@@ -54,7 +54,7 @@ async def userinfo(interaction: discord.Interaction, user: Optional[discord.User
     # parameter is typehinted to `Optinal[discord.User]`. This means that
     # the end-user will be able to pick a user that has access
     # to the channel or to provide an user id.
-    # After command was invoked this will resolve the user to a `discord.User` instance.
+    # After the command is invoked, this will resolve the user to a `discord.User` instance.
 
     # If no user is explicitly provided then we use the command user here
     user = user or interaction.user
