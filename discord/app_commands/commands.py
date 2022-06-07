@@ -34,6 +34,7 @@ from typing import (
     Generator,
     Generic,
     List,
+    Literal,
     MutableMapping,
     Optional,
     Set,
@@ -426,7 +427,6 @@ def _get_context_menu_parameter(
     func: ContextMenuCallback, requires_binding: bool = False
 ) -> Tuple[str, Any, AppCommandType]:
     params = inspect.signature(func).parameters
-    print(params)
     requires_binding = requires_binding or is_inside_class(func)
     required_params = 2 if not requires_binding else 3
     annotation_text = (
@@ -443,7 +443,8 @@ def _get_context_menu_parameter(
         raise TypeError(msg)
 
     iterator = iter(params.values())
-    next(iterator)  # skip self
+    if requires_binding:
+        next(iterator)  # skip self
     next(iterator)  # skip interaction
     parameter = next(iterator)
     if parameter.annotation is parameter.empty:
@@ -456,7 +457,6 @@ def _get_context_menu_parameter(
         raise TypeError(msg)
 
     resolved = resolve_annotation(parameter.annotation, func.__globals__, func.__globals__, {})
-    print(parameter, parameter.annotation, resolved, iterator)
     type = _context_menu_annotation(resolved)
     return (parameter.name, resolved, type)
 
@@ -967,15 +967,9 @@ class ContextMenu(Generic[CogT]):
         self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
 
-        # for classes
+        # for cog support
         self.binding: Optional[CogT] = None
-        self.parent = None
-        # Unwrap __self__ for bound methods
-        try:
-            self.binding = callback.__self__
-            self._callback = callback = callback.__func__
-        except AttributeError:
-            pass
+        self.parent: Literal[None] = None
         # ----
 
         (param, annotation, actual_type) = _get_context_menu_parameter(callback, requires_binding=bool(self.binding))
@@ -1027,11 +1021,11 @@ class ContextMenu(Generic[CogT]):
         copy.default_permissions = self.default_permissions
         copy.guild_only = self.guild_only
         copy.nsfw = self.nsfw
-        copy._attr = None  # backwards compatibility
+        copy._attr = None  # type: ignore # backwards compatibility
         copy._callback = self._callback
         copy.on_error = self.on_error
         copy.module = self.module
-        copy.parent = None  # backwards compatibility
+        copy.parent = None  # type: ignore # backwards compatibility
         copy.binding = bindings.get(self.binding) if self.binding is not None else binding
 
         return copy
