@@ -253,7 +253,9 @@ class Cog(metaclass=CogMeta):
     __cog_group_description__: str
     __cog_settings__: Dict[str, Any]
     __cog_commands__: List[Command[Self, ..., Any]]
-    __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]]
+    __cog_app_commands__: List[
+        Union[app_commands.Group, app_commands.Command[Self, ..., Any], app_commands.ContextMenu[Self]]
+    ]
     __cog_listeners__: List[Tuple[str, str]]
     __cog_is_app_commands_group__: ClassVar[bool] = False
     __cog_app_commands_group__: Optional[app_commands.Group]
