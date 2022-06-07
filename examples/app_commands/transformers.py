@@ -56,7 +56,7 @@ async def userinfo(interaction: discord.Interaction, user: Optional[discord.User
     # to the channel or to provide an user id.
     # After the command is invoked, this will resolve the user to a `discord.User` instance.
 
-    # If no user is explicitly provided then we use the command user here
+    # If no user is explicitly provided then we use the command user here.
     user = user or interaction.user
 
     await interaction.response.send_message(f'User found - {user}\nAvatar: {user.display_avatar.url}')
