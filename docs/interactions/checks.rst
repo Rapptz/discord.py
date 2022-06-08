@@ -46,7 +46,7 @@ A very similar process happens for checking multiple roles:
 Permission Checks
 ------------------
 
-These checks handle validating whether the user activating a command has certain permissions in a server, or whether the bot user has a specific permission.
+These checks handle validating whether the user activating a command has certain permissions in a server, or whether the bot user has specific permissions.
 
 .. code-block:: python3
     :emphasize-lines: 3,9
