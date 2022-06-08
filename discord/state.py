@@ -965,6 +965,7 @@ class ConnectionState:
 
         thread_id = int(data['id'])
         thread: Optional[Thread] = guild.get_thread(thread_id)
+        raw = RawThreadMembersUpdate(data)
         if thread is None:
             _log.debug('THREAD_MEMBERS_UPDATE referencing an unknown thread ID: %s. Discarding', thread_id)
             return
@@ -983,6 +984,7 @@ class ConnectionState:
         for member_id in removed_member_ids:
             if member_id != self_id:
                 member = thread._pop_member(member_id)
+                self.dispatch('raw_thread_member_remove', raw)
                 if member is not None:
                     self.dispatch('thread_member_remove', member)
             else:

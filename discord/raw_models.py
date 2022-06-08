@@ -29,6 +29,7 @@ from typing import TYPE_CHECKING, Optional, Set, List, Tuple, Union
 
 from .enums import ChannelType, try_enum
 from .utils import _get_as_snowflake
+from types.snowflake import Snowflake
 
 if TYPE_CHECKING:
     from .types.gateway import (
@@ -42,6 +43,7 @@ if TYPE_CHECKING:
         IntegrationDeleteEvent,
         ThreadUpdateEvent,
         ThreadDeleteEvent,
+        ThreadMembersUpdate,
         TypingStartEvent,
         GuildMemberRemoveEvent,
     )
@@ -50,6 +52,7 @@ if TYPE_CHECKING:
     from .member import Member
     from .threads import Thread
     from .user import User
+    from types.threads import ThreadMember
 
     ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]
 
@@ -64,6 +67,7 @@ __all__ = (
     'RawIntegrationDeleteEvent',
     'RawThreadUpdateEvent',
     'RawThreadDeleteEvent',
+    'RawThreadMembersUpdate',
     'RawTypingEvent',
     'RawMemberRemoveEvent',
 )
@@ -355,6 +359,38 @@ class RawThreadDeleteEvent(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
         self.parent_id: int = int(data['parent_id'])
         self.thread: Optional[Thread] = None
+
+
+class RawThreadMembersUpdate(_RawReprMixin):
+    """Represents the payload for :func:`on_raw_thread_member_join` and :func:`on_raw_thread_member_remove` events.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    thread_id: :class:`int`
+        The ID of the thread that was updated.
+    guild_id: :class:`int`
+        The ID of the guild the thread is in.
+    member_count: :class:`int`
+        The number of members in the thread.
+    data: :class:`dict`
+        The raw data given by the :ddocs:`gateway <topics/gateway#thread-members-update>`
+    added_members: Optional[List[]:class:`discord.ThreadMember`]]
+        The members added to the thread.
+    removed_member_ids: Optional[List[]:class:`discord.abc.Snowflake`]]
+        The ids of the members removed from the thread.
+    """
+
+    __slots__ = ('thread_id', 'guild_id', 'member_count', 'data', 'added_members', 'removed_member_ids')
+
+    def __init__(self, data: ThreadMembersUpdate) -> None:
+        self.thread_id: int = int(data['id'])
+        self.guild_id: int = int(data['guild_id'])
+        self.member_count: int = int(data['member_count'])
+        self.data: ThreadMembersUpdate = data
+        self.added_members: Optional[List[ThreadMember]] = data.get('added_members', None)
+        self.removed_member_ids: Optional[List[Snowflake]] = data.get('removed_member_ids', None)
 
 
 class RawTypingEvent(_RawReprMixin):
