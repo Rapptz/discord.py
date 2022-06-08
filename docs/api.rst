@@ -1271,8 +1271,6 @@ Threads
     Called when a :class:`ThreadMember` leaves a :class:`Thread`. Unlike :func:`on_thread_members_remove` this
     is called regardless of the member being in the internal thread's members cache or not.
 
-    You can get the thread a member belongs in by accessing :attr:`ThreadMember.thread`.
-
     This requires :attr:`Intents.members` to be enabled.
 
     .. versionadded:: 2.0
