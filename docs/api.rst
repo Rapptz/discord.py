@@ -1268,7 +1268,7 @@ Threads
 
 .. function:: on_raw_thread_member_remove(payload)
 
-    Called when a :class:`ThreadMember` leaves a :class:`Thread`. Unlike :func:`on_thread_members_remove` this
+    Called when a :class:`ThreadMember` leaves a :class:`Thread`. Unlike :func:`on_thread_member_remove` this
     is called regardless of the member being in the internal thread's members cache or not.
 
     This requires :attr:`Intents.members` to be enabled.
