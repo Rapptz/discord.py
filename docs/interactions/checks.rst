@@ -163,7 +163,7 @@ In this example, the first check is implemented to only allow the command usage 
 Combining Checks
 -----------------
 
-You can combine multiple checks on a command to end up with a vary particular functionality for your needs, in a very concise manner.
+You can combine multiple checks on a command to end up with a very particular functionality for your needs, in a very concise manner.
 
 As an example, here is a command which only runs if a user has a certain role, ``send_messages`` permissions, the bot has ``manage_messages`` permissions, and with a ``15`` second global cooldown:
 
