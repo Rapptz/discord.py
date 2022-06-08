@@ -29,7 +29,6 @@ from typing import TYPE_CHECKING, Optional, Set, List, Tuple, Union
 
 from .enums import ChannelType, try_enum
 from .utils import _get_as_snowflake
-from types.snowflake import Snowflake
 
 if TYPE_CHECKING:
     from .types.gateway import (
@@ -52,7 +51,6 @@ if TYPE_CHECKING:
     from .member import Member
     from .threads import Thread
     from .user import User
-    from types.threads import ThreadMember
 
     ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]
 
@@ -389,8 +387,6 @@ class RawThreadMembersUpdate(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
         self.member_count: int = int(data['member_count'])
         self.data: ThreadMembersUpdate = data
-        self.added_members: Optional[List[ThreadMember]] = data.get('added_members', None)
-        self.removed_member_ids: Optional[List[Snowflake]] = data.get('removed_member_ids', None)
 
 
 class RawTypingEvent(_RawReprMixin):
