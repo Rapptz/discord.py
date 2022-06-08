@@ -360,7 +360,7 @@ class RawThreadDeleteEvent(_RawReprMixin):
 
 
 class RawThreadMembersUpdate(_RawReprMixin):
-    """Represents the payload for :func:`on_raw_thread_member_join` and :func:`on_raw_thread_member_remove` events.
+    """Represents the payload for a :func:`on_raw_thread_member_remove` event.
 
     .. versionadded:: 2.0
 
@@ -374,13 +374,9 @@ class RawThreadMembersUpdate(_RawReprMixin):
         The number of members in the thread.
     data: :class:`dict`
         The raw data given by the :ddocs:`gateway <topics/gateway#thread-members-update>`
-    added_members: Optional[List[]:class:`discord.ThreadMember`]]
-        The members added to the thread.
-    removed_member_ids: Optional[List[]:class:`discord.abc.Snowflake`]]
-        The ids of the members removed from the thread.
     """
 
-    __slots__ = ('thread_id', 'guild_id', 'member_count', 'data', 'added_members', 'removed_member_ids')
+    __slots__ = ('thread_id', 'guild_id', 'member_count', 'data')
 
     def __init__(self, data: ThreadMembersUpdate) -> None:
         self.thread_id: int = int(data['id'])
