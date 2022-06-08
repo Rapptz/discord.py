@@ -7,7 +7,7 @@ Checks
 
 Checks are a feature that allows you to set requirements in order for a command to be executed. This can include things like requiring administrator permissions, requiring a user to have a role, making sure that the bot has necessary permissions to execute a task, adding a cooldown to a command, creating a custom check function, or any combination of these.
 
-These checks will be used as decorators in conjunction with any :func:`@app_commands.command <.app_commands.command>` or :func:`@app_commands.context_menu <.app_commands.context_menu>`  decorators.
+These checks will be used as decorators in conjunction with any :func:`@app_commands.command <.app_commands.command>` or :func:`@app_commands.context_menu <.app_commands.context_menu>` decorators.
 
 Before getting started, the examples shown below are made using both :class:`.app_commands.Command` and :class:`.app_commands.ContextMenu` methods. All of the checks present here can apply to either one. Let's take a look at each of the possible checks.
 
