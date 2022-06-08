@@ -133,7 +133,7 @@ In this specific use case, the function is used to apply a ``10.0`` second per u
 Custom Check
 -------------
 
-Custom check commands can also be implemented if further functionality is needed outside of the checks listed above. These will generally come in two forms: a standard check decorator that is passe a custom function, or a custom decorator for common checks.
+Custom check commands can also be implemented if further functionality is needed outside of the checks listed above. These will generally come in two forms: a standard check decorator that is passed a custom function, or a custom decorator for common checks.
 
 .. code-block:: python3
     :emphasize-lines: 6,17
