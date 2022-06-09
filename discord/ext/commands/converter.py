@@ -259,7 +259,7 @@ class MemberConverter(IDConverter[discord.Member]):
             if not result:
                 raise MemberNotFound(argument)
 
-        return result
+        return result  # type: ignore
 
 
 class UserConverter(IDConverter[discord.User]):
@@ -1182,7 +1182,7 @@ async def _actual_conversion(ctx: Context[BotT], converter: Any, argument: str, 
     except CommandError:
         raise
     except Exception as exc:
-        raise ConversionError(converter, exc) from exc
+        raise ConversionError(converter, exc) from exc  # type: ignore
 
     try:
         return converter(argument)
