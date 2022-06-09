@@ -30,20 +30,20 @@ discord.py は機能豊富かつモダンで使いやすい、非同期処理に
 .. code:: sh
 
     # Linux/OS X
-    python3 -m pip install -U discord.py
+    pip3 install discord.py
 
     # Windows
-    py -3 -m pip install -U discord.py
+    pip install discord.py
 
 音声サポートが必要なら、次のコマンドを実行しましょう:
 
 .. code:: sh
 
     # Linux/OS X
-    python3 -m pip install -U discord.py[voice]
+    pip3 install discord.py[voice]
 
     # Windows
-    py -3 -m pip install -U discord.py[voice]
+    pip install discord.py[voice]
 
 
 開発版をインストールしたいのならば、次の手順に従ってください:
@@ -52,7 +52,7 @@ discord.py は機能豊富かつモダンで使いやすい、非同期処理に
 
     $ git clone https://github.com/Rapptz/discord.py
     $ cd discord.py
-    $ python3 -m pip install -U .[voice]
+    $ pip install .[voice]
 
 
 オプションパッケージ
