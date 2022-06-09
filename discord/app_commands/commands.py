@@ -34,6 +34,7 @@ from typing import (
     Generator,
     Generic,
     List,
+    Literal,
     MutableMapping,
     Optional,
     Set,
@@ -541,6 +542,11 @@ class Command(Generic[GroupT, P, T]):
     def callback(self) -> CommandCallback[GroupT, P, T]:
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the command is called."""
         return self._callback
+
+    @property
+    def type(self) -> Literal[AppCommandType.chat_input]:
+        """:class:`~discord.AppCommandType`: The command's type. This is always :attr:`~discord.AppCommandType.chat_input`."""
+        return AppCommandType.chat_input
 
     def _copy_with(
         self,
@@ -1301,11 +1307,10 @@ class Group:
     def to_dict(self) -> Dict[str, Any]:
         # If this has a parent command then it's part of a subcommand group
         # Otherwise, it's just a regular command
-        option_type = 1 if self.parent is None else AppCommandOptionType.subcommand_group.value
         base: Dict[str, Any] = {
             'name': self.name,
             'description': self.description,
-            'type': option_type,
+            'type': self.type.value,
             'options': [child.to_dict() for child in self._children.values()],
         }
 
@@ -1332,6 +1337,17 @@ class Group:
         if self.parent is None:
             return self.name
         return f'{self.parent.name} {self.name}'
+
+    @property
+    def type(self) -> Literal[AppCommandOptionType.subcommand, AppCommandOptionType.subcommand_group]:
+        """:class:`~discord.AppCommandOptionType`: The command's type.
+        This is :attr:`~discord.AppCommandOptionType.subcommand_group` if the command is part of a subcommand group
+        otherwise it's :attr:`~discord.AppCommandOptionType.subcommand`.
+        """
+        if self.parent is None:
+            return AppCommandOptionType.subcommand
+        else:
+            return AppCommandOptionType.subcommand_group
 
     def _get_internal_command(self, name: str) -> Optional[Union[Command[Any, ..., Any], Group]]:
         return self._children.get(name)
