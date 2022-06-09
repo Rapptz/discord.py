@@ -140,7 +140,7 @@ def make_converter_transformer(converter: Any, parameter: Parameter) -> Type[app
         except CommandError:
             raise
         except Exception as exc:
-            raise ConversionError(converter, exc) from exc
+            raise ConversionError(converter, exc) from exc  # type: ignore
 
     return type('ConverterTransformer', (app_commands.Transformer,), {'transform': classmethod(transform)})
 
