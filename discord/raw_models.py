@@ -42,6 +42,7 @@ if TYPE_CHECKING:
         IntegrationDeleteEvent,
         ThreadUpdateEvent,
         ThreadDeleteEvent,
+        ThreadMembersUpdate,
         TypingStartEvent,
         GuildMemberRemoveEvent,
     )
@@ -64,6 +65,7 @@ __all__ = (
     'RawIntegrationDeleteEvent',
     'RawThreadUpdateEvent',
     'RawThreadDeleteEvent',
+    'RawThreadMembersUpdate',
     'RawTypingEvent',
     'RawMemberRemoveEvent',
 )
@@ -355,6 +357,32 @@ class RawThreadDeleteEvent(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
         self.parent_id: int = int(data['parent_id'])
         self.thread: Optional[Thread] = None
+
+
+class RawThreadMembersUpdate(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_thread_member_remove` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    thread_id: :class:`int`
+        The ID of the thread that was updated.
+    guild_id: :class:`int`
+        The ID of the guild the thread is in.
+    member_count: :class:`int`
+        The approximate number of members in the thread. This caps at 50.
+    data: :class:`dict`
+        The raw data given by the :ddocs:`gateway <topics/gateway#thread-members-update>`.
+    """
+
+    __slots__ = ('thread_id', 'guild_id', 'member_count', 'data')
+
+    def __init__(self, data: ThreadMembersUpdate) -> None:
+        self.thread_id: int = int(data['id'])
+        self.guild_id: int = int(data['guild_id'])
+        self.member_count: int = int(data['member_count'])
+        self.data: ThreadMembersUpdate = data
 
 
 class RawTypingEvent(_RawReprMixin):
