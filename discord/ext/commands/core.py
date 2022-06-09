@@ -1880,7 +1880,7 @@ def check(predicate: UserCheck[ContextT], /) -> Check[ContextT]:
 
     def decorator(func: Union[Command, CoroFunc]) -> Union[Command, CoroFunc]:
         if isinstance(func, Command):
-            func.checks.append(predicate)
+            func.checks.append(predicate)  # type: ignore
         else:
             if not hasattr(func, '__commands_checks__'):
                 func.__commands_checks__ = []
