@@ -626,7 +626,7 @@ async def maybe_coroutine(f: MaybeAwaitableFunc[P, T], *args: P.args, **kwargs: 
 
 async def async_all(gen: Iterable[Awaitable[T]], *, check: Callable[[T], bool] = _isawaitable) -> bool:
     for elem in gen:
-        if check(elem):
+        if check(elem):  # type: ignore
             elem = await elem
         if not elem:
             return False
