@@ -388,7 +388,6 @@ class Asset(AssetMixin):
             else:
                 if static_format is MISSING and format not in VALID_STATIC_FORMATS:
                     raise ValueError(f'format must be one of {VALID_STATIC_FORMATS}')
-
             url = url.with_path(f'{path}.{format}')
 
         if static_format is not MISSING and not self._animated:
