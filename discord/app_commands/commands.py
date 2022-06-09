@@ -750,7 +750,7 @@ class Command(Generic[GroupT, P, T]):
 
     @property
     def type(self) -> Literal[AppCommandType.chat_input, AppCommandOptionType.subcommand]:
-        """Union[:class:`~discord.AppCommandType`, :class`~discord.AppCommandOptionType`]: The command's type.
+        """Union[:class:`~discord.AppCommandType`, :class:`~discord.AppCommandOptionType`]: The command's type.
         This is :attr:`~discord.AppCommandType.value` if the command is a subcommand,
         otherwise :attr:`~discord.AppCommandOptionType.subcommand` is returned.
         """
