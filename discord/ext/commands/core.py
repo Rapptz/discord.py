@@ -368,7 +368,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             raise TypeError('Name of a command must be a string.')
         self.name: str = name
 
-        self.callback = func
+        self.callback = func  # type: ignore
         self.enabled: bool = kwargs.get('enabled', True)
 
         help_doc = kwargs.get('help')
@@ -498,7 +498,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             The function that will be used as a check.
         """
 
-        self.checks.append(func)
+        self.checks.append(func)  # type: ignore
 
     def remove_check(self, func: UserCheck[ContextT], /) -> None:
         """Removes a check from the command.
@@ -519,7 +519,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         """
 
         try:
-            self.checks.remove(func)
+            self.checks.remove(func)  # type: ignore
         except ValueError:
             pass
 
