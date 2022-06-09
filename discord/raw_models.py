@@ -371,9 +371,9 @@ class RawThreadMembersUpdate(_RawReprMixin):
     guild_id: :class:`int`
         The ID of the guild the thread is in.
     member_count: :class:`int`
-        The number of members in the thread.
+        The approximate number of members in the thread. This is only for UI purposes and caps at 50.
     data: :class:`dict`
-        The raw data given by the :ddocs:`gateway <topics/gateway#thread-members-update>`
+        The raw data given by the :ddocs:`gateway <topics/gateway#thread-members-update>`.
     """
 
     __slots__ = ('thread_id', 'guild_id', 'member_count', 'data')
