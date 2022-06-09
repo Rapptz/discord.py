@@ -615,6 +615,8 @@ def flatten_handlers(cls: Type[Message]) -> Type[Message]:
 class MessageApplication:
     """Represents a message's application data from a :class:`~discord.Message`.
 
+    .. versionadded:: 2.0
+
     Attributes
     -----------
     id: :class:`int`
@@ -623,19 +625,9 @@ class MessageApplication:
         The application description.
     name: :class:`str`
         The application's name.
-
-    .. versionadded:: 2.0
-
     """
 
-    __slots__ = (
-        '_state',
-        '_icon',
-        '_cover_image',
-        'id',
-        'description',
-        'name',
-    )
+    __slots__ = ('_state', '_icon', '_cover_image', 'id', 'description', 'name')
 
     def __init__(self, *, state: ConnectionState, data: MessageApplicationPayload) -> None:
         self._state: ConnectionState = state
@@ -646,13 +638,14 @@ class MessageApplication:
         self._cover_image: Optional[str] = data.get('cover_image')
 
     def __repr__(self) -> str:
-        return f"<MessageApplication id={self.id} name={self.name!r}>"
+        return f'<MessageApplication id={self.id} name={self.name!r}>'
 
     @property
     def icon(self) -> Optional[Asset]:
         """Optional[:class:`Asset`]: The application's icon, if any."""
         if self._icon:
             return Asset._from_app_icon(state=self._state, object_id=self.id, icon_hash=self._icon, asset_type='icon')
+        return None
 
     @property
     def cover(self) -> Optional[Asset]:
@@ -661,6 +654,7 @@ class MessageApplication:
             return Asset._from_app_icon(
                 state=self._state, object_id=self.id, icon_hash=self._cover_image, asset_type='cover_image'
             )
+        return None
 
 
 class PartialMessage(Hashable):
@@ -1382,6 +1376,9 @@ class Message(PartialMessage, Hashable):
         - ``party_id``: The party ID associated with the party.
     application: Optional[:class:`~discord.MessageApplication`]
         The rich presence enabled application associated with this message.
+
+        .. versionchanged:: 2.0
+            This now returns a richer interface type, not a `dict` of the raw payload.
 
     stickers: List[:class:`StickerItem`]
         A list of sticker items given to the message.
