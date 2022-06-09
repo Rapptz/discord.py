@@ -528,7 +528,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         try:
             if hasattr(entity, '__cog_commands__'):
                 injected = wrap_callback(cmd.send_cog_help)
-                return await injected(entity)
+                return await injected(entity)  # type: ignore
             elif isinstance(entity, Group):
                 injected = wrap_callback(cmd.send_group_help)
                 return await injected(entity)
