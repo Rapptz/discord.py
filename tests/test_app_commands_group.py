@@ -260,7 +260,7 @@ def test_cog_with_group_subclass_with_group_subclass():
 
 
 def test_cog_group_with_commands():
-    class MyCog(commands.GroupCog):
+    class MyCog(commands.GroupCog):  # type: ignore
         @app_commands.command()
         async def my_command(self, interaction: discord.Interaction) -> None:
             ...
@@ -275,7 +275,7 @@ def test_cog_group_with_commands():
 
 
 def test_cog_group_with_group():
-    class MyCog(commands.GroupCog):
+    class MyCog(commands.GroupCog):  # type: ignore
         sub_group = app_commands.Group(name='mysubgroup', description='My sub-group')
 
         @sub_group.command()
@@ -299,7 +299,7 @@ def test_cog_group_with_subclass_group():
         async def my_command(self, interaction: discord.Interaction) -> None:
             ...
 
-    class MyCog(commands.GroupCog):
+    class MyCog(commands.GroupCog):  # type: ignore
         sub_group = MyGroup()
 
         @sub_group.command()
@@ -331,7 +331,7 @@ def test_cog_group_with_subclassed_subclass_group():
     class MySubclassedGroup(MyGroup, name='mygroup'):
         ...
 
-    class MyCog(commands.GroupCog):
+    class MyCog(commands.GroupCog):  # type: ignore
         sub_group = MySubclassedGroup()
 
         @sub_group.command()

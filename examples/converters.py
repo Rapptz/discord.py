@@ -84,7 +84,7 @@ async def notify(ctx: commands.Context, target: ChannelOrMemberConverter):
     # the `argument` parameter of the `ChannelOrMemberConverter.convert` method and
     # the conversion will go through the process defined there.
 
-    await target.send(f'Hello, {target.name}!')
+    await target.send(f'Hello, {target.name}!')  # type: ignore
 
 
 @bot.command()
@@ -112,8 +112,8 @@ async def multiply(ctx: commands.Context, number: int, maybe: bool):
     # See: https://discordpy.readthedocs.io/en/latest/ext/commands/commands.html#bool
 
     if maybe is True:
-        return await ctx.send(number * 2)
-    await ctx.send(number * 5)
+        return await ctx.send(number * 2)  # type: ignore
+    await ctx.send(number * 5)  # type: ignore
 
 
 bot.run('token')

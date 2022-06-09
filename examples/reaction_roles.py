@@ -20,7 +20,7 @@ class MyClient(discord.Client):
         if payload.message_id != self.role_message_id:
             return
 
-        guild = self.get_guild(payload.guild_id)
+        guild = self.get_guild(payload.guild_id)  # type: ignore
         if guild is None:
             # Check if we're still in the guild and it's cached.
             return
@@ -49,7 +49,7 @@ class MyClient(discord.Client):
         if payload.message_id != self.role_message_id:
             return
 
-        guild = self.get_guild(payload.guild_id)
+        guild = self.get_guild(payload.guild_id)  # type: ignore
         if guild is None:
             # Check if we're still in the guild and it's cached.
             return

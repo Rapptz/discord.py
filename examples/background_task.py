@@ -22,7 +22,7 @@ class MyClient(discord.Client):
     async def my_background_task(self):
         channel = self.get_channel(1234567)  # channel ID goes here
         self.counter += 1
-        await channel.send(self.counter)
+        await channel.send(self.counter)  # type: ignore
 
     @my_background_task.before_loop
     async def before_my_task(self):
