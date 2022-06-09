@@ -1555,7 +1555,7 @@ class Guild(Hashable):
         nsfw: bool = MISSING,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
         reason: Optional[str] = None,
-        default_auto_archive_duration: int = MISSING
+        default_auto_archive_duration: int = MISSING,
     ) -> ForumChannel:
         """|coro|
 
@@ -1623,12 +1623,7 @@ class Guild(Hashable):
             options['default_auto_archive_duration'] = default_auto_archive_duration
 
         data = await self._create_channel(
-            name=name,
-            overwrites=overwrites,
-            channel_type=ChannelType.forum,
-            category=category,
-            reason=reason,
-            **options
+            name=name, overwrites=overwrites, channel_type=ChannelType.forum, category=category, reason=reason, **options
         )
 
         channel = ForumChannel(state=self._state, guild=self, data=data)
