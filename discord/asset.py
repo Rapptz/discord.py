@@ -353,6 +353,11 @@ class Asset(AssetMixin):
     ) -> Self:
         """Returns a new asset with the passed components replaced.
 
+
+        .. versionchanged:: 2.0
+            ``static_format`` is now preferred over ``format`` 
+            if both are present and the asset is not animated.
+
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
             ``InvalidArgument``.
