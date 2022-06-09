@@ -623,6 +623,9 @@ class MessageApplication:
         The application description.
     name: :class:`str`
         The application's name.
+
+    .. versionadded:: 2.0
+
     """
 
     __slots__ = (
