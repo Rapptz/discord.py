@@ -355,7 +355,7 @@ class Asset(AssetMixin):
 
 
         .. versionchanged:: 2.0
-            ``static_format`` is now preferred over ``format`` 
+            ``static_format`` is now preferred over ``format``
             if both are present and the asset is not animated.
 
         .. versionchanged:: 2.0
