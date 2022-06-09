@@ -469,7 +469,14 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             # channel and author will always match relevant types here
             return self.channel.permissions_for(self.author)  # type: ignore
         base = self.interaction.permissions
-        if self.channel.type not in (ChannelType.voice, ChannelType.stage_voice):
+        if self.channel.type in (ChannelType.voice, ChannelType.stage_voice):
+            if not base.connect:
+                # voice channels cannot be edited by people who can't connect to them
+                # It also implicitly denies all other voice perms
+                denied = Permissions.voice()
+                denied.update(manage_channels=True, manage_roles=True)
+                base.value &= ~denied.value
+        else:
             # text channels do not have voice related permissions
             denied = Permissions.voice()
             base.value &= ~denied.value
