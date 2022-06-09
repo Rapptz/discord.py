@@ -218,7 +218,7 @@ def _load_default() -> bool:
             _lib = libopus_loader(_filename)
         else:
             # This is handled in the exception case
-            _lib = libopus_loader(ctypes.util.find_library('opus'))  # type: ignore
+            _lib = libopus_loader(ctypes.util.find_library('opus'))
     except Exception:
         _lib = None
 
