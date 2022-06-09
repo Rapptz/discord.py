@@ -1323,8 +1323,6 @@ Threads
     Called whenever a thread is deleted. Unlike :func:`on_thread_delete` this
     is called regardless of the thread being in the internal thread cache or not.
 
-    This requires :attr:`Intents.guilds` to be enabled.
-
     .. versionadded:: 2.0
 
     :param payload: The raw event payload data.
@@ -1341,6 +1339,16 @@ Threads
 
     :param member: The member who joined or left.
     :type member: :class:`ThreadMember`
+
+.. function:: on_raw_thread_member_remove(payload)
+
+    Called when a :class:`ThreadMember` leaves a :class:`Thread`. Unlike :func:`on_thread_member_remove` this
+    is called regardless of the member being in the internal thread's members cache or not.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type member: :class:`RawThreadMembersUpdate`
 
 Voice
 ~~~~~~
@@ -6834,6 +6842,11 @@ RawEvent
 .. attributetable:: RawIntegrationDeleteEvent
 
 .. autoclass:: RawIntegrationDeleteEvent()
+    :members:
+
+.. attributetable:: RawThreadMembersUpdate
+
+.. autoclass:: RawThreadMembersUpdate()
     :members:
 
 .. attributetable:: RawThreadDeleteEvent
