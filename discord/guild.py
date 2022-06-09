@@ -129,6 +129,7 @@ if TYPE_CHECKING:
         VoiceChannel as VoiceChannelPayload,
         CategoryChannel as CategoryChannelPayload,
         StageChannel as StageChannelPayload,
+        ForumChannel as ForumChannelPayload,
     )
     from .types.integration import IntegrationType
     from .types.snowflake import SnowflakeList, Snowflake as _Snowflake
@@ -1192,6 +1193,17 @@ class Guild(Hashable):
     def _create_channel(
         self,
         name: str,
+        channel_type: Literal[ChannelType.forum],
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
+        category: Optional[Snowflake] = ...,
+        **options: Any,
+    ) -> Coroutine[Any, Any, ForumChannelPayload]:
+        ...
+
+    @overload
+    def _create_channel(
+        self,
+        name: str,
         channel_type: ChannelType,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
@@ -1576,6 +1588,94 @@ class Guild(Hashable):
         return channel
 
     create_category_channel = create_category
+
+    async def create_forum(
+        self,
+        name: str,
+        *,
+        topic: str = MISSING,
+        position: int = MISSING,
+        category: Optional[CategoryChannel] = None,
+        slowmode_delay: int = MISSING,
+        nsfw: bool = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
+        reason: Optional[str] = None,
+        default_auto_archive_duration: int = MISSING,
+    ) -> ForumChannel:
+        """|coro|
+
+        Similar to :meth:`create_text_channel` except makes a :class:`ForumChannel` instead.
+
+        The ``overwrites`` parameter can be used to create a 'secret'
+        channel upon creation. This parameter expects a :class:`dict` of
+        overwrites with the target (either a :class:`Member` or a :class:`Role`)
+        as the key and a :class:`PermissionOverwrite` as the value.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The channel's name.
+        topic: :class:`str`
+            The channel's topic.
+        category: Optional[:class:`CategoryChannel`]
+            The category to place the newly created channel under.
+            The permissions will be automatically synced to category if no
+            overwrites are provided.
+        position: :class:`int`
+            The position in the channel list. This is a number that starts
+            at 0. e.g. the top channel is position 0.
+        nsfw: :class:`bool`
+            To mark the channel as NSFW or not.
+        slowmode_delay: :class:`int`
+            Specifies the slowmode rate limit for users in this channel, in seconds.
+            The maximum possible value is `21600`.
+        reason: Optional[:class:`str`]
+            The reason for creating this channel. Shows up in the audit log.
+        default_auto_archive_duration: :class:`int`
+            The default auto archive duuration for threads created in the forum channel (in minutes).
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        TypeError
+            The permission overwrite information is not in proper form.
+
+        Returns
+        -------
+        :class:`ForumChannel`
+            The channel that was just created.
+        """
+        options = {}
+
+        if position is not MISSING:
+            options['position'] = position
+
+        if topic is not MISSING:
+            options['topic'] = topic
+
+        if slowmode_delay is not MISSING:
+            options['rate_limit_per_user'] = slowmode_delay
+
+        if nsfw is not MISSING:
+            options['nsfw'] = nsfw
+
+        if default_auto_archive_duration is not MISSING:
+            options['default_auto_archive_duration'] = default_auto_archive_duration
+
+        data = await self._create_channel(
+            name=name, overwrites=overwrites, channel_type=ChannelType.forum, category=category, reason=reason, **options
+        )
+
+        channel = ForumChannel(state=self._state, guild=self, data=data)
+
+        # temporarily add to the cache
+        self._channels[channel.id] = channel
+        return channel
 
     async def leave(self) -> None:
         """|coro|

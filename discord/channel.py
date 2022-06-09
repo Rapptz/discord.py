@@ -1880,6 +1880,20 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """
         return await self.guild.create_stage_channel(name, category=self, **options)
 
+    async def create_forum(self, name: str, **options: Any) -> ForumChannel:
+        """|coro|
+
+        A shortcut method to :meth:`Guild.create_forum` to create a :class:`ForumChannel` in the category.
+
+        .. versionadded:: 2.0
+
+        Returns
+        --------
+        :class:`ForumChannel`
+            The channel that was just created.
+        """
+        return await self.guild.create_forum(name, category=self, **options)
+
 
 class ForumChannel(discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild forum channel.
