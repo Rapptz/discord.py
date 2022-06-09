@@ -543,11 +543,6 @@ class Command(Generic[GroupT, P, T]):
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the command is called."""
         return self._callback
 
-    @property
-    def type(self) -> Literal[AppCommandType.chat_input]:
-        """:class:`~discord.AppCommandType`: The command's type. This is always :attr:`~discord.AppCommandType.chat_input`."""
-        return AppCommandType.chat_input
-
     def _copy_with(
         self,
         *,
@@ -581,13 +576,10 @@ class Command(Generic[GroupT, P, T]):
         return copy
 
     def to_dict(self) -> Dict[str, Any]:
-        # If we have a parent then our type is a subcommand
-        # Otherwise, the type falls back to the specific command type (e.g. slash command or context menu)
-        option_type = AppCommandType.chat_input.value if self.parent is None else AppCommandOptionType.subcommand.value
         base: Dict[str, Any] = {
             'name': self.name,
             'description': self.description,
-            'type': option_type,
+            'type': self.type.value,
             'options': [param.to_dict() for param in self._params.values()],
         }
 
@@ -755,6 +747,17 @@ class Command(Generic[GroupT, P, T]):
             names.append(grandparent.name)
 
         return ' '.join(reversed(names))
+
+    @property
+    def type(self) -> Literal[AppCommandType.chat_input, AppCommandOptionType.subcommand]:
+        """Union[:class:`~discord.AppCommandType`, :class`~discord.AppCommandOptionType`]: The command's type.
+        This is :attr:`~discord.AppCommandType.value` if the command is a subcommand,
+        otherwise :attr:`~discord.AppCommandOptionType.subcommand` is returned.
+        """
+        if self.parent is None:
+            return AppCommandType.chat_input
+        else:
+            return AppCommandOptionType.subcommand
 
     async def _check_can_run(self, interaction: Interaction) -> bool:
         if self.parent is not None and self.parent is not self.binding:
@@ -1341,8 +1344,8 @@ class Group:
     @property
     def type(self) -> Literal[AppCommandOptionType.subcommand, AppCommandOptionType.subcommand_group]:
         """:class:`~discord.AppCommandOptionType`: The command's type.
-        This is :attr:`~discord.AppCommandOptionType.subcommand_group` if the command is part of a subcommand group
-        otherwise it's :attr:`~discord.AppCommandOptionType.subcommand`.
+        This is :attr:`~discord.AppCommandOptionType.subcommand_group` if the command is a subcommand group,
+        otherwise :attr:`~discord.AppCommandOptionType.subcommand` is returned.
         """
         if self.parent is None:
             return AppCommandOptionType.subcommand
