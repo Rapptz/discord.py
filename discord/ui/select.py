@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union
+from contextvars import ContextVar
 import inspect
 import os
 
@@ -52,6 +53,8 @@ if TYPE_CHECKING:
     )
 
 V = TypeVar('V', bound='View', covariant=True)
+
+selected_values: ContextVar[List[str]] = ContextVar('selected_values')
 
 
 class Select(Item[V]):
@@ -108,7 +111,6 @@ class Select(Item[V]):
         row: Optional[int] = None,
     ) -> None:
         super().__init__()
-        self._selected_values: List[str] = []
         self._provided_custom_id = custom_id is not MISSING
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
         if not isinstance(custom_id, str):
@@ -259,7 +261,7 @@ class Select(Item[V]):
     @property
     def values(self) -> List[str]:
         """List[:class:`str`]: A list of values that have been selected by the user."""
-        return self._selected_values
+        return selected_values.get()
 
     @property
     def width(self) -> int:
@@ -272,7 +274,7 @@ class Select(Item[V]):
         self._underlying = component
 
     def _refresh_state(self, data: MessageComponentInteractionData) -> None:
-        self._selected_values = data.get('values', [])
+        selected_values.set(data.get('values', []))
 
     @classmethod
     def from_component(cls, component: SelectMenu) -> Self:
