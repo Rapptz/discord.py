@@ -29,7 +29,7 @@ discord.py は機能豊富かつモダンで使いやすい、非同期処理に
 
 .. code:: sh
 
-    # Linux/OS X
+    # Linux/macOS
     python3 -m pip install -U discord.py
 
     # Windows
@@ -39,7 +39,7 @@ discord.py は機能豊富かつモダンで使いやすい、非同期処理に
 
 .. code:: sh
 
-    # Linux/OS X
+    # Linux/macOS
     python3 -m pip install -U discord.py[voice]
 
     # Windows
