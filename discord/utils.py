@@ -340,7 +340,8 @@ def oauth_url(
     if disable_guild_select:
         url += '&disable_guild_select=true'
     if state is not MISSING:
-        url += f'&state={state}'
+        encoded = urlencode({'state': state})
+        url += f'&{encoded}'
     return url
 
 
