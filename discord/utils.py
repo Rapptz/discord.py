@@ -295,7 +295,7 @@ def oauth_url(
 
     .. versionchanged:: 2.0
 
-        ``permissions``, ``guild``, ``redirect_uri``, ``scopes`` and ``state`` parameters
+        ``permissions``, ``guild``, ``redirect_uri``, and ``scopes`` parameters
         are now keyword-only.
 
     Parameters
