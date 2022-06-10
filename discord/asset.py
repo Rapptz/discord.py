@@ -382,6 +382,11 @@ class Asset(AssetMixin):
     ) -> Self:
         """Returns a new asset with the passed components replaced.
 
+
+        .. versionchanged:: 2.0
+            ``static_format`` is now preferred over ``format``
+            if both are present and the asset is not animated.
+
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
             ``InvalidArgument``.
@@ -415,7 +420,7 @@ class Asset(AssetMixin):
                 if format not in VALID_ASSET_FORMATS:
                     raise ValueError(f'format must be one of {VALID_ASSET_FORMATS}')
             else:
-                if format not in VALID_STATIC_FORMATS:
+                if static_format is MISSING and format not in VALID_STATIC_FORMATS:
                     raise ValueError(f'format must be one of {VALID_STATIC_FORMATS}')
             url = url.with_path(f'{path}.{format}')
 
