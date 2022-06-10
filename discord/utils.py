@@ -288,7 +288,7 @@ def oauth_url(
     redirect_uri: str = MISSING,
     scopes: Iterable[str] = MISSING,
     disable_guild_select: bool = False,
-    state: str = MISSING
+    state: str = MISSING,
 ) -> str:
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
@@ -341,7 +341,7 @@ def oauth_url(
         if redirect_uri is not MISSING:
             url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
         if state is not MISSING:
-            url += f'&state={state}'
+            url += urlencode({'state': state})
     return url
 
 
