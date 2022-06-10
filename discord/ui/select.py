@@ -54,7 +54,7 @@ if TYPE_CHECKING:
 
 V = TypeVar('V', bound='View', covariant=True)
 
-selected_values: ContextVar[List[str]] = ContextVar('selected_values')
+selected_values: ContextVar[Optional[List[str]]] = ContextVar('selected_values', default=None)
 
 
 class Select(Item[V]):
@@ -261,7 +261,8 @@ class Select(Item[V]):
     @property
     def values(self) -> List[str]:
         """List[:class:`str`]: A list of values that have been selected by the user."""
-        return selected_values.get()
+        values = selected_values.get()
+        return values if values is not None else []
 
     @property
     def width(self) -> int:
