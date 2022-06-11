@@ -145,6 +145,8 @@ class AppCommand(Hashable):
         The application command's name.
     description: :class:`str`
         The application command's description.
+    options: List[Union[:class:`AppCommand`, :class:`AppCommandGroup`]]
+        A list of options.
     default_member_permissions: Optional[:class:`~discord.Permissions`]
         The default member permissions that can run this command.
     dm_permission: :class:`bool`
@@ -798,12 +800,8 @@ class AppCommandGroup:
         The name of the subcommand.
     description: :class:`str`
         The description of the subcommand.
-    required: :class:`bool`
-        Whether the subcommand is required.
-    choices: List[:class:`Choice`]
-        A list of choices for the command to choose from for this subcommand.
-    arguments: List[:class:`Argument`]
-        A list of arguments.
+    options: List[Union[:class:`AppCommand`, :class:`AppCommandGroup`]]
+        A list of options.
     parent: Union[:class:`AppCommand`, :class:`AppCommandGroup`]
         The parent application command.
     """
@@ -812,9 +810,7 @@ class AppCommandGroup:
         'type',
         'name',
         'description',
-        'required',
-        'choices',
-        'arguments',
+        'options',
         'parent',
         '_state',
     )
@@ -827,20 +823,14 @@ class AppCommandGroup:
         self._from_data(data)
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} name={self.name!r} type={self.type!r} required={self.required}>'
+        return f'<{self.__class__.__name__} name={self.name!r} type={self.type!r}>'
 
     def _from_data(self, data: ApplicationCommandOption) -> None:
         self.type: AppCommandOptionType = try_enum(AppCommandOptionType, data['type'])
         self.name: str = data['name']
         self.description: str = data['description']
-        self.required: bool = data.get('required', False)
-        self.choices: List[Choice[Union[int, float, str]]] = [
-            Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])
-        ]
-        self.arguments: List[Argument] = [
-            Argument(parent=self, state=self._state, data=d)
-            for d in data.get('options', [])
-            if is_app_command_argument_type(d['type'])
+        self.options: List[Union[Argument, AppCommandGroup]] = [
+            app_command_option_factory(data=d, parent=self, state=self._state) for d in data.get('options', [])
         ]
 
     def to_dict(self) -> 'ApplicationCommandOption':
@@ -848,9 +838,7 @@ class AppCommandGroup:
             'name': self.name,
             'type': self.type.value,
             'description': self.description,
-            'required': self.required,
-            'choices': [choice.to_dict() for choice in self.choices],
-            'options': [arg.to_dict() for arg in self.arguments],
+            'options': [arg.to_dict() for arg in self.options],
         }  # type: ignore # Type checker does not understand this literal.
 
 
