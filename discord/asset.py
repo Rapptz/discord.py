@@ -255,7 +255,7 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_app_icon(cls, state: _State, object_id: int, icon_hash: str, asset_type: Literal['icon', 'cover_image']) -> Self
+    def _from_app_icon(cls, state: _State, object_id: int, icon_hash: str, asset_type: Literal['icon', 'cover_image']) -> Self:
         return cls(
             state,
             url=f'{cls.BASE}/app-icons/{object_id}/{asset_type}.png?size=1024',
