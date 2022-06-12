@@ -234,6 +234,7 @@ class MemberConverter(IDConverter[discord.Member]):
         guild = ctx.guild
         result = None
         user_id = None
+
         if match is None:
             # not a mention...
             if guild:
@@ -247,7 +248,7 @@ class MemberConverter(IDConverter[discord.Member]):
             else:
                 result = _get_from_guilds(bot, 'get_member', user_id)
 
-        if result is None:
+        if not isinstance(result, discord.Member):
             if guild is None:
                 raise MemberNotFound(argument)
 
@@ -1182,7 +1183,7 @@ async def _actual_conversion(ctx: Context[BotT], converter: Any, argument: str, 
     except CommandError:
         raise
     except Exception as exc:
-        raise ConversionError(converter, exc) from exc
+        raise ConversionError(converter, exc) from exc  # type: ignore
 
     try:
         return converter(argument)

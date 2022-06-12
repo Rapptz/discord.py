@@ -59,7 +59,7 @@ BotT = TypeVar('BotT', bound=_Bot, covariant=True)
 ContextT_co = TypeVar('ContextT_co', bound='Context[Any]', covariant=True)
 
 
-class Check(Protocol[ContextT_co]):
+class Check(Protocol[ContextT_co]):  # type: ignore # TypeVar is expected to be invariant
 
     predicate: Callable[[ContextT_co], Coroutine[Any, Any, bool]]
 
