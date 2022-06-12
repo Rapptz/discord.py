@@ -799,6 +799,10 @@ class Argument:
             'description': self.description,
             'required': self.required,
             'choices': [choice.to_dict() for choice in self.choices],
+            'channel_types': [channel_type.value for channel_type in self.channel_types],
+            'min_value': self.min_value,
+            'max_value': self.max_value,
+            'autocomplete': self.autocomplete,
             'options': [],
         }  # type: ignore # Type checker does not understand this literal.
 
