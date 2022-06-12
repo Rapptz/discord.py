@@ -476,6 +476,11 @@ class BadInviteArgument(BadArgument):
     This inherits from :exc:`BadArgument`
 
     .. versionadded:: 1.5
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The invite supplied by the caller that was not valid
     """
 
     def __init__(self, argument: str) -> None:
