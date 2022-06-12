@@ -35,7 +35,7 @@ from .view import StringView
 from ._types import BotT
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, ParamSpec
+    from typing_extensions import Self, ParamSpec, TypeGuard
 
     from discord.abc import MessageableChannel
     from discord.guild import Guild
@@ -75,6 +75,10 @@ if TYPE_CHECKING:
     P = ParamSpec('P')
 else:
     P = TypeVar('P')
+
+
+def is_cog(obj: Any) -> TypeGuard[Cog]:
+    return hasattr(obj, '__cog_commands__')
 
 
 class DeferTyping:
@@ -526,7 +530,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         await cmd.prepare_help_command(self, entity.qualified_name)
 
         try:
-            if hasattr(entity, '__cog_commands__'):
+            if is_cog(entity):
                 injected = wrap_callback(cmd.send_cog_help)
                 return await injected(entity)
             elif isinstance(entity, Group):

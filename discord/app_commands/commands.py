@@ -771,8 +771,7 @@ class Command(Generic[GroupT, P, T]):
         if not predicates:
             return True
 
-        # Type checker does not understand negative narrowing cases like this function
-        return await async_all(f(interaction) for f in predicates)  # type: ignore
+        return await async_all(f(interaction) for f in predicates)
 
     def error(self, coro: Error[GroupT]) -> Error[GroupT]:
         """A decorator that registers a coroutine as a local error handler.
@@ -997,8 +996,7 @@ class ContextMenu:
         if not predicates:
             return True
 
-        # Type checker does not understand negative narrowing cases like this function
-        return await async_all(f(interaction) for f in predicates)  # type: ignore
+        return await async_all(f(interaction) for f in predicates)
 
     def _has_any_error_handlers(self) -> bool:
         return self.on_error is not None

@@ -131,7 +131,7 @@ class _cached_property:
 if TYPE_CHECKING:
     from functools import cached_property as cached_property
 
-    from typing_extensions import ParamSpec, Self
+    from typing_extensions import ParamSpec, Self, TypeGuard
 
     from .permissions import Permissions
     from .abc import Snowflake
@@ -624,7 +624,11 @@ async def maybe_coroutine(f: MaybeAwaitableFunc[P, T], *args: P.args, **kwargs: 
         return value  # type: ignore
 
 
-async def async_all(gen: Iterable[Awaitable[T]], *, check: Callable[[T], bool] = _isawaitable) -> bool:
+async def async_all(
+    gen: Iterable[Union[T, Awaitable[T]]],
+    *,
+    check: Callable[[Union[T, Awaitable[T]]], TypeGuard[Awaitable[T]]] = _isawaitable,
+) -> bool:
     for elem in gen:
         if check(elem):
             elem = await elem
