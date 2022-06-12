@@ -128,7 +128,9 @@ class WelcomeScreen:
     def _store(self, data: WelcomeScreenPayload) -> None:
         self.description: str = data['description']
         welcome_channels = data.get('welcome_channels', [])
-        self.welcome_channels: List[WelcomeChannel] = [WelcomeChannel._from_dict(data=wc, guild=self._guild) for wc in welcome_channels]
+        self.welcome_channels: List[WelcomeChannel] = [
+            WelcomeChannel._from_dict(data=wc, guild=self._guild) for wc in welcome_channels
+        ]
 
     def __repr__(self) -> str:
         return f'<WelcomeScreen description={self.description!r} welcome_channels={self.welcome_channels!r} enabled={self.enabled}>'

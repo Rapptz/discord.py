@@ -1770,7 +1770,7 @@ def group(
 @overload
 def group(
     name: str = ...,
-    cls: Type[GroupT] = ...,  # type: ignore  # previous overload handles case where cls is not set 
+    cls: Type[GroupT] = ...,  # type: ignore  # previous overload handles case where cls is not set
     **attrs: Any,
 ) -> Callable[
     [
