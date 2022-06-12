@@ -1218,6 +1218,8 @@ The following changes have been made:
 
 - :attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to `'untitled'`.
 
+- :attr:`Message.application` will no longer be a raw `dict` of the API payload and now returns an instance of :class:`MessageApplication`.
+
 :meth:`VoiceProtocol.connect` signature changes.
 --------------------------------------------------
 
