@@ -107,7 +107,7 @@ First, we created a class called "MyHelp" which subclasses
 :class:`~ext.commands.HelpCommand`. Next, we added a method which is called 
 "send_bot_help". This method overrides the existing method:
 :meth:`~discord.ext.commands.HelpCommand.send_bot_help`, it is called whenever 
-someone uses the help command with no other arguments(e.g. ``!help``). 
+someone uses the help command with no other arguments (e.g. ``!help``). 
 
 This method takes in one positional only parameter, ``mapping``, 
 which is a dictionary of :class:`~ext.commands.Cog` objects as 
