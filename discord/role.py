@@ -341,7 +341,14 @@ class Role(Hashable):
 
     @property
     def mention(self) -> str:
-        """:class:`str`: Returns a string that allows you to mention a role."""
+        """:class:`str`: Returns a string that allows you to mention a role.
+
+        .. versionchanged:: 2.0
+            Mentioning the :attr:`~Guild.default_role` will now return ``@everyone`` instead of ``<@&{role_id}>``.
+
+        """
+        if self.is_default():
+            return '@everyone'
         return f'<@&{self.id}>'
 
     @property
