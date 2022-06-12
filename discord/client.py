@@ -1219,6 +1219,11 @@ class Client:
         """
         if self._ready is not MISSING:
             await self._ready.wait()
+        else:
+            raise RuntimeError(
+                'Client has not been properly initialised. '
+                'Please use the login method or asynchronous context manager before calling this method'
+            )
 
     def wait_for(
         self,
