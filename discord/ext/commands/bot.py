@@ -379,8 +379,7 @@ class BotBase(GroupMixin[None]):
         if len(data) == 0:
             return True
 
-        # type-checker doesn't distinguish between functions and methods
-        return await discord.utils.async_all(f(ctx) for f in data)  # type: ignore
+        return await discord.utils.async_all(f(ctx) for f in data)
 
     async def is_owner(self, user: User, /) -> bool:
         """|coro|

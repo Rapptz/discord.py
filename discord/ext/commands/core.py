@@ -351,8 +351,8 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     def __init__(
         self,
         func: Union[
-            Callable[Concatenate[CogT, ContextT, P], Coro[T]],
-            Callable[Concatenate[ContextT, P], Coro[T]],
+            Callable[Concatenate[CogT, Context[Any], P], Coro[T]],
+            Callable[Concatenate[Context[Any], P], Coro[T]],
         ],
         /,
         **kwargs: Any,
@@ -396,7 +396,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         except AttributeError:
             checks = kwargs.get('checks', [])
 
-        self.checks: List[UserCheck[ContextT]] = checks
+        self.checks: List[UserCheck[Context[Any]]] = checks
 
         try:
             cooldown = func.__commands_cooldown__
@@ -468,7 +468,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         self.params: Dict[str, Parameter] = get_signature_parameters(function, globalns)
 
-    def add_check(self, func: UserCheck[ContextT], /) -> None:
+    def add_check(self, func: UserCheck[Context[Any]], /) -> None:
         """Adds a check to the command.
 
         This is the non-decorator interface to :func:`.check`.
@@ -487,7 +487,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         self.checks.append(func)
 
-    def remove_check(self, func: UserCheck[ContextT], /) -> None:
+    def remove_check(self, func: UserCheck[Context[Any]], /) -> None:
         """Removes a check from the command.
 
         This function is idempotent and will not raise an exception
@@ -1236,7 +1236,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 # since we have no checks, then we just return True.
                 return True
 
-            return await discord.utils.async_all(predicate(ctx) for predicate in predicates)  # type: ignore
+            return await discord.utils.async_all(predicate(ctx) for predicate in predicates)
         finally:
             ctx.command = original
 
@@ -1435,7 +1435,7 @@ class GroupMixin(Generic[CogT]):
     def command(
         self: GroupMixin[CogT],
         name: str = ...,
-        cls: Type[CommandT] = ...,
+        cls: Type[CommandT] = ...,  # type: ignore  # previous overload handles case where cls is not set
         *args: Any,
         **kwargs: Any,
     ) -> Callable[
@@ -1495,7 +1495,7 @@ class GroupMixin(Generic[CogT]):
     def group(
         self: GroupMixin[CogT],
         name: str = ...,
-        cls: Type[GroupT] = ...,
+        cls: Type[GroupT] = ...,  # type: ignore  # previous overload handles case where cls is not set
         *args: Any,
         **kwargs: Any,
     ) -> Callable[
@@ -1687,7 +1687,7 @@ def command(
 @overload
 def command(
     name: str = ...,
-    cls: Type[CommandT] = ...,
+    cls: Type[CommandT] = ...,  # type: ignore  # previous overload handles case where cls is not set
     **attrs: Any,
 ) -> Callable[
     [
@@ -1757,7 +1757,7 @@ def group(
 @overload
 def group(
     name: str = ...,
-    cls: Type[GroupT] = ...,
+    cls: Type[GroupT] = ...,  # type: ignore  # previous overload handles case where cls is not set
     **attrs: Any,
 ) -> Callable[
     [
@@ -1865,9 +1865,9 @@ def check(predicate: UserCheck[ContextT], /) -> Check[ContextT]:
         The predicate to check if the command should be invoked.
     """
 
-    def decorator(func: Union[Command, CoroFunc]) -> Union[Command, CoroFunc]:
+    def decorator(func: Union[Command[Any, ..., Any], CoroFunc]) -> Union[Command[Any, ..., Any], CoroFunc]:
         if isinstance(func, Command):
-            func.checks.append(predicate)
+            func.checks.append(predicate)  # type: ignore
         else:
             if not hasattr(func, '__commands_checks__'):
                 func.__commands_checks__ = []

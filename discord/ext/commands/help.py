@@ -62,7 +62,6 @@ if TYPE_CHECKING:
 
     from ._types import (
         UserCheck,
-        ContextT,
         BotT,
         _Bot,
     )
@@ -377,7 +376,7 @@ class HelpCommand:
         bot.remove_command(self._command_impl.name)
         self._command_impl._eject_cog()
 
-    def add_check(self, func: UserCheck[ContextT], /) -> None:
+    def add_check(self, func: UserCheck[Context[Any]], /) -> None:
         """
         Adds a check to the help command.
 
@@ -395,7 +394,7 @@ class HelpCommand:
 
         self._command_impl.add_check(func)
 
-    def remove_check(self, func: UserCheck[ContextT], /) -> None:
+    def remove_check(self, func: UserCheck[Context[Any]], /) -> None:
         """
         Removes a check from the help command.
 

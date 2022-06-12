@@ -126,8 +126,8 @@ class WelcomeScreen:
         state = self.guild._state
         channels = data.get('welcome_channels', [])
 
-        self.welcome_channels = [WelcomeChannel._from_dict(data=channel, state=state) for channel in channels]
-        self.description = data.get('description', '')
+        self.welcome_channels: List[WelcomeChannel] = [WelcomeChannel._from_dict(data=channel, state=state) for channel in channels]
+        self.description: str = data.get('description', '')
 
     def __repr__(self) -> str:
         return f'<WelcomeScreen enabled={self.enabled} description={self.description} welcome_channels={self.welcome_channels!r}>'

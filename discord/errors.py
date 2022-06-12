@@ -29,13 +29,9 @@ from .utils import _get_as_snowflake
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse, ClientWebSocketResponse
+    from requests import Response
 
-    try:
-        from requests import Response
-
-        _ResponseType = Union[ClientResponse, Response]
-    except ModuleNotFoundError:
-        _ResponseType = ClientResponse
+    _ResponseType = Union[ClientResponse, Response]
 
 __all__ = (
     'DiscordException',
