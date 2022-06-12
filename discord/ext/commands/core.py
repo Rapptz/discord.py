@@ -274,8 +274,6 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         The long help text for the command.
     brief: Optional[:class:`str`]
         The short help text for the command.
-    usage: Optional[:class:`str`]
-        A replacement for arguments in the default help text.
     aliases: Union[List[:class:`str`], Tuple[:class:`str`]]
         The list of aliases the command can be invoked under.
     enabled: :class:`bool`
@@ -382,7 +380,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         self.help: Optional[str] = help_doc
 
         self.brief: Optional[str] = kwargs.get('brief')
-        self.usage: Optional[str] = kwargs.get('usage')
+        self._signature: Optional[str] = kwargs.get('signature')
         self.rest_is_raw: bool = kwargs.get('rest_is_raw', False)
         self.aliases: Union[List[str], Tuple[str]] = kwargs.get('aliases', [])
         self.extras: Dict[str, Any] = kwargs.get('extras', {})
@@ -1132,9 +1130,12 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
     @property
     def signature(self) -> str:
-        """:class:`str`: Returns a POSIX-like signature useful for help command output."""
-        if self.usage is not None:
-            return self.usage
+        """:class:`str`: Returns a signature useful for help command output.
+
+        By default, this is a POSIX-like signature, but can be overridden.
+        """
+        if self._signature is not None:
+            return self._signature
 
         params = self.clean_params
         if not params:
@@ -1194,6 +1195,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 result.append(f'<{name}>')
 
         return ' '.join(result)
+
+    @signature.setter
+    def signature(self, value: Optional[str]) -> None:
+        self._signature = value
 
     async def can_run(self, ctx: Context[BotT], /) -> bool:
         """|coro|
