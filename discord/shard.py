@@ -312,7 +312,7 @@ class AutoShardedClient(Client):
 
         .. describe:: async with x
 
-            Asynchronously initialises the :class:`AutoShardedClient`.
+            Asynchronously initialises the client and automatically.
 
             .. versionadded:: 2.0
 
