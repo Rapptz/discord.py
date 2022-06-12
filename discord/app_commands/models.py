@@ -201,15 +201,22 @@ class AppCommand(Hashable):
         self.dm_permission: bool = dm_permission
         self.nsfw: bool = data.get('nsfw', False)
 
-    def to_dict(self) -> ApplicationCommandPayload:
-        return {
-            'id': self.id,
+    def to_comparison_dict(self) -> ApplicationCommandPayload:
+        base = {
             'type': self.type.value,
-            'application_id': self.application_id,
             'name': self.name,
             'description': self.description,
             'options': [opt.to_dict() for opt in self.options],
-        }  # type: ignore # Type checker does not understand this literal.
+            'nsfw': self.nsfw,
+            'default_member_permissions': self.default_member_permissions and self.default_member_permissions.value,
+            'dm_permission': self.dm_permission,
+        }
+        # context menus don't support this.
+        if self.type in (AppCommandType.user, AppCommandType.message):
+            del base['options']
+            del base['description']
+
+        return base  # type: ignore # Type checker does not understand this literal.
 
     def __str__(self) -> str:
         return self.name
@@ -793,18 +800,19 @@ class Argument:
         ]
 
     def to_dict(self) -> ApplicationCommandOption:
-        return {
-            'name': self.name,
-            'type': self.type.value,
-            'description': self.description,
-            'required': self.required,
-            'choices': [choice.to_dict() for choice in self.choices],
-            'channel_types': [channel_type.value for channel_type in self.channel_types],
-            'min_value': self.min_value,
-            'max_value': self.max_value,
-            'autocomplete': self.autocomplete,
-            'options': [],
-        }  # type: ignore # Type checker does not understand this literal.
+        base = {'name': self.name, 'type': self.type.value, 'description': self.description, 'required': self.required}
+        if self.choices:
+            base['choices'] = [choice.to_dict() for choice in self.choices]
+        if self.channel_types:
+            base['channel_types'] = [t.value for t in self.channel_types]
+        if self.autocomplete:
+            base['autocomplete'] = True
+        if self.min_value is not None:
+            base['min_value'] = self.min_value
+        if self.max_value is not None:
+            base['max_value'] = self.max_value
+
+        return base  # type: ignore # Type checker does not understand this literal.
 
 
 class AppCommandGroup:

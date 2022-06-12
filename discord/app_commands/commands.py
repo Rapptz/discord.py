@@ -49,7 +49,7 @@ from textwrap import TextWrapper
 import re
 
 from ..enums import AppCommandOptionType, AppCommandType
-from .models import Choice
+from .models import AppCommand, Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
 from ..message import Message
@@ -534,6 +534,26 @@ class Command(Generic[GroupT, P, T]):
         if self._guild_ids is not None and self.parent is not None:
             raise ValueError('child commands cannot have default guilds set, consider setting them in the parent instead')
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            return self.to_dict() == other.to_dict()
+        elif isinstance(other, AppCommand):
+            # API is inconsistent about how it handles this
+            # always returns True if the command is a guild command
+            # so we need to change it to match the behavior of the API
+            # for this comparison.
+            # otherwise it is handled correctly.
+            cls_to_dict = self.to_dict()
+            if self._guild_ids is not None:
+                cls_to_dict['dm_permission'] = True
+
+            return cls_to_dict == other.to_comparison_dict()
+        else:
+            return False
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
 
@@ -973,6 +993,17 @@ class ContextMenu:
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            return self.to_dict() == other.to_dict()
+        elif isinstance(other, AppCommand):
+            return self.to_dict() == other.to_comparison_dict()
+        else:
+            return False
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
     @property
     def callback(self) -> ContextMenuCallback:
         """:ref:`coroutine <coroutine>`: The coroutine that is executed when the context menu is called."""
@@ -1250,6 +1281,17 @@ class Group:
             if parent.parent is not None:
                 raise ValueError('groups can only be nested at most one level')
             parent.add_command(self)
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            return self.to_dict() == other.to_dict()
+        elif isinstance(other, AppCommand):
+            return self.to_dict() == other.to_comparison_dict()
+        else:
+            return False
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
