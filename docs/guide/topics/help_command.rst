@@ -133,7 +133,8 @@ respectively.
 
 - The ``send_command_help`` method gets called when the help command is used with a valid command in the command usage (i.e. ``!help [command]``).
 
-- The ``send_error_message`` method gets called when an error occurrs during executing the code in help command. 
+- The ``send_error_message`` method gets called when an error occurs while executing the code in the help command. 
+
 
 .. image of this
 
