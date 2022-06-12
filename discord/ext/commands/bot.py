@@ -1220,6 +1220,14 @@ class Bot(BotBase, discord.Client):
     This class also subclasses :class:`.GroupMixin` to provide the functionality
     to manage commands.
 
+    .. container:: operations
+
+        .. describe:: async with x
+
+            Asynchronously initialises the bot and automatically cleans up.
+
+            .. versionadded:: 2.0
+
     Attributes
     -----------
     command_prefix
@@ -1277,3 +1285,5 @@ class Bot(BotBase, discord.Client):
 
         .. versionadded:: 1.7
     """
+
+    pass

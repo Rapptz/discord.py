@@ -136,6 +136,14 @@ class Client:
     r"""Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
 
+    .. container:: operations
+
+        .. describe:: async with x
+
+            Asynchronously initialises the client and automatically cleans up.
+
+            .. versionadded:: 2.0
+
     A number of options can be passed to the :class:`Client`.
 
     Parameters
