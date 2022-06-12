@@ -1412,6 +1412,10 @@ The following attributes have been removed:
 
     - Use :attr:`ext.commands.Context.clean_prefix` instead.
 
+- ``usage`` from the :class:`~ext.commands.Command`
+
+    - Use :attr:`~ext.commands.Command.signature` instead.
+
 Miscellaneous Changes
 ~~~~~~~~~~~~~~~~~~~~~~
 
