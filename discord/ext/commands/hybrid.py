@@ -140,7 +140,7 @@ def make_converter_transformer(converter: Any, parameter: Parameter) -> Type[app
         except CommandError:
             raise
         except Exception as exc:
-            raise ConversionError(converter, exc) from exc
+            raise ConversionError(converter, exc) from exc  # type: ignore
 
     return type('ConverterTransformer', (app_commands.Transformer,), {'transform': classmethod(transform)})
 
@@ -400,10 +400,10 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
                 if not ret:
                     return False
 
-        if self.checks and not await async_all(f(interaction) for f in self.checks):  # type: ignore
+        if self.checks and not await async_all(f(interaction) for f in self.checks):
             return False
 
-        if self.wrapped.checks and not await async_all(f(ctx) for f in self.wrapped.checks):  # type: ignore
+        if self.wrapped.checks and not await async_all(f(ctx) for f in self.wrapped.checks):
             return False
 
         return True
@@ -468,7 +468,7 @@ class HybridCommand(Command[CogT, P, T]):
 
     def __init__(
         self,
-        func: CommandCallback[CogT, ContextT, P, T],
+        func: CommandCallback[CogT, Context[Any], P, T],
         /,
         **kwargs: Any,
     ) -> None:
@@ -838,10 +838,10 @@ def hybrid_command(
         If the function is not a coroutine or is already a command.
     """
 
-    def decorator(func: CommandCallback[CogT, ContextT, P, T]):
+    def decorator(func: CommandCallback[CogT, ContextT, P, T]) -> HybridCommand[CogT, P, T]:
         if isinstance(func, Command):
             raise TypeError('Callback is already a command.')
-        return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)
+        return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)  # type: ignore  # ???
 
     return decorator
 

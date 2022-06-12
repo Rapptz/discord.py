@@ -35,7 +35,7 @@ from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
 
 if TYPE_CHECKING:
     from .types.scheduled_event import (
-        GuildScheduledEvent as GuildScheduledEventPayload,
+        GuildScheduledEvent as BaseGuildScheduledEventPayload,
         GuildScheduledEventWithUserCount as GuildScheduledEventWithUserCountPayload,
         EntityMetadata,
     )
@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .user import User
 
-    GuildScheduledEventPayload = Union[GuildScheduledEventPayload, GuildScheduledEventWithUserCountPayload]
+    GuildScheduledEventPayload = Union[BaseGuildScheduledEventPayload, GuildScheduledEventWithUserCountPayload]
 
 # fmt: off
 __all__ = (
