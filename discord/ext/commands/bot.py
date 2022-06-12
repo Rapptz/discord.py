@@ -21,30 +21,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
-
 from __future__ import annotations
+
 
 import asyncio
 import collections
 import collections.abc
-import importlib.util
 import inspect
+import importlib.util
 import sys
 import traceback
 import types
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
-    Collection,
-    Dict,
-    Iterable,
-    List,
     Mapping,
+    List,
+    Dict,
+    TYPE_CHECKING,
     Optional,
-    Type,
     TypeVar,
+    Type,
     Union,
+    Iterable,
+    Collection,
     overload,
 )
 
@@ -53,24 +53,30 @@ from discord import app_commands
 from discord.app_commands.tree import _retrieve_guild_ids
 from discord.utils import MISSING, _is_submodule
 
-from . import errors
-from .cog import Cog
-from .context import Context
 from .core import GroupMixin
-from .help import DefaultHelpCommand, HelpCommand
-from .hybrid import HybridCommand, HybridGroup, hybrid_command, hybrid_group
 from .view import StringView
+from .context import Context
+from . import errors
+from .help import HelpCommand, DefaultHelpCommand
+from .cog import Cog
+from .hybrid import hybrid_command, hybrid_group, HybridCommand, HybridGroup
 
 if TYPE_CHECKING:
-    import importlib.machinery
-
     from typing_extensions import Self
 
-    from discord.abc import Snowflake, User
-    from discord.interactions import Interaction
-    from discord.message import Message
+    import importlib.machinery
 
-    from ._types import BotT, ContextT, CoroFunc, MaybeAwaitableFunc, UserCheck, _Bot
+    from discord.message import Message
+    from discord.interactions import Interaction
+    from discord.abc import User, Snowflake
+    from ._types import (
+        _Bot,
+        BotT,
+        UserCheck,
+        CoroFunc,
+        ContextT,
+        MaybeAwaitableFunc,
+    )
     from .core import Command
     from .hybrid import CommandCallback, ContextT, P
 
