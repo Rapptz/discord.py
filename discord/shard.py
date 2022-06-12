@@ -308,6 +308,14 @@ class AutoShardedClient(Client):
     if this is used. By default, when omitted, the client will launch shards from
     0 to ``shard_count - 1``.
 
+    .. container:: operations
+
+        .. describe:: async with x
+
+            Asynchronously initialises the client and automatically.
+
+            .. versionadded:: 2.0
+
     Attributes
     ------------
     shard_ids: Optional[List[:class:`int`]]

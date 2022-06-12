@@ -1387,6 +1387,14 @@ class Bot(BotBase, discord.Client):
     a :class:`~discord.app_commands.CommandTree` and is automatically set upon
     instantiating the class.
 
+    .. container:: operations
+
+        .. describe:: async with x
+
+            Asynchronously initialises the bot and automatically cleans up.
+
+            .. versionadded:: 2.0
+
     Attributes
     -----------
     command_prefix
@@ -1457,6 +1465,14 @@ class Bot(BotBase, discord.Client):
 class AutoShardedBot(BotBase, discord.AutoShardedClient):
     """This is similar to :class:`.Bot` except that it is inherited from
     :class:`discord.AutoShardedClient` instead.
+
+    .. container:: operations
+
+        .. describe:: async with x
+
+            Asynchronously initialises the bot and automatically cleans.
+
+            .. versionadded:: 2.0
     """
 
     pass
