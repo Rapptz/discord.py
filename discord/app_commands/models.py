@@ -745,6 +745,14 @@ class Argument:
         A list of choices for the command to choose from for this argument.
     parent: Union[:class:`AppCommand`, :class:`AppCommandGroup`]
         The parent application command that has this argument.
+    channel_types: List[:class:`~discord.ChannelType`]
+        The channel types that are allowed for this parameter.
+    min_value: Optional[Union[:class:`int`, :class:`float`]]
+        The minimum supported value for this parameter.
+    max_value: Optional[Union[:class:`int`, :class:`float`]]
+        The maximum supported value for this parameter.
+    autocomplete: :class:`bool`
+        Whether the argument has autocomplete.
     """
 
     __slots__ = (
@@ -753,6 +761,10 @@ class Argument:
         'description',
         'required',
         'choices',
+        'channel_types',
+        'min_value',
+        'max_value',
+        'autocomplete',
         'parent',
         '_state',
     )
@@ -772,6 +784,10 @@ class Argument:
         self.name: str = data['name']
         self.description: str = data['description']
         self.required: bool = data.get('required', False)
+        self.min_value: Optional[Union[int, float]] = data.get('min_value')
+        self.max_value: Optional[Union[int, float]] = data.get('max_value')
+        self.autocomplete: bool = data.get('autocomplete', False)
+        self.channel_types: List[ChannelType] = [try_enum(ChannelType, d) for d in data.get('channel_types', [])]
         self.choices: List[Choice[Union[int, float, str]]] = [
             Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])
         ]
