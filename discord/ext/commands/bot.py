@@ -1392,7 +1392,7 @@ class Bot(BotBase, discord.Client):
 
         .. describe:: async with x
 
-            Asynchronously initialises the :class:`Client`.
+            Asynchronously initialises the :class:`Bot`.
 
             .. versionadded:: 2.0
 
@@ -1471,7 +1471,7 @@ class AutoShardedBot(BotBase, discord.AutoShardedClient):
 
         .. describe:: async with x
 
-            Asynchronously initialises the :class:`Client`.
+            Asynchronously initialises the :class:`AutoShardedBot`.
 
             .. versionadded:: 2.0
     """
