@@ -96,14 +96,14 @@ class AllChannels:
     __slots__ = ('guild',)
 
     def __init__(self, guild: Guild):
-        self.guild = guild
+        self.guild: Guild = guild
 
     @property
     def id(self) -> int:
         """:class:`int`: The ID sentinel used to represent all channels. Equivalent to the guild's ID minus 1."""
         return self.guild.id - 1
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'<AllChannels guild={self.guild}>'
 
 
