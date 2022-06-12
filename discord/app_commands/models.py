@@ -206,7 +206,7 @@ class AppCommand(Hashable):
             'type': self.type.value,
             'name': self.name,
             'description': self.description,
-            'options': [opt.to_dict() for opt in self.options],
+            'options': [opt.to_comparison_dict() for opt in self.options],
             'nsfw': self.nsfw,
             'default_member_permissions': self.default_member_permissions and self.default_member_permissions.value,
             'dm_permission': self.dm_permission,
@@ -799,7 +799,7 @@ class Argument:
             Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])
         ]
 
-    def to_dict(self) -> ApplicationCommandOption:
+    def to_comparison_dict(self) -> ApplicationCommandOption:
         base = {'name': self.name, 'type': self.type.value, 'description': self.description, 'required': self.required}
         if self.choices:
             base['choices'] = [choice.to_dict() for choice in self.choices]
@@ -861,12 +861,12 @@ class AppCommandGroup:
             app_command_option_factory(data=d, parent=self, state=self._state) for d in data.get('options', [])
         ]
 
-    def to_dict(self) -> 'ApplicationCommandOption':
+    def to_comparison_dict(self) -> 'ApplicationCommandOption':
         return {
             'name': self.name,
             'type': self.type.value,
             'description': self.description,
-            'options': [arg.to_dict() for arg in self.options],
+            'options': [arg.to_comparison_dict() for arg in self.options],
         }  # type: ignore # Type checker does not understand this literal.
 
 
