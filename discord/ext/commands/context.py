@@ -615,7 +615,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             return Typing(self)
         return DeferTyping(self, ephemeral=ephemeral)
 
-    async def defer(self, *, ephemeral: bool = False) -> None:
+    async def defer(self, *, ephemeral: bool = False, thinking: bool = False) -> None:
         """|coro|
 
         Defers the interaction based contexts.
@@ -629,6 +629,12 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         -----------
         ephemeral: :class:`bool`
             Indicates whether the deferred message will eventually be ephemeral.
+        thinking: :class:`bool`
+            Indicates whether the deferred type should be :attr:`InteractionResponseType.deferred_channel_message`
+            instead of the default :attr:`InteractionResponseType.deferred_message_update` if both are valid.
+            In UI terms, this is represented as if the bot is thinking of a response. It is your responsibility to
+            eventually send a followup message via :attr:`Interaction.followup` to make this thinking state go away.
+            Application commands (AKA Slash commands) cannot use :attr:`InteractionResponseType.deferred_message_update`.
 
         Raises
         -------
@@ -639,7 +645,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         """
 
         if self.interaction:
-            await self.interaction.response.defer(ephemeral=ephemeral)
+            await self.interaction.response.defer(ephemeral=ephemeral, thinking=thinking)
 
     async def send(
         self,
