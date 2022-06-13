@@ -1378,7 +1378,7 @@ class Message(PartialMessage, Hashable):
         The rich presence enabled application associated with this message.
 
         .. versionchanged:: 2.0
-            This now returns a richer interface type, not a `dict` of the raw payload.
+            Type is now :class:`MessageApplication` instead of :class:`dict`.
 
     stickers: List[:class:`StickerItem`]
         A list of sticker items given to the message.
