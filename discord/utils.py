@@ -59,6 +59,7 @@ import datetime
 import functools
 from inspect import isawaitable as _isawaitable, signature as _signature
 from operator import attrgetter
+from urllib.parse import urlencode
 import json
 import re
 import sys
@@ -335,13 +336,10 @@ def oauth_url(
         url += f'&guild_id={guild.id}'
     if disable_guild_select:
         url += '&disable_guild_select=true'
-    if redirect_uri is not MISSING or state is not MISSING:
-        from urllib.parse import urlencode
-
-        if redirect_uri is not MISSING:
-            url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
-        if state is not MISSING:
-            url += f'&{urlencode({"state": state})}'
+    if redirect_uri is not MISSING:
+        url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
+    if state is not MISSING:
+        url += f'&{urlencode({"state": state})}'
     return url
 
 
