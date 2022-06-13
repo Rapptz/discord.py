@@ -176,7 +176,7 @@ naive :class:`~datetime.datetime`, such exceptions are listed below).
 Because naive :class:`~datetime.datetime` objects are treated by many of its methods as local times, the previous behavior
 was more likely to result in programming errors with their usage.
 
-To ease the migration :func:`utils.utcnow` helper function has been added.
+To ease the migration, :func:`utils.utcnow` helper function has been added.
 
 .. warning::
     Using :meth:`datetime.datetime.utcnow` can be problematic since it returns a naive UTC ``datetime`` object.
@@ -1229,7 +1229,7 @@ The following changes have been made:
 
 - :attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to `'untitled'`.
 
-- :attr:`Message.application` will no longer be a raw `dict` of the API payload and now returns an instance of :class:`MessageApplication`.
+- :attr:`Message.application` will no longer be a raw :class:`dict` of the API payload and now returns an instance of :class:`MessageApplication`.
 
 :meth:`VoiceProtocol.connect` signature changes.
 --------------------------------------------------
@@ -1434,7 +1434,7 @@ Miscellaneous Changes
 
 - Metaclass of :class:`~ext.commands.Context` changed from :class:`abc.ABCMeta` to :class:`type`.
 - Changed type of :attr:`ext.commands.Command.clean_params` from :class:`collections.OrderedDict` to :class:`dict`.
-  as the latter is guaranteed to preserve insertion order since Python 3.7.
+  As the latter is guaranteed to preserve insertion order since Python 3.7.
 - :attr:`ext.commands.ChannelNotReadable.argument` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes.
 - :attr:`ext.commands.NSFWChannelRequired.channel` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes.
 - :attr:`ext.commands.Context.channel` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes.
