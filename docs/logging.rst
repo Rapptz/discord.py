@@ -36,7 +36,7 @@ Likewise, configuring the log level to ``logging.DEBUG`` is also possible:
 
     import logging
 
-    handler = handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+    handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
     # Assume client refers to a discord.Client subclass...
     client.run(token, log_handler=handler, log_level=logging.DEBUG)
@@ -60,7 +60,6 @@ More advanced setups are possible with the :mod:`logging` module. The example be
         maxBytes=32 * 1024 * 1024,  # 32 MiB
         backupCount=5,  # Rotate through 5 files
     )
-    formatter = logging.Formatter()
     dt_fmt = '%Y-%m-%d %H:%M:%S'
     formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
     handler.setFormatter(formatter)
