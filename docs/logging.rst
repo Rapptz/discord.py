@@ -36,7 +36,7 @@ Likewise, configuring the log level to ``logging.DEBUG`` is also possible:
 
     import logging
 
-    handler = handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+    handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
     # Assume client refers to a discord.Client subclass...
     client.run(token, log_handler=handler, log_level=logging.DEBUG)
