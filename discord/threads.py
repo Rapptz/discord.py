@@ -444,7 +444,7 @@ class Thread(Messageable, Hashable):
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
         around: Optional[SnowflakeTime] = None,
-        oldest_first: Optional[bool] = False,
+        oldest_first: Optional[bool] = None,
         reason: Optional[str] = None,
     ) -> List[Message]:
         """|coro|
