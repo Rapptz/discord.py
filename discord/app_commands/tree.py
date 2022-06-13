@@ -23,9 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+import logging
 import inspect
-import sys
-import traceback
 
 from typing import (
     Any,
@@ -78,6 +77,8 @@ if TYPE_CHECKING:
 __all__ = ('CommandTree',)
 
 ClientT = TypeVar('ClientT', bound='Client')
+
+_log = logging.getLogger(__name__)
 
 
 def _retrieve_guild_ids(
@@ -775,8 +776,8 @@ class CommandTree(Generic[ClientT]):
 
         A callback that is called when any command raises an :exc:`AppCommandError`.
 
-        The default implementation prints the traceback to stderr if the command does
-        not have any error handlers attached to it.
+        The default implementation logs the exception using the library logger
+        if the command does not have any error handlers attached to it.
 
         To get the command that failed, :attr:`discord.Interaction.command` should
         be used.
@@ -794,11 +795,9 @@ class CommandTree(Generic[ClientT]):
             if command._has_any_error_handlers():
                 return
 
-            print(f'Ignoring exception in command {command.name!r}:', file=sys.stderr)
+            _log.error('Ignoring exception in command %r', command.name, exc_info=error)
         else:
-            print(f'Ignoring exception in command tree:', file=sys.stderr)
-
-        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+            _log.error('Ignoring exception in command tree', exc_info=error)
 
     def error(self, coro: ErrorFunc) -> ErrorFunc:
         """A decorator that registers a coroutine as a local error handler.
