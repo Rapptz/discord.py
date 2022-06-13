@@ -844,6 +844,17 @@ The following methods have been changed:
 - :meth:`Webhook.send`
 - :meth:`abc.GuildChannel.set_permissions`
 
+Logging Changes
+----------------
+
+The library now provides a default logging configuration if using :meth:`Client.run`. To disable it, pass ``None`` to the ``log_handler`` keyword parameter. Since the library now provides a default logging configuration, certain methods were changed to no longer print to :data:`sys.stderr` but use the logger instead:
+
+- :meth:`Client.on_error`
+- :meth:`discord.ext.tasks.Loop.error`
+- :meth:`discord.ext.commands.Bot.on_command_error`
+
+For more information, check :doc:`logging`.
+
 Removal of ``StoreChannel``
 -----------------------------
 

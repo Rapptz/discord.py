@@ -31,7 +31,7 @@ import collections.abc
 import inspect
 import importlib.util
 import sys
-import traceback
+import logging
 import types
 from typing import (
     Any,
@@ -87,6 +87,8 @@ __all__ = (
 
 T = TypeVar('T')
 CFT = TypeVar('CFT', bound='CoroFunc')
+
+_log = logging.getLogger(__name__)
 
 
 def when_mentioned(bot: _Bot, msg: Message, /) -> List[str]:
@@ -225,7 +227,7 @@ class BotBase(GroupMixin[None]):
 
         The default command error handler provided by the bot.
 
-        By default this prints to :data:`sys.stderr` however it could be
+        By default this logs to the library logger, however it could be
         overridden to have a different implementation.
 
         This only fires if you do not specify any listeners for command error.
@@ -233,6 +235,7 @@ class BotBase(GroupMixin[None]):
         .. versionchanged:: 2.0
 
             ``context`` and ``exception`` parameters are now positional-only.
+            Instead of writing to ``sys.stderr`` this now uses the library logger.
         """
         if self.extra_events.get('on_command_error', None):
             return
@@ -245,8 +248,7 @@ class BotBase(GroupMixin[None]):
         if cog and cog.has_error_handler():
             return
 
-        print(f'Ignoring exception in command {context.command}:', file=sys.stderr)
-        traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
+        _log.error('Ignoring exception in command %s', command, exc_info=exception)
 
     # global check registration
 

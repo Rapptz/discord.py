@@ -29,7 +29,6 @@ from datetime import datetime
 import logging
 import sys
 import os
-import traceback
 from typing import (
     Any,
     AsyncIterator,
@@ -606,16 +605,16 @@ class Client:
 
         The default error handler provided by the client.
 
-        By default this prints to :data:`sys.stderr` however it could be
+        By default this logs to the library logger however it could be
         overridden to have a different implementation.
         Check :func:`~discord.on_error` for more details.
 
         .. versionchanged:: 2.0
 
-            ``event_method`` parameter is now positional-only.
+            ``event_method`` parameter is now positional-only
+            and instead of writing to ``sys.stderr`` it logs instead.
         """
-        print(f'Ignoring exception in {event_method}', file=sys.stderr)
-        traceback.print_exc()
+        _log.exception('Ignoring exception in %s', event_method)
 
     async def on_internal_settings_update(self, old_settings: UserSettings, new_settings: UserSettings):
         if not self._sync_presences:
