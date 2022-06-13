@@ -343,13 +343,14 @@ def oauth_url(
     redirect_uri: str = MISSING,
     scopes: Iterable[str] = MISSING,
     disable_guild_select: bool = False,
+    state: str = MISSING,
 ) -> str:
     """A helper function that returns the OAuth2 URL for inviting a bot
     into guilds.
 
     .. versionchanged:: 2.0
 
-        ``permissions``, ``guild``, ``redirect_uri``, and ``scopes`` parameters
+        ``permissions``, ``guild``, ``redirect_uri``, ``scopes`` and ``state`` parameters
         are now keyword-only.
 
     Parameters
@@ -371,6 +372,10 @@ def oauth_url(
         Whether to disallow the user from changing the guild dropdown.
 
         .. versionadded:: 2.0
+    state: :class:`str`
+        The state to return after the authorization.
+
+        .. versionadded:: 2.0
 
     Returns
     --------
@@ -383,12 +388,15 @@ def oauth_url(
         url += f'&permissions={permissions.value}'
     if guild is not MISSING:
         url += f'&guild_id={guild.id}'
-    if redirect_uri is not MISSING:
-        from urllib.parse import urlencode
-
-        url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
     if disable_guild_select:
         url += '&disable_guild_select=true'
+    if redirect_uri is not MISSING or state is not MISSING:
+        from urllib.parse import urlencode
+
+        if redirect_uri is not MISSING:
+            url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
+        if state is not MISSING:
+            url += f'&{urlencode({"state": state})}'
     return url
 
 
