@@ -444,7 +444,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
         around: Optional[SnowflakeTime] = None,
-        oldest_first: Optional[bool] = False,
+        oldest_first: Optional[bool] = None,
         bulk: bool = True,
         reason: Optional[str] = None,
     ) -> List[Message]:
@@ -1165,7 +1165,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
         around: Optional[SnowflakeTime] = None,
-        oldest_first: Optional[bool] = False,
+        oldest_first: Optional[bool] = None,
         bulk: bool = True,
         reason: Optional[str] = None,
     ) -> List[Message]:

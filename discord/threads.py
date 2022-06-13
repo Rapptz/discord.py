@@ -443,7 +443,7 @@ class Thread(Messageable, Hashable):
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
         around: Optional[SnowflakeTime] = None,
-        oldest_first: Optional[bool] = False,
+        oldest_first: Optional[bool] = None,
         bulk: bool = True,
         reason: Optional[str] = None,
     ) -> List[Message]:
