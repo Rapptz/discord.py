@@ -4255,6 +4255,14 @@ PartialMessage
 .. autoclass:: PartialMessage
     :members:
 
+MessageApplication
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MessageApplication
+
+.. autoclass:: MessageApplication
+    :members:
+
 Intents
 ~~~~~~~~~~
 
