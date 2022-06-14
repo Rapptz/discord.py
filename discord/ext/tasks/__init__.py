@@ -754,7 +754,8 @@ class Loop(Generic[LF]):
             self._time = self._get_time_parameter(time)
             self._sleep = self._seconds = self._minutes = self._hours = MISSING
 
-        if self.is_running():
+        # Only update the interval if we've ran the body at least once
+        if self.is_running() and self._last_iteration is not MISSING:
             self._next_iteration = self._get_next_sleep_time()
             if self._handle and not self._handle.done():
                 # the loop is sleeping, recalculate based on new interval
