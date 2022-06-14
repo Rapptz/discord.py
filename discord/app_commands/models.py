@@ -201,28 +201,38 @@ class AppCommand(Hashable):
         self.dm_permission: bool = dm_permission
         self.nsfw: bool = data.get('nsfw', False)
 
-    def to_comparison_dict(self) -> ApplicationCommandPayload:
+    def to_comparison_dict(self) -> Dict[str, Any]:
         base = {
             'type': self.type.value,
             'name': self.name,
-            'description': self.description,
-            'options': [opt.to_dict() for opt in self.options],
             'nsfw': self.nsfw,
             'default_member_permissions': self.default_member_permissions and self.default_member_permissions.value,
             'dm_permission': self.dm_permission,
         }
-        # context menus don't support this.
-        if self.type in (AppCommandType.user, AppCommandType.message):
-            del base['options']
-            del base['description']
+        if self.type not in (AppCommandType.user, AppCommandType.message):
+            base['options'] = [opt.to_dict() for opt in self.options]
+            base['description'] = self.description
 
-        return base  # type: ignore # Type checker does not understand this literal.
+        return base
 
     def __str__(self) -> str:
         return self.name
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id!r} name={self.name!r} type={self.type!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            return super().__eq__(other)
+        return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            return super().__ne__(other)
+        return NotImplemented
+
+    def __hash__(self) -> int:
+        return self.id >> 22
 
     @property
     def guild(self) -> Optional[Guild]:

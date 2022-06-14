@@ -542,7 +542,6 @@ class Command(Generic[GroupT, P, T]):
             # always returns True if the command is a guild command
             # so we need to change it to match the behavior of the API
             # for this comparison.
-            # otherwise it is handled correctly.
             cls_to_dict = self.to_dict()
             if self._guild_ids is not None:
                 cls_to_dict['dm_permission'] = True
@@ -551,8 +550,8 @@ class Command(Generic[GroupT, P, T]):
         else:
             return False
 
-    def __ne__(self, other: object) -> bool:
-        return not self.__eq__(other)
+    def __hash__(self) -> int:
+        return hash(self.to_dict().values())
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
@@ -1000,8 +999,8 @@ class ContextMenu:
         else:
             return False
 
-    def __ne__(self, other: object) -> bool:
-        return not self.__eq__(other)
+    def __hash__(self) -> int:
+        return hash(self.to_dict().values())
 
     @property
     def callback(self) -> ContextMenuCallback:
@@ -1288,8 +1287,8 @@ class Group:
         else:
             return False
 
-    def __ne__(self, other: object) -> bool:
-        return not self.__eq__(other)
+    def __hash__(self) -> int:
+        return hash(self.to_dict().values())
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
