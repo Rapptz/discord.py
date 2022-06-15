@@ -1808,11 +1808,6 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
 
     .. code-block:: python3
 
-            @app_commands.command()
-            @app_commands.autocomplete(fruit=fruit_autocomplete)
-            async def fruits(interaction: discord.Interaction, fruit: str):
-                await interaction.response.send_message(f'Your favourite fruit seems to be {fruit}')
-
             async def fruit_autocomplete(
                 interaction: discord.Interaction,
                 current: str,
@@ -1822,6 +1817,11 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
                     app_commands.Choice(name=fruit, value=fruit)
                     for fruit in fruits if current.lower() in fruit.lower()
                 ]
+
+            @app_commands.command()
+            @app_commands.autocomplete(fruit=fruit_autocomplete)
+            async def fruits(interaction: discord.Interaction, fruit: str):
+                await interaction.response.send_message(f'Your favourite fruit seems to be {fruit}')
 
     Parameters
     -----------
