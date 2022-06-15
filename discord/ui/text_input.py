@@ -148,6 +148,10 @@ class TextInput(Item[V]):
     def value(self) -> Optional[str]:
         """Optional[:class:`str`]: The value of the text input."""
         return self._value
+    
+    @value.setter
+    def value(self, value: str) -> None:
+        self._value = value
 
     @property
     def label(self) -> str:
