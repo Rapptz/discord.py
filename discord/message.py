@@ -1817,7 +1817,7 @@ class Message(PartialMessage, Hashable):
         )
 
     @utils.cached_slot_property('_cs_system_content')
-    def system_content(self) -> Optional[str]:
+    def system_content(self) -> str:
         r""":class:`str`: A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
@@ -1930,6 +1930,9 @@ class Message(PartialMessage, Hashable):
 
         if self.type is MessageType.guild_invite_reminder:
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
+
+        # Fallback for unknown message types
+        return ''
 
     @overload
     async def edit(
