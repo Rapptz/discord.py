@@ -568,7 +568,7 @@ class HTTPClient:
 
                             # Sleep a bit
                             retry_after: float = data['retry_after']
-                            _log.warning(fmt, retry_after, bucket)
+                            _log.warning(fmt, retry_after, bucket, stack_info=True)
 
                             # Check if it's a global rate limit
                             is_global = data.get('global', False)

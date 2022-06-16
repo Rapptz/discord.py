@@ -186,7 +186,10 @@ class AsyncWebhookAdapter:
                         if remaining == '0' and response.status != 429:
                             delta = utils._parse_ratelimit_header(response)
                             _log.debug(
-                                'Webhook ID %s has been pre-emptively rate limited, waiting %.2f seconds.', webhook_id, delta
+                                'Webhook ID %s has exhausted its rate limit bucket (bucket: %s, retry: %s).',
+                                webhook_id,
+                                bucket,
+                                delta,
                             )
                             lock.delay_by(delta)
 
@@ -196,9 +199,10 @@ class AsyncWebhookAdapter:
                         if response.status == 429:
                             if not response.headers.get('Via'):
                                 raise HTTPException(response, data)
+                            fmt = 'Webhook ID %s is rate limited. Retrying in %.2f seconds. Handled under the bucket %s.'
 
                             retry_after: float = data['retry_after']  # type: ignore
-                            _log.warning('Webhook ID %s is rate limited. Retrying in %.2f seconds.', webhook_id, retry_after)
+                            _log.warning(fmt, webhook_id, retry_after, bucket, stack_info=True)
                             await asyncio.sleep(retry_after)
                             continue
 
