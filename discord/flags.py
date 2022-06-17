@@ -41,6 +41,7 @@ __all__ = (
     'MemberCacheFlags',
     'ApplicationFlags',
     'ChannelFlags',
+    'AutoModPresets',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -1123,12 +1124,10 @@ class Intents(BaseFlags):
 
     @flag_value
     def auto_moderation_execution(self):
-        """:class:`bool`: Whether auto moderation configuration related events are enabled.
+        """:class:`bool`: Whether auto moderation execution related events are enabled.
 
         This corresponds to the following events:
-        - :func:`on_auto_moderation_rule_create`
-        - :func:`on_auto_moderation_rule_update`
-        - :func:`on_auto_moderation_rule_delete`
+        - :func:`on_auto_moderation_action_execution`
 
         .. versionadded:: 2.0
         """
@@ -1487,7 +1486,7 @@ class ArrayFlags(BaseFlags):
 
 @fill_with_flags()
 class AutoModPresets(ArrayFlags):
-    r"""Wraps up the Discord :class:`AutoMod` presets.
+    r"""Wraps up the Discord :class:`AutoModRule` presets.
 
     .. container:: operations
 
@@ -1545,14 +1544,17 @@ class AutoModPresets(ArrayFlags):
 
     @flag_value
     def profanity(self):
+        """:class:`bool`: Whether to use the preset profanity filter."""
         return 1 << 0
 
     @flag_value
     def sexual_content(self):
+        """:class:`bool`: Whether to use the preset sexual content filter."""
         return 1 << 1
 
     @flag_value
     def slurs(self):
+        """:class:`bool`: Whether to use the preset slurs filter."""
         return 1 << 2
 
     @classmethod

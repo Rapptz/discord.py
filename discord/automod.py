@@ -118,8 +118,8 @@ class AutoModTrigger:
         The type of trigger.
     keyword_filter: Optional[List[:class:`str`]]
         The list of strings that will trigger the keyword filter.
-    presets: Optional[List[:class:`int`]]
-        The list of presets used with the preset keyword filter.
+    presets: Optional[:class:`AutoModPresets`]
+        The presets used with the preset keyword filter.
 
     .. versionadded:: 2.0
     """

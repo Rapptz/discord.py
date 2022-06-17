@@ -4395,6 +4395,13 @@ ChannelFlags
 .. autoclass:: ChannelFlags
     :members:
 
+AutoModPresets
+~~~~~~~~~~~~~~
+
+.. attributetable:: AutoModPresets
+
+.. autoclass:: AutoModPresets
+    :members:
 
 File
 ~~~~~
