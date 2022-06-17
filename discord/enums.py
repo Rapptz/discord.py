@@ -451,6 +451,8 @@ class AuditLogAction(Enum):
             return 'thread'
         elif v < 122:
             return 'integration_or_app_command'
+        elif v < 143:
+            return 'auto_moderation'
 
 
 class UserFlags(Enum):
