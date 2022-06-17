@@ -3838,7 +3838,18 @@ class Guild(Hashable):
 
     async def fetch_automod_rule(self, automod_rule_id: int) -> AutoModRule:
         """|coro|
-        # TODO
+
+        This method will fetch an active automod rule from the guild.
+
+        Parameters
+        -----------
+        automod_rule_id: :class:`int`
+            The ID of the automod rule to fetch.
+
+        Returns
+        --------
+        :class:`AutoModRule`
+            The automod rule that was fetched.
         """
 
         data = await self._state.http.get_auto_moderation_rule(self.id, automod_rule_id)
@@ -3846,6 +3857,15 @@ class Guild(Hashable):
         return AutoModRule(data=data, guild=self, state=self._state)
 
     async def fetch_automod_rules(self) -> List[AutoModRule]:
+        """|coro|
+
+        This method will fetch all automod rules from the guild.
+
+        Returns
+        --------
+        List[:class:`AutoModRule`]
+            The automod rules that were fetched.
+        """
         data = await self._state.http.get_auto_moderation_rules(self.id)
 
         return [AutoModRule(data=d, guild=self, state=self._state) for d in data]
@@ -3863,7 +3883,37 @@ class Guild(Hashable):
         reason: str,
     ) -> AutoModRule:
         """|coro|
-        # TODO
+        This method will create an automod rule in the guild.
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The name of the automod rule.
+        event_type: :class:`AutoModRuleEventType`
+            The type of event that the automod rule will trigger on.
+        trigger: :class:`AutoModTrigger`
+            The trigger that will trigger the automod rule.
+        actions: List[:class:`AutoModRuleAction`]
+            The actions that will be taken when the automod rule is triggered.
+        enabled: Optional[:class:`bool`]
+            Whether the automod rule is enabled.
+            Discord will default to ``False``.
+        exempt_roles: Optional[List[:class:`Role`]]
+            A list of roles that will be exempt from the automod rule.
+        exempt_channels: Optional[List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]]
+            A list of channels that will be exempt from the automod rule.
+        reason: :class:`str`
+            The reason that the automod rule was created.
+
+        Raises
+        -------
+        :exc:`Forbidden`
+            You do not have permissions to create an automod rule.
+
+        Returns
+        --------
+        :class:`AutoModRule`
+            The automod rule that was created.
         """
         data = await self._state.http.create_auto_moderation_rule(
             self.id,
