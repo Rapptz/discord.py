@@ -1542,6 +1542,7 @@ class AutoModPresets(ArrayFlags):
         The raw value. You should query flags via the properties
         rather than using this raw value.
     """
+
     @flag_value
     def profanity(self):
         return 1 << 0
