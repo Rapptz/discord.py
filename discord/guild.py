@@ -3836,7 +3836,7 @@ class Guild(Hashable):
         channel_id = channel.id if channel else None
         await ws.voice_state(self.id, channel_id, self_mute, self_deaf)
 
-    async def fetch_automod_rule(self, automod_rule_id: int) -> AutoModRule:
+    async def fetch_automod_rule(self, automod_rule_id: int, /) -> AutoModRule:
         """|coro|
 
         This method will fetch an active automod rule from the guild.
@@ -3880,7 +3880,6 @@ class Guild(Hashable):
         enabled: Optional[bool] = None,
         exempt_roles: Optional[List[Role]] = None,
         exempt_channels: Optional[List[Union[GuildChannel, Thread]]] = None,
-        reason: str,
     ) -> AutoModRule:
         """|coro|
         This method will create an automod rule in the guild.
@@ -3902,8 +3901,6 @@ class Guild(Hashable):
             A list of roles that will be exempt from the automod rule.
         exempt_channels: Optional[List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]]
             A list of channels that will be exempt from the automod rule.
-        reason: :class:`str`
-            The reason that the automod rule was created.
 
         Raises
         -------
@@ -3925,7 +3922,6 @@ class Guild(Hashable):
             enabled=enabled,
             exempt_roles=[str(r.id) for r in exempt_roles] if exempt_roles else None,
             exempt_channel=[str(c.id) for c in exempt_channels] if exempt_channels else None,
-            reason=reason,
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)

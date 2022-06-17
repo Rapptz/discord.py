@@ -62,9 +62,9 @@ class AutoModRuleAction:
     -----------
     type: :class:`AutoModRuleActionType`
         The type of action to take.
-    channel_id: Optional[int]
+    channel_id: Optional[:class:`int`]
         The channel to send the alert message to, if any.
-    duration_seconds: Optional[int]
+    duration_seconds: Optional[:class:`int`]
         The duration of the timeout to apply, if any.
 
     Raises
@@ -90,9 +90,7 @@ class AutoModRuleAction:
     @classmethod
     def from_data(cls, data: AutoModerationActionPayload) -> Self:
         type_ = try_enum(AutoModRuleActionType, data['type'])
-        if data['type'] == AutoModRuleActionType.block_message.value:
-            return cls(type=type_)
-        elif data['type'] == AutoModRuleActionType.timeout.value:
+        if data['type'] == AutoModRuleActionType.timeout.value:
             duration_seconds = data['metadata']['duration_seconds']
             return cls(type=type_, duration_seconds=duration_seconds)
         elif data['type'] == AutoModRuleActionType.send_alert_message.value:
@@ -266,22 +264,22 @@ class AutoModRule:
     ) -> Self:
         """|coro|
 
-        This method will alter an existing auto moderation rule.
+        This method will edit an existing auto moderation rule.
 
         Parameters
         -----------
         name: Optional[:class:`str`]
-            The name to change to, if any.
+            The new name to change to.
         event_type: Optional[:class:`AutoModRuleEventType`]
-            The event type to change to, if any.
+            The new event type to change to.
         actions: List[:class:`AutoModRuleAction`]
-            The rule actions to update, if any.
+            The new rule actions to update.
         enabled: Optional[:class:`bool`]
             Whether the rule should be enabled or not.
         exempt_roles: Optional[List[:class:`Role`]]
-            The roles to exempt from the rule, if any.
+            The new roles to exempt from the rule.
         exempt_channels: Optional[List[Union[:class:`abc.GuildChannel`], :class:`Thread`]]
-            The channels to exempt from the rule, if any.
+            The new channels to exempt from the rule.
 
         Raises
         -------
@@ -310,7 +308,7 @@ class AutoModRule:
             exempt_channels=exempt_channels,
         )
 
-        return self.__class__(data=data, guild=self.guild, state=self._state)
+        return AutoModRule(data=data, guild=self.guild, state=self._state)
 
     async def delete(self) -> None:
         """|coro|
