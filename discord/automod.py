@@ -176,7 +176,7 @@ class AutoModRule:
         The name of the rule.
     creator_id: :class:`int`
         The ID of the user that created the rule.
-    trigger: :class:`AutoModRuleTrigger`
+    trigger: :class:`AutoModTrigger`
         The rule's trigger.
     enabled: :class:`bool`
         Whether the rule is enabled.
@@ -248,7 +248,7 @@ class AutoModRule:
 
     @property
     def exempt_channels(self) -> List[Union[GuildChannel, Thread]]:
-        """List[Union[:class:`GuildChannel`, :class:`Thread`]]: The channels that are exempt from this rule."""
+        """List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The channels that are exempt from this rule."""
         it = filter(None, map(self.guild._resolve_channel, self.raw_exempt_channels))
         return utils._unique(it)
 
@@ -283,10 +283,8 @@ class AutoModRule:
             Whether the rule should be enabled or not.
         exempt_roles: Optional[List[:class:`Role`]]
             The roles to exempt from the rule, if any.
-        exempt_channels: Optional[List[Union[:class:`GuildChannel`], :class:`Thread`]]
+        exempt_channels: Optional[List[Union[:class:`abc.GuildChannel`], :class:`Thread`]]
             The channels to exempt from the rule, if any.
-
-        .. versionadded:: 2.0
 
         Raises
         -------
@@ -375,7 +373,7 @@ class AutoModRuleExecution:
 
     @property
     def channel(self) -> Optional[Union[GuildChannel, Thread]]:
-        """Optional[Union[:class:`GuildChannel`, :class:`Thread`]]: The channel this rule was executed in."""
+        """Optional[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The channel this rule was executed in."""
         if self._channel_id:
             return self.guild and self.guild.get_channel(self._channel_id)
         return None

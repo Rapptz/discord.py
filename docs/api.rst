@@ -1305,7 +1305,7 @@ AutoMod
 
 .. function:: on_auto_moderation_rule_create(rule)
 
-    Called when a :class:`AutoModerationRule` is created.
+    Called when a :class:`AutoModRule` is created.
 
     This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
     :param rule: The rule that was created.
@@ -1313,7 +1313,7 @@ AutoMod
 
 .. function:: on_auto_moderation_rule_update(rule)
 
-    Called when a :class:`AutoModerationRule` is updated.
+    Called when a :class:`AutoModRule` is updated.
 
     This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
     :param rule: The rule that was updated.
@@ -1321,7 +1321,7 @@ AutoMod
 
 .. function:: on_auto_moderation_rule_delete(rule)
 
-    Called when a :class:`AutoModerationRule` is deleted.
+    Called when a :class:`AutoModRule` is deleted.
 
     This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
     :param rule: The rule that was deleted.
@@ -1329,11 +1329,11 @@ AutoMod
 
 .. function:: on_auto_moderation_action_execution(execution)
 
-    Called when a :class:`AutoModActionExecution` is created/performed.
+    Called when a :class:`AutoModRuleExecution` is created/performed.
 
     This requires :attr:`Intents.auto_moderation_execution` to be enabled.
     :param execution: The rule execution that was performed.
-    :type execution: :class:`AutoModActionExecution`
+    :type execution: :class:`AutoModRuleExecution`
 
 .. _discord-api-utils:
 
@@ -2984,6 +2984,56 @@ of :class:`enum.Enum`.
     .. attribute:: ended
 
         An alias for :attr:`completed`.
+
+.. class:: AutoModRuleTriggerType
+
+    Represents the trigger type of an auto mod rule.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: keyword
+
+        The rule will trigger when a keyword is mentioned.
+
+    .. attribute:: harmful_link
+
+        The rule will trigger when a harmful link is posted.
+
+    .. attribute:: spam
+
+        The rule will trigger when a spam message is posted.
+
+    .. attribute:: keyword_preset
+
+        The rule will trigger when something triggers based on the set keyword preset types.
+
+.. class:: AutoModRuleEventType
+
+    Represents the event type of an auto mod rule.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: message_send
+
+        The rule will trigger when a message is sent.
+
+.. class:: AutoModRuleActionType
+
+    Represents the action type of an auto mod rule.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: block_message
+
+        The rule will block a message from being sent.
+
+    .. attribute:: send_alert_message
+
+        The rule will send an alert message to a predefined channel.
+
+    .. attribute:: timeout
+
+        The rule will timeout a user.
 
 .. _discord-api-audit-logs:
 

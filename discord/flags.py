@@ -1113,9 +1113,9 @@ class Intents(BaseFlags):
         """:class:`bool`: Whether auto moderation configuration related events are enabled.
 
         This corresponds to the following events:
-        - :func:`on_automoderation_rule_create`
-        - :func:`on_automoderation_rule_update`
-        - :func:`on_automoderation_rule_delete`
+        - :func:`on_auto_moderation_rule_create`
+        - :func:`on_auto_moderation_rule_update`
+        - :func:`on_auto_moderation_rule_delete`
 
         .. versionadded:: 2.0
         """
@@ -1126,9 +1126,9 @@ class Intents(BaseFlags):
         """:class:`bool`: Whether auto moderation configuration related events are enabled.
 
         This corresponds to the following events:
-        - :func:`on_automoderation_rule_create`
-        - :func:`on_automoderation_rule_update`
-        - :func:`on_automoderation_rule_delete`
+        - :func:`on_auto_moderation_rule_create`
+        - :func:`on_auto_moderation_rule_update`
+        - :func:`on_auto_moderation_rule_delete`
 
         .. versionadded:: 2.0
         """
