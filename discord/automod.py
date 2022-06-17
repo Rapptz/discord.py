@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, List, Union, Type
-from typing_extensions import Self
 
 
 from .enums import AutoModRuleTriggerType, AutoModRuleActionType, AutoModRuleEventType, try_enum
@@ -33,6 +32,7 @@ from .flags import AutoModPresets
 from . import utils
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
     from .abc import GuildChannel
     from .threads import Thread
     from .guild import Guild
