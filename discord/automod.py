@@ -332,6 +332,24 @@ class AutoModRuleExecution:
 
     Attributes
     -----------
+    action: :class:`AutoModRuleAction`
+        The action that was taken.
+    message_id: Optional[:class:`int`]
+        The message ID that was triggered the reaction.
+    rule_id: :class:`int`
+        The ID of the rule that was triggered.
+    rule_trigger_type: :class:`AutoModRuleTriggerType`
+        The trigger type of the rule that was triggered.
+    user_id: :class:`int`
+        The ID of the user that triggered the rule.
+    alert_system_message_id: Optional[:class:`int`]
+        The ID of the system message that was sent to the predefined alert channel.
+    content: :class:`str`
+        The content of the message that triggered the rule.
+    matched_keyword: Optional[:class:`str`]
+        The matched keyword from the triggering message.
+    matched_content: Optional[:class:`str`]
+        The matched content from the triggering message.
     """
 
     __slots__ = (
