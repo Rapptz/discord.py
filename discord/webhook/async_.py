@@ -574,7 +574,7 @@ def interaction_message_response_params(
             data['components'] = []
 
     if flags is not MISSING:
-        data['flags'] = flags.value
+        data['flags'] = flags._value
 
     if allowed_mentions:
         if previous_allowed_mentions is not None:

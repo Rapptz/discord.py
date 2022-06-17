@@ -67,6 +67,7 @@ from .scheduled_event import *
 from .interactions import *
 from .components import *
 from .threads import *
+from .automod import *
 
 
 class VersionInfo(NamedTuple):

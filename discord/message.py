@@ -2056,7 +2056,7 @@ class Message(PartialMessage, Hashable):
             previous_allowed_mentions = None
 
         if suppress is not MISSING:
-            flags = MessageFlags._from_value(self.flags.value)
+            flags = MessageFlags._from_value(self.flags._value)
             flags.suppress_embeds = suppress
         else:
             flags = MISSING

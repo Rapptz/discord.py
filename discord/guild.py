@@ -71,6 +71,7 @@ from .enums import (
     NSFWLevel,
     MFALevel,
     Locale,
+    AutoModRuleEventType,
 )
 from .mixins import Hashable
 from .user import User
@@ -87,6 +88,7 @@ from .file import File
 from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
 from .welcome_screen import WelcomeScreen, WelcomeChannel
+from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 
 
 __all__ = (
@@ -1896,7 +1898,7 @@ class Guild(Hashable):
             if not isinstance(system_channel_flags, SystemChannelFlags):
                 raise TypeError('system_channel_flags field must be of type SystemChannelFlags')
 
-            fields['system_channel_flags'] = system_channel_flags.value
+            fields['system_channel_flags'] = system_channel_flags._value
 
         if community is not MISSING:
             features = []
@@ -3833,3 +3835,47 @@ class Guild(Hashable):
         ws = self._state._get_websocket(self.id)
         channel_id = channel.id if channel else None
         await ws.voice_state(self.id, channel_id, self_mute, self_deaf)
+
+    async def fetch_automod_rule(self, automod_rule_id: int) -> AutoModRule:
+        """|coro|
+        # TODO
+        """
+
+        data = await self._state.http.get_auto_moderation_rule(self.id, automod_rule_id)
+
+        return AutoModRule(data=data, guild=self, state=self._state)
+
+    async def fetch_automod_rules(self) -> List[AutoModRule]:
+        data = await self._state.http.get_auto_moderation_rules(self.id)
+
+        return [AutoModRule(data=d, guild=self, state=self._state) for d in data]
+
+    async def create_automod_rule(
+        self,
+        *,
+        name: str,
+        event_type: AutoModRuleEventType,
+        trigger: AutoModTrigger,
+        actions: List[AutoModRuleAction],
+        enabled: Optional[bool] = None,
+        exempt_roles: Optional[List[Role]] = None,
+        exempt_channels: Optional[List[Union[GuildChannel, Thread]]] = None,
+        reason: str,
+    ) -> AutoModRule:
+        """|coro|
+        # TODO
+        """
+        data = await self._state.http.create_auto_moderation_rule(
+            self.id,
+            name=name,
+            event_type=event_type.value,
+            trigger_type=trigger.type.value,
+            trigger_metadata=trigger.to_metadata_dict() or None,
+            actions=[a.to_dict() for a in actions],
+            enabled=enabled,
+            exempt_roles=[str(r.id) for r in exempt_roles] if exempt_roles else None,
+            exempt_channel=[str(c.id) for c in exempt_channels] if exempt_channels else None,
+            reason=reason,
+        )
+
+        return AutoModRule(data=data, guild=self, state=self._state)

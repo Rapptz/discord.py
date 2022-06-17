@@ -63,6 +63,9 @@ __all__ = (
     'AppCommandType',
     'AppCommandOptionType',
     'AppCommandPermissionType',
+    'AutoModRuleTriggerType',
+    'AutoModRuleEventType',
+    'AutoModRuleActionType',
 )
 
 if TYPE_CHECKING:
@@ -347,6 +350,10 @@ class AuditLogAction(Enum):
     thread_update                 = 111
     thread_delete                 = 112
     app_command_permission_update = 121
+    auto_moderation_rule_create   = 140
+    auto_moderation_rule_update   = 141
+    auto_moderation_rule_delete   = 142
+    auto_moderation_block_message = 143
     # fmt: on
 
     @property
@@ -687,6 +694,23 @@ class AppCommandPermissionType(Enum):
     role = 1
     user = 2
     channel = 3
+
+
+class AutoModRuleTriggerType(Enum):
+    keyword = 1
+    harmful_link = 2
+    spam = 3
+    keyword_preset = 4
+
+
+class AutoModRuleEventType(Enum):
+    message_send = 1
+
+
+class AutoModRuleActionType(Enum):
+    block_message = 1
+    send_alert_message = 2
+    timeout = 3
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

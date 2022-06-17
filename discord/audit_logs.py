@@ -394,6 +394,12 @@ class _AuditLogProxyMessageBulkDelete(_AuditLogProxy):
     count: int
 
 
+class _AuditLogProxyAutoModAction(_AuditLogProxy):
+    auto_moderation_rule_name: str
+    auto_moderation_rule_trigger_type: str
+    channel_id: str
+
+
 class AuditLogEntry(Hashable):
     r"""Represents an Audit Log entry.
 
@@ -469,6 +475,7 @@ class AuditLogEntry(Hashable):
             _AuditLogProxyPinAction,
             _AuditLogProxyStageInstanceAction,
             _AuditLogProxyMessageBulkDelete,
+            _AuditLogProxyAutoModAction,
             Member, User, None, PartialIntegration,
             Role, Object
         ] = None
@@ -500,6 +507,13 @@ class AuditLogEntry(Hashable):
                     channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
                     message_id=int(extra['message_id']),
                 )
+            elif self.action is enums.AuditLogAction.auto_moderation_block_message:
+                self.extra = _AuditLogProxyAutoModAction(
+                    auto_moderation_rule_name=extra['auto_moderation_rule_name'],
+                    auto_moderatio_rule_trigger_type=extra['auto_moderation_rule_trigger_type'],
+                    channel_id=extra['channel_id'],
+                )
+
             elif self.action.name.startswith('overwrite_'):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(extra['id'])

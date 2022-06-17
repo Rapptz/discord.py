@@ -49,6 +49,7 @@ import inspect
 
 import os
 
+
 from .guild import Guild
 from .activity import BaseActivity
 from .user import User, ClientUser
@@ -73,6 +74,7 @@ from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
+from .automod import AutoModRule, AutoModRuleExecution
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel
@@ -84,6 +86,7 @@ if TYPE_CHECKING:
     from .gateway import DiscordWebSocket
     from .app_commands import CommandTree
 
+    from .types.automod import AutoModerationRule, AutoModerationActionExecution
     from .types.snowflake import Snowflake
     from .types.activity import Activity as ActivityPayload
     from .types.channel import DMChannel as DMChannelPayload
@@ -310,7 +313,7 @@ class ConnectionState:
     @property
     def intents(self) -> Intents:
         ret = Intents.none()
-        ret.value = self._intents.value
+        ret._value = self._intents.value
         return ret
 
     @property
@@ -1078,6 +1081,46 @@ class ConnectionState:
 
         guild.stickers = tuple(map(lambda d: self.store_sticker(guild, d), data['stickers']))
         self.dispatch('guild_stickers_update', guild, before_stickers, guild.stickers)
+
+    def parse_auto_moderation_rule_create(self, data: AutoModerationRule) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            _log.debug('AUTO_MODERATION_RULE_CREATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        rule = AutoModRule(data=data, guild=guild, state=self)
+
+        self.dispatch('auto_moderation_rule_create', rule)
+
+    def parse_auto_moderation_rule_update(self, data: AutoModerationRule) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            _log.debug('AUTO_MODERATION_RULE_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        rule = AutoModRule(data=data, guild=guild, state=self)
+
+        self.dispatch('auto_moderation_rule_update', rule)
+
+    def parse_auto_moderation_rule_delete(self, data: AutoModerationRule) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            _log.debug('AUTO_MODERATION_RULE_DELETE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        rule = AutoModRule(data=data, guild=guild, state=self)
+
+        self.dispatch('auto_moderation_rule_delete', rule)
+
+    def parse_auto_moderation_action_execution(self, data: AutoModerationActionExecution) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            _log.debug('AUTO_MODERATION_ACTION_EXECUTION referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        execution = AutoModRuleExecution(data=data, state=self)
+
+        self.dispatch('auto_moderation_action_execution', execution)
 
     def _get_create_guild(self, data: gw.GuildCreateEvent) -> Guild:
         if data.get('unavailable') is False:

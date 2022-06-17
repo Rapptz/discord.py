@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+from functools import reduce
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, overload
 
 from .enums import UserFlags
@@ -100,12 +101,12 @@ class BaseFlags:
     VALID_FLAGS: ClassVar[Dict[str, int]]
     DEFAULT_VALUE: ClassVar[int]
 
-    value: int
+    _value: int
 
-    __slots__ = ('value',)
+    __slots__ = ('_value',)
 
     def __init__(self, **kwargs: bool):
-        self.value = self.DEFAULT_VALUE
+        self._value = self.DEFAULT_VALUE
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
                 raise TypeError(f'{key!r} is not a valid flag name.')
@@ -114,43 +115,47 @@ class BaseFlags:
     @classmethod
     def _from_value(cls, value):
         self = cls.__new__(cls)
-        self.value = value
+        self._value = value
         return self
 
+    @property
+    def value(self) -> int:
+        return self._value
+
     def __or__(self, other: Self) -> Self:
-        return self._from_value(self.value | other.value)
+        return self._from_value(self._value | other._value)
 
     def __and__(self, other: Self) -> Self:
-        return self._from_value(self.value & other.value)
+        return self._from_value(self._value & other._value)
 
     def __xor__(self, other: Self) -> Self:
-        return self._from_value(self.value ^ other.value)
+        return self._from_value(self._value ^ other._value)
 
     def __ior__(self, other: Self) -> Self:
-        self.value |= other.value
+        self._value |= other._value
         return self
 
     def __iand__(self, other: Self) -> Self:
-        self.value &= other.value
+        self._value &= other._value
         return self
 
     def __ixor__(self, other: Self) -> Self:
-        self.value ^= other.value
+        self._value ^= other._value
         return self
 
     def __invert__(self) -> Self:
         max_bits = max(self.VALID_FLAGS.values()).bit_length()
         max_value = -1 + (2**max_bits)
-        return self._from_value(self.value ^ max_value)
+        return self._from_value(self._value ^ max_value)
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, self.__class__) and self.value == other.value
+        return isinstance(other, self.__class__) and self._value == other._value
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
-        return hash(self.value)
+        return hash(self._value)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} value={self.value}>'
@@ -164,13 +169,13 @@ class BaseFlags:
                 yield (name, self._has_flag(value.flag))
 
     def _has_flag(self, o: int) -> bool:
-        return (self.value & o) == o
+        return (self._value & o) == o
 
     def _set_flag(self, o: int, toggle: bool) -> None:
         if toggle is True:
-            self.value |= o
+            self._value |= o
         elif toggle is False:
-            self.value &= ~o
+            self._value &= ~o
         else:
             raise TypeError(f'Value to set for {self.__class__.__name__} must be a bool.')
 
@@ -248,13 +253,13 @@ class SystemChannelFlags(BaseFlags):
     # these will be inverted automatically
 
     def _has_flag(self, o: int) -> bool:
-        return (self.value & o) != o
+        return (self._value & o) != o
 
     def _set_flag(self, o: int, toggle: bool) -> None:
         if toggle is True:
-            self.value &= ~o
+            self._value &= ~o
         elif toggle is False:
-            self.value |= o
+            self._value |= o
         else:
             raise TypeError('Value to set for SystemChannelFlags must be a bool.')
 
@@ -655,17 +660,16 @@ class Intents(BaseFlags):
     @classmethod
     def all(cls: Type[Intents]) -> Intents:
         """A factory method that creates a :class:`Intents` with everything enabled."""
-        bits = max(cls.VALID_FLAGS.values()).bit_length()
-        value = (1 << bits) - 1
+        value = reduce(lambda a, b: a | b, cls.VALID_FLAGS.values())
         self = cls.__new__(cls)
-        self.value = value
+        self._value = value
         return self
 
     @classmethod
     def none(cls: Type[Intents]) -> Intents:
         """A factory method that creates a :class:`Intents` with everything disabled."""
         self = cls.__new__(cls)
-        self.value = self.DEFAULT_VALUE
+        self._value = self.DEFAULT_VALUE
         return self
 
     @classmethod
@@ -1104,6 +1108,32 @@ class Intents(BaseFlags):
         """
         return 1 << 16
 
+    @flag_value
+    def auto_moderation_configuration(self):
+        """:class:`bool`: Whether auto moderation configuration related events are enabled.
+
+        This corresponds to the following events:
+        - :func:`on_automoderation_rule_create`
+        - :func:`on_automoderation_rule_update`
+        - :func:`on_automoderation_rule_delete`
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 20
+
+    @flag_value
+    def auto_moderation_execution(self):
+        """:class:`bool`: Whether auto moderation configuration related events are enabled.
+
+        This corresponds to the following events:
+        - :func:`on_automoderation_rule_create`
+        - :func:`on_automoderation_rule_update`
+        - :func:`on_automoderation_rule_delete`
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 21
+
 
 @fill_with_flags()
 class MemberCacheFlags(BaseFlags):
@@ -1192,14 +1222,14 @@ class MemberCacheFlags(BaseFlags):
         bits = max(cls.VALID_FLAGS.values()).bit_length()
         value = (1 << bits) - 1
         self = cls.__new__(cls)
-        self.value = value
+        self._value = value
         return self
 
     @classmethod
     def none(cls: Type[MemberCacheFlags]) -> MemberCacheFlags:
         """A factory method that creates a :class:`MemberCacheFlags` with everything disabled."""
         self = cls.__new__(cls)
-        self.value = self.DEFAULT_VALUE
+        self._value = self.DEFAULT_VALUE
         return self
 
     @property
@@ -1436,3 +1466,106 @@ class ChannelFlags(BaseFlags):
     def pinned(self):
         """:class:`bool`: Returns ``True`` if the thread is pinned to the forum channel."""
         return 1 << 1
+
+
+class ArrayFlags(BaseFlags):
+    @classmethod
+    def _from_value(cls: Type[Self], value: List[int]) -> Self:
+        self = cls.__new__(cls)
+        self._value = sum((1 << i - 1 for i in value))
+        return self
+
+    @property
+    def value(self) -> List[int]:
+        ret = []
+        for idx, (_, value) in enumerate(self, start=1):
+            if value:
+                ret.append(idx)
+
+        return ret
+
+
+@fill_with_flags()
+class AutoModPresets(ArrayFlags):
+    r"""Wraps up the Discord :class:`AutoMod` presets.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two AutoMod preset flags are equal.
+        .. describe:: x != y
+
+            Checks if two AutoMod preset flags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a AutoModPresets instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x & y, x &= y
+
+            Returns a AutoModPresets instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a AutoModPresets instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+
+        .. describe:: ~x
+
+            Returns a AutoModPresets instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
+
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+    @flag_value
+    def profanity(self):
+        return 1 << 0
+
+    @flag_value
+    def sexual_content(self):
+        return 1 << 1
+
+    @flag_value
+    def slurs(self):
+        return 1 << 2
+
+    @classmethod
+    def all(cls: Type[Self]) -> Self:
+        """A factory method that creates a :class:`AutoModPresets` with everything enabled."""
+        bits = max(cls.VALID_FLAGS.values()).bit_length()
+        value = (1 << bits) - 1
+        self = cls.__new__(cls)
+        self._value = value
+        return self
+
+    @classmethod
+    def none(cls: Type[Self]) -> Self:
+        """A factory method that creates a :class:`AutoModPresets` with everything disabled."""
+        self = cls.__new__(cls)
+        self._value = self.DEFAULT_VALUE
+        return self

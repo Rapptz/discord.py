@@ -71,6 +71,7 @@ if TYPE_CHECKING:
     from .types import (
         appinfo,
         audit_log,
+        automod,
         channel,
         command,
         emoji,
@@ -205,7 +206,7 @@ def handle_message_parameters(
         payload['username'] = username
 
     if flags is not MISSING:
-        payload['flags'] = flags.value
+        payload['flags'] = flags._value
 
     if thread_name is not MISSING:
         payload['thread_name'] = thread_name
@@ -2038,6 +2039,55 @@ class HTTPClient:
             command_id=command_id,
         )
         return self.request(r, json=payload)
+
+    def get_auto_moderation_rules(self, guild_id: Snowflake) -> Response[List[automod.AutoModerationRule]]:
+        return self.request(Route('GET', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id))
+
+    def get_auto_moderation_rule(self, guild_id: Snowflake, rule_id: Snowflake) -> Response[automod.AutoModerationRule]:
+        return self.request(
+            Route('GET', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id)
+        )
+
+    def create_auto_moderation_rule(self, guild_id: Snowflake, **payload: Any) -> Response[automod.AutoModerationRule]:
+        valid_keys = (
+            'name',
+            'event_type',
+            'trigger_type',
+            'trigger_metadata',
+            'actions',
+            'enabled',
+            'exempt_roles',
+            'exempt_channels',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys and v is not None}
+
+        return self.request(Route('POST', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id), json=payload)
+
+    def modify_auto_moderation_rule(
+        self, guild_id: Snowflake, rule_id: Snowflake, **payload: Any
+    ) -> Response[automod.AutoModerationRule]:
+        valid_keys = (
+            'name',
+            'event_type',
+            'trigger_metadata',
+            'actions',
+            'enabled',
+            'exempt_roles',
+            'exempt_channels',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys if v is not None}
+
+        return self.request(
+            Route('PATCH', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
+            json=payload,
+        )
+
+    def delete_auto_moderation_rule(self, guild_id: Snowflake, rule_id: Snowflake) -> Response[None]:
+        return self.request(
+            Route('DELETE', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id)
+        )
 
     # Misc
 
