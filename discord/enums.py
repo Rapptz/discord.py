@@ -408,6 +408,10 @@ class AuditLogAction(Enum):
             AuditLogAction.thread_delete:                 AuditLogActionCategory.delete,
             AuditLogAction.thread_update:                 AuditLogActionCategory.update,
             AuditLogAction.app_command_permission_update: AuditLogActionCategory.update,
+            AuditLogAction.auto_moderation_rule_create:   AuditLogActionCategory.create,
+            AuditLogAction.auto_moderation_rule_update:   AuditLogActionCategory.update,
+            AuditLogAction.auto_moderation_rule_delete:   AuditLogActionCategory.delete,
+            AuditLogAction.auto_moderation_block_message: None,
         }
         # fmt: on
         return lookup[self]

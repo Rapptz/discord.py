@@ -88,7 +88,7 @@ class AutoModRuleAction:
             raise ValueError('channel_id must be set if type is send_alert_message.')
 
     @classmethod
-    def from_data(cls: Type[Self], data: AutoModerationActionPayload) -> Self:
+    def from_data(cls, data: AutoModerationActionPayload) -> Self:
         type_ = try_enum(AutoModRuleActionType, data['type'])
         if data['type'] == AutoModRuleActionType.block_message.value:
             return cls(type=type_)
@@ -101,14 +101,11 @@ class AutoModRuleAction:
         return cls(type=type_)
 
     def to_dict(self) -> AutoModerationActionPayload:
-        ret: AutoModerationActionPayload = {'type': self.type.value}
+        ret: AutoModerationActionPayload = {'type': self.type.value, 'metadata': {}}
         if self.type is AutoModRuleActionType.timeout:
             ret['metadata'] = {'duration_seconds': self.duration_seconds}  # type: ignore # guarded by type check
-            return ret
         elif self.type is AutoModRuleActionType.send_alert_message:
             ret['metadata'] = {'channel_id': str(self.channel_id)}  # type: ignore # guarded by type check
-            return ret
-        ret['metadata'] = {}
         return ret
 
 
@@ -164,7 +161,7 @@ class AutoModTrigger:
 
 
 class AutoModRule:
-    """Represents a auto moderation rule.
+    """Represents an auto moderation rule.
 
     Attributes
     -----------

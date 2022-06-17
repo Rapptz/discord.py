@@ -510,7 +510,7 @@ class AuditLogEntry(Hashable):
             elif self.action is enums.AuditLogAction.auto_moderation_block_message:
                 self.extra = _AuditLogProxyAutoModAction(
                     auto_moderation_rule_name=extra['auto_moderation_rule_name'],
-                    auto_moderatio_rule_trigger_type=extra['auto_moderation_rule_trigger_type'],
+                    auto_moderation_rule_trigger_type=extra['auto_moderation_rule_trigger_type'],
                     channel_id=extra['channel_id'],
                 )
 
