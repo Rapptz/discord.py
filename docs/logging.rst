@@ -49,12 +49,13 @@ More advanced setups are possible with the :mod:`logging` module. The example be
 
     import discord
     import logging
+    import logging.handlers
 
     logger = logging.getLogger('discord')
     logger.setLevel(logging.DEBUG)
     logging.getLogger('discord.http').setLevel(logging.INFO)
 
-    handler = logging.RotatingFileHandler(
+    handler = logging.handlers.RotatingFileHandler(
         filename='discord.log',
         encoding='utf-8',
         maxBytes=32 * 1024 * 1024,  # 32 MiB
