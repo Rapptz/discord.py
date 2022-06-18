@@ -429,11 +429,9 @@ class DiscordWebSocket:
             'd': {
                 'token': self.token,
                 'properties': {
-                    '$os': sys.platform,
-                    '$browser': 'discord.py',
-                    '$device': 'discord.py',
-                    '$referrer': '',
-                    '$referring_domain': '',
+                    'os': sys.platform,
+                    'browser': 'discord.py',
+                    'device': 'discord.py',
                 },
                 'compress': True,
                 'large_threshold': 250,
