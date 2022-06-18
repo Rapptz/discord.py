@@ -87,7 +87,6 @@ if TYPE_CHECKING:
     from .channel import DMChannel
     from .message import Message
     from .member import Member
-    from .relationship import Relationship
     from .voice_client import VoiceProtocol
     from .types.snowflake import Snowflake as _Snowflake
 
@@ -2339,27 +2338,25 @@ class Client:
         return GroupChannel(me=self.user, data=data, state=state)  # type: ignore # user is always present when logged in
 
     @overload
-    async def send_friend_request(self, user: BaseUser, /) -> Relationship:
+    async def send_friend_request(self, user: BaseUser, /) -> None:
         ...
 
     @overload
-    async def send_friend_request(self, user: str, /) -> Relationship:
+    async def send_friend_request(self, user: str, /) -> None:
         ...
 
     @overload
-    async def send_friend_request(self, username: str, discriminator: str, /) -> Relationship:
+    async def send_friend_request(self, username: str, discriminator: str, /) -> None:
         ...
 
-    async def send_friend_request(self, *args: Union[BaseUser, str]) -> Relationship:
+    async def send_friend_request(self, *args: Union[BaseUser, str]) -> None:
         """|coro|
 
         Sends a friend request to another user.
 
         This function can be used in multiple ways.
 
-        .. versionchanged:: 2.0
-
-            All parameters are now positional-only.
+        .. versionadded:: 2.0
 
         .. code-block:: python
 
@@ -2390,11 +2387,6 @@ class Client:
             Sending the friend request failed.
         TypeError
             More than 2 parameters or less than 1 parameter was passed.
-
-        Returns
-        -------
-        :class:`.Relationship`
-            The new relationship.
         """
         username: str
         discrim: str
@@ -2409,8 +2401,7 @@ class Client:
             raise TypeError(f'send_friend_request() takes 1 or 2 arguments but {len(args)} were given')
 
         state = self._connection
-        data = await state.http.send_friend_request(username, discrim)
-        return Relationship(state=state, data=data)
+        await state.http.send_friend_request(username, discrim)
 
     async def applications(self, *, with_team_applications: bool = True) -> List[Application]:
         """|coro|

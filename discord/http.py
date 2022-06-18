@@ -2166,7 +2166,7 @@ class HTTPClient:
 
         return self.request(r, **kwargs)
 
-    def send_friend_request(self, username, discriminator):  # TODO: return type
+    def send_friend_request(self, username, discriminator) -> Response[None]:
         r = Route('POST', '/users/@me/relationships')
         props = choice((ContextProperties._from_add_friend_page, ContextProperties._from_group_dm))  # Friends, Group DM
         payload = {'username': username, 'discriminator': int(discriminator)}
