@@ -381,7 +381,7 @@ class AutoModRuleExecution:
 
     @property
     def guild(self) -> Guild:
-        """Optional[:class:`Guild`]: The guild this rule was executed in."""
+        """:class:`Guild`: The guild this rule was executed in."""
         return self._state._get_guild(self._guild_id)  # type: ignore # this should never be None here
 
     @property
