@@ -557,7 +557,8 @@ class ClientUser(BaseUser):
         nsfw_allowed: bool
 
     def __init__(self, *, state: ConnectionState, data: UserPayload) -> None:
-        super().__init__(state=state, data=data)
+        self._state = state
+        self._full_update(data)
         self.note: Note = Note(state, self.id)
 
     def __repr__(self) -> str:
@@ -566,8 +567,8 @@ class ClientUser(BaseUser):
             f' bot={self.bot} verified={self.verified} mfa_enabled={self.mfa_enabled} premium={self.premium}>'
         )
 
-    def _update(self, data: UserPayload) -> None:
-        super()._update(data)
+    def _full_update(self, data: UserPayload) -> None:
+        self._update(data)
         self.verified = data.get('verified', False)
         self.email = data.get('email')
         self.phone = _get_as_snowflake(data, 'phone')

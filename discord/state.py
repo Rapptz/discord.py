@@ -1059,7 +1059,7 @@ class ConnectionState:
 
     def parse_user_update(self, data: gw.UserUpdateEvent) -> None:
         if self.user:
-            self.user._update(data)
+            self.user._full_update(data)
 
     def parse_user_settings_update(self, data) -> None:
         new_settings = self.settings
