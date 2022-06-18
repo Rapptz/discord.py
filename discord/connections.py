@@ -23,12 +23,17 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
+from .enums import ConnectionType, try_enum
+from .integrations import Integration
 from .utils import MISSING
 
 if TYPE_CHECKING:
+    from .guild import Guild
     from .state import ConnectionState
+    from .types.integration import ConnectionIntegration as IntegrationPayload
+    from .types.user import Connection as ConnectionPayload, PartialConnection as PartialConnectionPayload
 
 __all__ = (
     'PartialConnection',
@@ -37,9 +42,9 @@ __all__ = (
 
 
 class PartialConnection:
-    """Represents a partial Discord profile connection
+    """Represents a partial Discord profile connection.
 
-    This is the info you get for other people's connections.
+    This is the info you get for other users' connections.
 
     .. container:: operations
 
@@ -59,14 +64,16 @@ class PartialConnection:
 
             Returns the connection's name.
 
+    .. versionadded:: 2.0
+
     Attributes
     ----------
     id: :class:`str`
         The connection's account ID.
     name: :class:`str`
         The connection's account name.
-    type: :class:`str`
-        The connection service (e.g. 'youtube')
+    type: :class:`ConnectionType`
+        The connection service (e.g. youtube, twitch, etc.).
     verified: :class:`bool`
         Whether the connection is verified.
     revoked: :class:`bool`
@@ -77,7 +84,7 @@ class PartialConnection:
 
     __slots__ = ('id', 'name', 'type', 'verified', 'revoked', 'visible')
 
-    def __init__(self, data: dict):
+    def __init__(self, data: PartialConnectionPayload):
         self._update(data)
 
     def __str__(self) -> str:
@@ -99,10 +106,10 @@ class PartialConnection:
             return self.id != other.id or self.name != other.name
         return True
 
-    def _update(self, data: dict):
+    def _update(self, data: PartialConnectionPayload):
         self.id: str = data['id']
         self.name: str = data['name']
-        self.type: str = data['type']
+        self.type: ConnectionType = try_enum(ConnectionType, data['type'])
 
         self.verified: bool = data['verified']
         self.revoked: bool = data.get('revoked', False)
@@ -110,7 +117,27 @@ class PartialConnection:
 
 
 class Connection(PartialConnection):
-    """Represents a Discord profile connection
+    """Represents a Discord profile connection.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two connections are equal.
+
+        .. describe:: x != y
+
+            Checks if two connections are not equal.
+
+        .. describe:: hash(x)
+
+            Return the connection's hash.
+
+        .. describe:: str(x)
+
+            Returns the connection's name.
+
+    .. versionadded:: 2.0
 
     Attributes
     ----------
@@ -120,16 +147,18 @@ class Connection(PartialConnection):
         Whether activities from this connection will be shown in presences.
     access_token: :class:`str`
         The OAuth2 access token for the account, if applicable.
+    integrations: List[:class:`Integration`]
+        The integrations attached to the connection.
     """
 
-    __slots__ = ('_state', 'visible', 'friend_sync', 'show_activity', 'access_token')
+    __slots__ = ('_state', 'visible', 'friend_sync', 'show_activity', 'access_token', 'integrations')
 
-    def __init__(self, *, data: dict, state: ConnectionState):
+    def __init__(self, *, data: ConnectionPayload, state: ConnectionState):
         super().__init__(data)
         self._state = state
         self.access_token: Optional[str] = None
 
-    def _update(self, data: dict):
+    def _update(self, data: ConnectionPayload):
         super()._update(data)
         self.visible: bool = bool(data.get('visibility', True))
         self.friend_sync: bool = data.get('friend_sync', False)
@@ -141,7 +170,25 @@ class Connection(PartialConnection):
         except KeyError:
             pass
 
-    async def edit(self, *, visible: bool = MISSING, show_activity: bool = MISSING):
+        self.integrations: List[Integration] = [
+            Integration(data=i, guild=self._resolve_guild(i)) for i in data.get('integrations', [])
+        ]
+
+    def _resolve_guild(self, data: IntegrationPayload) -> Guild:
+        from .guild import Guild
+
+        state = self._state
+        guild_data = data['guild']
+
+        guild_id = int(guild_data['id'])
+        guild = state._get_guild(guild_id)
+        if guild is None:
+            guild = Guild(data=guild_data, state=state)
+        return guild
+
+    async def edit(
+        self, *, name: str = MISSING, visible: bool = MISSING, show_activity: bool = MISSING, friend_sync: bool = MISSING
+    ) -> None:
         """|coro|
 
         Edit the connection.
@@ -150,8 +197,12 @@ class Connection(PartialConnection):
 
         Parameters
         ----------
+        name: :class:`str`
+            The new name of the connection. Only editable for certain connection types.
         visible: :class:`bool`
             Whether the connection is visible on your profile.
+        friend_sync: :class:`bool`
+            Whether friends are synced over the connection.
         show_activity: :class:`bool`
             Whether activities from this connection will be shown in presences.
 
@@ -161,11 +212,15 @@ class Connection(PartialConnection):
             Editing the connection failed.
         """
         payload = {}
+        if name is not MISSING:
+            payload['name'] = name
         if visible is not MISSING:
             payload['visibility'] = visible
+        if friend_sync is not MISSING:
+            payload['friend_sync'] = friend_sync
         if show_activity is not MISSING:
             payload['show_activity'] = show_activity
-        data = await self._state.http.edit_connection(self.type, self.id, **payload)
+        data = await self._state.http.edit_connection(self.type.value, self.id, **payload)
         self._update(data)
 
     async def delete(self) -> None:
@@ -178,7 +233,7 @@ class Connection(PartialConnection):
         HTTPException
             Deleting the connection failed.
         """
-        await self._state.http.delete_connection(self.type, self.id)
+        await self._state.http.delete_connection(self.type.value, self.id)
 
     async def fetch_access_token(self) -> str:
         """|coro|
@@ -195,6 +250,6 @@ class Connection(PartialConnection):
         :class:`str`
             The new access token.
         """
-        data = await self._state.http.get_connection_token(self.type, self.id)
+        data = await self._state.http.get_connection_token(self.type.value, self.id)
         self.access_token = token = data['access_token']
         return token

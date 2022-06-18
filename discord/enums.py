@@ -79,6 +79,7 @@ __all__ = (
     'ScheduledEventStatus',
     'ScheduledEventEntityType',
     'ApplicationType',
+    'ConnectionType',
 )
 
 if TYPE_CHECKING:
@@ -871,6 +872,25 @@ class AppCommandType(Enum):
 
     def __int__(self) -> int:
         return self.value
+
+
+class ConnectionType(Enum):
+    battle_net = 'battlenet'
+    contacts = 'contacts'
+    epic_games = 'epicgames'
+    facebook = 'facebook'
+    github = 'github'
+    league_of_legends = 'leagueoflegends'
+    playstation = 'playstation'
+    reddit = 'reddit'
+    samsung = 'samsunggalaxy'
+    spotify = 'spotify'
+    skype = 'skype'
+    steam = 'steam'
+    twitch = 'twitch'
+    twitter = 'twitter'
+    youtube = 'youtube'
+    xbox = 'xbox'
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

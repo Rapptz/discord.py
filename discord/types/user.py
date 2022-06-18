@@ -22,8 +22,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from typing import List, Literal, Optional, TypedDict
+from typing_extensions import NotRequired
+
+from .integration import ConnectionIntegration
 from .snowflake import Snowflake
-from typing import Literal, Optional, TypedDict
 
 
 class PartialUser(TypedDict):
@@ -33,6 +36,25 @@ class PartialUser(TypedDict):
     avatar: Optional[str]
 
 
+ConnectionType = Literal[
+    'battlenet',
+    'contacts',
+    'epicgames',
+    'facebook',
+    'github',
+    'leagueoflegends',
+    'playstation',
+    'reddit',
+    'samsunggalaxy',
+    'spotify',
+    'skype',
+    'steam',
+    'twitch',
+    'twitter',
+    'youtube',
+    'xbox',
+]
+ConnectionVisibilty = Literal[0, 1]
 PremiumType = Literal[0, 1, 2]
 
 
@@ -52,3 +74,19 @@ class User(PartialUser, total=False):
     analytics_token: str
     phone: Optional[str]
     token: str
+
+
+class PartialConnection(TypedDict):
+    id: str
+    type: ConnectionType
+    name: str
+    verified: bool
+    revoked: NotRequired[bool]
+
+
+class Connection(PartialConnection):
+    visibility: int
+    show_activity: bool
+    friend_sync: bool
+    integrations: NotRequired[List[ConnectionIntegration]]
+    access_token: NotRequired[str]
