@@ -1,7 +1,5 @@
 # This example requires the 'message_content' privileged intent to function.
 
-import typing
-
 import discord
 from discord.ext import commands
 
