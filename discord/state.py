@@ -413,7 +413,7 @@ class ConnectionState:
                 activities = [activity]
 
         if not all(isinstance(activity, BaseActivity) for activity in activities):
-            raise TypeError('activity parameter must derive from BaseActivity.')
+            raise TypeError('activity parameter must derive from BaseActivity')
         activities = [activity.to_dict() for activity in activities]
 
         status = options.get('status', None)

@@ -213,7 +213,7 @@ class Client:
         http_trace: Optional[aiohttp.TraceConfig] = options.pop('http_trace', None)
         captcha_handler: Optional[CaptchaHandler] = options.pop('captcha_handler', None)
         if captcha_handler is not None and not isinstance(captcha_handler, CaptchaHandler):
-            raise TypeError(f'captcha_handler must be CaptchaHandler not {type(captcha_handler)!r}')
+            raise TypeError(f'captcha_handler must derive from CaptchaHandler')
         self.http: HTTPClient = HTTPClient(
             self.loop,
             proxy=proxy,
