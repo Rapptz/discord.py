@@ -1376,7 +1376,7 @@ class BotBase(GroupMixin[None]):
 
 
 class Bot(BotBase, discord.Client):
-    """Represents a discord bot.
+    """Represents a Discord bot.
 
     This class is a subclass of :class:`discord.Client` and as a result
     anything that you can do with a :class:`discord.Client` you can do with
@@ -1385,7 +1385,7 @@ class Bot(BotBase, discord.Client):
     This class also subclasses :class:`.GroupMixin` to provide the functionality
     to manage commands.
 
-    Unlike :class:`discord.Client`, This class does not require manually setting
+    Unlike :class:`discord.Client`, this class does not require manually setting
     a :class:`~discord.app_commands.CommandTree` and is automatically set upon
     instantiating the class.
 
