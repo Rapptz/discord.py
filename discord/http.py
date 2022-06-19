@@ -1062,8 +1062,14 @@ class HTTPClient:
 
         return self.request(Route('POST', '/guilds/{guild_id}/channels', guild_id=guild_id), json=payload, reason=reason)
 
-    def delete_channel(self, channel_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
-        return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id), reason=reason)
+    def delete_channel(
+        self, channel_id: Snowflake, *, reason: Optional[str] = None, silent: bool = MISSING
+    ) -> Response[channel.Channel]:
+        params = {}
+        if silent is not MISSING:
+            params['silent'] = str(silent).lower()
+
+        return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id), params=params, reason=reason)
 
     # Thread management
 

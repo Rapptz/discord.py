@@ -2717,7 +2717,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         # The payload will always be the proper channel payload
         return self.__class__(me=self.me, state=self._state, data=data)  # type: ignore
 
-    async def leave(self) -> None:
+    async def leave(self, *, silent: bool = False) -> None:
         """|coro|
 
         Leave the group.
@@ -2726,14 +2726,19 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         There is an alias for this called :func:`close`.
 
+        Parameters
+        -----------
+        silent: :class:`bool`
+            Whether to leave the group without sending a leave message.
+
         Raises
         -------
         HTTPException
             Leaving the group failed.
         """
-        await self._state.http.delete_channel(self.id)
+        await self._state.http.delete_channel(self.id, silent=silent)
 
-    async def close(self) -> None:
+    async def close(self, *, silent: bool = False) -> None:
         """|coro|
 
         Leave the group.
@@ -2742,12 +2747,17 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         This is an alias of :func:`leave`.
 
+        Parameters
+        -----------
+        silent: :class:`bool`
+            Whether to leave the group without sending a leave message.
+
         Raises
         -------
         HTTPException
             Leaving the group failed.
         """
-        await self.leave()
+        await self.leave(silent=silent)
 
     async def create_invite(self, *, max_age: int = 86400) -> Invite:
         """|coro|
