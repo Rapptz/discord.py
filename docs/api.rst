@@ -1229,7 +1229,7 @@ Threads
 
 .. function:: on_raw_thread_update(payload)
 
-    Called whenever a thread is update. Unlike :func:`on_thread_update` this
+    Called whenever a thread is updated. Unlike :func:`on_thread_update` this
     is called regardless of the thread being in the internal thread cache or not.
 
     This requires :attr:`Intents.guilds` to be enabled.
