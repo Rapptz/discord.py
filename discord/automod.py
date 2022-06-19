@@ -257,7 +257,7 @@ class AutoModRule:
         *,
         name: Optional[str] = None,
         event_type: Optional[AutoModRuleEventType] = None,
-        actions: List[AutoModRuleAction],
+        actions: Optional[List[AutoModRuleAction]] = None,
         enabled: Optional[bool] = None,
         exempt_roles: Optional[List[Role]] = None,
         exempt_channels: Optional[List[Union[GuildChannel, Thread]]] = None,
@@ -272,7 +272,7 @@ class AutoModRule:
             The new name to change to.
         event_type: Optional[:class:`AutoModRuleEventType`]
             The new event type to change to.
-        actions: List[:class:`AutoModRuleAction`]
+        actions: Optional[List[:class:`AutoModRuleAction`]]
             The new rule actions to update.
         enabled: Optional[:class:`bool`]
             Whether the rule should be enabled or not.
