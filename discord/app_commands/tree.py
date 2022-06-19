@@ -862,7 +862,8 @@ class CommandTree(Generic[ClientT]):
             with the ``guild`` parameter. If no guilds are given at all
             then it becomes a global command instead.
         extras: :class:`dict`
-            A dictionary of user provided extras to attach to this command.
+            A dictionary that can be used to store extraneous data.
+            The library will not touch any values or keys within this dictionary.
         """
 
         def decorator(func: CommandCallback[Group, P, T]) -> Command[Group, P, T]:

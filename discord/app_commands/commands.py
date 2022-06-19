@@ -493,7 +493,8 @@ class Command(Generic[GroupT, P, T]):
     parent: Optional[:class:`Group`]
         The parent application command. ``None`` if there isn't one.
     extras: :class:`dict`
-        A dictionary of user provided extras to attach to this command.
+        A dictionary that can be used to store extraneous data.
+        The library will not touch any values or keys within this dictionary.
     """
 
     def __init__(
@@ -1533,7 +1534,8 @@ class Group:
         nsfw: :class:`bool`
             Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
         extras: :class:`dict`
-            A dictionary of user provided extras to attach to this command.
+            A dictionary that can be used to store extraneous data.
+            The library will not touch any values or keys within this dictionary.
         """
 
         def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
@@ -1585,7 +1587,8 @@ def command(
 
         Due to a Discord limitation, this does not work on subcommands.
     extras: :class:`dict`
-        A dictionary of user provided extras to attach to this command.
+        A dictionary that can be used to store extraneous data.
+        The library will not touch any values or keys within this dictionary.
     """
 
     def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
