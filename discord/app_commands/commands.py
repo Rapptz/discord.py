@@ -492,6 +492,8 @@ class Command(Generic[GroupT, P, T]):
         Due to a Discord limitation, this does not work on subcommands.
     parent: Optional[:class:`Group`]
         The parent application command. ``None`` if there isn't one.
+    extras: :class:`dict`
+        A dictionary of user provided extras to attach to this command.
     """
 
     def __init__(
@@ -503,6 +505,7 @@ class Command(Generic[GroupT, P, T]):
         nsfw: bool = False,
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
+        extras: dict = MISSING,
     ):
         self.name: str = validate_name(name)
         self.description: str = description
@@ -530,6 +533,7 @@ class Command(Generic[GroupT, P, T]):
         )
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
         self.nsfw: bool = nsfw
+        self.extras: dict = extras or {}
 
         if self._guild_ids is not None and self.parent is not None:
             raise ValueError('child commands cannot have default guilds set, consider setting them in the parent instead')
@@ -1513,6 +1517,7 @@ class Group:
         name: str = MISSING,
         description: str = MISSING,
         nsfw: bool = False,
+        extras: dict = MISSING,
     ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
         """Creates an application command under this group.
 
@@ -1527,6 +1532,8 @@ class Group:
             of the callback shortened to 100 characters.
         nsfw: :class:`bool`
             Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
+        extras: :class:`dict`
+            A dictionary of user provided extras to attach to this command.
         """
 
         def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
@@ -1547,6 +1554,7 @@ class Group:
                 callback=func,
                 nsfw=nsfw,
                 parent=self,
+                extras=extras,
             )
             self.add_command(command)
             return command
@@ -1559,6 +1567,7 @@ def command(
     name: str = MISSING,
     description: str = MISSING,
     nsfw: bool = False,
+    extras: dict = MISSING,
 ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
     """Creates an application command from a regular function.
 
@@ -1575,6 +1584,8 @@ def command(
         Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
 
         Due to a Discord limitation, this does not work on subcommands.
+    extras: :class:`dict`
+        A dictionary of user provided extras to attach to this command.
     """
 
     def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
@@ -1595,6 +1606,7 @@ def command(
             callback=func,
             parent=None,
             nsfw=nsfw,
+            extras=extras,
         )
 
     return decorator

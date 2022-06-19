@@ -837,6 +837,7 @@ class CommandTree(Generic[ClientT]):
         nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
+        extras: dict = MISSING,
     ) -> Callable[[CommandCallback[Group, P, T]], Command[Group, P, T]]:
         """Creates an application command directly under this tree.
 
@@ -860,6 +861,8 @@ class CommandTree(Generic[ClientT]):
             The list of guilds to add the command to. This cannot be mixed
             with the ``guild`` parameter. If no guilds are given at all
             then it becomes a global command instead.
+        extras: :class:`dict`
+            A dictionary of user provided extras to attach to this command.
         """
 
         def decorator(func: CommandCallback[Group, P, T]) -> Command[Group, P, T]:
@@ -880,6 +883,7 @@ class CommandTree(Generic[ClientT]):
                 callback=func,
                 nsfw=nsfw,
                 parent=None,
+                extras=extras,
             )
             self.add_command(command, guild=guild, guilds=guilds)
             return command
