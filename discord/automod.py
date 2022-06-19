@@ -87,6 +87,9 @@ class AutoModRuleAction:
         elif self.type is AutoModRuleActionType.send_alert_message and self.channel_id is None:
             raise ValueError('channel_id must be set if type is send_alert_message.')
 
+    def __repr__(self) -> str:
+        return f"<AutoModRuleAction type={self.type.value} channel_id={self.channel_id} duration_seconds={self.duration_seconds}>"
+
     @classmethod
     def from_data(cls, data: AutoModerationActionPayload) -> Self:
         type_ = try_enum(AutoModRuleActionType, data['type'])
@@ -139,6 +142,9 @@ class AutoModTrigger:
             raise ValueError('keyword_filter must be set if type is keyword.')
         elif self.type is AutoModRuleTriggerType.keyword_preset and self.presets is None:
             raise ValueError('presets must be set if type is keyword_preset.')
+
+    def __repr__(self) -> str:
+        return f"<AutoModTrigger type={self.type}>"
 
     @classmethod
     def from_data(cls: Type[Self], type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
@@ -211,7 +217,7 @@ class AutoModRule:
         self._actions: List[AutoModerationActionPayload] = data['actions']
 
     def __repr__(self) -> str:
-        return f'<AutoModRule id={self.id} name={self.name!r}>'
+        return f'<AutoModRule id={self.id} name={self.name!r} guild={self.guild!r}>'
 
     def to_dict(self) -> AutoModerationRulePayload:
         ret: AutoModerationRulePayload = {
@@ -378,6 +384,9 @@ class AutoModRuleExecution:
         self.content: str = data['content']
         self.matched_keyword: Optional[str] = data['matched_keyword']
         self.matched_content: Optional[str] = data['matched_content']
+
+    def __repr__(self) -> str:
+        return f"<AutoModRuleExecution rule_id={self.rule_id} action={self.action!r}>"
 
     @property
     def guild(self) -> Guild:
