@@ -3898,6 +3898,7 @@ class Guild(Hashable):
         enabled: bool = MISSING,
         exempt_roles: List[Role] = MISSING,
         exempt_channels: List[Union[GuildChannel, Thread]] = MISSING,
+        reason: str = MISSING,
     ) -> AutoModRule:
         """|coro|
 
@@ -3924,6 +3925,8 @@ class Guild(Hashable):
             A list of roles that will be exempt from the automod rule.
         exempt_channels: List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]
             A list of channels that will be exempt from the automod rule.
+        reason: :class:`str`
+            The reason for creating this automod rule.
 
         Raises
         -------
@@ -3947,6 +3950,7 @@ class Guild(Hashable):
             enabled=enabled,
             exempt_roles=[str(r.id) for r in exempt_roles] if exempt_roles else None,
             exempt_channel=[str(c.id) for c in exempt_channels] if exempt_channels else None,
+            reason=reason,
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)

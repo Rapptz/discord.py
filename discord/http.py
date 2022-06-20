@@ -2048,7 +2048,9 @@ class HTTPClient:
             Route('GET', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id)
         )
 
-    def create_auto_moderation_rule(self, guild_id: Snowflake, **payload: Any) -> Response[automod.AutoModerationRule]:
+    def create_auto_moderation_rule(
+        self, guild_id: Snowflake, *, reason: Optional[str], **payload: Any
+    ) -> Response[automod.AutoModerationRule]:
         valid_keys = (
             'name',
             'event_type',
@@ -2062,10 +2064,12 @@ class HTTPClient:
 
         payload = {k: v for k, v in payload.items() if k in valid_keys and v is not None}
 
-        return self.request(Route('POST', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id), json=payload)
+        return self.request(
+            Route('POST', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id), json=payload, reason=reason
+        )
 
     def modify_auto_moderation_rule(
-        self, guild_id: Snowflake, rule_id: Snowflake, **payload: Any
+        self, guild_id: Snowflake, rule_id: Snowflake, *, reason: Optional[str], **payload: Any
     ) -> Response[automod.AutoModerationRule]:
         valid_keys = (
             'name',
@@ -2082,11 +2086,15 @@ class HTTPClient:
         return self.request(
             Route('PATCH', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
             json=payload,
+            reason=reason,
         )
 
-    def delete_auto_moderation_rule(self, guild_id: Snowflake, rule_id: Snowflake) -> Response[None]:
+    def delete_auto_moderation_rule(
+        self, guild_id: Snowflake, rule_id: Snowflake, *, reason: Optional[str]
+    ) -> Response[None]:
         return self.request(
-            Route('DELETE', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id)
+            Route('DELETE', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
+            reason=reason,
         )
 
     # Misc

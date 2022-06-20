@@ -280,6 +280,7 @@ class AutoModRule:
         enabled: bool = MISSING,
         exempt_roles: List[Role] = MISSING,
         exempt_channels: Sequence[Snowflake] = MISSING,
+        reason: str = MISSING,
     ) -> Self:
         """|coro|
 
@@ -299,6 +300,8 @@ class AutoModRule:
             The new roles to exempt from the rule.
         exempt_channels: List[Union[:class:`abc.GuildChannel`], :class:`Thread`]
             The new channels to exempt from the rule.
+        reason: :class:`str`
+            The reason for updating this rule.
 
         Raises
         -------
@@ -325,14 +328,20 @@ class AutoModRule:
             enabled=enabled,
             exempt_roles=exempt_roles,
             exempt_channels=exempt_channels,
+            reason=reason,
         )
 
         return AutoModRule(data=data, guild=self.guild, state=self._state)
 
-    async def delete(self) -> None:
+    async def delete(self, reason: str = MISSING) -> None:
         """|coro|
 
         Delete the auto moderation rule.
+
+        Parameters
+        -----------
+        reason: :class:`str`
+            The reason for deleting this rule.
 
         Raises
         -------
@@ -341,7 +350,7 @@ class AutoModRule:
         HTTPException
             Deleting the rule failed.
         """
-        await self._state.http.delete_auto_moderation_rule(self.guild.id, self.id)
+        await self._state.http.delete_auto_moderation_rule(self.guild.id, self.id, reason=reason)
 
 
 class AutoModAction:
