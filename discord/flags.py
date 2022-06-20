@@ -1487,6 +1487,7 @@ class AutoModPresets(ArrayFlags):
         .. describe:: x == y
 
             Checks if two AutoMod preset flags are equal.
+
         .. describe:: x != y
 
             Checks if two AutoMod preset flags are not equal.
