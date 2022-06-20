@@ -1898,7 +1898,7 @@ class Guild(Hashable):
             if not isinstance(system_channel_flags, SystemChannelFlags):
                 raise TypeError('system_channel_flags field must be of type SystemChannelFlags')
 
-            fields['system_channel_flags'] = system_channel_flags._value
+            fields['system_channel_flags'] = system_channel_flags.value
 
         if community is not MISSING:
             features = []
@@ -3839,12 +3839,21 @@ class Guild(Hashable):
     async def fetch_automod_rule(self, automod_rule_id: int, /) -> AutoModRule:
         """|coro|
 
-        This method will fetch an active automod rule from the guild.
+        Fetch an active automod rule from the guild.
+
+        You must have the :attr:`Permissions.manage_guild` to use this.
+
+        .. versionadded:: 2.0
 
         Parameters
         -----------
         automod_rule_id: :class:`int`
             The ID of the automod rule to fetch.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to view the automod rule.
 
         Returns
         --------
@@ -3859,7 +3868,16 @@ class Guild(Hashable):
     async def fetch_automod_rules(self) -> List[AutoModRule]:
         """|coro|
 
-        This method will fetch all automod rules from the guild.
+        Fetch all automod rules from the guild.
+
+        You must have the :attr:`Permissions.manage_guild` to use this.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to view the automod rule.
 
         Returns
         --------
@@ -3877,12 +3895,17 @@ class Guild(Hashable):
         event_type: AutoModRuleEventType,
         trigger: AutoModTrigger,
         actions: List[AutoModRuleAction],
-        enabled: Optional[bool] = None,
-        exempt_roles: Optional[List[Role]] = None,
-        exempt_channels: Optional[List[Union[GuildChannel, Thread]]] = None,
+        enabled: bool = MISSING,
+        exempt_roles: List[Role] = MISSING,
+        exempt_channels: List[Union[GuildChannel, Thread]] = MISSING,
     ) -> AutoModRule:
         """|coro|
-        This method will create an automod rule in the guild.
+
+        Create an automod rule in the guild.
+
+        Requires the :attr:`Permissions.manage_guild` permission to use this.
+
+        .. versionadded:: 2.0
 
         Parameters
         -----------
@@ -3894,18 +3917,20 @@ class Guild(Hashable):
             The trigger that will trigger the automod rule.
         actions: List[:class:`AutoModRuleAction`]
             The actions that will be taken when the automod rule is triggered.
-        enabled: Optional[:class:`bool`]
+        enabled: :class:`bool`
             Whether the automod rule is enabled.
             Discord will default to ``False``.
-        exempt_roles: Optional[List[:class:`Role`]]
+        exempt_roles: List[:class:`Role`]
             A list of roles that will be exempt from the automod rule.
-        exempt_channels: Optional[List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]]
+        exempt_channels: List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]
             A list of channels that will be exempt from the automod rule.
 
         Raises
         -------
-        :exc:`Forbidden`
+        Forbidden
             You do not have permissions to create an automod rule.
+        HTTPException
+            Creating the automod rule failed.
 
         Returns
         --------

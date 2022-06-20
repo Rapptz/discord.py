@@ -1303,37 +1303,49 @@ Voice
 AutoMod
 ~~~~~~~
 
-.. function:: on_auto_moderation_rule_create(rule)
+.. function:: on_automod_rule_create(rule)
 
     Called when a :class:`AutoModRule` is created.
 
     This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
+
+    .. versionadded:: 2.0
+
     :param rule: The rule that was created.
     :type rule: :class:`AutoModRule`
 
-.. function:: on_auto_moderation_rule_update(rule)
+.. function:: on_automod_rule_update(rule)
 
     Called when a :class:`AutoModRule` is updated.
 
     This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
+
+    .. versionadded:: 2.0
+
     :param rule: The rule that was updated.
     :type rule: :class:`AutoModRule`
 
-.. function:: on_auto_moderation_rule_delete(rule)
+.. function:: on_automod_rule_delete(rule)
 
     Called when a :class:`AutoModRule` is deleted.
 
     This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
+
+    .. versionadded:: 2.0
+
     :param rule: The rule that was deleted.
     :type rule: :class:`AutoModRule`
 
-.. function:: on_auto_moderation_action_execution(execution)
+.. function:: on_automod_action(execution)
 
-    Called when a :class:`AutoModRuleExecution` is created/performed.
+    Called when a :class:`AutoModAction` is created/performed.
 
     This requires :attr:`Intents.auto_moderation_execution` to be enabled.
+
+    .. versionadded:: 2.0
+
     :param execution: The rule execution that was performed.
-    :type execution: :class:`AutoModRuleExecution`
+    :type execution: :class:`AutoModAction`
 
 .. _discord-api-utils:
 
@@ -3796,7 +3808,7 @@ AutoMod
 .. autoclass:: AutoModRuleAction()
     :members:
 
-.. autoclass:: AutoModRuleExecution()
+.. autoclass:: AutoModAction()
     :members:
 
 Attachment

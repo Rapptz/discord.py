@@ -74,7 +74,7 @@ from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
-from .automod import AutoModRule, AutoModRuleExecution
+from .automod import AutoModRule, AutoModAction
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel
@@ -313,7 +313,7 @@ class ConnectionState:
     @property
     def intents(self) -> Intents:
         ret = Intents.none()
-        ret._value = self._intents.value
+        ret.value = self._intents.value
         return ret
 
     @property
@@ -1090,7 +1090,7 @@ class ConnectionState:
 
         rule = AutoModRule(data=data, guild=guild, state=self)
 
-        self.dispatch('auto_moderation_rule_create', rule)
+        self.dispatch('automod_rule_create', rule)
 
     def parse_auto_moderation_rule_update(self, data: AutoModerationRule) -> None:
         guild = self._get_guild(int(data['guild_id']))
@@ -1100,7 +1100,7 @@ class ConnectionState:
 
         rule = AutoModRule(data=data, guild=guild, state=self)
 
-        self.dispatch('auto_moderation_rule_update', rule)
+        self.dispatch('automod_rule_update', rule)
 
     def parse_auto_moderation_rule_delete(self, data: AutoModerationRule) -> None:
         guild = self._get_guild(int(data['guild_id']))
@@ -1110,7 +1110,7 @@ class ConnectionState:
 
         rule = AutoModRule(data=data, guild=guild, state=self)
 
-        self.dispatch('auto_moderation_rule_delete', rule)
+        self.dispatch('automod_rule_delete', rule)
 
     def parse_auto_moderation_action_execution(self, data: AutoModerationActionExecution) -> None:
         guild = self._get_guild(int(data['guild_id']))
@@ -1118,9 +1118,9 @@ class ConnectionState:
             _log.debug('AUTO_MODERATION_ACTION_EXECUTION referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
             return
 
-        execution = AutoModRuleExecution(data=data, state=self)
+        execution = AutoModAction(data=data, state=self)
 
-        self.dispatch('auto_moderation_action_execution', execution)
+        self.dispatch('automod_action', execution)
 
     def _get_create_guild(self, data: gw.GuildCreateEvent) -> Guild:
         if data.get('unavailable') is False:

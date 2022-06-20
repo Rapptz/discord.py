@@ -23,17 +23,19 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+import datetime
 
-from typing import TYPE_CHECKING, Optional, List, Union, Type
+from typing import TYPE_CHECKING, Any, Dict, Optional, List, Sequence, Set, Union, Sequence
 
 
 from .enums import AutoModRuleTriggerType, AutoModRuleActionType, AutoModRuleEventType, try_enum
 from .flags import AutoModPresets
 from . import utils
+from .utils import MISSING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-    from .abc import GuildChannel
+    from .abc import Snowflake, GuildChannel
     from .threads import Thread
     from .guild import Guild
     from .member import Member
@@ -44,69 +46,64 @@ if TYPE_CHECKING:
         AutoModerationAction as AutoModerationActionPayload,
         AutoModerationActionExecution as AutoModerationActionExecutionPayload,
     )
-    from .user import User
     from .role import Role
 
 __all__ = (
     'AutoModRuleAction',
     'AutoModTrigger',
     'AutoModRule',
-    'AutoModRuleExecution',
+    'AutoModAction',
 )
 
 
 class AutoModRuleAction:
-    """Represents a rule action.
+    """Represents an auto moderation's rule action.
 
     Attributes
     -----------
     type: :class:`AutoModRuleActionType`
         The type of action to take.
     channel_id: Optional[:class:`int`]
-        The channel to send the alert message to, if any.
-    duration_seconds: Optional[:class:`int`]
+        The ID of the channel to send the alert message to, if any.
+    duration: Optional[:class:`datetime.timedelta`]
         The duration of the timeout to apply, if any.
-
-    Raises
-    -------
-    :exc:`ValueError`
-        Provided arguments do not match the needed types.
     """
 
-    __slots__ = ('type', 'channel_id', 'duration_seconds')
+    __slots__ = ('type', 'channel_id', 'duration')
 
-    def __init__(
-        self, *, type: AutoModRuleActionType, channel_id: Optional[int] = None, duration_seconds: Optional[int] = None
-    ) -> None:
-        self.type: AutoModRuleActionType = type
+    def __init__(self, *, channel_id: Optional[int] = None, duration: Optional[datetime.timedelta] = None) -> None:
         self.channel_id: Optional[int] = channel_id
-        self.duration_seconds: Optional[int] = duration_seconds
+        self.duration: Optional[datetime.timedelta] = duration
+        if channel_id and duration:
+            raise ValueError("Please provide only one of ``channel`` or ``duration``")
 
-        if self.type is AutoModRuleActionType.timeout and self.duration_seconds is None:
-            raise ValueError('duration_seconds must be set if type is timeout.')
-        elif self.type is AutoModRuleActionType.send_alert_message and self.channel_id is None:
-            raise ValueError('channel_id must be set if type is send_alert_message.')
+        if channel_id:
+            self.type = AutoModRuleActionType.send_alert_message
+        elif duration:
+            self.type = AutoModRuleActionType.timeout
+        else:
+            self.type = AutoModRuleActionType.block_message
 
     def __repr__(self) -> str:
-        return f"<AutoModRuleAction type={self.type.value} channel_id={self.channel_id} duration_seconds={self.duration_seconds}>"
+        return f'<AutoModRuleAction type={self.type.value} channel={self.channel_id} duration={self.duration}>'
 
     @classmethod
     def from_data(cls, data: AutoModerationActionPayload) -> Self:
         type_ = try_enum(AutoModRuleActionType, data['type'])
         if data['type'] == AutoModRuleActionType.timeout.value:
             duration_seconds = data['metadata']['duration_seconds']
-            return cls(type=type_, duration_seconds=duration_seconds)
+            return cls(duration=datetime.timedelta(seconds=duration_seconds))
         elif data['type'] == AutoModRuleActionType.send_alert_message.value:
             channel_id = int(data['metadata']['channel_id'])
-            return cls(type=type_, channel_id=channel_id)
-        return cls(type=type_)
+            return cls(channel_id=channel_id)
+        return cls()
 
-    def to_dict(self) -> AutoModerationActionPayload:
-        ret: AutoModerationActionPayload = {'type': self.type.value, 'metadata': {}}
+    def to_dict(self) -> Dict[str, Any]:
+        ret = {'type': self.type.value, 'metadata': {}}
         if self.type is AutoModRuleActionType.timeout:
-            ret['metadata'] = {'duration_seconds': self.duration_seconds}  # type: ignore # guarded by type check
+            ret['metadata'] = {'duration_seconds': self.duration.seconds}  # type: ignore # duration cannot be None here
         elif self.type is AutoModRuleActionType.send_alert_message:
-            ret['metadata'] = {'channel_id': str(self.channel_id)}  # type: ignore # guarded by type check
+            ret['metadata'] = {'channel_id': str(self.channel_id)}
         return ret
 
 
@@ -130,42 +127,40 @@ class AutoModTrigger:
     def __init__(
         self,
         *,
-        type: AutoModRuleTriggerType,
         keyword_filter: Optional[List[str]] = None,
         presets: Optional[AutoModPresets] = None,
     ) -> None:
-        self.type: AutoModRuleTriggerType = type
         self.keyword_filter: Optional[List[str]] = keyword_filter
         self.presets: Optional[AutoModPresets] = presets
+        if keyword_filter and presets:
+            raise ValueError("Please pass only one of keyword_filter or presets.")
 
-        if self.type is AutoModRuleTriggerType.keyword and self.keyword_filter is None:
-            raise ValueError('keyword_filter must be set if type is keyword.')
-        elif self.type is AutoModRuleTriggerType.keyword_preset and self.presets is None:
-            raise ValueError('presets must be set if type is keyword_preset.')
-
-    def __repr__(self) -> str:
-        return f"<AutoModTrigger type={self.type}>"
+        if self.keyword_filter is not None:
+            self.type = AutoModRuleTriggerType.keyword
+        else:
+            self.type = AutoModRuleTriggerType.keyword_preset
 
     @classmethod
-    def from_data(cls: Type[Self], type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
+    def from_data(cls, type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
         type_ = try_enum(AutoModRuleTriggerType, type)
         if type_ is AutoModRuleTriggerType.keyword:
-            return cls(type=type_, keyword_filter=data['keyword_filter'])  # type: ignore # unable to typeguard due to outer payload
-        elif type_ is AutoModRuleTriggerType.keyword_preset:
-            return cls(type=type_, presets=AutoModPresets._from_value(data['presets']))  # type: ignore # unable to typeguard due to outer payload
-        return cls(type=type_)
+            return cls(keyword_filter=data['keyword_filter'])  # type: ignore # unable to typeguard due to outer payload
+        else:
+            return cls(presets=AutoModPresets._from_value(data['presets']))  # type: ignore # unable to typeguard due to outer payload
 
-    def to_metadata_dict(self) -> AutoModerationTriggerMetadataPayload:
-        if self.type is AutoModRuleTriggerType.keyword:
-            return {'keyword_filter': self.keyword_filter}  # type: ignore # guarded by the type check
-        elif self.type is AutoModRuleTriggerType.keyword_preset:
-            return {'presets': self.presets.value}  # type: ignore # guarded by the type check
+    def to_metadata_dict(self) -> Dict[str, Any]:
+        if self.keyword_filter is not None:
+            return {'keyword_filter': self.keyword_filter}
+        elif self.presets is not None:
+            return {'presets': self.presets.to_array()}
 
         return {}
 
 
 class AutoModRule:
     """Represents an auto moderation rule.
+
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -181,12 +176,10 @@ class AutoModRule:
         The rule's trigger.
     enabled: :class:`bool`
         Whether the rule is enabled.
-    raw_exempt_roles: List[:class:`int`]
+    exempt_role_ids: List[:class:`int`]
         The IDs of the roles that are exempt from the rule.
-    raw_exempt_channels: List[:class:`int`]
+    exempt_channel_ids: List[:class:`int`]
         The IDs of the channels that are exempt from the rule.
-
-    .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -198,8 +191,8 @@ class AutoModRule:
         'event_type',
         'trigger',
         'enabled',
-        'raw_exempt_roles',
-        'raw_exempt_channels',
+        'exempt_role_ids',
+        'exempt_channel_ids',
         '_actions',
     )
 
@@ -212,8 +205,8 @@ class AutoModRule:
         self.event_type: AutoModRuleEventType = try_enum(AutoModRuleEventType, data['event_type'])
         self.trigger: AutoModTrigger = AutoModTrigger.from_data(data['trigger_type'], data=data.get('trigger_metadata'))
         self.enabled: bool = data['enabled']
-        self.raw_exempt_roles: List[int] = [int(role_id) for role_id in data['exempt_roles']]
-        self.raw_exempt_channels: List[int] = [int(channel_id) for channel_id in data['exempt_channels']]
+        self.exempt_role_ids: Set[int] = {int(role_id) for role_id in data['exempt_roles']}
+        self.exempt_channel_ids: Set[int] = {int(channel_id) for channel_id in data['exempt_channels']}
         self._actions: List[AutoModerationActionPayload] = data['actions']
 
     def __repr__(self) -> str:
@@ -230,27 +223,33 @@ class AutoModRule:
             'trigger_metadata': self.trigger.to_metadata_dict(),
             'actions': [action.to_dict() for action in self.actions],
             'enabled': self.enabled,
-            'exempt_roles': [str(role_id) for role_id in self.raw_exempt_roles],
-            'exempt_channels': [str(channel_id) for channel_id in self.raw_exempt_channels],
+            'exempt_roles': [str(role_id) for role_id in self.exempt_role_ids],
+            'exempt_channels': [str(channel_id) for channel_id in self.exempt_channel_ids],
         }  # type: ignore # trigger types break the flow here.
 
         return ret
 
     @property
-    def creator(self) -> Optional[User]:
-        """Optional[:class:`User`]: The user that created this rule."""
-        return self._state.get_user(self.creator_id)
+    def creator(self) -> Optional[Member]:
+        """Optional[:class:`Member`]: The member that created this rule."""
+        return self.guild.get_member(self.creator_id)
 
     @property
     def exempt_roles(self) -> List[Role]:
         """List[:class:`Role`]: The roles that are exempt from this rule."""
-        it = [role for role in (self.guild.get_role(role_id) for role_id in self.raw_exempt_roles) if role is not None]
-        return utils._unique(it)
+        result = []
+        get_role = self.guild.get_role
+        for role_id in self.exempt_role_ids:
+            role = get_role(role_id)
+            if role is not None:
+                result.append(role)
+
+        return utils._unique(result)
 
     @property
     def exempt_channels(self) -> List[Union[GuildChannel, Thread]]:
         """List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The channels that are exempt from this rule."""
-        it = filter(None, map(self.guild._resolve_channel, self.raw_exempt_channels))
+        it = filter(None, map(self.guild._resolve_channel, self.exempt_channel_ids))
         return utils._unique(it)
 
     @property
@@ -258,41 +257,55 @@ class AutoModRule:
         """List[:class:`AutoModRuleAction`]: The actions that are taken when this rule is triggered."""
         return [AutoModRuleAction.from_data(action) for action in self._actions]
 
-    async def edit(
-        self,
-        *,
-        name: Optional[str] = None,
-        event_type: Optional[AutoModRuleEventType] = None,
-        actions: Optional[List[AutoModRuleAction]] = None,
-        enabled: Optional[bool] = None,
-        exempt_roles: Optional[List[Role]] = None,
-        exempt_channels: Optional[List[Union[GuildChannel, Thread]]] = None,
-    ) -> Self:
-        """|coro|
-
-        This method will edit an existing auto moderation rule.
+    def is_exempt(self, object: Union[GuildChannel, Thread, Role], /) -> bool:
+        """This method will check if an object is exempt from the automod rule.
 
         Parameters
         -----------
-        name: Optional[:class:`str`]
+        object: Union[:class:`abc.GuildChannel`, :class:`Thread`, :class:`Role`]
+            The object which we are checking.
+
+        Returns
+        --------
+        :class:`bool`
+        """
+        return object.id in self.exempt_channel_ids or object.id in self.exempt_role_ids
+
+    async def edit(
+        self,
+        *,
+        name: str = MISSING,
+        event_type: AutoModRuleEventType = MISSING,
+        actions: List[AutoModRuleAction] = MISSING,
+        enabled: bool = MISSING,
+        exempt_roles: List[Role] = MISSING,
+        exempt_channels: Sequence[Snowflake] = MISSING,
+    ) -> Self:
+        """|coro|
+
+        Edit an existing auto moderation rule. All parameters of this method are optional.
+
+        Parameters
+        -----------
+        name: :class:`str`
             The new name to change to.
-        event_type: Optional[:class:`AutoModRuleEventType`]
+        event_type: :class:`AutoModRuleEventType`
             The new event type to change to.
-        actions: Optional[List[:class:`AutoModRuleAction`]]
+        actions: List[:class:`AutoModRuleAction`]
             The new rule actions to update.
-        enabled: Optional[:class:`bool`]
+        enabled: :class:`bool`
             Whether the rule should be enabled or not.
-        exempt_roles: Optional[List[:class:`Role`]]
+        exempt_roles: List[:class:`Role`]
             The new roles to exempt from the rule.
-        exempt_channels: Optional[List[Union[:class:`abc.GuildChannel`], :class:`Thread`]]
+        exempt_channels: List[Union[:class:`abc.GuildChannel`], :class:`Thread`]
             The new channels to exempt from the rule.
 
         Raises
         -------
-        :exc:`Forbidden`
-            You are not authorised to perform this action.
-        :exc:`NotFound`
-            The rule was not found.
+        Forbidden
+            You do not have permission to edit this rule.
+        HTTPException
+            Editing the rule failed.
 
         Returns
         --------
@@ -319,20 +332,20 @@ class AutoModRule:
     async def delete(self) -> None:
         """|coro|
 
-        This method will delete the auto moderation rule.
+        Delete the auto moderation rule.
 
         Raises
         -------
-        :exc:`Forbidden`
-            You are not authorised to perform this action.
-        :exc:`NotFound`
-            The rule was not found.
+        Forbidden
+            You do not have permissions to delete the rule.
+        HTTPException
+            Deleting the rule failed.
         """
         await self._state.http.delete_auto_moderation_rule(self.guild.id, self.id)
 
 
-class AutoModRuleExecution:
-    """Represents an auto moderation rule execution.
+class AutoModAction:
+    """Represents an action that was taken as the result of a moderation rule.
 
     Attributes
     -----------
@@ -344,8 +357,12 @@ class AutoModRuleExecution:
         The ID of the rule that was triggered.
     rule_trigger_type: :class:`AutoModRuleTriggerType`
         The trigger type of the rule that was triggered.
+    guild_id: :class:`int`
+        The ID of the guild where the rule was triggered.
     user_id: :class:`int`
         The ID of the user that triggered the rule.
+    channel_id: :class:`int`
+        The ID of the channel where the rule was triggered.
     alert_system_message_id: Optional[:class:`int`]
         The ID of the system message that was sent to the predefined alert channel.
     content: :class:`str`
@@ -354,16 +371,20 @@ class AutoModRuleExecution:
         The matched keyword from the triggering message.
     matched_content: Optional[:class:`str`]
         The matched content from the triggering message.
+
+
+    .. note::
+        The :attr:`content` requires the :attr:`Intents.message_content` or it will always return an empty string.
     """
 
     __slots__ = (
         '_state',
-        '_guild_id',
-        '_channel_id',
         'action',
         'rule_id',
         'rule_trigger_type',
+        'guild_id',
         'user_id',
+        'channel_id',
         'message_id',
         'alert_system_message_id',
         'content',
@@ -373,12 +394,12 @@ class AutoModRuleExecution:
 
     def __init__(self, *, data: AutoModerationActionExecutionPayload, state: ConnectionState) -> None:
         self._state: ConnectionState = state
-        self._guild_id: int = int(data['guild_id'])
-        self._channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
         self.message_id: Optional[int] = utils._get_as_snowflake(data, 'message_id')
         self.action: AutoModRuleAction = AutoModRuleAction.from_data(data['action'])
         self.rule_id: int = int(data['rule_id'])
         self.rule_trigger_type: AutoModRuleTriggerType = try_enum(AutoModRuleTriggerType, data['rule_trigger_type'])
+        self.guild_id: int = int(data['guild_id'])
+        self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
         self.user_id: int = int(data['user_id'])
         self.alert_system_message_id: Optional[int] = utils._get_as_snowflake(data, 'alert_system_message_id')
         self.content: str = data['content']
@@ -386,29 +407,38 @@ class AutoModRuleExecution:
         self.matched_content: Optional[str] = data['matched_content']
 
     def __repr__(self) -> str:
-        return f"<AutoModRuleExecution rule_id={self.rule_id} action={self.action!r}>"
+        return f'<AutoModRuleExecution rule_id={self.rule_id} action={self.action!r}>'
 
     @property
     def guild(self) -> Guild:
-        """:class:`Guild`: The guild this rule was executed in."""
-        return self._state._get_guild(self._guild_id)  # type: ignore # this should never be None here
+        """:class:`Guild`: The guild this action was taken in."""
+        return self._state._get_or_create_unavailable_guild(self.guild_id)
 
     @property
     def channel(self) -> Optional[Union[GuildChannel, Thread]]:
-        """Optional[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The channel this rule was executed in."""
-        if self._channel_id:
-            return self.guild and self.guild.get_channel(self._channel_id)
+        """Optional[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The channel this action was taken in."""
+        if self.channel_id:
+            return self.guild.get_channel(self.channel_id)
         return None
 
     @property
     def member(self) -> Optional[Member]:
-        """Optional[:class:`Member`]: The member this rule was executed on/who triggered this rule."""
-        return self.guild and self.guild.get_member(self.user_id)
+        """Optional[:class:`Member`]: The member this action was taken against /who triggered this rule."""
+        return self.guild.get_member(self.user_id)
 
     async def fetch_rule(self) -> AutoModRule:
         """|coro|
 
-        This method will fetch the rule that was executed.
+        Fetch the rule whose from which the action was taken.
+
+        You need the :attr:`Permissions.manage_guild` permission to use this.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to view the rule.
+        HTTPException
+            Fetching the rule failed.
 
         Returns
         --------

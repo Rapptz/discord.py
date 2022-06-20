@@ -507,7 +507,7 @@ class AuditLogEntry(Hashable):
                     channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
                     message_id=int(extra['message_id']),
                 )
-            elif self.action is enums.AuditLogAction.auto_moderation_block_message:
+            elif self.action is enums.AuditLogAction.automod_block_message:
                 self.extra = _AuditLogProxyAutoModAction(
                     auto_moderation_rule_name=extra['auto_moderation_rule_name'],
                     auto_moderation_rule_trigger_type=extra['auto_moderation_rule_trigger_type'],

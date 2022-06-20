@@ -206,7 +206,7 @@ def handle_message_parameters(
         payload['username'] = username
 
     if flags is not MISSING:
-        payload['flags'] = flags._value
+        payload['flags'] = flags.value
 
     if thread_name is not MISSING:
         payload['thread_name'] = thread_name

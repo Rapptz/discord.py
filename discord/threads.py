@@ -590,7 +590,7 @@ class Thread(Messageable, Hashable):
         if pinned is not MISSING:
             flags = self.flags
             flags.pinned = pinned
-            payload['flags'] = flags._value
+            payload['flags'] = flags.value
 
         data = await self._state.http.edit_channel(self.id, **payload, reason=reason)
         # The data payload will always be a Thread payload
