@@ -1213,7 +1213,7 @@ class BotBase(GroupMixin[None]):
 
 
 class Bot(BotBase, discord.Client):
-    """Represents a discord bot.
+    """Represents a Discord bot.
 
     This class is a subclass of :class:`discord.Client` and as a result
     anything that you can do with a :class:`discord.Client` you can do with
