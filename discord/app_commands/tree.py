@@ -1058,6 +1058,9 @@ class CommandTree(Generic[ClientT]):
         name = data['name']
         guild_id = _get_as_snowflake(data, 'guild_id')
         ctx_menu = self._context_menus.get((name, guild_id, type))
+        if ctx_menu is None and self.fallback_to_global:
+            ctx_menu = self._context_menus.get((name, None, type))
+
         # Pre-fill the cached slot to prevent re-computation
         interaction._cs_command = ctx_menu
 
