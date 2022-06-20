@@ -350,10 +350,10 @@ class AuditLogAction(Enum):
     thread_update                 = 111
     thread_delete                 = 112
     app_command_permission_update = 121
-    automod_rule_create   = 140
-    automod_rule_update   = 141
-    automod_rule_delete   = 142
-    automod_block_message = 143
+    automod_rule_create           = 140
+    automod_rule_update           = 141
+    automod_rule_delete           = 142
+    automod_block_message         = 143
     # fmt: on
 
     @property
@@ -408,10 +408,10 @@ class AuditLogAction(Enum):
             AuditLogAction.thread_delete:                 AuditLogActionCategory.delete,
             AuditLogAction.thread_update:                 AuditLogActionCategory.update,
             AuditLogAction.app_command_permission_update: AuditLogActionCategory.update,
-            AuditLogAction.automod_rule_create:   AuditLogActionCategory.create,
-            AuditLogAction.automod_rule_update:   AuditLogActionCategory.update,
-            AuditLogAction.automod_rule_delete:   AuditLogActionCategory.delete,
-            AuditLogAction.automod_block_message: None,
+            AuditLogAction.automod_rule_create:           AuditLogActionCategory.create,
+            AuditLogAction.automod_rule_update:           AuditLogActionCategory.update,
+            AuditLogAction.automod_rule_delete:           AuditLogActionCategory.delete,
+            AuditLogAction.automod_block_message:         None,
         }
         # fmt: on
         return lookup[self]
