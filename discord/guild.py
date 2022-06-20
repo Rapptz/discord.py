@@ -3839,7 +3839,7 @@ class Guild(Hashable):
     async def fetch_automod_rule(self, automod_rule_id: int, /) -> AutoModRule:
         """|coro|
 
-        Fetch an active automod rule from the guild.
+        Fetches an active automod rule from the guild.
 
         You must have the :attr:`Permissions.manage_guild` to use this.
 
@@ -3868,7 +3868,7 @@ class Guild(Hashable):
     async def fetch_automod_rules(self) -> List[AutoModRule]:
         """|coro|
 
-        Fetch all automod rules from the guild.
+        Fetches all automod rules from the guild.
 
         You must have the :attr:`Permissions.manage_guild` to use this.
 
@@ -3896,15 +3896,15 @@ class Guild(Hashable):
         trigger: AutoModTrigger,
         actions: List[AutoModRuleAction],
         enabled: bool = MISSING,
-        exempt_roles: List[Role] = MISSING,
-        exempt_channels: List[Union[GuildChannel, Thread]] = MISSING,
+        exempt_roles: Sequence[Snowflake] = MISSING,
+        exempt_channels: Sequence[Snowflake] = MISSING,
         reason: str = MISSING,
     ) -> AutoModRule:
         """|coro|
 
-        Create an automod rule in the guild.
+        Create an automod rule.
 
-        Requires the :attr:`Permissions.manage_guild` permission to use this.
+        You must have the :attr:`Permissions.manage_guild` permission to use this.
 
         .. versionadded:: 2.0
 
@@ -3921,9 +3921,9 @@ class Guild(Hashable):
         enabled: :class:`bool`
             Whether the automod rule is enabled.
             Discord will default to ``False``.
-        exempt_roles: List[:class:`Role`]
+        exempt_roles: Sequence[:class:`abc.Snowflake`]
             A list of roles that will be exempt from the automod rule.
-        exempt_channels: List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]
+        exempt_channels: Sequence[:class:`abc.Snowflake`]
             A list of channels that will be exempt from the automod rule.
         reason: :class:`str`
             The reason for creating this automod rule.

@@ -75,7 +75,7 @@ class AutoModRuleAction:
         self.channel_id: Optional[int] = channel_id
         self.duration: Optional[datetime.timedelta] = duration
         if channel_id and duration:
-            raise ValueError("Please provide only one of ``channel`` or ``duration``")
+            raise ValueError('Please provide only one of ``channel`` or ``duration``')
 
         if channel_id:
             self.type = AutoModRuleActionType.send_alert_message
@@ -133,7 +133,7 @@ class AutoModTrigger:
         self.keyword_filter: Optional[List[str]] = keyword_filter
         self.presets: Optional[AutoModPresets] = presets
         if keyword_filter and presets:
-            raise ValueError("Please pass only one of keyword_filter or presets.")
+            raise ValueError('Please pass only one of keyword_filter or presets.')
 
         if self.keyword_filter is not None:
             self.type = AutoModRuleTriggerType.keyword
@@ -258,12 +258,12 @@ class AutoModRule:
         return [AutoModRuleAction.from_data(action) for action in self._actions]
 
     def is_exempt(self, object: Union[GuildChannel, Thread, Role], /) -> bool:
-        """This method will check if an object is exempt from the automod rule.
+        """Check if an object is exempt from the automod rule.
 
         Parameters
         -----------
         object: Union[:class:`abc.GuildChannel`, :class:`Thread`, :class:`Role`]
-            The object which we are checking.
+            The object to check.
 
         Returns
         --------
@@ -278,13 +278,13 @@ class AutoModRule:
         event_type: AutoModRuleEventType = MISSING,
         actions: List[AutoModRuleAction] = MISSING,
         enabled: bool = MISSING,
-        exempt_roles: List[Role] = MISSING,
+        exempt_roles: Sequence[Snowflake] = MISSING,
         exempt_channels: Sequence[Snowflake] = MISSING,
         reason: str = MISSING,
     ) -> Self:
         """|coro|
 
-        Edit an existing auto moderation rule. All parameters of this method are optional.
+        Edits this auto moderation rule.
 
         Parameters
         -----------
@@ -296,9 +296,9 @@ class AutoModRule:
             The new rule actions to update.
         enabled: :class:`bool`
             Whether the rule should be enabled or not.
-        exempt_roles: List[:class:`Role`]
+        exempt_roles: Sequence[:class:`abc.Snowflake`]
             The new roles to exempt from the rule.
-        exempt_channels: List[Union[:class:`abc.GuildChannel`], :class:`Thread`]
+        exempt_channels: Sequence[:class:`abc.Snowflake`]
             The new channels to exempt from the rule.
         reason: :class:`str`
             The reason for updating this rule.
@@ -333,10 +333,10 @@ class AutoModRule:
 
         return AutoModRule(data=data, guild=self.guild, state=self._state)
 
-    async def delete(self, reason: str = MISSING) -> None:
+    async def delete(self, *, reason: str = MISSING) -> None:
         """|coro|
 
-        Delete the auto moderation rule.
+        Deletes the auto moderation rule.
 
         Parameters
         -----------
@@ -361,7 +361,7 @@ class AutoModAction:
     action: :class:`AutoModRuleAction`
         The action that was taken.
     message_id: Optional[:class:`int`]
-        The message ID that was triggered the reaction.
+        The message ID that triggered the action.
     rule_id: :class:`int`
         The ID of the rule that was triggered.
     rule_trigger_type: :class:`AutoModRuleTriggerType`
@@ -438,7 +438,7 @@ class AutoModAction:
     async def fetch_rule(self) -> AutoModRule:
         """|coro|
 
-        Fetch the rule whose from which the action was taken.
+        Fetch the rule whose action was taken.
 
         You need the :attr:`Permissions.manage_guild` permission to use this.
 
