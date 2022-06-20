@@ -572,6 +572,7 @@ class Command(Generic[GroupT, P, T]):
         copy.module = self.module
         copy.parent = parent
         copy.binding = bindings.get(self.binding) if self.binding is not None else binding
+        copy.extras = self.extras
 
         if copy._attr and set_on_binding:
             setattr(copy.binding, copy._attr, copy)
