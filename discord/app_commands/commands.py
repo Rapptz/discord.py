@@ -944,6 +944,9 @@ class ContextMenu:
         is necessary to be thrown to signal failure, then one inherited from
         :exc:`AppCommandError` should be used. If all the checks fail without
         propagating an exception, :exc:`CheckFailure` is raised.
+    extras: :class:`dict`
+        A dictionary that can be used to store extraneous data.
+        The library will not touch any values or keys within this dictionary.
     """
 
     def __init__(
@@ -954,6 +957,7 @@ class ContextMenu:
         type: AppCommandType = MISSING,
         nsfw: bool = False,
         guild_ids: Optional[List[int]] = None,
+        extras: dict = MISSING,
     ):
         self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
@@ -976,6 +980,7 @@ class ContextMenu:
         self.nsfw: bool = nsfw
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
+        self.extras: dict = extras or {}
 
     @property
     def callback(self) -> ContextMenuCallback:
