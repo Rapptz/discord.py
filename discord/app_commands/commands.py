@@ -1631,7 +1631,7 @@ def context_menu(
     *,
     name: str = MISSING,
     nsfw: bool = False,
-    extras: dict = MISSING
+    extras: dict = MISSING,
 ) -> Callable[[ContextMenuCallback], ContextMenu]:
     """Creates an application command context menu from a regular function.
 
