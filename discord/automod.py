@@ -31,7 +31,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, List, Sequence, Set, Unio
 from .enums import AutoModRuleTriggerType, AutoModRuleActionType, AutoModRuleEventType, try_enum
 from .flags import AutoModPresets
 from . import utils
-from .utils import MISSING
+from .utils import MISSING, cached_slot_property
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -184,6 +184,10 @@ class AutoModRule:
 
     __slots__ = (
         '_state',
+        '_cs_exempt_roles',
+        '_cs_exempt_channels',
+        '_cs_actions',
+        '_cs_creator',
         'id',
         'guild',
         'name',
@@ -229,12 +233,12 @@ class AutoModRule:
 
         return ret
 
-    @property
+    @cached_slot_property('_cs_creator')
     def creator(self) -> Optional[Member]:
         """Optional[:class:`Member`]: The member that created this rule."""
         return self.guild.get_member(self.creator_id)
 
-    @property
+    @cached_slot_property('_cs_exempt_roles')
     def exempt_roles(self) -> List[Role]:
         """List[:class:`Role`]: The roles that are exempt from this rule."""
         result = []
@@ -246,13 +250,13 @@ class AutoModRule:
 
         return utils._unique(result)
 
-    @property
+    @cached_slot_property('_cs_exempt_channels')
     def exempt_channels(self) -> List[Union[GuildChannel, Thread]]:
         """List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The channels that are exempt from this rule."""
         it = filter(None, map(self.guild._resolve_channel, self.exempt_channel_ids))
         return utils._unique(it)
 
-    @property
+    @cached_slot_property('_cs_actions')
     def actions(self) -> List[AutoModRuleAction]:
         """List[:class:`AutoModRuleAction`]: The actions that are taken when this rule is triggered."""
         return [AutoModRuleAction.from_data(action) for action in self._actions]
