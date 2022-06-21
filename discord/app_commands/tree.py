@@ -898,6 +898,7 @@ class CommandTree(Generic[ClientT]):
         nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
+        extras: dict = MISSING,
     ) -> Callable[[ContextMenuCallback], ContextMenu]:
         """Creates a application command context menu from a regular function directly under this tree.
 
@@ -935,6 +936,9 @@ class CommandTree(Generic[ClientT]):
             The list of guilds to add the command to. This cannot be mixed
             with the ``guild`` parameter. If no guilds are given at all
             then it becomes a global command instead.
+        extras: :class:`dict`
+            A dictionary that can be used to store extraneous data.
+            The library will not touch any values or keys within this dictionary.
         """
 
         def decorator(func: ContextMenuCallback) -> ContextMenu:
@@ -942,7 +946,7 @@ class CommandTree(Generic[ClientT]):
                 raise TypeError('context menu function must be a coroutine function')
 
             actual_name = func.__name__.title() if name is MISSING else name
-            context_menu = ContextMenu(name=actual_name, nsfw=nsfw, callback=func)
+            context_menu = ContextMenu(name=actual_name, nsfw=nsfw, callback=func, extras=extras)
             self.add_command(context_menu, guild=guild, guilds=guilds)
             return context_menu
 

@@ -1126,6 +1126,9 @@ class Group:
         Due to a Discord limitation, this does not work on subcommands.
     parent: Optional[:class:`Group`]
         The parent group. ``None`` if there isn't one.
+    extras: :class:`dict`
+        A dictionary that can be used to store extraneous data.
+        The library will not touch any values or keys within this dictionary.
     """
 
     __discord_app_commands_group_children__: ClassVar[List[Union[Command[Any, ..., Any], Group]]] = []
@@ -1195,6 +1198,7 @@ class Group:
         guild_only: bool = MISSING,
         nsfw: bool = MISSING,
         default_permissions: Optional[Permissions] = MISSING,
+        extras: dict = MISSING,
     ):
         cls = self.__class__
         self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
@@ -1240,6 +1244,7 @@ class Group:
                 self.module = None
 
         self._children: Dict[str, Union[Command, Group]] = {}
+        self.extras: dict = extras or {}
 
         bindings: Dict[Group, Group] = {}
 
@@ -1288,6 +1293,7 @@ class Group:
         copy._attr = self._attr
         copy._owner_cls = self._owner_cls
         copy._children = {}
+        copy.extras = self.extras
 
         bindings[self] = copy
 
@@ -1621,7 +1627,7 @@ def command(
     return decorator
 
 
-def context_menu(*, name: str = MISSING, nsfw: bool = False) -> Callable[[ContextMenuCallback], ContextMenu]:
+def context_menu(*, name: str = MISSING, nsfw: bool = False, extras: dict = MISSING) -> Callable[[ContextMenuCallback], ContextMenu]:
     """Creates an application command context menu from a regular function.
 
     This function must have a signature of :class:`~discord.Interaction` as its first parameter
@@ -1651,6 +1657,9 @@ def context_menu(*, name: str = MISSING, nsfw: bool = False) -> Callable[[Contex
         Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
 
         Due to a Discord limitation, this does not work on subcommands.
+    extras: :class:`dict`
+        A dictionary that can be used to store extraneous data.
+        The library will not touch any values or keys within this dictionary.
     """
 
     def decorator(func: ContextMenuCallback) -> ContextMenu:
@@ -1658,7 +1667,7 @@ def context_menu(*, name: str = MISSING, nsfw: bool = False) -> Callable[[Contex
             raise TypeError('context menu function must be a coroutine function')
 
         actual_name = func.__name__.title() if name is MISSING else name
-        return ContextMenu(name=actual_name, nsfw=nsfw, callback=func)
+        return ContextMenu(name=actual_name, nsfw=nsfw, callback=func, extras=extras)
 
     return decorator
 
