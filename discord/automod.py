@@ -301,7 +301,7 @@ class AutoModRule:
         exempt_channels: Sequence[:class:`abc.Snowflake`]
             The new channels to exempt from the rule.
         reason: :class:`str`
-            The reason for updating this rule.
+            The reason for updating this rule. Shows up on the audit log.
 
         Raises
         -------
@@ -341,7 +341,7 @@ class AutoModRule:
         Parameters
         -----------
         reason: :class:`str`
-            The reason for deleting this rule.
+            The reason for deleting this rule. Shows up on the audit log.
 
         Raises
         -------

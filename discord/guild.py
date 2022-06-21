@@ -3926,7 +3926,7 @@ class Guild(Hashable):
         exempt_channels: Sequence[:class:`abc.Snowflake`]
             A list of channels that will be exempt from the automod rule.
         reason: :class:`str`
-            The reason for creating this automod rule.
+            The reason for creating this automod rule. Shows up on the audit log.
 
         Raises
         -------
