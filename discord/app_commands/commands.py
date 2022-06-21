@@ -1627,7 +1627,12 @@ def command(
     return decorator
 
 
-def context_menu(*, name: str = MISSING, nsfw: bool = False, extras: dict = MISSING) -> Callable[[ContextMenuCallback], ContextMenu]:
+def context_menu(
+    *,
+    name: str = MISSING,
+    nsfw: bool = False,
+    extras: dict = MISSING
+) -> Callable[[ContextMenuCallback], ContextMenu]:
     """Creates an application command context menu from a regular function.
 
     This function must have a signature of :class:`~discord.Interaction` as its first parameter
