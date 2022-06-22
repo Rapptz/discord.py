@@ -587,7 +587,10 @@ class VoiceClient(VoiceProtocol):
 
         If an error happens while the audio player is running, the exception is
         caught and the audio player is then stopped.  If no after callback is
-        passed, any caught exception will be displayed as if it were raised.
+        passed, any caught exception will be logged using the library logger.
+
+        .. versionchanged:: 2.0
+            Instead of writing to ``sys.stderr``, the library's logger is used.
 
         Parameters
         -----------
