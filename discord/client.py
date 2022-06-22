@@ -635,7 +635,7 @@ class Client:
     @staticmethod
     def _raise_if_fatal(exc: Exception, reconnect: bool) -> None:
         if isinstance(exc, ConnectionClosed):
-            # We should only get this when an uhnandled close code happens (c.f. DiscordWebSocket._can_handle_close).
+            # We should only get this when an unhandled close code happens (c.f. DiscordWebSocket._can_handle_close).
             # Sometimes discord sends us clean disconnect (1000) for unknown reasons so we just reconnect, but any other
             # close code signifies bad state (bad token, no sharding, etc) and we raise
             if exc.code == 4014:
@@ -667,6 +667,20 @@ class Client:
             failure or a specific failure on Discord's part. Certain
             disconnects that lead to bad state will not be handled (such as
             invalid sharding payloads or bad tokens).
+        resume_state: Optional[:class:`discord.ResumeState`]
+            If provided, we will attempt to resume the WebSocket connection
+            using the given state.
+
+            .. versionadded:: 2.0
+
+        Returns
+        -------
+        Optional[:class:`discord.ResumeState`]
+            Returns the data necessary to resume the WebSocket connection,
+            unless it was closed in a way that does not allow resuming, in
+            which case this returns ``None``.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -728,6 +742,15 @@ class Client:
         """|coro|
 
         Closes the connection to Discord.
+
+        Parameters
+        ----------
+        resumable: :class:`bool`
+            Whether the WebSocket connection should be closed in a way that allows resuming it later.
+
+            .. versionadded:: 2.0
+
+            .. seealso:: :class:`discord.ResumeState`
         """
         if self._closed:
             return
@@ -781,6 +804,21 @@ class Client:
             failure or a specific failure on Discord's part. Certain
             disconnects that lead to bad state will not be handled (such as
             invalid sharding payloads or bad tokens).
+        resume_state: Optional[:class:`discord.ResumeState`]
+            If provided, we will attempt to resume the WebSocket connection
+            using the given state.
+
+            .. versionadded:: 2.0
+
+        Returns
+        -------
+        Optional[:class:`discord.ResumeState`]
+
+            Returns the data necessary to resume the WebSocket connection,
+            unless it was closed in a way that does not allow resuming, in
+            which case this returns ``None``.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -828,6 +866,11 @@ class Client:
             failure or a specific failure on Discord's part. Certain
             disconnects that lead to bad state will not be handled (such as
             invalid sharding payloads or bad tokens).
+        resume_state: Optional[:class:`discord.ResumeState`]
+            If provided, we will attempt to resume the WebSocket connection
+            using the given state.
+
+            .. versionadded:: 2.0
         log_handler: Optional[:class:`logging.Handler`]
             The log handler to use for the library's logger. If this is ``None``
             then the library will not set up anything logging related. Logging
@@ -849,6 +892,15 @@ class Client:
             Note that the *root* logger will always be set to ``logging.INFO`` and this
             only controls the library's log level. To control the root logger's level,
             you can use ``logging.getLogger().setLevel(level)``.
+
+            .. versionadded:: 2.0
+
+        Returns
+        -------
+        Optional[:class:`discord.ResumeState`]
+            Returns the data necessary to resume the WebSocket connection,
+            unless it was closed in a way that does not allow resuming, in
+            which case this returns ``None``.
 
             .. versionadded:: 2.0
         """

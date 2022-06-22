@@ -59,6 +59,30 @@ _log = logging.getLogger(__name__)
 
 
 class ShardedResumeState:
+    """This is the sharded version of :class:`ResumeState`.
+
+    See also: :meth:`AutoShardedClient.connect`.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Serializes the resume state to a :class:`str`, containing only
+            alphanumerics, ``:`` and ``,``.
+
+    Parameters
+    ----------
+    data: ::class:`str`
+        The data to deserialize.
+
+    Attributes
+    ----------
+    state: Mapping[:class:`int`, :class:`ResumeState`]
+        A mapping of shard IDs to their respective resume states.
+    """
+
     __slots__ = ('states',)
 
     def __init__(self, data: Union[str, Mapping[int, ResumeState]]) -> None:
@@ -460,6 +484,41 @@ class AutoShardedClient(Client):
     async def connect(
         self, *, reconnect: bool = True, resume_state: Optional[ShardedResumeState] = None
     ) -> ShardedResumeState:
+        """|coro|
+        Creates a websocket connection and lets the websocket listen
+        to messages from Discord. This is a loop that runs the entire
+        event system and miscellaneous aspects of the library. Control
+        is not resumed until the WebSocket connection is terminated.
+
+        Parameters
+        -----------
+        reconnect: :class:`bool`
+            If we should attempt reconnecting, either due to internet
+            failure or a specific failure on Discord's part. Certain
+            disconnects that lead to bad state will not be handled (such as
+            invalid sharding payloads or bad tokens).
+        resume_state: Optional[:class:`ShardedResumeState`]
+            If provided, we will attempt to resume WebSocket connections
+            using the given states.
+
+            .. versionadded:: 2.0
+
+        Returns
+        -------
+        :class:`ShardedResumeState`
+            Returns the data necessary to resume WebSocket connections,
+            except those that were closed in a way that does not allow resuming.
+
+            .. versionadded:: 2.0
+
+        Raises
+        -------
+        GatewayNotFound
+            If the gateway to connect to Discord is not found. Usually if this
+            is thrown then there is a Discord API outage.
+        ConnectionClosed
+            The websocket connection has been terminated.
+        """
         if resume_state is not None and not isinstance(resume_state, ShardedResumeState):
             raise TypeError(f'resume_state must be a ShardedResumeState not {resume_state.__class__!r}')
 
@@ -491,6 +550,15 @@ class AutoShardedClient(Client):
         """|coro|
 
         Closes the connection to Discord.
+
+        Parameters
+        ----------
+        resumable: :class:`bool`
+            Whether WebSocket connections should be closed in a way that allows resuming them later.
+
+            .. versionadded:: 2.0
+
+            .. seealso:: :class:`ShardedResumeState`
         """
         if self.is_closed():
             return

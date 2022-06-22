@@ -63,6 +63,50 @@ if TYPE_CHECKING:
 
 
 class ResumeState:
+    """This data class represents the necessary data to resume a WebSocket connection.
+    This data can be converted to and from :class:`str` and can be e.g. transferred to
+    another process using your favorite Inter-Process Communication method.
+
+    See also: :meth:`Client.connect`, :meth:`Client.start`, :meth:`Client.run`.
+
+    Example
+    -------
+    We can completely restart our bot process and pass the ::class:`ResumeState`
+    to the new version via e.g. environment variables:
+
+    .. code-block:: python3
+
+        # Deserialize websocket state that was passed to us from
+        # a previous version of the process, if any:
+        state = ResumeState(os.environ.get("STATE", ""))
+        # Run the bot until it is closed (with resumable=True):
+        new_state = bot.run(token, resume_state=state)
+        # Serialize the new state and pass it to the new process:
+        os.environ["STATE"] = str(new_state)
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Serializes the resume state to a :class:`str`, containing only
+            alphanumerics, ``:`` and ``,``.
+
+    Parameters
+    ----------
+    data: ::class:`str`
+        The data to deserialize.
+
+    Attributes
+    ----------
+    session: :class:`str`
+        The session ID of the websocket.
+    sequence: :class:`int`
+        The sequence number of the last received payload.
+    """
+
     __slots__ = ('session', 'sequence')
 
     @overload

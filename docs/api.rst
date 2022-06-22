@@ -4368,6 +4368,22 @@ PermissionOverwrite
 .. autoclass:: PermissionOverwrite
     :members:
 
+ResumeState
+~~~~~~~~~~~
+
+.. attributetable:: ResumeState
+
+.. autoclass:: ResumeState(data, /)
+    :members:
+
+ShardedResumeState
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: ShardedResumeState
+
+.. autoclass:: ShardedResumeState
+    :members:
+
 ShardInfo
 ~~~~~~~~~~~
 
