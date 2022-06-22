@@ -2572,6 +2572,48 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
+    .. attribute:: automod_rule_create
+
+        An automod rule was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Object` with the ID of the automod rule that was created.
+
+        .. versionadded:: 2.0
+
+    .. attribute:: automod_role_update
+
+        An automod rule was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Object` with the ID of the automod rule that was updated.
+
+        .. versionadded:: 2.0
+
+    .. attribute:: automod_rule_delete
+
+        An automod rule was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Object` with the ID of the automod rule that was deleted.
+
+        .. versionadded:: 2.0
+
+    .. attribute:: automod_block_message
+
+        An automod rule blocked a message from being sent.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Object` with the ID of the person who triggered the automod rule.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.auto_moderation_rule_name`
+        - :attr:`~AuditLogDiff.auto_moderation_rule_trigger_type`
+        - :attr:`~AuditLogDiff.channel`
+
+        .. versionadded:: 2.0
+
 .. class:: AuditLogActionCategory
 
     Represents the category that the :class:`AuditLogAction` belongs to.
