@@ -66,9 +66,13 @@ class ResumeState:
     __slots__ = ('session', 'sequence')
 
     @overload
-    def __init__(self, session: str, sequence: int, /) -> None: ...
+    def __init__(self, session: str, sequence: int, /) -> None:
+        ...
+
     @overload
-    def __init__(self, data: str, /) -> None: ...
+    def __init__(self, data: str, /) -> None:
+        ...
+
     def __init__(self, data: str, sequence: Optional[int] = None, /) -> None:
         self.session = ''
         self.sequence = 0

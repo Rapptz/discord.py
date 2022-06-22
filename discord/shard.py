@@ -97,7 +97,13 @@ class EventType:
 class EventItem:
     __slots__ = ('type', 'shard', 'error', 'resume_state')
 
-    def __init__(self, etype: int, shard: Optional['Shard'], error: Optional[Exception], resume_state: Optional[ResumeState] = None) -> None:
+    def __init__(
+        self,
+        etype: int,
+        shard: Optional['Shard'],
+        error: Optional[Exception],
+        resume_state: Optional[ResumeState] = None,
+    ) -> None:
         self.type: int = etype
         self.shard: Optional['Shard'] = shard
         self.error: Optional[Exception] = error
@@ -413,9 +419,13 @@ class AutoShardedClient(Client):
         """Mapping[int, :class:`ShardInfo`]: Returns a mapping of shard IDs to their respective info object."""
         return {shard_id: ShardInfo(parent, self.shard_count) for shard_id, parent in self.__shards.items()}
 
-    async def launch_shard(self, gateway: str, shard_id: int, resume_state: Optional[ResumeState] = None, *, initial: bool = False) -> None:
+    async def launch_shard(
+        self, gateway: str, shard_id: int, resume_state: Optional[ResumeState] = None, *, initial: bool = False
+    ) -> None:
         try:
-            coro = DiscordWebSocket.from_client(self, initial=initial, gateway=gateway, shard_id=shard_id, resume_state=resume_state)
+            coro = DiscordWebSocket.from_client(
+                self, initial=initial, gateway=gateway, shard_id=shard_id, resume_state=resume_state
+            )
             ws = await asyncio.wait_for(coro, timeout=180.0)
         except Exception:
             _log.exception('Failed to connect for shard_id: %s. Retrying...', shard_id)
@@ -447,7 +457,9 @@ class AutoShardedClient(Client):
         await super()._async_setup_hook()
         self.__queue = asyncio.PriorityQueue()
 
-    async def connect(self, *, reconnect: bool = True, resume_state: Optional[ShardedResumeState] = None) -> ShardedResumeState:
+    async def connect(
+        self, *, reconnect: bool = True, resume_state: Optional[ShardedResumeState] = None
+    ) -> ShardedResumeState:
         if resume_state is not None and not isinstance(resume_state, ShardedResumeState):
             raise TypeError(f'resume_state must be a ShardedResumeState not {resume_state.__class__!r}')
 
@@ -492,7 +504,9 @@ class AutoShardedClient(Client):
                 except Exception:
                     pass
 
-            to_close = [asyncio.ensure_future(shard.close(resumable=resumable), loop=self.loop) for shard in self.__shards.values()]
+            to_close = [
+                asyncio.ensure_future(shard.close(resumable=resumable), loop=self.loop) for shard in self.__shards.values()
+            ]
             if to_close:
                 await asyncio.wait(to_close)
 

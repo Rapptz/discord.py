@@ -685,7 +685,9 @@ class Client:
         try:
             while not self.is_closed():
                 try:
-                    coro = DiscordWebSocket.from_client(self, initial=initial, shard_id=self.shard_id, resume_state=resume_state)
+                    coro = DiscordWebSocket.from_client(
+                        self, initial=initial, shard_id=self.shard_id, resume_state=resume_state
+                    )
                     self.ws = await asyncio.wait_for(coro, timeout=60.0)
                     while True:
                         await self.ws.poll_event()
@@ -762,7 +764,9 @@ class Client:
         self._connection.clear()
         self.http.clear()
 
-    async def start(self, token: str, *, reconnect: bool = True, resume_state: Optional[ResumeState] = None) -> Optional[ResumeState]:
+    async def start(
+        self, token: str, *, reconnect: bool = True, resume_state: Optional[ResumeState] = None
+    ) -> Optional[ResumeState]:
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
