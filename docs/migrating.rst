@@ -941,6 +941,7 @@ The library now provides a default logging configuration if using :meth:`Client.
 - :meth:`Client.on_error`
 - :meth:`discord.ext.tasks.Loop.error`
 - :meth:`discord.ext.commands.Bot.on_command_error`
+- :meth:`VoiceClient.play`
 
 For more information, check :doc:`logging`.
 

@@ -27,7 +27,6 @@ from typing import Any, Callable, ClassVar, Coroutine, Dict, Iterator, List, Opt
 from functools import partial
 from itertools import groupby
 
-import traceback
 import asyncio
 import logging
 import sys
@@ -388,7 +387,7 @@ class View:
         A callback that is called when an item's callback or :meth:`interaction_check`
         fails with an error.
 
-        The default implementation prints the traceback to stderr.
+        The default implementation logs to the library logger.
 
         Parameters
         -----------
@@ -399,8 +398,7 @@ class View:
         item: :class:`Item`
             The item that failed the dispatch.
         """
-        print(f'Ignoring exception in view {self} for item {item}:', file=sys.stderr)
-        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+        _log.error('Ignoring exception in view %r for item %r', self, item, exc_info=error)
 
     async def _scheduled_task(self, item: Item, interaction: Interaction):
         try:
