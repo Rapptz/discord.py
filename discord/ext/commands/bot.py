@@ -206,7 +206,7 @@ class BotBase(GroupMixin[None]):
             self._schedule_event(event, ev, *args, **kwargs)  # type: ignore
 
     @discord.utils.copy_doc(discord.Client.close)
-    async def close(self) -> None:
+    async def close(self, *, resumable: bool = False) -> None:
         for extension in tuple(self.__extensions):
             try:
                 await self.unload_extension(extension)
@@ -219,7 +219,7 @@ class BotBase(GroupMixin[None]):
             except Exception:
                 pass
 
-        await super().close()  # type: ignore
+        await super().close(resumable=resumable)  # type: ignore
 
     # GroupMixin overrides
 
