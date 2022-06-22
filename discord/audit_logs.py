@@ -508,10 +508,13 @@ class AuditLogEntry(Hashable):
                     message_id=int(extra['message_id']),
                 )
             elif self.action is enums.AuditLogAction.automod_block_message:
+                channel_id = int(extra['channel_id'])
                 self.extra = _AuditLogProxyAutoModAction(
                     auto_moderation_rule_name=extra['auto_moderation_rule_name'],
-                    auto_moderation_rule_trigger_type=extra['auto_moderation_rule_trigger_type'],
-                    channel_id=extra['channel_id'],
+                    auto_moderation_rule_trigger_type=enums.try_enum(
+                        enums.AutoModRuleTriggerType, extra['auto_moderation_rule_trigger_type']
+                    ),
+                    channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
                 )
 
             elif self.action.name.startswith('overwrite_'):

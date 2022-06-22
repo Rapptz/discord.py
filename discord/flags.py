@@ -1468,7 +1468,7 @@ class ArrayFlags(BaseFlags):
     @classmethod
     def _from_value(cls: Type[Self], value: List[int]) -> Self:
         self = cls.__new__(cls)
-        self.value = sum((1 << i - 1 for i in value))
+        self.value = reduce(lambda a, b: a | (1 << b - 1), value)
         return self
 
     def to_array(self) -> List[int]:

@@ -203,6 +203,53 @@ to handle it, which defaults to logging the traceback and ignoring the exception
     errors. In order to turn a function into a coroutine they must be ``async def``
     functions.
 
+AutoMod
+~~~~~~~
+
+.. function:: on_automod_rule_create(rule)
+
+    Called when a :class:`AutoModRule` is created.
+
+    This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param rule: The rule that was created.
+    :type rule: :class:`AutoModRule`
+
+.. function:: on_automod_rule_update(rule)
+
+    Called when a :class:`AutoModRule` is updated.
+
+    This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param rule: The rule that was updated.
+    :type rule: :class:`AutoModRule`
+
+.. function:: on_automod_rule_delete(rule)
+
+    Called when a :class:`AutoModRule` is deleted.
+
+    This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param rule: The rule that was deleted.
+    :type rule: :class:`AutoModRule`
+
+.. function:: on_automod_action(execution)
+
+    Called when a :class:`AutoModAction` is created/performed.
+
+    This requires :attr:`Intents.auto_moderation_execution` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param execution: The rule execution that was performed.
+    :type execution: :class:`AutoModAction`
+
 Channels
 ~~~~~~~~~
 
@@ -1299,53 +1346,6 @@ Voice
     :type before: :class:`VoiceState`
     :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
-
-AutoMod
-~~~~~~~
-
-.. function:: on_automod_rule_create(rule)
-
-    Called when a :class:`AutoModRule` is created.
-
-    This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
-
-    .. versionadded:: 2.0
-
-    :param rule: The rule that was created.
-    :type rule: :class:`AutoModRule`
-
-.. function:: on_automod_rule_update(rule)
-
-    Called when a :class:`AutoModRule` is updated.
-
-    This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
-
-    .. versionadded:: 2.0
-
-    :param rule: The rule that was updated.
-    :type rule: :class:`AutoModRule`
-
-.. function:: on_automod_rule_delete(rule)
-
-    Called when a :class:`AutoModRule` is deleted.
-
-    This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
-
-    .. versionadded:: 2.0
-
-    :param rule: The rule that was deleted.
-    :type rule: :class:`AutoModRule`
-
-.. function:: on_automod_action(execution)
-
-    Called when a :class:`AutoModAction` is created/performed.
-
-    This requires :attr:`Intents.auto_moderation_execution` to be enabled.
-
-    .. versionadded:: 2.0
-
-    :param execution: The rule execution that was performed.
-    :type execution: :class:`AutoModAction`
 
 .. _discord-api-utils:
 
@@ -3640,6 +3640,18 @@ AuditLogDiff
 
         :type: :class:`~discord.app_commands.AppCommandPermissions`
 
+    .. attribute:: auto_moderation_rule_name
+
+        The name of the auto moderation rule name.
+
+        :type: :class:`str`
+
+    .. attribute:: auto_moderation_rule_trigger_type
+
+        The rule type that was triggered by an action.
+
+        :type: :class:`~discord.AutoModRuleTriggerType`
+
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
 
@@ -3800,12 +3812,6 @@ AutoMod
 ~~~~~~~
 
 .. autoclass:: AutoModRule()
-    :members:
-
-.. autoclass:: AutoModTrigger()
-    :members:
-
-.. autoclass:: AutoModRuleAction()
     :members:
 
 .. autoclass:: AutoModAction()
@@ -4413,6 +4419,22 @@ AutoModPresets
 .. attributetable:: AutoModPresets
 
 .. autoclass:: AutoModPresets
+    :members:
+
+AutoModRuleAction
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: AutoModRuleAction
+
+.. autoclass:: AutoModRuleAction
+    :members:
+
+AutoModTrigger
+~~~~~~~~~~~~~~
+
+.. attributetable:: AutoModTrigger
+
+.. autoclass:: AutoModTrigger
     :members:
 
 File

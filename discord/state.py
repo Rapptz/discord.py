@@ -49,7 +49,6 @@ import inspect
 
 import os
 
-
 from .guild import Guild
 from .activity import BaseActivity
 from .user import User, ClientUser

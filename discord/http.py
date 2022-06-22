@@ -2068,7 +2068,7 @@ class HTTPClient:
             Route('POST', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id), json=payload, reason=reason
         )
 
-    def modify_auto_moderation_rule(
+    def edit_auto_moderation_rule(
         self, guild_id: Snowflake, rule_id: Snowflake, *, reason: Optional[str], **payload: Any
     ) -> Response[automod.AutoModerationRule]:
         valid_keys = (

@@ -59,6 +59,8 @@ __all__ = (
 class AutoModRuleAction:
     """Represents an auto moderation's rule action.
 
+    .. versionadded:: 2.0
+
     Attributes
     -----------
     type: :class:`AutoModRuleActionType`
@@ -67,6 +69,7 @@ class AutoModRuleAction:
         The ID of the channel to send the alert message to, if any.
     duration: Optional[:class:`datetime.timedelta`]
         The duration of the timeout to apply, if any.
+        Has a maximum of 28 days.
     """
 
     __slots__ = ('type', 'channel_id', 'duration')
@@ -101,7 +104,7 @@ class AutoModRuleAction:
     def to_dict(self) -> Dict[str, Any]:
         ret = {'type': self.type.value, 'metadata': {}}
         if self.type is AutoModRuleActionType.timeout:
-            ret['metadata'] = {'duration_seconds': self.duration.seconds}  # type: ignore # duration cannot be None here
+            ret['metadata'] = {'duration_seconds': int(self.duration.total_seconds())}  # type: ignore # duration cannot be None here
         elif self.type is AutoModRuleActionType.send_alert_message:
             ret['metadata'] = {'channel_id': str(self.channel_id)}
         return ret
@@ -109,6 +112,8 @@ class AutoModRuleAction:
 
 class AutoModTrigger:
     """Represents a trigger for an auto moderation rule.
+
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -118,8 +123,6 @@ class AutoModTrigger:
         The list of strings that will trigger the keyword filter.
     presets: Optional[:class:`AutoModPresets`]
         The presets used with the preset keyword filter.
-
-    .. versionadded:: 2.0
     """
 
     __slots__ = ('type', 'keyword_filter', 'presets')
@@ -187,7 +190,6 @@ class AutoModRule:
         '_cs_exempt_roles',
         '_cs_exempt_channels',
         '_cs_actions',
-        '_cs_creator',
         'id',
         'guild',
         'name',
@@ -233,7 +235,7 @@ class AutoModRule:
 
         return ret
 
-    @cached_slot_property('_cs_creator')
+    @property
     def creator(self) -> Optional[Member]:
         """Optional[:class:`Member`]: The member that created this rule."""
         return self.guild.get_member(self.creator_id)
@@ -261,19 +263,20 @@ class AutoModRule:
         """List[:class:`AutoModRuleAction`]: The actions that are taken when this rule is triggered."""
         return [AutoModRuleAction.from_data(action) for action in self._actions]
 
-    def is_exempt(self, object: Union[GuildChannel, Thread, Role], /) -> bool:
+    def is_exempt(self, obj: Snowflake, /) -> bool:
         """Check if an object is exempt from the automod rule.
 
         Parameters
         -----------
-        object: Union[:class:`abc.GuildChannel`, :class:`Thread`, :class:`Role`]
-            The object to check.
+        obj: :class:`abc.Snowflake`
+            The role, channel, or thread to check.
 
         Returns
         --------
         :class:`bool`
+            Whether the object is exempt from the automod rule.
         """
-        return object.id in self.exempt_channel_ids or object.id in self.exempt_role_ids
+        return obj.id in self.exempt_channel_ids or obj.id in self.exempt_role_ids
 
     async def edit(
         self,
@@ -289,6 +292,7 @@ class AutoModRule:
         """|coro|
 
         Edits this auto moderation rule.
+        Requires the :attr:`Permissions.manage_guild` to use.
 
         Parameters
         -----------
@@ -323,7 +327,7 @@ class AutoModRule:
         if actions:
             transformed_actions = [action.to_dict() for action in actions]
 
-        data = await self._state.http.modify_auto_moderation_rule(
+        data = await self._state.http.edit_auto_moderation_rule(
             self.guild.id,
             self.id,
             name=name,
@@ -341,6 +345,7 @@ class AutoModRule:
         """|coro|
 
         Deletes the auto moderation rule.
+        Requires the :attr:`Permissions.manage_guild` to use.
 
         Parameters
         -----------
@@ -359,6 +364,8 @@ class AutoModRule:
 
 class AutoModAction:
     """Represents an action that was taken as the result of a moderation rule.
+
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -380,14 +387,12 @@ class AutoModAction:
         The ID of the system message that was sent to the predefined alert channel.
     content: :class:`str`
         The content of the message that triggered the rule.
+        Requires the :attr:`Intents.message_content` or it will always return an empty string.
     matched_keyword: Optional[:class:`str`]
         The matched keyword from the triggering message.
     matched_content: Optional[:class:`str`]
         The matched content from the triggering message.
-
-
-    .. note::
-        The :attr:`content` requires the :attr:`Intents.message_content` or it will always return an empty string.
+        Requires the :attr:`Intents.message_content` or it will always return an empty string.
     """
 
     __slots__ = (
