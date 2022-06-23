@@ -276,6 +276,7 @@ class AuditLogChanges:
         'preferred_locale':              (None, _enum_transformer(enums.Locale)),
         'image_hash':                    ('cover_image', _transform_cover_image),
         'app_command_permission_update': ('app_command_permissions', _transform_app_command_permissions),
+        'trigger_type':                  (None, _enum_transformer(enums.AutoModRuleTriggerType)),
     }
     # fmt: on
 
