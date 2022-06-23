@@ -2579,7 +2579,7 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         a :class:`Object` with the ID of the automod rule that was created.
 
-        Possible attributes for :clas:`AuditLogDiff`:
+        Possible attributes for :class:`AuditLogDiff`:
 
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.enabled`
@@ -2599,7 +2599,7 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         a :class:`Object` with the ID of the automod rule that was updated.
 
-        Possible attributes for :clas:`AuditLogDiff`:
+        Possible attributes for :class:`AuditLogDiff`:
 
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.enabled`
@@ -2619,7 +2619,7 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         a :class:`Object` with the ID of the automod rule that was deleted.
 
-        Possible attributes for :clas:`AuditLogDiff`:
+        Possible attributes for :class:`AuditLogDiff`:
 
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.enabled`
@@ -3718,17 +3718,47 @@ AuditLogDiff
 
         :type: :class:`~discord.app_commands.AppCommandPermissions`
 
-    .. attribute:: auto_moderation_rule_name
+    .. attribute:: enabled
 
-        The name of the auto moderation rule name.
+        Whether the automod rule is active or not.
+
+        :type: :class:`bool`
+
+    .. attribute:: event_type
+
+        The event type for triggering the automod rule.
 
         :type: :class:`str`
 
-    .. attribute:: auto_moderation_rule_trigger_type
+    .. attribute:: trigger_type
 
-        The rule type that was triggered by an action.
+        The trigger type for the automod rule.
 
-        :type: :class:`~discord.AutoModRuleTriggerType`
+        :type: :class:`AutoModRuleTriggerType`
+
+    .. attribute:: trigger_metadata
+
+        The trigger metadata for the automod rule.
+
+        :type: Dict[:class:`str`, Any]
+
+    .. attribute:: actions
+
+        The actions to take when an automod rule is triggered.
+
+        :type: List[Dict[:class:`str`, Any]]
+
+    .. attribute:: exempt_roles
+
+        The list of roles that are exempt from the automod rule.
+
+        :type: List[:class:`str`]
+
+    .. attribute:: exempt_channels
+
+        The list of channels that are exempt from the automod rule.
+
+        :type: List[:class:`str`]
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to about porting these
