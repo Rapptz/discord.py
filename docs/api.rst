@@ -2579,6 +2579,17 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         a :class:`Object` with the ID of the automod rule that was created.
 
+        Possible attributes for :clas:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.enabled`
+        - :attr:`~AuditLogDiff.event_type`
+        - :attr:`~AuditLogDiff.trigger_type`
+        - :attr:`~AuditLogDiff.trigger_metadata`
+        - :attr:`~AuditLogDiff.actions`
+        - :attr:`~AuditLogDiff.exempt_roles`
+        - :attr:`~AuditLogDiff.exempt_channels`
+
         .. versionadded:: 2.0
 
     .. attribute:: automod_role_update
@@ -2587,6 +2598,17 @@ of :class:`enum.Enum`.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         a :class:`Object` with the ID of the automod rule that was updated.
+
+        Possible attributes for :clas:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.enabled`
+        - :attr:`~AuditLogDiff.event_type`
+        - :attr:`~AuditLogDiff.trigger_type`
+        - :attr:`~AuditLogDiff.trigger_metadata`
+        - :attr:`~AuditLogDiff.actions`
+        - :attr:`~AuditLogDiff.exempt_roles`
+        - :attr:`~AuditLogDiff.exempt_channels`
 
         .. versionadded:: 2.0
 
@@ -2597,6 +2619,17 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         a :class:`Object` with the ID of the automod rule that was deleted.
 
+        Possible attributes for :clas:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.enabled`
+        - :attr:`~AuditLogDiff.event_type`
+        - :attr:`~AuditLogDiff.trigger_type`
+        - :attr:`~AuditLogDiff.trigger_metadata`
+        - :attr:`~AuditLogDiff.actions`
+        - :attr:`~AuditLogDiff.exempt_roles`
+        - :attr:`~AuditLogDiff.exempt_channels`
+
         .. versionadded:: 2.0
 
     .. attribute:: automod_block_message
@@ -2604,13 +2637,16 @@ of :class:`enum.Enum`.
         An automod rule blocked a message from being sent.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        a :class:`Object` with the ID of the person who triggered the automod rule.
+        a :class:`Member` with the ID of the person who triggered the automod rule.
 
-        Possible attributes for :class:`AuditLogDiff`:
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with 3 attributes:
 
-        - :attr:`~AuditLogDiff.auto_moderation_rule_name`
-        - :attr:`~AuditLogDiff.auto_moderation_rule_trigger_type`
-        - :attr:`~AuditLogDiff.channel`
+        - ``automod_rule_name``: The name of the automod rule that was triggered.
+        - ``automod_rule_trigger``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``channel``: The channel in which the automod rule was triggered.
+
+        When this is the action, :attr:`AuditLogEntry.changes` is empty.
 
         .. versionadded:: 2.0
 

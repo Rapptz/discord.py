@@ -179,9 +179,9 @@ class AutoModRule:
         The rule's trigger.
     enabled: :class:`bool`
         Whether the rule is enabled.
-    exempt_role_ids: List[:class:`int`]
+    exempt_role_ids: Set[:class:`int`]
         The IDs of the roles that are exempt from the rule.
-    exempt_channel_ids: List[:class:`int`]
+    exempt_channel_ids: Set[:class:`int`]
         The IDs of the channels that are exempt from the rule.
     """
 
@@ -292,7 +292,8 @@ class AutoModRule:
         """|coro|
 
         Edits this auto moderation rule.
-        Requires the :attr:`Permissions.manage_guild` to use.
+
+        You must have :attr:`Permissions.manage_guild` to edit rules.
 
         Parameters
         -----------
@@ -345,7 +346,8 @@ class AutoModRule:
         """|coro|
 
         Deletes the auto moderation rule.
-        Requires the :attr:`Permissions.manage_guild` to use.
+
+        You must have :attr:`Permissions.manage_guild` to delete rules.
 
         Parameters
         -----------
@@ -449,7 +451,7 @@ class AutoModAction:
 
         Fetch the rule whose action was taken.
 
-        You need the :attr:`Permissions.manage_guild` permission to use this.
+        You must have the :attr:`Permissions.manage_guild` permission to use this.
 
         Raises
         -------

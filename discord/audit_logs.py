@@ -395,9 +395,9 @@ class _AuditLogProxyMessageBulkDelete(_AuditLogProxy):
 
 
 class _AuditLogProxyAutoModAction(_AuditLogProxy):
-    auto_moderation_rule_name: str
-    auto_moderation_rule_trigger_type: str
-    channel_id: str
+    automod_rule_name: str
+    automod_rule_trigger_type: str
+    channel: Union[abc.GuildChannel, Thread]
 
 
 class AuditLogEntry(Hashable):
@@ -510,8 +510,8 @@ class AuditLogEntry(Hashable):
             elif self.action is enums.AuditLogAction.automod_block_message:
                 channel_id = int(extra['channel_id'])
                 self.extra = _AuditLogProxyAutoModAction(
-                    auto_moderation_rule_name=extra['auto_moderation_rule_name'],
-                    auto_moderation_rule_trigger_type=enums.try_enum(
+                    automod_rule_name=extra['auto_moderation_rule_name'],
+                    automod_rule_trigger_type=enums.try_enum(
                         enums.AutoModRuleTriggerType, extra['auto_moderation_rule_trigger_type']
                     ),
                     channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
@@ -677,3 +677,6 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_integration_or_app_command(self, target_id: int) -> Union[PartialIntegration, AppCommand, Object]:
         return self._get_integration_by_app_id(target_id) or self._get_app_command(target_id) or Object(target_id)
+
+    def _convert_target_auto_moderation(self, target_id: int) -> Union[Member, Object]:
+        return self.guild.get_member(target_id) or Object(target_id)
