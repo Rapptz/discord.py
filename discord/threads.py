@@ -91,7 +91,7 @@ class Thread(Messageable, Hashable):
     guild: :class:`Guild`
         The guild the thread belongs to.
     id: :class:`int`
-        The thread ID.
+        The thread ID. This is the same as the thread starter message ID.
     parent_id: :class:`int`
         The parent :class:`TextChannel` or :class:`ForumChannel` ID this thread belongs to.
     owner_id: :class:`int`
@@ -256,8 +256,23 @@ class Thread(Messageable, Hashable):
         return list(self._members.values())
 
     @property
+    def starter_message(self) -> Optional[Message]:
+        """Returns the thread starter message from the cache.
+
+        The message might not be cached, valid, or point to an existing message.
+
+        Note that the thread starter message ID is the same ID as the thread.
+
+        Returns
+        --------
+        Optional[:class:`Message`]
+            The thread starter message or ``None`` if not found.
+        """
+        return self._state._get_message(self.id)
+
+    @property
     def last_message(self) -> Optional[Message]:
-        """Fetches the last message from this channel in cache.
+        """Returns the last message from this thread from the cache.
 
         The message might not be valid or point to an existing message.
 
