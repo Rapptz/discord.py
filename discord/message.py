@@ -1318,6 +1318,8 @@ class Message(PartialMessage, Hashable):
         This is not stored long term within Discord's servers and is only used ephemerally.
     embeds: List[:class:`Embed`]
         A list of embeds the message has.
+        If :attr:`Intents.message_content` is not enabled this will always be an empty list
+        unless the bot is mentioned or the message is a direct message.
     channel: Union[:class:`TextChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]
         The :class:`TextChannel` or :class:`Thread` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
@@ -1359,6 +1361,8 @@ class Message(PartialMessage, Hashable):
         message.
     attachments: List[:class:`Attachment`]
         A list of attachments given to a message.
+        If :attr:`Intents.message_content` is not enabled this will always be an empty list
+        unless the bot is mentioned or the message is a direct message.
     pinned: :class:`bool`
         Specifies if the message is currently pinned.
     flags: :class:`MessageFlags`
@@ -1388,6 +1392,8 @@ class Message(PartialMessage, Hashable):
         .. versionadded:: 1.6
     components: List[Union[:class:`ActionRow`, :class:`Button`, :class:`SelectMenu`]]
         A list of components in the message.
+        If :attr:`Intents.message_content` is not enabled this will always be an empty list
+        unless the bot is mentioned or the message is a direct message.
 
         .. versionadded:: 2.0
     interaction: Optional[:class:`MessageInteraction`]
