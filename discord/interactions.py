@@ -200,7 +200,11 @@ class Interaction:
 
     @property
     def client(self) -> Client:
-        """:class:`Client`: The client that is handling this interaction."""
+        """:class:`Client`: The client that is handling this interaction.
+
+        Note that :class:`AutoShardedClient`, :class:`~.commands.Bot`, and
+        :class:`~.commands.AutoShardedBot` are all subclasses of client.
+        """
         return self._client
 
     @property
