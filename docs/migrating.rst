@@ -1238,6 +1238,16 @@ The following changes have been made:
 :meth:`VoiceProtocol.connect` will now be passed 2 keyword only arguments, ``self_deaf`` and ``self_mute``. These indicate
 whether or not the client should join the voice chat being deafened or muted.
 
+:class:`VoiceChannel` is now :class:`abc.Messageable`
+-----------------------------------------------------
+
+:class:`VoiceChannel` now implements the abc :class:`abc.Messageable` and can now have messages sent to and receieved.
+
+:attr:`Message.channel` can now be :class:`VoiceChannel`
+--------------------------------------------------------
+
+:class:`VoiceChannel` is now messageable, so it now is possible to receive messages where the channel is a `VoiceChannel`.
+
 .. _migrating_2_0_commands:
 
 Command Extension Changes
