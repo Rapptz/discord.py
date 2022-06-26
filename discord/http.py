@@ -2081,7 +2081,7 @@ class HTTPClient:
             'exempt_channels',
         )
 
-        payload = {k: v for k, v in payload.items() if k in valid_keys if v is not None}
+        payload = {k: v for k, v in payload.items() if k in valid_keys and v is not None}
 
         return self.request(
             Route('PATCH', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),

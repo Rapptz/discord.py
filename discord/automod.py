@@ -328,21 +328,33 @@ class AutoModRule:
         :class:`AutoModRule`
             The updated auto moderation rule.
         """
-        transformed_actions = None
+        payload = {}
         if actions:
-            transformed_actions = [action.to_dict() for action in actions]
+            payload['actions'] = [action.to_dict() for action in actions]
+
+        if name:
+            payload['name'] = name
+
+        if event_type:
+            payload['event_type'] = event_type
+
+        if trigger:
+            payload['trigger_metadata'] = trigger.to_metadata_dict()
+
+        if enabled:
+            payload['enabled'] = enabled
+
+        if exempt_roles:
+            payload['exempt_roles'] = exempt_roles
+
+        if exempt_channels:
+            payload['exempt_channels'] = exempt_channels
 
         data = await self._state.http.edit_auto_moderation_rule(
             self.guild.id,
             self.id,
-            name=name,
-            event_type=event_type,
-            actions=transformed_actions,
-            trigger_metadata=trigger.to_metadata_dict() if trigger else None,
-            enabled=enabled,
-            exempt_roles=exempt_roles,
-            exempt_channels=exempt_channels,
             reason=reason,
+            **payload,
         )
 
         return AutoModRule(data=data, guild=self.guild, state=self._state)
