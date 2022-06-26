@@ -329,25 +329,25 @@ class AutoModRule:
             The updated auto moderation rule.
         """
         payload = {}
-        if actions:
+        if actions is not MISSING:
             payload['actions'] = [action.to_dict() for action in actions]
 
-        if name:
+        if name is not MISSING:
             payload['name'] = name
 
-        if event_type:
+        if event_type is not MISSING:
             payload['event_type'] = event_type
 
-        if trigger:
+        if trigger is not MISSING:
             payload['trigger_metadata'] = trigger.to_metadata_dict()
 
-        if enabled:
+        if enabled is not MISSING:
             payload['enabled'] = enabled
 
-        if exempt_roles:
+        if exempt_roles is not MISSING:
             payload['exempt_roles'] = exempt_roles
 
-        if exempt_channels:
+        if exempt_channels is not MISSING:
             payload['exempt_channels'] = exempt_channels
 
         data = await self._state.http.edit_auto_moderation_rule(
