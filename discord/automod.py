@@ -284,6 +284,7 @@ class AutoModRule:
         name: str = MISSING,
         event_type: AutoModRuleEventType = MISSING,
         actions: List[AutoModRuleAction] = MISSING,
+        trigger: AutoModTrigger = MISSING,
         enabled: bool = MISSING,
         exempt_roles: Sequence[Snowflake] = MISSING,
         exempt_channels: Sequence[Snowflake] = MISSING,
@@ -303,6 +304,9 @@ class AutoModRule:
             The new event type to change to.
         actions: List[:class:`AutoModRuleAction`]
             The new rule actions to update.
+        trigger: :class:`AutoModTrigger`
+            The new trigger to update.
+            You can only change the trigger metadata, not the type.
         enabled: :class:`bool`
             Whether the rule should be enabled or not.
         exempt_roles: Sequence[:class:`abc.Snowflake`]
@@ -334,6 +338,7 @@ class AutoModRule:
             name=name,
             event_type=event_type,
             actions=transformed_actions,
+            trigger_metadata=trigger.to_metadata_dict(),
             enabled=enabled,
             exempt_roles=exempt_roles,
             exempt_channels=exempt_channels,
