@@ -338,7 +338,7 @@ class AutoModRule:
             name=name,
             event_type=event_type,
             actions=transformed_actions,
-            trigger_metadata=trigger.to_metadata_dict(),
+            trigger_metadata=trigger.to_metadata_dict() if trigger else None,
             enabled=enabled,
             exempt_roles=exempt_roles,
             exempt_channels=exempt_channels,
