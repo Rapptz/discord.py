@@ -1181,7 +1181,7 @@ class SyncWebhook(BaseWebhook):
         ------------
         message_id: :class:`int`
             The message ID to delete.
-        hread: :class:`~discord.abc.Snowflake`
+        thread: :class:`~discord.abc.Snowflake`
             The thread the webhook message belongs to.
 
             .. versionadded:: 2.0

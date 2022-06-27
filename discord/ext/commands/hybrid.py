@@ -238,8 +238,8 @@ def replace_parameter(
             if len(args) == 2 and args[-1] is _NoneType:
                 # Special case Optional[X] where X is a single type that can optionally be a converter
                 inner = args[0]
-                is_inner_tranformer = is_transformer(inner)
-                if is_converter(inner) and not is_inner_tranformer:
+                is_inner_transformer = is_transformer(inner)
+                if is_converter(inner) and not is_inner_transformer:
                     param = param.replace(annotation=Optional[make_converter_transformer(inner, original)])  # type: ignore
             else:
                 raise
