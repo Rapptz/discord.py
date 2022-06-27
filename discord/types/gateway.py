@@ -26,6 +26,7 @@ from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired, Required
 
 from .activity import Activity, ClientStatus, PartialPresenceUpdate, StatusType
+from .automod import AutoModerationAction, AutoModerationRuleTriggerType
 from .voice import GuildVoiceState
 from .integration import BaseIntegration, IntegrationApplication
 from .role import Role
@@ -463,3 +464,17 @@ class ProtoSettingsEvent(TypedDict):
 
 class RecentMentionDeleteEvent(TypedDict):
     message_id: Snowflake
+
+
+class AutoModerationActionExecution(TypedDict):
+    guild_id: Snowflake
+    action: AutoModerationAction
+    rule_id: Snowflake
+    rule_trigger_type: AutoModerationRuleTriggerType
+    user_id: Snowflake
+    channel_id: NotRequired[Snowflake]
+    message_id: NotRequired[Snowflake]
+    alert_system_message_id: NotRequired[Snowflake]
+    content: str
+    matched_keyword: Optional[str]
+    matched_content: Optional[str]

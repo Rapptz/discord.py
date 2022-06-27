@@ -258,6 +258,7 @@ class AuditLogChanges:
         'entity_type':                   (None, _enum_transformer(enums.EntityType)),
         'preferred_locale':              (None, _enum_transformer(enums.Locale)),
         'image_hash':                    ('cover_image', _transform_cover_image),
+        'trigger_type':                  (None, _enum_transformer(enums.AutoModRuleTriggerType)),
     }
     # fmt: on
 
@@ -370,6 +371,12 @@ class _AuditLogProxyMessageBulkDelete(_AuditLogProxy):
     count: int
 
 
+class _AuditLogProxyAutoModAction(_AuditLogProxy):
+    automod_rule_name: str
+    automod_rule_trigger_type: str
+    channel: Union[abc.GuildChannel, Thread]
+
+
 class AuditLogEntry(Hashable):
     r"""Represents an Audit Log entry.
 
@@ -435,6 +442,7 @@ class AuditLogEntry(Hashable):
             _AuditLogProxyPinAction,
             _AuditLogProxyStageInstanceAction,
             _AuditLogProxyMessageBulkDelete,
+            _AuditLogProxyAutoModAction,
             Member, User, None,
             Role, Object
         ] = None
@@ -466,6 +474,16 @@ class AuditLogEntry(Hashable):
                     channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
                     message_id=int(extra['message_id']),
                 )
+            elif self.action is enums.AuditLogAction.automod_block_message:
+                channel_id = int(extra['channel_id'])
+                self.extra = _AuditLogProxyAutoModAction(
+                    automod_rule_name=extra['auto_moderation_rule_name'],
+                    automod_rule_trigger_type=enums.try_enum(
+                        enums.AutoModRuleTriggerType, extra['auto_moderation_rule_trigger_type']
+                    ),
+                    channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
+                )
+
             elif self.action.name.startswith('overwrite_'):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(extra['id'])
@@ -595,3 +613,6 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_guild_scheduled_event(self, target_id: int) -> Union[ScheduledEvent, Object]:
         return self.guild.get_scheduled_event(target_id) or Object(id=target_id)
+
+    def _convert_target_auto_moderation(self, target_id: int) -> Union[Member, Object]:
+        return self.guild.get_member(target_id) or Object(target_id)

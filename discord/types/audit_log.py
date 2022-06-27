@@ -272,6 +272,10 @@ class AuditEntryInfo(TypedDict):
     id: Snowflake
     type: Literal['0', '1']
     role_name: str
+    application_id: Snowflake
+    guild_id: Snowflake
+    auto_moderation_rule_name: str
+    auto_moderation_rule_trigger_type: str
 
 
 class AuditLogEntry(TypedDict):

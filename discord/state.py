@@ -92,6 +92,7 @@ from .payments import Payment
 from .entitlements import Entitlement, Gift
 from .guild_premium import PremiumGuildSubscriptionSlot
 from .library import LibraryApplication
+from .automod import AutoModRule, AutoModAction
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -106,6 +107,7 @@ if TYPE_CHECKING:
     from .gateway import DiscordWebSocket
     from .calls import Call
 
+    from .types.automod import AutoModerationRule, AutoModerationActionExecution
     from .types.snowflake import Snowflake
     from .types.activity import Activity as ActivityPayload
     from .types.application import Achievement as AchievementPayload, IntegrationApplication as IntegrationApplicationPayload
@@ -1972,6 +1974,42 @@ class ConnectionState:
 
         guild.stickers = tuple(map(lambda d: self.store_sticker(guild, d), data['stickers']))
         self.dispatch('guild_stickers_update', guild, before_stickers, guild.stickers)
+
+    def parse_auto_moderation_rule_create(self, data: AutoModerationRule) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            _log.debug('AUTO_MODERATION_RULE_CREATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        rule = AutoModRule(data=data, guild=guild, state=self)
+        self.dispatch('automod_rule_create', rule)
+
+    def parse_auto_moderation_rule_update(self, data: AutoModerationRule) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            _log.debug('AUTO_MODERATION_RULE_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        rule = AutoModRule(data=data, guild=guild, state=self)
+        self.dispatch('automod_rule_update', rule)
+
+    def parse_auto_moderation_rule_delete(self, data: AutoModerationRule) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            _log.debug('AUTO_MODERATION_RULE_DELETE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        rule = AutoModRule(data=data, guild=guild, state=self)
+        self.dispatch('automod_rule_delete', rule)
+
+    def parse_auto_moderation_action_execution(self, data: AutoModerationActionExecution) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            _log.debug('AUTO_MODERATION_ACTION_EXECUTION referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        execution = AutoModAction(data=data, state=self)
+        self.dispatch('automod_action', execution)
 
     def _get_create_guild(self, data: gw.GuildCreateEvent):
         guild = self._get_guild(int(data['id']))

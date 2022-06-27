@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+from functools import reduce
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, overload
 
 from .enums import UserFlags
@@ -54,6 +55,7 @@ __all__ = (
     'FriendDiscoveryFlags',
     'HubProgressFlags',
     'OnboardingProgressFlags',
+    'AutoModPresets',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -187,6 +189,17 @@ class BaseFlags:
             self.value &= ~o
         else:
             raise TypeError(f'Value to set for {self.__class__.__name__} must be a bool.')
+
+
+class ArrayFlags(BaseFlags):
+    @classmethod
+    def _from_value(cls: Type[Self], value: List[int]) -> Self:
+        self = cls.__new__(cls)
+        self.value = reduce(lambda a, b: a | (1 << b - 1), value)
+        return self
+
+    def to_array(self) -> List[int]:
+        return [i + 1 for i in range(self.value.bit_length()) if self.value & (1 << i)]
 
 
 @fill_with_flags()
@@ -2148,3 +2161,78 @@ class OnboardingProgressFlags(BaseFlags):
     def notice_cleared(self):
         """:class:`bool`: Returns ``True`` if the user has cleared the onboarding notice."""
         return 1 << 1
+
+
+@fill_with_flags()
+class AutoModPresets(ArrayFlags):
+    r"""Wraps up the Discord :class:`AutoModRule` presets.
+
+    .. container:: operations
+        .. describe:: x == y
+
+            Checks if two AutoModPresets flags are equal.
+        .. describe:: x != y
+
+            Checks if two AutoModPresets flags are not equal.
+        .. describe:: x | y, x |= y
+
+            Returns a AutoModPresets instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a AutoModPresets instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a AutoModPresets instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a AutoModPresets instance with all flags inverted from x.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    @classmethod
+    def all(cls: Type[Self]) -> Self:
+        """A factory method that creates a :class:`AutoModPresets` with everything enabled."""
+        bits = max(cls.VALID_FLAGS.values()).bit_length()
+        value = (1 << bits) - 1
+        self = cls.__new__(cls)
+        self.value = value
+        return self
+
+    @classmethod
+    def none(cls: Type[Self]) -> Self:
+        """A factory method that creates a :class:`AutoModPresets` with everything disabled."""
+        self = cls.__new__(cls)
+        self.value = self.DEFAULT_VALUE
+        return self
+
+    @flag_value
+    def profanity(self):
+        """:class:`bool`: Whether to use the preset profanity filter."""
+        return 1 << 0
+
+    @flag_value
+    def sexual_content(self):
+        """:class:`bool`: Whether to use the preset sexual content filter."""
+        return 1 << 1
+
+    @flag_value
+    def slurs(self):
+        """:class:`bool`: Whether to use the preset slurs filter."""
+        return 1 << 2

@@ -25,6 +25,7 @@ from .affinity import *
 from .application import *
 from .asset import *
 from .audit_logs import *
+from .automod import *
 from .billing import *
 from .calls import *
 from .channel import *
