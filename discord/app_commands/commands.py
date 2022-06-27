@@ -506,7 +506,7 @@ class Command(Generic[GroupT, P, T]):
         nsfw: bool = False,
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
-        extras: dict = MISSING,
+        extras: Dict[Any, Any] = MISSING,
     ):
         self.name: str = validate_name(name)
         self.description: str = description
@@ -534,7 +534,7 @@ class Command(Generic[GroupT, P, T]):
         )
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
         self.nsfw: bool = nsfw
-        self.extras: dict = extras or {}
+        self.extras: Dict[Any, Any] = extras or {}
 
         if self._guild_ids is not None and self.parent is not None:
             raise ValueError('child commands cannot have default guilds set, consider setting them in the parent instead')
@@ -958,7 +958,7 @@ class ContextMenu:
         type: AppCommandType = MISSING,
         nsfw: bool = False,
         guild_ids: Optional[List[int]] = None,
-        extras: dict = MISSING,
+        extras: Dict[Any, Any] = MISSING,
     ):
         self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
@@ -981,7 +981,7 @@ class ContextMenu:
         self.nsfw: bool = nsfw
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
-        self.extras: dict = extras or {}
+        self.extras: Dict[Any, Any] = extras or {}
 
     @property
     def callback(self) -> ContextMenuCallback:
@@ -1198,7 +1198,7 @@ class Group:
         guild_only: bool = MISSING,
         nsfw: bool = MISSING,
         default_permissions: Optional[Permissions] = MISSING,
-        extras: dict = MISSING,
+        extras: Dict[Any, Any] = MISSING,
     ):
         cls = self.__class__
         self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
@@ -1244,7 +1244,7 @@ class Group:
                 self.module = None
 
         self._children: Dict[str, Union[Command, Group]] = {}
-        self.extras: dict = extras or {}
+        self.extras: Dict[Any, Any] = extras or {}
 
         bindings: Dict[Group, Group] = {}
 
@@ -1530,7 +1530,7 @@ class Group:
         name: str = MISSING,
         description: str = MISSING,
         nsfw: bool = False,
-        extras: dict = MISSING,
+        extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
         """Creates an application command under this group.
 
@@ -1581,7 +1581,7 @@ def command(
     name: str = MISSING,
     description: str = MISSING,
     nsfw: bool = False,
-    extras: dict = MISSING,
+    extras: Dict[Any, Any] = MISSING,
 ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
     """Creates an application command from a regular function.
 
@@ -1631,7 +1631,7 @@ def context_menu(
     *,
     name: str = MISSING,
     nsfw: bool = False,
-    extras: dict = MISSING,
+    extras: Dict[Any, Any] = MISSING,
 ) -> Callable[[ContextMenuCallback], ContextMenu]:
     """Creates an application command context menu from a regular function.
 
