@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-27 08:41+0000\n"
-"PO-Revision-Date: 2022-06-06 17:05\n"
+"POT-Creation-Date: 2022-06-23 08:08+0000\n"
+"PO-Revision-Date: 2022-06-23 11:10\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -112,7 +112,7 @@ msgstr "例外"
 
 #: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.after_loop:14
 #: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.before_loop:14
-#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:13
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:17
 msgid "The function was not a coroutine."
 msgstr "渡された関数がコルーチンでない場合に発生します。"
 
@@ -141,10 +141,14 @@ msgid "The coroutine must take only one argument the exception raised (except ``
 msgstr "コルーチンは、送出された例外を引数としてとります。(クラス内での ``self`` は除く)"
 
 #: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:5
-msgid "By default this prints to :data:`sys.stderr` however it could be overridden to have a different implementation."
-msgstr "既定ではこれは例外を :data:`sys.stderr` に出力しますが、他の実装を利用する場合は上書きできます。"
+msgid "By default this logs to the library logger however it could be overridden to have a different implementation."
+msgstr "デフォルトではライブラリロガーに出力しますが、他の実装をするために上書きすることもできます。"
 
-#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:10
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:12
+msgid "Instead of writing to ``sys.stderr``, the library's logger is used."
+msgstr "``sys.stderr`` に出力する代わりに、ライブラリロガーを使用するようになりました。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:14
 msgid "The coroutine to register in the event of an unhandled exception."
 msgstr "処理されない例外が発生した場合に登録するコルーチンを示します。"
 

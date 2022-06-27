@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-27 08:41+0000\n"
-"PO-Revision-Date: 2022-06-06 17:05\n"
+"POT-Creation-Date: 2022-06-23 08:08+0000\n"
+"PO-Revision-Date: 2022-06-23 09:58\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -34,7 +34,7 @@ msgid "Bot"
 msgstr "Bot"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:1
-msgid "Represents a discord bot."
+msgid "Represents a Discord bot."
 msgstr "Discord Botを表します。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:3
@@ -46,26 +46,30 @@ msgid "This class also subclasses :class:`.GroupMixin` to provide the functional
 msgstr "また、 :class:`.GroupMixin` も継承しており、コマンド管理の機能も使用可能です。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:10
-msgid "Unlike :class:`discord.Client`, This class does not require manually setting a :class:`~discord.app_commands.CommandTree` and is automatically set upon instantiating the class."
+msgid "Unlike :class:`discord.Client`, this class does not require manually setting a :class:`~discord.app_commands.CommandTree` and is automatically set upon instantiating the class."
 msgstr ":class:`discord.Client` とは異なり、このクラスでは :class:`~discord.app_commands.CommandTree` を手動で設定する必要はなく、クラスのインスタンスを作成する際に自動的に設定されます。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:16
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:18
+msgid "Asynchronously initialises the bot and automatically cleans up."
+msgstr "非同期的にボットを初期化し自動でクリーンアップします。"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:24
 msgid "The command prefix is what the message content must contain initially to have a command invoked. This prefix could either be a string to indicate what the prefix should be, or a callable that takes in the bot as its first parameter and :class:`discord.Message` as its second parameter and returns the prefix. This is to facilitate \"dynamic\" command prefixes. This callable can be either a regular function or a coroutine."
 msgstr "コマンドの接頭詞とは、コマンドの判定のためにメッセージの先頭に付けなければならないものです。接頭詞には、そのまま接頭詞として使用する文字列、または :class:`discord.Message` を二つ目の引数として受け取り、接頭詞を返す呼び出し可能な関数を渡すことができます。これは「動的な」接頭詞の実装を容易にするためです。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:24
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:32
 msgid "An empty string as the prefix always matches, enabling prefix-less command invocation. While this may be useful in DMs it should be avoided in servers, as it's likely to cause performance issues and unintended command invocations."
 msgstr "接頭詞に空文字列を渡せば、接頭詞なしでコマンドの呼び出しができます。これはDM上では有用ですが、サーバーでは意図せずコマンドを呼び出してしまうことに繋がるため、避けるべきです。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:29
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:37
 msgid "The command prefix could also be an iterable of strings indicating that multiple checks for the prefix should be used and the first one to match will be the invocation prefix. You can get this prefix via :attr:`.Context.prefix`."
 msgstr "コマンドの接頭辞を文字列のイテラブルで指定することもできます。この場合、接頭辞を複数回チェックし、最初にマッチしたものを呼び出し時の接頭辞とします。使用された接頭辞は、 :attr:`.Context.prefix` で取得することができます。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:36
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:44
 msgid "When passing multiple prefixes be careful to not pass a prefix that matches a longer prefix occurring later in the sequence.  For example, if the command prefix is ``('!', '!?')``  the ``'!?'`` prefix will never be matched to any message as the previous one matches messages starting with ``!?``. This is especially important when passing an empty string, it should always be last as no prefix after it will be matched."
 msgstr "複数の接頭辞を渡すとき、後の接頭辞にマッチする接頭辞を、それよりも前に渡さないよう注意してください。たとえば、接頭辞が ``('!', '!?')`` のとき、 ``!?`` の接頭辞は、その前のものが ``!?`` で始まるメッセージにマッチするため、どのメッセージにも反応しません。これは空文字列を渡すときは特に重要で、その後の接頭辞は無視されるため、空文字列は最後に置かないといけません。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:46
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:54
 msgid "Whether the commands should be case insensitive. Defaults to ``False``. This attribute does not carry over to groups. You must set it to every group if you require group commands to be case insensitive as well."
 msgstr "コマンド名で大文字と小文字を区別するかどうか。デフォルトでは\\ ``False``\\ です。この属性はグループに適用されません。もしグループコマンドも大文字と小文字を区別したくない場合、すべてのグループで設定しなければなりません。"
 
@@ -77,19 +81,19 @@ msgstr "コマンド名で大文字と小文字を区別するかどうか。デ
 msgid "type"
 msgstr "型"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:50
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:94
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:58
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:102
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.is_owner:21
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.Command:49
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.Command:86
 msgid ":class:`bool`"
 msgstr ":class:`bool`"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:54
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:62
 msgid "The content prefixed into the default help message."
 msgstr "デフォルトのヘルプメッセージの最初に表示される文字列。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:56
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:64
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.Command:10
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.Command:79
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.Command.full_parent_name:6
@@ -97,42 +101,42 @@ msgstr "デフォルトのヘルプメッセージの最初に表示される文
 msgid ":class:`str`"
 msgstr ":class:`str`"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:60
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:68
 msgid "The help command implementation to use. This can be dynamically set at runtime. To remove the help command pass ``None``. For more information on implementing a help command, see :ref:`ext_commands_help_command`."
 msgstr "使用するヘルプコマンドの実装。これは、実行時でも動的に設定できます。ヘルプコマンドを削除するには、``None`` を引数に入れてください。ヘルプ コマンドの実装の詳細については、 :ref:`ext_commands_help_command` を参照してください。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:64
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:72
 msgid "Optional[:class:`.HelpCommand`]"
 msgstr "Optional[:class:`.HelpCommand`]"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:68
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:76
 msgid "The user ID that owns the bot. If this is not set and is then queried via :meth:`.is_owner` then it is fetched automatically using :meth:`~.Bot.application_info`."
 msgstr "Botを所有するユーザーのID。 もし設定されていない場合、 :meth:`.is_owner` が呼び出されたとき、 :meth:`~.Bot.application_info` を用いて自動的に取得します。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:72
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:80
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.Bot.application_id:10
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:36
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand:41
 msgid "Optional[:class:`int`]"
 msgstr "Optional[:class:`int`]"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:76
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:84
 msgid "The user IDs that owns the bot. This is similar to :attr:`owner_id`. If this is not set and the application is team based, then it is fetched automatically using :meth:`~.Bot.application_info`. For performance reasons it is recommended to use a :class:`set` for the collection. You cannot set both ``owner_id`` and ``owner_ids``."
 msgstr "Botを所有するユーザーのID群。これは :attr:`owner_id` と同様のものです。もしこの変数が設定されておらず、Botのアプリケーションがチームに帰属する場合、自動的に :meth:`~.Bot.application_info` から取得されます。パフォーマンス上の問題により、このID群を操作するにあたって :class:`set` を使うことが推奨されています。 ``owner_id`` と ``owner_ids`` は、どちらか片方しか設定することができません。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:84
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:92
 msgid "Optional[Collection[:class:`int`]]"
 msgstr "Optional[Collection[:class:`int`]]"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:88
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:96
 msgid "Whether to strip whitespace characters after encountering the command prefix. This allows for ``!   hello`` and ``!hello`` to both work if the ``command_prefix`` is set to ``!``. Defaults to ``False``."
 msgstr "接頭辞の後の空白を除去するかどうか。 ``command_prefix`` が ``!`` に設定されているときに、これが有効だと ``! hello`` 、 ``!hello`` 両方が動作するようになります。 デフォルトは ``False`` です。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:98
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:106
 msgid "The type of application command tree to use. Defaults to :class:`~discord.app_commands.CommandTree`."
 msgstr "使用するアプリケーションコマンドツリーの型を指定します。デフォルトは :class:`~discord.app_commands.CommandTree` です。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:102
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.Bot:110
 msgid "Type[:class:`~discord.app_commands.CommandTree`]"
 msgstr "Type[:class:`~discord.app_commands.CommandTree`]"
 
@@ -708,6 +712,8 @@ msgid "Creates a websocket connection and lets the websocket listen to messages 
 msgstr "WebSocket接続を作成し、Discordからのメッセージを受け取れるようにします。これはイベントシステム全体とライブラリの様々な機能を実行するループです。WebSocket接続が終了するまで、制御は再開されません。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.connect:8
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:22
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.start:8
 msgid "If we should attempt reconnecting, either due to internet failure or a specific failure on Discord's part. Certain disconnects that lead to bad state will not be handled (such as invalid sharding payloads or bad tokens)."
 msgstr "インターネットの障害やDiscord側の特定の障害が発生した際に再接続を試みるかどうか。不正な状態による特定の切断 (無効なシャーディングペイロードや不正なトークンなど) は処理されません。"
 
@@ -1621,6 +1627,8 @@ msgid "Logs in the client with the specified credentials and calls the :meth:`se
 msgstr "指定した資格情報を使用してクライアントにログインし、 :meth:`setup_hook` を呼び出します。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.login:7
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:19
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.start:5
 msgid "The authentication token. Do not prefix this token with anything as the library will do it for you."
 msgstr "認証トークン。ライブラリが処理するのでトークンには何もつけないでください（ ``Bot`` 等）。"
 
@@ -1637,28 +1645,28 @@ msgid "The default command error handler provided by the bot."
 msgstr "ボットに渡されたデフォルトのコマンドの例外のハンドラ。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.on_command_error:5
-msgid "By default this prints to :data:`sys.stderr` however it could be overridden to have a different implementation."
-msgstr "デフォルトでは :data:`sys.stderr` に出力しますが、他の実装をするために上書きすることもできます。"
+msgid "By default this logs to the library logger, however it could be overridden to have a different implementation."
+msgstr "デフォルトではライブラリロガーに出力しますが、他の実装をするために上書きすることもできます。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.on_command_error:8
 msgid "This only fires if you do not specify any listeners for command error."
 msgstr "これは、コマンドの例外のリスナーを指定していない場合にのみ発生します。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.on_command_error:12
-msgid "``context`` and ``exception`` parameters are now positional-only."
-msgstr "``context`` と ``exception`` パラメータは、位置指定のみになりました。"
+msgid "``context`` and ``exception`` parameters are now positional-only. Instead of writing to ``sys.stderr`` this now uses the library logger."
+msgstr "``context`` と ``exception`` が位置限定引数になりました。 ``sys.stderr`` に出力するのではなくライブラリロガーが使用されるようになりました。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.on_error:3
 msgid "The default error handler provided by the client."
 msgstr "クライアントによって提供されるデフォルトのエラーハンドラ。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.on_error:5
-msgid "By default this prints to :data:`sys.stderr` however it could be overridden to have a different implementation. Check :func:`~discord.on_error` for more details."
-msgstr "デフォルトでは、これは :data:`sys.stderr` に出力されますが、異なる実装によって上書きされる可能性があります。詳細については :func:`~discord.on_error` を確認してください。"
+msgid "By default this logs to the library logger however it could be overridden to have a different implementation. Check :func:`~discord.on_error` for more details."
+msgstr "デフォルトでは、これはライブラリロガーに出力されますが、異なる実装によって上書きされる可能性があります。詳細については :func:`~discord.on_error` を確認してください。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.on_error:11
-msgid "``event_method`` parameter is now positional-only."
-msgstr "``event_method`` パラメータは、位置指定のみになりました。"
+msgid "``event_method`` parameter is now positional-only and instead of writing to ``sys.stderr`` it logs instead."
+msgstr "``event_method`` パラメータが位置限定引数になり、 ``sys.stderr`` に出力するのではなくログに記録するようになりました。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.Bot.persistent_views:1
 msgid "A sequence of persistent views added to the client."
@@ -1833,12 +1841,32 @@ msgid "If you want more control over the event loop then this function should no
 msgstr "イベントループをより詳細に制御するには、この関数を使用しないでください。 :meth:`start` または :meth:`connect` + :meth:`login` を使用してください。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:8
-msgid "Roughly Equivalent to: ::"
-msgstr "例えば、おおよそ次のようなコードで詳細に制御できます:"
+msgid "This function also sets up the logging library to make it easier for beginners to know what is going on with the library. For more advanced users, this can be disabled by passing ``None`` to the ``log_handler`` parameter."
+msgstr "またこの関数は、初心者がライブラリの仕組みを知ることが簡単にできるよう logging ライブラリを設定します。より高度なユーザーは、 ``log_handler`` に ``None`` を渡してこれを無効化することもできます。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:17
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:15
 msgid "This function must be the last function to call due to the fact that it is blocking. That means that registration of events or anything being called after this function call will not execute until it returns."
 msgstr "この関数はブロッキングを行うため、必ず最後の方で呼び出してください。この関数を呼び出した後に書かれているイベントや関数は、Botが停止するまで実行されません。"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:27
+msgid "The log handler to use for the library's logger. If this is ``None`` then the library will not set up anything logging related. Logging will still work if ``None`` is passed, though it is your responsibility to set it up."
+msgstr "ライブラリロガーにて使用すべきログハンドラ。もしこれが ``None`` の場合ライブラリはログ関連のセットアップを一切行いません。 ``None`` を渡してもログは記録されますが、設定は自己責任となります。"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:32
+msgid "The default log handler if not provided is :class:`logging.StreamHandler`."
+msgstr "渡されない場合のデフォルトは :class:`logging.StreamHandler` です。"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:36
+msgid "The formatter to use with the given log handler. If not provided then it defaults to a colour based logging formatter (if available)."
+msgstr "指定されたログハンドラで使用するフォーマッタ。渡されない場合は、既定で色ベースのログフォーマッタが使用されます (使用可能な場合)。"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:41
+msgid "The default log level for the library's logger. This is only applied if the ``log_handler`` parameter is not ``None``. Defaults to ``logging.INFO``."
+msgstr "ライブラリロガーの既定のログレベル。これは ``log_handler`` が ``None`` でない場合のみ適用されます。デフォルトは ``logging.INFO`` です。"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:44
+msgid "Note that the *root* logger will always be set to ``logging.INFO`` and this only controls the library's log level. To control the root logger's level, you can use ``logging.getLogger().setLevel(level)``."
+msgstr "*root* ロガーは常に ``logging.INFO`` に設定されていて、これはライブラリのログレベルのみを制御することに注意してください。 ルートロガーのレベルを制御するには、 ``logging.getLogger().setLevel(level)`` を使用してください。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.setup_hook:3
 msgid "A coroutine to be called to setup the bot, by default this is blank."
@@ -1860,7 +1888,7 @@ msgstr "これはWebSocket接続の *前に* 呼ばれるため、WebSocketを�
 msgid "A shorthand coroutine for :meth:`login` + :meth:`connect`."
 msgstr ":meth:`login` + :meth:`connect` を簡略化したコルーチン。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.start:5
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.start:14
 msgid "An unexpected keyword argument was received."
 msgstr "予期しないキーワード引数を受け取った場合。"
 
@@ -2024,6 +2052,10 @@ msgstr "AutoShardedBot"
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.AutoShardedBot:1
 msgid "This is similar to :class:`.Bot` except that it is inherited from :class:`discord.AutoShardedClient` instead."
 msgstr "これは、 :class:`discord.AutoShardedClient` から代わりに継承されていることを除いて、 :class:`.Bot` と似ています。"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.AutoShardedBot:8
+msgid "Asynchronously initialises the bot and automatically cleans."
+msgstr "非同期的にボットを初期化し自動でクリーンアップします。"
 
 #: ../../ext/commands/api.rst:56
 msgid "Prefix Helpers"
@@ -5673,6 +5705,10 @@ msgstr "呼び出し元から渡された、見つからなかったロール。
 #: ../../../discord/ext/commands/errors.py:docstring of discord.ext.commands.errors.BadInviteArgument:1
 msgid "Exception raised when the invite is invalid or expired."
 msgstr "招待が無効または期限切れの場合に発生する例外。"
+
+#: ../../../discord/ext/commands/errors.py:docstring of discord.ext.commands.errors.BadInviteArgument:9
+msgid "The invite supplied by the caller that was not valid"
+msgstr "呼び出し元から渡された、無効な招待。"
 
 #: ../../../discord/ext/commands/errors.py:docstring of discord.ext.commands.errors.EmojiNotFound:1
 msgid "Exception raised when the bot can not find the emoji."
