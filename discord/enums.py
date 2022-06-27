@@ -63,6 +63,9 @@ __all__ = (
     'AppCommandType',
     'AppCommandOptionType',
     'AppCommandPermissionType',
+    'AutoModRuleTriggerType',
+    'AutoModRuleEventType',
+    'AutoModRuleActionType',
 )
 
 if TYPE_CHECKING:
@@ -227,6 +230,7 @@ class MessageType(Enum):
     thread_starter_message = 21
     guild_invite_reminder = 22
     context_menu_command = 23
+    auto_moderation_action = 24
 
 
 class SpeakingState(Enum):
@@ -347,6 +351,10 @@ class AuditLogAction(Enum):
     thread_update                 = 111
     thread_delete                 = 112
     app_command_permission_update = 121
+    automod_rule_create           = 140
+    automod_rule_update           = 141
+    automod_rule_delete           = 142
+    automod_block_message         = 143
     # fmt: on
 
     @property
@@ -401,6 +409,10 @@ class AuditLogAction(Enum):
             AuditLogAction.thread_delete:                 AuditLogActionCategory.delete,
             AuditLogAction.thread_update:                 AuditLogActionCategory.update,
             AuditLogAction.app_command_permission_update: AuditLogActionCategory.update,
+            AuditLogAction.automod_rule_create:           AuditLogActionCategory.create,
+            AuditLogAction.automod_rule_update:           AuditLogActionCategory.update,
+            AuditLogAction.automod_rule_delete:           AuditLogActionCategory.delete,
+            AuditLogAction.automod_block_message:         None,
         }
         # fmt: on
         return lookup[self]
@@ -440,6 +452,8 @@ class AuditLogAction(Enum):
             return 'thread'
         elif v < 122:
             return 'integration_or_app_command'
+        elif v < 144:
+            return 'auto_moderation'
 
 
 class UserFlags(Enum):
@@ -687,6 +701,23 @@ class AppCommandPermissionType(Enum):
     role = 1
     user = 2
     channel = 3
+
+
+class AutoModRuleTriggerType(Enum):
+    keyword = 1
+    harmful_link = 2
+    spam = 3
+    keyword_preset = 4
+
+
+class AutoModRuleEventType(Enum):
+    message_send = 1
+
+
+class AutoModRuleActionType(Enum):
+    block_message = 1
+    send_alert_message = 2
+    timeout = 3
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
