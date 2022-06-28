@@ -837,7 +837,7 @@ class CommandTree(Generic[ClientT]):
         nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
-        extras: dict = MISSING,
+        extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[CommandCallback[Group, P, T]], Command[Group, P, T]]:
         """Creates an application command directly under this tree.
 
@@ -898,7 +898,7 @@ class CommandTree(Generic[ClientT]):
         nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
-        extras: dict = MISSING,
+        extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[ContextMenuCallback], ContextMenu]:
         """Creates a application command context menu from a regular function directly under this tree.
 
