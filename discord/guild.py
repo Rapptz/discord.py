@@ -1591,7 +1591,7 @@ class Guild(Hashable):
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up in the audit log.
         default_auto_archive_duration: :class:`int`
-            The default auto archive duuration for threads created in the forum channel (in minutes).
+            The default auto archive duration for threads created in the forum channel (in minutes).
 
         Raises
         -------
