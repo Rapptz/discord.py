@@ -1679,6 +1679,12 @@ of :class:`enum.Enum`.
         The system message denoting that a context menu command was executed.
 
         .. versionadded:: 2.0
+    .. attribute:: auto_moderation_action
+
+        The system message sent when an AutoMod rule is triggered. This is only
+        sent if the rule is configured to sent an alert when triggered.
+
+        .. versionadded:: 2.0
 
 .. class:: InviteType
 
