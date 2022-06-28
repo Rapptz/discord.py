@@ -49,4 +49,4 @@ jobs:
 
       - name: Run isort
         run: |
-          isort discord examples tests docs
+          isort discord examples
