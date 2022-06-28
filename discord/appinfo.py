@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from . import utils
 from .asset import Asset
@@ -33,14 +33,14 @@ from .permissions import Permissions
 
 if TYPE_CHECKING:
     from .guild import Guild
+    from .state import ConnectionState
     from .types.appinfo import (
         AppInfo as AppInfoPayload,
+        InstallParams as InstallParamsPayload,
         PartialAppInfo as PartialAppInfoPayload,
         Team as TeamPayload,
-        InstallParams as InstallParamsPayload,
     )
     from .user import User
-    from .state import ConnectionState
 
 __all__ = (
     'AppInfo',

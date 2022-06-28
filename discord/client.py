@@ -27,9 +27,10 @@ from __future__ import annotations
 import asyncio
 import datetime
 import logging
-import sys
 import os
+import sys
 from typing import (
+    TYPE_CHECKING,
     Any,
     AsyncIterator,
     Callable,
@@ -39,7 +40,6 @@ from typing import (
     List,
     Optional,
     Sequence,
-    TYPE_CHECKING,
     Tuple,
     Type,
     TypeVar,
@@ -48,43 +48,44 @@ from typing import (
 
 import aiohttp
 
-from .user import User, ClientUser
-from .invite import Invite
-from .template import Template
-from .widget import Widget
-from .guild import Guild
+from . import utils
+from .activity import ActivityTypes, BaseActivity, create_activity
+from .appinfo import AppInfo
+from .backoff import ExponentialBackoff
+from .channel import PartialMessageable, _threaded_channel_factory
 from .emoji import Emoji
-from .channel import _threaded_channel_factory, PartialMessageable
-from .enums import ChannelType
-from .mentions import AllowedMentions
+from .enums import ChannelType, Status
 from .errors import *
-from .enums import Status
 from .flags import ApplicationFlags, Intents
 from .gateway import *
-from .activity import ActivityTypes, BaseActivity, create_activity
-from .voice_client import VoiceClient
+from .guild import Guild
 from .http import HTTPClient
-from .state import ConnectionState
-from . import utils
-from .utils import MISSING, time_snowflake
+from .invite import Invite
+from .mentions import AllowedMentions
 from .object import Object
-from .backoff import ExponentialBackoff
-from .webhook import Webhook
-from .appinfo import AppInfo
-from .ui.view import View
 from .stage_instance import StageInstance
-from .threads import Thread
+from .state import ConnectionState
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
+from .template import Template
+from .threads import Thread
+from .ui.view import View
+from .user import ClientUser, User
+from .utils import MISSING, time_snowflake
+from .voice_client import VoiceClient
+from .webhook import Webhook
+from .widget import Widget
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
     from types import TracebackType
-    from .types.guild import Guild as GuildPayload
-    from .abc import SnowflakeTime, Snowflake, PrivateChannel
-    from .guild import GuildChannel
+
+    from typing_extensions import Self
+
+    from .abc import PrivateChannel, Snowflake, SnowflakeTime
     from .channel import DMChannel
-    from .message import Message
+    from .guild import GuildChannel
     from .member import Member
+    from .message import Message
+    from .types.guild import Guild as GuildPayload
     from .voice_client import VoiceProtocol
 
 # fmt: off

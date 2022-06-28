@@ -26,24 +26,14 @@ from __future__ import annotations
 
 import asyncio
 import datetime
+import inspect
 import logging
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    Generic,
-    List,
-    Optional,
-    Type,
-    TypeVar,
-    Union,
-)
+from collections.abc import Sequence
+from typing import Any, Awaitable, Callable, Generic, List, Optional, Type, TypeVar, Union
 
 import aiohttp
-import discord
-import inspect
 
-from collections.abc import Sequence
+import discord
 from discord.backoff import ExponentialBackoff
 from discord.utils import MISSING
 

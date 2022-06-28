@@ -23,19 +23,17 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union
+
 import inspect
 import os
+from typing import TYPE_CHECKING, Callable, List, Literal, Optional, Tuple, TypeVar, Union
 
-from .item import Item, ItemCallbackType
+from ..components import SelectMenu, SelectOption
+from ..emoji import Emoji
 from ..enums import ComponentType
 from ..partial_emoji import PartialEmoji
-from ..emoji import Emoji
 from ..utils import MISSING
-from ..components import (
-    SelectOption,
-    SelectMenu,
-)
+from .item import Item, ItemCallbackType
 
 __all__ = (
     'Select',
@@ -45,11 +43,9 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .view import View
     from ..types.components import SelectMenu as SelectMenuPayload
-    from ..types.interactions import (
-        MessageComponentInteractionData,
-    )
+    from ..types.interactions import MessageComponentInteractionData
+    from .view import View
 
 V = TypeVar('V', bound='View', covariant=True)
 

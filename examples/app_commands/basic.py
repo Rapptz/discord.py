@@ -3,7 +3,6 @@ from typing import Optional
 import discord
 from discord import app_commands
 
-
 MY_GUILD = discord.Object(id=0)  # replace with your guild id
 
 

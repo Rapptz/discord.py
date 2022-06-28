@@ -24,21 +24,19 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
-from .utils import snowflake_time, _get_as_snowflake, resolve_invite
-from .user import BaseUser
 from .activity import BaseActivity, Spotify, create_activity
-from .invite import Invite
 from .enums import Status, try_enum
+from .invite import Invite
+from .user import BaseUser
+from .utils import _get_as_snowflake, resolve_invite, snowflake_time
 
 if TYPE_CHECKING:
     import datetime
+
     from .state import ConnectionState
-    from .types.widget import (
-        WidgetMember as WidgetMemberPayload,
-        Widget as WidgetPayload,
-    )
+    from .types.widget import Widget as WidgetPayload, WidgetMember as WidgetMemberPayload
 
 __all__ = (
     'WidgetChannel',

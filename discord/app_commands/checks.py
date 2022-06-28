@@ -24,38 +24,27 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import (
-    Any,
-    Coroutine,
-    Dict,
-    Hashable,
-    Union,
-    Callable,
-    TypeVar,
-    Optional,
-    TYPE_CHECKING,
-)
-
 import time
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, Hashable, Optional, TypeVar, Union
 
+from ..permissions import Permissions
+from ..user import User
+from ..utils import MISSING, get as utils_get, maybe_coroutine
 from .commands import check
 from .errors import (
-    NoPrivateMessage,
-    MissingRole,
-    MissingAnyRole,
-    MissingPermissions,
     BotMissingPermissions,
     CommandOnCooldown,
+    MissingAnyRole,
+    MissingPermissions,
+    MissingRole,
+    NoPrivateMessage,
 )
-
-from ..user import User
-from ..permissions import Permissions
-from ..utils import get as utils_get, MISSING, maybe_coroutine
 
 T = TypeVar('T')
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
     from ..interactions import Interaction
 
     CooldownFunction = Union[

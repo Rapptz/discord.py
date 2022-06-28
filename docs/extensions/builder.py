@@ -1,13 +1,14 @@
-from sphinx.builders.html import StandaloneHTMLBuilder
-from sphinx.builders.gettext import MessageCatalogBuilder, I18nBuilder, timestamp, ltz, should_write, GettextRenderer
-from sphinx.locale import __
-from sphinx.util import status_iterator
-from sphinx.util.osutil import ensuredir
-from sphinx.environment.adapters.indexentries import IndexEntries
-from sphinx.writers.html5 import HTML5Translator
 import datetime
 import os
 import re
+
+from sphinx.builders.gettext import GettextRenderer, I18nBuilder, MessageCatalogBuilder, ltz, should_write, timestamp
+from sphinx.builders.html import StandaloneHTMLBuilder
+from sphinx.environment.adapters.indexentries import IndexEntries
+from sphinx.locale import __
+from sphinx.util import status_iterator
+from sphinx.util.osutil import ensuredir
+from sphinx.writers.html5 import HTML5Translator
 
 
 class DPYHTML5Translator(HTML5Translator):

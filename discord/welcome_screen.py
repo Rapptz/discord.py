@@ -26,9 +26,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING, Union
-from .utils import _get_as_snowflake, get, MISSING
+from typing import TYPE_CHECKING, List, Optional, Union
+
 from .partial_emoji import _EmojiTag
+from .utils import MISSING, _get_as_snowflake, get
 
 __all__ = (
     'WelcomeChannel',
@@ -37,14 +38,15 @@ __all__ = (
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
+    from .abc import Snowflake
+    from .emoji import Emoji
+    from .guild import Guild
+    from .partial_emoji import PartialEmoji
     from .types.welcome_screen import (
         WelcomeScreen as WelcomeScreenPayload,
         WelcomeScreenChannel as WelcomeScreenChannelPayload,
     )
-    from .abc import Snowflake
-    from .guild import Guild
-    from .partial_emoji import PartialEmoji
-    from .emoji import Emoji
 
 
 class WelcomeChannel:

@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         id: install-deps
         run: |
-          python -m pip install --upgrade pip setuptools wheel black requests
+          python -m pip install --upgrade pip setuptools wheel black requests isort
           pip install -U -r requirements.txt
 
       - name: Setup node.js
@@ -46,3 +46,7 @@ jobs:
         if: ${{ always() && steps.install-deps.outcome == 'success' }}
         run: |
           black --check discord examples
+
+      - name: Run isort
+        run: |
+          isort discord examples tests docs

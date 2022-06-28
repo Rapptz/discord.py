@@ -23,8 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-import inspect
 
+import inspect
 from dataclasses import dataclass
 from enum import Enum
 from typing import (
@@ -44,17 +44,17 @@ from typing import (
     Union,
 )
 
-from .errors import AppCommandError, TransformerError
-from .models import AppCommandChannel, AppCommandThread, Choice
-from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
 from ..abc import GuildChannel
-from ..threads import Thread
-from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType
-from ..utils import MISSING, maybe_coroutine
-from ..user import User
-from ..role import Role
+from ..channel import CategoryChannel, StageChannel, TextChannel, VoiceChannel
+from ..enums import AppCommandOptionType, ChannelType, Enum as InternalEnum
 from ..member import Member
 from ..message import Attachment
+from ..role import Role
+from ..threads import Thread
+from ..user import User
+from ..utils import MISSING, maybe_coroutine
+from .errors import AppCommandError, TransformerError
+from .models import AppCommandChannel, AppCommandThread, Choice
 
 __all__ = (
     'Transformer',
@@ -399,8 +399,7 @@ def _make_complex_enum_transformer(enum) -> Type[Transformer]:
 
 
 if TYPE_CHECKING:
-    from typing_extensions import Annotated as Transform
-    from typing_extensions import Annotated as Range
+    from typing_extensions import Annotated as Range, Annotated as Transform
 else:
 
     class Transform:

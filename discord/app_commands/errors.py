@@ -24,8 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING, List, Optional, Type, Union
-
+from typing import TYPE_CHECKING, Any, List, Optional, Type, Union
 
 from ..enums import AppCommandOptionType, AppCommandType
 from ..errors import DiscordException
@@ -49,10 +48,10 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from .commands import Command, Group, ContextMenu
-    from .transformers import Transformer
     from ..types.snowflake import Snowflake, SnowflakeList
     from .checks import Cooldown
+    from .commands import Command, ContextMenu, Group
+    from .transformers import Transformer
 
 APP_ID_NOT_FOUND = (
     'Client does not have an application_id set. Either the function was called before on_ready '

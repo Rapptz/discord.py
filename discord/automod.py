@@ -23,30 +23,30 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+
 import datetime
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Sequence, Set, Union
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, List, Sequence, Set, Union, Sequence
-
-
-from .enums import AutoModRuleTriggerType, AutoModRuleActionType, AutoModRuleEventType, try_enum
-from .flags import AutoModPresets
 from . import utils
+from .enums import AutoModRuleActionType, AutoModRuleEventType, AutoModRuleTriggerType, try_enum
+from .flags import AutoModPresets
 from .utils import MISSING, cached_slot_property
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-    from .abc import Snowflake, GuildChannel
-    from .threads import Thread
+
+    from .abc import GuildChannel, Snowflake
     from .guild import Guild
     from .member import Member
+    from .role import Role
     from .state import ConnectionState
+    from .threads import Thread
     from .types.automod import (
-        AutoModerationRule as AutoModerationRulePayload,
-        AutoModerationTriggerMetadata as AutoModerationTriggerMetadataPayload,
         AutoModerationAction as AutoModerationActionPayload,
         AutoModerationActionExecution as AutoModerationActionExecutionPayload,
+        AutoModerationRule as AutoModerationRulePayload,
+        AutoModerationTriggerMetadata as AutoModerationTriggerMetadataPayload,
     )
-    from .role import Role
 
 __all__ = (
     'AutoModRuleAction',

@@ -23,17 +23,16 @@ DEALINGS IN THE SOFTWARE.
 """
 
 
-from typing import Any, Awaitable, Callable, Coroutine, TYPE_CHECKING, Protocol, TypeVar, Union, Tuple, Optional
-
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Coroutine, Optional, Protocol, Tuple, TypeVar, Union
 
 T = TypeVar('T')
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec
 
-    from .bot import Bot, AutoShardedBot
-    from .context import Context
+    from .bot import AutoShardedBot, Bot
     from .cog import Cog
+    from .context import Context
     from .errors import CommandError
 
     P = ParamSpec('P')

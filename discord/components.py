@@ -24,24 +24,25 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
-from .enums import try_enum, ComponentType, ButtonStyle, TextStyle
-from .utils import get_slots, MISSING
+from typing import TYPE_CHECKING, ClassVar, List, Literal, Optional, Tuple, Union, overload
+
+from .enums import ButtonStyle, ComponentType, TextStyle, try_enum
 from .partial_emoji import PartialEmoji, _EmojiTag
+from .utils import MISSING, get_slots
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from .emoji import Emoji
     from .types.components import (
-        Component as ComponentPayload,
+        ActionRow as ActionRowPayload,
+        ActionRowChildComponent as ActionRowChildComponentPayload,
         ButtonComponent as ButtonComponentPayload,
+        Component as ComponentPayload,
         SelectMenu as SelectMenuPayload,
         SelectOption as SelectOptionPayload,
-        ActionRow as ActionRowPayload,
         TextInput as TextInputPayload,
-        ActionRowChildComponent as ActionRowChildComponentPayload,
     )
-    from .emoji import Emoji
 
     ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
 

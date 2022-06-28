@@ -25,8 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import struct
-
-from typing import TYPE_CHECKING, ClassVar, IO, Generator, Tuple, Optional
+from typing import IO, TYPE_CHECKING, ClassVar, Generator, Optional, Tuple
 
 from .errors import DiscordException
 

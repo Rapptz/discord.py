@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from .errors import UnexpectedQuoteError, InvalidEndOfQuotedStringError, ExpectedClosingQuoteError
+from .errors import ExpectedClosingQuoteError, InvalidEndOfQuotedStringError, UnexpectedQuoteError
 
 # map from opening quotes to closing quotes
 _quotes = {

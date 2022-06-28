@@ -25,31 +25,31 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Optional, Set, List, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
 
 from .enums import ChannelType, try_enum
 from .utils import _get_as_snowflake
 
 if TYPE_CHECKING:
-    from .types.gateway import (
-        MessageDeleteEvent,
-        MessageDeleteBulkEvent as BulkMessageDeleteEvent,
-        MessageReactionAddEvent,
-        MessageReactionRemoveEvent,
-        MessageReactionRemoveAllEvent as ReactionClearEvent,
-        MessageReactionRemoveEmojiEvent as ReactionClearEmojiEvent,
-        MessageUpdateEvent,
-        IntegrationDeleteEvent,
-        ThreadUpdateEvent,
-        ThreadDeleteEvent,
-        ThreadMembersUpdate,
-        TypingStartEvent,
-        GuildMemberRemoveEvent,
-    )
+    from .member import Member
     from .message import Message
     from .partial_emoji import PartialEmoji
-    from .member import Member
     from .threads import Thread
+    from .types.gateway import (
+        GuildMemberRemoveEvent,
+        IntegrationDeleteEvent,
+        MessageDeleteBulkEvent as BulkMessageDeleteEvent,
+        MessageDeleteEvent,
+        MessageReactionAddEvent,
+        MessageReactionRemoveAllEvent as ReactionClearEvent,
+        MessageReactionRemoveEmojiEvent as ReactionClearEmojiEvent,
+        MessageReactionRemoveEvent,
+        MessageUpdateEvent,
+        ThreadDeleteEvent,
+        ThreadMembersUpdate,
+        ThreadUpdateEvent,
+        TypingStartEvent,
+    )
     from .user import User
 
     ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]

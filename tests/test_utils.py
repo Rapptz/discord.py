@@ -6,9 +6,9 @@ Tests for discord.utils
 
 """
 
+import collections
 import datetime
 import random
-import collections
 import secrets
 import sys
 import time

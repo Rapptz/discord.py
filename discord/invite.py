@@ -24,14 +24,15 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Optional, Union, TYPE_CHECKING
-from .asset import Asset
-from .utils import parse_time, snowflake_time, _get_as_snowflake
-from .object import Object
-from .mixins import Hashable
-from .enums import ChannelType, NSFWLevel, VerificationLevel, InviteTarget, try_enum
+from typing import TYPE_CHECKING, List, Optional, Union
+
 from .appinfo import PartialAppInfo
+from .asset import Asset
+from .enums import ChannelType, InviteTarget, NSFWLevel, VerificationLevel, try_enum
+from .mixins import Hashable
+from .object import Object
 from .scheduled_event import ScheduledEvent
+from .utils import _get_as_snowflake, parse_time, snowflake_time
 
 __all__ = (
     'PartialInviteChannel',
@@ -42,19 +43,16 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from .abc import GuildChannel, Snowflake
+    from .guild import Guild
+    from .state import ConnectionState
+    from .types.channel import PartialChannel as InviteChannelPayload
     from .types.invite import (
+        GatewayInvite as GatewayInvitePayload,
         Invite as InvitePayload,
         InviteGuild as InviteGuildPayload,
-        GatewayInvite as GatewayInvitePayload,
     )
-    from .types.channel import (
-        PartialChannel as InviteChannelPayload,
-    )
-    from .state import ConnectionState
-    from .guild import Guild
-    from .abc import GuildChannel
     from .user import User
-    from .abc import Snowflake
 
     InviteGuildType = Union[Guild, 'PartialInviteGuild', Object]
     InviteChannelType = Union[GuildChannel, 'PartialInviteChannel', Object]

@@ -23,9 +23,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-import inspect
 
+import inspect
+import re
+from textwrap import TextWrapper
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     ClassVar,
@@ -37,38 +40,35 @@ from typing import (
     MutableMapping,
     Optional,
     Set,
-    TYPE_CHECKING,
     Tuple,
     Type,
     TypeVar,
     Union,
     overload,
 )
-from textwrap import TextWrapper
-
-import re
 
 from ..enums import AppCommandOptionType, AppCommandType
-from .models import Choice
-from .transformers import annotation_to_parameter, CommandParameter, NoneType
-from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
-from ..message import Message
-from ..user import User
 from ..member import Member
+from ..message import Message
 from ..permissions import Permissions
-from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all
+from ..user import User
+from ..utils import MISSING, async_all, is_inside_class, maybe_coroutine, resolve_annotation
+from .errors import AppCommandError, CheckFailure, CommandAlreadyRegistered, CommandInvokeError, CommandSignatureMismatch
+from .models import Choice
+from .transformers import CommandParameter, NoneType, annotation_to_parameter
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec, Concatenate
-    from ..interactions import Interaction
-    from ..abc import Snowflake
-    from .namespace import Namespace
-    from .models import ChoiceT
+    from typing_extensions import Concatenate, ParamSpec
 
     # Generally, these two libraries are supposed to be separate from each other.
     # However, for type hinting purposes it's unfortunately necessary for one to
     # reference the other to prevent type checking errors in callbacks
     from discord.ext.commands import Cog
+
+    from ..abc import Snowflake
+    from ..interactions import Interaction
+    from .models import ChoiceT
+    from .namespace import Namespace
 
     ErrorFunc = Callable[[Interaction, AppCommandError], Coroutine[Any, Any, None]]
 

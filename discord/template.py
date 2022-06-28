@@ -24,9 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING
-from .utils import parse_time, _bytes_to_base64_data, MISSING
+from typing import TYPE_CHECKING, Any, Optional
+
 from .guild import Guild
+from .utils import MISSING, _bytes_to_base64_data, parse_time
 
 # fmt: off
 __all__ = (
@@ -36,8 +37,9 @@ __all__ = (
 
 if TYPE_CHECKING:
     import datetime
-    from .types.template import Template as TemplatePayload
+
     from .state import ConnectionState
+    from .types.template import Template as TemplatePayload
     from .user import User
 
 

@@ -8,9 +8,9 @@ Tests for discord.ext.tasks
 
 import asyncio
 import datetime
+import sys
 
 import pytest
-import sys
 
 from discord import utils
 from discord.ext import tasks

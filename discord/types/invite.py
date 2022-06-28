@@ -25,14 +25,15 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Literal, Optional, TypedDict, Union
+
 from typing_extensions import NotRequired
 
+from .appinfo import PartialAppInfo
+from .channel import PartialChannel
+from .guild import InviteGuild, _GuildPreviewUnique
 from .scheduled_event import GuildScheduledEvent
 from .snowflake import Snowflake
-from .guild import InviteGuild, _GuildPreviewUnique
-from .channel import PartialChannel
 from .user import PartialUser
-from .appinfo import PartialAppInfo
 
 InviteTargetType = Literal[1, 2]
 

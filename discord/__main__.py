@@ -24,16 +24,16 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Optional, Tuple, Dict
-
 import argparse
+import platform
 import sys
 from pathlib import Path
+from typing import Dict, Optional, Tuple
+
+import aiohttp
+import pkg_resources
 
 import discord
-import pkg_resources
-import aiohttp
-import platform
 
 
 def show_version() -> None:

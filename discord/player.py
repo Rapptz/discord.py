@@ -23,24 +23,23 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-import threading
-import subprocess
-import audioop
 import asyncio
-import logging
-import shlex
-import time
-import json
-import sys
-import re
+import audioop
 import io
-
-from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+import json
+import logging
+import re
+import shlex
+import subprocess
+import sys
+import threading
+import time
+from typing import IO, TYPE_CHECKING, Any, Callable, Generic, Optional, Tuple, TypeVar, Union
 
 from .enums import SpeakingState
 from .errors import ClientException
-from .opus import Encoder as OpusEncoder
 from .oggparse import OggStream
+from .opus import Encoder as OpusEncoder
 from .utils import MISSING
 
 if TYPE_CHECKING:

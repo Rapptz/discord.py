@@ -47,7 +47,7 @@ from typing import (
 
 import discord
 
-from ._types import _BaseCommand, CogT
+from ._types import CogT, _BaseCommand
 from .cog import Cog
 from .context import Context
 from .converter import Greedy, run_converters

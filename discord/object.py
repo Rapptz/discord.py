@@ -24,14 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, SupportsInt, Union
+
 from .mixins import Hashable
 from .utils import snowflake_time
-
-from typing import (
-    SupportsInt,
-    TYPE_CHECKING,
-    Union,
-)
 
 if TYPE_CHECKING:
     import datetime

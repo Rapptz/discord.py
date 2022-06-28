@@ -24,11 +24,11 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
-from .utils import MISSING, cached_slot_property, _get_as_snowflake
-from .mixins import Hashable
 from .enums import PrivacyLevel, try_enum
+from .mixins import Hashable
+from .utils import MISSING, _get_as_snowflake, cached_slot_property
 
 # fmt: off
 __all__ = (
@@ -37,11 +37,11 @@ __all__ = (
 # fmt: on
 
 if TYPE_CHECKING:
-    from .types.channel import StageInstance as StageInstancePayload
-    from .state import ConnectionState
     from .channel import StageChannel
     from .guild import Guild
     from .scheduled_event import ScheduledEvent
+    from .state import ConnectionState
+    from .types.channel import StageInstance as StageInstancePayload
 
 
 class StageInstance(Hashable):

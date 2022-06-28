@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import types
 from collections import namedtuple
-from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Iterator, Mapping
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterator, List, Mapping, Optional, Tuple, Type, TypeVar
 
 __all__ = (
     'Enum',

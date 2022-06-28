@@ -30,9 +30,9 @@ from discord.errors import ClientException, DiscordException
 
 if TYPE_CHECKING:
     from discord.abc import GuildChannel
+    from discord.app_commands import AppCommandError
     from discord.threads import Thread
     from discord.types.snowflake import Snowflake, SnowflakeList
-    from discord.app_commands import AppCommandError
 
     from ._types import BotT
     from .context import Context

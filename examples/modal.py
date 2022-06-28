@@ -1,7 +1,7 @@
+import traceback
+
 import discord
 from discord import app_commands
-
-import traceback
 
 # The guild in which this slash command will be registered.
 # It is recommended to have a test guild to separate from your "production" bot

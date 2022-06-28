@@ -27,7 +27,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
+import weakref
 from typing import (
+    TYPE_CHECKING,
     Any,
     ClassVar,
     Coroutine,
@@ -37,37 +39,35 @@ from typing import (
     Literal,
     NamedTuple,
     Optional,
-    overload,
     Sequence,
     Tuple,
-    TYPE_CHECKING,
     Type,
     TypeVar,
     Union,
+    overload,
 )
 from urllib.parse import quote as _uriquote
-import weakref
 
 import aiohttp
 
-from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
-from .gateway import DiscordClientWebSocketResponse
-from .file import File
-from .mentions import AllowedMentions
 from . import __version__, utils
+from .errors import DiscordServerError, Forbidden, GatewayNotFound, HTTPException, LoginFailure, NotFound
+from .file import File
+from .gateway import DiscordClientWebSocketResponse
+from .mentions import AllowedMentions
 from .utils import MISSING
 
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from types import TracebackType
+
     from typing_extensions import Self
 
-    from .ui.view import View
     from .embeds import Embed
-    from .message import Attachment
-    from .flags import MessageFlags
     from .enums import AuditLogAction
-
+    from .flags import MessageFlags
+    from .message import Attachment
     from .types import (
         appinfo,
         audit_log,
@@ -80,19 +80,18 @@ if TYPE_CHECKING:
         invite,
         member,
         message,
-        template,
         role,
-        user,
-        webhook,
-        widget,
-        threads,
         scheduled_event,
         sticker,
+        template,
+        threads,
+        user,
+        webhook,
         welcome_screen,
+        widget,
     )
     from .types.snowflake import Snowflake, SnowflakeList
-
-    from types import TracebackType
+    from .ui.view import View
 
     T = TypeVar('T')
     BE = TypeVar('BE', bound=BaseException)

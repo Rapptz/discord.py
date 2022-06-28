@@ -24,8 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Tuple, TypedDict, Any, TYPE_CHECKING, Callable, TypeVar, Literal, Optional, overload
-
 import array
 import ctypes
 import ctypes.util
@@ -34,6 +32,7 @@ import math
 import os.path
 import struct
 import sys
+from typing import TYPE_CHECKING, Any, Callable, List, Literal, Optional, Tuple, TypedDict, TypeVar, overload
 
 from .errors import DiscordException
 

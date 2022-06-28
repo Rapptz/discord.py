@@ -1,8 +1,9 @@
 from __future__ import annotations
+
 import importlib
 import inspect
 import re
-from typing import Dict, List, NamedTuple, Optional, Tuple, Sequence, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, NamedTuple, Optional, Sequence, Tuple
 
 from docutils import nodes
 from sphinx import addnodes

@@ -26,21 +26,13 @@ from __future__ import annotations
 
 import inspect
 from operator import attrgetter
-from typing import TYPE_CHECKING, Any, Literal, Optional, OrderedDict, Union, Protocol
+from typing import TYPE_CHECKING, Any, Literal, Optional, OrderedDict, Protocol, Union
 
+from discord import DMChannel, Member, TextChannel, Thread, User, VoiceChannel
 from discord.utils import MISSING, maybe_coroutine
 
-from .errors import NoPrivateMessage
 from .converter import GuildConverter
-
-from discord import (
-    Member,
-    User,
-    TextChannel,
-    VoiceChannel,
-    DMChannel,
-    Thread,
-)
+from .errors import NoPrivateMessage
 
 if TYPE_CHECKING:
     from typing_extensions import Self

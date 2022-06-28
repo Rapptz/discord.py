@@ -28,22 +28,21 @@ from datetime import datetime
 from typing import TYPE_CHECKING, AsyncIterator, Dict, Optional, Union
 
 from .asset import Asset
-from .enums import EventStatus, EntityType, PrivacyLevel, try_enum
+from .enums import EntityType, EventStatus, PrivacyLevel, try_enum
 from .mixins import Hashable
-from .object import Object, OLDEST_OBJECT
-from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
+from .object import OLDEST_OBJECT, Object
+from .utils import MISSING, _bytes_to_base64_data, _get_as_snowflake, parse_time
 
 if TYPE_CHECKING:
+    from .abc import Snowflake
+    from .channel import StageChannel, VoiceChannel
+    from .guild import Guild
+    from .state import ConnectionState
     from .types.scheduled_event import (
+        EntityMetadata,
         GuildScheduledEvent as BaseGuildScheduledEventPayload,
         GuildScheduledEventWithUserCount as GuildScheduledEventWithUserCountPayload,
-        EntityMetadata,
     )
-
-    from .abc import Snowflake
-    from .guild import Guild
-    from .channel import VoiceChannel, StageChannel
-    from .state import ConnectionState
     from .user import User
 
     GuildScheduledEventPayload = Union[BaseGuildScheduledEventPayload, GuildScheduledEventWithUserCountPayload]

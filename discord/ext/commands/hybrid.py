@@ -24,42 +24,29 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    List,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-    Optional,
-)
+import inspect
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import discord
-import inspect
 from discord import app_commands
-from discord.utils import MISSING, maybe_coroutine, async_all
-from .core import Command, Group
-from .errors import BadArgument, CommandRegistrationError, CommandError, HybridCommandError, ConversionError
-from .converter import Converter, Range, Greedy, run_converters, CONVERTER_MAPPING
-from .parameters import Parameter
-from .flags import is_flag, FlagConverter
+from discord.utils import MISSING, async_all, maybe_coroutine
+
 from .cog import Cog
+from .converter import CONVERTER_MAPPING, Converter, Greedy, Range, run_converters
+from .core import Command, Group
+from .errors import BadArgument, CommandError, CommandRegistrationError, ConversionError, HybridCommandError
+from .flags import FlagConverter, is_flag
+from .parameters import Parameter
 from .view import StringView
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, ParamSpec, Concatenate
-    from ._types import ContextT, Coro, BotT
+    from typing_extensions import Concatenate, ParamSpec, Self
+
+    from discord.app_commands.commands import AutocompleteCallback, Check as AppCommandCheck, ChoiceT
+
+    from ._types import BotT, ContextT, Coro
     from .bot import Bot
     from .context import Context
-    from discord.app_commands.commands import (
-        Check as AppCommandCheck,
-        AutocompleteCallback,
-        ChoiceT,
-    )
 
 
 __all__ = (

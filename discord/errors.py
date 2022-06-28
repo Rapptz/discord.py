@@ -23,7 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Dict, List, Optional, TYPE_CHECKING, Any, Tuple, Union
+
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse, ClientWebSocketResponse

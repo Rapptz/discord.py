@@ -23,12 +23,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-import logging
-import inspect
 
+import inspect
+import logging
+from collections import Counter
 from typing import (
-    Any,
     TYPE_CHECKING,
+    Any,
     Callable,
     Coroutine,
     Dict,
@@ -44,30 +45,28 @@ from typing import (
     Union,
     overload,
 )
-from collections import Counter
 
-
-from .namespace import Namespace, ResolveKey
-from .models import AppCommand
+from ..enums import AppCommandType, InteractionType
+from ..errors import ClientException
+from ..utils import MISSING, _get_as_snowflake, _is_submodule
 from .commands import Command, ContextMenu, Group, _shorten
 from .errors import (
     AppCommandError,
     CommandAlreadyRegistered,
+    CommandLimitReached,
     CommandNotFound,
     CommandSignatureMismatch,
-    CommandLimitReached,
     MissingApplicationID,
 )
-from ..errors import ClientException
-from ..enums import AppCommandType, InteractionType
-from ..utils import MISSING, _get_as_snowflake, _is_submodule
+from .models import AppCommand
+from .namespace import Namespace, ResolveKey
 
 if TYPE_CHECKING:
-    from ..types.interactions import ApplicationCommandInteractionData, ApplicationCommandInteractionDataOption
-    from ..interactions import Interaction
-    from ..client import Client
     from ..abc import Snowflake
-    from .commands import ContextMenuCallback, CommandCallback, P, T
+    from ..client import Client
+    from ..interactions import Interaction
+    from ..types.interactions import ApplicationCommandInteractionData, ApplicationCommandInteractionDataOption
+    from .commands import CommandCallback, ContextMenuCallback, P, T
 
     ErrorFunc = Callable[
         [Interaction, AppCommandError],

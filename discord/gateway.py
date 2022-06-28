@@ -24,17 +24,16 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from collections import deque
 import concurrent.futures
 import logging
 import struct
 import sys
-import time
 import threading
+import time
 import traceback
 import zlib
-
-from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar
+from collections import deque
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Deque, Dict, List, NamedTuple, Optional, TypeVar
 
 import aiohttp
 

@@ -28,9 +28,9 @@ import asyncio
 from typing import TYPE_CHECKING, Generator, Optional, Type, TypeVar
 
 if TYPE_CHECKING:
-    from .abc import Messageable, MessageableChannel
-
     from types import TracebackType
+
+    from .abc import Messageable, MessageableChannel
 
     BE = TypeVar('BE', bound=BaseException)
 

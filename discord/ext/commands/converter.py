@@ -35,12 +35,12 @@ from typing import (
     List,
     Literal,
     Optional,
-    overload,
     Protocol,
     Tuple,
     Type,
     TypeVar,
     Union,
+    overload,
     runtime_checkable,
 )
 
@@ -52,9 +52,9 @@ if TYPE_CHECKING:
     from discord.state import Channel
     from discord.threads import Thread
 
-    from .parameters import Parameter
     from ._types import BotT, _Bot
     from .context import Context
+    from .parameters import Parameter
 
 __all__ = (
     'Converter',

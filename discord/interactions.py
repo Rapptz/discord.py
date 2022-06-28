@@ -25,23 +25,23 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, Optional, TYPE_CHECKING, Sequence, Tuple, Union
+
 import asyncio
 import datetime
+from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, Tuple, Union
 
 from . import utils
-from .enums import try_enum, Locale, InteractionType, InteractionResponseType
-from .errors import InteractionResponded, HTTPException, ClientException, DiscordException
-from .flags import MessageFlags
-from .channel import PartialMessageable, ChannelType
-
-from .user import User
-from .member import Member
-from .message import Message, Attachment
-from .permissions import Permissions
-from .http import handle_message_parameters
-from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
 from .app_commands.namespace import Namespace
+from .channel import ChannelType, PartialMessageable
+from .enums import InteractionResponseType, InteractionType, Locale, try_enum
+from .errors import ClientException, DiscordException, HTTPException, InteractionResponded
+from .flags import MessageFlags
+from .http import handle_message_parameters
+from .member import Member
+from .message import Attachment, Message
+from .permissions import Permissions
+from .user import User
+from .webhook.async_ import Webhook, async_context, interaction_message_response_params, interaction_response_params
 
 __all__ = (
     'Interaction',
@@ -50,27 +50,22 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from .types.interactions import (
-        Interaction as InteractionPayload,
-        InteractionData,
-        ApplicationCommandInteractionData,
-    )
-    from .types.webhook import (
-        Webhook as WebhookPayload,
-    )
-    from .client import Client
-    from .guild import Guild
-    from .state import ConnectionState
-    from .file import File
-    from .mentions import AllowedMentions
     from aiohttp import ClientSession
-    from .embeds import Embed
-    from .ui.view import View
-    from .app_commands.models import Choice, ChoiceT
-    from .ui.modal import Modal
-    from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel
-    from .threads import Thread
+
     from .app_commands.commands import Command, ContextMenu
+    from .app_commands.models import Choice, ChoiceT
+    from .channel import CategoryChannel, ForumChannel, StageChannel, TextChannel, VoiceChannel
+    from .client import Client
+    from .embeds import Embed
+    from .file import File
+    from .guild import Guild
+    from .mentions import AllowedMentions
+    from .state import ConnectionState
+    from .threads import Thread
+    from .types.interactions import ApplicationCommandInteractionData, Interaction as InteractionPayload, InteractionData
+    from .types.webhook import Webhook as WebhookPayload
+    from .ui.modal import Modal
+    from .ui.view import View
 
     InteractionChannel = Union[
         VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel, Thread, PartialMessageable

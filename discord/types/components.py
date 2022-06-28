@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, TypedDict, Union
+
 from typing_extensions import NotRequired
 
 from .emoji import PartialEmoji

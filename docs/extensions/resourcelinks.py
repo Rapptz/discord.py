@@ -4,11 +4,10 @@
 
 from typing import Any, Dict, List, Tuple
 
+import sphinx
 from docutils import nodes, utils
 from docutils.nodes import Node, system_message
 from docutils.parsers.rst.states import Inliner
-
-import sphinx
 from sphinx.application import Sphinx
 from sphinx.util.nodes import split_explicit_title
 from sphinx.util.typing import RoleFunction

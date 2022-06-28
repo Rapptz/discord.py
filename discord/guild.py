@@ -28,6 +28,7 @@ import copy
 import datetime
 import unicodedata
 from typing import (
+    TYPE_CHECKING,
     Any,
     AsyncIterator,
     ClassVar,
@@ -35,61 +36,56 @@ from typing import (
     Coroutine,
     Dict,
     List,
+    Literal,
     Mapping,
     NamedTuple,
+    Optional,
     Sequence,
     Set,
-    Literal,
-    Optional,
-    TYPE_CHECKING,
     Tuple,
     Union,
     overload,
 )
 
-from . import utils, abc
-from .role import Role
-from .member import Member, VoiceState
-from .emoji import Emoji
-from .errors import InvalidData
-from .permissions import PermissionOverwrite
-from .colour import Colour
-from .errors import ClientException
+from . import abc, utils
+from .asset import Asset
+from .audit_logs import AuditLogEntry
+from .automod import AutoModRule, AutoModRuleAction, AutoModTrigger
 from .channel import *
-from .channel import _guild_channel_factory
-from .channel import _threaded_guild_channel_factory
+from .colour import Colour
+from .emoji import Emoji
 from .enums import (
     AuditLogAction,
-    VideoQualityMode,
+    AutoModRuleEventType,
     ChannelType,
-    EntityType,
-    PrivacyLevel,
-    try_enum,
-    VerificationLevel,
     ContentFilter,
+    EntityType,
+    Locale,
+    MFALevel,
     NotificationLevel,
     NSFWLevel,
-    MFALevel,
-    Locale,
-    AutoModRuleEventType,
+    PrivacyLevel,
+    VerificationLevel,
+    VideoQualityMode,
+    try_enum,
 )
-from .mixins import Hashable
-from .user import User
-from .invite import Invite
-from .widget import Widget
-from .asset import Asset
+from .errors import ClientException, InvalidData
+from .file import File
 from .flags import SystemChannelFlags
 from .integrations import Integration, PartialIntegration, _integration_factory
+from .invite import Invite
+from .member import Member, VoiceState
+from .mixins import Hashable
+from .object import OLDEST_OBJECT, Object
+from .permissions import PermissionOverwrite
+from .role import Role
 from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
-from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
-from .file import File
-from .audit_logs import AuditLogEntry
-from .object import OLDEST_OBJECT, Object
-from .welcome_screen import WelcomeScreen, WelcomeChannel
-from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
-
+from .threads import Thread, ThreadMember
+from .user import User
+from .welcome_screen import WelcomeChannel, WelcomeScreen
+from .widget import Widget
 
 __all__ = (
     'Guild',
@@ -100,34 +96,32 @@ MISSING = utils.MISSING
 
 if TYPE_CHECKING:
     from .abc import Snowflake, SnowflakeTime
+    from .channel import CategoryChannel, ForumChannel, StageChannel, TextChannel, VoiceChannel
+    from .permissions import Permissions
+    from .state import ConnectionState
+    from .template import Template
+    from .types.channel import (
+        CategoryChannel as CategoryChannelPayload,
+        ForumChannel as ForumChannelPayload,
+        GuildChannel as GuildChannelPayload,
+        NewsChannel as NewsChannelPayload,
+        StageChannel as StageChannelPayload,
+        TextChannel as TextChannelPayload,
+        VoiceChannel as VoiceChannelPayload,
+    )
     from .types.guild import (
         Ban as BanPayload,
         Guild as GuildPayload,
-        RolePositionUpdate as RolePositionUpdatePayload,
         GuildFeature,
-    )
-    from .types.threads import (
-        Thread as ThreadPayload,
-    )
-    from .types.voice import GuildVoiceState
-    from .permissions import Permissions
-    from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel
-    from .template import Template
-    from .webhook import Webhook
-    from .state import ConnectionState
-    from .voice_client import VoiceProtocol
-    from .types.channel import (
-        GuildChannel as GuildChannelPayload,
-        TextChannel as TextChannelPayload,
-        NewsChannel as NewsChannelPayload,
-        VoiceChannel as VoiceChannelPayload,
-        CategoryChannel as CategoryChannelPayload,
-        StageChannel as StageChannelPayload,
-        ForumChannel as ForumChannelPayload,
+        RolePositionUpdate as RolePositionUpdatePayload,
     )
     from .types.integration import IntegrationType
     from .types.snowflake import SnowflakeList
+    from .types.threads import Thread as ThreadPayload
+    from .types.voice import GuildVoiceState
     from .types.widget import EditWidgetSettings
+    from .voice_client import VoiceProtocol
+    from .webhook import Webhook
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]

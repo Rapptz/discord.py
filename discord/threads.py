@@ -24,15 +24,15 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Iterable, List, Literal, Optional, Union, TYPE_CHECKING
 from datetime import datetime
+from typing import TYPE_CHECKING, Callable, Dict, Iterable, List, Literal, Optional, Union
 
-from .mixins import Hashable
 from .abc import Messageable, _purge_helper
 from .enums import ChannelType, try_enum
 from .errors import ClientException
 from .flags import ChannelFlags
-from .utils import MISSING, parse_time, _get_as_snowflake
+from .mixins import Hashable
+from .utils import MISSING, _get_as_snowflake, parse_time
 
 __all__ = (
     'Thread',
@@ -42,21 +42,21 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .types.threads import (
-        Thread as ThreadPayload,
-        ThreadMember as ThreadMemberPayload,
-        ThreadMetadata,
-        ThreadArchiveDuration,
-    )
-    from .types.snowflake import SnowflakeList
+    from .abc import Snowflake, SnowflakeTime
+    from .channel import CategoryChannel, ForumChannel, TextChannel
     from .guild import Guild
-    from .channel import TextChannel, CategoryChannel, ForumChannel
     from .member import Member
     from .message import Message, PartialMessage
-    from .abc import Snowflake, SnowflakeTime
-    from .role import Role
     from .permissions import Permissions
+    from .role import Role
     from .state import ConnectionState
+    from .types.snowflake import SnowflakeList
+    from .types.threads import (
+        Thread as ThreadPayload,
+        ThreadArchiveDuration,
+        ThreadMember as ThreadMemberPayload,
+        ThreadMetadata,
+    )
 
     ThreadChannelType = Literal[ChannelType.news_thread, ChannelType.public_thread, ChannelType.private_thread]
 

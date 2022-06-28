@@ -23,10 +23,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, Optional, Tuple, Union
 
-import os
 import io
+import os
+from typing import Any, Dict, Optional, Tuple, Union
 
 from .utils import MISSING
 

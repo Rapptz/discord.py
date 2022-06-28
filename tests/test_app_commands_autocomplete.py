@@ -23,10 +23,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+
 from typing import List
 
-import discord
 import pytest
+
+import discord
 from discord import app_commands
 from discord.utils import MISSING
 

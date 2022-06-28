@@ -24,15 +24,14 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 import inspect
 import os
+from typing import TYPE_CHECKING, Callable, Literal, Optional, Tuple, TypeVar, Union
 
-
-from .item import Item, ItemCallbackType
+from ..components import Button as ButtonComponent
 from ..enums import ButtonStyle, ComponentType
 from ..partial_emoji import PartialEmoji, _EmojiTag
-from ..components import Button as ButtonComponent
+from .item import Item, ItemCallbackType
 
 __all__ = (
     'Button',
@@ -42,9 +41,9 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .view import View
     from ..emoji import Emoji
     from ..types.components import ButtonComponent as ButtonComponentPayload
+    from .view import View
 
 V = TypeVar('V', bound='View', covariant=True)
 

@@ -26,75 +26,56 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import re
 import io
+import re
 from os import PathLike
-from typing import (
-    Dict,
-    TYPE_CHECKING,
-    Sequence,
-    Union,
-    List,
-    Optional,
-    Any,
-    Callable,
-    Tuple,
-    ClassVar,
-    Type,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Optional, Sequence, Tuple, Type, Union, overload
 
 from . import utils
 from .asset import Asset
-from .reaction import Reaction
-from .emoji import Emoji
-from .partial_emoji import PartialEmoji
-from .enums import InteractionType, MessageType, ChannelType, try_enum
-from .errors import HTTPException
+from .channel import PartialMessageable
 from .components import _component_factory
 from .embeds import Embed
-from .member import Member
-from .flags import MessageFlags
+from .emoji import Emoji
+from .enums import ChannelType, InteractionType, MessageType, try_enum
+from .errors import HTTPException
 from .file import File
-from .utils import escape_mentions, MISSING
-from .http import handle_message_parameters
+from .flags import MessageFlags
 from .guild import Guild
+from .http import handle_message_parameters
+from .member import Member
 from .mixins import Hashable
+from .partial_emoji import PartialEmoji
+from .reaction import Reaction
 from .sticker import StickerItem
 from .threads import Thread
-from .channel import PartialMessageable
+from .utils import MISSING, escape_mentions
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .types.message import (
-        Message as MessagePayload,
-        Attachment as AttachmentPayload,
-        MessageReference as MessageReferencePayload,
-        MessageApplication as MessageApplicationPayload,
-        MessageActivity as MessageActivityPayload,
-    )
-
-    from .types.interactions import MessageInteraction as MessageInteractionPayload
-
+    from .abc import GuildChannel, MessageableChannel, Snowflake
+    from .channel import TextChannel
+    from .components import ActionRow, ActionRowChildComponentType
+    from .mentions import AllowedMentions
+    from .role import Role
+    from .state import ConnectionState
     from .types.components import Component as ComponentPayload
-    from .types.threads import ThreadArchiveDuration
-    from .types.member import (
-        Member as MemberPayload,
-        UserWithMember as UserWithMemberPayload,
-    )
-    from .types.user import User as UserPayload
     from .types.embed import Embed as EmbedPayload
     from .types.gateway import MessageReactionRemoveEvent, MessageUpdateEvent
-    from .abc import Snowflake
-    from .abc import GuildChannel, MessageableChannel
-    from .components import ActionRow, ActionRowChildComponentType
-    from .state import ConnectionState
-    from .channel import TextChannel
-    from .mentions import AllowedMentions
-    from .user import User
-    from .role import Role
+    from .types.interactions import MessageInteraction as MessageInteractionPayload
+    from .types.member import Member as MemberPayload, UserWithMember as UserWithMemberPayload
+    from .types.message import (
+        Attachment as AttachmentPayload,
+        Message as MessagePayload,
+        MessageActivity as MessageActivityPayload,
+        MessageApplication as MessageApplicationPayload,
+        MessageReference as MessageReferencePayload,
+    )
+    from .types.threads import ThreadArchiveDuration
+    from .types.user import User as UserPayload
     from .ui.view import View
+    from .user import User
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
     MessageComponentType = Union[ActionRow, ActionRowChildComponentType]

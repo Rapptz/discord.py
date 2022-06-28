@@ -40,33 +40,32 @@ Some documentation to refer to:
 from __future__ import annotations
 
 import asyncio
-import socket
 import logging
+import socket
 import struct
 import threading
-from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, Union
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
-from .gateway import *
 from .errors import ClientException, ConnectionClosed
+from .gateway import *
 from .player import AudioPlayer, AudioSource
 from .utils import MISSING
 
 if TYPE_CHECKING:
+    from . import abc
+    from .channel import StageChannel, VoiceChannel
     from .client import Client
     from .guild import Guild
-    from .state import ConnectionState
-    from .user import ClientUser
     from .opus import Encoder
-    from .channel import StageChannel, VoiceChannel
-    from . import abc
-
+    from .state import ConnectionState
     from .types.voice import (
         GuildVoiceState as GuildVoiceStatePayload,
-        VoiceServerUpdate as VoiceServerUpdatePayload,
         SupportedModes,
+        VoiceServerUpdate as VoiceServerUpdatePayload,
     )
+    from .user import ClientUser
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
 

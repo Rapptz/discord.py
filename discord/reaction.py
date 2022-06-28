@@ -23,10 +23,11 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, AsyncIterator, Union, Optional
 
-from .user import User
+from typing import TYPE_CHECKING, AsyncIterator, Optional, Union
+
 from .object import Object
+from .user import User
 
 # fmt: off
 __all__ = (
@@ -35,12 +36,12 @@ __all__ = (
 # fmt: on
 
 if TYPE_CHECKING:
+    from .abc import Snowflake
+    from .emoji import Emoji
     from .member import Member
-    from .types.message import Reaction as ReactionPayload
     from .message import Message
     from .partial_emoji import PartialEmoji
-    from .emoji import Emoji
-    from .abc import Snowflake
+    from .types.message import Reaction as ReactionPayload
 
 
 class Reaction:

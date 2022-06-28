@@ -28,7 +28,7 @@ import asyncio
 import logging
 import os
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, ClassVar, List
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, List, Optional, Sequence
 
 from ..utils import MISSING, find
 from .item import Item

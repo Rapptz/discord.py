@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, List, Mapping, Optional, Protocol, TYPE_CHECKING, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Protocol, TypeVar, Union
 
 from . import utils
 from .colour import Colour

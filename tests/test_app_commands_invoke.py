@@ -23,20 +23,21 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-
 from functools import wraps
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Coroutine, List, Optional, Type, TypeVar, Union
+
 import pytest
-from typing import Awaitable, TYPE_CHECKING, Callable, Coroutine, Optional, TypeVar, Any, Type, List, Union
 
 import discord
 
 if TYPE_CHECKING:
 
     from typing_extensions import ParamSpec
+
     from discord.types.interactions import (
         ApplicationCommandInteraction as ApplicationCommandInteractionPayload,
-        ChatInputApplicationCommandInteractionData as ChatInputApplicationCommandInteractionDataPayload,
         ApplicationCommandInteractionDataOption as ApplicationCommandInteractionDataOptionPayload,
+        ChatInputApplicationCommandInteractionData as ChatInputApplicationCommandInteractionDataPayload,
     )
 
     P = ParamSpec('P')

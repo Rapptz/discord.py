@@ -24,29 +24,15 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import itertools
 import copy
 import functools
+import itertools
 import re
-
-from typing import (
-    TYPE_CHECKING,
-    Optional,
-    Generator,
-    List,
-    TypeVar,
-    Callable,
-    Any,
-    Dict,
-    Tuple,
-    Iterable,
-    Sequence,
-    Mapping,
-)
+from typing import TYPE_CHECKING, Any, Callable, Dict, Generator, Iterable, List, Mapping, Optional, Sequence, Tuple, TypeVar
 
 import discord.utils
 
-from .core import Group, Command, get_signature_parameters
+from .core import Command, Group, get_signature_parameters
 from .errors import CommandError
 
 if TYPE_CHECKING:
@@ -54,16 +40,11 @@ if TYPE_CHECKING:
 
     import discord.abc
 
+    from ._types import BotT, UserCheck, _Bot
     from .bot import BotBase
-    from .context import Context
     from .cog import Cog
+    from .context import Context
     from .parameters import Parameter
-
-    from ._types import (
-        UserCheck,
-        BotT,
-        _Bot,
-    )
 
 __all__ = (
     'Paginator',

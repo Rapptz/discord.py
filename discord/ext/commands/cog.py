@@ -24,16 +24,17 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import inspect
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Generator, Iterable, List, Optional, Tuple, TypeVar, Union
+
 import discord
 from discord import app_commands
 from discord.utils import maybe_coroutine
 
-from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
-
-from ._types import _BaseCommand, BotT
+from ._types import BotT, _BaseCommand
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+
     from discord.abc import Snowflake
 
     from .bot import BotBase

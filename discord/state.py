@@ -25,76 +25,73 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from collections import deque, OrderedDict
 import copy
+import inspect
 import logging
+import os
+import weakref
+from collections import OrderedDict, deque
 from typing import (
-    Dict,
-    Optional,
     TYPE_CHECKING,
-    Union,
-    Callable,
     Any,
-    List,
-    TypeVar,
+    Callable,
     Coroutine,
+    Deque,
+    Dict,
+    List,
+    Literal,
+    Optional,
     Sequence,
     Tuple,
-    Deque,
-    Literal,
+    TypeVar,
+    Union,
     overload,
 )
-import weakref
-import inspect
 
-import os
-
-from .guild import Guild
-from .activity import BaseActivity
-from .user import User, ClientUser
-from .emoji import Emoji
-from .mentions import AllowedMentions
-from .partial_emoji import PartialEmoji
-from .message import Message
-from .channel import *
-from .channel import _channel_factory
-from .raw_models import *
-from .member import Member
-from .role import Role
-from .enums import ChannelType, try_enum, Status
 from . import utils
+from .activity import BaseActivity
+from .automod import AutoModAction, AutoModRule
+from .channel import *
+from .emoji import Emoji
+from .enums import ChannelType, Status, try_enum
 from .flags import ApplicationFlags, Intents, MemberCacheFlags
-from .object import Object
-from .invite import Invite
+from .guild import Guild
 from .integrations import _integration_factory
 from .interactions import Interaction
-from .ui.view import ViewStore, View
+from .invite import Invite
+from .member import Member
+from .mentions import AllowedMentions
+from .message import Message
+from .object import Object
+from .partial_emoji import PartialEmoji
+from .raw_models import *
+from .role import Role
 from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
-from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
-from .automod import AutoModRule, AutoModAction
+from .threads import Thread, ThreadMember
+from .ui.view import View, ViewStore
+from .user import ClientUser, User
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel
-    from .message import MessageableChannel
-    from .guild import GuildChannel, VocalGuildChannel
-    from .http import HTTPClient
-    from .voice_client import VoiceProtocol
+    from .app_commands import CommandTree
     from .client import Client
     from .gateway import DiscordWebSocket
-    from .app_commands import CommandTree
-
-    from .types.automod import AutoModerationRule, AutoModerationActionExecution
-    from .types.snowflake import Snowflake
+    from .guild import GuildChannel, VocalGuildChannel
+    from .http import HTTPClient
+    from .message import MessageableChannel
+    from .types import gateway as gw
     from .types.activity import Activity as ActivityPayload
+    from .types.automod import AutoModerationActionExecution, AutoModerationRule
     from .types.channel import DMChannel as DMChannelPayload
-    from .types.user import User as UserPayload, PartialUser as PartialUserPayload
     from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload
-    from .types.sticker import GuildSticker as GuildStickerPayload
     from .types.guild import Guild as GuildPayload
     from .types.message import Message as MessagePayload, PartialMessage as PartialMessagePayload
-    from .types import gateway as gw
+    from .types.snowflake import Snowflake
+    from .types.sticker import GuildSticker as GuildStickerPayload
+    from .types.user import PartialUser as PartialUserPayload, User as UserPayload
+    from .voice_client import VoiceProtocol
 
     T = TypeVar('T')
     Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable]

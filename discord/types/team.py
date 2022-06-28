@@ -24,10 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TypedDict, List, Optional
+from typing import List, Optional, TypedDict
 
-from .user import PartialUser
 from .snowflake import Snowflake
+from .user import PartialUser
 
 
 class TeamMember(TypedDict):

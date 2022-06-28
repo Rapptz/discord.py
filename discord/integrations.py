@@ -25,10 +25,11 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Tuple
-from .utils import _get_as_snowflake, parse_time, MISSING
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Type
+
+from .enums import ExpireBehaviour, try_enum
 from .user import User
-from .enums import try_enum, ExpireBehaviour
+from .utils import MISSING, _get_as_snowflake, parse_time
 
 __all__ = (
     'IntegrationAccount',
@@ -44,13 +45,13 @@ if TYPE_CHECKING:
     from .role import Role
     from .state import ConnectionState
     from .types.integration import (
-        IntegrationAccount as IntegrationAccountPayload,
-        Integration as IntegrationPayload,
-        StreamIntegration as StreamIntegrationPayload,
         BotIntegration as BotIntegrationPayload,
-        IntegrationType,
+        Integration as IntegrationPayload,
+        IntegrationAccount as IntegrationAccountPayload,
         IntegrationApplication as IntegrationApplicationPayload,
+        IntegrationType,
         PartialIntegration as PartialIntegrationPayload,
+        StreamIntegration as StreamIntegrationPayload,
     )
 
 

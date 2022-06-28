@@ -26,12 +26,13 @@ from __future__ import annotations
 
 import io
 import os
-from typing import Any, Literal, Optional, TYPE_CHECKING, Tuple, Union
-from .errors import DiscordException
-from . import utils
-from .file import File
+from typing import TYPE_CHECKING, Any, Literal, Optional, Tuple, Union
 
 import yarl
+
+from . import utils
+from .errors import DiscordException
+from .file import File
 
 # fmt: off
 __all__ = (

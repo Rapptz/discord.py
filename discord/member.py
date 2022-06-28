@@ -28,20 +28,20 @@ import datetime
 import inspect
 import itertools
 from operator import attrgetter
-from typing import Any, Awaitable, Callable, Collection, Dict, List, Optional, TYPE_CHECKING, Tuple, Union, Type
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Collection, Dict, List, Optional, Tuple, Type, Union
 
 import discord.abc
 
 from . import utils
+from .activity import ActivityTypes, create_activity
 from .asset import Asset
-from .utils import MISSING
-from .user import BaseUser, User, _UserTag
-from .activity import create_activity, ActivityTypes
-from .permissions import Permissions
+from .colour import Colour
 from .enums import Status, try_enum
 from .errors import ClientException
-from .colour import Colour
 from .object import Object
+from .permissions import Permissions
+from .user import BaseUser, User, _UserTag
+from .utils import MISSING
 
 __all__ = (
     'VoiceState',
@@ -51,28 +51,22 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .channel import DMChannel, VoiceChannel, StageChannel
+    from .abc import Snowflake
+    from .channel import DMChannel, StageChannel, VoiceChannel
     from .flags import PublicUserFlags
     from .guild import Guild
-    from .types.activity import (
-        ClientStatus as ClientStatusPayload,
-        PartialPresenceUpdate,
-    )
-    from .types.member import (
-        MemberWithUser as MemberWithUserPayload,
-        Member as MemberPayload,
-        UserWithMember as UserWithMemberPayload,
-    )
-    from .types.gateway import GuildMemberUpdateEvent
-    from .types.user import User as UserPayload
-    from .abc import Snowflake
-    from .state import ConnectionState
     from .message import Message
     from .role import Role
-    from .types.voice import (
-        GuildVoiceState as GuildVoiceStatePayload,
-        VoiceState as VoiceStatePayload,
+    from .state import ConnectionState
+    from .types.activity import ClientStatus as ClientStatusPayload, PartialPresenceUpdate
+    from .types.gateway import GuildMemberUpdateEvent
+    from .types.member import (
+        Member as MemberPayload,
+        MemberWithUser as MemberWithUserPayload,
+        UserWithMember as UserWithMemberPayload,
     )
+    from .types.user import User as UserPayload
+    from .types.voice import GuildVoiceState as GuildVoiceStatePayload, VoiceState as VoiceStatePayload
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
 

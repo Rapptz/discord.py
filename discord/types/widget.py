@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import List, Optional, TypedDict
+
 from .activity import Activity
 from .snowflake import Snowflake
 from .user import User

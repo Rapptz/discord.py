@@ -45,29 +45,24 @@ if TYPE_CHECKING:
     import datetime
 
     from . import abc
+    from .app_commands import AppCommand, AppCommandPermissions
     from .emoji import Emoji
     from .guild import Guild
+    from .integrations import PartialIntegration
     from .member import Member
     from .role import Role
     from .scheduled_event import ScheduledEvent
+    from .stage_instance import StageInstance
     from .state import ConnectionState
-    from .types.audit_log import (
-        AuditLogChange as AuditLogChangePayload,
-        AuditLogEntry as AuditLogEntryPayload,
-    )
-    from .types.channel import (
-        PermissionOverwrite as PermissionOverwritePayload,
-    )
+    from .sticker import GuildSticker
+    from .threads import Thread
+    from .types.audit_log import AuditLogChange as AuditLogChangePayload, AuditLogEntry as AuditLogEntryPayload
+    from .types.channel import PermissionOverwrite as PermissionOverwritePayload
+    from .types.command import ApplicationCommandPermissions
     from .types.invite import Invite as InvitePayload
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
-    from .types.command import ApplicationCommandPermissions
     from .user import User
-    from .stage_instance import StageInstance
-    from .sticker import GuildSticker
-    from .threads import Thread
-    from .integrations import PartialIntegration
-    from .app_commands import AppCommand, AppCommandPermissions
 
     TargetType = Union[
         Guild,
