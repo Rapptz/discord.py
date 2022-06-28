@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-05-24 14:51+0000\n"
-"PO-Revision-Date: 2022-06-06 17:05\n"
+"PO-Revision-Date: 2022-06-23 11:21\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -1026,7 +1026,7 @@ msgstr "RGBのタプルから :class:`Colour` を作成する :meth:`Colour.from
 
 #: ../../migrating_to_v1.rst:415
 msgid ":meth:`Guild.get_role` to get a role by its ID."
-msgstr "IDから役職を取得する :meth:`Guild.get_role` 。"
+msgstr "IDからロールを取得する :meth:`Guild.get_role` 。"
 
 #: ../../migrating_to_v1.rst:420
 msgid "Sending Messages"
