@@ -1445,6 +1445,7 @@ Miscellaneous Changes
 - :meth:`ext.commands.Cog.cog_load` has been added as part of the :ref:`migrating_2_0_commands_extension_cog_async` changes.
 - :meth:`ext.commands.Cog.cog_unload` may now be a :term:`coroutine` due to the :ref:`migrating_2_0_commands_extension_cog_async` changes.
 - :attr:`ext.commands.Command.clean_params` type now uses a custom :class:`inspect.Parameter` to handle defaults.
+- :class:`ext.commands.PartialEmojiConverter` can now return a :class:`PartialEmoji` representing a unicode emoji.
 
 .. _migrating_2_0_tasks:
 
