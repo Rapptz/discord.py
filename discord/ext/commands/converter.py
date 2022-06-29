@@ -771,8 +771,13 @@ class PartialEmojiConverter(Converter[discord.PartialEmoji]):
 
     This is done by extracting the animated flag, name and ID from the emoji.
 
+    If the emoji is a unicode emoji, then the name is the unicode character.
+
     .. versionchanged:: 1.5
          Raise :exc:`.PartialEmojiConversionFailure` instead of generic :exc:`.BadArgument`
+
+    .. versionchanged:: 2.0
+        Add support for converting unicode emojis
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.PartialEmoji:
@@ -786,6 +791,10 @@ class PartialEmojiConverter(Converter[discord.PartialEmoji]):
             return discord.PartialEmoji.with_state(
                 ctx.bot._connection, animated=emoji_animated, name=emoji_name, id=emoji_id
             )
+
+        # If the emoji is a unicode emoji, then the name is the unicode character.
+        if re.match(r'^[\u0023-\u0039]?[\u00ae\u00a9\U00002000-\U0010ffff]+$', argument):
+            return discord.PartialEmoji.with_state(ctx.bot._connection, name=argument)
 
         raise PartialEmojiConversionFailure(argument)
 
