@@ -276,19 +276,17 @@ class AuditLogChanges:
             self.after.app_command_permissions = []
 
             for elem in data:
-                old_value = self._handle_app_command_permissions(
+                self._handle_app_command_permissions(
+                    self.before,
                     entry,
                     elem.get('old_value'),  # type: ignore # value will be an ApplicationCommandPermissions if present
                 )
-                if old_value is not None:
-                    self.before.app_command_permissions.append(old_value)
 
-                new_value = self._handle_app_command_permissions(
+                self._handle_app_command_permissions(
+                    self.after,
                     entry,
                     elem.get('new_value'),  # type: ignore # value will be an ApplicationCommandPermissions if present
                 )
-                if new_value is not None:
-                    self.after.app_command_permissions.append(new_value)
             return
 
         for elem in data:
@@ -364,18 +362,19 @@ class AuditLogChanges:
 
     def _handle_app_command_permissions(
         self,
+        diff: AuditLogDiff,
         entry: AuditLogEntry,
         data: Optional[ApplicationCommandPermissions],
-    ) -> Optional[AppCommandPermissions]:
+    ):
         if data is None:
-            return None
+            return
 
         # avoid circular import
         from discord.app_commands import AppCommandPermissions
 
         state = entry._state
         guild = entry.guild
-        return AppCommandPermissions(data=data, guild=guild, state=state)
+        diff.app_command_permissions.append(AppCommandPermissions(data=data, guild=guild, state=state))
 
 
 class _AuditLogProxy:
