@@ -485,15 +485,14 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     @discord.utils.cached_property
     def bot_permissions(self) -> Permissions:
         """:class:`.Permissions`: Returns the resolved permissions for the bot in this channel.
+        Shorthand for :meth:`.abc.GuildChannel.permissions_for` or :attr:`.Interaction.app_permissions`.
 
         For interaction-based commands, this will reflect the effective permissions
         for :class:`Context` calls, which may differ from calls through
         other :class:`.abc.Messageable` endpoints, like :attr:`channel`.
 
         Notably, sending messages, embedding links, and attaching files are always
-        permitted, while reading messages might not be. Mass mentioning and using
-        external emojis and stickers also inherits their permissions from the
-        default guild role.
+        permitted, while reading messages might not be.
 
         .. versionadded:: 2.0
         """
@@ -516,16 +515,9 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             # text channels do not have voice related permissions
             denied = Permissions.voice()
             base.value &= ~denied.value
-        if guild:
-            everyone = channel.permissions_for(guild.default_role)
-        else:
-            everyone = Permissions.none()
         base.update(
             embed_links=True,
             attach_files=True,
-            external_emojis=everyone.external_emojis,
-            external_stickers=everyone.external_stickers,
-            mention_everyone=everyone.mention_everyone,
             send_tts_messages=False,
         )
         if isinstance(channel, Thread):
