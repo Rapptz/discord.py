@@ -45,6 +45,7 @@ from .errors import (
     MissingAnyRole,
     MissingPermissions,
     BotMissingPermissions,
+    MissingInteractionPermissions,
     CommandOnCooldown,
 )
 

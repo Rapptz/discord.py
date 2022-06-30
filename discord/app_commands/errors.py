@@ -44,6 +44,7 @@ __all__ = (
     'MissingAnyRole',
     'MissingPermissions',
     'BotMissingPermissions',
+    'MissingInteractionPermissions',
     'CommandOnCooldown',
     'MissingApplicationID',
 )

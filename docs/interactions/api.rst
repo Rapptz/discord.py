@@ -625,6 +625,9 @@ Exceptions
 
 .. autoexception:: discord.app_commands.BotMissingPermissions
     :members:
+    
+.. autoexception:: discord.app_commands.MissingInteractionPermissions
+    :members:
 
 .. autoexception:: discord.app_commands.CommandOnCooldown
     :members:
@@ -659,6 +662,7 @@ Exception Hierarchy
                 - :exc:`~discord.app_commands.MissingAnyRole`
                 - :exc:`~discord.app_commands.MissingPermissions`
                 - :exc:`~discord.app_commands.BotMissingPermissions`
+                - :exc:`~discord.app_commands.MissingInteractionPermissions`
                 - :exc:`~discord.app_commands.CommandOnCooldown`
             - :exc:`~discord.app_commands.CommandLimitReached`
             - :exc:`~discord.app_commands.CommandAlreadyRegistered`
