@@ -500,16 +500,27 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         channel = self.channel
         if channel.type == ChannelType.private:
             return Permissions._dm_permissions()
-        # channel and me will always match relevant types here
-        my_perms = channel.permissions_for(self.me)  # type: ignore
         if not self.interaction:
-            return my_perms
+            # channel and me will always match relevant types here
+            return channel.permissions_for(self.me)  # type: ignore
         guild = channel.guild
+        base = self.interaction.app_permissions
+        if self.channel.type in (ChannelType.voice, ChannelType.stage_voice):
+            if not base.connect:
+                # voice channels cannot be edited by people who can't connect to them
+                # It also implicitly denies all other voice perms
+                denied = Permissions.voice()
+                denied.update(manage_channels=True, manage_roles=True)
+                base.value &= ~denied.value
+        else:
+            # text channels do not have voice related permissions
+            denied = Permissions.voice()
+            base.value &= ~denied.value
         if guild:
             everyone = channel.permissions_for(guild.default_role)
         else:
             everyone = Permissions.none()
-        my_perms.update(
+        base.update(
             embed_links=True,
             attach_files=True,
             external_emojis=everyone.external_emojis,
@@ -518,10 +529,10 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             send_tts_messages=False,
         )
         if isinstance(channel, Thread):
-            my_perms.send_messages_in_threads = True
+            base.send_messages_in_threads = True
         else:
-            my_perms.send_messages = True
-        return my_perms
+            base.send_messages = True
+        return base
 
     @property
     def voice_client(self) -> Optional[VoiceProtocol]:
