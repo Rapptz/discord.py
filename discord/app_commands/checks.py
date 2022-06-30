@@ -373,6 +373,33 @@ def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
     return check(predicate)
 
 
+def has_interaction_permissions(**perms: bool) -> Callable[[T], T]:
+    """Similar to :func:`bot_has_permissions` except checks if the application or bot has
+    the permissions for the current interaction.
+
+    This check raises a special exception, :exc:`~discord.app_commands.MissingInteractionPermissions`
+    that is inherited from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+    """
+
+    invalid = set(perms) - set(Permissions.VALID_FLAGS)
+    if invalid:
+        raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
+
+    def predicate(interaction: Interaction) -> bool:
+        permissions = interaction.app_permissions
+
+        missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
+
+        if not missing:
+            return True
+
+        raise MissingInteractionPermissions(missing)
+
+    return check(predicate)
+
+
 def _create_cooldown_decorator(
     key: CooldownFunction[Hashable], factory: CooldownFunction[Optional[Cooldown]]
 ) -> Callable[[T], T]:
