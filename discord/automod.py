@@ -130,6 +130,7 @@ class AutoModTrigger:
     def __init__(
         self,
         *,
+        type: Optional[AutoModRuleTriggerType] = None,
         keyword_filter: Optional[List[str]] = None,
         presets: Optional[AutoModPresets] = None,
     ) -> None:
@@ -138,18 +139,24 @@ class AutoModTrigger:
         if keyword_filter and presets:
             raise ValueError('Please pass only one of keyword_filter or presets.')
 
-        if self.keyword_filter is not None:
+        if type is not None:
+            self.type = type
+        elif self.keyword_filter is not None:
             self.type = AutoModRuleTriggerType.keyword
-        else:
+        elif self.presets is not None:
             self.type = AutoModRuleTriggerType.keyword_preset
+        else:
+            raise ValueError('Please pass the trigger type explicitly if not using keyword_filter or presets.')
 
     @classmethod
     def from_data(cls, type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
         type_ = try_enum(AutoModRuleTriggerType, type)
         if type_ is AutoModRuleTriggerType.keyword:
             return cls(keyword_filter=data['keyword_filter'])  # type: ignore # unable to typeguard due to outer payload
-        else:
+        elif type_ is AutoModRuleTriggerType.keyword_preset:
             return cls(presets=AutoModPresets._from_value(data['presets']))  # type: ignore # unable to typeguard due to outer payload
+        else:
+            return cls(type=type_)
 
     def to_metadata_dict(self) -> Dict[str, Any]:
         if self.keyword_filter is not None:
