@@ -5259,7 +5259,7 @@ of :class:`enum.Enum`.
 
 .. class:: AutoModRuleTriggerType
 
-    Represents the trigger type of an auto mod rule.
+    Represents the trigger type of an automod rule.
 
     .. versionadded:: 2.0
 
@@ -5281,7 +5281,7 @@ of :class:`enum.Enum`.
 
 .. class:: AutoModRuleEventType
 
-    Represents the event type of an auto mod rule.
+    Represents the event type of an automod rule.
 
     .. versionadded:: 2.0
 
@@ -5291,7 +5291,7 @@ of :class:`enum.Enum`.
 
 .. class:: AutoModRuleActionType
 
-    Represents the action type of an auto mod rule.
+    Represents the action type of an automod rule.
 
     .. versionadded:: 2.0
 
@@ -5943,7 +5943,7 @@ AuditLogDiff
         :type: List[:class:`str`]
 
 .. this is currently missing the following keys: reason and application_id
-   I'm not sure how to about porting these
+   I'm not sure how to port these
 
 Webhook Support
 ------------------
