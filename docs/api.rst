@@ -3720,9 +3720,9 @@ AuditLogDiff
 
     .. attribute:: app_command_permissions
 
-        The permissions of the app command.
+        List of permissions for the app command.
 
-        :type: :class:`~discord.app_commands.AppCommandPermissions`
+        :type: List[:class:`~discord.app_commands.AppCommandPermissions`]
 
     .. attribute:: enabled
 
