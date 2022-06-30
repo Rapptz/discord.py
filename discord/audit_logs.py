@@ -67,7 +67,7 @@ if TYPE_CHECKING:
     from .sticker import GuildSticker
     from .threads import Thread
     from .integrations import PartialIntegration
-    from .app_commands import AppCommand, AppCommandPermissions
+    from .app_commands import AppCommand
 
     TargetType = Union[
         Guild,
