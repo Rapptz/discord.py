@@ -122,10 +122,14 @@ class CommandParameter:
             base['channel_types'] = [t.value for t in self.channel_types]
         if self.autocomplete:
             base['autocomplete'] = True
+
+        min_key, max_key = (
+            ('min_value', 'max_value') if self.type is not AppCommandOptionType.string else ('min_length', 'max_length')
+        )
         if self.min_value is not None:
-            base['min_value'] = self.min_value
+            base[min_key] = self.min_value
         if self.max_value is not None:
-            base['max_value'] = self.max_value
+            base[max_key] = self.max_value
 
         return base
 
@@ -215,8 +219,8 @@ class Transformer:
     def min_value(cls) -> Optional[Union[int, float]]:
         """Optional[:class:`int`]: The minimum supported value for this parameter.
 
-        Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number` or
-        :attr:`~discord.AppCommandOptionType.integer`.
+        Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number`
+        :attr:`~discord.AppCommandOptionType.integer`, or :attr:`~discord.AppCommandOptionType.string`.
 
         Defaults to ``None``.
         """
@@ -226,8 +230,8 @@ class Transformer:
     def max_value(cls) -> Optional[Union[int, float]]:
         """Optional[:class:`int`]: The maximum supported value for this parameter.
 
-        Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number` or
-        :attr:`~discord.AppCommandOptionType.integer`.
+        Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number`
+        :attr:`~discord.AppCommandOptionType.integer`, or :attr:`~discord.AppCommandOptionType.string`.
 
         Defaults to ``None``.
         """
@@ -433,8 +437,8 @@ else:
             return _TransformMetadata(transformer)
 
     class Range:
-        """A type annotation that can be applied to a parameter to require a numeric type
-        to fit within the range provided.
+        """A type annotation that can be applied to a parameter to require a numeric or string
+        type to fit within the range provided.
 
         During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
         the intent of the code.
@@ -480,8 +484,10 @@ else:
                 opt_type = AppCommandOptionType.integer
             elif obj_type is float:
                 opt_type = AppCommandOptionType.number
+            elif obj_type is str:
+                opt_type = AppCommandOptionType.string
             else:
-                raise TypeError(f'expected int or float as range type, received {obj_type!r} instead')
+                raise TypeError(f'expected int, float, or str as range type, received {obj_type!r} instead')
 
             transformer = _make_range_transformer(
                 opt_type,
@@ -736,7 +742,7 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
         result.choices = choices
 
     # These methods should be duck typed
-    if type in (AppCommandOptionType.number, AppCommandOptionType.integer):
+    if type in (AppCommandOptionType.number, AppCommandOptionType.string, AppCommandOptionType.integer):
         result.min_value = inner.min_value()
         result.max_value = inner.max_value()
 
