@@ -594,17 +594,17 @@ class RangeError(BadArgument):
         The minimum value expected or ``None`` if there wasn't one
     maximum: Optional[Union[:class:`int`, :class:`float`]]
         The maximum value expected or ``None`` if there wasn't one
-    value: Union[:class:`int`, :class:`float`]
+    value: Union[:class:`int`, :class:`float`, :class:`str`]
         The value that was out of range.
     """
 
     def __init__(
         self,
-        value: Union[int, float],
+        value: Union[int, float, str],
         minimum: Optional[Union[int, float]],
         maximum: Optional[Union[int, float]],
     ) -> None:
-        self.value: Union[int, float] = value
+        self.value: Union[int, float, str] = value
         self.minimum: Optional[Union[int, float]] = minimum
         self.maximum: Optional[Union[int, float]] = maximum
 
@@ -615,6 +615,14 @@ class RangeError(BadArgument):
             label = f'no less than {minimum}'
         elif maximum is not None and minimum is not None:
             label = f'between {minimum} and {maximum}'
+
+        if label and isinstance(value, str):
+            label += ' characters'
+            count = len(value)
+            if count == 1:
+                value = '1 character'
+            else:
+                value = f'{count} characters'
 
         super().__init__(f'value must be {label} but received {value}')
 
