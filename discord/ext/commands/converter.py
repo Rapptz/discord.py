@@ -1035,8 +1035,8 @@ if TYPE_CHECKING:
 else:
 
     class Range:
-        """A special converter that can be applied to a parameter to require a numeric type
-        to fit within the range provided.
+        """A special converter that can be applied to a parameter to require a numeric
+        or string type to fit within the range provided.
 
         During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
         the intent of the code.
@@ -1048,6 +1048,9 @@ else:
         - ``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10.
 
         Inside a :class:`HybridCommand` this functions equivalently to :class:`discord.app_commands.Range`.
+
+        If the converter fails then :class:`~.ext.commands.RangeError` is raised to
+        the appropriate error handlers.
 
         .. versionadded:: 2.0
 
@@ -1073,8 +1076,11 @@ else:
             self.max: Optional[Union[int, float]] = max
 
         async def convert(self, ctx: Context[BotT], value: str) -> Union[int, float]:
-            converted = self.annotation(value)
-            if (self.min is not None and converted < self.min) or (self.max is not None and converted > self.max):
+            count = converted = self.annotation(value)
+            if self.annotation is str:
+                count = len(value)
+
+            if (self.min is not None and count < self.min) or (self.max is not None and count > self.max):
                 raise RangeError(converted, minimum=self.min, maximum=self.max)
 
             return converted
@@ -1098,13 +1104,18 @@ else:
                 if type(min) != type(max):
                     raise TypeError('Both min and max in Range must be the same type')
 
-            if annotation not in (int, float):
-                raise TypeError(f'expected int or float as range type, received {annotation!r} instead')
+            if annotation not in (int, float, str):
+                raise TypeError(f'expected int, float, or str as range type, received {annotation!r} instead')
+
+            if annotation in (str, int):
+                cast = int
+            else:
+                cast = float
 
             return cls(
                 annotation=annotation,
-                min=annotation(min) if min is not None else None,
-                max=annotation(max) if max is not None else None,
+                min=cast(min) if min is not None else None,
+                max=cast(max) if max is not None else None,
             )
 
 
