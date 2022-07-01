@@ -173,7 +173,9 @@ class AsyncWebhookAdapter:
                     to_send = form_data
 
                 try:
-                    async with session.request(method, url, data=to_send, headers=headers, params=params) as response:
+                    async with session.request(
+                        method, url, data=to_send, headers=headers, params=params, proxy=proxy, proxy_auth=proxy_auth
+                    ) as response:
                         _log.debug(
                             'Webhook ID %s with %s %s has returned status code %s',
                             webhook_id,
