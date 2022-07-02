@@ -808,7 +808,7 @@ class Argument:
 
 
 class AppCommandGroup:
-    """Represents a application command subcommand.
+    """Represents an application command subcommand.
 
     .. versionadded:: 2.0
 
