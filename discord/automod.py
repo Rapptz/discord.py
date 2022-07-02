@@ -398,7 +398,8 @@ class AutoModAction:
     action: :class:`AutoModRuleAction`
         The action that was taken.
     message_id: Optional[:class:`int`]
-        The message ID that triggered the action.
+        The message ID that triggered the action. This is only available if the
+        action is done on an edited message.
     rule_id: :class:`int`
         The ID of the rule that was triggered.
     rule_trigger_type: :class:`AutoModRuleTriggerType`
