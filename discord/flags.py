@@ -195,7 +195,7 @@ class ArrayFlags(BaseFlags):
     @classmethod
     def _from_value(cls: Type[Self], value: List[int]) -> Self:
         self = cls.__new__(cls)
-        self.value = reduce(lambda a, b: a | (1 << b - 1), value)
+        self.value = reduce(lambda a, b: a | (1 << b - 1), value, 0)
         return self
 
     def to_array(self) -> List[int]:
