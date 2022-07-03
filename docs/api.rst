@@ -3153,6 +3153,76 @@ of :class:`enum.Enum`.
 
         The user must accept Discord's terms of service.
 
+.. class:: ConnectionType
+
+    Represents the type of connection a user has with Discord.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: battle_net
+
+        The user has a Battle.net connection.
+
+    .. attribute:: contacts
+
+        The user has a contact sync connection.
+
+    .. attribute:: epic_games
+
+        The user has an Epic Games connection.
+
+    .. attribute:: facebook
+
+        The user has a Facebook connection.
+
+    .. attribute:: github
+
+        The user has a GitHub connection.
+
+    .. attribute:: league_of_legends
+
+        The user has a League of Legends connection.
+
+    .. attribute:: playstation
+
+        The user has a PlayStation connection.
+
+    .. attribute:: reddit
+
+        The user has a Reddit connection.
+
+    .. attribute:: samsung
+
+        The user has a Samsung Account connection.
+
+    .. attribute:: spotify
+
+        The user has a Spotify connection.
+
+    .. attribute:: skype
+
+        The user has a Skype connection.
+
+    .. attribute:: steam
+
+        The user has a Steam connection.
+
+    .. attribute:: twitch
+
+        The user has a Twitch connection.
+
+    .. attribute:: twitter
+
+        The user has a Twitter connection.
+
+    .. attribute:: youtube
+
+        The user has a YouTube connection.
+
+    .. attribute:: xbox
+
+        The user has an Xbox Live connection.
+
 .. class:: InteractionType
 
     Specifies the type of :class:`Interaction`.
