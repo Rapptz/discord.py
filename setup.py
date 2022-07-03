@@ -1,12 +1,14 @@
 from setuptools import setup, find_packages
 import re
 
+prefix = 'discord'  # This will be changed with regular expressions if necessary
+
 requirements = []
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 version = ''
-with open('discord/__init__.py') as f:
+with open(f'{prefix}/__init__.py') as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
 if not version:
@@ -49,7 +51,7 @@ extras_require = {
 }
 
 setup(
-    name='discord.py-self',
+    name='discord.py-self' if prefix == 'discord' else f'{prefix}.py',
     author='Dolfies',
     url='https://github.com/dolfies/discord.py-self',
     project_urls={
@@ -59,7 +61,7 @@ setup(
         "Discussion & support": "https://t.me/dpy_self_discussions",
     },
     version=version,
-    packages=find_packages() + ['discord.ext.commands', 'discord.ext.tasks'],
+    packages=find_packages() + [f'{prefix}.ext.commands', f'{prefix}.ext.tasks'],
     license='MIT',
     description='A Python wrapper for the Discord user API',
     long_description=readme,

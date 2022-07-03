@@ -1,0 +1,34 @@
+name: rename
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Replace instances
+      run: |
+        cp .github/files/README.rst README.rst
+        rm -rf docs .github .readthedocs.yml
+        mv discord selfcord
+
+        sed -i -e 's/import discord/import selfcord/g' -e 's/from discord/from selfcord/g' -e 's/from discord/from selfcord/g' -e 's/discord\.py-self/selfcord\.py/g' -e '/\(discord\.com\|discord\.gg\|discord\.new\)/! s/discord\./selfcord\./g' $(find selfcord examples tests -name "*.py")
+        sed -i -e 's/discord/selfcord/g' pyproject.toml MANIFEST.in
+        sed -i -e "s/prefix = 'discord'/prefix = 'selfcord'/" setup.py
+
+    - name: Push changes
+      uses: actions-x/commit@v6
+      with:
+        message: Synchronize selfcord
+        branch: renamed
+        force: true
