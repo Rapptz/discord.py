@@ -2209,6 +2209,9 @@ class ConnectionState:
             self.dispatch('relationship_update', old, new)
 
     def parse_interaction_create(self, data) -> None:
+        if 'nonce' not in data:  # Sometimes interactions seem to be missing the nonce
+            return
+
         type, name, channel = self._interaction_cache.pop(data['nonce'], (0, None, None))
         i = Interaction._from_self(channel, type=type, user=self.user, name=name, **data)  # type: ignore # self.user is always present here
         self._interactions[i.id] = i
