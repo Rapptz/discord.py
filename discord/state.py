@@ -2241,7 +2241,7 @@ class ConnectionState:
     # Silence "unknown event" warnings for events parsed elsewhere
     parse_nothing = lambda *_: None
     parse_thread_member_list_update = parse_nothing  # Grabbed directly in Thread.fetch_members
-    parse_guild_application_commands_update = parse_nothing  # Grabbed directly in command iterators
+    # parse_guild_application_commands_update = parse_nothing  # Grabbed directly in command iterators
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, TextChannel):
