@@ -1081,6 +1081,9 @@ else:
             self.min: Optional[Union[int, float]] = min
             self.max: Optional[Union[int, float]] = max
 
+            if min and max and min > max:
+                raise TypeError('minimum cannot be larger than maximum')
+
         async def convert(self, ctx: Context[BotT], value: str) -> Union[int, float]:
             count = converted = self.annotation(value)
             if self.annotation is str:

@@ -310,6 +310,9 @@ def _make_range_transformer(
     min: Optional[Union[int, float]] = None,
     max: Optional[Union[int, float]] = None,
 ) -> Type[Transformer]:
+    if min and max and min > max:
+        raise TypeError('minimum cannot be larger than maximum')
+
     ns = {
         'type': classmethod(lambda _: opt_type),
         'min_value': classmethod(lambda _: min),
