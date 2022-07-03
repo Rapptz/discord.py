@@ -26,7 +26,7 @@ jobs:
     environment: Crowdin
     name: download
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: master
@@ -48,7 +48,7 @@ jobs:
 
       - name: Create pull request
         id: cpr_crowdin
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: Crowdin translations download
@@ -59,7 +59,7 @@ jobs:
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
 
       - name: Close and reopen the PR with different token to trigger CI
-        uses: actions/github-script@v3
+        uses: actions/github-script@v6
         env:
           PR_NUMBER: ${{ steps.cpr_crowdin.outputs.pull-request-number }}
           PR_OPERATION: ${{ steps.cpr_crowdin.outputs.pull-request-operation }}
