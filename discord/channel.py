@@ -2301,7 +2301,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         return Webhook.from_state(data, state=self._state)
 
 
-class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
+class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.PrivateChannel, Hashable):
     """Represents a Discord direct message channel.
 
     .. container:: operations
@@ -2640,7 +2640,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         await self._state.http.decline_message_request(self.id)
 
 
-class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
+class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.PrivateChannel, Hashable):
     """Represents a Discord group channel.
 
     .. container:: operations
