@@ -32,3 +32,5 @@ jobs:
         message: Synchronize selfcord
         branch: renamed
         force: true
+        name: github-actions[bot]
+        email: 41898282+github-actions[bot]@users.noreply.github.com
