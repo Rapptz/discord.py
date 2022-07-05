@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Any, Dict, Generator, Generic, List, Optional,
 
 import discord.abc
 import discord.utils
-from discord import Interaction, Message, Attachment, MessageType, User, PartialMessageable
+from discord import Interaction, Message, Attachment, MessageType, User, PartialMessageable, Permissions, ChannelType, Thread
 from discord.context_managers import Typing
 from .view import StringView
 
@@ -455,6 +455,76 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         """
         # bot.user will never be None at this point.
         return self.guild.me if self.guild is not None else self.bot.user  # type: ignore
+
+    @discord.utils.cached_property
+    def permissions(self) -> Permissions:
+        """:class:`.Permissions`: Returns the resolved permissions for the invoking user in this channel.
+        Shorthand for :meth:`.abc.GuildChannel.permissions_for` or :attr:`.Interaction.permissions`.
+
+        .. versionadded:: 2.0
+        """
+        if self.channel.type is ChannelType.private:
+            return Permissions._dm_permissions()
+        if not self.interaction:
+            # channel and author will always match relevant types here
+            return self.channel.permissions_for(self.author)  # type: ignore
+        base = self.interaction.permissions
+        if self.channel.type in (ChannelType.voice, ChannelType.stage_voice):
+            if not base.connect:
+                # voice channels cannot be edited by people who can't connect to them
+                # It also implicitly denies all other voice perms
+                denied = Permissions.voice()
+                denied.update(manage_channels=True, manage_roles=True)
+                base.value &= ~denied.value
+        else:
+            # text channels do not have voice related permissions
+            denied = Permissions.voice()
+            base.value &= ~denied.value
+        return base
+
+    @discord.utils.cached_property
+    def bot_permissions(self) -> Permissions:
+        """:class:`.Permissions`: Returns the resolved permissions for the bot in this channel.
+        Shorthand for :meth:`.abc.GuildChannel.permissions_for` or :attr:`.Interaction.app_permissions`.
+
+        For interaction-based commands, this will reflect the effective permissions
+        for :class:`Context` calls, which may differ from calls through
+        other :class:`.abc.Messageable` endpoints, like :attr:`channel`.
+
+        Notably, sending messages, embedding links, and attaching files are always
+        permitted, while reading messages might not be.
+
+        .. versionadded:: 2.0
+        """
+        channel = self.channel
+        if channel.type == ChannelType.private:
+            return Permissions._dm_permissions()
+        if not self.interaction:
+            # channel and me will always match relevant types here
+            return channel.permissions_for(self.me)  # type: ignore
+        guild = channel.guild
+        base = self.interaction.app_permissions
+        if self.channel.type in (ChannelType.voice, ChannelType.stage_voice):
+            if not base.connect:
+                # voice channels cannot be edited by people who can't connect to them
+                # It also implicitly denies all other voice perms
+                denied = Permissions.voice()
+                denied.update(manage_channels=True, manage_roles=True)
+                base.value &= ~denied.value
+        else:
+            # text channels do not have voice related permissions
+            denied = Permissions.voice()
+            base.value &= ~denied.value
+        base.update(
+            embed_links=True,
+            attach_files=True,
+            send_tts_messages=False,
+        )
+        if isinstance(channel, Thread):
+            base.send_messages_in_threads = True
+        else:
+            base.send_messages = True
+        return base
 
     @property
     def voice_client(self) -> Optional[VoiceProtocol]:
