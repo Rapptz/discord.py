@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-23 08:08+0000\n"
-"PO-Revision-Date: 2022-06-23 11:21\n"
+"POT-Creation-Date: 2022-06-29 08:53+0000\n"
+"PO-Revision-Date: 2022-06-29 13:58\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -165,6 +165,10 @@ msgid "The client that is handling this interaction."
 msgstr "このインタラクションを処理するクライアント。"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.client:3
+msgid "Note that :class:`AutoShardedClient`, :class:`~.commands.Bot`, and :class:`~.commands.AutoShardedBot` are all subclasses of client."
+msgstr "なお、 :class:`AutoShardedClient` 、 :class:`~.commands.Bot` 、 :class:`~.commands.AutoShardedBot` はすべてClientのサブクラスです。"
+
+#: ../../../discord/interactions.py:docstring of discord.Interaction.client:6
 msgid ":class:`Client`"
 msgstr ":class:`Client`"
 
