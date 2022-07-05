@@ -1106,6 +1106,24 @@ class Intents(BaseFlags):
         return 1 << 16
 
     @flag_value
+    def auto_moderation(self):
+        """:class:`bool`: Whether auto moderation related events are enabled.
+
+        This is a shortcut to set or get both :attr:`auto_moderation_configuration`
+        and :attr:`auto_moderation_execution`.
+
+        This corresponds to the following events:
+
+        - :func:`on_automod_rule_create`
+        - :func:`on_automod_rule_update`
+        - :func:`on_automod_rule_delete`
+        - :func:`on_automod_action`
+
+        .. versionadded:: 2.0
+        """
+        return (1 << 20) | (1 << 21)
+
+    @flag_value
     def auto_moderation_configuration(self):
         """:class:`bool`: Whether auto moderation configuration related events are enabled.
 
