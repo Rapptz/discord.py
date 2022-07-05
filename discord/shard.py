@@ -38,12 +38,11 @@ from .errors import (
     HTTPException,
     GatewayNotFound,
     ConnectionClosed,
-    PrivilegedIntentsRequired,
 )
 
 from .enums import Status
 
-from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Optional, Tuple, Type, Union
 
 if TYPE_CHECKING:
     from .gateway import DiscordWebSocket
@@ -51,6 +50,7 @@ if TYPE_CHECKING:
     from .flags import Intents
 
 __all__ = (
+    'ShardedResumeState',
     'AutoShardedClient',
     'ShardInfo',
 )
@@ -58,22 +58,80 @@ __all__ = (
 _log = logging.getLogger(__name__)
 
 
+class ShardedResumeState:
+    """This is the sharded version of :class:`ResumeState`.
+
+    See also: :meth:`AutoShardedClient.connect`.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Serializes the resume state to a :class:`str`, containing only
+            alphanumerics, ``:`` and ``,``.
+
+    Parameters
+    ----------
+    data: ::class:`str`
+        The data to deserialize.
+
+    Attributes
+    ----------
+    state: Mapping[:class:`int`, :class:`ResumeState`]
+        A mapping of shard IDs to their respective resume states.
+    """
+
+    __slots__ = ('states',)
+
+    def __init__(self, data: Union[str, Mapping[int, ResumeState]]) -> None:
+        self.states: Mapping[int, ResumeState]
+        if isinstance(data, str):
+            self.states = {}
+            for row in data.split(','):
+                try:
+                    sid, session_id, seq = row.split(':')
+                    shard_id = int(sid)
+                    sequence = int(seq)
+                    self.states[shard_id] = ResumeState(session_id, sequence)
+                except ValueError:
+                    # Worst case the client will just have to re-identify, so we can just ignore invalid data
+                    pass
+        else:
+            self.states = dict(data)
+
+    def __str__(self) -> str:
+        return ','.join(f'{shard_id}:{resume_state}' for shard_id, resume_state in self.states.items())
+
+    def __repr__(self) -> str:
+        return f'ShardedResumeState({self.states!r})'
+
+
 class EventType:
     close = 0
     reconnect = 1
     resume = 2
-    identify = 3
-    terminate = 4
-    clean_close = 5
+    reidentify = 3
+    finish = 4
+    terminate = 5
+    clean_close = 6
 
 
 class EventItem:
-    __slots__ = ('type', 'shard', 'error')
+    __slots__ = ('type', 'shard', 'error', 'resume_state')
 
-    def __init__(self, etype: int, shard: Optional['Shard'], error: Optional[Exception]) -> None:
+    def __init__(
+        self,
+        etype: int,
+        shard: Optional['Shard'],
+        error: Optional[Exception],
+        resume_state: Optional[ResumeState] = None,
+    ) -> None:
         self.type: int = etype
         self.shard: Optional['Shard'] = shard
         self.error: Optional[Exception] = error
+        self.resume_state: Optional[ResumeState] = resume_state
 
     def __lt__(self, other: object) -> bool:
         if not isinstance(other, EventItem):
@@ -120,55 +178,54 @@ class Shard:
         if self._task is not None and not self._task.done():
             self._task.cancel()
 
-    async def close(self) -> None:
+    async def close(self, *, resumable: bool = False) -> None:
         self._cancel_task()
-        await self.ws.close(code=1000)
+        await self.ws.close(code=4000 if resumable else 1000)
 
     async def disconnect(self) -> None:
-        await self.close()
+        await self.close(resumable=False)
         self._dispatch('shard_disconnect', self.id)
 
-    async def _handle_disconnect(self, e: Exception) -> None:
+    async def _handle_disconnect(self, exc: Exception) -> None:
         self._dispatch('disconnect')
         self._dispatch('shard_disconnect', self.id)
+
+        resume_state = self.ws.resume_state()
+
+        try:
+            self._client._raise_if_fatal(exc, self._reconnect)
+        except Exception as exc:
+            self._queue_put(EventItem(EventType.terminate, self, exc))
+            return
+
         if not self._reconnect:
-            self._queue_put(EventItem(EventType.close, self, e))
+            self._queue_put(EventItem(EventType.close, self, exc))
             return
 
         if self._client.is_closed():
+            self._queue_put(EventItem(EventType.finish, self, None, resume_state))
             return
 
-        if isinstance(e, OSError) and e.errno in (54, 10054):
-            # If we get Connection reset by peer then always try to RESUME the connection.
-            exc = ReconnectWebSocket(self.id, resume=True)
-            self._queue_put(EventItem(EventType.resume, self, exc))
-            return
-
-        if isinstance(e, ConnectionClosed):
-            if e.code == 4014:
-                self._queue_put(EventItem(EventType.terminate, self, PrivilegedIntentsRequired(self.id)))
-                return
-            if e.code != 1000:
-                self._queue_put(EventItem(EventType.close, self, e))
-                return
-
-        retry = self._backoff.delay()
-        _log.error('Attempting a reconnect for shard ID %s in %.2fs', self.id, retry, exc_info=e)
-        await asyncio.sleep(retry)
-        self._queue_put(EventItem(EventType.reconnect, self, e))
+        if self._client._should_delay(exc):
+            retry = self._backoff.delay()
+            _log.error('Attempting to reconnect Shard ID %s in %.2f seconds', self.id, retry, exc_info=exc)
+            await asyncio.sleep(retry)
+        else:
+            _log.error('Attempting to reconnect Shard ID %s', self.id, exc_info=exc)
+        self._queue_put(EventItem(EventType.reconnect, self, exc, resume_state))
 
     async def worker(self) -> None:
         while not self._client.is_closed():
             try:
                 await self.ws.poll_event()
             except ReconnectWebSocket as e:
-                etype = EventType.resume if e.resume else EventType.identify
-                self._queue_put(EventItem(etype, self, e))
+                self._queue_put(EventItem(EventType.reidentify, self, e))
                 break
             except self._handled_exceptions as e:
                 await self._handle_disconnect(e)
                 break
             except asyncio.CancelledError:
+                self._queue_put(EventItem(EventType.finish, self, None, self.ws.resume_state()))
                 break
             except Exception as e:
                 self._queue_put(EventItem(EventType.terminate, self, e))
@@ -178,29 +235,13 @@ class Shard:
         self._cancel_task()
         self._dispatch('disconnect')
         self._dispatch('shard_disconnect', self.id)
-        _log.info('Got a request to %s the websocket at Shard ID %s.', exc.op, self.id)
-        try:
-            coro = DiscordWebSocket.from_client(
-                self._client,
-                resume=exc.resume,
-                shard_id=self.id,
-                session=self.ws.session_id,
-                sequence=self.ws.sequence,
-            )
-            self.ws = await asyncio.wait_for(coro, timeout=60.0)
-        except self._handled_exceptions as e:
-            await self._handle_disconnect(e)
-        except asyncio.CancelledError:
-            return
-        except Exception as e:
-            self._queue_put(EventItem(EventType.terminate, self, e))
-        else:
-            self.launch()
+        _log.info('Gateway requested to reconnect Shard ID %s %s resume', self.id, 'with' if exc.resume_state else 'without')
+        await self.reconnect(exc.resume_state)
 
-    async def reconnect(self) -> None:
+    async def reconnect(self, resume_state: Optional[ResumeState] = None) -> None:
         self._cancel_task()
         try:
-            coro = DiscordWebSocket.from_client(self._client, shard_id=self.id)
+            coro = DiscordWebSocket.from_client(self._client, shard_id=self.id, resume_state=resume_state)
             self.ws = await asyncio.wait_for(coro, timeout=60.0)
         except self._handled_exceptions as e:
             await self._handle_disconnect(e)
@@ -402,20 +443,24 @@ class AutoShardedClient(Client):
         """Mapping[int, :class:`ShardInfo`]: Returns a mapping of shard IDs to their respective info object."""
         return {shard_id: ShardInfo(parent, self.shard_count) for shard_id, parent in self.__shards.items()}
 
-    async def launch_shard(self, gateway: str, shard_id: int, *, initial: bool = False) -> None:
+    async def launch_shard(
+        self, gateway: str, shard_id: int, resume_state: Optional[ResumeState] = None, *, initial: bool = False
+    ) -> None:
         try:
-            coro = DiscordWebSocket.from_client(self, initial=initial, gateway=gateway, shard_id=shard_id)
+            coro = DiscordWebSocket.from_client(
+                self, initial=initial, gateway=gateway, shard_id=shard_id, resume_state=resume_state
+            )
             ws = await asyncio.wait_for(coro, timeout=180.0)
         except Exception:
             _log.exception('Failed to connect for shard_id: %s. Retrying...', shard_id)
             await asyncio.sleep(5.0)
-            return await self.launch_shard(gateway, shard_id)
+            return await self.launch_shard(gateway, shard_id, resume_state)
 
         # keep reading the shard while others connect
         self.__shards[shard_id] = ret = Shard(ws, self, self.__queue.put_nowait)
         ret.launch()
 
-    async def launch_shards(self) -> None:
+    async def launch_shards(self, resume_state: Optional[ShardedResumeState] = None) -> None:
         if self.shard_count is None:
             self.shard_count: int
             self.shard_count, gateway = await self.http.get_bot_gateway()
@@ -429,58 +474,113 @@ class AutoShardedClient(Client):
 
         for shard_id in shard_ids:
             initial = shard_id == shard_ids[0]
-            await self.launch_shard(gateway, shard_id, initial=initial)
+            state = resume_state.states.get(shard_id) if resume_state else None
+            await self.launch_shard(gateway, shard_id, state, initial=initial)
 
     async def _async_setup_hook(self) -> None:
         await super()._async_setup_hook()
         self.__queue = asyncio.PriorityQueue()
 
-    async def connect(self, *, reconnect: bool = True) -> None:
-        self._reconnect = reconnect
-        await self.launch_shards()
+    async def connect(
+        self, *, reconnect: bool = True, resume_state: Optional[ShardedResumeState] = None
+    ) -> ShardedResumeState:
+        """|coro|
+        Creates a websocket connection and lets the websocket listen
+        to messages from Discord. This is a loop that runs the entire
+        event system and miscellaneous aspects of the library. Control
+        is not resumed until the WebSocket connection is terminated.
 
-        while not self.is_closed():
+        Parameters
+        -----------
+        reconnect: :class:`bool`
+            If we should attempt reconnecting, either due to internet
+            failure or a specific failure on Discord's part. Certain
+            disconnects that lead to bad state will not be handled (such as
+            invalid sharding payloads or bad tokens).
+        resume_state: Optional[:class:`ShardedResumeState`]
+            If provided, we will attempt to resume WebSocket connections
+            using the given states.
+
+            .. versionadded:: 2.0
+
+        Returns
+        -------
+        :class:`ShardedResumeState`
+            Returns the data necessary to resume WebSocket connections,
+            except those that were closed in a way that does not allow resuming.
+
+            .. versionadded:: 2.0
+
+        Raises
+        -------
+        GatewayNotFound
+            If the gateway to connect to Discord is not found. Usually if this
+            is thrown then there is a Discord API outage.
+        ConnectionClosed
+            The websocket connection has been terminated.
+        """
+        if resume_state is not None and not isinstance(resume_state, ShardedResumeState):
+            raise TypeError(f'resume_state must be a ShardedResumeState not {resume_state.__class__!r}')
+
+        self._reconnect = reconnect
+        await self.launch_shards(resume_state)
+
+        states = {}
+
+        while True:
             item = await self.__queue.get()
             if item.type == EventType.close:
-                await self.close()
-                if isinstance(item.error, ConnectionClosed):
-                    if item.error.code != 1000:
-                        raise item.error
-                    if item.error.code == 4014:
-                        raise PrivilegedIntentsRequired(item.shard.id) from None
-                return
-            elif item.type in (EventType.identify, EventType.resume):
+                await self.close(resumable=True)
+            elif item.type == EventType.reidentify:
                 await item.shard.reidentify(item.error)
             elif item.type == EventType.reconnect:
-                await item.shard.reconnect()
+                await item.shard.reconnect(item.resume_state)
+            elif item.type == EventType.finish:
+                if item.resume_state:
+                    states[item.shard.id] = item.resume_state
             elif item.type == EventType.terminate:
                 await self.close()
                 raise item.error
             elif item.type == EventType.clean_close:
-                return
+                break
 
-    async def close(self) -> None:
+        return ShardedResumeState(states)
+
+    async def close(self, *, resumable: bool = False) -> None:
         """|coro|
 
         Closes the connection to Discord.
+
+        Parameters
+        ----------
+        resumable: :class:`bool`
+            Whether WebSocket connections should be closed in a way that allows resuming them later.
+
+            .. versionadded:: 2.0
+
+            .. seealso:: :class:`ShardedResumeState`
         """
         if self.is_closed():
             return
 
-        self._closed = True
+        try:
+            self._closed = True
 
-        for vc in self.voice_clients:
-            try:
-                await vc.disconnect(force=True)
-            except Exception:
-                pass
+            for vc in self.voice_clients:
+                try:
+                    await vc.disconnect(force=True)
+                except Exception:
+                    pass
 
-        to_close = [asyncio.ensure_future(shard.close(), loop=self.loop) for shard in self.__shards.values()]
-        if to_close:
-            await asyncio.wait(to_close)
+            to_close = [
+                asyncio.ensure_future(shard.close(resumable=resumable), loop=self.loop) for shard in self.__shards.values()
+            ]
+            if to_close:
+                await asyncio.wait(to_close)
 
-        await self.http.close()
-        self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
+            await self.http.close()
+        finally:
+            self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
 
     async def change_presence(
         self,

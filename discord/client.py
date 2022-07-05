@@ -89,6 +89,7 @@ if TYPE_CHECKING:
 
 # fmt: off
 __all__ = (
+    'ResumeState',
     'Client',
 )
 # fmt: on
@@ -631,7 +632,27 @@ class Client:
 
         await self.setup_hook()
 
-    async def connect(self, *, reconnect: bool = True) -> None:
+    @staticmethod
+    def _raise_if_fatal(exc: Exception, reconnect: bool) -> None:
+        if isinstance(exc, ConnectionClosed):
+            # We should only get this when an unhandled close code happens (c.f. DiscordWebSocket._can_handle_close).
+            # Sometimes discord sends us clean disconnect (1000) for unknown reasons so we just reconnect, but any other
+            # close code signifies bad state (bad token, no sharding, etc) and we raise
+            if exc.code == 4014:
+                raise PrivilegedIntentsRequired(exc.shard_id)
+            elif exc.code != 1000:
+                raise exc
+            else:
+                return
+        if not reconnect:
+            raise exc
+
+    @staticmethod
+    def _should_delay(exc: Exception) -> bool:
+        # If we get connection reset by peer then try to RESUME immediately
+        return not (isinstance(exc, OSError) and exc.errno in (54, 10054))
+
+    async def connect(self, *, reconnect: bool = True, resume_state: Optional[ResumeState] = None) -> Optional[ResumeState]:
         """|coro|
 
         Creates a websocket connection and lets the websocket listen
@@ -646,6 +667,20 @@ class Client:
             failure or a specific failure on Discord's part. Certain
             disconnects that lead to bad state will not be handled (such as
             invalid sharding payloads or bad tokens).
+        resume_state: Optional[:class:`discord.ResumeState`]
+            If provided, we will attempt to resume the WebSocket connection
+            using the given state.
+
+            .. versionadded:: 2.0
+
+        Returns
+        -------
+        Optional[:class:`discord.ResumeState`]
+            Returns the data necessary to resume the WebSocket connection,
+            unless it was closed in a way that does not allow resuming, in
+            which case this returns ``None``.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -656,71 +691,66 @@ class Client:
             The websocket connection has been terminated.
         """
 
+        if resume_state is not None and not isinstance(resume_state, ResumeState):
+            raise TypeError(f'resume_state must be ResumeState not {resume_state.__class__!r}')
+
         backoff = ExponentialBackoff()
-        ws_params = {
-            'initial': True,
-            'shard_id': self.shard_id,
-        }
-        while not self.is_closed():
-            try:
-                coro = DiscordWebSocket.from_client(self, **ws_params)
-                self.ws = await asyncio.wait_for(coro, timeout=60.0)
-                ws_params['initial'] = False
-                while True:
-                    await self.ws.poll_event()
-            except ReconnectWebSocket as e:
-                _log.info('Got a request to %s the websocket.', e.op)
-                self.dispatch('disconnect')
-                ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)
-                continue
-            except (
-                OSError,
-                HTTPException,
-                GatewayNotFound,
-                ConnectionClosed,
-                aiohttp.ClientError,
-                asyncio.TimeoutError,
-            ) as exc:
+        initial = True
+        try:
+            while not self.is_closed():
+                try:
+                    coro = DiscordWebSocket.from_client(
+                        self, initial=initial, shard_id=self.shard_id, resume_state=resume_state
+                    )
+                    self.ws = await asyncio.wait_for(coro, timeout=60.0)
+                    while True:
+                        await self.ws.poll_event()
+                except ReconnectWebSocket as exc:
+                    self.dispatch('disconnect')
+                    resume_state = exc.resume_state
+                    _log.info('Gateway requested reconnect %s resume', 'with' if resume_state else 'without')
+                except (
+                    ReconnectWebSocket,
+                    OSError,
+                    HTTPException,
+                    GatewayNotFound,
+                    ConnectionClosed,
+                    aiohttp.ClientError,
+                    asyncio.TimeoutError,
+                ) as exc:
+                    self.dispatch('disconnect')
+                    # Always try to RESUME the connection
+                    # If the connection is not RESUME-able then the gateway will invalidate the session.
+                    # This is apparently what the official Discord client does.
+                    resume_state = self.ws.resume_state()
+                    self._raise_if_fatal(exc, reconnect)
+                    if not reconnect or self.is_closed():
+                        break
+                    if self._should_delay(exc):
+                        retry = backoff.delay()
+                        _log.exception('Attempting to reconnect in %.2f seconds', retry, exc_info=exc)
+                        await asyncio.sleep(retry)
+                    else:
+                        _log.exception('Attempting to reconnect', exc_info=exc)
+                finally:
+                    initial = False
+        finally:
+            await self.close()
+        return resume_state
 
-                self.dispatch('disconnect')
-                if not reconnect:
-                    await self.close()
-                    if isinstance(exc, ConnectionClosed) and exc.code == 1000:
-                        # clean close, don't re-raise this
-                        return
-                    raise
-
-                if self.is_closed():
-                    return
-
-                # If we get connection reset by peer then try to RESUME
-                if isinstance(exc, OSError) and exc.errno in (54, 10054):
-                    ws_params.update(sequence=self.ws.sequence, initial=False, resume=True, session=self.ws.session_id)
-                    continue
-
-                # We should only get this when an unhandled close code happens,
-                # such as a clean disconnect (1000) or a bad state (bad token, no sharding, etc)
-                # sometimes, discord sends us 1000 for unknown reasons so we should reconnect
-                # regardless and rely on is_closed instead
-                if isinstance(exc, ConnectionClosed):
-                    if exc.code == 4014:
-                        raise PrivilegedIntentsRequired(exc.shard_id) from None
-                    if exc.code != 1000:
-                        await self.close()
-                        raise
-
-                retry = backoff.delay()
-                _log.exception("Attempting a reconnect in %.2fs", retry)
-                await asyncio.sleep(retry)
-                # Always try to RESUME the connection
-                # If the connection is not RESUME-able then the gateway will invalidate the session.
-                # This is apparently what the official Discord client does.
-                ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)
-
-    async def close(self) -> None:
+    async def close(self, *, resumable: bool = False) -> None:
         """|coro|
 
         Closes the connection to Discord.
+
+        Parameters
+        ----------
+        resumable: :class:`bool`
+            Whether the WebSocket connection should be closed in a way that allows resuming it later.
+
+            .. versionadded:: 2.0
+
+            .. seealso:: :class:`discord.ResumeState`
         """
         if self._closed:
             return
@@ -735,7 +765,8 @@ class Client:
                 pass
 
         if self.ws is not None and self.ws.open:
-            await self.ws.close(code=1000)
+            # If we send a 1000 close code, discord will not allow resuming
+            await self.ws.close(code=4000 if resumable else 1000)
 
         await self.http.close()
 
@@ -756,7 +787,9 @@ class Client:
         self._connection.clear()
         self.http.clear()
 
-    async def start(self, token: str, *, reconnect: bool = True) -> None:
+    async def start(
+        self, token: str, *, reconnect: bool = True, resume_state: Optional[ResumeState] = None
+    ) -> Optional[ResumeState]:
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
@@ -771,6 +804,21 @@ class Client:
             failure or a specific failure on Discord's part. Certain
             disconnects that lead to bad state will not be handled (such as
             invalid sharding payloads or bad tokens).
+        resume_state: Optional[:class:`discord.ResumeState`]
+            If provided, we will attempt to resume the WebSocket connection
+            using the given state.
+
+            .. versionadded:: 2.0
+
+        Returns
+        -------
+        Optional[:class:`discord.ResumeState`]
+
+            Returns the data necessary to resume the WebSocket connection,
+            unless it was closed in a way that does not allow resuming, in
+            which case this returns ``None``.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -778,17 +826,18 @@ class Client:
             An unexpected keyword argument was received.
         """
         await self.login(token)
-        await self.connect(reconnect=reconnect)
+        return await self.connect(reconnect=reconnect, resume_state=resume_state)
 
     def run(
         self,
         token: str,
         *,
         reconnect: bool = True,
+        resume_state: Optional[ResumeState] = None,
         log_handler: Optional[logging.Handler] = MISSING,
         log_formatter: logging.Formatter = MISSING,
         log_level: int = MISSING,
-    ) -> None:
+    ) -> Optional[ResumeState]:
         """A blocking call that abstracts away the event loop
         initialisation from you.
 
@@ -817,6 +866,11 @@ class Client:
             failure or a specific failure on Discord's part. Certain
             disconnects that lead to bad state will not be handled (such as
             invalid sharding payloads or bad tokens).
+        resume_state: Optional[:class:`discord.ResumeState`]
+            If provided, we will attempt to resume the WebSocket connection
+            using the given state.
+
+            .. versionadded:: 2.0
         log_handler: Optional[:class:`logging.Handler`]
             The log handler to use for the library's logger. If this is ``None``
             then the library will not set up anything logging related. Logging
@@ -840,11 +894,20 @@ class Client:
             you can use ``logging.getLogger().setLevel(level)``.
 
             .. versionadded:: 2.0
+
+        Returns
+        -------
+        Optional[:class:`discord.ResumeState`]
+            Returns the data necessary to resume the WebSocket connection,
+            unless it was closed in a way that does not allow resuming, in
+            which case this returns ``None``.
+
+            .. versionadded:: 2.0
         """
 
-        async def runner():
+        async def runner() -> Optional[ResumeState]:
             async with self:
-                await self.start(token, reconnect=reconnect)
+                return await self.start(token, reconnect=reconnect, resume_state=resume_state)
 
         if log_level is MISSING:
             log_level = logging.INFO
@@ -869,7 +932,7 @@ class Client:
             logger.addHandler(log_handler)
 
         try:
-            asyncio.run(runner())
+            return asyncio.run(runner())
         except KeyboardInterrupt:
             # nothing to do here
             # `asyncio.run` handles the loop cleanup

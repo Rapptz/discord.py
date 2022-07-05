@@ -34,7 +34,7 @@ import threading
 import traceback
 import zlib
 
-from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar
+from typing import Any, Callable, Coroutine, Deque, Dict, List, NamedTuple, Optional, overload, TYPE_CHECKING, TypeVar
 
 import aiohttp
 
@@ -46,6 +46,7 @@ from .errors import ConnectionClosed
 _log = logging.getLogger(__name__)
 
 __all__ = (
+    'ResumeState',
     'DiscordWebSocket',
     'KeepAliveHandler',
     'VoiceKeepAliveHandler',
@@ -61,13 +62,92 @@ if TYPE_CHECKING:
     from .voice_client import VoiceClient
 
 
+class ResumeState:
+    """This data class represents the necessary data to resume a WebSocket connection.
+    This data can be converted to and from :class:`str` and can be e.g. transferred to
+    another process using your favorite Inter-Process Communication method.
+
+    See also: :meth:`Client.connect`, :meth:`Client.start`, :meth:`Client.run`.
+
+    Example
+    -------
+    We can completely restart our bot process and pass the ::class:`ResumeState`
+    to the new version via e.g. environment variables:
+
+    .. code-block:: python3
+
+        # Deserialize websocket state that was passed to us from
+        # a previous version of the process, if any:
+        state = ResumeState(os.environ.get("STATE", ""))
+        # Run the bot until it is closed (with resumable=True):
+        new_state = bot.run(token, resume_state=state)
+        # Serialize the new state and pass it to the new process:
+        os.environ["STATE"] = str(new_state)
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Serializes the resume state to a :class:`str`, containing only
+            alphanumerics, ``:`` and ``,``.
+
+    Parameters
+    ----------
+    data: ::class:`str`
+        The data to deserialize.
+
+    Attributes
+    ----------
+    session: :class:`str`
+        The session ID of the websocket.
+    sequence: :class:`int`
+        The sequence number of the last received payload.
+    """
+
+    __slots__ = ('session', 'sequence')
+
+    @overload
+    def __init__(self, session: str, sequence: int, /) -> None:
+        ...
+
+    @overload
+    def __init__(self, data: str, /) -> None:
+        ...
+
+    def __init__(self, data: str, sequence: Optional[int] = None, /) -> None:
+        self.session = ''
+        self.sequence = 0
+        if sequence is not None:
+            self.session = data
+            self.sequence = sequence
+        else:
+            try:
+                session, seq = data.split(':')
+                self.sequence = int(seq)
+                self.session = session
+            except ValueError:
+                # Worst case the client will just have to re-identify, so we can just ignore invalid data
+                pass
+
+    def __bool__(self) -> bool:
+        return bool(self.session)
+
+    def __str__(self) -> str:
+        return f'{self.session}:{self.sequence}'
+
+    def __repr__(self) -> str:
+        return f'ResumeState({self.session!r}, {self.sequence!r})'
+
+
 class ReconnectWebSocket(Exception):
     """Signals to safely reconnect the websocket."""
 
-    def __init__(self, shard_id: Optional[int], *, resume: bool = True) -> None:
+    def __init__(self, shard_id: Optional[int], resume_state: Optional[ResumeState]) -> None:
         self.shard_id: Optional[int] = shard_id
-        self.resume: bool = resume
-        self.op: str = 'RESUME' if resume else 'IDENTIFY'
+        self.resume_state: Optional[ResumeState] = resume_state
 
 
 class WebSocketClosure(Exception):
@@ -347,9 +427,7 @@ class DiscordWebSocket:
         initial: bool = False,
         gateway: Optional[str] = None,
         shard_id: Optional[int] = None,
-        session: Optional[str] = None,
-        sequence: Optional[int] = None,
-        resume: bool = False,
+        resume_state: Optional[ResumeState] = None,
     ) -> Self:
         """Creates a main websocket for Discord from a :class:`Client`.
 
@@ -370,9 +448,11 @@ class DiscordWebSocket:
         ws.shard_id = shard_id
         ws._rate_limiter.shard_id = shard_id
         ws.shard_count = client._connection.shard_count
-        ws.session_id = session
-        ws.sequence = sequence
         ws._max_heartbeat_timeout = client._connection.heartbeat_timeout
+
+        if resume_state:
+            ws.session_id = resume_state.session
+            ws.sequence = resume_state.sequence
 
         if client._enable_debug_events:
             ws.send = ws.debug_send
@@ -385,11 +465,10 @@ class DiscordWebSocket:
         # poll event for OP Hello
         await ws.poll_event()
 
-        if not resume:
+        if resume_state:
+            await ws.resume()
+        else:
             await ws.identify()
-            return ws
-
-        await ws.resume()
         return ws
 
     def wait_for(
@@ -471,6 +550,12 @@ class DiscordWebSocket:
         await self.send_as_json(payload)
         _log.info('Shard ID %s has sent the RESUME payload.', self.shard_id)
 
+    def resume_state(self) -> Optional[ResumeState]:
+        if self.session_id is not None and self.sequence is not None:
+            return ResumeState(self.session_id, self.sequence)
+        else:
+            return None
+
     async def received_message(self, msg: Any, /) -> None:
         if type(msg) is bytes:
             self._buffer.extend(msg)
@@ -505,7 +590,7 @@ class DiscordWebSocket:
                 # internal exception signalling to reconnect.
                 _log.debug('Received RECONNECT opcode.')
                 await self.close()
-                raise ReconnectWebSocket(self.shard_id)
+                raise ReconnectWebSocket(self.shard_id, self.resume_state())
 
             if op == self.HEARTBEAT_ACK:
                 if self._keep_alive:
@@ -529,13 +614,13 @@ class DiscordWebSocket:
             if op == self.INVALIDATE_SESSION:
                 if data is True:
                     await self.close()
-                    raise ReconnectWebSocket(self.shard_id)
+                    raise ReconnectWebSocket(self.shard_id, self.resume_state())
 
                 self.sequence = None
                 self.session_id = None
                 _log.info('Shard ID %s session has been invalidated.', self.shard_id)
                 await self.close(code=1000)
-                raise ReconnectWebSocket(self.shard_id, resume=False)
+                raise ReconnectWebSocket(self.shard_id, None)
 
             _log.warning('Unknown OP code %s.', op)
             return
@@ -620,12 +705,12 @@ class DiscordWebSocket:
 
             if isinstance(e, asyncio.TimeoutError):
                 _log.info('Timed out receiving packet. Attempting a reconnect.')
-                raise ReconnectWebSocket(self.shard_id) from None
+                raise ReconnectWebSocket(self.shard_id, self.resume_state()) from None
 
             code = self._close_code or self.socket.close_code
             if self._can_handle_close():
                 _log.info('Websocket closed with %s, attempting a reconnect.', code)
-                raise ReconnectWebSocket(self.shard_id) from None
+                raise ReconnectWebSocket(self.shard_id, self.resume_state()) from None
             else:
                 _log.info('Websocket closed with %s, cannot reconnect.', code)
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id, code=code) from None
