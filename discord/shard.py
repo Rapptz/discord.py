@@ -416,6 +416,9 @@ class AutoShardedClient(Client):
         ret.launch()
 
     async def launch_shards(self) -> None:
+        if self.is_closed():
+            return
+
         if self.shard_count is None:
             self.shard_count: int
             self.shard_count, gateway = await self.http.get_bot_gateway()
