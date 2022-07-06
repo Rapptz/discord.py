@@ -463,7 +463,7 @@ class AutoModAction:
     def channel(self) -> Optional[Union[GuildChannel, Thread]]:
         """Optional[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The channel this action was taken in."""
         if self.channel_id:
-            return self.guild.get_channel(self.channel_id)
+            return self.guild.get_channel_or_thread(self.channel_id)
         return None
 
     @property
