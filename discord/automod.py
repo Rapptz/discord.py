@@ -66,7 +66,7 @@ class AutoModRuleAction:
     type: :class:`AutoModRuleActionType`
         The type of action to take.
     channel_id: Optional[:class:`int`]
-        The ID of the channel to send the alert message to, if any.
+        The ID of the channel or thread to send the alert message to, if any.
     duration: Optional[:class:`datetime.timedelta`]
         The duration of the timeout to apply, if any.
         Has a maximum of 28 days.

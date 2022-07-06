@@ -3627,6 +3627,12 @@ class Guild(Hashable):
             app_commands = (AppCommand(data=raw_cmd, state=self._state) for raw_cmd in data.get('application_commands', []))
             app_command_map = {app_command.id: app_command for app_command in app_commands}
 
+            automod_rules = (
+                AutoModRule(data=raw_rule, guild=self, state=self._state)
+                for raw_rule in data.get('auto_moderation_rules', [])
+            )
+            automod_rule_map = {rule.id: rule for rule in automod_rules}
+
             for raw_entry in raw_entries:
                 # Weird Discord quirk
                 if raw_entry['action_type'] is None:
@@ -3637,6 +3643,7 @@ class Guild(Hashable):
                     users=user_map,
                     integrations=integration_map,
                     app_commands=app_command_map,
+                    automod_rules=automod_rule_map,
                     guild=self,
                 )
 
