@@ -63,11 +63,7 @@ if TYPE_CHECKING:
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
     from .types.command import ApplicationCommandPermissions
-    from .types.automod import (
-        AutoModerationTriggerMetadata,
-        AutoModerationAction,
-        _AutoModerationTriggerMetadataKeywordPreset,
-    )
+    from .types.automod import AutoModerationTriggerMetadata, AutoModerationAction
     from .user import User
     from .stage_instance import StageInstance
     from .sticker import GuildSticker
@@ -89,6 +85,7 @@ if TYPE_CHECKING:
         Thread,
         Object,
         PartialIntegration,
+        AutoModRule,
         None,
     ]
 
