@@ -2759,7 +2759,8 @@ of :class:`enum.Enum`.
         An automod rule was created.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        a :class:`Object` with the ID of the automod rule that was created.
+        a :class:`AutoModRule` or :class:`Object` with the ID of the automod
+        rule that was created.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2767,7 +2768,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.enabled`
         - :attr:`~AuditLogDiff.event_type`
         - :attr:`~AuditLogDiff.trigger_type`
-        - :attr:`~AuditLogDiff.trigger_metadata`
+        - :attr:`~AuditLogDiff.trigger`
         - :attr:`~AuditLogDiff.actions`
         - :attr:`~AuditLogDiff.exempt_roles`
         - :attr:`~AuditLogDiff.exempt_channels`
@@ -2779,7 +2780,8 @@ of :class:`enum.Enum`.
         An automod rule was updated.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        a :class:`Object` with the ID of the automod rule that was updated.
+        a :class:`AutoModRule` or :class:`Object` with the ID of the automod
+        rule that was created.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2787,7 +2789,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.enabled`
         - :attr:`~AuditLogDiff.event_type`
         - :attr:`~AuditLogDiff.trigger_type`
-        - :attr:`~AuditLogDiff.trigger_metadata`
+        - :attr:`~AuditLogDiff.trigger`
         - :attr:`~AuditLogDiff.actions`
         - :attr:`~AuditLogDiff.exempt_roles`
         - :attr:`~AuditLogDiff.exempt_channels`
@@ -2799,7 +2801,8 @@ of :class:`enum.Enum`.
         An automod rule was deleted.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        a :class:`Object` with the ID of the automod rule that was deleted.
+        a :class:`AutoModRule` or :class:`Object` with the ID of the automod
+        rule that was created.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2807,7 +2810,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.enabled`
         - :attr:`~AuditLogDiff.event_type`
         - :attr:`~AuditLogDiff.trigger_type`
-        - :attr:`~AuditLogDiff.trigger_metadata`
+        - :attr:`~AuditLogDiff.trigger`
         - :attr:`~AuditLogDiff.actions`
         - :attr:`~AuditLogDiff.exempt_roles`
         - :attr:`~AuditLogDiff.exempt_channels`
@@ -5910,7 +5913,7 @@ AuditLogDiff
 
         The event type for triggering the automod rule.
 
-        :type: :class:`str`
+        :type: :class:`AutoModRuleEventType`
 
     .. attribute:: trigger_type
 
@@ -5918,29 +5921,29 @@ AuditLogDiff
 
         :type: :class:`AutoModRuleTriggerType`
 
-    .. attribute:: trigger_metadata
+    .. attribute:: trigger
 
-        The trigger metadata for the automod rule.
+        The trigger for the automod rule.
 
-        :type: Dict[:class:`str`, Any]
+        :type: :class:`AutoModTrigger`
 
     .. attribute:: actions
 
         The actions to take when an automod rule is triggered.
 
-        :type: List[Dict[:class:`str`, Any]]
+        :type: List[AutoModRuleAction]
 
     .. attribute:: exempt_roles
 
         The list of roles that are exempt from the automod rule.
 
-        :type: List[:class:`str`]
+        :type: List[Union[:class:`Role`, :class:`Object`]]
 
     .. attribute:: exempt_channels
 
-        The list of channels that are exempt from the automod rule.
+        The list of channels or threads that are exempt from the automod rule.
 
-        :type: List[:class:`str`]
+        :type: List[:class:`abc.GuildChannel`, :class:`Thread`, :class:`Object`]
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these

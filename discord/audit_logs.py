@@ -33,6 +33,7 @@ from .invite import Invite
 from .mixins import Hashable
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
+from .automod import AutoModTrigger, AutoModRuleAction, AutoModPresets
 
 __all__ = (
     'AuditLogDiff',
@@ -61,10 +62,12 @@ if TYPE_CHECKING:
     from .types.invite import Invite as InvitePayload
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
+    from .types.automod import AutoModerationTriggerMetadata, AutoModerationAction
     from .user import User
     from .stage_instance import StageInstance
     from .sticker import GuildSticker
     from .threads import Thread
+    from .automod import AutoModRule, AutoModTrigger
 
     TargetType = Union[
         Guild,
@@ -78,7 +81,7 @@ if TYPE_CHECKING:
         GuildSticker,
         Thread,
         Object,
-        PartialIntegration,
+        AutoModRule,
         None,
     ]
 
@@ -101,6 +104,12 @@ def _transform_channel(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optio
     return entry.guild.get_channel(int(data)) or Object(id=data)
 
 
+def _transform_channels_or_threads(
+    entry: AuditLogEntry, data: List[Snowflake]
+) -> List[Union[abc.GuildChannel, Thread, Object]]:
+    return [entry.guild.get_channel_or_thread(int(data)) or Object(id=data) for data in data]
+
+
 def _transform_member_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Union[Member, User, None]:
     if data is None:
         return None
@@ -111,6 +120,10 @@ def _transform_guild_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Opti
     if data is None:
         return None
     return entry._state._get_guild(int(data))
+
+
+def _transform_roles(entry: AuditLogEntry, data: List[Snowflake]) -> List[Union[Role, Object]]:
+    return [entry.guild.get_role(int(role_id)) or Object(role_id) for role_id in data]
 
 
 def _transform_overwrites(
@@ -166,6 +179,24 @@ def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]
         return Asset._from_guild_image(entry._state, entry.guild.id, data, path=path)
 
     return _transform
+
+
+def _transform_automod_trigger_metadata(
+    entry: AuditLogEntry, data: AutoModerationTriggerMetadata
+) -> Optional[AutoModTrigger]:
+    if data is None:
+        return None
+
+    # discord doesn't provide the type of the trigger
+    # have to infer from the data and present keys
+    if 'presets' in data:
+        return AutoModTrigger(presets=AutoModPresets._from_value(data['presets']))  # type: ignore
+
+    return AutoModTrigger(**data)
+
+
+def _transform_automod_actions(entry: AuditLogEntry, data: List[AutoModerationAction]) -> List[AutoModRuleAction]:
+    return [AutoModRuleAction.from_data(action) for action in data]
 
 
 E = TypeVar('E', bound=enums.Enum)
@@ -259,6 +290,11 @@ class AuditLogChanges:
         'preferred_locale':              (None, _enum_transformer(enums.Locale)),
         'image_hash':                    ('cover_image', _transform_cover_image),
         'trigger_type':                  (None, _enum_transformer(enums.AutoModRuleTriggerType)),
+        'event_type':                    (None, _enum_transformer(enums.AutoModRuleEventType)),
+        'trigger_metadata':              ('trigger', _transform_automod_trigger_metadata),
+        'actions':                       (None, _transform_automod_actions),
+        'exempt_channels':               (None, _transform_channels_or_threads),
+        'exempt_roles':                  (None, _transform_roles),
     }
     # fmt: on
 
@@ -420,10 +456,18 @@ class AuditLogEntry(Hashable):
         which actions have this field filled out.
     """
 
-    def __init__(self, *, users: Dict[int, User], data: AuditLogEntryPayload, guild: Guild):
+    def __init__(
+        self,
+        *,
+        users: Dict[int, User],
+        automod_rules: Dict[int, AutoModRule],
+        data: AuditLogEntryPayload,
+        guild: Guild,
+    ):
         self._state: ConnectionState = guild._state
         self.guild: Guild = guild
         self._users: Dict[int, User] = users
+        self._automod_rules: Dict[int, AutoModRule] = automod_rules
         self._from_data(data)
 
     def _from_data(self, data: AuditLogEntryPayload) -> None:
@@ -614,5 +658,5 @@ class AuditLogEntry(Hashable):
     def _convert_target_guild_scheduled_event(self, target_id: int) -> Union[ScheduledEvent, Object]:
         return self.guild.get_scheduled_event(target_id) or Object(id=target_id)
 
-    def _convert_target_auto_moderation(self, target_id: int) -> Union[Member, Object]:
-        return self.guild.get_member(target_id) or Object(target_id)
+    def _convert_target_auto_moderation(self, target_id: int) -> Union[AutoModRule, Object]:
+        return self._automod_rules.get(target_id) or Object(target_id)
