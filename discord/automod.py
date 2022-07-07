@@ -66,7 +66,7 @@ class AutoModRuleAction:
     type: :class:`AutoModRuleActionType`
         The type of action to take.
     channel_id: Optional[:class:`int`]
-        The ID of the channel to send the alert message to, if any.
+        The ID of the channel or thread to send the alert message to, if any.
     duration: Optional[:class:`datetime.timedelta`]
         The duration of the timeout to apply, if any.
         Has a maximum of 28 days.
@@ -463,7 +463,7 @@ class AutoModAction:
     def channel(self) -> Optional[Union[GuildChannel, Thread]]:
         """Optional[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The channel this action was taken in."""
         if self.channel_id:
-            return self.guild.get_channel(self.channel_id)
+            return self.guild.get_channel_or_thread(self.channel_id)
         return None
 
     @property
