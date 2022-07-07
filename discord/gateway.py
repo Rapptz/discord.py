@@ -429,11 +429,9 @@ class DiscordWebSocket:
             'd': {
                 'token': self.token,
                 'properties': {
-                    '$os': sys.platform,
-                    '$browser': 'discord.py',
-                    '$device': 'discord.py',
-                    '$referrer': '',
-                    '$referring_domain': '',
+                    'os': sys.platform,
+                    'browser': 'discord.py',
+                    'device': 'discord.py',
                 },
                 'compress': True,
                 'large_threshold': 250,
@@ -543,26 +541,14 @@ class DiscordWebSocket:
             return
 
         if event == 'READY':
-            self._trace = trace = data.get('_trace', [])
             self.sequence = msg['s']
             self.session_id = data['session_id']
-            _log.info(
-                'Shard ID %s has connected to Gateway: %s (Session ID: %s).',
-                self.shard_id,
-                ', '.join(trace),
-                self.session_id,
-            )
+            _log.info('Shard ID %s has connected to Gateway (Session ID: %s).', self.shard_id, self.session_id)
 
         elif event == 'RESUMED':
-            self._trace = trace = data.get('_trace', [])
             # pass back the shard ID to the resumed handler
             data['__shard_id__'] = self.shard_id
-            _log.info(
-                'Shard ID %s has successfully RESUMED session %s under trace %s.',
-                self.shard_id,
-                self.session_id,
-                ', '.join(trace),
-            )
+            _log.info('Shard ID %s has successfully RESUMED session %s.', self.shard_id, self.session_id)
 
         try:
             func = self._discord_parsers[event]

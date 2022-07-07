@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-27 08:41+0000\n"
-"PO-Revision-Date: 2022-05-27 09:03\n"
+"POT-Creation-Date: 2022-06-29 08:53+0000\n"
+"PO-Revision-Date: 2022-06-29 13:58\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -87,7 +87,7 @@ msgstr "インタラクションが送信されたギルドのID。"
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:30
 #: ../../../discord/components.py:docstring of discord.components.TextInput:49
 #: ../../../discord/components.py:docstring of discord.components.TextInput:55
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:73
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:79
 msgid "Optional[:class:`int`]"
 msgstr "Optional[:class:`int`]"
 
@@ -134,6 +134,9 @@ msgstr "生のインタラクションデータ。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:61
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:81
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:73
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:60
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:73
 msgid ":class:`dict`"
 msgstr ":class:`dict`"
 
@@ -162,6 +165,10 @@ msgid "The client that is handling this interaction."
 msgstr "このインタラクションを処理するクライアント。"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.client:3
+msgid "Note that :class:`AutoShardedClient`, :class:`~.commands.Bot`, and :class:`~.commands.AutoShardedBot` are all subclasses of client."
+msgstr "なお、 :class:`AutoShardedClient` 、 :class:`~.commands.Bot` 、 :class:`~.commands.AutoShardedBot` はすべてClientのサブクラスです。"
+
+#: ../../../discord/interactions.py:docstring of discord.Interaction.client:6
 msgid ":class:`Client`"
 msgstr ":class:`Client`"
 
@@ -1135,7 +1142,7 @@ msgid "List[Union[:class:`Button`, :class:`SelectMenu`, :class:`TextInput`]]"
 msgstr "List[Union[:class:`Button`, :class:`SelectMenu`, :class:`TextInput`]]"
 
 #: ../../interactions/api.rst:65
-#: ../../interactions/api.rst:397
+#: ../../interactions/api.rst:429
 msgid "Button"
 msgstr "Button"
 
@@ -1185,8 +1192,8 @@ msgstr "ボタンが無効化されているかどうか。"
 #: ../../../discord/components.py:docstring of discord.components.Button:35
 #: ../../../discord/components.py:docstring of discord.components.SelectMenu:49
 #: ../../../discord/components.py:docstring of discord.components.TextInput:43
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:66
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:79
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:72
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:85
 msgid ":class:`bool`"
 msgstr ":class:`bool`"
 
@@ -1203,7 +1210,6 @@ msgid "The emoji of the button, if available."
 msgstr "利用可能な場合、ボタンの絵文字。"
 
 #: ../../../discord/components.py:docstring of discord.components.Button:47
-#: ../../../discord/components.py:docstring of discord.components.SelectOption:48
 msgid "Optional[:class:`PartialEmoji`]"
 msgstr "Optional[:class:`PartialEmoji`]"
 
@@ -1265,7 +1271,7 @@ msgid "Whether the select is disabled or not."
 msgstr "選択メニューが無効化されているかどうか。"
 
 #: ../../interactions/api.rst:84
-#: ../../interactions/api.rst:419
+#: ../../interactions/api.rst:451
 msgid "TextInput"
 msgstr "TextInput"
 
@@ -1387,25 +1393,35 @@ msgid "The application command's description."
 msgstr "アプリケーションコマンドの説明。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:58
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:25
+msgid "A list of options."
+msgstr "オプションのリスト。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:60
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:27
+msgid "List[Union[:class:`AppCommand`, :class:`AppCommandGroup`]]"
+msgstr "List[Union[:class:`AppCommand`, :class:`AppCommandGroup`]]"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:64
 msgid "The default member permissions that can run this command."
 msgstr "このコマンドを実行できるデフォルトのメンバー権限。"
 
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:60
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:66
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:42
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:31
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:42
 msgid "Optional[:class:`~discord.Permissions`]"
 msgstr "Optional[:class:`~discord.Permissions`]"
 
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:64
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:70
 msgid "A boolean that indicates whether this command can be run in direct messages."
 msgstr "このコマンドがダイレクトメッセージで実行できるかどうかを示す真偽値。"
 
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:70
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:76
 msgid "The ID of the guild this command is registered in. A value of ``None`` denotes that it is a global command."
 msgstr "このコマンドが登録されているギルドのID。 ``None`` の値はグローバルコマンドであることを示します。"
 
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:77
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:83
 msgid "Whether the command is NSFW and should only work in NSFW channels."
 msgstr "コマンドに年齢制限をかけて、年齢制限つきチャンネルのみで利用できるようにすべきか。"
 
@@ -1438,7 +1454,8 @@ msgstr "アプリケーションコマンドの削除に失敗した場合。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.delete:8
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.edit:20
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:16
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.fetch_permissions:10
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:13
 msgid "The client does not have an application ID."
 msgstr "クライアントにアプリケーションIDがない場合。"
 
@@ -1482,6 +1499,34 @@ msgstr "新しく編集されたアプリケーションコマンド。"
 msgid ":class:`AppCommand`"
 msgstr ":class:`AppCommand`"
 
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.fetch_permissions:3
+msgid "Retrieves this command's permission in the guild."
+msgstr "コマンドのギルド内の権限を取得します。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.fetch_permissions:5
+msgid "The guild to retrieve the permissions from."
+msgstr "権限を取得するギルド。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.fetch_permissions:8
+msgid "You do not have permission to fetch the application command's permissions."
+msgstr "アプリケーションコマンドの権限を取得する権限がない場合。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.fetch_permissions:9
+msgid "Fetching the application command's permissions failed."
+msgstr "アプリケーションコマンドの権限を取得するのに失敗した場合。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.fetch_permissions:11
+msgid "The application command's permissions could not be found.     This can also indicate that the permissions are synced with the guild     (i.e. they are unchanged from the default)."
+msgstr "アプリケーションコマンドの権限が見つからなかった場合。これは、権限が同期されている(つまり、デフォルトのまま変わっていない)ことも示します。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.fetch_permissions:13
+msgid "An object representing the application command's permissions in the guild."
+msgstr "ギルド内のアプリケーションコマンドの権限を表すオブジェクト。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand.fetch_permissions:14
+msgid ":class:`GuildAppCommandPermissions`"
+msgstr ":class:`GuildAppCommandPermissions`"
+
 #: ../../interactions/api.rst:101
 msgid "AppCommandGroup"
 msgstr "AppCommandGroup"
@@ -1508,32 +1553,11 @@ msgstr "サブコマンドの名前。"
 msgid "The description of the subcommand."
 msgstr "サブコマンドの説明。"
 
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:25
-msgid "Whether the subcommand is required."
-msgstr "サブコマンドが必須かどうか。"
-
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:31
-msgid "A list of choices for the command to choose from for this subcommand."
-msgstr "このサブコマンドの選択肢のリスト。"
-
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:33
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:33
-msgid "List[:class:`Choice`]"
-msgstr "List[:class:`Choice`]"
-
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:37
-msgid "A list of arguments."
-msgstr "引数のリスト。"
-
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:39
-msgid "List[:class:`Argument`]"
-msgstr "List[:class:`Argument`]"
-
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:43
 msgid "The parent application command."
 msgstr "親アプリケーションコマンド。"
 
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:45
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:33
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:39
 msgid "Union[:class:`AppCommand`, :class:`AppCommandGroup`]"
 msgstr "Union[:class:`AppCommand`, :class:`AppCommandGroup`]"
@@ -1757,6 +1781,89 @@ msgid ":class:`~discord.Thread`"
 msgstr ":class:`~discord.Thread`"
 
 #: ../../interactions/api.rst:125
+msgid "AppCommandPermissions"
+msgstr "AppCommandPermissions"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandPermissions:1
+msgid "Represents the permissions for an application command."
+msgstr "アプリケーションコマンドの権限を表します。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandPermissions:7
+msgid "The guild associated with this permission."
+msgstr "この権限に紐づけられたギルド。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandPermissions:9
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.GuildAppCommandPermissions.guild:3
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AllChannels:9
+msgid ":class:`~discord.Guild`"
+msgstr ":class:`~discord.Guild`"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandPermissions:13
+msgid "The ID of the permission target, such as a role, channel, or guild. The special ``guild_id - 1`` sentinel is used to represent \"all channels\"."
+msgstr "ロール、チャンネル、ギルドなど、権限の対象のID。すべてのチャンネルを示す ``guild_id - 1`` センチネルもあります。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandPermissions:20
+msgid "The role, user, or channel associated with this permission. This could also be the :class:`AllChannels` sentinel type. Falls back to :class:`~discord.Object` if the target could not be found in the cache."
+msgstr "この権限に関連付けられたロール、ユーザー、またはチャンネル。これは :class:`AllChannels` センチネル型である可能性もあります。これは対象がキャッシュ内に見つからない場合は :class:`~discord.Object` となります。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandPermissions:23
+#: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.TransformerError:18
+msgid "Any"
+msgstr "Any"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandPermissions:27
+msgid "The type of permission."
+msgstr "権限の種類。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandPermissions:29
+msgid ":class:`.AppCommandPermissionType`"
+msgstr ":class:`.AppCommandPermissionType`"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandPermissions:33
+msgid "The permission value. ``True`` for allow, ``False`` for deny."
+msgstr "権限の値。 ``True`` は許可を、 ``False`` は拒否を示します。"
+
+#: ../../interactions/api.rst:133
+msgid "GuildAppCommandPermissions"
+msgstr "GuildAppCommandPermissions"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.GuildAppCommandPermissions:1
+msgid "Represents the permissions for an application command in a guild."
+msgstr "ギルド内のアプリケーションコマンドの権限を示します。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.GuildAppCommandPermissions:7
+msgid "The application ID."
+msgstr "アプリケーションID。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.GuildAppCommandPermissions:13
+msgid "The application command associated with the permissions."
+msgstr "権限に紐づけられたアプリケーションコマンド。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.GuildAppCommandPermissions:15
+msgid ":class:`.AppCommand`"
+msgstr ":class:`.AppCommand`"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.GuildAppCommandPermissions:19
+msgid "ID of the command or the application ID. When this is the application ID instead of a command ID, the permissions apply to all commands that do not contain explicit overwrites."
+msgstr "コマンドIDまたはアプリケーションID。これがコマンドIDではなくアプリケーションIDの場合、権限は明示的に上書きされていないすべてのコマンドに適用されます。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.GuildAppCommandPermissions:27
+msgid "The guild ID associated with the permissions."
+msgstr "この権限に関連付けられたギルドID。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.GuildAppCommandPermissions:33
+msgid "The permissions, this is a max of 100."
+msgstr "権限ら。最大で100個の制限があります。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.GuildAppCommandPermissions:35
+msgid "List[:class:`AppCommandPermissions`]"
+msgstr "List[:class:`AppCommandPermissions`]"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.GuildAppCommandPermissions.guild:1
+msgid "The guild associated with the permissions."
+msgstr "権限に紐づけられたギルド。"
+
+#: ../../interactions/api.rst:141
 msgid "Argument"
 msgstr "Argument"
 
@@ -1784,11 +1891,40 @@ msgstr "引数が入力必須かどうか。"
 msgid "A list of choices for the command to choose from for this argument."
 msgstr "この引数の選択肢のリスト。"
 
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:33
+msgid "List[:class:`Choice`]"
+msgstr "List[:class:`Choice`]"
+
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:37
 msgid "The parent application command that has this argument."
 msgstr "この引数を持つ親アプリケーションコマンド。"
 
-#: ../../interactions/api.rst:133
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:43
+msgid "The channel types that are allowed for this parameter."
+msgstr "このパラメータにて利用できるチャンネルの種類。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:45
+msgid "List[:class:`~discord.ChannelType`]"
+msgstr "List[:class:`~discord.ChannelType`]"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:49
+msgid "The minimum supported value for this parameter."
+msgstr "このパラメータがサポートする最小の値。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:51
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:57
+msgid "Optional[Union[:class:`int`, :class:`float`]]"
+msgstr "Optional[Union[:class:`int`, :class:`float`]]"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:55
+msgid "The maximum supported value for this parameter."
+msgstr "このパラメータがサポートする最大の値。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:61
+msgid "Whether the argument has autocomplete."
+msgstr "この引数がオートコンプリートを有するか。"
+
+#: ../../interactions/api.rst:149
 msgid "AllChannels"
 msgstr "AllChannels"
 
@@ -1800,23 +1936,19 @@ msgstr "アプリケーションコマンド権限のすべてのチャンネル
 msgid "The guild the application command permission is for."
 msgstr "アプリケーションコマンド権限の対象ギルド。"
 
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AllChannels:9
-msgid ":class:`~discord.Guild`"
-msgstr ":class:`~discord.Guild`"
-
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AllChannels.id:1
 msgid "The ID sentinel used to represent all channels. Equivalent to the guild's ID minus 1."
 msgstr "すべてのチャンネルを表すために使用されるIDセンチネル。ギルドのIDから1を引いたものに相当します。"
 
-#: ../../interactions/api.rst:141
+#: ../../interactions/api.rst:157
 msgid "Data Classes"
 msgstr "データクラス"
 
-#: ../../interactions/api.rst:143
+#: ../../interactions/api.rst:159
 msgid "Similar to :ref:`discord_api_data`, these can be received and constructed by users."
 msgstr ":ref:`discord_api_data` と同様に、これらは受け取ることもあれば、ユーザーによって構築することもできます。"
 
-#: ../../interactions/api.rst:146
+#: ../../interactions/api.rst:162
 msgid "SelectOption"
 msgstr "SelectOption"
 
@@ -1846,17 +1978,22 @@ msgid "An additional description of the option, if any. Can only be up to 100 ch
 msgstr "存在する場合、オプションの追加の説明。最大 100 文字まで可能です。"
 
 #: ../../../discord/components.py:docstring of discord.components.SelectOption:17
-#: ../../../discord/components.py:docstring of discord.components.SelectOption:46
+#: ../../../discord/components.py:docstring of discord.SelectOption.emoji:1
 msgid "The emoji of the option, if available."
 msgstr "利用可能な場合、オプションの絵文字。"
 
 #: ../../../discord/components.py:docstring of discord.components.SelectOption:19
-#: ../../../discord/components.py:docstring of discord.components.SelectOption:52
+#: ../../../discord/components.py:docstring of discord.components.SelectOption:46
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select.add_option:18
 msgid "Whether this option is selected by default."
 msgstr "このオプションがデフォルトで選択されているかどうか。"
 
-#: ../../interactions/api.rst:154
+#: ../../../discord/components.py:docstring of discord.SelectOption.emoji:3
+#: ../../../discord/ui/button.py:docstring of discord.ui.Button.emoji:3
+msgid "Optional[:class:`.PartialEmoji`]"
+msgstr "Optional[:class:`.PartialEmoji`]"
+
+#: ../../interactions/api.rst:170
 msgid "Choice"
 msgstr "Choice"
 
@@ -1884,245 +2021,261 @@ msgstr "選択肢の名前。表示用です。"
 msgid "The value of the choice."
 msgstr "選択肢の値。"
 
-#: ../../interactions/api.rst:163
+#: ../../interactions/api.rst:179
 msgid "Enumerations"
 msgstr "列挙型"
 
-#: ../../interactions/api.rst:167
+#: ../../interactions/api.rst:183
 msgid "Specifies the type of :class:`Interaction`."
 msgstr ":class:`Interaction` のタイプを指定します。"
 
-#: ../../interactions/api.rst:173
+#: ../../interactions/api.rst:189
 msgid "Represents Discord pinging to see if the interaction response server is alive."
 msgstr "インタラクション応答サーバーが利用可能かを確認するためのDiscordのping。"
 
-#: ../../interactions/api.rst:176
+#: ../../interactions/api.rst:192
 msgid "Represents a slash command interaction."
 msgstr "スラッシュコマンドのインタラクション。"
 
-#: ../../interactions/api.rst:179
+#: ../../interactions/api.rst:195
 msgid "Represents a component based interaction, i.e. using the Discord Bot UI Kit."
 msgstr "コンポーネントベースのインタラクション、つまり Discord Bot UI Kitの使用。"
 
-#: ../../interactions/api.rst:182
+#: ../../interactions/api.rst:198
 msgid "Represents an auto complete interaction."
 msgstr "オートコンプリートのインタラクション。"
 
-#: ../../interactions/api.rst:185
+#: ../../interactions/api.rst:201
 msgid "Represents submission of a modal interaction."
 msgstr "モーダル送信のインタラクション。"
 
-#: ../../interactions/api.rst:189
+#: ../../interactions/api.rst:205
 msgid "Specifies the response type for the interaction."
 msgstr "インタラクションの応答タイプを示します。"
 
-#: ../../interactions/api.rst:195
+#: ../../interactions/api.rst:211
 msgid "Pongs the interaction when given a ping."
 msgstr "pingインタラクションにpongします。"
 
-#: ../../interactions/api.rst:197
+#: ../../interactions/api.rst:213
 msgid "See also :meth:`InteractionResponse.pong`"
 msgstr ":meth:`InteractionResponse.pong` も参照してください。"
 
-#: ../../interactions/api.rst:200
+#: ../../interactions/api.rst:216
 msgid "Respond to the interaction with a message."
 msgstr "インタラクションにメッセージで応答します。"
 
-#: ../../interactions/api.rst:202
+#: ../../interactions/api.rst:218
 msgid "See also :meth:`InteractionResponse.send_message`"
 msgstr ":meth:`InteractionResponse.send_message` も参照してください。"
 
-#: ../../interactions/api.rst:205
+#: ../../interactions/api.rst:221
 msgid "Responds to the interaction with a message at a later time."
 msgstr "後でインタラクションにメッセージで応答します。"
 
-#: ../../interactions/api.rst:207
-#: ../../interactions/api.rst:213
+#: ../../interactions/api.rst:223
+#: ../../interactions/api.rst:229
 msgid "See also :meth:`InteractionResponse.defer`"
 msgstr ":meth:`InteractionResponse.defer` も参照してください。"
 
-#: ../../interactions/api.rst:210
+#: ../../interactions/api.rst:226
 msgid "Acknowledges the component interaction with a promise that the message will update later (though there is no need to actually update the message)."
 msgstr "メッセージが後で更新されると約束してコンポーネントインタラクションを確認します。（実際には、メッセージを更新する必要はありません。）"
 
-#: ../../interactions/api.rst:216
+#: ../../interactions/api.rst:232
 msgid "Responds to the interaction by editing the message."
 msgstr "インタラクションにメッセージを編集して応答します。"
 
-#: ../../interactions/api.rst:218
+#: ../../interactions/api.rst:234
 msgid "See also :meth:`InteractionResponse.edit_message`"
 msgstr ":meth:`InteractionResponse.edit_message` も参照してください。"
 
-#: ../../interactions/api.rst:221
+#: ../../interactions/api.rst:237
 msgid "Responds to the autocomplete interaction with suggested choices."
 msgstr "オートコンプリートインタラクションに対し提案された選択肢で応答します。"
 
-#: ../../interactions/api.rst:223
+#: ../../interactions/api.rst:239
 msgid "See also :meth:`InteractionResponse.autocomplete`"
 msgstr ":meth:`InteractionResponse.autocomplete` も参照してください。"
 
-#: ../../interactions/api.rst:226
+#: ../../interactions/api.rst:242
 msgid "Responds to the interaction with a modal."
 msgstr "インタラクションにモーダルで応答します。"
 
-#: ../../interactions/api.rst:228
+#: ../../interactions/api.rst:244
 msgid "See also :meth:`InteractionResponse.send_modal`"
 msgstr ":meth:`InteractionResponse.send_modal` も参照してください。"
 
-#: ../../interactions/api.rst:232
+#: ../../interactions/api.rst:248
 msgid "Represents the component type of a component."
 msgstr "コンポーネントのコンポーネントタイプを表します。"
 
-#: ../../interactions/api.rst:238
+#: ../../interactions/api.rst:254
 msgid "Represents the group component which holds different components in a row."
 msgstr "行内に異なるコンポーネントを保持するグループコンポーネント。"
 
-#: ../../interactions/api.rst:241
+#: ../../interactions/api.rst:257
 msgid "Represents a button component."
 msgstr "ボタンコンポーネント。"
 
-#: ../../interactions/api.rst:244
+#: ../../interactions/api.rst:260
 msgid "Represents a select component."
 msgstr "選択メニューコンポーネント。"
 
-#: ../../interactions/api.rst:248
+#: ../../interactions/api.rst:264
 msgid "Represents a text box component."
 msgstr "テキストボックスコンポーネント。"
 
-#: ../../interactions/api.rst:252
+#: ../../interactions/api.rst:268
 msgid "Represents the style of the button component."
 msgstr "ボタンコンポーネントのスタイルを表します。"
 
-#: ../../interactions/api.rst:258
+#: ../../interactions/api.rst:274
 msgid "Represents a blurple button for the primary action."
 msgstr "主なアクションのためのブループル色のボタンを表します。"
 
-#: ../../interactions/api.rst:261
+#: ../../interactions/api.rst:277
 msgid "Represents a grey button for the secondary action."
 msgstr "主でないアクションのための灰色のボタンを表します。"
 
-#: ../../interactions/api.rst:264
+#: ../../interactions/api.rst:280
 msgid "Represents a green button for a successful action."
 msgstr "成功したアクションを意味する緑色のボタンを表します。"
 
-#: ../../interactions/api.rst:267
+#: ../../interactions/api.rst:283
 msgid "Represents a red button for a dangerous action."
 msgstr "危険な操作を意味する赤いボタンを表します。"
 
-#: ../../interactions/api.rst:270
+#: ../../interactions/api.rst:286
 msgid "Represents a link button."
 msgstr "リンクボタンを表します。"
 
-#: ../../interactions/api.rst:274
+#: ../../interactions/api.rst:290
 msgid "An alias for :attr:`primary`."
 msgstr ":attr:`primary` のエイリアス。"
 
-#: ../../interactions/api.rst:277
-#: ../../interactions/api.rst:280
+#: ../../interactions/api.rst:293
+#: ../../interactions/api.rst:296
 msgid "An alias for :attr:`secondary`."
 msgstr ":attr:`secondary` のエイリアス。"
 
-#: ../../interactions/api.rst:283
+#: ../../interactions/api.rst:299
 msgid "An alias for :attr:`success`."
 msgstr ":attr:`success` のエイリアス。"
 
-#: ../../interactions/api.rst:286
+#: ../../interactions/api.rst:302
 msgid "An alias for :attr:`danger`."
 msgstr ":attr:`danger` のエイリアス。"
 
-#: ../../interactions/api.rst:289
+#: ../../interactions/api.rst:305
 msgid "An alias for :attr:`link`."
 msgstr ":attr:`link` のエイリアス。"
 
-#: ../../interactions/api.rst:293
+#: ../../interactions/api.rst:309
 msgid "Represents the style of the text box component."
 msgstr "テキストボックスコンポーネントのスタイルを表します。"
 
-#: ../../interactions/api.rst:299
+#: ../../interactions/api.rst:315
 msgid "Represents a short text box."
 msgstr "短いテキストボックスを表します。"
 
-#: ../../interactions/api.rst:302
+#: ../../interactions/api.rst:318
 msgid "Represents a long form text box."
 msgstr "長いフォームのテキストボックスを表します。"
 
-#: ../../interactions/api.rst:305
+#: ../../interactions/api.rst:321
 msgid "An alias for :attr:`paragraph`."
 msgstr ":attr:`paragraph` のエイリアス。"
 
-#: ../../interactions/api.rst:309
+#: ../../interactions/api.rst:325
 msgid "The application command's option type. This is usually the type of parameter an application command takes."
 msgstr "アプリケーションコマンドのオプションタイプ。これは通常アプリケーションコマンドがとるパラメータの型です。"
 
-#: ../../interactions/api.rst:315
+#: ../../interactions/api.rst:331
 msgid "A subcommand."
 msgstr "サブコマンド。"
 
-#: ../../interactions/api.rst:318
+#: ../../interactions/api.rst:334
 msgid "A subcommand group."
 msgstr "サブコマンドグループ。"
 
-#: ../../interactions/api.rst:321
+#: ../../interactions/api.rst:337
 msgid "A string parameter."
 msgstr "文字列パラメータ。"
 
-#: ../../interactions/api.rst:324
+#: ../../interactions/api.rst:340
 msgid "A integer parameter."
 msgstr "整数パラメータ。"
 
-#: ../../interactions/api.rst:327
+#: ../../interactions/api.rst:343
 msgid "A boolean parameter."
 msgstr "真偽値パラメータ。"
 
-#: ../../interactions/api.rst:330
+#: ../../interactions/api.rst:346
 msgid "A user parameter."
 msgstr "ユーザーパラメータ。"
 
-#: ../../interactions/api.rst:333
+#: ../../interactions/api.rst:349
 msgid "A channel parameter."
 msgstr "チャンネルパラメータ。"
 
-#: ../../interactions/api.rst:336
+#: ../../interactions/api.rst:352
 msgid "A role parameter."
 msgstr "ロールパラメータ。"
 
-#: ../../interactions/api.rst:339
+#: ../../interactions/api.rst:355
 msgid "A mentionable parameter."
 msgstr "メンション可能なもののパラメータ。"
 
-#: ../../interactions/api.rst:342
+#: ../../interactions/api.rst:358
 msgid "A number parameter."
 msgstr "数値のパラメータ。"
 
-#: ../../interactions/api.rst:345
+#: ../../interactions/api.rst:361
 msgid "An attachment parameter."
 msgstr "添付ファイルのパラメータ。"
 
-#: ../../interactions/api.rst:349
+#: ../../interactions/api.rst:365
 msgid "The type of application command."
 msgstr "アプリケーションコマンドの種類。"
 
-#: ../../interactions/api.rst:355
+#: ../../interactions/api.rst:371
 msgid "A slash command."
 msgstr "スラッシュコマンド。"
 
-#: ../../interactions/api.rst:358
+#: ../../interactions/api.rst:374
 msgid "A user context menu command."
 msgstr "ユーザーコンテキストメニューコマンド。"
 
-#: ../../interactions/api.rst:361
+#: ../../interactions/api.rst:377
 msgid "A message context menu command."
 msgstr "メッセージコンテキストメニューコマンド。"
 
-#: ../../interactions/api.rst:366
+#: ../../interactions/api.rst:381
+msgid "The application command's permission type."
+msgstr "アプリケーションコマンドの権限タイプ。"
+
+#: ../../interactions/api.rst:387
+msgid "The permission is for a role."
+msgstr "権限はロール用です。"
+
+#: ../../interactions/api.rst:390
+msgid "The permission is for one or all channels."
+msgstr "権限は一つ、またはすべてのチャンネル用です。"
+
+#: ../../interactions/api.rst:393
+msgid "The permission is for a user."
+msgstr "権限はユーザー用です。"
+
+#: ../../interactions/api.rst:398
 msgid "Bot UI Kit"
 msgstr "Bot UIキット"
 
-#: ../../interactions/api.rst:368
+#: ../../interactions/api.rst:400
 msgid "The library has helpers to aid create component-based UIs. These are all in the ``discord.ui`` package."
 msgstr "ライブラリにはコンポーネントベースの UI の作成を支援するヘルパーがあります。これらはすべて ``discord.ui`` パッケージにあります。"
 
-#: ../../interactions/api.rst:372
+#: ../../interactions/api.rst:404
 msgid "View"
 msgstr "View"
 
@@ -2278,8 +2431,8 @@ msgstr "項目のコールバックや :meth:`interaction_check` がエラーで
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.on_error:6
 #: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal.on_error:6
-msgid "The default implementation prints the traceback to stderr."
-msgstr "デフォルトの実装では、トレースバックを stderr に出力します。"
+msgid "The default implementation logs to the library logger."
+msgstr "デフォルトの実装はライブラリロガーに記録します。"
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View.on_error:8
 #: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal.on_error:8
@@ -2342,7 +2495,7 @@ msgstr "ビューは :meth:`stop` が呼び出されるかタイムアウトし�
 msgid "If ``True``, then the view timed out. If ``False`` then the view finished normally."
 msgstr "``True`` の場合、ビューがタイムアウトしました。 ``False`` の場合、ビューは正常に終了しました。"
 
-#: ../../interactions/api.rst:380
+#: ../../interactions/api.rst:412
 msgid "Modal"
 msgstr "Modal"
 
@@ -2390,7 +2543,7 @@ msgstr "このモーダルを送信したインタラクション。"
 msgid "A callback that is called when :meth:`on_submit` fails with an error."
 msgstr ":meth:`on_submit` がエラーで失敗したときに呼び出されるコールバック。"
 
-#: ../../interactions/api.rst:389
+#: ../../interactions/api.rst:421
 msgid "Item"
 msgstr "Item"
 
@@ -2474,10 +2627,6 @@ msgstr "このボタンが URL 用の場合、カスタム ID はありません
 msgid "The label of the button, if available."
 msgstr "利用可能な場合、ボタンのラベル。"
 
-#: ../../../discord/ui/button.py:docstring of discord.ui.Button.emoji:3
-msgid "Optional[:class:`.PartialEmoji`]"
-msgstr "Optional[:class:`.PartialEmoji`]"
-
 #: ../../../discord/ui/button.py:docstring of discord.ui.button.button:1
 msgid "A decorator that attaches a button to a component."
 msgstr "コンポーネントにボタンを付属させるデコレータ。"
@@ -2506,7 +2655,7 @@ msgstr "ボタンを無効にするかどうか。デフォルトは ``False`` �
 msgid "The emoji of the button. This can be in string form or a :class:`.PartialEmoji` or a full :class:`.Emoji`."
 msgstr "ボタンの絵文字。文字列形式または :class:`.PartialEmoji` または完全な :class:`.Emoji` が渡せます。"
 
-#: ../../interactions/api.rst:408
+#: ../../interactions/api.rst:440
 msgid "Select"
 msgstr "Select"
 
@@ -2631,15 +2780,15 @@ msgstr "テキスト入力のラベル。"
 msgid ":class:`discord.TextStyle`"
 msgstr ":class:`discord.TextStyle`"
 
-#: ../../interactions/api.rst:430
+#: ../../interactions/api.rst:462
 msgid "Application Commands"
 msgstr "アプリケーションコマンド"
 
-#: ../../interactions/api.rst:432
+#: ../../interactions/api.rst:464
 msgid "The library has helpers to aid in creation of application commands. These are all in the ``discord.app_commands`` package."
 msgstr "ライブラリにはアプリケーションコマンドの作成を支援するヘルパーがあります。これらはすべて ``discord.app_commands`` パッケージにあります。"
 
-#: ../../interactions/api.rst:435
+#: ../../interactions/api.rst:467
 msgid "CommandTree"
 msgstr "CommandTree"
 
@@ -2654,6 +2803,39 @@ msgstr "アプリケーションコマンドの情報を取得するためのク
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree:5
 msgid "If a guild-specific command is not found when invoked, then try falling back into a global command in the tree. For example, if the tree locally has a ``/ping`` command under the global namespace but the guild has a guild-specific ``/ping``, instead of failing to find the guild-specific ``/ping`` command it will fall back to the global ``/ping`` command. This has the potential to raise more :exc:`~discord.app_commands.CommandSignatureMismatch` errors than usual. Defaults to ``True``."
 msgstr "ギルド固有のコマンドが呼び出されたときに見つからない場合は、ツリー内のグローバルコマンドを呼び出します。 例えば、ローカル環境でグローバル名前空間の下に ``/ping`` コマンドがあるが、ギルド本体ではギルド固有の ``/ping`` がある場合、ギルド固有の ``/ping`` コマンドを見つけるのに失敗せずに、グローバルの ``/ping`` コマンドをフォールバックとして使用します。 これは :exc:`~discord.app_commands.CommandSignatureMismatch` エラーを通常より多く引き起こす可能性があります。デフォルトは ``True`` です。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:3
+msgid "Fetches an application command from the application."
+msgstr "アプリケーションからアプリケーションコマンドを取得します。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:5
+msgid "The ID of the command to fetch."
+msgstr "取得するコマンドのID。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:7
+msgid "The guild to fetch the command from. If not passed then the global command is fetched instead."
+msgstr "コマンドを取得するギルド。渡されない場合は、代わりにグローバルコマンドが取得されます。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:11
+msgid "Fetching the command failed."
+msgstr "コマンドの取得に失敗した場合。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:12
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_commands:17
+msgid "The application ID could not be found."
+msgstr "アプリケーションコマンドが見つからなかった場合。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:13
+msgid "The application command was not found.     This could also be because the command is a guild command     and the guild was not specified and vice versa."
+msgstr "アプリケーションコマンドが見つからなかった場合。 これは、コマンドがギルドコマンドであるのにギルドが指定されていない場合またはその逆を含みます。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:15
+msgid "The application command."
+msgstr "アプリケーションコマンド。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:16
+msgid ":class:`~discord.app_commands.AppCommand`"
+msgstr ":class:`~discord.app_commands.AppCommand`"
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_commands:3
 msgid "Fetches the application's current commands."
@@ -2675,10 +2857,6 @@ msgstr "コマンドを取得するギルド。渡されない場合は、代わ
 msgid "Fetching the commands failed."
 msgstr "コマンドの取得に失敗した場合。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_commands:17
-msgid "The application ID could not be found."
-msgstr "アプリケーションコマンドが見つからなかった場合。"
-
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_commands:19
 msgid "The application's commands."
 msgstr "アプリケーションコマンド。"
@@ -2692,18 +2870,18 @@ msgid "Copies all global commands to the specified guild."
 msgstr "指定したギルドにグローバルコマンドをすべてコピーします。"
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:3
-msgid "This method is mainly available for development purposes, as it allows you to copy your global commands over to a testing guild easily and prevent waiting an hour for the propagation."
-msgstr "これは、グローバルコマンドをテスト用のギルドにコピーして、伝播されるのに一時間待たずに済むようにするため、主に開発のために提供されています。"
+msgid "This method is mainly available for development purposes, as it allows you to copy your global commands over to a testing guild easily."
+msgstr "これは、グローバルコマンドをテスト用のギルドにコピーできるので、主に開発のために提供されています。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:7
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:6
 msgid "Note that this method will *override* pre-existing guild commands that would conflict."
 msgstr "このメソッドは競合する既存のギルドコマンドを *上書き* することに注意してください。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:9
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:8
 msgid "The guild to copy the commands to."
 msgstr "コマンドをコピーするギルド。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:12
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.copy_global_to:11
 msgid "The maximum number of commands was reached for that guild.     This is currently 100 for slash commands and 5 for context menu commands."
 msgstr "ギルドの最大コマンド数に達した場合。これはスラッシュコマンドでは100個で、コンテキストメニューコマンドでは5個です。"
 
@@ -2862,8 +3040,8 @@ msgid "A callback that is called when any command raises an :exc:`AppCommandErro
 msgstr "どれかのコマンドが :exc:`AppCommandError` を送出したときに呼び出されるコールバック。"
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:5
-msgid "The default implementation prints the traceback to stderr if the command does not have any error handlers attached to it."
-msgstr "デフォルトの実装ではコマンドにエラーハンドラーが付属したいない場合のみトレースバックをstderrに出力します。"
+msgid "The default implementation logs the exception using the library logger if the command does not have any error handlers attached to it."
+msgstr "デフォルトの実装ではコマンドにエラーハンドラーが付属したいない場合のみ例外をライブラリロガーを用いて記録します。"
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.on_error:8
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.on_error:5
@@ -2943,6 +3121,14 @@ msgstr "コマンドに年齢制限をかけて、年齢制限つきチャンネ
 msgid "Due to a Discord limitation, this does not work on subcommands."
 msgstr "Discord側の制限のため、サブコマンドでは動作しません。"
 
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:21
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:34
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:70
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:57
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:70
+msgid "A dictionary that can be used to store extraneous data. The library will not touch any values or keys within this dictionary."
+msgstr "追加のデータを保管できる辞書型。ライブラリは辞書型の中のキーや値を一切操作しません。"
+
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:1
 msgid "Creates a application command context menu from a regular function directly under this tree."
 msgstr "関数からこのツリーの下にアプリケーションコマンドコンテキストメニューを作成します。"
@@ -2966,26 +3152,22 @@ msgid "This must be called for the application commands to show up."
 msgstr "アプリケーションコマンドを表示するためには、これを呼び出さないといけません。"
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:7
-msgid "Global commands take up to 1-hour to propagate but guild commands propagate instantly."
-msgstr "グローバルコマンドは伝播に最大1時間かかりますが、ギルドコマンドは即時に伝播します。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:10
 msgid "The guild to sync the commands to. If ``None`` then it syncs all global commands instead."
 msgstr "コマンドを同期するギルド。指定されていない場合や ``None`` の場合グローバルコマンドを同期します。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:14
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:11
 msgid "Syncing the commands failed."
 msgstr "コマンドの同期に失敗した場合。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:15
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:12
 msgid "The client does not have the ``applications.commands`` scope in the guild."
 msgstr "クライアントがギルドで ``applications.commands`` スコープを有さない場合。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:18
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:15
 msgid "The application's commands that got synced."
 msgstr "同期されたアプリケーションコマンド。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:19
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.sync:16
 msgid "List[:class:`AppCommand`]"
 msgstr "List[:class:`AppCommand`]"
 
@@ -3021,11 +3203,11 @@ msgstr "インタラクションデータがアプリケーションコマンド
 msgid "An error occurred while calling the command."
 msgstr "コマンドの実行中にエラーが発生した場合。"
 
-#: ../../interactions/api.rst:443
+#: ../../interactions/api.rst:475
 msgid "Commands"
 msgstr "コマンド"
 
-#: ../../interactions/api.rst:446
+#: ../../interactions/api.rst:478
 msgid "Command"
 msgstr "Command"
 
@@ -3138,7 +3320,7 @@ msgstr "コルーチンのデコレータは :class:`~discord.app_commands.Choic
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:18
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:4
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:4
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:7
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.choices:3
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:12
 msgid "Example:"
@@ -3182,7 +3364,7 @@ msgstr "この関数は冪等性を保持しており、関数がコマンドの
 msgid "The function to remove from the checks."
 msgstr "チェックから除去する関数。"
 
-#: ../../interactions/api.rst:454
+#: ../../interactions/api.rst:486
 msgid "ContextMenu"
 msgstr "ContextMenu"
 
@@ -3214,7 +3396,7 @@ msgstr ":class:`.AppCommandType`"
 msgid "The coroutine that is executed when the context menu is called."
 msgstr "コンテキストメニューが呼び出されたときに実行されるコルーチン。"
 
-#: ../../interactions/api.rst:462
+#: ../../interactions/api.rst:494
 msgid "Group"
 msgstr "Group"
 
@@ -3359,7 +3541,7 @@ msgstr "取得されたコマンドまたはグループ。何も見つからな
 msgid "Creates an application command under this group."
 msgstr "このグループの下にアプリケーションコマンドを作成します。"
 
-#: ../../interactions/api.rst:470
+#: ../../interactions/api.rst:502
 msgid "Decorators"
 msgstr "デコレータ"
 
@@ -3380,7 +3562,7 @@ msgid "The description of the parameters."
 msgstr "パラメータの説明。"
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:15
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:16
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:19
 msgid "The parameter name is not found."
 msgstr "パラメータ名が見つからない場合。"
 
@@ -3388,11 +3570,15 @@ msgstr "パラメータ名が見つからない場合。"
 msgid "Renames the given parameters by their name using the key of the keyword argument as the name."
 msgstr "キーワード引数のキーを名前として使用して与えられたパラメータを改名します。"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:13
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:4
+msgid "This renames the parameter within the Discord UI. When referring to the parameter in other decorators, the parameter name used in the function is used instead of the renamed one."
+msgstr "これはDiscord UI内のパラメータの名前を変更します。 他のデコレータでパラメータを参照する場合、改名先のものではなく関数内で使用されるパラメータ名を使用しないといけません。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:16
 msgid "The name of the parameters."
 msgstr "パラメータの名前。"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:15
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:18
 msgid "The parameter name is already used by another parameter."
 msgstr "パラメータ名がすでに他のパラメータによって使用されている場合。"
 
@@ -3500,7 +3686,7 @@ msgstr "デフォルトとして設定する権限を示すキーワード引数
 msgid "Example"
 msgstr "例"
 
-#: ../../interactions/api.rst:500
+#: ../../interactions/api.rst:532
 msgid "Checks"
 msgstr "チェック"
 
@@ -3653,7 +3839,7 @@ msgstr "所有者以外の全員にクールダウンを設定します。"
 msgid "A function that takes an interaction and returns a cooldown that will apply to that interaction or ``None`` if the interaction should not have a cooldown."
 msgstr "インタラクションを受け取り、このインタラクションに適用されるクールダウンまたはクールダウンを回避する場合 ``None`` を返す関数。"
 
-#: ../../interactions/api.rst:524
+#: ../../interactions/api.rst:556
 msgid "Cooldown"
 msgstr "Cooldown"
 
@@ -3733,7 +3919,7 @@ msgstr "このクールダウンの新しいインスタンス。"
 msgid ":class:`Cooldown`"
 msgstr ":class:`Cooldown`"
 
-#: ../../interactions/api.rst:533
+#: ../../interactions/api.rst:565
 msgid "Namespace"
 msgstr "Namespace"
 
@@ -3841,11 +4027,11 @@ msgstr "オートコンプリートのインタラクションでは、名前空
 msgid "This is a Discord limitation."
 msgstr "これはDiscordの制限です。"
 
-#: ../../interactions/api.rst:541
+#: ../../interactions/api.rst:573
 msgid "Transformers"
 msgstr "トランスフォーマー"
 
-#: ../../interactions/api.rst:544
+#: ../../interactions/api.rst:576
 msgid "Transformer"
 msgstr "Transformer"
 
@@ -3943,7 +4129,7 @@ msgstr "ユーザーに表示される選択肢のリスト、最大25個です�
 msgid "List[:class:`~discord.app_commands.Choice`]"
 msgstr "List[:class:`~discord.app_commands.Choice`]"
 
-#: ../../interactions/api.rst:552
+#: ../../interactions/api.rst:584
 msgid "Transform"
 msgstr "Transform"
 
@@ -3960,7 +4146,7 @@ msgstr "型チェック時には型チェッカがコードの意図を理解で
 msgid "For example usage, check :class:`Transformer`."
 msgstr "使用例は、 :class:`Transformer` を確認してください。"
 
-#: ../../interactions/api.rst:560
+#: ../../interactions/api.rst:592
 msgid "Range"
 msgstr "Range"
 
@@ -3984,7 +4170,7 @@ msgstr "``Range[int, None, 10]`` は最小値なし、最大値10を意味しま
 msgid "``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10."
 msgstr "``Range[int, 1, 10]`` は最小値1、最大値10を意味します。"
 
-#: ../../interactions/api.rst:568
+#: ../../interactions/api.rst:600
 msgid "Exceptions"
 msgstr "例外"
 
@@ -4051,10 +4237,6 @@ msgstr "もし :exc:`AppCommandError` を継承しない例外が変換中に送
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.TransformerError:16
 msgid "The value that failed to convert."
 msgstr "変換に失敗した値。"
-
-#: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.TransformerError:18
-msgid "Any"
-msgstr "Any"
 
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.TransformerError:22
 msgid "The type of argument that failed to convert."
@@ -4197,71 +4379,71 @@ msgstr "見つからなかったコマンドの種類。"
 msgid "An exception raised when the client does not have an application ID set. An application ID is required for syncing application commands."
 msgstr "クライアントにアプリケーションIDが設定されていない場合に発生する例外。アプリケーションコマンドの同期にはアプリケーションIDが必要です。"
 
-#: ../../interactions/api.rst:616
+#: ../../interactions/api.rst:648
 msgid "Exception Hierarchy"
 msgstr "例外の階層構造"
 
-#: ../../interactions/api.rst:634
+#: ../../interactions/api.rst:666
 msgid ":exc:`~discord.DiscordException`"
 msgstr ":exc:`~discord.DiscordException`"
 
-#: ../../interactions/api.rst:634
+#: ../../interactions/api.rst:666
 msgid ":exc:`~discord.app_commands.AppCommandError`"
 msgstr ":exc:`~discord.app_commands.AppCommandError`"
 
-#: ../../interactions/api.rst:622
+#: ../../interactions/api.rst:654
 msgid ":exc:`~discord.app_commands.CommandInvokeError`"
 msgstr ":exc:`~discord.app_commands.CommandInvokeError`"
 
-#: ../../interactions/api.rst:623
+#: ../../interactions/api.rst:655
 msgid ":exc:`~discord.app_commands.TransformerError`"
 msgstr ":exc:`~discord.app_commands.TransformerError`"
 
-#: ../../interactions/api.rst:629
+#: ../../interactions/api.rst:661
 msgid ":exc:`~discord.app_commands.CheckFailure`"
 msgstr ":exc:`~discord.app_commands.CheckFailure`"
 
-#: ../../interactions/api.rst:625
+#: ../../interactions/api.rst:657
 msgid ":exc:`~discord.app_commands.NoPrivateMessage`"
 msgstr ":exc:`~discord.app_commands.NoPrivateMessage`"
 
-#: ../../interactions/api.rst:626
+#: ../../interactions/api.rst:658
 msgid ":exc:`~discord.app_commands.MissingRole`"
 msgstr ":exc:`~discord.app_commands.MissingRole`"
 
-#: ../../interactions/api.rst:627
+#: ../../interactions/api.rst:659
 msgid ":exc:`~discord.app_commands.MissingAnyRole`"
 msgstr ":exc:`~discord.app_commands.MissingAnyRole`"
 
-#: ../../interactions/api.rst:628
+#: ../../interactions/api.rst:660
 msgid ":exc:`~discord.app_commands.MissingPermissions`"
 msgstr ":exc:`~discord.app_commands.MissingPermissions`"
 
-#: ../../interactions/api.rst:629
+#: ../../interactions/api.rst:661
 msgid ":exc:`~discord.app_commands.BotMissingPermissions`"
 msgstr ":exc:`~discord.app_commands.BotMissingPermissions`"
 
-#: ../../interactions/api.rst:630
+#: ../../interactions/api.rst:662
 msgid ":exc:`~discord.app_commands.CommandOnCooldown`"
 msgstr ":exc:`~discord.app_commands.CommandOnCooldown`"
 
-#: ../../interactions/api.rst:631
+#: ../../interactions/api.rst:663
 msgid ":exc:`~discord.app_commands.CommandLimitReached`"
 msgstr ":exc:`~discord.app_commands.CommandLimitReached`"
 
-#: ../../interactions/api.rst:632
+#: ../../interactions/api.rst:664
 msgid ":exc:`~discord.app_commands.CommandAlreadyRegistered`"
 msgstr ":exc:`~discord.app_commands.CommandAlreadyRegistered`"
 
-#: ../../interactions/api.rst:633
+#: ../../interactions/api.rst:665
 msgid ":exc:`~discord.app_commands.CommandSignatureMismatch`"
 msgstr ":exc:`~discord.app_commands.CommandSignatureMismatch`"
 
-#: ../../interactions/api.rst:634
+#: ../../interactions/api.rst:666
 msgid ":exc:`~discord.app_commands.CommandNotFound`"
 msgstr ":exc:`~discord.app_commands.CommandNotFound`"
 
-#: ../../interactions/api.rst:635
+#: ../../interactions/api.rst:667
 msgid ":exc:`~discord.app_commands.MissingApplicationID`"
 msgstr ":exc:`~discord.app_commands.MissingApplicationID`"
 

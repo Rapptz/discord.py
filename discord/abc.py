@@ -125,7 +125,7 @@ async def _purge_helper(
     before: Optional[SnowflakeTime] = None,
     after: Optional[SnowflakeTime] = None,
     around: Optional[SnowflakeTime] = None,
-    oldest_first: Optional[bool] = False,
+    oldest_first: Optional[bool] = None,
     bulk: bool = True,
     reason: Optional[str] = None,
 ) -> List[Message]:
@@ -272,8 +272,7 @@ class User(Snowflake, Protocol):
         raise NotImplementedError
 
 
-@runtime_checkable
-class PrivateChannel(Snowflake, Protocol):
+class PrivateChannel:
     """An ABC that details the common operations on a private Discord channel.
 
     The following implement this ABC:
@@ -291,6 +290,7 @@ class PrivateChannel(Snowflake, Protocol):
 
     __slots__ = ()
 
+    id: int
     me: ClientUser
 
 

@@ -28,7 +28,7 @@ import asyncio
 import datetime
 import logging
 import sys
-import traceback
+import os
 from typing import (
     Any,
     AsyncIterator,
@@ -113,9 +113,72 @@ class _LoopSentinel:
 _loop: Any = _LoopSentinel()
 
 
+def stream_supports_colour(stream: Any) -> bool:
+    is_a_tty = hasattr(stream, 'isatty') and stream.isatty()
+    if sys.platform != 'win32':
+        return is_a_tty
+
+    # ANSICON checks for things like ConEmu
+    # WT_SESSION checks if this is Windows Terminal
+    # VSCode built-in terminal supports colour too
+    return is_a_tty and ('ANSICON' in os.environ or 'WT_SESSION' in os.environ or os.environ.get('TERM_PROGRAM') == 'vscode')
+
+
+class _ColourFormatter(logging.Formatter):
+
+    # ANSI codes are a bit weird to decipher if you're unfamiliar with them, so here's a refresher
+    # It starts off with a format like \x1b[XXXm where XXX is a semicolon separated list of commands
+    # The important ones here relate to colour.
+    # 30-37 are black, red, green, yellow, blue, magenta, cyan and white in that order
+    # 40-47 are the same except for the background
+    # 90-97 are the same but "bright" foreground
+    # 100-107 are the same as the bright ones but for the background.
+    # 1 means bold, 2 means dim, 0 means reset, and 4 means underline.
+
+    LEVEL_COLOURS = [
+        (logging.DEBUG, '\x1b[40;1m'),
+        (logging.INFO, '\x1b[34;1m'),
+        (logging.WARNING, '\x1b[33;1m'),
+        (logging.ERROR, '\x1b[31m'),
+        (logging.CRITICAL, '\x1b[41m'),
+    ]
+
+    FORMATS = {
+        level: logging.Formatter(
+            f'\x1b[30;1m%(asctime)s\x1b[0m {colour}%(levelname)-8s\x1b[0m \x1b[35m%(name)s\x1b[0m %(message)s',
+            '%Y-%m-%d %H:%M:%S',
+        )
+        for level, colour in LEVEL_COLOURS
+    }
+
+    def format(self, record):
+        formatter = self.FORMATS.get(record.levelno)
+        if formatter is None:
+            formatter = self.FORMATS[logging.DEBUG]
+
+        # Override the traceback to always print in red
+        if record.exc_info:
+            text = formatter.formatException(record.exc_info)
+            record.exc_text = f'\x1b[31m{text}\x1b[0m'
+
+        output = formatter.format(record)
+
+        # Remove the cache layer
+        record.exc_text = None
+        return output
+
+
 class Client:
     r"""Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
+
+    .. container:: operations
+
+        .. describe:: async with x
+
+            Asynchronously initialises the client and automatically cleans up.
+
+            .. versionadded:: 2.0
 
     A number of options can be passed to the :class:`Client`.
 
@@ -455,16 +518,16 @@ class Client:
 
         The default error handler provided by the client.
 
-        By default this prints to :data:`sys.stderr` however it could be
+        By default this logs to the library logger however it could be
         overridden to have a different implementation.
         Check :func:`~discord.on_error` for more details.
 
         .. versionchanged:: 2.0
 
-            ``event_method`` parameter is now positional-only.
+            ``event_method`` parameter is now positional-only
+            and instead of writing to ``sys.stderr`` it logs instead.
         """
-        print(f'Ignoring exception in {event_method}', file=sys.stderr)
-        traceback.print_exc()
+        _log.exception('Ignoring exception in %s', event_method)
 
     # hooks
 
@@ -698,6 +761,17 @@ class Client:
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
 
+        Parameters
+        -----------
+        token: :class:`str`
+            The authentication token. Do not prefix this token with
+            anything as the library will do it for you.
+        reconnect: :class:`bool`
+            If we should attempt reconnecting, either due to internet
+            failure or a specific failure on Discord's part. Certain
+            disconnects that lead to bad state will not be handled (such as
+            invalid sharding payloads or bad tokens).
+
         Raises
         -------
         TypeError
@@ -706,7 +780,15 @@ class Client:
         await self.login(token)
         await self.connect(reconnect=reconnect)
 
-    def run(self, *args: Any, **kwargs: Any) -> None:
+    def run(
+        self,
+        token: str,
+        *,
+        reconnect: bool = True,
+        log_handler: Optional[logging.Handler] = MISSING,
+        log_formatter: logging.Formatter = MISSING,
+        log_level: int = MISSING,
+    ) -> None:
         """A blocking call that abstracts away the event loop
         initialisation from you.
 
@@ -714,23 +796,77 @@ class Client:
         function should not be used. Use :meth:`start` coroutine
         or :meth:`connect` + :meth:`login`.
 
-        Roughly Equivalent to: ::
-
-            try:
-                asyncio.run(self.start(*args, **kwargs))
-            except KeyboardInterrupt:
-                return
+        This function also sets up the logging library to make it easier
+        for beginners to know what is going on with the library. For more
+        advanced users, this can be disabled by passing ``None`` to
+        the ``log_handler`` parameter.
 
         .. warning::
 
             This function must be the last function to call due to the fact that it
             is blocking. That means that registration of events or anything being
             called after this function call will not execute until it returns.
+
+        Parameters
+        -----------
+        token: :class:`str`
+            The authentication token. Do not prefix this token with
+            anything as the library will do it for you.
+        reconnect: :class:`bool`
+            If we should attempt reconnecting, either due to internet
+            failure or a specific failure on Discord's part. Certain
+            disconnects that lead to bad state will not be handled (such as
+            invalid sharding payloads or bad tokens).
+        log_handler: Optional[:class:`logging.Handler`]
+            The log handler to use for the library's logger. If this is ``None``
+            then the library will not set up anything logging related. Logging
+            will still work if ``None`` is passed, though it is your responsibility
+            to set it up.
+
+            The default log handler if not provided is :class:`logging.StreamHandler`.
+
+            .. versionadded:: 2.0
+        log_formatter: :class:`logging.Formatter`
+            The formatter to use with the given log handler. If not provided then it
+            defaults to a colour based logging formatter (if available).
+
+            .. versionadded:: 2.0
+        log_level: :class:`int`
+            The default log level for the library's logger. This is only applied if the
+            ``log_handler`` parameter is not ``None``. Defaults to ``logging.INFO``.
+
+            Note that the *root* logger will always be set to ``logging.INFO`` and this
+            only controls the library's log level. To control the root logger's level,
+            you can use ``logging.getLogger().setLevel(level)``.
+
+            .. versionadded:: 2.0
         """
 
         async def runner():
             async with self:
-                await self.start(*args, **kwargs)
+                await self.start(token, reconnect=reconnect)
+
+        if log_level is MISSING:
+            log_level = logging.INFO
+
+        if log_handler is MISSING:
+            log_handler = logging.StreamHandler()
+
+        if log_formatter is MISSING:
+            if isinstance(log_handler, logging.StreamHandler) and stream_supports_colour(log_handler.stream):
+                log_formatter = _ColourFormatter()
+            else:
+                dt_fmt = '%Y-%m-%d %H:%M:%S'
+                log_formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+
+        logger = None
+        if log_handler is not None:
+            library, _, _ = __name__.partition('.')
+            logger = logging.getLogger(library)
+
+            log_handler.setFormatter(log_formatter)
+            logger.setLevel(log_level)
+            logger.addHandler(log_handler)
 
         try:
             asyncio.run(runner())
@@ -739,6 +875,9 @@ class Client:
             # `asyncio.run` handles the loop cleanup
             # and `self.start` closes all sockets and the HTTPClient instance.
             return
+        finally:
+            if log_handler is not None and logger is not None:
+                logger.removeHandler(log_handler)
 
     # properties
 
@@ -1012,6 +1151,11 @@ class Client:
         """
         if self._ready is not MISSING:
             await self._ready.wait()
+        else:
+            raise RuntimeError(
+                'Client has not been properly initialised. '
+                'Please use the login method or asynchronous context manager before calling this method'
+            )
 
     def wait_for(
         self,

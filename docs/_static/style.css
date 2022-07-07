@@ -319,7 +319,7 @@ header > nav > a:hover {
   border-bottom: 1px solid var(--search-border);
 
   appearance: none;
-  background-image: url('/_images/drop_down_icon.svg');
+  background-image: url('drop_down_icon.svg');
   background-repeat: no-repeat;
   background-position-x: 100%;
   background-position-y: 50%;

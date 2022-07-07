@@ -255,6 +255,17 @@ class Asset(AssetMixin):
         )
 
     @classmethod
+    def _from_app_icon(
+        cls, state: _State, object_id: int, icon_hash: str, asset_type: Literal['icon', 'cover_image']
+    ) -> Self:
+        return cls(
+            state,
+            url=f'{cls.BASE}/app-icons/{object_id}/{asset_type}.png?size=1024',
+            key=icon_hash,
+            animated=False,
+        )
+
+    @classmethod
     def _from_cover_image(cls, state: _State, object_id: int, cover_image_hash: str) -> Self:
         return cls(
             state,
@@ -353,6 +364,11 @@ class Asset(AssetMixin):
     ) -> Self:
         """Returns a new asset with the passed components replaced.
 
+
+        .. versionchanged:: 2.0
+            ``static_format`` is now preferred over ``format``
+            if both are present and the asset is not animated.
+
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
             ``InvalidArgument``.
@@ -386,7 +402,7 @@ class Asset(AssetMixin):
                 if format not in VALID_ASSET_FORMATS:
                     raise ValueError(f'format must be one of {VALID_ASSET_FORMATS}')
             else:
-                if format not in VALID_STATIC_FORMATS:
+                if static_format is MISSING and format not in VALID_STATIC_FORMATS:
                     raise ValueError(f'format must be one of {VALID_STATIC_FORMATS}')
             url = url.with_path(f'{path}.{format}')
 

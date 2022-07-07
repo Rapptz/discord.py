@@ -261,28 +261,31 @@ class AuditLogChanges:
         'entity_type':                   (None, _enum_transformer(enums.EntityType)),
         'preferred_locale':              (None, _enum_transformer(enums.Locale)),
         'image_hash':                    ('cover_image', _transform_cover_image),
+        'trigger_type':                  (None, _enum_transformer(enums.AutoModRuleTriggerType)),
     }
     # fmt: on
 
     def __init__(self, entry: AuditLogEntry, data: List[AuditLogChangePayload]):
         self.before: AuditLogDiff = AuditLogDiff()
         self.after: AuditLogDiff = AuditLogDiff()
-
+        # special case entire process since each
+        # element in data is a different target
+        # key is the target id
         if entry.action is enums.AuditLogAction.app_command_permission_update:
-            # special case entire process since each
-            # element in data is a different target
             self.before.app_command_permissions = []
             self.after.app_command_permissions = []
 
-            for d in data:
-
+            for elem in data:
                 self._handle_app_command_permissions(
                     self.before,
+                    entry,
+                    elem.get('old_value'),  # type: ignore # value will be an ApplicationCommandPermissions if present
+                )
+
+                self._handle_app_command_permissions(
                     self.after,
                     entry,
-                    int(d['key']),
-                    d.get('old_value'),  # type: ignore # old value will be an ApplicationCommandPermissions if present
-                    d.get('new_value'),  # type: ignore # new value will be an ApplicationCommandPermissions if present
+                    elem.get('new_value'),  # type: ignore # value will be an ApplicationCommandPermissions if present
                 )
             return
 
@@ -359,49 +362,19 @@ class AuditLogChanges:
 
     def _handle_app_command_permissions(
         self,
-        before: AuditLogDiff,
-        after: AuditLogDiff,
+        diff: AuditLogDiff,
         entry: AuditLogEntry,
-        target_id: int,
-        old_value: Optional[ApplicationCommandPermissions],
-        new_value: Optional[ApplicationCommandPermissions],
+        data: Optional[ApplicationCommandPermissions],
     ):
+        if data is None:
+            return
+
+        # avoid circular import
+        from discord.app_commands import AppCommandPermissions
+
+        state = entry._state
         guild = entry.guild
-
-        old_permission = new_permission = target = None
-
-        if target_id == (guild.id - 1):
-            # avoid circular import
-            from .app_commands import AllChannels
-
-            # all channels
-            target = AllChannels(guild)
-        else:
-            # get type and determine role, user or channel
-            _value = old_value or new_value
-            if _value is None:
-                return
-            permission_type = _value['type']
-            if permission_type == 1:
-                # role
-                target = guild.get_role(target_id)
-            elif permission_type == 2:
-                # user
-                target = entry._get_member(target_id)
-            elif permission_type == 3:
-                # channel
-                target = guild.get_channel(target_id)
-
-        if target is None:
-            target = Object(target_id)
-
-        if old_value is not None:
-            old_permission = old_value['permission']
-            before.app_command_permissions.append((target, old_permission))
-
-        if new_value is not None:
-            new_permission = new_value['permission']
-            after.app_command_permissions.append((target, new_permission))
+        diff.app_command_permissions.append(AppCommandPermissions(data=data, guild=guild, state=state))
 
 
 class _AuditLogProxy:
@@ -435,6 +408,12 @@ class _AuditLogProxyStageInstanceAction(_AuditLogProxy):
 
 class _AuditLogProxyMessageBulkDelete(_AuditLogProxy):
     count: int
+
+
+class _AuditLogProxyAutoModAction(_AuditLogProxy):
+    automod_rule_name: str
+    automod_rule_trigger_type: str
+    channel: Union[abc.GuildChannel, Thread]
 
 
 class AuditLogEntry(Hashable):
@@ -512,6 +491,7 @@ class AuditLogEntry(Hashable):
             _AuditLogProxyPinAction,
             _AuditLogProxyStageInstanceAction,
             _AuditLogProxyMessageBulkDelete,
+            _AuditLogProxyAutoModAction,
             Member, User, None, PartialIntegration,
             Role, Object
         ] = None
@@ -543,6 +523,16 @@ class AuditLogEntry(Hashable):
                     channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
                     message_id=int(extra['message_id']),
                 )
+            elif self.action is enums.AuditLogAction.automod_block_message:
+                channel_id = int(extra['channel_id'])
+                self.extra = _AuditLogProxyAutoModAction(
+                    automod_rule_name=extra['auto_moderation_rule_name'],
+                    automod_rule_trigger_type=enums.try_enum(
+                        enums.AutoModRuleTriggerType, extra['auto_moderation_rule_trigger_type']
+                    ),
+                    channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
+                )
+
             elif self.action.name.startswith('overwrite_'):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(extra['id'])
@@ -703,3 +693,6 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_integration_or_app_command(self, target_id: int) -> Union[PartialIntegration, AppCommand, Object]:
         return self._get_integration_by_app_id(target_id) or self._get_app_command(target_id) or Object(target_id)
+
+    def _convert_target_auto_moderation(self, target_id: int) -> Union[Member, Object]:
+        return self.guild.get_member(target_id) or Object(target_id)

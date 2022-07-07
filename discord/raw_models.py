@@ -40,7 +40,9 @@ if TYPE_CHECKING:
         MessageReactionRemoveEmojiEvent as ReactionClearEmojiEvent,
         MessageUpdateEvent,
         IntegrationDeleteEvent,
+        ThreadUpdateEvent,
         ThreadDeleteEvent,
+        ThreadMembersUpdate,
         TypingStartEvent,
         GuildMemberRemoveEvent,
     )
@@ -61,7 +63,9 @@ __all__ = (
     'RawReactionClearEvent',
     'RawReactionClearEmojiEvent',
     'RawIntegrationDeleteEvent',
+    'RawThreadUpdateEvent',
     'RawThreadDeleteEvent',
+    'RawThreadMembersUpdate',
     'RawTypingEvent',
     'RawMemberRemoveEvent',
 )
@@ -294,6 +298,38 @@ class RawIntegrationDeleteEvent(_RawReprMixin):
             self.application_id: Optional[int] = None
 
 
+class RawThreadUpdateEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_thread_update` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    thread_id: :class:`int`
+        The ID of the thread that was updated.
+    thread_type: :class:`discord.ChannelType`
+        The channel type of the updated thread.
+    guild_id: :class:`int`
+        The ID of the guild the thread is in.
+    parent_id: :class:`int`
+        The ID of the channel the thread belongs to.
+    data: :class:`dict`
+        The raw data given by the :ddocs:`gateway <topics/gateway#thread-update>`
+    thread: Optional[:class:`discord.Thread`]
+        The thread, if it could be found in the internal cache.
+    """
+
+    __slots__ = ('thread_id', 'thread_type', 'parent_id', 'guild_id', 'data', 'thread')
+
+    def __init__(self, data: ThreadUpdateEvent) -> None:
+        self.thread_id: int = int(data['id'])
+        self.thread_type: ChannelType = try_enum(ChannelType, data['type'])
+        self.guild_id: int = int(data['guild_id'])
+        self.parent_id: int = int(data['parent_id'])
+        self.data: ThreadUpdateEvent = data
+        self.thread: Optional[Thread] = None
+
+
 class RawThreadDeleteEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_thread_delete` event.
 
@@ -321,6 +357,32 @@ class RawThreadDeleteEvent(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
         self.parent_id: int = int(data['parent_id'])
         self.thread: Optional[Thread] = None
+
+
+class RawThreadMembersUpdate(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_thread_member_remove` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    thread_id: :class:`int`
+        The ID of the thread that was updated.
+    guild_id: :class:`int`
+        The ID of the guild the thread is in.
+    member_count: :class:`int`
+        The approximate number of members in the thread. This caps at 50.
+    data: :class:`dict`
+        The raw data given by the :ddocs:`gateway <topics/gateway#thread-members-update>`.
+    """
+
+    __slots__ = ('thread_id', 'guild_id', 'member_count', 'data')
+
+    def __init__(self, data: ThreadMembersUpdate) -> None:
+        self.thread_id: int = int(data['id'])
+        self.guild_id: int = int(data['guild_id'])
+        self.member_count: int = int(data['member_count'])
+        self.data: ThreadMembersUpdate = data
 
 
 class RawTypingEvent(_RawReprMixin):

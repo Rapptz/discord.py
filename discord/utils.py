@@ -59,6 +59,7 @@ import datetime
 import functools
 from inspect import isawaitable as _isawaitable, signature as _signature
 from operator import attrgetter
+from urllib.parse import urlencode
 import json
 import re
 import sys
@@ -131,7 +132,7 @@ class _cached_property:
 if TYPE_CHECKING:
     from functools import cached_property as cached_property
 
-    from typing_extensions import ParamSpec, Self
+    from typing_extensions import ParamSpec, Self, TypeGuard
 
     from .permissions import Permissions
     from .abc import Snowflake
@@ -288,13 +289,14 @@ def oauth_url(
     redirect_uri: str = MISSING,
     scopes: Iterable[str] = MISSING,
     disable_guild_select: bool = False,
+    state: str = MISSING,
 ) -> str:
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
 
     .. versionchanged:: 2.0
 
-        ``permissions``, ``guild``, ``redirect_uri``, and ``scopes`` parameters
+        ``permissions``, ``guild``, ``redirect_uri``, ``scopes`` and ``state`` parameters
         are now keyword-only.
 
     Parameters
@@ -316,6 +318,10 @@ def oauth_url(
         Whether to disallow the user from changing the guild dropdown.
 
         .. versionadded:: 2.0
+    state: :class:`str`
+        The state to return after the authorization.
+
+        .. versionadded:: 2.0
 
     Returns
     --------
@@ -328,12 +334,12 @@ def oauth_url(
         url += f'&permissions={permissions.value}'
     if guild is not MISSING:
         url += f'&guild_id={guild.id}'
-    if redirect_uri is not MISSING:
-        from urllib.parse import urlencode
-
-        url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
     if disable_guild_select:
         url += '&disable_guild_select=true'
+    if redirect_uri is not MISSING:
+        url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
+    if state is not MISSING:
+        url += f'&{urlencode({"state": state})}'
     return url
 
 
@@ -624,7 +630,11 @@ async def maybe_coroutine(f: MaybeAwaitableFunc[P, T], *args: P.args, **kwargs: 
         return value  # type: ignore
 
 
-async def async_all(gen: Iterable[Awaitable[T]], *, check: Callable[[T], bool] = _isawaitable) -> bool:
+async def async_all(
+    gen: Iterable[Union[T, Awaitable[T]]],
+    *,
+    check: Callable[[Union[T, Awaitable[T]]], TypeGuard[Awaitable[T]]] = _isawaitable,
+) -> bool:
     for elem in gen:
         if check(elem):
             elem = await elem

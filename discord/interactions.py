@@ -133,6 +133,7 @@ class Interaction:
         'guild_locale',
         'extras',
         '_permissions',
+        '_app_permissions',
         '_state',
         '_client',
         '_session',
@@ -182,6 +183,7 @@ class Interaction:
 
         self.user: Union[User, Member] = MISSING
         self._permissions: int = 0
+        self._app_permissions: int = int(data.get('app_permissions', 0))
 
         if self.guild_id:
             guild = self._state._get_or_create_unavailable_guild(self.guild_id)
@@ -200,7 +202,11 @@ class Interaction:
 
     @property
     def client(self) -> Client:
-        """:class:`Client`: The client that is handling this interaction."""
+        """:class:`Client`: The client that is handling this interaction.
+
+        Note that :class:`AutoShardedClient`, :class:`~.commands.Bot`, and
+        :class:`~.commands.AutoShardedBot` are all subclasses of client.
+        """
         return self._client
 
     @property
@@ -231,6 +237,11 @@ class Interaction:
         In a non-guild context where this doesn't apply, an empty permissions object is returned.
         """
         return Permissions(self._permissions)
+
+    @property
+    def app_permissions(self) -> Permissions:
+        """:class:`Permissions`: The resolved permissions of the application or the bot, including overwrites."""
+        return Permissions(self._app_permissions)
 
     @utils.cached_slot_property('_cs_namespace')
     def namespace(self) -> Namespace:

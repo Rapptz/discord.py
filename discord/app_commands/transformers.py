@@ -47,6 +47,7 @@ from typing import (
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
 from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
+from ..abc import GuildChannel
 from ..threads import Thread
 from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType
 from ..utils import MISSING, maybe_coroutine
@@ -121,10 +122,14 @@ class CommandParameter:
             base['channel_types'] = [t.value for t in self.channel_types]
         if self.autocomplete:
             base['autocomplete'] = True
+
+        min_key, max_key = (
+            ('min_value', 'max_value') if self.type is not AppCommandOptionType.string else ('min_length', 'max_length')
+        )
         if self.min_value is not None:
-            base['min_value'] = self.min_value
+            base[min_key] = self.min_value
         if self.max_value is not None:
-            base['max_value'] = self.max_value
+            base[max_key] = self.max_value
 
         return base
 
@@ -214,8 +219,8 @@ class Transformer:
     def min_value(cls) -> Optional[Union[int, float]]:
         """Optional[:class:`int`]: The minimum supported value for this parameter.
 
-        Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number` or
-        :attr:`~discord.AppCommandOptionType.integer`.
+        Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number`
+        :attr:`~discord.AppCommandOptionType.integer`, or :attr:`~discord.AppCommandOptionType.string`.
 
         Defaults to ``None``.
         """
@@ -225,8 +230,8 @@ class Transformer:
     def max_value(cls) -> Optional[Union[int, float]]:
         """Optional[:class:`int`]: The maximum supported value for this parameter.
 
-        Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number` or
-        :attr:`~discord.AppCommandOptionType.integer`.
+        Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number`
+        :attr:`~discord.AppCommandOptionType.integer`, or :attr:`~discord.AppCommandOptionType.string`.
 
         Defaults to ``None``.
         """
@@ -305,6 +310,9 @@ def _make_range_transformer(
     min: Optional[Union[int, float]] = None,
     max: Optional[Union[int, float]] = None,
 ) -> Type[Transformer]:
+    if min and max and min > max:
+        raise TypeError('minimum cannot be larger than maximum')
+
     ns = {
         'type': classmethod(lambda _: opt_type),
         'min_value': classmethod(lambda _: min),
@@ -432,8 +440,8 @@ else:
             return _TransformMetadata(transformer)
 
     class Range:
-        """A type annotation that can be applied to a parameter to require a numeric type
-        to fit within the range provided.
+        """A type annotation that can be applied to a parameter to require a numeric or string
+        type to fit within the range provided.
 
         During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
         the intent of the code.
@@ -479,8 +487,10 @@ else:
                 opt_type = AppCommandOptionType.integer
             elif obj_type is float:
                 opt_type = AppCommandOptionType.number
+            elif obj_type is str:
+                opt_type = AppCommandOptionType.string
             else:
-                raise TypeError(f'expected int or float as range type, received {obj_type!r} instead')
+                raise TypeError(f'expected int, float, or str as range type, received {obj_type!r} instead')
 
             transformer = _make_range_transformer(
                 opt_type,
@@ -574,6 +584,13 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.news,
         ChannelType.category,
     ],
+    GuildChannel: [
+        ChannelType.stage_voice,
+        ChannelType.voice,
+        ChannelType.text,
+        ChannelType.news,
+        ChannelType.category,
+    ],
     AppCommandThread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
     Thread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
     StageChannel: [ChannelType.stage_voice],
@@ -592,6 +609,7 @@ BUILT_IN_TRANSFORMERS: Dict[Any, Type[Transformer]] = {
     Role: passthrough_transformer(AppCommandOptionType.role),
     AppCommandChannel: channel_transformer(AppCommandChannel, raw=True),
     AppCommandThread: channel_transformer(AppCommandThread, raw=True),
+    GuildChannel: channel_transformer(GuildChannel),
     Thread: channel_transformer(Thread),
     StageChannel: channel_transformer(StageChannel),
     VoiceChannel: channel_transformer(VoiceChannel),
@@ -613,32 +631,34 @@ def get_supported_annotation(
     *,
     _none: type = NoneType,
     _mapping: Dict[Any, Type[Transformer]] = BUILT_IN_TRANSFORMERS,
-) -> Tuple[Any, Any]:
+) -> Tuple[Any, Any, bool]:
     """Returns an appropriate, yet supported, annotation along with an optional default value.
+
+    The third boolean element of the tuple indicates if default values should be validated.
 
     This differs from the built in mapping by supporting a few more things.
     Likewise, this returns a "transformed" annotation that is ready to use with CommandParameter.transform.
     """
 
     try:
-        return (_mapping[annotation], MISSING)
+        return (_mapping[annotation], MISSING, True)
     except KeyError:
         pass
 
     if hasattr(annotation, '__discord_app_commands_transform__'):
-        return (annotation.metadata, MISSING)
+        return (annotation.metadata, MISSING, False)
 
     if hasattr(annotation, '__metadata__'):
         return get_supported_annotation(annotation.__metadata__[0])
 
     if inspect.isclass(annotation):
         if issubclass(annotation, Transformer):
-            return (annotation, MISSING)
+            return (annotation, MISSING, False)
         if issubclass(annotation, (Enum, InternalEnum)):
             if all(isinstance(v.value, (str, int, float)) for v in annotation):
-                return (_make_enum_transformer(annotation), MISSING)
+                return (_make_enum_transformer(annotation), MISSING, False)
             else:
-                return (_make_complex_enum_transformer(annotation), MISSING)
+                return (_make_complex_enum_transformer(annotation), MISSING, False)
         if annotation is Choice:
             raise TypeError(f'Choice requires a type argument of int, str, or float')
 
@@ -646,11 +666,11 @@ def get_supported_annotation(
     origin = getattr(annotation, '__origin__', None)
     if origin is Literal:
         args = annotation.__args__  # type: ignore
-        return (_make_literal_transformer(args), MISSING)
+        return (_make_literal_transformer(args), MISSING, True)
 
     if origin is Choice:
         arg = annotation.__args__[0]  # type: ignore
-        return (_make_choice_transformer(arg), MISSING)
+        return (_make_choice_transformer(arg), MISSING, True)
 
     if origin is not Union:
         # Only Union/Optional is supported right now so bail early
@@ -661,10 +681,10 @@ def get_supported_annotation(
     if args[-1] is _none:
         if len(args) == 2:
             underlying = args[0]
-            inner, _ = get_supported_annotation(underlying)
+            inner, _, validate_default = get_supported_annotation(underlying)
             if inner is None:
                 raise TypeError(f'unsupported inner optional type {underlying!r}')
-            return (inner, None)
+            return (inner, None, validate_default)
         else:
             args = args[:-1]
             default = None
@@ -672,7 +692,7 @@ def get_supported_annotation(
     # Check for channel union types
     if any(arg in CHANNEL_TO_TYPES for arg in args):
         # If any channel type is given, then *all* must be channel types
-        return (channel_transformer(*args, raw=None), default)
+        return (channel_transformer(*args, raw=None), default, True)
 
     # The only valid transformations here are:
     # [Member, User] => user
@@ -682,9 +702,9 @@ def get_supported_annotation(
     if not all(arg in supported_types for arg in args):
         raise TypeError(f'unsupported types given inside {annotation!r}')
     if args == (User, Member) or args == (Member, User):
-        return (passthrough_transformer(AppCommandOptionType.user), default)
+        return (passthrough_transformer(AppCommandOptionType.user), default, True)
 
-    return (passthrough_transformer(AppCommandOptionType.mentionable), default)
+    return (passthrough_transformer(AppCommandOptionType.mentionable), default, True)
 
 
 def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> CommandParameter:
@@ -695,7 +715,7 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
     of a command parameter.
     """
 
-    (inner, default) = get_supported_annotation(annotation)
+    (inner, default, validate_default) = get_supported_annotation(annotation)
     type = inner.type()
 
     if default is MISSING or default is None:
@@ -704,12 +724,10 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
             default = param_default
 
     # Verify validity of the default parameter
-    if default is not MISSING:
-        enum_type = getattr(inner, '__discord_app_commands_transformer_enum__', None)
-        if default.__class__ is not enum_type:
-            valid_types: Tuple[Any, ...] = ALLOWED_DEFAULTS.get(type, (NoneType,))
-            if not isinstance(default, valid_types):
-                raise TypeError(f'invalid default parameter type given ({default.__class__}), expected {valid_types}')
+    if default is not MISSING and validate_default:
+        valid_types: Tuple[Any, ...] = ALLOWED_DEFAULTS.get(type, (NoneType,))
+        if not isinstance(default, valid_types):
+            raise TypeError(f'invalid default parameter type given ({default.__class__}), expected {valid_types}')
 
     result = CommandParameter(
         type=type,
@@ -727,7 +745,7 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
         result.choices = choices
 
     # These methods should be duck typed
-    if type in (AppCommandOptionType.number, AppCommandOptionType.integer):
+    if type in (AppCommandOptionType.number, AppCommandOptionType.string, AppCommandOptionType.integer):
         result.min_value = inner.min_value()
         result.max_value = inner.max_value()
 

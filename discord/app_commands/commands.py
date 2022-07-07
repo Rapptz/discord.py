@@ -492,6 +492,9 @@ class Command(Generic[GroupT, P, T]):
         Due to a Discord limitation, this does not work on subcommands.
     parent: Optional[:class:`Group`]
         The parent application command. ``None`` if there isn't one.
+    extras: :class:`dict`
+        A dictionary that can be used to store extraneous data.
+        The library will not touch any values or keys within this dictionary.
     """
 
     def __init__(
@@ -503,6 +506,7 @@ class Command(Generic[GroupT, P, T]):
         nsfw: bool = False,
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
+        extras: Dict[Any, Any] = MISSING,
     ):
         self.name: str = validate_name(name)
         self.description: str = description
@@ -530,6 +534,7 @@ class Command(Generic[GroupT, P, T]):
         )
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
         self.nsfw: bool = nsfw
+        self.extras: Dict[Any, Any] = extras or {}
 
         if self._guild_ids is not None and self.parent is not None:
             raise ValueError('child commands cannot have default guilds set, consider setting them in the parent instead')
@@ -568,6 +573,7 @@ class Command(Generic[GroupT, P, T]):
         copy.module = self.module
         copy.parent = parent
         copy.binding = bindings.get(self.binding) if self.binding is not None else binding
+        copy.extras = self.extras
 
         if copy._attr and set_on_binding:
             setattr(copy.binding, copy._attr, copy)
@@ -771,8 +777,7 @@ class Command(Generic[GroupT, P, T]):
         if not predicates:
             return True
 
-        # Type checker does not understand negative narrowing cases like this function
-        return await async_all(f(interaction) for f in predicates)  # type: ignore
+        return await async_all(f(interaction) for f in predicates)
 
     def error(self, coro: Error[GroupT]) -> Error[GroupT]:
         """A decorator that registers a coroutine as a local error handler.
@@ -940,6 +945,9 @@ class ContextMenu:
         is necessary to be thrown to signal failure, then one inherited from
         :exc:`AppCommandError` should be used. If all the checks fail without
         propagating an exception, :exc:`CheckFailure` is raised.
+    extras: :class:`dict`
+        A dictionary that can be used to store extraneous data.
+        The library will not touch any values or keys within this dictionary.
     """
 
     def __init__(
@@ -950,6 +958,7 @@ class ContextMenu:
         type: AppCommandType = MISSING,
         nsfw: bool = False,
         guild_ids: Optional[List[int]] = None,
+        extras: Dict[Any, Any] = MISSING,
     ):
         self.name: str = validate_context_menu_name(name)
         self._callback: ContextMenuCallback = callback
@@ -972,6 +981,7 @@ class ContextMenu:
         self.nsfw: bool = nsfw
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
+        self.extras: Dict[Any, Any] = extras or {}
 
     @property
     def callback(self) -> ContextMenuCallback:
@@ -997,8 +1007,7 @@ class ContextMenu:
         if not predicates:
             return True
 
-        # Type checker does not understand negative narrowing cases like this function
-        return await async_all(f(interaction) for f in predicates)  # type: ignore
+        return await async_all(f(interaction) for f in predicates)
 
     def _has_any_error_handlers(self) -> bool:
         return self.on_error is not None
@@ -1117,6 +1126,9 @@ class Group:
         Due to a Discord limitation, this does not work on subcommands.
     parent: Optional[:class:`Group`]
         The parent group. ``None`` if there isn't one.
+    extras: :class:`dict`
+        A dictionary that can be used to store extraneous data.
+        The library will not touch any values or keys within this dictionary.
     """
 
     __discord_app_commands_group_children__: ClassVar[List[Union[Command[Any, ..., Any], Group]]] = []
@@ -1186,6 +1198,7 @@ class Group:
         guild_only: bool = MISSING,
         nsfw: bool = MISSING,
         default_permissions: Optional[Permissions] = MISSING,
+        extras: Dict[Any, Any] = MISSING,
     ):
         cls = self.__class__
         self.name: str = validate_name(name) if name is not MISSING else cls.__discord_app_commands_group_name__
@@ -1231,6 +1244,7 @@ class Group:
                 self.module = None
 
         self._children: Dict[str, Union[Command, Group]] = {}
+        self.extras: Dict[Any, Any] = extras or {}
 
         bindings: Dict[Group, Group] = {}
 
@@ -1279,6 +1293,7 @@ class Group:
         copy._attr = self._attr
         copy._owner_cls = self._owner_cls
         copy._children = {}
+        copy.extras = self.extras
 
         bindings[self] = copy
 
@@ -1515,6 +1530,7 @@ class Group:
         name: str = MISSING,
         description: str = MISSING,
         nsfw: bool = False,
+        extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
         """Creates an application command under this group.
 
@@ -1529,6 +1545,9 @@ class Group:
             of the callback shortened to 100 characters.
         nsfw: :class:`bool`
             Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
+        extras: :class:`dict`
+            A dictionary that can be used to store extraneous data.
+            The library will not touch any values or keys within this dictionary.
         """
 
         def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
@@ -1549,6 +1568,7 @@ class Group:
                 callback=func,
                 nsfw=nsfw,
                 parent=self,
+                extras=extras,
             )
             self.add_command(command)
             return command
@@ -1561,6 +1581,7 @@ def command(
     name: str = MISSING,
     description: str = MISSING,
     nsfw: bool = False,
+    extras: Dict[Any, Any] = MISSING,
 ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
     """Creates an application command from a regular function.
 
@@ -1577,6 +1598,9 @@ def command(
         Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
 
         Due to a Discord limitation, this does not work on subcommands.
+    extras: :class:`dict`
+        A dictionary that can be used to store extraneous data.
+        The library will not touch any values or keys within this dictionary.
     """
 
     def decorator(func: CommandCallback[GroupT, P, T]) -> Command[GroupT, P, T]:
@@ -1597,12 +1621,18 @@ def command(
             callback=func,
             parent=None,
             nsfw=nsfw,
+            extras=extras,
         )
 
     return decorator
 
 
-def context_menu(*, name: str = MISSING, nsfw: bool = False) -> Callable[[ContextMenuCallback], ContextMenu]:
+def context_menu(
+    *,
+    name: str = MISSING,
+    nsfw: bool = False,
+    extras: Dict[Any, Any] = MISSING,
+) -> Callable[[ContextMenuCallback], ContextMenu]:
     """Creates an application command context menu from a regular function.
 
     This function must have a signature of :class:`~discord.Interaction` as its first parameter
@@ -1632,6 +1662,9 @@ def context_menu(*, name: str = MISSING, nsfw: bool = False) -> Callable[[Contex
         Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.
 
         Due to a Discord limitation, this does not work on subcommands.
+    extras: :class:`dict`
+        A dictionary that can be used to store extraneous data.
+        The library will not touch any values or keys within this dictionary.
     """
 
     def decorator(func: ContextMenuCallback) -> ContextMenu:
@@ -1639,7 +1672,7 @@ def context_menu(*, name: str = MISSING, nsfw: bool = False) -> Callable[[Contex
             raise TypeError('context menu function must be a coroutine function')
 
         actual_name = func.__name__.title() if name is MISSING else name
-        return ContextMenu(name=actual_name, nsfw=nsfw, callback=func)
+        return ContextMenu(name=actual_name, nsfw=nsfw, callback=func, extras=extras)
 
     return decorator
 
@@ -1685,6 +1718,9 @@ def describe(**parameters: str) -> Callable[[T], T]:
 def rename(**parameters: str) -> Callable[[T], T]:
     r"""Renames the given parameters by their name using the key of the keyword argument
     as the name.
+
+    This renames the parameter within the Discord UI. When referring to the parameter in other
+    decorators, the parameter name used in the function is used instead of the renamed one.
 
     Example:
 
@@ -1807,11 +1843,6 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
 
     .. code-block:: python3
 
-            @app_commands.command()
-            @app_commands.autocomplete(fruit=fruit_autocomplete)
-            async def fruits(interaction: discord.Interaction, fruit: str):
-                await interaction.response.send_message(f'Your favourite fruit seems to be {fruit}')
-
             async def fruit_autocomplete(
                 interaction: discord.Interaction,
                 current: str,
@@ -1821,6 +1852,11 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
                     app_commands.Choice(name=fruit, value=fruit)
                     for fruit in fruits if current.lower() in fruit.lower()
                 ]
+
+            @app_commands.command()
+            @app_commands.autocomplete(fruit=fruit_autocomplete)
+            async def fruits(interaction: discord.Interaction, fruit: str):
+                await interaction.response.send_message(f'Your favourite fruit seems to be {fruit}')
 
     Parameters
     -----------

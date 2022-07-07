@@ -71,6 +71,7 @@ if TYPE_CHECKING:
     from .types import (
         appinfo,
         audit_log,
+        automod,
         channel,
         command,
         emoji,
@@ -148,6 +149,7 @@ def handle_message_parameters(
     stickers: Optional[SnowflakeList] = MISSING,
     previous_allowed_mentions: Optional[AllowedMentions] = None,
     mention_author: Optional[bool] = None,
+    thread_name: str = MISSING,
     channel_payload: Dict[str, Any] = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
@@ -205,6 +207,9 @@ def handle_message_parameters(
 
     if flags is not MISSING:
         payload['flags'] = flags.value
+
+    if thread_name is not MISSING:
+        payload['thread_name'] = thread_name
 
     if allowed_mentions:
         if previous_allowed_mentions is not None:
@@ -467,7 +472,7 @@ class HTTPClient:
 
                             # sleep a bit
                             retry_after: float = data['retry_after']
-                            _log.warning(fmt, retry_after, bucket)
+                            _log.warning(fmt, retry_after, bucket, stack_info=True)
 
                             # check if it's a global rate limit
                             is_global = data.get('global', False)
@@ -2035,19 +2040,62 @@ class HTTPClient:
         )
         return self.request(r, json=payload)
 
-    def bulk_edit_guild_application_command_permissions(
-        self,
-        application_id: Snowflake,
-        guild_id: Snowflake,
-        payload: List[Dict[str, Any]],
-    ) -> Response[None]:
-        r = Route(
-            'PUT',
-            '/applications/{application_id}/guilds/{guild_id}/commands/permissions',
-            application_id=application_id,
-            guild_id=guild_id,
+    def get_auto_moderation_rules(self, guild_id: Snowflake) -> Response[List[automod.AutoModerationRule]]:
+        return self.request(Route('GET', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id))
+
+    def get_auto_moderation_rule(self, guild_id: Snowflake, rule_id: Snowflake) -> Response[automod.AutoModerationRule]:
+        return self.request(
+            Route('GET', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id)
         )
-        return self.request(r, json=payload)
+
+    def create_auto_moderation_rule(
+        self, guild_id: Snowflake, *, reason: Optional[str], **payload: Any
+    ) -> Response[automod.AutoModerationRule]:
+        valid_keys = (
+            'name',
+            'event_type',
+            'trigger_type',
+            'trigger_metadata',
+            'actions',
+            'enabled',
+            'exempt_roles',
+            'exempt_channels',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys and v is not None}
+
+        return self.request(
+            Route('POST', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id), json=payload, reason=reason
+        )
+
+    def edit_auto_moderation_rule(
+        self, guild_id: Snowflake, rule_id: Snowflake, *, reason: Optional[str], **payload: Any
+    ) -> Response[automod.AutoModerationRule]:
+        valid_keys = (
+            'name',
+            'event_type',
+            'trigger_metadata',
+            'actions',
+            'enabled',
+            'exempt_roles',
+            'exempt_channels',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys and v is not None}
+
+        return self.request(
+            Route('PATCH', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
+            json=payload,
+            reason=reason,
+        )
+
+    def delete_auto_moderation_rule(
+        self, guild_id: Snowflake, rule_id: Snowflake, *, reason: Optional[str]
+    ) -> Response[None]:
+        return self.request(
+            Route('DELETE', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
+            reason=reason,
+        )
 
     # Misc
 

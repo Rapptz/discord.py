@@ -308,6 +308,14 @@ class AutoShardedClient(Client):
     if this is used. By default, when omitted, the client will launch shards from
     0 to ``shard_count - 1``.
 
+    .. container:: operations
+
+        .. describe:: async with x
+
+            Asynchronously initialises the client and automatically cleans up.
+
+            .. versionadded:: 2.0
+
     Attributes
     ------------
     shard_ids: Optional[List[:class:`int`]]
@@ -408,6 +416,9 @@ class AutoShardedClient(Client):
         ret.launch()
 
     async def launch_shards(self) -> None:
+        if self.is_closed():
+            return
+
         if self.shard_count is None:
             self.shard_count: int
             self.shard_count, gateway = await self.http.get_bot_gateway()

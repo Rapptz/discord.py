@@ -23,9 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+import logging
 import inspect
-import sys
-import traceback
 
 from typing import (
     Any,
@@ -78,6 +77,8 @@ if TYPE_CHECKING:
 __all__ = ('CommandTree',)
 
 ClientT = TypeVar('ClientT', bound='Client')
+
+_log = logging.getLogger(__name__)
 
 
 def _retrieve_guild_ids(
@@ -140,6 +141,45 @@ class CommandTree(Generic[ClientT]):
         # it's uncommon and N=5 anyway.
         self._context_menus: Dict[Tuple[str, Optional[int], int], ContextMenu] = {}
 
+    async def fetch_command(self, command_id: int, /, *, guild: Optional[Snowflake] = None) -> AppCommand:
+        """|coro|
+
+        Fetches an application command from the application.
+
+        Parameters
+        -----------
+        command_id: :class:`int`
+            The ID of the command to fetch.
+        guild: Optional[:class:`~discord.abc.Snowflake`]
+            The guild to fetch the command from. If not passed then the global command
+            is fetched instead.
+
+        Raises
+        -------
+        HTTPException
+            Fetching the command failed.
+        MissingApplicationID
+            The application ID could not be found.
+        NotFound
+            The application command was not found.
+            This could also be because the command is a guild command
+            and the guild was not specified and vice versa.
+
+        Returns
+        --------
+        :class:`~discord.app_commands.AppCommand`
+            The application command.
+        """
+        if self.client.application_id is None:
+            raise MissingApplicationID
+
+        if guild is None:
+            command = await self._http.get_global_command(self.client.application_id, command_id)
+        else:
+            command = await self._http.get_guild_command(self.client.application_id, guild.id, command_id)
+
+        return AppCommand(data=command, state=self._state)
+
     async def fetch_commands(self, *, guild: Optional[Snowflake] = None) -> List[AppCommand]:
         """|coro|
 
@@ -184,8 +224,7 @@ class CommandTree(Generic[ClientT]):
         """Copies all global commands to the specified guild.
 
         This method is mainly available for development purposes, as it allows you
-        to copy your global commands over to a testing guild easily and prevent waiting
-        an hour for the propagation.
+        to copy your global commands over to a testing guild easily.
 
         Note that this method will *override* pre-existing guild commands that would conflict.
 
@@ -737,8 +776,8 @@ class CommandTree(Generic[ClientT]):
 
         A callback that is called when any command raises an :exc:`AppCommandError`.
 
-        The default implementation prints the traceback to stderr if the command does
-        not have any error handlers attached to it.
+        The default implementation logs the exception using the library logger
+        if the command does not have any error handlers attached to it.
 
         To get the command that failed, :attr:`discord.Interaction.command` should
         be used.
@@ -756,11 +795,9 @@ class CommandTree(Generic[ClientT]):
             if command._has_any_error_handlers():
                 return
 
-            print(f'Ignoring exception in command {command.name!r}:', file=sys.stderr)
+            _log.error('Ignoring exception in command %r', command.name, exc_info=error)
         else:
-            print(f'Ignoring exception in command tree:', file=sys.stderr)
-
-        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+            _log.error('Ignoring exception in command tree', exc_info=error)
 
     def error(self, coro: ErrorFunc) -> ErrorFunc:
         """A decorator that registers a coroutine as a local error handler.
@@ -800,6 +837,7 @@ class CommandTree(Generic[ClientT]):
         nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
+        extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[CommandCallback[Group, P, T]], Command[Group, P, T]]:
         """Creates an application command directly under this tree.
 
@@ -823,6 +861,9 @@ class CommandTree(Generic[ClientT]):
             The list of guilds to add the command to. This cannot be mixed
             with the ``guild`` parameter. If no guilds are given at all
             then it becomes a global command instead.
+        extras: :class:`dict`
+            A dictionary that can be used to store extraneous data.
+            The library will not touch any values or keys within this dictionary.
         """
 
         def decorator(func: CommandCallback[Group, P, T]) -> Command[Group, P, T]:
@@ -843,6 +884,7 @@ class CommandTree(Generic[ClientT]):
                 callback=func,
                 nsfw=nsfw,
                 parent=None,
+                extras=extras,
             )
             self.add_command(command, guild=guild, guilds=guilds)
             return command
@@ -856,6 +898,7 @@ class CommandTree(Generic[ClientT]):
         nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
+        extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[ContextMenuCallback], ContextMenu]:
         """Creates a application command context menu from a regular function directly under this tree.
 
@@ -893,6 +936,9 @@ class CommandTree(Generic[ClientT]):
             The list of guilds to add the command to. This cannot be mixed
             with the ``guild`` parameter. If no guilds are given at all
             then it becomes a global command instead.
+        extras: :class:`dict`
+            A dictionary that can be used to store extraneous data.
+            The library will not touch any values or keys within this dictionary.
         """
 
         def decorator(func: ContextMenuCallback) -> ContextMenu:
@@ -900,7 +946,7 @@ class CommandTree(Generic[ClientT]):
                 raise TypeError('context menu function must be a coroutine function')
 
             actual_name = func.__name__.title() if name is MISSING else name
-            context_menu = ContextMenu(name=actual_name, nsfw=nsfw, callback=func)
+            context_menu = ContextMenu(name=actual_name, nsfw=nsfw, callback=func, extras=extras)
             self.add_command(context_menu, guild=guild, guilds=guilds)
             return context_menu
 
@@ -912,9 +958,6 @@ class CommandTree(Generic[ClientT]):
         Syncs the application commands to Discord.
 
         This must be called for the application commands to show up.
-
-        Global commands take up to 1-hour to propagate but guild
-        commands propagate instantly.
 
         Parameters
         -----------
@@ -1024,6 +1067,9 @@ class CommandTree(Generic[ClientT]):
         name = data['name']
         guild_id = _get_as_snowflake(data, 'guild_id')
         ctx_menu = self._context_menus.get((name, guild_id, type))
+        if ctx_menu is None and self.fallback_to_global:
+            ctx_menu = self._context_menus.get((name, None, type))
+
         # Pre-fill the cached slot to prevent re-computation
         interaction._cs_command = ctx_menu
 

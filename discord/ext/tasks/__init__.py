@@ -42,8 +42,6 @@ from typing import (
 import aiohttp
 import discord
 import inspect
-import sys
-import traceback
 
 from collections.abc import Sequence
 from discord.backoff import ExponentialBackoff
@@ -536,8 +534,7 @@ class Loop(Generic[LF]):
 
     async def _error(self, *args: Any) -> None:
         exception: Exception = args[-1]
-        print(f'Unhandled exception in internal background task {self.coro.__name__!r}.', file=sys.stderr)
-        traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
+        _log.error('Unhandled exception in internal background task %r.', self.coro.__name__, exc_info=exception)
 
     def before_loop(self, coro: FT) -> FT:
         """A decorator that registers a coroutine to be called before the loop starts running.
@@ -600,10 +597,14 @@ class Loop(Generic[LF]):
 
         The coroutine must take only one argument the exception raised (except ``self`` in a class context).
 
-        By default this prints to :data:`sys.stderr` however it could be
+        By default this logs to the library logger however it could be
         overridden to have a different implementation.
 
         .. versionadded:: 1.4
+
+        .. versionchanged:: 2.0
+
+            Instead of writing to ``sys.stderr``, the library's logger is used.
 
         Parameters
         ------------
@@ -753,7 +754,8 @@ class Loop(Generic[LF]):
             self._time = self._get_time_parameter(time)
             self._sleep = self._seconds = self._minutes = self._hours = MISSING
 
-        if self.is_running():
+        # Only update the interval if we've ran the body at least once
+        if self.is_running() and self._last_iteration is not MISSING:
             self._next_iteration = self._get_next_sleep_time()
             if self._handle and not self._handle.done():
                 # the loop is sleeping, recalculate based on new interval

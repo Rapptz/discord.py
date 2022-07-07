@@ -237,6 +237,9 @@ class Reaction:
             if data:
                 limit -= len(data)
                 after = Object(id=int(data[-1]['id']))
+            else:
+                # Terminate loop if we received no data
+                limit = 0
 
             if guild is None or isinstance(guild, Object):
                 for raw_user in reversed(data):

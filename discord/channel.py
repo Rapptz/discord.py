@@ -46,7 +46,7 @@ import datetime
 import discord.abc
 from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, PrivacyLevel, try_enum, VideoQualityMode
+from .enums import ChannelType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
 from .mixins import Hashable
 from . import utils
 from .utils import MISSING
@@ -215,6 +215,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     @property
     def _sorting_bucket(self) -> int:
         return ChannelType.text.value
+
+    @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return None
 
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
@@ -440,7 +444,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
         around: Optional[SnowflakeTime] = None,
-        oldest_first: Optional[bool] = False,
+        oldest_first: Optional[bool] = None,
         bulk: bool = True,
         reason: Optional[str] = None,
     ) -> List[Message]:
@@ -1046,6 +1050,10 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         return self
 
     @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return EntityType.voice
+
+    @property
     def type(self) -> Literal[ChannelType.voice]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.voice
@@ -1157,7 +1165,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
         around: Optional[SnowflakeTime] = None,
-        oldest_first: Optional[bool] = False,
+        oldest_first: Optional[bool] = None,
         bulk: bool = True,
         reason: Optional[str] = None,
     ) -> List[Message]:
@@ -1481,6 +1489,10 @@ class StageChannel(VocalGuildChannel):
         self.topic: Optional[str] = data.get('topic')
 
     @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return EntityType.stage_instance
+
+    @property
     def requesting_to_speak(self) -> List[Member]:
         """List[:class:`Member`]: A list of members who are requesting to speak in the stage channel."""
         return [member for member in self.members if member.voice and member.voice.requested_to_speak_at is not None]
@@ -1759,6 +1771,10 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return ChannelType.category.value
 
     @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return None
+
+    @property
     def type(self) -> Literal[ChannelType.category]:
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.category
@@ -1927,6 +1943,20 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """
         return await self.guild.create_stage_channel(name, category=self, **options)
 
+    async def create_forum(self, name: str, **options: Any) -> ForumChannel:
+        """|coro|
+
+        A shortcut method to :meth:`Guild.create_forum` to create a :class:`ForumChannel` in the category.
+
+        .. versionadded:: 2.0
+
+        Returns
+        --------
+        :class:`ForumChannel`
+            The channel that was just created.
+        """
+        return await self.guild.create_forum(name, category=self, **options)
+
 
 class ForumChannel(discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild forum channel.
@@ -2033,6 +2063,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     @property
     def _sorting_bucket(self) -> int:
         return ChannelType.text.value
+
+    @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return None
 
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
@@ -2285,8 +2319,69 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
             return ThreadWithMessage(thread=thread, message=message)
 
+    async def webhooks(self) -> List[Webhook]:
+        """|coro|
 
-class DMChannel(discord.abc.Messageable, Hashable):
+        Gets the list of webhooks from this channel.
+
+        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to get the webhooks.
+
+        Returns
+        --------
+        List[:class:`Webhook`]
+            The webhooks for this channel.
+        """
+
+        from .webhook import Webhook
+
+        data = await self._state.http.channel_webhooks(self.id)
+        return [Webhook.from_state(d, state=self._state) for d in data]
+
+    async def create_webhook(self, *, name: str, avatar: Optional[bytes] = None, reason: Optional[str] = None) -> Webhook:
+        """|coro|
+
+        Creates a webhook for this channel.
+
+        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+
+        Parameters
+        -------------
+        name: :class:`str`
+            The webhook's name.
+        avatar: Optional[:class:`bytes`]
+            A :term:`py:bytes-like object` representing the webhook's default avatar.
+            This operates similarly to :meth:`~ClientUser.edit`.
+        reason: Optional[:class:`str`]
+            The reason for creating this webhook. Shows up in the audit logs.
+
+        Raises
+        -------
+        HTTPException
+            Creating the webhook failed.
+        Forbidden
+            You do not have permissions to create a webhook.
+
+        Returns
+        --------
+        :class:`Webhook`
+            The created webhook.
+        """
+
+        from .webhook import Webhook
+
+        if avatar is not None:
+            avatar = utils._bytes_to_base64_data(avatar)  # type: ignore # Silence reassignment error
+
+        data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar, reason=reason)
+        return Webhook.from_state(data, state=self._state)
+
+
+class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
     """Represents a Discord direct message channel.
 
     .. container:: operations
@@ -2403,12 +2498,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         :class:`Permissions`
             The resolved permissions.
         """
-
-        base = Permissions.text()
-        base.read_messages = True
-        base.send_tts_messages = False
-        base.manage_messages = False
-        return base
+        return Permissions._dm_permissions()
 
     def get_partial_message(self, message_id: int, /) -> PartialMessage:
         """Creates a :class:`PartialMessage` from the message ID.
@@ -2438,7 +2528,7 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return PartialMessage(channel=self, id=message_id)
 
 
-class GroupChannel(discord.abc.Messageable, Hashable):
+class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
     """Represents a Discord group channel.
 
     .. container:: operations
@@ -2576,10 +2666,7 @@ class GroupChannel(discord.abc.Messageable, Hashable):
             The resolved permissions for the user.
         """
 
-        base = Permissions.text()
-        base.read_messages = True
-        base.send_tts_messages = False
-        base.manage_messages = False
+        base = Permissions._dm_permissions()
         base.mention_everyone = True
 
         if obj.id == self.owner_id:

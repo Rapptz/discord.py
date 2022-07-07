@@ -343,7 +343,7 @@ def has_permissions(**perms: bool) -> Callable[[T], T]:
 
 def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
     """Similar to :func:`has_permissions` except checks if the bot itself has
-    the permissions listed.
+    the permissions listed. This relies on :attr:`discord.Interaction.app_permissions`.
 
     This check raises a special exception, :exc:`~discord.app_commands.BotMissingPermissions`
     that is inherited from :exc:`~discord.app_commands.CheckFailure`.
@@ -356,13 +356,7 @@ def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
         raise TypeError(f"Invalid permission(s): {', '.join(invalid)}")
 
     def predicate(interaction: Interaction) -> bool:
-        guild = interaction.guild
-        me = guild.me if guild is not None else interaction.client.user
-        if interaction.channel is None:
-            permissions = Permissions.none()
-        else:
-            permissions = interaction.channel.permissions_for(me)  # type: ignore
-
+        permissions = interaction.app_permissions
         missing = [perm for perm, value in perms.items() if getattr(permissions, perm) != value]
 
         if not missing:

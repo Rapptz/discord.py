@@ -71,6 +71,7 @@ from .enums import (
     NSFWLevel,
     MFALevel,
     Locale,
+    AutoModRuleEventType,
 )
 from .mixins import Hashable
 from .user import User
@@ -87,6 +88,7 @@ from .file import File
 from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
 from .welcome_screen import WelcomeScreen, WelcomeChannel
+from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 
 
 __all__ = (
@@ -121,6 +123,7 @@ if TYPE_CHECKING:
         VoiceChannel as VoiceChannelPayload,
         CategoryChannel as CategoryChannelPayload,
         StageChannel as StageChannelPayload,
+        ForumChannel as ForumChannelPayload,
     )
     from .types.integration import IntegrationType
     from .types.snowflake import SnowflakeList
@@ -333,8 +336,8 @@ class Guild(Hashable):
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
-        None: _GuildLimit(emoji=50, stickers=0, bitrate=96e3, filesize=8388608),
-        0: _GuildLimit(emoji=50, stickers=0, bitrate=96e3, filesize=8388608),
+        None: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=8388608),
+        0: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=8388608),
         1: _GuildLimit(emoji=100, stickers=15, bitrate=128e3, filesize=8388608),
         2: _GuildLimit(emoji=150, stickers=30, bitrate=256e3, filesize=52428800),
         3: _GuildLimit(emoji=250, stickers=60, bitrate=384e3, filesize=104857600),
@@ -1147,6 +1150,17 @@ class Guild(Hashable):
     def _create_channel(
         self,
         name: str,
+        channel_type: Literal[ChannelType.forum],
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
+        category: Optional[Snowflake] = ...,
+        **options: Any,
+    ) -> Coroutine[Any, Any, ForumChannelPayload]:
+        ...
+
+    @overload
+    def _create_channel(
+        self,
+        name: str,
         channel_type: ChannelType,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
@@ -1531,6 +1545,94 @@ class Guild(Hashable):
         return channel
 
     create_category_channel = create_category
+
+    async def create_forum(
+        self,
+        name: str,
+        *,
+        topic: str = MISSING,
+        position: int = MISSING,
+        category: Optional[CategoryChannel] = None,
+        slowmode_delay: int = MISSING,
+        nsfw: bool = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
+        reason: Optional[str] = None,
+        default_auto_archive_duration: int = MISSING,
+    ) -> ForumChannel:
+        """|coro|
+
+        Similar to :meth:`create_text_channel` except makes a :class:`ForumChannel` instead.
+
+        The ``overwrites`` parameter can be used to create a 'secret'
+        channel upon creation. This parameter expects a :class:`dict` of
+        overwrites with the target (either a :class:`Member` or a :class:`Role`)
+        as the key and a :class:`PermissionOverwrite` as the value.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The channel's name.
+        topic: :class:`str`
+            The channel's topic.
+        category: Optional[:class:`CategoryChannel`]
+            The category to place the newly created channel under.
+            The permissions will be automatically synced to category if no
+            overwrites are provided.
+        position: :class:`int`
+            The position in the channel list. This is a number that starts
+            at 0. e.g. the top channel is position 0.
+        nsfw: :class:`bool`
+            To mark the channel as NSFW or not.
+        slowmode_delay: :class:`int`
+            Specifies the slowmode rate limit for users in this channel, in seconds.
+            The maximum possible value is `21600`.
+        reason: Optional[:class:`str`]
+            The reason for creating this channel. Shows up in the audit log.
+        default_auto_archive_duration: :class:`int`
+            The default auto archive duration for threads created in the forum channel (in minutes).
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        TypeError
+            The permission overwrite information is not in proper form.
+
+        Returns
+        -------
+        :class:`ForumChannel`
+            The channel that was just created.
+        """
+        options = {}
+
+        if position is not MISSING:
+            options['position'] = position
+
+        if topic is not MISSING:
+            options['topic'] = topic
+
+        if slowmode_delay is not MISSING:
+            options['rate_limit_per_user'] = slowmode_delay
+
+        if nsfw is not MISSING:
+            options['nsfw'] = nsfw
+
+        if default_auto_archive_duration is not MISSING:
+            options['default_auto_archive_duration'] = default_auto_archive_duration
+
+        data = await self._create_channel(
+            name=name, overwrites=overwrites, channel_type=ChannelType.forum, category=category, reason=reason, **options
+        )
+
+        channel = ForumChannel(state=self._state, guild=self, data=data)
+
+        # temporarily add to the cache
+        self._channels[channel.id] = channel
+        return channel
 
     async def leave(self) -> None:
         """|coro|
@@ -2657,7 +2759,7 @@ class Guild(Hashable):
         *,
         name: str,
         start_time: datetime.datetime,
-        entity_type: EntityType,
+        entity_type: EntityType = MISSING,
         privacy_level: PrivacyLevel = MISSING,
         channel: Optional[Snowflake] = MISSING,
         location: str = MISSING,
@@ -2681,7 +2783,9 @@ class Guild(Hashable):
         description: :class:`str`
             The description of the scheduled event.
         channel: Optional[:class:`abc.Snowflake`]
-            The channel to send the scheduled event to.
+            The channel to send the scheduled event to. If the channel is
+            a :class:`StageInstance` or :class:`VoiceChannel` then
+            it automatically sets the entity type.
 
             Required if ``entity_type`` is either :attr:`EntityType.voice` or
             :attr:`EntityType.stage_instance`.
@@ -2694,7 +2798,11 @@ class Guild(Hashable):
 
             Required if the entity type is :attr:`EntityType.external`.
         entity_type: :class:`EntityType`
-            The entity type of the scheduled event.
+            The entity type of the scheduled event. If the channel is a
+            :class:`StageInstance` or :class:`VoiceChannel` then this is
+            automatically set to the appropriate entity type. If no channel
+            is passed then the entity type is assumed to be
+            :attr:`EntityType.external`
         image: :class:`bytes`
             The image of the scheduled event.
         location: :class:`str`
@@ -2735,6 +2843,20 @@ class Guild(Hashable):
                     'start_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
                 )
             payload['scheduled_start_time'] = start_time.isoformat()
+
+        if entity_type is MISSING:
+            if channel is MISSING:
+                entity_type = EntityType.external
+            else:
+                _entity_type = getattr(channel, '_scheduled_event_entity_type', MISSING)
+                if _entity_type is None:
+                    raise TypeError(
+                        f'invalid GuildChannel type passed, must be VoiceChannel or StageChannel not {channel.__class__!r}'
+                    )
+                if _entity_type is MISSING:
+                    raise TypeError('entity_type must be passed in when passing an ambiguous channel type')
+
+                entity_type = _entity_type
 
         if not isinstance(entity_type, EntityType):
             raise TypeError('entity_type must be of type EntityType')
@@ -3713,3 +3835,124 @@ class Guild(Hashable):
         ws = self._state._get_websocket(self.id)
         channel_id = channel.id if channel else None
         await ws.voice_state(self.id, channel_id, self_mute, self_deaf)
+
+    async def fetch_automod_rule(self, automod_rule_id: int, /) -> AutoModRule:
+        """|coro|
+
+        Fetches an active automod rule from the guild.
+
+        You must have the :attr:`Permissions.manage_guild` to use this.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        automod_rule_id: :class:`int`
+            The ID of the automod rule to fetch.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to view the automod rule.
+
+        Returns
+        --------
+        :class:`AutoModRule`
+            The automod rule that was fetched.
+        """
+
+        data = await self._state.http.get_auto_moderation_rule(self.id, automod_rule_id)
+
+        return AutoModRule(data=data, guild=self, state=self._state)
+
+    async def fetch_automod_rules(self) -> List[AutoModRule]:
+        """|coro|
+
+        Fetches all automod rules from the guild.
+
+        You must have the :attr:`Permissions.manage_guild` to use this.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to view the automod rule.
+        NotFound
+            There are no automod rules within this guild.
+
+        Returns
+        --------
+        List[:class:`AutoModRule`]
+            The automod rules that were fetched.
+        """
+        data = await self._state.http.get_auto_moderation_rules(self.id)
+
+        return [AutoModRule(data=d, guild=self, state=self._state) for d in data]
+
+    async def create_automod_rule(
+        self,
+        *,
+        name: str,
+        event_type: AutoModRuleEventType,
+        trigger: AutoModTrigger,
+        actions: List[AutoModRuleAction],
+        enabled: bool = MISSING,
+        exempt_roles: Sequence[Snowflake] = MISSING,
+        exempt_channels: Sequence[Snowflake] = MISSING,
+        reason: str = MISSING,
+    ) -> AutoModRule:
+        """|coro|
+
+        Create an automod rule.
+
+        You must have the :attr:`Permissions.manage_guild` permission to use this.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The name of the automod rule.
+        event_type: :class:`AutoModRuleEventType`
+            The type of event that the automod rule will trigger on.
+        trigger: :class:`AutoModTrigger`
+            The trigger that will trigger the automod rule.
+        actions: List[:class:`AutoModRuleAction`]
+            The actions that will be taken when the automod rule is triggered.
+        enabled: :class:`bool`
+            Whether the automod rule is enabled.
+            Discord will default to ``False``.
+        exempt_roles: Sequence[:class:`abc.Snowflake`]
+            A list of roles that will be exempt from the automod rule.
+        exempt_channels: Sequence[:class:`abc.Snowflake`]
+            A list of channels that will be exempt from the automod rule.
+        reason: :class:`str`
+            The reason for creating this automod rule. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to create an automod rule.
+        HTTPException
+            Creating the automod rule failed.
+
+        Returns
+        --------
+        :class:`AutoModRule`
+            The automod rule that was created.
+        """
+        data = await self._state.http.create_auto_moderation_rule(
+            self.id,
+            name=name,
+            event_type=event_type.value,
+            trigger_type=trigger.type.value,
+            trigger_metadata=trigger.to_metadata_dict() or None,
+            actions=[a.to_dict() for a in actions],
+            enabled=enabled,
+            exempt_roles=[str(r.id) for r in exempt_roles] if exempt_roles else None,
+            exempt_channel=[str(c.id) for c in exempt_channels] if exempt_channels else None,
+            reason=reason,
+        )
+
+        return AutoModRule(data=data, guild=self, state=self._state)

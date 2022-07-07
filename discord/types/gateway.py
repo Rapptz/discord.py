@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from typing import List, Literal, Optional, TypedDict
 from typing_extensions import NotRequired, Required
 
+from .automod import AutoModerationAction, AutoModerationRuleTriggerType
 from .activity import PartialPresenceUpdate
 from .voice import GuildVoiceState
 from .integration import BaseIntegration, IntegrationApplication
@@ -321,3 +322,17 @@ class TypingStartEvent(TypedDict):
     timestamp: int
     guild_id: NotRequired[Snowflake]
     member: NotRequired[MemberWithUser]
+
+
+class AutoModerationActionExecution(TypedDict):
+    guild_id: Snowflake
+    action: AutoModerationAction
+    rule_id: Snowflake
+    rule_trigger_type: AutoModerationRuleTriggerType
+    user_id: Snowflake
+    channel_id: NotRequired[Snowflake]
+    message_id: NotRequired[Snowflake]
+    alert_system_message_id: NotRequired[Snowflake]
+    content: str
+    matched_keyword: Optional[str]
+    matched_content: Optional[str]

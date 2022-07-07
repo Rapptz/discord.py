@@ -27,8 +27,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-import sys
-import traceback
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, ClassVar, List
 
@@ -154,7 +152,7 @@ class Modal(View):
         A callback that is called when :meth:`on_submit`
         fails with an error.
 
-        The default implementation prints the traceback to stderr.
+        The default implementation logs to the library logger.
 
         Parameters
         -----------
@@ -163,8 +161,7 @@ class Modal(View):
         error: :class:`Exception`
             The exception that was raised.
         """
-        print(f'Ignoring exception in modal {self}:', file=sys.stderr)
-        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+        _log.error('Ignoring exception in modal %r:', self, exc_info=error)
 
     def _refresh(self, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
         for component in components:

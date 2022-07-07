@@ -203,6 +203,7 @@ class _BaseInteraction(TypedDict):
     version: Literal[1]
     guild_id: NotRequired[Snowflake]
     channel_id: NotRequired[Snowflake]
+    app_permissions: NotRequired[str]
     locale: NotRequired[str]
     guild_locale: NotRequired[str]
 
