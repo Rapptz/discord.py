@@ -18,6 +18,9 @@ jobs:
 
     - name: Replace instances
       run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
         git checkout -b temp master
         cp .github/files/README.rst README.rst
         rm -rf docs .github .readthedocs.yml tests
@@ -27,15 +30,12 @@ jobs:
         sed -i -e 's/discord/selfcord/g' pyproject.toml MANIFEST.in
         sed -i -e "s/prefix = 'discord'/prefix = 'selfcord'/" setup.py
 
+    - name: Push changes
+      run: |
         git add .
         git stash
         git switch renamed
         git checkout stash -- .
 
-    - name: Push changes
-      uses: actions-x/commit@v6
-      with:
-        message: Synchronize selfcord
-        branch: renamed
-        name: github-actions[bot]
-        email: 41898282+github-actions[bot]@users.noreply.github.com
+        git commit -am "Synchronize selfcord"
+        git push origin renamed
