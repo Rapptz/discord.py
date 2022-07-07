@@ -39,3 +39,5 @@ jobs:
 
         git commit -am "Synchronize selfcord"
         git push origin renamed
+
+        exit 0
