@@ -2,9 +2,10 @@
 
 import asyncio
 import logging
+import logging.handlers
 import os
 
-from typing import Optional
+from typing import List, Optional
 
 import asyncpg  # asyncpg is not a dependency of the discord.py, and is only included here for illustrative purposes.
 import discord
@@ -16,7 +17,7 @@ class CustomBot(commands.Bot):
     def __init__(
         self,
         *args,
-        initial_extensions: list,
+        initial_extensions: List[str],
         db_pool: asyncpg.Pool,
         web_client: ClientSession,
         testing_guild_id: Optional[int] = None,
@@ -40,7 +41,11 @@ class CustomBot(commands.Bot):
         # In this case, we are using this to ensure that once we are connected, we sync for the testing guild.
         # You should not do this for every guild or for global sync, those should only be synced when changes happen.
         if self.testing_guild_id:
-            await self.tree.sync(guild=discord.Object(self.testing_guild_id))
+            guild = discord.Object(self.testing_guild_id)
+            # We'll copy in the global commands to test with:
+            self.tree.copy_global_to(guild=guild)
+            # followed by syncing to the testing guild.
+            await self.tree.sync(guild=guild)
 
         # This would also be a good place to connect to our database and
         # load anything that should be in memory prior to handling events.
@@ -52,9 +57,23 @@ async def main():
 
     # 1. logging
 
-    # for this example, we're just going to use some basic defaults provided by python
-    # for more info on setting up logging, see https://docs.python.org/3/howto/logging.html
-    logging.basicConfig(level=logging.INFO)
+    # for this example, we're going to set up a rotating file logger.
+    # for more info on setting up logging,
+    # see https://discordpy.readthedocs.io/en/latest/logging.html and https://docs.python.org/3/howto/logging.html
+
+    logger = logging.getLogger('discord')
+    logger.setLevel(logging.INFO)
+
+    handler = logging.handlers.RotatingFileHandler(
+        filename='discord.log',
+        encoding='utf-8',
+        maxBytes=32 * 1024 * 1024,  # 32 MiB
+        backupCount=5,  # Rotate through 5 files
+    )
+    dt_fmt = '%Y-%m-%d %H:%M:%S'
+    formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
 
     # One of the reasons to take over more of the process though
     # is to ensure use with other libraries or tools which also require their own cleanup.
@@ -65,8 +84,9 @@ async def main():
     async with ClientSession() as our_client, asyncpg.create_pool(user='postgres', command_timeout=30) as pool:
         # 2. We become responsible for starting the bot.
 
-        exts = ["general", "mod", "dice"]
+        exts = ['general', 'mod', 'dice']
         async with CustomBot(commands.when_mentioned, db_pool=pool, web_client=our_client, initial_extensions=exts) as bot:
+
             await bot.start(os.getenv('TOKEN', ''))
 
 
