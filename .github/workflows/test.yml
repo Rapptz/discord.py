@@ -1,4 +1,4 @@
-name: test
+name: Test
 
 on:
   push:
@@ -8,21 +8,16 @@ on:
 jobs:
   pytest:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ '3.8' ]
-
-    name: pytest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - name: Set up CPython ${{ matrix.python-version }}
+      - name: Set up CPython 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.8'
 
       - name: Install dependencies
         run: |

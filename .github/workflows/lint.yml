@@ -1,4 +1,4 @@
-name: lint
+name: Lint
 
 on:
   push:
@@ -8,21 +8,16 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: [ '3.8' ]
-
-    name: lint
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - name: Set up CPython ${{ matrix.python-version }}
+      - name: Set up CPython 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.8'
 
       - name: Install dependencies
         id: install-deps
@@ -30,7 +25,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel black
           pip install -U -r requirements.txt
 
-      - name: Setup node.js
+      - name: Set up node.js
         uses: actions/setup-node@v2
         with:
           node-version: '16'
