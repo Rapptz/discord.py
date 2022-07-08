@@ -14,7 +14,7 @@ for the Discord user APIs.
 - Command extension to aid with bot creation
 - Easy to use with an object oriented design
 - Optimised for both speed and memory
-- Selfbot detection prevention
+- Prevents detection of user account automation
 
 Getting started
 -----------------

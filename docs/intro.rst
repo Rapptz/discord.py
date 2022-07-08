@@ -8,7 +8,7 @@ Introduction
 ==============
 
 This is the documentation for discord.py-self, a library for Python to aid
-in creating self-bots that utilise the Discord API.
+in creating bots running on user accounts that utilise the Discord API.
 
 Prerequisites
 ---------------

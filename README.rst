@@ -26,7 +26,7 @@ These changes have become too numerous to mention, so check out our `docs <https
 |
 
 | **Note:**
-| Automating user accounts is against the Discord ToS. This library is a proof of concept and I do not recommend using it. Do so at your own risk.
+| Automating user accounts is against the Discord ToS. This library is a proof of concept and I cannot recommend using it. Do so at your own risk.
 
 Key Features
 -------------
@@ -35,7 +35,7 @@ Key Features
 - Proper rate limit handling.
 - Optimised in both speed and memory.
 - Mostly compatible with the official ``discord.py``.
-- Prevents selfbot detection.
+- Prevents user account automation detection.
 
 Installing
 ----------
