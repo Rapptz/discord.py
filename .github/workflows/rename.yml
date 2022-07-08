@@ -37,7 +37,5 @@ jobs:
         git switch renamed
         git checkout stash -- .
 
-        git commit -am "Synchronize selfcord"
-        git push origin renamed
-
-        exit 0
+        (git commit -am "Synchronize selfcord") || true
+        (git push origin renamed) || true
