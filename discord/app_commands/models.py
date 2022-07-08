@@ -874,7 +874,7 @@ class AppCommandGroup:
             base_command = self.parent
         else:
             base_command = self.parent.parent
-        return f'</{self.qualified_name}:{base_command.id}>'
+        return f'</{self.qualified_name}:{base_command.id}>' # type: ignore
 
     def _from_data(self, data: ApplicationCommandOption) -> None:
         self.type: AppCommandOptionType = try_enum(AppCommandOptionType, data['type'])
