@@ -870,10 +870,10 @@ class AppCommandGroup:
     @property
     def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention the given AppCommandGroup."""
-        if isinstance(self.parent, AppCommandGroup):
-            base_command = self.parent.parent
-        else:
+        if isinstance(self.parent, AppCommand):
             base_command = self.parent
+        else:
+            base_command = self.parent.parent
         return f'</{self.qualified_name}:{base_command.id}>'
 
     def _from_data(self, data: ApplicationCommandOption) -> None:
