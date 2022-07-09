@@ -98,13 +98,13 @@ DISCORD_EPOCH = 1420070400000
 class _MissingSentinel:
     __slots__ = ()
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return False
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return False
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return 0
 
     def __repr__(self):
@@ -115,7 +115,7 @@ MISSING: Any = _MissingSentinel()
 
 
 class _cached_property:
-    def __init__(self, function):
+    def __init__(self, function) -> None:
         self.function = function
         self.__doc__ = getattr(function, '__doc__')
 
