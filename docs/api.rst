@@ -203,8 +203,20 @@ to handle it, which defaults to logging the traceback and ignoring the exception
     errors. In order to turn a function into a coroutine they must be ``async def``
     functions.
 
+App Commands
+~~~~~~~~~~~~~
+
+.. function:: on_raw_app_cmd_permissions_update(payload)
+
+    Called when application command permissions are updated.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawAppCmdPermissionsUpdateEvent`
+
 AutoMod
-~~~~~~~
+~~~~~~~~
 
 .. function:: on_automod_rule_create(rule)
 
@@ -4415,6 +4427,14 @@ RawMemberRemoveEvent
 .. attributetable:: RawMemberRemoveEvent
 
 .. autoclass:: RawMemberRemoveEvent()
+    :members:
+
+RawAppCmdPermissionsUpdateEvent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawAppCmdPermissionsUpdateEvent
+
+.. autoclass:: RawAppCmdPermissionsUpdateEvent()
     :members:
 
 PartialWebhookGuild

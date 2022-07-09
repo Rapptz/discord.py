@@ -411,7 +411,7 @@ class AuditLogChanges:
 
         state = entry._state
         guild = entry.guild
-        diff.app_command_permissions.append(AppCommandPermissions(data=data, guild=guild, state=state))
+        diff.app_command_permissions.append(AppCommandPermissions(data=data, guild_id=guild.id, state=state))
 
 
 class _AuditLogProxy:
