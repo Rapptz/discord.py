@@ -54,6 +54,7 @@ if TYPE_CHECKING:
     from .threads import Thread
     from .user import User
     from .state import ConnectionState
+    from .guild import Guild
 
     ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]
 
@@ -451,18 +452,18 @@ class RawAppCmdPermissionsUpdateEvent(_RawReprMixin):
         apply to all commands that do not contain explicit overwrites.
     application_id: :class:`int`
         The ID of the application that the command belongs to.
-    guild_id: :class:`int`
-        The ID of the guild the where the permissions were updated.
+    guild: :class:`~discord.Guild`
+        The guild where the permissions were updated.
     permissions: List[:class:`~discord.app_commands.AppCommandPermissions`]
         List of new permissions for the app command.
     """
 
-    __slots__ = ('target_id', 'application_id', 'guild_id', 'permissions')
+    __slots__ = ('target_id', 'application_id', 'guild', 'permissions')
 
     def __init__(self, *, data: GuildApplicationCommandPermissions, state: ConnectionState):
         self.target_id: int = int(data['id'])
         self.application_id: int = int(data['application_id'])
-        self.guild_id: int = int(data['guild_id'])
+        self.guild: Guild = state._get_or_create_unavailable_guild(int(data['guild_id']))
         self.permissions: List[AppCommandPermissions] = [
-            AppCommandPermissions(data=perm, guild_id=self.guild_id, state=state) for perm in data['permissions']
+            AppCommandPermissions(data=perm, guild=self.guild, state=state) for perm in data['permissions']
         ]

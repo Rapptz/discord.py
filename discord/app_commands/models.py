@@ -869,8 +869,8 @@ class AppCommandPermissions:
 
     Attributes
     -----------
-    guild_id: :class:`int`
-        The ID of the guild associated with this permission.
+    guild: :class:`~discord.Guild`
+        The guild associated with this permission.
     id: :class:`int`
         The ID of the permission target, such as a role, channel, or guild.
         The special ``guild_id - 1`` sentinel is used to represent "all channels".
@@ -883,38 +883,31 @@ class AppCommandPermissions:
         The permission value. ``True`` for allow, ``False`` for deny.
     """
 
-    __slots__ = ('id', 'type', 'permission', 'target', 'guild_id', '_state')
+    __slots__ = ('id', 'type', 'permission', 'target', 'guild', '_state')
 
-    def __init__(self, *, data: ApplicationCommandPermissions, guild_id: int, state: ConnectionState) -> None:
+    def __init__(self, *, data: ApplicationCommandPermissions, guild: Guild, state: ConnectionState) -> None:
         self._state: ConnectionState = state
-        self.guild_id: int = guild_id
+        self.guild: Guild = guild
 
         self.id: int = int(data['id'])
         self.type: AppCommandPermissionType = try_enum(AppCommandPermissionType, data['type'])
         self.permission: bool = data['permission']
 
         _object = None
-        guild = self.guild
         if self.type is AppCommandPermissionType.user:
-            _object = guild and guild.get_member(self.id) or self._state.get_user(self.id)
-        elif guild:
-            if self.type is AppCommandPermissionType.channel:
-                if self.id == (guild_id - 1):
-                    _object = AllChannels(guild)
-                else:
-                    _object = guild.get_channel(self.id)
-            elif self.type is AppCommandPermissionType.role:
-                _object = guild.get_role(self.id)
+            _object = guild.get_member(self.id) or self._state.get_user(self.id)
+        elif self.type is AppCommandPermissionType.channel:
+            if self.id == (guild.id - 1):
+                _object = AllChannels(guild)
+            else:
+                _object = guild.get_channel(self.id)
+        elif self.type is AppCommandPermissionType.role:
+            _object = guild.get_role(self.id)
 
         if _object is None:
             _object = Object(id=self.id)
 
         self.target: Union[Object, User, Member, Role, AllChannels, GuildChannel] = _object
-
-    @property
-    def guild(self) -> Optional[Guild]:
-        """:class:`discord.Guild`: The guild associated with this permission."""
-        return self._state._get_guild(self.guild_id)
 
     def to_dict(self) -> ApplicationCommandPermissions:
         return {
@@ -954,8 +947,9 @@ class GuildAppCommandPermissions:
         self.id: int = int(data['id'])
         self.application_id: int = int(data['application_id'])
         self.guild_id: int = int(data['guild_id'])
+        guild = self.guild
         self.permissions: List[AppCommandPermissions] = [
-            AppCommandPermissions(data=value, guild_id=self.guild_id, state=self._state) for value in data['permissions']
+            AppCommandPermissions(data=value, guild=guild, state=self._state) for value in data['permissions']
         ]
 
     def to_dict(self) -> Dict[str, Any]:
