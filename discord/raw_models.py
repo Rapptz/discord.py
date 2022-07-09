@@ -453,7 +453,7 @@ class RawAppCmdPermissionsUpdateEvent(_RawReprMixin):
         The ID of the application that the command belongs to.
     guild_id: :class:`int`
         The ID of the guild the where the permissions were updated.
-    permissions: List[:class:`~discord.app_cmds.AppCommandPermissions`]
+    permissions: List[:class:`~discord.app_commands.AppCommandPermissions`]
         List of new permissions for the app command.
     """
 
