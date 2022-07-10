@@ -206,14 +206,14 @@ to handle it, which defaults to logging the traceback and ignoring the exception
 App Commands
 ~~~~~~~~~~~~~
 
-.. function:: on_raw_app_cmd_permissions_update(payload)
+.. function:: on_raw_app_command_permissions_update(payload)
 
     Called when application command permissions are updated.
 
     .. versionadded:: 2.0
 
     :param payload: The raw event payload data.
-    :type payload: :class:`RawAppCmdPermissionsUpdateEvent`
+    :type payload: :class:`RawAppCommandPermissionsUpdateEvent`
 
 AutoMod
 ~~~~~~~~
@@ -4429,12 +4429,12 @@ RawMemberRemoveEvent
 .. autoclass:: RawMemberRemoveEvent()
     :members:
 
-RawAppCmdPermissionsUpdateEvent
+RawAppCommandPermissionsUpdateEvent
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: RawAppCmdPermissionsUpdateEvent
+.. attributetable:: RawAppCommandPermissionsUpdateEvent
 
-.. autoclass:: RawAppCmdPermissionsUpdateEvent()
+.. autoclass:: RawAppCommandPermissionsUpdateEvent()
     :members:
 
 PartialWebhookGuild

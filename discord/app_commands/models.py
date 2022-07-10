@@ -894,6 +894,7 @@ class AppCommandPermissions:
         self.permission: bool = data['permission']
 
         _object = None
+
         if self.type is AppCommandPermissionType.user:
             _object = guild.get_member(self.id) or self._state.get_user(self.id)
         elif self.type is AppCommandPermissionType.channel:

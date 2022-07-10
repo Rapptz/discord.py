@@ -72,7 +72,7 @@ __all__ = (
     'RawThreadMembersUpdate',
     'RawTypingEvent',
     'RawMemberRemoveEvent',
-    'RawAppCmdPermissionsUpdateEvent',
+    'RawAppCommandPermissionsUpdateEvent',
 )
 
 
@@ -439,8 +439,8 @@ class RawMemberRemoveEvent(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
 
 
-class RawAppCmdPermissionsUpdateEvent(_RawReprMixin):
-    """Represents the payload for a :func:`on_raw_app_cmd_permissions_update` event.
+class RawAppCommandPermissionsUpdateEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_app_command_permissions_update` event.
 
     .. versionadded:: 2.0
 
