@@ -4430,7 +4430,7 @@ RawMemberRemoveEvent
     :members:
 
 RawAppCommandPermissionsUpdateEvent
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: RawAppCommandPermissionsUpdateEvent
 
