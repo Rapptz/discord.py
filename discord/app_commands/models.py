@@ -218,6 +218,11 @@ class AppCommand(Hashable):
         return f'<{self.__class__.__name__} id={self.id!r} name={self.name!r} type={self.type!r}>'
 
     @property
+    def mention(self) -> str:
+        """:class:`str`: Returns a string that allows you to mention the given AppCommand."""
+        return f'</{self.name}:{self.id}>'
+
+    @property
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`~discord.Guild`]: Returns the guild this command is registered to
         if it exists.
@@ -844,6 +849,32 @@ class AppCommandGroup:
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} name={self.name!r} type={self.type!r}>'
+
+    @property
+    def qualified_name(self) -> str:
+        """:class:`str`: Returns the fully qualified command name.
+
+        The qualified name includes the parent name as well. For example,
+        in a command like ``/foo bar`` the qualified name is ``foo bar``.
+        """
+        # A B C
+        #     ^ self
+        #   ^ parent
+        # ^ grandparent
+        names = [self.name, self.parent.name]
+        if isinstance(self.parent, AppCommandGroup):
+            names.append(self.parent.parent.name)
+
+        return ' '.join(reversed(names))
+
+    @property
+    def mention(self) -> str:
+        """:class:`str`: Returns a string that allows you to mention the given AppCommandGroup."""
+        if isinstance(self.parent, AppCommand):
+            base_command = self.parent
+        else:
+            base_command = self.parent.parent
+        return f'</{self.qualified_name}:{base_command.id}>'  # type: ignore
 
     def _from_data(self, data: ApplicationCommandOption) -> None:
         self.type: AppCommandOptionType = try_enum(AppCommandOptionType, data['type'])
