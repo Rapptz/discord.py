@@ -95,6 +95,7 @@ if TYPE_CHECKING:
     from .types.guild import Guild as GuildPayload
     from .types.message import Message as MessagePayload, PartialMessage as PartialMessagePayload
     from .types import gateway as gw
+    from .types.command import GuildApplicationCommandPermissions as GuildApplicationCommandPermissionsPayload
 
     T = TypeVar('T')
     Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable]
@@ -1474,6 +1475,10 @@ class ConnectionState:
                 )
         else:
             _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_application_command_permissions_update(self, data: GuildApplicationCommandPermissionsPayload):
+        raw = RawAppCommandPermissionsUpdateEvent(data=data, state=self)
+        self.dispatch('raw_app_command_permissions_update', raw)
 
     def parse_voice_state_update(self, data: gw.VoiceStateUpdateEvent) -> None:
         guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
