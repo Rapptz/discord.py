@@ -447,7 +447,7 @@ class RawAppCommandPermissionsUpdateEvent(_RawReprMixin):
     Attributes
     ----------
     target_id: :class:`int`
-        The ID of the command or application whos permissions were updated.
+        The ID of the command or application whose permissions were updated.
         When this is the application ID instead of a command ID, the permissions
         apply to all commands that do not contain explicit overwrites.
     application_id: :class:`int`
