@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-29 08:53+0000\n"
-"PO-Revision-Date: 2022-06-29 13:58\n"
+"POT-Creation-Date: 2022-07-11 11:50+0000\n"
+"PO-Revision-Date: 2022-07-11 14:52\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -201,8 +201,13 @@ msgid "In a non-guild context where this doesn't apply, an empty permissions obj
 msgstr "ギルド以外の文脈では権限が適用されないため、空の権限オブジェクトが返されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.permissions:5
+#: ../../../discord/interactions.py:docstring of discord.Interaction.app_permissions:3
 msgid ":class:`Permissions`"
 msgstr ":class:`Permissions`"
+
+#: ../../../discord/interactions.py:docstring of discord.Interaction.app_permissions:1
+msgid "The resolved permissions of the application or the bot, including overwrites."
+msgstr "権限の上書きを含む、アプリケーションまたはボットの解決された権限。"
 
 #: ../../docstring of discord.Interaction.namespace:1
 msgid "The resolved namespace for this interaction."
@@ -1425,6 +1430,10 @@ msgstr "このコマンドが登録されているギルドのID。 ``None`` の
 msgid "Whether the command is NSFW and should only work in NSFW channels."
 msgstr "コマンドに年齢制限をかけて、年齢制限つきチャンネルのみで利用できるようにすべきか。"
 
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommand.mention:1
+msgid "Returns a string that allows you to mention the given AppCommand."
+msgstr "アプリケーションコマンドをメンションすることのできる文字列を返します。"
+
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommand.guild:1
 msgid "Returns the guild this command is registered to if it exists."
 msgstr "存在する場合、このコマンドが登録されたギルドを返します。"
@@ -1532,7 +1541,7 @@ msgid "AppCommandGroup"
 msgstr "AppCommandGroup"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:1
-msgid "Represents a application command subcommand."
+msgid "Represents an application command subcommand."
 msgstr "アプリケーションコマンドのサブコマンドを表します。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:7
@@ -1561,6 +1570,21 @@ msgstr "親アプリケーションコマンド。"
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:39
 msgid "Union[:class:`AppCommand`, :class:`AppCommandGroup`]"
 msgstr "Union[:class:`AppCommand`, :class:`AppCommandGroup`]"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandGroup.qualified_name:1
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Command.qualified_name:1
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.ContextMenu.qualified_name:1
+msgid "Returns the fully qualified command name."
+msgstr "完全修飾されたコマンド名を返します。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandGroup.qualified_name:3
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Command.qualified_name:3
+msgid "The qualified name includes the parent name as well. For example, in a command like ``/foo bar`` the qualified name is ``foo bar``."
+msgstr "修飾名には親の名前も含まれています。例えば、 ``/foo bar`` のようなコマンドでは修飾名は ``foo bar`` です。"
+
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.AppCommandGroup.mention:1
+msgid "Returns a string that allows you to mention the given AppCommandGroup."
+msgstr "アプリケーションコマンドグループをメンションすることのできる文字列を返します。"
 
 #: ../../interactions/api.rst:109
 msgid "AppCommandChannel"
@@ -3279,15 +3303,6 @@ msgstr ":ref:`coroutine <coroutine>`"
 msgid "The root parent of this command."
 msgstr "コマンドの大元の親。"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Command.qualified_name:1
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.ContextMenu.qualified_name:1
-msgid "Returns the fully qualified command name."
-msgstr "完全修飾されたコマンド名を返します。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Command.qualified_name:3
-msgid "The qualified name includes the parent name as well. For example, in a command like ``/foo bar`` the qualified name is ``foo bar``."
-msgstr "修飾名には親の名前も含まれています。例えば、 ``/foo bar`` のようなコマンドでは修飾名は ``foo bar`` です。"
-
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:3
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:3
 msgid "The local error handler is called whenever an exception is raised in the body of the command or during handling of the command. The error handler must take 2 parameters, the interaction and the error."
@@ -3777,8 +3792,8 @@ msgid "Keyword arguments denoting the permissions to check for."
 msgstr "確認する権限を示すキーワード引数。"
 
 #: ../../../discord/app_commands/checks.py:docstring of discord.app_commands.checks.bot_has_permissions:1
-msgid "Similar to :func:`has_permissions` except checks if the bot itself has the permissions listed."
-msgstr "ボット自身がリストされている権限を持っているかどうかをチェックすること以外は :func:`has_permissions` と同様です。"
+msgid "Similar to :func:`has_permissions` except checks if the bot itself has the permissions listed. This relies on :attr:`discord.Interaction.app_permissions`."
+msgstr ":func:`has_permissions` と似ていますが、ボット自体に列挙された権限が存在するかを確認します。これは :attr:`discord.Interaction.app_permissions` を使用します。"
 
 #: ../../../discord/app_commands/checks.py:docstring of discord.app_commands.checks.bot_has_permissions:4
 msgid "This check raises a special exception, :exc:`~discord.app_commands.BotMissingPermissions` that is inherited from :exc:`~discord.app_commands.CheckFailure`."
@@ -4073,8 +4088,8 @@ msgstr "Optional[:class:`int`]: このパラメータがサポートする最小
 
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.min_value:3
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.max_value:3
-msgid "Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number` or :attr:`~discord.AppCommandOptionType.integer`."
-msgstr ":meth:`type` が :attr:`~discord.AppCommandOptionType.number` または :attr:`~discord.AppCommandOptionType.integer` を返す場合にのみ有効です。"
+msgid "Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number` :attr:`~discord.AppCommandOptionType.integer`, or :attr:`~discord.AppCommandOptionType.string`."
+msgstr ":meth:`type` が :attr:`~discord.AppCommandOptionType.number` 、 :attr:`~discord.AppCommandOptionType.integer` または :attr:`~discord.AppCommandOptionType.string` を返す場合にのみ有効です。"
 
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.min_value:6
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.max_value:6
@@ -4151,8 +4166,8 @@ msgid "Range"
 msgstr "Range"
 
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Range:1
-msgid "A type annotation that can be applied to a parameter to require a numeric type to fit within the range provided."
-msgstr "与えられた範囲内に収まる数値型を必要とするパラメータに適用できる型アノテーション。"
+msgid "A type annotation that can be applied to a parameter to require a numeric or string type to fit within the range provided."
+msgstr "与えられた範囲内に収まる数値または文字列型を必要とするパラメータに適用できる型アノテーション。"
 
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Range:7
 msgid "Some example ranges:"
