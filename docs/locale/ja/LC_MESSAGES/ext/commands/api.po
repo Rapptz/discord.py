@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-23 08:08+0000\n"
-"PO-Revision-Date: 2022-06-29 12:06\n"
+"POT-Creation-Date: 2022-07-11 11:50+0000\n"
+"PO-Revision-Date: 2022-07-11 15:03\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -4342,6 +4342,27 @@ msgstr "Union[:class:`~discord.User`, :class:`.Member`]: このコンテキス�
 msgid "Union[:class:`.Member`, :class:`.ClientUser`]: Similar to :attr:`.Guild.me` except it may return the :class:`.ClientUser` in private message contexts."
 msgstr "Union[:class:`.Member`, :class:`ClientUser`]: これはプライベートメッセージコンテキストでは :class:`ClientUser` を返すことを除いて、 :attr:`.Guild.me` と同様です。"
 
+#: ../../docstring of discord.ext.commands.Context.permissions:1
+msgid "Returns the resolved permissions for the invoking user in this channel. Shorthand for :meth:`.abc.GuildChannel.permissions_for` or :attr:`.Interaction.permissions`."
+msgstr "このチャンネルでのコマンドを実行したユーザーの解決された権限を返します。 :meth:`.abc.GuildChannel.permissions_for` と :attr:`.Interaction.permissions` のショートカットです。"
+
+#: ../../docstring of discord.ext.commands.Context.permissions:6
+#: ../../docstring of discord.ext.commands.Context.bot_permissions:13
+msgid ":class:`.Permissions`"
+msgstr ":class:`.Permissions`"
+
+#: ../../docstring of discord.ext.commands.Context.bot_permissions:1
+msgid "Returns the resolved permissions for the bot in this channel. Shorthand for :meth:`.abc.GuildChannel.permissions_for` or :attr:`.Interaction.app_permissions`."
+msgstr "このチャンネルでのボットの解決された権限を返します。 :meth:`.abc.GuildChannel.permissions_for` と :attr:`.Interaction.app_permissions` のショートカットです。"
+
+#: ../../docstring of discord.ext.commands.Context.bot_permissions:4
+msgid "For interaction-based commands, this will reflect the effective permissions for :class:`Context` calls, which may differ from calls through other :class:`.abc.Messageable` endpoints, like :attr:`channel`."
+msgstr "インタラクションベースのコマンドでは、これは :class:`Context` 呼び出しにて有効な権限を反映していて、 :attr:`channel` のような他の :class:`.abc.Messageable` に適用されるものと異なる可能性があります。"
+
+#: ../../docstring of discord.ext.commands.Context.bot_permissions:8
+msgid "Notably, sending messages, embedding links, and attaching files are always permitted, while reading messages might not be."
+msgstr "特に、メッセージの送信、埋め込みリンク、ファイルの添付は常に許可されていますが、メッセージを読むことはできない場合があります。"
+
 #: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.Context.voice_client:1
 msgid "A shortcut to :attr:`.Guild.voice_client`\\, if applicable."
 msgstr "該当する場合は、 :attr:`.Guild.voice_client` へのショートカット。"
@@ -5040,8 +5061,8 @@ msgid "For interaction based contexts the conversion error is propagated rather 
 msgstr "インタラクションベースのコンテキストではアプリケーションコマンドでのユーザーエクスペリエンスの差異のため変換エラーは無視されず伝播されます。"
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.Range:1
-msgid "A special converter that can be applied to a parameter to require a numeric type to fit within the range provided."
-msgstr "与えられた範囲内に収まる数値型を必要とするパラメータに適用できる特別なコンバーター。"
+msgid "A special converter that can be applied to a parameter to require a numeric or string type to fit within the range provided."
+msgstr "与えられた範囲内に収まる数値または文字列型を必要とするパラメータに適用できる特別なコンバーター。"
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.Range:4
 msgid "During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand the intent of the code."
@@ -5066,6 +5087,10 @@ msgstr "``Range[int, 1, 10]`` は最小値1、最大値10を意味します。"
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.Range:13
 msgid "Inside a :class:`HybridCommand` this functions equivalently to :class:`discord.app_commands.Range`."
 msgstr ":class:`HybridCommand` 内では、この関数は :class:`discord.app_commands.Range` と同様に動作します。"
+
+#: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.Range:15
+msgid "If the converter fails then :class:`~.ext.commands.RangeError` is raised to the appropriate error handlers."
+msgstr "コンバーターが失敗した場合、 :class:`~.ext.commands.RangeError` が適切なエラーハンドラに送出されます。"
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.run_converters:3
 msgid "Runs converters for a given converter, argument, and parameter."
@@ -5772,8 +5797,8 @@ msgid "The value that was out of range."
 msgstr "範囲外であった値。"
 
 #: ../../../discord/ext/commands/errors.py:docstring of discord.ext.commands.errors.RangeError:23
-msgid "Union[:class:`int`, :class:`float`]"
-msgstr "Union[:class:`int`, :class:`float`]"
+msgid "Union[:class:`int`, :class:`float`, :class:`str`]"
+msgstr "Union[:class:`int`, :class:`float`, :class:`str`]"
 
 #: ../../../discord/ext/commands/errors.py:docstring of discord.ext.commands.errors.MissingPermissions:1
 msgid "Exception raised when the command invoker lacks permissions to run a command."
