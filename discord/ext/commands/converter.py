@@ -1056,7 +1056,7 @@ else:
         Inside a :class:`HybridCommand` this functions equivalently to :class:`discord.app_commands.Range`.
 
         If the value cannot be converted to the provided type or is outside the given range,
-        :class:`~ext.commands.BadArgument` or :class:`~.ext.commands.RangeError` is raised to
+        :class:`~.ext.commands.BadArgument` or :class:`~.ext.commands.RangeError` is raised to
         the appropriate error handlers respectively.
 
         .. versionadded:: 2.0
