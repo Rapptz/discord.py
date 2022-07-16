@@ -1090,7 +1090,7 @@ else:
                 count = converted = self.annotation(value)
             except ValueError:
                 raise BadArgument(
-                    f'Converting to "{self.annotation.__name__}" failed for parameter "{ctx.current_param.name}".'
+                    f'Converting to "{self.annotation.__name__}" failed for parameter "{ctx.current_parameter.name}".'
                 )
 
             if self.annotation is str:
