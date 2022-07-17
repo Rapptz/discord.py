@@ -1724,6 +1724,8 @@ class Messageable:
 
         Raises
         -------
+        ~discord.Forbidden
+            You do not have the permission to retrieve pinned messages.
         ~discord.HTTPException
             Retrieving the pinned messages failed.
 
