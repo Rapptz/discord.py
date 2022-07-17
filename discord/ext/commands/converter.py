@@ -1055,8 +1055,9 @@ else:
 
         Inside a :class:`HybridCommand` this functions equivalently to :class:`discord.app_commands.Range`.
 
-        If the converter fails then :class:`~.ext.commands.RangeError` is raised to
-        the appropriate error handlers.
+        If the value cannot be converted to the provided type or is outside the given range,
+        :class:`~.ext.commands.BadArgument` or :class:`~.ext.commands.RangeError` is raised to
+        the appropriate error handlers respectively.
 
         .. versionadded:: 2.0
 
@@ -1085,7 +1086,13 @@ else:
                 raise TypeError('minimum cannot be larger than maximum')
 
         async def convert(self, ctx: Context[BotT], value: str) -> Union[int, float]:
-            count = converted = self.annotation(value)
+            try:
+                count = converted = self.annotation(value)
+            except ValueError:
+                raise BadArgument(
+                    f'Converting to "{self.annotation.__name__}" failed for parameter "{ctx.current_parameter.name}".'
+                )
+
             if self.annotation is str:
                 count = len(value)
 
