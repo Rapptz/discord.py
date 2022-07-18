@@ -447,6 +447,7 @@ def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, Ap
     type = _context_menu_annotation(resolved)
     return (parameter.name, resolved, type)
 
+
 def _is_cog(obj: Any) -> TypeGuard[Cog]:
     return hasattr(obj, '__cog_commands__')
 
