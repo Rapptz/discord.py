@@ -1220,8 +1220,7 @@ decorator.
         await ctx.send(f"Created tag: {name}")
 
 Due to a Discord limitation, Slash command groups cannot be invoked directly so the ``fallback``
-parameter allows you to create a sub-command with that command that will call the callback of
-group.
+parameter allows you to create a sub-command that will be bound to callback of parent group.
 
 .. image:: /images/commands/hybrid3.png
 .. image:: /images/commands/hybrid4.png
