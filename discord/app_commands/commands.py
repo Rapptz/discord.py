@@ -59,7 +59,7 @@ from ..permissions import Permissions
 from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all
 
 if TYPE_CHECKING:
-    from typing_extensions import ParamSpec, Concatenate
+    from typing_extensions import ParamSpec, Concatenate, TypeGuard
     from ..interactions import Interaction
     from ..abc import Snowflake
     from .namespace import Namespace
@@ -447,6 +447,9 @@ def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, Ap
     type = _context_menu_annotation(resolved)
     return (parameter.name, resolved, type)
 
+def _is_cog(obj: Any) -> TypeGuard[Cog]:
+    return hasattr(obj, '__cog_commands__')
+
 
 class Command(Generic[GroupT, P, T]):
     """A class that implements an application command.
@@ -598,7 +601,7 @@ class Command(Generic[GroupT, P, T]):
 
         return base
 
-    async def _invoke_error_handler(self, interaction: Interaction, error: AppCommandError) -> None:
+    async def _invoke_error_handlers(self, interaction: Interaction, error: AppCommandError) -> None:
         # These type ignores are because the type checker can't narrow this type properly.
         if self.on_error is not None:
             if self.binding is not None:
@@ -612,6 +615,12 @@ class Command(Generic[GroupT, P, T]):
 
             if parent.parent is not None:
                 await parent.parent.on_error(interaction, error)
+
+        if _is_cog(self.binding):
+            cog = self.binding
+            local = cog._get_overridden_method(cog.cog_app_command_error)
+            if local is not None:
+                await local(interaction, error)
 
     def _has_any_error_handlers(self) -> bool:
         if self.on_error is not None:

@@ -525,6 +525,25 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
+    async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError) -> None:
+        """A special method that is called whenever an error within
+        an application command is dispatched inside this cog.
+
+        This is similar to :func:`discord.app_commands.CommandTree.on_error` except
+        only applying to the application commands inside this cog.
+
+        This **must** be a coroutine.
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The interaction that is being handled.
+        error: :exc:`~discord.app_commands.AppCommandError`
+            The exception that was raised.
+        """
+        pass
+
+    @_cog_special_method
     async def cog_before_invoke(self, ctx: Context[BotT]) -> None:
         """A special method that acts as a cog local pre-invoke hook.
 
