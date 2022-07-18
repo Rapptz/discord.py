@@ -649,6 +649,8 @@ class HTTPClient:
             else:
                 raise HTTPException(resp, 'failed to get asset')
 
+        raise RuntimeError('Unreachable code in HTTP handling')
+
     async def upload_to_cloud(self, url: str, file: Union[File, str], hash: Optional[str] = None) -> Any:
         response: Optional[aiohttp.ClientResponse] = None
         data: Optional[Union[Dict[str, Any], str]] = None
