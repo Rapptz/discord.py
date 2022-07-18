@@ -1199,6 +1199,10 @@ In order to define a hybrid command, The command callback should be decorated wi
     async def test(ctx):
         await ctx.send("This is a hybrid command!")
 
+The above command can be invoked as both text and slash command. Note that you have to manually
+sync your :class:`~discord.CommandTree` by calling :class:`~discord.CommandTree.sync` in order
+for slash command to appear.
+
 .. image:: /images/commands/hybrid1.png
 .. image:: /images/commands/hybrid2.png
 
