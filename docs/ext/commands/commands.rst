@@ -1176,3 +1176,69 @@ For example, to block all DMs we could do the following:
     Be careful on how you write your global checks, as it could also lock you out of your own bot.
 
 .. need a note on global check once here I think
+
+
+Hybrid Commands
+---------------
+
+.. versionadded:: 2.0
+
+:class:`.commands.HybridCommand` is a command that can be invoked as both a text and a slash command.
+This allows you to define a command as both slash and text command without writing separate code for
+both counterparts.
+
+One of the goals of hybrid commands is to also allow you to easily transit from text commands to
+slash commands without having to make too many changes to existing code.
+
+In order to define a hybrid command, The command callback should be decorated with
+:meth:`.Bot.hybrid_command` decorator.
+
+.. code-block:: python3
+
+    @bot.hybrid_command()
+    async def test(ctx):
+        await ctx.send("This is a hybrid command!")
+
+.. image:: /images/commands/hybrid1.png
+.. image:: /images/commands/hybrid2.png
+
+You can create hybrid command groups and sub-commands using the :meth:`.Bot.hybrid_group`
+decorator.
+
+.. code-block:: python3
+
+    @bot.hybrid_group(fallback="get")
+    async def tag(ctx, name):
+        await ctx.send(f"Showing tag: {name}")
+
+    @tag.command()
+    async def create(ctx, name):
+        await ctx.send(f"Created tag: {name}")
+
+Due to a Discord limitation, Slash command groups cannot be invoked directly so the ``fallback``
+parameter allows you to create a sub-command with that command that will call the callback of
+group.
+
+.. image:: /images/commands/hybrid3.png
+.. image:: /images/commands/hybrid4.png
+
+Due to certain limitation on slash commands, Certain features of text commands are not supported
+on hybrid commands. You can define a hybrid command as long as it meets the same subset that is
+supported for slash commands.
+
+Following are **not supported** by hybrid commands:
+
+- Variadic arguments
+- Nested command groups more than one
+- Many :class:`~typing.Union` types
+
+Apart from that, All other features such as converters, checks, autocomplete, flags etc.
+are supported on hybrid commands.
+
+For convenience and ease in writing code, The :class:`~ext.commands.Context` class implements
+some behavioural changes for various methods and attributes:
+
+- Since interaction can only be responded to once, The :meth:`.Context.send` automatically
+  determines whether to send an interaction response or a followup response.
+- :meth:`.Context.defer` defers the interaction response for slash commands but shows typing
+  indicator for text commands.
