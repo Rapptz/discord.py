@@ -28,7 +28,21 @@ import discord
 from discord import app_commands
 from discord.utils import maybe_coroutine
 
-from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Coroutine,
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    Optional,
+    TYPE_CHECKING,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 from ._types import _BaseCommand, BotT
 
@@ -254,6 +268,9 @@ class Cog(metaclass=CogMeta):
     __cog_listeners__: List[Tuple[str, str]]
     __cog_is_app_commands_group__: ClassVar[bool] = False
     __cog_app_commands_group__: Optional[app_commands.Group]
+    __app_commands_error_handler__: Optional[
+        Callable[[discord.Interaction, app_commands.AppCommandError], Coroutine[Any, Any, None]]
+    ]
 
     def __new__(cls, *args: Any, **kwargs: Any) -> Self:
         # For issue 426, we need to store a copy of the command objects
@@ -328,6 +345,11 @@ class Cog(metaclass=CogMeta):
                 raise TypeError('maximum number of application command children exceeded')
 
             self.__cog_app_commands_group__._children = mapping  # type: ignore  # Variance issue
+
+        if Cog._get_overridden_method(self.cog_app_command_error) is not None:
+            self.__app_commands_error_handler__ = self.cog_app_command_error
+        else:
+            self.__app_commands_error_handler__ = None
 
         return self
 
@@ -521,6 +543,25 @@ class Cog(metaclass=CogMeta):
             The invocation context where the error happened.
         error: :class:`CommandError`
             The error that happened.
+        """
+        pass
+
+    @_cog_special_method
+    async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError) -> None:
+        """A special method that is called whenever an error within
+        an application command is dispatched inside this cog.
+
+        This is similar to :func:`discord.app_commands.CommandTree.on_error` except
+        only applying to the application commands inside this cog.
+
+        This **must** be a coroutine.
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The interaction that is being handled.
+        error: :exc:`~discord.app_commands.AppCommandError`
+            The exception that was raised.
         """
         pass
 

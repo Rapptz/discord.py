@@ -992,12 +992,19 @@ class CommandTree(Generic[ClientT]):
 
         return [AppCommand(data=d, state=self._state) for d in data]
 
-    def _from_interaction(self, interaction: Interaction):
+    async def _dispatch_error(self, interaction: Interaction, error: AppCommandError, /) -> None:
+        command = interaction.command
+        if isinstance(command, Command):
+            await command._invoke_error_handlers(interaction, error)
+        else:
+            await self.on_error(interaction, error)
+
+    def _from_interaction(self, interaction: Interaction) -> None:
         async def wrapper():
             try:
                 await self.call(interaction)
             except AppCommandError as e:
-                await self.on_error(interaction, e)
+                await self._dispatch_error(interaction, e)
 
         self.client.loop.create_task(wrapper(), name='CommandTree-invoker')
 
@@ -1167,5 +1174,5 @@ class CommandTree(Generic[ClientT]):
         try:
             await command._invoke_with_namespace(interaction, namespace)
         except AppCommandError as e:
-            await command._invoke_error_handler(interaction, e)
+            await command._invoke_error_handlers(interaction, e)
             await self.on_error(interaction, e)
