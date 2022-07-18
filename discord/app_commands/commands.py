@@ -613,9 +613,9 @@ class Command(Generic[GroupT, P, T]):
             if parent.parent is not None:
                 await parent.parent.on_error(interaction, error)
 
-        cog_error = getattr(self.binding, '__app_commands_error_handler__', None)
-        if cog_error is not None:
-            await cog_error(interaction, error)
+        binding_error_handler = getattr(self.binding, '__app_commands_error_handler__', None)
+        if binding_error_handler is not None:
+            await binding_error_handler(interaction, error)
 
     def _has_any_error_handlers(self) -> bool:
         if self.on_error is not None:
