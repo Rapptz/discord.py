@@ -534,6 +534,8 @@ class HTTPClient:
             else:
                 raise HTTPException(resp, 'failed to get asset')
 
+        raise RuntimeError('Unreachable')
+
     # state management
 
     async def close(self) -> None:

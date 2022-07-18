@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING, List
 from .utils import parse_time, _bytes_to_base64_data, MISSING
 from .guild import Guild
 
@@ -81,7 +81,7 @@ class _PartialTemplateState:
     def _get_guild(self, id):
         return self.__state._get_guild(id)
 
-    async def query_members(self, **kwargs: Any) -> list:
+    async def query_members(self, **kwargs: Any) -> List[Any]:
         return []
 
     def __getattr__(self, attr):
