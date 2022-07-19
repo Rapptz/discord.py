@@ -43,6 +43,7 @@ from typing import (
     Deque,
     Literal,
     overload,
+    Sequence,
 )
 import weakref
 import inspect
@@ -761,8 +762,8 @@ class ConnectionState:
         return sticker
 
     @property
-    def guilds(self) -> List[Guild]:
-        return list(self._guilds.values())
+    def guilds(self) -> Sequence[Guild]:
+        return utils.SequenceProxy(self._guilds.values())
 
     def _get_guild(self, guild_id: Optional[int]) -> Optional[Guild]:
         # The keys of self._guilds are ints
@@ -786,12 +787,12 @@ class ConnectionState:
         del guild
 
     @property
-    def emojis(self) -> List[Emoji]:
-        return list(self._emojis.values())
+    def emojis(self) -> Sequence[Emoji]:
+        return utils.SequenceProxy(self._emojis.values())
 
     @property
-    def stickers(self) -> List[GuildSticker]:
-        return list(self._stickers.values())
+    def stickers(self) -> Sequence[GuildSticker]:
+        return utils.SequenceProxy(self._stickers.values())
 
     def get_emoji(self, emoji_id: Optional[int]) -> Optional[Emoji]:
         # the keys of self._emojis are ints
@@ -802,8 +803,8 @@ class ConnectionState:
         return self._stickers.get(sticker_id)  # type: ignore
 
     @property
-    def private_channels(self) -> List[PrivateChannel]:
-        return list(self._private_channels.values())
+    def private_channels(self) -> Sequence[PrivateChannel]:
+        return utils.SequenceProxy(self._private_channels.values())
 
     async def call_connect(self, channel_id: int) -> None:
         if self.ws is None:

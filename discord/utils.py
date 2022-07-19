@@ -31,6 +31,7 @@ from typing import (
     AsyncIterator,
     Awaitable,
     Callable,
+    Collection,
     Coroutine,
     Dict,
     ForwardRef,
@@ -219,31 +220,41 @@ def cached_slot_property(name: str) -> Callable[[Callable[[T], T_co]], CachedSlo
 
 
 class SequenceProxy(Sequence[T_co]):
-    """Read-only proxy of a Sequence."""
+    """A proxy of a sequence that only creates a copy when necessary."""
 
-    def __init__(self, proxied: Sequence[T_co]):
-        self.__proxied = proxied
+    def __init__(self, proxied: Collection[T_co], *, sorted: bool = False):
+        self.__proxied: Collection[T_co] = proxied
+        self.__sorted: bool = sorted
+
+    @cached_property
+    def __copied(self) -> List[T_co]:
+        if self.__sorted:
+            # The type checker thinks the variance is wrong, probably due to the comparison requirements
+            self.__proxied = sorted(self.__proxied)  # type: ignore
+        else:
+            self.__proxied = list(self.__proxied)
+        return self.__proxied
 
     def __getitem__(self, idx: int) -> T_co:
-        return self.__proxied[idx]
+        return self.__copied[idx]
 
     def __len__(self) -> int:
         return len(self.__proxied)
 
     def __contains__(self, item: Any) -> bool:
-        return item in self.__proxied
+        return item in self.__copied
 
     def __iter__(self) -> Iterator[T_co]:
-        return iter(self.__proxied)
+        return iter(self.__copied)
 
     def __reversed__(self) -> Iterator[T_co]:
-        return reversed(self.__proxied)
+        return reversed(self.__copied)
 
     def index(self, value: Any, *args: Any, **kwargs: Any) -> int:
-        return self.__proxied.index(value, *args, **kwargs)
+        return self.__copied.index(value, *args, **kwargs)
 
     def count(self, value: Any) -> int:
-        return self.__proxied.count(value)
+        return self.__copied.count(value)
 
 
 @overload

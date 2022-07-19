@@ -395,32 +395,32 @@ class Client:
         return self._connection.user
 
     @property
-    def guilds(self) -> List[Guild]:
-        """List[:class:`.Guild`]: The guilds that the connected client is a member of."""
+    def guilds(self) -> Sequence[Guild]:
+        """Sequence[:class:`.Guild`]: The guilds that the connected client is a member of."""
         return self._connection.guilds
 
     @property
-    def emojis(self) -> List[Emoji]:
-        """List[:class:`.Emoji`]: The emojis that the connected client has."""
+    def emojis(self) -> Sequence[Emoji]:
+        """Sequence[:class:`.Emoji`]: The emojis that the connected client has."""
         return self._connection.emojis
 
     @property
-    def stickers(self) -> List[GuildSticker]:
-        """List[:class:`.GuildSticker`]: The stickers that the connected client has.
+    def stickers(self) -> Sequence[GuildSticker]:
+        """Sequence[:class:`.GuildSticker`]: The stickers that the connected client has.
 
         .. versionadded:: 2.0
         """
         return self._connection.stickers
 
     @property
-    def sessions(self) -> List[Session]:
-        """List[:class:`.Session`]: The gateway sessions that the current user is connected in with.
+    def sessions(self) -> Sequence[Session]:
+        """Sequence[:class:`.Session`]: The gateway sessions that the current user is connected in with.
 
         When connected, this includes a representation of the library's session and an "all" session representing the user's overall presence.
 
         .. versionadded:: 2.0
         """
-        return list(self._connection._sessions.values())
+        return utils.SequenceProxy(self._connection._sessions.values())
 
     @property
     def cached_messages(self) -> Sequence[Message]:
@@ -431,8 +431,8 @@ class Client:
         return utils.SequenceProxy(self._connection._messages or [])
 
     @property
-    def connections(self) -> List[Connection]:
-        """List[:class:`.Connection`]: The connections that the connected client has.
+    def connections(self) -> Sequence[Connection]:
+        """Sequence[:class:`.Connection`]: The connections that the connected client has.
 
         These connections don't have the :attr:`.Connection.metadata` attribute populated.
 
@@ -442,20 +442,20 @@ class Client:
             Due to a Discord limitation, removed connections may not be removed from this cache.
 
         """
-        return list(self._connection.connections.values())
+        return utils.SequenceProxy(self._connection.connections.values())
 
     @property
-    def private_channels(self) -> List[PrivateChannel]:
-        """List[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on."""
+    def private_channels(self) -> Sequence[PrivateChannel]:
+        """Sequence[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on."""
         return self._connection.private_channels
 
     @property
-    def relationships(self) -> List[Relationship]:
-        """List[:class:`.Relationship`]: Returns all the relationships that the connected client has.
+    def relationships(self) -> Sequence[Relationship]:
+        """Sequence[:class:`.Relationship`]: Returns all the relationships that the connected client has.
 
         .. versionadded:: 2.0
         """
-        return list(self._connection._relationships.values())
+        return utils.SequenceProxy(self._connection._relationships.values())
 
     @property
     def friends(self) -> List[Relationship]:
@@ -531,12 +531,12 @@ class Client:
         return self._connection.preferred_regions
 
     @property
-    def pending_payments(self) -> List[Payment]:
-        """List[:class:`.Payment`]: The pending payments that the connected client has.
+    def pending_payments(self) -> Sequence[Payment]:
+        """Sequence[:class:`.Payment`]: The pending payments that the connected client has.
 
         .. versionadded:: 2.0
         """
-        return list(self._connection.pending_payments.values())
+        return utils.SequenceProxy(self._connection.pending_payments.values())
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""

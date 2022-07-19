@@ -775,6 +775,25 @@ The return type of the following methods has been changed to an :term:`asynchron
 The ``NoMoreItems`` exception was removed as calling :func:`anext` or :meth:`~object.__anext__` on an
 :term:`asynchronous iterator` will now raise :class:`StopAsyncIteration`.
 
+Changing certain lists to be lazy sequences instead
+-----------------------------------------------------
+
+In order to improve performance when calculating the length of certain lists, certain attributes were changed to return a sequence rather than a :class:`list`.
+
+A sequence is similar to a :class:`list` except it is read-only. In order to get a list again you can call :class:`list` on the resulting sequence.
+
+The following properties were changed to return a sequence instead of a list:
+
+- :attr:`Client.guilds`
+- :attr:`Client.emojis`
+- :attr:`Client.private_channels`
+- :attr:`Guild.roles`
+- :attr:`Guild.channels`
+- :attr:`Guild.members`
+
+This change should be transparent, unless you are modifying the sequence by doing things such as ``list.append``.
+
+
 Removal of ``Embed.Empty``
 ---------------------------
 

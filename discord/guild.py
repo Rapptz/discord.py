@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import copy
 from datetime import datetime
-import logging
 import unicodedata
 from typing import (
     Any,
@@ -556,17 +555,17 @@ class Guild(Hashable):
             state.store_presence(user_id, presence, self.id)
 
     @property
-    def channels(self) -> List[GuildChannel]:
-        """List[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild."""
-        return list(self._channels.values())
+    def channels(self) -> Sequence[GuildChannel]:
+        """Sequence[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild."""
+        return utils.SequenceProxy(self._channels.values())
 
     @property
-    def threads(self) -> List[Thread]:
-        """List[:class:`Thread`]: A list of active threads that you have permission to view.
+    def threads(self) -> Sequence[Thread]:
+        """Sequence[:class:`Thread`]: A list of active threads that you have permission to view.
 
         .. versionadded:: 2.0
         """
-        return list(self._threads.values())
+        return utils.SequenceProxy(self._threads.values())
 
     @property
     def large(self) -> bool:
@@ -870,9 +869,9 @@ class Guild(Hashable):
         return self._PREMIUM_GUILD_LIMITS[self.premium_tier].filesize
 
     @property
-    def members(self) -> List[Member]:
-        """List[:class:`Member`]: A list of members that belong to this guild."""
-        return list(self._members.values())
+    def members(self) -> Sequence[Member]:
+        """Sequence[:class:`Member`]: A list of members that belong to this guild."""
+        return utils.SequenceProxy(self._members.values())
 
     def get_member(self, user_id: int, /) -> Optional[Member]:
         """Returns a member with the given ID.
@@ -899,13 +898,13 @@ class Guild(Hashable):
         return [member for member in self.members if member.premium_since is not None]
 
     @property
-    def roles(self) -> List[Role]:
-        """List[:class:`Role`]: Returns a :class:`list` of the guild's roles in hierarchy order.
+    def roles(self) -> Sequence[Role]:
+        """Sequence[:class:`Role`]: Returns a sequence of the guild's roles in hierarchy order.
 
-        The first element of this list will be the lowest role in the
+        The first element of this sequence will be the lowest role in the
         hierarchy.
         """
-        return sorted(self._roles.values())
+        return utils.SequenceProxy(self._roles.values(), sorted=True)
 
     def get_role(self, role_id: int, /) -> Optional[Role]:
         """Returns a role with the given ID.
@@ -944,13 +943,13 @@ class Guild(Hashable):
         return None
 
     @property
-    def stage_instances(self) -> List[StageInstance]:
-        """List[:class:`StageInstance`]: Returns a :class:`list` of the guild's stage instances that
+    def stage_instances(self) -> Sequence[StageInstance]:
+        """Sequence[:class:`StageInstance`]: Returns a sequence of the guild's stage instances that
         are currently running.
 
         .. versionadded:: 2.0
         """
-        return list(self._stage_instances.values())
+        return utils.SequenceProxy(self._stage_instances.values())
 
     def get_stage_instance(self, stage_instance_id: int, /) -> Optional[StageInstance]:
         """Returns a stage instance with the given ID.
@@ -970,12 +969,12 @@ class Guild(Hashable):
         return self._stage_instances.get(stage_instance_id)
 
     @property
-    def scheduled_events(self) -> List[ScheduledEvent]:
-        """List[:class:`ScheduledEvent`]: Returns a :class:`list` of the guild's scheduled events.
+    def scheduled_events(self) -> Sequence[ScheduledEvent]:
+        """Sequence[:class:`ScheduledEvent`]: Returns a sequence of the guild's scheduled events.
 
         .. versionadded:: 2.0
         """
-        return list(self._scheduled_events.values())
+        return utils.SequenceProxy(self._scheduled_events.values())
 
     def get_scheduled_event(self, scheduled_event_id: int, /) -> Optional[ScheduledEvent]:
         """Returns a scheduled event with the given ID.
