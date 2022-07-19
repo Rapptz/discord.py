@@ -1009,7 +1009,22 @@ class HTTPClient:
     def delete_message(
         self, channel_id: Snowflake, message_id: Snowflake, *, reason: Optional[str] = None
     ) -> Response[None]:
-        r = Route('DELETE', '/channels/{channel_id}/messages/{message_id}', channel_id=channel_id, message_id=message_id)
+        # Special case certain sub-rate limits
+        # https://github.com/discord/discord-api-docs/issues/1092
+        # https://github.com/discord/discord-api-docs/issues/1295
+        difference = utils.utcnow() - utils.snowflake_time(int(message_id))
+        metadata: Optional[str] = None
+        if difference <= datetime.timedelta(seconds=10):
+            metadata = 'sub-10-seconds'
+        elif difference >= datetime.timedelta(days=14):
+            metadata = 'older-than-two-weeks'
+        r = Route(
+            'DELETE',
+            '/channels/{channel_id}/messages/{message_id}',
+            channel_id=channel_id,
+            message_id=message_id,
+            metadata=metadata,
+        )
         return self.request(r, reason=reason)
 
     def edit_message(
