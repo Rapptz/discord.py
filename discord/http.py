@@ -747,6 +747,19 @@ class HTTPClient:
                                 # Banned by Cloudflare more than likely.
                                 raise HTTPException(response, data)
 
+                            if ratelimit.remaining > 0:
+                                # According to night
+                                # https://github.com/discord/discord-api-docs/issues/2190#issuecomment-816363129
+                                # Remaining > 0 and 429 means that a sub ratelimit was hit.
+                                # It is unclear what should happen in these cases other than just using the retry_after
+                                # value in the body.
+                                _log.debug(
+                                    '%s %s received a 429 despite having %s remaining requests. This is a sub-ratelimit.',
+                                    method,
+                                    url,
+                                    ratelimit.remaining,
+                                )
+
                             retry_after: float = data['retry_after']
                             if self.max_ratelimit_timeout and retry_after > self.max_ratelimit_timeout:
                                 _log.warning(
