@@ -7350,6 +7350,9 @@ The following exceptions are thrown by the library.
 .. autoexception:: HTTPException
     :members:
 
+.. autoexception:: RateLimited
+    :members:
+
 .. autoexception:: Forbidden
 
 .. autoexception:: NotFound
@@ -7384,3 +7387,4 @@ Exception Hierarchy
                 - :exc:`NotFound`
                 - :exc:`DiscordServerError`
                 - :exc:`CaptchaRequired`
+            - :exc:`RateLimited`

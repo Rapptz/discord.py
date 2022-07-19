@@ -272,6 +272,14 @@ class Client:
         A class that solves captcha challenges.
 
         .. versionadded:: 2.0
+    max_ratelimit_timeout: Optional[:class:`float`]
+        The maximum number of seconds to wait when a non-global rate limit is encountered.
+        If a request requires sleeping for more than the seconds passed in, then
+        :exc:`~discord.RateLimited` will be raised. By default, there is no timeout limit.
+        In order to prevent misuse and unnecessary bans, the minimum value this can be
+        set to is ``30.0`` seconds.
+
+        .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -292,6 +300,7 @@ class Client:
         captcha_handler: Optional[CaptchaHandler] = options.pop('captcha_handler', None)
         if captcha_handler is not None and not isinstance(captcha_handler, CaptchaHandler):
             raise TypeError(f'captcha_handler must derive from CaptchaHandler')
+        max_ratelimit_timeout: Optional[float] = options.pop('max_ratelimit_timeout', None)
         self.http: HTTPClient = HTTPClient(
             self.loop,
             proxy=proxy,
@@ -299,6 +308,7 @@ class Client:
             unsync_clock=unsync_clock,
             http_trace=http_trace,
             captcha_handler=captcha_handler,
+            max_ratelimit_timeout=max_ratelimit_timeout,
         )
 
         self._handlers: Dict[str, Callable[..., None]] = {
