@@ -308,7 +308,7 @@ def parse_timestamp(timestamp: Optional[float]) -> Optional[datetime.datetime]:
         return datetime.datetime.fromtimestamp(timestamp / 1000.0, tz=datetime.timezone.utc)
 
 
-def copy_doc(original: Callable) -> Callable[[T], T]:
+def copy_doc(original: Callable[..., Any]) -> Callable[[T], T]:
     def decorator(overridden: T) -> T:
         overridden.__doc__ = original.__doc__
         overridden.__signature__ = _signature(original)  # type: ignore
