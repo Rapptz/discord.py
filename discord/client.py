@@ -370,18 +370,18 @@ class Client:
         return self._connection.user
 
     @property
-    def guilds(self) -> List[Guild]:
-        """List[:class:`.Guild`]: The guilds that the connected client is a member of."""
+    def guilds(self) -> Sequence[Guild]:
+        """Sequence[:class:`.Guild`]: The guilds that the connected client is a member of."""
         return self._connection.guilds
 
     @property
-    def emojis(self) -> List[Emoji]:
-        """List[:class:`.Emoji`]: The emojis that the connected client has."""
+    def emojis(self) -> Sequence[Emoji]:
+        """Sequence[:class:`.Emoji`]: The emojis that the connected client has."""
         return self._connection.emojis
 
     @property
-    def stickers(self) -> List[GuildSticker]:
-        """List[:class:`.GuildSticker`]: The stickers that the connected client has.
+    def stickers(self) -> Sequence[GuildSticker]:
+        """Sequence[:class:`.GuildSticker`]: The stickers that the connected client has.
 
         .. versionadded:: 2.0
         """
@@ -396,8 +396,8 @@ class Client:
         return utils.SequenceProxy(self._connection._messages or [])
 
     @property
-    def private_channels(self) -> List[PrivateChannel]:
-        """List[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on.
+    def private_channels(self) -> Sequence[PrivateChannel]:
+        """Sequence[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on.
 
         .. note::
 
