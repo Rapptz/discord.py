@@ -404,7 +404,7 @@ Client
 
 .. function:: on_required_action_update(action)
 
-    Called when Discord requires you to do something to verify ypur account.
+    Called when Discord requires you to do something to verify your account.
 
     .. versionadded:: 2.0
 
