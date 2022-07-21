@@ -407,10 +407,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if cooldown is None:
             buckets = CooldownMapping(cooldown, BucketType.default)
         elif isinstance(cooldown, CooldownMapping):
-            buckets = cooldown
+            buckets: CooldownMapping[Context] = cooldown
         else:
             raise TypeError("Cooldown must be a an instance of CooldownMapping or None.")
-        self._buckets: CooldownMapping[Context] = buckets  # type: ignore
+        self._buckets: CooldownMapping[Context] = buckets
 
         try:
             max_concurrency = func.__commands_max_concurrency__
