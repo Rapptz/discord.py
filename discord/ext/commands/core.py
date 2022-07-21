@@ -2436,8 +2436,8 @@ def cooldown(
 
 
 def dynamic_cooldown(
-    cooldown: Union[BucketType, Callable[[Context], Any]],
-    type: BucketType,
+    cooldown: Callable[[Context], Cooldown | None],
+    type: BucketType | Callable[[Context], Any],
 ) -> Callable[[T], T]:
     """A decorator that adds a dynamic cooldown to a :class:`.Command`
 
@@ -2477,7 +2477,7 @@ def dynamic_cooldown(
         if isinstance(func, Command):
             func._buckets = DynamicCooldownMapping(cooldown, type)
         else:
-            func.__commands_cooldown__ = DynamicCooldownMapping(cooldown, type)  # type: ignore
+            func.__commands_cooldown__ = DynamicCooldownMapping(cooldown, type)
         return func
 
     return decorator  # type: ignore
