@@ -459,7 +459,10 @@ class Cog(metaclass=CogMeta):
                     for to_undo in self.__cog_commands__[:index]:
                         if to_undo.parent is None:
                             bot.remove_command(to_undo.name)
-                    raise e
+                    try:
+                        await maybe_coroutine(self.cog_unload)
+                    finally:
+                        raise e
 
         # check if we're overriding the default
         if cls.bot_check is not Cog.bot_check:
