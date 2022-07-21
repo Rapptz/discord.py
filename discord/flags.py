@@ -1417,6 +1417,12 @@ class ApplicationFlags(BaseFlags):
         read message content in guilds."""
         return 1 << 19
 
+    @flag_value
+    def app_commands_badge(self):
+        """:class:`bool`: Returns ``True`` if the application has registered a global application
+        command. This shows up as a badge in the official client."""
+        return 1 << 23
+
 
 @fill_with_flags()
 class ChannelFlags(BaseFlags):
