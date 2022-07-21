@@ -519,21 +519,22 @@ class Guild(Hashable):
             scheduled_event = ScheduledEvent(data=s, state=state)
             self._scheduled_events[scheduled_event.id] = scheduled_event
 
-        cache_joined = self._state.member_cache_flags.joined
-        self_id = self._state.self_id
-        for mdata in guild.get('members', []):
-            member = Member(data=mdata, guild=self, state=state)  # type: ignore # Members will have the 'user' key in this scenario
-            if cache_joined or member.id == self_id:
-                self._add_member(member)
-
-        self._sync(guild)
-        self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
-
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self.afk_channel: Optional[VocalGuildChannel] = self.get_channel(utils._get_as_snowflake(guild, 'afk_channel_id'))  # type: ignore
 
         for obj in guild.get('voice_states', []):
             self._update_voice_state(obj, int(obj['channel_id']))
+
+        cache_joined = self._state.member_cache_flags.joined
+        cache_voice = self._state.member_cache_flags.voice
+        self_id = self._state.self_id
+        for mdata in guild.get('members', []):
+            member = Member(data=mdata, guild=self, state=state)  # type: ignore # Members will have the 'user' key in this scenario
+            if cache_joined or member.id == self_id or (cache_voice and member.id in self._voice_states):
+                self._add_member(member)
+
+        self._sync(guild)
+        self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
 
     # TODO: refactor/remove?
     def _sync(self, data: GuildPayload) -> None:
