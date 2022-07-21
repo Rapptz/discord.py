@@ -1187,8 +1187,7 @@ Hybrid Commands
 This allows you to define a command as both slash and text command without writing separate code for
 both counterparts.
 
-One of the goals of hybrid commands is to also allow you to easily transit from text commands to
-slash commands without having to make too many changes to existing code.
+The goal of hybrid commands is to allow you to seamlessly share functionality of both command types.
 
 In order to define a hybrid command, The command callback should be decorated with
 :meth:`.Bot.hybrid_command` decorator.
@@ -1231,12 +1230,14 @@ supported for slash commands.
 
 Following are **not supported** by hybrid commands:
 
-- Variadic arguments
+- Variable number of arguments such as `*arg: int`
 - Nested command groups more than one
 - Many :class:`~typing.Union` types
 
 Apart from that, All other features such as converters, checks, autocomplete, flags etc.
-are supported on hybrid commands.
+are supported on hybrid commands. Note that for decorators related to application commands
+such as :func:`discord.app_commands.autocomplete` etc. should be placed below the :meth:`.Bot.hybrid_command`
+decorator.
 
 For convenience and ease in writing code, The :class:`~ext.commands.Context` class implements
 some behavioural changes for various methods and attributes:
