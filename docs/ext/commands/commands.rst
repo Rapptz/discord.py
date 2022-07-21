@@ -1230,9 +1230,12 @@ supported for slash commands.
 
 Following are **not supported** by hybrid commands:
 
-- Variable number of arguments such as `*arg: int`
-- Nested command groups more than one
-- Many :class:`~typing.Union` types
+- Variable number of arguments. e.g. ``*arg: int``
+- Group commands with a depth greater than 1.
+- Most :class:`typing.Union` types.
+    - Unions of channel types are allowed
+    - Unions of user types are allowed
+    - Unions of user types with roles are allowed
 
 Apart from that, All other features such as converters, checks, autocomplete, flags etc.
 are supported on hybrid commands. Note that for decorators related to application commands
