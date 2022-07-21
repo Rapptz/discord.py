@@ -492,10 +492,15 @@ else:
             else:
                 raise TypeError(f'expected int, float, or str as range type, received {obj_type!r} instead')
 
+            if obj_type in (str, int):
+                cast = int
+            else:
+                cast = float
+
             transformer = _make_range_transformer(
                 opt_type,
-                min=obj_type(min) if min is not None else None,
-                max=obj_type(max) if max is not None else None,
+                min=cast(min) if min is not None else None,
+                max=cast(max) if max is not None else None,
             )
             return _TransformMetadata(transformer)
 
