@@ -2429,7 +2429,7 @@ def cooldown(
         if isinstance(func, Command):
             func._buckets = CooldownMapping(Cooldown(rate, per), type)
         else:
-            func.__commands_cooldown__ = CooldownMapping(Cooldown(rate, per), type)  # type: ignore
+            func.__commands_cooldown__ = CooldownMapping(Cooldown(rate, per), type)  # type: ignore # typevar cannot be inferred without annotation
         return func
 
     return decorator  # type: ignore
