@@ -58,8 +58,6 @@ from .parameters import Parameter, Signature
 if TYPE_CHECKING:
     from typing_extensions import Concatenate, ParamSpec, Self
 
-    from discord.message import Message
-
     from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, Hook, UserCheck
 
 
@@ -409,10 +407,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if cooldown is None:
             buckets = CooldownMapping(cooldown, BucketType.default)
         elif isinstance(cooldown, CooldownMapping):
-            buckets = cooldown
+            buckets: CooldownMapping[Context] = cooldown
         else:
             raise TypeError("Cooldown must be a an instance of CooldownMapping or None.")
-        self._buckets: CooldownMapping = buckets
+        self._buckets: CooldownMapping[Context] = buckets
 
         try:
             max_concurrency = func.__commands_max_concurrency__
@@ -879,7 +877,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if self._buckets.valid:
             dt = ctx.message.edited_at or ctx.message.created_at
             current = dt.replace(tzinfo=datetime.timezone.utc).timestamp()
-            bucket = self._buckets.get_bucket(ctx.message, current)
+            bucket = self._buckets.get_bucket(ctx, current)
             if bucket is not None:
                 retry_after = bucket.update_rate_limit(current)
                 if retry_after:
@@ -929,7 +927,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if not self._buckets.valid:
             return False
 
-        bucket = self._buckets.get_bucket(ctx.message)
+        bucket = self._buckets.get_bucket(ctx)
         if bucket is None:
             return False
         dt = ctx.message.edited_at or ctx.message.created_at
@@ -949,7 +947,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             The invocation context to reset the cooldown under.
         """
         if self._buckets.valid:
-            bucket = self._buckets.get_bucket(ctx.message)
+            bucket = self._buckets.get_bucket(ctx)
             if bucket is not None:
                 bucket.reset()
 
@@ -974,7 +972,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             If this is ``0.0`` then the command isn't on cooldown.
         """
         if self._buckets.valid:
-            bucket = self._buckets.get_bucket(ctx.message)
+            bucket = self._buckets.get_bucket(ctx)
             if bucket is None:
                 return 0.0
             dt = ctx.message.edited_at or ctx.message.created_at
@@ -2399,7 +2397,7 @@ def is_nsfw() -> Check[Any]:
 def cooldown(
     rate: int,
     per: float,
-    type: Union[BucketType, Callable[[Message], Any]] = BucketType.default,
+    type: Union[BucketType, Callable[[Context], Any]] = BucketType.default,
 ) -> Callable[[T], T]:
     """A decorator that adds a cooldown to a :class:`.Command`
 
@@ -2420,7 +2418,7 @@ def cooldown(
         The number of times a command can be used before triggering a cooldown.
     per: :class:`float`
         The amount of seconds to wait for a cooldown when it's been triggered.
-    type: Union[:class:`.BucketType`, Callable[[:class:`.Message`], Any]]
+    type: Union[:class:`.BucketType`, Callable[[:class:`.Context`], Any]]
         The type of cooldown to have. If callable, should return a key for the mapping.
 
         .. versionchanged:: 1.7
@@ -2431,15 +2429,15 @@ def cooldown(
         if isinstance(func, Command):
             func._buckets = CooldownMapping(Cooldown(rate, per), type)
         else:
-            func.__commands_cooldown__ = CooldownMapping(Cooldown(rate, per), type)
+            func.__commands_cooldown__ = CooldownMapping(Cooldown(rate, per), type)  # type: ignore # typevar cannot be inferred without annotation
         return func
 
     return decorator  # type: ignore
 
 
 def dynamic_cooldown(
-    cooldown: Union[BucketType, Callable[[Message], Any]],
-    type: BucketType,
+    cooldown: Callable[[Context], Cooldown | None],
+    type: BucketType | Callable[[Context], Any],
 ) -> Callable[[T], T]:
     """A decorator that adds a dynamic cooldown to a :class:`.Command`
 
@@ -2463,7 +2461,7 @@ def dynamic_cooldown(
 
     Parameters
     ------------
-    cooldown: Callable[[:class:`.discord.Message`], Optional[:class:`~discord.app_commands.Cooldown`]]
+    cooldown: Callable[[:class:`.Context`], Optional[:class:`~discord.app_commands.Cooldown`]]
         A function that takes a message and returns a cooldown that will
         apply to this invocation or ``None`` if the cooldown should be bypassed.
     type: :class:`.BucketType`
