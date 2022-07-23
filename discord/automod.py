@@ -419,7 +419,7 @@ class AutoModAction:
         The matched keyword from the triggering message.
     matched_content: Optional[:class:`str`]
         The matched content from the triggering message.
-        Requires the :attr:`Intents.message_content` or it will always return an empty string.
+        Requires the :attr:`Intents.message_content` or it will always return ``None``.
     """
 
     __slots__ = (
@@ -447,9 +447,9 @@ class AutoModAction:
         self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
         self.user_id: int = int(data['user_id'])
         self.alert_system_message_id: Optional[int] = utils._get_as_snowflake(data, 'alert_system_message_id')
-        self.content: str = data['content']
+        self.content: str = data.get('content', '')
         self.matched_keyword: Optional[str] = data['matched_keyword']
-        self.matched_content: Optional[str] = data['matched_content']
+        self.matched_content: Optional[str] = data.get('matched_content')
 
     def __repr__(self) -> str:
         return f'<AutoModRuleExecution rule_id={self.rule_id} action={self.action!r}>'
