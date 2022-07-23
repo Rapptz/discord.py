@@ -280,8 +280,19 @@ class View:
             one of its subclasses.
         """
         view = View(timeout=timeout)
-        for component in _walk_all_components(message.components):  # type: ignore
-            view.add_item(_component_to_item(component))
+        row = 0
+        for component in message.components:
+            if isinstance(component, ActionRowComponent):
+                for child in component.children:
+                    item = _component_to_item(child)
+                    item.row = row
+                    view.add_item(item)
+                row += 1
+            else:
+                item = _component_to_item(component)
+                item.row = row
+                view.add_item(item)
+
         return view
 
     def add_item(self, item: Item[Any]) -> Self:
