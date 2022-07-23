@@ -2358,8 +2358,8 @@ def cooldown(
 
 
 def dynamic_cooldown(
-    cooldown: Callable[[Context], Cooldown | None],
-    type: BucketType | Callable[[Context], Any],
+    cooldown: Callable[[Context], Optional[Cooldown]],
+    type: Union[BucketType, Callable[[Context], Any]],
 ) -> Callable[[T], T]:
     """A decorator that adds a dynamic cooldown to a :class:`.Command`
 
