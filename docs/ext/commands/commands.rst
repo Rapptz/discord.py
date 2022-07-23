@@ -1187,7 +1187,6 @@ Hybrid Commands
 This allows you to define a command as both slash and text command without writing separate code for
 both counterparts.
 
-The goal of hybrid commands is to allow you to seamlessly share functionality of both command types.
 
 In order to define a hybrid command, The command callback should be decorated with
 :meth:`.Bot.hybrid_command` decorator.
@@ -1200,7 +1199,7 @@ In order to define a hybrid command, The command callback should be decorated wi
 
 The above command can be invoked as both text and slash command. Note that you have to manually
 sync your :class:`~app_commands.CommandTree` by calling :class:`~app_commands.CommandTree.sync` in order
-for slash command to appear.
+for slash commands to appear.
 
 .. image:: /images/commands/hybrid1.png
 .. image:: /images/commands/hybrid2.png
@@ -1218,17 +1217,17 @@ decorator.
     async def create(ctx, name):
         await ctx.send(f"Created tag: {name}")
 
-Due to a Discord limitation, Slash command groups cannot be invoked directly so the ``fallback``
+Due to a Discord limitation, slash command groups cannot be invoked directly so the ``fallback``
 parameter allows you to create a sub-command that will be bound to callback of parent group.
 
 .. image:: /images/commands/hybrid3.png
 .. image:: /images/commands/hybrid4.png
 
-Due to certain limitation on slash commands, Certain features of text commands are not supported
+Due to certain limitations on slash commands, some features of text commands are not supported
 on hybrid commands. You can define a hybrid command as long as it meets the same subset that is
 supported for slash commands.
 
-Following are **not supported** by hybrid commands:
+Following are currently **not supported** by hybrid commands:
 
 - Variable number of arguments. e.g. ``*arg: int``
 - Group commands with a depth greater than 1.
@@ -1237,9 +1236,9 @@ Following are **not supported** by hybrid commands:
     - Unions of user types are allowed
     - Unions of user types with roles are allowed
 
-Apart from that, All other features such as converters, checks, autocomplete, flags etc.
-are supported on hybrid commands. Note that for decorators related to application commands
-such as :func:`discord.app_commands.autocomplete` etc. should be placed below the :meth:`.Bot.hybrid_command`
+Apart from that, all other features such as converters, checks, autocomplete, flags etc.
+are supported on hybrid commands. Note that due to a design constraint, decorators related to application commands
+such as :func:`discord.app_commands.autocomplete` should be placed below the :func:`~ext.commands.hybrid_command` decorator.
 decorator.
 
 For convenience and ease in writing code, The :class:`~ext.commands.Context` class implements
