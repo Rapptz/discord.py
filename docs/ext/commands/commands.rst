@@ -1245,6 +1245,7 @@ decorator.
 For convenience and ease in writing code, The :class:`~ext.commands.Context` class implements
 some behavioural changes for various methods and attributes:
 
+- :attr:`.Context.interaction` can be used to retrieve the slash command interaction.
 - Since interaction can only be responded to once, The :meth:`.Context.send` automatically
   determines whether to send an interaction response or a followup response.
 - :meth:`.Context.defer` defers the interaction response for slash commands but shows typing
