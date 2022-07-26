@@ -50,6 +50,9 @@ class EmbedProxy:
 
     def __getattr__(self, attr: str) -> None:
         return None
+    
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, EmbedProxy) and self.__dict__ == other.__dict__
 
 
 if TYPE_CHECKING:
