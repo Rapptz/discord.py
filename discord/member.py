@@ -28,7 +28,7 @@ import datetime
 import inspect
 import itertools
 from operator import attrgetter
-from typing import Any, Awaitable, Callable, Collection, Dict, List, Optional, TYPE_CHECKING, Tuple, Union, Type
+from typing import Any, Awaitable, Callable, Collection, Dict, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
 import discord.abc
 
@@ -46,6 +46,8 @@ __all__ = (
     'VoiceState',
     'Member',
 )
+
+T = TypeVar('T', bound=type)
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -170,7 +172,7 @@ class VoiceState:
         return f'<{self.__class__.__name__} {inner}>'
 
 
-def flatten_user(cls: Any) -> Type[Member]:
+def flatten_user(cls: T) -> T:
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
         # Ignore private/special methods
         if attr.startswith('_'):
