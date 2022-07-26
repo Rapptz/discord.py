@@ -1269,6 +1269,10 @@ class Group:
                 raise ValueError('groups can only be nested at most one level')
             parent.add_command(self)
 
+        self.__app_commands_error_handler__: Optional[
+            Callable[[Interaction, AppCommandError], Coroutine[Any, Any, None]]
+        ] = None
+
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
         self.module = owner.__module__

@@ -328,12 +328,22 @@ class Cog(metaclass=CogMeta):
                     if self.__cog_app_commands_group__:
                         children.append(app_command)
 
+        if Cog._get_overridden_method(self.cog_app_command_error) is not None:
+            error_handler = self.cog_app_command_error
+        else:
+            error_handler = None
+
+        self.__app_commands_error_handler__ = error_handler
+
         for command in cls.__cog_app_commands__:
             copy = command._copy_with(parent=self.__cog_app_commands_group__, binding=self)
 
             # Update set bindings
             if copy._attr:
                 setattr(self, copy._attr, copy)
+
+            if isinstance(copy, app_commands.Group):
+                copy.__app_commands_error_handler__ = error_handler
 
             children.append(copy)
 
@@ -345,11 +355,6 @@ class Cog(metaclass=CogMeta):
                 raise TypeError('maximum number of application command children exceeded')
 
             self.__cog_app_commands_group__._children = mapping  # type: ignore  # Variance issue
-
-        if Cog._get_overridden_method(self.cog_app_command_error) is not None:
-            self.__app_commands_error_handler__ = self.cog_app_command_error
-        else:
-            self.__app_commands_error_handler__ = None
 
         return self
 
