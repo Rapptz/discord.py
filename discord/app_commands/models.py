@@ -145,7 +145,7 @@ class AppCommand(Hashable):
         The application command's name.
     description: :class:`str`
         The application command's description.
-    options: List[Union[:class:`AppCommand`, :class:`AppCommandGroup`]]
+    options: List[Union[:class:`Argument`, :class:`AppCommandGroup`]]
         A list of options.
     default_member_permissions: Optional[:class:`~discord.Permissions`]
         The default member permissions that can run this command.
@@ -825,7 +825,7 @@ class AppCommandGroup:
         The name of the subcommand.
     description: :class:`str`
         The description of the subcommand.
-    options: List[Union[:class:`AppCommand`, :class:`AppCommandGroup`]]
+    options: List[Union[:class:`Argument`, :class:`AppCommandGroup`]]
         A list of options.
     parent: Union[:class:`AppCommand`, :class:`AppCommandGroup`]
         The parent application command.
