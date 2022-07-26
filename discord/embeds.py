@@ -291,21 +291,20 @@ class Embed:
         )
 
     def __eq__(self, other: Embed) -> bool:
-        return isinstance(other, Embed) and all(
-            (
-                self.title == other.title,
-                self.url == other.url,
-                self.description == other.description,
-                self.colour == other.colour,
-                self.fields == other.fields,
-                self.timestamp == other.timestamp,
-                self.author == other.author,
-                self.thumbnail == other.thumbnail,
-                self.footer == other.footer,
-                self.image == other.image,
-                self.provider == other.provider,
-                self.video == other.video,
-            )
+        return isinstance(other, Embed) and (
+            self.type == other.type
+            and self.title == other.title
+            and self.url == other.url
+            and self.description == other.description
+            and self.colour == other.colour
+            and self.fields == other.fields
+            and self.timestamp == other.timestamp
+            and self.author == other.author
+            and self.thumbnail == other.thumbnail
+            and self.footer == other.footer
+            and self.image == other.image
+            and self.provider == other.provider
+            and self.video == other.video
         )
 
     @property
