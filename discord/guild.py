@@ -521,21 +521,10 @@ class Guild(Hashable):
 
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
 
-        cache_joined = self._state.member_cache_flags.joined
-        cache_voice = self._state.member_cache_flags.voice
-        self_id = self._state.self_id
-        for mdata in guild.get('members', []):
-            member = Member(data=mdata, guild=self, state=state)  # type: ignore # Members will have the 'user' key in this scenario
-            if cache_joined or member.id == self_id or (cache_voice and member.id in self._voice_states):
-                self._add_member(member)
-
         self._sync(guild)
         self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
 
         self.afk_channel: Optional[VocalGuildChannel] = self.get_channel(utils._get_as_snowflake(guild, 'afk_channel_id'))  # type: ignore
-
-        for obj in guild.get('voice_states', []):
-            self._update_voice_state(obj, int(obj['channel_id']))
 
     # TODO: refactor/remove?
     def _sync(self, data: GuildPayload) -> None:
@@ -544,19 +533,30 @@ class Guild(Hashable):
         except KeyError:
             pass
 
-        empty_tuple = tuple()
-        for presence in data.get('presences', []):
-            user_id = int(presence['user']['id'])
-            member = self.get_member(user_id)
-            if member is not None:
-                member._presence_update(presence, empty_tuple)  # type: ignore
-
         if 'channels' in data:
             channels = data['channels']
             for c in channels:
                 factory, ch_type = _guild_channel_factory(c['type'])
                 if factory:
                     self._add_channel(factory(guild=self, data=c, state=self._state))  # type: ignore
+
+        for obj in data.get('voice_states', []):
+            self._update_voice_state(obj, int(obj['channel_id']))
+
+        cache_joined = self._state.member_cache_flags.joined
+        cache_voice = self._state.member_cache_flags.voice
+        self_id = self._state.self_id
+        for mdata in data.get('members', []):
+            member = Member(data=mdata, guild=self, state=self._state)  # type: ignore # Members will have the 'user' key in this scenario
+            if cache_joined or member.id == self_id or (cache_voice and member.id in self._voice_states):
+                self._add_member(member)
+
+        empty_tuple = tuple()
+        for presence in data.get('presences', []):
+            user_id = int(presence['user']['id'])
+            member = self.get_member(user_id)
+            if member is not None:
+                member._presence_update(presence, empty_tuple)  # type: ignore
 
         if 'threads' in data:
             threads = data['threads']
