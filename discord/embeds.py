@@ -109,6 +109,12 @@ class Embed:
 
             .. versionadded:: 2.0
 
+        .. describe:: x == y
+
+            Checks if two embeds are equal.
+
+            .. versionadded:: 2.0
+
     For ease of use, all parameters that expect a :class:`str` are implicitly
     casted to :class:`str` for you.
 
@@ -281,6 +287,24 @@ class Embed:
                 self.image,
                 self.provider,
                 self.video,
+            )
+        )
+
+    def __eq__(self, other: Embed) -> bool:
+        return isinstance(other, Embed) and all(
+            (
+                self.title == other.title,
+                self.url == other.url,
+                self.description == other.description,
+                self.colour == other.colour,
+                self.fields == other.fields,
+                self.timestamp == other.timestamp,
+                self.author == other.author,
+                self.thumbnail == other.thumbnail,
+                self.footer == other.footer,
+                self.image == other.image,
+                self.provider == other.provider,
+                self.video == other.video,
             )
         )
 
