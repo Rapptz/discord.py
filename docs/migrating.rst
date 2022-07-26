@@ -884,7 +884,7 @@ This change should be transparent, unless you are modifying the sequence by doin
 
 
 Embed Changes
----------------------------
+--------------
 
 Originally, embeds used a special sentinel to denote emptiness or remove an attribute from display. The ``Embed.Empty`` sentinel was made when Discord's embed design was in a nebulous state of flux. Since then, the embed design has stabilised and thus the sentinel is seen as legacy.
 
