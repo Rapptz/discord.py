@@ -268,7 +268,7 @@ class Cog(metaclass=CogMeta):
     __cog_listeners__: List[Tuple[str, str]]
     __cog_is_app_commands_group__: ClassVar[bool] = False
     __cog_app_commands_group__: Optional[app_commands.Group]
-    __app_commands_error_handler__: Optional[
+    __discord_app_commands_error_handler__: Optional[
         Callable[[discord.Interaction, app_commands.AppCommandError], Coroutine[Any, Any, None]]
     ]
 
@@ -333,7 +333,7 @@ class Cog(metaclass=CogMeta):
         else:
             error_handler = None
 
-        self.__app_commands_error_handler__ = error_handler
+        self.__discord_app_commands_error_handler__ = error_handler
 
         for command in cls.__cog_app_commands__:
             copy = command._copy_with(parent=self.__cog_app_commands_group__, binding=self)
@@ -343,7 +343,10 @@ class Cog(metaclass=CogMeta):
                 setattr(self, copy._attr, copy)
 
             if isinstance(copy, app_commands.Group):
-                copy.__app_commands_error_handler__ = error_handler
+                copy.__discord_app_commands_error_handler__ = error_handler
+                for command in copy._children.values():
+                    if isinstance(command, app_commands.Group):
+                        command.__discord_app_commands_error_handler__ = error_handler
 
             children.append(copy)
 

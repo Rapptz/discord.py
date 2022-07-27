@@ -613,7 +613,7 @@ class Command(Generic[GroupT, P, T]):
             if parent.parent is not None:
                 await parent.parent.on_error(interaction, error)
 
-        binding_error_handler = getattr(self.binding, '__app_commands_error_handler__', None)
+        binding_error_handler = getattr(self.binding, '__discord_app_commands_error_handler__', None)
         if binding_error_handler is not None:
             await binding_error_handler(interaction, error)
 
@@ -1143,6 +1143,9 @@ class Group:
     __discord_app_commands_guild_only__: bool = MISSING
     __discord_app_commands_default_permissions__: Optional[Permissions] = MISSING
     __discord_app_commands_has_module__: bool = False
+    __discord_app_commands_error_handler__: Optional[
+        Callable[[Interaction, AppCommandError], Coroutine[Any, Any, None]]
+    ] = None
 
     def __init_subclass__(
         cls,
@@ -1268,10 +1271,6 @@ class Group:
             if parent.parent is not None:
                 raise ValueError('groups can only be nested at most one level')
             parent.add_command(self)
-
-        self.__app_commands_error_handler__: Optional[
-            Callable[[Interaction, AppCommandError], Coroutine[Any, Any, None]]
-        ] = None
 
     def __set_name__(self, owner: Type[Any], name: str) -> None:
         self._attr = name
