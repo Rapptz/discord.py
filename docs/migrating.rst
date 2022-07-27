@@ -794,22 +794,28 @@ The following properties were changed to return a sequence instead of a list:
 This change should be transparent, unless you are modifying the sequence by doing things such as ``list.append``.
 
 
-Removal of ``Embed.Empty``
----------------------------
+Embed Changes
+--------------
 
 Originally, embeds used a special sentinel to denote emptiness or remove an attribute from display. The ``Embed.Empty`` sentinel was made when Discord's embed design was in a nebulous state of flux. Since then, the embed design has stabilised and thus the sentinel is seen as legacy.
 
 Therefore, ``Embed.Empty`` has been removed in favour of ``None``.
+
+Additionally, ``Embed.__eq__`` has been implemented thus embeds becoming unhashable (e.g. using them in sets or dict keys).
 
 .. code-block:: python
 
     # before
     embed = discord.Embed(title='foo')
     embed.title = discord.Embed.Empty
+    embed == embed.copy() # False
 
     # after
     embed = discord.Embed(title='foo')
     embed.title = None
+    embed == embed.copy() # True
+    {embed, embed} # Raises TypeError
+
 
 
 Removal of ``InvalidArgument`` Exception

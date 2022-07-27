@@ -51,6 +51,9 @@ class EmbedProxy:
     def __getattr__(self, attr: str) -> None:
         return None
 
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, EmbedProxy) and self.__dict__ == other.__dict__
+
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -103,6 +106,12 @@ class Embed:
         .. describe:: bool(b)
 
             Returns whether the embed has any data set.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x == y
+
+            Checks if two embeds are equal.
 
             .. versionadded:: 2.0
 
@@ -279,6 +288,23 @@ class Embed:
                 self.provider,
                 self.video,
             )
+        )
+
+    def __eq__(self, other: Embed) -> bool:
+        return isinstance(other, Embed) and (
+            self.type == other.type
+            and self.title == other.title
+            and self.url == other.url
+            and self.description == other.description
+            and self.colour == other.colour
+            and self.fields == other.fields
+            and self.timestamp == other.timestamp
+            and self.author == other.author
+            and self.thumbnail == other.thumbnail
+            and self.footer == other.footer
+            and self.image == other.image
+            and self.provider == other.provider
+            and self.video == other.video
         )
 
     @property
