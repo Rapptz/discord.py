@@ -1737,14 +1737,13 @@ class Guild(Hashable):
 
         Edits the guild.
 
-        You must have the :attr:`~Permissions.manage_guild` permission
-        to edit the guild.
+        You must have the :attr:`~Permissions.manage_guild` permission to edit the guild.
 
         .. versionchanged:: 1.4
-            The `rules_channel` and `public_updates_channel` keyword-only parameters were added.
+            The ``rules_channel`` and ``public_updates_channel`` keyword parameters were added.
 
         .. versionchanged:: 2.0
-            The `discovery_splash` and `community` keyword-only parameters were added.
+            The ``discovery_splash`` and `community` keyword parameters were added.
 
         .. versionchanged:: 2.0
             The newly updated guild is returned.
@@ -1760,7 +1759,7 @@ class Guild(Hashable):
             The ``preferred_locale`` keyword parameter now accepts an enum instead of :class:`str`.
 
         .. versionchanged:: 2.0
-            The `premium_progress_bar_enabled` keyword-only parameter were added.
+            The ``premium_progress_bar_enabled`` keyword parameter was added.
 
         Parameters
         ----------
