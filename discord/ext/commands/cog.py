@@ -375,6 +375,17 @@ class Cog(metaclass=CogMeta):
         """
         return [c for c in self.__cog_commands__ if c.parent is None]
 
+    def get_app_commands(self) -> List[Union[app_commands.Command[Self, ..., Any], app_commands.Group]]:
+        r"""Returns the app commands that are defined inside this cog.
+
+        Returns
+        --------
+        List[Union[:class:`discord.app_commands.Command`, :class:`discord.app_commands.Group`]]
+            A :class:`list` of :class:`discord.app_commands.Command`\s and :class:`discord.app_commands.Group`\s that are
+            defined inside this cog, not including subcommands.
+        """
+        return [c for c in self.__cog_app_commands__ if c.parent is None]
+
     @property
     def qualified_name(self) -> str:
         """:class:`str`: Returns the cog's specified name, not the class name."""
@@ -388,6 +399,20 @@ class Cog(metaclass=CogMeta):
     @description.setter
     def description(self, description: str) -> None:
         self.__cog_description__ = description
+
+    def walk_app_commands(self) -> Generator[Union[app_commands.Command[Self, ..., Any], app_commands.Group], None, None]:
+        """An iterator that recursively walks through this cog's app (group)commands and subcommands.
+
+        Yields
+        ------
+        Union[:class:`discord.app_commands.Command`, :class:`discord.app_commands.Group`]
+            An app command or group from the cog.
+        """
+        for command in self.__cog_app_commands__:
+            if command.parent is None:
+                yield command
+                if isinstance(command, app_commands.Group):
+                    yield from command.walk_commands()
 
     def walk_commands(self) -> Generator[Command[Self, ..., Any], None, None]:
         """An iterator that recursively walks through this cog's commands and subcommands.
