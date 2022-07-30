@@ -759,7 +759,7 @@ class Argument:
     min_length: Optional[:class:`int`]
         The minimum allowed length for this parameter.
     max_length: Optional[:class:`int`]
-        The maximum allowed length for this parameter.    
+        The maximum allowed length for this parameter.
     autocomplete: :class:`bool`
         Whether the argument has autocomplete.
     """
