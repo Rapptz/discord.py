@@ -146,7 +146,7 @@ class RateLimited(DiscordException):
     This is not raised during global ratelimits.
 
     Since sometimes requests are halted pre-emptively before they're
-    even made, **this does not subclass :exc:`HTTPException`.**
+    even made, **this does not subclass** :exc:`HTTPException`.
 
     .. versionadded:: 2.0
 
@@ -165,7 +165,7 @@ class RateLimited(DiscordException):
 class Forbidden(HTTPException):
     """Exception that's raised for when status code 403 occurs.
 
-    Subclass of :exc:`HTTPException`
+    Subclass of :exc:`HTTPException`.
     """
 
     pass
@@ -174,7 +174,7 @@ class Forbidden(HTTPException):
 class NotFound(HTTPException):
     """Exception that's raised for when status code 404 occurs.
 
-    Subclass of :exc:`HTTPException`
+    Subclass of :exc:`HTTPException`.
     """
 
     pass
