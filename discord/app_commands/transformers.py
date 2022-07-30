@@ -202,6 +202,9 @@ class Transformer:
     def __call__(self) -> None:
         pass
 
+    def __or__(self, rhs: Any) -> Any:
+        return Union[self, rhs]  # type: ignore
+
     @property
     def type(self) -> AppCommandOptionType:
         """:class:`~discord.AppCommandOptionType`: The option type associated with this transformer.

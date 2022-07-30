@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING, List, Optional, Type, Union
+from typing import Any, TYPE_CHECKING, List, Optional, Union
 
 
 from ..enums import AppCommandOptionType, AppCommandType

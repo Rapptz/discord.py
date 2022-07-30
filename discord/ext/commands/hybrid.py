@@ -142,7 +142,7 @@ class ConverterTransformer(app_commands.Transformer):
                 else:
                     return await converter().convert(ctx, value)  # type: ignore
             elif isinstance(converter, Converter):
-                return await converter.convert(ctx, value)  # type: ignore
+                return await converter.convert(ctx, value)
         except CommandError:
             raise
         except Exception as exc:
