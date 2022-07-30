@@ -49,7 +49,7 @@ __all__ = (
     'MaxConcurrency',
 )
 
-T_contra = TypeVar('T_contra')
+T_contra = TypeVar('T_contra', contravariant=True)
 
 
 class BucketType(Enum):
