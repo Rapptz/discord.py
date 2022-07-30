@@ -797,8 +797,8 @@ class Argument:
         self.required: bool = data.get('required', False)
         self.min_value: Optional[Union[int, float]] = data.get('min_value')
         self.max_value: Optional[Union[int, float]] = data.get('max_value')
-        self.min_length: Optional[str] = data.get('min_length')
-        self.max_length: Optional[str] = data.get('max_length')
+        self.min_length: Optional[int] = data.get('min_length')
+        self.max_length: Optional[int] = data.get('max_length')
         self.autocomplete: bool = data.get('autocomplete', False)
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, d) for d in data.get('channel_types', [])]
         self.choices: List[Choice[Union[int, float, str]]] = [
