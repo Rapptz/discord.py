@@ -164,7 +164,7 @@ class RateLimited(DiscordException):
     This is not raised during global ratelimits.
 
     Since sometimes requests are halted pre-emptively before they're
-    even made, **this does not subclass :exc:`HTTPException`.**
+    even made, this **does not** subclass :exc:`HTTPException`.
 
     .. versionadded:: 2.0
 
