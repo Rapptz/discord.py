@@ -756,6 +756,10 @@ class Argument:
         The minimum supported value for this parameter.
     max_value: Optional[Union[:class:`int`, :class:`float`]]
         The maximum supported value for this parameter.
+    min_length: Optional[:class:`int`]
+        The minimum allowed length for this parameter.
+    max_length: Optional[:class:`int`]
+        The maximum allowed length for this parameter.    
     autocomplete: :class:`bool`
         Whether the argument has autocomplete.
     """
@@ -769,6 +773,8 @@ class Argument:
         'channel_types',
         'min_value',
         'max_value',
+        'min_length',
+        'max_length',
         'autocomplete',
         'parent',
         '_state',
@@ -791,6 +797,8 @@ class Argument:
         self.required: bool = data.get('required', False)
         self.min_value: Optional[Union[int, float]] = data.get('min_value')
         self.max_value: Optional[Union[int, float]] = data.get('max_value')
+        self.min_length: Optional[str] = data.get('min_length')
+        self.max_length: Optional[str] = data.get('max_length')
         self.autocomplete: bool = data.get('autocomplete', False)
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, d) for d in data.get('channel_types', [])]
         self.choices: List[Choice[Union[int, float, str]]] = [
@@ -807,6 +815,8 @@ class Argument:
             'channel_types': [channel_type.value for channel_type in self.channel_types],
             'min_value': self.min_value,
             'max_value': self.max_value,
+            'min_length': self.min_length,
+            'max_length': self.max_length,
             'autocomplete': self.autocomplete,
             'options': [],
         }  # type: ignore # Type checker does not understand this literal.
