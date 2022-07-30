@@ -121,28 +121,16 @@ class TransformerError(AppCommandError):
         The value that failed to convert.
     type: :class:`~discord.AppCommandOptionType`
         The type of argument that failed to convert.
-    transformer: Type[:class:`Transformer`]
+    transformer: :class:`Transformer`
         The transformer that failed the conversion.
     """
 
-    def __init__(self, value: Any, opt_type: AppCommandOptionType, transformer: Type[Transformer]):
+    def __init__(self, value: Any, opt_type: AppCommandOptionType, transformer: Transformer):
         self.value: Any = value
         self.type: AppCommandOptionType = opt_type
-        self.transformer: Type[Transformer] = transformer
+        self.transformer: Transformer = transformer
 
-        try:
-            result_type = transformer.transform.__annotations__['return']
-        except KeyError:
-            name = transformer.__name__
-            if name.endswith('Transformer'):
-                result_type = name[:-11]
-            else:
-                result_type = name
-        else:
-            if isinstance(result_type, type):
-                result_type = result_type.__name__
-
-        super().__init__(f'Failed to convert {value} to {result_type!s}')
+        super().__init__(f'Failed to convert {value} to {transformer._error_display_name!s}')
 
 
 class CheckFailure(AppCommandError):

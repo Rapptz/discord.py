@@ -165,9 +165,6 @@ def get_signature_parameters(
             if len(metadata) >= 1:
                 annotation = metadata[0]
 
-        if isinstance(annotation, discord.app_commands.transformers._TransformMetadata):
-            annotation = annotation.metadata
-
         params[name] = parameter.replace(annotation=annotation)
 
     return params
