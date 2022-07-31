@@ -288,16 +288,6 @@ Channels
     :param after: The updated guild channel's new info.
     :type after: :class:`abc.GuildChannel`
 
-.. function:: on_group_join(channel, user)
-              on_group_remove(channel, user)
-
-    Called when someone joins or leaves a :class:`GroupChannel`.
-
-    :param channel: The group that the user joined or left.
-    :type channel: :class:`GroupChannel`
-    :param user: The user that joined or left.
-    :type user: :class:`User`
-
 .. function:: on_guild_channel_pins_update(channel, last_pin)
 
     Called whenever a message is pinned or unpinned from a guild channel.
