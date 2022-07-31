@@ -400,20 +400,6 @@ class Cog(metaclass=CogMeta):
     def description(self, description: str) -> None:
         self.__cog_description__ = description
 
-    def walk_app_commands(self) -> Generator[Union[app_commands.Command[Self, ..., Any], app_commands.Group], None, None]:
-        """An iterator that recursively walks through this cog's app (group)commands and subcommands.
-
-        Yields
-        ------
-        Union[:class:`discord.app_commands.Command`, :class:`discord.app_commands.Group`]
-            An app command or group from the cog.
-        """
-        for command in self.__cog_app_commands__:
-            if command.parent is None:
-                yield command
-                if isinstance(command, app_commands.Group):
-                    yield from command.walk_commands()
-
     def walk_commands(self) -> Generator[Command[Self, ..., Any], None, None]:
         """An iterator that recursively walks through this cog's commands and subcommands.
 
@@ -429,6 +415,19 @@ class Cog(metaclass=CogMeta):
                 yield command
                 if isinstance(command, GroupMixin):
                     yield from command.walk_commands()
+
+    def walk_app_commands(self) -> Generator[Union[app_commands.Command[Self, ..., Any], app_commands.Group], None, None]:
+        """An iterator that recursively walks through this cog's app commands and subcommands.
+
+        Yields
+        ------
+        Union[:class:`discord.app_commands.Command`, :class:`discord.app_commands.Group`]
+            An app command or group from the cog.
+        """
+        for command in self.__cog_app_commands__:
+            yield command
+            if isinstance(command, app_commands.Group):
+                yield from command.walk_commands()
 
     @property
     def app_command(self) -> Optional[app_commands.Group]:
