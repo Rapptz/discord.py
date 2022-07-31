@@ -61,6 +61,8 @@ class _StringApplicationCommandOptionChoice(TypedDict):
 class _StringApplicationCommandOption(_BaseApplicationCommandOption):
     type: Literal[3]
     choices: NotRequired[List[_StringApplicationCommandOptionChoice]]
+    min_length: int
+    max_length: int
     autocomplete: NotRequired[bool]
 
 
