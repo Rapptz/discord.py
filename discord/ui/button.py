@@ -152,6 +152,7 @@ class Button(Item[V]):
             raise TypeError('custom_id must be None or str')
 
         self._underlying.custom_id = value
+        self._provided_custom_id = value is not None
 
     @property
     def url(self) -> Optional[str]:
