@@ -900,7 +900,7 @@ class CommandTree(Generic[ClientT]):
         guilds: Sequence[Snowflake] = MISSING,
         extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[ContextMenuCallback], ContextMenu]:
-        """Creates a application command context menu from a regular function directly under this tree.
+        """Creates an application command context menu from a regular function directly under this tree.
 
         This function must have a signature of :class:`~discord.Interaction` as its first parameter
         and taking either a :class:`~discord.Member`, :class:`~discord.User`, or :class:`~discord.Message`,
