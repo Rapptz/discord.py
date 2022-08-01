@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-24 08:53+0000\n"
-"PO-Revision-Date: 2022-07-11 14:46\n"
+"POT-Creation-Date: 2022-08-01 08:28+0000\n"
+"PO-Revision-Date: 2022-08-01 09:38\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -976,4 +976,80 @@ msgstr "例えば、全DMをブロックするには、次の操作を行いま�
 #: ../../ext/commands/commands.rst:1176
 msgid "Be careful on how you write your global checks, as it could also lock you out of your own bot."
 msgstr "グローバルチェックを追加するときには注意して下さい。ボットを操作できなくなる可能性があります。"
+
+#: ../../ext/commands/commands.rst:1182
+msgid "Hybrid Commands"
+msgstr "ハイブリッドコマンド"
+
+#: ../../ext/commands/commands.rst:1186
+msgid ":class:`.commands.HybridCommand` is a command that can be invoked as both a text and a slash command. This allows you to define a command as both slash and text command without writing separate code for both counterparts."
+msgstr ":class:`.commands.HybridCommand` は、テキストコマンドとしても、スラッシュコマンドとしても呼び出せるコマンドです。これを使用すれば、別々のコードを書かずにコマンドをスラッシュコマンドとテキストコマンドの両方として定義できます。"
+
+#: ../../ext/commands/commands.rst:1191
+msgid "In order to define a hybrid command, The command callback should be decorated with :meth:`.Bot.hybrid_command` decorator."
+msgstr "ハイブリッドコマンドを定義するには、コマンドコールバックを :meth:`.Bot.hybrid_command` デコレータで装飾しないといけません。"
+
+#: ../../ext/commands/commands.rst:1200
+msgid "The above command can be invoked as both text and slash command. Note that you have to manually sync your :class:`~app_commands.CommandTree` by calling :class:`~app_commands.CommandTree.sync` in order for slash commands to appear."
+msgstr "上のコマンドはテキストコマンドとスラッシュコマンドの両方として実行できます。なお、スラッシュコマンドを表示するには、 :class:`~app_commands.CommandTree.sync` を呼び出して :class:`~app_commands.CommandTree` を手動で同期しないといけません。"
+
+#: ../../ext/commands/commands.rst:1207
+msgid "You can create hybrid command groups and sub-commands using the :meth:`.Bot.hybrid_group` decorator."
+msgstr ":meth:`.Bot.hybrid_group` デコレータを使用して、ハイブリッドコマンドグループとサブコマンドを作成できます。"
+
+#: ../../ext/commands/commands.rst:1220
+msgid "Due to a Discord limitation, slash command groups cannot be invoked directly so the ``fallback`` parameter allows you to create a sub-command that will be bound to callback of parent group."
+msgstr "Discordの制限により、 スラッシュコマンドグループは直接呼び出すことができないため、 ``fallback`` パラメータを使用して、親グループのコールバックを呼び出すサブコマンドを作成できます。"
+
+#: ../../ext/commands/commands.rst:1226
+msgid "Due to certain limitations on slash commands, some features of text commands are not supported on hybrid commands. You can define a hybrid command as long as it meets the same subset that is supported for slash commands."
+msgstr "スラッシュコマンドには制限があるため、ハイブリッドコマンドではテキストコマンドの一部の機能がサポートされていません。スラッシュコマンドでサポートされている機能のみ使用している場合にハイブリッドコマンドを定義できます。"
+
+#: ../../ext/commands/commands.rst:1230
+msgid "Following are currently **not supported** by hybrid commands:"
+msgstr "以下は現時点でハイブリッドコマンドではサポート **されていません**:"
+
+#: ../../ext/commands/commands.rst:1232
+msgid "Variable number of arguments. e.g. ``*arg: int``"
+msgstr "可変長引数。例: ``*arg: int``"
+
+#: ../../ext/commands/commands.rst:1233
+msgid "Group commands with a depth greater than 1."
+msgstr "深さが1より大きいグループコマンド。"
+
+#: ../../ext/commands/commands.rst:1237
+msgid "Most :class:`typing.Union` types."
+msgstr "ほとんどの :class:`typing.Union` 型。"
+
+#: ../../ext/commands/commands.rst:1235
+msgid "Unions of channel types are allowed"
+msgstr "チャンネルの型のユニオン型は使用できます"
+
+#: ../../ext/commands/commands.rst:1236
+msgid "Unions of user types are allowed"
+msgstr "ユーザーの型のユニオン型は使用できます"
+
+#: ../../ext/commands/commands.rst:1237
+msgid "Unions of user types with roles are allowed"
+msgstr "チャンネルの型とロールの型のユニオン型は使用できます"
+
+#: ../../ext/commands/commands.rst:1239
+msgid "Apart from that, all other features such as converters, checks, autocomplete, flags etc. are supported on hybrid commands. Note that due to a design constraint, decorators related to application commands such as :func:`discord.app_commands.autocomplete` should be placed below the :func:`~ext.commands.hybrid_command` decorator. decorator."
+msgstr "それ以外の、コンバーター、チェック、オートコンプリート、フラグ、その他はすべてハイブリッドコマンドで利用できます。なお、設計上の制限により、 :func:`discord.app_commands.autocomplete` といったアプリケーションコマンド関連のデコレータは :func:`~ext.commands.hybrid_command` デコレータの下に配置しないといけません。"
+
+#: ../../ext/commands/commands.rst:1244
+msgid "For convenience and ease in writing code, The :class:`~ext.commands.Context` class implements some behavioural changes for various methods and attributes:"
+msgstr "コードを簡単に書くために、 :class:`~ext.commands.Context` クラスのメソッドや属性の動作が変化します:"
+
+#: ../../ext/commands/commands.rst:1247
+msgid ":attr:`.Context.interaction` can be used to retrieve the slash command interaction."
+msgstr ":attr:`.Context.interaction` を用いてスラッシュコマンドのインタラクションを取得できます。"
+
+#: ../../ext/commands/commands.rst:1248
+msgid "Since interaction can only be responded to once, The :meth:`.Context.send` automatically determines whether to send an interaction response or a followup response."
+msgstr "インタラクションは一度しか応答できないため、 :meth:`.Context.send` は、インタラクション応答とフォローアップ応答のどちらを送信するかを自動的に決定します。"
+
+#: ../../ext/commands/commands.rst:1250
+msgid ":meth:`.Context.defer` defers the interaction response for slash commands but shows typing indicator for text commands."
+msgstr ":meth:`.Context.defer` はスラッシュコマンドではインタラクション応答を遅らせ、テキストコマンドでは入力インジケーターを表示します。"
 
