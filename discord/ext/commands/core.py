@@ -91,9 +91,9 @@ __all__ = (
 MISSING: Any = discord.utils.MISSING
 
 T = TypeVar('T')
-CommandT = TypeVar('CommandT', bound='Command')
+CommandT = TypeVar('CommandT', bound='Command[Any, ..., Any]')
 # CHT = TypeVar('CHT', bound='Check')
-GroupT = TypeVar('GroupT', bound='Group')
+GroupT = TypeVar('GroupT', bound='Group[Any, ..., Any]')
 
 if TYPE_CHECKING:
     P = ParamSpec('P')
@@ -404,10 +404,10 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if cooldown is None:
             buckets = CooldownMapping(cooldown, BucketType.default)
         elif isinstance(cooldown, CooldownMapping):
-            buckets: CooldownMapping[Context] = cooldown
+            buckets: CooldownMapping[Context[Any]] = cooldown
         else:
             raise TypeError("Cooldown must be a an instance of CooldownMapping or None.")
-        self._buckets: CooldownMapping[Context] = buckets
+        self._buckets: CooldownMapping[Context[Any]] = buckets
 
         try:
             max_concurrency = func.__commands_max_concurrency__
@@ -444,15 +444,15 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     @property
     def callback(
         self,
-    ) -> Union[Callable[Concatenate[CogT, Context, P], Coro[T]], Callable[Concatenate[Context, P], Coro[T]],]:
+    ) -> Union[Callable[Concatenate[CogT, Context[Any], P], Coro[T]], Callable[Concatenate[Context[Any], P], Coro[T]],]:
         return self._callback
 
     @callback.setter
     def callback(
         self,
         function: Union[
-            Callable[Concatenate[CogT, Context, P], Coro[T]],
-            Callable[Concatenate[Context, P], Coro[T]],
+            Callable[Concatenate[CogT, Context[Any], P], Coro[T]],
+            Callable[Concatenate[Context[Any], P], Coro[T]],
         ],
     ) -> None:
         self._callback = function
@@ -2319,7 +2319,7 @@ def is_nsfw() -> Check[Any]:
 def cooldown(
     rate: int,
     per: float,
-    type: Union[BucketType, Callable[[Context], Any]] = BucketType.default,
+    type: Union[BucketType, Callable[[Context[Any]], Any]] = BucketType.default,
 ) -> Callable[[T], T]:
     """A decorator that adds a cooldown to a :class:`.Command`
 
@@ -2358,8 +2358,8 @@ def cooldown(
 
 
 def dynamic_cooldown(
-    cooldown: Callable[[Context], Optional[Cooldown]],
-    type: Union[BucketType, Callable[[Context], Any]],
+    cooldown: Callable[[Context[Any]], Optional[Cooldown]],
+    type: Union[BucketType, Callable[[Context[Any]], Any]],
 ) -> Callable[[T], T]:
     """A decorator that adds a dynamic cooldown to a :class:`.Command`
 
