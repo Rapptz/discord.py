@@ -134,7 +134,7 @@ else:
     AutocompleteCallback = Callable[..., Coro[T]]
 
 
-CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', CommandCallback, ContextMenuCallback]
+CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', 'CommandCallback[Any, ..., Any]', ContextMenuCallback]
 
 # The re module doesn't support \p{} so we have to list characters from Thai and Devanagari manually.
 THAI_COMBINING = r'\u0e31-\u0e3a\u0e47-\u0e4e'
