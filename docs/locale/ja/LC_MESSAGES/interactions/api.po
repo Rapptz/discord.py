@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-11 11:50+0000\n"
-"PO-Revision-Date: 2022-07-11 14:52\n"
+"POT-Creation-Date: 2022-08-01 08:28+0000\n"
+"PO-Revision-Date: 2022-08-01 09:38\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -1404,8 +1404,8 @@ msgstr "オプションのリスト。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:60
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:27
-msgid "List[Union[:class:`AppCommand`, :class:`AppCommandGroup`]]"
-msgstr "List[Union[:class:`AppCommand`, :class:`AppCommandGroup`]]"
+msgid "List[Union[:class:`Argument`, :class:`AppCommandGroup`]]"
+msgstr "List[Union[:class:`Argument`, :class:`AppCommandGroup`]]"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:64
 msgid "The default member permissions that can run this command."
@@ -1550,6 +1550,7 @@ msgstr "サブコマンドのタイプ。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandGroup:9
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:9
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.type:7
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.TransformerError:24
 msgid ":class:`~discord.AppCommandOptionType`"
 msgstr ":class:`~discord.AppCommandOptionType`"
@@ -1928,10 +1929,12 @@ msgid "The channel types that are allowed for this parameter."
 msgstr "このパラメータにて利用できるチャンネルの種類。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:45
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.channel_types:9
 msgid "List[:class:`~discord.ChannelType`]"
 msgstr "List[:class:`~discord.ChannelType`]"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:49
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.min_value:1
 msgid "The minimum supported value for this parameter."
 msgstr "このパラメータがサポートする最小の値。"
 
@@ -1941,6 +1944,7 @@ msgid "Optional[Union[:class:`int`, :class:`float`]]"
 msgstr "Optional[Union[:class:`int`, :class:`float`]]"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:55
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.max_value:1
 msgid "The maximum supported value for this parameter."
 msgstr "このパラメータがサポートする最大の値。"
 
@@ -4055,50 +4059,60 @@ msgid "The base class that allows a type annotation in an application command pa
 msgstr "アプリケーションコマンドのパラメータの型アノテーションを :class:`~discord.AppCommandOptionType` に対応させ、生の値をその型の値に変換する基底クラス。"
 
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer:5
-msgid "This class is customisable through the overriding of :func:`classmethod` in the class and by using it as the second type parameter of the :class:`~discord.app_commands.Transform` class. For example, to convert a string into a custom pair type:"
-msgstr "このクラスは、クラス内の :func:`classmethod` を上書きして :class:`~discord.app_commands.Transform` クラスの第二型パラメータとして渡すことによってカスタマイズできます。たとえば、文字列をカスタムのペア型に変換するには:"
+msgid "This class is customisable through the overriding of methods and properties in the class and by using it as the second type parameter of the :class:`~discord.app_commands.Transform` class. For example, to convert a string into a custom pair type:"
+msgstr "このクラスは、クラス内のメソッドとプロパティを上書きして :class:`~discord.app_commands.Transform` クラスの第二型パラメータとして渡すことによってカスタマイズできます。たとえば、文字列をカスタムのペア型に変換するには:"
 
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.type:1
-msgid ":class:`~discord.AppCommandOptionType`: The option type associated with this transformer."
-msgstr ":class:`~discord.AppCommandOptionType`: トランスフォーマーに関連付けられたオプションの種類。"
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer:27
+msgid "If a class is passed instead of an instance to the second type parameter, then it is constructed with no arguments passed to the ``__init__`` method."
+msgstr "二番目の型パラメータにインスタンスの代わりにクラスが渡された場合、それが ``__init__`` メソッドに何も渡さずに構築されます。"
 
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.type:3
-msgid "This must be a :obj:`classmethod`."
-msgstr "これは :obj:`classmethod` でなければなりません。"
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.type:1
+msgid "The option type associated with this transformer."
+msgstr "このトランスフォーマーに関連付けられたオプションタイプ。"
 
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.type:5
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.type:3
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.channel_types:5
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.min_value:6
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.max_value:6
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.choices:6
+msgid "This must be a :obj:`property`."
+msgstr "これは :obj:`property` でなければなりません。"
+
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.type:5
 msgid "Defaults to :attr:`~discord.AppCommandOptionType.string`."
 msgstr "デフォルトは :attr:`~discord.AppCommandOptionType.string` です。"
 
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.channel_types:1
-msgid "List[:class:`~discord.ChannelType`]: A list of channel types that are allowed to this parameter."
-msgstr "List[:class:`~discord.ChannelType`]: このパラメータで許可されているチャンネルタイプのリスト。"
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.channel_types:1
+msgid "A list of channel types that are allowed to this parameter."
+msgstr "このパラメータにて利用できるチャンネルの種類のリスト。"
 
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.channel_types:3
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.channel_types:3
 msgid "Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.channel`."
 msgstr ":meth:`type` が :attr:`~discord.AppCommandOptionType.channel` を返す場合にのみ有効です。"
 
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.channel_types:5
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.channel_types:7
 msgid "Defaults to an empty list."
 msgstr "既定値は空のリストです。"
 
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.min_value:1
-msgid "Optional[:class:`int`]: The minimum supported value for this parameter."
-msgstr "Optional[:class:`int`]: このパラメータがサポートする最小の値。"
-
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.min_value:3
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.max_value:3
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.min_value:3
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.max_value:3
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.choices:3
 msgid "Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number` :attr:`~discord.AppCommandOptionType.integer`, or :attr:`~discord.AppCommandOptionType.string`."
 msgstr ":meth:`type` が :attr:`~discord.AppCommandOptionType.number` 、 :attr:`~discord.AppCommandOptionType.integer` または :attr:`~discord.AppCommandOptionType.string` を返す場合にのみ有効です。"
 
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.min_value:6
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.max_value:6
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.min_value:8
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.max_value:8
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.choices:8
 msgid "Defaults to ``None``."
 msgstr "既定値は ``None`` です。"
 
-#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.max_value:1
-msgid "Optional[:class:`int`]: The maximum supported value for this parameter."
-msgstr "Optional[:class:`int`]: このパラメータがサポートする最大の値。"
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.choices:1
+msgid "A list of choices that are allowed to this parameter."
+msgstr "このパラメータにて利用できる選択肢のリスト。"
+
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.choices:10
+msgid "Optional[List[:class:`~discord.app_commands.Choice`]]"
+msgstr "Optional[List[:class:`~discord.app_commands.Choice`]]"
 
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Transformer.transform:1
 msgid "|maybecoro|"
@@ -4262,8 +4276,8 @@ msgid "The transformer that failed the conversion."
 msgstr "変換に失敗したトランスフォーマー。"
 
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.TransformerError:30
-msgid "Type[:class:`Transformer`]"
-msgstr "Type[:class:`Transformer`]"
+msgid ":class:`Transformer`"
+msgstr ":class:`Transformer`"
 
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CheckFailure:1
 msgid "An exception raised when check predicates in a command have failed."
