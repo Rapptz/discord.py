@@ -248,9 +248,9 @@ class CheckAnyFailure(CheckFailure):
         A list of check predicates that failed.
     """
 
-    def __init__(self, checks: List[CheckFailure], errors: List[Callable[[Context[BotT]], bool]]) -> None:
-        self.checks: List[CheckFailure] = checks
-        self.errors: List[Callable[[Context[BotT]], bool]] = errors
+    def __init__(self, checks: List[Callable[[Context[BotT]], bool]], errors: List[CheckFailure]) -> None:
+        self.checks: List[Callable[[Context[BotT]], bool]] = checks
+        self.errors: List[CheckFailure] = errors
         super().__init__('You do not have permission to run this command.')
 
 
