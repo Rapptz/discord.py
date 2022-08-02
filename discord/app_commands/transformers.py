@@ -441,7 +441,7 @@ class EnumNameTransformer(Transformer):
             raise TypeError(f'enum.Enum requires at least two values.')
 
         self._enum: Any = enum
-        self._choices = [Choice(name=v.name, value=v.value) for v in values]
+        self._choices = [Choice(name=v.name, value=v.name) for v in values]
 
     @property
     def _error_display_name(self) -> str:
