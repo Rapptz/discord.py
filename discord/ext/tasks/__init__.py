@@ -28,15 +28,19 @@ import asyncio
 import datetime
 import logging
 from typing import (
+    TYPE_CHECKING,
     Any,
     Awaitable,
     Callable,
     Generic,
     List,
     Optional,
+    Protocol,
+    Tuple,
     Type,
     TypeVar,
     Union,
+    overload,
 )
 
 import aiohttp
@@ -47,6 +51,9 @@ from collections.abc import Sequence
 from discord.backoff import ExponentialBackoff
 from discord.utils import MISSING
 
+if TYPE_CHECKING:
+    from typing_extensions import Concatenate, ParamSpec, Self
+
 _log = logging.getLogger(__name__)
 
 # fmt: off
@@ -55,11 +62,15 @@ __all__ = (
 )
 # fmt: on
 
+C = TypeVar('C')
 T = TypeVar('T')
-_func = Callable[..., Awaitable[Any]]
-LF = TypeVar('LF', bound=_func)
-FT = TypeVar('FT', bound=_func)
-ET = TypeVar('ET', bound=Callable[[Any, BaseException], Awaitable[Any]])
+OT = TypeVar('OT')
+ET = TypeVar('ET', bound=BaseException)
+
+if TYPE_CHECKING:
+    P = ParamSpec('P')
+else:
+    P = TypeVar('P')
 
 
 def is_ambiguous(dt: datetime.datetime) -> bool:
@@ -129,15 +140,28 @@ class SleepHandle:
         self.future.cancel()
 
 
-class Loop(Generic[LF]):
+class Loop(Generic[C, P, T]):
     """A background task helper that abstracts the loop and reconnection logic for you.
 
     The main interface to create this is through :func:`loop`.
     """
 
+    if TYPE_CHECKING:
+
+        @overload
+        def coro(self: Loop[None, ..., Any], *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
+            ...
+
+        @overload
+        def coro(self, __self: C, *args: P.args, **kwargs: P.kwargs) -> Awaitable[T]:
+            ...
+
+        def coro(self, *args: Any, **Kwargs: Any) -> Awaitable[Any]:
+            ...
+
     def __init__(
         self,
-        coro: LF,
+        coro: Union[Callable[Concatenate[C, P], Awaitable[T]], Callable[P, Awaitable[T]]],
         seconds: float,
         hours: float,
         minutes: float,
@@ -145,14 +169,14 @@ class Loop(Generic[LF]):
         count: Optional[int],
         reconnect: bool,
     ) -> None:
-        self.coro: LF = coro
+        self.coro = coro  # type: ignore
         self.reconnect: bool = reconnect
         self.count: Optional[int] = count
         self._current_loop = 0
         self._handle: Optional[SleepHandle] = None
         self._task: Optional[asyncio.Task[None]] = None
-        self._injected = None
-        self._valid_exception = (
+        self._injected: C = None
+        self._valid_exception: Tuple[Type[BaseException], ...] = (
             OSError,
             discord.GatewayNotFound,
             discord.ConnectionClosed,
@@ -197,7 +221,7 @@ class Loop(Generic[LF]):
     def _is_explicit_time(self) -> bool:
         return self._time is not MISSING
 
-    async def _loop(self, *args: Any, **kwargs: Any) -> None:
+    async def _loop(self, *args: P.args, **kwargs: P.kwargs) -> None:
         backoff = ExponentialBackoff()
         await self._call_loop_function('before_loop')
         self._last_iteration_failed = False
@@ -270,11 +294,11 @@ class Loop(Generic[LF]):
             self._current_loop = 0
             self._stop_next_iteration = False
 
-    def __get__(self, obj: T, objtype: Type[T]) -> Loop[LF]:
+    def __get__(self, obj: OT, objtype: Type[OT]) -> Self:
         if obj is None:
             return self
 
-        copy: Loop[LF] = Loop(
+        copy = Loop(
             self.coro,
             seconds=self._seconds,
             hours=self._hours,
@@ -347,7 +371,7 @@ class Loop(Generic[LF]):
             return None
         return self._next_iteration
 
-    async def __call__(self, *args: Any, **kwargs: Any) -> Any:
+    async def __call__(self, *args: P.args, **kwargs: P.kwargs) -> T:
         r"""|coro|
 
         Calls the internal callback that the task holds.
@@ -363,7 +387,7 @@ class Loop(Generic[LF]):
         """
 
         if self._injected is not None:
-            args = (self._injected, *args)
+            args = (self._injected, *args)  # type: ignore
 
         return await self.coro(*args, **kwargs)
 
@@ -536,7 +560,15 @@ class Loop(Generic[LF]):
         exception: Exception = args[-1]
         _log.error('Unhandled exception in internal background task %r.', self.coro.__name__, exc_info=exception)
 
-    def before_loop(self, coro: FT) -> FT:
+    @overload
+    def before_loop(self: Loop[None, ..., Any], coro: Callable[[], OT]) -> Callable[[], OT]:
+        ...
+
+    @overload
+    def before_loop(self, coro: Callable[[C], OT]) -> Callable[[C], OT]:
+        ...
+
+    def before_loop(self, coro: OT) -> OT:
         """A decorator that registers a coroutine to be called before the loop starts running.
 
         This is useful if you want to wait for some bot state before the loop starts,
@@ -564,7 +596,15 @@ class Loop(Generic[LF]):
         self._before_loop = coro
         return coro
 
-    def after_loop(self, coro: FT) -> FT:
+    @overload
+    def after_loop(self: Loop[None, ..., Any], coro: Callable[[], OT]) -> Callable[[], OT]:
+        ...
+
+    @overload
+    def after_loop(self, coro: Callable[[C], OT]) -> Callable[[C], OT]:
+        ...
+
+    def after_loop(self, coro: OT) -> OT:
         """A decorator that registers a coroutine to be called after the loop finishes running.
 
         The coroutine must take no arguments (except ``self`` in a class context).
@@ -592,7 +632,15 @@ class Loop(Generic[LF]):
         self._after_loop = coro
         return coro
 
-    def error(self, coro: ET) -> ET:
+    @overload
+    def error(self: Loop[None, ..., Any], coro: Callable[[ET], OT]) -> Callable[[ET], OT]:
+        ...
+
+    @overload
+    def error(self, coro: Callable[[C, ET], OT]) -> Callable[[C, ET], OT]:
+        ...
+
+    def error(self, coro: OT) -> OT:
         """A decorator that registers a coroutine to be called if the task encounters an unhandled exception.
 
         The coroutine must take only one argument the exception raised (except ``self`` in a class context).
@@ -762,6 +810,24 @@ class Loop(Generic[LF]):
                 self._handle.recalculate(self._next_iteration)
 
 
+if TYPE_CHECKING:
+    # Using a class to emulate a function allows for overloading the inner function in the decorator.
+
+    class _Method(Protocol[C, P, T]):  # type: ignore # C can't be covariant
+        @staticmethod
+        def __call__(self: C, *args: P.args, **kwargs: P.kwargs) -> T:  # type: ignore # this is a crime
+            ...
+
+    class _LoopDecorator(Protocol):
+        @overload
+        def __call__(self, func: _Method[C, P, Awaitable[T]], /) -> Loop[C, P, T]:
+            ...
+
+        @overload
+        def __call__(self, func: Callable[P, Awaitable[T]], /) -> Loop[None, P, T]:
+            ...
+
+
 def loop(
     *,
     seconds: float = MISSING,
@@ -770,7 +836,7 @@ def loop(
     time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
     count: Optional[int] = None,
     reconnect: bool = True,
-) -> Callable[[LF], Loop[LF]]:
+) -> _LoopDecorator:
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
 
@@ -812,8 +878,8 @@ def loop(
         or ``time`` parameter was passed in conjunction with relative time parameters.
     """
 
-    def decorator(func: LF) -> Loop[LF]:
-        return Loop[LF](
+    def decorator(func):
+        return Loop(
             func,
             seconds=seconds,
             minutes=minutes,
