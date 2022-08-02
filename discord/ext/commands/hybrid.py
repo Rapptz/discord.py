@@ -297,22 +297,22 @@ def replace_parameters(
 
 
 class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
-    def __init__(self, wrapped: Command[CogT, Any, T]) -> None:
+    def __init__(self, wrapped: Union[HybridCommand[CogT, Any, T], HybridGroup[CogT, Any, T]]) -> None:
         signature = inspect.signature(wrapped.callback)
         params = replace_parameters(wrapped.params, wrapped.callback, signature)
         wrapped.callback.__signature__ = signature.replace(parameters=params)
         nsfw = getattr(wrapped.callback, '__discord_app_commands_is_nsfw__', False)
         try:
             super().__init__(
-                name=wrapped.name,
+                name=wrapped._locale_name or wrapped.name,
                 callback=wrapped.callback,  # type: ignore # Signature doesn't match but we're overriding the invoke
-                description=wrapped.description or wrapped.short_doc or '…',
+                description=wrapped._locale_description or wrapped.description or wrapped.short_doc or '…',
                 nsfw=nsfw,
             )
         finally:
             del wrapped.callback.__signature__
 
-        self.wrapped: Command[CogT, Any, T] = wrapped
+        self.wrapped: Union[HybridCommand[CogT, Any, T], HybridGroup[CogT, Any, T]] = wrapped
         self.binding: Optional[CogT] = wrapped.cog
         # This technically means only one flag converter is supported
         self.flag_converter: Optional[Tuple[str, Type[FlagConverter]]] = getattr(
@@ -484,11 +484,25 @@ class HybridCommand(Command[CogT, P, T]):
         self,
         func: CommandCallback[CogT, Context[Any], P, T],
         /,
+        *,
+        name: Union[str, app_commands.locale_str] = MISSING,
+        description: Union[str, app_commands.locale_str] = MISSING,
         **kwargs: Any,
     ) -> None:
+        name, name_locale = (name.message, name) if isinstance(name, app_commands.locale_str) else (name, None)
+        if name is not MISSING:
+            kwargs['name'] = name
+        description, description_locale = (
+            (description.message, description) if isinstance(description, app_commands.locale_str) else (description, None)
+        )
+        if description is not MISSING:
+            kwargs['description'] = description
+
         super().__init__(func, **kwargs)
         self.with_app_command: bool = kwargs.pop('with_app_command', True)
         self.with_command: bool = kwargs.pop('with_command', True)
+        self._locale_name: Optional[app_commands.locale_str] = name_locale
+        self._locale_description: Optional[app_commands.locale_str] = description_locale
 
         if not self.with_command and not self.with_app_command:
             raise TypeError('cannot set both with_command and with_app_command to False')
@@ -586,10 +600,27 @@ class HybridGroup(Group[CogT, P, T]):
 
     __commands_is_hybrid__: ClassVar[bool] = True
 
-    def __init__(self, *args: Any, fallback: Optional[str] = None, **attrs: Any) -> None:
+    def __init__(
+        self,
+        *args: Any,
+        name: Union[str, app_commands.locale_str] = MISSING,
+        description: Union[str, app_commands.locale_str] = MISSING,
+        fallback: Optional[str] = None,
+        **attrs: Any,
+    ) -> None:
+        name, name_locale = (name.message, name) if isinstance(name, app_commands.locale_str) else (name, None)
+        if name is not MISSING:
+            attrs['name'] = name
+        description, description_locale = (
+            (description.message, description) if isinstance(description, app_commands.locale_str) else (description, None)
+        )
+        if description is not MISSING:
+            attrs['description'] = description
         super().__init__(*args, **attrs)
         self.invoke_without_command = True
         self.with_app_command: bool = attrs.pop('with_app_command', True)
+        self._locale_name: Optional[app_commands.locale_str] = name_locale
+        self._locale_description: Optional[app_commands.locale_str] = description_locale
 
         parent = None
         if self.parent is not None:
@@ -612,8 +643,8 @@ class HybridGroup(Group[CogT, P, T]):
             default_permissions = getattr(self.callback, '__discord_app_commands_default_permissions__', None)
             nsfw = getattr(self.callback, '__discord_app_commands_is_nsfw__', False)
             self.app_command = app_commands.Group(
-                name=self.name,
-                description=self.description or self.short_doc or '…',
+                name=self._locale_name or self.name,
+                description=self._locale_description or self.description or self.short_doc or '…',
                 guild_ids=guild_ids,
                 guild_only=guild_only,
                 default_permissions=default_permissions,
@@ -762,7 +793,7 @@ class HybridGroup(Group[CogT, P, T]):
 
     def command(
         self,
-        name: str = MISSING,
+        name: Union[str, app_commands.locale_str] = MISSING,
         *args: Any,
         with_app_command: bool = True,
         **kwargs: Any,
@@ -786,7 +817,7 @@ class HybridGroup(Group[CogT, P, T]):
 
     def group(
         self,
-        name: str = MISSING,
+        name: Union[str, app_commands.locale_str] = MISSING,
         *args: Any,
         with_app_command: bool = True,
         **kwargs: Any,
@@ -810,7 +841,7 @@ class HybridGroup(Group[CogT, P, T]):
 
 
 def hybrid_command(
-    name: str = MISSING,
+    name: Union[str, app_commands.locale_str] = MISSING,
     *,
     with_app_command: bool = True,
     **attrs: Any,
@@ -837,7 +868,7 @@ def hybrid_command(
 
     Parameters
     -----------
-    name: :class:`str`
+    name: Union[:class:`str`, :class:`~discord.app_commands.locale_str`]
         The name to create the command with. By default this uses the
         function name unchanged.
     with_app_command: :class:`bool`
@@ -861,7 +892,7 @@ def hybrid_command(
 
 
 def hybrid_group(
-    name: str = MISSING,
+    name: Union[str, app_commands.locale_str] = MISSING,
     *,
     with_app_command: bool = True,
     **attrs: Any,

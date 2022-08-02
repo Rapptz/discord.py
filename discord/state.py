@@ -83,7 +83,7 @@ if TYPE_CHECKING:
     from .voice_client import VoiceProtocol
     from .client import Client
     from .gateway import DiscordWebSocket
-    from .app_commands import CommandTree
+    from .app_commands import CommandTree, Translator
 
     from .types.automod import AutoModerationRule, AutoModerationActionExecution
     from .types.snowflake import Snowflake
@@ -245,6 +245,7 @@ class ConnectionState:
         self._status: Optional[str] = status
         self._intents: Intents = intents
         self._command_tree: Optional[CommandTree] = None
+        self._translator: Optional[Translator] = None
 
         if not intents.members or cache_flags._empty:
             self.store_user = self.store_user_no_intents
@@ -256,6 +257,19 @@ class ConnectionState:
                 parsers[attr[6:].upper()] = func
 
         self.clear()
+
+    async def close(self) -> None:
+        for voice in self.voice_clients:
+            try:
+                await voice.disconnect(force=True)
+            except Exception:
+                # if an error happens during disconnects, disregard it.
+                pass
+
+        if self._translator:
+            await self._translator.unload()
+
+        # Purposefully don't call `clear` because users rely on cache being available post-close
 
     def clear(self, *, views: bool = True) -> None:
         self.user: Optional[ClientUser] = None

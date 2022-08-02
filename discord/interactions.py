@@ -878,9 +878,15 @@ class InteractionResponse:
         if self._response_type:
             raise InteractionResponded(self._parent)
 
-        payload: Dict[str, Any] = {
-            'choices': [option.to_dict() for option in choices],
-        }
+        translator = self._parent._state._translator
+        if translator is not None:
+            payload: Dict[str, Any] = {
+                'choices': [await option.get_translated_payload(translator) for option in choices],
+            }
+        else:
+            payload: Dict[str, Any] = {
+                'choices': [option.to_dict() for option in choices],
+            }
 
         parent = self._parent
         if parent.type is not InteractionType.autocomplete:

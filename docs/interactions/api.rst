@@ -377,7 +377,7 @@ Enumerations
         A message context menu command.
 
 .. class:: AppCommandPermissionType
-    
+
     The application command's permission type.
 
     .. versionadded:: 2.0
@@ -596,6 +596,52 @@ Range
 .. autoclass:: discord.app_commands.Range
     :members:
 
+Translations
+~~~~~~~~~~~~~
+
+Translator
++++++++++++
+
+.. attributetable:: discord.app_commands.Translator
+
+.. autoclass:: discord.app_commands.Translator
+    :members:
+
+locale_str
++++++++++++
+
+.. attributetable:: discord.app_commands.locale_str
+
+.. autoclass:: discord.app_commands.locale_str
+    :members:
+
+TranslationContext
++++++++++++++++++++
+
+.. class:: TranslationContext
+    :module: discord.app_commands
+
+    An enum representing the context that the translation occurs in when requested for translation.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: command_name
+
+        The translation involved a command name.
+    .. attribute:: command_description
+
+        The translation involved a command description.
+    .. attribute:: parameter_name
+
+        The translation involved a parameter name.
+    .. attribute:: parameter_description
+
+        The translation involved a parameter description.
+    .. attribute:: choice_name
+
+        The translation involved a choice name.
+
+
 Exceptions
 ~~~~~~~~~~~
 
@@ -606,6 +652,9 @@ Exceptions
     :members:
 
 .. autoexception:: discord.app_commands.TransformerError
+    :members:
+
+.. autoexception:: discord.app_commands.TranslationError
     :members:
 
 .. autoexception:: discord.app_commands.CheckFailure
@@ -653,6 +702,7 @@ Exception Hierarchy
         - :exc:`~discord.app_commands.AppCommandError`
             - :exc:`~discord.app_commands.CommandInvokeError`
             - :exc:`~discord.app_commands.TransformerError`
+            - :exc:`~discord.app_commands.TranslationError`
             - :exc:`~discord.app_commands.CheckFailure`
                 - :exc:`~discord.app_commands.NoPrivateMessage`
                 - :exc:`~discord.app_commands.MissingRole`

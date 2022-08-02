@@ -124,12 +124,12 @@ class CogMeta(type):
                 async def bar(self, ctx):
                     pass # hidden -> False
 
-    group_name: :class:`str`
+    group_name: Union[:class:`str`, :class:`~discord.app_commands.locale_str`]
         The group name of a cog. This is only applicable for :class:`GroupCog` instances.
         By default, it's the same value as :attr:`name`.
 
         .. versionadded:: 2.0
-    group_description: :class:`str`
+    group_description: Union[:class:`str`, :class:`~discord.app_commands.locale_str`]
         The group description of a cog. This is only applicable for :class:`GroupCog` instances.
         By default, it's the same value as :attr:`description`.
 
@@ -143,8 +143,8 @@ class CogMeta(type):
 
     __cog_name__: str
     __cog_description__: str
-    __cog_group_name__: str
-    __cog_group_description__: str
+    __cog_group_name__: Union[str, app_commands.locale_str]
+    __cog_group_description__: Union[str, app_commands.locale_str]
     __cog_group_nsfw__: bool
     __cog_settings__: Dict[str, Any]
     __cog_commands__: List[Command[Any, ..., Any]]
@@ -260,8 +260,8 @@ class Cog(metaclass=CogMeta):
 
     __cog_name__: str
     __cog_description__: str
-    __cog_group_name__: str
-    __cog_group_description__: str
+    __cog_group_name__: Union[str, app_commands.locale_str]
+    __cog_group_description__: Union[str, app_commands.locale_str]
     __cog_settings__: Dict[str, Any]
     __cog_commands__: List[Command[Self, ..., Any]]
     __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]]

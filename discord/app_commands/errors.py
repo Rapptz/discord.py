@@ -27,13 +27,14 @@ from __future__ import annotations
 from typing import Any, TYPE_CHECKING, List, Optional, Union
 
 
-from ..enums import AppCommandOptionType, AppCommandType
+from ..enums import AppCommandOptionType, AppCommandType, Locale
 from ..errors import DiscordException
 
 __all__ = (
     'AppCommandError',
     'CommandInvokeError',
     'TransformerError',
+    'TranslationError',
     'CheckFailure',
     'CommandAlreadyRegistered',
     'CommandSignatureMismatch',
@@ -51,6 +52,7 @@ __all__ = (
 if TYPE_CHECKING:
     from .commands import Command, Group, ContextMenu
     from .transformers import Transformer
+    from .translator import TranslationContext, locale_str
     from ..types.snowflake import Snowflake, SnowflakeList
     from .checks import Cooldown
 
@@ -131,6 +133,50 @@ class TransformerError(AppCommandError):
         self.transformer: Transformer = transformer
 
         super().__init__(f'Failed to convert {value} to {transformer._error_display_name!s}')
+
+
+class TranslationError(AppCommandError):
+    """An exception raised when the library fails to translate a string.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    If an exception occurs while calling :meth:`Translator.translate` that does
+    not subclass this then the exception is wrapped into this exception.
+    The original exception can be retrieved using the ``__cause__`` attribute.
+    Otherwise it will be propagated as-is.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    string: Optional[Union[:class:`str`, :class:`locale_str`]]
+        The string that caused the error, if any.
+    locale: Optional[:class:`~discord.Locale`]
+        The locale that caused the error, if any.
+    context: :class:`~discord.app_commands.TranslationContext`
+        The context of the translation that triggered the error.
+    """
+
+    def __init__(
+        self,
+        *msg: str,
+        string: Optional[Union[str, locale_str]] = None,
+        locale: Optional[Locale] = None,
+        context: TranslationContext,
+    ) -> None:
+        self.string: Optional[Union[str, locale_str]] = string
+        self.locale: Optional[Locale] = locale
+        self.context: TranslationContext = context
+
+        if msg:
+            super().__init__(*msg)
+        else:
+            ctx = context.name.replace('_', ' ')
+            fmt = f'Failed to translate {self.string!r} in a {ctx}'
+            if self.locale is not None:
+                fmt = f'{fmt} in the {self.locale.value} locale'
+
+            super().__init__(fmt)
 
 
 class CheckFailure(AppCommandError):

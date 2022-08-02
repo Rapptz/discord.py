@@ -26,8 +26,9 @@ from __future__ import annotations
 from datetime import datetime
 
 from .errors import MissingApplicationID
+from .translator import Translator, TranslationContext, locale_str
 from ..permissions import Permissions
-from ..enums import AppCommandOptionType, AppCommandType, AppCommandPermissionType, ChannelType, try_enum
+from ..enums import AppCommandOptionType, AppCommandType, AppCommandPermissionType, ChannelType, Locale, try_enum
 from ..mixins import Hashable
 from ..utils import _get_as_snowflake, parse_time, snowflake_time, MISSING
 from ..object import Object
@@ -56,7 +57,6 @@ def is_app_command_argument_type(value: int) -> bool:
 if TYPE_CHECKING:
     from ..types.command import (
         ApplicationCommand as ApplicationCommandPayload,
-        ApplicationCommandOptionChoice,
         ApplicationCommandOption,
         ApplicationCommandPermissions,
         GuildApplicationCommandPermissions,
@@ -407,17 +407,22 @@ class Choice(Generic[ChoiceT]):
 
     Parameters
     -----------
-    name: :class:`str`
+    name: Union[:class:`str`, :class:`locale_str`]
         The name of the choice. Used for display purposes.
+    name_localizations: Dict[:class:`~discord.Locale`, :class:`str`]
+        The localised names of the choice. Used for display purposes.
     value: Union[:class:`int`, :class:`str`, :class:`float`]
         The value of the choice.
     """
 
-    __slots__ = ('name', 'value')
+    __slots__ = ('name', 'value', '_locale_name', 'name_localizations')
 
-    def __init__(self, *, name: str, value: ChoiceT):
+    def __init__(self, *, name: Union[str, locale_str], value: ChoiceT, name_localizations: Dict[Locale, str] = MISSING):
+        name, locale = (name.message, name) if isinstance(name, locale_str) else (name, None)
         self.name: str = name
+        self._locale_name: Optional[locale_str] = locale
         self.value: ChoiceT = value
+        self.name_localizations: Dict[Locale, str] = MISSING
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, Choice) and self.name == o.name and self.value == o.value
@@ -441,11 +446,28 @@ class Choice(Generic[ChoiceT]):
                 f'invalid Choice value type given, expected int, str, or float but received {self.value.__class__!r}'
             )
 
-    def to_dict(self) -> ApplicationCommandOptionChoice:
-        return {  # type: ignore
+    async def get_translated_payload(self, translator: Translator) -> Dict[str, Any]:
+        base = self.to_dict()
+        name_localizations: Dict[str, str] = {}
+        if self._locale_name:
+            for locale in Locale:
+                translation = await translator._checked_translate(self._locale_name, locale, TranslationContext.choice_name)
+                if translation is not None:
+                    name_localizations[locale.value] = translation
+
+        if name_localizations:
+            base['name_localizations'] = name_localizations
+
+        return base
+
+    def to_dict(self) -> Dict[str, Any]:
+        base = {
             'name': self.name,
             'value': self.value,
         }
+        if self.name_localizations is not MISSING:
+            base['name_localizations'] = {str(k): v for k, v in self.name_localizations.items()}
+        return base
 
 
 class AppCommandChannel(Hashable):

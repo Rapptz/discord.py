@@ -253,7 +253,7 @@ class BotBase(GroupMixin[None]):
 
     def hybrid_command(
         self,
-        name: str = MISSING,
+        name: Union[str, app_commands.locale_str] = MISSING,
         with_app_command: bool = True,
         *args: Any,
         **kwargs: Any,
@@ -277,7 +277,7 @@ class BotBase(GroupMixin[None]):
 
     def hybrid_group(
         self,
-        name: str = MISSING,
+        name: Union[str, app_commands.locale_str] = MISSING,
         with_app_command: bool = True,
         *args: Any,
         **kwargs: Any,

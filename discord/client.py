@@ -737,12 +737,7 @@ class Client:
 
         self._closed = True
 
-        for voice in self.voice_clients:
-            try:
-                await voice.disconnect(force=True)
-            except Exception:
-                # if an error happens during disconnects, disregard it.
-                pass
+        await self._connection.close()
 
         if self.ws is not None and self.ws.open:
             await self.ws.close(code=1000)

@@ -46,10 +46,11 @@ from typing import (
 
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
+from .translator import locale_str, Translator, TranslationContext
 from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
 from ..abc import GuildChannel
 from ..threads import Thread
-from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType
+from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType, Locale
 from ..utils import MISSING, maybe_coroutine
 from ..user import User
 from ..role import Role
@@ -95,8 +96,10 @@ class CommandParameter:
         The maximum supported value for this parameter.
     """
 
+    # The name of the parameter is *always* the parameter name in the code
+    # Therefore, it can't be Union[str, locale_str]
     name: str = MISSING
-    description: str = MISSING
+    description: Union[str, locale_str] = MISSING
     required: bool = MISSING
     default: Any = MISSING
     choices: List[Choice[Union[str, int, float]]] = MISSING
@@ -105,8 +108,48 @@ class CommandParameter:
     min_value: Optional[Union[int, float]] = None
     max_value: Optional[Union[int, float]] = None
     autocomplete: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
-    _rename: str = MISSING
+    _rename: Union[str, locale_str] = MISSING
     _annotation: Any = MISSING
+
+    async def get_translated_payload(self, translator: Translator) -> Dict[str, Any]:
+        base = self.to_dict()
+
+        needs_name_translations = isinstance(self._rename, locale_str)
+        needs_description_translations = isinstance(self.description, locale_str)
+        name_localizations: Dict[str, str] = {}
+        description_localizations: Dict[str, str] = {}
+        for locale in Locale:
+            if needs_name_translations:
+                translation = await translator._checked_translate(
+                    self._rename,  # type: ignore  # This will always be locale_str
+                    locale,
+                    TranslationContext.parameter_name,
+                )
+                if translation is not None:
+                    name_localizations[locale.value] = translation
+
+            if needs_description_translations:
+                translation = await translator._checked_translate(
+                    self.description,  # type: ignore  # This will always be locale_str
+                    locale,
+                    TranslationContext.parameter_description,
+                )
+                if translation is not None:
+                    description_localizations[locale.value] = translation
+
+        if isinstance(self.description, locale_str):
+            base['description'] = self.description.message
+
+        if self.choices:
+            base['choices'] = [await choice.get_translated_payload(translator) for choice in self.choices]
+
+        if name_localizations:
+            base['name_localizations'] = name_localizations
+
+        if description_localizations:
+            base['description_localizations'] = description_localizations
+
+        return base
 
     def to_dict(self) -> Dict[str, Any]:
         base = {
@@ -158,7 +201,7 @@ class CommandParameter:
     @property
     def display_name(self) -> str:
         """:class:`str`: The name of the parameter as it should be displayed to the user."""
-        return self.name if self._rename is MISSING else self._rename
+        return self.name if self._rename is MISSING else str(self._rename)
 
 
 class Transformer:
