@@ -147,7 +147,7 @@ class AutoModTrigger:
             self.type = type
         elif self.keyword_filter is not None:
             self.type = AutoModRuleTriggerType.keyword
-        elif self.presets is not None or self.allow_list is not None:
+        elif self.presets is not None:
             self.type = AutoModRuleTriggerType.keyword_preset
         else:
             raise ValueError('Please pass the trigger type explicitly if not using keyword_filter or presets.')
