@@ -127,7 +127,12 @@ class AutoModTrigger:
         The list of words that are exempt from the commonly flagged words.
     """
 
-    __slots__ = ('type', 'keyword_filter', 'presets', 'allow_list',)
+    __slots__ = (
+        'type',
+        'keyword_filter',
+        'presets',
+        'allow_list',
+    )
 
     def __init__(
         self,
@@ -170,7 +175,6 @@ class AutoModTrigger:
             if self.allow_list:
                 ret['allow_list'] = self.allow_list
             return ret
-
 
         return {}
 
