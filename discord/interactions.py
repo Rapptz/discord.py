@@ -514,13 +514,18 @@ class InteractionResponse:
 
     def __init__(self, parent: Interaction):
         self._parent: Interaction = parent
-        self._responded: bool = False
+        self._responded: Optional[InteractionResponseType] = None
 
     def is_done(self) -> bool:
         """:class:`bool`: Indicates whether an interaction response has been done before.
 
         An interaction can only be responded to once.
         """
+        return bool(self._responded)
+
+    @property
+    def type(self) -> Optional[InteractionResponseType]:
+        """:class:`InteractionResponseType`: The type of response that was sent, ``None`` if response is not done."""
         return self._responded
 
     async def defer(self, *, ephemeral: bool = False, thinking: bool = False) -> None:
@@ -587,7 +592,7 @@ class InteractionResponse:
                 proxy_auth=http.proxy_auth,
                 params=params,
             )
-            self._responded = True
+            self._responded = InteractionResponseType(defer_type)
 
     async def pong(self) -> None:
         """|coro|
@@ -619,7 +624,7 @@ class InteractionResponse:
                 proxy_auth=http.proxy_auth,
                 params=params,
             )
-            self._responded = True
+            self._responded = InteractionResponseType.pong
 
     async def send_message(
         self,
@@ -723,7 +728,7 @@ class InteractionResponse:
             entity_id = parent.id if parent.type is InteractionType.application_command else None
             self._parent._state.store_view(view, entity_id)
 
-        self._responded = True
+        self._responded = InteractionResponseType.channel_message
 
     async def edit_message(
         self,
@@ -811,7 +816,7 @@ class InteractionResponse:
         if view and not view.is_finished():
             state.store_view(view, message_id)
 
-        self._responded = True
+        self._responded = InteractionResponseType.message_update
 
     async def send_modal(self, modal: Modal, /) -> None:
         """|coro|
@@ -849,7 +854,7 @@ class InteractionResponse:
         )
 
         self._parent._state.store_view(modal)
-        self._responded = True
+        self._responded = InteractionResponseType.modal
 
     async def autocomplete(self, choices: Sequence[Choice[ChoiceT]]) -> None:
         """|coro|
@@ -893,7 +898,7 @@ class InteractionResponse:
             params=params,
         )
 
-        self._responded = True
+        self._responded = InteractionResponseType.autocomplete_result
 
 
 class _InteractionMessageState:
