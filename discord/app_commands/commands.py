@@ -226,21 +226,22 @@ def validate_context_menu_name(name: str) -> str:
 
 
 def _validate_auto_complete_callback(
-    callback: AutocompleteCallback[GroupT, ChoiceT],
-    skip_binding: bool = False,
+    callback: AutocompleteCallback[GroupT, ChoiceT]
 ) -> AutocompleteCallback[GroupT, ChoiceT]:
+    # This function needs to ensure the following is true:
+    # If self.foo is passed then don't pass command.binding to the callback
+    # If Class.foo is passed then it is assumed command.binding has to be passed
+    # If free_function_foo is passed then no binding should be passed at all
+    # Passing command.binding is mandated by pass_command_binding
 
     binding = getattr(callback, '__self__', None)
-    if binding is not None:
-        callback = callback.__func__
-        requires_binding = True
-    else:
-        requires_binding = is_inside_class(callback) or skip_binding
+    pass_command_binding = binding is None and is_inside_class(callback)
 
-    callback.requires_binding = requires_binding
-    callback.binding = binding
+    # 'method' objects can't have dynamic attributes
+    if binding is None:
+        callback.pass_command_binding = pass_command_binding
 
-    required_parameters = 2 + requires_binding
+    required_parameters = 2 + pass_command_binding
     params = inspect.signature(callback).parameters
     if len(params) != required_parameters:
         raise TypeError(f'autocomplete callback {callback.__qualname__!r} requires either 2 or 3 parameters to be passed')
@@ -714,8 +715,8 @@ class Command(Generic[GroupT, P, T]):
                     await interaction.response.autocomplete([])
                 return
 
-        if param.autocomplete.requires_binding:
-            binding = param.autocomplete.binding or self.binding
+        if getattr(param.autocomplete, 'pass_command_binding', False):
+            binding = self.binding
             if binding is not None:
                 choices = await param.autocomplete(binding, interaction, value)
             else:

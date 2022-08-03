@@ -810,6 +810,6 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
     if inner.autocomplete.__func__ is not Transformer.autocomplete:
         from .commands import _validate_auto_complete_callback
 
-        result.autocomplete = _validate_auto_complete_callback(inner.autocomplete, skip_binding=True)
+        result.autocomplete = _validate_auto_complete_callback(inner.autocomplete)
 
     return result
