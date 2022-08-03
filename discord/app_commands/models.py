@@ -442,7 +442,7 @@ class Choice(Generic[ChoiceT]):
             )
 
     def to_dict(self) -> ApplicationCommandOptionChoice:
-        return {
+        return {  # type: ignore
             'name': self.name,
             'value': self.value,
         }

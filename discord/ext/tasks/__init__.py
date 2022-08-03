@@ -562,7 +562,7 @@ class Loop(Generic[LF]):
             raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._before_loop = coro
-        return coro
+        return coro  # type: ignore
 
     def after_loop(self, coro: FT) -> FT:
         """A decorator that registers a coroutine to be called after the loop finishes running.
@@ -590,7 +590,7 @@ class Loop(Generic[LF]):
             raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._after_loop = coro
-        return coro
+        return coro  # type: ignore
 
     def error(self, coro: ET) -> ET:
         """A decorator that registers a coroutine to be called if the task encounters an unhandled exception.
@@ -619,8 +619,8 @@ class Loop(Generic[LF]):
         if not inspect.iscoroutinefunction(coro):
             raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
-        self._error = coro  # type: ignore
-        return coro
+        self._error = coro
+        return coro  # type: ignore
 
     def _get_next_sleep_time(self, now: datetime.datetime = MISSING) -> datetime.datetime:
         if self._sleep is not MISSING:

@@ -140,7 +140,7 @@ class ConverterTransformer(app_commands.Transformer):
                 if inspect.ismethod(converter.convert):
                     return await converter.convert(ctx, value)
                 else:
-                    return await converter().convert(ctx, value)  # type: ignore
+                    return await converter().convert(ctx, value)
             elif isinstance(converter, Converter):
                 return await converter.convert(ctx, value)
         except CommandError:
@@ -205,7 +205,7 @@ def replace_parameter(
         args = getattr(converter, '__args__', [])
         if isinstance(converter, Range):
             r = converter
-            param = param.replace(annotation=app_commands.Range[r.annotation, r.min, r.max])  # type: ignore
+            param = param.replace(annotation=app_commands.Range[r.annotation, r.min, r.max])
         elif isinstance(converter, Greedy):
             # Greedy is "optional" in ext.commands
             # However, in here, it probably makes sense to make it required.

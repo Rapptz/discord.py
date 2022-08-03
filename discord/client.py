@@ -1442,7 +1442,7 @@ class Client:
             The guild with the guild data parsed.
         """
 
-        async def _before_strategy(retrieve, before, limit):
+        async def _before_strategy(retrieve: int, before: Union[Object, Snowflake, None], limit: Optional[int]):
             before_id = before.id if before else None
             data = await self.http.get_guilds(retrieve, before=before_id)
 
@@ -1454,7 +1454,7 @@ class Client:
 
             return data, before, limit
 
-        async def _after_strategy(retrieve, after, limit):
+        async def _after_strategy(retrieve: int, after: Union[Object, Snowflake, None], limit: Optional[int]):
             after_id = after.id if after else None
             data = await self.http.get_guilds(retrieve, after=after_id)
 
