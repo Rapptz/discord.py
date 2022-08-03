@@ -29,8 +29,8 @@ import datetime
 import logging
 from typing import (
     Any,
-    Awaitable,
     Callable,
+    Coroutine,
     Generic,
     List,
     Optional,
@@ -56,10 +56,10 @@ __all__ = (
 # fmt: on
 
 T = TypeVar('T')
-_func = Callable[..., Awaitable[Any]]
+_func = Callable[..., Coroutine[Any, Any, Any]]
 LF = TypeVar('LF', bound=_func)
 FT = TypeVar('FT', bound=_func)
-ET = TypeVar('ET', bound=Callable[[Any, BaseException], Awaitable[Any]])
+ET = TypeVar('ET', bound=Callable[[Any, BaseException], Coroutine[Any, Any, Any]])
 
 
 def is_ambiguous(dt: datetime.datetime) -> bool:
@@ -562,7 +562,7 @@ class Loop(Generic[LF]):
             raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._before_loop = coro
-        return coro  # type: ignore
+        return coro
 
     def after_loop(self, coro: FT) -> FT:
         """A decorator that registers a coroutine to be called after the loop finishes running.
@@ -590,7 +590,7 @@ class Loop(Generic[LF]):
             raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._after_loop = coro
-        return coro  # type: ignore
+        return coro
 
     def error(self, coro: ET) -> ET:
         """A decorator that registers a coroutine to be called if the task encounters an unhandled exception.
@@ -620,7 +620,7 @@ class Loop(Generic[LF]):
             raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
         self._error = coro
-        return coro  # type: ignore
+        return coro
 
     def _get_next_sleep_time(self, now: datetime.datetime = MISSING) -> datetime.datetime:
         if self._sleep is not MISSING:
