@@ -508,25 +508,25 @@ class InteractionResponse:
     """
 
     __slots__: Tuple[str, ...] = (
-        '_responded',
+        '_response_type',
         '_parent',
     )
 
     def __init__(self, parent: Interaction):
         self._parent: Interaction = parent
-        self._responded: Optional[InteractionResponseType] = None
+        self._response_type: Optional[InteractionResponseType] = None
 
     def is_done(self) -> bool:
         """:class:`bool`: Indicates whether an interaction response has been done before.
 
         An interaction can only be responded to once.
         """
-        return bool(self._responded)
+        return self._response_type is not None
 
     @property
     def type(self) -> Optional[InteractionResponseType]:
         """:class:`InteractionResponseType`: The type of response that was sent, ``None`` if response is not done."""
-        return self._responded
+        return self._response_type
 
     async def defer(self, *, ephemeral: bool = False, thinking: bool = False) -> None:
         """|coro|
@@ -561,7 +561,7 @@ class InteractionResponse:
         InteractionResponded
             This interaction has already been responded to before.
         """
-        if self._responded:
+        if self._response_type:
             raise InteractionResponded(self._parent)
 
         defer_type: int = 0
@@ -592,7 +592,7 @@ class InteractionResponse:
                 proxy_auth=http.proxy_auth,
                 params=params,
             )
-            self._responded = InteractionResponseType(defer_type)
+            self._response_type = InteractionResponseType(defer_type)
 
     async def pong(self) -> None:
         """|coro|
@@ -608,7 +608,7 @@ class InteractionResponse:
         InteractionResponded
             This interaction has already been responded to before.
         """
-        if self._responded:
+        if self._response_type:
             raise InteractionResponded(self._parent)
 
         parent = self._parent
@@ -624,7 +624,7 @@ class InteractionResponse:
                 proxy_auth=http.proxy_auth,
                 params=params,
             )
-            self._responded = InteractionResponseType.pong
+            self._response_type = InteractionResponseType.pong
 
     async def send_message(
         self,
@@ -683,7 +683,7 @@ class InteractionResponse:
         InteractionResponded
             This interaction has already been responded to before.
         """
-        if self._responded:
+        if self._response_type:
             raise InteractionResponded(self._parent)
 
         if ephemeral or suppress_embeds:
@@ -728,7 +728,7 @@ class InteractionResponse:
             entity_id = parent.id if parent.type is InteractionType.application_command else None
             self._parent._state.store_view(view, entity_id)
 
-        self._responded = InteractionResponseType.channel_message
+        self._response_type = InteractionResponseType.channel_message
 
     async def edit_message(
         self,
@@ -778,7 +778,7 @@ class InteractionResponse:
         InteractionResponded
             This interaction has already been responded to before.
         """
-        if self._responded:
+        if self._response_type:
             raise InteractionResponded(self._parent)
 
         parent = self._parent
@@ -816,7 +816,7 @@ class InteractionResponse:
         if view and not view.is_finished():
             state.store_view(view, message_id)
 
-        self._responded = InteractionResponseType.message_update
+        self._response_type = InteractionResponseType.message_update
 
     async def send_modal(self, modal: Modal, /) -> None:
         """|coro|
@@ -835,7 +835,7 @@ class InteractionResponse:
         InteractionResponded
             This interaction has already been responded to before.
         """
-        if self._responded:
+        if self._response_type:
             raise InteractionResponded(self._parent)
 
         parent = self._parent
@@ -854,7 +854,7 @@ class InteractionResponse:
         )
 
         self._parent._state.store_view(modal)
-        self._responded = InteractionResponseType.modal
+        self._response_type = InteractionResponseType.modal
 
     async def autocomplete(self, choices: Sequence[Choice[ChoiceT]]) -> None:
         """|coro|
@@ -875,7 +875,7 @@ class InteractionResponse:
         InteractionResponded
             This interaction has already been responded to before.
         """
-        if self._responded:
+        if self._response_type:
             raise InteractionResponded(self._parent)
 
         payload: Dict[str, Any] = {
@@ -898,7 +898,7 @@ class InteractionResponse:
             params=params,
         )
 
-        self._responded = InteractionResponseType.autocomplete_result
+        self._response_type = InteractionResponseType.autocomplete_result
 
 
 class _InteractionMessageState:
