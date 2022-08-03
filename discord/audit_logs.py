@@ -188,15 +188,15 @@ def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]
 def _transform_automod_trigger_metadata(
     entry: AuditLogEntry, data: AutoModerationTriggerMetadata
 ) -> Optional[AutoModTrigger]:
-    if data is None:
+    if not data:
         return None
 
     # discord doesn't provide the type of the trigger
     # have to infer from the data and present keys
     if 'presets' in data:
-        return AutoModTrigger(presets=AutoModPresets._from_value(data['presets']))  # type: ignore
-
-    return AutoModTrigger(**data)
+        return AutoModTrigger(presets=AutoModPresets._from_value(data['presets']), allow_list=data.get('allow_list'))  # type: ignore
+    elif 'keyword_filter' in data:
+        return AutoModTrigger(keyword_filter=data['keyword_filter'])  # type: ignore
 
 
 def _transform_automod_actions(entry: AuditLogEntry, data: List[AutoModerationAction]) -> List[AutoModRuleAction]:
