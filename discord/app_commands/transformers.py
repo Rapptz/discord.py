@@ -176,6 +176,19 @@ class CommandParameter:
 
         return base
 
+    def _convert_to_locale_strings(self) -> None:
+        if self._rename is MISSING:
+            self._rename = locale_str(self.name)
+        elif isinstance(self._rename, str):
+            self._rename = locale_str(self._rename)
+
+        if isinstance(self.description, str):
+            self.description = locale_str(self.description)
+
+        for choice in self.choices:
+            if choice._locale_name is None:
+                choice._locale_name = locale_str(choice.name)
+
     def is_choice_annotation(self) -> bool:
         return getattr(self._annotation, '__discord_app_commands_is_choice__', False)
 

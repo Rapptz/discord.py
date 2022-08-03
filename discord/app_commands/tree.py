@@ -838,6 +838,7 @@ class CommandTree(Generic[ClientT]):
         nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
+        auto_locale_strings: bool = False,
         extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[CommandCallback[Group, P, T]], Command[Group, P, T]]:
         """Creates an application command directly under this tree.
@@ -862,6 +863,12 @@ class CommandTree(Generic[ClientT]):
             The list of guilds to add the command to. This cannot be mixed
             with the ``guild`` parameter. If no guilds are given at all
             then it becomes a global command instead.
+        auto_locale_strings: :class:`bool`
+            If this is set to ``True``, then all translatable strings will implicitly
+            be wrapped into :class:`locale_str` rather than :class:`str`. This could
+            avoid some repetition and be more ergonomic for certain defaults such
+            as default command names, command descriptions, and parameter names.
+            Defaults to ``False``.
         extras: :class:`dict`
             A dictionary that can be used to store extraneous data.
             The library will not touch any values or keys within this dictionary.
@@ -885,6 +892,7 @@ class CommandTree(Generic[ClientT]):
                 callback=func,
                 nsfw=nsfw,
                 parent=None,
+                auto_locale_strings=auto_locale_strings,
                 extras=extras,
             )
             self.add_command(command, guild=guild, guilds=guilds)
@@ -899,6 +907,7 @@ class CommandTree(Generic[ClientT]):
         nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
+        auto_locale_strings: bool = False,
         extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[ContextMenuCallback], ContextMenu]:
         """Creates an application command context menu from a regular function directly under this tree.
@@ -937,6 +946,12 @@ class CommandTree(Generic[ClientT]):
             The list of guilds to add the command to. This cannot be mixed
             with the ``guild`` parameter. If no guilds are given at all
             then it becomes a global command instead.
+        auto_locale_strings: :class:`bool`
+            If this is set to ``True``, then all translatable strings will implicitly
+            be wrapped into :class:`locale_str` rather than :class:`str`. This could
+            avoid some repetition and be more ergonomic for certain defaults such
+            as default command names, command descriptions, and parameter names.
+            Defaults to ``False``.
         extras: :class:`dict`
             A dictionary that can be used to store extraneous data.
             The library will not touch any values or keys within this dictionary.
@@ -947,7 +962,13 @@ class CommandTree(Generic[ClientT]):
                 raise TypeError('context menu function must be a coroutine function')
 
             actual_name = func.__name__.title() if name is MISSING else name
-            context_menu = ContextMenu(name=actual_name, nsfw=nsfw, callback=func, extras=extras)
+            context_menu = ContextMenu(
+                name=actual_name,
+                nsfw=nsfw,
+                callback=func,
+                auto_locale_strings=auto_locale_strings,
+                extras=extras,
+            )
             self.add_command(context_menu, guild=guild, guilds=guilds)
             return context_menu
 
