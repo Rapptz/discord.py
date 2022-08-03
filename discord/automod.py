@@ -123,9 +123,16 @@ class AutoModTrigger:
         The list of strings that will trigger the keyword filter.
     presets: Optional[:class:`AutoModPresets`]
         The presets used with the preset keyword filter.
+    allow_list: Optional[List[:class:`str`]]
+        The list of words that are exempt from the commonly flagged words.
     """
 
-    __slots__ = ('type', 'keyword_filter', 'presets')
+    __slots__ = (
+        'type',
+        'keyword_filter',
+        'presets',
+        'allow_list',
+    )
 
     def __init__(
         self,
@@ -133,9 +140,11 @@ class AutoModTrigger:
         type: Optional[AutoModRuleTriggerType] = None,
         keyword_filter: Optional[List[str]] = None,
         presets: Optional[AutoModPresets] = None,
+        allow_list: Optional[List[str]] = None,
     ) -> None:
         self.keyword_filter: Optional[List[str]] = keyword_filter
         self.presets: Optional[AutoModPresets] = presets
+        self.allow_list: Optional[List[str]] = allow_list
         if keyword_filter and presets:
             raise ValueError('Please pass only one of keyword_filter or presets.')
 
@@ -162,7 +171,10 @@ class AutoModTrigger:
         if self.keyword_filter is not None:
             return {'keyword_filter': self.keyword_filter}
         elif self.presets is not None:
-            return {'presets': self.presets.to_array()}
+            ret: Dict[str, Any] = {'presets': self.presets.to_array()}
+            if self.allow_list:
+                ret['allow_list'] = self.allow_list
+            return ret
 
         return {}
 
