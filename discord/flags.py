@@ -1082,19 +1082,19 @@ class ApplicationFlags(BaseFlags):
             Checks if two ApplicationFlags are not equal.
         .. describe:: x | y, x |= y
 
-            Returns a ApplicationFlags instance with all enabled flags from
+            Returns an ApplicationFlags instance with all enabled flags from
             both x and y.
         .. describe:: x & y, x &= y
 
-            Returns a ApplicationFlags instance with only flags enabled on
+            Returns an ApplicationFlags instance with only flags enabled on
             both x and y.
         .. describe:: x ^ y, x ^= y
 
-            Returns a ApplicationFlags instance with only flags enabled on
+            Returns an ApplicationFlags instance with only flags enabled on
             only one of x or y, not on both.
         .. describe:: ~x
 
-            Returns a ApplicationFlags instance with all flags inverted from x.
+            Returns an ApplicationFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -2176,19 +2176,19 @@ class AutoModPresets(ArrayFlags):
             Checks if two AutoModPresets flags are not equal.
         .. describe:: x | y, x |= y
 
-            Returns a AutoModPresets instance with all enabled flags from
+            Returns an AutoModPresets instance with all enabled flags from
             both x and y.
         .. describe:: x & y, x &= y
 
-            Returns a AutoModPresets instance with only flags enabled on
+            Returns an AutoModPresets instance with only flags enabled on
             both x and y.
         .. describe:: x ^ y, x ^= y
 
-            Returns a AutoModPresets instance with only flags enabled on
+            Returns an AutoModPresets instance with only flags enabled on
             only one of x or y, not on both.
         .. describe:: ~x
 
-            Returns a AutoModPresets instance with all flags inverted from x.
+            Returns an AutoModPresets instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.

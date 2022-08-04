@@ -406,7 +406,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         elif isinstance(cooldown, CooldownMapping):
             buckets: CooldownMapping[Context[Any]] = cooldown
         else:
-            raise TypeError("Cooldown must be a an instance of CooldownMapping or None.")
+            raise TypeError("Cooldown must be an instance of CooldownMapping or None.")
         self._buckets: CooldownMapping[Context[Any]] = buckets
 
         try:
