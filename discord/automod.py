@@ -166,7 +166,7 @@ class AutoModTrigger:
         if type_ is AutoModRuleTriggerType.keyword:
             return cls(keyword_filter=data['keyword_filter'])  # type: ignore # unable to typeguard due to outer payload
         elif type_ is AutoModRuleTriggerType.keyword_preset:
-            return cls(presets=AutoModPresets._from_value(data['presets']))  # type: ignore # unable to typeguard due to outer payload
+            return cls(presets=AutoModPresets._from_value(data['presets']), allow_list=data.get('allow_list'))  # type: ignore # unable to typeguard due to outer payload
         else:
             return cls(type=type_)
 
