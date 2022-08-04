@@ -652,7 +652,7 @@ class Loop(Generic[LF]):
         # to it in order to make the comparisons make sense.
         # For example, if given a list of times [0, 3, 18]
         # If it's 04:00 today then we know we have to wait until 18:00 today
-        # If it's 19:00 today then we know we we have to wait until 00:00 tomorrow
+        # If it's 19:00 today then we know we have to wait until 00:00 tomorrow
         # Note that timezones need to be taken into consideration for this to work.
         # If the timezone is set to UTC+9 and the now timezone is UTC
         # A conversion needs to be done.
