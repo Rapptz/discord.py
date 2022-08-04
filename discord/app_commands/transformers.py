@@ -459,6 +459,23 @@ class EnumNameTransformer(Transformer):
         return self._enum[value]
 
 
+class InlineTransformer(Transformer):
+    def __init__(self, annotation: Any) -> None:
+        super().__init__()
+        self.annotation: Any = annotation
+
+    @property
+    def _error_display_name(self) -> str:
+        return self.annotation.__name__
+
+    @property
+    def type(self) -> AppCommandOptionType:
+        return AppCommandOptionType.string
+
+    async def transform(self, interaction: Interaction, value: Any) -> Any:
+        return await self.annotation.transform(interaction, value)
+
+
 if TYPE_CHECKING:
     from typing_extensions import Annotated as Transform
     from typing_extensions import Annotated as Range
@@ -715,6 +732,17 @@ def get_supported_annotation(
                 return (EnumNameTransformer(annotation), MISSING, False)
         if annotation is Choice:
             raise TypeError(f'Choice requires a type argument of int, str, or float')
+
+        # Check if a transform @classmethod is given to the class
+        # These flatten into simple "inline" transformers with implicit strings
+        transform_classmethod = annotation.__dict__.get('transform', None)
+        if isinstance(transform_classmethod, classmethod):
+            params = inspect.signature(transform_classmethod.__func__).parameters
+            if len(params) != 3:
+                raise TypeError(f'Inline transformer with transform classmethod requires 3 parameters')
+            if not inspect.iscoroutinefunction(transform_classmethod.__func__):
+                raise TypeError(f'Inline transformer with transform classmethod must be a coroutine')
+            return (InlineTransformer(annotation), MISSING, False)
 
     # Check if there's an origin
     origin = getattr(annotation, '__origin__', None)
