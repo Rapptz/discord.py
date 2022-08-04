@@ -73,7 +73,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class CommandParameter:
-    """Represents a application command parameter.
+    """Represents an application command parameter.
 
     Attributes
     -----------

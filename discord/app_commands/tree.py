@@ -344,7 +344,7 @@ class CommandTree(Generic[ClientT]):
                 self._context_menus.update(current)
             return
         elif not isinstance(command, (Command, Group)):
-            raise TypeError(f'Expected a application command, received {command.__class__!r} instead')
+            raise TypeError(f'Expected an application command, received {command.__class__!r} instead')
 
         # todo: validate application command groups having children (required)
 
@@ -538,7 +538,7 @@ class CommandTree(Generic[ClientT]):
         guild: Optional[Snowflake] = None,
         type: AppCommandType = AppCommandType.chat_input,
     ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
-        """Gets a application command from the tree.
+        """Gets an application command from the tree.
 
         Parameters
         -----------
@@ -900,7 +900,7 @@ class CommandTree(Generic[ClientT]):
         guilds: Sequence[Snowflake] = MISSING,
         extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[ContextMenuCallback], ContextMenu]:
-        """Creates a application command context menu from a regular function directly under this tree.
+        """Creates an application command context menu from a regular function directly under this tree.
 
         This function must have a signature of :class:`~discord.Interaction` as its first parameter
         and taking either a :class:`~discord.Member`, :class:`~discord.User`, or :class:`~discord.Message`,

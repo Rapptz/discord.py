@@ -1322,28 +1322,28 @@ class ApplicationFlags(BaseFlags):
 
         .. describe:: x | y, x |= y
 
-            Returns a ApplicationFlags instance with all enabled flags from
+            Returns an ApplicationFlags instance with all enabled flags from
             both x and y.
 
             .. versionadded:: 2.0
 
         .. describe:: x & y, x &= y
 
-            Returns a ApplicationFlags instance with only flags enabled on
+            Returns an ApplicationFlags instance with only flags enabled on
             both x and y.
 
             .. versionadded:: 2.0
 
         .. describe:: x ^ y, x ^= y
 
-            Returns a ApplicationFlags instance with only flags enabled on
+            Returns an ApplicationFlags instance with only flags enabled on
             only one of x or y, not on both.
 
             .. versionadded:: 2.0
 
         .. describe:: ~x
 
-            Returns a ApplicationFlags instance with all flags inverted from x.
+            Returns an ApplicationFlags instance with all flags inverted from x.
 
             .. versionadded:: 2.0
 
@@ -1518,28 +1518,28 @@ class AutoModPresets(ArrayFlags):
 
         .. describe:: x | y, x |= y
 
-            Returns a AutoModPresets instance with all enabled flags from
+            Returns an AutoModPresets instance with all enabled flags from
             both x and y.
 
             .. versionadded:: 2.0
 
         .. describe:: x & y, x &= y
 
-            Returns a AutoModPresets instance with only flags enabled on
+            Returns an AutoModPresets instance with only flags enabled on
             both x and y.
 
             .. versionadded:: 2.0
 
         .. describe:: x ^ y, x ^= y
 
-            Returns a AutoModPresets instance with only flags enabled on
+            Returns an AutoModPresets instance with only flags enabled on
             only one of x or y, not on both.
 
             .. versionadded:: 2.0
 
         .. describe:: ~x
 
-            Returns a AutoModPresets instance with all flags inverted from x.
+            Returns an AutoModPresets instance with all flags inverted from x.
 
             .. versionadded:: 2.0
 
