@@ -40,8 +40,7 @@ async def invalid_free_function(self, interaction: discord.Interaction, current:
 
 
 class X(app_commands.Transformer):
-    @classmethod
-    async def autocomplete(cls, interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
+    async def autocomplete(self, interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
         return []
 
 
@@ -66,8 +65,7 @@ def test_free_function_autocomplete():
 
     param = cmd._params['name']
     assert param.autocomplete is not MISSING
-    assert param.autocomplete.binding is None  # type: ignore
-    assert not param.autocomplete.requires_binding  # type: ignore
+    assert not param.autocomplete.pass_command_binding  # type: ignore
 
 
 def test_invalid_free_function_autocomplete():
@@ -86,8 +84,32 @@ def test_transformer_autocomplete():
 
     param = cmd._params['param']
     assert param.autocomplete is not MISSING
-    assert param.autocomplete.binding is X  # type: ignore
-    assert param.autocomplete.requires_binding  # type: ignore
+    assert getattr(param.autocomplete, '__self__', None) is not None
+    assert not getattr(param.autocomplete, 'pass_command_binding', False)
+
+
+first_instance = X()
+second_instance = X()
+
+
+def test_multiple_transformer_autocomplete():
+    @app_commands.command()
+    async def cmd(
+        interaction: discord.Interaction,
+        param: app_commands.Transform[str, first_instance],
+        second: app_commands.Transform[str, second_instance],
+    ):
+        ...
+
+    param = cmd._params['param']
+    assert param.autocomplete is not MISSING
+    assert getattr(param.autocomplete, '__self__', None) is first_instance
+    assert not getattr(param.autocomplete, 'pass_command_binding', False)
+
+    param = cmd._params['second']
+    assert param.autocomplete is not MISSING
+    assert getattr(param.autocomplete, '__self__', None) is second_instance
+    assert not getattr(param.autocomplete, 'pass_command_binding', False)
 
 
 def test_bound_function_autocomplete():
@@ -98,8 +120,8 @@ def test_bound_function_autocomplete():
 
     param = cmd._params['name']
     assert param.autocomplete is not MISSING
-    assert param.autocomplete.binding is lookup  # type: ignore
-    assert param.autocomplete.requires_binding  # type: ignore
+    assert getattr(param.autocomplete, '__self__', None) is lookup
+    assert not getattr(param.autocomplete, 'pass_command_binding', False)
 
 
 def test_invalid_bound_function_autocomplete():
@@ -125,6 +147,5 @@ def test_group_function_autocomplete():
     param = g.foo._params['name']
 
     assert param.autocomplete is not MISSING
-    # Note: The binding is filled later when actually invoked
-    assert param.autocomplete.binding is None  # type: ignore
-    assert param.autocomplete.requires_binding  # type: ignore
+    assert getattr(param.autocomplete, '__self__', None) is None
+    assert getattr(param.autocomplete, 'pass_command_binding', False)
