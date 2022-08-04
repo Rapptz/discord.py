@@ -108,7 +108,7 @@ class AllChannels:
 
 
 class AppCommand(Hashable):
-    """Represents a application command.
+    """Represents an application command.
 
     In common parlance this is referred to as a "Slash Command" or a
     "Context Menu Command".
@@ -732,7 +732,7 @@ class AppCommandThread(Hashable):
 
 
 class Argument:
-    """Represents a application command argument.
+    """Represents an application command argument.
 
     .. versionadded:: 2.0
 
