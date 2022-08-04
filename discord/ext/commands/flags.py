@@ -184,6 +184,11 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
             flag.name = name
 
         annotation = flag.annotation = resolve_annotation(flag.annotation, globals, locals, cache)
+        if hasattr(annotation, '__metadata__'):
+            # Annotated[X, Y] can access Y via __metadata__
+            metadata = annotation.__metadata__
+            if len(metadata) >= 1:
+                annotation = flag.annotation = metadata[0]
 
         if flag.default is MISSING and hasattr(annotation, '__commands_is_flag__') and annotation._can_be_constructible():
             flag.default = annotation._construct_default
