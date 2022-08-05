@@ -412,7 +412,7 @@ class Team(Hashable):
             The payout received.
         """
 
-        async def strategy(retrieve, before, limit):
+        async def strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[Snowflake]):
             before_id = before.id if before else None
             data = await self._state.http.get_team_payouts(self.id, limit=retrieve, before=before_id)
 

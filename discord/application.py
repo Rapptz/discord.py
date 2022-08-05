@@ -2935,7 +2935,7 @@ class Application(PartialApplication):
 
         _state = self._state
 
-        async def _after_strategy(retrieve, after, limit):
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[Snowflake]):
             after_id = after.id if after else None
             data = await _state.http.get_app_entitlements(
                 self.id,
@@ -2956,7 +2956,7 @@ class Application(PartialApplication):
 
             return data, after, limit
 
-        async def _before_strategy(retrieve, before, limit):
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[Snowflake]):
             before_id = before.id if before else None
             data = await _state.http.get_app_entitlements(
                 self.id,

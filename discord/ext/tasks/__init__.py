@@ -29,8 +29,8 @@ import datetime
 import logging
 from typing import (
     Any,
-    Awaitable,
     Callable,
+    Coroutine,
     Generic,
     List,
     Optional,
@@ -56,10 +56,10 @@ __all__ = (
 # fmt: on
 
 T = TypeVar('T')
-_func = Callable[..., Awaitable[Any]]
+_func = Callable[..., Coroutine[Any, Any, Any]]
 LF = TypeVar('LF', bound=_func)
 FT = TypeVar('FT', bound=_func)
-ET = TypeVar('ET', bound=Callable[[Any, BaseException], Awaitable[Any]])
+ET = TypeVar('ET', bound=Callable[[Any, BaseException], Coroutine[Any, Any, Any]])
 
 
 def is_ambiguous(dt: datetime.datetime) -> bool:
@@ -619,7 +619,7 @@ class Loop(Generic[LF]):
         if not inspect.iscoroutinefunction(coro):
             raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
 
-        self._error = coro  # type: ignore
+        self._error = coro
         return coro
 
     def _get_next_sleep_time(self, now: datetime.datetime = MISSING) -> datetime.datetime:

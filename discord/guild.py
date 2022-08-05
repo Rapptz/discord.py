@@ -2233,7 +2233,7 @@ class Guild(Hashable):
                 yield BanEntry(user=User(state=_state, data=entry['user']), reason=entry['reason'])
             return
 
-        async def _before_strategy(retrieve, before, limit):
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             data = await endpoint(self.id, limit=retrieve, before=before_id)
 
@@ -2245,7 +2245,7 @@ class Guild(Hashable):
 
             return data, before, limit
 
-        async def _after_strategy(retrieve, after, limit):
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
             data = await endpoint(self.id, limit=retrieve, after=after_id)
 
@@ -3503,7 +3503,7 @@ class Guild(Hashable):
             The audit log entry.
         """
 
-        async def _before_strategy(retrieve, before, limit):
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             data = await self._state.http.get_audit_logs(
                 self.id, limit=retrieve, user_id=user_id, action_type=action, before=before_id
@@ -3519,7 +3519,7 @@ class Guild(Hashable):
 
             return data, entries, before, limit
 
-        async def _after_strategy(retrieve, after, limit):
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
             data = await self._state.http.get_audit_logs(
                 self.id, limit=retrieve, user_id=user_id, action_type=action, after=after_id
