@@ -103,6 +103,7 @@ class ReadyEvent(ResumedEvent):
     pending_payments: NotRequired[List[Payment]]
     private_channels: List[Union[DMChannel, GroupDMChannel]]
     relationships: List[Relationship]
+    resume_gateway_url: str
     required_action: NotRequired[str]
     sessions: List[Session]
     session_id: str

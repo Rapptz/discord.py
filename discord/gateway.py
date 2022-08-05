@@ -293,6 +293,7 @@ class DiscordWebSocket:
         _zlib_enabled: bool
 
     # fmt: off
+    DEFAULT_GATEWAY    = 'wss://gateway.discord.gg/'
     DISPATCH           = 0
     HEARTBEAT          = 1
     IDENTIFY           = 2
@@ -358,13 +359,24 @@ class DiscordWebSocket:
         session: Optional[str] = None,
         sequence: Optional[int] = None,
         resume: bool = False,
+        encoding: str = 'json',
+        zlib: bool = True,
     ) -> Self:
         """Creates a main websocket for Discord from a :class:`Client`.
 
         This is for internal use only.
         """
-        gateway = gateway or await client.http.get_gateway()
-        socket = await client.http.ws_connect(gateway)
+        # Circular import
+        from .http import INTERNAL_API_VERSION
+
+        gateway = gateway or cls.DEFAULT_GATEWAY
+
+        if zlib:
+            url = f'{gateway}?v={INTERNAL_API_VERSION}&encoding={encoding}&compress=zlib-stream'
+        else:
+            url = f'{gateway}?v={INTERNAL_API_VERSION}&encoding={encoding}'
+
+        socket = await client.http.ws_connect(url)
         ws = cls(socket, loop=client.loop)
 
         # Dynamically add attributes needed
@@ -380,7 +392,7 @@ class DiscordWebSocket:
         ws._max_heartbeat_timeout = client._connection.heartbeat_timeout
         ws._user_agent = client.http.user_agent
         ws._super_properties = client.http.super_properties
-        ws._zlib_enabled = client.http.zlib
+        ws._zlib_enabled = zlib
 
         if client._enable_debug_events:
             ws.send = ws.debug_send
@@ -553,6 +565,7 @@ class DiscordWebSocket:
 
                 self.sequence = None
                 self.session_id = None
+                self.gateway = self.DEFAULT_GATEWAY
                 _log.info('Gateway session has been invalidated.')
                 await self.close(code=1000)
                 raise ReconnectWebSocket(resume=False)
@@ -564,8 +577,8 @@ class DiscordWebSocket:
             self._trace = trace = data.get('_trace', [])
             self.sequence = msg['s']
             self.session_id = data['session_id']
+            self.gateway = data['resume_gateway_url']
             _log.info('Connected to Gateway: %s (Session ID: %s).', ', '.join(trace), self.session_id)
-            await self.voice_state()  # Initial OP 4
 
         elif event == 'RESUMED':
             self._trace = trace = data.get('_trace', [])

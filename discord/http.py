@@ -62,16 +62,6 @@ from . import utils
 from .mentions import AllowedMentions
 from .utils import MISSING
 
-CAPTCHA_VALUES = {
-    'incorrect-captcha',
-    'response-already-used',
-    'captcha-required',
-    'invalid-input-response',
-    'invalid-response',
-    'You need to update your app',  # Discord moment
-}
-_log = logging.getLogger(__name__)
-
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -122,6 +112,18 @@ if TYPE_CHECKING:
     BE = TypeVar('BE', bound=BaseException)
     Response = Coroutine[Any, Any, T]
     MessageableChannel = Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable, VoiceChannel, ForumChannel]
+
+CAPTCHA_VALUES = {
+    'incorrect-captcha',
+    'response-already-used',
+    'captcha-required',
+    'invalid-input-response',
+    'invalid-response',
+    'You need to update your app',  # Discord moment
+}
+INTERNAL_API_VERSION = 9
+_log = logging.getLogger(__name__)
+
 
 
 async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any], str]:
@@ -288,7 +290,7 @@ def _gen_accept_encoding_header():
 
 
 class Route:
-    BASE: ClassVar[str] = 'https://discord.com/api/v9'
+    BASE: ClassVar[str] = f'https://discord.com/api/v{INTERNAL_API_VERSION}'
 
     def __init__(self, method: str, path: str, *, metadata: Optional[str] = None, **parameters: Any) -> None:
         self.path: str = path
@@ -3989,15 +3991,12 @@ class HTTPClient:
     # Misc
 
     async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
-        # The gateway URL hasn't changed for over 5 years
-        # And, the official clients aren't GETting it anymore, sooooo...
-        self.zlib = zlib
+        data = await self.request(Route('GET', '/gateway'))
         if zlib:
-            value = 'wss://gateway.discord.gg?encoding={0}&v=9&compress=zlib-stream'
+            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
         else:
-            value = 'wss://gateway.discord.gg?encoding={0}&v=9'
-
-        return value.format(encoding)
+            value = '{0}?encoding={1}&v={2}'
+        return value.format(data['url'], encoding, INTERNAL_API_VERSION)
 
     def get_user(self, user_id: Snowflake) -> Response[user.User]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))

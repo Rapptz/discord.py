@@ -766,7 +766,7 @@ class Client:
         """
 
         backoff = ExponentialBackoff()
-        ws_params = {
+        ws_params: Dict[str, Any] = {
             'initial': True,
         }
         while not self.is_closed():
@@ -779,7 +779,9 @@ class Client:
             except ReconnectWebSocket as e:
                 _log.info('Got a request to %s the websocket.', e.op)
                 self.dispatch('disconnect')
-                ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)  # type: ignore # These are always present at this point
+                ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)
+                if e.resume:
+                    ws_params['gateway'] = self.ws.gateway
                 continue
             except (
                 OSError,
@@ -803,7 +805,13 @@ class Client:
 
                 # If we get connection reset by peer then try to RESUME
                 if isinstance(exc, OSError) and exc.errno in (54, 10054):
-                    ws_params.update(sequence=self.ws.sequence, initial=False, resume=True, session=self.ws.session_id)  # type: ignore # These are always present at this point
+                    ws_params.update(
+                        sequence=self.ws.sequence,
+                        gateway=self.ws.gateway,
+                        initial=False,
+                        resume=True,
+                        session=self.ws.session_id,
+                    )
                     continue
 
                 # We should only get this when an unhandled close code happens,
@@ -821,7 +829,12 @@ class Client:
                 # Always try to RESUME the connection
                 # If the connection is not RESUME-able then the gateway will invalidate the session
                 # This is apparently what the official Discord client does
-                ws_params.update(sequence=self.ws.sequence, resume=True, session=self.ws.session_id)  # type: ignore # These are always present at this point
+                ws_params.update(
+                    sequence=self.ws.sequence,
+                    gateway=self.ws.gateway,
+                    resume=True,
+                    session=self.ws.session_id,
+                )
 
     async def close(self) -> None:
         """|coro|
