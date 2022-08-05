@@ -291,6 +291,7 @@ class DiscordWebSocket:
         _max_heartbeat_timeout: float
 
     # fmt: off
+    DEFAULT_GATEWAY    = 'wss://gateway.discord.gg/'
     DISPATCH           = 0
     HEARTBEAT          = 1
     IDENTIFY           = 2
@@ -350,13 +351,24 @@ class DiscordWebSocket:
         session: Optional[str] = None,
         sequence: Optional[int] = None,
         resume: bool = False,
+        encoding: str = 'json',
+        zlib: bool = True,
     ) -> Self:
         """Creates a main websocket for Discord from a :class:`Client`.
 
         This is for internal use only.
         """
-        gateway = gateway or await client.http.get_gateway()
-        socket = await client.http.ws_connect(gateway)
+        # Circular import
+        from .http import INTERNAL_API_VERSION
+
+        gateway = gateway or cls.DEFAULT_GATEWAY
+
+        if zlib:
+            url = f'{gateway}?v={INTERNAL_API_VERSION}&encoding={encoding}&compress=zlib-stream'
+        else:
+            url = f'{gateway}?v={INTERNAL_API_VERSION}&encoding={encoding}'
+
+        socket = await client.http.ws_connect(url)
         ws = cls(socket, loop=client.loop)
 
         # dynamically add attributes needed
@@ -533,6 +545,7 @@ class DiscordWebSocket:
 
                 self.sequence = None
                 self.session_id = None
+                self.gateway = self.DEFAULT_GATEWAY
                 _log.info('Shard ID %s session has been invalidated.', self.shard_id)
                 await self.close(code=1000)
                 raise ReconnectWebSocket(self.shard_id, resume=False)
@@ -543,6 +556,7 @@ class DiscordWebSocket:
         if event == 'READY':
             self.sequence = msg['s']
             self.session_id = data['session_id']
+            self.gateway = data['resume_gateway_url']
             _log.info('Shard ID %s has connected to Gateway (Session ID: %s).', self.shard_id, self.session_id)
 
         elif event == 'RESUMED':

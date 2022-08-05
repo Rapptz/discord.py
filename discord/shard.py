@@ -183,6 +183,7 @@ class Shard:
             coro = DiscordWebSocket.from_client(
                 self._client,
                 resume=exc.resume,
+                gateway=None if not exc.resume else self.ws.gateway,
                 shard_id=self.id,
                 session=self.ws.session_id,
                 sequence=self.ws.sequence,

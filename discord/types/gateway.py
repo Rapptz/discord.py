@@ -66,6 +66,7 @@ class ReadyEvent(TypedDict):
     user: User
     guilds: List[UnavailableGuild]
     session_id: str
+    resume_gateway_url: str
     shard: List[int]  # shard_id, num_shards
     application: GatewayAppInfo
 
