@@ -247,7 +247,7 @@ class ConnectionState:
         self._command_tree: Optional[CommandTree] = None
 
         if not intents.members or cache_flags._empty:
-            self.store_user = self.store_user_no_intents  # type: ignore # This reassignment is on purpose
+            self.store_user = self.store_user_no_intents
 
         self.parsers: Dict[str, Callable[[Any], None]]
         self.parsers = parsers = {}
@@ -1329,7 +1329,7 @@ class ConnectionState:
             _log.debug('GUILD_INTEGRATIONS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_integration_create(self, data: gw.IntegrationCreateEvent) -> None:
-        guild_id = int(data.pop('guild_id'))
+        guild_id = int(data['guild_id'])
         guild = self._get_guild(guild_id)
         if guild is not None:
             cls, _ = _integration_factory(data['type'])
@@ -1339,7 +1339,7 @@ class ConnectionState:
             _log.debug('INTEGRATION_CREATE referencing an unknown guild ID: %s. Discarding.', guild_id)
 
     def parse_integration_update(self, data: gw.IntegrationUpdateEvent) -> None:
-        guild_id = int(data.pop('guild_id'))
+        guild_id = int(data['guild_id'])
         guild = self._get_guild(guild_id)
         if guild is not None:
             cls, _ = _integration_factory(data['type'])

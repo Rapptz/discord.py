@@ -512,7 +512,7 @@ class ScheduledEvent(Hashable):
             All subscribed users of this event.
         """
 
-        async def _before_strategy(retrieve, before, limit):
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             users = await self._state.http.get_scheduled_event_users(
                 self.guild_id, self.id, limit=retrieve, with_member=False, before=before_id
@@ -526,7 +526,7 @@ class ScheduledEvent(Hashable):
 
             return users, before, limit
 
-        async def _after_strategy(retrieve, after, limit):
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
             users = await self._state.http.get_scheduled_event_users(
                 self.guild_id, self.id, limit=retrieve, with_member=False, after=after_id

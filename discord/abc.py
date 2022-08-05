@@ -1696,7 +1696,7 @@ class Messageable:
             The message with the message data parsed.
         """
 
-        async def _around_strategy(retrieve, around, limit):
+        async def _around_strategy(retrieve: int, around: Optional[Snowflake], limit: Optional[int]):
             if not around:
                 return []
 
@@ -1705,7 +1705,7 @@ class Messageable:
 
             return data, None, limit
 
-        async def _after_strategy(retrieve, after, limit):
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
             data = await self._state.http.logs_from(channel.id, retrieve, after=after_id)
 
@@ -1717,7 +1717,7 @@ class Messageable:
 
             return data, after, limit
 
-        async def _before_strategy(retrieve, before, limit):
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             data = await self._state.http.logs_from(channel.id, retrieve, before=before_id)
 

@@ -822,7 +822,7 @@ def create_activity(data: Optional[ActivityPayload], state: ConnectionState) -> 
         return Game(**data)
     elif game_type is ActivityType.custom:
         try:
-            name = data.pop('name')
+            name = data.pop('name')  # type: ignore
         except KeyError:
             ret = Activity(**data)
         else:
