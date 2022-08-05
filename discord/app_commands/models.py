@@ -107,6 +107,10 @@ class AllChannels:
         return f'<AllChannels guild={self.guild}>'
 
 
+def _to_locale_dict(data: Dict[str, str]) -> Dict[Locale, str]:
+    return {try_enum(Locale, key): value for key, value in data.items()}
+
+
 class AppCommand(Hashable):
     """Represents an application command.
 
@@ -145,6 +149,10 @@ class AppCommand(Hashable):
         The application command's name.
     description: :class:`str`
         The application command's description.
+    name_localizations: Dict[:class:`~discord.Locale`, :class:`str`]
+        The localised names of the application command. Used for display purposes.
+    description_localizations: Dict[:class:`~discord.Locale`, :class:`str`]
+        The localised descriptions of the application command. Used for display purposes.
     options: List[Union[:class:`Argument`, :class:`AppCommandGroup`]]
         A list of options.
     default_member_permissions: Optional[:class:`~discord.Permissions`]
@@ -164,6 +172,8 @@ class AppCommand(Hashable):
         'application_id',
         'name',
         'description',
+        'name_localizations',
+        'description_localizations',
         'guild_id',
         'options',
         'default_member_permissions',
@@ -200,6 +210,8 @@ class AppCommand(Hashable):
 
         self.dm_permission: bool = dm_permission
         self.nsfw: bool = data.get('nsfw', False)
+        self.name_localizations: Dict[Locale, str] = _to_locale_dict(data.get('name_localizations') or {})
+        self.description_localizations: Dict[Locale, str] = _to_locale_dict(data.get('description_localizations') or {})
 
     def to_dict(self) -> ApplicationCommandPayload:
         return {
@@ -208,6 +220,8 @@ class AppCommand(Hashable):
             'application_id': self.application_id,
             'name': self.name,
             'description': self.description,
+            'name_localizations': {str(k): v for k, v in self.name_localizations.items()},
+            'description_localizations': {str(k): v for k, v in self.description_localizations.items()},
             'options': [opt.to_dict() for opt in self.options],
         }  # type: ignore # Type checker does not understand this literal.
 
@@ -766,6 +780,10 @@ class Argument:
         The name of the argument.
     description: :class:`str`
         The description of the argument.
+    name_localizations: Dict[:class:`~discord.Locale`, :class:`str`]
+        The localised names of the argument. Used for display purposes.
+    description_localizations: Dict[:class:`~discord.Locale`, :class:`str`]
+        The localised descriptions of the argument. Used for display purposes.
     required: :class:`bool`
         Whether the argument is required.
     choices: List[:class:`Choice`]
@@ -790,6 +808,8 @@ class Argument:
         'type',
         'name',
         'description',
+        'name_localizations',
+        'description_localizations',
         'required',
         'choices',
         'channel_types',
@@ -826,6 +846,8 @@ class Argument:
         self.choices: List[Choice[Union[int, float, str]]] = [
             Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])
         ]
+        self.name_localizations: Dict[Locale, str] = _to_locale_dict(data.get('name_localizations') or {})
+        self.description_localizations: Dict[Locale, str] = _to_locale_dict(data.get('description_localizations') or {})
 
     def to_dict(self) -> ApplicationCommandOption:
         return {
@@ -841,6 +863,8 @@ class Argument:
             'max_length': self.max_length,
             'autocomplete': self.autocomplete,
             'options': [],
+            'name_localizations': {str(k): v for k, v in self.name_localizations.items()},
+            'description_localizations': {str(k): v for k, v in self.description_localizations.items()},
         }  # type: ignore # Type checker does not understand this literal.
 
 
@@ -857,6 +881,10 @@ class AppCommandGroup:
         The name of the subcommand.
     description: :class:`str`
         The description of the subcommand.
+    name_localizations: Dict[:class:`~discord.Locale`, :class:`str`]
+        The localised names of the subcommand. Used for display purposes.
+    description_localizations: Dict[:class:`~discord.Locale`, :class:`str`]
+        The localised descriptions of the subcommand. Used for display purposes.
     options: List[Union[:class:`Argument`, :class:`AppCommandGroup`]]
         A list of options.
     parent: Union[:class:`AppCommand`, :class:`AppCommandGroup`]
@@ -867,6 +895,8 @@ class AppCommandGroup:
         'type',
         'name',
         'description',
+        'name_localizations',
+        'description_localizations',
         'options',
         'parent',
         '_state',
@@ -915,6 +945,8 @@ class AppCommandGroup:
         self.options: List[Union[Argument, AppCommandGroup]] = [
             app_command_option_factory(data=d, parent=self, state=self._state) for d in data.get('options', [])
         ]
+        self.name_localizations: Dict[Locale, str] = _to_locale_dict(data.get('name_localizations') or {})
+        self.description_localizations: Dict[Locale, str] = _to_locale_dict(data.get('description_localizations') or {})
 
     def to_dict(self) -> 'ApplicationCommandOption':
         return {
@@ -922,6 +954,8 @@ class AppCommandGroup:
             'type': self.type.value,
             'description': self.description,
             'options': [arg.to_dict() for arg in self.options],
+            'name_localizations': {str(k): v for k, v in self.name_localizations.items()},
+            'description_localizations': {str(k): v for k, v in self.description_localizations.items()},
         }  # type: ignore # Type checker does not understand this literal.
 
 
