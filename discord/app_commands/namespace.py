@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, NamedTuple, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Iterable, Iterator, List, NamedTuple, Tuple
 from ..member import Member
 from ..object import Object
 from ..role import Role
@@ -88,6 +88,10 @@ class Namespace:
         .. describe:: key in x
 
             Checks if the attribute is in the namespace.
+        .. describe:: iter(x)
+
+           Returns an iterator of ``(name, value)`` pairs. This allows it
+           to be, for example, constructed as a dict or a list of pairs.
 
     This namespace object converts resolved objects into their appropriate form depending on their
     type. Consult the table below for conversion information.
@@ -134,17 +138,17 @@ class Namespace:
             opt_type = option['type']
             name = option['name']
             if opt_type in (3, 4, 5):  # string, integer, boolean
-                value = option['value']  # type: ignore -- Key is there
+                value = option['value']  # type: ignore # Key is there
                 self.__dict__[name] = value
             elif opt_type == 10:  # number
-                value = option['value']  # type: ignore -- Key is there
+                value = option['value']  # type: ignore # Key is there
                 if value is None:
                     self.__dict__[name] = float('nan')
                 else:
                     self.__dict__[name] = float(value)
             elif opt_type in (6, 7, 8, 9, 11):
                 # Remaining ones should be snowflake based ones with resolved data
-                snowflake: str = option['value']  # type: ignore -- Key is there
+                snowflake: str = option['value']  # type: ignore # Key is there
                 if opt_type == 9:  # Mentionable
                     # Mentionable is User | Role, these do not cause any conflict
                     key = ResolveKey.any_with(snowflake)
@@ -164,7 +168,7 @@ class Namespace:
         state = interaction._state
         members = resolved.get('members', {})
         guild_id = interaction.guild_id
-        guild = (state._get_guild(guild_id) or Object(id=guild_id)) if guild_id is not None else None
+        guild = state._get_or_create_unavailable_guild(guild_id) if guild_id is not None else None
         type = AppCommandOptionType.user.value
         for (user_id, user_data) in resolved.get('users', {}).items():
             try:
@@ -209,9 +213,11 @@ class Namespace:
         for (message_id, message_data) in resolved.get('messages', {}).items():
             channel_id = int(message_data['channel_id'])
             if guild is None:
-                channel = PartialMessageable(state=state, id=channel_id)
+                channel = PartialMessageable(state=state, guild_id=guild_id, id=channel_id)
             else:
-                channel = guild.get_channel_or_thread(channel_id) or PartialMessageable(state=state, id=channel_id)
+                channel = guild.get_channel_or_thread(channel_id) or PartialMessageable(
+                    state=state, guild_id=guild_id, id=channel_id
+                )
 
             # Type checker doesn't understand this due to failure to narrow
             message = Message(state=state, channel=channel, data=message_data)  # type: ignore
@@ -237,6 +243,9 @@ class Namespace:
 
     def __getattr__(self, attr: str) -> Any:
         return None
+
+    def __iter__(self) -> Iterator[Tuple[str, Any]]:
+        yield from self.__dict__.items()
 
     def _update_with_defaults(self, defaults: Iterable[Tuple[str, Any]]) -> None:
         for key, value in defaults:

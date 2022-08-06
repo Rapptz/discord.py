@@ -28,7 +28,7 @@ import datetime
 import inspect
 import itertools
 from operator import attrgetter
-from typing import Any, Callable, Collection, Coroutine, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, Type
+from typing import Any, Awaitable, Callable, Collection, Dict, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
 import discord.abc
 
@@ -48,10 +48,11 @@ __all__ = (
     'Member',
 )
 
+T = TypeVar('T', bound=type)
+
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .asset import Asset
     from .channel import DMChannel, VoiceChannel, StageChannel
     from .flags import PublicUserFlags
     from .guild import Guild
@@ -206,7 +207,7 @@ class _ClientStatus:
         return self
 
 
-def flatten_user(cls: Any) -> Type[Member]:
+def flatten_user(cls: T) -> T:
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
         # ignore private/special methods
         if attr.startswith('_'):
@@ -332,7 +333,7 @@ class Member(discord.abc.Messageable, _UserTag):
         default_avatar: Asset
         avatar: Optional[Asset]
         dm_channel: Optional[DMChannel]
-        create_dm: Callable[[], Coroutine[Any, Any, DMChannel]]
+        create_dm: Callable[[], Awaitable[DMChannel]]
         mutual_guilds: List[Guild]
         public_flags: PublicUserFlags
         banner: Optional[Asset]
@@ -550,10 +551,24 @@ class Member(discord.abc.Messageable, _UserTag):
         return result
 
     @property
+    def display_icon(self) -> Optional[Union[str, Asset]]:
+        """Optional[Union[:class:`str`, :class:`Asset`]]: A property that returns the role icon that is rendered for
+        this member. If no icon is shown then ``None`` is returned.
+
+        .. versionadded:: 2.0
+        """
+
+        roles = self.roles[1:]  # remove @everyone
+        for role in reversed(roles):
+            icon = role.display_icon
+            if icon:
+                return icon
+
+        return None
+
+    @property
     def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention the member."""
-        if self.nick:
-            return f'<@!{self._user.id}>'
         return f'<@{self._user.id}>'
 
     @property
@@ -650,8 +665,11 @@ class Member(discord.abc.Messageable, _UserTag):
         channel permission overwrites. For 100% accurate permission
         calculation, please use :meth:`abc.GuildChannel.permissions_for`.
 
-        This does take into consideration guild ownership and the
-        administrator implication.
+        This does take into consideration guild ownership, the
+        administrator implication, and whether the member is timed out.
+
+        .. versionchanged:: 2.0
+            Member timeouts are taken into consideration.
         """
 
         if self.guild.owner_id == self.id:
@@ -663,6 +681,9 @@ class Member(discord.abc.Messageable, _UserTag):
 
         if base.administrator:
             return Permissions.all()
+
+        if self.is_timed_out():
+            base.value &= Permissions._timeout_mask()
 
         return base
 
@@ -753,7 +774,7 @@ class Member(discord.abc.Messageable, _UserTag):
             Can now pass ``None`` to ``voice_channel`` to kick a member from voice.
 
         .. versionchanged:: 2.0
-            The newly member is now optionally returned, if applicable.
+            The newly updated member is now optionally returned, if applicable.
 
         Parameters
         -----------
@@ -913,7 +934,9 @@ class Member(discord.abc.Messageable, _UserTag):
         """
         await self.edit(voice_channel=channel, reason=reason)
 
-    async def timeout(self, when: Union[datetime.timedelta, datetime.datetime], /, *, reason: Optional[str] = None) -> None:
+    async def timeout(
+        self, until: Optional[Union[datetime.timedelta, datetime.datetime]], /, *, reason: Optional[str] = None
+    ) -> None:
         """|coro|
 
         Applies a time out to a member until the specified date time or for the
@@ -926,26 +949,28 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Parameters
         -----------
-        when: Union[:class:`datetime.timedelta`, :class:`datetime.datetime`]
+        until: Optional[Union[:class:`datetime.timedelta`, :class:`datetime.datetime`]]
             If this is a :class:`datetime.timedelta` then it represents the amount of
             time the member should be timed out for. If this is a :class:`datetime.datetime`
-            then it's when the member's timeout should expire. Note that the API only allows
-            for timeouts up to 28 days.
+            then it's when the member's timeout should expire. If ``None`` is passed then the
+            timeout is removed. Note that the API only allows for timeouts up to 28 days.
         reason: Optional[:class:`str`]
             The reason for doing this action. Shows up on the audit log.
 
         Raises
         -------
         TypeError
-            The ``when`` parameter was the wrong type of the datetime was not timezone-aware.
+            The ``until`` parameter was the wrong type or the datetime was not timezone-aware.
         """
 
-        if isinstance(when, datetime.timedelta):
-            timed_out_until = utils.utcnow() + when
-        elif isinstance(when, datetime.datetime):
-            timed_out_until = when
+        if until is None:
+            timed_out_until = None
+        elif isinstance(until, datetime.timedelta):
+            timed_out_until = utils.utcnow() + until
+        elif isinstance(until, datetime.datetime):
+            timed_out_until = until
         else:
-            raise TypeError(f'expected datetime.datetime or datetime.timedelta not {when.__class__!r}')
+            raise TypeError(f'expected None, datetime.datetime, or datetime.timedelta not {until.__class__!r}')
 
         await self.edit(timed_out_until=timed_out_until, reason=reason)
 

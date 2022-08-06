@@ -21,6 +21,16 @@
   <link rel="stylesheet" href="{{ pathto('_static/icons.css', 1)|e }}" type="text/css" />
   {%- block scripts %}
   <script id="documentation_options" data-url_root="{{ pathto('', 1) }}" src="{{ pathto('_static/documentation_options.js', 1) }}"></script>
+  {#- In order to allow strings to be translated, they must be passed to gettext here #}
+  {#- Any user-facing string that is translated must be in this object #}
+  {#- Note that these can only be simple key-value translations #}
+  {#- If something better comes along this will be removed #}
+  <script type="text/javascript">
+    var DPY_TRANSLATIONS = {{ "{" }}
+      copy_code: "{{ _('Copy Code') }}",
+      copy_code_error: "{{ _('Could not copy codeblock:') }}",
+    {{ "}" }}
+  </script>
   {%- for js in script_files %}
   {{ js_tag(js) }}
   {%- endfor %}
@@ -61,7 +71,7 @@
         <a href="{{ pathto(master_doc)|e }}" class="main-heading">discord.py</a>
         <a href="https://github.com/Rapptz/discord.py" title="GitHub"><span class="material-icons custom-icons">github</span></a>
         <a href="{{ discord_invite }}" title="{{ _('Discord') }}"><span class="material-icons custom-icons">discord</span></a>
-        <a href="{{ pathto('faq') }}" title="FAQ"><span class="material-icons">help_center</span></a>
+        <a href="{{ pathto('faq') }}" title="{{ _('FAQ') }}"><span class="material-icons">help_center</span></a>
         {#- If we have more links we can put them here #}
         <a onclick="mobileSearch.open();" title="{{ _('Search') }}" id="open-search" class="mobile-only"><span class="material-icons">search</span></a>
         <a onclick="mobileSearch.close();" title="{{ _('Close') }}" id="close-search" class="mobile-only" hidden><span class="material-icons">close</span></a>
@@ -157,7 +167,7 @@
 
   <div id="settings" class="modal" onclick="if (event.target == this){ settingsModal.close(); }" hidden>
     <div class="modal-content">
-      <span class="close" onclick="settingsModal.close();" title="Close">
+      <span class="close" onclick="settingsModal.close();" title="{{ _('Close') }}">
         <span class="material-icons">close</span>
       </span>
       <h1>{{ _('Settings') }}</h1>
@@ -199,7 +209,7 @@
   </div>
 
   <div id="to-top" onclick="scrollToTop()"{%- if READTHEDOCS %} class="is-rtd"{%- endif %} hidden>
-    <span><span class="material-icons">arrow_upward</span> to top</span>
+    <span><span class="material-icons">arrow_upward</span>{{ _('to top') }}</span>
   </div>
 
 </body>

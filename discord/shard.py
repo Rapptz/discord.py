@@ -48,7 +48,7 @@ from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Di
 if TYPE_CHECKING:
     from .gateway import DiscordWebSocket
     from .activity import BaseActivity
-    from .enums import Status
+    from .flags import Intents
 
 __all__ = (
     'AutoShardedClient',
@@ -308,6 +308,14 @@ class AutoShardedClient(Client):
     if this is used. By default, when omitted, the client will launch shards from
     0 to ``shard_count - 1``.
 
+    .. container:: operations
+
+        .. describe:: async with x
+
+            Asynchronously initialises the client and automatically cleans up.
+
+            .. versionadded:: 2.0
+
     Attributes
     ------------
     shard_ids: Optional[List[:class:`int`]]
@@ -317,10 +325,10 @@ class AutoShardedClient(Client):
     if TYPE_CHECKING:
         _connection: AutoShardedConnectionState
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, intents: Intents, **kwargs: Any) -> None:
         kwargs.pop('shard_id', None)
         self.shard_ids: Optional[List[int]] = kwargs.pop('shard_ids', None)
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, intents=intents, **kwargs)
 
         if self.shard_ids is not None:
             if self.shard_count is None:
@@ -408,6 +416,9 @@ class AutoShardedClient(Client):
         ret.launch()
 
     async def launch_shards(self) -> None:
+        if self.is_closed():
+            return
+
         if self.shard_count is None:
             self.shard_count: int
             self.shard_count, gateway = await self.http.get_bot_gateway()
@@ -422,8 +433,6 @@ class AutoShardedClient(Client):
         for shard_id in shard_ids:
             initial = shard_id == shard_ids[0]
             await self.launch_shard(gateway, shard_id, initial=initial)
-
-        self._connection.shards_launched.set()
 
     async def _async_setup_hook(self) -> None:
         await super()._async_setup_hook()
@@ -462,12 +471,7 @@ class AutoShardedClient(Client):
             return
 
         self._closed = True
-
-        for vc in self.voice_clients:
-            try:
-                await vc.disconnect(force=True)
-            except Exception:
-                pass
+        await self._connection.close()
 
         to_close = [asyncio.ensure_future(shard.close(), loop=self.loop) for shard in self.__shards.values()]
         if to_close:

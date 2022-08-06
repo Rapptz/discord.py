@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import List, Literal, Optional, TypedDict, Union
+from typing_extensions import NotRequired
 
 from .snowflake import Snowflake
 from .user import User
@@ -33,15 +34,7 @@ EventStatus = Literal[1, 2, 3, 4]
 EntityType = Literal[1, 2, 3]
 
 
-class _BaseGuildScheduledEventOptional(TypedDict, total=False):
-    creator_id: Optional[Snowflake]
-    description: Optional[str]
-    creator: User
-    user_count: int
-    image: Optional[str]
-
-
-class _BaseGuildScheduledEvent(_BaseGuildScheduledEventOptional):
+class _BaseGuildScheduledEvent(TypedDict):
     id: Snowflake
     guild_id: Snowflake
     entity_id: Optional[Snowflake]
@@ -49,15 +42,17 @@ class _BaseGuildScheduledEvent(_BaseGuildScheduledEventOptional):
     scheduled_start_time: str
     privacy_level: PrivacyLevel
     status: EventStatus
+    creator_id: NotRequired[Optional[Snowflake]]
+    description: NotRequired[Optional[str]]
+    creator: NotRequired[User]
+    user_count: NotRequired[int]
+    image: NotRequired[Optional[str]]
 
 
-class _VoiceChannelScheduledEventOptional(_BaseGuildScheduledEvent, total=False):
-    scheduled_end_time: Optional[str]
-
-
-class _VoiceChannelScheduledEvent(_VoiceChannelScheduledEventOptional):
+class _VoiceChannelScheduledEvent(_BaseGuildScheduledEvent):
     channel_id: Snowflake
     entity_metadata: Literal[None]
+    scheduled_end_time: NotRequired[Optional[str]]
 
 
 class StageInstanceScheduledEvent(_VoiceChannelScheduledEvent):

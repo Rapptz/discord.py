@@ -31,6 +31,7 @@ from typing import (
     AsyncIterator,
     Awaitable,
     Callable,
+    Collection,
     Coroutine,
     Dict,
     ForwardRef,
@@ -59,6 +60,7 @@ import datetime
 import functools
 from inspect import isawaitable as _isawaitable, signature as _signature
 from operator import attrgetter
+from urllib.parse import urlencode
 import json
 import re
 import sys
@@ -88,19 +90,22 @@ __all__ = (
     'escape_mentions',
     'as_chunks',
     'format_dt',
+    'MISSING',
 )
 
 DISCORD_EPOCH = 1420070400000
 
 
 class _MissingSentinel:
-    def __eq__(self, other):
+    __slots__ = ()
+
+    def __eq__(self, other) -> bool:
         return False
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return False
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return 0
 
     def __repr__(self):
@@ -111,7 +116,7 @@ MISSING: Any = _MissingSentinel()
 
 
 class _cached_property:
-    def __init__(self, function):
+    def __init__(self, function) -> None:
         self.function = function
         self.__doc__ = getattr(function, '__doc__')
 
@@ -128,7 +133,7 @@ class _cached_property:
 if TYPE_CHECKING:
     from functools import cached_property as cached_property
 
-    from typing_extensions import ParamSpec, Self
+    from typing_extensions import ParamSpec, Self, TypeGuard
 
     from .permissions import Permissions
     from .abc import Snowflake
@@ -140,10 +145,7 @@ if TYPE_CHECKING:
 
     P = ParamSpec('P')
 
-    MaybeCoroFunc = Union[
-        Callable[P, Coroutine[Any, Any, 'T']],
-        Callable[P, 'T'],
-    ]
+    MaybeAwaitableFunc = Callable[P, 'MaybeAwaitable[T]']
 
     _SnowflakeListBase = array.array[int]
 
@@ -156,6 +158,7 @@ T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
 _Iter = Union[Iterable[T], AsyncIterable[T]]
 Coro = Coroutine[Any, Any, T]
+MaybeAwaitable = Union[T, Awaitable[T]]
 
 
 class CachedSlotProperty(Generic[T, T_co]):
@@ -203,31 +206,41 @@ def cached_slot_property(name: str) -> Callable[[Callable[[T], T_co]], CachedSlo
 
 
 class SequenceProxy(Sequence[T_co]):
-    """Read-only proxy of a Sequence."""
+    """A proxy of a sequence that only creates a copy when necessary."""
 
-    def __init__(self, proxied: Sequence[T_co]):
-        self.__proxied = proxied
+    def __init__(self, proxied: Collection[T_co], *, sorted: bool = False):
+        self.__proxied: Collection[T_co] = proxied
+        self.__sorted: bool = sorted
+
+    @cached_property
+    def __copied(self) -> List[T_co]:
+        if self.__sorted:
+            # The type checker thinks the variance is wrong, probably due to the comparison requirements
+            self.__proxied = sorted(self.__proxied)  # type: ignore
+        else:
+            self.__proxied = list(self.__proxied)
+        return self.__proxied
 
     def __getitem__(self, idx: int) -> T_co:
-        return self.__proxied[idx]
+        return self.__copied[idx]
 
     def __len__(self) -> int:
         return len(self.__proxied)
 
     def __contains__(self, item: Any) -> bool:
-        return item in self.__proxied
+        return item in self.__copied
 
     def __iter__(self) -> Iterator[T_co]:
-        return iter(self.__proxied)
+        return iter(self.__copied)
 
     def __reversed__(self) -> Iterator[T_co]:
-        return reversed(self.__proxied)
+        return reversed(self.__copied)
 
     def index(self, value: Any, *args: Any, **kwargs: Any) -> int:
-        return self.__proxied.index(value, *args, **kwargs)
+        return self.__copied.index(value, *args, **kwargs)
 
     def count(self, value: Any) -> int:
-        return self.__proxied.count(value)
+        return self.__copied.count(value)
 
 
 @overload
@@ -251,7 +264,7 @@ def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     return None
 
 
-def copy_doc(original: Callable) -> Callable[[T], T]:
+def copy_doc(original: Callable[..., Any]) -> Callable[[T], T]:
     def decorator(overridden: T) -> T:
         overridden.__doc__ = original.__doc__
         overridden.__signature__ = _signature(original)  # type: ignore
@@ -287,13 +300,14 @@ def oauth_url(
     redirect_uri: str = MISSING,
     scopes: Iterable[str] = MISSING,
     disable_guild_select: bool = False,
+    state: str = MISSING,
 ) -> str:
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
 
     .. versionchanged:: 2.0
 
-        ``permissions``, ``guild``, ``redirect_uri``, and ``scopes`` parameters
+        ``permissions``, ``guild``, ``redirect_uri``, ``scopes`` and ``state`` parameters
         are now keyword-only.
 
     Parameters
@@ -315,6 +329,10 @@ def oauth_url(
         Whether to disallow the user from changing the guild dropdown.
 
         .. versionadded:: 2.0
+    state: :class:`str`
+        The state to return after the authorization.
+
+        .. versionadded:: 2.0
 
     Returns
     --------
@@ -327,12 +345,12 @@ def oauth_url(
         url += f'&permissions={permissions.value}'
     if guild is not MISSING:
         url += f'&guild_id={guild.id}'
-    if redirect_uri is not MISSING:
-        from urllib.parse import urlencode
-
-        url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
     if disable_guild_select:
         url += '&disable_guild_select=true'
+    if redirect_uri is not MISSING:
+        url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
+    if state is not MISSING:
+        url += f'&{urlencode({"state": state})}'
     return url
 
 
@@ -391,12 +409,12 @@ async def _afind(predicate: Callable[[T], Any], iterable: AsyncIterable[T], /) -
 
 
 @overload
-def find(predicate: Callable[[T], Any], iterable: Iterable[T], /) -> Optional[T]:
+def find(predicate: Callable[[T], Any], iterable: AsyncIterable[T], /) -> Coro[Optional[T]]:
     ...
 
 
 @overload
-def find(predicate: Callable[[T], Any], iterable: AsyncIterable[T], /) -> Coro[Optional[T]]:
+def find(predicate: Callable[[T], Any], iterable: Iterable[T], /) -> Optional[T]:
     ...
 
 
@@ -430,9 +448,9 @@ def find(predicate: Callable[[T], Any], iterable: _Iter[T], /) -> Union[Optional
     """
 
     return (
-        _find(predicate, iterable)  # type: ignore
-        if hasattr(iterable, '__iter__')  # isinstance(iterable, collections.abc.Iterable) is too slow
-        else _afind(predicate, iterable)  # type: ignore
+        _afind(predicate, iterable)  # type: ignore
+        if hasattr(iterable, '__aiter__')  # isinstance(iterable, collections.abc.AsyncIterable) is too slow
+        else _find(predicate, iterable)  # type: ignore
     )
 
 
@@ -477,12 +495,12 @@ async def _aget(iterable: AsyncIterable[T], /, **attrs: Any) -> Optional[T]:
 
 
 @overload
-def get(iterable: Iterable[T], /, **attrs: Any) -> Optional[T]:
+def get(iterable: AsyncIterable[T], /, **attrs: Any) -> Coro[Optional[T]]:
     ...
 
 
 @overload
-def get(iterable: AsyncIterable[T], /, **attrs: Any) -> Coro[Optional[T]]:
+def get(iterable: Iterable[T], /, **attrs: Any) -> Optional[T]:
     ...
 
 
@@ -546,9 +564,9 @@ def get(iterable: _Iter[T], /, **attrs: Any) -> Union[Optional[T], Coro[Optional
     """
 
     return (
-        _get(iterable, **attrs)  # type: ignore
-        if hasattr(iterable, '__iter__')  # isinstance(iterable, collections.abc.Iterable) is too slow
-        else _aget(iterable, **attrs)  # type: ignore
+        _aget(iterable, **attrs)  # type: ignore
+        if hasattr(iterable, '__aiter__')  # isinstance(iterable, collections.abc.AsyncIterable) is too slow
+        else _get(iterable, **attrs)  # type: ignore
     )
 
 
@@ -615,7 +633,7 @@ def _parse_ratelimit_header(request: Any, *, use_clock: bool = False) -> float:
         return float(reset_after)
 
 
-async def maybe_coroutine(f: MaybeCoroFunc[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
+async def maybe_coroutine(f: MaybeAwaitableFunc[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
     value = f(*args, **kwargs)
     if _isawaitable(value):
         return await value
@@ -623,7 +641,11 @@ async def maybe_coroutine(f: MaybeCoroFunc[P, T], *args: P.args, **kwargs: P.kwa
         return value  # type: ignore
 
 
-async def async_all(gen: Iterable[Awaitable[T]], *, check: Callable[[T], bool] = _isawaitable) -> bool:
+async def async_all(
+    gen: Iterable[Union[T, Awaitable[T]]],
+    *,
+    check: Callable[[Union[T, Awaitable[T]]], TypeGuard[Awaitable[T]]] = _isawaitable,
+) -> bool:
     for elem in gen:
         if check(elem):
             elem = await elem
@@ -1032,9 +1054,9 @@ def evaluate_annotation(
     if implicit_str and isinstance(tp, str):
         if tp in cache:
             return cache[tp]
-        evaluated = eval(tp, globals, locals)
+        evaluated = evaluate_annotation(eval(tp, globals, locals), globals, locals, cache)
         cache[tp] = evaluated
-        return evaluate_annotation(evaluated, globals, locals, cache)
+        return evaluated
 
     if hasattr(tp, '__args__'):
         implicit_str = True

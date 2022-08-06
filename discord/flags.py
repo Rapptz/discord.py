@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+from functools import reduce
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, overload
 
 from .enums import UserFlags
@@ -39,6 +40,8 @@ __all__ = (
     'Intents',
     'MemberCacheFlags',
     'ApplicationFlags',
+    'ChannelFlags',
+    'AutoModPresets',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -116,6 +119,32 @@ class BaseFlags:
         self.value = value
         return self
 
+    def __or__(self, other: Self) -> Self:
+        return self._from_value(self.value | other.value)
+
+    def __and__(self, other: Self) -> Self:
+        return self._from_value(self.value & other.value)
+
+    def __xor__(self, other: Self) -> Self:
+        return self._from_value(self.value ^ other.value)
+
+    def __ior__(self, other: Self) -> Self:
+        self.value |= other.value
+        return self
+
+    def __iand__(self, other: Self) -> Self:
+        self.value &= other.value
+        return self
+
+    def __ixor__(self, other: Self) -> Self:
+        self.value ^= other.value
+        return self
+
+    def __invert__(self) -> Self:
+        max_bits = max(self.VALID_FLAGS.values()).bit_length()
+        max_value = -1 + (2**max_bits)
+        return self._from_value(self.value ^ max_value)
+
     def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and self.value == other.value
 
@@ -164,12 +193,42 @@ class SystemChannelFlags(BaseFlags):
         .. describe:: x == y
 
             Checks if two flags are equal.
+
         .. describe:: x != y
 
             Checks if two flags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a SystemChannelFlags instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x & y, x &= y
+
+            Returns a SystemChannelFlags instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a SystemChannelFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+
+        .. describe:: ~x
+
+            Returns a SystemChannelFlags instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
+
         .. describe:: hash(x)
 
                Return the flag's hash.
+
         .. describe:: iter(x)
 
                Returns an iterator of ``(name, value)`` pairs. This allows it
@@ -243,6 +302,34 @@ class MessageFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two flags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a MessageFlags instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x & y, x &= y
+
+            Returns a MessageFlags instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a MessageFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+
+        .. describe:: ~x
+
+            Returns a MessageFlags instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
+
         .. describe:: hash(x)
 
                Return the flag's hash.
@@ -338,6 +425,34 @@ class PublicUserFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two PublicUserFlags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a PublicUserFlags instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x & y, x &= y
+
+            Returns a PublicUserFlags instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a PublicUserFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+
+        .. describe:: ~x
+
+            Returns a PublicUserFlags instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
+
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -487,6 +602,34 @@ class Intents(BaseFlags):
         .. describe:: x != y
 
             Checks if two flags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns an Intents instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x & y, x &= y
+
+            Returns an Intents instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns an Intents instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+
+        .. describe:: ~x
+
+            Returns an Intents instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
+
         .. describe:: hash(x)
 
                Return the flag's hash.
@@ -504,8 +647,8 @@ class Intents(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, **kwargs: bool) -> None:
-        self.value: int = self.DEFAULT_VALUE
+    def __init__(self, value: int = 0, **kwargs: bool) -> None:
+        self.value: int = value
         for key, value in kwargs.items():
             if key not in self.VALID_FLAGS:
                 raise TypeError(f'{key!r} is not a valid flag name.')
@@ -514,8 +657,7 @@ class Intents(BaseFlags):
     @classmethod
     def all(cls: Type[Intents]) -> Intents:
         """A factory method that creates a :class:`Intents` with everything enabled."""
-        bits = max(cls.VALID_FLAGS.values()).bit_length()
-        value = (1 << bits) - 1
+        value = reduce(lambda a, b: a | b, cls.VALID_FLAGS.values())
         self = cls.__new__(cls)
         self.value = value
         return self
@@ -552,6 +694,10 @@ class Intents(BaseFlags):
         - :func:`on_guild_channel_create`
         - :func:`on_guild_channel_delete`
         - :func:`on_guild_channel_pins_update`
+        - :func:`on_thread_create`
+        - :func:`on_thread_join`
+        - :func:`on_thread_update`
+        - :func:`on_thread_delete`
 
         This also corresponds to the following attributes and classes in terms of cache:
 
@@ -574,6 +720,8 @@ class Intents(BaseFlags):
         - :func:`on_member_remove`
         - :func:`on_member_update`
         - :func:`on_user_update`
+        - :func:`on_thread_member_join`
+        - :func:`on_thread_member_remove`
 
         This also corresponds to the following attributes and classes in terms of cache:
 
@@ -957,6 +1105,49 @@ class Intents(BaseFlags):
         """
         return 1 << 16
 
+    @flag_value
+    def auto_moderation(self):
+        """:class:`bool`: Whether auto moderation related events are enabled.
+
+        This is a shortcut to set or get both :attr:`auto_moderation_configuration`
+        and :attr:`auto_moderation_execution`.
+
+        This corresponds to the following events:
+
+        - :func:`on_automod_rule_create`
+        - :func:`on_automod_rule_update`
+        - :func:`on_automod_rule_delete`
+        - :func:`on_automod_action`
+
+        .. versionadded:: 2.0
+        """
+        return (1 << 20) | (1 << 21)
+
+    @flag_value
+    def auto_moderation_configuration(self):
+        """:class:`bool`: Whether auto moderation configuration related events are enabled.
+
+        This corresponds to the following events:
+
+        - :func:`on_automod_rule_create`
+        - :func:`on_automod_rule_update`
+        - :func:`on_automod_rule_delete`
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 20
+
+    @flag_value
+    def auto_moderation_execution(self):
+        """:class:`bool`: Whether auto moderation execution related events are enabled.
+
+        This corresponds to the following events:
+        - :func:`on_automod_action`
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 21
+
 
 @fill_with_flags()
 class MemberCacheFlags(BaseFlags):
@@ -986,6 +1177,34 @@ class MemberCacheFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two flags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a MemberCacheFlags instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x & y, x &= y
+
+            Returns a MemberCacheFlags instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a MemberCacheFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+
+        .. describe:: ~x
+
+            Returns a MemberCacheFlags instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
+
         .. describe:: hash(x)
 
                Return the flag's hash.
@@ -1100,6 +1319,34 @@ class ApplicationFlags(BaseFlags):
         .. describe:: x != y
 
             Checks if two ApplicationFlags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns an ApplicationFlags instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x & y, x &= y
+
+            Returns an ApplicationFlags instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns an ApplicationFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+
+        .. describe:: ~x
+
+            Returns an ApplicationFlags instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
+
         .. describe:: hash(x)
 
             Return the flag's hash.
@@ -1169,3 +1416,176 @@ class ApplicationFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the application is unverified and is allowed to
         read message content in guilds."""
         return 1 << 19
+
+    @flag_value
+    def app_commands_badge(self):
+        """:class:`bool`: Returns ``True`` if the application has registered a global application
+        command. This shows up as a badge in the official client."""
+        return 1 << 23
+
+
+@fill_with_flags()
+class ChannelFlags(BaseFlags):
+    r"""Wraps up the Discord :class:`~discord.abc.GuildChannel` or :class:`Thread` flags.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two channel flags are equal.
+        .. describe:: x != y
+
+            Checks if two channel flags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a ChannelFlags instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x & y, x &= y
+
+            Returns a ChannelFlags instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a ChannelFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+
+        .. describe:: ~x
+
+            Returns a ChannelFlags instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
+
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    @flag_value
+    def pinned(self):
+        """:class:`bool`: Returns ``True`` if the thread is pinned to the forum channel."""
+        return 1 << 1
+
+
+class ArrayFlags(BaseFlags):
+    @classmethod
+    def _from_value(cls: Type[Self], value: List[int]) -> Self:
+        self = cls.__new__(cls)
+        self.value = reduce(lambda a, b: a | (1 << b - 1), value, 0)
+        return self
+
+    def to_array(self) -> List[int]:
+        return [i + 1 for i in range(self.value.bit_length()) if self.value & (1 << i)]
+
+
+@fill_with_flags()
+class AutoModPresets(ArrayFlags):
+    r"""Wraps up the Discord :class:`AutoModRule` presets.
+
+    .. versionadded:: 2.0
+
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two AutoMod preset flags are equal.
+
+        .. describe:: x != y
+
+            Checks if two AutoMod preset flags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns an AutoModPresets instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x & y, x &= y
+
+            Returns an AutoModPresets instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns an AutoModPresets instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+
+        .. describe:: ~x
+
+            Returns an AutoModPresets instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
+
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    @flag_value
+    def profanity(self):
+        """:class:`bool`: Whether to use the preset profanity filter."""
+        return 1 << 0
+
+    @flag_value
+    def sexual_content(self):
+        """:class:`bool`: Whether to use the preset sexual content filter."""
+        return 1 << 1
+
+    @flag_value
+    def slurs(self):
+        """:class:`bool`: Whether to use the preset slurs filter."""
+        return 1 << 2
+
+    @classmethod
+    def all(cls: Type[Self]) -> Self:
+        """A factory method that creates a :class:`AutoModPresets` with everything enabled."""
+        bits = max(cls.VALID_FLAGS.values()).bit_length()
+        value = (1 << bits) - 1
+        self = cls.__new__(cls)
+        self.value = value
+        return self
+
+    @classmethod
+    def none(cls: Type[Self]) -> Self:
+        """A factory method that creates a :class:`AutoModPresets` with everything disabled."""
+        self = cls.__new__(cls)
+        self.value = self.DEFAULT_VALUE
+        return self

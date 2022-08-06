@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING, AsyncIterator, Union, Optional
+from typing import TYPE_CHECKING, AsyncIterator, Union, Optional
 
 from .user import User
 from .object import Object
@@ -237,6 +237,9 @@ class Reaction:
             if data:
                 limit -= len(data)
                 after = Object(id=int(data[-1]['id']))
+            else:
+                # Terminate loop if we received no data
+                limit = 0
 
             if guild is None or isinstance(guild, Object):
                 for raw_user in reversed(data):

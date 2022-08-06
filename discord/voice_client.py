@@ -30,7 +30,7 @@ Some documentation to refer to:
 - We pull the token, endpoint and server_id from VOICE_SERVER_UPDATE.
 - Then we initiate the voice web socket (vWS) pointing to the endpoint.
 - We send opcode 0 with the user_id, server_id, session_id and token using the vWS.
-- The vWS sends back opcode 2 with an ssrc, port, modes(array) and hearbeat_interval.
+- The vWS sends back opcode 2 with an ssrc, port, modes(array) and heartbeat_interval.
 - We send a UDP discovery packet to endpoint:port and receive our IP and our port in LE.
 - Then we send our IP and port via vWS with opcode 1.
 - When that's all done, we receive opcode 4 from the vWS.
@@ -124,11 +124,7 @@ class VoiceProtocol:
         Parameters
         ------------
         data: :class:`dict`
-            The raw `voice state payload`__.
-
-            .. _voice_state_update_payload: https://discord.com/developers/docs/resources/voice#voice-state-object
-
-            __ voice_state_update_payload_
+            The raw :ddocs:`voice state payload <resources/voice#voice-state-object>`.
         """
         raise NotImplementedError
 
@@ -141,15 +137,11 @@ class VoiceProtocol:
         Parameters
         ------------
         data: :class:`dict`
-            The raw `voice server update payload`__.
-
-            .. _voice_server_update_payload: https://discord.com/developers/docs/topics/gateway#voice-server-update-voice-server-update-event-fields
-
-            __ voice_server_update_payload_
+            The raw :ddocs:`voice server update payload <topics/gateway#voice-server-update>`.
         """
         raise NotImplementedError
 
-    async def connect(self, *, timeout: float, reconnect: bool) -> None:
+    async def connect(self, *, timeout: float, reconnect: bool, self_deaf: bool = False, self_mute: bool = False) -> None:
         """|coro|
 
         An abstract method called when the client initiates the connection request.
@@ -169,6 +161,14 @@ class VoiceProtocol:
             The timeout for the connection.
         reconnect: :class:`bool`
             Whether reconnection is expected.
+        self_mute: :class:`bool`
+            Indicates if the client should be self-muted.
+
+            .. versionadded:: 2.0
+        self_deaf: :class:`bool`
+            Indicates if the client should be self-deafened.
+
+            .. versionadded:: 2.0
         """
         raise NotImplementedError
 
@@ -233,7 +233,7 @@ class VoiceClient(VoiceProtocol):
     secret_key: List[int]
     ssrc: int
 
-    def __init__(self, client: Client, channel: abc.Connectable):
+    def __init__(self, client: Client, channel: abc.Connectable) -> None:
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
 
@@ -278,7 +278,7 @@ class VoiceClient(VoiceProtocol):
     @property
     def user(self) -> ClientUser:
         """:class:`ClientUser`: The user connected to voice (i.e. ourselves)."""
-        return self._state.user  # type: ignore - user can't be None after login
+        return self._state.user  # type: ignore
 
     def checked_add(self, attr: str, value: int, limit: int) -> None:
         val = getattr(self, attr)
@@ -301,7 +301,7 @@ class VoiceClient(VoiceProtocol):
                 # We're being disconnected so cleanup
                 await self.disconnect()
             else:
-                self.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore - this won't be None
+                self.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
         else:
             self._voice_state_complete.set()
 
@@ -339,8 +339,8 @@ class VoiceClient(VoiceProtocol):
 
         self._voice_server_complete.set()
 
-    async def voice_connect(self) -> None:
-        await self.channel.guild.change_voice_state(channel=self.channel)
+    async def voice_connect(self, self_deaf: bool = False, self_mute: bool = False) -> None:
+        await self.channel.guild.change_voice_state(channel=self.channel, self_deaf=self_deaf, self_mute=self_mute)
 
     async def voice_disconnect(self) -> None:
         _log.info('The voice handshake is being terminated for Channel ID %s (Guild ID %s)', self.channel.id, self.guild.id)
@@ -367,7 +367,7 @@ class VoiceClient(VoiceProtocol):
         self._connected.set()
         return ws
 
-    async def connect(self, *, reconnect: bool, timeout: float) -> None:
+    async def connect(self, *, reconnect: bool, timeout: float, self_deaf: bool = False, self_mute: bool = False) -> None:
         _log.info('Connecting to voice...')
         self.timeout = timeout
 
@@ -381,7 +381,7 @@ class VoiceClient(VoiceProtocol):
             ]
 
             # Start the connection flow
-            await self.voice_connect()
+            await self.voice_connect(self_deaf=self_deaf, self_mute=self_mute)
 
             try:
                 await utils.sane_wait_for(futures, timeout=timeout)
@@ -572,7 +572,10 @@ class VoiceClient(VoiceProtocol):
 
         If an error happens while the audio player is running, the exception is
         caught and the audio player is then stopped.  If no after callback is
-        passed, any caught exception will be displayed as if it were raised.
+        passed, any caught exception will be logged using the library logger.
+
+        .. versionchanged:: 2.0
+            Instead of writing to ``sys.stderr``, the library's logger is used.
 
         Parameters
         -----------

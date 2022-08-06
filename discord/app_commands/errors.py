@@ -24,25 +24,42 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING, List, Optional, Type, Union
+from typing import Any, TYPE_CHECKING, List, Optional, Union
 
 
-from ..enums import AppCommandOptionType, AppCommandType
+from ..enums import AppCommandOptionType, AppCommandType, Locale
 from ..errors import DiscordException
 
 __all__ = (
     'AppCommandError',
     'CommandInvokeError',
     'TransformerError',
+    'TranslationError',
     'CheckFailure',
     'CommandAlreadyRegistered',
     'CommandSignatureMismatch',
     'CommandNotFound',
+    'CommandLimitReached',
+    'NoPrivateMessage',
+    'MissingRole',
+    'MissingAnyRole',
+    'MissingPermissions',
+    'BotMissingPermissions',
+    'CommandOnCooldown',
+    'MissingApplicationID',
 )
 
 if TYPE_CHECKING:
     from .commands import Command, Group, ContextMenu
     from .transformers import Transformer
+    from .translator import TranslationContext, locale_str
+    from ..types.snowflake import Snowflake, SnowflakeList
+    from .checks import Cooldown
+
+APP_ID_NOT_FOUND = (
+    'Client does not have an application_id set. Either the function was called before on_ready '
+    'was called or application_id was not passed to the Client constructor.'
+)
 
 
 class AppCommandError(DiscordException):
@@ -92,10 +109,11 @@ class TransformerError(AppCommandError):
 
     This inherits from :exc:`~discord.app_commands.AppCommandError`.
 
-    .. note::
-
-        If the transformer raises a custom :exc:`AppCommandError` then it will
-        be propagated rather than wrapped into this exception.
+    If an exception occurs while converting that does not subclass
+    :exc:`AppCommandError` then the exception is wrapped into this exception.
+    The original exception can be retrieved using the ``__cause__`` attribute.
+    Otherwise if the exception derives from :exc:`AppCommandError` then it will
+    be propagated as-is.
 
     .. versionadded:: 2.0
 
@@ -105,28 +123,60 @@ class TransformerError(AppCommandError):
         The value that failed to convert.
     type: :class:`~discord.AppCommandOptionType`
         The type of argument that failed to convert.
-    transformer: Type[:class:`Transformer`]
+    transformer: :class:`Transformer`
         The transformer that failed the conversion.
     """
 
-    def __init__(self, value: Any, opt_type: AppCommandOptionType, transformer: Type[Transformer]):
+    def __init__(self, value: Any, opt_type: AppCommandOptionType, transformer: Transformer):
         self.value: Any = value
         self.type: AppCommandOptionType = opt_type
-        self.transformer: Type[Transformer] = transformer
+        self.transformer: Transformer = transformer
 
-        try:
-            result_type = transformer.transform.__annotations__['return']
-        except KeyError:
-            name = transformer.__name__
-            if name.endswith('Transformer'):
-                result_type = name[:-11]
-            else:
-                result_type = name
+        super().__init__(f'Failed to convert {value} to {transformer._error_display_name!s}')
+
+
+class TranslationError(AppCommandError):
+    """An exception raised when the library fails to translate a string.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    If an exception occurs while calling :meth:`Translator.translate` that does
+    not subclass this then the exception is wrapped into this exception.
+    The original exception can be retrieved using the ``__cause__`` attribute.
+    Otherwise it will be propagated as-is.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    string: Optional[Union[:class:`str`, :class:`locale_str`]]
+        The string that caused the error, if any.
+    locale: Optional[:class:`~discord.Locale`]
+        The locale that caused the error, if any.
+    context: :class:`~discord.app_commands.TranslationContext`
+        The context of the translation that triggered the error.
+    """
+
+    def __init__(
+        self,
+        *msg: str,
+        string: Optional[Union[str, locale_str]] = None,
+        locale: Optional[Locale] = None,
+        context: TranslationContext,
+    ) -> None:
+        self.string: Optional[Union[str, locale_str]] = string
+        self.locale: Optional[Locale] = locale
+        self.context: TranslationContext = context
+
+        if msg:
+            super().__init__(*msg)
         else:
-            if isinstance(result_type, type):
-                result_type = result_type.__name__
+            ctx = context.name.replace('_', ' ')
+            fmt = f'Failed to translate {self.string!r} in a {ctx}'
+            if self.locale is not None:
+                fmt = f'{fmt} in the {self.locale.value} locale'
 
-        super().__init__(f'Failed to convert {value} to {result_type!s}')
+            super().__init__(fmt)
 
 
 class CheckFailure(AppCommandError):
@@ -138,6 +188,142 @@ class CheckFailure(AppCommandError):
     """
 
     pass
+
+
+class NoPrivateMessage(CheckFailure):
+    """An exception raised when a command does not work in a direct message.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+    """
+
+    def __init__(self, message: Optional[str] = None) -> None:
+        super().__init__(message or 'This command cannot be used in direct messages.')
+
+
+class MissingRole(CheckFailure):
+    """An exception raised when the command invoker lacks a role to run a command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_role: Union[:class:`str`, :class:`int`]
+        The required role that is missing.
+        This is the parameter passed to :func:`~discord.app_commands.checks.has_role`.
+    """
+
+    def __init__(self, missing_role: Snowflake) -> None:
+        self.missing_role: Snowflake = missing_role
+        message = f'Role {missing_role!r} is required to run this command.'
+        super().__init__(message)
+
+
+class MissingAnyRole(CheckFailure):
+    """An exception raised when the command invoker lacks any of the roles
+    specified to run a command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_roles: List[Union[:class:`str`, :class:`int`]]
+        The roles that the invoker is missing.
+        These are the parameters passed to :func:`~discord.app_commands.checks.has_any_role`.
+    """
+
+    def __init__(self, missing_roles: SnowflakeList) -> None:
+        self.missing_roles: SnowflakeList = missing_roles
+
+        missing = [f"'{role}'" for role in missing_roles]
+
+        if len(missing) > 2:
+            fmt = '{}, or {}'.format(', '.join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' or '.join(missing)
+
+        message = f'You are missing at least one of the required roles: {fmt}'
+        super().__init__(message)
+
+
+class MissingPermissions(CheckFailure):
+    """An exception raised when the command invoker lacks permissions to run a
+    command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_permissions: List[:class:`str`]
+        The required permissions that are missing.
+    """
+
+    def __init__(self, missing_permissions: List[str], *args: Any) -> None:
+        self.missing_permissions: List[str] = missing_permissions
+
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
+
+        if len(missing) > 2:
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' and '.join(missing)
+        message = f'You are missing {fmt} permission(s) to run this command.'
+        super().__init__(message, *args)
+
+
+class BotMissingPermissions(CheckFailure):
+    """An exception raised when the bot's member lacks permissions to run a
+    command.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    missing_permissions: List[:class:`str`]
+        The required permissions that are missing.
+    """
+
+    def __init__(self, missing_permissions: List[str], *args: Any) -> None:
+        self.missing_permissions: List[str] = missing_permissions
+
+        missing = [perm.replace('_', ' ').replace('guild', 'server').title() for perm in missing_permissions]
+
+        if len(missing) > 2:
+            fmt = '{}, and {}'.format(", ".join(missing[:-1]), missing[-1])
+        else:
+            fmt = ' and '.join(missing)
+        message = f'Bot requires {fmt} permission(s) to run this command.'
+        super().__init__(message, *args)
+
+
+class CommandOnCooldown(CheckFailure):
+    """An exception raised when the command being invoked is on cooldown.
+
+    This inherits from :exc:`~discord.app_commands.CheckFailure`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    cooldown: :class:`~discord.app_commands.Cooldown`
+        The cooldown that was triggered.
+    retry_after: :class:`float`
+        The amount of seconds to wait before you can retry again.
+    """
+
+    def __init__(self, cooldown: Cooldown, retry_after: float) -> None:
+        self.cooldown: Cooldown = cooldown
+        self.retry_after: float = retry_after
+        super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s')
 
 
 class CommandAlreadyRegistered(AppCommandError):
@@ -187,6 +373,39 @@ class CommandNotFound(AppCommandError):
         super().__init__(f'Application command {name!r} not found')
 
 
+class CommandLimitReached(AppCommandError):
+    """An exception raised when the maximum number of application commands was reached
+    either globally or in a guild.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    type: :class:`~discord.AppCommandType`
+        The type of command that reached the limit.
+    guild_id: Optional[:class:`int`]
+        The guild ID that reached the limit or ``None`` if it was global.
+    limit: :class:`int`
+        The limit that was hit.
+    """
+
+    def __init__(self, guild_id: Optional[int], limit: int, type: AppCommandType = AppCommandType.chat_input):
+        self.guild_id: Optional[int] = guild_id
+        self.limit: int = limit
+        self.type: AppCommandType = type
+
+        lookup = {
+            AppCommandType.chat_input: 'slash commands',
+            AppCommandType.message: 'message context menu commands',
+            AppCommandType.user: 'user context menu commands',
+        }
+        desc = lookup.get(type, 'application commands')
+        ns = 'globally' if self.guild_id is None else f'for guild ID {self.guild_id}'
+        super().__init__(f'maximum number of {desc} exceeded {limit} {ns}')
+
+
 class CommandSignatureMismatch(AppCommandError):
     """An exception raised when an application command from Discord has a different signature
     from the one provided in the code. This happens because your command definition differs
@@ -212,3 +431,16 @@ class CommandSignatureMismatch(AppCommandError):
             'command tree to fix this issue.'
         )
         super().__init__(msg)
+
+
+class MissingApplicationID(AppCommandError):
+    """An exception raised when the client does not have an application ID set.
+    An application ID is required for syncing application commands.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`.
+
+    .. versionadded:: 2.0
+    """
+
+    def __init__(self, message: Optional[str] = None):
+        super().__init__(message or APP_ID_NOT_FOUND)

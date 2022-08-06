@@ -24,7 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Literal, TypedDict, Union
+from typing import Dict, List, Literal, Optional, TypedDict, Union
+from typing_extensions import NotRequired, Required
 
 from .channel import ChannelType
 from .snowflake import Snowflake
@@ -36,6 +37,8 @@ ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 class _BaseApplicationCommandOption(TypedDict):
     name: str
     description: str
+    name_localizations: NotRequired[Optional[Dict[str, str]]]
+    description_localizations: NotRequired[Optional[Dict[str, str]]]
 
 
 class _SubCommandCommandOption(_BaseApplicationCommandOption):
@@ -54,44 +57,39 @@ class _BaseValueApplicationCommandOption(_BaseApplicationCommandOption, total=Fa
 
 class _StringApplicationCommandOptionChoice(TypedDict):
     name: str
+    name_localizations: NotRequired[Optional[Dict[str, str]]]
     value: str
 
 
-class _StringApplicationCommandOptionOptional(_BaseValueApplicationCommandOption, total=False):
-    choices: List[_StringApplicationCommandOptionChoice]
-    autocomplete: bool
-
-
-class _StringApplicationCommandOption(_StringApplicationCommandOptionOptional):
+class _StringApplicationCommandOption(_BaseApplicationCommandOption):
     type: Literal[3]
+    choices: NotRequired[List[_StringApplicationCommandOptionChoice]]
+    min_length: NotRequired[int]
+    max_length: NotRequired[int]
+    autocomplete: NotRequired[bool]
 
 
 class _IntegerApplicationCommandOptionChoice(TypedDict):
     name: str
+    name_localizations: NotRequired[Optional[Dict[str, str]]]
     value: int
 
 
-class _IntegerApplicationCommandOptionOptional(_BaseValueApplicationCommandOption, total=False):
+class _IntegerApplicationCommandOption(_BaseApplicationCommandOption, total=False):
+    type: Required[Literal[4]]
     min_value: int
     max_value: int
     choices: List[_IntegerApplicationCommandOptionChoice]
     autocomplete: bool
 
 
-class _IntegerApplicationCommandOption(_IntegerApplicationCommandOptionOptional):
-    type: Literal[4]
-
-
 class _BooleanApplicationCommandOption(_BaseValueApplicationCommandOption):
     type: Literal[5]
 
 
-class _ChannelApplicationCommandOptionChoiceOptional(_BaseApplicationCommandOption, total=False):
-    channel_types: List[ChannelType]
-
-
-class _ChannelApplicationCommandOptionChoice(_ChannelApplicationCommandOptionChoiceOptional):
+class _ChannelApplicationCommandOptionChoice(_BaseApplicationCommandOption):
     type: Literal[7]
+    channel_types: NotRequired[List[ChannelType]]
 
 
 class _NonChannelSnowflakeApplicationCommandOptionChoice(_BaseValueApplicationCommandOption):
@@ -106,18 +104,16 @@ _SnowflakeApplicationCommandOptionChoice = Union[
 
 class _NumberApplicationCommandOptionChoice(TypedDict):
     name: str
+    name_localizations: NotRequired[Optional[Dict[str, str]]]
     value: float
 
 
-class _NumberApplicationCommandOptionOptional(_BaseValueApplicationCommandOption, total=False):
+class _NumberApplicationCommandOption(_BaseValueApplicationCommandOption, total=False):
+    type: Required[Literal[10]]
     min_value: float
     max_value: float
     choices: List[_NumberApplicationCommandOptionChoice]
     autocomplete: bool
-
-
-class _NumberApplicationCommandOption(_NumberApplicationCommandOptionOptional):
-    type: Literal[10]
 
 
 _ValueApplicationCommandOption = Union[
@@ -145,19 +141,21 @@ class _BaseApplicationCommand(TypedDict):
     id: Snowflake
     application_id: Snowflake
     name: str
+    dm_permission: NotRequired[Optional[bool]]
+    default_member_permissions: NotRequired[Optional[str]]
+    nsfw: NotRequired[bool]
     version: Snowflake
+    name_localizations: NotRequired[Optional[Dict[str, str]]]
+    description_localizations: NotRequired[Optional[Dict[str, str]]]
 
 
-class _ChatInputApplicationCommandOptional(_BaseApplicationCommand, total=False):
+class _ChatInputApplicationCommand(_BaseApplicationCommand, total=False):
+    description: Required[str]
     type: Literal[1]
     options: Union[
         List[_ValueApplicationCommandOption],
         List[Union[_SubCommandCommandOption, _SubCommandGroupCommandOption]],
     ]
-
-
-class _ChatInputApplicationCommand(_ChatInputApplicationCommandOptional):
-    description: str
 
 
 class _BaseContextMenuApplicationCommand(_BaseApplicationCommand):
@@ -204,7 +202,7 @@ ApplicationCommand = Union[
 ]
 
 
-ApplicationCommandPermissionType = Literal[1, 2]
+ApplicationCommandPermissionType = Literal[1, 2, 3]
 
 
 class ApplicationCommandPermissions(TypedDict):

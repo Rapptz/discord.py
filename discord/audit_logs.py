@@ -33,6 +33,7 @@ from .invite import Invite
 from .mixins import Hashable
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
+from .automod import AutoModTrigger, AutoModRuleAction, AutoModPresets
 
 __all__ = (
     'AuditLogDiff',
@@ -61,13 +62,31 @@ if TYPE_CHECKING:
     from .types.invite import Invite as InvitePayload
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
+    from .types.command import ApplicationCommandPermissions
+    from .types.automod import AutoModerationTriggerMetadata, AutoModerationAction
     from .user import User
     from .stage_instance import StageInstance
     from .sticker import GuildSticker
     from .threads import Thread
+    from .integrations import PartialIntegration
+    from .app_commands import AppCommand
+    from .automod import AutoModRule, AutoModTrigger
 
     TargetType = Union[
-        Guild, abc.GuildChannel, Member, User, Role, Invite, Emoji, StageInstance, GuildSticker, Thread, Object, None
+        Guild,
+        abc.GuildChannel,
+        Member,
+        User,
+        Role,
+        Invite,
+        Emoji,
+        StageInstance,
+        GuildSticker,
+        Thread,
+        Object,
+        PartialIntegration,
+        AutoModRule,
+        None,
     ]
 
 
@@ -89,6 +108,12 @@ def _transform_channel(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optio
     return entry.guild.get_channel(int(data)) or Object(id=data)
 
 
+def _transform_channels_or_threads(
+    entry: AuditLogEntry, data: List[Snowflake]
+) -> List[Union[abc.GuildChannel, Thread, Object]]:
+    return [entry.guild.get_channel_or_thread(int(data)) or Object(id=data) for data in data]
+
+
 def _transform_member_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Union[Member, User, None]:
     if data is None:
         return None
@@ -99,6 +124,10 @@ def _transform_guild_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Opti
     if data is None:
         return None
     return entry._state._get_guild(int(data))
+
+
+def _transform_roles(entry: AuditLogEntry, data: List[Snowflake]) -> List[Union[Role, Object]]:
+    return [entry.guild.get_role(int(role_id)) or Object(role_id) for role_id in data]
 
 
 def _transform_overwrites(
@@ -132,13 +161,19 @@ def _transform_icon(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset
     if entry.action is enums.AuditLogAction.guild_update:
         return Asset._from_guild_icon(entry._state, entry.guild.id, data)
     else:
-        return Asset._from_icon(entry._state, entry._target_id, data, path='role')  # type: ignore - target_id won't be None in this case
+        return Asset._from_icon(entry._state, entry._target_id, data, path='role')  # type: ignore # target_id won't be None in this case
 
 
 def _transform_avatar(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
     if data is None:
         return None
-    return Asset._from_avatar(entry._state, entry._target_id, data)  # type: ignore - target_id won't be None in this case
+    return Asset._from_avatar(entry._state, entry._target_id, data)  # type: ignore # target_id won't be None in this case
+
+
+def _transform_cover_image(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
+    if data is None:
+        return None
+    return Asset._from_scheduled_event_cover_image(entry._state, entry._target_id, data)  # type: ignore # target_id won't be None in this case
 
 
 def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]], Optional[Asset]]:
@@ -148,6 +183,24 @@ def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]
         return Asset._from_guild_image(entry._state, entry.guild.id, data, path=path)
 
     return _transform
+
+
+def _transform_automod_trigger_metadata(
+    entry: AuditLogEntry, data: AutoModerationTriggerMetadata
+) -> Optional[AutoModTrigger]:
+    if not data:
+        return None
+
+    # discord doesn't provide the type of the trigger
+    # have to infer from the data and present keys
+    if 'presets' in data:
+        return AutoModTrigger(presets=AutoModPresets._from_value(data['presets']), allow_list=data.get('allow_list'))  # type: ignore
+    elif 'keyword_filter' in data:
+        return AutoModTrigger(keyword_filter=data['keyword_filter'])  # type: ignore
+
+
+def _transform_automod_actions(entry: AuditLogEntry, data: List[AutoModerationAction]) -> List[AutoModRuleAction]:
+    return [AutoModRuleAction.from_data(action) for action in data]
 
 
 E = TypeVar('E', bound=enums.Enum)
@@ -238,22 +291,50 @@ class AuditLogChanges:
         'mfa_level':                     (None, _enum_transformer(enums.MFALevel)),
         'status':                        (None, _enum_transformer(enums.EventStatus)),
         'entity_type':                   (None, _enum_transformer(enums.EntityType)),
+        'preferred_locale':              (None, _enum_transformer(enums.Locale)),
+        'image_hash':                    ('cover_image', _transform_cover_image),
+        'trigger_type':                  (None, _enum_transformer(enums.AutoModRuleTriggerType)),
+        'event_type':                    (None, _enum_transformer(enums.AutoModRuleEventType)),
+        'trigger_metadata':              ('trigger', _transform_automod_trigger_metadata),
+        'actions':                       (None, _transform_automod_actions),
+        'exempt_channels':               (None, _transform_channels_or_threads),
+        'exempt_roles':                  (None, _transform_roles),
     }
     # fmt: on
 
     def __init__(self, entry: AuditLogEntry, data: List[AuditLogChangePayload]):
         self.before: AuditLogDiff = AuditLogDiff()
         self.after: AuditLogDiff = AuditLogDiff()
+        # special case entire process since each
+        # element in data is a different target
+        # key is the target id
+        if entry.action is enums.AuditLogAction.app_command_permission_update:
+            self.before.app_command_permissions = []
+            self.after.app_command_permissions = []
+
+            for elem in data:
+                self._handle_app_command_permissions(
+                    self.before,
+                    entry,
+                    elem.get('old_value'),  # type: ignore # value will be an ApplicationCommandPermissions if present
+                )
+
+                self._handle_app_command_permissions(
+                    self.after,
+                    entry,
+                    elem.get('new_value'),  # type: ignore # value will be an ApplicationCommandPermissions if present
+                )
+            return
 
         for elem in data:
             attr = elem['key']
 
             # special cases for role add/remove
             if attr == '$add':
-                self._handle_role(self.before, self.after, entry, elem['new_value'])  # type: ignore - new_value is a list of roles in this case
+                self._handle_role(self.before, self.after, entry, elem['new_value'])  # type: ignore # new_value is a list of roles in this case
                 continue
             elif attr == '$remove':
-                self._handle_role(self.after, self.before, entry, elem['new_value'])  # type: ignore - new_value is a list of roles in this case
+                self._handle_role(self.after, self.before, entry, elem['new_value'])  # type: ignore # new_value is a list of roles in this case
                 continue
 
             try:
@@ -310,11 +391,27 @@ class AuditLogChanges:
 
             if role is None:
                 role = Object(id=role_id)
-                role.name = e['name']  # type: ignore - Object doesn't usually have name
+                role.name = e['name']  # type: ignore # Object doesn't usually have name
 
             data.append(role)
 
         setattr(second, 'roles', data)
+
+    def _handle_app_command_permissions(
+        self,
+        diff: AuditLogDiff,
+        entry: AuditLogEntry,
+        data: Optional[ApplicationCommandPermissions],
+    ):
+        if data is None:
+            return
+
+        # avoid circular import
+        from discord.app_commands import AppCommandPermissions
+
+        state = entry._state
+        guild = entry.guild
+        diff.app_command_permissions.append(AppCommandPermissions(data=data, guild=guild, state=state))
 
 
 class _AuditLogProxy:
@@ -329,7 +426,7 @@ class _AuditLogProxyMemberPrune(_AuditLogProxy):
 
 
 class _AuditLogProxyMemberMoveOrMessageDelete(_AuditLogProxy):
-    channel: abc.GuildChannel
+    channel: Union[abc.GuildChannel, Thread]
     count: int
 
 
@@ -338,12 +435,22 @@ class _AuditLogProxyMemberDisconnect(_AuditLogProxy):
 
 
 class _AuditLogProxyPinAction(_AuditLogProxy):
-    channel: abc.GuildChannel
+    channel: Union[abc.GuildChannel, Thread]
     message_id: int
 
 
 class _AuditLogProxyStageInstanceAction(_AuditLogProxy):
     channel: abc.GuildChannel
+
+
+class _AuditLogProxyMessageBulkDelete(_AuditLogProxy):
+    count: int
+
+
+class _AuditLogProxyAutoModAction(_AuditLogProxy):
+    automod_rule_name: str
+    automod_rule_trigger_type: str
+    channel: Union[abc.GuildChannel, Thread]
 
 
 class AuditLogEntry(Hashable):
@@ -389,10 +496,22 @@ class AuditLogEntry(Hashable):
         which actions have this field filled out.
     """
 
-    def __init__(self, *, users: Dict[int, User], data: AuditLogEntryPayload, guild: Guild):
+    def __init__(
+        self,
+        *,
+        users: Dict[int, User],
+        integrations: Dict[int, PartialIntegration],
+        app_commands: Dict[int, AppCommand],
+        automod_rules: Dict[int, AutoModRule],
+        data: AuditLogEntryPayload,
+        guild: Guild,
+    ):
         self._state: ConnectionState = guild._state
         self.guild: Guild = guild
         self._users: Dict[int, User] = users
+        self._integrations: Dict[int, PartialIntegration] = integrations
+        self._app_commands: Dict[int, AppCommand] = app_commands
+        self._automod_rules: Dict[int, AutoModRule] = automod_rules
         self._from_data(data)
 
     def _from_data(self, data: AuditLogEntryPayload) -> None:
@@ -410,7 +529,9 @@ class AuditLogEntry(Hashable):
             _AuditLogProxyMemberDisconnect,
             _AuditLogProxyPinAction,
             _AuditLogProxyStageInstanceAction,
-            Member, User, None,
+            _AuditLogProxyMessageBulkDelete,
+            _AuditLogProxyAutoModAction,
+            Member, User, None, PartialIntegration,
             Role, Object
         ] = None
         # fmt: on
@@ -426,18 +547,31 @@ class AuditLogEntry(Hashable):
                 channel_id = int(extra['channel_id'])
                 self.extra = _AuditLogProxyMemberMoveOrMessageDelete(
                     count=int(extra['count']),
-                    channel=self.guild.get_channel(channel_id) or Object(id=channel_id),
+                    channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
                 )
             elif self.action is enums.AuditLogAction.member_disconnect:
                 # The member disconnect action has a dict with some information
                 self.extra = _AuditLogProxyMemberDisconnect(count=int(extra['count']))
+            elif self.action is enums.AuditLogAction.message_bulk_delete:
+                # The bulk message delete action has the number of messages deleted
+                self.extra = _AuditLogProxyMessageBulkDelete(count=int(extra['count']))
             elif self.action.name.endswith('pin'):
                 # the pin actions have a dict with some information
                 channel_id = int(extra['channel_id'])
                 self.extra = _AuditLogProxyPinAction(
-                    channel=self.guild.get_channel(channel_id) or Object(id=channel_id),
+                    channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
                     message_id=int(extra['message_id']),
                 )
+            elif self.action is enums.AuditLogAction.automod_block_message:
+                channel_id = int(extra['channel_id'])
+                self.extra = _AuditLogProxyAutoModAction(
+                    automod_rule_name=extra['auto_moderation_rule_name'],
+                    automod_rule_trigger_type=enums.try_enum(
+                        enums.AutoModRuleTriggerType, extra['auto_moderation_rule_trigger_type']
+                    ),
+                    channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
+                )
+
             elif self.action.name.startswith('overwrite_'):
                 # the overwrite_ actions have a dict with some information
                 instance_id = int(extra['id'])
@@ -448,13 +582,16 @@ class AuditLogEntry(Hashable):
                     role = self.guild.get_role(instance_id)
                     if role is None:
                         role = Object(id=instance_id)
-                        role.name = self.extra.get('role_name')  # type: ignore - Object doesn't usually have name
+                        role.name = extra.get('role_name')  # type: ignore # Object doesn't usually have name
                     self.extra = role
             elif self.action.name.startswith('stage_instance'):
                 channel_id = int(extra['channel_id'])
                 self.extra = _AuditLogProxyStageInstanceAction(
                     channel=self.guild.get_channel(channel_id) or Object(id=channel_id)
                 )
+            elif self.action.name.startswith('app_command'):
+                application_id = int(extra['application_id'])
+                self.extra = self._get_integration_by_app_id(application_id) or Object(application_id)
 
         # this key is not present when the above is present, typically.
         # It's a list of { new_value: a, old_value: b, key: c }
@@ -473,6 +610,25 @@ class AuditLogEntry(Hashable):
 
         return self.guild.get_member(user_id) or self._users.get(user_id)
 
+    def _get_integration(self, integration_id: Optional[int]) -> Optional[PartialIntegration]:
+        if integration_id is None:
+            return None
+
+        return self._integrations.get(integration_id)
+
+    def _get_integration_by_app_id(self, application_id: Optional[int]) -> Optional[PartialIntegration]:
+        if application_id is None:
+            return None
+
+        # get PartialIntegration by application id
+        return utils.get(self._integrations.values(), application_id=application_id)
+
+    def _get_app_command(self, app_command_id: Optional[int]) -> Optional[AppCommand]:
+        if app_command_id is None:
+            return None
+
+        return self._app_commands.get(app_command_id)
+
     def __repr__(self) -> str:
         return f'<AuditLogEntry id={self.id} action={self.action} user={self.user!r}>'
 
@@ -483,12 +639,14 @@ class AuditLogEntry(Hashable):
 
     @utils.cached_property
     def target(self) -> TargetType:
-        if self._target_id is None or self.action.target_type is None:
+        if self.action.target_type is None:
             return None
 
         try:
             converter = getattr(self, '_convert_target_' + self.action.target_type)
         except AttributeError:
+            if self._target_id is None:
+                return None
             return Object(id=self._target_id)
         else:
             return converter(self._target_id)
@@ -527,7 +685,7 @@ class AuditLogEntry(Hashable):
     def _convert_target_role(self, target_id: int) -> Union[Role, Object]:
         return self.guild.get_role(target_id) or Object(id=target_id)
 
-    def _convert_target_invite(self, target_id: int) -> Invite:
+    def _convert_target_invite(self, target_id: None) -> Invite:
         # invites have target_id set to null
         # so figure out which change has the full invite data
         changeset = self.before if self.action is enums.AuditLogAction.invite_delete else self.after
@@ -538,7 +696,7 @@ class AuditLogEntry(Hashable):
             'code': changeset.code,
             'temporary': changeset.temporary,
             'uses': changeset.uses,
-            'channel': None,  # type: ignore - the channel is passed to the Invite constructor directly
+            'channel': None,  # type: ignore # the channel is passed to the Invite constructor directly
         }
 
         obj = Invite(state=self._state, data=fake_payload, guild=self.guild, channel=changeset.channel)
@@ -565,3 +723,15 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_guild_scheduled_event(self, target_id: int) -> Union[ScheduledEvent, Object]:
         return self.guild.get_scheduled_event(target_id) or Object(id=target_id)
+
+    def _convert_target_integration(self, target_id: int) -> Union[PartialIntegration, Object]:
+        return self._get_integration(target_id) or Object(target_id)
+
+    def _convert_target_app_command(self, target_id: int) -> Union[AppCommand, Object]:
+        return self._get_app_command(target_id) or Object(target_id)
+
+    def _convert_target_integration_or_app_command(self, target_id: int) -> Union[PartialIntegration, AppCommand, Object]:
+        return self._get_integration_by_app_id(target_id) or self._get_app_command(target_id) or Object(target_id)
+
+    def _convert_target_auto_moderation(self, target_id: int) -> Union[AutoModRule, Object]:
+        return self._automod_rules.get(target_id) or Object(target_id)

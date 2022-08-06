@@ -56,6 +56,8 @@ def show_version() -> None:
 def core(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
     if args.version:
         show_version()
+    else:
+        parser.print_help()
 
 
 _bot_template = """#!/usr/bin/env python3
@@ -65,8 +67,8 @@ import discord
 import config
 
 class Bot(commands.{base}):
-    def __init__(self, **kwargs):
-        super().__init__(command_prefix=commands.when_mentioned_or('{prefix}'), **kwargs)
+    def __init__(self, intents: discord.Intents, **kwargs):
+        super().__init__(command_prefix=commands.when_mentioned_or('{prefix}'), intents=intents, **kwargs)
 
     async def setup_hook(self):
         for cog in config.cogs:
@@ -79,7 +81,9 @@ class Bot(commands.{base}):
         print(f'Logged on as {{self.user}} (ID: {{self.user.id}})')
 
 
-bot = Bot()
+intents = discord.Intents.default()
+intents.message_content = True
+bot = Bot(intents=intents)
 
 # write general commands here
 
@@ -152,6 +156,10 @@ _cog_extras = '''
 
     async def cog_command_error(self, ctx, error):
         # error handling to every command in here
+        pass
+        
+    async def cog_app_command_error(self, interaction, error):
+        # error handling to every application command in here
         pass
 
     async def cog_before_invoke(self, ctx):

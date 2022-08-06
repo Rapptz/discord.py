@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import threading
-import traceback
 import subprocess
 import audioop
 import asyncio
@@ -163,7 +162,7 @@ class FFmpegAudio(AudioSource):
         kwargs.update(subprocess_kwargs)
 
         self._process: subprocess.Popen = self._spawn_process(args, **kwargs)
-        self._stdout: IO[bytes] = self._process.stdout  # type: ignore - process stdout is explicitly set
+        self._stdout: IO[bytes] = self._process.stdout  # type: ignore # process stdout is explicitly set
         self._stdin: Optional[IO[bytes]] = None
         self._pipe_thread: Optional[threading.Thread] = None
 
@@ -709,14 +708,10 @@ class AudioPlayer(threading.Thread):
             try:
                 self.after(error)
             except Exception as exc:
-                _log.exception('Calling the after function failed.')
                 exc.__context__ = error
-                traceback.print_exception(type(exc), exc, exc.__traceback__)
+                _log.exception('Calling the after function failed.', exc_info=exc)
         elif error:
-            msg = f'Exception in voice thread {self.name}'
-            _log.exception(msg, exc_info=error)
-            print(msg, file=sys.stderr)
-            traceback.print_exception(type(error), error, error.__traceback__)
+            _log.exception('Exception in voice thread %s', self.name, exc_info=error)
 
     def stop(self) -> None:
         self._end.set()

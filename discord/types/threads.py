@@ -23,9 +23,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+
 from typing import List, Literal, Optional, TypedDict
+from typing_extensions import NotRequired
 
 from .snowflake import Snowflake
+from .message import Message
 
 ThreadType = Literal[10, 11, 12]
 ThreadArchiveDuration = Literal[60, 1440, 4320, 10080]
@@ -38,26 +41,17 @@ class ThreadMember(TypedDict):
     flags: int
 
 
-class _ThreadMetadataOptional(TypedDict, total=False):
-    archiver_id: Snowflake
-    locked: bool
-    invitable: bool
-    create_timestamp: str
-
-
-class ThreadMetadata(_ThreadMetadataOptional):
+class ThreadMetadata(TypedDict):
     archived: bool
     auto_archive_duration: ThreadArchiveDuration
     archive_timestamp: str
+    archiver_id: NotRequired[Snowflake]
+    locked: NotRequired[bool]
+    invitable: NotRequired[bool]
+    create_timestamp: NotRequired[str]
 
 
-class _ThreadOptional(TypedDict, total=False):
-    member: ThreadMember
-    last_message_id: Optional[Snowflake]
-    last_pin_timestamp: Optional[Snowflake]
-
-
-class Thread(_ThreadOptional):
+class Thread(TypedDict):
     id: Snowflake
     guild_id: Snowflake
     parent_id: Snowflake
@@ -68,9 +62,18 @@ class Thread(_ThreadOptional):
     message_count: int
     rate_limit_per_user: int
     thread_metadata: ThreadMetadata
+    member: NotRequired[ThreadMember]
+    last_message_id: NotRequired[Optional[Snowflake]]
+    last_pin_timestamp: NotRequired[Optional[Snowflake]]
+    newly_created: NotRequired[bool]
+    flags: NotRequired[int]
 
 
 class ThreadPaginationPayload(TypedDict):
     threads: List[Thread]
     members: List[ThreadMember]
     has_more: bool
+
+
+class ForumThread(Thread):
+    message: Message

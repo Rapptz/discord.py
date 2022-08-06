@@ -72,6 +72,14 @@ PartialAppInfo
 .. autoclass:: PartialAppInfo()
     :members:
 
+AppInstallParams
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: AppInstallParams
+
+.. autoclass:: AppInstallParams()
+    :members:
+
 Team
 ~~~~~
 
@@ -187,13 +195,72 @@ overriding the specific events. For example: ::
 
 
 If an event handler raises an exception, :func:`on_error` will be called
-to handle it, which defaults to print a traceback and ignoring the exception.
+to handle it, which defaults to logging the traceback and ignoring the exception.
 
 .. warning::
 
     All the events must be a |coroutine_link|_. If they aren't, then you might get unexpected
     errors. In order to turn a function into a coroutine they must be ``async def``
     functions.
+
+App Commands
+~~~~~~~~~~~~~
+
+.. function:: on_raw_app_command_permissions_update(payload)
+
+    Called when application command permissions are updated.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawAppCommandPermissionsUpdateEvent`
+
+AutoMod
+~~~~~~~~
+
+.. function:: on_automod_rule_create(rule)
+
+    Called when a :class:`AutoModRule` is created.
+
+    This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param rule: The rule that was created.
+    :type rule: :class:`AutoModRule`
+
+.. function:: on_automod_rule_update(rule)
+
+    Called when a :class:`AutoModRule` is updated.
+
+    This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param rule: The rule that was updated.
+    :type rule: :class:`AutoModRule`
+
+.. function:: on_automod_rule_delete(rule)
+
+    Called when a :class:`AutoModRule` is deleted.
+
+    This requires :attr:`Intents.auto_moderation_configuration` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param rule: The rule that was deleted.
+    :type rule: :class:`AutoModRule`
+
+.. function:: on_automod_action(execution)
+
+    Called when a :class:`AutoModAction` is created/performed.
+
+    This requires :attr:`Intents.auto_moderation_execution` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param execution: The rule execution that was performed.
+    :type execution: :class:`AutoModAction`
 
 Channels
 ~~~~~~~~~
@@ -220,16 +287,6 @@ Channels
     :type before: :class:`abc.GuildChannel`
     :param after: The updated guild channel's new info.
     :type after: :class:`abc.GuildChannel`
-
-.. function:: on_group_join(channel, user)
-              on_group_remove(channel, user)
-
-    Called when someone joins or leaves a :class:`GroupChannel`.
-
-    :param channel: The group that the user joined or left.
-    :type channel: :class:`GroupChannel`
-    :param user: The user that joined or left.
-    :type user: :class:`User`
 
 .. function:: on_guild_channel_pins_update(channel, last_pin)
 
@@ -273,6 +330,9 @@ Channels
     If the ``channel`` is a :class:`TextChannel` then the ``user`` parameter
     is a :class:`Member`, otherwise it is a :class:`User`.
 
+    If the channel or user could not be found in the internal cache this event
+    will not be called, you may use :func:`on_raw_typing` instead.
+
     This requires :attr:`Intents.typing` to be enabled.
 
     :param channel: The location where the typing originated from.
@@ -281,6 +341,18 @@ Channels
     :type user: Union[:class:`User`, :class:`Member`]
     :param when: When the typing started as an aware datetime in UTC.
     :type when: :class:`datetime.datetime`
+
+.. function:: on_raw_typing(payload)
+
+    Called when someone begins typing a message. Unlike :func:`on_typing` this
+    is called regardless of the channel and user being in the internal cache.
+
+    This requires :attr:`Intents.typing` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawTypingEvent`
 
 Connection
 ~~~~~~~~~~~
@@ -327,18 +399,13 @@ Debug
 .. function:: on_error(event, *args, **kwargs)
 
     Usually when an event raises an uncaught exception, a traceback is
-    printed to stderr and the exception is ignored. If you want to
+    logged to stderr and the exception is ignored. If you want to
     change this behaviour and handle the exception for whatever reason
     yourself, this event can be overridden. Which, when done, will
     suppress the default action of printing the traceback.
 
     The information of the exception raised and the exception itself can
     be retrieved with a standard call to :func:`sys.exc_info`.
-
-    If you want exception to propagate out of the :class:`Client` class
-    you can define an ``on_error`` handler consisting of a single empty
-    :ref:`raise statement <py:raise>`. Exceptions raised by ``on_error`` will not be
-    handled in any way by :class:`Client`.
 
     .. note::
 
@@ -347,6 +414,10 @@ Debug
         It will not be received by :meth:`Client.wait_for`, or, if used,
         :ref:`ext_commands_api_bot` listeners such as
         :meth:`~ext.commands.Bot.listen` or :meth:`~ext.commands.Cog.listener`.
+
+    .. versionchanged:: 2.0
+
+        The traceback is now logged rather than printed.
 
     :param event: The name of the event that raised the exception.
     :type event: :class:`str`
@@ -367,7 +438,7 @@ Debug
 
     :param event_type: The event type from Discord that is received, e.g. ``'READY'``.
     :type event_type: :class:`str`
-    
+
 .. function:: on_socket_raw_receive(msg)
 
     Called whenever a message is completely received from the WebSocket, before
@@ -592,7 +663,7 @@ Integrations
 
     .. versionadded:: 2.0
 
-    :param integration: The integration that was created.
+    :param integration: The integration that was updated.
     :type integration: :class:`Integration`
 
 .. function:: on_guild_integrations_update(guild)
@@ -650,14 +721,39 @@ Members
 ~~~~~~~~
 
 .. function:: on_member_join(member)
-              on_member_remove(member)
 
-    Called when a :class:`Member` join or leaves a :class:`Guild`.
+    Called when a :class:`Member` joins a :class:`Guild`.
 
     This requires :attr:`Intents.members` to be enabled.
 
-    :param member: The member who joined or left.
+    :param member: The member who joined.
     :type member: :class:`Member`
+
+.. function:: on_member_remove(member)
+
+    Called when a :class:`Member` leaves a :class:`Guild`.
+
+    If the guild or member could not be found in the internal cache this event
+    will not be called, you may use :func:`on_raw_member_remove` instead.
+
+    This requires :attr:`Intents.members` to be enabled.
+
+    :param member: The member who left.
+    :type member: :class:`Member`
+
+.. function:: on_raw_member_remove(payload)
+
+    Called when a :class:`Member` leaves a :class:`Guild`.
+
+    Unlike :func:`on_member_remove`
+    this is called regardless of the guild or member being in the internal cache.
+
+    This requires :attr:`Intents.members` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawMemberRemoveEvent`
 
 .. function:: on_member_update(before, after)
 
@@ -668,6 +764,10 @@ Members
     - nickname
     - roles
     - pending
+    - timeout
+    - guild avatar
+
+    Due to a Discord limitation, this event is not dispatched when a member's timeout expires.
 
     This requires :attr:`Intents.members` to be enabled.
 
@@ -827,7 +927,7 @@ Messages
     will return a :class:`Message` object that represents the message before the content was modified.
 
     Due to the inherently raw nature of this event, the data parameter coincides with
-    the raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_.
+    the raw data given by the :ddocs:`gateway <topics/gateway#message-update>`.
 
     Since the data payload can be partial, care must be taken when accessing stuff in the dictionary.
     One example of a common case of partial data is when the ``'content'`` key is inaccessible. This
@@ -913,7 +1013,7 @@ Reactions
 
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
-    :param user: The user who added the reaction.
+    :param user: The user whose reaction was removed.
     :type user: Union[:class:`Member`, :class:`User`]
 
 .. function:: on_reaction_clear(message, reactions)
@@ -1096,11 +1196,22 @@ Stages
 Threads
 ~~~~~~~~
 
+.. function:: on_thread_create(thread)
+
+    Called whenever a thread is created.
+
+    Note that you can get the guild from :attr:`Thread.guild`.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param thread: The thread that was created.
+    :type thread: :class:`Thread`
 
 .. function:: on_thread_join(thread)
 
-    Called whenever a thread is joined or created. Note that from the API's perspective there is no way to
-    differentiate between a thread being created or the bot joining a thread.
+    Called whenever a thread is joined.
 
     Note that you can get the guild from :attr:`Thread.guild`.
 
@@ -1113,7 +1224,11 @@ Threads
 
 .. function:: on_thread_update(before, after)
 
-    Called whenever a thread is updated.
+    Called whenever a thread is updated. If the thread could
+    not be found in the internal cache this event will not be called.
+    Threads will not be in the cache if they are archived.
+
+    If you need this information use :func:`on_raw_thread_update` instead.
 
     This requires :attr:`Intents.guilds` to be enabled.
 
@@ -1146,7 +1261,11 @@ Threads
 
 .. function:: on_thread_delete(thread)
 
-    Called whenever a thread is deleted.
+    Called whenever a thread is deleted. If the thread could
+    not be found in the internal cache this event will not be called.
+    Threads will not be in the cache if they are archived.
+
+    If you need this information use :func:`on_raw_thread_delete` instead.
 
     Note that you can get the guild from :attr:`Thread.guild`.
 
@@ -1156,6 +1275,30 @@ Threads
 
     :param thread: The thread that got deleted.
     :type thread: :class:`Thread`
+
+.. function:: on_raw_thread_update(payload)
+
+    Called whenever a thread is updated. Unlike :func:`on_thread_update` this
+    is called regardless of the thread being in the internal thread cache or not.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawThreadUpdateEvent`
+
+.. function:: on_raw_thread_delete(payload)
+
+    Called whenever a thread is deleted. Unlike :func:`on_thread_delete` this
+    is called regardless of the thread being in the internal thread cache or not.
+
+    This requires :attr:`Intents.guilds` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawThreadDeleteEvent`
 
 .. function:: on_thread_member_join(member)
               on_thread_member_remove(member)
@@ -1170,6 +1313,18 @@ Threads
 
     :param member: The member who joined or left.
     :type member: :class:`ThreadMember`
+
+.. function:: on_raw_thread_member_remove(payload)
+
+    Called when a :class:`ThreadMember` leaves a :class:`Thread`. Unlike :func:`on_thread_member_remove` this
+    is called regardless of the member being in the internal thread's members cache or not.
+
+    This requires :attr:`Intents.members` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param payload: The raw event payload data.
+    :type member: :class:`RawThreadMembersUpdate`
 
 Voice
 ~~~~~~
@@ -1241,6 +1396,12 @@ Utility Functions
 
 .. autofunction:: discord.utils.as_chunks
 
+.. data:: discord.utils.MISSING
+
+    A type safe sentinel used in the library to represent something as missing. Used to distinguish from ``None`` values.
+
+    .. versionadded:: 2.0
+
 .. _discord-api-enums:
 
 Enumerations
@@ -1275,10 +1436,6 @@ of :class:`enum.Enum`.
 
         A guild news channel.
 
-    .. attribute:: store
-
-        A guild store channel.
-
     .. attribute:: stage_voice
 
         A guild stage voice channel.
@@ -1300,6 +1457,12 @@ of :class:`enum.Enum`.
     .. attribute:: private_thread
 
         A private thread
+
+        .. versionadded:: 2.0
+
+    .. attribute:: forum
+
+        A forum channel.
 
         .. versionadded:: 2.0
 
@@ -1407,9 +1570,9 @@ of :class:`enum.Enum`.
         The system message denoting that the author is replying to a message.
 
         .. versionadded:: 2.0
-    .. attribute:: application_command
+    .. attribute:: chat_input_command
 
-        The system message denoting that an application (or "slash") command was executed.
+        The system message denoting that a slash command was executed.
 
         .. versionadded:: 2.0
     .. attribute:: guild_invite_reminder
@@ -1421,6 +1584,17 @@ of :class:`enum.Enum`.
 
         The system message denoting the message in the thread that is the one that started the
         thread's conversation topic.
+
+        .. versionadded:: 2.0
+    .. attribute:: context_menu_command
+
+        The system message denoting that a context menu command was executed.
+
+        .. versionadded:: 2.0
+    .. attribute:: auto_moderation_action
+
+        The system message sent when an AutoMod rule is triggered. This is only
+        sent if the rule is configured to sent an alert when triggered.
 
         .. versionadded:: 2.0
 
@@ -1690,7 +1864,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.afk_channel`
         - :attr:`~AuditLogDiff.system_channel`
         - :attr:`~AuditLogDiff.afk_timeout`
-        - :attr:`~AuditLogDiff.default_message_notifications`
+        - :attr:`~AuditLogDiff.default_notifications`
         - :attr:`~AuditLogDiff.explicit_content_filter`
         - :attr:`~AuditLogDiff.mfa_level`
         - :attr:`~AuditLogDiff.name`
@@ -2156,7 +2330,8 @@ of :class:`enum.Enum`.
         A guild integration was created.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Object` with the integration ID of the integration which was created.
+        a :class:`PartialIntegration` or :class:`Object` with the
+        integration ID of the integration which was created.
 
         .. versionadded:: 1.3
 
@@ -2165,7 +2340,8 @@ of :class:`enum.Enum`.
         A guild integration was updated.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Object` with the integration ID of the integration which was updated.
+        a :class:`PartialIntegration` or :class:`Object` with the
+        integration ID of the integration which was updated.
 
         .. versionadded:: 1.3
 
@@ -2174,7 +2350,8 @@ of :class:`enum.Enum`.
         A guild integration was deleted.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Object` with the integration ID of the integration which was deleted.
+        a :class:`PartialIntegration` or :class:`Object` with the
+        integration ID of the integration which was deleted.
 
         .. versionadded:: 1.3
 
@@ -2286,6 +2463,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.privacy_level`
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
+        - :attr:`~AuditLogDiff.cover_image`
 
         .. versionadded:: 2.0
 
@@ -2304,6 +2482,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.privacy_level`
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
+        - :attr:`~AuditLogDiff.cover_image`
 
         .. versionadded:: 2.0
 
@@ -2322,6 +2501,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.privacy_level`
         - :attr:`~AuditLogDiff.status`
         - :attr:`~AuditLogDiff.entity_type`
+        - :attr:`~AuditLogDiff.cover_image`
 
         .. versionadded:: 2.0
 
@@ -2376,6 +2556,108 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.locked`
         - :attr:`~AuditLogDiff.auto_archive_duration`
         - :attr:`~AuditLogDiff.invitable`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: app_command_permission_update
+
+        An application command or integrations application command permissions
+        were updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`PartialIntegration` for an integrations general permissions,
+        :class:`~discord.app_commands.AppCommand` for a specific commands permissions,
+        or :class:`Object` with the ID of the command or integration which
+        was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an :class:`PartialIntegration` or :class:`Object` with the ID of
+        application that command or integration belongs to.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.app_command_permissions`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: automod_rule_create
+
+        An automod rule was created.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`AutoModRule` or :class:`Object` with the ID of the automod
+        rule that was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.enabled`
+        - :attr:`~AuditLogDiff.event_type`
+        - :attr:`~AuditLogDiff.trigger_type`
+        - :attr:`~AuditLogDiff.trigger`
+        - :attr:`~AuditLogDiff.actions`
+        - :attr:`~AuditLogDiff.exempt_roles`
+        - :attr:`~AuditLogDiff.exempt_channels`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: automod_role_update
+
+        An automod rule was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`AutoModRule` or :class:`Object` with the ID of the automod
+        rule that was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.enabled`
+        - :attr:`~AuditLogDiff.event_type`
+        - :attr:`~AuditLogDiff.trigger_type`
+        - :attr:`~AuditLogDiff.trigger`
+        - :attr:`~AuditLogDiff.actions`
+        - :attr:`~AuditLogDiff.exempt_roles`
+        - :attr:`~AuditLogDiff.exempt_channels`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: automod_rule_delete
+
+        An automod rule was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`AutoModRule` or :class:`Object` with the ID of the automod
+        rule that was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.enabled`
+        - :attr:`~AuditLogDiff.event_type`
+        - :attr:`~AuditLogDiff.trigger_type`
+        - :attr:`~AuditLogDiff.trigger`
+        - :attr:`~AuditLogDiff.actions`
+        - :attr:`~AuditLogDiff.exempt_roles`
+        - :attr:`~AuditLogDiff.exempt_channels`
+
+        .. versionadded:: 2.0
+
+    .. attribute:: automod_block_message
+
+        An automod rule blocked a message from being sent.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`Member` with the ID of the person who triggered the automod rule.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with 3 attributes:
+
+        - ``automod_rule_name``: The name of the automod rule that was triggered.
+        - ``automod_rule_trigger``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``channel``: The channel in which the automod rule was triggered.
+
+        When this is the action, :attr:`AuditLogEntry.changes` is empty.
 
         .. versionadded:: 2.0
 
@@ -2800,6 +3082,60 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`cancelled`.
 
+    .. attribute:: ended
+
+        An alias for :attr:`completed`.
+
+.. class:: AutoModRuleTriggerType
+
+    Represents the trigger type of an automod rule.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: keyword
+
+        The rule will trigger when a keyword is mentioned.
+
+    .. attribute:: harmful_link
+
+        The rule will trigger when a harmful link is posted.
+
+    .. attribute:: spam
+
+        The rule will trigger when a spam message is posted.
+
+    .. attribute:: keyword_preset
+
+        The rule will trigger when something triggers based on the set keyword preset types.
+
+.. class:: AutoModRuleEventType
+
+    Represents the event type of an automod rule.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: message_send
+
+        The rule will trigger when a message is sent.
+
+.. class:: AutoModRuleActionType
+
+    Represents the action type of an automod rule.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: block_message
+
+        The rule will block a message from being sent.
+
+    .. attribute:: send_alert_message
+
+        The rule will send an alert message to a predefined channel.
+
+    .. attribute:: timeout
+
+        The rule will timeout a user.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -3023,12 +3359,6 @@ AuditLogDiff
         See also :attr:`Guild.explicit_content_filter`.
 
         :type: :class:`ContentFilter`
-
-    .. attribute:: default_message_notifications
-
-        The guild's default message notification setting.
-
-        :type: :class:`int`
 
     .. attribute:: vanity_url_code
 
@@ -3365,7 +3695,7 @@ AuditLogDiff
 
         See also :attr:`Guild.preferred_locale`
 
-        :type: :class:`str`
+        :type: :class:`Locale`
 
     .. attribute:: prune_delete_days
 
@@ -3385,8 +3715,64 @@ AuditLogDiff
 
         :type: :class:`EntityType`
 
+    .. attribute:: cover_image
+
+        The scheduled event's cover image.
+
+        See also :attr:`ScheduledEvent.cover_image`.
+
+        :type: :class:`Asset`
+
+    .. attribute:: app_command_permissions
+
+        List of permissions for the app command.
+
+        :type: List[:class:`~discord.app_commands.AppCommandPermissions`]
+
+    .. attribute:: enabled
+
+        Whether the automod rule is active or not.
+
+        :type: :class:`bool`
+
+    .. attribute:: event_type
+
+        The event type for triggering the automod rule.
+
+        :type: :class:`AutoModRuleEventType`
+
+    .. attribute:: trigger_type
+
+        The trigger type for the automod rule.
+
+        :type: :class:`AutoModRuleTriggerType`
+
+    .. attribute:: trigger
+
+        The trigger for the automod rule.
+
+        :type: :class:`AutoModTrigger`
+
+    .. attribute:: actions
+
+        The actions to take when an automod rule is triggered.
+
+        :type: List[AutoModRuleAction]
+
+    .. attribute:: exempt_roles
+
+        The list of roles that are exempt from the automod rule.
+
+        :type: List[Union[:class:`Role`, :class:`Object`]]
+
+    .. attribute:: exempt_channels
+
+        The list of channels or threads that are exempt from the automod rule.
+
+        :type: List[:class:`abc.GuildChannel`, :class:`Thread`, :class:`Object`]
+
 .. this is currently missing the following keys: reason and application_id
-   I'm not sure how to about porting these
+   I'm not sure how to port these
 
 Webhook Support
 ------------------
@@ -3409,6 +3795,7 @@ WebhookMessage
 
 .. autoclass:: WebhookMessage()
     :members:
+    :inherited-members:
 
 SyncWebhook
 ~~~~~~~~~~~~
@@ -3540,6 +3927,15 @@ User
     .. automethod:: typing
         :async-with:
 
+AutoMod
+~~~~~~~
+
+.. autoclass:: AutoModRule()
+    :members:
+
+.. autoclass:: AutoModAction()
+    :members:
+
 Attachment
 ~~~~~~~~~~~
 
@@ -3564,6 +3960,7 @@ Message
 
 .. autoclass:: Message()
     :members:
+    :inherited-members:
 
 DeletedReferencedMessage
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -3631,6 +4028,9 @@ Integration
     :members:
 
 .. autoclass:: StreamIntegration()
+    :members:
+
+.. autoclass:: PartialIntegration()
     :members:
 
 Member
@@ -3718,6 +4118,15 @@ TextChannel
     .. automethod:: typing
         :async-with:
 
+ForumChannel
+~~~~~~~~~~~~~
+
+.. attributetable:: ForumChannel
+
+.. autoclass:: ForumChannel()
+    :members:
+    :inherited-members:
+
 Thread
 ~~~~~~~~
 
@@ -3738,15 +4147,6 @@ ThreadMember
 
 .. autoclass:: ThreadMember()
     :members:
-
-StoreChannel
-~~~~~~~~~~~~~
-
-.. attributetable:: StoreChannel
-
-.. autoclass:: StoreChannel()
-    :members:
-    :inherited-members:
 
 VoiceChannel
 ~~~~~~~~~~~~~
@@ -3840,6 +4240,22 @@ Template
 .. attributetable:: Template
 
 .. autoclass:: Template()
+    :members:
+
+WelcomeScreen
+~~~~~~~~~~~~~~~
+
+.. attributetable:: WelcomeScreen
+
+.. autoclass:: WelcomeScreen()
+    :members:
+
+WelcomeChannel
+~~~~~~~~~~~~~~~
+
+.. attributetable:: WelcomeChannel
+
+.. autoclass:: WelcomeChannel()
     :members:
 
 WidgetChannel
@@ -3963,6 +4379,54 @@ RawIntegrationDeleteEvent
 .. autoclass:: RawIntegrationDeleteEvent()
     :members:
 
+RawThreadUpdateEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawThreadUpdateEvent
+
+.. autoclass:: RawThreadUpdateEvent()
+    :members:
+
+RawThreadMembersUpdate
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawThreadMembersUpdate
+
+.. autoclass:: RawThreadMembersUpdate()
+    :members:
+
+RawThreadDeleteEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawThreadDeleteEvent
+
+.. autoclass:: RawThreadDeleteEvent()
+    :members:
+
+RawTypingEvent
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawTypingEvent
+
+.. autoclass:: RawTypingEvent()
+    :members:
+
+RawMemberRemoveEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawMemberRemoveEvent
+
+.. autoclass:: RawMemberRemoveEvent()
+    :members:
+
+RawAppCommandPermissionsUpdateEvent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawAppCommandPermissionsUpdateEvent
+
+.. autoclass:: RawAppCommandPermissionsUpdateEvent()
+    :members:
+
 PartialWebhookGuild
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -4036,6 +4500,14 @@ PartialMessage
 .. autoclass:: PartialMessage
     :members:
 
+MessageApplication
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MessageApplication
+
+.. autoclass:: MessageApplication
+    :members:
+
 Intents
 ~~~~~~~~~~
 
@@ -4058,6 +4530,38 @@ ApplicationFlags
 .. attributetable:: ApplicationFlags
 
 .. autoclass:: ApplicationFlags
+    :members:
+
+ChannelFlags
+~~~~~~~~~~~~~~
+
+.. attributetable:: ChannelFlags
+
+.. autoclass:: ChannelFlags
+    :members:
+
+AutoModPresets
+~~~~~~~~~~~~~~
+
+.. attributetable:: AutoModPresets
+
+.. autoclass:: AutoModPresets
+    :members:
+
+AutoModRuleAction
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: AutoModRuleAction
+
+.. autoclass:: AutoModRuleAction
+    :members:
+
+AutoModTrigger
+~~~~~~~~~~~~~~
+
+.. attributetable:: AutoModTrigger
+
+.. autoclass:: AutoModTrigger
     :members:
 
 File
@@ -4178,6 +4682,9 @@ The following exceptions are thrown by the library.
 .. autoexception:: HTTPException
     :members:
 
+.. autoexception:: RateLimited
+    :members:
+
 .. autoexception:: Forbidden
 
 .. autoexception:: NotFound
@@ -4216,3 +4723,4 @@ Exception Hierarchy
                 - :exc:`Forbidden`
                 - :exc:`NotFound`
                 - :exc:`DiscordServerError`
+            - :exc:`RateLimited`

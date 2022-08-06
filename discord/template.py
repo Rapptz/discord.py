@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING, List
 from .utils import parse_time, _bytes_to_base64_data, MISSING
 from .guild import Guild
 
@@ -49,7 +49,7 @@ class _FriendlyHttpAttributeErrorHelper:
 
 
 class _PartialTemplateState:
-    def __init__(self, *, state):
+    def __init__(self, *, state) -> None:
         self.__state = state
         self.http = _FriendlyHttpAttributeErrorHelper()
 
@@ -69,19 +69,19 @@ class _PartialTemplateState:
     def member_cache_flags(self):
         return self.__state.member_cache_flags
 
-    def store_emoji(self, guild, packet):
+    def store_emoji(self, guild, packet) -> None:
         return None
 
-    def _get_voice_client(self, id):
+    def _get_voice_client(self, id) -> None:
         return None
 
-    def _get_message(self, id):
+    def _get_message(self, id) -> None:
         return None
 
     def _get_guild(self, id):
         return self.__state._get_guild(id)
 
-    async def query_members(self, **kwargs: Any):
+    async def query_members(self, **kwargs: Any) -> List[Any]:
         return []
 
     def __getattr__(self, attr):

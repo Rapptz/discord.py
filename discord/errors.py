@@ -27,13 +27,9 @@ from typing import Dict, List, Optional, TYPE_CHECKING, Any, Tuple, Union
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse, ClientWebSocketResponse
+    from requests import Response
 
-    try:
-        from requests import Response
-
-        _ResponseType = Union[ClientResponse, Response]
-    except ModuleNotFoundError:
-        _ResponseType = ClientResponse
+    _ResponseType = Union[ClientResponse, Response]
 
     from .interactions import Interaction
 
@@ -42,6 +38,7 @@ __all__ = (
     'ClientException',
     'GatewayNotFound',
     'HTTPException',
+    'RateLimited',
     'Forbidden',
     'NotFound',
     'DiscordServerError',
@@ -117,7 +114,7 @@ class HTTPException(DiscordException):
 
     def __init__(self, response: _ResponseType, message: Optional[Union[str, Dict[str, Any]]]):
         self.response: _ResponseType = response
-        self.status: int = response.status  # type: ignore - This attribute is filled by the library even if using requests
+        self.status: int = response.status  # type: ignore # This attribute is filled by the library even if using requests
         self.code: int
         self.text: str
         if isinstance(message, dict):
@@ -139,6 +136,30 @@ class HTTPException(DiscordException):
             fmt += ': {2}'
 
         super().__init__(fmt.format(self.response, self.code, self.text))
+
+
+class RateLimited(DiscordException):
+    """Exception that's raised for when status code 429 occurs
+    and the timeout is greater than the configured maximum using
+    the ``max_ratelimit_timeout`` parameter in :class:`Client`.
+
+    This is not raised during global ratelimits.
+
+    Since sometimes requests are halted pre-emptively before they're
+    even made, this **does not** subclass :exc:`HTTPException`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    retry_after: :class:`float`
+        The amount of seconds that the client should wait before retrying
+        the request.
+    """
+
+    def __init__(self, retry_after: float):
+        self.retry_after = retry_after
+        super().__init__(f'Too many requests. Retry in {retry_after:.2f} seconds.')
 
 
 class Forbidden(HTTPException):
@@ -220,6 +241,7 @@ class PrivilegedIntentsRequired(ClientException):
 
     - :attr:`Intents.members`
     - :attr:`Intents.presences`
+    - :attr:`Intents.message_content`
 
     Attributes
     -----------

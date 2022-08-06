@@ -52,7 +52,6 @@ if TYPE_CHECKING:
         StandardSticker as StandardStickerPayload,
         GuildSticker as GuildStickerPayload,
         ListPremiumStickerPacks as ListPremiumStickerPacksPayload,
-        EditGuildSticker,
     )
 
 
@@ -123,7 +122,7 @@ class StickerPack(Hashable):
     @property
     def banner(self) -> Optional[Asset]:
         """:class:`Asset`: The banner asset of the sticker pack."""
-        return self._banner and Asset._from_sticker_banner(self._state, self._banner)  # type: ignore - type-checker thinks _banner could be Literal[0]
+        return self._banner and Asset._from_sticker_banner(self._state, self._banner)  # type: ignore
 
     def __repr__(self) -> str:
         return f'<StickerPack id={self.id} name={self.name!r} description={self.description!r}>'
@@ -199,7 +198,7 @@ class StickerItem(_StickerTag):
 
     __slots__ = ('_state', 'name', 'id', 'format', 'url')
 
-    def __init__(self, *, state: ConnectionState, data: StickerItemPayload):
+    def __init__(self, *, state: ConnectionState, data: StickerItemPayload) -> None:
         self._state: ConnectionState = state
         self.name: str = data['name']
         self.id: int = int(data['id'])
@@ -469,7 +468,7 @@ class GuildSticker(Sticker):
         :class:`GuildSticker`
             The newly modified sticker.
         """
-        payload: EditGuildSticker = {}
+        payload = {}
 
         if name is not MISSING:
             payload['name'] = name

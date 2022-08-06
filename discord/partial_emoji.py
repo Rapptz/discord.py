@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 
     from .state import ConnectionState
     from datetime import datetime
-    from .types.message import PartialEmoji as PartialEmojiPayload
+    from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload
     from .types.activity import ActivityEmoji
 
 
@@ -148,13 +148,16 @@ class PartialEmoji(_EmojiTag, AssetMixin):
 
         return cls(name=value, id=None, animated=False)
 
-    def to_dict(self) -> Dict[str, Any]:
-        o: Dict[str, Any] = {'name': self.name}
-        if self.id:
-            o['id'] = self.id
+    def to_dict(self) -> EmojiPayload:
+        payload: EmojiPayload = {
+            'id': self.id,
+            'name': self.name,
+        }
+
         if self.animated:
-            o['animated'] = self.animated
-        return o
+            payload['animated'] = self.animated
+
+        return payload
 
     def _to_partial(self) -> PartialEmoji:
         return self
@@ -233,6 +236,26 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         return f'{Asset.BASE}/emojis/{self.id}.{fmt}'
 
     async def read(self) -> bytes:
+        """|coro|
+
+        Retrieves the content of this asset as a :class:`bytes` object.
+
+        Raises
+        ------
+        DiscordException
+            There was no internal connection state.
+        HTTPException
+            Downloading the asset failed.
+        NotFound
+            The asset was deleted.
+        ValueError
+            The PartialEmoji is not a custom emoji.
+
+        Returns
+        -------
+        :class:`bytes`
+            The content of the asset.
+        """
         if self.is_unicode_emoji():
             raise ValueError('PartialEmoji is not a custom emoji')
 

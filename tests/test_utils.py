@@ -164,7 +164,9 @@ def test_resolve_template(url, code):
     assert utils.resolve_template(url) == code
 
 
-@pytest.mark.parametrize('mention', ['@everyone', '@here', '<@80088516616269824>', '<@!80088516616269824>', '<@&381978264698224660>'])
+@pytest.mark.parametrize(
+    'mention', ['@everyone', '@here', '<@80088516616269824>', '<@!80088516616269824>', '<@&381978264698224660>']
+)
 def test_escape_mentions(mention):
     assert mention not in utils.escape_mentions(mention)
     assert mention not in utils.escape_mentions(f"one {mention} two")
@@ -198,6 +200,37 @@ def test_resolve_annotation(annotation, resolved):
     assert resolved == utils.resolve_annotation(annotation, globals(), locals(), None)
 
 
+@pytest.mark.parametrize(
+    ('annotation', 'resolved', 'check_cache'),
+    [
+        (datetime.datetime, datetime.datetime, False),
+        ('datetime.datetime', datetime.datetime, True),
+        (
+            'typing.Union[typing.Literal["a"], typing.Literal["b"]]',
+            typing.Union[typing.Literal["a"], typing.Literal["b"]],
+            True,
+        ),
+        ('typing.Union[typing.Union[int, str], typing.Union[bool, dict]]', typing.Union[int, str, bool, dict], True),
+    ],
+)
+def test_resolve_annotation_with_cache(annotation, resolved, check_cache):
+    cache = {}
+
+    assert resolved == utils.resolve_annotation(annotation, globals(), locals(), cache)
+
+    if check_cache:
+        assert len(cache) == 1
+
+        cached_item = cache[annotation]
+
+        latest = utils.resolve_annotation(annotation, globals(), locals(), cache)
+
+        assert latest is cached_item
+        assert typing.get_origin(latest) is typing.get_origin(resolved)
+    else:
+        assert len(cache) == 0
+
+
 def test_resolve_annotation_optional_normalisation():
     value = utils.resolve_annotation('typing.Union[None, int]', globals(), locals(), None)
     assert value.__args__ == (int, type(None))
@@ -214,6 +247,30 @@ def test_resolve_annotation_optional_normalisation():
 )
 def test_resolve_annotation_310(annotation, resolved):
     assert resolved == utils.resolve_annotation(annotation, globals(), locals(), None)
+
+
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="3.10 union syntax")
+@pytest.mark.parametrize(
+    ('annotation', 'resolved'),
+    [
+        ('int | None', typing.Optional[int]),
+        ('str | int', typing.Union[str, int]),
+        ('str | int | None', typing.Optional[typing.Union[str, int]]),
+    ],
+)
+def test_resolve_annotation_with_cache_310(annotation, resolved):
+    cache = {}
+
+    assert resolved == utils.resolve_annotation(annotation, globals(), locals(), cache)
+    assert typing.get_origin(resolved) is typing.Union
+
+    assert len(cache) == 1
+
+    cached_item = cache[annotation]
+
+    latest = utils.resolve_annotation(annotation, globals(), locals(), cache)
+    assert latest is cached_item
+    assert typing.get_origin(latest) is typing.get_origin(resolved)
 
 
 # is_inside_class tests

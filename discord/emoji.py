@@ -108,16 +108,16 @@ class Emoji(_EmojiTag, AssetMixin):
         'available',
     )
 
-    def __init__(self, *, guild: Guild, state: ConnectionState, data: EmojiPayload):
+    def __init__(self, *, guild: Guild, state: ConnectionState, data: EmojiPayload) -> None:
         self.guild_id: int = guild.id
         self._state: ConnectionState = state
         self._from_data(data)
 
-    def _from_data(self, emoji: EmojiPayload):
+    def _from_data(self, emoji: EmojiPayload) -> None:
         self.require_colons: bool = emoji.get('require_colons', False)
         self.managed: bool = emoji.get('managed', False)
-        self.id: int = int(emoji['id'])  # type: ignore - This won't be None for full emoji objects.
-        self.name: str = emoji['name']  # type: ignore - This won't be None for full emoji objects.
+        self.id: int = int(emoji['id'])  # type: ignore # This won't be None for full emoji objects.
+        self.name: str = emoji['name']  # type: ignore # This won't be None for full emoji objects.
         self.animated: bool = emoji.get('animated', False)
         self.available: bool = emoji.get('available', True)
         self._roles: SnowflakeList = SnowflakeList(map(int, emoji.get('roles', [])))
@@ -256,4 +256,4 @@ class Emoji(_EmojiTag, AssetMixin):
             payload['roles'] = [role.id for role in roles]
 
         data = await self._state.http.edit_custom_emoji(self.guild_id, self.id, payload=payload, reason=reason)
-        return Emoji(guild=self.guild, data=data, state=self._state)  # type: ignore - if guild is None, the http request would have failed
+        return Emoji(guild=self.guild, data=data, state=self._state)  # type: ignore # if guild is None, the http request would have failed

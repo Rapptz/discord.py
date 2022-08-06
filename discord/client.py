@@ -28,7 +28,7 @@ import asyncio
 import datetime
 import logging
 import sys
-import traceback
+import os
 from typing import (
     Any,
     AsyncIterator,
@@ -113,9 +113,72 @@ class _LoopSentinel:
 _loop: Any = _LoopSentinel()
 
 
+def stream_supports_colour(stream: Any) -> bool:
+    is_a_tty = hasattr(stream, 'isatty') and stream.isatty()
+    if sys.platform != 'win32':
+        return is_a_tty
+
+    # ANSICON checks for things like ConEmu
+    # WT_SESSION checks if this is Windows Terminal
+    # VSCode built-in terminal supports colour too
+    return is_a_tty and ('ANSICON' in os.environ or 'WT_SESSION' in os.environ or os.environ.get('TERM_PROGRAM') == 'vscode')
+
+
+class _ColourFormatter(logging.Formatter):
+
+    # ANSI codes are a bit weird to decipher if you're unfamiliar with them, so here's a refresher
+    # It starts off with a format like \x1b[XXXm where XXX is a semicolon separated list of commands
+    # The important ones here relate to colour.
+    # 30-37 are black, red, green, yellow, blue, magenta, cyan and white in that order
+    # 40-47 are the same except for the background
+    # 90-97 are the same but "bright" foreground
+    # 100-107 are the same as the bright ones but for the background.
+    # 1 means bold, 2 means dim, 0 means reset, and 4 means underline.
+
+    LEVEL_COLOURS = [
+        (logging.DEBUG, '\x1b[40;1m'),
+        (logging.INFO, '\x1b[34;1m'),
+        (logging.WARNING, '\x1b[33;1m'),
+        (logging.ERROR, '\x1b[31m'),
+        (logging.CRITICAL, '\x1b[41m'),
+    ]
+
+    FORMATS = {
+        level: logging.Formatter(
+            f'\x1b[30;1m%(asctime)s\x1b[0m {colour}%(levelname)-8s\x1b[0m \x1b[35m%(name)s\x1b[0m %(message)s',
+            '%Y-%m-%d %H:%M:%S',
+        )
+        for level, colour in LEVEL_COLOURS
+    }
+
+    def format(self, record):
+        formatter = self.FORMATS.get(record.levelno)
+        if formatter is None:
+            formatter = self.FORMATS[logging.DEBUG]
+
+        # Override the traceback to always print in red
+        if record.exc_info:
+            text = formatter.formatException(record.exc_info)
+            record.exc_text = f'\x1b[31m{text}\x1b[0m'
+
+        output = formatter.format(record)
+
+        # Remove the cache layer
+        record.exc_text = None
+        return output
+
+
 class Client:
     r"""Represents a client connection that connects to Discord.
     This class is used to interact with the Discord WebSocket and API.
+
+    .. container:: operations
+
+        .. describe:: async with x
+
+            Asynchronously initialises the client and automatically cleans up.
+
+            .. versionadded:: 2.0
 
     A number of options can be passed to the :class:`Client`.
 
@@ -140,9 +203,11 @@ class Client:
     intents: :class:`Intents`
         The intents that you want to enable for the session. This is a way of
         disabling and enabling certain gateway events from triggering and being sent.
-        If not given, defaults to a regularly constructed :class:`Intents` class.
 
         .. versionadded:: 1.5
+
+        .. versionchanged:: 2.0
+            Parameter is now required.
     member_cache_flags: :class:`MemberCacheFlags`
         Allows for finer control over how the library caches members.
         If not given, defaults to cache as much as possible with the
@@ -196,6 +261,14 @@ class Client:
         `aiohttp documentation <https://docs.aiohttp.org/en/stable/client_advanced.html#client-tracing>`_.
 
         .. versionadded:: 2.0
+    max_ratelimit_timeout: Optional[:class:`float`]
+        The maximum number of seconds to wait when a non-global rate limit is encountered.
+        If a request requires sleeping for more than the seconds passed in, then
+        :exc:`~discord.RateLimited` will be raised. By default, there is no timeout limit.
+        In order to prevent misuse and unnecessary bans, the minimum value this can be
+        set to is ``30.0`` seconds.
+
+        .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -203,7 +276,7 @@ class Client:
         The websocket gateway the client is currently connected to. Could be ``None``.
     """
 
-    def __init__(self, **options: Any) -> None:
+    def __init__(self, *, intents: Intents, **options: Any) -> None:
         self.loop: asyncio.AbstractEventLoop = _loop
         # self.ws is set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore
@@ -215,12 +288,14 @@ class Client:
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
         http_trace: Optional[aiohttp.TraceConfig] = options.pop('http_trace', None)
+        max_ratelimit_timeout: Optional[float] = options.pop('max_ratelimit_timeout', None)
         self.http: HTTPClient = HTTPClient(
             self.loop,
             proxy=proxy,
             proxy_auth=proxy_auth,
             unsync_clock=unsync_clock,
             http_trace=http_trace,
+            max_ratelimit_timeout=max_ratelimit_timeout,
         )
 
         self._handlers: Dict[str, Callable[..., None]] = {
@@ -232,10 +307,11 @@ class Client:
         }
 
         self._enable_debug_events: bool = options.pop('enable_debug_events', False)
-        self._connection: ConnectionState = self._get_state(**options)
+        self._connection: ConnectionState = self._get_state(intents=intents, **options)
         self._connection.shard_count = self.shard_count
         self._closed: bool = False
         self._ready: asyncio.Event = MISSING
+        self._application: Optional[AppInfo] = None
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
 
@@ -294,18 +370,18 @@ class Client:
         return self._connection.user
 
     @property
-    def guilds(self) -> List[Guild]:
-        """List[:class:`.Guild`]: The guilds that the connected client is a member of."""
+    def guilds(self) -> Sequence[Guild]:
+        """Sequence[:class:`.Guild`]: The guilds that the connected client is a member of."""
         return self._connection.guilds
 
     @property
-    def emojis(self) -> List[Emoji]:
-        """List[:class:`.Emoji`]: The emojis that the connected client has."""
+    def emojis(self) -> Sequence[Emoji]:
+        """Sequence[:class:`.Emoji`]: The emojis that the connected client has."""
         return self._connection.emojis
 
     @property
-    def stickers(self) -> List[GuildSticker]:
-        """List[:class:`.GuildSticker`]: The stickers that the connected client has.
+    def stickers(self) -> Sequence[GuildSticker]:
+        """Sequence[:class:`.GuildSticker`]: The stickers that the connected client has.
 
         .. versionadded:: 2.0
         """
@@ -320,8 +396,8 @@ class Client:
         return utils.SequenceProxy(self._connection._messages or [])
 
     @property
-    def private_channels(self) -> List[PrivateChannel]:
-        """List[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on.
+    def private_channels(self) -> Sequence[PrivateChannel]:
+        """Sequence[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on.
 
         .. note::
 
@@ -343,8 +419,9 @@ class Client:
         """Optional[:class:`int`]: The client's application ID.
 
         If this is not passed via ``__init__`` then this is retrieved
-        through the gateway when an event contains the data. Usually
-        after :func:`~discord.on_connect` is called.
+        through the gateway when an event contains the data or after a call
+        to :meth:`~discord.Client.login`. Usually after :func:`~discord.on_connect`
+        is called.
 
         .. versionadded:: 2.0
         """
@@ -357,6 +434,22 @@ class Client:
         .. versionadded:: 2.0
         """
         return self._connection.application_flags
+
+    @property
+    def application(self) -> Optional[AppInfo]:
+        """Optional[:class:`~discord.AppInfo`]: The client's application info.
+
+        This is retrieved on :meth:`~discord.Client.login` and is not updated
+        afterwards. This allows populating the application_id without requiring a
+        gateway connection.
+
+        This is ``None`` if accessed before :meth:`~discord.Client.login` is called.
+
+        .. seealso:: The :meth:`~discord.Client.application_info` API call
+
+        .. versionadded:: 2.0
+        """
+        return self._application
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
@@ -390,7 +483,7 @@ class Client:
         # Schedules the task
         return self.loop.create_task(wrapped, name=f'discord.py: {event_name}')
 
-    def dispatch(self, event: str, *args: Any, **kwargs: Any) -> None:
+    def dispatch(self, event: str, /, *args: Any, **kwargs: Any) -> None:
         _log.debug('Dispatching event %s', event)
         method = 'on_' + event
 
@@ -430,17 +523,21 @@ class Client:
         else:
             self._schedule_event(coro, method, *args, **kwargs)
 
-    async def on_error(self, event_method: str, *args: Any, **kwargs: Any) -> None:
+    async def on_error(self, event_method: str, /, *args: Any, **kwargs: Any) -> None:
         """|coro|
 
         The default error handler provided by the client.
 
-        By default this prints to :data:`sys.stderr` however it could be
+        By default this logs to the library logger however it could be
         overridden to have a different implementation.
         Check :func:`~discord.on_error` for more details.
+
+        .. versionchanged:: 2.0
+
+            ``event_method`` parameter is now positional-only
+            and instead of writing to ``sys.stderr`` it logs instead.
         """
-        print(f'Ignoring exception in {event_method}', file=sys.stderr)
-        traceback.print_exc()
+        _log.exception('Ignoring exception in %s', event_method)
 
     # hooks
 
@@ -478,7 +575,6 @@ class Client:
         self.loop = loop
         self.http.loop = loop
         self._connection.loop = loop
-        await self._connection.async_setup()
 
         self._ready = asyncio.Event()
 
@@ -531,10 +627,18 @@ class Client:
 
         _log.info('logging in using static token')
 
-        await self._async_setup_hook()
+        if self.loop is _loop:
+            await self._async_setup_hook()
 
         data = await self.http.static_login(token.strip())
         self._connection.user = ClientUser(state=self._connection, data=data)
+        self._application = await self.application_info()
+        if self._connection.application_id is None:
+            self._connection.application_id = self._application.id
+
+        if not self._connection.application_flags:
+            self._connection.application_flags = self._application.flags
+
         await self.setup_hook()
 
     async def connect(self, *, reconnect: bool = True) -> None:
@@ -633,12 +737,7 @@ class Client:
 
         self._closed = True
 
-        for voice in self.voice_clients:
-            try:
-                await voice.disconnect(force=True)
-            except Exception:
-                # if an error happens during disconnects, disregard it.
-                pass
+        await self._connection.close()
 
         if self.ws is not None and self.ws.open:
             await self.ws.close(code=1000)
@@ -660,12 +759,23 @@ class Client:
         self._closed = False
         self._ready.clear()
         self._connection.clear()
-        self.http.recreate()
+        self.http.clear()
 
     async def start(self, token: str, *, reconnect: bool = True) -> None:
         """|coro|
 
         A shorthand coroutine for :meth:`login` + :meth:`connect`.
+
+        Parameters
+        -----------
+        token: :class:`str`
+            The authentication token. Do not prefix this token with
+            anything as the library will do it for you.
+        reconnect: :class:`bool`
+            If we should attempt reconnecting, either due to internet
+            failure or a specific failure on Discord's part. Certain
+            disconnects that lead to bad state will not be handled (such as
+            invalid sharding payloads or bad tokens).
 
         Raises
         -------
@@ -675,7 +785,15 @@ class Client:
         await self.login(token)
         await self.connect(reconnect=reconnect)
 
-    def run(self, *args: Any, **kwargs: Any) -> None:
+    def run(
+        self,
+        token: str,
+        *,
+        reconnect: bool = True,
+        log_handler: Optional[logging.Handler] = MISSING,
+        log_formatter: logging.Formatter = MISSING,
+        log_level: int = MISSING,
+    ) -> None:
         """A blocking call that abstracts away the event loop
         initialisation from you.
 
@@ -683,23 +801,77 @@ class Client:
         function should not be used. Use :meth:`start` coroutine
         or :meth:`connect` + :meth:`login`.
 
-        Roughly Equivalent to: ::
-
-            try:
-                asyncio.run(self.start(*args, **kwargs))
-            except KeyboardInterrupt:
-                return
+        This function also sets up the logging library to make it easier
+        for beginners to know what is going on with the library. For more
+        advanced users, this can be disabled by passing ``None`` to
+        the ``log_handler`` parameter.
 
         .. warning::
 
             This function must be the last function to call due to the fact that it
             is blocking. That means that registration of events or anything being
             called after this function call will not execute until it returns.
+
+        Parameters
+        -----------
+        token: :class:`str`
+            The authentication token. Do not prefix this token with
+            anything as the library will do it for you.
+        reconnect: :class:`bool`
+            If we should attempt reconnecting, either due to internet
+            failure or a specific failure on Discord's part. Certain
+            disconnects that lead to bad state will not be handled (such as
+            invalid sharding payloads or bad tokens).
+        log_handler: Optional[:class:`logging.Handler`]
+            The log handler to use for the library's logger. If this is ``None``
+            then the library will not set up anything logging related. Logging
+            will still work if ``None`` is passed, though it is your responsibility
+            to set it up.
+
+            The default log handler if not provided is :class:`logging.StreamHandler`.
+
+            .. versionadded:: 2.0
+        log_formatter: :class:`logging.Formatter`
+            The formatter to use with the given log handler. If not provided then it
+            defaults to a colour based logging formatter (if available).
+
+            .. versionadded:: 2.0
+        log_level: :class:`int`
+            The default log level for the library's logger. This is only applied if the
+            ``log_handler`` parameter is not ``None``. Defaults to ``logging.INFO``.
+
+            Note that the *root* logger will always be set to ``logging.INFO`` and this
+            only controls the library's log level. To control the root logger's level,
+            you can use ``logging.getLogger().setLevel(level)``.
+
+            .. versionadded:: 2.0
         """
 
         async def runner():
             async with self:
-                await self.start(*args, **kwargs)
+                await self.start(token, reconnect=reconnect)
+
+        if log_level is MISSING:
+            log_level = logging.INFO
+
+        if log_handler is MISSING:
+            log_handler = logging.StreamHandler()
+
+        if log_formatter is MISSING:
+            if isinstance(log_handler, logging.StreamHandler) and stream_supports_colour(log_handler.stream):
+                log_formatter = _ColourFormatter()
+            else:
+                dt_fmt = '%Y-%m-%d %H:%M:%S'
+                log_formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+
+        logger = None
+        if log_handler is not None:
+            library, _, _ = __name__.partition('.')
+            logger = logging.getLogger(library)
+
+            log_handler.setFormatter(log_formatter)
+            logger.setLevel(log_level)
+            logger.addHandler(log_handler)
 
         try:
             asyncio.run(runner())
@@ -708,6 +880,9 @@ class Client:
             # `asyncio.run` handles the loop cleanup
             # and `self.start` closes all sockets and the HTTPClient instance.
             return
+        finally:
+            if log_handler is not None and logger is not None:
+                logger.removeHandler(log_handler)
 
     # properties
 
@@ -799,9 +974,11 @@ class Client:
         Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]]
             The returned channel or ``None`` if not found.
         """
-        return self._connection.get_channel(id)  # type: ignore - The cache contains all channel types
+        return self._connection.get_channel(id)  # type: ignore # The cache contains all channel types
 
-    def get_partial_messageable(self, id: int, *, type: Optional[ChannelType] = None) -> PartialMessageable:
+    def get_partial_messageable(
+        self, id: int, *, guild_id: Optional[int] = None, type: Optional[ChannelType] = None
+    ) -> PartialMessageable:
         """Returns a partial messageable with the given channel ID.
 
         This is useful if you have a channel_id but don't want to do an API call
@@ -813,6 +990,12 @@ class Client:
         -----------
         id: :class:`int`
             The channel ID to create a partial messageable for.
+        guild_id: Optional[:class:`int`]
+            The optional guild ID to create a partial messageable for.
+
+            This is not required to actually send messages, but it does allow the
+            :meth:`~discord.PartialMessageable.jump_url` and
+            :attr:`~discord.PartialMessageable.guild` properties to function properly.
         type: Optional[:class:`.ChannelType`]
             The underlying channel type for the partial messageable.
 
@@ -821,7 +1004,7 @@ class Client:
         :class:`.PartialMessageable`
             The partial messageable
         """
-        return PartialMessageable(state=self._connection, id=id, type=type)
+        return PartialMessageable(state=self._connection, id=id, guild_id=guild_id, type=type)
 
     def get_stage_instance(self, id: int, /) -> Optional[StageInstance]:
         """Returns a stage instance with the given stage channel ID.
@@ -973,10 +1156,16 @@ class Client:
         """
         if self._ready is not MISSING:
             await self._ready.wait()
+        else:
+            raise RuntimeError(
+                'Client has not been properly initialised. '
+                'Please use the login method or asynchronous context manager before calling this method'
+            )
 
     def wait_for(
         self,
         event: str,
+        /,
         *,
         check: Optional[Callable[..., bool]] = None,
         timeout: Optional[float] = None,
@@ -1036,6 +1225,10 @@ class Client:
                     else:
                         await channel.send('\N{THUMBS UP SIGN}')
 
+        .. versionchanged:: 2.0
+
+            ``event`` parameter is now positional-only.
+
 
         Parameters
         ------------
@@ -1082,7 +1275,7 @@ class Client:
 
     # event registration
 
-    def event(self, coro: Coro) -> Coro:
+    def event(self, coro: Coro, /) -> Coro:
         """A decorator that registers an event to listen to.
 
         You can find more info about the events on the :ref:`documentation below <discord-api-events>`.
@@ -1097,6 +1290,10 @@ class Client:
             @client.event
             async def on_ready():
                 print('Ready!')
+
+        .. versionchanged:: 2.0
+
+            ``coro`` parameter is now positional-only.
 
         Raises
         --------
@@ -1167,7 +1364,7 @@ class Client:
                 continue
 
             if activity is not None:
-                me.activities = (activity,)  # type: ignore - Type checker does not understand the downcast here
+                me.activities = (activity,)  # type: ignore # Type checker does not understand the downcast here
             else:
                 me.activities = ()
 
@@ -1178,7 +1375,7 @@ class Client:
     async def fetch_guilds(
         self,
         *,
-        limit: Optional[int] = 100,
+        limit: Optional[int] = 200,
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
     ) -> AsyncIterator[Guild]:
@@ -1214,7 +1411,12 @@ class Client:
             The number of guilds to retrieve.
             If ``None``, it retrieves every guild you have access to. Note, however,
             that this would make it a slow operation.
-            Defaults to ``100``.
+            Defaults to ``200``.
+
+            .. versionchanged:: 2.0
+
+                The default has been changed to 200.
+
         before: Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]
             Retrieves guilds before this date or object.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
@@ -1235,7 +1437,7 @@ class Client:
             The guild with the guild data parsed.
         """
 
-        async def _before_strategy(retrieve, before, limit):
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             data = await self.http.get_guilds(retrieve, before=before_id)
 
@@ -1243,11 +1445,11 @@ class Client:
                 if limit is not None:
                     limit -= len(data)
 
-                before = Object(id=int(data[-1]['id']))
+                before = Object(id=int(data[0]['id']))
 
             return data, before, limit
 
-        async def _after_strategy(retrieve, after, limit):
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
             data = await self.http.get_guilds(retrieve, after=after_id)
 
@@ -1255,7 +1457,7 @@ class Client:
                 if limit is not None:
                     limit -= len(data)
 
-                after = Object(id=int(data[0]['id']))
+                after = Object(id=int(data[-1]['id']))
 
             return data, after, limit
 
@@ -1265,22 +1467,23 @@ class Client:
             after = Object(id=time_snowflake(after, high=True))
 
         predicate: Optional[Callable[[GuildPayload], bool]] = None
-        strategy, state = _before_strategy, before
+        strategy, state = _after_strategy, after
+
+        if before:
+            strategy, state = _before_strategy, before
 
         if before and after:
             predicate = lambda m: int(m['id']) > after.id
-        elif after:
-            strategy, state = _after_strategy, after
 
         while True:
-            retrieve = min(100 if limit is None else limit, 100)
+            retrieve = min(200 if limit is None else limit, 200)
             if retrieve < 1:
                 return
 
             data, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 100:
+            if len(data) < 200:
                 limit = 0
 
             if predicate:
@@ -1374,7 +1577,7 @@ class Client:
         Bot accounts in more than 10 guilds are not allowed to create guilds.
 
         .. versionchanged:: 2.0
-            ``name`` and ``icon`` parameters are now keyword-only. The `region`` parameter has been removed.
+            ``name`` and ``icon`` parameters are now keyword-only. The ``region`` parameter has been removed.
 
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
