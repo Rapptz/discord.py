@@ -544,6 +544,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     def _ensure_assignment_on_copy(self, other: Self) -> Self:
         other._before_invoke = self._before_invoke
         other._after_invoke = self._after_invoke
+        other.extras = self.extras
         if self.checks != other.checks:
             other.checks = self.checks.copy()
         if self._buckets.valid and not other._buckets.valid:
