@@ -185,9 +185,10 @@ class CommandParameter:
         if isinstance(self.description, str):
             self.description = locale_str(self.description)
 
-        for choice in self.choices:
-            if choice._locale_name is None:
-                choice._locale_name = locale_str(choice.name)
+        if self.choices:
+            for choice in self.choices:
+                if choice._locale_name is None:
+                    choice._locale_name = locale_str(choice.name)
 
     def is_choice_annotation(self) -> bool:
         return getattr(self._annotation, '__discord_app_commands_is_choice__', False)
