@@ -1027,6 +1027,7 @@ The following changes have been made:
 - :attr:`AuditLogEntry.target` may now be a :class:`PartialMessageable`.
 - :attr:`PartialMessage.channel` may now be a :class:`PartialMessageable`.
 - :attr:`Guild.preferred_locale` is now of type :class:`Locale`.
+- :attr:`abc.GuildChannel.overwrites` keys can now have :class:`Object` in them.
 
 Removals
 ----------

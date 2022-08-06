@@ -574,6 +574,8 @@ class GuildChannel:
 
                 if isinstance(target, Role):
                     payload['type'] = _Overwrites.ROLE
+                elif isinstance(target, Object):
+                    payload['type'] = _Overwrites.ROLE if target.type is Role else _Overwrites.MEMBER
                 else:
                     payload['type'] = _Overwrites.MEMBER
 
@@ -664,14 +666,13 @@ class GuildChannel:
         """
         return f'https://discord.com/channels/{self.guild.id}/{self.id}'
 
-    def overwrites_for(self, obj: Union[Role, User]) -> PermissionOverwrite:
+    def overwrites_for(self, obj: Union[Role, User, Object]) -> PermissionOverwrite:
         """Returns the channel-specific overwrites for a member or a role.
 
         Parameters
         -----------
-        obj: Union[:class:`~discord.Role`, :class:`~discord.abc.User`]
-            The role or user denoting
-            whose overwrite to get.
+        obj: Union[:class:`~discord.Role`, :class:`~discord.abc.User`, :class:`~discord.Object`]
+            The role or user denoting whose overwrite to get.
 
         Returns
         ---------
@@ -695,16 +696,19 @@ class GuildChannel:
         return PermissionOverwrite()
 
     @property
-    def overwrites(self) -> Dict[Union[Object, Role, Member], PermissionOverwrite]:
+    def overwrites(self) -> Dict[Union[Role, Member, Object], PermissionOverwrite]:
         """Returns all of the channel's overwrites.
 
         This is returned as a dictionary where the key contains the target which
         can be either a :class:`~discord.Role` or a :class:`~discord.Member` and the value is the
         overwrite as a :class:`~discord.PermissionOverwrite`.
 
+        .. versionchanged:: 2.0
+            Overwrites can now be type-aware :class:`~discord.Object` in case of cache lookup failure
+
         Returns
         --------
-        Dict[Union[:class:`~discord.Object`, :class:`~discord.Role`, :class:`~discord.Member`], :class:`~discord.PermissionOverwrite`]
+        Dict[Union[:class:`~discord.Role`, :class:`~discord.Member`, :class:`~discord.Object`], :class:`~discord.PermissionOverwrite`]
             The channel's permission overwrites.
         """
         ret = {}
@@ -720,7 +724,8 @@ class GuildChannel:
                 target = self.guild.get_member(ow.id)
 
             if target is None:
-                target = Object(ow.id)
+                target_type = Role if ow.is_role() else User
+                target = Object(id=ow.id, type=target_type)  # type: ignore
 
             ret[target] = overwrite
         return ret
