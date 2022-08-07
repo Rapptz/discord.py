@@ -868,7 +868,7 @@ def hybrid_command(
         The name to create the command with. By default this uses the
         function name unchanged.
     with_app_command: :class:`bool`
-        Whether to register the command as an application command.
+        Whether to register the command also as an application command.
     \*\*attrs
         Keyword arguments to pass into the construction of the
         hybrid command.
@@ -901,7 +901,7 @@ def hybrid_group(
     Parameters
     -----------
     with_app_command: :class:`bool`
-        Whether to register the command as an application command.
+        Whether to register the command also as an application command.
 
     Raises
     -------
