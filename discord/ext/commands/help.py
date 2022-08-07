@@ -1097,10 +1097,11 @@ class DefaultHelpCommand(HelpCommand):
 
         The formatting is added to the :attr:`paginator`.
 
-        The default implementation is the argument name indented by
+        The default implementation is the argument :attr:`~.commands.Parameter.name` indented by
         :attr:`indent` spaces, padded to ``max_size`` followed by
-        the argument's :attr:`~.commands.Parameter.description` or "No description provided." and then shortened
-        to fit into the :attr:`width`.
+        the argument's :attr:`~.commands.Parameter.description` or :attr:`.default_argument_description` and then shortened
+        to fit into the :attr:`width` and then the :attr:`~.commands.Parameter.displayed_default` between () if argument
+        has a default value.
 
         .. versionadded:: 2.0
 
