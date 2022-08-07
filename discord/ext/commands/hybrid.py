@@ -500,12 +500,8 @@ class HybridCommand(Command[CogT, P, T]):
 
         super().__init__(func, **kwargs)
         self.with_app_command: bool = kwargs.pop('with_app_command', True)
-        self.with_command: bool = kwargs.pop('with_command', True)
         self._locale_name: Optional[app_commands.locale_str] = name_locale
         self._locale_description: Optional[app_commands.locale_str] = description_locale
-
-        if not self.with_command and not self.with_app_command:
-            raise TypeError('cannot set both with_command and with_app_command to False')
 
         self.app_command: Optional[HybridAppCommand[CogT, Any, T]] = (
             HybridAppCommand(self) if self.with_app_command else None
@@ -872,7 +868,7 @@ def hybrid_command(
         The name to create the command with. By default this uses the
         function name unchanged.
     with_app_command: :class:`bool`
-        Whether to register the command as an application command.
+        Whether to register the command also as an application command.
     \*\*attrs
         Keyword arguments to pass into the construction of the
         hybrid command.
@@ -905,7 +901,7 @@ def hybrid_group(
     Parameters
     -----------
     with_app_command: :class:`bool`
-        Whether to register the command as an application command.
+        Whether to register the command also as an application command.
 
     Raises
     -------
