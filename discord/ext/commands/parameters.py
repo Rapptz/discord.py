@@ -162,7 +162,7 @@ class Parameter(inspect.Parameter):
     def description(self) -> Optional[str]:
         """Optional[:class:`str`]: The description of this parameter."""
         return self._description if self._description is not empty else None
-        
+
     @property
     def displayed_default(self) -> Optional[str]:
         """Optional[:class:`str`]: The displayed default in :class:`Command.signature`."""

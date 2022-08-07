@@ -470,8 +470,8 @@ class HelpCommand:
             alias = f'[{command.name}|{aliases}]'
         else:
             alias = command.name
-        
-        return f"{self.context.clean_prefix}{name}"
+
+        return f'{self.context.clean_prefix}{alias}'
 
     def remove_mentions(self, string: str, /) -> str:
         """Removes mentions from the string to prevent abuse.
@@ -1116,7 +1116,7 @@ class DefaultHelpCommand(HelpCommand):
             return
 
         self.paginator.add_line(heading)
-        max_size = max_size or self.get_max_size(arguments) # type: ignore # not a command
+        max_size = max_size or self.get_max_size(arguments)  # type: ignore # not a command
 
         get_width = discord.utils._string_width
         for argument in arguments:
