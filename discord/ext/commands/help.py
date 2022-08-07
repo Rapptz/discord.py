@@ -465,26 +465,13 @@ class HelpCommand:
             The signature for the command.
         """
 
-        parent: Optional[Group[Any, ..., Any]] = command.parent  # type: ignore # the parent will be a Group
-        entries = []
-        while parent is not None:
-            if not parent.signature or parent.invoke_without_command:
-                entries.append(parent.name)
-            else:
-                entries.append(parent.name + ' ' + parent.signature)
-            parent = parent.parent  # type: ignore
-        parent_sig = ' '.join(reversed(entries))
-
         if len(command.aliases) > 0:
             aliases = '|'.join(command.aliases)
-            fmt = f'[{command.name}|{aliases}]'
-            if parent_sig:
-                fmt = parent_sig + ' ' + fmt
-            alias = fmt
+            alias = f'[{command.name}|{aliases}]'
         else:
-            alias = command.name if not parent_sig else parent_sig + ' ' + command.name
-
-        return f'{self.context.clean_prefix}{alias} {command.signature}'
+            alias = command.name
+        
+        return f"{self.context.clean_prefix}{name}"
 
     def remove_mentions(self, string: str, /) -> str:
         """Removes mentions from the string to prevent abuse.
@@ -1005,9 +992,15 @@ class DefaultHelpCommand(HelpCommand):
         user if :attr:`dm_help` is set to ``None``. Defaults to 1000.
     indent: :class:`int`
         How much to indent the commands from a heading. Defaults to ``2``.
+    arguments_heading: :class:`str`
+        The arguments list's heading string used when the help command is invoked with a command name.
+        Useful for i18n. Defaults to ``"Arguments:"``
     commands_heading: :class:`str`
         The command list's heading string used when the help command is invoked with a category name.
         Useful for i18n. Defaults to ``"Commands:"``
+    default_argument_description: :class:`str`
+        The default argument description string used when the argument's :attr:`~.commands.Parameter.description` is ``None``.
+        Useful for i18n. Defaults to ``"No description given."``
     no_category: :class:`str`
         The string used when there is a command which does not belong to any category(cog).
         Useful for i18n. Defaults to ``"No Category"``
@@ -1022,6 +1015,8 @@ class DefaultHelpCommand(HelpCommand):
         self.dm_help: bool = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
         self.commands_heading: str = options.pop('commands_heading', 'Commands:')
+        self.arguments_heading: str = options.pop('arguments_heading', 'Arguments:')
+        self.default_argument_description: str = options.pop('default_argument_description', 'No description given.')
         self.no_category: str = options.pop('no_category', 'No Category')
         self.paginator: Paginator = options.pop('paginator', None)
 
@@ -1088,8 +1083,58 @@ class DefaultHelpCommand(HelpCommand):
         for command in commands:
             name = command.name
             width = max_size - (get_width(name) - len(name))
-            entry = f'{self.indent * " "}{name:<{width}} {command.short_doc}'
+            entry = f'{self.indent * " "}{name:<{width}} - {command.short_doc}'
             self.paginator.add_line(self.shorten_text(entry))
+
+    def add_command_arguments(
+        self, command: Command[Any, ..., Any], /, *, heading: str, max_size: Optional[int] = None
+    ) -> None:
+        """Indents a list of command arguments after the specified heading.
+
+        The formatting is added to the :attr:`paginator`.
+
+        The default implementation is the argument name indented by
+        :attr:`indent` spaces, padded to ``max_size`` followed by
+        the argument's :attr:`~.commands.Parameter.description` or "No description provided." and then shortened
+        to fit into the :attr:`width`.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        commands: :class:`Command`
+            The command to list the arguments for.
+        heading: :class:`str`
+            The heading to add to the output. This is only added
+            if the list of arguments is greater than 0.
+        max_size: Optional[:class:`int`]
+            The max size to use for the gap between indents.
+            If unspecified, calls :meth:`~HelpCommand.get_max_size` on all arguments.
+        """
+        arguments = command.clean_params.values()
+        if not arguments:
+            return
+
+        self.paginator.add_line(heading)
+        max_size = max_size or self.get_max_size(arguments) # type: ignore # not a command
+
+        get_width = discord.utils._string_width
+        for argument in arguments:
+            name = argument.name
+            width = max_size - (get_width(name) - len(name))
+            entry = f'{self.indent * " "}{name:<{width}}'
+            if argument.description is not None:
+                entry += f' - {argument.description}'
+            else:
+                entry += f' - {self.default_argument_description}'
+
+            # don't want it to shorten the default
+            entry = self.shorten_text(entry)
+
+            if argument.displayed_default is not None:
+                entry += f' (default: {argument.displayed_default})'
+
+            self.paginator.add_line(entry)
 
     async def send_pages(self) -> None:
         """A helper utility to send the page output from :attr:`paginator` to the destination."""
@@ -1123,6 +1168,8 @@ class DefaultHelpCommand(HelpCommand):
                 for line in command.help.splitlines():
                     self.paginator.add_line(line)
                 self.paginator.add_line()
+
+        self.add_command_arguments(command, heading=self.arguments_heading)
 
     def get_destination(self) -> discord.abc.Messageable:
         ctx = self.context
