@@ -995,12 +995,16 @@ class DefaultHelpCommand(HelpCommand):
     arguments_heading: :class:`str`
         The arguments list's heading string used when the help command is invoked with a command name.
         Useful for i18n. Defaults to ``"Arguments:"``
+
+        .. versionadded:: 2.0
     commands_heading: :class:`str`
         The command list's heading string used when the help command is invoked with a category name.
         Useful for i18n. Defaults to ``"Commands:"``
     default_argument_description: :class:`str`
         The default argument description string used when the argument's :attr:`~.commands.Parameter.description` is ``None``.
         Useful for i18n. Defaults to ``"No description given."``
+
+        .. versionadded:: 2.0
     no_category: :class:`str`
         The string used when there is a command which does not belong to any category(cog).
         Useful for i18n. Defaults to ``"No Category"``
