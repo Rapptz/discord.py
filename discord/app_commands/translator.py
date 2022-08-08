@@ -171,6 +171,8 @@ class locale_str:
         Since these are passed via keyword arguments, the keys are strings.
     """
 
+    __slots__ = ('__message', 'extras')
+
     def __init__(self, message: str, /, **kwargs: Any) -> None:
         self.__message: str = message
         self.extras: dict[str, Any] = kwargs
