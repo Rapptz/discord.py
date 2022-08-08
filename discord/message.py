@@ -1354,7 +1354,6 @@ class Message(PartialMessage, Hashable):
     """
 
     __slots__ = (
-        '_state',
         '_edited_timestamp',
         '_cs_channel_mentions',
         '_cs_raw_mentions',
@@ -1364,7 +1363,6 @@ class Message(PartialMessage, Hashable):
         '_cs_system_content',
         'tts',
         'content',
-        'channel',
         'webhook_id',
         'mention_everyone',
         'embeds',

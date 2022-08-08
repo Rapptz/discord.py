@@ -58,6 +58,7 @@ MISSING = utils.MISSING
 
 
 class AssetMixin:
+    __slots__ = ()
     url: str
     _state: Optional[Any]
 
