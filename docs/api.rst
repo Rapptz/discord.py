@@ -1396,7 +1396,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.as_chunks
 
-.. data:: discord.utils.MISSING
+.. data:: MISSING
+    :module: discord.utils
 
     A type safe sentinel used in the library to represent something as missing. Used to distinguish from ``None`` values.
 

@@ -508,19 +508,19 @@ Defaults
 
 .. data:: discord.ext.commands.Author
 
-    A default :class:`.Parameter` which returns the :attr:`~.Context.author` for this context.
+    A default :class:`Parameter` which returns the :attr:`~.Context.author` for this context.
 
     .. versionadded:: 2.0
 
 .. data:: discord.ext.commands.CurrentChannel
 
-    A default :class:`.Parameter` which returns the :attr:`~.Context.channel` for this context.
+    A default :class:`Parameter` which returns the :attr:`~.Context.channel` for this context.
 
     .. versionadded:: 2.0
 
 .. data:: discord.ext.commands.CurrentGuild
 
-    A default :class:`.Parameter` which returns the :attr:`~.Context.guild` for this context. This will never be ``None``. If the command is called in a DM context then :exc:`~discord.ext.commands.NoPrivateMessage` is raised to the error handlers.
+    A default :class:`Parameter` which returns the :attr:`~.Context.guild` for this context. This will never be ``None``. If the command is called in a DM context then :exc:`~discord.ext.commands.NoPrivateMessage` is raised to the error handlers.
 
     .. versionadded:: 2.0
 

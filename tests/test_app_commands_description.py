@@ -37,8 +37,8 @@ def test_descriptions_describe():
         ...
 
     assert describe.description == 'This is the short description that will appear.'
-    assert describe._params['arg'].description == 'Decorator description of arg.'
-    assert describe._params['arg2'].description == 'Decorator description of arg2.'
+    assert describe.get_parameter('arg').description == 'Decorator description of arg.'  # type: ignore
+    assert describe.get_parameter('arg2').description == 'Decorator description of arg2.'  # type: ignore
 
 
 def test_descriptions_no_args():
@@ -66,8 +66,8 @@ def test_descriptions_numpy():
         """
 
     assert numpy.description == 'This is the short description that will appear.'
-    assert numpy._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert numpy._params['arg2'].description == 'Docstring description of arg2.'
+    assert numpy.get_parameter('arg').description == 'Docstring description of arg. This is the second line of the arg docstring.'  # type: ignore
+    assert numpy.get_parameter('arg2').description == 'Docstring description of arg2.'  # type: ignore
 
 
 def test_descriptions_numpy_extras():
@@ -94,8 +94,8 @@ def test_descriptions_numpy_extras():
         """
 
     assert numpy.description == 'This is the short description that will appear.'
-    assert numpy._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert numpy._params['arg2'].description == 'Docstring description of arg2.'
+    assert numpy.get_parameter('arg').description == 'Docstring description of arg. This is the second line of the arg docstring.'  # type: ignore
+    assert numpy.get_parameter('arg2').description == 'Docstring description of arg2.'  # type: ignore
 
 
 def test_descriptions_google():
@@ -112,8 +112,8 @@ def test_descriptions_google():
         """
 
     assert google.description == 'This is the short description that will appear.'
-    assert google._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert google._params['arg2'].description == 'Docstring description of arg2.'
+    assert google.get_parameter('arg').description == 'Docstring description of arg. This is the second line of the arg docstring.'  # type: ignore
+    assert google.get_parameter('arg2').description == 'Docstring description of arg2.'  # type: ignore
 
 
 def test_descriptions_google_extras():
@@ -136,8 +136,8 @@ def test_descriptions_google_extras():
         """
 
     assert google.description == 'This is the short description that will appear.'
-    assert google._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert google._params['arg2'].description == 'Docstring description of arg2.'
+    assert google.get_parameter('arg').description == 'Docstring description of arg. This is the second line of the arg docstring.'  # type: ignore
+    assert google.get_parameter('arg2').description == 'Docstring description of arg2.'  # type: ignore
 
 
 def test_descriptions_sphinx():
@@ -155,8 +155,8 @@ def test_descriptions_sphinx():
         """
 
     assert sphinx.description == 'This is the short description that will appear.'
-    assert sphinx._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert sphinx._params['arg2'].description == 'Docstring description of arg2.'
+    assert sphinx.get_parameter('arg').description == 'Docstring description of arg. This is the second line of the arg docstring.'  # type: ignore
+    assert sphinx.get_parameter('arg2').description == 'Docstring description of arg2.'  # type: ignore
 
 
 def test_descriptions_sphinx_extras():
@@ -178,8 +178,8 @@ def test_descriptions_sphinx_extras():
         """
 
     assert sphinx.description == 'This is the short description that will appear.'
-    assert sphinx._params['arg'].description == 'Docstring description of arg. This is the second line of the arg docstring.'
-    assert sphinx._params['arg2'].description == 'Docstring description of arg2.'
+    assert sphinx.get_parameter('arg').description == 'Docstring description of arg. This is the second line of the arg docstring.'  # type: ignore
+    assert sphinx.get_parameter('arg2').description == 'Docstring description of arg2.'  # type: ignore
 
 
 def test_descriptions_docstring_and_describe():
@@ -197,8 +197,8 @@ def test_descriptions_docstring_and_describe():
         """
 
     assert describe.description == 'This is the short description that will appear.'
-    assert describe._params['arg'].description == 'Decorator description of arg.'
-    assert describe._params['arg2'].description == 'Docstring description of arg2.'
+    assert describe.get_parameter('arg').description == 'Decorator description of arg.'  # type: ignore
+    assert describe.get_parameter('arg2').description == 'Docstring description of arg2.'  # type: ignore
 
 
 def test_descriptions_group_no_args():
@@ -228,8 +228,8 @@ def test_descriptions_group_args():
         """
 
     assert my_command.description == 'Test slash command'
-    assert my_command._params['arg'].description == 'Description of arg. This is the second line of the arg description.'
-    assert my_command._params['arg2'].description == 'Description of arg2.'
+    assert my_command.get_parameter('arg').description == 'Description of arg. This is the second line of the arg description.'  # type: ignore
+    assert my_command.get_parameter('arg2').description == 'Description of arg2.'  # type: ignore
 
 
 def test_descriptions_cog_commands():
@@ -249,5 +249,5 @@ def test_descriptions_cog_commands():
 
     cog = MyCog()
     assert cog.test.description == 'Test slash command'
-    assert cog.test._params['arg'].description == 'Description of arg. This is the second line of the arg description.'
-    assert cog.test._params['arg2'].description == 'Description of arg2.'
+    assert cog.test.get_parameter('arg').description == 'Description of arg. This is the second line of the arg description.'  # type: ignore
+    assert cog.test.get_parameter('arg2').description == 'Description of arg2.'  # type: ignore

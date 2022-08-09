@@ -491,7 +491,7 @@ class Parameter:
         The maximum supported value for this parameter.
     default: Any
         The default value of the parameter, if given.
-        If not given then this is :data:`discord.utils.MISSING`.
+        If not given then this is :data:`~discord.utils.MISSING`.
     """
 
     def __init__(self, parent: CommandParameter) -> None:
