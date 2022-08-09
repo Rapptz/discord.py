@@ -458,7 +458,7 @@ class Invite(Hashable):
         if guild is not None:
             channel = guild.get_channel(channel_id) or Object(id=channel_id)
         else:
-            guild = Object(id=guild_id) if guild_id is not None else None
+            guild = state._get_or_create_unavailable_guild(guild_id) if guild_id is not None else None
             channel = Object(id=channel_id)
 
         return cls(state=state, data=data, guild=guild, channel=channel)  # type: ignore

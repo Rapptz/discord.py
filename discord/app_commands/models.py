@@ -32,6 +32,8 @@ from ..enums import AppCommandOptionType, AppCommandType, AppCommandPermissionTy
 from ..mixins import Hashable
 from ..utils import _get_as_snowflake, parse_time, snowflake_time, MISSING
 from ..object import Object
+from ..role import Role
+from ..member import Member
 
 from typing import Any, Dict, Generic, List, TYPE_CHECKING, Optional, TypeVar, Union
 
@@ -75,9 +77,7 @@ if TYPE_CHECKING:
     from ..guild import GuildChannel, Guild
     from ..channel import TextChannel
     from ..threads import Thread
-    from ..role import Role
     from ..user import User
-    from ..member import Member
 
     ApplicationCommandParent = Union['AppCommand', 'AppCommandGroup']
 
@@ -991,9 +991,11 @@ class AppCommandPermissions:
         self.permission: bool = data['permission']
 
         _object = None
+        _type = MISSING
 
         if self.type is AppCommandPermissionType.user:
             _object = guild.get_member(self.id) or self._state.get_user(self.id)
+            _type = Member
         elif self.type is AppCommandPermissionType.channel:
             if self.id == (guild.id - 1):
                 _object = AllChannels(guild)
@@ -1001,9 +1003,10 @@ class AppCommandPermissions:
                 _object = guild.get_channel(self.id)
         elif self.type is AppCommandPermissionType.role:
             _object = guild.get_role(self.id)
+            _type = Role
 
         if _object is None:
-            _object = Object(id=self.id)
+            _object = Object(id=self.id, type=_type)
 
         self.target: Union[Object, User, Member, Role, AllChannels, GuildChannel] = _object
 
