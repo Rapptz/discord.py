@@ -483,7 +483,7 @@ class Command(Generic[GroupT, P, T]):
         be wrapped into :class:`locale_str` rather than :class:`str`. This could
         avoid some repetition and be more ergonomic for certain defaults such
         as default command names, command descriptions, and parameter names.
-        Defaults to ``False``.
+        Defaults to ``True``.
     nsfw: :class:`bool`
         Whether the command is NSFW and should only work in NSFW channels.
         Defaults to ``False``.
@@ -539,7 +539,7 @@ class Command(Generic[GroupT, P, T]):
         nsfw: bool = False,
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
-        auto_locale_strings: bool = False,
+        auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ):
         name, locale = (name.message, name) if isinstance(name, locale_str) else (name, None)
@@ -1015,7 +1015,7 @@ class ContextMenu:
         be wrapped into :class:`locale_str` rather than :class:`str`. This could
         avoid some repetition and be more ergonomic for certain defaults such
         as default command names, command descriptions, and parameter names.
-        Defaults to ``False``.
+        Defaults to ``True``.
     nsfw: :class:`bool`
         Whether the command is NSFW and should only work in NSFW channels.
         Defaults to ``False``.
@@ -1060,7 +1060,7 @@ class ContextMenu:
         type: AppCommandType = MISSING,
         nsfw: bool = False,
         guild_ids: Optional[List[int]] = None,
-        auto_locale_strings: bool = False,
+        auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ):
         name, locale = (name.message, name) if isinstance(name, locale_str) else (name, None)
@@ -1233,7 +1233,7 @@ class Group:
         be wrapped into :class:`locale_str` rather than :class:`str`. This could
         avoid some repetition and be more ergonomic for certain defaults such
         as default command names, command descriptions, and parameter names.
-        Defaults to ``False``.
+        Defaults to ``True``.
     default_permissions: Optional[:class:`~discord.Permissions`]
         The default permissions that can execute this group on Discord. Note
         that server administrators can override this value in the client.
@@ -1363,7 +1363,7 @@ class Group:
         guild_ids: Optional[List[int]] = None,
         guild_only: bool = MISSING,
         nsfw: bool = MISSING,
-        auto_locale_strings: bool = False,
+        auto_locale_strings: bool = True,
         default_permissions: Optional[Permissions] = MISSING,
         extras: Dict[Any, Any] = MISSING,
     ):
@@ -1752,7 +1752,7 @@ class Group:
         name: Union[str, locale_str] = MISSING,
         description: Union[str, locale_str] = MISSING,
         nsfw: bool = False,
-        auto_locale_strings: bool = False,
+        auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
         """Creates an application command under this group.
@@ -1773,7 +1773,7 @@ class Group:
             be wrapped into :class:`locale_str` rather than :class:`str`. This could
             avoid some repetition and be more ergonomic for certain defaults such
             as default command names, command descriptions, and parameter names.
-            Defaults to ``False``.
+            Defaults to ``True``.
         extras: :class:`dict`
             A dictionary that can be used to store extraneous data.
             The library will not touch any values or keys within this dictionary.
@@ -1811,7 +1811,7 @@ def command(
     name: Union[str, locale_str] = MISSING,
     description: Union[str, locale_str] = MISSING,
     nsfw: bool = False,
-    auto_locale_strings: bool = False,
+    auto_locale_strings: bool = True,
     extras: Dict[Any, Any] = MISSING,
 ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
     """Creates an application command from a regular function.
@@ -1834,7 +1834,7 @@ def command(
         be wrapped into :class:`locale_str` rather than :class:`str`. This could
         avoid some repetition and be more ergonomic for certain defaults such
         as default command names, command descriptions, and parameter names.
-        Defaults to ``False``.
+        Defaults to ``True``.
     extras: :class:`dict`
         A dictionary that can be used to store extraneous data.
         The library will not touch any values or keys within this dictionary.
@@ -1869,7 +1869,7 @@ def context_menu(
     *,
     name: Union[str, locale_str] = MISSING,
     nsfw: bool = False,
-    auto_locale_strings: bool = False,
+    auto_locale_strings: bool = True,
     extras: Dict[Any, Any] = MISSING,
 ) -> Callable[[ContextMenuCallback], ContextMenu]:
     """Creates an application command context menu from a regular function.
@@ -1906,7 +1906,7 @@ def context_menu(
         be wrapped into :class:`locale_str` rather than :class:`str`. This could
         avoid some repetition and be more ergonomic for certain defaults such
         as default command names, command descriptions, and parameter names.
-        Defaults to ``False``.
+        Defaults to ``True``.
     extras: :class:`dict`
         A dictionary that can be used to store extraneous data.
         The library will not touch any values or keys within this dictionary.

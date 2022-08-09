@@ -838,7 +838,7 @@ class CommandTree(Generic[ClientT]):
         nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
-        auto_locale_strings: bool = False,
+        auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[CommandCallback[Group, P, T]], Command[Group, P, T]]:
         """Creates an application command directly under this tree.
@@ -868,7 +868,7 @@ class CommandTree(Generic[ClientT]):
             be wrapped into :class:`locale_str` rather than :class:`str`. This could
             avoid some repetition and be more ergonomic for certain defaults such
             as default command names, command descriptions, and parameter names.
-            Defaults to ``False``.
+            Defaults to ``True``.
         extras: :class:`dict`
             A dictionary that can be used to store extraneous data.
             The library will not touch any values or keys within this dictionary.
@@ -907,7 +907,7 @@ class CommandTree(Generic[ClientT]):
         nsfw: bool = False,
         guild: Optional[Snowflake] = MISSING,
         guilds: Sequence[Snowflake] = MISSING,
-        auto_locale_strings: bool = False,
+        auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[ContextMenuCallback], ContextMenu]:
         """Creates an application command context menu from a regular function directly under this tree.
@@ -951,7 +951,7 @@ class CommandTree(Generic[ClientT]):
             be wrapped into :class:`locale_str` rather than :class:`str`. This could
             avoid some repetition and be more ergonomic for certain defaults such
             as default command names, command descriptions, and parameter names.
-            Defaults to ``False``.
+            Defaults to ``True``.
         extras: :class:`dict`
             A dictionary that can be used to store extraneous data.
             The library will not touch any values or keys within this dictionary.
