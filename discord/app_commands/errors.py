@@ -171,7 +171,7 @@ class TranslationError(AppCommandError):
         if msg:
             super().__init__(*msg)
         else:
-            ctx = context.name.replace('_', ' ')
+            ctx = context.location.name.replace('_', ' ')
             fmt = f'Failed to translate {self.string!r} in a {ctx}'
             if self.locale is not None:
                 fmt = f'{fmt} in the {self.locale.value} locale'
