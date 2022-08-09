@@ -1886,7 +1886,7 @@ class Client:
             # the factory can't be a DMChannel or GroupChannel here
             guild_id = int(data['guild_id'])  # type: ignore
             guild = self._connection._get_or_create_unavailable_guild(guild_id)
-            # the factory will be a GuildChannel or Thread
+            # the factory should be a GuildChannel or Thread
             channel = factory(guild=guild, state=self._connection, data=data)  # type: ignore
 
         return channel

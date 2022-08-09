@@ -42,6 +42,7 @@ from .stage_instance import StageInstance
 from .sticker import GuildSticker
 from .threads import Thread
 from .integrations import PartialIntegration
+from .channel import StageChannel
 
 __all__ = (
     'AuditLogDiff',
@@ -586,7 +587,7 @@ class AuditLogEntry(Hashable):
             elif self.action.name.startswith('stage_instance'):
                 channel_id = int(extra['channel_id'])
                 self.extra = _AuditLogProxyStageInstanceAction(
-                    channel=self.guild.get_channel(channel_id) or Object(id=channel_id, type=StageInstance)
+                    channel=self.guild.get_channel(channel_id) or Object(id=channel_id, type=StageChannel)
                 )
             elif self.action.name.startswith('app_command'):
                 app_id = int(extra['application_id'])
