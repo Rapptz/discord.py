@@ -772,6 +772,9 @@ class ConnectionState:
             guild = self._queued_guilds.get(guild_id)  # type: ignore
         return guild
 
+    def _get_or_create_unavailable_guild(self, guild_id: int) -> Guild:
+        return self._guilds.get(guild_id) or Guild._create_unavailable(state=self, guild_id=guild_id)
+
     def _add_guild(self, guild: Guild) -> None:
         self._guilds[guild.id] = guild
 

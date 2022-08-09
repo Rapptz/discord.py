@@ -457,6 +457,10 @@ class Guild(Hashable):
 
         return role
 
+    @classmethod
+    def _create_unavailable(cls, *, state: ConnectionState, guild_id: int) -> Guild:
+        return cls(state=state, data={'id': guild_id, 'unavailable': True})  # type: ignore
+
     def _from_data(self, guild: Union[GuildPayload, PartialGuildPayload]) -> None:
         try:
             self._member_count: int = guild['member_count']  # type: ignore # Handled below
