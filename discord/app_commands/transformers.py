@@ -137,9 +137,6 @@ class CommandParameter:
                 if translation is not None:
                     description_localizations[locale.value] = translation
 
-        if isinstance(self.description, locale_str):
-            base['description'] = self.description.message
-
         if self.choices:
             base['choices'] = [await choice.get_translated_payload(translator) for choice in self.choices]
 
@@ -155,7 +152,7 @@ class CommandParameter:
         base = {
             'type': self.type.value,
             'name': self.display_name,
-            'description': self.description,
+            'description': str(self.description),
             'required': self.required,
         }
 
