@@ -46,7 +46,7 @@ from typing import (
 
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
-from .translator import TranslationContextLocation, locale_str, Translator, TranslationContext
+from .translator import TranslationContextLocation, TranslationContextObject, Translator, locale_str
 from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
 from ..abc import GuildChannel
 from ..threads import Thread
@@ -101,8 +101,8 @@ class CommandParameter:
         description_localizations: Dict[str, str] = {}
 
         # Prevent creating these objects in a heavy loop
-        name_context = TranslationContext(location=TranslationContextLocation.parameter_name, data=data)
-        description_context = TranslationContext(location=TranslationContextLocation.parameter_description, data=data)
+        name_context = TranslationContextObject(location=TranslationContextLocation.parameter_name, data=data)
+        description_context = TranslationContextObject(location=TranslationContextLocation.parameter_description, data=data)
         for locale in Locale:
             if needs_name_translations:
                 translation = await translator._checked_translate(rename, locale, name_context)
