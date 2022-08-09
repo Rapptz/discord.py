@@ -26,7 +26,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from .errors import MissingApplicationID
-from .translator import Translator, TranslationContext, locale_str
+from .translator import TranslationContextLocation, Translator, TranslationContext, locale_str
 from ..permissions import Permissions
 from ..enums import AppCommandOptionType, AppCommandType, AppCommandPermissionType, ChannelType, Locale, try_enum
 from ..mixins import Hashable
@@ -463,9 +463,10 @@ class Choice(Generic[ChoiceT]):
     async def get_translated_payload(self, translator: Translator) -> Dict[str, Any]:
         base = self.to_dict()
         name_localizations: Dict[str, str] = {}
+        context = TranslationContext(location=TranslationContextLocation.choice_name, data=self)
         if self._locale_name:
             for locale in Locale:
-                translation = await translator._checked_translate(self._locale_name, locale, TranslationContext.choice_name)
+                translation = await translator._checked_translate(self._locale_name, locale, context)
                 if translation is not None:
                     name_localizations[locale.value] = translation
 

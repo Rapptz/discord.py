@@ -46,7 +46,7 @@ from typing import (
 
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
-from .translator import locale_str, Translator, TranslationContext
+from .translator import TranslationContextLocation, locale_str, Translator, TranslationContext
 from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
 from ..abc import GuildChannel
 from ..threads import Thread
@@ -70,6 +70,7 @@ NoneType = type(None)
 
 if TYPE_CHECKING:
     from ..interactions import Interaction
+    from .commands import Parameter
 
 
 @dataclass
@@ -89,29 +90,27 @@ class CommandParameter:
     _rename: Union[str, locale_str] = MISSING
     _annotation: Any = MISSING
 
-    async def get_translated_payload(self, translator: Translator) -> Dict[str, Any]:
+    async def get_translated_payload(self, translator: Translator, data: Parameter) -> Dict[str, Any]:
         base = self.to_dict()
 
-        needs_name_translations = isinstance(self._rename, locale_str)
-        needs_description_translations = isinstance(self.description, locale_str)
+        rename = self._rename
+        description = self.description
+        needs_name_translations = isinstance(rename, locale_str)
+        needs_description_translations = isinstance(description, locale_str)
         name_localizations: Dict[str, str] = {}
         description_localizations: Dict[str, str] = {}
+
+        # Prevent creating these objects in a heavy loop
+        name_context = TranslationContext(location=TranslationContextLocation.parameter_name, data=data)
+        description_context = TranslationContext(location=TranslationContextLocation.parameter_description, data=data)
         for locale in Locale:
             if needs_name_translations:
-                translation = await translator._checked_translate(
-                    self._rename,  # type: ignore  # This will always be locale_str
-                    locale,
-                    TranslationContext.parameter_name,
-                )
+                translation = await translator._checked_translate(rename, locale, name_context)
                 if translation is not None:
                     name_localizations[locale.value] = translation
 
             if needs_description_translations:
-                translation = await translator._checked_translate(
-                    self.description,  # type: ignore  # This will always be locale_str
-                    locale,
-                    TranslationContext.parameter_description,
-                )
+                translation = await translator._checked_translate(description, locale, description_context)
                 if translation is not None:
                     description_localizations[locale.value] = translation
 

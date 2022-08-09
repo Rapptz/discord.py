@@ -626,10 +626,18 @@ locale_str
 TranslationContext
 +++++++++++++++++++
 
-.. class:: TranslationContext
+.. attributetable:: discord.app_commands.TranslationContext
+
+.. autoclass:: discord.app_commands.TranslationContext
+    :members:
+
+TranslationContextLocation
++++++++++++++++++++++++++++
+
+.. class:: TranslationContextLocation
     :module: discord.app_commands
 
-    An enum representing the context that the translation occurs in when requested for translation.
+    An enum representing the location context that the translation occurs in when requested for translation.
 
     .. versionadded:: 2.0
 
@@ -639,6 +647,13 @@ TranslationContext
     .. attribute:: command_description
 
         The translation involved a command description.
+
+    .. attribute:: group_name
+
+        The translation involved a group name.
+    .. attribute:: group_description
+
+        The translation involved a group description.
     .. attribute:: parameter_name
 
         The translation involved a parameter name.
@@ -648,7 +663,10 @@ TranslationContext
     .. attribute:: choice_name
 
         The translation involved a choice name.
+    .. attribute:: other
 
+        The translation involved something else entirely. This is useful for running
+        :meth:`Translator.translate` for custom usage.
 
 Exceptions
 ~~~~~~~~~~~

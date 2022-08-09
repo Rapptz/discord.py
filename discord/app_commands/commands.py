@@ -52,7 +52,7 @@ from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
-from .translator import TranslationContext, Translator, locale_str
+from .translator import TranslationContext, TranslationContextLocation, Translator, locale_str
 from ..message import Message
 from ..user import User
 from ..member import Member
@@ -737,22 +737,27 @@ class Command(Generic[GroupT, P, T]):
         base = self.to_dict()
         name_localizations: Dict[str, str] = {}
         description_localizations: Dict[str, str] = {}
+
+        # Prevent creating these objects in a heavy loop
+        name_context = TranslationContext(location=TranslationContextLocation.command_name, data=self)
+        description_context = TranslationContext(location=TranslationContextLocation.command_description, data=self)
+
         for locale in Locale:
             if self._locale_name:
-                translation = await translator._checked_translate(self._locale_name, locale, TranslationContext.command_name)
+                translation = await translator._checked_translate(self._locale_name, locale, name_context)
                 if translation is not None:
                     name_localizations[locale.value] = translation
 
             if self._locale_description:
-                translation = await translator._checked_translate(
-                    self._locale_description, locale, TranslationContext.command_description
-                )
+                translation = await translator._checked_translate(self._locale_description, locale, description_context)
                 if translation is not None:
                     description_localizations[locale.value] = translation
 
         base['name_localizations'] = name_localizations
         base['description_localizations'] = description_localizations
-        base['options'] = [await param.get_translated_payload(translator) for param in self._params.values()]
+        base['options'] = [
+            await param.get_translated_payload(translator, Parameter(param)) for param in self._params.values()
+        ]
         return base
 
     def to_dict(self) -> Dict[str, Any]:
@@ -1225,10 +1230,11 @@ class ContextMenu:
 
     async def get_translated_payload(self, translator: Translator) -> Dict[str, Any]:
         base = self.to_dict()
+        context = TranslationContext(location=TranslationContextLocation.command_name, data=self)
         if self._locale_name:
             name_localizations: Dict[str, str] = {}
             for locale in Locale:
-                translation = await translator._checked_translate(self._locale_name, locale, TranslationContext.command_name)
+                translation = await translator._checked_translate(self._locale_name, locale, context)
                 if translation is not None:
                     name_localizations[locale.value] = translation
 
@@ -1638,16 +1644,18 @@ class Group:
         base = self.to_dict()
         name_localizations: Dict[str, str] = {}
         description_localizations: Dict[str, str] = {}
+
+        # Prevent creating these objects in a heavy loop
+        name_context = TranslationContext(location=TranslationContextLocation.group_name, data=self)
+        description_context = TranslationContext(location=TranslationContextLocation.group_description, data=self)
         for locale in Locale:
             if self._locale_name:
-                translation = await translator._checked_translate(self._locale_name, locale, TranslationContext.command_name)
+                translation = await translator._checked_translate(self._locale_name, locale, name_context)
                 if translation is not None:
                     name_localizations[locale.value] = translation
 
             if self._locale_description:
-                translation = await translator._checked_translate(
-                    self._locale_description, locale, TranslationContext.command_description
-                )
+                translation = await translator._checked_translate(self._locale_description, locale, description_context)
                 if translation is not None:
                     description_localizations[locale.value] = translation
 

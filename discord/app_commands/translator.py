@@ -23,24 +23,100 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Literal, Optional, Union
 from .errors import TranslationError
 from ..enums import Enum, Locale
 
 
 __all__ = (
+    'TranslationContextLocation',
     'TranslationContext',
     'Translator',
     'locale_str',
 )
 
 
-class TranslationContext(Enum):
+class TranslationContextLocation(Enum):
     command_name = 0
     command_description = 1
-    parameter_name = 2
-    parameter_description = 3
-    choice_name = 4
+    group_name = 2
+    group_description = 3
+    parameter_name = 4
+    parameter_description = 5
+    choice_name = 6
+    other = 7
+
+
+class TranslationContext:  # type: ignore  # See below
+    """A class that provides context for the :class:`locale_str` being translated.
+
+    This is useful to determine where exactly the string is located and aid in looking
+    up the actual translation.
+
+    Attributes
+    -----------
+    location: :class:`TranslationContextLocation`
+        The location where this string is located.
+    data: Any
+        The extraneous data that is being translated.
+    """
+
+    __slots__ = ('location', 'data')
+
+    def __init__(self, location: TranslationContextLocation, data: Any) -> None:
+        self.location: TranslationContextLocation = location
+        self.data: Any = data
+
+
+if TYPE_CHECKING:
+    # For type checking purposes, it makes sense to allow the user to leverage type narrowing
+    # So code like this works as expected:
+    # if context.type is TranslationContextLocation.command_name:
+    #    reveal_type(context.data)  # Revealed type is Command | ContextMenu
+    #
+    # Unfortunately doing a trick like this requires lying to the type checker so
+    # this is what the code below enables.
+    #
+    # Should this trick stop working then it might be fair to remove this code.
+    # It's purely here for convenience.
+
+    from .commands import Command, ContextMenu, Group, Parameter
+    from .models import Choice
+
+    class _CommandNameTranslationContext:
+        location: Literal[TranslationContextLocation.command_name]
+        data: Union[Command[Any, ..., Any], ContextMenu]
+
+    class _CommandDescriptionTranslationContext:
+        location: Literal[TranslationContextLocation.command_description]
+        data: Command[Any, ..., Any]
+
+    class _GroupTranslationContext:
+        location: Literal[TranslationContextLocation.group_name, TranslationContextLocation.group_description]
+        data: Group
+
+    class _ParameterTranslationContext:
+        location: Literal[TranslationContextLocation.parameter_description, TranslationContextLocation.parameter_name]
+        data: Parameter
+
+    class _ChoiceTranslationContext:
+        location: Literal[TranslationContextLocation.choice_name]
+        data: Choice[Union[int, str, float]]
+
+    class _OtherTranslationContext:
+        location: Literal[TranslationContextLocation.other]
+        data: Any
+
+    class TranslationContext(
+        _CommandNameTranslationContext,
+        _CommandDescriptionTranslationContext,
+        _GroupTranslationContext,
+        _ParameterTranslationContext,
+        _ChoiceTranslationContext,
+        _OtherTranslationContext,
+    ):
+        def __init__(self, location: TranslationContextLocation, data: Any) -> None:
+            ...
 
 
 class Translator:
