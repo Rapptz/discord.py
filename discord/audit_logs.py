@@ -742,7 +742,7 @@ class AuditLogEntry(Hashable):
         if not target:
             try:
                 # get application id from extras
-                # if it matches target id, type should be intergration
+                # if it matches target id, type should be integration
                 target_app = self.extra
                 # extra should be an Object or PartialIntegration
                 app_id = target_app.application_id if isinstance(target_app, PartialIntegration) else target_app.id  # type: ignore
