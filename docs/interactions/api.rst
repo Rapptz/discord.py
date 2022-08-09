@@ -482,6 +482,14 @@ Command
 .. autoclass:: discord.app_commands.Command
     :members:
 
+Parameter
+++++++++++
+
+.. attributetable:: discord.app_commands.Parameter
+
+.. autoclass:: discord.app_commands.Parameter()
+    :members:
+
 ContextMenu
 ++++++++++++
 

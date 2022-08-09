@@ -48,7 +48,7 @@ from textwrap import TextWrapper
 
 import re
 
-from ..enums import AppCommandOptionType, AppCommandType, Locale
+from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
@@ -77,6 +77,7 @@ __all__ = (
     'Command',
     'ContextMenu',
     'Group',
+    'Parameter',
     'context_menu',
     'command',
     'describe',
@@ -457,6 +458,104 @@ def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, Ap
     return (parameter.name, resolved, type)
 
 
+class Parameter:
+    """A class that contains the parameter information of a :class:`Command` callback.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The name of the parameter. This is the Python identifier for the parameter.
+    display_name: :class:`str`
+        The displayed name of the parameter on Discord.
+    description: :class:`str`
+        The description of the parameter.
+    autocomplete: :class:`bool`
+        Whether the parameter has an autocomplete handler.
+    locale_name: Optional[:class:`locale_str`]
+        The display name's locale string, if available.
+    locale_description: Optional[:class:`locale_str`]
+        The description's locale string, if available.
+    required: :class:`bool`
+        Whether the parameter is required
+    choices: List[:class:`~discord.app_commands.Choice`]
+        A list of choices this parameter takes, if any.
+    type: :class:`~discord.AppCommandOptionType`
+        The underlying type of this parameter.
+    channel_types: List[:class:`~discord.ChannelType`]
+        The channel types that are allowed for this parameter.
+    min_value: Optional[Union[:class:`int`, :class:`float`]]
+        The minimum supported value for this parameter.
+    max_value: Optional[Union[:class:`int`, :class:`float`]]
+        The maximum supported value for this parameter.
+    default: Any
+        The default value of the parameter, if given.
+        If not given then this is :data:`discord.utils.MISSING`.
+    """
+
+    def __init__(self, parent: CommandParameter) -> None:
+        self.__parent: CommandParameter = parent
+
+    @property
+    def name(self) -> str:
+        return self.__parent.name
+
+    @property
+    def display_name(self) -> str:
+        return self.__parent.display_name
+
+    @property
+    def description(self) -> str:
+        return str(self.__parent.description)
+
+    @property
+    def locale_name(self) -> Optional[locale_str]:
+        if isinstance(self.__parent._rename, locale_str):
+            return self.__parent._rename
+        return None
+
+    @property
+    def locale_description(self) -> Optional[locale_str]:
+        if isinstance(self.__parent.description, locale_str):
+            return self.__parent.description
+        return None
+
+    @property
+    def autocomplete(self) -> bool:
+        return self.__parent.autocomplete is not None
+
+    @property
+    def default(self) -> Any:
+        return self.__parent.default
+
+    @property
+    def type(self) -> AppCommandOptionType:
+        return self.__parent.type
+
+    @property
+    def choices(self) -> List[Choice[Union[int, float, str]]]:
+        choices = self.__parent.choices
+        if choices is MISSING:
+            return []
+        return choices.copy()
+
+    @property
+    def channel_types(self) -> List[ChannelType]:
+        channel_types = self.__parent.channel_types
+        if channel_types is MISSING:
+            return []
+        return channel_types.copy()
+
+    @property
+    def min_value(self) -> Optional[Union[int, float]]:
+        return self.__parent.min_value
+
+    @property
+    def max_value(self) -> Optional[Union[int, float]]:
+        return self.__parent.max_value
+
+
 class Command(Generic[GroupT, P, T]):
     """A class that implements an application command.
 
@@ -805,6 +904,28 @@ class Command(Generic[GroupT, P, T]):
         await interaction.response.autocomplete(choices)
 
     def _get_internal_command(self, name: str) -> Optional[Union[Command, Group]]:
+        return None
+
+    def get_parameter(self, name: str) -> Optional[Parameter]:
+        """Retrieves a parameter by its name.
+
+        The name must be the Python identifier rather than the renamed
+        one for display on Discord.
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The parameter name in the callback function.
+
+        Returns
+        --------
+        Optional[:class:`Parameter`]
+            The parameter or ``None`` if not found.
+        """
+
+        parent = self._params.get(name)
+        if parent is not None:
+            return Parameter(parent)
         return None
 
     @property

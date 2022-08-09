@@ -74,28 +74,6 @@ if TYPE_CHECKING:
 
 @dataclass
 class CommandParameter:
-    """Represents an application command parameter.
-
-    Attributes
-    -----------
-    name: :class:`str`
-        The name of the parameter.
-    description: :class:`str`
-        The description of the parameter
-    required: :class:`bool`
-        Whether the parameter is required
-    choices: List[:class:`~discord.app_commands.Choice`]
-        A list of choices this parameter takes
-    type: :class:`~discord.AppCommandOptionType`
-        The underlying type of this parameter.
-    channel_types: List[:class:`~discord.ChannelType`]
-        The channel types that are allowed for this parameter.
-    min_value: Optional[Union[:class:`int`, :class:`float`]]
-        The minimum supported value for this parameter.
-    max_value: Optional[Union[:class:`int`, :class:`float`]]
-        The maximum supported value for this parameter.
-    """
-
     # The name of the parameter is *always* the parameter name in the code
     # Therefore, it can't be Union[str, locale_str]
     name: str = MISSING
