@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union
+from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union, Dict
 from contextvars import ContextVar
 import inspect
 import os
@@ -54,7 +54,7 @@ if TYPE_CHECKING:
 
 V = TypeVar('V', bound='View', covariant=True)
 
-selected_values: ContextVar[Optional[List[str]]] = ContextVar('selected_values', default=None)
+selected_values: ContextVar[Dict[str, list[str]]] = ContextVar('selected_values')
 
 
 class Select(Item[V]):
@@ -262,8 +262,8 @@ class Select(Item[V]):
     @property
     def values(self) -> List[str]:
         """List[:class:`str`]: A list of values that have been selected by the user."""
-        values = selected_values.get()
-        return values if values is not None else []
+        values = selected_values.get({})
+        return values.get(self.custom_id, [])
 
     @property
     def width(self) -> int:
@@ -276,7 +276,9 @@ class Select(Item[V]):
         self._underlying = component
 
     def _refresh_state(self, data: MessageComponentInteractionData) -> None:
-        selected_values.set(data.get('values', []))
+        values = selected_values.get({})
+        values[self.custom_id] = data.get('values', [])
+        selected_values.set(values)
 
     @classmethod
     def from_component(cls, component: SelectMenu) -> Self:
