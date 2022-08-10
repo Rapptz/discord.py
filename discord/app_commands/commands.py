@@ -492,10 +492,17 @@ class Parameter:
     default: Any
         The default value of the parameter, if given.
         If not given then this is :data:`~discord.utils.MISSING`.
+    command: :class:`Command`
+        The command this parameter is attached to.
     """
 
-    def __init__(self, parent: CommandParameter) -> None:
+    def __init__(self, parent: CommandParameter, command: Command[Any, ..., Any]) -> None:
         self.__parent: CommandParameter = parent
+        self.__command: Command[Any, ..., Any] = command
+
+    @property
+    def command(self) -> Command[Any, ... , Any]:
+        return self.__command
 
     @property
     def name(self) -> str:
@@ -756,7 +763,7 @@ class Command(Generic[GroupT, P, T]):
         base['name_localizations'] = name_localizations
         base['description_localizations'] = description_localizations
         base['options'] = [
-            await param.get_translated_payload(translator, Parameter(param)) for param in self._params.values()
+            await param.get_translated_payload(translator, Parameter(param, self)) for param in self._params.values()
         ]
         return base
 
@@ -930,7 +937,7 @@ class Command(Generic[GroupT, P, T]):
 
         parent = self._params.get(name)
         if parent is not None:
-            return Parameter(parent)
+            return Parameter(parent, self)
         return None
 
     @property
