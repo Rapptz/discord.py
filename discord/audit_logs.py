@@ -654,7 +654,7 @@ class AuditLogEntry(Hashable):
         return self.guild.get_stage_instance(target_id) or Object(id=target_id, type=StageInstance)
 
     def _convert_target_sticker(self, target_id: int) -> Union[GuildSticker, Object]:
-        return self._state.get_sticker(target_id) or Object(id=target_id, type=StageInstance)
+        return self._state.get_sticker(target_id) or Object(id=target_id, type=GuildSticker)
 
     def _convert_target_thread(self, target_id: int) -> Union[Thread, Object]:
         return self.guild.get_thread(target_id) or Object(id=target_id, type=Thread)
