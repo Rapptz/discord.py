@@ -501,7 +501,7 @@ class Parameter:
         self.__command: Command[Any, ..., Any] = command
 
     @property
-    def command(self) -> Command[Any, ... , Any]:
+    def command(self) -> Command[Any, ..., Any]:
         return self.__command
 
     @property
