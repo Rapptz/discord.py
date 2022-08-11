@@ -795,7 +795,7 @@ class HTTPClient:
                                 raise RateLimited(retry_after)
 
                             fmt = 'We are being rate limited. %s %s responded with 429. Retrying in %.2f seconds.'
-                            _log.warning(fmt, method, url, retry_after, stack_info=True)
+                            _log.warning(fmt, method, url, retry_after)
 
                             _log.debug(
                                 'Rate limit is being handled by bucket hash %s with %r major parameters',
