@@ -435,6 +435,7 @@ Button
     :inherited-members:
 
 .. autofunction:: discord.ui.button
+    :decorator:
 
 Select
 ~~~~~~~
@@ -446,6 +447,7 @@ Select
     :inherited-members:
 
 .. autofunction:: discord.ui.select
+    :decorator:
 
 TextInput
 ~~~~~~~~~~
