@@ -781,7 +781,7 @@ class Command(Generic[GroupT, P, T]):
         if self.parent is None:
             base['nsfw'] = self.nsfw
             base['dm_permission'] = not self.guild_only
-            base['default_member_permissions'] = self.default_permissions and self.default_permissions.value
+            base['default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
 
         return base
 
@@ -1253,7 +1253,7 @@ class ContextMenu:
             'name': self.name,
             'type': self.type.value,
             'dm_permission': not self.guild_only,
-            'default_member_permissions': self.default_permissions and self.default_permissions.value,
+            'default_member_permissions': None if self.default_permissions is None else self.default_permissions.value,
             'nsfw': self.nsfw,
         }
 
@@ -1685,7 +1685,7 @@ class Group:
         if self.parent is None:
             base['nsfw'] = self.nsfw
             base['dm_permission'] = not self.guild_only
-            base['default_member_permissions'] = self.default_permissions and self.default_permissions.value
+            base['default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
 
         return base
 
