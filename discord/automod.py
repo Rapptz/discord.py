@@ -128,6 +128,8 @@ class AutoModTrigger:
         The presets used with the preset keyword filter.
     allow_list: Optional[List[:class:`str`]]
         The list of words that are exempt from the commonly flagged words.
+    mention_limit: Optional[:class:`int`]
+        The maximum number of mentions a message can contain.
     """
 
     __slots__ = (
@@ -135,6 +137,7 @@ class AutoModTrigger:
         'keyword_filter',
         'presets',
         'allow_list',
+        'mention_limit',
     )
 
     def __init__(
@@ -144,12 +147,14 @@ class AutoModTrigger:
         keyword_filter: Optional[List[str]] = None,
         presets: Optional[AutoModPresets] = None,
         allow_list: Optional[List[str]] = None,
+        mention_limit: Optional[int] = None,
     ) -> None:
         self.keyword_filter: Optional[List[str]] = keyword_filter
         self.presets: Optional[AutoModPresets] = presets
         self.allow_list: Optional[List[str]] = allow_list
-        if keyword_filter and presets:
-            raise ValueError('Please pass only one of keyword_filter or presets.')
+        self.mention_limit = mention_limit
+        if sum(arg is not None for arg in (keyword_filter, presets, mention_limit)) >= 2:
+            raise ValueError('Please pass only one of keyword_filter, presets, or mention_limit.')
 
         if type is not None:
             self.type = type
@@ -157,8 +162,10 @@ class AutoModTrigger:
             self.type = AutoModRuleTriggerType.keyword
         elif self.presets is not None:
             self.type = AutoModRuleTriggerType.keyword_preset
+        elif self.mention_limit is not None:
+            self.type = AutoModRuleTriggerType.mention_spam
         else:
-            raise ValueError('Please pass the trigger type explicitly if not using keyword_filter or presets.')
+            raise ValueError('Please pass the trigger type explicitly if not using keyword_filter, presets, or mention_limit.')
 
     @classmethod
     def from_data(cls, type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
@@ -167,6 +174,8 @@ class AutoModTrigger:
             return cls(keyword_filter=data['keyword_filter'])  # type: ignore # unable to typeguard due to outer payload
         elif type_ is AutoModRuleTriggerType.keyword_preset:
             return cls(presets=AutoModPresets._from_value(data['presets']), allow_list=data.get('allow_list'))  # type: ignore # unable to typeguard due to outer payload
+        elif type_ is AutoModRuleTriggerType.mention_spam:
+            return cls(mention_limit=data['mention_total_limit'])  # type: ignore # unable to typeguard due to outer payload
         else:
             return cls(type=type_)
 
@@ -178,6 +187,8 @@ class AutoModTrigger:
             if self.allow_list:
                 ret['allow_list'] = self.allow_list
             return ret
+        elif self.mention_limit is not None:
+            return {'mention_total_limit': self.mention_limit}
 
         return {}
 

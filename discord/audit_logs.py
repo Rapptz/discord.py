@@ -197,6 +197,8 @@ def _transform_automod_trigger_metadata(
         return AutoModTrigger(presets=AutoModPresets._from_value(data['presets']), allow_list=data.get('allow_list'))  # type: ignore
     elif 'keyword_filter' in data:
         return AutoModTrigger(keyword_filter=data['keyword_filter'])  # type: ignore
+    elif 'mention_total_limit' in data:
+        return AutoModTrigger(mention_limit=data['mention_total_limit'])  # type: ignore
 
 
 def _transform_automod_actions(entry: AuditLogEntry, data: List[AutoModerationAction]) -> List[AutoModRuleAction]:
