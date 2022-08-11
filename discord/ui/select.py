@@ -54,7 +54,7 @@ if TYPE_CHECKING:
 
 V = TypeVar('V', bound='View', covariant=True)
 
-selected_values: ContextVar[Dict[str, list[str]]] = ContextVar('selected_values')
+selected_values: ContextVar[Dict[str, List[str]]] = ContextVar('selected_values')
 
 
 class Select(Item[V]):
