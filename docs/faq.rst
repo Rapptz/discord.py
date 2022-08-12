@@ -105,7 +105,7 @@ Why does ``get_x`` and ``utils.get`` return ``None``?
   - The bot has to be on the server, share a server with the member, etc.
   - If you're sharded on separate processes, each process will only have objects for that shard.
 
-- Objects retuned by ``fetch_x will`` not have a populated cache.
+- Objects retuned by ``fetch_x`` will not have a populated cache.
 
 
 How do I set the "Playing" status?
