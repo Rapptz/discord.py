@@ -100,9 +100,9 @@ client = discord.Client(intents=discord.Intents.default())
 class MockTree(discord.app_commands.CommandTree):
     last_exception: Optional[discord.app_commands.AppCommandError]
 
-    async def call(self, interaction: discord.Interaction) -> None:
+    async def _call(self, interaction: discord.Interaction) -> None:
         self.last_exception = None
-        return await super().call(interaction)
+        return await super()._call(interaction)
 
     async def on_error(self, interaction: discord.Interaction, error: discord.app_commands.AppCommandError) -> None:
         self.last_exception = error
@@ -167,7 +167,7 @@ async def test_valid_command_invoke(
     command: discord.app_commands.Command[Any, ..., Any], raises: Optional[Type[BaseException]]
 ):
     interaction = MockCommandInteraction(client, command, foo='foo')
-    await tree.call(interaction)
+    await tree._call(interaction)
 
     if raises is None:
         assert tree.last_exception is None
@@ -192,6 +192,6 @@ async def test_valid_command_invoke(
 @pytest.mark.asyncio
 async def test_invalid_command_invoke(command: discord.app_commands.Command[Any, ..., Any]):
     interaction = MockCommandInteraction(client, command, bar='bar')
-    await tree.call(interaction)
+    await tree._call(interaction)
 
     assert isinstance(tree.last_exception, discord.app_commands.CommandSignatureMismatch)

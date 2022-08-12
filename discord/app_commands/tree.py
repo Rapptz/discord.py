@@ -1075,7 +1075,7 @@ class CommandTree(Generic[ClientT]):
     def _from_interaction(self, interaction: Interaction) -> None:
         async def wrapper():
             try:
-                await self.call(interaction)
+                await self._call(interaction)
             except AppCommandError as e:
                 await self._dispatch_error(interaction, e)
 
@@ -1191,29 +1191,7 @@ class CommandTree(Generic[ClientT]):
         """
         return True
 
-    async def call(self, interaction: Interaction) -> None:
-        """|coro|
-
-        Given an :class:`~discord.Interaction`, calls the matching
-        application command that's being invoked.
-
-        This is usually called automatically by the library.
-
-        Parameters
-        -----------
-        interaction: :class:`~discord.Interaction`
-            The interaction to dispatch from.
-
-        Raises
-        --------
-        CommandNotFound
-            The application command referred to could not be found.
-        CommandSignatureMismatch
-            The interaction data referred to a parameter that was not found in the
-            application command definition.
-        AppCommandError
-            An error occurred while calling the command.
-        """
+    async def _call(self, interaction: Interaction) -> None:
         if not await self.interaction_check(interaction):
             return
 
