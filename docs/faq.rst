@@ -98,7 +98,7 @@ Why does ``get_x`` and ``utils.get`` return ``None``?
 
 - Bot not logged in, and trying to grab objects from cache
 
-  - Subvariant, using two client objects. :class:`Bot` has all the functionality of :class:`Client` in addition to a full command system.
+  - Subvariant, using two client objects. :class:`~ext.commands.Bot` has all the functionality of :class:`Client` in addition to a full command system.
 
 - Bot cannot "see" the object.
 
