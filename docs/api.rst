@@ -4724,4 +4724,5 @@ Exception Hierarchy
                 - :exc:`Forbidden`
                 - :exc:`NotFound`
                 - :exc:`DiscordServerError`
+                - :exc:`app_commands.CommandSyncFailure`
             - :exc:`RateLimited`

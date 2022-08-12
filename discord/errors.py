@@ -121,6 +121,7 @@ class HTTPException(DiscordException):
             self.code = message.get('code', 0)
             base = message.get('message', '')
             errors = message.get('errors')
+            self._errors: Optional[Dict[str, Any]] = errors
             if errors:
                 errors = _flatten_error_dict(errors)
                 helpful = '\n'.join('In %s: %s' % t for t in errors.items())

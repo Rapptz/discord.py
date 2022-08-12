@@ -26,9 +26,8 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING, List, Optional, Union
 
-
 from ..enums import AppCommandOptionType, AppCommandType, Locale
-from ..errors import DiscordException
+from ..errors import DiscordException, HTTPException, _flatten_error_dict
 
 __all__ = (
     'AppCommandError',
@@ -47,6 +46,7 @@ __all__ = (
     'BotMissingPermissions',
     'CommandOnCooldown',
     'MissingApplicationID',
+    'CommandSyncFailure',
 )
 
 if TYPE_CHECKING:
@@ -55,6 +55,8 @@ if TYPE_CHECKING:
     from .translator import TranslationContext, locale_str
     from ..types.snowflake import Snowflake, SnowflakeList
     from .checks import Cooldown
+
+    CommandTypes = Union[Command[Any, ..., Any], Group, ContextMenu]
 
 APP_ID_NOT_FOUND = (
     'Client does not have an application_id set. Either the function was called before on_ready '
@@ -444,3 +446,58 @@ class MissingApplicationID(AppCommandError):
 
     def __init__(self, message: Optional[str] = None):
         super().__init__(message or APP_ID_NOT_FOUND)
+
+
+def _get_command_error(index: str, inner: Any, commands: List[CommandTypes], messages: List[str]) -> None:
+    # Top level errors are:
+    # <number>: { <key>: <error> }
+    # The dicts could be nested, e.g.
+    # <number>: { <key>: { <second>: <error> } }
+    # Luckily, this is already handled by the flatten_error_dict utility
+    if not index.isdigit():
+        errors = _flatten_error_dict(inner, index)
+        messages.extend(f'In {k}: {v}' for k, v in errors.items())
+        return
+
+    idx = int(index)
+    try:
+        command = commands[idx]
+    except IndexError:
+        errors = _flatten_error_dict(inner, index)
+        messages.extend(f'In {k}: {v}' for k, v in errors.items())
+        return
+
+    callback = getattr(command, 'callback', None)
+    class_name = command.__class__.__name__
+    if callback:
+        messages.append(f'In {class_name} {command.qualified_name!r} defined in {callback.__qualname__!r}')
+    else:
+        messages.append(f'In {class_name} {command.qualified_name!r} defined in module {command.module!r}')
+
+    errors = _flatten_error_dict(inner)
+    messages.extend(f'  {k}: {v}' for k, v in errors.items())
+
+
+class CommandSyncFailure(AppCommandError, HTTPException):
+    """An exception raised when :meth:`CommandTree.sync` failed.
+
+    This provides syncing failures in a slightly more readable format.
+
+    This inherits from :exc:`~discord.app_commands.AppCommandError`
+    and :exc:`~discord.HTTPException`.
+
+    .. versionadded:: 2.0
+    """
+
+    def __init__(self, child: HTTPException, commands: List[CommandTypes]) -> None:
+        # Consume the child exception and make it seem as if we are that exception
+        self.__dict__.update(child.__dict__)
+
+        messages = [f'Failed to upload commands to Discord (HTTP status {self.status}, error code {self.code})']
+
+        if self._errors:
+            for index, inner in self._errors.items():
+                _get_command_error(index, inner, commands, messages)
+
+        # Equivalent to super().__init__(...) but skips other constructors
+        self.args = ('\n'.join(messages),)

@@ -56,10 +56,11 @@ from .errors import (
     CommandNotFound,
     CommandSignatureMismatch,
     CommandLimitReached,
+    CommandSyncFailure,
     MissingApplicationID,
 )
 from .translator import Translator, locale_str
-from ..errors import ClientException
+from ..errors import ClientException, HTTPException
 from ..enums import AppCommandType, InteractionType
 from ..utils import MISSING, _get_as_snowflake, _is_submodule
 
@@ -1034,6 +1035,10 @@ class CommandTree(Generic[ClientT]):
         -------
         HTTPException
             Syncing the commands failed.
+        CommandSyncFailure
+            Syncing the commands failed due to a user related error, typically because
+            the command has invalid data. This is equivalent to an HTTP status code of
+            400.
         Forbidden
             The client does not have the ``applications.commands`` scope in the guild.
         MissingApplicationID
@@ -1058,10 +1063,15 @@ class CommandTree(Generic[ClientT]):
         else:
             payload = [command.to_dict() for command in commands]
 
-        if guild is None:
-            data = await self._http.bulk_upsert_global_commands(self.client.application_id, payload=payload)
-        else:
-            data = await self._http.bulk_upsert_guild_commands(self.client.application_id, guild.id, payload=payload)
+        try:
+            if guild is None:
+                data = await self._http.bulk_upsert_global_commands(self.client.application_id, payload=payload)
+            else:
+                data = await self._http.bulk_upsert_guild_commands(self.client.application_id, guild.id, payload=payload)
+        except HTTPException as e:
+            if e.status == 400:
+                raise CommandSyncFailure(e, commands) from None
+            raise
 
         return [AppCommand(data=d, state=self._state) for d in data]
 
