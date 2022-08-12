@@ -85,7 +85,7 @@ Example code can be found in the `examples folder <https://github.com/Rapptz/dis
 in the repository.
 
 Why does ``get_x`` and ``utils.get`` return ``None``?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ``get_x``  and :meth:`utils.get` both return ``None`` if they can't find anything matching.
 
 **Common causes include:**
