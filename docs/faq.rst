@@ -84,6 +84,30 @@ Where can I find usage examples?
 Example code can be found in the `examples folder <https://github.com/Rapptz/discord.py/tree/master/examples>`_
 in the repository.
 
+Why does ``get_x`` and ``utils.get`` return ``None``?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``get_x``  and :meth:`utils.get` both return ``None`` if they can't find anything matching.
+
+**Common causes include:**
+
+- Not subscribed to the relevant intent. See `A Primer to Gateway Intents <https://discordpy.readthedocs.io/en/latest/intents.html>`_
+- Wrong key
+
+  - Remember, IDs are integers, not strings
+  - If you're trying to copy an emoji ID, right-clicking the emoji in a message will copy the message ID
+
+- Bot not logged in, and trying to grab objects from cache
+
+  - Subvariant, using two client objects. :class:`Bot` has all the functionality of :class:`Client` in addition to a full command system.
+
+- Bot cannot "see" the object.
+
+  - The bot has to be on the server, share a server with the member, etc.
+  - If you're sharded on separate processes, each process will only have objects for that shard.
+
+- Objects retuned by ``fetch_x will`` not have a populated cache.
+
+
 How do I set the "Playing" status?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
