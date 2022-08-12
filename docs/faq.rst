@@ -107,7 +107,6 @@ Why does ``get_x`` and ``utils.get`` return ``None``?
 
 - Objects retuned by ``fetch_x`` will not have a populated cache.
 
-
 How do I set the "Playing" status?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
