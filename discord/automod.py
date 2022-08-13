@@ -129,7 +129,7 @@ class AutoModTrigger:
     allow_list: Optional[List[:class:`str`]]
         The list of words that are exempt from the commonly flagged words.
     mention_limit: Optional[:class:`int`]
-        The maximum number of mentions a message can contain.
+        The maximum number of user or role mentions a message can contain.
     """
 
     __slots__ = (
@@ -153,7 +153,7 @@ class AutoModTrigger:
         self.presets: Optional[AutoModPresets] = presets
         self.allow_list: Optional[List[str]] = allow_list
         self.mention_limit = mention_limit
-        if sum(arg is not None for arg in (keyword_filter, presets, mention_limit)) >= 2:
+        if sum(arg is not None for arg in (keyword_filter, presets, mention_limit)) > 1:
             raise ValueError('Please pass only one of keyword_filter, presets, or mention_limit.')
 
         if type is not None:
@@ -171,11 +171,13 @@ class AutoModTrigger:
     def from_data(cls, type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
         type_ = try_enum(AutoModRuleTriggerType, type)
         if type_ is AutoModRuleTriggerType.keyword:
-            return cls(keyword_filter=data['keyword_filter'])  # type: ignore # unable to typeguard due to outer payload
+            return cls(type=type_, keyword_filter=data['keyword_filter'])  # type: ignore # unable to typeguard due to outer payload
         elif type_ is AutoModRuleTriggerType.keyword_preset:
-            return cls(presets=AutoModPresets._from_value(data['presets']), allow_list=data.get('allow_list'))  # type: ignore # unable to typeguard due to outer payload
+            return cls(
+                type=type_, presets=AutoModPresets._from_value(data['presets']), allow_list=data.get('allow_list')  # type: ignore # unable to typeguard due to outer payload
+            )
         elif type_ is AutoModRuleTriggerType.mention_spam:
-            return cls(mention_limit=data['mention_total_limit'])  # type: ignore # unable to typeguard due to outer payload
+            return cls(type=type_, mention_limit=data['mention_total_limit'])  # type: ignore # unable to typeguard due to outer payload
         else:
             return cls(type=type_)
 
