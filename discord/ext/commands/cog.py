@@ -139,6 +139,12 @@ class CogMeta(type):
         By default, it's ``False``.
 
         .. versionadded:: 2.0
+    group_auto_locale_strings: :class:`bool`
+        If this is set to ``True``, then all translatable strings will implicitly
+        be wrapped into :class:`locale_str` rather than :class:`str`.
+        Defaults to ``True``.
+
+        .. versionadded:: 2.0
     """
 
     __cog_name__: str
@@ -146,6 +152,7 @@ class CogMeta(type):
     __cog_group_name__: Union[str, app_commands.locale_str]
     __cog_group_description__: Union[str, app_commands.locale_str]
     __cog_group_nsfw__: bool
+    __cog_group_auto_locale_strings__: bool
     __cog_settings__: Dict[str, Any]
     __cog_commands__: List[Command[Any, ..., Any]]
     __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Any, ..., Any]]]
@@ -175,6 +182,7 @@ class CogMeta(type):
         attrs['__cog_name__'] = cog_name
         attrs['__cog_group_name__'] = group_name
         attrs['__cog_group_nsfw__'] = kwargs.pop('group_nsfw', False)
+        attrs['__cog_group_auto_locale_strings__'] = kwargs.pop('group_auto_locale_strings', True)
 
         description = kwargs.pop('description', None)
         if description is None:
@@ -293,6 +301,7 @@ class Cog(metaclass=CogMeta):
                 name=cls.__cog_group_name__,
                 description=cls.__cog_group_description__,
                 nsfw=cls.__cog_group_nsfw__,
+                auto_locale_strings=cls.__cog_group_auto_locale_strings__,
                 parent=None,
                 guild_ids=getattr(cls, '__discord_app_commands_default_guilds__', None),
                 guild_only=getattr(cls, '__discord_app_commands_guild_only__', False),
