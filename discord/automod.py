@@ -122,13 +122,13 @@ class AutoModTrigger:
     -----------
     type: :class:`AutoModRuleTriggerType`
         The type of trigger.
-    keyword_filter: Optional[List[:class:`str`]]
+    keyword_filter: List[:class:`str`]
         The list of strings that will trigger the keyword filter.
-    presets: Optional[:class:`AutoModPresets`]
+    presets: :class:`AutoModPresets`
         The presets used with the preset keyword filter.
-    allow_list: Optional[List[:class:`str`]]
+    allow_list: List[:class:`str`]
         The list of words that are exempt from the commonly flagged words.
-    mention_limit: Optional[:class:`int`]
+    mention_limit: :class:`int`
         The maximum number of user or role mentions a message can contain.
     """
 
@@ -143,31 +143,32 @@ class AutoModTrigger:
     def __init__(
         self,
         *,
-        type: Optional[AutoModRuleTriggerType] = None,
-        keyword_filter: Optional[List[str]] = None,
-        presets: Optional[AutoModPresets] = None,
-        allow_list: Optional[List[str]] = None,
-        mention_limit: Optional[int] = None,
+        type: AutoModRuleTriggerType = MISSING,
+        keyword_filter: List[str] = MISSING,
+        presets: AutoModPresets = MISSING,
+        allow_list: List[str] = MISSING,
+        mention_limit: int = MISSING,
     ) -> None:
-        self.keyword_filter: Optional[List[str]] = keyword_filter
-        self.presets: Optional[AutoModPresets] = presets
-        self.allow_list: Optional[List[str]] = allow_list
-        self.mention_limit = mention_limit
-        if sum(arg is not None for arg in (keyword_filter, presets, mention_limit)) > 1:
+        if type is MISSING and sum(arg is not MISSING for arg in (keyword_filter, presets, mention_limit)) > 1:
             raise ValueError('Please pass only one of keyword_filter, presets, or mention_limit.')
 
-        if type is not None:
+        if type is not MISSING:
             self.type = type
-        elif self.keyword_filter is not None:
+        elif self.keyword_filter is not MISSING:
             self.type = AutoModRuleTriggerType.keyword
-        elif self.presets is not None:
+        elif self.presets is not MISSING:
             self.type = AutoModRuleTriggerType.keyword_preset
-        elif self.mention_limit is not None:
+        elif self.mention_limit is not MISSING:
             self.type = AutoModRuleTriggerType.mention_spam
         else:
             raise ValueError(
                 'Please pass the trigger type explicitly if not using keyword_filter, presets, or mention_limit.'
             )
+
+        self.keyword_filter: List[str] = keyword_filter if keyword_filter is not MISSING else []
+        self.presets: AutoModPresets = presets if presets is not MISSING else AutoModPresets()
+        self.allow_list: List[str] = allow_list if allow_list is not MISSING else []
+        self.mention_limit: int = mention_limit if mention_limit is not MISSING else 0
 
     @classmethod
     def from_data(cls, type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
@@ -184,14 +185,11 @@ class AutoModTrigger:
             return cls(type=type_)
 
     def to_metadata_dict(self) -> Dict[str, Any]:
-        if self.keyword_filter is not None:
+        if self.type is AutoModRuleTriggerType.keyword:
             return {'keyword_filter': self.keyword_filter}
-        elif self.presets is not None:
-            ret: Dict[str, Any] = {'presets': self.presets.to_array()}
-            if self.allow_list:
-                ret['allow_list'] = self.allow_list
-            return ret
-        elif self.mention_limit is not None:
+        elif self.type is AutoModRuleTriggerType.keyword_preset:
+            return {'presets': self.presets.to_array(), 'allow_list': self.allow_list}
+        elif self.type is AutoModRuleTriggerType.mention_spam:
             return {'mention_total_limit': self.mention_limit}
 
         return {}
