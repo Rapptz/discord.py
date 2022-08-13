@@ -630,7 +630,12 @@ class Client:
         if self.loop is _loop:
             await self._async_setup_hook()
 
-        data = await self.http.static_login(token.strip())
+        try:
+            token = token.strip()
+        except AttributeError as exc:
+            raise LoginFailure('Token must be of type str.') from exc
+
+        data = await self.http.static_login(token)
         self._connection.user = ClientUser(state=self._connection, data=data)
         self._application = await self.application_info()
         if self._connection.application_id is None:
