@@ -633,7 +633,7 @@ class Client:
         try:
             token = token.strip()
         except AttributeError as exc:
-            raise LoginFailure('Token must be of type str.') from exc
+            raise TypeError('Token must be of type str.') from exc
 
         data = await self.http.static_login(token)
         self._connection.user = ClientUser(state=self._connection, data=data)
