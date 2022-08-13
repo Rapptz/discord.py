@@ -165,7 +165,9 @@ class AutoModTrigger:
         elif self.mention_limit is not None:
             self.type = AutoModRuleTriggerType.mention_spam
         else:
-            raise ValueError('Please pass the trigger type explicitly if not using keyword_filter, presets, or mention_limit.')
+            raise ValueError(
+                'Please pass the trigger type explicitly if not using keyword_filter, presets, or mention_limit.'
+            )
 
     @classmethod
     def from_data(cls, type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
