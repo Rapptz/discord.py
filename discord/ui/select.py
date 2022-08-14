@@ -263,8 +263,8 @@ class Select(Item[V]):
     @property
     def values(self) -> List[str]:
         """List[:class:`str`]: A list of values that have been selected by the user."""
-        values = selected_values.get(None)
-        return self._values if values is None else values.get(self.custom_id, [])
+        values = selected_values.get({})
+        return values.get(self.custom_id, self._values)
 
     @property
     def width(self) -> int:
