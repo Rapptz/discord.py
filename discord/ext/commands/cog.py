@@ -141,8 +141,8 @@ class CogMeta(type):
         .. versionadded:: 2.0
     group_auto_locale_strings: :class:`bool`
         If this is set to ``True``, then all translatable strings will implicitly
-        be wrapped into :class:`locale_str` rather than :class:`str`.
-        Defaults to ``True``.
+        be wrapped into :class:`~discord.app_commands.locale_str` rather 
+        than :class:`str`. Defaults to ``True``.
 
         .. versionadded:: 2.0
     """
