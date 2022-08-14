@@ -52,7 +52,7 @@ from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
-from .translator import TranslationContextLocation, TranslationContextObject, Translator, locale_str
+from .translator import TranslationContextLocation, TranslationContext, Translator, locale_str
 from ..message import Message
 from ..user import User
 from ..member import Member
@@ -739,8 +739,8 @@ class Command(Generic[GroupT, P, T]):
         description_localizations: Dict[str, str] = {}
 
         # Prevent creating these objects in a heavy loop
-        name_context = TranslationContextObject(location=TranslationContextLocation.command_name, data=self)
-        description_context = TranslationContextObject(location=TranslationContextLocation.command_description, data=self)
+        name_context = TranslationContext(location=TranslationContextLocation.command_name, data=self)
+        description_context = TranslationContext(location=TranslationContextLocation.command_description, data=self)
 
         for locale in Locale:
             if self._locale_name:
@@ -1230,7 +1230,7 @@ class ContextMenu:
 
     async def get_translated_payload(self, translator: Translator) -> Dict[str, Any]:
         base = self.to_dict()
-        context = TranslationContextObject(location=TranslationContextLocation.command_name, data=self)
+        context = TranslationContext(location=TranslationContextLocation.command_name, data=self)
         if self._locale_name:
             name_localizations: Dict[str, str] = {}
             for locale in Locale:
@@ -1646,8 +1646,8 @@ class Group:
         description_localizations: Dict[str, str] = {}
 
         # Prevent creating these objects in a heavy loop
-        name_context = TranslationContextObject(location=TranslationContextLocation.group_name, data=self)
-        description_context = TranslationContextObject(location=TranslationContextLocation.group_description, data=self)
+        name_context = TranslationContext(location=TranslationContextLocation.group_name, data=self)
+        description_context = TranslationContext(location=TranslationContextLocation.group_description, data=self)
         for locale in Locale:
             if self._locale_name:
                 translation = await translator._checked_translate(self._locale_name, locale, name_context)

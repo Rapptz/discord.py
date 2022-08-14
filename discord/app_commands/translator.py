@@ -23,19 +23,19 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union, overload
 from .errors import TranslationError
 from ..enums import Enum, Locale
 
 
 if TYPE_CHECKING:
-    from typing import Protocol
     from .commands import Command, ContextMenu, Group, Parameter
     from .models import Choice
 
 
 __all__ = (
     'TranslationContextLocation',
+    'TranslationContextTypes',
     'TranslationContext',
     'Translator',
     'locale_str',
@@ -53,7 +53,11 @@ class TranslationContextLocation(Enum):
     other = 7
 
 
-class TranslationContextObject:
+_L = TypeVar('_L', bound=TranslationContextLocation)
+_D = TypeVar('_D')
+
+
+class TranslationContext(Generic[_L, _D]):
     """A class that provides context for the :class:`locale_str` being translated.
 
     This is useful to determine where exactly the string is located and aid in looking
@@ -69,54 +73,77 @@ class TranslationContextObject:
 
     __slots__ = ('location', 'data')
 
-    def __init__(self, location: TranslationContextLocation, data: Any) -> None:
-        self.location: TranslationContextLocation = location
-        self.data: Any = data
+    @overload
+    def __init__(
+        self, location: Literal[TranslationContextLocation.command_name], data: Union[Command[Any, ..., Any], ContextMenu]
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self, location: Literal[TranslationContextLocation.command_description], data: Command[Any, ..., Any]
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        location: Literal[TranslationContextLocation.group_name, TranslationContextLocation.group_description],
+        data: Group,
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        location: Literal[TranslationContextLocation.parameter_name, TranslationContextLocation.parameter_description],
+        data: Parameter,
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(self, location: Literal[TranslationContextLocation.choice_name], data: Choice[Any]) -> None:
+        ...
+
+    @overload
+    def __init__(self, location: Literal[TranslationContextLocation.other], data: Any) -> None:
+        ...
+
+    def __init__(self, location: _L, data: _D) -> None:
+        self.location: _L = location
+        self.data: _D = data
 
 
-if TYPE_CHECKING:
-    # For type checking purposes, it makes sense to allow the user to leverage type narrowing
-    # So code like this works as expected:
-    #
-    # if context.type is TranslationContextLocation.command_name:
-    #    reveal_type(context.data)  # Revealed type is Command | ContextMenu
-    #
-    # This requires a union of types
+# For type checking purposes, it makes sense to allow the user to leverage type narrowing
+# So code like this works as expected:
+#
+# if context.type == TranslationContextLocation.command_name:
+#    reveal_type(context.data)  # Revealed type is Command | ContextMenu
+#
+# This requires a union of types
+CommandNameTranslationContext = TranslationContext[
+    Literal[TranslationContextLocation.command_name], Union['Command[Any, ..., Any]', 'ContextMenu']
+]
+CommandDescriptionTranslationContext = TranslationContext[
+    Literal[TranslationContextLocation.command_description], 'Command[Any, ..., Any]'
+]
+GroupTranslationContext = TranslationContext[
+    Literal[TranslationContextLocation.group_name, TranslationContextLocation.group_description], 'Group'
+]
+ParameterTranslationContext = TranslationContext[
+    Literal[TranslationContextLocation.parameter_name, TranslationContextLocation.parameter_description], 'Parameter'
+]
+ChoiceTranslationContext = TranslationContext[Literal[TranslationContextLocation.choice_name], 'Choice[Any]']
+OtherTranslationContext = TranslationContext[Literal[TranslationContextLocation.other], Any]
 
-    class _CommandNameTranslationContext(Protocol):
-        location: Literal[TranslationContextLocation.command_name]
-        data: Union[Command[Any, ..., Any], ContextMenu]
-
-    class _CommandDescriptionTranslationContext(Protocol):
-        location: Literal[TranslationContextLocation.command_description]
-        data: Command[Any, ..., Any]
-
-    class _GroupTranslationContext(Protocol):
-        location: Literal[TranslationContextLocation.group_name, TranslationContextLocation.group_description]
-        data: Group
-
-    class _ParameterTranslationContext(Protocol):
-        location: Literal[TranslationContextLocation.parameter_description, TranslationContextLocation.parameter_name]
-        data: Parameter
-
-    class _ChoiceTranslationContext(Protocol):
-        location: Literal[TranslationContextLocation.choice_name]
-        data: Choice[Union[int, str, float]]
-
-    class _OtherTranslationContext(Protocol):
-        location: Literal[TranslationContextLocation.other]
-        data: Any
-
-    TranslationContext = Union[
-        _CommandNameTranslationContext,
-        _CommandDescriptionTranslationContext,
-        _GroupTranslationContext,
-        _ParameterTranslationContext,
-        _ChoiceTranslationContext,
-        _OtherTranslationContext,
-    ]
-else:
-    TranslationContext = TranslationContextObject
+TranslationContextTypes = Union[
+    CommandNameTranslationContext,
+    CommandDescriptionTranslationContext,
+    GroupTranslationContext,
+    ParameterTranslationContext,
+    ChoiceTranslationContext,
+    OtherTranslationContext,
+]
 
 
 class Translator:
@@ -163,16 +190,16 @@ class Translator:
         pass
 
     async def _checked_translate(
-        self, string: locale_str, locale: Locale, context: TranslationContextObject
+        self, string: locale_str, locale: Locale, context: TranslationContextTypes
     ) -> Optional[str]:
         try:
-            return await self.translate(string, locale, context)  # type: ignore
+            return await self.translate(string, locale, context)
         except TranslationError:
             raise
         except Exception as e:
-            raise TranslationError(string=string, locale=locale, context=context) from e  # type: ignore
+            raise TranslationError(string=string, locale=locale, context=context) from e
 
-    async def translate(self, string: locale_str, locale: Locale, context: TranslationContext) -> Optional[str]:
+    async def translate(self, string: locale_str, locale: Locale, context: TranslationContextTypes) -> Optional[str]:
         """|coro|
 
         Translates the given string to the specified locale.
