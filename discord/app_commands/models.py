@@ -437,7 +437,7 @@ class Choice(Generic[ChoiceT]):
         self.name: str = name
         self._locale_name: Optional[locale_str] = locale
         self.value: ChoiceT = value
-        self.name_localizations: Dict[Locale, str] = MISSING
+        self.name_localizations: Dict[Locale, str] = {}
 
     @classmethod
     def from_dict(cls, data: ApplicationCommandOptionChoice) -> Choice[ChoiceT]:
