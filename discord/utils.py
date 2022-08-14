@@ -1093,12 +1093,12 @@ async def _achunk(iterator: AsyncIterable[T], max_size: int) -> AsyncIterator[Li
 
 
 @overload
-def as_chunks(iterator: Iterable[T], max_size: int) -> Iterator[List[T]]:
+def as_chunks(iterator: AsyncIterable[T], max_size: int) -> AsyncIterator[List[T]]:
     ...
 
 
 @overload
-def as_chunks(iterator: AsyncIterable[T], max_size: int) -> AsyncIterator[List[T]]:
+def as_chunks(iterator: Iterable[T], max_size: int) -> Iterator[List[T]]:
     ...
 
 
