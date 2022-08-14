@@ -484,6 +484,16 @@ class Choice(Generic[ChoiceT]):
 
         return base
 
+    async def get_translated_payload_for_locale(self, translator: Translator, locale: Locale) -> Dict[str, Any]:
+        base = self.to_dict()
+        if self._locale_name:
+            context = TranslationContext(location=TranslationContextLocation.choice_name, data=self)
+            translation = await translator._checked_translate(self._locale_name, locale, context)
+            if translation is not None:
+                base['name'] = translation
+
+        return base
+
     def to_dict(self) -> Dict[str, Any]:
         base = {
             'name': self.name,

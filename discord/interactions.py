@@ -880,8 +880,9 @@ class InteractionResponse:
 
         translator = self._parent._state._translator
         if translator is not None:
+            user_locale = self._parent.locale
             payload: Dict[str, Any] = {
-                'choices': [await option.get_translated_payload(translator) for option in choices],
+                'choices': [await option.get_translated_payload_for_locale(translator, user_locale) for option in choices],
             }
         else:
             payload: Dict[str, Any] = {
