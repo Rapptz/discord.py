@@ -737,6 +737,9 @@ class Client:
         if self.loop is _loop:
             await self._async_setup_hook()
 
+        if not isinstance(token, str):
+            raise TypeError(f'expected token to be a str, received {token.__class__!r} instead')
+
         state = self._connection
         data = await state.http.static_login(token.strip())
         state.analytics_token = data.get('analytics_token', '')
