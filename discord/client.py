@@ -630,10 +630,9 @@ class Client:
         if self.loop is _loop:
             await self._async_setup_hook()
 
-        try:
-            token = token.strip()
-        except AttributeError as exc:
-            raise TypeError('Token must be of type str.') from exc
+        if not isinstance(token, str):
+            raise TypeError(f'expected token to be a str, received {token.__class__!r} instead')
+        token = token.strip()
 
         data = await self.http.static_login(token)
         self._connection.user = ClientUser(state=self._connection, data=data)
