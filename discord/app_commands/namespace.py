@@ -142,7 +142,8 @@ class Namespace:
                 self.__dict__[name] = value
             elif opt_type == 10:  # number
                 value = option['value']  # type: ignore # Key is there
-                if value is None:
+                # This condition is written this way because 0 can be a valid float
+                if value is None or value == '':
                     self.__dict__[name] = float('nan')
                 else:
                     self.__dict__[name] = float(value)
