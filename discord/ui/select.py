@@ -126,6 +126,7 @@ class Select(Item[V]):
             disabled=disabled,
         )
         self.row = row
+        self._values: List[str] = []
 
     @property
     def custom_id(self) -> str:
@@ -262,8 +263,8 @@ class Select(Item[V]):
     @property
     def values(self) -> List[str]:
         """List[:class:`str`]: A list of values that have been selected by the user."""
-        values = selected_values.get({})
-        return values.get(self.custom_id, [])
+        values = selected_values.get(None)
+        return self._values if values is None else values.get(self.custom_id, [])
 
     @property
     def width(self) -> int:
@@ -277,7 +278,7 @@ class Select(Item[V]):
 
     def _refresh_state(self, data: MessageComponentInteractionData) -> None:
         values = selected_values.get({})
-        values[self.custom_id] = data.get('values', [])
+        self._values = values[self.custom_id] = data.get('values', [])
         selected_values.set(values)
 
     @classmethod
