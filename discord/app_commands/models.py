@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from ..types.command import (
         ApplicationCommand as ApplicationCommandPayload,
         ApplicationCommandOption,
+        ApplicationCommandOptionChoice,
         ApplicationCommandPermissions,
         GuildApplicationCommandPermissions,
     )
@@ -431,12 +432,20 @@ class Choice(Generic[ChoiceT]):
 
     __slots__ = ('name', 'value', '_locale_name', 'name_localizations')
 
-    def __init__(self, *, name: Union[str, locale_str], value: ChoiceT, name_localizations: Dict[Locale, str] = MISSING):
+    def __init__(self, *, name: Union[str, locale_str], value: ChoiceT):
         name, locale = (name.message, name) if isinstance(name, locale_str) else (name, None)
         self.name: str = name
         self._locale_name: Optional[locale_str] = locale
         self.value: ChoiceT = value
         self.name_localizations: Dict[Locale, str] = MISSING
+
+    @classmethod
+    def from_dict(cls, data: ApplicationCommandOptionChoice) -> Choice[ChoiceT]:
+        self = cls.__new__(cls)
+        self.name = data['name']
+        self.value = data['value']
+        self.name_localizations = _to_locale_dict(data.get('name_localizations') or {})
+        return self
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, Choice) and self.name == o.name and self.value == o.value
@@ -480,7 +489,7 @@ class Choice(Generic[ChoiceT]):
             'name': self.name,
             'value': self.value,
         }
-        if self.name_localizations is not MISSING:
+        if self.name_localizations:
             base['name_localizations'] = {str(k): v for k, v in self.name_localizations.items()}
         return base
 
@@ -844,9 +853,7 @@ class Argument:
         self.max_length: Optional[int] = data.get('max_length')
         self.autocomplete: bool = data.get('autocomplete', False)
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, d) for d in data.get('channel_types', [])]
-        self.choices: List[Choice[Union[int, float, str]]] = [
-            Choice(name=d['name'], value=d['value']) for d in data.get('choices', [])
-        ]
+        self.choices: List[Choice[Union[int, float, str]]] = [Choice.from_dict(d) for d in data.get('choices', [])]
         self.name_localizations: Dict[Locale, str] = _to_locale_dict(data.get('name_localizations') or {})
         self.description_localizations: Dict[Locale, str] = _to_locale_dict(data.get('description_localizations') or {})
 
