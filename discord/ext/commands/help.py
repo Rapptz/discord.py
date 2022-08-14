@@ -1090,12 +1090,8 @@ class DefaultHelpCommand(HelpCommand):
             entry = f'{self.indent * " "}{name:<{width}} - {command.short_doc}'
             self.paginator.add_line(self.shorten_text(entry))
 
-    def add_command_arguments(
-        self, command: Command[Any, ..., Any], /, *, heading: str, max_size: Optional[int] = None
-    ) -> None:
+    def add_command_arguments(self, command: Command[Any, ..., Any], /) -> None:
         """Indents a list of command arguments after the specified heading.
-
-        The formatting is added to the :attr:`paginator`.
 
         The default implementation is the argument :attr:`~.commands.Parameter.name` indented by
         :attr:`indent` spaces, padded to ``max_size`` followed by
@@ -1109,19 +1105,13 @@ class DefaultHelpCommand(HelpCommand):
         -----------
         commands: :class:`Command`
             The command to list the arguments for.
-        heading: :class:`str`
-            The heading to add to the output. This is only added
-            if the list of arguments is greater than 0.
-        max_size: Optional[:class:`int`]
-            The max size to use for the gap between indents.
-            If unspecified, calls :meth:`~HelpCommand.get_max_size` on all arguments.
         """
         arguments = command.clean_params.values()
         if not arguments:
             return
 
-        self.paginator.add_line(heading)
-        max_size = max_size or self.get_max_size(arguments)  # type: ignore # not a command
+        self.paginator.add_line(self.arguments_heading)
+        max_size = self.get_max_size(arguments)  # type: ignore # not a command
 
         get_width = discord.utils._string_width
         for argument in arguments:
