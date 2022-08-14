@@ -219,6 +219,11 @@ class Translator:
             The locale being requested for translation.
         context: :class:`TranslationContext`
             The translation context where the string originated from.
+
+            .. note::
+                For better type checking ergonomics, the ``TranslationContextTypes``
+                type can be used instead to aid with type narrowing. It is functionally
+                equivalent to :class:`TranslationContext`.
         """
 
         return None
