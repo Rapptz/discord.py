@@ -1085,7 +1085,7 @@ class DefaultHelpCommand(HelpCommand):
         :class:`str`
             The signature for the command.
         """
-        if self.show_parameter_descriptions is False:
+        if not self.show_parameter_descriptions:
             return super().get_command_signature(command)
 
         name = command.name
@@ -1208,7 +1208,7 @@ class DefaultHelpCommand(HelpCommand):
                     self.paginator.add_line(line)
                 self.paginator.add_line()
 
-        if self.show_parameter_descriptions is True:
+        if self.show_parameter_descriptions:
             self.add_command_arguments(command)
 
     def get_destination(self) -> discord.abc.Messageable:
