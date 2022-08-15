@@ -513,6 +513,10 @@ class Parameter:
         return self.__parent.display_name
 
     @property
+    def required(self) -> bool:
+        return self.__parent.required
+
+    @property
     def description(self) -> str:
         return str(self.__parent.description)
 
