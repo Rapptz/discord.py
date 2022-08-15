@@ -1239,7 +1239,6 @@ Following are currently **not supported** by hybrid commands:
 Apart from that, all other features such as converters, checks, autocomplete, flags etc.
 are supported on hybrid commands. Note that due to a design constraint, decorators related to application commands
 such as :func:`discord.app_commands.autocomplete` should be placed below the :func:`~ext.commands.hybrid_command` decorator.
-decorator.
 
 For convenience and ease in writing code, The :class:`~ext.commands.Context` class implements
 some behavioural changes for various methods and attributes:
