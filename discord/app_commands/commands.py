@@ -918,6 +918,19 @@ class Command(Generic[GroupT, P, T]):
     def _get_internal_command(self, name: str) -> Optional[Union[Command, Group]]:
         return None
 
+    @property
+    def parameters(self) -> List[Parameter]:
+        """Returns a list of parameters for this command.
+
+        This does not include the ``self`` or ``interaction`` parameters.
+
+        Returns
+        --------
+        List[:class:`Parameter`]
+            The parameters of this command.
+        """
+        return [Parameter(p, self) for p in self._params.values()]
+
     def get_parameter(self, name: str) -> Optional[Parameter]:
         """Retrieves a parameter by its name.
 
