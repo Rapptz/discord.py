@@ -480,7 +480,6 @@ class HelpCommand:
             if parent_sig:
                 fmt = parent_sig + ' ' + fmt
             alias = fmt
-            alias = f'[{command.name}|{aliases}]'
         else:
             alias = command.name if not parent_sig else parent_sig + ' ' + command.name
 
