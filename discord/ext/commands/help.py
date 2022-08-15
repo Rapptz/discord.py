@@ -463,7 +463,6 @@ class HelpCommand:
         :class:`str`
             The signature for the command.
         """
-
         parent: Optional[Group[Any, ..., Any]] = command.parent  # type: ignore # the parent will be a Group
         entries = []
         while parent is not None:
@@ -1004,9 +1003,25 @@ class DefaultHelpCommand(HelpCommand):
         user if :attr:`dm_help` is set to ``None``. Defaults to 1000.
     indent: :class:`int`
         How much to indent the commands from a heading. Defaults to ``2``.
+    arguments_heading: :class:`str`
+        The arguments list's heading string used when the help command is invoked with a command name.
+        Useful for i18n. Defaults to ``"Arguments:"``.
+        Shown when :attr:`.show_parameter_descriptions` is ``True``.
+
+        .. versionadded:: 2.0
+    show_parameter_descriptions: :class:`bool`
+        Whether to show the parameter descriptions. Defaults to ``True``.
+        Setting this to ``False`` will revert to showing the :attr:`~.commands.Command.signature` instead.
+
+        .. versionadded:: 2.0
     commands_heading: :class:`str`
         The command list's heading string used when the help command is invoked with a category name.
         Useful for i18n. Defaults to ``"Commands:"``
+    default_argument_description: :class:`str`
+        The default argument description string used when the argument's :attr:`~.commands.Parameter.description` is ``None``.
+        Useful for i18n. Defaults to ``"No description given."``
+
+        .. versionadded:: 2.0
     no_category: :class:`str`
         The string used when there is a command which does not belong to any category(cog).
         Useful for i18n. Defaults to ``"No Category"``
@@ -1020,9 +1035,12 @@ class DefaultHelpCommand(HelpCommand):
         self.sort_commands: bool = options.pop('sort_commands', True)
         self.dm_help: bool = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
+        self.arguments_heading: str = options.pop('arguments_heading', "Arguments:")
         self.commands_heading: str = options.pop('commands_heading', 'Commands:')
+        self.default_argument_description: str = options.pop('default_argument_description', 'No description given')
         self.no_category: str = options.pop('no_category', 'No Category')
         self.paginator: Paginator = options.pop('paginator', None)
+        self.show_parameter_descriptions: bool = options.pop('show_parameter_descriptions', True)
 
         if self.paginator is None:
             self.paginator: Paginator = Paginator()
@@ -1048,6 +1066,34 @@ class DefaultHelpCommand(HelpCommand):
             f'You can also type {self.context.clean_prefix}{command_name} category for more info on a category.'
         )
 
+    def get_command_signature(self, command: Command[Any, ..., Any], /) -> str:
+        """Retrieves the signature portion of the help page.
+
+        Calls :meth:`~.HelpCommand.get_command_signature` if :attr:`show_parameter_descriptions` is ``False``
+        else returns a modified signature where the command parameters are not shown.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ------------
+        command: :class:`Command`
+            The command to get the signature of.
+
+        Returns
+        --------
+        :class:`str`
+            The signature for the command.
+        """
+        if not self.show_parameter_descriptions:
+            return super().get_command_signature(command)
+
+        name = command.name
+        if len(command.aliases) > 0:
+            aliases = '|'.join(command.aliases)
+            name = f'[{command.name}|{aliases}]'
+
+        return f'{self.context.clean_prefix}{name}'
+
     def add_indented_commands(
         self, commands: Sequence[Command[Any, ..., Any]], /, *, heading: str, max_size: Optional[int] = None
     ) -> None:
@@ -1061,7 +1107,6 @@ class DefaultHelpCommand(HelpCommand):
         to fit into the :attr:`width`.
 
         .. versionchanged:: 2.0
-
             ``commands`` parameter is now positional-only.
 
         Parameters
@@ -1090,6 +1135,42 @@ class DefaultHelpCommand(HelpCommand):
             entry = f'{self.indent * " "}{name:<{width}} {command.short_doc}'
             self.paginator.add_line(self.shorten_text(entry))
 
+    def add_command_arguments(self, command: Command[Any, ..., Any], /) -> None:
+        """Indents a list of command arguments after the :attr:`.arguments_heading`.
+
+        The default implementation is the argument :attr:`~.commands.Parameter.name` indented by
+        :attr:`indent` spaces, padded to ``max_size`` using :meth:`~HelpCommand.get_max_size`
+        followed by the argument's :attr:`~.commands.Parameter.description` or
+        :attr:`.default_argument_description` and then shortened
+        to fit into the :attr:`width` and then :attr:`~.commands.Parameter.displayed_default`
+        between () if one is present after that.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        command: :class:`Command`
+            The command to list the arguments for.
+        """
+        arguments = command.clean_params.values()
+        if not arguments:
+            return
+
+        self.paginator.add_line(self.arguments_heading)
+        max_size = self.get_max_size(arguments)  # type: ignore # not a command
+
+        get_width = discord.utils._string_width
+        for argument in arguments:
+            name = argument.name
+            width = max_size - (get_width(name) - len(name))
+            entry = f'{self.indent * " "}{name:<{width}} {argument.description or self.default_argument_description}'
+            # we do not want to shorten the default value, if any.
+            entry = self.shorten_text(entry)
+            if argument.displayed_default is not None:
+                entry += f' (default: {argument.displayed_default})'
+
+            self.paginator.add_line(entry)
+
     async def send_pages(self) -> None:
         """A helper utility to send the page output from :attr:`paginator` to the destination."""
         destination = self.get_destination()
@@ -1102,6 +1183,9 @@ class DefaultHelpCommand(HelpCommand):
         .. versionchanged:: 2.0
 
             ``command`` parameter is now positional-only.
+
+        .. versionchanged:: 2.0
+            :meth:`.add_command_arguments` is now called if :attr:`.show_parameter_descriptions` is ``True``.
 
         Parameters
         ------------
@@ -1122,6 +1206,9 @@ class DefaultHelpCommand(HelpCommand):
                 for line in command.help.splitlines():
                     self.paginator.add_line(line)
                 self.paginator.add_line()
+
+        if self.show_parameter_descriptions:
+            self.add_command_arguments(command)
 
     def get_destination(self) -> discord.abc.Messageable:
         ctx = self.context
