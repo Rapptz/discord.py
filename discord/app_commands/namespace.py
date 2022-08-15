@@ -137,6 +137,7 @@ class Namespace:
         for option in options:
             opt_type = option['type']
             name = option['name']
+            focused = option.get('focused', False)
             if opt_type in (3, 4, 5):  # string, integer, boolean
                 value = option['value']  # type: ignore # Key is there
                 self.__dict__[name] = value
@@ -146,7 +147,11 @@ class Namespace:
                 if value is None or value == '':
                     self.__dict__[name] = float('nan')
                 else:
-                    self.__dict__[name] = float(value)
+                    if not focused:
+                        self.__dict__[name] = float(value)
+                    else:
+                        # Autocomplete focused values tend to be garbage in
+                        self.__dict__[name] = value
             elif opt_type in (6, 7, 8, 9, 11):
                 # Remaining ones should be snowflake based ones with resolved data
                 snowflake: str = option['value']  # type: ignore # Key is there
