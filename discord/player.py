@@ -161,7 +161,9 @@ class FFmpegAudio(AudioSource):
         kwargs = {'stdout': subprocess.PIPE}
         kwargs.update(subprocess_kwargs)
 
-        self._process: subprocess.Popen = self._spawn_process(args, **kwargs)
+        # Ensure attribute is assigned even in the case of errors
+        self._process: subprocess.Popen = MISSING
+        self._process = self._spawn_process(args, **kwargs)
         self._stdout: IO[bytes] = self._process.stdout  # type: ignore # process stdout is explicitly set
         self._stdin: Optional[IO[bytes]] = None
         self._pipe_thread: Optional[threading.Thread] = None
