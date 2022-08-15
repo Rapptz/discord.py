@@ -1007,7 +1007,7 @@ class DefaultHelpCommand(HelpCommand):
         How much to indent the commands from a heading. Defaults to ``2``.
     arguments_heading: :class:`str`
         The arguments list's heading string used when the help command is invoked with a command name.
-        Useful for i18n. Defaults to ``"Arguments:"``
+        Useful for i18n. Defaults to ``"Arguments:"``. 
         Shown when :attr:`.show_parameter_descriptions` is ``True``.
 
         .. versionadded:: 2.0
@@ -1095,7 +1095,7 @@ class DefaultHelpCommand(HelpCommand):
             ``commands`` parameter is now positional-only.
 
         .. versionchanged:: 2.0
-            A `-` is added between the command name and short_doc.
+            A ``-`` is added between the command name and short_doc.
 
         Parameters
         -----------
@@ -1120,23 +1120,26 @@ class DefaultHelpCommand(HelpCommand):
         for command in commands:
             name = command.name
             width = max_size - (get_width(name) - len(name))
-            entry = f'{self.indent * " "}{name:<{width}} - {command.short_doc}'
+            entry = f'{self.indent * " "}{name:<{width}}'
+            if command.short_doc:
+                entry += f' - {command.short_doc}'
             self.paginator.add_line(self.shorten_text(entry))
 
     def add_command_arguments(self, command: Command[Any, ..., Any], /) -> None:
-        """Indents a list of command arguments after the specified heading.
+        """Indents a list of command arguments after :attr:`.arguments_heading`.
 
         The default implementation is the argument :attr:`~.commands.Parameter.name` indented by
-        :attr:`indent` spaces, padded to ``max_size`` followed by
-        the argument's :attr:`~.commands.Parameter.description` or :attr:`.default_argument_description` and then shortened
-        to fit into the :attr:`width` and then the :attr:`~.commands.Parameter.displayed_default` between () if argument
-        has a default value.
+        :attr:`indent` spaces, padded to ``max_size`` using :meth:`~HelpCommand.get_max_size` 
+        followed by the argument's :attr:`~.commands.Parameter.description` or 
+        :attr:`.default_argument_description` and then shortened
+        to fit into the :attr:`width` and  then the 
+        :attr:`~.commands.Parameter.displayed_default` between () if one is present.
 
         .. versionadded:: 2.0
 
         Parameters
         -----------
-        commands: :class:`Command`
+        command: :class:`Command`
             The command to list the arguments for.
         """
         arguments = command.clean_params.values()
@@ -1176,6 +1179,9 @@ class DefaultHelpCommand(HelpCommand):
         .. versionchanged:: 2.0
 
             ``command`` parameter is now positional-only.
+
+        .. versionchanged:: 2.0
+            :meth:`.add_command_arguments` is now called if :attr:`.show_parameter_descriptions` is ``True``.
 
         Parameters
         ------------
