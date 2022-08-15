@@ -1110,9 +1110,6 @@ class DefaultHelpCommand(HelpCommand):
         .. versionchanged:: 2.0
             ``commands`` parameter is now positional-only.
 
-        .. versionchanged:: 2.0
-            A ``-`` is added between the command name and short_doc.
-
         Parameters
         -----------
         commands: Sequence[:class:`Command`]
@@ -1136,9 +1133,7 @@ class DefaultHelpCommand(HelpCommand):
         for command in commands:
             name = command.name
             width = max_size - (get_width(name) - len(name))
-            entry = f'{self.indent * " "}{name:<{width}}'
-            if command.short_doc:
-                entry += f' - {command.short_doc}'
+            entry = f'{self.indent * " "}{name:<{width}} {command.short_doc}'
             self.paginator.add_line(self.shorten_text(entry))
 
     def add_command_arguments(self, command: Command[Any, ..., Any], /) -> None:
