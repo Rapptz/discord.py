@@ -178,7 +178,7 @@ class Shard:
         self._cancel_task()
         self._dispatch('disconnect')
         self._dispatch('shard_disconnect', self.id)
-        _log.info('Got a request to %s the websocket at Shard ID %s.', exc.op, self.id)
+        _log.debug('Got a request to %s the websocket at Shard ID %s.', exc.op, self.id)
         try:
             coro = DiscordWebSocket.from_client(
                 self._client,

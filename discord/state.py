@@ -1184,7 +1184,7 @@ class ConnectionState:
         try:
             await asyncio.wait_for(self.chunk_guild(guild), timeout=timeout)
         except asyncio.TimeoutError:
-            _log.info('Somehow timed out waiting for chunks.')
+            _log.warning('Somehow timed out waiting for chunks for guild ID %s.', guild.id)
 
         if unavailable is False:
             self.dispatch('guild_available', guild)
