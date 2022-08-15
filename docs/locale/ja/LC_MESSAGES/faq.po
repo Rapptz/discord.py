@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-24 08:53+0000\n"
-"PO-Revision-Date: 2022-08-03 06:03\n"
+"POT-Creation-Date: 2022-08-15 14:07+0000\n"
+"PO-Revision-Date: 2022-08-15 15:30\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -439,8 +439,8 @@ msgid "This requires three steps."
 msgstr "これには3つのステップが必要です。"
 
 #: ../../faq.rst:440
-msgid "Attach a message to the :class:`~discord.ui.View` using either the return type of :meth:`~abc.Messageable.send` or retrieving it via :meth:`Interaction.original_message`."
-msgstr ":meth:`~abc.Messageable.send` の戻り値の型を使用して、または :meth:`Interaction.original_message` から取得した :class:`~discord.ui.View` にメッセージを添付します。"
+msgid "Attach a message to the :class:`~discord.ui.View` using either the return type of :meth:`~abc.Messageable.send` or retrieving it via :meth:`Interaction.original_response`."
+msgstr ":meth:`~abc.Messageable.send` の戻り値の型を使用して、または :meth:`Interaction.original_response` から取得した :class:`~discord.ui.View` にメッセージを添付します。"
 
 #: ../../faq.rst:441
 msgid "Inside :meth:`~ui.View.on_timeout`, loop over all items inside the view and mark them disabled."
@@ -455,8 +455,8 @@ msgid "Putting it all together, we can do this in a text command:"
 msgstr "すべてをまとめると、テキストコマンドではこのように行うことができます。"
 
 #: ../../faq.rst:468
-msgid "Application commands do not return a message when you respond with :meth:`InteractionResponse.send_message`, therefore in order to reliably do this we should retrieve the message using :meth:`Interaction.original_message`."
-msgstr "アプリケーションコマンドは :meth:`InteractionResponse.send_message` で応答したときメッセージを返さないため、信頼性の高い方法で行うには :meth:`Interaction.original_message` を使用してメッセージを取得すべきです。"
+msgid "Application commands do not return a message when you respond with :meth:`InteractionResponse.send_message`, therefore in order to reliably do this we should retrieve the message using :meth:`Interaction.original_response`."
+msgstr "アプリケーションコマンドは :meth:`InteractionResponse.send_message` で応答したときメッセージを返さないため、信頼性の高い方法で行うには :meth:`Interaction.original_response` を使用してメッセージを取得すべきです。"
 
 #: ../../faq.rst:470
 msgid "Putting it all together, using the previous view definition:"

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-01 08:28+0000\n"
-"PO-Revision-Date: 2022-08-03 06:03\n"
+"POT-Creation-Date: 2022-08-15 16:38+0000\n"
+"PO-Revision-Date: 2022-08-15 16:40\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -2201,8 +2201,8 @@ msgstr "チェックとエラーハンドラは、 :class:`.Command` のよう�
 
 #: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.hybrid_command:24
 #: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.hybrid_group:6
-msgid "Whether to register the command as an application command."
-msgstr "アプリケーションコマンドとしてコマンドを登録するかどうか。"
+msgid "Whether to register the command also as an application command."
+msgstr "アプリケーションコマンドとしてもコマンドを登録するかどうか。"
 
 #: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.hybrid_command:26
 msgid "Keyword arguments to pass into the construction of the hybrid command."
@@ -2814,6 +2814,18 @@ msgstr "このコグ内で定義されているサブコマンドを含まない
 msgid "List[:class:`.Command`]"
 msgstr "List[:class:`.Command`]"
 
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.get_app_commands:1
+msgid "Returns the app commands that are defined inside this cog."
+msgstr "このコグ内で定義されているアプリケーションコマンドを返します。"
+
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.get_app_commands:3
+msgid "A :class:`list` of :class:`discord.app_commands.Command`\\s and :class:`discord.app_commands.Group`\\s that are defined inside this cog, not including subcommands."
+msgstr "このコグ内で定義されている、サブコマンドを除いた :class:`discord.app_commands.Command` と :class:`discord.app_commands.Group` の :class:`list` 。"
+
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.get_app_commands:5
+msgid "List[Union[:class:`discord.app_commands.Command`, :class:`discord.app_commands.Group`]]"
+msgstr "List[Union[:class:`discord.app_commands.Command`, :class:`discord.app_commands.Group`]]"
+
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.Cog.qualified_name:1
 msgid "Returns the cog's specified name, not the class name."
 msgstr "クラス名ではなく、コグの指定した名前を返します。"
@@ -2829,6 +2841,14 @@ msgstr "このコグのすべてのコマンドとサブコマンドを、再帰
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.walk_commands:3
 msgid "Union[:class:`.Command`, :class:`.Group`] -- A command or group from the cog."
 msgstr "Union[:class:`.Command`, :class:`.Group`] -- コグ内のコマンドまたはグループ。"
+
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.walk_app_commands:1
+msgid "An iterator that recursively walks through this cog's app commands and subcommands."
+msgstr "このコグのすべてのアプリケーションコマンドとサブコマンドを、再帰的に網羅するイテレータ。"
+
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.walk_app_commands:3
+msgid "Union[:class:`discord.app_commands.Command`, :class:`discord.app_commands.Group`] -- An app command or group from the cog."
+msgstr "Union[:class:`discord.app_commands.Command`, :class:`discord.app_commands.Group`] -- コグのアプリケーションコマンドまたはグループ。"
 
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.Cog.app_command:1
 msgid "Returns the associated group with this cog."
@@ -3030,6 +3050,11 @@ msgstr "このコグ内のすべてのコマンドに適用される属性のリ
 msgid "The group name of a cog. This is only applicable for :class:`GroupCog` instances. By default, it's the same value as :attr:`name`."
 msgstr "コグのグループ名。これは :class:`GroupCog` インスタンスにのみ適用されます。デフォルトでは、 :attr:`name` と同じ値です。"
 
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.CogMeta:74
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.CogMeta:83
+msgid "Union[:class:`str`, :class:`~discord.app_commands.locale_str`]"
+msgstr "Union[:class:`str`, :class:`~discord.app_commands.locale_str`]"
+
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.CogMeta:78
 msgid "The group description of a cog. This is only applicable for :class:`GroupCog` instances. By default, it's the same value as :attr:`description`."
 msgstr "コグのグループ説明。これは :class:`GroupCog` インスタンスにのみ適用されます。デフォルトでは、 :attr:`description` と同じ値です。"
@@ -3037,6 +3062,10 @@ msgstr "コグのグループ説明。これは :class:`GroupCog` インスタ�
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.CogMeta:87
 msgid "Whether the application command group is NSFW. This is only applicable for :class:`GroupCog` instances. By default, it's ``False``."
 msgstr "アプリケーションコマンドグループに年齢制限をかけるか。これは :class:`GroupCog` インスタンスにのみ適用されます。デフォルトでは ``False`` です。"
+
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.CogMeta:96
+msgid "If this is set to ``True``, then all translatable strings will implicitly be wrapped into :class:`~discord.app_commands.locale_str` rather than :class:`str`. Defaults to ``True``."
+msgstr "これが ``True`` に設定されている場合、翻訳可能な文字列は :class:`str` ではなく暗黙的に :class:`~discord.app_commands.locale_str` にラップされます。デフォルトは ``True`` です。"
 
 #: ../../ext/commands/api.rst:261
 msgid "Help Commands"
@@ -3110,16 +3139,19 @@ msgid "The command name that triggered this invocation."
 msgstr "この実行を引き起こしたコマンド名。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.get_command_signature:1
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.get_command_signature:1
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand.get_command_signature:1
 msgid "Retrieves the signature portion of the help page."
 msgstr "ヘルプページに表示される、コマンドの使用方法を示す文字列を返します。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.get_command_signature:7
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.get_command_signature:8
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand.get_command_signature:7
 msgid "The command to get the signature of."
 msgstr "使用方法を取得したいコマンド。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.get_command_signature:10
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.get_command_signature:11
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand.get_command_signature:10
 msgid "The signature for the command."
 msgstr "コマンドの使用方法を示す文字列。"
@@ -3223,7 +3255,7 @@ msgstr "これは :attr:`verify_checks` と :attr:`show_hidden` 属性を考慮�
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.filter_commands:10
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.get_max_size:5
-#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_indented_commands:12
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_indented_commands:10
 msgid "``commands`` parameter is now positional-only."
 msgstr "``commands`` 引数は位置限定引数になりました。"
 
@@ -3540,20 +3572,32 @@ msgid "How much to indent the commands from a heading. Defaults to ``2``."
 msgstr "見出しからのコマンドのインデントの量。デフォルトは ``2`` です。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:46
+msgid "The arguments list's heading string used when the help command is invoked with a command name. Useful for i18n. Defaults to ``\"Arguments:\"``. Shown when :attr:`.show_parameter_descriptions` is ``True``."
+msgstr ""
+
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:56
+msgid "Whether to show the parameter descriptions. Defaults to ``True``. Setting this to ``False`` will revert to showing the :attr:`~.commands.Command.signature` instead."
+msgstr ""
+
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:65
 msgid "The command list's heading string used when the help command is invoked with a category name. Useful for i18n. Defaults to ``\"Commands:\"``"
 msgstr "ヘルプコマンドがカテゴリ名で呼び出されたときに使用されるコマンドリストの見出し文字列。i18nに便利です。デフォルトは ``\"Commands:\"`` です。"
 
-#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:53
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:72
+msgid "The default argument description string used when the argument's :attr:`~.commands.Parameter.description` is ``None``. Useful for i18n. Defaults to ``\"No description given.\"``"
+msgstr ""
+
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:81
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand:45
 msgid "The string used when there is a command which does not belong to any category(cog). Useful for i18n. Defaults to ``\"No Category\"``"
 msgstr "任意のカテゴリ(コグ) に属さないコマンドがある場合に使用される文字列。i18nに便利です。デフォルトは ``\"No Category\"`` です。"
 
-#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:60
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:88
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand:52
 msgid "The paginator used to paginate the help command output."
 msgstr "ヘルプコマンドの出力にページ番号を付けるために使用されるペジネーター。"
 
-#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:62
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:90
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand:54
 msgid ":class:`Paginator`"
 msgstr ":class:`Paginator`"
@@ -3570,6 +3614,10 @@ msgstr "``text`` 引数は位置限定引数になりました。"
 msgid ":class:`str`: Returns help command's ending note. This is mainly useful to override for i18n purposes."
 msgstr ":class:`str`: Helpコマンドの末尾の文字列を返します。主に翻訳する際にオーバーライドしてください。"
 
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.get_command_signature:3
+msgid "Calls :meth:`~.HelpCommand.get_command_signature` if :attr:`show_parameter_descriptions` is ``False`` else returns a modified signature where the command parameters are not shown."
+msgstr ""
+
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_indented_commands:1
 msgid "Indents a list of commands after the specified heading."
 msgstr "指定した見出しの後の、コマンドのリストをインデントします。"
@@ -3582,17 +3630,29 @@ msgstr "書式は :attr:`paginator` に追加されます。"
 msgid "The default implementation is the command name indented by :attr:`indent` spaces, padded to ``max_size`` followed by the command's :attr:`Command.short_doc` and then shortened to fit into the :attr:`width`."
 msgstr "デフォルトの実装は :attr:`indent` の空白でインデントされ、コマンドの :attr:`Command.short_doc` に先立って ``max_size`` まで肉付けされ、 :attr:`width` に沿うように縮められたコマンド名です。"
 
-#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_indented_commands:14
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_indented_commands:13
 msgid "A list of commands to indent for output."
 msgstr "出力にてインデントするコマンドのリスト。"
 
-#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_indented_commands:16
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_indented_commands:15
 msgid "The heading to add to the output. This is only added if the list of commands is greater than 0."
 msgstr "出力に追加する見出し。これはコマンドのリストが 0 より大きい場合にのみ追加されます。"
 
-#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_indented_commands:19
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_indented_commands:18
 msgid "The max size to use for the gap between indents. If unspecified, calls :meth:`~HelpCommand.get_max_size` on the commands parameter."
 msgstr "インデント間の差分に使用する最大サイズです。指定されていない場合は、 :meth:`~HelpCommand.get_max_size` をコマンドパラメータとして呼び出します。"
+
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_command_arguments:1
+msgid "Indents a list of command arguments after the :attr:`.arguments_heading`."
+msgstr ""
+
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_command_arguments:3
+msgid "The default implementation is the argument :attr:`~.commands.Parameter.name` indented by :attr:`indent` spaces, padded to ``max_size`` using :meth:`~HelpCommand.get_max_size` followed by the argument's :attr:`~.commands.Parameter.description` or :attr:`.default_argument_description` and then shortened to fit into the :attr:`width` and then :attr:`~.commands.Parameter.displayed_default` between () if one is present after that."
+msgstr ""
+
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_command_arguments:12
+msgid "The command to list the arguments for."
+msgstr ""
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.send_pages:1
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand.send_pages:1
@@ -3604,6 +3664,10 @@ msgid "A utility function to format the non-indented block of commands and group
 msgstr "コマンドとグループのインデントされていないブロックをフォーマットするユーティリティ関数。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_command_formatting:7
+msgid ":meth:`.add_command_arguments` is now called if :attr:`.show_parameter_descriptions` is ``True``."
+msgstr ""
+
+#: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_command_formatting:10
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand.add_command_formatting:7
 msgid "The command to format."
 msgstr "フォーマットするコマンド。"
@@ -5319,6 +5383,11 @@ msgstr "パラメータが必須かどうか。"
 msgid "The converter that should be used for this parameter."
 msgstr "このパラメータに使用すべきコンバーター。"
 
+#: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.Parameter.description:1
+#: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.parameter:20
+msgid "The description of this parameter."
+msgstr ""
+
 #: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.Parameter.displayed_default:1
 msgid "The displayed default in :class:`Command.signature`."
 msgstr ":class:`Command.signature` で表示される既定値。"
@@ -5347,29 +5416,29 @@ msgstr "このフラグに使用するコンバーター。実行時にアノテ
 msgid "The default value for the parameter, if this is a :term:`callable` or a |coroutine_link|_ it is called with a positional :class:`Context` argument."
 msgstr "パラメータの既定値。これが :term:`callable` か |coroutine_link|_ の場合これは位置指定の :class:`Context` 引数を渡して呼び出されます。"
 
-#: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.parameter:20
+#: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.parameter:22
 msgid "The displayed default in :attr:`Command.signature`."
 msgstr ":attr:`Command.signature` で表示される既定値。"
 
 #: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.parameter:1
-msgid "param(\\*, converter=..., default=..., displayed_default=...)"
-msgstr "param(\\*, converter=..., default=..., displayed_default=...)"
+msgid "param(\\*, converter=..., default=..., description=..., displayed_default=...)"
+msgstr ""
 
 #: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.parameter:3
 msgid "An alias for :func:`parameter`."
 msgstr ":func:`parameter` のエイリアス。"
 
 #: ../../ext/commands/api.rst:511
-msgid "A default :class:`.Parameter` which returns the :attr:`~.Context.author` for this context."
-msgstr "このコンテキストの :attr:`~.Context.author` を返すデフォルトの :class:`.Parameter` 。"
+msgid "A default :class:`Parameter` which returns the :attr:`~.Context.author` for this context."
+msgstr "このコンテキストの :attr:`~.Context.author` を返すデフォルト :class:`Parameter` 。"
 
 #: ../../ext/commands/api.rst:517
-msgid "A default :class:`.Parameter` which returns the :attr:`~.Context.channel` for this context."
-msgstr "このコンテキストの :attr:`~.Context.channel` を返すデフォルトの :class:`.Parameter` 。"
+msgid "A default :class:`Parameter` which returns the :attr:`~.Context.channel` for this context."
+msgstr "このコンテキストの :attr:`~.Context.channel` を返すデフォルト :class:`Parameter` 。"
 
 #: ../../ext/commands/api.rst:523
-msgid "A default :class:`.Parameter` which returns the :attr:`~.Context.guild` for this context. This will never be ``None``. If the command is called in a DM context then :exc:`~discord.ext.commands.NoPrivateMessage` is raised to the error handlers."
-msgstr "このコンテキストの :attr:`~.Context.guild` を返すデフォルトの :class:`.Parameter` 。これは ``None`` にはなりません。コマンドがDM内で呼び出された場合は :exc:`~discord.ext.commands.NoPrivateMessage` がエラーハンドラに送出されます。"
+msgid "A default :class:`Parameter` which returns the :attr:`~.Context.guild` for this context. This will never be ``None``. If the command is called in a DM context then :exc:`~discord.ext.commands.NoPrivateMessage` is raised to the error handlers."
+msgstr "このコンテキストの :attr:`~.Context.guild` を返すデフォルト :class:`Parameter` 。これは ``None`` にはなりません。コマンドがDM内で呼び出された場合は :exc:`~discord.ext.commands.NoPrivateMessage` がエラーハンドラに送出されます。"
 
 #: ../../ext/commands/api.rst:530
 msgid "Exceptions"
