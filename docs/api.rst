@@ -1372,6 +1372,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.snowflake_time
 
+.. autofunction:: discord.utils.time_snowflake
+
 .. autofunction:: discord.utils.oauth_url
 
 .. autofunction:: discord.utils.remove_markdown
