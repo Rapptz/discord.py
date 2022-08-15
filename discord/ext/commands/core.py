@@ -147,6 +147,7 @@ def get_signature_parameters(
                     parameter._annotation = default.annotation
 
             parameter._default = default.default
+            parameter._description = default._description
             parameter._displayed_default = default._displayed_default
 
         annotation = parameter.annotation

@@ -87,7 +87,7 @@ class Parameter(inspect.Parameter):
     .. versionadded:: 2.0
     """
 
-    __slots__ = ('_displayed_default', '_fallback')
+    __slots__ = ('_displayed_default', '_description', '_fallback')
 
     def __init__(
         self,
@@ -95,11 +95,13 @@ class Parameter(inspect.Parameter):
         kind: ParamKinds,
         default: Any = empty,
         annotation: Any = empty,
+        description: str = empty,
         displayed_default: str = empty,
     ) -> None:
         super().__init__(name=name, kind=kind, default=default, annotation=annotation)
         self._name = name
         self._kind = kind
+        self._description = description
         self._default = default
         self._annotation = annotation
         self._displayed_default = displayed_default
@@ -112,6 +114,7 @@ class Parameter(inspect.Parameter):
         kind: ParamKinds = MISSING,
         default: Any = MISSING,
         annotation: Any = MISSING,
+        description: str = MISSING,
         displayed_default: Any = MISSING,
     ) -> Self:
         if name is MISSING:
@@ -122,6 +125,8 @@ class Parameter(inspect.Parameter):
             default = self._default
         if annotation is MISSING:
             annotation = self._annotation
+        if description is MISSING:
+            description = self._description
         if displayed_default is MISSING:
             displayed_default = self._displayed_default
 
@@ -130,6 +135,7 @@ class Parameter(inspect.Parameter):
             kind=kind,
             default=default,
             annotation=annotation,
+            description=description,
             displayed_default=displayed_default,
         )
 
@@ -151,6 +157,11 @@ class Parameter(inspect.Parameter):
             return type(self.default) if self.default not in (empty, None) else str
 
         return self.annotation
+
+    @property
+    def description(self) -> Optional[str]:
+        """Optional[:class:`str`]: The description of this parameter."""
+        return self._description if self._description is not empty else None
 
     @property
     def displayed_default(self) -> Optional[str]:
@@ -180,6 +191,7 @@ def parameter(
     *,
     converter: Any = empty,
     default: Any = empty,
+    description: str = empty,
     displayed_default: str = empty,
 ) -> Any:
     r"""parameter(\*, converter=..., default=..., displayed_default=...)
@@ -205,6 +217,8 @@ def parameter(
     default: Any
         The default value for the parameter, if this is a :term:`callable` or a |coroutine_link|_ it is called with a
         positional :class:`Context` argument.
+    description: :class:`str`
+        The description of this parameter.
     displayed_default: :class:`str`
         The displayed default in :attr:`Command.signature`.
     """
@@ -213,6 +227,7 @@ def parameter(
         kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
         annotation=converter,
         default=default,
+        description=description,
         displayed_default=displayed_default,
     )
 
@@ -223,13 +238,14 @@ class ParameterAlias(Protocol):
         *,
         converter: Any = empty,
         default: Any = empty,
+        description: str = empty,
         displayed_default: str = empty,
     ) -> Any:
         ...
 
 
 param: ParameterAlias = parameter
-r"""param(\*, converter=..., default=..., displayed_default=...)
+r"""param(\*, converter=..., default=..., description=..., displayed_default=...)
 
 An alias for :func:`parameter`.
 
