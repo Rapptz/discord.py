@@ -464,14 +464,27 @@ class HelpCommand:
         :class:`str`
             The signature for the command.
         """
+        parent: Optional[Group[Any, ..., Any]] = command.parent  # type: ignore # the parent will be a Group
+        entries = []
+        while parent is not None:
+            if not parent.signature or parent.invoke_without_command:
+                entries.append(parent.name)
+            else:
+                entries.append(parent.name + ' ' + parent.signature)
+            parent = parent.parent  # type: ignore
+        parent_sig = ' '.join(reversed(entries))
 
         if len(command.aliases) > 0:
             aliases = '|'.join(command.aliases)
+            fmt = f'[{command.name}|{aliases}]'
+            if parent_sig:
+                fmt = parent_sig + ' ' + fmt
+            alias = fmt
             alias = f'[{command.name}|{aliases}]'
         else:
-            alias = command.name
-
-        return f'{self.context.clean_prefix}{alias}'
+            alias = command.name if not parent_sig else parent_sig + ' ' + command.name
+        
+        return f'{self.context.clean_prefix}{alias} {command.signature}'
 
     def remove_mentions(self, string: str, /) -> str:
         """Removes mentions from the string to prevent abuse.
@@ -995,6 +1008,12 @@ class DefaultHelpCommand(HelpCommand):
     arguments_heading: :class:`str`
         The arguments list's heading string used when the help command is invoked with a command name.
         Useful for i18n. Defaults to ``"Arguments:"``
+        Shown when :attr:`.show_parameter_descriptions` is ``True``.
+
+        .. versionadded:: 2.0
+    show_parameter_descriptions: :class:`bool`
+        Whether to show the parameter descriptions. Defaults to ``True``.
+        Setting this to ``False`` will revert to showing the :attr:`~.commands.Command.signature` instead.
 
         .. versionadded:: 2.0
     commands_heading: :class:`str`
@@ -1018,11 +1037,12 @@ class DefaultHelpCommand(HelpCommand):
         self.sort_commands: bool = options.pop('sort_commands', True)
         self.dm_help: bool = options.pop('dm_help', False)
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
+        self.arguments_heading: str = options.pop('arguments_heading', "Arguments:")
         self.commands_heading: str = options.pop('commands_heading', 'Commands:')
-        self.arguments_heading: str = options.pop('arguments_heading', 'Arguments:')
         self.default_argument_description: str = options.pop('default_argument_description', 'No description given.')
         self.no_category: str = options.pop('no_category', 'No Category')
         self.paginator: Paginator = options.pop('paginator', None)
+        self.show_parameter_descriptions: bool = options.pop('show_parameter_descriptions', True)
 
         if self.paginator is None:
             self.paginator: Paginator = Paginator()
@@ -1048,6 +1068,17 @@ class DefaultHelpCommand(HelpCommand):
             f'You can also type {self.context.clean_prefix}{command_name} category for more info on a category.'
         )
 
+    def get_command_signature(self, command: Command[Any, ..., Any], /) -> str:
+        if self.show_parameter_descriptions is False:
+            return super().get_command_signature(command)
+        
+        name = command.name
+        if len(command.aliases) > 0:
+            aliases = '|'.join(command.aliases)
+            name = f'[{command.name}|{aliases}]'
+
+        return f'{self.context.clean_prefix}{name}'
+
     def add_indented_commands(
         self, commands: Sequence[Command[Any, ..., Any]], /, *, heading: str, max_size: Optional[int] = None
     ) -> None:
@@ -1061,8 +1092,10 @@ class DefaultHelpCommand(HelpCommand):
         to fit into the :attr:`width`.
 
         .. versionchanged:: 2.0
-
             ``commands`` parameter is now positional-only.
+
+        .. versionchanged:: 2.0
+            A `-` is added between the command name and short_doc.
 
         Parameters
         -----------
@@ -1123,7 +1156,7 @@ class DefaultHelpCommand(HelpCommand):
             else:
                 entry += f' - {self.default_argument_description}'
 
-            # don't want it to shorten the default
+            # we do not want to shorten the default value, if any.
             entry = self.shorten_text(entry)
 
             if argument.displayed_default is not None:
@@ -1164,7 +1197,8 @@ class DefaultHelpCommand(HelpCommand):
                     self.paginator.add_line(line)
                 self.paginator.add_line()
 
-        self.add_command_arguments(command, heading=self.arguments_heading)
+        if self.show_parameter_descriptions is True:
+            self.add_command_arguments(command)
 
     def get_destination(self) -> discord.abc.Messageable:
         ctx = self.context
