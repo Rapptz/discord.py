@@ -1148,8 +1148,8 @@ class DefaultHelpCommand(HelpCommand):
         :attr:`indent` spaces, padded to ``max_size`` using :meth:`~HelpCommand.get_max_size`
         followed by the argument's :attr:`~.commands.Parameter.description` or
         :attr:`.default_argument_description` and then shortened
-        to fit into the :attr:`width` and  then the
-        :attr:`~.commands.Parameter.displayed_default` between () if one is present.
+        to fit into the :attr:`width` and then :attr:`~.commands.Parameter.displayed_default`
+        between () if one is present after that.
 
         .. versionadded:: 2.0
 
