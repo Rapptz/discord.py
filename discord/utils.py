@@ -409,8 +409,12 @@ def oauth_url(
     return url
 
 
-def snowflake_time(id: int) -> datetime.datetime:
-    """
+def snowflake_time(id: int, /) -> datetime.datetime:
+    """Returns the creation time of the given snowflake.
+
+    .. versionchanged:: 2.0
+        The ``id`` parameter is now positional-only.
+
     Parameters
     -----------
     id: :class:`int`
@@ -425,14 +429,18 @@ def snowflake_time(id: int) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
 
-def time_snowflake(dt: datetime.datetime, high: bool = False) -> int:
+def time_snowflake(dt: datetime.datetime, /, *, high: bool = False) -> int:
     """Returns a numeric snowflake pretending to be created at the given date.
 
     When using as the lower end of a range, use ``time_snowflake(high=False) - 1``
     to be inclusive, ``high=True`` to be exclusive.
 
     When using as the higher end of a range, use ``time_snowflake(high=True) + 1``
-    to be inclusive, ``high=False`` to be exclusive
+    to be inclusive, ``high=False`` to be exclusive.
+
+    .. versionchanged:: 2.0
+        The ``high`` parameter is now keyword-only and the ``dt`` parameter is now
+        positional-only.
 
     Parameters
     -----------
