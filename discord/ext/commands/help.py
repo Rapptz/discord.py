@@ -483,7 +483,7 @@ class HelpCommand:
             alias = f'[{command.name}|{aliases}]'
         else:
             alias = command.name if not parent_sig else parent_sig + ' ' + command.name
-        
+
         return f'{self.context.clean_prefix}{alias} {command.signature}'
 
     def remove_mentions(self, string: str, /) -> str:
@@ -1007,7 +1007,7 @@ class DefaultHelpCommand(HelpCommand):
         How much to indent the commands from a heading. Defaults to ``2``.
     arguments_heading: :class:`str`
         The arguments list's heading string used when the help command is invoked with a command name.
-        Useful for i18n. Defaults to ``"Arguments:"``. 
+        Useful for i18n. Defaults to ``"Arguments:"``.
         Shown when :attr:`.show_parameter_descriptions` is ``True``.
 
         .. versionadded:: 2.0
@@ -1071,7 +1071,7 @@ class DefaultHelpCommand(HelpCommand):
     def get_command_signature(self, command: Command[Any, ..., Any], /) -> str:
         if self.show_parameter_descriptions is False:
             return super().get_command_signature(command)
-        
+
         name = command.name
         if len(command.aliases) > 0:
             aliases = '|'.join(command.aliases)
@@ -1129,10 +1129,10 @@ class DefaultHelpCommand(HelpCommand):
         """Indents a list of command arguments after :attr:`.arguments_heading`.
 
         The default implementation is the argument :attr:`~.commands.Parameter.name` indented by
-        :attr:`indent` spaces, padded to ``max_size`` using :meth:`~HelpCommand.get_max_size` 
-        followed by the argument's :attr:`~.commands.Parameter.description` or 
+        :attr:`indent` spaces, padded to ``max_size`` using :meth:`~HelpCommand.get_max_size`
+        followed by the argument's :attr:`~.commands.Parameter.description` or
         :attr:`.default_argument_description` and then shortened
-        to fit into the :attr:`width` and  then the 
+        to fit into the :attr:`width` and  then the
         :attr:`~.commands.Parameter.displayed_default` between () if one is present.
 
         .. versionadded:: 2.0
