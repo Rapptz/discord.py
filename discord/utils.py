@@ -432,10 +432,10 @@ def snowflake_time(id: int, /) -> datetime.datetime:
 def time_snowflake(dt: datetime.datetime, /, *, high: bool = False) -> int:
     """Returns a numeric snowflake pretending to be created at the given date.
 
-    When using as the lower end of a range, use ``time_snowflake(high=False) - 1``
+    When using as the lower end of a range, use ``time_snowflake(dt, high=False) - 1``
     to be inclusive, ``high=True`` to be exclusive.
 
-    When using as the higher end of a range, use ``time_snowflake(high=True) + 1``
+    When using as the higher end of a range, use ``time_snowflake(dt, high=True) + 1``
     to be inclusive, ``high=False`` to be exclusive.
 
     .. versionchanged:: 2.0
