@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-01 08:28+0000\n"
-"PO-Revision-Date: 2022-08-03 06:03\n"
+"POT-Creation-Date: 2022-08-15 14:07+0000\n"
+"PO-Revision-Date: 2022-08-15 17:01\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -42,7 +42,7 @@ msgid "Logging on with a user token is against the Discord `Terms of Service <ht
 msgstr "ユーザートークンを用いてのログインはDiscordの `利用規約 <https://support.discord.com/hc/en-us/articles/115002192352>`_ に反しているため、ユーザーのみのエンドポイントに対するサポートはすべて削除されました。"
 
 #: ../../migrating.rst:24
-#: ../../migrating.rst:1137
+#: ../../migrating.rst:1148
 msgid "The following have been removed:"
 msgstr "以下の機能は削除されました。"
 
@@ -296,7 +296,7 @@ msgstr "これにより、これらのクラスが使用する基幹メタクラ
 
 #: ../../migrating.rst:149
 msgid "All of the classes are either :func:`runtime-checkable <typing.runtime_checkable>` protocols or explicitly inherited from and as such usage with :func:`isinstance` and :func:`issubclass` is not affected."
-msgstr "すべてのクラスは :func:`runtime-checkable <typing.runtime_checkable>` プロトコルであるか明示的に継承されているので、 :func:`isinstance` and :func:`issubclass` の使用には影響を与えません。"
+msgstr "すべてのクラスは :func:`runtime-checkable <typing.runtime_checkable>` プロトコルであるか明示的に継承されているので、 :func:`isinstance` や :func:`issubclass` の使用には影響を与えません。"
 
 #: ../../migrating.rst:152
 msgid "The following have been changed to :func:`runtime-checkable <typing.runtime_checkable>` :class:`~typing.Protocol`\\s:"
@@ -340,7 +340,7 @@ msgstr "``datetime`` オブジェクトはUTC-Awareに"
 
 #: ../../migrating.rst:170
 msgid "All usage of naive :class:`datetime.datetime` objects in the library has been replaced with aware objects using UTC timezone. Methods that accepted naive :class:`~datetime.datetime` objects now also accept timezone-aware objects. To keep behavior inline with :class:`~datetime.datetime`'s methods, this library's methods now assume that naive :class:`~datetime.datetime` objects are local time (note that some of the methods may not accept naive :class:`~datetime.datetime`, such exceptions are listed below)."
-msgstr "ライブラリ内でのnaiveな :class:`datetime.datetime` オブジェクトはUTCタイムゾーンを使用したawareなものへ置き換えられました。naiveな :class:`~datetime.datetime` オブジェクトを受け取るメソッドは、 timezone-awareなオブジェクトも受け取るようになりました。 :class:`~datetime.datetime` のメソッドと同じように動作するよう、このライブラリのメソッドは naiveな :class:`~datetime.datetime` オブジェクトがローカルタイムを表すものと仮定するようになりました。（いくつかのメソッドは naiveな :class:`~datetime.datetime` を受け入れないことに注意してください。それを示す例外は下の方に記述してあります）"
+msgstr "ライブラリ内でのnaiveな :class:`datetime.datetime` オブジェクトはUTCタイムゾーンを使用したawareなものへ置き換えられました。naiveな :class:`~datetime.datetime` オブジェクトを受け取るメソッドは、 timezone-awareなオブジェクトも受け取るようになりました。 :class:`~datetime.datetime` のメソッドと同じように動作するよう、このライブラリのメソッドは naiveな :class:`~datetime.datetime` オブジェクトがローカルタイムを表すものと仮定するようになりました。（いくつかのメソッドは naiveな :class:`~datetime.datetime` を受け入れないことに注意してください。そのような例外は下に記載してあります。）"
 
 #: ../../migrating.rst:176
 msgid "Because naive :class:`~datetime.datetime` objects are treated by many of its methods as local times, the previous behavior was more likely to result in programming errors with their usage."
@@ -634,7 +634,7 @@ msgstr ":class:`Asset` オブジェクトにCDNアセットに関連する全て
 
 #: ../../migrating.rst:312
 msgid "This means that all models with asset-related attribute and methods have been transformed to use this new design. As an example, here's how these changes look for :attr:`Guild.icon` (of :class:`Asset` type):"
-msgstr "これはアセット関連の属性とメソッドを持つ全てのモデルがこの新しいデザインを使用するように変えられたことを意味します。例として、 :attr:`Guild.icon` （ :class:`Asset` の） がどのように変更されたかを以下に示します:"
+msgstr "これはアセット関連の属性とメソッドを持つ全てのモデルがこの新しいデザインを使用するように変えられたことを意味します。例として、（ :class:`Asset` 型の） :attr:`Guild.icon` がどのように変更されたかを以下に示します:"
 
 #: ../../migrating.rst:315
 msgid "``Guild.icon`` (of :class:`str` type) has been replaced with :attr:`Guild.icon.key <Asset.key>`."
@@ -692,7 +692,7 @@ msgstr ":class:`Asset` の ``bool(x)`` は ``False`` を返せなくなりまし
 
 #: ../../migrating.rst:333
 msgid "Attributes containing an optional :class:`Asset` can now be ``None``."
-msgstr "Optionalな :class:`Asset` を含む属性は ``None`` になりうります。"
+msgstr "Optionalな :class:`Asset` を含む属性は ``None`` になることがあります。"
 
 #: ../../migrating.rst:335
 msgid "The following were affected by this change:"
@@ -1221,8 +1221,8 @@ msgid "A guild member can react with an emoji to messages in a private thread if
 msgstr "ギルドメンバーは以下の場合にプライベートスレッドのメッセージにリアクションをつけることができます:"
 
 #: ../../migrating.rst:594
-#: ../../migrating.rst:1080
-#: ../../migrating.rst:1198
+#: ../../migrating.rst:1090
+#: ../../migrating.rst:1209
 msgid "The following changes have been made:"
 msgstr "以下のように変更されました:"
 
@@ -1244,7 +1244,7 @@ msgstr ":attr:`PartialMessage.channel` が :class:`Thread` になるようにな
 
 #: ../../migrating.rst:600
 msgid ":attr:`Guild.get_channel` does not return :class:`Thread`\\s."
-msgstr ":attr:`Guild.get_channel` は :class:`Thread`\\s を返しません。"
+msgstr ":attr:`Guild.get_channel` は :class:`Thread` を返しません。"
 
 #: ../../migrating.rst:602
 msgid "If you're looking to get a channel or thread, use :attr:`Guild.get_channel_or_thread` instead."
@@ -1256,11 +1256,11 @@ msgstr "スレッドを取得したい場合は、 :attr:`Guild.get_thread` ま�
 
 #: ../../migrating.rst:605
 msgid "``channel`` parameter in :func:`on_guild_channel_pins_update` may now be a :class:`Thread`."
-msgstr ":func:`on_guild_channel_pins_update` のパラメータ ``channel`` に :class:`Thread` が追加されました。"
+msgstr ":func:`on_guild_channel_pins_update` のパラメータ ``channel`` は :class:`Thread` になるかもしれません。"
 
 #: ../../migrating.rst:606
 msgid "``channel`` parameter in :func:`on_typing` may now be a :class:`Thread`."
-msgstr ":func:`on_typing` のパラメータ ``channel`` に :class:`Thread` が追加されました。"
+msgstr ":func:`on_typing` のパラメータ ``channel`` は :class:`Thread` になるかもしれません。"
 
 #: ../../migrating.rst:607
 msgid ":meth:`Client.fetch_channel` may now return :class:`Thread`."
@@ -1403,7 +1403,7 @@ msgstr "``Sticker.tags`` は削除されました。"
 
 #: ../../migrating.rst:678
 msgid "Depending on type of the sticker, :attr:`StandardSticker.tags` or :attr:`GuildSticker.emoji` can be used instead."
-msgstr "スタンプの種類に応じて、:attr:`StandardSticket.tags` または :attr:`GuildSticker.emoji` を使用できます"
+msgstr "スタンプの種類に応じて、:attr:`StandardSticker.tags` または :attr:`GuildSticker.emoji` を使用できます。"
 
 #: ../../migrating.rst:680
 msgid "``Sticker.image`` and related methods have been removed."
@@ -1544,7 +1544,7 @@ msgstr ":meth:`Reaction.users`"
 
 #: ../../migrating.rst:864
 msgid "The ``NoMoreItems`` exception was removed as calling :func:`anext` or :meth:`~object.__anext__` on an :term:`asynchronous iterator` will now raise :class:`StopAsyncIteration`."
-msgstr "現在は :term:`asynchronous iterator` に対して :func:`anext` や :meth:`~object.__anext__` を呼び出すと :class:`StopAsyncIteration` が発生するため、 ``NoMoreItems`` 例外は削除されました。"
+msgstr "変更によって :term:`asynchronous iterator` に対して :func:`anext` や :meth:`~object.__anext__` を呼び出すと :class:`StopAsyncIteration` が発生するようになったため、 ``NoMoreItems`` 例外は削除されました。"
 
 #: ../../migrating.rst:868
 msgid "Changing certain lists to be lazy sequences instead"
@@ -1619,7 +1619,7 @@ msgid "The following methods have been changed:"
 msgstr "以下のメソッドが変更されました:"
 
 #: ../../migrating.rst:918
-#: ../../migrating.rst:1023
+#: ../../migrating.rst:1033
 msgid ":meth:`Message.add_reaction`"
 msgstr ":meth:`Message.add_reaction`"
 
@@ -1688,7 +1688,7 @@ msgid ":meth:`WebhookMessage.delete`"
 msgstr ":meth:`WebhookMessage.delete`"
 
 #: ../../migrating.rst:935
-#: ../../migrating.rst:1030
+#: ../../migrating.rst:1040
 msgid ":meth:`Webhook.delete_message`"
 msgstr ":meth:`Webhook.delete_message`"
 
@@ -1753,7 +1753,7 @@ msgid "The library now provides a default logging configuration if using :meth:`
 msgstr "ライブラリは :meth:`Client.run` を使用した場合にデフォルトの logging 構成を提供するようになりました。無効化するには、 ``log_handler`` キーワード引数に ``None`` を渡してください。ライブラリがデフォルトでログ設定を提供するようになったため、次のメソッドは :data:`sys.stderr` に出力せず、ロガーを使用するように変更されました。"
 
 #: ../../migrating.rst:966
-#: ../../migrating.rst:1024
+#: ../../migrating.rst:1034
 msgid ":meth:`Client.on_error`"
 msgstr ":meth:`Client.on_error`"
 
@@ -1774,1100 +1774,1123 @@ msgid "For more information, check :doc:`logging`."
 msgstr "詳しくは、 :doc:`logging` を確認してください。"
 
 #: ../../migrating.rst:974
+msgid "Text in Voice"
+msgstr "ボイスチャンネル チャット"
+
+#: ../../migrating.rst:976
+msgid "In order to support text in voice functionality, a few changes had to be made:"
+msgstr "ボイスチャンネル チャット機能に対応するために、いくつかの変更が行われました:"
+
+#: ../../migrating.rst:978
+msgid ":class:`VoiceChannel` is now :class:`abc.Messageable` so it can have messages sent and received."
+msgstr ":class:`VoiceChannel` が :class:`abc.Messageable` になり、メッセージの送受信ができるようになりました。"
+
+#: ../../migrating.rst:979
+msgid ":attr:`Message.channel` can now be :class:`VoiceChannel`."
+msgstr ":attr:`Message.channel` は :class:`VoiceChannel` になるかもしれません。"
+
+#: ../../migrating.rst:981
+msgid "In the future this may include :class:`StageChannel` when Discord implements it."
+msgstr "将来的には、Discordが実装する際に、 :class:`StageChannel` でも同様の変更が行われるかもしれません。"
+
+#: ../../migrating.rst:984
 msgid "Removal of ``StoreChannel``"
 msgstr "``StoreChannel`` の削除"
 
-#: ../../migrating.rst:976
+#: ../../migrating.rst:986
 msgid "Discord's API has removed store channels as of `March 10th, 2022 <https://support-dev.discord.com/hc/en-us/articles/4414590563479>`_. Therefore, the library has removed support for it as well."
 msgstr "DiscordのAPIは、 `2022年3月10日 <https://support-dev.discord.com/hc/en-us/articles/4414590563479>`_ をもって、ストアチャンネルを削除しました。そのため、ライブラリもそれに対するサポートを削除しました。"
 
-#: ../../migrating.rst:978
+#: ../../migrating.rst:988
 msgid "This removes the following:"
 msgstr "これにより、以下が削除されます。"
 
-#: ../../migrating.rst:980
+#: ../../migrating.rst:990
 msgid "``StoreChannel``"
 msgstr "``StoreChannel``"
 
-#: ../../migrating.rst:981
+#: ../../migrating.rst:991
 msgid "``commands.StoreChannelConverter``"
 msgstr "``commands.StoreChannelConverter``"
 
-#: ../../migrating.rst:982
+#: ../../migrating.rst:992
 msgid "``ChannelType.store``"
 msgstr "``ChannelType.store``"
 
-#: ../../migrating.rst:985
+#: ../../migrating.rst:995
 msgid "Change in ``Guild.bans`` endpoint"
 msgstr "``Guild.bans`` エンドポイントの変更"
 
-#: ../../migrating.rst:987
+#: ../../migrating.rst:997
 msgid "Due to a breaking API change by Discord, :meth:`Guild.bans` no longer returns a list of every ban in the guild but instead is paginated using an asynchronous iterator."
 msgstr "Discord APIの破壊的変更のため、 :meth:`Guild.bans` はギルドのすべてのBANのリストを返さなくなり、代わりに非同期イテレータを用いてページ化されるようになりました。"
 
-#: ../../migrating.rst:1001
-#: ../../migrating.rst:1350
+#: ../../migrating.rst:1011
+#: ../../migrating.rst:1361
 msgid "Function Signature Changes"
 msgstr "関数シグネチャの変更"
 
-#: ../../migrating.rst:1003
-#: ../../migrating.rst:1352
+#: ../../migrating.rst:1013
+#: ../../migrating.rst:1363
 msgid "Parameters in the following methods are now all positional-only:"
 msgstr "以下のメソッドの引数は全て位置限定になりました:"
 
-#: ../../migrating.rst:1005
+#: ../../migrating.rst:1015
 msgid ":meth:`AutoShardedClient.get_shard`"
 msgstr ":meth:`AutoShardedClient.get_shard`"
 
-#: ../../migrating.rst:1006
+#: ../../migrating.rst:1016
 msgid ":meth:`Client.get_channel`"
 msgstr ":meth:`Client.get_channel`"
 
-#: ../../migrating.rst:1007
+#: ../../migrating.rst:1017
 msgid ":meth:`Client.fetch_channel`"
 msgstr ":meth:`Client.fetch_channel`"
 
-#: ../../migrating.rst:1008
+#: ../../migrating.rst:1018
 msgid ":meth:`Guild.get_channel`"
 msgstr ":meth:`Guild.get_channel`"
 
-#: ../../migrating.rst:1009
+#: ../../migrating.rst:1019
 msgid ":meth:`Guild.fetch_channel`"
 msgstr ":meth:`Guild.fetch_channel`"
 
-#: ../../migrating.rst:1010
+#: ../../migrating.rst:1020
 msgid ":meth:`Client.get_emoji`"
 msgstr ":meth:`Client.get_emoji`"
 
-#: ../../migrating.rst:1011
+#: ../../migrating.rst:1021
 msgid ":meth:`Guild.fetch_emoji`"
 msgstr ":meth:`Guild.fetch_emoji`"
 
-#: ../../migrating.rst:1012
+#: ../../migrating.rst:1022
 msgid ":meth:`Client.get_guild`"
 msgstr ":meth:`Client.get_guild`"
 
-#: ../../migrating.rst:1013
+#: ../../migrating.rst:1023
 msgid ":meth:`Client.fetch_guild`"
 msgstr ":meth:`Client.fetch_guild`"
 
-#: ../../migrating.rst:1014
+#: ../../migrating.rst:1024
 msgid ":meth:`Client.delete_invite`"
 msgstr ":meth:`Client.delete_invite`"
 
-#: ../../migrating.rst:1015
+#: ../../migrating.rst:1025
 msgid ":meth:`Guild.get_member`"
 msgstr ":meth:`Guild.get_member`"
 
-#: ../../migrating.rst:1016
+#: ../../migrating.rst:1026
 msgid ":meth:`Guild.get_member_named`"
 msgstr ":meth:`Guild.get_member_named`"
 
-#: ../../migrating.rst:1017
+#: ../../migrating.rst:1027
 msgid ":meth:`Guild.fetch_member`"
 msgstr ":meth:`Guild.fetch_member`"
 
-#: ../../migrating.rst:1018
+#: ../../migrating.rst:1028
 msgid ":meth:`Client.get_user`"
 msgstr ":meth:`Client.get_user`"
 
-#: ../../migrating.rst:1019
+#: ../../migrating.rst:1029
 msgid ":meth:`Client.fetch_user`"
 msgstr ":meth:`Client.fetch_user`"
 
-#: ../../migrating.rst:1020
+#: ../../migrating.rst:1030
 msgid ":meth:`Guild.get_role`"
 msgstr ":meth:`Guild.get_role`"
 
-#: ../../migrating.rst:1021
+#: ../../migrating.rst:1031
 msgid ":meth:`Client.fetch_webhook`"
 msgstr ":meth:`Client.fetch_webhook`"
 
-#: ../../migrating.rst:1022
+#: ../../migrating.rst:1032
 msgid ":meth:`Client.fetch_widget`"
 msgstr ":meth:`Client.fetch_widget`"
 
-#: ../../migrating.rst:1025
+#: ../../migrating.rst:1035
 msgid ":meth:`abc.Messageable.fetch_message`"
 msgstr ":meth:`abc.Messageable.fetch_message`"
 
-#: ../../migrating.rst:1026
+#: ../../migrating.rst:1036
 msgid ":meth:`abc.GuildChannel.permissions_for`"
 msgstr ":meth:`abc.GuildChannel.permissions_for`"
 
-#: ../../migrating.rst:1027
+#: ../../migrating.rst:1037
 msgid ":meth:`DMChannel.get_partial_message`"
 msgstr ":meth:`DMChannel.get_partial_message`"
 
-#: ../../migrating.rst:1028
+#: ../../migrating.rst:1038
 msgid ":meth:`TextChannel.get_partial_message`"
 msgstr ":meth:`TextChannel.get_partial_message`"
 
-#: ../../migrating.rst:1029
+#: ../../migrating.rst:1039
 msgid ":meth:`TextChannel.delete_messages`"
 msgstr ":meth:`TextChannel.delete_messages`"
 
-#: ../../migrating.rst:1031
+#: ../../migrating.rst:1041
 msgid ":meth:`utils.find`"
 msgstr ":meth:`utils.find`"
 
-#: ../../migrating.rst:1033
-#: ../../migrating.rst:1396
+#: ../../migrating.rst:1043
+#: ../../migrating.rst:1407
 msgid "The following parameters are now positional-only:"
 msgstr "以下の引数が位置限定になりました:"
 
-#: ../../migrating.rst:1035
+#: ../../migrating.rst:1045
 msgid "``iterable`` in :meth:`utils.get`"
 msgstr ":meth:`utils.get` の ``iterable``"
 
-#: ../../migrating.rst:1036
+#: ../../migrating.rst:1046
 msgid "``event_method`` in :meth:`Client.on_error`"
 msgstr ":meth:`Client.on_error` の ``event_method``"
 
-#: ../../migrating.rst:1037
+#: ../../migrating.rst:1047
 msgid "``event`` in :meth:`Client.wait_for`"
 msgstr ":meth:`Client.wait_for` の ``event``"
 
-#: ../../migrating.rst:1039
+#: ../../migrating.rst:1049
 msgid "The following are now keyword-only:"
 msgstr "以下はキーワード限定になりました:"
 
-#: ../../migrating.rst:1041
+#: ../../migrating.rst:1051
 msgid "Parameters in :meth:`Reaction.users`"
 msgstr ":meth:`Reaction.users` の引数"
 
-#: ../../migrating.rst:1042
+#: ../../migrating.rst:1052
 msgid "Parameters in :meth:`Client.create_guild`"
 msgstr ":meth:`Client.create_guild` の引数"
 
-#: ../../migrating.rst:1043
+#: ../../migrating.rst:1053
 msgid "``permissions``, ``guild``, ``redirect_uri``, and ``scopes`` parameters in :meth:`utils.oauth_url`"
 msgstr ":meth:`utils.oauth_url` の ``permissions``, ``guild``, ``scopes`` 引数"
 
-#: ../../migrating.rst:1045
-#: ../../migrating.rst:1427
+#: ../../migrating.rst:1055
+#: ../../migrating.rst:1438
 msgid "The library now less often uses ``None`` as the default value for function/method parameters."
 msgstr "ライブラリは関数/メソッドの引数のデフォルト値として ``None`` を使用することが少なくなりました。"
 
-#: ../../migrating.rst:1047
-#: ../../migrating.rst:1429
+#: ../../migrating.rst:1057
+#: ../../migrating.rst:1440
 msgid "As a result, these parameters can no longer be ``None``:"
 msgstr "その結果、 これらの引数は ``None`` にはならなくなりました:"
 
-#: ../../migrating.rst:1049
+#: ../../migrating.rst:1059
 msgid "``size``, ``format``, and ``static_format`` in :meth:`Asset.replace`"
 msgstr ":meth:`Asset.replace` の ``size``, ``format``, ``static_format``"
 
-#: ../../migrating.rst:1050
+#: ../../migrating.rst:1060
 msgid "``check`` in :meth:`TextChannel.purge`"
 msgstr ":meth:`TextChannel.purge` の ``check``"
 
-#: ../../migrating.rst:1051
+#: ../../migrating.rst:1061
 msgid "``icon`` and ``code`` in :meth:`Client.create_guild`"
 msgstr ":meth:`Client.create_guild` の ``icon`` と ``code``"
 
-#: ../../migrating.rst:1052
+#: ../../migrating.rst:1062
 msgid "``roles`` in :meth:`Emoji.edit`"
 msgstr ":meth:`Emoji.edit` の ``roles``"
 
-#: ../../migrating.rst:1053
+#: ../../migrating.rst:1063
 msgid "``topic``, ``position`` and ``overwrites`` in :meth:`Guild.create_text_channel`"
 msgstr ":meth:`Guild.create_text_channel` の ``topic``, ``position``, ``overwrites``"
 
-#: ../../migrating.rst:1054
+#: ../../migrating.rst:1064
 msgid "``position`` and ``overwrites`` in :meth:`Guild.create_voice_channel`"
 msgstr ":meth:`Guild.create_voice_channel` の ``position`` と ``overwrites``"
 
-#: ../../migrating.rst:1055
+#: ../../migrating.rst:1065
 msgid "``topic``, ``position`` and ``overwrites`` in :meth:`Guild.create_stage_channel`"
 msgstr ":meth:`Guild.create_voice_channel` の ``topic``, ``position``, ``overwrites``"
 
-#: ../../migrating.rst:1056
+#: ../../migrating.rst:1066
 msgid "``position`` and ``overwrites`` in :meth:`Guild.create_category`"
 msgstr ":meth:`Guild.create_category` の ``position`` と ``overwrites``"
 
-#: ../../migrating.rst:1057
+#: ../../migrating.rst:1067
 msgid "``roles`` in :meth:`Guild.prune_members`"
 msgstr ":meth:`Guild.prune_members` の ``roles``"
 
-#: ../../migrating.rst:1058
+#: ../../migrating.rst:1068
 msgid "``roles`` in :meth:`Guild.estimate_pruned_members`"
 msgstr ":meth:`Guild.estimate_pruned_members` の ``roles``"
 
-#: ../../migrating.rst:1059
+#: ../../migrating.rst:1069
 msgid "``description`` in :meth:`Guild.create_template`"
 msgstr ":meth:`Guild.create_template` の ``description``"
 
-#: ../../migrating.rst:1060
+#: ../../migrating.rst:1070
 msgid "``roles`` in :meth:`Guild.create_custom_emoji`"
 msgstr ":meth:`Guild.create_custom_emoji` の ``roles``"
 
-#: ../../migrating.rst:1061
+#: ../../migrating.rst:1071
 msgid "``before``, ``after``, ``oldest_first``, ``user``, and ``action`` in :meth:`Guild.audit_logs`"
 msgstr ":meth:`Guild.audit_logs` の ``before``, ``after``, ``oldest_first``, ``user``, ``action``"
 
-#: ../../migrating.rst:1062
+#: ../../migrating.rst:1072
 msgid "``enable_emoticons`` in :meth:`StreamIntegration.edit`"
 msgstr ":meth:`StreamIntegration.edit` の ``enable_emoticons``"
 
-#: ../../migrating.rst:1063
+#: ../../migrating.rst:1073
 msgid "``mute``, ``deafen``, ``suppress``, and ``roles`` in :meth:`Member.edit`"
 msgstr ":meth:`Member.edit` の ``mute``, ``deafen``, ``suppress``, ``roles``"
 
-#: ../../migrating.rst:1064
+#: ../../migrating.rst:1074
 msgid "``position`` in :meth:`Role.edit`"
 msgstr ":meth:`Role.edit` の ``position``"
 
-#: ../../migrating.rst:1065
+#: ../../migrating.rst:1075
 msgid "``icon`` in :meth:`Template.create_guild`"
 msgstr ":meth:`Template.create_guild` の ``icon``"
 
-#: ../../migrating.rst:1066
+#: ../../migrating.rst:1076
 msgid "``name`` in :meth:`Template.edit`"
 msgstr ":meth:`Template.edit` の ``name``"
 
-#: ../../migrating.rst:1067
+#: ../../migrating.rst:1077
 msgid "``permissions``, ``guild``, ``redirect_uri``, ``scopes`` in :meth:`utils.oauth_url`"
 msgstr ":meth:`utils.oauth_url` の ``permissions``, ``guild``, ``redirect_uri``, ``scopes``"
 
-#: ../../migrating.rst:1068
+#: ../../migrating.rst:1078
 msgid "``content``, ``username``, ``avatar_url``, ``tts``, ``file``, ``files``, ``embed``, ``embeds``, and ``allowed_mentions`` in :meth:`Webhook.send`"
 msgstr ":meth:`Webhook.send` の ``content``, ``username``, ``avatar_url``, ``tts``, ``file``, ``files``, ``embed``, ``embeds``, ``allowed_mentions``"
 
-#: ../../migrating.rst:1070
+#: ../../migrating.rst:1080
 msgid "Allowed types for the following parameters have been changed:"
 msgstr "以下の引数で受け取られる型が変更されました:"
 
-#: ../../migrating.rst:1072
+#: ../../migrating.rst:1082
 msgid "``rtc_region`` in :meth:`Guild.create_voice_channel` is now of type Optional[:class:`str`]."
 msgstr ":meth:`Guild.create_voice_channel` の ``rtc_region`` は Optional[:class:`str`] 型になりました。"
 
-#: ../../migrating.rst:1073
+#: ../../migrating.rst:1083
 msgid "``rtc_region`` in :meth:`StageChannel.edit` is now of type Optional[:class:`str`]."
 msgstr ":meth:`StageChannel.edit` の ``rtc_region`` は Optional[:class:`str`] 型になりました。"
 
-#: ../../migrating.rst:1074
+#: ../../migrating.rst:1084
 msgid "``rtc_region`` in :meth:`VoiceChannel.edit` is now of type Optional[:class:`str`]."
 msgstr ":meth:`VoiceChannel.edit` の ``rtc_region`` は Optional[:class:`str`] 型になりました。"
 
-#: ../../migrating.rst:1075
+#: ../../migrating.rst:1085
 msgid "``preferred_locale`` in :meth:`Guild.edit` is now of type :class:`Locale`."
 msgstr ":meth:`Guild.edit` の ``preferred_locale`` は :class:`Locale` 型になりました。"
 
-#: ../../migrating.rst:1078
+#: ../../migrating.rst:1088
 msgid "Attribute Type Changes"
 msgstr "属性の型の変更"
 
-#: ../../migrating.rst:1082
+#: ../../migrating.rst:1092
 msgid ":attr:`DMChannel.recipient` may now be ``None``."
 msgstr ":attr:`DMChannel.recipient` が ``None`` になりうるようになりました。"
 
-#: ../../migrating.rst:1083
+#: ../../migrating.rst:1093
 msgid ":meth:`Guild.vanity_invite` may now be ``None``. This has been done to fix an issue with the method returning a broken :class:`Invite` object."
 msgstr ":meth:`Guild.vanity_invite` が ``None`` を返しうるようになりました。これはこのメソッドが壊れた :class:`Invite` オブジェクトを返す問題を解決するために行われました。"
 
-#: ../../migrating.rst:1084
+#: ../../migrating.rst:1094
 msgid ":meth:`Widget.fetch_invite` may now be ``None``."
 msgstr ":meth:`Widget.fetch_invite` が ``None`` を返しうるようになりました。"
 
-#: ../../migrating.rst:1085
+#: ../../migrating.rst:1095
 msgid ":attr:`Guild.shard_id` is now ``0`` instead of ``None`` if :class:`AutoShardedClient` is not used."
 msgstr ":class:`AutoShardedClient` が使われていない場合、 :attr:`Guild.shard_id` は ``None`` の代わりに ``0`` になるようになりました。"
 
-#: ../../migrating.rst:1086
+#: ../../migrating.rst:1096
 msgid ":attr:`Guild.mfa_level` is now of type :class:`MFALevel`."
 msgstr ":attr:`Guild.mfa_level` は :class:`MFALevel` 型に変更されました。"
 
-#: ../../migrating.rst:1087
+#: ../../migrating.rst:1097
 msgid ":attr:`Guild.member_count` is now of type Optional[:class:`int`]."
 msgstr ":attr:`Guild.member_count` の型が Optional[:class:`int`] に変更されました。"
 
-#: ../../migrating.rst:1088
+#: ../../migrating.rst:1098
 msgid ":attr:`AuditLogDiff.mfa_level` is now of type :class:`MFALevel`."
 msgstr ":attr:`AuditLogDiff.mfa_level` は :class:`MFALevel` 型に変更されました。"
 
-#: ../../migrating.rst:1089
+#: ../../migrating.rst:1099
 msgid ":attr:`AuditLogDiff.rtc_region` is now of type :class:`str`."
 msgstr ":attr:`AuditLogDiff.rtc_region` は :class:`str` 型に変更されました。"
 
-#: ../../migrating.rst:1090
+#: ../../migrating.rst:1100
 msgid ":attr:`StageChannel.rtc_region` is now of type :class:`str`."
 msgstr ":attr:`StageChannel.rtc_region` は :class:`str` 型に変更されました。"
 
-#: ../../migrating.rst:1091
+#: ../../migrating.rst:1101
 msgid ":attr:`VoiceChannel.rtc_region` is now of type :class:`str`."
 msgstr ":attr:`VoiceChannel.rtc_region` は :class:`str` 型になりました。"
 
-#: ../../migrating.rst:1092
+#: ../../migrating.rst:1102
 msgid ":attr:`ClientUser.avatar` is now ``None`` when the default avatar is used."
 msgstr ":attr:`ClientUser.avatar` は、デフォルトのアバターが利用されている場合は ``None`` に変更されました。"
 
-#: ../../migrating.rst:1094
+#: ../../migrating.rst:1104
 msgid "If you want the avatar that a user has displayed, consider :attr:`ClientUser.display_avatar`."
 msgstr "ユーザーの表示されているアバターを取得したい場合は、 :attr:`ClientUser.display_avatar` を検討してください。"
 
-#: ../../migrating.rst:1096
+#: ../../migrating.rst:1106
 msgid ":attr:`Member.avatar` is now ``None`` when the default avatar is used."
 msgstr ":attr:`Member.avatar` は、デフォルトのアバターが使用されている場合は ``None`` に変更されました。"
 
-#: ../../migrating.rst:1098
+#: ../../migrating.rst:1108
 msgid "If you want the avatar that a member or user has displayed, consider :attr:`Member.display_avatar` or :attr:`User.display_avatar`."
-msgstr "メンバーやユーザーが表示しているアバターを取得したい場合は、 :attr:`Member.display_avatar` または\n"
-" :attr:`User.display_avatar` を検討してください。"
+msgstr "メンバーやユーザーが表示しているアバターを取得したい場合は、 :attr:`Member.display_avatar` または :attr:`User.display_avatar` を検討してください。"
 
-#: ../../migrating.rst:1101
+#: ../../migrating.rst:1111
 msgid ":attr:`User.avatar` is now ``None`` when the default avatar is used."
 msgstr ":attr:`User.avatar` は、デフォルトのアバターが利用されている場合は ``None`` に変更されました。"
 
-#: ../../migrating.rst:1103
+#: ../../migrating.rst:1113
 msgid "If you want the avatar that a user has displayed, consider :attr:`User.display_avatar`."
 msgstr "ユーザーが表示しているアバターを取得したい場合は、 :attr:`User.display_avatar` を検討してください。"
 
-#: ../../migrating.rst:1105
+#: ../../migrating.rst:1115
 msgid ":attr:`Webhook.avatar` is now ``None`` when the default avatar is used."
 msgstr ":attr:`Webhook.avatar` は、デフォルトのアバターが利用されている場合は ``None`` に変更されました。"
 
-#: ../../migrating.rst:1107
+#: ../../migrating.rst:1117
 msgid "If you want the avatar that a webhook has displayed, consider :attr:`Webhook.display_avatar`."
 msgstr "Webhookに表示されるアバターを取得したい場合は、 :attr:`Webhook.display_avatar` を検討してください。"
 
-#: ../../migrating.rst:1109
+#: ../../migrating.rst:1119
 msgid ":attr:`AuditLogEntry.target` may now be a :class:`PartialMessageable`."
 msgstr ":attr:`AuditLogEntry.target` が :class:`PartialMessageable` になりうるようになりました。"
 
-#: ../../migrating.rst:1110
+#: ../../migrating.rst:1120
 msgid ":attr:`PartialMessage.channel` may now be a :class:`PartialMessageable`."
 msgstr ":attr:`PartialMessage.channel` が :class:`PartialMessageable` になりうるようになりました。"
 
-#: ../../migrating.rst:1111
+#: ../../migrating.rst:1121
 msgid ":attr:`Guild.preferred_locale` is now of type :class:`Locale`."
-msgstr ":attr:`Guild.preferred_locale` は :class:`Locale` の型になりました。"
+msgstr ":attr:`Guild.preferred_locale` の型が :class:`Locale` になりました。"
 
-#: ../../migrating.rst:1114
-#: ../../migrating.rst:1440
+#: ../../migrating.rst:1122
+msgid ":attr:`abc.GuildChannel.overwrites` keys can now have :class:`Object` in them."
+msgstr ":attr:`abc.GuildChannel.overwrites` のキーが :class:`Object` になりうるようになりました。"
+
+#: ../../migrating.rst:1125
+#: ../../migrating.rst:1451
 msgid "Removals"
 msgstr "削除"
 
-#: ../../migrating.rst:1116
+#: ../../migrating.rst:1127
 msgid "The following deprecated functionality have been removed:"
 msgstr "以下の非推奨の機能は削除されました。"
 
-#: ../../migrating.rst:1118
+#: ../../migrating.rst:1129
 msgid "``Client.request_offline_members``"
 msgstr "``Client.request_offline_members``"
 
-#: ../../migrating.rst:1120
-#: ../../migrating.rst:1124
+#: ../../migrating.rst:1131
+#: ../../migrating.rst:1135
 msgid "Use :meth:`Guild.chunk` instead."
 msgstr "代わりに :meth:`Guild.chunk` を使用してください。"
 
-#: ../../migrating.rst:1122
+#: ../../migrating.rst:1133
 msgid "``AutoShardedClient.request_offline_members``"
 msgstr "``AutoShardedClient.request_offline_members``"
 
-#: ../../migrating.rst:1126
+#: ../../migrating.rst:1137
 msgid "``Client.logout``"
 msgstr "``Client.logout``"
 
-#: ../../migrating.rst:1128
+#: ../../migrating.rst:1139
 msgid "Use :meth:`Client.close` instead."
 msgstr "代わりに :meth:`Client.close` を使用してください。"
 
-#: ../../migrating.rst:1130
+#: ../../migrating.rst:1141
 msgid "``fetch_offline_members`` parameter from :class:`Client` constructor"
 msgstr ":class:`Client` コンストラクタの ``fetch_offline_members`` パラメータ"
 
-#: ../../migrating.rst:1132
+#: ../../migrating.rst:1143
 msgid "Use ``chunk_guild_at_startup`` instead."
 msgstr "代わりに ``chunk_guild_at_startup`` を使用してください。"
 
-#: ../../migrating.rst:1135
+#: ../../migrating.rst:1146
 msgid "``Permissions.use_slash_commands`` and ``PermissionOverwrite.use_slash_commands``"
 msgstr "``Permissions.use_slash_commands`` と ``PermissionOverwrite.use_slash_commands``"
 
-#: ../../migrating.rst:1135
+#: ../../migrating.rst:1146
 msgid "Use :attr:`Permissions.use_application_commands` and ``PermissionOverwrite.use_application_commands`` instead."
 msgstr "代わりに :attr:`Permissions.use_application_commands` と ``PermissionOverwrite.use_application_commands`` を使用してください。"
 
-#: ../../migrating.rst:1139
+#: ../../migrating.rst:1150
 msgid "``MemberCacheFlags.online``"
 msgstr "``MemberCacheFlags.online``"
 
-#: ../../migrating.rst:1141
+#: ../../migrating.rst:1152
 msgid "There is no replacement for this one. The current API version no longer provides enough data for this to be possible."
 msgstr "置換先はありません。現在のAPIバージョンは、このために必要な十分なデータを提供しません。"
 
-#: ../../migrating.rst:1143
+#: ../../migrating.rst:1154
 msgid "``AppInfo.summary``"
 msgstr "``AppInfo.summary``"
 
-#: ../../migrating.rst:1145
+#: ../../migrating.rst:1156
 msgid "There is no replacement for this one. The current API version no longer provides this field."
 msgstr "この項目を置き換えることはできません。現在の API バージョンではこの項目は提供されません。"
 
-#: ../../migrating.rst:1147
+#: ../../migrating.rst:1158
 msgid "``User.permissions_in`` and ``Member.permissions_in``"
 msgstr "``User.permissions_in`` と ``Member.permissions_in``"
 
-#: ../../migrating.rst:1149
+#: ../../migrating.rst:1160
 msgid "Use :meth:`abc.GuildChannel.permissions_for` instead."
 msgstr "代わりに :meth:`abc.GuildChannel.permissions_for` を使用してください。"
 
-#: ../../migrating.rst:1151
+#: ../../migrating.rst:1162
 msgid "``guild_subscriptions`` parameter from :class:`Client` constructor"
 msgstr ":class:`Client` コンストラクタの ``guild_subscriptions`` パラメータ"
 
-#: ../../migrating.rst:1153
+#: ../../migrating.rst:1164
 msgid "The current API version no longer provides this functionality. Use ``intents`` parameter instead."
 msgstr "現在の API バージョンはこの機能を提供していません。代わりに ``intents`` パラメーターを使用してください。"
 
-#: ../../migrating.rst:1155
+#: ../../migrating.rst:1166
 msgid ":class:`VerificationLevel` aliases:"
 msgstr ":class:`VerificationLevel` のエイリアス"
 
-#: ../../migrating.rst:1157
+#: ../../migrating.rst:1168
 msgid "``VerificationLevel.table_flip`` - use :attr:`VerificationLevel.high` instead."
 msgstr "``VerificationLevel.table_flip`` - 代わりに :attr:`VerificationLevel.high` を使用してください。"
 
-#: ../../migrating.rst:1158
+#: ../../migrating.rst:1169
 msgid "``VerificationLevel.extreme`` - use :attr:`VerificationLevel.highest` instead."
 msgstr "``VerificationLevel.extreme`` - 代わりに :attr:`VerificationLevel.highest` を使用してください。"
 
-#: ../../migrating.rst:1159
+#: ../../migrating.rst:1170
 msgid "``VerificationLevel.double_table_flip`` - use :attr:`VerificationLevel.highest` instead."
 msgstr "``VerificationLevel.double_table_flip`` - 代わりに :attr:`VerificationLevel.highest` を使用してください。"
 
-#: ../../migrating.rst:1160
+#: ../../migrating.rst:1171
 msgid "``VerificationLevel.very_high`` - use :attr:`VerificationLevel.highest` instead."
 msgstr "``VerificationLevel.very_high`` - 代わりに :attr:`VerificationLevel.highest` を利用してください。"
 
-#: ../../migrating.rst:1162
+#: ../../migrating.rst:1173
 msgid "``topic`` parameter from :meth:`StageChannel.edit`"
 msgstr ":meth:`StageChannel.edit` の ``topic`` パラメータ"
 
-#: ../../migrating.rst:1164
+#: ../../migrating.rst:1175
 msgid "The ``topic`` parameter must now be set via :meth:`StageChannel.create_instance`."
 msgstr "``topic`` パラメーターは :meth:`StageChannel.create_instance` で設定する必要があります。"
 
-#: ../../migrating.rst:1166
+#: ../../migrating.rst:1177
 msgid "``Reaction.custom_emoji``"
 msgstr "``Reaction.custom_emoji``"
 
-#: ../../migrating.rst:1168
+#: ../../migrating.rst:1179
 msgid "Use :meth:`Reaction.is_custom_emoji` instead."
 msgstr "代わりに :meth:`Reaction.is_custom_emoji` を使用してください。"
 
-#: ../../migrating.rst:1170
+#: ../../migrating.rst:1181
 msgid "``AuditLogDiff.region``"
 msgstr "``AuditLogDiff.region``"
 
-#: ../../migrating.rst:1171
+#: ../../migrating.rst:1182
 msgid "``Guild.region``"
 msgstr "``Guild.region``"
 
-#: ../../migrating.rst:1172
+#: ../../migrating.rst:1183
 msgid "``VoiceRegion``"
 msgstr "``VoiceRegion``"
 
-#: ../../migrating.rst:1174
+#: ../../migrating.rst:1185
 msgid "This has been marked deprecated by Discord and it was usually more or less out of date due to the pace they added them anyway."
 msgstr "これはDiscordより非推奨とされていて、また追加されたペースが速いため多くの場合で反映するのが遅れていました。"
 
-#: ../../migrating.rst:1176
+#: ../../migrating.rst:1187
 msgid "``region`` parameter from :meth:`Client.create_guild`"
 msgstr ":meth:`Client.create_guild` の ``region`` パラメータ"
 
-#: ../../migrating.rst:1177
+#: ../../migrating.rst:1188
 msgid "``region`` parameter from :meth:`Template.create_guild`"
 msgstr ":meth:`Template.create_guild` の ``region`` パラメータ"
 
-#: ../../migrating.rst:1178
+#: ../../migrating.rst:1189
 msgid "``region`` parameter from :meth:`Guild.edit`"
 msgstr ":meth:`Guild.edit` の ``region`` パラメータ"
 
-#: ../../migrating.rst:1179
+#: ../../migrating.rst:1190
 msgid "``on_private_channel_create`` event"
 msgstr "``on_private_channel_create`` イベント"
 
-#: ../../migrating.rst:1181
-#: ../../migrating.rst:1185
+#: ../../migrating.rst:1192
+#: ../../migrating.rst:1196
 msgid "Discord API no longer sends channel create event for DMs."
 msgstr "Discord APIは、DMにはチャンネル作成イベントを送信しないようになりました。"
 
-#: ../../migrating.rst:1183
+#: ../../migrating.rst:1194
 msgid "``on_private_channel_delete`` event"
 msgstr "``on_private_channel_delete`` イベント"
 
-#: ../../migrating.rst:1187
+#: ../../migrating.rst:1198
 msgid "The undocumented private ``on_socket_response`` event"
 msgstr "文書化されていないプライベートな ``on_socket_response`` イベント"
 
-#: ../../migrating.rst:1189
+#: ../../migrating.rst:1200
 msgid "Consider using the newer documented :func:`on_socket_event_type` event instead."
 msgstr "代わりに、より新しくドキュメント化された :func:`on_socket_event_type` イベントを使用することを検討してください。"
 
-#: ../../migrating.rst:1191
+#: ../../migrating.rst:1202
 msgid "``abc.Messageable.trigger_typing``"
 msgstr "``abc.Messageable.trigger_typing``"
 
-#: ../../migrating.rst:1193
+#: ../../migrating.rst:1204
 msgid "Use :meth:`abc.Messageable.typing` with ``await`` instead."
 msgstr "代わりに :meth:`abc.Messageable.typing` を ``await`` してください。"
 
-#: ../../migrating.rst:1196
-#: ../../migrating.rst:1455
+#: ../../migrating.rst:1207
+#: ../../migrating.rst:1466
 msgid "Miscellaneous Changes"
 msgstr "その他の変更点"
 
-#: ../../migrating.rst:1200
+#: ../../migrating.rst:1211
 msgid ":func:`on_socket_raw_receive` is now only called if ``enable_debug_events`` is set on :class:`Client`."
 msgstr ":class:`Client` に ``enable_debug_events`` が設定されている場合にのみ :func:`on_socket_raw_receive` が呼び出されるようになりました。"
 
-#: ../../migrating.rst:1201
+#: ../../migrating.rst:1212
 msgid ":func:`on_socket_raw_receive` is now only called once the **complete** message is received and decompressed. The passed ``msg`` parameter is now always :class:`str`."
 msgstr ":func:`on_socket_raw_receive` は **完全な** メッセージを受信して解凍した後にのみ呼び出されるようになりました。渡された ``msg`` パラメータは 常に :class:`str` になりました。"
 
-#: ../../migrating.rst:1202
+#: ../../migrating.rst:1213
 msgid ":func:`on_socket_raw_send` is now only called if ``enable_debug_events`` is set on :class:`Client`."
 msgstr ":class:`Client` に ``enable_debug_events`` が設定されている場合にのみ :func:`on_socket_raw_send` が呼び出されるようになりました。"
 
-#: ../../migrating.rst:1203
+#: ../../migrating.rst:1214
 msgid "The documented return type for :meth:`Guild.fetch_channels` changed to Sequence[:class:`abc.GuildChannel`]."
 msgstr "文書化された :meth:`Guild.fetch_channels` の戻り値の型は Sequence[:class:`abc.GuildChannel`] に変更されました。"
 
-#: ../../migrating.rst:1204
+#: ../../migrating.rst:1215
 msgid ":func:`utils.resolve_invite` now returns a :class:`ResolvedInvite` class."
 msgstr ":func:`utils.resolve_invite` が :class:`ResolvedInvite` クラスを返すようになりました。"
 
-#: ../../migrating.rst:1205
+#: ../../migrating.rst:1216
 msgid ":func:`utils.oauth_url` now defaults to ``bot`` and ``applications.commands`` scopes when not given instead of just ``bot``."
 msgstr ":func:`utils.oauth_url` のスコープが与えられていない場合の初期値が ``bot`` から ``bot`` と ``applications.commands`` に変更されました。"
 
-#: ../../migrating.rst:1206
+#: ../../migrating.rst:1217
 msgid ":meth:`abc.Messageable.typing` can no longer be used as a regular (non-async) context manager."
 msgstr ":meth:`abc.Messageable.typing` は、通常の(非同期でない)コンテキストマネージャーとしては使用できなくなりました。"
 
-#: ../../migrating.rst:1207
+#: ../../migrating.rst:1218
 msgid ":attr:`Intents.emojis` is now an alias of :attr:`Intents.emojis_and_stickers`."
 msgstr ":attr:`Intents.emojis` が :attr:`Intents.emojis_and_stickers` のエイリアスになりました。"
 
-#: ../../migrating.rst:1209
+#: ../../migrating.rst:1220
 msgid "This may affect code that iterates through ``(name, value)`` pairs in an instance of this class:"
 msgstr "これは、このクラスのインスタンス内の ``(name, value)`` ペアをイテレートするコードに影響を与える可能性があります。"
 
-#: ../../migrating.rst:1231
+#: ../../migrating.rst:1242
 msgid "``created_at`` is no longer part of :class:`abc.Snowflake`."
 msgstr "``created_at`` は :class:`abc.Snowflake` の一部ではなくなりました。"
 
-#: ../../migrating.rst:1233
+#: ../../migrating.rst:1244
 msgid "All of the existing classes still keep this attribute. It is just no longer part of this protocol. This has been done because Discord reuses IDs (snowflakes) of some models in other models. For example, if :class:`Thread` is created from a message, its :attr:`Thread.id` is equivalent to the ID of that message and as such it doesn't contain information about creation time of the thread and :attr:`Thread.created_at` cannot be based on it."
 msgstr "既存のすべてのクラスは、この属性を保持します。ただ、このプロトコルの一部ではなくなりました。これは、DiscordがいくつかのモデルのID(snowflake)を他のモデルで再利用するために行われました。例えば、あるメッセージから :class:`Thread` が作成された場合、その :attr:`Thread.id` はそのメッセージの ID と同じで、スレッドの作成時刻に関する情報は含まれず、 :attr:`Thread.created_at` に基づいて作成することはできません。"
 
-#: ../../migrating.rst:1238
+#: ../../migrating.rst:1249
 msgid ":class:`Embed`'s bool implementation now returns ``True`` when embed has any data set."
 msgstr ":class:`Embed` の bool 実装では、埋め込みに何らかのデータが設定されていれば ``True`` が返されるようになりました。"
 
-#: ../../migrating.rst:1239
+#: ../../migrating.rst:1250
 msgid "Calling :meth:`Emoji.edit` without ``roles`` argument no longer makes the emoji available to everyone."
 msgstr ":meth:`Emoji.edit` を ``roles`` 引数なしで呼び出したときに、絵文字が全員に利用できるようにならなくなりました。"
 
-#: ../../migrating.rst:1241
+#: ../../migrating.rst:1252
 msgid "To make the emoji available to everyone, pass an empty list to ``roles`` instead."
 msgstr "絵文字を誰でも利用できるようにするには、空のリストを ``roles`` に渡してください。"
 
-#: ../../migrating.rst:1243
+#: ../../migrating.rst:1254
 msgid "The old ``Colour.blurple`` has been renamed to :attr:`Colour.og_blurple`."
-msgstr "古い ``Color.blurple`` は :attr:`Colour.og_blurple` に改名されました。"
+msgstr "古い ``Colour.blurple`` は :attr:`Colour.og_blurple` に改名されました。"
 
-#: ../../migrating.rst:1245
+#: ../../migrating.rst:1256
 msgid ":attr:`Colour.blurple` refers to a different colour now."
 msgstr ":attr:`Colour.blurple` は別の色を参照するようになりました。"
 
-#: ../../migrating.rst:1247
+#: ../../migrating.rst:1258
 msgid ":attr:`Message.type` is now set to :attr:`MessageType.reply` when a message is a reply."
 msgstr "メッセージが返信である場合、 :attr:`Message.type` が :attr:`MessageType.reply` に設定されるようになりました。"
 
-#: ../../migrating.rst:1249
+#: ../../migrating.rst:1260
 msgid "This is caused by a difference in behavior in the current Discord API version."
 msgstr "これは、現在のDiscordAPIバージョンでの動作の違いによって引き起こされます。"
 
-#: ../../migrating.rst:1251
+#: ../../migrating.rst:1262
 msgid ":meth:`Message.edit` now merges object passed in ``allowed_mentions`` parameter with :attr:`Client.allowed_mentions`. If the parameter isn't provided, the defaults given by :attr:`Client.allowed_mentions` are used instead."
 msgstr ":meth:`Message.edit` は ``allowed_mentions`` パラメータで渡されたオブジェクトを :attr:`Client.allowed_mentions` と合わせるようになりました。このパラメータが指定されていない場合は、代わりに :attr:`Client.allowed_mentions` で指定されたデフォルト値が使用されます。"
 
-#: ../../migrating.rst:1254
+#: ../../migrating.rst:1265
 msgid ":meth:`Permissions.stage_moderator` now includes the :attr:`Permissions.manage_channels` permission and the :attr:`Permissions.request_to_speak` permission is no longer included."
 msgstr ":meth:`Permissions.stage_moderator` に :attr:`Permissions.manage_channels` 権限が含まれるようになり、 :attr:`Permissions.request_to_speak` 権限が含まれなくなりました。"
 
-#: ../../migrating.rst:1256
+#: ../../migrating.rst:1267
 msgid ":attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to `'untitled'`."
 msgstr ":attr:`File.filename` が ``None`` になることはなくなりました。以前そうなった場合ではファイル名は `'untitled'` になります。"
 
-#: ../../migrating.rst:1258
+#: ../../migrating.rst:1269
 msgid ":attr:`Message.application` will no longer be a raw :class:`dict` of the API payload and now returns an instance of :class:`MessageApplication`."
 msgstr ":attr:`Message.application` が生のAPIペイロードの :class:`dict` ではなくなり、 :class:`MessageApplication` インスタンスを返すようになりました。"
 
-#: ../../migrating.rst:1261
+#: ../../migrating.rst:1272
 msgid ":meth:`VoiceProtocol.connect` signature changes."
-msgstr ":meth:`VoiceProtocol.connect` のシグネチャ変更。"
+msgstr ":meth:`VoiceProtocol.connect` のシグネチャ変更"
 
-#: ../../migrating.rst:1263
+#: ../../migrating.rst:1274
 msgid ":meth:`VoiceProtocol.connect` will now be passed 2 keyword only arguments, ``self_deaf`` and ``self_mute``. These indicate whether or not the client should join the voice chat being deafened or muted."
 msgstr ":meth:`VoiceProtocol.connect` に、 ``self_deaf`` と ``self_mute`` キーワード引数が渡されるようになりました。これはクライアントがボイスチャットに参加する際にスピーカーミュートし、またはミュートすべきかを示します。"
 
-#: ../../migrating.rst:1269
+#: ../../migrating.rst:1280
 msgid "Command Extension Changes"
 msgstr "コマンド拡張の変更"
 
-#: ../../migrating.rst:1274
+#: ../../migrating.rst:1285
 msgid "Extension and Cog Loading / Unloading is Now Asynchronous"
 msgstr "エクステンションとコグの読み込み・解除の非同期化"
 
-#: ../../migrating.rst:1276
+#: ../../migrating.rst:1287
 msgid "As an extension to the :ref:`asyncio changes <migrating_2_0_client_async_setup>` the loading and unloading of extensions and cogs is now asynchronous."
 msgstr ":ref:`asyncio の変更 <migrating_2_0_client_async_setup>` に伴い、エクステンションとコグの読み込みや読み込み解除が非同期処理となりました。"
 
-#: ../../migrating.rst:1278
+#: ../../migrating.rst:1289
 msgid "To accommodate this, the following changes have been made:"
 msgstr "これに対応するために、以下のように変更が行われました："
 
-#: ../../migrating.rst:1280
+#: ../../migrating.rst:1291
 msgid "The ``setup`` and ``teardown`` functions in extensions must now be coroutines."
 msgstr "エクステンションの ``setup`` と ``teardown`` 関数はコルーチンでないといけません。"
 
-#: ../../migrating.rst:1281
+#: ../../migrating.rst:1292
 msgid ":meth:`ext.commands.Bot.load_extension` must now be awaited."
 msgstr ":meth:`ext.commands.Bot.load_extension` を呼び出すときには await が必要です。"
 
-#: ../../migrating.rst:1282
+#: ../../migrating.rst:1293
 msgid ":meth:`ext.commands.Bot.unload_extension` must now be awaited."
 msgstr ":meth:`ext.commands.Bot.unload_extension` を呼び出すときには await が必要です。"
 
-#: ../../migrating.rst:1283
+#: ../../migrating.rst:1294
 msgid ":meth:`ext.commands.Bot.reload_extension` must now be awaited."
 msgstr ":meth:`ext.commands.Bot.reload_extension` を呼び出すときには await が必要です。"
 
-#: ../../migrating.rst:1284
+#: ../../migrating.rst:1295
 msgid ":meth:`ext.commands.Bot.add_cog` must now be awaited."
 msgstr ":meth:`ext.commands.Bot.add_cog` を呼び出すときには await が必要です。"
 
-#: ../../migrating.rst:1285
+#: ../../migrating.rst:1296
 msgid ":meth:`ext.commands.Bot.remove_cog` must now be awaited."
 msgstr ":meth:`ext.commands.Bot.remove_cog` を呼び出すときには await が必要です。"
 
-#: ../../migrating.rst:1287
+#: ../../migrating.rst:1298
 msgid "Quick example of an extension setup function:"
 msgstr "エクステンションのセットアップの簡単な例："
 
-#: ../../migrating.rst:1299
+#: ../../migrating.rst:1310
 msgid "Quick example of loading an extension:"
 msgstr "エクステンションの読み込みの簡単な例："
 
-#: ../../migrating.rst:1321
+#: ../../migrating.rst:1332
 msgid "Converters Are Now Generic Runtime Protocols"
-msgstr "コンバータは汎用ランタイムプロトコルになりました"
+msgstr "コンバータの汎用ランタイムプロトコル化"
 
-#: ../../migrating.rst:1323
+#: ../../migrating.rst:1334
 msgid ":class:`~ext.commands.Converter` is now a :func:`runtime-checkable <typing.runtime_checkable>` :class:`typing.Protocol`."
 msgstr ":class:`~ext.commands.Converter` が :func:`runtime-checkable <typing.runtime_checkable>` な :class:`typing.Protocol` になりました。"
 
-#: ../../migrating.rst:1325
+#: ../../migrating.rst:1336
 msgid "This results in a change of the base metaclass used by these classes which may affect user-created classes that inherit from :class:`~ext.commands.Converter`."
 msgstr "その結果、これらのクラスで使用されるベースメタクラスが変更され、 :class:`~ext.commands.Converter` を継承するユーザーが作成したクラスに影響を与える可能性があります。"
 
-#: ../../migrating.rst:1346
+#: ../../migrating.rst:1357
 msgid "In addition, :class:`~ext.commands.Converter` is now a :class:`typing.Generic` which (optionally) allows the users to define their type hints more accurately."
 msgstr "さらに、 :class:`~ext.commands.Converter` は :class:`typing.Generic` になり、ユーザーは(自己判断で)型ヒントをより正確に定義することができます。"
 
-#: ../../migrating.rst:1354
+#: ../../migrating.rst:1365
 msgid ":meth:`ext.commands.when_mentioned`"
 msgstr ":meth:`ext.commands.when_mentioned`"
 
-#: ../../migrating.rst:1355
+#: ../../migrating.rst:1366
 msgid ":meth:`ext.commands.Bot.on_command_error`"
 msgstr ":meth:`ext.commands.Bot.on_command_error`"
 
-#: ../../migrating.rst:1356
+#: ../../migrating.rst:1367
 msgid ":meth:`ext.commands.Bot.check`"
 msgstr ":meth:`ext.commands.Bot.check`"
 
-#: ../../migrating.rst:1357
+#: ../../migrating.rst:1368
 msgid ":meth:`ext.commands.Bot.check_once`"
 msgstr ":meth:`ext.commands.Bot.check_once`"
 
-#: ../../migrating.rst:1358
+#: ../../migrating.rst:1369
 msgid ":meth:`ext.commands.Bot.is_owner`"
 msgstr ":meth:`ext.commands.Bot.is_owner`"
 
-#: ../../migrating.rst:1359
+#: ../../migrating.rst:1370
 msgid ":meth:`ext.commands.Bot.before_invoke`"
 msgstr ":meth:`ext.commands.Bot.before_invoke`"
 
-#: ../../migrating.rst:1360
+#: ../../migrating.rst:1371
 msgid ":meth:`ext.commands.Bot.after_invoke`"
 msgstr ":meth:`ext.commands.Bot.after_invoke`"
 
-#: ../../migrating.rst:1361
+#: ../../migrating.rst:1372
 msgid ":meth:`ext.commands.Bot.get_prefix`"
 msgstr ":meth:`ext.commands.Bot.get_prefix`"
 
-#: ../../migrating.rst:1362
+#: ../../migrating.rst:1373
 msgid ":meth:`ext.commands.Bot.invoke`"
 msgstr ":meth:`ext.commands.Bot.invoke`"
 
-#: ../../migrating.rst:1363
+#: ../../migrating.rst:1374
 msgid ":meth:`ext.commands.Bot.process_commands`"
 msgstr ":meth:`ext.commands.Bot.process_commands`"
 
-#: ../../migrating.rst:1364
+#: ../../migrating.rst:1375
 msgid ":meth:`ext.commands.Command.is_on_cooldown`"
 msgstr ":meth:`ext.commands.Command.is_on_cooldown`"
 
-#: ../../migrating.rst:1365
+#: ../../migrating.rst:1376
 msgid ":meth:`ext.commands.Command.reset_cooldown`"
 msgstr ":meth:`ext.commands.Command.reset_cooldown`"
 
-#: ../../migrating.rst:1366
+#: ../../migrating.rst:1377
 msgid ":meth:`ext.commands.Command.get_cooldown_retry_after`"
 msgstr ":meth:`ext.commands.Command.get_cooldown_retry_after`"
 
-#: ../../migrating.rst:1367
+#: ../../migrating.rst:1378
 msgid ":meth:`ext.commands.Command.error`"
 msgstr ":meth:`ext.commands.Command.error`"
 
-#: ../../migrating.rst:1368
+#: ../../migrating.rst:1379
 msgid ":meth:`ext.commands.Command.before_invoke`"
 msgstr ":meth:`ext.commands.Command.before_invoke`"
 
-#: ../../migrating.rst:1369
+#: ../../migrating.rst:1380
 msgid ":meth:`ext.commands.Command.after_invoke`"
 msgstr ":meth:`ext.commands.Command.after_invoke`"
 
-#: ../../migrating.rst:1370
+#: ../../migrating.rst:1381
 msgid ":meth:`ext.commands.Command.can_run`"
 msgstr ":meth:`ext.commands.Command.can_run`"
 
-#: ../../migrating.rst:1371
+#: ../../migrating.rst:1382
 msgid ":meth:`ext.commands.check`"
 msgstr ":meth:`ext.commands.check`"
 
-#: ../../migrating.rst:1372
+#: ../../migrating.rst:1383
 msgid ":meth:`ext.commands.has_role`"
 msgstr ":meth:`ext.commands.has_role`"
 
-#: ../../migrating.rst:1373
+#: ../../migrating.rst:1384
 msgid ":meth:`ext.commands.bot_has_role`"
 msgstr ":meth:`ext.commands.bot_has_role`"
 
-#: ../../migrating.rst:1374
+#: ../../migrating.rst:1385
 msgid ":meth:`ext.commands.before_invoke`"
 msgstr ":meth:`ext.commands.before_invoke`"
 
-#: ../../migrating.rst:1375
+#: ../../migrating.rst:1386
 msgid ":meth:`ext.commands.after_invoke`"
 msgstr ":meth:`ext.commands.after_invoke`"
 
-#: ../../migrating.rst:1376
+#: ../../migrating.rst:1387
 msgid ":meth:`ext.commands.HelpCommand.get_command_signature`"
 msgstr ":meth:`ext.commands.HelpCommand.get_command_signature`"
 
-#: ../../migrating.rst:1377
+#: ../../migrating.rst:1388
 msgid ":meth:`ext.commands.HelpCommand.remove_mentions`"
 msgstr ":meth:`ext.commands.HelpCommand.remove_mentions`"
 
-#: ../../migrating.rst:1378
+#: ../../migrating.rst:1389
 msgid ":meth:`ext.commands.HelpCommand.command_not_found`"
 msgstr ":meth:`ext.commands.HelpCommand.command_not_found`"
 
-#: ../../migrating.rst:1379
+#: ../../migrating.rst:1390
 msgid ":meth:`ext.commands.HelpCommand.subcommand_not_found`"
 msgstr ":meth:`ext.commands.HelpCommand.subcommand_not_found`"
 
-#: ../../migrating.rst:1380
+#: ../../migrating.rst:1391
 msgid ":meth:`ext.commands.HelpCommand.get_max_size`"
 msgstr ":meth:`ext.commands.HelpCommand.get_max_size`"
 
-#: ../../migrating.rst:1381
+#: ../../migrating.rst:1392
 msgid ":meth:`ext.commands.HelpCommand.send_error_message`"
 msgstr ":meth:`ext.commands.HelpCommand.send_error_message`"
 
-#: ../../migrating.rst:1382
+#: ../../migrating.rst:1393
 msgid ":meth:`ext.commands.HelpCommand.on_help_command_error`"
 msgstr ":meth:`ext.commands.HelpCommand.on_help_command_error`"
 
-#: ../../migrating.rst:1383
+#: ../../migrating.rst:1394
 msgid ":meth:`ext.commands.HelpCommand.send_bot_help`"
 msgstr ":meth:`ext.commands.HelpCommand.send_bot_help`"
 
-#: ../../migrating.rst:1384
+#: ../../migrating.rst:1395
 msgid ":meth:`ext.commands.HelpCommand.send_cog_help`"
 msgstr ":meth:`ext.commands.HelpCommand.send_cog_help`"
 
-#: ../../migrating.rst:1385
+#: ../../migrating.rst:1396
 msgid ":meth:`ext.commands.HelpCommand.send_group_help`"
 msgstr ":meth:`ext.commands.HelpCommand.send_group_help`"
 
-#: ../../migrating.rst:1386
+#: ../../migrating.rst:1397
 msgid ":meth:`ext.commands.HelpCommand.send_command_help`"
 msgstr ":meth:`ext.commands.HelpCommand.send_command_help`"
 
-#: ../../migrating.rst:1387
+#: ../../migrating.rst:1398
 msgid ":meth:`ext.commands.HelpCommand.prepare_help_command`"
 msgstr ":meth:`ext.commands.HelpCommand.prepare_help_command`"
 
-#: ../../migrating.rst:1388
+#: ../../migrating.rst:1399
 msgid ":meth:`ext.commands.DefaultHelpCommand.shorten_text`"
 msgstr ":meth:`ext.commands.DefaultHelpCommand.shorten_text`"
 
-#: ../../migrating.rst:1389
+#: ../../migrating.rst:1400
 msgid ":meth:`ext.commands.DefaultHelpCommand.add_command_formatting`"
 msgstr ":meth:`ext.commands.DefaultHelpCommand.add_command_formatting`"
 
-#: ../../migrating.rst:1390
+#: ../../migrating.rst:1401
 msgid ":meth:`ext.commands.MinimalHelpCommand.get_command_signature`"
 msgstr ":meth:`ext.commands.MinimalHelpCommand.get_command_signature`"
 
-#: ../../migrating.rst:1391
+#: ../../migrating.rst:1402
 msgid ":meth:`ext.commands.MinimalHelpCommand.add_bot_commands_formatting`"
 msgstr ":meth:`ext.commands.MinimalHelpCommand.add_bot_commands_formatting`"
 
-#: ../../migrating.rst:1392
+#: ../../migrating.rst:1403
 msgid ":meth:`ext.commands.MinimalHelpCommand.add_subcommand_formatting`"
 msgstr ":meth:`ext.commands.MinimalHelpCommand.add_subcommand_formatting`"
 
-#: ../../migrating.rst:1393
+#: ../../migrating.rst:1404
 msgid ":meth:`ext.commands.MinimalHelpCommand.add_aliases_formatting`"
 msgstr ":meth:`ext.commands.MinimalHelpCommand.add_aliases_formatting`"
 
-#: ../../migrating.rst:1394
+#: ../../migrating.rst:1405
 msgid ":meth:`ext.commands.MinimalHelpCommand.add_command_formatting`"
 msgstr ":meth:`ext.commands.MinimalHelpCommand.add_command_formatting`"
 
-#: ../../migrating.rst:1398
+#: ../../migrating.rst:1409
 msgid "``func`` in :meth:`ext.commands.Bot.check`"
 msgstr ":meth:`ext.commands.Bot.check` の ``func``"
 
-#: ../../migrating.rst:1399
+#: ../../migrating.rst:1410
 msgid "``func`` in :meth:`ext.commands.Bot.add_check`"
 msgstr ":meth:`ext.commands.Bot.add_check` の ``func``"
 
-#: ../../migrating.rst:1400
+#: ../../migrating.rst:1411
 msgid "``func`` in :meth:`ext.commands.Bot.remove_check`"
 msgstr ":meth:`ext.commands.Bot.remove_check` の ``func``"
 
-#: ../../migrating.rst:1401
+#: ../../migrating.rst:1412
 msgid "``func`` in :meth:`ext.commands.Bot.check_once`"
 msgstr ":meth:`ext.commands.Bot.check_once` の ``func``"
 
-#: ../../migrating.rst:1402
+#: ../../migrating.rst:1413
 msgid "``func`` in :meth:`ext.commands.Bot.add_listener`"
 msgstr ":meth:`ext.commands.Bot.add_listener` の ``func``"
 
-#: ../../migrating.rst:1403
+#: ../../migrating.rst:1414
 msgid "``func`` in :meth:`ext.commands.Bot.remove_listener`"
 msgstr ":meth:`ext.commands.Bot.remove_listener` の ``func``"
 
-#: ../../migrating.rst:1404
+#: ../../migrating.rst:1415
 msgid "``message`` in :meth:`ext.commands.Bot.get_context`"
 msgstr ":meth:`ext.commands.Bot.get_context` の ``message``"
 
-#: ../../migrating.rst:1405
+#: ../../migrating.rst:1416
 msgid "``func`` in :meth:`ext.commands.Command.add_check`"
 msgstr ":meth:`ext.commands.Command.add_check` の ``func``"
 
-#: ../../migrating.rst:1406
+#: ../../migrating.rst:1417
 msgid "``func`` in :meth:`ext.commands.Command.remove_check`"
 msgstr ":meth:`ext.commands.Command.remove_check` の ``func``"
 
-#: ../../migrating.rst:1407
+#: ../../migrating.rst:1418
 msgid "``context`` in :meth:`ext.commands.Command.__call__`"
 msgstr ":meth:`ext.commands.Command.__call__` の ``context``"
 
-#: ../../migrating.rst:1408
+#: ../../migrating.rst:1419
 msgid "``commands`` in :meth:`ext.commands.HelpCommand.filter_commands`"
 msgstr ":meth:`ext.commands.HelpCommand.filter_commands` の ``commands``"
 
-#: ../../migrating.rst:1409
+#: ../../migrating.rst:1420
 msgid "``ctx`` in :meth:`ext.commands.HelpCommand.command_callback`"
 msgstr ":meth:`ext.commands.HelpCommand.command_callback` の ``ctx``"
 
-#: ../../migrating.rst:1410
+#: ../../migrating.rst:1421
 msgid "``func`` in :meth:`ext.commands.HelpCommand.add_check`"
 msgstr ":meth:`ext.commands.HelpCommand.add_check` の ``func``"
 
-#: ../../migrating.rst:1411
+#: ../../migrating.rst:1422
 msgid "``func`` in :meth:`ext.commands.HelpCommand.remove_check`"
 msgstr ":meth:`ext.commands.HelpCommand.remove_check` の ``func``"
 
-#: ../../migrating.rst:1412
+#: ../../migrating.rst:1423
 msgid "``commands`` in :meth:`ext.commands.DefaultHelpCommand.add_indented_commands`"
 msgstr ":meth:`ext.commands.DefaultHelpCommand.add_indented_commands` の ``commands``"
 
-#: ../../migrating.rst:1413
+#: ../../migrating.rst:1424
 msgid "``cog`` in :meth:`ext.commands.Bot.add_cog`"
 msgstr ":meth:`ext.commands.Bot.add_cog` の ``cog``"
 
-#: ../../migrating.rst:1414
+#: ../../migrating.rst:1425
 msgid "``name`` in :meth:`ext.commands.Bot.get_cog`"
 msgstr ":meth:`ext.commands.Bot.get_cog` の ``name``"
 
-#: ../../migrating.rst:1415
+#: ../../migrating.rst:1426
 msgid "``name`` in :meth:`ext.commands.Bot.remove_cog`"
 msgstr ":meth:`ext.commands.Bot.remove_cog` の ``name``"
 
-#: ../../migrating.rst:1416
+#: ../../migrating.rst:1427
 msgid "``command`` in :meth:`ext.commands.Context.invoke`"
 msgstr ":meth:`ext.commands.Context.invoke` の ``command``"
 
-#: ../../migrating.rst:1417
+#: ../../migrating.rst:1428
 msgid "``command`` in :meth:`ext.commands.GroupMixin.add_command`"
 msgstr ":meth:`ext.commands.GroupMixin.add_command` の ``command``"
 
-#: ../../migrating.rst:1418
+#: ../../migrating.rst:1429
 msgid "``name`` in :meth:`ext.commands.GroupMixin.get_command`"
 msgstr ":meth:`ext.commands.GroupMixin.get_command` の ``name``"
 
-#: ../../migrating.rst:1419
+#: ../../migrating.rst:1430
 msgid "``name`` in :meth:`ext.commands.GroupMixin.remove_command`"
 msgstr ":meth:`ext.commands.GroupMixin.remove_command` の ``name``"
 
-#: ../../migrating.rst:1421
+#: ../../migrating.rst:1432
 msgid "The following parameters have been removed:"
 msgstr "以下のパラメータは削除されました。"
 
-#: ../../migrating.rst:1423
+#: ../../migrating.rst:1434
 msgid "``self_bot`` from :class:`~ext.commands.Bot`"
 msgstr ":class:`~ext.commands.Bot` の ``self_bot``"
 
-#: ../../migrating.rst:1425
+#: ../../migrating.rst:1436
 msgid "This has been done due to the :ref:`migrating_2_0_userbot_removal` changes."
 msgstr "これは :ref:`migrating_2_0_userbot_removal` の変更によって行われました。"
 
-#: ../../migrating.rst:1431
+#: ../../migrating.rst:1442
 msgid "``name`` in :meth:`ext.commands.Bot.add_listener`"
 msgstr ":meth:`ext.commands.Bot.add_listener` の ``name``"
 
-#: ../../migrating.rst:1432
+#: ../../migrating.rst:1443
 msgid "``name`` in :meth:`ext.commands.Bot.remove_listener`"
 msgstr ":meth:`ext.commands.Bot.remove_listener` の ``name``"
 
-#: ../../migrating.rst:1433
+#: ../../migrating.rst:1444
 msgid "``name`` in :meth:`ext.commands.Bot.listen`"
 msgstr ":meth:`ext.commands.Bot.listen` の ``name``"
 
-#: ../../migrating.rst:1434
+#: ../../migrating.rst:1445
 msgid "``name`` in :meth:`ext.commands.Cog.listener`"
 msgstr ":meth:`ext.commands.Cog.listener` の ``name``"
 
-#: ../../migrating.rst:1435
+#: ../../migrating.rst:1446
 msgid "``name`` in :meth:`ext.commands.Command`"
 msgstr ":meth:`ext.commands.Command` の ``name``"
 
-#: ../../migrating.rst:1436
+#: ../../migrating.rst:1447
 msgid "``name`` and ``cls`` in :meth:`ext.commands.command`"
 msgstr ":meth:`ext.commands.command` の ``name`` と ``cls``"
 
-#: ../../migrating.rst:1437
+#: ../../migrating.rst:1448
 msgid "``name`` and ``cls`` in :meth:`ext.commands.group`"
 msgstr ":meth:`ext.commands.group` の ``name`` と ``cls``"
 
-#: ../../migrating.rst:1442
+#: ../../migrating.rst:1453
 msgid "The following attributes have been removed:"
 msgstr "以下の属性が削除されました："
 
-#: ../../migrating.rst:1444
+#: ../../migrating.rst:1455
 msgid "``original`` from the :exc:`~ext.commands.ExtensionNotFound`"
 msgstr ":exc:`~ext.commands.ExtensionNotFound` の ``original``"
 
-#: ../../migrating.rst:1445
+#: ../../migrating.rst:1456
 msgid "``type`` from the :class:`~ext.commands.Cooldown` class that was provided by the :attr:`ext.commands.CommandOnCooldown.cooldown` attribute"
 msgstr ":attr:`ext.commands.CommandOnCooldown.cooldown` から提供されていた :class:`~ext.commands.Cooldown` クラスの ``type``"
 
-#: ../../migrating.rst:1448
+#: ../../migrating.rst:1459
 msgid "Use :attr:`ext.commands.CommandOnCooldown.type` instead."
 msgstr "代わりに :attr:`ext.commands.CommandOnCooldown.type` を使用してください。"
 
-#: ../../migrating.rst:1450
+#: ../../migrating.rst:1461
 msgid "``clean_prefix`` from the :class:`~ext.commands.HelpCommand`"
 msgstr ":class:`~ext.commands.HelpCommand` の ``clean_prefix``"
 
-#: ../../migrating.rst:1452
+#: ../../migrating.rst:1463
 msgid "Use :attr:`ext.commands.Context.clean_prefix` instead."
 msgstr "代わりに :attr:`ext.commands.Context.clean_prefix` を使用してください。"
 
-#: ../../migrating.rst:1457
+#: ../../migrating.rst:1468
 msgid ":meth:`ext.commands.Bot.add_cog` is now raising :exc:`ClientException` when a cog with the same name is already loaded."
 msgstr ":meth:`ext.commands.Bot.add_cog` は、同名のコグがすでに読み込まれている場合には :exc:`ClientException` を送出するようになりました。"
 
-#: ../../migrating.rst:1459
+#: ../../migrating.rst:1470
 msgid "To override a cog, the new ``override`` parameter can be used."
 msgstr "コグを上書きするには、新しい ``override`` パラメータが使用できます。"
 
-#: ../../migrating.rst:1461
+#: ../../migrating.rst:1472
 msgid "Metaclass of :class:`~ext.commands.Context` changed from :class:`abc.ABCMeta` to :class:`type`."
 msgstr ":class:`~ext.commands.Context` のメタクラスが :class:`abc.ABCMeta` から :class:`type` へと変更されました。"
 
-#: ../../migrating.rst:1462
+#: ../../migrating.rst:1473
 msgid "Changed type of :attr:`ext.commands.Command.clean_params` from :class:`collections.OrderedDict` to :class:`dict`. As the latter is guaranteed to preserve insertion order since Python 3.7."
 msgstr ":attr:`ext.commands.Command.clean_params` の型を :class:`collections.OrderedDict` からPython 3.7以降で追加順が必ず保持される :class:`dict` に変更しました。"
 
-#: ../../migrating.rst:1464
+#: ../../migrating.rst:1475
 msgid ":attr:`ext.commands.ChannelNotReadable.argument` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes."
 msgstr ":ref:`migrating_2_0_thread_support` の変更により、 :attr:`ext.commands.ChannelNotReadable.argument` は :class:`Thread` になる可能性があります。"
 
-#: ../../migrating.rst:1465
+#: ../../migrating.rst:1476
 msgid ":attr:`ext.commands.NSFWChannelRequired.channel` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes."
 msgstr ":ref:`migrating_2_0_thread_support` の変更により、 :attr:`ext.commands.NSFWChannelRequired.channel` は :class:`Thread` になる可能性があります。"
 
-#: ../../migrating.rst:1466
+#: ../../migrating.rst:1477
 msgid ":attr:`ext.commands.Context.channel` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes."
 msgstr ":ref:`migrating_2_0_thread_support` の変更により、 :attr:`ext.commands.Context.channel` は :class:`Thread` になる可能性があります。"
 
-#: ../../migrating.rst:1467
+#: ../../migrating.rst:1478
 msgid ":attr:`ext.commands.Context.channel` may now be a :class:`PartialMessageable`."
 msgstr ":attr:`ext.commands.Context.channel` が :class:`PartialMessageable` になりうるようになりました。"
 
-#: ../../migrating.rst:1468
+#: ../../migrating.rst:1479
 msgid "``MissingPermissions.missing_perms`` has been renamed to :attr:`ext.commands.MissingPermissions.missing_permissions`."
 msgstr "``MissingPermissions.missing_perms`` は :attr:`ext.commands.MissingPermissions.missing_permissions` へと名前が変更されました。"
 
-#: ../../migrating.rst:1469
+#: ../../migrating.rst:1480
 msgid "``BotMissingPermissions.missing_perms`` has been renamed to :attr:`ext.commands.BotMissingPermissions.missing_permissions`."
 msgstr "``BotMissingPermissions.missing_perms`` は :attr:`ext.commands.BotMissingPermissions.missing_permissions` へと名前が変更されました。"
 
-#: ../../migrating.rst:1470
+#: ../../migrating.rst:1481
 msgid ":meth:`ext.commands.Cog.cog_load` has been added as part of the :ref:`migrating_2_0_commands_extension_cog_async` changes."
 msgstr ":meth:`ext.commands.Cog.cog_load` が、 :ref:`migrating_2_0_commands_extension_cog_async` の変更に伴って追加されました。"
 
-#: ../../migrating.rst:1471
+#: ../../migrating.rst:1482
 msgid ":meth:`ext.commands.Cog.cog_unload` may now be a :term:`coroutine` due to the :ref:`migrating_2_0_commands_extension_cog_async` changes."
 msgstr ":meth:`ext.commands.Cog.cog_unload` は、 :ref:`migrating_2_0_commands_extension_cog_async` のため :term:`coroutine` になることができるようになりました。"
 
-#: ../../migrating.rst:1472
+#: ../../migrating.rst:1483
 msgid ":attr:`ext.commands.Command.clean_params` type now uses a custom :class:`inspect.Parameter` to handle defaults."
 msgstr ":attr:`ext.commands.Command.clean_params` 型は既定値を扱うためカスタム :class:`inspect.Parameter` を使用するようになりました。"
 
-#: ../../migrating.rst:1477
+#: ../../migrating.rst:1488
 msgid "Tasks Extension Changes"
 msgstr "タスク拡張機能の変更"
 
-#: ../../migrating.rst:1479
+#: ../../migrating.rst:1490
 msgid "Calling :meth:`ext.tasks.Loop.stop` in :meth:`~ext.tasks.Loop.before_loop` now stops the first iteration from running."
-msgstr ":meth:`~ext.tasks.Loop.stop` を :meth:`~ext.tasks.Loop.before_loop` で呼び出すと、最初のイテレーションが実行されなくなりました"
+msgstr ":meth:`~ext.tasks.Loop.stop` を :meth:`~ext.tasks.Loop.before_loop` で呼び出すと、最初のイテレーションが実行されなくなりました。"
 
-#: ../../migrating.rst:1480
+#: ../../migrating.rst:1491
 msgid "Calling :meth:`ext.tasks.Loop.change_interval` now changes the interval for the sleep time right away, rather than on the next loop iteration."
-msgstr ":meth:`ext.tasks.Loop.change_interval` を呼び出すと、次のループの繰り返しではなく、すぐにスリープ時間の間隔が変更されるようになりました"
+msgstr ":meth:`ext.tasks.Loop.change_interval` を呼び出すと、次のループの繰り返しの時ではなく、直ちにスリープ時間の間隔が変更されるようになりました。"
 
-#: ../../migrating.rst:1482
+#: ../../migrating.rst:1493
 msgid "``loop`` parameter in :func:`ext.tasks.loop` can no longer be ``None``."
-msgstr ":func:`ext.tasks.loop` のパラメーター ``loop`` は ``None`` にすることができなくなりました"
+msgstr ":func:`ext.tasks.loop` のパラメーター ``loop`` に ``None`` を渡せなくなりました。"
 
-#: ../../migrating.rst:1485
+#: ../../migrating.rst:1496
 msgid "Migrating to v1.0"
 msgstr "v1.0への移行"
 
-#: ../../migrating.rst:1487
+#: ../../migrating.rst:1498
 msgid "The contents of that migration has been moved to :ref:`migrating_1_0`."
 msgstr "この移行に関する内容は :ref:`migrating_1_0` に移動されました。"
 
