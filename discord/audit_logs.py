@@ -188,11 +188,20 @@ def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]
 def _transform_automod_trigger_metadata(
     entry: AuditLogEntry, data: AutoModerationTriggerMetadata
 ) -> Optional[AutoModTrigger]:
+
+    if isinstance(entry.target, AutoModRule):
+        # type of trigger cannot be changed
+        # try to get trigger type from the resolved rule
+        try:
+            return AutoModTrigger.from_data(type=entry.target.trigger.type.value, data=data)
+        except Exception:
+            pass
+
+    # if no trigger type from resolved rule, cannot determine trigger type if data is empty
     if not data:
         return None
 
-    # discord doesn't provide the type of the trigger
-    # have to infer from the data and present keys
+    # try to infer trigger type from data
     if 'presets' in data:
         return AutoModTrigger(presets=AutoModPresets._from_value(data['presets']), allow_list=data.get('allow_list'))  # type: ignore
     elif 'keyword_filter' in data:

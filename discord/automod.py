@@ -173,26 +173,26 @@ class AutoModTrigger:
     @classmethod
     def from_data(cls, type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
         type_ = try_enum(AutoModRuleTriggerType, type)
-        if type_ is AutoModRuleTriggerType.keyword:
-            return cls(type=type_, keyword_filter=data['keyword_filter'])  # type: ignore # unable to typeguard due to outer payload
+        if data is None:
+            return cls(type=type_)
+        elif type_ is AutoModRuleTriggerType.keyword:
+            return cls(type=type_, keyword_filter=data.get('keyword_filter'))  # type: ignore # unable to typeguard due to outer payload
         elif type_ is AutoModRuleTriggerType.keyword_preset:
             return cls(
-                type=type_, presets=AutoModPresets._from_value(data['presets']), allow_list=data.get('allow_list')  # type: ignore # unable to typeguard due to outer payload
+                type=type_, presets=AutoModPresets._from_value(data.get('presets', [])), allow_list=data.get('allow_list')  # type: ignore # unable to typeguard due to outer payload
             )
         elif type_ is AutoModRuleTriggerType.mention_spam:
-            return cls(type=type_, mention_limit=data['mention_total_limit'])  # type: ignore # unable to typeguard due to outer payload
+            return cls(type=type_, mention_limit=data.get('mention_total_limit'))  # type: ignore # unable to typeguard due to outer payload
         else:
             return cls(type=type_)
 
-    def to_metadata_dict(self) -> Dict[str, Any]:
+    def to_metadata_dict(self) -> Optional[Dict[str, Any]]:
         if self.type is AutoModRuleTriggerType.keyword:
             return {'keyword_filter': self.keyword_filter}
         elif self.type is AutoModRuleTriggerType.keyword_preset:
             return {'presets': self.presets.to_array(), 'allow_list': self.allow_list}
         elif self.type is AutoModRuleTriggerType.mention_spam:
             return {'mention_total_limit': self.mention_limit}
-
-        return {}
 
 
 class AutoModRule:
@@ -374,7 +374,9 @@ class AutoModRule:
             payload['event_type'] = event_type
 
         if trigger is not MISSING:
-            payload['trigger_metadata'] = trigger.to_metadata_dict()
+            trigger_metadata = trigger.to_metadata_dict()
+            if trigger_metadata is not None:
+                payload['trigger_metadata'] = trigger_metadata
 
         if enabled is not MISSING:
             payload['enabled'] = enabled
