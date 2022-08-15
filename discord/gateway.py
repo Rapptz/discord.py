@@ -487,7 +487,7 @@ class DiscordWebSocket:
 
         await self.call_hooks('before_identify', initial=self._initial_identify)
         await self.send_as_json(payload)
-        _log.info('Gateway has sent the IDENTIFY payload.')
+        _log.debug('Gateway has sent the IDENTIFY payload.')
 
     async def resume(self) -> None:
         """Sends the RESUME packet."""
@@ -501,7 +501,7 @@ class DiscordWebSocket:
         }
 
         await self.send_as_json(payload)
-        _log.info('Gateway has sent the RESUME payload.')
+        _log.debug('Gateway has sent the RESUME payload.')
 
     async def received_message(self, msg: Any, /) -> None:
         if type(msg) is bytes:
@@ -654,15 +654,15 @@ class DiscordWebSocket:
                 self._keep_alive = None
 
             if isinstance(e, asyncio.TimeoutError):
-                _log.info('Timed out receiving packet. Attempting a reconnect.')
+                _log.debug('Timed out receiving packet. Attempting a reconnect.')
                 raise ReconnectWebSocket from None
 
             code = self._close_code or self.socket.close_code
             if self._can_handle_close():
-                _log.info('Websocket closed with %s, attempting a reconnect.', code)
+                _log.debug('Websocket closed with %s, attempting a reconnect.', code)
                 raise ReconnectWebSocket from None
             else:
-                _log.info('Websocket closed with %s, cannot reconnect.', code)
+                _log.debug('Websocket closed with %s, cannot reconnect.', code)
                 raise ConnectionClosed(self.socket, code=code) from None
 
     async def debug_send(self, data: str, /) -> None:
@@ -1029,7 +1029,7 @@ class DiscordVoiceWebSocket:
             if self._keep_alive:
                 self._keep_alive.ack()
         elif op == self.RESUMED:
-            _log.info('Voice RESUME succeeded.')
+            _log.debug('Voice RESUME succeeded.')
         elif op == self.SESSION_DESCRIPTION:
             self._connection.mode = data['mode']
             await self.load_secret_key(data)
@@ -1068,7 +1068,7 @@ class DiscordVoiceWebSocket:
 
         mode = modes[0]
         await self.select_protocol(state.ip, state.port, mode)
-        _log.info('Selected the voice protocol for use: %s.', mode)
+        _log.debug('Selected the voice protocol for use: %s.', mode)
 
     @property
     def latency(self) -> float:
@@ -1086,7 +1086,7 @@ class DiscordVoiceWebSocket:
         return sum(heartbeat.recent_ack_latencies) / len(heartbeat.recent_ack_latencies)
 
     async def load_secret_key(self, data: Dict[str, Any]) -> None:
-        _log.info('Received secret key for voice connection.')
+        _log.debug('Received secret key for voice connection.')
         self.secret_key = self._connection.secret_key = data['secret_key']
         await self.speak()
         await self.speak(SpeakingState.none)

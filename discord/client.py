@@ -780,7 +780,7 @@ class Client:
                 while True:
                     await self.ws.poll_event()
             except ReconnectWebSocket as e:
-                _log.info('Got a request to %s the websocket.', e.op)
+                _log.debug('Got a request to %s the websocket.', e.op)
                 self.dispatch('disconnect')
                 ws_params.update(sequence=self.ws.sequence, resume=e.resume, session=self.ws.session_id)
                 if e.resume:

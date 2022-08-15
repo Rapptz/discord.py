@@ -189,7 +189,7 @@ class FFmpegAudio(AudioSource):
         if proc is MISSING:
             return
 
-        _log.info('Preparing to terminate ffmpeg process %s.', proc.pid)
+        _log.debug('Preparing to terminate ffmpeg process %s.', proc.pid)
 
         try:
             proc.kill()
@@ -533,9 +533,9 @@ class FFmpegOpusAudio(FFmpegAudio):
             except Exception:
                 _log.exception("Fallback probe using '%s' failed", executable)
             else:
-                _log.info("Fallback probe found codec=%s, bitrate=%s", codec, bitrate)
+                _log.debug("Fallback probe found codec=%s, bitrate=%s", codec, bitrate)
         else:
-            _log.info("Probe found codec=%s, bitrate=%s", codec, bitrate)
+            _log.debug("Probe found codec=%s, bitrate=%s", codec, bitrate)
         finally:
             return codec, bitrate
 
@@ -745,5 +745,5 @@ class AudioPlayer(threading.Thread):
     def _speak(self, speaking: SpeakingState) -> None:
         try:
             asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.client.loop)
-        except Exception as e:
-            _log.info("Speaking call in player failed: %s", e)
+        except Exception:
+            _log.exception('Speaking call in player failed.')

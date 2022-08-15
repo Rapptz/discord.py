@@ -307,7 +307,7 @@ class VoiceClient(VoiceProtocol):
 
     async def on_voice_server_update(self, data: VoiceServerUpdatePayload) -> None:
         if self._voice_server_complete.is_set():
-            _log.info('Ignoring extraneous voice server update.')
+            _log.warning('Ignoring extraneous voice server update.')
             return
 
         self.token = data['token']
