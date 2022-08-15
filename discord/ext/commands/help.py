@@ -1070,7 +1070,7 @@ class DefaultHelpCommand(HelpCommand):
     def get_command_signature(self, command: Command[Any, ..., Any], /) -> str:
         """Retrieves the signature portion of the help page.
 
-        Calls :meth:`~.HelpCommand.get_command_signature` if :attr:`show_parameter_descriptions` is ``False`` 
+        Calls :meth:`~.HelpCommand.get_command_signature` if :attr:`show_parameter_descriptions` is ``False``
         else returns a modified signature where the command parameters are not shown.
 
         .. versionadded:: 2.0
