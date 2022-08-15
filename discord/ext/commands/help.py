@@ -1038,7 +1038,7 @@ class DefaultHelpCommand(HelpCommand):
         self.dm_help_threshold: int = options.pop('dm_help_threshold', 1000)
         self.arguments_heading: str = options.pop('arguments_heading', "Arguments:")
         self.commands_heading: str = options.pop('commands_heading', 'Commands:')
-        self.default_argument_description: str = options.pop('default_argument_description', 'No description given.')
+        self.default_argument_description: str = options.pop('default_argument_description', 'No description given')
         self.no_category: str = options.pop('no_category', 'No Category')
         self.paginator: Paginator = options.pop('paginator', None)
         self.show_parameter_descriptions: bool = options.pop('show_parameter_descriptions', True)
@@ -1164,15 +1164,9 @@ class DefaultHelpCommand(HelpCommand):
         for argument in arguments:
             name = argument.name
             width = max_size - (get_width(name) - len(name))
-            entry = f'{self.indent * " "}{name:<{width}}'
-            if argument.description is not None:
-                entry += f' - {argument.description}'
-            else:
-                entry += f' - {self.default_argument_description}'
-
+            entry = f'{self.indent * " "}{name:<{width}} {argument.description or self.default_argument_description}'
             # we do not want to shorten the default value, if any.
             entry = self.shorten_text(entry)
-
             if argument.displayed_default is not None:
                 entry += f' (default: {argument.displayed_default})'
 
