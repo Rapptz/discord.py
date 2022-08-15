@@ -46,7 +46,7 @@ from typing import (
 
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
-from .translator import TranslationContextLocation, locale_str, Translator, TranslationContext
+from .translator import TranslationContextLocation, TranslationContext, Translator, locale_str
 from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
 from ..abc import GuildChannel
 from ..threads import Thread

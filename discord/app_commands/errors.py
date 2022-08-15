@@ -52,7 +52,7 @@ __all__ = (
 if TYPE_CHECKING:
     from .commands import Command, Group, ContextMenu
     from .transformers import Transformer
-    from .translator import TranslationContext, locale_str
+    from .translator import TranslationContextTypes, locale_str
     from ..types.snowflake import Snowflake, SnowflakeList
     from .checks import Cooldown
 
@@ -164,11 +164,11 @@ class TranslationError(AppCommandError):
         *msg: str,
         string: Optional[Union[str, locale_str]] = None,
         locale: Optional[Locale] = None,
-        context: TranslationContext,
+        context: TranslationContextTypes,
     ) -> None:
         self.string: Optional[Union[str, locale_str]] = string
         self.locale: Optional[Locale] = locale
-        self.context: TranslationContext = context
+        self.context: TranslationContextTypes = context
 
         if msg:
             super().__init__(*msg)

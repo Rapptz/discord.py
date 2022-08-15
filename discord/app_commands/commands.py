@@ -52,7 +52,7 @@ from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
-from .translator import TranslationContext, TranslationContextLocation, Translator, locale_str
+from .translator import TranslationContextLocation, TranslationContext, Translator, locale_str
 from ..message import Message
 from ..user import User
 from ..member import Member

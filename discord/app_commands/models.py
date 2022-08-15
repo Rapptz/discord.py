@@ -26,7 +26,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from .errors import MissingApplicationID
-from .translator import TranslationContextLocation, Translator, TranslationContext, locale_str
+from .translator import TranslationContextLocation, TranslationContext, locale_str, Translator
 from ..permissions import Permissions
 from ..enums import AppCommandOptionType, AppCommandType, AppCommandPermissionType, ChannelType, Locale, try_enum
 from ..mixins import Hashable

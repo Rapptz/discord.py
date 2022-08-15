@@ -23,13 +23,19 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union, overload
 from .errors import TranslationError
 from ..enums import Enum, Locale
 
 
+if TYPE_CHECKING:
+    from .commands import Command, ContextMenu, Group, Parameter
+    from .models import Choice
+
+
 __all__ = (
     'TranslationContextLocation',
+    'TranslationContextTypes',
     'TranslationContext',
     'Translator',
     'locale_str',
@@ -47,7 +53,11 @@ class TranslationContextLocation(Enum):
     other = 7
 
 
-class TranslationContext:  # type: ignore  # See below
+_L = TypeVar('_L', bound=TranslationContextLocation)
+_D = TypeVar('_D')
+
+
+class TranslationContext(Generic[_L, _D]):
     """A class that provides context for the :class:`locale_str` being translated.
 
     This is useful to determine where exactly the string is located and aid in looking
@@ -63,60 +73,77 @@ class TranslationContext:  # type: ignore  # See below
 
     __slots__ = ('location', 'data')
 
-    def __init__(self, location: TranslationContextLocation, data: Any) -> None:
-        self.location: TranslationContextLocation = location
-        self.data: Any = data
+    @overload
+    def __init__(
+        self, location: Literal[TranslationContextLocation.command_name], data: Union[Command[Any, ..., Any], ContextMenu]
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self, location: Literal[TranslationContextLocation.command_description], data: Command[Any, ..., Any]
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        location: Literal[TranslationContextLocation.group_name, TranslationContextLocation.group_description],
+        data: Group,
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        location: Literal[TranslationContextLocation.parameter_name, TranslationContextLocation.parameter_description],
+        data: Parameter,
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(self, location: Literal[TranslationContextLocation.choice_name], data: Choice[Any]) -> None:
+        ...
+
+    @overload
+    def __init__(self, location: Literal[TranslationContextLocation.other], data: Any) -> None:
+        ...
+
+    def __init__(self, location: _L, data: _D) -> None:
+        self.location: _L = location
+        self.data: _D = data
 
 
-if TYPE_CHECKING:
-    # For type checking purposes, it makes sense to allow the user to leverage type narrowing
-    # So code like this works as expected:
-    # if context.type is TranslationContextLocation.command_name:
-    #    reveal_type(context.data)  # Revealed type is Command | ContextMenu
-    #
-    # Unfortunately doing a trick like this requires lying to the type checker so
-    # this is what the code below enables.
-    #
-    # Should this trick stop working then it might be fair to remove this code.
-    # It's purely here for convenience.
+# For type checking purposes, it makes sense to allow the user to leverage type narrowing
+# So code like this works as expected:
+#
+# if context.type == TranslationContextLocation.command_name:
+#    reveal_type(context.data)  # Revealed type is Command | ContextMenu
+#
+# This requires a union of types
+CommandNameTranslationContext = TranslationContext[
+    Literal[TranslationContextLocation.command_name], Union['Command[Any, ..., Any]', 'ContextMenu']
+]
+CommandDescriptionTranslationContext = TranslationContext[
+    Literal[TranslationContextLocation.command_description], 'Command[Any, ..., Any]'
+]
+GroupTranslationContext = TranslationContext[
+    Literal[TranslationContextLocation.group_name, TranslationContextLocation.group_description], 'Group'
+]
+ParameterTranslationContext = TranslationContext[
+    Literal[TranslationContextLocation.parameter_name, TranslationContextLocation.parameter_description], 'Parameter'
+]
+ChoiceTranslationContext = TranslationContext[Literal[TranslationContextLocation.choice_name], 'Choice[Any]']
+OtherTranslationContext = TranslationContext[Literal[TranslationContextLocation.other], Any]
 
-    from .commands import Command, ContextMenu, Group, Parameter
-    from .models import Choice
-
-    class _CommandNameTranslationContext:
-        location: Literal[TranslationContextLocation.command_name]
-        data: Union[Command[Any, ..., Any], ContextMenu]
-
-    class _CommandDescriptionTranslationContext:
-        location: Literal[TranslationContextLocation.command_description]
-        data: Command[Any, ..., Any]
-
-    class _GroupTranslationContext:
-        location: Literal[TranslationContextLocation.group_name, TranslationContextLocation.group_description]
-        data: Group
-
-    class _ParameterTranslationContext:
-        location: Literal[TranslationContextLocation.parameter_description, TranslationContextLocation.parameter_name]
-        data: Parameter
-
-    class _ChoiceTranslationContext:
-        location: Literal[TranslationContextLocation.choice_name]
-        data: Choice[Union[int, str, float]]
-
-    class _OtherTranslationContext:
-        location: Literal[TranslationContextLocation.other]
-        data: Any
-
-    class TranslationContext(
-        _CommandNameTranslationContext,
-        _CommandDescriptionTranslationContext,
-        _GroupTranslationContext,
-        _ParameterTranslationContext,
-        _ChoiceTranslationContext,
-        _OtherTranslationContext,
-    ):
-        def __init__(self, location: TranslationContextLocation, data: Any) -> None:
-            ...
+TranslationContextTypes = Union[
+    CommandNameTranslationContext,
+    CommandDescriptionTranslationContext,
+    GroupTranslationContext,
+    ParameterTranslationContext,
+    ChoiceTranslationContext,
+    OtherTranslationContext,
+]
 
 
 class Translator:
@@ -162,7 +189,9 @@ class Translator:
         """
         pass
 
-    async def _checked_translate(self, string: locale_str, locale: Locale, context: TranslationContext) -> Optional[str]:
+    async def _checked_translate(
+        self, string: locale_str, locale: Locale, context: TranslationContextTypes
+    ) -> Optional[str]:
         try:
             return await self.translate(string, locale, context)
         except TranslationError:
@@ -170,7 +199,7 @@ class Translator:
         except Exception as e:
             raise TranslationError(string=string, locale=locale, context=context) from e
 
-    async def translate(self, string: locale_str, locale: Locale, context: TranslationContext) -> Optional[str]:
+    async def translate(self, string: locale_str, locale: Locale, context: TranslationContextTypes) -> Optional[str]:
         """|coro|
 
         Translates the given string to the specified locale.
@@ -190,6 +219,9 @@ class Translator:
             The locale being requested for translation.
         context: :class:`TranslationContext`
             The translation context where the string originated from.
+            For better type checking ergonomics, the ``TranslationContextTypes``
+            type can be used instead to aid with type narrowing. It is functionally
+            equivalent to :class:`TranslationContext`.
         """
 
         return None
