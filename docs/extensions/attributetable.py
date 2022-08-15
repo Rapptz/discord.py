@@ -276,7 +276,7 @@ def class_results_to_node(key: str, elements: Sequence[TableElement]) -> attribu
     return attributetablecolumn('', title, ul)
 
 
-def setup(app: Sphinx) -> None:
+def setup(app: Sphinx):
     app.add_directive('attributetable', PyAttributeTable)
     app.add_node(attributetable, html=(visit_attributetable_node, depart_attributetable_node))
     app.add_node(attributetablecolumn, html=(visit_attributetablecolumn_node, depart_attributetablecolumn_node))
@@ -285,3 +285,4 @@ def setup(app: Sphinx) -> None:
     app.add_node(attributetable_item, html=(visit_attributetable_item_node, depart_attributetable_item_node))
     app.add_node(attributetableplaceholder)
     app.connect('doctree-resolved', process_attributetable)
+    return {'parallel_read_safe': True}

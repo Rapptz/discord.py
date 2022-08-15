@@ -130,3 +130,4 @@ def add_builders(app):
 def setup(app):
     add_builders(app)
     app.connect('builder-inited', add_custom_jinja2)
+    return {'parallel_read_safe': True}
