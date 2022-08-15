@@ -42,7 +42,7 @@ jobs:
         shell: bash
         run: |
           cd docs
-          sphinx-build -b html -D language=en -a -n -T -W --keep-going . _build/html
+          sphinx-build -b html -D language=en -j auto -a -n -T -W --keep-going . _build/html
         env:
           DOCS_LANGUAGE: en
 
