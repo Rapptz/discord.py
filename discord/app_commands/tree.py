@@ -1189,6 +1189,8 @@ class CommandTree(Generic[ClientT]):
             if ctx_menu.on_error is not None:
                 await ctx_menu.on_error(interaction, e)
             await self.on_error(interaction, e)
+        else:
+            self.client.dispatch('app_command_completion', interaction, ctx_menu)
 
     async def interaction_check(self, interaction: Interaction, /) -> bool:
         """|coro|
@@ -1237,3 +1239,5 @@ class CommandTree(Generic[ClientT]):
         except AppCommandError as e:
             await command._invoke_error_handlers(interaction, e)
             await self.on_error(interaction, e)
+        else:
+            self.client.dispatch('app_command_completion', interaction, command)

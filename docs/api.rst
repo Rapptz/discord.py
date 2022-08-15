@@ -215,6 +215,18 @@ App Commands
     :param payload: The raw event payload data.
     :type payload: :class:`RawAppCommandPermissionsUpdateEvent`
 
+.. function:: on_app_command_completion(interaction, command)
+
+    Called when a :class:`app_commands.Command` or :class:`app_commands.ContextMenu` has
+    successfully completed without error.
+
+    .. versionadded:: 2.0
+
+    :param interaction: The interaction of the command.
+    :type interaction: :class:`Interaction`
+    :param command: The command that completed successfully
+    :type command: Union[:class:`app_commands.Command`, :class:`app_commands.ContextMenu`]
+
 AutoMod
 ~~~~~~~~
 
