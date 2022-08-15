@@ -1068,6 +1068,23 @@ class DefaultHelpCommand(HelpCommand):
         )
 
     def get_command_signature(self, command: Command[Any, ..., Any], /) -> str:
+        """Retrieves the signature portion of the help page.
+
+        Calls :meth:`~.HelpCommand.get_command_signature` if :attr:`show_parameter_descriptions` is ``False`` 
+        else returns a modified signature where the command parameters are not shown.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ------------
+        command: :class:`Command`
+            The command to get the signature of.
+
+        Returns
+        --------
+        :class:`str`
+            The signature for the command.
+        """
         if self.show_parameter_descriptions is False:
             return super().get_command_signature(command)
 
@@ -1125,7 +1142,7 @@ class DefaultHelpCommand(HelpCommand):
             self.paginator.add_line(self.shorten_text(entry))
 
     def add_command_arguments(self, command: Command[Any, ..., Any], /) -> None:
-        """Indents a list of command arguments after :attr:`.arguments_heading`.
+        """Indents a list of command arguments after the :attr:`.arguments_heading`.
 
         The default implementation is the argument :attr:`~.commands.Parameter.name` indented by
         :attr:`indent` spaces, padded to ``max_size`` using :meth:`~HelpCommand.get_max_size`
