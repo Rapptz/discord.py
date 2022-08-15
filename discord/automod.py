@@ -143,32 +143,32 @@ class AutoModTrigger:
     def __init__(
         self,
         *,
-        type: AutoModRuleTriggerType = MISSING,
-        keyword_filter: List[str] = MISSING,
-        presets: AutoModPresets = MISSING,
-        allow_list: List[str] = MISSING,
-        mention_limit: int = MISSING,
+        type: Optional[AutoModRuleTriggerType] = None,
+        keyword_filter: Optional[List[str]] = None,
+        presets: Optional[AutoModPresets] = None,
+        allow_list: Optional[List[str]] = None,
+        mention_limit: Optional[int] = None,
     ) -> None:
-        if type is MISSING and sum(arg is not MISSING for arg in (keyword_filter, presets, mention_limit)) > 1:
+        if type is None and sum(arg is not None for arg in (keyword_filter, presets, mention_limit)) > 1:
             raise ValueError('Please pass only one of keyword_filter, presets, or mention_limit.')
 
-        if type is not MISSING:
+        if type is not None:
             self.type = type
-        elif self.keyword_filter is not MISSING:
+        elif keyword_filter is not None:
             self.type = AutoModRuleTriggerType.keyword
-        elif self.presets is not MISSING:
+        elif presets is not None:
             self.type = AutoModRuleTriggerType.keyword_preset
-        elif self.mention_limit is not MISSING:
+        elif mention_limit is not None:
             self.type = AutoModRuleTriggerType.mention_spam
         else:
             raise ValueError(
                 'Please pass the trigger type explicitly if not using keyword_filter, presets, or mention_limit.'
             )
 
-        self.keyword_filter: List[str] = keyword_filter if keyword_filter is not MISSING else []
-        self.presets: AutoModPresets = presets if presets is not MISSING else AutoModPresets()
-        self.allow_list: List[str] = allow_list if allow_list is not MISSING else []
-        self.mention_limit: int = mention_limit if mention_limit is not MISSING else 0
+        self.keyword_filter: List[str] = keyword_filter if keyword_filter is not None else []
+        self.presets: AutoModPresets = presets if presets is not None else AutoModPresets()
+        self.allow_list: List[str] = allow_list if allow_list is not None else []
+        self.mention_limit: int = mention_limit if mention_limit is not None else 0
 
     @classmethod
     def from_data(cls, type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
