@@ -318,6 +318,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         self.flag_converter: Optional[Tuple[str, Type[FlagConverter]]] = getattr(
             wrapped.callback, '__hybrid_command_flag__', None
         )
+        self.module = wrapped.module
 
     def _copy_with(self, **kwargs) -> Self:
         copy: Self = super()._copy_with(**kwargs)  # type: ignore
@@ -649,6 +650,7 @@ class HybridGroup(Group[CogT, P, T]):
 
             # This prevents the group from re-adding the command at __init__
             self.app_command.parent = parent
+            self.app_command.module = self.module
 
             if fallback is not None:
                 command = HybridAppCommand(self)
