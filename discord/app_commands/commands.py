@@ -2094,6 +2094,23 @@ def describe(**parameters: Union[str, locale_str]) -> Callable[[T], T]:
         async def ban(interaction: discord.Interaction, member: discord.Member):
             await interaction.response.send_message(f'Banned {member}')
 
+    Alternatively, you can describe parameters using Google, Sphinx, or Numpy style docstrings.
+
+    Example:
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        async def ban(interaction: discord.Interaction, member: discord.Member):
+            \"\"\"Bans a member
+
+            Parameters
+            -----------
+            member: discord.Member
+                the member to ban
+            \"\"\"
+            await interaction.response.send_message(f'Banned {member}')
+
     Parameters
     -----------
     \*\*parameters: Union[:class:`str`, :class:`locale_str`]
