@@ -2102,13 +2102,13 @@ def describe(**parameters: Union[str, locale_str]) -> Callable[[T], T]:
 
         @app_commands.command()
         async def ban(interaction: discord.Interaction, member: discord.Member):
-            '''Bans a member
+            \"\"\"Bans a member
 
             Parameters
             -----------
             member: discord.Member
                 the member to ban
-            '''
+            \"\"\"
             await interaction.response.send_message(f'Banned {member}')
 
     Parameters
