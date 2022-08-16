@@ -908,6 +908,7 @@ class Client:
         log_handler: Optional[logging.Handler] = MISSING,
         log_formatter: logging.Formatter = MISSING,
         log_level: int = MISSING,
+        root_logger: bool = False,
     ) -> None:
         """A blocking call that abstracts away the event loop
         initialisation from you.
@@ -958,6 +959,14 @@ class Client:
             you can use ``logging.getLogger().setLevel(level)``.
 
             .. versionadded:: 2.0
+        root_logger: :class:`bool`
+            Whether to set up the root logger rather than the library logger.
+            By default, only the library logger (``'discord'``) is set up. If this
+            is set to ``True`` then the root logger is set up as well.
+
+            Defaults to ``False``.
+
+            .. versionadded:: 2.0
         """
 
         async def runner():
@@ -985,6 +994,11 @@ class Client:
             log_handler.setFormatter(log_formatter)
             logger.setLevel(log_level)
             logger.addHandler(log_handler)
+
+            if root_logger:
+                logger = logging.getLogger()
+                logger.setLevel(log_level)
+                logger.addHandler(log_handler)
 
         try:
             asyncio.run(runner())
