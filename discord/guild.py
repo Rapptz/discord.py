@@ -739,6 +739,11 @@ class Guild(Hashable):
     def get_thread(self, thread_id: int, /) -> Optional[Thread]:
         """Returns a thread with the given ID.
 
+        .. note::
+
+            This does not always retrieve archived threads, as they are not retained in the internal
+            cache. Use :func:`fetch_channel` instead.
+
         .. versionadded:: 2.0
 
         Parameters
