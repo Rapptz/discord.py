@@ -710,6 +710,7 @@ class AutoModRuleTriggerType(Enum):
     harmful_link = 2
     spam = 3
     keyword_preset = 4
+    mention_spam = 5
 
 
 class AutoModRuleEventType(Enum):
