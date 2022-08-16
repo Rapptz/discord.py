@@ -190,24 +190,29 @@ def _transform_automod_trigger_metadata(
 ) -> Optional[AutoModTrigger]:
 
     if isinstance(entry.target, AutoModRule):
-        # type of trigger cannot be changed
-        # try to get trigger type from the resolved rule
+        # Trigger type cannot be changed, so type should be the same before and after updates.
+        # Avoids checking which keys are in data to guess trigger type
+        # or returning None if data is empty.
         try:
             return AutoModTrigger.from_data(type=entry.target.trigger.type.value, data=data)
         except Exception:
             pass
 
-    # if no trigger type from resolved rule, cannot determine trigger type if data is empty
+    # If cannot get trigger type from the rule and data is empty, then cannot determine trigger type
     if not data:
         return None
 
-    # try to infer trigger type from data
+    # Try to infer trigger type from available keys in data
     if 'presets' in data:
-        return AutoModTrigger(presets=AutoModPresets._from_value(data['presets']), allow_list=data.get('allow_list'))  # type: ignore
+        return AutoModTrigger(
+            type=enums.AutoModRuleTriggerType.keyword_preset,
+            presets=AutoModPresets._from_value(data['presets']),  # type: ignore
+            allow_list=data.get('allow_list'),
+        )
     elif 'keyword_filter' in data:
-        return AutoModTrigger(keyword_filter=data['keyword_filter'])  # type: ignore
+        return AutoModTrigger(type=enums.AutoModRuleTriggerType.keyword, keyword_filter=data['keyword_filter'])  # type: ignore
     elif 'mention_total_limit' in data:
-        return AutoModTrigger(mention_limit=data['mention_total_limit'])  # type: ignore
+        return AutoModTrigger(type=enums.AutoModRuleTriggerType.mention_spam, mention_limit=data['mention_total_limit'])  # type: ignore
 
 
 def _transform_automod_actions(entry: AuditLogEntry, data: List[AutoModerationAction]) -> List[AutoModRuleAction]:
