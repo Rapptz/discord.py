@@ -123,8 +123,6 @@ class AutoModTrigger:
     +===============================================+======================================+
     | :attr:`AutoModRuleTriggerType.keyword`        | :attr:`keyword_filter`               |
     +-----------------------------------------------+--------------------------------------+
-    | :attr:`AutoModRuleTriggerType.harmful_link`   |                                      |
-    +-----------------------------------------------+--------------------------------------+
     | :attr:`AutoModRuleTriggerType.spam`           |                                      |
     +-----------------------------------------------+--------------------------------------+
     | :attr:`AutoModRuleTriggerType.keyword_preset` | :attr:`presets`\, :attr:`allow_list` |
