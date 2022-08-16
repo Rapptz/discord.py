@@ -3111,7 +3111,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: mention_spam
 
-        The rule will trigger when number of role or user mentions within a message
+        The rule will trigger when combined number of role and user mentions
         is greater than the set limit.
 
 .. class:: AutoModRuleEventType

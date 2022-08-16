@@ -114,7 +114,23 @@ class AutoModRuleAction:
 
 
 class AutoModTrigger:
-    """Represents a trigger for an auto moderation rule.
+    r"""Represents a trigger for an auto moderation rule.
+
+    The following table illustrates relevant attributes for each :class:`AutoModRuleTriggerType`:
+
+    +-----------------------------------------------+--------------------------------------+
+    |                    Type                       |              Attributes              |
+    +===============================================+======================================+
+    | :attr:`AutoModRuleTriggerType.keyword`        | :attr:`keyword_filter`               |
+    +-----------------------------------------------+--------------------------------------+
+    | :attr:`AutoModRuleTriggerType.harmful_link`   |                                      |
+    +-----------------------------------------------+--------------------------------------+
+    | :attr:`AutoModRuleTriggerType.spam`           |                                      |
+    +-----------------------------------------------+--------------------------------------+
+    | :attr:`AutoModRuleTriggerType.keyword_preset` | :attr:`presets`\, :attr:`allow_list` |
+    +-----------------------------------------------+--------------------------------------+
+    | :attr:`AutoModRuleTriggerType.mention_spam`   | :attr:`mention_limit`                |
+    +-----------------------------------------------+--------------------------------------+
 
     .. versionadded:: 2.0
 
@@ -129,7 +145,8 @@ class AutoModTrigger:
     allow_list: List[:class:`str`]
         The list of words that are exempt from the commonly flagged words.
     mention_limit: :class:`int`
-        The maximum number of user or role mentions a message can contain.
+        The total number of user and role mentions a message can contain.
+        Has a maximum of 50.
     """
 
     __slots__ = (
