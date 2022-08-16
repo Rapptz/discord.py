@@ -3109,7 +3109,7 @@ of :class:`enum.Enum`.
 
         The rule will trigger when something triggers based on the set keyword preset types.
 
-    .. atribute:: mention_spam
+    .. attribute:: mention_spam
 
         The rule will trigger when number of role or user mentions within a message
         is greater than the set limit.
