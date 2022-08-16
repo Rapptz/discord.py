@@ -176,13 +176,13 @@ class AutoModTrigger:
         if data is None:
             return cls(type=type_)
         elif type_ is AutoModRuleTriggerType.keyword:
-            return cls(type=type_, keyword_filter=data.get('keyword_filter'))  # type: ignore # unable to typeguard due to outer payload
+            return cls(type=type_, keyword_filter=data.get('keyword_filter'))
         elif type_ is AutoModRuleTriggerType.keyword_preset:
             return cls(
-                type=type_, presets=AutoModPresets._from_value(data.get('presets', [])), allow_list=data.get('allow_list')  # type: ignore # unable to typeguard due to outer payload
+                type=type_, presets=AutoModPresets._from_value(data.get('presets', [])), allow_list=data.get('allow_list')
             )
         elif type_ is AutoModRuleTriggerType.mention_spam:
-            return cls(type=type_, mention_limit=data.get('mention_total_limit'))  # type: ignore # unable to typeguard due to outer payload
+            return cls(type=type_, mention_limit=data.get('mention_total_limit'))
         else:
             return cls(type=type_)
 
