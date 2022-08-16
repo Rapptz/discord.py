@@ -114,7 +114,21 @@ class AutoModRuleAction:
 
 
 class AutoModTrigger:
-    """Represents a trigger for an auto moderation rule.
+    r"""Represents a trigger for an auto moderation rule.
+
+    The following table illustrates relevant attributes for each :class:`AutoModRuleTriggerType`:
+
+    +-----------------------------------------------+--------------------------------------+
+    |                    Type                       |              Attributes              |
+    +===============================================+======================================+
+    | :attr:`AutoModRuleTriggerType.keyword`        | :attr:`keyword_filter`               |
+    +-----------------------------------------------+--------------------------------------+
+    | :attr:`AutoModRuleTriggerType.spam`           |                                      |
+    +-----------------------------------------------+--------------------------------------+
+    | :attr:`AutoModRuleTriggerType.keyword_preset` | :attr:`presets`\, :attr:`allow_list` |
+    +-----------------------------------------------+--------------------------------------+
+    | :attr:`AutoModRuleTriggerType.mention_spam`   | :attr:`mention_limit`                |
+    +-----------------------------------------------+--------------------------------------+
 
     .. versionadded:: 2.0
 
@@ -122,12 +136,15 @@ class AutoModTrigger:
     -----------
     type: :class:`AutoModRuleTriggerType`
         The type of trigger.
-    keyword_filter: Optional[List[:class:`str`]]
+    keyword_filter: List[:class:`str`]
         The list of strings that will trigger the keyword filter.
-    presets: Optional[:class:`AutoModPresets`]
+    presets: :class:`AutoModPresets`
         The presets used with the preset keyword filter.
-    allow_list: Optional[List[:class:`str`]]
+    allow_list: List[:class:`str`]
         The list of words that are exempt from the commonly flagged words.
+    mention_limit: :class:`int`
+        The total number of user and role mentions a message can contain.
+        Has a maximum of 50.
     """
 
     __slots__ = (
@@ -135,6 +152,7 @@ class AutoModTrigger:
         'keyword_filter',
         'presets',
         'allow_list',
+        'mention_limit',
     )
 
     def __init__(
@@ -144,42 +162,52 @@ class AutoModTrigger:
         keyword_filter: Optional[List[str]] = None,
         presets: Optional[AutoModPresets] = None,
         allow_list: Optional[List[str]] = None,
+        mention_limit: Optional[int] = None,
     ) -> None:
-        self.keyword_filter: Optional[List[str]] = keyword_filter
-        self.presets: Optional[AutoModPresets] = presets
-        self.allow_list: Optional[List[str]] = allow_list
-        if keyword_filter and presets:
-            raise ValueError('Please pass only one of keyword_filter or presets.')
+        if type is None and sum(arg is not None for arg in (keyword_filter, presets, mention_limit)) > 1:
+            raise ValueError('Please pass only one of keyword_filter, presets, or mention_limit.')
 
         if type is not None:
             self.type = type
-        elif self.keyword_filter is not None:
+        elif keyword_filter is not None:
             self.type = AutoModRuleTriggerType.keyword
-        elif self.presets is not None:
+        elif presets is not None:
             self.type = AutoModRuleTriggerType.keyword_preset
+        elif mention_limit is not None:
+            self.type = AutoModRuleTriggerType.mention_spam
         else:
-            raise ValueError('Please pass the trigger type explicitly if not using keyword_filter or presets.')
+            raise ValueError(
+                'Please pass the trigger type explicitly if not using keyword_filter, presets, or mention_limit.'
+            )
+
+        self.keyword_filter: List[str] = keyword_filter if keyword_filter is not None else []
+        self.presets: AutoModPresets = presets if presets is not None else AutoModPresets()
+        self.allow_list: List[str] = allow_list if allow_list is not None else []
+        self.mention_limit: int = mention_limit if mention_limit is not None else 0
 
     @classmethod
     def from_data(cls, type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
         type_ = try_enum(AutoModRuleTriggerType, type)
-        if type_ is AutoModRuleTriggerType.keyword:
-            return cls(keyword_filter=data['keyword_filter'])  # type: ignore # unable to typeguard due to outer payload
+        if data is None:
+            return cls(type=type_)
+        elif type_ is AutoModRuleTriggerType.keyword:
+            return cls(type=type_, keyword_filter=data.get('keyword_filter'))
         elif type_ is AutoModRuleTriggerType.keyword_preset:
-            return cls(presets=AutoModPresets._from_value(data['presets']), allow_list=data.get('allow_list'))  # type: ignore # unable to typeguard due to outer payload
+            return cls(
+                type=type_, presets=AutoModPresets._from_value(data.get('presets', [])), allow_list=data.get('allow_list')
+            )
+        elif type_ is AutoModRuleTriggerType.mention_spam:
+            return cls(type=type_, mention_limit=data.get('mention_total_limit'))
         else:
             return cls(type=type_)
 
-    def to_metadata_dict(self) -> Dict[str, Any]:
-        if self.keyword_filter is not None:
+    def to_metadata_dict(self) -> Optional[Dict[str, Any]]:
+        if self.type is AutoModRuleTriggerType.keyword:
             return {'keyword_filter': self.keyword_filter}
-        elif self.presets is not None:
-            ret: Dict[str, Any] = {'presets': self.presets.to_array()}
-            if self.allow_list:
-                ret['allow_list'] = self.allow_list
-            return ret
-
-        return {}
+        elif self.type is AutoModRuleTriggerType.keyword_preset:
+            return {'presets': self.presets.to_array(), 'allow_list': self.allow_list}
+        elif self.type is AutoModRuleTriggerType.mention_spam:
+            return {'mention_total_limit': self.mention_limit}
 
 
 class AutoModRule:
@@ -361,7 +389,9 @@ class AutoModRule:
             payload['event_type'] = event_type
 
         if trigger is not MISSING:
-            payload['trigger_metadata'] = trigger.to_metadata_dict()
+            trigger_metadata = trigger.to_metadata_dict()
+            if trigger_metadata is not None:
+                payload['trigger_metadata'] = trigger_metadata
 
         if enabled is not MISSING:
             payload['enabled'] = enabled

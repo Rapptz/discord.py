@@ -5282,6 +5282,11 @@ of :class:`enum.Enum`.
 
         The rule will trigger when something triggers based on the set keyword preset types.
 
+    .. attribute:: mention_spam
+
+        The rule will trigger when combined number of role and user mentions
+        is greater than the set limit.
+
 .. class:: AutoModRuleEventType
 
     Represents the event type of an automod rule.
