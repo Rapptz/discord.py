@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING, List, Optional, Union
+from typing import Any, TYPE_CHECKING, List, Optional, Sequence, Union
 
 from ..enums import AppCommandOptionType, AppCommandType, Locale
 from ..errors import DiscordException, HTTPException, _flatten_error_dict
@@ -50,7 +50,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from .commands import Command, Group, ContextMenu
+    from .commands import Command, Group, ContextMenu, Parameter
     from .transformers import Transformer
     from .translator import TranslationContextTypes, locale_str
     from ..types.snowflake import Snowflake, SnowflakeList
@@ -448,7 +448,18 @@ class MissingApplicationID(AppCommandError):
         super().__init__(message or APP_ID_NOT_FOUND)
 
 
-def _get_command_error(index: str, inner: Any, commands: List[CommandTypes], messages: List[str]) -> None:
+def _get_command_error(
+    index: str,
+    inner: Any,
+    objects: Sequence[Union[Parameter, CommandTypes]],
+    messages: List[str],
+    indent: int = 0,
+) -> None:
+    # Import these here to avoid circular imports
+    from .commands import Command, Group, ContextMenu
+
+    indentation = ' ' * indent
+
     # Top level errors are:
     # <number>: { <key>: <error> }
     # The dicts could be nested, e.g.
@@ -461,21 +472,35 @@ def _get_command_error(index: str, inner: Any, commands: List[CommandTypes], mes
 
     idx = int(index)
     try:
-        command = commands[idx]
+        obj = objects[idx]
     except IndexError:
+        dedent_one_level = ' ' * (indent - 2)
         errors = _flatten_error_dict(inner, index)
-        messages.extend(f'In {k}: {v}' for k, v in errors.items())
+        messages.extend(f'{dedent_one_level}In {k}: {v}' for k, v in errors.items())
         return
 
-    callback = getattr(command, 'callback', None)
-    class_name = command.__class__.__name__
-    if callback:
-        messages.append(f'In {class_name} {command.qualified_name!r} defined in {callback.__qualname__!r}')
+    children: Sequence[Union[Parameter, CommandTypes]] = []
+    if isinstance(obj, Command):
+        messages.append(f'{indentation}In command {obj.qualified_name!r} defined in function {obj.callback.__qualname__!r}')
+        children = obj.parameters
+    elif isinstance(obj, Group):
+        messages.append(f'{indentation}In group {obj.qualified_name!r} defined in module {obj.module!r}')
+        children = obj.commands
+    elif isinstance(obj, ContextMenu):
+        messages.append(
+            f'{indentation}In context menu {obj.qualified_name!r} defined in function {obj.callback.__qualname__!r}'
+        )
     else:
-        messages.append(f'In {class_name} {command.qualified_name!r} defined in module {command.module!r}')
+        messages.append(f'{indentation}In parameter {obj.name!r}')
 
-    errors = _flatten_error_dict(inner)
-    messages.extend(f'  {k}: {v}' for k, v in errors.items())
+    for key, remaining in inner.items():
+        # Special case the 'options' key since they have well defined meanings
+        if key == 'options':
+            for index, d in remaining.items():
+                _get_command_error(index, d, children, messages, indent=indent + 2)
+        else:
+            errors = _flatten_error_dict(remaining, key=key)
+            messages.extend(f'{indentation}  {k}: {v}' for k, v in errors.items())
 
 
 class CommandSyncFailure(AppCommandError, HTTPException):
