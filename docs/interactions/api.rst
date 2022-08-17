@@ -725,7 +725,7 @@ Exceptions
     :members:
 
 Exception Hierarchy
-~~~~~~~~~~~~~~~~~~~~
+++++++++++++++++++++
 
 .. exception_hierarchy::
 
