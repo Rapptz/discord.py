@@ -40,14 +40,20 @@ extras_require = {
         'sphinx==4.4.0',
         'sphinxcontrib_trio==1.1.2',
         'sphinxcontrib-websupport',
-        'typing-extensions',
-        'requests',
+        'typing-extensions>=4.3,<5',
     ],
     'speed': [
         'aiohttp[speedups]',
         'orjson>=3.5.4',
     ],
-    'test': ['coverage[toml]', 'pytest', 'pytest-asyncio', 'pytest-cov', 'pytest-mock'],
+    'test': [
+        'coverage[toml]',
+        'pytest',
+        'pytest-asyncio',
+        'pytest-cov',
+        'pytest-mock',
+        'typing-extensions>=4.3,<5',
+    ]
 }
 
 setup(

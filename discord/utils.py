@@ -1179,6 +1179,11 @@ def evaluate_annotation(
         cache[tp] = evaluated
         return evaluated
 
+    if hasattr(tp, '__metadata__'):
+        # Annotated[X, Y] can access Y via __metadata__
+        metadata = tp.__metadata__[0]
+        return evaluate_annotation(metadata, globals, locals, cache)
+
     if hasattr(tp, '__args__'):
         implicit_str = True
         is_literal = False
