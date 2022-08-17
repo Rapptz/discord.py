@@ -462,6 +462,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         if not ctx.command_failed:
             bot.dispatch('command_completion', ctx)
 
+        interaction.command_failed = ctx.command_failed
         return value
 
 
