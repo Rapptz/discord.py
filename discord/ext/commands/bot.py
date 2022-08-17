@@ -198,6 +198,23 @@ class BotBase(GroupMixin[None]):
 
     # internal helpers
 
+    async def _async_setup_hook(self) -> None:
+        # self/super() resolves to Client/AutoShardedClient
+        await super()._async_setup_hook()  # type: ignore
+        prefix = self.command_prefix
+
+        # This has to be here because for the default logging set up to capture
+        # the logging calls, they have to come after the `Client.run` call.
+        # The best place to do this is in an async init scenario
+        if not self.intents.message_content:  # type: ignore
+            trigger_warning = (
+                (callable(prefix) and prefix is not when_mentioned)
+                or isinstance(prefix, str)
+                or (isinstance(prefix, collections.abc.Iterable) and len(list(prefix)) >= 1)
+            )
+            if trigger_warning:
+                _log.warning('Privileged message content intent is missing, commands may not work as expected.')
+
     def dispatch(self, event_name: str, /, *args: Any, **kwargs: Any) -> None:
         # super() will resolve to Client
         super().dispatch(event_name, *args, **kwargs)  # type: ignore
