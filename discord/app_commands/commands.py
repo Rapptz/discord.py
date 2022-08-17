@@ -2089,7 +2089,7 @@ def describe(**parameters: Union[str, locale_str]) -> Callable[[T], T]:
 
     .. code-block:: python3
 
-        @app_commands.command()
+        @app_commands.command(description='Bans a member')
         @app_commands.describe(member='the member to ban')
         async def ban(interaction: discord.Interaction, member: discord.Member):
             await interaction.response.send_message(f'Banned {member}')
