@@ -764,14 +764,10 @@ class SnowflakeList(_SnowflakeListBase):
         return i != len(self) and self[i] == element
 
 
-_IS_ASCII = re.compile(r'^[\x00-\x7f]+$')
-
-
-def _string_width(string: str, *, _IS_ASCII=_IS_ASCII) -> int:
+def _string_width(string: str) -> int:
     """Returns string's width."""
-    match = _IS_ASCII.match(string)
-    if match:
-        return match.endpos
+    if string.isascii():
+        return len(string)
 
     UNICODE_WIDE_CHAR_TYPE = 'WFA'
     func = unicodedata.east_asian_width
