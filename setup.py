@@ -39,7 +39,7 @@ extras_require = {
         'sphinx==4.4.0',
         'sphinxcontrib_trio==1.1.2',
         'sphinxcontrib-websupport',
-        'typing-extensions',
+        'typing-extensions>=4.3,<5',
     ],
     'speed': [
         'orjson>=3.5.4',
@@ -52,7 +52,8 @@ extras_require = {
         'pytest',
         'pytest-asyncio',
         'pytest-cov',
-        'pytest-mock'
+        'pytest-mock',
+        'typing-extensions>=4.3,<5',
     ]
 }
 

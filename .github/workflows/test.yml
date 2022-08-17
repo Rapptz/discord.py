@@ -26,8 +26,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip setuptools wheel "coverage[toml]" pytest pytest-asyncio pytest-cov pytest-mock
-          pip install -U -r requirements.txt
+          python -m pip install -e .[test]
 
       - name: Run tests
         shell: bash

@@ -750,9 +750,6 @@ def get_supported_annotation(
     if isinstance(annotation, Transformer):
         return (annotation, MISSING, False)
 
-    if hasattr(annotation, '__metadata__'):
-        return get_supported_annotation(annotation.__metadata__[0])
-
     if inspect.isclass(annotation):
         if issubclass(annotation, Transformer):
             return (annotation(), MISSING, False)
