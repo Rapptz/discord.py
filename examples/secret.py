@@ -1,5 +1,3 @@
-# This example requires the 'message_content' privileged intent to function.
-
 import typing
 
 import discord
