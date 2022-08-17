@@ -126,7 +126,7 @@ class TextInput(Item[V]):
         self.row = row
 
     def __str__(self) -> str:
-        return self.value or ''
+        return self.value
 
     @property
     def custom_id(self) -> str:
@@ -145,9 +145,9 @@ class TextInput(Item[V]):
         return 5
 
     @property
-    def value(self) -> Optional[str]:
-        """Optional[:class:`str`]: The value of the text input."""
-        return self._value
+    def value(self) -> str:
+        """:class:`str`: The value of the text input."""
+        return self._value or ''
 
     @property
     def label(self) -> str:
