@@ -11,7 +11,7 @@ class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
         super().__init__(intents=intents)
         # A CommandTree is a special type that holds all the application command
-        # state required to make it work. This is a separate class because it
+        # states required to make it work. This is a separate class because it
         # allows all the extra state to be opt-in.
         # Whenever you want to work with application commands, your tree is used
         # to store and work with them.
