@@ -45,7 +45,7 @@ extras_require = {
         'orjson>=3.5.4',
         'aiodns>=1.1',
         'Brotli',
-        'cchardet',
+        'cchardet==2.1.7; python_version < "3.10"',
     ],
     'test': [
         'coverage[toml]',
