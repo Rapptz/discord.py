@@ -413,14 +413,14 @@ class View:
 
     async def _scheduled_task(self, item: Item, interaction: Interaction):
         try:
-            if self.timeout:
-                self.__timeout_expiry = time.monotonic() + self.timeout
-
             item._refresh_state(interaction.data)  # type: ignore
 
             allow = await self.interaction_check(interaction)
             if not allow:
                 return
+
+            if self.timeout:
+                self.__timeout_expiry = time.monotonic() + self.timeout
 
             await item.callback(interaction)
         except Exception as e:
