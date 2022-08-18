@@ -362,6 +362,7 @@ class Embed:
             The footer text. Can only be up to 2048 characters.
         icon_url: :class:`str`
             The URL of the footer icon. Only HTTP(S) is supported.
+            Inline attachment URLs are also supported, see :ref:`local_image`.
         """
 
         self._footer = {}
@@ -414,6 +415,7 @@ class Embed:
         -----------
         url: :class:`str`
             The source URL for the image. Only HTTP(S) is supported.
+            Inline attachment URLs are also supported, see :ref:`local_image`.
         """
 
         if url is None:
@@ -457,6 +459,7 @@ class Embed:
         -----------
         url: :class:`str`
             The source URL for the thumbnail. Only HTTP(S) is supported.
+            Inline attachment URLs are also supported, see :ref:`local_image`.
         """
 
         if url is None:
@@ -522,6 +525,7 @@ class Embed:
             The URL for the author.
         icon_url: :class:`str`
             The URL of the author icon. Only HTTP(S) is supported.
+            Inline attachment URLs are also supported, see :ref:`local_image`.
         """
 
         self._author = {
