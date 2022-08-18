@@ -43,8 +43,10 @@ extras_require = {
         'typing-extensions>=4.3,<5',
     ],
     'speed': [
-        'aiohttp[speedups]',
         'orjson>=3.5.4',
+        'aiodns>=1.1',
+        'Brotli',
+        'cchardet==2.1.7; python_version < "3.10"',
     ],
     'test': [
         'coverage[toml]',
