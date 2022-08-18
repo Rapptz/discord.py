@@ -43,6 +43,17 @@ Likewise, configuring the log level to ``logging.DEBUG`` is also possible:
 
 This is recommended, especially at verbose levels such as ``DEBUG``, as there are a lot of events logged and it would clog the stderr of your program.
 
+If you want to setup logging using the library provided configuration without using :meth:`Client.run`, you can use :func:`discord.utils.setup_logging`:
+
+.. code-block:: python3
+
+    import discord
+
+    discord.utils.setup_logging()
+
+    # or, for example
+    discord.utils.setup_logging(level=logging.INFO, root=False)
+
 More advanced setups are possible with the :mod:`logging` module. The example below configures a rotating file handler that outputs DEBUG output for everything the library outputs, except for HTTP requests:
 
 .. code-block:: python3

@@ -27,8 +27,6 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime
 import logging
-import sys
-import os
 from typing import (
     Any,
     AsyncIterator,
@@ -130,61 +128,6 @@ class _LoopSentinel:
 
 
 _loop: Any = _LoopSentinel()
-
-
-def stream_supports_colour(stream: Any) -> bool:
-    is_a_tty = hasattr(stream, 'isatty') and stream.isatty()
-    if sys.platform != 'win32':
-        return is_a_tty
-
-    # ANSICON checks for things like ConEmu
-    # WT_SESSION checks if this is Windows Terminal
-    # VSCode built-in terminal supports colour too
-    return is_a_tty and ('ANSICON' in os.environ or 'WT_SESSION' in os.environ or os.environ.get('TERM_PROGRAM') == 'vscode')
-
-
-class _ColourFormatter(logging.Formatter):
-
-    # ANSI codes are a bit weird to decipher if you're unfamiliar with them, so here's a refresher
-    # It starts off with a format like \x1b[XXXm where XXX is a semicolon separated list of commands
-    # The important ones here relate to colour.
-    # 30-37 are black, red, green, yellow, blue, magenta, cyan and white in that order
-    # 40-47 are the same except for the background
-    # 90-97 are the same but "bright" foreground
-    # 100-107 are the same as the bright ones but for the background.
-    # 1 means bold, 2 means dim, 0 means reset, and 4 means underline.
-
-    LEVEL_COLOURS = [
-        (logging.DEBUG, '\x1b[40;1m'),
-        (logging.INFO, '\x1b[34;1m'),
-        (logging.WARNING, '\x1b[33;1m'),
-        (logging.ERROR, '\x1b[31m'),
-        (logging.CRITICAL, '\x1b[41m'),
-    ]
-
-    FORMATS = {
-        level: logging.Formatter(
-            f'\x1b[30;1m%(asctime)s\x1b[0m {colour}%(levelname)-8s\x1b[0m \x1b[35m%(name)s\x1b[0m %(message)s',
-            '%Y-%m-%d %H:%M:%S',
-        )
-        for level, colour in LEVEL_COLOURS
-    }
-
-    def format(self, record):
-        formatter = self.FORMATS.get(record.levelno)
-        if formatter is None:
-            formatter = self.FORMATS[logging.DEBUG]
-
-        # Override the traceback to always print in red
-        if record.exc_info:
-            text = formatter.formatException(record.exc_info)
-            record.exc_text = f'\x1b[31m{text}\x1b[0m'
-
-        output = formatter.format(record)
-
-        # Remove the cache layer
-        record.exc_text = None
-        return output
 
 
 class Client:
@@ -954,10 +897,6 @@ class Client:
             The default log level for the library's logger. This is only applied if the
             ``log_handler`` parameter is not ``None``. Defaults to ``logging.INFO``.
 
-            Note that the *root* logger will always be set to ``logging.INFO`` and this
-            only controls the library's log level. To control the root logger's level,
-            you can use ``logging.getLogger().setLevel(level)``.
-
             .. versionadded:: 2.0
         root_logger: :class:`bool`
             Whether to set up the root logger rather than the library logger.
@@ -973,32 +912,13 @@ class Client:
             async with self:
                 await self.start(token, reconnect=reconnect)
 
-        if log_level is MISSING:
-            log_level = logging.INFO
-
-        if log_handler is MISSING:
-            log_handler = logging.StreamHandler()
-
-        if log_formatter is MISSING:
-            if isinstance(log_handler, logging.StreamHandler) and stream_supports_colour(log_handler.stream):
-                log_formatter = _ColourFormatter()
-            else:
-                dt_fmt = '%Y-%m-%d %H:%M:%S'
-                log_formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
-
-        logger = None
         if log_handler is not None:
-            library, _, _ = __name__.partition('.')
-            logger = logging.getLogger(library)
-
-            log_handler.setFormatter(log_formatter)
-            logger.setLevel(log_level)
-            logger.addHandler(log_handler)
-
-            if root_logger:
-                logger = logging.getLogger()
-                logger.setLevel(log_level)
-                logger.addHandler(log_handler)
+            utils.setup_logging(
+                handler=log_handler,
+                formatter=log_formatter,
+                level=log_level,
+                root=root_logger,
+            )
 
         try:
             asyncio.run(runner())
@@ -1007,9 +927,6 @@ class Client:
             # `asyncio.run` handles the loop cleanup
             # and `self.start` closes all sockets and the HTTPClient instance
             return
-        finally:
-            if log_handler is not None and logger is not None:
-                logger.removeHandler(log_handler)
 
     # Properties
 

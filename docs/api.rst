@@ -1426,6 +1426,8 @@ Utility Functions
 
 .. autofunction:: discord.utils.get
 
+.. autofunction:: discord.utils.setup_logging
+
 .. autofunction:: discord.utils.snowflake_time
 
 .. autofunction:: discord.utils.time_snowflake
