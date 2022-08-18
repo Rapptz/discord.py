@@ -815,8 +815,8 @@ class Member(discord.abc.Messageable, _UserTag):
         Returns
         --------
         Optional[:class:`.Member`]
-            The newly updated member, if applicable. This is only returned
-            when certain fields are updated.
+            The newly updated member, if applicable. This is not returned
+            if certain fields are passed, such as ``suppress``.
         """
         http = self._state.http
         guild_id = self.guild.id
