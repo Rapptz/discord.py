@@ -75,6 +75,9 @@ async def main():
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
+    # Alternatively, you could use:
+    # discord.utils.setup_logging(handler=handler, root=False)
+
     # One of the reasons to take over more of the process though
     # is to ensure use with other libraries or tools which also require their own cleanup.
 
