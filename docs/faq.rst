@@ -316,6 +316,8 @@ Quick example:
 
 See `aiohttp's full documentation <http://aiohttp.readthedocs.io/en/stable/>`_ for more information.
 
+.. _local_image:
+
 How do I use a local image file for an embed image?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
