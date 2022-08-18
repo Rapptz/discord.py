@@ -2435,8 +2435,8 @@ def dynamic_cooldown(
     """A decorator that adds a dynamic cooldown to a :class:`.Command`
 
     This differs from :func:`.cooldown` in that it takes a function that
-    accepts a single parameter of type :class:`.discord.Message` and must
-    return a :class:`~discord.app_commands.Cooldown` or ``None``.
+    accepts a single parameter of type :class:`.Context` and must
+    return a :class:`.cooldowns.Cooldown` or ``None``.
     If ``None`` is returned then that cooldown is effectively bypassed.
 
     A cooldown allows a command to only be used a specific amount
@@ -2454,7 +2454,7 @@ def dynamic_cooldown(
 
     Parameters
     ------------
-    cooldown: Callable[[:class:`.Context`], Optional[:class:`~discord.app_commands.Cooldown`]]
+    cooldown: Callable[[:class:`.Context`], Optional[:class:`.cooldowns.Cooldown`]]
         A function that takes a message and returns a cooldown that will
         apply to this invocation or ``None`` if the cooldown should be bypassed.
     type: :class:`.BucketType`
