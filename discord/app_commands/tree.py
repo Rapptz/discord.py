@@ -1078,9 +1078,10 @@ class CommandTree(Generic[ClientT]):
     async def _dispatch_error(self, interaction: Interaction, error: AppCommandError, /) -> None:
         command = interaction.command
         interaction.command_failed = True
-        if isinstance(command, Command):
-            await command._invoke_error_handlers(interaction, error)
-        else:
+        try:
+            if isinstance(command, Command):
+                await command._invoke_error_handlers(interaction, error)
+        finally:
             await self.on_error(interaction, error)
 
     def _from_interaction(self, interaction: Interaction) -> None:
