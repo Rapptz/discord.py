@@ -2436,7 +2436,7 @@ def dynamic_cooldown(
 
     This differs from :func:`.cooldown` in that it takes a function that
     accepts a single parameter of type :class:`.Context` and must
-    return a :class:`.cooldowns.Cooldown` or ``None``.
+    return a :class:`~discord.app_commands.Cooldown` or ``None``.
     If ``None`` is returned then that cooldown is effectively bypassed.
 
     A cooldown allows a command to only be used a specific amount
