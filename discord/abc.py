@@ -288,7 +288,6 @@ class Snowflake(Protocol):
         The model's unique ID.
     """
 
-    __slots__ = ()
     id: int
 
 
@@ -315,8 +314,6 @@ class User(Snowflake, Protocol):
     system: :class:`bool`
         If the user is a system account.
     """
-
-    __slots__ = ()
 
     name: str
     discriminator: str
