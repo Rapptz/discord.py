@@ -528,6 +528,14 @@ Group
 
 .. autoclass:: discord.app_commands.Group
     :members:
+    :exclude-members: error, command
+
+    .. automethod:: Group.error(coro)
+        :decorator:
+
+    .. automethod:: Group.command(*, name=..., description=..., nsfw=False, auto_locale_strings=True, extras=...)
+        :decorator:
+
 
 Decorators
 ~~~~~~~~~~~
