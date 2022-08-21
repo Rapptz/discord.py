@@ -516,6 +516,10 @@ ContextMenu
 
 .. autoclass:: discord.app_commands.ContextMenu
     :members:
+    :exclude-members: error
+
+    .. automethod:: ContextMenu.error(coro)
+        :decorator:
 
 Group
 ++++++
