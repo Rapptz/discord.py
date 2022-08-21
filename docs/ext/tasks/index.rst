@@ -152,3 +152,4 @@ API Reference
         :decorator:
 
 .. autofunction:: discord.ext.tasks.loop
+    :decorator:
