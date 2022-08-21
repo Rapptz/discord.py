@@ -167,7 +167,7 @@ class CommandParameter:
     def is_choice_annotation(self) -> bool:
         return getattr(self._annotation, '__discord_app_commands_is_choice__', False)
 
-    async def transform(self, interaction: Interaction, value: Any) -> Any:
+    async def transform(self, interaction: Interaction, value: Any, /) -> Any:
         if hasattr(self._annotation, '__discord_app_commands_transformer__'):
             # This one needs special handling for type safety reasons
             if self._annotation.__discord_app_commands_is_choice__:
@@ -305,7 +305,7 @@ class Transformer:
         else:
             return name
 
-    async def transform(self, interaction: Interaction, value: Any) -> Any:
+    async def transform(self, interaction: Interaction, value: Any, /) -> Any:
         """|maybecoro|
 
         Transforms the converted option value into another value.
@@ -325,7 +325,7 @@ class Transformer:
         raise NotImplementedError('Derived classes need to implement this.')
 
     async def autocomplete(
-        self, interaction: Interaction, value: Union[int, float, str]
+        self, interaction: Interaction, value: Union[int, float, str], /
     ) -> List[Choice[Union[int, float, str]]]:
         """|coro|
 
@@ -361,7 +361,7 @@ class IdentityTransformer(Transformer):
     def type(self) -> AppCommandOptionType:
         return self._type
 
-    async def transform(self, interaction: Interaction, value: Any) -> Any:
+    async def transform(self, interaction: Interaction, value: Any, /) -> Any:
         return value
 
 
@@ -459,7 +459,7 @@ class EnumValueTransformer(Transformer):
     def choices(self):
         return self._choices
 
-    async def transform(self, interaction: Interaction, value: Any) -> Any:
+    async def transform(self, interaction: Interaction, value: Any, /) -> Any:
         return self._enum(value)
 
 
@@ -486,7 +486,7 @@ class EnumNameTransformer(Transformer):
     def choices(self):
         return self._choices
 
-    async def transform(self, interaction: Interaction, value: Any) -> Any:
+    async def transform(self, interaction: Interaction, value: Any, /) -> Any:
         return self._enum[value]
 
 
@@ -503,7 +503,7 @@ class InlineTransformer(Transformer):
     def type(self) -> AppCommandOptionType:
         return AppCommandOptionType.string
 
-    async def transform(self, interaction: Interaction, value: Any) -> Any:
+    async def transform(self, interaction: Interaction, value: Any, /) -> Any:
         return await self.annotation.transform(interaction, value)
 
 
@@ -615,7 +615,7 @@ class MemberTransformer(Transformer):
     def type(self) -> AppCommandOptionType:
         return AppCommandOptionType.user
 
-    async def transform(self, interaction: Interaction, value: Any) -> Member:
+    async def transform(self, interaction: Interaction, value: Any, /) -> Member:
         if not isinstance(value, Member):
             raise TransformerError(value, self.type, self)
         return value
@@ -653,7 +653,7 @@ class BaseChannelTransformer(Transformer):
     def channel_types(self) -> List[ChannelType]:
         return self._channel_types
 
-    async def transform(self, interaction: Interaction, value: Any):
+    async def transform(self, interaction: Interaction, value: Any, /):
         resolved = value.resolve()
         if resolved is None or not isinstance(resolved, self._types):
             raise TransformerError(value, AppCommandOptionType.channel, self)
@@ -661,14 +661,14 @@ class BaseChannelTransformer(Transformer):
 
 
 class RawChannelTransformer(BaseChannelTransformer):
-    async def transform(self, interaction: Interaction, value: Any):
+    async def transform(self, interaction: Interaction, value: Any, /):
         if not isinstance(value, self._types):
             raise TransformerError(value, AppCommandOptionType.channel, self)
         return value
 
 
 class UnionChannelTransformer(BaseChannelTransformer):
-    async def transform(self, interaction: Interaction, value: Any):
+    async def transform(self, interaction: Interaction, value: Any, /):
         if isinstance(value, self._types):
             return value
 

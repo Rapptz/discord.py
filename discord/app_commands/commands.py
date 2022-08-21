@@ -1745,7 +1745,7 @@ class Group:
             if isinstance(command, Group):
                 yield from command.walk_commands()
 
-    async def on_error(self, interaction: Interaction, error: AppCommandError) -> None:
+    async def on_error(self, interaction: Interaction, error: AppCommandError, /) -> None:
         """|coro|
 
         A callback that is called when a child's command raises an :exc:`AppCommandError`.
@@ -1790,10 +1790,10 @@ class Group:
         if len(params) != 2:
             raise TypeError('The error handler must have 2 parameters.')
 
-        self.on_error = coro  # type: ignore
+        self.on_error = coro
         return coro
 
-    async def interaction_check(self, interaction: Interaction) -> bool:
+    async def interaction_check(self, interaction: Interaction, /) -> bool:
         """|coro|
 
         A callback that is called when an interaction happens within the group

@@ -134,7 +134,7 @@ class Modal(View):
 
         super().__init__(timeout=timeout)
 
-    async def on_submit(self, interaction: Interaction) -> None:
+    async def on_submit(self, interaction: Interaction, /) -> None:
         """|coro|
 
         Called when the modal is submitted.
@@ -146,7 +146,7 @@ class Modal(View):
         """
         pass
 
-    async def on_error(self, interaction: Interaction, error: Exception) -> None:
+    async def on_error(self, interaction: Interaction, error: Exception, /) -> None:
         """|coro|
 
         A callback that is called when :meth:`on_submit`
