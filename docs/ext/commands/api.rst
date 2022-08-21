@@ -194,9 +194,12 @@ HybridCommand
 .. autoclass:: discord.ext.commands.HybridCommand
     :members:
     :special-members: __call__
-    :exclude-members: after_invoke, before_invoke, error
+    :exclude-members: after_invoke, autocomplete, before_invoke, error
 
     .. automethod:: HybridCommand.after_invoke()
+        :decorator:
+
+    .. automethod:: HybridCommand.autocomplete(name)
         :decorator:
 
     .. automethod:: HybridCommand.before_invoke()
