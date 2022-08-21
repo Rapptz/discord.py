@@ -472,6 +472,16 @@ CommandTree
 
 .. autoclass:: discord.app_commands.CommandTree
     :members:
+    :exclude-members: error, command, context_menu
+
+    .. automethod:: CommandTree.command(*, name=..., description=..., nsfw=False, guild=..., guilds=..., auto_locale_strings=True, extras=...)
+        :decorator:
+
+    .. automethod:: CommandTree.context_menu(*, name=..., nsfw=False, guild=..., guilds=..., auto_locale_strings=True, extras=...)
+        :decorator:
+
+    .. automethod:: CommandTree.error(coro)
+        :decorator:
 
 Commands
 ~~~~~~~~~
@@ -483,6 +493,13 @@ Command
 
 .. autoclass:: discord.app_commands.Command
     :members:
+    :exclude-members: error, autocomplete
+
+    .. automethod:: Command.autocomplete(name)
+        :decorator:
+
+    .. automethod:: Command.error(coro)
+        :decorator:
 
 Parameter
 ++++++++++
@@ -499,6 +516,10 @@ ContextMenu
 
 .. autoclass:: discord.app_commands.ContextMenu
     :members:
+    :exclude-members: error
+
+    .. automethod:: ContextMenu.error(coro)
+        :decorator:
 
 Group
 ++++++
@@ -507,6 +528,13 @@ Group
 
 .. autoclass:: discord.app_commands.Group
     :members:
+    :exclude-members: error, command
+
+    .. automethod:: Group.command(*, name=..., description=..., nsfw=False, auto_locale_strings=True, extras=...)
+        :decorator:
+
+    .. automethod:: Group.error(coro)
+        :decorator:
 
 Decorators
 ~~~~~~~~~~~

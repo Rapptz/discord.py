@@ -842,7 +842,7 @@ class CommandTree(Generic[ClientT]):
         auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[CommandCallback[Group, P, T]], Command[Group, P, T]]:
-        """Creates an application command directly under this tree.
+        """A decorator that creates an application command from a regular function directly under this tree.
 
         Parameters
         ------------
@@ -911,7 +911,7 @@ class CommandTree(Generic[ClientT]):
         auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[ContextMenuCallback], ContextMenu]:
-        """Creates an application command context menu from a regular function directly under this tree.
+        """A decorator that creates an application command context menu from a regular function directly under this tree.
 
         This function must have a signature of :class:`~discord.Interaction` as its first parameter
         and taking either a :class:`~discord.Member`, :class:`~discord.User`, or :class:`~discord.Message`,

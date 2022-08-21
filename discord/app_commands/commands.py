@@ -1908,7 +1908,7 @@ class Group:
         auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
-        """Creates an application command under this group.
+        """A decorator that creates an application command from a regular function under this group.
 
         Parameters
         ------------
