@@ -474,13 +474,13 @@ CommandTree
     :members:
     :exclude-members: error, command, context_menu
 
-    .. automethod:: CommandTree.error(coro)
-        :decorator:
-
     .. automethod:: CommandTree.command(*, name=..., description=..., nsfw=False, guild=..., guilds=..., auto_locale_strings=True, extras=...)
         :decorator:
 
     .. automethod:: CommandTree.context_menu(*, name=..., nsfw=False, guild=..., guilds=..., auto_locale_strings=True, extras=...)
+        :decorator:
+
+    .. automethod:: CommandTree.error(coro)
         :decorator:
 
 Commands
@@ -495,10 +495,10 @@ Command
     :members:
     :exclude-members: error, autocomplete
 
-    .. automethod:: Command.error(coro)
+    .. automethod:: Command.autocomplete(name)
         :decorator:
 
-    .. automethod:: Command.autocomplete(name)
+    .. automethod:: Command.error(coro)
         :decorator:
 
 Parameter
@@ -530,12 +530,11 @@ Group
     :members:
     :exclude-members: error, command
 
-    .. automethod:: Group.error(coro)
-        :decorator:
-
     .. automethod:: Group.command(*, name=..., description=..., nsfw=False, auto_locale_strings=True, extras=...)
         :decorator:
 
+    .. automethod:: Group.error(coro)
+        :decorator:
 
 Decorators
 ~~~~~~~~~~~
