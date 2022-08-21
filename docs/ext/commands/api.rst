@@ -216,9 +216,12 @@ HybridGroup
 .. autoclass:: discord.ext.commands.HybridGroup
     :members:
     :inherited-members:
-    :exclude-members: after_invoke, before_invoke, command, error, group
+    :exclude-members: after_invoke, autocomplete, before_invoke, command, error, group
 
     .. automethod:: HybridGroup.after_invoke()
+        :decorator:
+
+    .. automethod:: HybridGroup.autocomplete(name)
         :decorator:
 
     .. automethod:: HybridGroup.before_invoke()
