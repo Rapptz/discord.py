@@ -43,6 +43,7 @@ from typing import (
     Union,
     runtime_checkable,
 )
+import types
 
 import discord
 
@@ -1021,8 +1022,11 @@ class Greedy(List[T]):
             raise TypeError('Greedy[...] only takes a single argument')
         converter = params[0]
 
-        origin = getattr(converter, '__origin__', None)
         args = getattr(converter, '__args__', ())
+        if discord.utils.PY_310 and converter.__class__ is types.UnionType:  # type: ignore
+            converter = Union[args]  # type: ignore
+
+        origin = getattr(converter, '__origin__', None)
 
         if not (callable(converter) or isinstance(converter, Converter) or origin is not None):
             raise TypeError('Greedy[...] expects a type or a Converter instance.')
