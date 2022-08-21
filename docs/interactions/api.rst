@@ -472,6 +472,16 @@ CommandTree
 
 .. autoclass:: discord.app_commands.CommandTree
     :members:
+    :exclude-members: error, command, context_menu
+
+    .. automethod:: CommandTree.error(coro)
+        :decorator:
+
+    .. automethod:: CommandTree.command(*, name=..., description=..., nsfw=False, guild=..., guilds=..., auto_locale_strings=True, extras=...)
+        :decorator:
+
+    .. automethod:: CommandTree.context_menu(*, name=..., nsfw=False, guild=..., guilds=..., auto_locale_strings=True, extras=...)
+        :decorator:
 
 Commands
 ~~~~~~~~~
