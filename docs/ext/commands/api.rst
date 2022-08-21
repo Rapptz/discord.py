@@ -18,7 +18,7 @@ Bot
 .. autoclass:: discord.ext.commands.Bot
     :members:
     :inherited-members:
-    :exclude-members: after_invoke, before_invoke, check, check_once, command, event, group, listen
+    :exclude-members: after_invoke, before_invoke, check, check_once, command, event, group, hybrid_command, hybrid_group, listen
 
     .. automethod:: Bot.after_invoke()
         :decorator:
@@ -39,6 +39,12 @@ Bot
         :decorator:
 
     .. automethod:: Bot.group(*args, **kwargs)
+        :decorator:
+
+    .. automethod:: Bot.hybrid_command(name=..., with_app_command=True, *args, **kwargs)
+        :decorator:
+
+    .. automethod:: Bot.hybrid_group(name=..., with_app_command=True, *args, **kwargs)
         :decorator:
 
     .. automethod:: Bot.listen(name=None)
