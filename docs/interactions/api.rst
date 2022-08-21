@@ -493,6 +493,13 @@ Command
 
 .. autoclass:: discord.app_commands.Command
     :members:
+    :exclude-members: error, autocomplete
+
+    .. automethod:: Command.error(coro)
+        :decorator:
+
+    .. automethod:: Command.autocomplete(name)
+        :decorator:
 
 Parameter
 ++++++++++
