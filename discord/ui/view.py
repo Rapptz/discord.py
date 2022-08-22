@@ -357,7 +357,7 @@ class View:
         self.__weights.clear()
         return self
 
-    async def interaction_check(self, interaction: Interaction) -> bool:
+    async def interaction_check(self, interaction: Interaction, /) -> bool:
         """|coro|
 
         A callback that is called when an interaction happens within the view
@@ -392,7 +392,7 @@ class View:
         """
         pass
 
-    async def on_error(self, interaction: Interaction, error: Exception, item: Item[Any]) -> None:
+    async def on_error(self, interaction: Interaction, error: Exception, item: Item[Any], /) -> None:
         """|coro|
 
         A callback that is called when an item's callback or :meth:`interaction_check`

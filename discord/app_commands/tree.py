@@ -773,7 +773,7 @@ class CommandTree(Generic[ClientT]):
             for key in remove:
                 del mapping[key]
 
-    async def on_error(self, interaction: Interaction, error: AppCommandError) -> None:
+    async def on_error(self, interaction: Interaction, error: AppCommandError, /) -> None:
         """|coro|
 
         A callback that is called when any command raises an :exc:`AppCommandError`.
@@ -827,8 +827,7 @@ class CommandTree(Generic[ClientT]):
         if len(params) != 2:
             raise TypeError('error handler must have 2 parameters')
 
-        # Type checker doesn't like overriding methods like this
-        self.on_error = coro  # type: ignore
+        self.on_error = coro
         return coro
 
     def command(

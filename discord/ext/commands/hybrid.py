@@ -130,7 +130,7 @@ class ConverterTransformer(app_commands.Transformer):
             if module is not None and (module.startswith('discord.') and not module.endswith('converter')):
                 self.converter = CONVERTER_MAPPING.get(converter, converter)
 
-    async def transform(self, interaction: discord.Interaction, value: str) -> Any:
+    async def transform(self, interaction: discord.Interaction, value: str, /) -> Any:
         ctx = interaction._baton
         converter = self.converter
         ctx.current_parameter = self.parameter
@@ -154,7 +154,7 @@ class CallableTransformer(app_commands.Transformer):
         super().__init__()
         self.func: Callable[[str], Any] = func
 
-    async def transform(self, interaction: discord.Interaction, value: str) -> Any:
+    async def transform(self, interaction: discord.Interaction, value: str, /) -> Any:
         try:
             return self.func(value)
         except CommandError:
@@ -169,7 +169,7 @@ class GreedyTransformer(app_commands.Transformer):
         self.converter: Any = converter
         self.parameter: Parameter = parameter
 
-    async def transform(self, interaction: discord.Interaction, value: str) -> Any:
+    async def transform(self, interaction: discord.Interaction, value: str, /) -> Any:
         view = StringView(value)
         result = []
         ctx = interaction._baton
