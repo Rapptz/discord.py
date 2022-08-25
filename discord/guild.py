@@ -626,6 +626,18 @@ class Guild(Hashable):
         return self._state._get_voice_client(self.id)
 
     @property
+    def voice_state(self) -> Optional[VoiceState]:
+        """Optional[:class:`VoiceState`]: Returns the client's :class:`VoiceState` associated with this guild, if any.
+
+        .. versionadded:: 2.0
+        """
+        key = self.me.id
+        value = self._voice_state_for(key)
+        if not value or not value.channel:
+            return None
+        return value
+
+    @property
     def text_channels(self) -> List[TextChannel]:
         """List[:class:`TextChannel`]: A list of text channels that belongs to this guild.
 
