@@ -280,6 +280,29 @@ class VoiceClient(VoiceProtocol):
         """:class:`ClientUser`: The user connected to voice (i.e. ourselves)."""
         return self._state.user  # type: ignore
 
+    @property
+    def voice_state(self):
+        """:class:`Optional[VoiceState]`: The voice state associated with the voice client.
+
+        .. versionadded:: 2.0"""
+        return self.channel.guild.me.voice
+
+    async def self_mute(self, value: bool = True, /) -> None:
+        """Self mutes the client.
+
+        .. versionadded:: 2.0"""
+        vs = self.voice_state
+        if vs:
+            await self.voice_connect(self_deaf=vs.self_deaf, self_mute=value)
+
+    async def self_deaf(self, value: bool = True, /) -> None:
+        """Self deafens the client.
+
+        .. versionadded:: 2.0"""
+        vs = self.voice_state
+        if vs:
+            await self.voice_connect(self_deaf=value, self_mute=vs.self_mute)
+
     def checked_add(self, attr: str, value: int, limit: int) -> None:
         val = getattr(self, attr)
         if val + value > limit:
