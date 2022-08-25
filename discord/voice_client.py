@@ -52,6 +52,7 @@ from .gateway import *
 from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
 from .utils import MISSING
+from .member import VoiceState
 
 if TYPE_CHECKING:
     from .client import Client
@@ -281,7 +282,7 @@ class VoiceClient(VoiceProtocol):
         return self._state.user  # type: ignore
 
     @property
-    def voice_state(self):
+    def voice_state(self) -> Optional[VoiceState]:
         """:class:`Optional[VoiceState]`: The voice state associated with the voice client.
 
         .. versionadded:: 2.0"""
