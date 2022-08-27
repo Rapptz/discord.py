@@ -11,6 +11,23 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p0p1:
+
+v2.0.1
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix ``cchardet`` being installed on Python >=3.10 when using the ``speed`` extras.
+- Fix :class:`ui.View` timeout updating when the :meth:`ui.View.interaction_check` failed.
+- Fix :meth:`app_commands.CommandTree.on_error` not triggering if :meth:`~app_commands.CommandTree.interaction_check` raises.
+- Fix ``__main__`` script to use ``importlib.metadata`` instead of the deprecated ``pkg_resources``.
+- Fix library callbacks triggering a type checking error if the parameter names were different.
+    - This required a change in the :ref:`version_guarantees`
+
+- |commands| Fix Python 3.10 union types not working with :class:`commands.Greedy <discord.ext.commands.Greedy>`.
+
 .. _vp2p0p0:
 
 v2.0.0
