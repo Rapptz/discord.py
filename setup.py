@@ -1,4 +1,6 @@
-import discord
+#No Changes were Made
+
+
 from setuptools import setup
 import re
 
@@ -24,7 +26,7 @@ if version.endswith(('a', 'b', 'rc')):
         if out:
             version += out.decode('utf-8').strip()
         p = subprocess.Popen(['git', 'rev-parse', '--short', 'HEAD'],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         if out:
             version += '+g' + out.decode('utf-8').strip()
