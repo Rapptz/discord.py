@@ -46,6 +46,7 @@ from typing import (
     Union,
     overload,
 )
+import warnings
 
 from . import utils, abc
 from .role import Role
@@ -3412,6 +3413,8 @@ class Guild(Hashable):
             raise TypeError('Cannot mix delete_message_days and delete_message_seconds keyword arguments.')
 
         if delete_message_days is not MISSING:
+            msg = 'delete_message_days is deprecated, use delete_message_seconds instead'
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
             delete_message_seconds = delete_message_days * 86400  # one day
 
         if delete_message_seconds is MISSING:
