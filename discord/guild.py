@@ -245,6 +245,7 @@ class Guild(Hashable):
         - ``VERIFIED``: Guild is a verified server.
         - ``VIP_REGIONS``: Guild has VIP voice regions.
         - ``WELCOME_SCREEN_ENABLED``: Guild has enabled the welcome screen.
+        - ``INVITES_DISABLED``: Guild has disabled invites.
 
     premium_tier: :class:`int`
         The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
@@ -1698,6 +1699,7 @@ class Guild(Hashable):
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
         premium_progress_bar_enabled: bool = MISSING,
+        invites_disabled: bool = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1726,6 +1728,9 @@ class Guild(Hashable):
 
         .. versionchanged:: 2.0
             The ``premium_progress_bar_enabled`` keyword parameter was added.
+
+        .. versionchanged:: 2.1
+            The ``invites_disabled`` keyword parameter was added.
 
         Parameters
         ----------
@@ -1786,6 +1791,8 @@ class Guild(Hashable):
             public updates channel.
         premium_progress_bar_enabled: :class:`bool`
             Whether the premium AKA server boost level progress bar should be enabled for the guild.
+        invites_disabled: :class:`bool`
+            Whether joining via invites should be disabled for the guild.
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 
@@ -1906,8 +1913,9 @@ class Guild(Hashable):
 
             fields['system_channel_flags'] = system_channel_flags.value
 
+        features = []
+
         if community is not MISSING:
-            features = []
             if community:
                 if 'rules_channel_id' in fields and 'public_updates_channel_id' in fields:
                     features.append('COMMUNITY')
@@ -1915,8 +1923,16 @@ class Guild(Hashable):
                     raise ValueError(
                         'community field requires both rules_channel and public_updates_channel fields to be provided'
                     )
+        elif 'COMMUNITY' in self.features:
+            features.append('COMMUNITY')
 
-            fields['features'] = features
+        if invites_disabled is not MISSING:
+            if invites_disabled:
+                features.append('INVITES_DISABLED')
+        elif 'INVITES_DISABLED' in self.features:
+            features.append('INVITES_DISABLED')
+
+        fields['features'] = features
 
         if premium_progress_bar_enabled is not MISSING:
             fields['premium_progress_bar_enabled'] = premium_progress_bar_enabled
