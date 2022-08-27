@@ -178,7 +178,7 @@ class View:
             children.append(item)
         return children
 
-    def __init__(self, *, timeout: Optional[float] = 180.0):
+    def __init__(self, *items: Item, timeout: Optional[float] = 180.0):
         self.__timeout = timeout
         self._children: List[Item[Self]] = self._init_children()
         self.__weights = _ViewWeights(self._children)
@@ -188,6 +188,9 @@ class View:
         self.__timeout_expiry: Optional[float] = None
         self.__timeout_task: Optional[asyncio.Task[None]] = None
         self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
+
+        for item in items:
+            self.add_item(item)
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self._children)}>'
