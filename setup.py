@@ -19,7 +19,7 @@ if version.endswith(('a', 'b', 'rc')):
     try:
         import subprocess
         p = subprocess.Popen(['git', 'rev-list', '--count', 'HEAD'],
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = p.communicate()
         if out:
             version += out.decode('utf-8').strip()
