@@ -1699,6 +1699,7 @@ class Guild(Hashable):
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
         premium_progress_bar_enabled: bool = MISSING,
+        discoverable: bool = MISSING,
         invites_disabled: bool = MISSING,
     ) -> Guild:
         r"""|coro|
@@ -1730,7 +1731,7 @@ class Guild(Hashable):
             The ``premium_progress_bar_enabled`` keyword parameter was added.
 
         .. versionchanged:: 2.1
-            The ``invites_disabled`` keyword parameter was added.
+            The ``discoverable`` and ``invites_disabled`` keyword parameters were added.
 
         Parameters
         ----------
@@ -1791,6 +1792,8 @@ class Guild(Hashable):
             public updates channel.
         premium_progress_bar_enabled: :class:`bool`
             Whether the premium AKA server boost level progress bar should be enabled for the guild.
+        discoverable: :class:`bool`
+            Whether server discovery is enabled for this guild.
         invites_disabled: :class:`bool`
             Whether joining via invites should be disabled for the guild.
         reason: Optional[:class:`str`]
@@ -1925,6 +1928,12 @@ class Guild(Hashable):
                     )
         elif 'COMMUNITY' in self.features:
             features.append('COMMUNITY')
+
+        if discoverable is not MISSING:
+            if discoverable:
+                features.append('DISCOVERABLE')
+        elif 'DISCOVERABLE' in self.features:
+            features.append('DISCOVERABLE')
 
         if invites_disabled is not MISSING:
             if invites_disabled:
