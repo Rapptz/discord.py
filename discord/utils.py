@@ -775,6 +775,16 @@ def compute_timedelta(dt: datetime.datetime) -> float:
     return max((dt - now).total_seconds(), 0)
 
 
+@overload
+async def sleep_until(when: datetime.datetime, result: T) -> T:
+    ...
+
+
+@overload
+async def sleep_until(when: datetime.datetime) -> None:
+    ...
+
+
 async def sleep_until(when: datetime.datetime, result: Optional[T] = None) -> Optional[T]:
     """|coro|
 
