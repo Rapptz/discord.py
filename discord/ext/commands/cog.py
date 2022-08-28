@@ -308,7 +308,7 @@ class Cog(metaclass=CogMeta):
                 guild_ids=getattr(cls, '__discord_app_commands_default_guilds__', None),
                 guild_only=getattr(cls, '__discord_app_commands_guild_only__', False),
                 default_permissions=getattr(cls, '__discord_app_commands_default_permissions__', None),
-                extras=cls.__cog_group_extras__
+                extras=cls.__cog_group_extras__,
             )
         else:
             group = None
