@@ -355,6 +355,8 @@ class AuditLogAction(Enum):
     automod_rule_update           = 141
     automod_rule_delete           = 142
     automod_block_message         = 143
+    automod_flag_message          = 144
+    automod_timeout_member        = 145
     # fmt: on
 
     @property
@@ -413,6 +415,8 @@ class AuditLogAction(Enum):
             AuditLogAction.automod_rule_update:           AuditLogActionCategory.update,
             AuditLogAction.automod_rule_delete:           AuditLogActionCategory.delete,
             AuditLogAction.automod_block_message:         None,
+            AuditLogAction.automod_flag_message:          None,
+            AuditLogAction.automod_timeout_member:        None,
         }
         # fmt: on
         return lookup[self]
@@ -454,7 +458,7 @@ class AuditLogAction(Enum):
             return 'integration_or_app_command'
         elif v < 143:
             return 'auto_moderation'
-        elif v == 143:
+        elif v < 146:
             return 'user'
 
 
