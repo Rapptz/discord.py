@@ -567,7 +567,7 @@ class CategoryChannelConverter(IDConverter[discord.CategoryChannel]):
 
 
 class ThreadConverter(IDConverter[discord.Thread]):
-    """Coverts to a :class:`~discord.Thread`.
+    """Converts to a :class:`~discord.Thread`.
 
     All lookups are via the local guild.
 
@@ -676,7 +676,7 @@ class RoleConverter(IDConverter[discord.Role]):
 
 
 class GameConverter(Converter[discord.Game]):
-    """Converts to :class:`~discord.Game`."""
+    """Converts to a :class:`~discord.Game`."""
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.Game:
         return discord.Game(name=argument)
