@@ -1916,32 +1916,32 @@ class Guild(Hashable):
 
             fields['system_channel_flags'] = system_channel_flags.value
 
-        features = []
+        features = set(self.features)
 
         if community is not MISSING:
             if community:
                 if 'rules_channel_id' in fields and 'public_updates_channel_id' in fields:
-                    features.append('COMMUNITY')
+                    features.add('COMMUNITY')
                 else:
                     raise ValueError(
                         'community field requires both rules_channel and public_updates_channel fields to be provided'
                     )
-        elif 'COMMUNITY' in self.features:
-            features.append('COMMUNITY')
+            else:
+                features.discard('COMMUNITY')
 
         if discoverable is not MISSING:
             if discoverable:
-                features.append('DISCOVERABLE')
-        elif 'DISCOVERABLE' in self.features:
-            features.append('DISCOVERABLE')
+                features.add('DISCOVERABLE')
+            else:
+                features.discard('DISCOVERABLE')
 
         if invites_disabled is not MISSING:
             if invites_disabled:
-                features.append('INVITES_DISABLED')
-        elif 'INVITES_DISABLED' in self.features:
-            features.append('INVITES_DISABLED')
+                features.add('INVITES_DISABLED')
+            else:
+                features.discard('INVITES_DISABLED')
 
-        fields['features'] = features
+        fields['features'] = list(features)
 
         if premium_progress_bar_enabled is not MISSING:
             fields['premium_progress_bar_enabled'] = premium_progress_bar_enabled
