@@ -1916,32 +1916,34 @@ class Guild(Hashable):
 
             fields['system_channel_flags'] = system_channel_flags.value
 
-        features = set(self.features)
+        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled)):
 
-        if community is not MISSING:
-            if community:
-                if 'rules_channel_id' in fields and 'public_updates_channel_id' in fields:
-                    features.add('COMMUNITY')
+            features = set(self.features)
+
+            if community is not MISSING:
+                if community:
+                    if 'rules_channel_id' in fields and 'public_updates_channel_id' in fields:
+                        features.add('COMMUNITY')
+                    else:
+                        raise ValueError(
+                            'community field requires both rules_channel and public_updates_channel fields to be provided'
+                        )
                 else:
-                    raise ValueError(
-                        'community field requires both rules_channel and public_updates_channel fields to be provided'
-                    )
-            else:
-                features.discard('COMMUNITY')
+                    features.discard('COMMUNITY')
 
-        if discoverable is not MISSING:
-            if discoverable:
-                features.add('DISCOVERABLE')
-            else:
-                features.discard('DISCOVERABLE')
+            if discoverable is not MISSING:
+                if discoverable:
+                    features.add('DISCOVERABLE')
+                else:
+                    features.discard('DISCOVERABLE')
 
-        if invites_disabled is not MISSING:
-            if invites_disabled:
-                features.add('INVITES_DISABLED')
-            else:
-                features.discard('INVITES_DISABLED')
+            if invites_disabled is not MISSING:
+                if invites_disabled:
+                    features.add('INVITES_DISABLED')
+                else:
+                    features.discard('INVITES_DISABLED')
 
-        fields['features'] = list(features)
+            fields['features'] = list(features)
 
         if premium_progress_bar_enabled is not MISSING:
             fields['premium_progress_bar_enabled'] = premium_progress_bar_enabled
