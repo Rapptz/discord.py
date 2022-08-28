@@ -184,7 +184,7 @@ The following now accept aware :class:`~datetime.datetime` and assume that if th
 - :attr:`Embed` constructor
 - :attr:`Embed.timestamp` property setter
 - :func:`utils.sleep_until` function
-- ``utils.time_snowflake`` function
+- :func:`utils.time_snowflake` function
 
 Currently, there's only one place in this library that doesn't accept naive :class:`datetime.datetime` objects:
 
