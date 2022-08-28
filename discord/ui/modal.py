@@ -32,6 +32,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, ClassVar, List
 
 from ..utils import MISSING, find
 from .item import Item
+from .text_input import TextInput
 from .view import View
 
 if TYPE_CHECKING:
@@ -106,7 +107,8 @@ class Modal(View):
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if isinstance(member, Item):
-                    children[name] = member
+                    if isinstance(member, TextInput):
+                        children[name] = member
 
         cls.__modal_children_items__ = children
 
@@ -204,3 +206,28 @@ class Modal(View):
         }
 
         return payload
+
+    def add_item(self, item: TextInput) -> Self:
+        """Adds an item to the modal.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        Parameters
+        -----------
+        item: :class:`TextInput`
+            The text input to add to the modal.
+
+        Raises
+        --------
+        TypeError
+            A :class:`TextInput` was not passed.
+        ValueError
+            Maximum number of children has been exceeded (25)
+            or the row the item is trying to be added to is full.
+        """
+
+        if not isinstance(item, TextInput):
+            raise TypeError(f'expected TextInput not {item.__class__!r}')
+
+        super().add_item(item)
