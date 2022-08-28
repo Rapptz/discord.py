@@ -106,9 +106,8 @@ class Modal(View):
         children = {}
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
-                if isinstance(member, Item):
-                    if isinstance(member, TextInput):
-                        children[name] = member
+                if isinstance(member, TextInput):
+                    children[name] = member
 
         cls.__modal_children_items__ = children
 
