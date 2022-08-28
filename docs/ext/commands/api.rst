@@ -421,76 +421,126 @@ Context
 Converters
 ------------
 
+.. attributetable:: discord.ext.commands.Converter
+
 .. autoclass:: discord.ext.commands.Converter
     :members:
+
+.. attributetable:: discord.ext.commands.ObjectConverter
 
 .. autoclass:: discord.ext.commands.ObjectConverter
     :members:
 
+.. attributetable:: discord.ext.commands.MemberConverter
+
 .. autoclass:: discord.ext.commands.MemberConverter
     :members:
+
+.. attributetable:: discord.ext.commands.UserConverter
 
 .. autoclass:: discord.ext.commands.UserConverter
     :members:
 
+.. attributetable:: discord.ext.commands.MessageConverter
+
 .. autoclass:: discord.ext.commands.MessageConverter
     :members:
+
+.. attributetable:: discord.ext.commands.PartialMessageConverter
 
 .. autoclass:: discord.ext.commands.PartialMessageConverter
     :members:
 
+.. attributetable:: discord.ext.commands.GuildChannelConverter
+
 .. autoclass:: discord.ext.commands.GuildChannelConverter
     :members:
+
+.. attributetable:: discord.ext.commands.TextChannelConverter
 
 .. autoclass:: discord.ext.commands.TextChannelConverter
     :members:
 
+.. attributetable:: discord.ext.commands.VoiceChannelConverter
+
 .. autoclass:: discord.ext.commands.VoiceChannelConverter
     :members:
+
+.. attributetable:: discord.ext.commands.StageChannelConverter
 
 .. autoclass:: discord.ext.commands.StageChannelConverter
     :members:
 
+.. attributetable:: discord.ext.commands.CategoryChannelConverter
+
 .. autoclass:: discord.ext.commands.CategoryChannelConverter
     :members:
+
+.. attributetable:: discord.ext.commands.ForumChannelConverter
 
 .. autoclass:: discord.ext.commands.ForumChannelConverter
     :members:
 
+.. attributetable:: discord.ext.commands.InviteConverter
+
 .. autoclass:: discord.ext.commands.InviteConverter
     :members:
+
+.. attributetable:: discord.ext.commands.GuildConverter
 
 .. autoclass:: discord.ext.commands.GuildConverter
     :members:
 
+.. attributetable:: discord.ext.commands.RoleConverter
+
 .. autoclass:: discord.ext.commands.RoleConverter
     :members:
+
+.. attributetable:: discord.ext.commands.GameConverter
 
 .. autoclass:: discord.ext.commands.GameConverter
     :members:
 
+.. attributetable:: discord.ext.commands.ColourConverter
+
 .. autoclass:: discord.ext.commands.ColourConverter
     :members:
+
+.. attributetable:: discord.ext.commands.EmojiConverter
 
 .. autoclass:: discord.ext.commands.EmojiConverter
     :members:
 
+.. attributetable:: discord.ext.commands.PartialEmojiConverter
+
 .. autoclass:: discord.ext.commands.PartialEmojiConverter
     :members:
+
+.. attributetable:: discord.ext.commands.ThreadConverter
 
 .. autoclass:: discord.ext.commands.ThreadConverter
     :members:
 
+.. attributetable:: discord.ext.commands.GuildStickerConverter
+
 .. autoclass:: discord.ext.commands.GuildStickerConverter
     :members:
+
+.. attributetable:: discord.ext.commands.ScheduledEventConverter
 
 .. autoclass:: discord.ext.commands.ScheduledEventConverter
     :members:
 
+.. attributetable:: discord.ext.commands.clean_content
+
 .. autoclass:: discord.ext.commands.clean_content
     :members:
 
+.. attributetable:: discord.ext.commands.Greedy
+
 .. autoclass:: discord.ext.commands.Greedy()
+
+.. attributetable:: discord.ext.commands.Range
 
 .. autoclass:: discord.ext.commands.Range()
 
@@ -499,8 +549,12 @@ Converters
 Flag Converter
 ~~~~~~~~~~~~~~~
 
+.. attributetable:: discord.ext.commands.FlagConverter
+
 .. autoclass:: discord.ext.commands.FlagConverter
     :members:
+
+.. attributetable:: discord.ext.commands.Flag
 
 .. autoclass:: discord.ext.commands.Flag()
     :members:
@@ -510,6 +564,8 @@ Flag Converter
 
 Defaults
 --------
+
+.. attributetable:: discord.ext.commands.Parameter
 
 .. autoclass:: discord.ext.commands.Parameter()
     :members:
