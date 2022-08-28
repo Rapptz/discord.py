@@ -1262,12 +1262,12 @@ class HTTPClient:
         self,
         user_id: Snowflake,
         guild_id: Snowflake,
-        delete_message_days: int = 1,
+        delete_message_seconds: int = 86400,  # one day
         reason: Optional[str] = None,
     ) -> Response[None]:
         r = Route('PUT', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
         payload = {
-            'delete_message_days': str(delete_message_days),
+            'delete_message_seconds': delete_message_seconds,
         }
 
         return self.request(r, json=payload, reason=reason)

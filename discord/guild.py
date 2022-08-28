@@ -46,6 +46,7 @@ from typing import (
     Union,
     overload,
 )
+import warnings
 
 from . import utils, abc
 from .role import Role
@@ -3338,7 +3339,8 @@ class Guild(Hashable):
         user: Snowflake,
         *,
         reason: Optional[str] = None,
-        delete_message_days: int = 1,
+        delete_message_days: int = MISSING,
+        delete_message_seconds: int = MISSING,
     ) -> None:
         """|coro|
 
@@ -3356,6 +3358,13 @@ class Guild(Hashable):
         delete_message_days: :class:`int`
             The number of days worth of messages to delete from the user
             in the guild. The minimum is 0 and the maximum is 7.
+
+            .. deprecated:: 2.0
+        delete_message_seconds: :class:`int`:
+            The number of seconds worth of messages to delete from the user
+            in the guild. The minimum is 0 and the maximum is 604800 (7 days).
+
+            .. versionadded:: 2.0
         reason: Optional[:class:`str`]
             The reason the user got banned.
 
@@ -3367,8 +3376,21 @@ class Guild(Hashable):
             You do not have the proper permissions to ban.
         HTTPException
             Banning failed.
+        TypeError
+            You specified both ``delete_message_days`` and ``delete_message_seconds``.
         """
-        await self._state.http.ban(user.id, self.id, delete_message_days, reason=reason)
+        if delete_message_days is not MISSING and delete_message_seconds is not MISSING:
+            raise TypeError('Cannot mix delete_message_days and delete_message_seconds keyword arguments.')
+
+        if delete_message_days is not MISSING:
+            msg = 'delete_message_days is deprecated, use delete_message_seconds instead'
+            warnings.warn(msg, DeprecationWarning, stacklevel=2)
+            delete_message_seconds = delete_message_days * 86400  # one day
+
+        if delete_message_seconds is MISSING:
+            delete_message_seconds = 86400  # one day
+
+        await self._state.http.ban(user.id, self.id, delete_message_seconds, reason=reason)
 
     async def unban(self, user: Snowflake, *, reason: Optional[str] = None) -> None:
         """|coro|
