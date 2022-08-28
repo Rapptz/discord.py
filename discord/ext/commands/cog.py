@@ -153,6 +153,7 @@ class CogMeta(type):
     __cog_group_description__: Union[str, app_commands.locale_str]
     __cog_group_nsfw__: bool
     __cog_group_auto_locale_strings__: bool
+    __cog_group_extras__: Dict[Any, Any]
     __cog_settings__: Dict[str, Any]
     __cog_commands__: List[Command[Any, ..., Any]]
     __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Any, ..., Any]]]
@@ -183,6 +184,7 @@ class CogMeta(type):
         attrs['__cog_group_name__'] = group_name
         attrs['__cog_group_nsfw__'] = kwargs.pop('group_nsfw', False)
         attrs['__cog_group_auto_locale_strings__'] = kwargs.pop('group_auto_locale_strings', True)
+        attrs['__cog_group_extras__'] = attrs.get('extras', kwargs.pop('extras', {}))
 
         description = kwargs.pop('description', None)
         if description is None:
@@ -306,6 +308,7 @@ class Cog(metaclass=CogMeta):
                 guild_ids=getattr(cls, '__discord_app_commands_default_guilds__', None),
                 guild_only=getattr(cls, '__discord_app_commands_guild_only__', False),
                 default_permissions=getattr(cls, '__discord_app_commands_default_permissions__', None),
+                extras=cls.__cog_group_extras__
             )
         else:
             group = None
