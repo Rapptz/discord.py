@@ -31,7 +31,7 @@ import datetime
 
 from . import utils
 from .enums import try_enum, Locale, InteractionType, InteractionResponseType
-from .errors import InteractionResponded, HTTPException, ClientException, DiscordException
+from .errors import InteractionResponded, HTTPException, ClientException, DiscordException, MissingRequiredItems
 from .flags import MessageFlags
 from .channel import PartialMessageable, ChannelType
 
@@ -843,12 +843,17 @@ class InteractionResponse:
         if self._response_type:
             raise InteractionResponded(self._parent)
 
+        modal_dict = modal.to_dict()
+
+        if not modal_dict["components"]:
+            raise MissingRequiredItems(modal)
+
         parent = self._parent
 
         adapter = async_context.get()
         http = parent._state.http
 
-        params = interaction_response_params(InteractionResponseType.modal.value, modal.to_dict())
+        params = interaction_response_params(InteractionResponseType.modal.value, modal_dict)
         await adapter.create_interaction_response(
             parent.id,
             parent.token,

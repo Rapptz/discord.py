@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     _ResponseType = Union[ClientResponse, Response]
 
     from .interactions import Interaction
+    from .ui.modal import Modal
 
 __all__ = (
     'DiscordException',
@@ -47,6 +48,7 @@ __all__ = (
     'ConnectionClosed',
     'PrivilegedIntentsRequired',
     'InteractionResponded',
+    'MissingRequiredItems',
 )
 
 
@@ -278,3 +280,19 @@ class InteractionResponded(ClientException):
     def __init__(self, interaction: Interaction):
         self.interaction: Interaction = interaction
         super().__init__('This interaction has already been responded to before')
+
+class MissingRequiredItems(ClientException):
+    """Exception that's raised when sending a modal using
+    :class:`InteractionResponse` when no items are added.
+
+    A modal requires at least one item.
+
+    Attributes
+    -----------
+    modal: :class:`ui.Modal`
+        The modal that's missing required items.
+    """
+
+    def __init__(self, modal: Modal):
+        self.modal: Modal = modal
+        super().__init__('This modal is missing required items.')
