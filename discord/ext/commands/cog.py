@@ -147,8 +147,7 @@ class CogMeta(type):
         .. versionadded:: 2.0
     group_extras: :class:`dict`
         A dictionary that can be used to store extraneous data.
-        The library will not touch any values or keys within this dictionary. Alternatively,
-        you can also set this as a class variable.
+        The library will not touch any values or keys within this dictionary.
 
         .. versionadded:: 2.1
     """
@@ -190,7 +189,7 @@ class CogMeta(type):
         attrs['__cog_group_name__'] = group_name
         attrs['__cog_group_nsfw__'] = kwargs.pop('group_nsfw', False)
         attrs['__cog_group_auto_locale_strings__'] = kwargs.pop('group_auto_locale_strings', True)
-        attrs['__cog_group_extras__'] = attrs.get('group_extras', kwargs.pop('group_extras', {}))
+        attrs['__cog_group_extras__'] = kwargs.pop('group_extras', {})
 
         description = kwargs.pop('description', None)
         if description is None:
