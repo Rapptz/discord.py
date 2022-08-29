@@ -184,7 +184,7 @@ class CogMeta(type):
         attrs['__cog_group_name__'] = group_name
         attrs['__cog_group_nsfw__'] = kwargs.pop('group_nsfw', False)
         attrs['__cog_group_auto_locale_strings__'] = kwargs.pop('group_auto_locale_strings', True)
-        attrs['__cog_group_extras__'] = attrs.get('extras', kwargs.pop('extras', {}))
+        attrs['__cog_group_extras__'] = attrs.get('group_extras', kwargs.pop('group_extras', {}))
 
         description = kwargs.pop('description', None)
         if description is None:
