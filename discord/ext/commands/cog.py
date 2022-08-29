@@ -149,7 +149,7 @@ class CogMeta(type):
         A dictionary that can be used to store extraneous data.
         The library will not touch any values or keys within this dictionary. Alternatively,
         you can also set this as a class variable.
-        
+
         .. versionadded:: 2.1
     """
 
@@ -730,8 +730,8 @@ class GroupCog(Cog):
     the application commands defined within it.
 
     This inherits from :class:`Cog` and the options in :class:`CogMeta` also apply to this.
-    See the :class:`Cog` documentation for methods. 
-    
+    See the :class:`Cog` documentation for methods.
+
     Decorators such as :func:`~discord.app_commands.guild_only`, :func:`~discord.app_commands.guilds`,
     and :func:`~discord.app_commands.default_permissions` will apply to the group if used on top of the
     cog.
