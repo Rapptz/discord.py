@@ -3988,8 +3988,12 @@ User
 AutoMod
 ~~~~~~~
 
+.. attributetable:: AutoModRule
+
 .. autoclass:: AutoModRule()
     :members:
+
+.. attributetable:: AutoModAction
 
 .. autoclass:: AutoModAction()
     :members:
@@ -4073,20 +4077,32 @@ ScheduledEvent
 Integration
 ~~~~~~~~~~~~
 
+.. attributetable:: Integration
+
 .. autoclass:: Integration()
     :members:
+
+.. attributetable:: IntegrationAccount
 
 .. autoclass:: IntegrationAccount()
     :members:
 
+.. attributetable:: BotIntegration
+
 .. autoclass:: BotIntegration()
     :members:
+
+.. attributetable:: IntegrationApplication
 
 .. autoclass:: IntegrationApplication()
     :members:
 
+.. attributetable:: StreamIntegration
+
 .. autoclass:: StreamIntegration()
     :members:
+
+.. attributetable:: PartialIntegration
 
 .. autoclass:: PartialIntegration()
     :members:
