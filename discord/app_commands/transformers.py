@@ -47,7 +47,7 @@ from typing import (
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
 from .translator import TranslationContextLocation, TranslationContext, Translator, locale_str
-from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel
+from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel, ForumChannel
 from ..abc import GuildChannel
 from ..threads import Thread
 from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType, Locale
@@ -685,6 +685,7 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.text,
         ChannelType.news,
         ChannelType.category,
+        ChannelType.forum,
     ],
     GuildChannel: [
         ChannelType.stage_voice,
@@ -692,6 +693,7 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.text,
         ChannelType.news,
         ChannelType.category,
+        ChannelType.forum,
     ],
     AppCommandThread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
     Thread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
@@ -699,6 +701,7 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
     VoiceChannel: [ChannelType.voice],
     TextChannel: [ChannelType.text, ChannelType.news],
     CategoryChannel: [ChannelType.category],
+    ForumChannel: [ChannelType.forum],
 }
 
 BUILT_IN_TRANSFORMERS: Dict[Any, Transformer] = {
