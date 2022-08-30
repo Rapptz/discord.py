@@ -1577,7 +1577,7 @@ class Group:
                 # This is pretty hacky
                 # It allows the module to be fetched if someone just constructs a bare Group object though.
                 self.module = inspect.currentframe().f_back.f_globals['__name__']  # type: ignore
-            except (AttributeError, IndexError):
+            except (AttributeError, IndexError, KeyError):
                 self.module = None
 
         self._children: Dict[str, Union[Command, Group]] = {}
