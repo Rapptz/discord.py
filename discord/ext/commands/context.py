@@ -295,6 +295,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             command=command,  # type: ignore # this will be a hybrid command, technically
         )
         interaction._baton = ctx
+        ctx.command_failed = interaction.command_failed
         return ctx
 
     async def invoke(self, command: Command[CogT, P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
