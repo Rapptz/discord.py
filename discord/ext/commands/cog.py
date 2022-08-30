@@ -147,6 +147,7 @@ class CogMeta(type):
         .. versionadded:: 2.0
     group_extras: :class:`dict`
         A dictionary that can be used to store extraneous data.
+        This is only applicable for :class:`GroupCog` instances.
         The library will not touch any values or keys within this dictionary.
 
         .. versionadded:: 2.1
