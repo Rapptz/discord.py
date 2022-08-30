@@ -6645,43 +6645,57 @@ ScheduledEvent
 Integration
 ~~~~~~~~~~~~
 
+.. attributetable:: Integration
+
 .. autoclass:: Integration()
     :members:
+
+.. attributetable:: IntegrationAccount
 
 .. autoclass:: IntegrationAccount()
     :members:
 
-.. autoclass:: IntegrationApplication()
-    :members:
+.. attributetable:: BotIntegration
 
 .. autoclass:: BotIntegration()
     :members:
 
+.. attributetable:: StreamIntegration
+
 .. autoclass:: StreamIntegration()
+    :members:
+
+.. attributetable:: IntegrationApplication
+
+.. autoclass:: IntegrationApplication()
     :members:
 
 AutoMod
 ~~~~~~~
 
+.. attributetable:: AutoModRule
+
 .. autoclass:: AutoModRule()
     :members:
+
+.. attributetable:: AutoModAction
 
 .. autoclass:: AutoModAction()
     :members:
 
 .. attributetable:: AutoModPresets
 
-.. autoclass:: AutoModPresets
+.. autoclass:: AutoModPresets()
     :members:
 
 .. attributetable:: AutoModRuleAction
 
-.. autoclass:: AutoModRuleAction
+.. autoclass:: AutoModRuleAction()
     :members:
 
 .. attributetable:: AutoModTrigger
 
-.. autoclass:: AutoModTrigger
+.. autoclass:: AutoModTrigger()
     :members:
 
 Member
