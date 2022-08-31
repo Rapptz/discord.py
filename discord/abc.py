@@ -522,6 +522,11 @@ class GuildChannel:
             pass
 
         try:
+            options['default_thread_rate_limit_per_user'] = options.pop('default_thread_slowmode_delay')
+        except KeyError:
+            pass
+
+        try:
             rtc_region = options.pop('rtc_region')
         except KeyError:
             pass

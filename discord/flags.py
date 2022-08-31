@@ -1282,6 +1282,15 @@ class ChannelFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the thread is pinned to the forum channel."""
         return 1 << 1
 
+    @flag_value
+    def require_tag(self):
+        """:class:`bool`: Returns ``True`` if a tag is required to be specified when creating a thread
+        in a :class:`ForumChannel`.
+
+        .. versionadded:: 2.0
+        """
+        return 1 << 4
+
 
 @fill_with_flags()
 class PaymentSourceFlags(BaseFlags):

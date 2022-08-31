@@ -24,9 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Iterable, List, Optional, Union, TYPE_CHECKING
+from typing import Callable, Dict, Iterable, List, Literal, Optional, Sequence, Union, TYPE_CHECKING
 from datetime import datetime
 import asyncio
+import array
 import copy
 
 from .mixins import Hashable
@@ -34,7 +35,7 @@ from .abc import Messageable, _purge_helper
 from .enums import ChannelType, try_enum
 from .errors import ClientException, InvalidData
 from .flags import ChannelFlags
-from .utils import MISSING, parse_time, snowflake_time, _get_as_snowflake
+from .utils import MISSING, parse_time, snowflake_time, _get_as_snowflake, _unique
 
 __all__ = (
     'Thread',
@@ -52,7 +53,7 @@ if TYPE_CHECKING:
         ThreadArchiveDuration,
     )
     from .guild import Guild
-    from .channel import TextChannel, CategoryChannel, ForumChannel
+    from .channel import TextChannel, CategoryChannel, ForumChannel, ForumTag
     from .member import Member
     from .message import Message, PartialMessage
     from .abc import Snowflake, SnowflakeTime
@@ -143,6 +144,7 @@ class Thread(Messageable, Hashable):
         '_member_ids',
         '_created_at',
         '_flags',
+        '_applied_tags',
     )
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: ThreadPayload) -> None:
@@ -175,6 +177,8 @@ class Thread(Messageable, Hashable):
         self.member_count: int = data['member_count']
         self._member_ids: List[Union[str, int]] = data['member_ids_preview']
         self._flags: int = data.get('flags', 0)
+        # SnowflakeList is sorted, but this would not be proper for applied tags, where order actually matters.
+        self._applied_tags: array.array[int] = array.array('Q', map(int, data.get('applied_tags', [])))
         self._unroll_metadata(data['thread_metadata'])
 
     def _unroll_metadata(self, data: ThreadMetadata):
@@ -268,6 +272,24 @@ class Thread(Messageable, Hashable):
         Initial members are not provided by Discord. You must call :func:`fetch_members`.
         """
         return list(self._members.values())
+
+    @property
+    def applied_tags(self) -> List[ForumTag]:
+        """List[:class:`ForumTag`]: A list of tags applied to this thread.
+
+        .. versionadded:: 2.0
+        """
+        tags = []
+        if self.parent is None or self.parent.type != ChannelType.forum:
+            return tags
+
+        parent = self.parent
+        for tag_id in self._applied_tags:
+            tag = parent.get_tag(tag_id)
+            if tag is not None:
+                tags.append(tag)
+
+        return tags
 
     @property
     def starter_message(self) -> Optional[Message]:
@@ -534,6 +556,7 @@ class Thread(Messageable, Hashable):
         pinned: bool = MISSING,
         slowmode_delay: int = MISSING,
         auto_archive_duration: ThreadArchiveDuration = MISSING,
+        applied_tags: Sequence[ForumTag] = MISSING,
         reason: Optional[str] = None,
     ) -> Thread:
         """|coro|
@@ -566,6 +589,10 @@ class Thread(Messageable, Hashable):
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for user in this thread, in seconds.
             A value of ``0`` disables slowmode. The maximum value possible is ``21600``.
+        applied_tags: Sequence[:class:`ForumTag`]
+            The new tags to apply to the thread. There can only be up to 5 tags applied to a thread.
+
+            .. versionadded:: 2.0
         reason: Optional[:class:`str`]
             The reason for editing this thread. Shows up on the audit log.
 
@@ -598,10 +625,86 @@ class Thread(Messageable, Hashable):
             flags = self.flags
             flags.pinned = pinned
             payload['flags'] = flags.value
+        if applied_tags is not MISSING:
+            payload['applied_tags'] = [str(tag.id) for tag in applied_tags]
 
         data = await self._state.http.edit_channel(self.id, **payload, reason=reason)
         # The data payload will always be a Thread payload
         return Thread(data=data, state=self._state, guild=self.guild)  # type: ignore
+
+    async def add_tags(self, *tags: Snowflake, reason: Optional[str] = None) -> None:
+        r"""|coro|
+
+        Adds the given forum tags to a thread.
+
+        You must have the :attr:`~Permissions.manage_threads` permission to
+        use this or the thread must be owned by you.
+
+        Tags that have :attr:`ForumTag.moderated` set to ``True`` require the
+        :attr:`~Permissions.manage_threads` permissions to be added.
+
+        The maximum number of tags that can be added to a thread is 5.
+
+        The parent channel must be a :class:`ForumChannel`.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        \*tags: :class:`abc.Snowflake`
+            An argument list of :class:`abc.Snowflake` representing a :class:`ForumTag`
+            to add to the thread.
+        reason: Optional[:class:`str`]
+            The reason for adding these tags.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to add these tags.
+        HTTPException
+            Adding tags failed.
+        """
+
+        applied_tags = [str(tag) for tag in self._applied_tags]
+        applied_tags.extend(str(tag.id) for tag in tags)
+
+        await self._state.http.edit_channel(self.id, applied_tags=_unique(applied_tags), reason=reason)
+
+    async def remove_tags(self, *tags: Snowflake, reason: Optional[str] = None) -> None:
+        r"""|coro|
+
+        Remove the given forum tags to a thread.
+
+        You must have the :attr:`~Permissions.manage_threads` permission to
+        use this or the thread must be owned by you.
+
+        The parent channel must be a :class:`ForumChannel`.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        \*tags: :class:`abc.Snowflake`
+            An argument list of :class:`abc.Snowflake` representing a :class:`ForumTag`
+            to remove to the thread.
+        reason: Optional[:class:`str`]
+            The reason for removing these tags.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to remove these tags.
+        HTTPException
+            Removing tags failed.
+        """
+
+        # Once again, taking advantage of the fact that dicts are ordered since 3.7
+        applied_tags: Dict[str, Literal[None]] = {str(tag): None for tag in self._applied_tags}
+
+        for tag in tags:
+            applied_tags.pop(str(tag.id), None)
+
+        await self._state.http.edit_channel(self.id, applied_tags=list(applied_tags.keys()), reason=reason)
 
     async def join(self) -> None:
         """|coro|

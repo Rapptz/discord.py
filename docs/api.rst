@@ -2853,7 +2853,7 @@ of :class:`enum.Enum`.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
 
-        .. versionadded:: 2.1
+        .. versionadded:: 2.0
 
     .. attribute:: automod_timeout_member
 
@@ -2871,7 +2871,7 @@ of :class:`enum.Enum`.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
 
-        .. versionadded:: 2.1
+        .. versionadded:: 2.0
 
 .. class:: AuditLogActionCategory
 
@@ -7289,6 +7289,14 @@ Permissions
 .. autoclass:: PermissionOverwrite()
     :members:
 
+ForumTag
+~~~~~~~~~
+
+.. attributetable:: ForumTag
+
+.. autoclass:: ForumTag
+    :members:
+
 Flags
 ~~~~~~
 
@@ -7392,6 +7400,7 @@ Flags
 
 .. autoclass:: MemberCacheFlags()
     :members:
+
 
 Exceptions
 ------------

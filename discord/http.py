@@ -1374,7 +1374,12 @@ class HTTPClient:
             'flags',
             'icon',
             'owner',
+            'default_thread_rate_limit_per_user',
+            'default_reaction_emoji',
+            'available_tags',
+            'applied_tags',
         )
+
         payload = {k: v for k, v in options.items() if k in valid_keys}
         return self.request(r, reason=reason, json=payload)
 

@@ -162,6 +162,11 @@ class PartialEmoji(_EmojiTag, AssetMixin):
     def _to_partial(self) -> PartialEmoji:
         return self
 
+    def _to_forum_tag_payload(self) -> Dict[str, Any]:
+        if self.id is not None:
+            return {'emoji_id': self.id, 'emoji_name': None}
+        return {'emoji_id': None, 'emoji_name': self.name}
+
     @classmethod
     def with_state(
         cls,
@@ -176,11 +181,13 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         return self
 
     def __str__(self) -> str:
+        # Coerce empty names to _ so it renders in the client regardless of having no name
+        name = self.name or '_'
         if self.id is None:
-            return self.name
+            return name
         if self.animated:
-            return f'<a:{self.name}:{self.id}>'
-        return f'<:{self.name}:{self.id}>'
+            return f'<a:{name}:{self.id}>'
+        return f'<:{name}:{self.id}>'
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} animated={self.animated} name={self.name!r} id={self.id}>'

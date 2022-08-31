@@ -36,12 +36,13 @@ from .permissions import PermissionOverwrite, Permissions
 from .automod import AutoModTrigger, AutoModRuleAction, AutoModPresets, AutoModRule
 from .role import Role
 from .emoji import Emoji
+from .partial_emoji import PartialEmoji
 from .member import Member
 from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
 from .sticker import GuildSticker
 from .threads import Thread
-from .channel import StageChannel
+from .channel import ForumChannel, StageChannel, ForumTag
 
 __all__ = (
     'AuditLogDiff',
@@ -62,6 +63,8 @@ if TYPE_CHECKING:
     )
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
+        ForumTag as ForumTagPayload,
+        DefaultReaction as DefaultReactionPayload,
     )
     from .types.invite import Invite as InvitePayload
     from .types.role import Role as RolePayload
@@ -128,6 +131,44 @@ def _transform_guild_id(entry: AuditLogEntry, data: Optional[Snowflake]) -> Opti
 
 def _transform_roles(entry: AuditLogEntry, data: List[Snowflake]) -> List[Union[Role, Object]]:
     return [entry.guild.get_role(int(role_id)) or Object(role_id, type=Role) for role_id in data]
+
+
+def _transform_applied_forum_tags(entry: AuditLogEntry, data: List[Snowflake]) -> List[Union[ForumTag, Object]]:
+    thread = entry.target
+    if isinstance(thread, Thread) and isinstance(thread.parent, ForumChannel):
+        return [thread.parent.get_tag(tag_id) or Object(id=tag_id, type=ForumTag) for tag_id in map(int, data)]
+    return [Object(id=tag_id, type=ForumTag) for tag_id in data]
+
+
+def _transform_overloaded_flags(entry: AuditLogEntry, data: int) -> Union[int, flags.ChannelFlags]:
+    # The `flags` key is definitely overloaded. Right now it's for channels and threads but
+    # I am aware of `member.flags` and `user.flags` existing. However, this does not impact audit logs
+    # at the moment but better safe than sorry.
+    channel_audit_log_types = (
+        enums.AuditLogAction.channel_create,
+        enums.AuditLogAction.channel_update,
+        enums.AuditLogAction.channel_delete,
+        enums.AuditLogAction.thread_create,
+        enums.AuditLogAction.thread_update,
+        enums.AuditLogAction.thread_delete,
+    )
+
+    if entry.action in channel_audit_log_types:
+        return flags.ChannelFlags._from_value(data)
+    return data
+
+
+def _transform_forum_tags(entry: AuditLogEntry, data: List[ForumTagPayload]) -> List[ForumTag]:
+    return [ForumTag.from_data(state=entry._state, data=d) for d in data]
+
+
+def _transform_default_reaction(entry: AuditLogEntry, data: DefaultReactionPayload) -> Optional[PartialEmoji]:
+    if data is None:
+        return None
+
+    emoji_name = data.get('emoji_name') or ''
+    emoji_id = utils._get_as_snowflake(data, 'emoji_id') or None  # Coerce 0 -> None
+    return PartialEmoji.with_state(state=entry._state, name=emoji_name, id=emoji_id)
 
 
 def _transform_overwrites(
@@ -272,49 +313,54 @@ Transformer = Callable[["AuditLogEntry", Any], Any]
 class AuditLogChanges:
     # fmt: off
     TRANSFORMERS: ClassVar[Dict[str, Tuple[Optional[str], Optional[Transformer]]]] = {
-        'verification_level':            (None, _enum_transformer(enums.VerificationLevel)),
-        'explicit_content_filter':       (None, _enum_transformer(enums.ContentFilter)),
-        'allow':                         (None, _flag_transformer(Permissions)),
-        'deny':                          (None, _flag_transformer(Permissions)),
-        'permissions':                   (None, _flag_transformer(Permissions)),
-        'id':                            (None, _transform_snowflake),
-        'color':                         ('colour', _transform_color),
-        'owner_id':                      ('owner', _transform_member_id),
-        'inviter_id':                    ('inviter', _transform_member_id),
-        'channel_id':                    ('channel', _transform_channel),
-        'afk_channel_id':                ('afk_channel', _transform_channel),
-        'system_channel_id':             ('system_channel', _transform_channel),
-        'system_channel_flags':          (None, _flag_transformer(flags.SystemChannelFlags)),
-        'widget_channel_id':             ('widget_channel', _transform_channel),
-        'rules_channel_id':              ('rules_channel', _transform_channel),
-        'public_updates_channel_id':     ('public_updates_channel', _transform_channel),
-        'permission_overwrites':         ('overwrites', _transform_overwrites),
-        'splash_hash':                   ('splash', _guild_hash_transformer('splashes')),
-        'banner_hash':                   ('banner', _guild_hash_transformer('banners')),
-        'discovery_splash_hash':         ('discovery_splash', _guild_hash_transformer('discovery-splashes')),
-        'icon_hash':                     ('icon', _transform_icon),
-        'avatar_hash':                   ('avatar', _transform_avatar),
-        'rate_limit_per_user':           ('slowmode_delay', None),
-        'guild_id':                      ('guild', _transform_guild_id),
-        'tags':                          ('emoji', None),
-        'default_message_notifications': ('default_notifications', _enum_transformer(enums.NotificationLevel)),
-        'video_quality_mode':            (None, _enum_transformer(enums.VideoQualityMode)),
-        'privacy_level':                 (None, _enum_transformer(enums.PrivacyLevel)),
-        'format_type':                   (None, _enum_transformer(enums.StickerFormatType)),
-        'type':                          (None, _transform_type),
-        'communication_disabled_until':  ('timed_out_until', _transform_timestamp),
-        'expire_behavior':               (None, _enum_transformer(enums.ExpireBehaviour)),
-        'mfa_level':                     (None, _enum_transformer(enums.MFALevel)),
-        'status':                        (None, _enum_transformer(enums.EventStatus)),
-        'entity_type':                   (None, _enum_transformer(enums.EntityType)),
-        'preferred_locale':              (None, _enum_transformer(enums.Locale)),
-        'image_hash':                    ('cover_image', _transform_cover_image),
-        'trigger_type':                  (None, _enum_transformer(enums.AutoModRuleTriggerType)),
-        'event_type':                    (None, _enum_transformer(enums.AutoModRuleEventType)),
-        'trigger_metadata':              ('trigger', _transform_automod_trigger_metadata),
-        'actions':                       (None, _transform_automod_actions),
-        'exempt_channels':               (None, _transform_channels_or_threads),
-        'exempt_roles':                  (None, _transform_roles),
+        'verification_level':                    (None, _enum_transformer(enums.VerificationLevel)),
+        'explicit_content_filter':               (None, _enum_transformer(enums.ContentFilter)),
+        'allow':                                 (None, _flag_transformer(Permissions)),
+        'deny':                                  (None, _flag_transformer(Permissions)),
+        'permissions':                           (None, _flag_transformer(Permissions)),
+        'id':                                    (None, _transform_snowflake),
+        'color':                                 ('colour', _transform_color),
+        'owner_id':                              ('owner', _transform_member_id),
+        'inviter_id':                            ('inviter', _transform_member_id),
+        'channel_id':                            ('channel', _transform_channel),
+        'afk_channel_id':                        ('afk_channel', _transform_channel),
+        'system_channel_id':                     ('system_channel', _transform_channel),
+        'system_channel_flags':                  (None, _flag_transformer(flags.SystemChannelFlags)),
+        'widget_channel_id':                     ('widget_channel', _transform_channel),
+        'rules_channel_id':                      ('rules_channel', _transform_channel),
+        'public_updates_channel_id':             ('public_updates_channel', _transform_channel),
+        'permission_overwrites':                 ('overwrites', _transform_overwrites),
+        'splash_hash':                           ('splash', _guild_hash_transformer('splashes')),
+        'banner_hash':                           ('banner', _guild_hash_transformer('banners')),
+        'discovery_splash_hash':                 ('discovery_splash', _guild_hash_transformer('discovery-splashes')),
+        'icon_hash':                             ('icon', _transform_icon),
+        'avatar_hash':                           ('avatar', _transform_avatar),
+        'rate_limit_per_user':                   ('slowmode_delay', None),
+        'default_thread_rate_limit_per_user':    ('default_thread_slowmode_delay', None),
+        'guild_id':                              ('guild', _transform_guild_id),
+        'tags':                                  ('emoji', None),
+        'default_message_notifications':         ('default_notifications', _enum_transformer(enums.NotificationLevel)),
+        'video_quality_mode':                    (None, _enum_transformer(enums.VideoQualityMode)),
+        'privacy_level':                         (None, _enum_transformer(enums.PrivacyLevel)),
+        'format_type':                           (None, _enum_transformer(enums.StickerFormatType)),
+        'type':                                  (None, _transform_type),
+        'communication_disabled_until':          ('timed_out_until', _transform_timestamp),
+        'expire_behavior':                       (None, _enum_transformer(enums.ExpireBehaviour)),
+        'mfa_level':                             (None, _enum_transformer(enums.MFALevel)),
+        'status':                                (None, _enum_transformer(enums.EventStatus)),
+        'entity_type':                           (None, _enum_transformer(enums.EntityType)),
+        'preferred_locale':                      (None, _enum_transformer(enums.Locale)),
+        'image_hash':                            ('cover_image', _transform_cover_image),
+        'trigger_type':                          (None, _enum_transformer(enums.AutoModRuleTriggerType)),
+        'event_type':                            (None, _enum_transformer(enums.AutoModRuleEventType)),
+        'trigger_metadata':                      ('trigger', _transform_automod_trigger_metadata),
+        'actions':                               (None, _transform_automod_actions),
+        'exempt_channels':                       (None, _transform_channels_or_threads),
+        'exempt_roles':                          (None, _transform_roles),
+        'applied_tags':                          (None, _transform_applied_forum_tags),
+        'available_tags':                        (None, _transform_forum_tags),
+        'flags':                                 (None, _transform_overloaded_flags),
+        'default_reaction_emoji':                (None, _transform_default_reaction),
     }
     # fmt: on
 

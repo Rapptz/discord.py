@@ -31,6 +31,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Literal,
     Mapping,
     NamedTuple,
     Optional,
@@ -55,7 +56,8 @@ from .asset import Asset
 from .errors import ClientException
 from .stage_instance import StageInstance
 from .threads import Thread
-from .invite import Invite
+from .partial_emoji import _EmojiTag, PartialEmoji
+from .flags import ChannelFlags
 from .http import handle_message_parameters
 
 __all__ = (
@@ -64,6 +66,7 @@ __all__ = (
     'StageChannel',
     'DMChannel',
     'CategoryChannel',
+    'ForumTag',
     'ForumChannel',
     'GroupChannel',
     'PartialMessageable',
@@ -77,14 +80,14 @@ if TYPE_CHECKING:
     from .role import Role
     from .object import Object
     from .member import Member, VoiceState
-    from .abc import Snowflake, SnowflakeTime, T as ConnectReturn
-    from .message import Message, PartialMessage
+    from .abc import Snowflake, SnowflakeTime
+    from .message import Message, PartialMessage, EmojiInputType
     from .mentions import AllowedMentions
     from .webhook import Webhook
     from .state import ConnectionState
     from .sticker import GuildSticker, StickerItem
     from .file import File
-    from .user import ClientUser, User
+    from .user import BaseUser, ClientUser, User
     from .guild import Guild, GuildChannel as GuildChannelType
     from .settings import ChannelSettings
     from .types.channel import (
@@ -96,6 +99,7 @@ if TYPE_CHECKING:
         CategoryChannel as CategoryChannelPayload,
         GroupDMChannel as GroupChannelPayload,
         ForumChannel as ForumChannelPayload,
+        ForumTag as ForumTagPayload,
     )
 
     from .types.snowflake import SnowflakeList
@@ -158,6 +162,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         The default auto archive duration in minutes for threads created in this channel.
 
         .. versionadded:: 2.0
+    default_thread_slowmode_delay: :class:`int`
+        The default slowmode delay in seconds for threads created in this channel.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -174,12 +182,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         '_type',
         'last_message_id',
         'default_auto_archive_duration',
+        'default_thread_slowmode_delay',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[TextChannelPayload, NewsChannelPayload]):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
-        self._type: int = data['type']
         self._update(guild, data)
 
     def __repr__(self) -> str:
@@ -204,7 +212,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         # Does this need coercion into `int`? No idea yet.
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.default_auto_archive_duration: ThreadArchiveDuration = data.get('default_auto_archive_duration', 1440)
-        self._type: int = data.get('type', self._type)
+        self.default_thread_slowmode_delay: int = data.get('default_thread_rate_limit_per_user', 0)
+        self._type: Literal[0, 5] = data.get('type', self._type)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
 
@@ -292,6 +301,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         category: Optional[CategoryChannel] = ...,
         slowmode_delay: int = ...,
         default_auto_archive_duration: ThreadArchiveDuration = ...,
+        default_thread_slowmode_delay: int = ...,
         type: ChannelType = ...,
         overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
     ) -> TextChannel:
@@ -349,6 +359,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         default_auto_archive_duration: :class:`int`
             The new default auto archive duration in minutes for threads created in this channel.
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
+
+            .. versionadded:: 2.0
+        default_thread_slowmode_delay: :class:`int`
+            The new default slowmode delay in seconds for threads created in this channel.
+
+            .. versionadded:: 2.0
 
         Raises
         ------
@@ -1904,6 +1920,89 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return await self.guild.create_forum(name, category=self, **options)
 
 
+class ForumTag(Hashable):
+    """Represents a forum tag that can be applied to a thread within a :class:`ForumChannel`.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two forum tags are equal.
+
+        .. describe:: x != y
+
+            Checks if two forum tags are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the forum tag's hash.
+
+        .. describe:: str(x)
+
+            Returns the forum tag's name.
+
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The ID of the tag. If this was manually created then the ID will be ``0``.
+    name: :class:`str`
+        The name of the tag. Can only be up to 20 characters.
+    moderated: :class:`bool`
+        Whether this tag can only be added or removed by a moderator with
+        the :attr:`~Permissions.manage_threads` permission.
+    emoji: :class:`PartialEmoji`
+        The emoji that is used to represent this tag.
+        Note that if the emoji is a custom emoji, it will *not* have name information.
+    """
+
+    __slots__ = ('name', 'id', 'moderated', 'emoji')
+
+    def __init__(self, *, name: str, emoji: EmojiInputType, moderated: bool = False) -> None:
+        self.name: str = name
+        self.id: int = 0
+        self.moderated: bool = moderated
+        self.emoji: PartialEmoji
+        if isinstance(emoji, _EmojiTag):
+            self.emoji = emoji._to_partial()
+        elif isinstance(emoji, str):
+            self.emoji = PartialEmoji.from_str(emoji)
+        else:
+            raise TypeError(f'emoji must be a Emoji, PartialEmoji, or str not {emoji.__class__!r}')
+
+    @classmethod
+    def from_data(cls, *, state: ConnectionState, data: ForumTagPayload) -> Self:
+        self = cls.__new__(cls)
+        self.name = data['name']
+        self.id = int(data['id'])
+        self.moderated = data.get('moderated', False)
+
+        emoji_name = data['emoji_name'] or ''
+        emoji_id = utils._get_as_snowflake(data, 'emoji_id') or None  # Coerce 0 -> None
+        self.emoji = PartialEmoji.with_state(state=state, name=emoji_name, id=emoji_id)
+        return self
+
+    def to_dict(self) -> Dict[str, Any]:
+        payload: Dict[str, Any] = {
+            'name': self.name,
+            'moderated': self.moderated,
+        }
+        payload.update(self.emoji._to_forum_tag_payload())
+
+        if self.id:
+            payload['id'] = self.id
+
+        return payload
+
+    def __repr__(self) -> str:
+        return f'<ForumTag id={self.id} name={self.name!r} emoji={self.emoji!r} moderated={self.moderated}>'
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class ForumChannel(discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild forum channel.
 
@@ -1938,7 +2037,8 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     category_id: Optional[:class:`int`]
         The category channel ID this forum belongs to, if applicable.
     topic: Optional[:class:`str`]
-        The forum's topic. ``None`` if it doesn't exist.
+        The forum's topic. ``None`` if it doesn't exist. Called "Guidelines" in the UI.
+        Can be up to 4096 characters long.
     position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
@@ -1955,6 +2055,15 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         If the forum is marked as "not safe for work" or "age restricted".
     default_auto_archive_duration: :class:`int`
         The default auto archive duration in minutes for threads created in this forum.
+    default_thread_slowmode_delay: :class:`int`
+        The default slowmode delay in seconds for threads created in this forum.
+
+        .. versionadded:: 2.0
+    default_reaction_emoji: Optional[:class:`PartialEmoji`]
+        The default reaction emoji for threads created in this forum to show in the
+        add reaction button.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -1971,6 +2080,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         '_overwrites',
         'last_message_id',
         'default_auto_archive_duration',
+        'default_thread_slowmode_delay',
+        'default_reaction_emoji',
+        '_available_tags',
+        '_flags',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: ForumChannelPayload):
@@ -1999,6 +2112,21 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.default_auto_archive_duration: ThreadArchiveDuration = data.get('default_auto_archive_duration', 1440)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        # This takes advantage of the fact that dicts are ordered since Python 3.7
+        tags = [ForumTag.from_data(state=self._state, data=tag) for tag in data.get('available_tags', [])]
+        self.default_thread_slowmode_delay: int = data.get('default_thread_slowmode_delay', 0)
+        self._available_tags: Dict[int, ForumTag] = {tag.id: tag for tag in tags}
+
+        self.default_reaction_emoji: Optional[PartialEmoji] = None
+        default_reaction_emoji = data.get('default_reaction_emoji')
+        if default_reaction_emoji:
+            self.default_reaction_emoji = PartialEmoji.with_state(
+                state=self._state,
+                id=utils._get_as_snowflake(default_reaction_emoji, 'emoji_id') or None,  # Coerce 0 -> None
+                name=default_reaction_emoji.get('emoji_name') or '',
+            )
+
+        self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)
 
     @property
@@ -2023,6 +2151,39 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     def threads(self) -> List[Thread]:
         """List[:class:`Thread`]: Returns all the threads that you can see."""
         return [thread for thread in self.guild._threads.values() if thread.parent_id == self.id]
+
+    @property
+    def flags(self) -> ChannelFlags:
+        """:class:`ChannelFlags`: The flags associated with this thread.
+
+        .. versionadded:: 2.0
+        """
+        return ChannelFlags._from_value(self._flags)
+
+    @property
+    def available_tags(self) -> Sequence[ForumTag]:
+        """Sequence[:class:`ForumTag`]: Returns all the available tags for this forum.
+
+        .. versionadded:: 2.0
+        """
+        return utils.SequenceProxy(self._available_tags.values())
+
+    def get_tag(self, tag_id: int, /) -> Optional[ForumTag]:
+        """Returns the tag with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ----------
+        tag_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        -------
+        Optional[:class:`ForumTag`]
+            The tag with the given ID, or ``None`` if not found.
+        """
+        return self._available_tags.get(tag_id)
 
     def is_nsfw(self) -> bool:
         """:class:`bool`: Checks if the forum is NSFW."""
@@ -2057,6 +2218,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         default_auto_archive_duration: ThreadArchiveDuration = ...,
         type: ChannelType = ...,
         overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
+        available_tags: Sequence[ForumTag] = ...,
+        default_thread_slowmode_delay: int = ...,
+        default_reaction_emoji: Optional[EmojiInputType] = ...,
+        require_tag: bool = ...,
     ) -> ForumChannel:
         ...
 
@@ -2099,6 +2264,22 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         default_auto_archive_duration: :class:`int`
             The new default auto archive duration in minutes for threads created in this channel.
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
+        available_tags: Sequence[:class:`ForumTag`]
+            The new available tags for this forum.
+
+            .. versionadded:: 2.0
+        default_thread_slowmode_delay: :class:`int`
+            The new default slowmode delay for threads in this channel.
+
+            .. versionadded:: 2.0
+        default_reaction_emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
+            The new default reaction emoji for threads in this channel.
+
+            .. versionadded:: 2.0
+        require_tag: :class:`bool`
+            Whether to require a tag for threads in this channel or not.
+
+            .. versionadded:: 2.0
 
         Raises
         ------
@@ -2118,10 +2299,90 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             then ``None`` is returned instead.
         """
 
+        try:
+            tags: Sequence[ForumTag] = options.pop('available_tags')
+        except KeyError:
+            pass
+        else:
+            options['available_tags'] = [tag.to_dict() for tag in tags]
+
+        try:
+            default_reaction_emoji: Optional[EmojiInputType] = options.pop('default_reaction_emoji')
+        except KeyError:
+            pass
+        else:
+            if default_reaction_emoji is None:
+                options['default_reaction_emoji'] = None
+            elif isinstance(default_reaction_emoji, _EmojiTag):
+                options['default_reaction_emoji'] = default_reaction_emoji._to_partial()._to_forum_tag_payload()
+            elif isinstance(default_reaction_emoji, str):
+                options['default_reaction_emoji'] = PartialEmoji.from_str(default_reaction_emoji)._to_forum_tag_payload()
+
+        try:
+            require_tag = options.pop('require_tag')
+        except KeyError:
+            pass
+        else:
+            flags = self.flags
+            flags.require_tag = require_tag
+            options['flags'] = flags.value
+
         payload = await self._edit(options, reason=reason)
         if payload is not None:
             # the payload will always be the proper channel payload
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
+
+    async def create_tag(
+        self,
+        *,
+        name: str,
+        emoji: PartialEmoji,
+        moderated: bool = False,
+        reason: Optional[str] = None,
+    ) -> ForumTag:
+        """|coro|
+
+        Creates a new tag in this forum.
+
+        You must have the :attr:`~Permissions.manage_channels` permission to
+        use this.
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The name of the tag. Can only be up to 20 characters.
+        emoji: Union[:class:`str`, :class:`PartialEmoji`]
+            The emoji to use for the tag.
+        moderated: :class:`bool`
+            Whether the tag can only be applied by moderators.
+        reason: Optional[:class:`str`]
+            The reason for creating this tag. Shows up on the audit log.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permissions to create a tag in this forum.
+        HTTPException
+            Creating the tag failed.
+
+        Returns
+        -------
+        :class:`ForumTag`
+            The newly created tag.
+        """
+
+        prior = list(self._available_tags.values())
+        result = ForumTag(name=name, emoji=emoji, moderated=moderated)
+        prior.append(result)
+        payload = await self._state.http.edit_channel(
+            self.id, reason=reason, available_tags=[tag.to_dict() for tag in prior]
+        )
+        try:
+            result.id = int(payload['available_tags'][-1]['id'])  # type: ignore
+        except (KeyError, IndexError, ValueError):
+            pass
+
+        return result
 
     async def create_thread(
         self,
