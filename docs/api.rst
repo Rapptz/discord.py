@@ -4397,6 +4397,14 @@ GuildSticker
 .. autoclass:: GuildSticker()
     :members:
 
+ShardInfo
+~~~~~~~~~~~
+
+.. attributetable:: ShardInfo
+
+.. autoclass:: ShardInfo()
+    :members:
+
 RawMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -4710,20 +4718,12 @@ PermissionOverwrite
 .. autoclass:: PermissionOverwrite
     :members:
 
-ShardInfo
-~~~~~~~~~~~
-
-.. attributetable:: ShardInfo
-
-.. autoclass:: ShardInfo()
-    :members:
-
 SystemChannelFlags
 ~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: SystemChannelFlags
 
-.. autoclass:: SystemChannelFlags()
+.. autoclass:: SystemChannelFlags
     :members:
 
 MessageFlags
@@ -4731,7 +4731,7 @@ MessageFlags
 
 .. attributetable:: MessageFlags
 
-.. autoclass:: MessageFlags()
+.. autoclass:: MessageFlags
     :members:
 
 PublicUserFlags
@@ -4739,8 +4739,18 @@ PublicUserFlags
 
 .. attributetable:: PublicUserFlags
 
-.. autoclass:: PublicUserFlags()
+.. autoclass:: PublicUserFlags
     :members:
+
+
+ForumTag
+~~~~~~~~~
+
+.. attributetable:: ForumTag
+
+.. autoclass:: ForumTag
+    :members:
+
 
 Exceptions
 ------------

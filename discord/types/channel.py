@@ -66,6 +66,7 @@ class _BaseTextChannel(_BaseGuildChannel, total=False):
     last_message_id: Optional[Snowflake]
     last_pin_timestamp: str
     rate_limit_per_user: int
+    default_thread_rate_limit_per_user: int
     default_auto_archive_duration: ThreadArchiveDuration
 
 
@@ -117,10 +118,27 @@ class ThreadChannel(_BaseChannel):
     last_message_id: NotRequired[Optional[Snowflake]]
     last_pin_timestamp: NotRequired[str]
     flags: NotRequired[int]
+    applied_tags: NotRequired[List[Snowflake]]
+
+
+class DefaultReaction(TypedDict):
+    emoji_id: Optional[Snowflake]
+    emoji_name: Optional[str]
+
+
+class ForumTag(TypedDict):
+    id: Snowflake
+    name: str
+    moderated: bool
+    emoji_id: Optional[Snowflake]
+    emoji_name: Optional[str]
 
 
 class ForumChannel(_BaseTextChannel):
     type: Literal[15]
+    available_tags: List[ForumTag]
+    default_reaction_emoji: Optional[DefaultReaction]
+    flags: NotRequired[int]
 
 
 GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel, ForumChannel]
