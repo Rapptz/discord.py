@@ -508,7 +508,7 @@ class Interaction:
         self, string: Union[str, locale_str], *, locale: Locale = MISSING, data: Any = MISSING
     ) -> Optional[str]:
         """|coro|
-        
+
         Translates a string using the set :class:`~discord.app_commands.Translator`.
 
         .. versionadded:: 2.1
@@ -520,19 +520,18 @@ class Interaction:
             :class:`~discord.app_commands.locale_str` can be used to add more context,
             information, or any metadata necessary.
         locale: :class:`Locale`
-            The locale to use, this is handy if you want the
-            translation for a specific locale.
+            The locale to use, this is handy if you want the translation
+            for a specific locale.
             Defaults to the user's :attr:`.locale`.
         data: Any
             The extraneous data that is being translated.
-            If not specified, either :attr:`.command`
-            or :attr:`.message` will be passed, depending on which is
-            available in the context.
+            If not specified, either :attr:`.command` or :attr:`.message` will be passed,
+            depending on which is available in the context.
 
         Returns
         --------
         Optional[:class:`str`]
-            The translated string, or ``None`` if a translator is not set.
+            The translated string, or ``None`` if a translator was not set.
         """
         translator = self._state._translator
         if not translator:
