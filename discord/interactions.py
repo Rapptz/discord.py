@@ -528,6 +528,11 @@ class Interaction:
             If not specified, either :attr:`.command`
             or :attr:`.message` will be passed, depending on which is
             available in the context.
+
+        Returns
+        --------
+        Optional[:class:`str`]
+            The translated string, or ``None`` if a translator is not set.
         """
         translator = self._state._translator
         if not translator:
