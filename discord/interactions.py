@@ -507,7 +507,9 @@ class Interaction:
     async def translate(
         self, string: Union[str, locale_str], *, locale: Locale = MISSING, data: Any = MISSING
     ) -> Optional[str]:
-        """|coro| Translates a string using the set :class:`~discord.app_commands.Translator`.
+        """|coro|
+        
+        Translates a string using the set :class:`~discord.app_commands.Translator`.
 
         .. versionadded:: 2.1
 
