@@ -505,7 +505,7 @@ class Interaction:
         )
 
     async def translate(
-        self, string: Union[str, locale_str], *, locale: Locale = MISSING, data: Optional[Any] = MISSING
+        self, string: Union[str, locale_str], *, locale: Locale = MISSING, data: Any = MISSING
     ) -> Optional[Any]:
         """|coro| Translates a string using the set :class:`~discord.app_commands.Translator`.
 
@@ -521,7 +521,7 @@ class Interaction:
             The locale to use, this is handy if you want the
             translation for a specific locale.
             Defaults to the user's :attr:`.locale`.
-        data: Optional[Any]
+        data: Any
             The extraneous data that is being translated.
             if not specified, either :attr:`.command`
             or :attr:`.message` will be passed, depending on which is
