@@ -505,11 +505,7 @@ class Interaction:
         )
 
     async def translate(
-        self,
-        string: Union[str, locale_str],
-        *,
-        locale: Locale = MISSING,
-        data: Optional[Any] = MISSING
+        self, string: Union[str, locale_str], *, locale: Locale = MISSING, data: Optional[Any] = MISSING
     ) -> Optional[Any]:
         """|coro| Translates a string using the set :class:`~discord.app_commands.Translator`.
 
@@ -519,16 +515,16 @@ class Interaction:
         ----------
         string: Union[:class:`str`, :class:`~discord.app_commands.locale_str`]
             The string to translate.
-            :class:`~discord.app_commands.locale_str` can be used to add more context, 
+            :class:`~discord.app_commands.locale_str` can be used to add more context,
             information, or any metadata necessary.
         locale: :class:`Locale`
-            The locale to use, this is handy if you want the 
+            The locale to use, this is handy if you want the
             translation for a specific locale.
             Defaults to the user's :attr:`.locale`.
         data: Optional[Any]
             The extraneous data that is being translated.
-            if not specified, either :attr:`.command` 
-            or :attr:`.message` will be passed, depending on which is 
+            if not specified, either :attr:`.command`
+            or :attr:`.message` will be passed, depending on which is
             available in the context.
             This can be ``None``.
         """
@@ -543,12 +539,8 @@ class Interaction:
         if data is MISSING:
             data = self.command or self.message
 
-        context = TranslationContext(
-            location=TranslationContextLocation.other,
-            data=data
-        )
+        context = TranslationContext(location=TranslationContextLocation.other, data=data)
         return await translator.translate(string, locale=locale, context=context)
-        
 
 
 class InteractionResponse:
@@ -958,6 +950,7 @@ class InteractionResponse:
         )
 
         self._response_type = InteractionResponseType.autocomplete_result
+
 
 class _InteractionMessageState:
     __slots__ = ('_parent', '_interaction')
