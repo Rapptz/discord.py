@@ -1566,6 +1566,8 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
         reason: Optional[str] = None,
         default_auto_archive_duration: int = MISSING,
+        default_thread_slowmode_delay: int = MISSING,
+        available_tags: Sequence[ForumTag] = MISSING,
     ) -> ForumChannel:
         """|coro|
 
@@ -1600,6 +1602,14 @@ class Guild(Hashable):
             The reason for creating this channel. Shows up in the audit log.
         default_auto_archive_duration: :class:`int`
             The default auto archive duration for threads created in the forum channel (in minutes).
+        default_thread_slowmode_delay: :class:`int`
+            The default slowmode delay in seconds for threads created in this forum.
+
+            .. versionadded:: 2.1
+        available_tags: Sequence[:class:`ForumTag`]
+            The available tags for this forum channel.
+
+            .. versionadded:: 2.1
 
         Raises
         -------
@@ -1631,6 +1641,12 @@ class Guild(Hashable):
 
         if default_auto_archive_duration is not MISSING:
             options['default_auto_archive_duration'] = default_auto_archive_duration
+
+        if default_thread_slowmode_delay is not MISSING:
+            options['default_thread_rate_limit_per_user'] = default_thread_slowmode_delay
+
+        if available_tags is not MISSING:
+            options['available_tags'] = [t.to_dict() for t in available_tags]
 
         data = await self._create_channel(
             name=name, overwrites=overwrites, channel_type=ChannelType.forum, category=category, reason=reason, **options
