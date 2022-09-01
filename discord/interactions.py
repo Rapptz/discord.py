@@ -525,10 +525,9 @@ class Interaction:
             Defaults to the user's :attr:`.locale`.
         data: Any
             The extraneous data that is being translated.
-            if not specified, either :attr:`.command`
+            If not specified, either :attr:`.command`
             or :attr:`.message` will be passed, depending on which is
             available in the context.
-            This can be ``None``.
         """
         translator = self._state._translator
         if not translator:
