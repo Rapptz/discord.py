@@ -42,6 +42,7 @@ from .permissions import Permissions
 from .http import handle_message_parameters
 from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
 from .app_commands.namespace import Namespace
+from .app_commands.translator import locale_str, TranslationContext, TranslationContextLocation
 
 __all__ = (
     'Interaction',
@@ -502,6 +503,49 @@ class Interaction:
             proxy=http.proxy,
             proxy_auth=http.proxy_auth,
         )
+
+    async def translate(
+        self, string: Union[str, locale_str], *, locale: Locale = MISSING, data: Any = MISSING
+    ) -> Optional[str]:
+        """|coro|
+
+        Translates a string using the set :class:`~discord.app_commands.Translator`.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        ----------
+        string: Union[:class:`str`, :class:`~discord.app_commands.locale_str`]
+            The string to translate.
+            :class:`~discord.app_commands.locale_str` can be used to add more context,
+            information, or any metadata necessary.
+        locale: :class:`Locale`
+            The locale to use, this is handy if you want the translation
+            for a specific locale.
+            Defaults to the user's :attr:`.locale`.
+        data: Any
+            The extraneous data that is being translated.
+            If not specified, either :attr:`.command` or :attr:`.message` will be passed,
+            depending on which is available in the context.
+
+        Returns
+        --------
+        Optional[:class:`str`]
+            The translated string, or ``None`` if a translator was not set.
+        """
+        translator = self._state._translator
+        if not translator:
+            return None
+
+        if not isinstance(string, locale_str):
+            string = locale_str(string)
+        if locale is MISSING:
+            locale = self.locale
+        if data is MISSING:
+            data = self.command or self.message
+
+        context = TranslationContext(location=TranslationContextLocation.other, data=data)
+        return await translator.translate(string, locale=locale, context=context)
 
 
 class InteractionResponse:
