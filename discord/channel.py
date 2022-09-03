@@ -2386,6 +2386,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         stickers: Sequence[Union[GuildSticker, StickerItem]] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
         mention_author: bool = MISSING,
+        applied_tags: Sequence[ForumTag] = MISSING,
         suppress_embeds: bool = False,
         reason: Optional[str] = None,
     ) -> ThreadWithMessage:
@@ -2424,6 +2425,8 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             are used instead.
         mention_author: :class:`bool`
             If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
+        applied_tags: List[:class:`discord.ForumTag`]
+            A list of tags to apply to the thread.
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
         suppress_embeds: :class:`bool`
@@ -2474,6 +2477,9 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         }
         if slowmode_delay is not None:
             extras['rate_limit_per_user'] = slowmode_delay
+
+        if applied_tags is not MISSING:
+            channel_payload['applied_tags'] = [str(tag.id) for tag in applied_tags]
 
         with handle_message_parameters(
             content=content,
