@@ -1760,6 +1760,8 @@ class Guild(Hashable):
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
         premium_progress_bar_enabled: bool = MISSING,
+        discoverable: bool = MISSING,
+        invites_disabled: bool = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1788,6 +1790,9 @@ class Guild(Hashable):
 
         .. versionchanged:: 2.0
             The ``premium_progress_bar_enabled`` keyword parameter was added.
+
+        .. versionchanged:: 2.1
+            The ``discoverable`` and ``invites_disabled`` keyword parameters were added.
 
         Parameters
         ----------
@@ -1848,6 +1853,10 @@ class Guild(Hashable):
             public updates channel.
         premium_progress_bar_enabled: :class:`bool`
             Whether the premium AKA server boost level progress bar should be enabled for the guild.
+        discoverable: :class:`bool`
+            Whether server discovery is enabled for this guild.
+        invites_disabled: :class:`bool`
+            Whether joining via invites should be disabled for the guild.
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 
@@ -1968,17 +1977,34 @@ class Guild(Hashable):
 
             fields['system_channel_flags'] = system_channel_flags.value
 
-        if community is not MISSING:
-            features = []
-            if community:
-                if 'rules_channel_id' in fields and 'public_updates_channel_id' in fields:
-                    features.append('COMMUNITY')
-                else:
-                    raise ValueError(
-                        'community field requires both rules_channel and public_updates_channel fields to be provided'
-                    )
+        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled)):
 
-            fields['features'] = features
+            features = set(self.features)
+
+            if community is not MISSING:
+                if community:
+                    if 'rules_channel_id' in fields and 'public_updates_channel_id' in fields:
+                        features.add('COMMUNITY')
+                    else:
+                        raise ValueError(
+                            'community field requires both rules_channel and public_updates_channel fields to be provided'
+                        )
+                else:
+                    features.discard('COMMUNITY')
+
+            if discoverable is not MISSING:
+                if discoverable:
+                    features.add('DISCOVERABLE')
+                else:
+                    features.discard('DISCOVERABLE')
+
+            if invites_disabled is not MISSING:
+                if invites_disabled:
+                    features.add('INVITES_DISABLED')
+                else:
+                    features.discard('INVITES_DISABLED')
+
+            fields['features'] = list(features)
 
         if premium_progress_bar_enabled is not MISSING:
             fields['premium_progress_bar_enabled'] = premium_progress_bar_enabled
