@@ -2563,7 +2563,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         }
 
         if applied_tags is not MISSING:
-            channel_payload["applied_tags"] = [str(tag.id) for tag in applied_tags]
+            channel_payload['applied_tags'] = [str(tag.id) for tag in applied_tags]
 
         with handle_message_parameters(
             content=content,
