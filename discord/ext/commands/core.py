@@ -44,6 +44,7 @@ from typing import (
     Union,
     overload,
 )
+import re
 
 import discord
 
@@ -54,6 +55,7 @@ from .converter import Greedy, run_converters
 from .cooldowns import BucketType, Cooldown, CooldownMapping, DynamicCooldownMapping, MaxConcurrency
 from .errors import *
 from .parameters import Parameter, Signature
+from discord.app_commands.commands import NUMPY_DOCSTRING_ARG_REGEX
 
 if TYPE_CHECKING:
     from typing_extensions import Concatenate, ParamSpec, Self
@@ -163,6 +165,43 @@ def get_signature_parameters(
         params[name] = parameter.replace(annotation=annotation)
 
     return params
+
+
+PARAMETER_HEADING_REGEX = re.compile(r'Parameters?\n---+\n', re.I)
+
+
+def _fold_text(input: str) -> str:
+    """Turns a single newline into a space, and multiple newlines into a newline."""
+
+    def replacer(m: re.Match[str]) -> str:
+        if len(m.group()) <= 1:
+            return ' '
+        return '\n'
+
+    return re.sub(r'\n+', replacer, inspect.cleandoc(input))
+
+
+def extract_descriptions_from_docstring(function: Callable[..., Any], params: Dict[str, Parameter], /) -> Optional[str]:
+    docstring = inspect.getdoc(function)
+
+    if docstring is None:
+        return None
+
+    divide = PARAMETER_HEADING_REGEX.split(docstring, 1)
+    if len(divide) == 1:
+        return docstring
+
+    description, param_docstring = divide
+    for match in NUMPY_DOCSTRING_ARG_REGEX.finditer(param_docstring):
+        name = match.group('name')
+        if name not in params:
+            continue
+
+        param = params[name]
+        if param.description is None:
+            param._description = _fold_text(match.group('description'))
+
+    return _fold_text(description.strip())
 
 
 def wrap_callback(coro: Callable[P, Coro[T]], /) -> Callable[P, Coro[Optional[T]]]:
@@ -365,9 +404,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         if help_doc is not None:
             help_doc = inspect.cleandoc(help_doc)
         else:
-            help_doc = inspect.getdoc(func)
-            if isinstance(help_doc, bytes):
-                help_doc = help_doc.decode('utf-8')
+            help_doc = extract_descriptions_from_docstring(func, self.params)
 
         self.help: Optional[str] = help_doc
 
