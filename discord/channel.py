@@ -389,7 +389,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay}, name=name, reason=reason
         )
 
-    async def delete_messages(self, messages: Iterable[Snowflake], *, reason: Optional[str] = None) -> None:
+    async def delete_messages(self, messages: Iterable[Message], *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Deletes a list of messages. This is similar to :meth:`Message.delete`
@@ -413,7 +413,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Parameters
         -----------
-        messages: Iterable[:class:`abc.Snowflake`]
+        messages: Iterable[:class:`Message`]
             An iterable of messages denoting which ones to bulk delete.
         reason: Optional[:class:`str`]
             The reason for deleting the messages. Shows up on the audit log.
