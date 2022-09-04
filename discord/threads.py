@@ -192,6 +192,8 @@ class Thread(Messageable, Hashable):
     def _update(self, data):
         old = copy.copy(self)
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
+        self._flags: int = data.get('flags', 0)
+        self._applied_tags: array.array[int] = array.array('Q', map(int, data.get('applied_tags', [])))
 
         if (meta := data.get('thread_metadata')) is not None:
             self._unroll_metadata(meta)
