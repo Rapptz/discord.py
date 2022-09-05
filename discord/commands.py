@@ -325,9 +325,6 @@ class SlashMixin(ApplicationCommand, Protocol):
             else:
                 options.append(Option(option))
 
-        for child in children:
-            setattr(self, child.name, child)
-
         self.options = options
         self.children = children
 
