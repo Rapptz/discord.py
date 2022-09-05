@@ -355,7 +355,6 @@ class UserCommand(BaseCommand):
             raise TypeError('__call__() missing 1 required positional argument: \'user\'')
 
         command = self._data
-        command['name_localized'] = command['name']
         data = {
             'application_command': command,
             'attachments': [],
