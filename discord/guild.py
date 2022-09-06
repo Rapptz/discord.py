@@ -350,6 +350,8 @@ class Guild(Hashable):
         self._members: Dict[int, Member] = {}
         self._voice_states: Dict[int, VoiceState] = {}
         self._threads: Dict[int, Thread] = {}
+        self._stage_instances: Dict[int, StageInstance] = {}
+        self._scheduled_events: Dict[int, ScheduledEvent] = {}
         self._state: ConnectionState = state
         self._member_count: Optional[int] = None
         self._from_data(data)
@@ -510,17 +512,6 @@ class Guild(Hashable):
         self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = guild.get('approximate_member_count')
         self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
-
-        self._stage_instances: Dict[int, StageInstance] = {}
-        for s in guild.get('stage_instances', []):
-            stage_instance = StageInstance(guild=self, data=s, state=state)
-            self._stage_instances[stage_instance.id] = stage_instance
-
-        self._scheduled_events: Dict[int, ScheduledEvent] = {}
-        for s in guild.get('guild_scheduled_events', []):
-            scheduled_event = ScheduledEvent(data=s, state=state)
-            self._scheduled_events[scheduled_event.id] = scheduled_event
-
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
 
         self._sync(guild)
@@ -564,6 +555,16 @@ class Guild(Hashable):
             threads = data['threads']
             for thread in threads:
                 self._add_thread(Thread(guild=self, state=self._state, data=thread))
+
+        if 'stage_instances' in data:
+            for s in data['stage_instances']:
+                stage_instance = StageInstance(guild=self, data=s, state=self._state)
+                self._stage_instances[stage_instance.id] = stage_instance
+
+        if 'guild_scheduled_events' in data:
+            for s in data['guild_scheduled_events']:
+                scheduled_event = ScheduledEvent(data=s, state=self._state)
+                self._scheduled_events[scheduled_event.id] = scheduled_event
 
     @property
     def channels(self) -> Sequence[GuildChannel]:
