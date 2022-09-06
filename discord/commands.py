@@ -199,7 +199,9 @@ class BaseCommand(ApplicationCommand, Hashable):
         '_default_member_permissions',
     )
 
-    def __init__(self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None, **kwargs) -> None:
+    def __init__(
+        self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None, **kwargs
+    ) -> None:
         self._state = state
         self._data = data
         self.name = data['name']
