@@ -1068,7 +1068,7 @@ class CommandTree(Generic[ClientT]):
             else:
                 data = await self._http.bulk_upsert_guild_commands(self.client.application_id, guild.id, payload=payload)
         except HTTPException as e:
-            if e.status == 400:
+            if e.status == 400 and e.code == 50035:
                 raise CommandSyncFailure(e, commands) from None
             raise
 
