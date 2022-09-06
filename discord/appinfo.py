@@ -31,7 +31,6 @@ from .asset import Asset
 from .enums import ApplicationType, ApplicationVerificationState, RPCApplicationState, StoreApplicationState, try_enum
 from .flags import ApplicationFlags
 from .mixins import Hashable
-from .object import Object
 from .permissions import Permissions
 from .user import User
 
