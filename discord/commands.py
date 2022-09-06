@@ -36,9 +36,11 @@ if TYPE_CHECKING:
     from .abc import Messageable, Snowflake
     from .appinfo import InteractionApplication
     from .file import File
+    from .guild import Guild
     from .interactions import Interaction
     from .message import Attachment, Message
     from .state import ConnectionState
+
 
 __all__ = (
     'BaseCommand',
@@ -57,11 +59,12 @@ class ApplicationCommand(Protocol):
 
     The following implement this ABC:
 
-    - :class:`~discord.BaseCommand`
     - :class:`~discord.UserCommand`
     - :class:`~discord.MessageCommand`
     - :class:`~discord.SlashCommand`
     - :class:`~discord.SubCommand`
+
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -75,11 +78,16 @@ class ApplicationCommand(Protocol):
         Whether the command is enabled in guilds by default.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
+    nsfw: :class:`bool`
+        Whether the command is marked NSFW and only available in NSFW channels.
     application: Optional[:class:`~discord.InteractionApplication`]
         The application this command belongs to.
         Only available if requested.
     application_id: :class:`int`
         The ID of the application this command belongs to.
+    guild_id: Optional[:class:`int`]
+        The ID of the guild this command is registered in. A value of ``None``
+        denotes that it is a global command.
     """
 
     __slots__ = ()
@@ -94,8 +102,11 @@ class ApplicationCommand(Protocol):
         type: AppCommandType
         default_permission: bool
         dm_permission: bool
+        nsfw: bool
         application_id: int
         application: Optional[InteractionApplication]
+        mention: str
+        guild_id: Optional[int]
 
     def __str__(self) -> str:
         return self.name
@@ -117,13 +128,20 @@ class ApplicationCommand(Protocol):
             i = await state.client.wait_for(
                 'interaction_finish',
                 check=lambda d: d.nonce == nonce,
-                timeout=7,
+                timeout=6,
             )
         except TimeoutError as exc:
             raise InvalidData('Did not receive a response from Discord') from exc
         finally:  # Cleanup even if we failed
             state._interaction_cache.pop(nonce, None)
         return i
+
+    @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`~discord.Guild`]: Returns the guild this command is registered to
+        if it exists.
+        """
+        return self._state._get_guild(self.guild_id)
 
     def is_group(self) -> bool:
         """Query whether this command is a group.
@@ -163,49 +181,6 @@ class ApplicationCommand(Protocol):
 
 
 class BaseCommand(ApplicationCommand, Hashable):
-    """Represents a base command.
-
-    .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two commands are equal.
-
-        .. describe:: x != y
-
-            Checks if two commands are not equal.
-
-        .. describe:: hash(x)
-
-            Return the command's hash.
-
-        .. describe:: str(x)
-
-            Returns the command's name.
-
-    Attributes
-    ----------
-    id: :class:`int`
-        The command's ID.
-    version: :class:`int`
-        The command's version.
-    name: :class:`str`
-        The command's name.
-    description: :class:`str`
-        The command's description, if any.
-    type: :class:`AppCommandType`
-        The type of application command.
-    default_permission: :class:`bool`
-        Whether the command is enabled in guilds by default.
-    dm_permission: :class:`bool`
-        Whether the command is enabled in DMs.
-    application: Optional[:class:`InteractionApplication`]
-        The application this command belongs to.
-        Only available if requested.
-    application_id: :class:`int`
-        The ID of the application this command belongs to.
-    """
-
     __slots__ = (
         'name',
         'description',
@@ -216,13 +191,15 @@ class BaseCommand(ApplicationCommand, Hashable):
         'application',
         'application_id',
         'dm_permission',
+        'nsfw',
+        'guild_id',
         '_data',
         '_state',
         '_channel',
         '_default_member_permissions',
     )
 
-    def __init__(self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None) -> None:
+    def __init__(self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None, **kwargs) -> None:
         self._state = state
         self._data = data
         self.name = data['name']
@@ -240,9 +217,16 @@ class BaseCommand(ApplicationCommand, Hashable):
         self.default_permission: bool = data.get('default_permission', True)
         dm_permission = data.get('dm_permission')  # Null means true?
         self.dm_permission = dm_permission if dm_permission is not None else True
+        self.nsfw: bool = data.get('nsfw', False)
+        self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
+
+    @property
+    def mention(self) -> str:
+        """:class:`str`: Returns a string that allows you to mention the command."""
+        return f'</{self.name}:{self.id}>'
 
 
 class SlashMixin(ApplicationCommand, Protocol):
@@ -270,6 +254,8 @@ class SlashMixin(ApplicationCommand, Protocol):
             'type': obj.type.value,
             'version': str(obj.version),
         }
+        if self.guild_id:
+            data['guild_id'] = str(self.guild_id)
         return await super().__call__(data, files, channel)
 
     def _parse_kwargs(self, kwargs: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], List[File], List[Attachment]]:
@@ -330,13 +316,63 @@ class SlashMixin(ApplicationCommand, Protocol):
 
 
 class UserCommand(BaseCommand):
-    """Represents a user command."""
+    """Represents a user command.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two commands are equal.
+
+        .. describe:: x != y
+
+            Checks if two commands are not equal.
+
+        .. describe:: hash(x)
+
+            Return the command's hash.
+
+        .. describe:: str(x)
+
+            Returns the command's name.
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The command's ID.
+    version: :class:`int`
+        The command's version.
+    name: :class:`str`
+        The command's name.
+    description: :class:`str`
+        The command's description, if any.
+    type: :class:`AppCommandType`
+        The type of application command. This will always be :attr:`AppCommandType.user`.
+    default_permission: :class:`bool`
+        Whether the command is enabled in guilds by default.
+    dm_permission: :class:`bool`
+        Whether the command is enabled in DMs.
+    nsfw: :class:`bool`
+        Whether the command is marked NSFW and only available in NSFW channels.
+    application: Optional[:class:`InteractionApplication`]
+        The application this command belongs to.
+        Only available if requested.
+    application_id: :class:`int`
+        The ID of the application this command belongs to.
+    guild_id: Optional[:class:`int`]
+        The ID of the guild this command is registered in. A value of ``None``
+        denotes that it is a global command.
+
+    .. automethod:: __call__
+    """
 
     __slots__ = ('_user',)
 
-    def __init__(self, *, user: Optional[Snowflake] = None, **kwargs):
+    def __init__(self, *, target: Optional[Snowflake] = None, **kwargs):
         super().__init__(**kwargs)
-        self._user = user
+        self._user = target
 
     async def __call__(self, user: Optional[Snowflake] = None, *, channel: Optional[Messageable] = None):
         """Use the user command.
@@ -385,13 +421,63 @@ class UserCommand(BaseCommand):
 
 
 class MessageCommand(BaseCommand):
-    """Represents a message command."""
+    """Represents a message command.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two commands are equal.
+
+        .. describe:: x != y
+
+            Checks if two commands are not equal.
+
+        .. describe:: hash(x)
+
+            Return the command's hash.
+
+        .. describe:: str(x)
+
+            Returns the command's name.
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The command's ID.
+    version: :class:`int`
+        The command's version.
+    name: :class:`str`
+        The command's name.
+    description: :class:`str`
+        The command's description, if any.
+    type: :class:`AppCommandType`
+        The type of application command. This will always be :attr:`AppCommandType.message`.
+    default_permission: :class:`bool`
+        Whether the command is enabled in guilds by default.
+    dm_permission: :class:`bool`
+        Whether the command is enabled in DMs.
+    nsfw: :class:`bool`
+        Whether the command is marked NSFW and only available in NSFW channels.
+    application: Optional[:class:`InteractionApplication`]
+        The application this command belongs to.
+        Only available if requested.
+    application_id: :class:`int`
+        The ID of the application this command belongs to.
+    guild_id: Optional[:class:`int`]
+        The ID of the guild this command is registered in. A value of ``None``
+        denotes that it is a global command.
+
+    .. automethod:: __call__
+    """
 
     __slots__ = ('_message',)
 
-    def __init__(self, *, message: Optional[Message] = None, **kwargs):
+    def __init__(self, *, target: Optional[Message] = None, **kwargs):
         super().__init__(**kwargs)
-        self._message = message
+        self._message = target
 
     async def __call__(self, message: Optional[Message] = None, *, channel: Optional[Messageable] = None):
         """Use the message command.
@@ -443,13 +529,58 @@ class MessageCommand(BaseCommand):
 class SlashCommand(BaseCommand, SlashMixin):
     """Represents a slash command.
 
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two commands are equal.
+
+        .. describe:: x != y
+
+            Checks if two commands are not equal.
+
+        .. describe:: hash(x)
+
+            Return the command's hash.
+
+        .. describe:: str(x)
+
+            Returns the command's name.
+
     Attributes
     ----------
+    id: :class:`int`
+        The command's ID.
+    version: :class:`int`
+        The command's version.
+    name: :class:`str`
+        The command's name.
+    description: :class:`str`
+        The command's description, if any.
+    type: :class:`AppCommandType`
+        The type of application command.
+    default_permission: :class:`bool`
+        Whether the command is enabled in guilds by default.
+    dm_permission: :class:`bool`
+        Whether the command is enabled in DMs.
+    nsfw: :class:`bool`
+        Whether the command is marked NSFW and only available in NSFW channels.
+    application: Optional[:class:`InteractionApplication`]
+        The application this command belongs to.
+        Only available if requested.
+    application_id: :class:`int`
+        The ID of the application this command belongs to.
+    guild_id: Optional[:class:`int`]
+        The ID of the guild this command is registered in. A value of ``None``
+        denotes that it is a global command.
     options: List[:class:`Option`]
         The command's options.
     children: List[:class:`SubCommand`]
         The command's subcommands. If a command has subcommands, it is a group and cannot be used.
-        You can access (and use) subcommands directly as attributes of the class.
+
+    .. automethod:: __call__
     """
 
     __slots__ = ('_parent', 'options', 'children')
@@ -503,6 +634,8 @@ class SlashCommand(BaseCommand, SlashMixin):
 class SubCommand(SlashMixin):
     """Represents a slash command child.
 
+    .. versionadded:: 2.0
+
     This could be a subcommand, or a subgroup.
 
     .. container:: operations
@@ -519,13 +652,14 @@ class SubCommand(SlashMixin):
         The subcommand's description, if any.
     type: :class:`AppCommandType`
         The type of application command. Always :attr:`AppCommandType.chat_input`.
-    parent: :class:`SlashCommand`
+    parent: Union[:class:`SlashCommand`, :class:`SubCommand`]
         The parent command.
     options: List[:class:`Option`]
         The subcommand's options.
     children: List[:class:`SubCommand`]
         The subcommand's subcommands. If a subcommand has subcommands, it is a group and cannot be used.
-        You can access (and use) subcommands directly as attributes of the class.
+
+    .. automethod:: __call__
     """
 
     __slots__ = (
@@ -609,6 +743,22 @@ class SubCommand(SlashMixin):
         return BASE + '>'
 
     @property
+    def qualified_name(self) -> str:
+        """:class:`str`: Returns the fully qualified command name.
+        The qualified name includes the parent name as well. For example,
+        in a command like ``/foo bar`` the qualified name is ``foo bar``.
+        """
+        names = [self.name, self.parent.name]
+        if isinstance(self.parent, SubCommand):
+            names.append(self._parent.name)
+        return ' '.join(reversed(names))
+
+    @property
+    def mention(self) -> str:
+        """:class:`str`: Returns a string that allows you to mention the subcommand."""
+        return f'</{self.qualified_name}:{self._parent.id}>'
+
+    @property
     def _default_member_permissions(self) -> Optional[int]:
         return self._parent._default_member_permissions
 
@@ -631,6 +781,24 @@ class SubCommand(SlashMixin):
     def dm_permission(self) -> bool:
         """:class:`bool`: Whether the command is enabled in DMs."""
         return self._parent.dm_permission
+
+    @property
+    def nsfw(self) -> bool:
+        """:class:`bool`: Whether the command is marked NSFW and only available in NSFW channels."""
+        return self._parent.nsfw
+
+    @property
+    def guild_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of the guild this command is registered in. A value of ``None``
+        denotes that it is a global command."""
+        return self._parent.guild_id
+
+    @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`~discord.Guild`]: Returns the guild this command is registered to
+        if it exists.
+        """
+        return self._parent.guild
 
     def is_group(self) -> bool:
         """Query whether this command is a group.
@@ -664,6 +832,8 @@ class SubCommand(SlashMixin):
 
 class Option:
     """Represents a command option.
+
+    .. versionadded:: 2.0
 
     .. container:: operations
 
@@ -738,6 +908,8 @@ class Option:
 
 class OptionChoice:
     """Represents a choice for an option.
+
+    .. versionadded:: 2.0
 
     .. container:: operations
 

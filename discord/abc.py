@@ -33,6 +33,7 @@ from typing import (
     Callable,
     Dict,
     List,
+    Literal,
     Optional,
     TYPE_CHECKING,
     Protocol,
@@ -57,7 +58,7 @@ from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
 from .settings import ChannelSettings
-from .commands import ApplicationCommand, SlashCommand, UserCommand
+from .commands import ApplicationCommand, BaseCommand, SlashCommand, UserCommand, MessageCommand, _command_factory
 from . import utils
 
 __all__ = (
@@ -145,6 +146,127 @@ async def _purge_helper(
     return ret
 
 
+@overload
+def _handle_commands(
+    messageable: Messageable,
+    type: Literal[AppCommandType.chat_input],
+    *,
+    query: Optional[str] = ...,
+    limit: Optional[int] = ...,
+    command_ids: Optional[List[int]] = ...,
+    application: Optional[Snowflake] = ...,
+    include_applications: bool = ...,
+    target: Optional[Snowflake] = ...,
+) -> AsyncIterator[SlashCommand]:
+    ...
+
+
+@overload
+def _handle_commands(
+    messageable: Messageable,
+    type: Literal[AppCommandType.user],
+    *,
+    query: Optional[str] = ...,
+    limit: Optional[int] = ...,
+    command_ids: Optional[List[int]] = ...,
+    application: Optional[Snowflake] = ...,
+    include_applications: bool = ...,
+    target: Optional[Snowflake] = ...,
+) -> AsyncIterator[UserCommand]:
+    ...
+
+
+@overload
+def _handle_commands(
+    messageable: Message,
+    type: Literal[AppCommandType.message],
+    *,
+    query: Optional[str] = ...,
+    limit: Optional[int] = ...,
+    command_ids: Optional[List[int]] = ...,
+    application: Optional[Snowflake] = ...,
+    include_applications: bool = ...,
+    target: Optional[Snowflake] = ...,
+) -> AsyncIterator[MessageCommand]:
+    ...
+
+
+async def _handle_commands(
+    messageable: Union[Messageable, Message],
+    type: AppCommandType,
+    *,
+    query: Optional[str] = None,
+    limit: Optional[int] = None,
+    command_ids: Optional[List[int]] = None,
+    application: Optional[Snowflake] = None,
+    include_applications: bool = True,
+    target: Optional[Snowflake] = None,
+) -> AsyncIterator[BaseCommand]:
+    if limit is not None and limit < 0:
+        raise ValueError('limit must be greater than or equal to 0')
+    if query and command_ids:
+        raise TypeError('Cannot specify both query and command_ids')
+
+    state = messageable._state
+    endpoint = state.http.search_application_commands
+    channel = await messageable._get_channel()
+
+    application_id = application.id if application else None
+    if channel.type == ChannelType.private:
+        recipient: User = channel.recipient  # type: ignore
+        if not recipient.bot:
+            raise TypeError('Cannot fetch commands in a DM with a non-bot user')
+        application_id = recipient.id
+        target = recipient
+    elif channel.type == ChannelType.group:
+        return
+
+    while True:
+        # We keep two cursors because Discord just sends us an infinite loop sometimes
+        prev_cursor = MISSING
+        cursor = MISSING
+        retrieve = min((25 if not command_ids else 0) if limit is None else limit, 25)
+        if limit is not None:
+            limit -= retrieve
+        if (not command_ids and retrieve < 1) or cursor is None or (prev_cursor is not MISSING and prev_cursor == cursor):
+            return
+
+        data = await endpoint(
+            channel.id,
+            type.value,
+            limit=retrieve if not application_id else None,
+            query=query if not command_ids and not application_id else None,
+            command_ids=command_ids if not application_id else None,  # type: ignore
+            application_id=application_id,
+            include_applications=include_applications,
+            cursor=cursor,
+        )
+        prev_cursor = cursor
+        cursor = data['cursor'].get('next')
+        cmds = data['application_commands']
+        apps: Dict[int, dict] = {int(app['id']): app for app in data.get('applications') or []}
+
+        if len(cmds) <= min(limit if limit else 25, 25) or application_id:
+            limit = 0
+
+        for cmd in cmds:
+            # Handle faked parameters
+            if application_id and command_ids and int(cmd['id']) not in command_ids:
+                continue
+            elif application_id and query and query.lower() not in cmd['name']:
+                continue
+            elif application_id and limit == 0:
+                return
+
+            # We follow Discord behavior
+            if limit is not None and (not command_ids or int(cmd['id']) not in command_ids):
+                limit -= 1
+
+            cmd['application'] = apps.get(int(cmd['application_id']))
+            _, cls = _command_factory(type.value)
+            yield cls(state=state, data=cmd, channel=channel, target=target)
+
+
 @runtime_checkable
 class Snowflake(Protocol):
     """An ABC that details the common operations on a Discord model.
@@ -194,6 +316,7 @@ class User(Snowflake, Protocol):
     name: str
     discriminator: str
     bot: bool
+    system: bool
 
     @property
     def display_name(self) -> str:
@@ -1529,7 +1652,7 @@ class Messageable:
     async def ack_pins(self) -> None:
         """|coro|
 
-        Acks the channel's pins.
+        Marks a channel's pins as viewed.
 
         Raises
         -------
@@ -1727,14 +1850,14 @@ class Messageable:
             for raw_message in data:
                 yield self._state.create_message(channel=channel, data=raw_message)
 
-    async def slash_commands(
+    def slash_commands(
         self,
         query: Optional[str] = None,
         *,
         limit: Optional[int] = None,
         command_ids: Optional[List[int]] = None,
         application: Optional[Snowflake] = None,
-        include_applications: bool = MISSING,
+        include_applications: bool = True,
     ) -> AsyncIterator[SlashCommand]:
         """Returns a :term:`asynchronous iterator` of the slash commands available in the channel.
 
@@ -1760,23 +1883,24 @@ class Messageable:
 
             This parameter is faked if ``application`` is specified.
         limit: Optional[:class:`int`]
-            The maximum number of commands to send back. Defaults to 25. If ``None``, returns all commands.
+            The maximum number of commands to send back. Defaults to 0 if ``command_ids`` is passed, else 25.
+            If ``None``, returns all commands.
 
             This parameter is faked if ``application`` is specified.
         command_ids: Optional[List[:class:`int`]]
             List of up to 100 command IDs to search for. If the command doesn't exist, it won't be returned.
-        application: Optional[:class:`~discord.abc.Snowflake`]
-            Return this application's commands. Always set to DM recipient in a private channel context.
-        include_applications: :class:`bool`
-            Whether to include applications in the response. This defaults to ``True`` if possible.
 
-            Cannot be set to ``True`` if ``application`` is specified.
+            If ``limit`` is passed alongside this parameter, this parameter will serve as a "preferred commands" list.
+            This means that the endpoint will return the found commands + ``limit`` more, if available.
+        application: Optional[:class:`~discord.abc.Snowflake`]
+            Whether to return this application's commands. Always set to DM recipient in a private channel context.
+        include_applications: :class:`bool`
+            Whether to include applications in the response. Defaults to ``True``.
 
         Raises
         ------
         TypeError
             Both query and command_ids are passed.
-            Both application and include_applications are passed.
             Attempted to fetch commands in a DM with a non-bot user.
         ValueError
             The limit was not greater than or equal to 0.
@@ -1792,76 +1916,24 @@ class Messageable:
         :class:`.SlashCommand`
             A slash command.
         """
-        if limit is not None and limit < 0:
-            raise ValueError('limit must be greater than or equal to 0')
-        if query and command_ids:
-            raise TypeError('Cannot specify both query and command_ids')
-
-        state = self._state
-        endpoint = state.http.search_application_commands
-        channel = await self._get_channel()
-
-        application_id = application.id if application else None
-        if channel.type == ChannelType.private:
-            recipient: User = channel.recipient  # type: ignore
-            if not recipient.bot:
-                raise TypeError('Cannot fetch commands in a DM with a non-bot user')
-            application_id = recipient.id
-        elif channel.type == ChannelType.group:
-            return
-
-        if application_id and include_applications:
-            raise TypeError('Cannot specify both application and include_applications')
-        include_applications = (
-            (False if application_id else True) if include_applications is MISSING else include_applications
+        return _handle_commands(
+            self,
+            AppCommandType.chat_input,
+            query=query,
+            limit=limit,
+            command_ids=command_ids,
+            application=application,
+            include_applications=include_applications,
         )
 
-        while True:
-            cursor = MISSING
-            retrieve = min(25 if limit is None else limit, 25)
-            if retrieve < 1 or cursor is None:
-                return
-
-            data = await endpoint(
-                channel.id,
-                AppCommandType.chat_input.value,
-                limit=retrieve if not application_id else None,
-                query=query if not command_ids and not application_id else None,
-                command_ids=command_ids if not application_id else None,  # type: ignore
-                application_id=application_id,
-                include_applications=include_applications if not application_id else None,
-                cursor=cursor if cursor is not MISSING else None,
-            )
-            cursor = data['cursor'].get('next')
-            cmds = data['application_commands']
-            apps: Dict[int, dict] = {int(app['id']): app for app in data.get('applications') or []}
-
-            if len(cmds) < 25:
-                limit = 0
-
-            for cmd in cmds:
-                # Handle faked parameters
-                if command_ids and int(cmd['id']) not in command_ids:
-                    continue
-                elif application_id and query and query.lower() not in cmd['name']:
-                    continue
-                elif application_id and limit == 0:
-                    return
-
-                if limit is not None:
-                    limit -= 1
-
-                cmd['application'] = apps.get(int(cmd['application_id']))
-                yield SlashCommand(state=state, data=cmd, channel=channel)
-
-    async def user_commands(
+    def user_commands(
         self,
         query: Optional[str] = None,
         *,
         limit: Optional[int] = None,
         command_ids: Optional[List[int]] = None,
         application: Optional[Snowflake] = None,
-        include_applications: bool = MISSING,
+        include_applications: bool = True,
     ) -> AsyncIterator[UserCommand]:
         """Returns a :term:`asynchronous iterator` of the user commands available to use on the user.
 
@@ -1887,23 +1959,24 @@ class Messageable:
 
             This parameter is faked if ``application`` is specified.
         limit: Optional[:class:`int`]
-            The maximum number of commands to send back. Defaults to 25. If ``None``, returns all commands.
+            The maximum number of commands to send back. Defaults to 0 if ``command_ids`` is passed, else 25.
+            If ``None``, returns all commands.
 
             This parameter is faked if ``application`` is specified.
         command_ids: Optional[List[:class:`int`]]
             List of up to 100 command IDs to search for. If the command doesn't exist, it won't be returned.
-        application: Optional[:class:`~discord.abc.Snowflake`]
-            Return this application's commands. Always set to DM recipient in a private channel context.
-        include_applications: :class:`bool`
-            Whether to include applications in the response. This defaults to ``True`` if possible.
 
-            Cannot be set to ``True`` if ``application`` is specified.
+            If ``limit`` is passed alongside this parameter, this parameter will serve as a "preferred commands" list.
+            This means that the endpoint will return the found commands + ``limit`` more, if available.
+        application: Optional[:class:`~discord.abc.Snowflake`]
+            Whether to return this application's commands. Always set to DM recipient in a private channel context.
+        include_applications: :class:`bool`
+            Whether to include applications in the response. Defaults to ``True``.
 
         Raises
         ------
         TypeError
             Both query and command_ids are passed.
-            Both application and include_applications are passed.
             Attempted to fetch commands in a DM with a non-bot user.
         ValueError
             The limit was not greater than or equal to 0.
@@ -1919,67 +1992,15 @@ class Messageable:
         :class:`.UserCommand`
             A user command.
         """
-        if limit is not None and limit < 0:
-            raise ValueError('limit must be greater than or equal to 0')
-        if query and command_ids:
-            raise TypeError('Cannot specify both query and command_ids')
-
-        state = self._state
-        endpoint = state.http.search_application_commands
-        channel = await self._get_channel()
-
-        application_id = application.id if application else None
-        if channel.type == ChannelType.private:
-            recipient: User = channel.recipient  # type: ignore
-            if not recipient.bot:
-                raise TypeError('Cannot fetch commands in a DM with a non-bot user')
-            application_id = recipient.id
-        elif channel.type == ChannelType.group:
-            return
-
-        if application_id and include_applications:
-            raise TypeError('Cannot specify both application and include_applications')
-        include_applications = (
-            (False if application_id else True) if include_applications is MISSING else include_applications
+        return _handle_commands(
+            self,
+            AppCommandType.user,
+            query=query,
+            limit=limit,
+            command_ids=command_ids,
+            application=application,
+            include_applications=include_applications,
         )
-
-        while True:
-            cursor = MISSING
-            retrieve = min(25 if limit is None else limit, 25)
-            if retrieve < 1 or cursor is None:
-                return
-
-            data = await endpoint(
-                channel.id,
-                AppCommandType.user.value,
-                limit=retrieve if not application_id else None,
-                query=query if not command_ids and not application_id else None,
-                command_ids=command_ids if not application_id else None,  # type: ignore
-                application_id=application_id,
-                include_applications=include_applications if not application_id else None,
-                cursor=cursor if cursor is not MISSING else None,
-            )
-            cursor = data['cursor'].get('next')
-            cmds = data['application_commands']
-            apps: Dict[int, dict] = {int(app['id']): app for app in data.get('applications') or []}
-
-            if len(cmds) < 25:
-                limit = 0
-
-            for cmd in cmds:
-                # Handle faked parameters
-                if command_ids and int(cmd['id']) not in command_ids:
-                    continue
-                elif application_id and query and query.lower() not in cmd['name'].lower():
-                    continue
-                elif application_id and limit == 0:
-                    return
-
-                if limit is not None:
-                    limit -= 1
-
-                cmd['application'] = apps.get(int(cmd['application_id']))
-                yield UserCommand(state=state, data=cmd, channel=channel, user=getattr(channel, 'recipient', None))
 
 
 class Connectable(Protocol):

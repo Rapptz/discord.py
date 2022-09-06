@@ -2389,7 +2389,7 @@ class HTTPClient:
         if cursor:
             params['cursor'] = cursor
         if command_ids:
-            params['command_ids'] = command_ids
+            params['command_ids'] = ','.join(map(str, command_ids))
         if application_id:
             params['application_id'] = application_id
 

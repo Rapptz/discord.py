@@ -228,7 +228,7 @@ class Button(Component):
             i = await state.client.wait_for(
                 'interaction_finish',
                 check=lambda d: d.nonce == nonce,
-                timeout=7,
+                timeout=6,
             )
         except TimeoutError as exc:
             raise InvalidData('Did not receive a response from Discord') from exc
@@ -324,7 +324,7 @@ class SelectMenu(Component):
             i = await state.client.wait_for(
                 'interaction_finish',
                 check=lambda d: d.nonce == nonce,
-                timeout=7,
+                timeout=6,
             )
         except TimeoutError as exc:
             raise InvalidData('Did not receive a response from Discord') from exc

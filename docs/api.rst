@@ -4071,10 +4071,16 @@ Messageable
 
 .. autoclass:: discord.abc.Messageable()
     :members:
-    :exclude-members: typing
+    :exclude-members: typing, slash_commands, user_commands
 
-    .. automethod:: discord.abc.Messageable.typing
+    .. automethod:: typing
         :async-with:
+
+    .. automethod:: slash_commands
+        :async-for:
+
+    .. automethod:: user_commands
+        :async-for:
 
 Connectable
 ~~~~~~~~~~~~
@@ -4132,10 +4138,16 @@ User
 .. autoclass:: User()
     :members:
     :inherited-members:
-    :exclude-members: typing
+    :exclude-members: typing, slash_commands, user_commands
 
     .. automethod:: typing
         :async-with:
+
+    .. automethod:: slash_commands
+        :async-for:
+
+    .. automethod:: user_commands
+        :async-for:
 
 .. attributetable:: UserProfile
 
@@ -4332,10 +4344,16 @@ Member
 .. autoclass:: Member()
     :members:
     :inherited-members:
-    :exclude-members: typing
+    :exclude-members: typing, slash_commands, user_commands
 
     .. automethod:: typing
         :async-with:
+
+    .. automethod:: slash_commands
+        :async-for:
+
+    .. automethod:: user_commands
+        :async-for:
 
 .. attributetable:: MemberProfile
 
@@ -4408,20 +4426,32 @@ GuildChannel
 .. autoclass:: TextChannel()
     :members:
     :inherited-members:
-    :exclude-members: typing
+    :exclude-members: typing, slash_commands, user_commands
 
     .. automethod:: typing
         :async-with:
+
+    .. automethod:: slash_commands
+        :async-for:
+
+    .. automethod:: user_commands
+        :async-for:
 
 .. attributetable:: VoiceChannel
 
 .. autoclass:: VoiceChannel()
     :members:
     :inherited-members:
-    :exclude-members: typing
+    :exclude-members: typing, slash_commands, user_commands
 
     .. automethod:: typing
         :async-with:
+
+    .. automethod:: slash_commands
+        :async-for:
+
+    .. automethod:: user_commands
+        :async-for:
 
 .. attributetable:: StageChannel
 
@@ -4443,20 +4473,32 @@ PrivateChannel
 .. autoclass:: DMChannel()
     :members:
     :inherited-members:
-    :exclude-members: typing
+    :exclude-members: typing, slash_commands, user_commands
 
     .. automethod:: typing
         :async-with:
+
+    .. automethod:: slash_commands
+        :async-for:
+
+    .. automethod:: user_commands
+        :async-for:
 
 .. attributetable:: GroupChannel
 
 .. autoclass:: GroupChannel()
     :members:
     :inherited-members:
-    :exclude-members: typing
+    :exclude-members: typing, slash_commands, user_commands
 
     .. automethod:: typing
         :async-with:
+
+    .. automethod:: slash_commands
+        :async-for:
+
+    .. automethod:: user_commands
+        :async-for:
 
 PartialMessageable
 ~~~~~~~~~~~~~~~~~~~
@@ -4475,10 +4517,16 @@ Thread
 .. autoclass:: Thread()
     :members:
     :inherited-members:
-    :exclude-members: typing
+    :exclude-members: typing, slash_commands, user_commands
 
     .. automethod:: typing
         :async-with:
+
+    .. automethod:: slash_commands
+        :async-for:
+
+    .. automethod:: user_commands
+        :async-for:
 
 .. attributetable:: ThreadMember
 
@@ -4520,6 +4568,10 @@ Message
 .. autoclass:: Message()
     :members:
     :inherited-members:
+    :exclude-members: message_commands
+
+    .. automethod:: message_commands
+        :async-for:
 
 .. attributetable:: PartialMessage
 
@@ -4603,11 +4655,6 @@ Component
 
 ApplicationCommand
 ~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: BaseCommand
-
-.. autoclass:: BaseCommand()
-    :members:
 
 .. attributetable:: UserCommand
 

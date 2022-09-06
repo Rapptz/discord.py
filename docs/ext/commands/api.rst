@@ -338,10 +338,19 @@ Context
 .. autoclass:: discord.ext.commands.Context
     :members:
     :inherited-members:
-    :exclude-members: typing
+    :exclude-members: typing, slash_commands, user_commands, message_commands
 
-    .. automethod:: discord.ext.commands.Context.typing
+    .. automethod:: typing
         :async-with:
+
+    .. automethod:: slash_commands
+        :async-for:
+
+    .. automethod:: user_commands
+        :async-for:
+
+    .. automethod:: message_commands
+        :async-for:
 
 .. _ext_commands_api_converters:
 
