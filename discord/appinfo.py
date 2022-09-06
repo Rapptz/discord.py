@@ -673,8 +673,8 @@ class InteractionApplication(Hashable):
         The application ID.
     name: :class:`str`
         The application name.
-    bot: :class:`User`
-        The bot attached to the application.
+    bot: Optional[:class:`User`]
+        The bot attached to the application, if any.
     description: Optional[:class:`str`]
         The application description.
     type: Optional[:class:`ApplicationType`]
@@ -705,12 +705,7 @@ class InteractionApplication(Hashable):
         self._icon: Optional[str] = data.get('icon')
         self.type: Optional[ApplicationType] = try_enum(ApplicationType, data['type']) if 'type' in data else None
 
-        self.bot: User  # User data should always be available, but these payloads are volatile
-        user = data.get('bot')
-        if user is not None:
-            self.bot = self._state.create_user(user)
-        else:
-            self.bot = Object(id=self.id)  # type: ignore
+        self.bot: Optional[User] = self._state.create_user(data['bot']) if data.get('bot') else None
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
