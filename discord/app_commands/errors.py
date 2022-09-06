@@ -499,7 +499,16 @@ def _get_command_error(
             for index, d in remaining.items():
                 _get_command_error(index, d, children, messages, indent=indent + 2)
         else:
-            errors = _flatten_error_dict(remaining, key=key)
+            if isinstance(remaining, dict):
+                try:
+                    inner_errors = remaining['_errors']
+                except KeyError:
+                    errors = _flatten_error_dict(remaining, key=key)
+                else:
+                    errors = {key: ' '.join(x.get('message', '') for x in inner_errors)}
+            else:
+                errors = _flatten_error_dict(remaining, key=key)
+
             messages.extend(f'{indentation}  {k}: {v}' for k, v in errors.items())
 
 
