@@ -687,6 +687,8 @@ class InteractionApplication(Hashable):
         'name',
         'description',
         '_icon',
+        '_cover_image',
+        'primary_sku_id',
         'type',
         'bot',
     )
@@ -702,10 +704,12 @@ class InteractionApplication(Hashable):
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self.description: str = data.get('description') or ''
-        self._icon: Optional[str] = data.get('icon')
         self.type: Optional[ApplicationType] = try_enum(ApplicationType, data['type']) if 'type' in data else None
 
+        self._icon: Optional[str] = data.get('icon')
+        self._cover_image: Optional[str] = data.get('cover_image')
         self.bot: Optional[User] = self._state.create_user(data['bot']) if data.get('bot') else None
+        self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
@@ -716,3 +720,13 @@ class InteractionApplication(Hashable):
         if self._icon is None:
             return None
         return Asset._from_icon(self._state, self.id, self._icon, path='app')
+
+    @property
+    def cover_image(self) -> Optional[Asset]:
+        """Optional[:class:`.Asset`]: Retrieves the cover image on a store embed, if any.
+
+        This is only available if the application is a game sold on Discord.
+        """
+        if self._cover_image is None:
+            return None
+        return Asset._from_cover_image(self._state, self.id, self._cover_image)
