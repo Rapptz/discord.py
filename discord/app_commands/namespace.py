@@ -71,6 +71,11 @@ class Namespace:
     with the name of ``example`` can be accessed using ``ns.example``. If an attribute is not found,
     then ``None`` is returned rather than an attribute error.
 
+    .. warning::
+
+        The key names come from the raw Discord data, which means that if a parameter was renamed then the
+        renamed key is used instead of the function parameter name.
+
     .. versionadded:: 2.0
 
     .. container:: operations
