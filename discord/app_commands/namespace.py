@@ -72,7 +72,9 @@ class Namespace:
     then ``None`` is returned rather than an attribute error.
     
     .. note::
-        Options that were renamed using ``@app_commands.rename()`` will also ne renamed in the namespace.
+
+        The key names come from the raw Discord data, which means that if a parameter was renamed then the
+        renamed key is used instead of the function parameter name.
 
     .. versionadded:: 2.0
 
