@@ -70,8 +70,8 @@ class Namespace:
     key-pair mapping. These attributes can be accessed using dot notation. For example, an option
     with the name of ``example`` can be accessed using ``ns.example``. If an attribute is not found,
     then ``None`` is returned rather than an attribute error.
-    
-    .. note::
+
+    .. warning::
 
         The key names come from the raw Discord data, which means that if a parameter was renamed then the
         renamed key is used instead of the function parameter name.
