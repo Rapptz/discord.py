@@ -70,6 +70,9 @@ class Namespace:
     key-pair mapping. These attributes can be accessed using dot notation. For example, an option
     with the name of ``example`` can be accessed using ``ns.example``. If an attribute is not found,
     then ``None`` is returned rather than an attribute error.
+    
+    .. note::
+        Options that were renamed using ``@app_commands.rename()`` will also ne renamed in the namespace.
 
     .. versionadded:: 2.0
 
