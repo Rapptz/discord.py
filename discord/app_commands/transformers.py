@@ -544,6 +544,9 @@ else:
 
             return transformer
 
+        def __or__(self, rhs) -> Any:
+            return Union[self, rhs]
+
     class Range:
         """A type annotation that can be applied to a parameter to require a numeric or string
         type to fit within the range provided.
@@ -608,6 +611,9 @@ else:
                 max=cast(max) if max is not None else None,
             )
             return transformer
+
+        def __or__(self, rhs) -> Any:
+            return Union[self, rhs]
 
 
 class MemberTransformer(Transformer):
