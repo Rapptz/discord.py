@@ -1103,6 +1103,9 @@ else:
         def __or__(self, rhs) -> Any:
             return Union[self, rhs]
 
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}[{self.annotation.__name__}, {self.min}, {self.max}]'
+
         def __class_getitem__(cls, obj) -> Range:
             if not isinstance(obj, tuple):
                 raise TypeError(f'expected tuple for arguments, received {obj.__class__!r} instead')
