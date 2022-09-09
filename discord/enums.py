@@ -80,6 +80,7 @@ __all__ = (
     'ScheduledEventEntityType',
     'ApplicationType',
     'ConnectionType',
+    'ConnectionLinkType',
 )
 
 if TYPE_CHECKING:
@@ -877,13 +878,16 @@ class AppCommandType(Enum):
 class ConnectionType(Enum):
     battle_net = 'battlenet'
     contacts = 'contacts'
+    ebay = 'ebay'
     epic_games = 'epicgames'
     facebook = 'facebook'
     github = 'github'
     league_of_legends = 'leagueoflegends'
+    paypal = 'paypal'
     playstation = 'playstation'
     reddit = 'reddit'
-    samsung = 'samsunggalaxy'
+    riot_games = 'riotgames'
+    samsung = 'samsung'
     spotify = 'spotify'
     skype = 'skype'
     steam = 'steam'
@@ -891,6 +895,18 @@ class ConnectionType(Enum):
     twitter = 'twitter'
     youtube = 'youtube'
     xbox = 'xbox'
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class ConnectionLinkType(Enum):
+    web = 'web'
+    mobile = 'mobile'
+    desktop = 'desktop'
+
+    def __str__(self) -> str:
+        return self.value
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

@@ -2184,16 +2184,40 @@ class HTTPClient:
 
     # Connections
 
-    def get_connections(self):
+    def get_connections(self) -> Response[List[user.Connection]]:
         return self.request(Route('GET', '/users/@me/connections'))
 
-    def edit_connection(self, type: str, id: str, **payload):
+    def edit_connection(self, type: str, id: str, **payload) -> Response[user.Connection]:
         return self.request(Route('PATCH', '/users/@me/connections/{type}/{id}', type=type, id=id), json=payload)
 
-    def delete_connection(self, type: str, id: str):
+    def refresh_connection(self, type: str, id: str, **payload) -> Response[None]:
+        return self.request(Route('POST', '/users/@me/connections/{type}/{id}/refresh', type=type, id=id), json=payload)
+
+    def delete_connection(self, type: str, id: str) -> Response[None]:
         return self.request(Route('DELETE', '/users/@me/connections/{type}/{id}', type=type, id=id))
 
-    def get_connection_token(self, type: str, id: str):
+    def authorize_connection(
+        self,
+        type: str,
+        two_way_link_type: Optional[str] = None,
+        continuation: bool = False,
+    ) -> Response[user.ConnectionAuthorization]:
+        params = {}
+        if two_way_link_type is not None:
+            params['two_way_link'] = 'true'
+            params['two_way_link_type'] = two_way_link_type
+        if continuation:
+            params['continuation'] = 'true'
+        return self.request(Route('GET', '/connections/{type}/authorize', type=type), params=params)
+
+    def add_connection(
+        self,
+        type: str,
+        **payload,
+    ) -> Response[None]:
+        return self.request(Route('POST', '/connections/{type}/callback', type=type), json=payload)
+
+    def get_connection_token(self, type: str, id: str) -> Response[user.ConnectionAccessToken]:
         return self.request(Route('GET', '/users/@me/connections/{type}/{id}/access-token', type=type, id=id))
 
     # Applications

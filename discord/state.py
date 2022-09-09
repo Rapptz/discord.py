@@ -79,6 +79,7 @@ from .member import _ClientStatus
 from .modal import Modal
 from .member import VoiceState
 from .appinfo import InteractionApplication
+from .connections import Connection
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel, Snowflake as abcSnowflake
@@ -453,6 +454,7 @@ class ConnectionState:
         self._users: weakref.WeakValueDictionary[int, User] = weakref.WeakValueDictionary()
         self.settings: Optional[UserSettings] = None
         self.consents: Optional[Tracking] = None
+        self.connections: Dict[str, Connection] = {}
         self.analytics_token: Optional[str] = None
         self.preferred_regions: List[str] = []
         self.country_code: Optional[str] = None
@@ -512,7 +514,8 @@ class ConnectionState:
 
     @property
     def session_id(self) -> Optional[str]:
-        return self.ws.session_id
+        if self.ws:
+            return self.ws.session_id
 
     @property
     def ws(self):
@@ -886,6 +889,7 @@ class ConnectionState:
         self.consents = Tracking(data=data.get('consents', {}), state=self)
         self.country_code = data.get('country_code', 'US')
         self.session_type = data.get('session_type', 'normal')
+        self.connections = {c['id']: Connection(state=self, data=c) for c in data.get('connected_accounts', [])}
 
         if 'required_action' in data:  # Locked more than likely
             self.parse_user_required_action_update(data)
@@ -1088,8 +1092,20 @@ class ConnectionState:
         required_action = try_enum(RequiredActionType, data['required_action'])
         self.dispatch('required_action_update', required_action)
 
-    def parse_user_connections_update(self, data: gw.ResumedEvent) -> None:
-        self.dispatch('connections_update')
+    def parse_user_connections_update(self, data: gw.Connection) -> None:
+        id = data['id']
+        if id not in self.connections:
+            self.connections[id] = connection = Connection(state=self, data=data)
+            self.dispatch('connection_create', connection)
+        else:
+            # TODO: We can also get to this point if the connection has been deleted
+            # We can detect that by checking if the payload is identical to the previous payload
+            # However, certain events can also trigger updates with identical payloads, so we can't rely on that
+            # For now, we assume everything is an update; thanks Discord
+            connection = self.connections[id]
+            old_connection = copy.copy(connection)
+            connection._update(data)
+            self.dispatch('connection_update', old_connection, connection)
 
     def parse_sessions_replace(self, data: List[Dict[str, Any]]) -> None:
         overall = MISSING

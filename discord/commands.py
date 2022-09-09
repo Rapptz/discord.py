@@ -173,7 +173,7 @@ class ApplicationCommand(Protocol):
     def default_member_permissions(self) -> Optional[Permissions]:
         """Optional[:class:`~discord.Permissions`]: The default permissions required to use this command.
 
-        ..note::
+        .. note::
             This may be overrided on a guild-by-guild basis.
         """
         perms = self._default_member_permissions

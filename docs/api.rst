@@ -387,7 +387,7 @@ Client
 
 .. function:: on_guild_settings_update(before, after)
 
-    Called when a :class:`.Guild`'s :class:`GuildSettings` updates, for example:
+    Called when a :class:`.Guild` :class:`GuildSettings` updates, for example:
 
     - Muted guild or channel
     - Changed notification settings
@@ -411,12 +411,31 @@ Client
     :param action: The action required.
     :type action: :class:`RequiredActionType`
 
-.. function:: on_connections_update()
+Connections
+~~~~~~~~~~~~
 
-    Called when your account connections are updated.
-    The updated connections are not provided and must be fetched by :meth:`Client.connections`.
+.. function:: on_connection_create(connection)
+
+    Called when a connection is added to your account.
 
     .. versionadded:: 2.0
+
+    :param connection: The connection that was added.
+    :type connection: :class:`Connection`
+
+.. function:: on_connection_update(before, after)
+
+    Called when a connection is updated on your account.
+
+    .. note::
+        Due to a Discord limitation, this is also called when a connection is removed.
+
+    .. versionadded:: 2.0
+
+    :param before: The connection prior to being updated.
+    :type before: :class:`Connection`
+    :param after: The connection after being updated.
+    :type after: :class:`Connection`
 
 Relationships
 ~~~~~~~~~~~~~
@@ -3167,6 +3186,10 @@ of :class:`enum.Enum`.
 
         The user has a contact sync connection.
 
+    .. attribute:: ebay
+
+        The user has an eBay connection.
+
     .. attribute:: epic_games
 
         The user has an Epic Games connection.
@@ -3183,6 +3206,10 @@ of :class:`enum.Enum`.
 
         The user has a League of Legends connection.
 
+    .. attribute:: paypal
+
+        The user has a PayPal connection.
+
     .. attribute:: playstation
 
         The user has a PlayStation connection.
@@ -3190,6 +3217,10 @@ of :class:`enum.Enum`.
     .. attribute:: reddit
 
         The user has a Reddit connection.
+
+    .. attribute:: riot_games
+
+        The user has a Riot Games connection.
 
     .. attribute:: samsung
 
@@ -3222,6 +3253,24 @@ of :class:`enum.Enum`.
     .. attribute:: xbox
 
         The user has an Xbox Live connection.
+
+.. class:: ConnectionLinkType
+
+    Represents the type of two-way link a Discord connection has.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: web
+
+        The connection is linked via web.
+
+    .. attribute:: mobile
+
+        The connection is linked via mobile.
+
+    .. attribute:: desktop
+
+        The connection is linked via desktop.
 
 .. class:: InteractionType
 
@@ -4172,6 +4221,11 @@ Connection
 .. attributetable:: PartialConnection
 
 .. autoclass:: PartialConnection()
+    :members:
+
+.. attributetable:: ConnectionMetadata
+
+.. autoclass:: ConnectionMetadata()
     :members:
 
 Application

@@ -39,7 +39,7 @@ from .message import Message
 from .sticker import GuildSticker
 from .appinfo import PartialAppInfo
 from .guild import Guild, UnavailableGuild, SupplementalGuild
-from .user import User
+from .user import Connection, User
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
 from .channel import DMChannel, GroupDMChannel
@@ -60,7 +60,7 @@ class ShardInfo(TypedDict):
 class ReadyEvent(TypedDict):
     analytics_token: str
     auth_token: NotRequired[str]
-    connected_accounts: List[dict]
+    connected_accounts: List[Connection]
     country_code: str
     friend_suggestion_count: int
     geo_ordered_rtc_regions: List[str]

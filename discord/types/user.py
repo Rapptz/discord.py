@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Literal, Optional, TypedDict
+from typing import Any, Dict, List, Literal, Optional, TypedDict
 from typing_extensions import NotRequired
 
 from .integration import ConnectionIntegration
@@ -39,13 +39,16 @@ class PartialUser(TypedDict):
 ConnectionType = Literal[
     'battlenet',
     'contacts',
+    'ebay',
     'epicgames',
     'facebook',
     'github',
     'leagueoflegends',
+    'paypal',
     'playstation',
     'reddit',
-    'samsunggalaxy',
+    'riotgames',
+    'samsung',
     'spotify',
     'skype',
     'steam',
@@ -81,12 +84,23 @@ class PartialConnection(TypedDict):
     type: ConnectionType
     name: str
     verified: bool
-    revoked: NotRequired[bool]
 
 
 class Connection(PartialConnection):
-    visibility: int
+    revoked: bool
+    visibility: Literal[0, 1]
+    metadata_visibility: Literal[0, 1]
     show_activity: bool
     friend_sync: bool
+    two_way_link: bool
     integrations: NotRequired[List[ConnectionIntegration]]
     access_token: NotRequired[str]
+    metadata: NotRequired[Dict[str, Any]]
+
+
+class ConnectionAccessToken(TypedDict):
+    access_token: str
+
+
+class ConnectionAuthorization(TypedDict):
+    url: str

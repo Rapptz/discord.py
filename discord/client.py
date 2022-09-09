@@ -54,7 +54,7 @@ from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
 from .channel import _private_channel_factory, _threaded_channel_factory, GroupChannel, PartialMessageable
-from .enums import ActivityType, ChannelType, Status, InviteType, try_enum
+from .enums import ActivityType, ChannelType, ConnectionLinkType, ConnectionType, Status, InviteType, try_enum
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status
@@ -336,6 +336,20 @@ class Client:
         .. versionadded:: 1.1
         """
         return utils.SequenceProxy(self._connection._messages or [])
+
+    @property
+    def connections(self) -> List[Connection]:
+        """List[:class:`.Connection`]: The connections that the connected client has.
+
+        These connections don't have the :attr:`.Connection.metadata` attribute populated.
+
+        .. versionadded:: 2.0
+
+        .. note::
+            Due to a Discord limitation, removed connections may not be removed from this cache.
+
+        """
+        return list(self._connection.connections.values())
 
     @property
     def private_channels(self) -> List[PrivateChannel]:
@@ -2197,7 +2211,7 @@ class Client:
         await note.fetch()
         return note
 
-    async def connections(self) -> List[Connection]:
+    async def fetch_connections(self) -> List[Connection]:
         """|coro|
 
         Retrieves all of your connections.
@@ -2217,6 +2231,87 @@ class Client:
         state = self._connection
         data = await state.http.get_connections()
         return [Connection(data=d, state=state) for d in data]
+
+    async def authorize_connection(
+        self, type: ConnectionType, two_way_link_type: Optional[ConnectionLinkType] = None, continuation: bool = False
+    ) -> str:
+        """|coro|
+
+        Retrieves a URL to authorize a connection with a third-party service.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        type: :class:`.ConnectionType`
+            The type of connection to authorize.
+        two_way_link_type: Optional[:class:`.ConnectionLinkType`]
+            The type of two-way link to use, if any.
+        continuation: :class:`bool`
+            Whether this is a continuation of a previous authorization.
+
+        Raises
+        -------
+        HTTPException
+            Authorizing the connection failed.
+
+        Returns
+        --------
+        :class:`str`
+            The URL to redirect the user to.
+        """
+        data = await self.http.authorize_connection(
+            str(type), str(two_way_link_type) if two_way_link_type else None, continuation=continuation
+        )
+        return data['url']
+
+    async def create_connection(
+        self,
+        type: ConnectionType,
+        code: str,
+        state: str,
+        *,
+        insecure: bool = True,
+        friend_sync: bool = MISSING,
+    ) -> None:
+        """|coro|
+
+        Creates a new connection.
+
+        This is a low-level method that requires data obtained from other APIs.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        type: :class:`.ConnectionType`
+            The type of connection to add.
+        code: :class:`str`
+            The authorization code for the connection.
+        state: :class:`str`
+            The state used to authorize the connection.
+        insecure: :class:`bool`
+            Whether the authorization is insecure. Defaults to ``True``.
+        friend_sync: :class:`bool`
+            Whether friends are synced over the connection.
+
+            Defaults to ``True`` for :attr:`.ConnectionType.facebook` and :attr:`.ConnectionType.contacts`, else ``False``.
+
+        Raises
+        -------
+        HTTPException
+            Creating the connection failed.
+        """
+        friend_sync = (
+            friend_sync if friend_sync is not MISSING else type in (ConnectionType.facebook, ConnectionType.contacts)
+        )
+        await self.http.add_connection(
+            str(type),
+            code=code,
+            state=state,
+            insecure=insecure,
+            friend_sync=friend_sync,
+        )
 
     async def fetch_private_channels(self) -> List[PrivateChannel]:
         """|coro|
