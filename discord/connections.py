@@ -112,6 +112,30 @@ class PartialConnection:
         self.verified: bool = data['verified']
         self.visible: bool = True  # If we have a partial connection, it's visible
 
+    @property
+    def url(self) -> Optional[str]:
+        """Optional[:class:`str`]: Returns a URL linking to the connection's profile, if available."""
+        if self.type == ConnectionType.twitch:
+            return f'https://www.twitch.tv/{self.name}'
+        elif self.type == ConnectionType.youtube:
+            return f'https://www.youtube.com/{self.id}'
+        elif self.type == ConnectionType.skype:
+            return f'skype:{self.id}?userinfo'
+        elif self.type == ConnectionType.steam:
+            return f'https://steamcommunity.com/profiles/{self.id}'
+        elif self.type == ConnectionType.reddit:
+            return f'https://www.reddit.com/u/{self.name}'
+        elif self.type == ConnectionType.facebook:
+            return f'https://www.facebook.com/{self.name}'
+        elif self.type == ConnectionType.twitter:
+            return f'https://twitter.com/{self.name}'
+        elif self.type == ConnectionType.spotify:
+            return f'https://open.spotify.com/user/{self.id}'
+        elif self.type == ConnectionType.xbox:
+            return f'https://account.xbox.com/en-US/Profile?Gamertag={self.name}'
+        elif self.type == ConnectionType.github:
+            return f'https://github.com/{self.name}'
+
 
 class Connection(PartialConnection):
     """Represents a Discord profile connection.
