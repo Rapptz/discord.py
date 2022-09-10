@@ -458,7 +458,12 @@ class CommandTree(Generic[ClientT]):
             key = (command, guild_id, type.value)
             return self._context_menus.pop(key, None)
 
-    def clear_commands(self, *, guild: Optional[Snowflake], type: Optional[AppCommandType] = None) -> None:
+    def clear_commands(
+        self,
+        *,
+        guild: Optional[Snowflake] = None,
+        type: Optional[AppCommandType] = None
+    ) -> None:
         """Clears all application commands from the tree.
 
         This only removes the commands locally -- in order to sync the commands
