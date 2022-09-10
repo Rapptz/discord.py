@@ -1694,7 +1694,7 @@ class Webhook(BaseWebhook):
                 raise ValueError('Webhook views require an associated state with the webhook')
 
             if not hasattr(view, '__discord_ui_view__'):
-                raise TypeError(f'expected view parameter to be of type View not {view.__class__!r}')
+                raise TypeError(f'expected view parameter to be of type View not {view.__class__.__name__}')
 
             if ephemeral is True and view.timeout is None:
                 view.timeout = 15 * 60.0

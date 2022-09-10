@@ -319,7 +319,7 @@ class View:
             raise ValueError('maximum number of children exceeded')
 
         if not isinstance(item, Item):
-            raise TypeError(f'expected Item not {item.__class__!r}')
+            raise TypeError(f'expected Item not {item.__class__.__name__}')
 
         self.__weights.add_item(item)
 

@@ -2902,7 +2902,8 @@ class Guild(Hashable):
                 _entity_type = getattr(channel, '_scheduled_event_entity_type', MISSING)
                 if _entity_type is None:
                     raise TypeError(
-                        f'invalid GuildChannel type passed, must be VoiceChannel or StageChannel not {channel.__class__!r}'
+                        'invalid GuildChannel type passed, must be VoiceChannel or StageChannel '
+                        f'not {channel.__class__.__name__}'
                     )
                 if _entity_type is MISSING:
                     raise TypeError('entity_type must be passed in when passing an ambiguous channel type')

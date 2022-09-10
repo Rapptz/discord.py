@@ -272,7 +272,7 @@ def _set_api_version(value: int):
     global INTERNAL_API_VERSION
 
     if not isinstance(value, int):
-        raise TypeError(f'expected int not {value.__class__!r}')
+        raise TypeError(f'expected int not {value.__class__.__name__}')
 
     if value not in (9, 10):
         raise ValueError(f'expected either 9 or 10 not {value}')

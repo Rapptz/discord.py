@@ -94,7 +94,7 @@ class Object(Hashable):
         try:
             id = int(id)
         except ValueError:
-            raise TypeError(f'id parameter must be convertible to int not {id.__class__!r}') from None
+            raise TypeError(f'id parameter must be convertible to int not {id.__class__.__name__}') from None
         self.id: int = id
         self.type: Type[abc.Snowflake] = type or self.__class__
 

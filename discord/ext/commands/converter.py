@@ -1117,7 +1117,7 @@ else:
 
         def __class_getitem__(cls, obj) -> Range:
             if not isinstance(obj, tuple):
-                raise TypeError(f'expected tuple for arguments, received {obj.__class__!r} instead')
+                raise TypeError(f'expected tuple for arguments, received {obj.__class__.__name__} instead')
 
             if len(obj) == 2:
                 obj = (*obj, None)

@@ -528,7 +528,7 @@ else:
 
         def __class_getitem__(cls, items) -> _TransformMetadata:
             if not isinstance(items, tuple):
-                raise TypeError(f'expected tuple for arguments, received {items.__class__!r} instead')
+                raise TypeError(f'expected tuple for arguments, received {items.__class__.__name__} instead')
 
             if len(items) != 2:
                 raise TypeError(f'Transform only accepts exactly two arguments')
@@ -540,7 +540,7 @@ else:
                     raise TypeError(f'second argument of Transform must be a Transformer class not {transformer!r}')
                 transformer = transformer()
             elif not isinstance(transformer, Transformer):
-                raise TypeError(f'second argument of Transform must be a Transformer not {transformer.__class__!r}')
+                raise TypeError(f'second argument of Transform must be a Transformer not {transformer.__class__.__name__}')
 
             return transformer
 
@@ -571,7 +571,7 @@ else:
 
         def __class_getitem__(cls, obj) -> _TransformMetadata:
             if not isinstance(obj, tuple):
-                raise TypeError(f'expected tuple for arguments, received {obj.__class__!r} instead')
+                raise TypeError(f'expected tuple for arguments, received {obj.__class__.__name__} instead')
 
             if len(obj) == 2:
                 obj = (*obj, None)

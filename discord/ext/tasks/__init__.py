@@ -559,7 +559,7 @@ class Loop(Generic[LF]):
         """
 
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__}.')
 
         self._before_loop = coro
         return coro
@@ -587,7 +587,7 @@ class Loop(Generic[LF]):
         """
 
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__}.')
 
         self._after_loop = coro
         return coro
@@ -617,7 +617,7 @@ class Loop(Generic[LF]):
             The function was not a coroutine.
         """
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__}.')
 
         self._error = coro
         return coro

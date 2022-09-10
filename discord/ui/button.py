@@ -106,7 +106,7 @@ class Button(Item[V]):
             custom_id = os.urandom(16).hex()
 
         if custom_id is not None and not isinstance(custom_id, str):
-            raise TypeError(f'expected custom_id to be str not {custom_id.__class__!r}')
+            raise TypeError(f'expected custom_id to be str not {custom_id.__class__.__name__}')
 
         if url is not None:
             style = ButtonStyle.link
@@ -117,7 +117,7 @@ class Button(Item[V]):
             elif isinstance(emoji, _EmojiTag):
                 emoji = emoji._to_partial()
             else:
-                raise TypeError(f'expected emoji to be str, Emoji, or PartialEmoji not {emoji.__class__}')
+                raise TypeError(f'expected emoji to be str, Emoji, or PartialEmoji not {emoji.__class__.__name__}')
 
         self._underlying = ButtonComponent._raw_construct(
             custom_id=custom_id,
@@ -196,7 +196,7 @@ class Button(Item[V]):
             elif isinstance(value, _EmojiTag):
                 self._underlying.emoji = value._to_partial()
             else:
-                raise TypeError(f'expected str, Emoji, or PartialEmoji, received {value.__class__} instead')
+                raise TypeError(f'expected str, Emoji, or PartialEmoji, received {value.__class__.__name__} instead')
         else:
             self._underlying.emoji = None
 

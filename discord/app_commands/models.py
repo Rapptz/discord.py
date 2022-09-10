@@ -468,7 +468,7 @@ class Choice(Generic[ChoiceT]):
             return AppCommandOptionType.string
         else:
             raise TypeError(
-                f'invalid Choice value type given, expected int, str, or float but received {self.value.__class__!r}'
+                f'invalid Choice value type given, expected int, str, or float but received {self.value.__class__.__name__}'
             )
 
     async def get_translated_payload(self, translator: Translator) -> Dict[str, Any]:
