@@ -320,7 +320,7 @@ class UserSettings:
 
         Returns
         -------
-        :class:`Tracking`
+        :class:`TrackingSettings`
             The tracking settings.
         """
         data = await self._state.http.get_tracking()

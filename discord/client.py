@@ -759,7 +759,7 @@ class Client:
 
     @property
     def notification_settings(self) -> GuildSettings:
-        """:class:`GuildSettings`: Returns the notification settings for private channels.
+        """:class:`.GuildSettings`: Returns the notification settings for private channels.
 
         If not found, an instance is created with defaults applied. This follows Discord behaviour.
 
