@@ -3576,6 +3576,8 @@ class Guild(Hashable):
         ClientException
             This guild cannot be chunked or chunking failed.
             Guild is no longer available.
+        InvalidData
+            Did not receive a response from the gateway.
 
         Returns
         --------
@@ -3588,8 +3590,6 @@ class Guild(Hashable):
             raise ClientException('This guild is no longer available')
 
         members = await self._state.chunk_guild(self, channels=[channel] if channel else [])
-        if members is None:
-            raise ClientException('Chunking failed')
         return members
 
     async def fetch_members(
@@ -3633,6 +3633,8 @@ class Guild(Hashable):
         ClientException
             Fetching members failed.
             Guild is no longer available.
+        InvalidData
+            Did not receive a response from the gateway.
 
         Returns
         --------
@@ -3645,8 +3647,6 @@ class Guild(Hashable):
         members = await self._state.scrape_guild(
             self, cache=cache, force_scraping=force_scraping, delay=delay, channels=channels
         )
-        if members is None:
-            raise ClientException('Fetching members failed')
         return members
 
     async def query_members(

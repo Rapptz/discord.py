@@ -48,7 +48,7 @@ import weakref
 import inspect
 from math import ceil
 
-from .errors import NotFound
+from .errors import ClientException, InvalidData, NotFound
 from .guild import CommandCounts, Guild
 from .activity import BaseActivity
 from .user import User, ClientUser
@@ -175,7 +175,8 @@ class MemberSidebar:
         self.channels = [str(channel.id) for channel in (channels or self.get_channels(1 if chunk else 5))]
         self.ranges = self.get_ranges()
         self.subscribing: bool = False
-        self.buffer: Optional[List[Member]] = []
+        self.buffer: List[Member] = []
+        self.exception: Optional[Exception] = None
         self.waiters: List[asyncio.Future[Optional[List[Member]]]] = []
 
     def __bool__(self) -> bool:
@@ -281,7 +282,7 @@ class MemberSidebar:
             for member in members:
                 guild._add_member(member)
 
-    async def wait(self) -> Optional[List[Member]]:
+    async def wait(self) -> List[Member]:
         future = self.loop.create_future()
         self.waiters.append(future)
         try:
@@ -289,7 +290,7 @@ class MemberSidebar:
         finally:
             self.waiters.remove(future)
 
-    def get_future(self) -> asyncio.Future[Optional[List[Member]]]:
+    def get_future(self) -> asyncio.Future[List[Member]]:
         future = self.loop.create_future()
         self.waiters.append(future)
         return future
@@ -297,7 +298,10 @@ class MemberSidebar:
     def done(self) -> None:
         for future in self.waiters:
             if not future.done():
-                future.set_result(self.buffer)
+                if self.exception:
+                    future.set_exception(self.exception)
+                else:
+                    future.set_result(self.buffer)
 
         try:
             del self.state._scrape_requests[self.guild.id]
@@ -310,11 +314,11 @@ class MemberSidebar:
     async def wrapper(self):
         try:
             await self.scrape()
-        except RuntimeError as exc:
-            _log.warning('Member list scraping failed for %s (%s).', self.guild.id, exc)
-            self.buffer = None
         except asyncio.CancelledError:
             pass
+        except Exception as exc:
+            _log.warning('Member list scraping failed for %s (%s).', self.guild.id, exc)
+            self.exception = exc
         finally:
             self.done()
 
@@ -337,7 +341,7 @@ class MemberSidebar:
                 break
 
             if not requests:
-                raise RuntimeError('failed to choose channels or ranges')
+                raise ClientException('Failed to automatically choose channels; please specify them manually')
 
             def predicate(data):
                 return int(data['guild_id']) == guild.id and any(op['op'] == 'SYNC' for op in data['ops'])
@@ -352,7 +356,7 @@ class MemberSidebar:
                     self.subscribing = False
                     break
                 else:
-                    raise RuntimeError('timeout: no response from gateway')
+                    raise InvalidData('Did not receive a response from Discord')
 
             await asyncio.sleep(delay)
 
@@ -790,6 +794,8 @@ class ConnectionState:
                     await asyncio.wait_for(future, timeout=10)
                 except asyncio.TimeoutError:
                     _log.warning('Timed out waiting for chunks for guild_id %s.', guild.id)
+                except (ClientException, InvalidData):
+                    pass
         except asyncio.CancelledError:
             pass
         else:
@@ -891,7 +897,7 @@ class ConnectionState:
         self.session_type = data.get('session_type', 'normal')
         self.connections = {c['id']: Connection(state=self, data=c) for c in data.get('connected_accounts', [])}
 
-        if 'required_action' in data:  # Locked more than likely
+        if 'required_action' in data:
             self.parse_user_required_action_update(data)
 
         if 'sessions' in data:
@@ -1720,7 +1726,7 @@ class ConnectionState:
         force_scraping: bool = ...,
         channels: List[abcSnowflake] = ...,
         delay: Union[int, float] = ...,
-    ) -> Optional[List[Member]]:
+    ) -> List[Member]:
         ...
 
     @overload
@@ -1733,7 +1739,7 @@ class ConnectionState:
         force_scraping: bool = ...,
         channels: List[abcSnowflake] = ...,
         delay: Union[int, float] = ...,
-    ) -> asyncio.Future[Optional[List[Member]]]:
+    ) -> asyncio.Future[List[Member]]:
         ...
 
     async def scrape_guild(
@@ -1745,7 +1751,7 @@ class ConnectionState:
         force_scraping: bool = False,
         channels: List[abcSnowflake] = MISSING,
         delay: Union[int, float] = MISSING,
-    ) -> Union[Optional[List[Member]], asyncio.Future[Optional[List[Member]]]]:
+    ) -> Union[List[Member], asyncio.Future[List[Member]]]:
         if not guild.me:
             await guild.query_members(user_ids=[self.self_id], cache=True)  # type: ignore # self_id is always present here
 
@@ -1773,18 +1779,18 @@ class ConnectionState:
 
         if wait:
             return await request.wait()
-        return request.get_future()  # type: ignore # Honestly, I'm confused too
+        return request.get_future()
 
     @overload
     async def chunk_guild(
         self, guild: Guild, *, wait: Literal[True] = ..., channels: List[abcSnowflake] = ...
-    ) -> Optional[List[Member]]:
+    ) -> List[Member]:
         ...
 
     @overload
     async def chunk_guild(
         self, guild: Guild, *, wait: Literal[False] = ..., channels: List[abcSnowflake] = ...
-    ) -> asyncio.Future[Optional[List[Member]]]:
+    ) -> asyncio.Future[List[Member]]:
         ...
 
     async def chunk_guild(
@@ -1793,7 +1799,7 @@ class ConnectionState:
         *,
         wait: bool = True,
         channels: List[abcSnowflake] = MISSING,
-    ) -> Union[asyncio.Future[Optional[List[Member]]], Optional[List[Member]]]:
+    ) -> Union[asyncio.Future[List[Member]], List[Member]]:
         if not guild.me:
             await guild.query_members(user_ids=[self.self_id], cache=True)  # type: ignore # self_id is always present here
 
@@ -1816,6 +1822,8 @@ class ConnectionState:
                 await asyncio.wait_for(self.chunk_guild(guild), timeout=10)
             except asyncio.TimeoutError:
                 _log.info('Somehow timed out waiting for chunks for guild %s.', guild.id)
+            except (ClientException, InvalidData):
+                pass
 
         self._queued_guilds.pop(guild.id)
 
