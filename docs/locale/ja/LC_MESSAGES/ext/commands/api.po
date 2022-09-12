@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-15 16:38+0000\n"
-"PO-Revision-Date: 2022-08-15 16:40\n"
+"POT-Creation-Date: 2022-09-06 06:27+0000\n"
+"PO-Revision-Date: 2022-09-07 14:31\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -302,9 +302,9 @@ msgstr ":func:`~discord.ext.commands.command` を呼び出し、 :meth:`~.GroupM
 
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.GroupMixin.command:0
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.GroupMixin.group:0
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_command:0
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_group:0
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.application_info:0
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.create_dm:0
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.create_guild:0
 msgid "Returns"
 msgstr "戻り値"
 
@@ -318,9 +318,9 @@ msgstr "提供されたメソッドをCommandに変換し、Botに追加し、�
 
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.GroupMixin.command:0
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.GroupMixin.group:0
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_command:0
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_group:0
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.application_info:0
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.create_dm:0
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.create_guild:0
 msgid "Return type"
 msgstr "戻り値の型"
 
@@ -361,6 +361,25 @@ msgstr "提供されたメソッドをGroupに変換し、Botに追加し、そ�
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.GroupMixin.group:5
 msgid "Callable[..., :class:`Group`]"
 msgstr "Callable[..., :class:`Group`]"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_command:1
+#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.HybridGroup.command:1
+msgid "A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_command` and adds it to the internal command list via :meth:`add_command`."
+msgstr ":func:`~discord.ext.commands.hybrid_command` を呼び出し、 :meth:`add_command` を介して内部コマンドリストに追加するショートカットデコレータ。"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_command:5
+#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.HybridGroup.command:5
+msgid "Callable[..., :class:`HybridCommand`]"
+msgstr "Callable[..., :class:`HybridCommand`]"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_group:1
+msgid "A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to the internal command list via :meth:`add_command`."
+msgstr ":func:`~discord.ext.commands.hybrid_group` を呼び出し、 :meth:`add_command` を介して内部コマンドリストに追加するショートカットデコレータ。"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_group:5
+#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.HybridGroup.group:5
+msgid "Callable[..., :class:`HybridGroup`]"
+msgstr "Callable[..., :class:`HybridGroup`]"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.listen:1
 msgid "A decorator that registers another function as an external event listener. Basically this allows you to listen to multiple events from different places e.g. such as :func:`.on_ready`"
@@ -1485,25 +1504,6 @@ msgstr "接続したクライアントがメンバーとして参加している
 msgid "Sequence[:class:`.Guild`]"
 msgstr "Sequence[:class:`.Guild`]"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_command:1
-#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.HybridGroup.command:1
-msgid "A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_command` and adds it to the internal command list via :meth:`add_command`."
-msgstr ":func:`~discord.ext.commands.hybrid_command` を呼び出し、 :meth:`add_command` を介して内部コマンドリストに追加するショートカットデコレータ。"
-
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_command:5
-#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.HybridGroup.command:5
-msgid "Callable[..., :class:`HybridCommand`]"
-msgstr "Callable[..., :class:`HybridCommand`]"
-
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_group:1
-msgid "A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to the internal command list via :meth:`add_command`."
-msgstr ":func:`~discord.ext.commands.hybrid_group` を呼び出し、 :meth:`add_command` を介して内部コマンドリストに追加するショートカットデコレータ。"
-
-#: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.hybrid_group:5
-#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.HybridGroup.group:5
-msgid "Callable[..., :class:`HybridGroup`]"
-msgstr "Callable[..., :class:`HybridGroup`]"
-
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.Bot.intents:1
 msgid "The intents configured for this connection."
 msgstr "この接続用に設定されたインテント。"
@@ -1864,9 +1864,13 @@ msgstr "指定されたログハンドラで使用するフォーマッタ。渡
 msgid "The default log level for the library's logger. This is only applied if the ``log_handler`` parameter is not ``None``. Defaults to ``logging.INFO``."
 msgstr "ライブラリロガーの既定のログレベル。これは ``log_handler`` が ``None`` でない場合のみ適用されます。デフォルトは ``logging.INFO`` です。"
 
-#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:44
-msgid "Note that the *root* logger will always be set to ``logging.INFO`` and this only controls the library's log level. To control the root logger's level, you can use ``logging.getLogger().setLevel(level)``."
-msgstr "*root* ロガーは常に ``logging.INFO`` に設定されていて、これはライブラリのログレベルのみを制御することに注意してください。 ルートロガーのレベルを制御するには、 ``logging.getLogger().setLevel(level)`` を使用してください。"
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:46
+msgid "Whether to set up the root logger rather than the library logger. By default, only the library logger (``'discord'``) is set up. If this is set to ``True`` then the root logger is set up as well."
+msgstr "ライブラリロガーではなくルートロガーを設定するかどうか。デフォルトではライブラリロガー (``'discord'``) のみが設定されています。 これが ``True`` に設定されている場合、ルートロガーも設定されます。"
+
+#: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.run:50
+msgid "Defaults to ``False``."
+msgstr "デフォルトでは ``False`` です。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.setup_hook:3
 msgid "A coroutine to be called to setup the bot, by default this is blank."
@@ -2045,7 +2049,7 @@ msgstr "エイリアスによって重複した場合は、そのエイリアス
 msgid "Union[:class:`.Command`, :class:`.Group`] -- A command or group from the internal list of commands."
 msgstr "Union[:class:`.Command`, :class:`.Group`] -- コマンドの内部リストからの、コマンドまたはグループ。"
 
-#: ../../ext/commands/api.rst:48
+#: ../../ext/commands/api.rst:54
 msgid "AutoShardedBot"
 msgstr "AutoShardedBot"
 
@@ -2057,7 +2061,7 @@ msgstr "これは、 :class:`discord.AutoShardedClient` から代わりに継承
 msgid "Asynchronously initialises the bot and automatically cleans."
 msgstr "非同期的にボットを初期化し自動でクリーンアップします。"
 
-#: ../../ext/commands/api.rst:56
+#: ../../ext/commands/api.rst:62
 msgid "Prefix Helpers"
 msgstr "接頭辞のヘルパー"
 
@@ -2086,56 +2090,56 @@ msgstr "この呼び出し可能オブジェクトは別の呼び出し可能オ
 msgid ":func:`.when_mentioned`"
 msgstr ":func:`.when_mentioned`"
 
-#: ../../ext/commands/api.rst:65
+#: ../../ext/commands/api.rst:71
 msgid "Event Reference"
 msgstr "イベントリファレンス"
 
-#: ../../ext/commands/api.rst:67
+#: ../../ext/commands/api.rst:73
 msgid "These events function similar to :ref:`the regular events <discord-api-events>`, except they are custom to the command extension module."
 msgstr "これらのイベントは、コマンド拡張モジュールのカスタム関数であることを除けば、 :ref:`通常のイベント <discord-api-events>` に似ています。"
 
-#: ../../ext/commands/api.rst:72
+#: ../../ext/commands/api.rst:78
 msgid "An error handler that is called when an error is raised inside a command either through user input error, check failure, or an error in your own code."
 msgstr "ユーザーによる入力エラー、チェックの失敗、またはコードの記述ミスによって、コマンド内でエラーが発生したときに呼び出されるエラーハンドラ。"
 
-#: ../../ext/commands/api.rst:76
+#: ../../ext/commands/api.rst:82
 msgid "A default one is provided (:meth:`.Bot.on_command_error`)."
 msgstr "デフォルトは (:meth:`.Bot.on_command_error`) です。"
 
-#: ../../ext/commands/api.rst:78
-#: ../../ext/commands/api.rst:90
-#: ../../ext/commands/api.rst:100
+#: ../../ext/commands/api.rst:84
+#: ../../ext/commands/api.rst:96
+#: ../../ext/commands/api.rst:106
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.cog_before_invoke:7
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.cog_after_invoke:7
 msgid "The invocation context."
 msgstr "呼び出しコンテキスト。"
 
-#: ../../ext/commands/api.rst:80
+#: ../../ext/commands/api.rst:86
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.on_help_command_error:17
 msgid "The error that was raised."
 msgstr "発生したエラー。"
 
-#: ../../ext/commands/api.rst:85
+#: ../../ext/commands/api.rst:91
 msgid "An event that is called when a command is found and is about to be invoked."
 msgstr "該当するコマンドが見つかり、呼び出されようとするときに、呼び出されるイベント。"
 
-#: ../../ext/commands/api.rst:87
+#: ../../ext/commands/api.rst:93
 msgid "This event is called regardless of whether the command itself succeeds via error or completes."
 msgstr "このイベントは、エラーまたは完了を介して、コマンド自体が成功するかどうかに関係なく、必ず呼び出されます。"
 
-#: ../../ext/commands/api.rst:95
+#: ../../ext/commands/api.rst:101
 msgid "An event that is called when a command has completed its invocation."
 msgstr "コマンドの呼び出しが完了したときに呼び出されるイベント。"
 
-#: ../../ext/commands/api.rst:97
+#: ../../ext/commands/api.rst:103
 msgid "This event is called only if the command succeeded, i.e. all checks have passed and the user input it correctly."
 msgstr "このイベントは、コマンドの実行が成功した場合にのみ呼び出されます。すなわち、すべてのチェックが成功し、ユーザーによって正しく入力された場合にのみ実行されます。"
 
-#: ../../ext/commands/api.rst:106
+#: ../../ext/commands/api.rst:112
 msgid "Commands"
 msgstr "コマンド"
 
-#: ../../ext/commands/api.rst:109
+#: ../../ext/commands/api.rst:115
 msgid "Decorators"
 msgstr "デコレータ"
 
@@ -2216,7 +2220,7 @@ msgstr "関数を :class:`.HybridGroup` に変換するデコレータ。"
 msgid "This is similar to the :func:`~discord.ext.commands.group` decorator except it creates a hybrid group instead."
 msgstr "これは :func:`~discord.ext.commands.group` デコレータに似ていますが、代わりにハイブリッドグループを作成します。"
 
-#: ../../ext/commands/api.rst:125
+#: ../../ext/commands/api.rst:131
 msgid "Command"
 msgstr "Command"
 
@@ -2336,8 +2340,8 @@ msgstr "このオブジェクトはライブラリによってコピーされる
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.Command:138
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.GroupMixin:9
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.CogMeta:65
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.CogMeta:112
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand:44
-#: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context:41
 msgid ":class:`dict`"
 msgstr ":class:`dict`"
 
@@ -2413,7 +2417,7 @@ msgstr "この関数は冪等性を保持しており、関数がグローバル
 #: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.core.Command.remove_check:12
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.remove_check:12
 msgid "The function to remove from the checks."
-msgstr "チェックから除去する関数"
+msgstr "チェックから除去する関数。"
 
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.Command.update:1
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.Command.update:1
@@ -2654,7 +2658,7 @@ msgstr "チェック中に発生したコマンドエラーは、この関数に
 msgid "A boolean indicating if the command can be invoked."
 msgstr "コマンドが呼び出し可能かどうかを示すbool値。"
 
-#: ../../ext/commands/api.rst:144
+#: ../../ext/commands/api.rst:150
 msgid "Group"
 msgstr "Group"
 
@@ -2689,7 +2693,7 @@ msgstr "このグループの新しいインスタンス。"
 msgid ":class:`Group`"
 msgstr ":class:`Group`"
 
-#: ../../ext/commands/api.rst:169
+#: ../../ext/commands/api.rst:175
 msgid "GroupMixin"
 msgstr "GroupMixin"
 
@@ -2705,7 +2709,7 @@ msgstr "コマンド名の :class:`.Command` オブジェクトへのマッピ�
 msgid "Whether the commands should be case insensitive. Defaults to ``False``."
 msgstr "コマンドの大文字小文字を区別するかどうか。デフォルトは ``False`` です。"
 
-#: ../../ext/commands/api.rst:184
+#: ../../ext/commands/api.rst:190
 msgid "HybridCommand"
 msgstr "HybridCommand"
 
@@ -2742,7 +2746,7 @@ msgstr "オートコンプリートに登録するパラメータ名。"
 msgid "The coroutine passed is not actually a coroutine or     the parameter is not found or of an invalid type."
 msgstr "渡されたコルーチンが実際にはコルーチンでない場合や、パラメータが見つからず、または無効な型であった場合。"
 
-#: ../../ext/commands/api.rst:203
+#: ../../ext/commands/api.rst:212
 msgid "HybridGroup"
 msgstr "HybridGroup"
 
@@ -2762,13 +2766,13 @@ msgstr "ハイブリッドグループでは :attr:`Group.invoke_without_command
 msgid "The command name to use as a fallback for the application command. Since application command groups cannot be invoked, this creates a subcommand within the group that can be invoked with the given group callback. If ``None`` then no fallback command is given. Defaults to ``None``."
 msgstr "アプリケーションコマンド用のフォールバックとして使用するコマンド名。アプリケーションコマンドグループを呼び出すことはできないため、これはグループ内に与えられたグループコールバックで呼び出すことのできるサブコマンドを作成します。 ``None`` の場合、フォールバックコマンドは指定されません。デフォルトは ``None`` です。"
 
-#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.HybridGroup.group:1
-msgid "A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to the internal command list via :meth:`~.GroupMixin.add_command`."
-msgstr ":func:`~discord.ext.commands.hybrid_group` を呼び出し、 :meth:`~.GroupMixin.add_command` を介して内部コマンドリストに追加するショートカットデコレータ。"
-
 #: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.HybridGroup.autocomplete:7
 msgid "This is only available if the group has a fallback application command registered."
 msgstr "これは、フォールバックアプリケーションコマンドが登録されている場合にのみ使用できます。"
+
+#: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.HybridGroup.group:1
+msgid "A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to the internal command list via :meth:`~.GroupMixin.add_command`."
+msgstr ":func:`~discord.ext.commands.hybrid_group` を呼び出し、 :meth:`~.GroupMixin.add_command` を介して内部コマンドリストに追加するショートカットデコレータ。"
 
 #: ../../../discord/ext/commands/hybrid.py:docstring of discord.ext.commands.hybrid.HybridGroup.add_command:1
 msgid "Adds a :class:`.HybridCommand` into the internal list of commands."
@@ -2778,11 +2782,11 @@ msgstr ":class:`.HybridCommand` を内部のコマンドリストに追加しま
 msgid "If the command passed is not a subclass of :class:`.HybridCommand`."
 msgstr "渡されたコマンドが、 :class:`.HybridCommand` のサブクラスでない場合。"
 
-#: ../../ext/commands/api.rst:231
+#: ../../ext/commands/api.rst:243
 msgid "Cogs"
 msgstr "Cogs"
 
-#: ../../ext/commands/api.rst:234
+#: ../../ext/commands/api.rst:246
 msgid "Cog"
 msgstr "Cog"
 
@@ -2994,7 +2998,7 @@ msgstr "コグのローカルポスト呼び出しフックとして機能する
 msgid "This is similar to :meth:`.Command.after_invoke`."
 msgstr "これは :meth:`.Command.after_invoke` に似ています。"
 
-#: ../../ext/commands/api.rst:242
+#: ../../ext/commands/api.rst:254
 msgid "GroupCog"
 msgstr "GroupCog"
 
@@ -3014,7 +3018,7 @@ msgstr ":func:`~discord.app_commands.guild_only` 、 :func:`~discord.app_command
 msgid "For example:"
 msgstr "例："
 
-#: ../../ext/commands/api.rst:251
+#: ../../ext/commands/api.rst:263
 msgid "CogMeta"
 msgstr "CogMeta"
 
@@ -3067,11 +3071,15 @@ msgstr "アプリケーションコマンドグループに年齢制限をかけ
 msgid "If this is set to ``True``, then all translatable strings will implicitly be wrapped into :class:`~discord.app_commands.locale_str` rather than :class:`str`. Defaults to ``True``."
 msgstr "これが ``True`` に設定されている場合、翻訳可能な文字列は :class:`str` ではなく暗黙的に :class:`~discord.app_commands.locale_str` にラップされます。デフォルトは ``True`` です。"
 
-#: ../../ext/commands/api.rst:261
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.CogMeta:106
+msgid "A dictionary that can be used to store extraneous data. This is only applicable for :class:`GroupCog` instances. The library will not touch any values or keys within this dictionary."
+msgstr "追加のデータを保管できる辞書型。これは :class:`GroupCog` インスタンスにのみ適用されます。ライブラリは辞書型の中のキーや値を一切操作しません。"
+
+#: ../../ext/commands/api.rst:273
 msgid "Help Commands"
 msgstr "ヘルプコマンド"
 
-#: ../../ext/commands/api.rst:264
+#: ../../ext/commands/api.rst:276
 msgid "HelpCommand"
 msgstr "HelpCommand"
 
@@ -3171,7 +3179,7 @@ msgstr "``string`` 引数は位置限定引数になりました。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.remove_mentions:9
 msgid "The string with mentions removed."
-msgstr "メンションが削除されたテキスト。"
+msgstr "メンションが除去された文字列。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.HelpCommand.cog:1
 msgid "A property for retrieving or setting the cog for the help command."
@@ -3456,7 +3464,7 @@ msgstr ":meth:`get_command_signature`"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.send_command_help:28
 msgid "There are more than just these attributes but feel free to play around with these to help you get started to get the output that you want."
-msgstr "これらの属性以外にももっとありますが、欲しい出力を手にし始めるのを助けてくれるこいつらで遊ぶことに開放感を感じてみてください。"
+msgstr "これら以外にももっと属性はありますが、欲しい出力を得るのを助けてくれるこいつらで遊ぶことに開放感を感じてみてください。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.send_command_help:35
 msgid "The command that was requested for help."
@@ -3473,7 +3481,7 @@ msgstr "デフォルトの実装では何もしません。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.prepare_help_command:12
 msgid "This is called *inside* the help command callback body. So all the usual rules that happen inside apply here as well."
-msgstr "これは*内部*ヘルプコマンドコールバック本体と呼ばれていますので、内部で発生する通常のルールはすべてここでも適用されます。"
+msgstr "これは *内部* ヘルプコマンドコールバック本体と呼ばれていますので、内部で発生する通常のルールはすべてここでも適用されます。 "
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.prepare_help_command:17
 msgid "``ctx`` and ``command`` parameters are now positional-only."
@@ -3531,7 +3539,7 @@ msgstr ":meth:`on_help_command_error`"
 msgid ":meth:`prepare_help_command`"
 msgstr ":meth:`prepare_help_command`"
 
-#: ../../ext/commands/api.rst:272
+#: ../../ext/commands/api.rst:284
 msgid "DefaultHelpCommand"
 msgstr "DefaultHelpCommand"
 
@@ -3573,11 +3581,11 @@ msgstr "見出しからのコマンドのインデントの量。デフォルト
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:46
 msgid "The arguments list's heading string used when the help command is invoked with a command name. Useful for i18n. Defaults to ``\"Arguments:\"``. Shown when :attr:`.show_parameter_descriptions` is ``True``."
-msgstr ""
+msgstr "コマンド名を指定してhelpコマンドを実行したときに使用される引数リストの見出し文字列です。国際化対応に便利です。デフォルトは ``\"Arguments:\"`` です。:attr:`.show_parameter_descriptions` が ``True`` の場合に表示されます。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:56
 msgid "Whether to show the parameter descriptions. Defaults to ``True``. Setting this to ``False`` will revert to showing the :attr:`~.commands.Command.signature` instead."
-msgstr ""
+msgstr "パラメータの説明を表示するかどうか。デフォルトは ``True`` です。``False`` に設定すると、代わりに :attr:`~.commands.Command.signature` が表示されるようになります。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:65
 msgid "The command list's heading string used when the help command is invoked with a category name. Useful for i18n. Defaults to ``\"Commands:\"``"
@@ -3585,7 +3593,7 @@ msgstr "ヘルプコマンドがカテゴリ名で呼び出されたときに使
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:72
 msgid "The default argument description string used when the argument's :attr:`~.commands.Parameter.description` is ``None``. Useful for i18n. Defaults to ``\"No description given.\"``"
-msgstr ""
+msgstr "引数の :attr:`~.commands.Parameter.description` が ``None`` である場合に使用される、デフォルトの引数の説明文字列です。国際化対応に便利です。デフォルトは ``\"No description given.\"`` です。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand:81
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand:45
@@ -3616,7 +3624,7 @@ msgstr ":class:`str`: Helpコマンドの末尾の文字列を返します。主
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.get_command_signature:3
 msgid "Calls :meth:`~.HelpCommand.get_command_signature` if :attr:`show_parameter_descriptions` is ``False`` else returns a modified signature where the command parameters are not shown."
-msgstr ""
+msgstr ":attr:`show_parameter_descriptions` が ``False`` の場合に :meth:`~.HelpCommand.get_command_signature` を呼び出し、それ以外の場合はコマンドパラメータを表示しない修正したシグネチャを返します。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_indented_commands:1
 msgid "Indents a list of commands after the specified heading."
@@ -3644,15 +3652,15 @@ msgstr "インデント間の差分に使用する最大サイズです。指定
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_command_arguments:1
 msgid "Indents a list of command arguments after the :attr:`.arguments_heading`."
-msgstr ""
+msgstr "コマンドの引数のリストを :attr:`.arguments_heading` の後にインデントします。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_command_arguments:3
 msgid "The default implementation is the argument :attr:`~.commands.Parameter.name` indented by :attr:`indent` spaces, padded to ``max_size`` using :meth:`~HelpCommand.get_max_size` followed by the argument's :attr:`~.commands.Parameter.description` or :attr:`.default_argument_description` and then shortened to fit into the :attr:`width` and then :attr:`~.commands.Parameter.displayed_default` between () if one is present after that."
-msgstr ""
+msgstr "デフォルトの実装では、引数の :attr:`~.commands.Parameter.name` は :attr:`indent` の量のスペースでインデントされ、引数の :attr:`~.commands.Parameter.description` または :attr:`.default_argument_description` が後に続くよう :meth:`~HelpCommand.get_max_size` を用いて ``max_size`` にパディングされ、そして引数の :attr:`width` と :attr:`~.commands.Parameter.displayed_default` の間に () があれば、その後に入るように短縮されます。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_command_arguments:12
 msgid "The command to list the arguments for."
-msgstr ""
+msgstr "引数の一覧を表示するコマンド。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.send_pages:1
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand.send_pages:1
@@ -3665,14 +3673,14 @@ msgstr "コマンドとグループのインデントされていないブロッ
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_command_formatting:7
 msgid ":meth:`.add_command_arguments` is now called if :attr:`.show_parameter_descriptions` is ``True``."
-msgstr ""
+msgstr ":meth:`.add_command_arguments` は :attr:`.show_parameter_descriptions` が ``True`` であれば呼び出されるようになりました。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.DefaultHelpCommand.add_command_formatting:10
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.MinimalHelpCommand.add_command_formatting:7
 msgid "The command to format."
 msgstr "フォーマットするコマンド。"
 
-#: ../../ext/commands/api.rst:281
+#: ../../ext/commands/api.rst:293
 msgid "MinimalHelpCommand"
 msgstr "MinimalHelpCommand"
 
@@ -3770,7 +3778,7 @@ msgstr "フォーマットするエイリアスのリスト。"
 msgid "A utility function to format commands and groups."
 msgstr "コマンドとグループをフォーマットするユーティリティ関数。"
 
-#: ../../ext/commands/api.rst:290
+#: ../../ext/commands/api.rst:302
 msgid "Paginator"
 msgstr "Paginator"
 
@@ -3838,43 +3846,43 @@ msgstr "レンダリングされたページの一覧を返します。"
 msgid "List[:class:`str`]"
 msgstr "List[:class:`str`]"
 
-#: ../../ext/commands/api.rst:298
+#: ../../ext/commands/api.rst:310
 msgid "Enums"
 msgstr "列挙型"
 
-#: ../../ext/commands/api.rst:303
+#: ../../ext/commands/api.rst:315
 msgid "Specifies a type of bucket for, e.g. a cooldown."
 msgstr "クールダウンなどに使用するバケットの種類を指定します。"
 
-#: ../../ext/commands/api.rst:307
+#: ../../ext/commands/api.rst:319
 msgid "The default bucket operates on a global basis."
 msgstr "デフォルトのバケットはグローバル基準で動作します。"
 
-#: ../../ext/commands/api.rst:310
+#: ../../ext/commands/api.rst:322
 msgid "The user bucket operates on a per-user basis."
 msgstr "ユーザーバケットは、ユーザーごとに動作します。"
 
-#: ../../ext/commands/api.rst:313
+#: ../../ext/commands/api.rst:325
 msgid "The guild bucket operates on a per-guild basis."
 msgstr "ギルドバケットは、ギルドごとに動作します。"
 
-#: ../../ext/commands/api.rst:316
+#: ../../ext/commands/api.rst:328
 msgid "The channel bucket operates on a per-channel basis."
 msgstr "チャンネルバケットは、チャンネルごとに動作します。"
 
-#: ../../ext/commands/api.rst:319
+#: ../../ext/commands/api.rst:331
 msgid "The member bucket operates on a per-member basis."
 msgstr "メンバーバケットは、メンバーごとに動作します。"
 
-#: ../../ext/commands/api.rst:322
+#: ../../ext/commands/api.rst:334
 msgid "The category bucket operates on a per-category basis."
 msgstr "カテゴリバケットは、カテゴリごとに動作します。"
 
-#: ../../ext/commands/api.rst:325
+#: ../../ext/commands/api.rst:337
 msgid "The role bucket operates on a per-role basis."
 msgstr "ロールバケットは、ロールごとに動作します。"
 
-#: ../../ext/commands/api.rst:333
+#: ../../ext/commands/api.rst:345
 msgid "Checks"
 msgstr "Checks"
 
@@ -4099,8 +4107,8 @@ msgid "A decorator that adds a dynamic cooldown to a :class:`.Command`"
 msgstr ":class:`.Command` に動的なクールダウンを追加するデコレータ。"
 
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.dynamic_cooldown:3
-msgid "This differs from :func:`.cooldown` in that it takes a function that accepts a single parameter of type :class:`.discord.Message` and must return a :class:`~discord.app_commands.Cooldown` or ``None``. If ``None`` is returned then that cooldown is effectively bypassed."
-msgstr "これは唯一のパラメータに :class:`.discord.Message` を取り、:class:`~discord.app_commands.Cooldown` または ``None`` を返す関数を取るという点で :func:`.cooldown` と異なります。もし ``None`` を返せば、クールダウンは事実上回避されます。"
+msgid "This differs from :func:`.cooldown` in that it takes a function that accepts a single parameter of type :class:`.Context` and must return a :class:`~discord.app_commands.Cooldown` or ``None``. If ``None`` is returned then that cooldown is effectively bypassed."
+msgstr "これは唯一のパラメータに :class:`.Context` を取り、 :class:`~discord.app_commands.Cooldown` または ``None`` を返す関数を取るという点で :func:`.cooldown` と異なります。もし ``None`` を返せば、クールダウンは事実上回避されます。"
 
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.dynamic_cooldown:21
 msgid "A function that takes a message and returns a cooldown that will apply to this invocation or ``None`` if the cooldown should be bypassed."
@@ -4186,7 +4194,7 @@ msgstr "ハイブリッドコマンドで使用する場合は、アプリケー
 msgid "Raise :exc:`.NSFWChannelRequired` instead of generic :exc:`.CheckFailure`. DM channels will also now pass this check."
 msgstr "一般的な :exc:`.CheckFailure` の代わりに :exc:`NSFWChannelRequired` を発生させます。DMチャンネルもこのチェックを通過するようになります。"
 
-#: ../../ext/commands/api.rst:395
+#: ../../ext/commands/api.rst:407
 msgid "Context"
 msgstr "Context"
 
@@ -4730,7 +4738,7 @@ msgstr "``files`` リストの大きさが適切でない場合。"
 msgid "You specified both ``file`` and ``files``,     or you specified both ``embed`` and ``embeds``,     or the ``reference`` object is not a :class:`~discord.Message`,     :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`."
 msgstr "``file`` と ``files`` の両方が指定された場合、 ``embed`` と ``embeds`` の両方が指定された場合、または ``reference`` が :class:`~discord.Message` 、 :class:`~discord.MessageReference` 、 :class:`~discord.PartialMessage` でない場合。"
 
-#: ../../ext/commands/api.rst:410
+#: ../../ext/commands/api.rst:422
 msgid "Converters"
 msgstr "コンバーター"
 
@@ -4993,7 +5001,7 @@ msgid "Raise :exc:`.RoleNotFound` instead of generic :exc:`.BadArgument`"
 msgstr "一般的な :exc:`.BadArgument` の代わりに :exc:`.RoleNotFound` を発生させます。"
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.GameConverter:1
-msgid "Converts to :class:`~discord.Game`."
+msgid "Converts to a :class:`~discord.Game`."
 msgstr ":class:`~discord.Game` に変換します。"
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.ColourConverter:1
@@ -5074,7 +5082,7 @@ msgid "Raise :exc:`.PartialEmojiConversionFailure` instead of generic :exc:`.Bad
 msgstr "一般的な :exc:`.BadArgument` の代わりに :exc:`.PartialEmojiConversionFailure` を発生させます。"
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.ThreadConverter:1
-msgid "Coverts to a :class:`~discord.Thread`."
+msgid "Converts to a :class:`~discord.Thread`."
 msgstr ":class:`~discord.Thread` に変換します。"
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.ThreadConverter:3
@@ -5209,7 +5217,7 @@ msgstr "コンバータが変換に失敗しました。"
 msgid "The resulting conversion."
 msgstr "変換の結果"
 
-#: ../../ext/commands/api.rst:488
+#: ../../ext/commands/api.rst:550
 msgid "Flag Converter"
 msgstr "Flag Converter"
 
@@ -5343,7 +5351,7 @@ msgstr "複数の値が与えられた場合に前の値を上書きするかど
 msgid "The converter to use for this flag. This replaces the annotation at runtime which is transparent to type checkers."
 msgstr "このフラグに使用するコンバーター。実行時にアノテーションを置き換えます。これは型チェッカに対して透過的です。"
 
-#: ../../ext/commands/api.rst:500
+#: ../../ext/commands/api.rst:566
 msgid "Defaults"
 msgstr "既定値"
 
@@ -5386,7 +5394,7 @@ msgstr "このパラメータに使用すべきコンバーター。"
 #: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.Parameter.description:1
 #: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.parameter:20
 msgid "The description of this parameter."
-msgstr ""
+msgstr "このパラメータの説明。"
 
 #: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.Parameter.displayed_default:1
 msgid "The displayed default in :class:`Command.signature`."
@@ -5422,25 +5430,25 @@ msgstr ":attr:`Command.signature` で表示される既定値。"
 
 #: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.parameter:1
 msgid "param(\\*, converter=..., default=..., description=..., displayed_default=...)"
-msgstr ""
+msgstr "param(\\*, converter=..., default=..., description=..., displayed_default=...)"
 
 #: ../../../discord/ext/commands/parameters.py:docstring of discord.ext.commands.parameters.parameter:3
 msgid "An alias for :func:`parameter`."
 msgstr ":func:`parameter` のエイリアス。"
 
-#: ../../ext/commands/api.rst:511
+#: ../../ext/commands/api.rst:579
 msgid "A default :class:`Parameter` which returns the :attr:`~.Context.author` for this context."
 msgstr "このコンテキストの :attr:`~.Context.author` を返すデフォルト :class:`Parameter` 。"
 
-#: ../../ext/commands/api.rst:517
+#: ../../ext/commands/api.rst:585
 msgid "A default :class:`Parameter` which returns the :attr:`~.Context.channel` for this context."
 msgstr "このコンテキストの :attr:`~.Context.channel` を返すデフォルト :class:`Parameter` 。"
 
-#: ../../ext/commands/api.rst:523
+#: ../../ext/commands/api.rst:591
 msgid "A default :class:`Parameter` which returns the :attr:`~.Context.guild` for this context. This will never be ``None``. If the command is called in a DM context then :exc:`~discord.ext.commands.NoPrivateMessage` is raised to the error handlers."
 msgstr "このコンテキストの :attr:`~.Context.guild` を返すデフォルト :class:`Parameter` 。これは ``None`` にはなりません。コマンドがDM内で呼び出された場合は :exc:`~discord.ext.commands.NoPrivateMessage` がエラーハンドラに送出されます。"
 
-#: ../../ext/commands/api.rst:530
+#: ../../ext/commands/api.rst:598
 msgid "Exceptions"
 msgstr "例外"
 
@@ -6092,251 +6100,251 @@ msgstr ":class:`~discord.ext.commands.HybridCommand` が :exc:`CommandError` 相
 msgid ":exc:`~discord.app_commands.AppCommandError`"
 msgstr ":exc:`~discord.app_commands.AppCommandError`"
 
-#: ../../ext/commands/api.rst:711
+#: ../../ext/commands/api.rst:779
 msgid "Exception Hierarchy"
 msgstr "例外の階層構造"
 
-#: ../../ext/commands/api.rst:772
+#: ../../ext/commands/api.rst:840
 msgid ":exc:`~.DiscordException`"
 msgstr ":exc:`~.DiscordException`"
 
-#: ../../ext/commands/api.rst:766
+#: ../../ext/commands/api.rst:834
 msgid ":exc:`~.commands.CommandError`"
 msgstr ":exc:`~.commands.CommandError`"
 
-#: ../../ext/commands/api.rst:717
+#: ../../ext/commands/api.rst:785
 msgid ":exc:`~.commands.ConversionError`"
 msgstr ":exc:`~.commands.ConversionError`"
 
-#: ../../ext/commands/api.rst:748
+#: ../../ext/commands/api.rst:816
 msgid ":exc:`~.commands.UserInputError`"
 msgstr ":exc:`~.commands.UserInputError`"
 
-#: ../../ext/commands/api.rst:719
+#: ../../ext/commands/api.rst:787
 msgid ":exc:`~.commands.MissingRequiredArgument`"
 msgstr ":exc:`~.commands.MissingRequiredArgument`"
 
-#: ../../ext/commands/api.rst:720
+#: ../../ext/commands/api.rst:788
 msgid ":exc:`~.commands.MissingRequiredAttachment`"
 msgstr ":exc:`~.commands.MissingRequiredAttachment`"
 
-#: ../../ext/commands/api.rst:721
+#: ../../ext/commands/api.rst:789
 msgid ":exc:`~.commands.TooManyArguments`"
 msgstr ":exc:`~.commands.TooManyArguments`"
 
-#: ../../ext/commands/api.rst:742
+#: ../../ext/commands/api.rst:810
 msgid ":exc:`~.commands.BadArgument`"
 msgstr ":exc:`~.commands.BadArgument`"
 
-#: ../../ext/commands/api.rst:723
+#: ../../ext/commands/api.rst:791
 msgid ":exc:`~.commands.MessageNotFound`"
 msgstr ":exc:`~.commands.MessageNotFound`"
 
-#: ../../ext/commands/api.rst:724
+#: ../../ext/commands/api.rst:792
 msgid ":exc:`~.commands.MemberNotFound`"
 msgstr ":exc:`~.commands.MemberNotFound`"
 
-#: ../../ext/commands/api.rst:725
+#: ../../ext/commands/api.rst:793
 msgid ":exc:`~.commands.GuildNotFound`"
 msgstr ":exc:`~.commands.GuildNotFound`"
 
-#: ../../ext/commands/api.rst:726
+#: ../../ext/commands/api.rst:794
 msgid ":exc:`~.commands.UserNotFound`"
 msgstr ":exc:`~.commands.UserNotFound`"
 
-#: ../../ext/commands/api.rst:727
+#: ../../ext/commands/api.rst:795
 msgid ":exc:`~.commands.ChannelNotFound`"
 msgstr ":exc:`~.commands.ChannelNotFound`"
 
-#: ../../ext/commands/api.rst:728
+#: ../../ext/commands/api.rst:796
 msgid ":exc:`~.commands.ChannelNotReadable`"
 msgstr ":exc:`~.commands.ChannelNotReadable`"
 
-#: ../../ext/commands/api.rst:729
+#: ../../ext/commands/api.rst:797
 msgid ":exc:`~.commands.BadColourArgument`"
 msgstr ":exc:`~.commands.BadColourArgument`"
 
-#: ../../ext/commands/api.rst:730
+#: ../../ext/commands/api.rst:798
 msgid ":exc:`~.commands.RoleNotFound`"
 msgstr ":exc:`~.commands.RoleNotFound`"
 
-#: ../../ext/commands/api.rst:731
+#: ../../ext/commands/api.rst:799
 msgid ":exc:`~.commands.BadInviteArgument`"
 msgstr ":exc:`~.commands.BadInviteArgument`"
 
-#: ../../ext/commands/api.rst:732
+#: ../../ext/commands/api.rst:800
 msgid ":exc:`~.commands.EmojiNotFound`"
 msgstr ":exc:`~.commands.EmojiNotFound`"
 
-#: ../../ext/commands/api.rst:733
+#: ../../ext/commands/api.rst:801
 msgid ":exc:`~.commands.GuildStickerNotFound`"
 msgstr ":exc:`~.commands.GuildStickerNotFound`"
 
-#: ../../ext/commands/api.rst:734
+#: ../../ext/commands/api.rst:802
 msgid ":exc:`~.commands.ScheduledEventNotFound`"
 msgstr ":exc:`~.commands.ScheduledEventNotFound`"
 
-#: ../../ext/commands/api.rst:735
+#: ../../ext/commands/api.rst:803
 msgid ":exc:`~.commands.PartialEmojiConversionFailure`"
 msgstr ":exc:`~.commands.PartialEmojiConversionFailure`"
 
-#: ../../ext/commands/api.rst:736
+#: ../../ext/commands/api.rst:804
 msgid ":exc:`~.commands.BadBoolArgument`"
 msgstr ":exc:`~.commands.BadBoolArgument`"
 
-#: ../../ext/commands/api.rst:737
+#: ../../ext/commands/api.rst:805
 msgid ":exc:`~.commands.RangeError`"
 msgstr ":exc:`~.commands.RangeError`"
 
-#: ../../ext/commands/api.rst:738
+#: ../../ext/commands/api.rst:806
 msgid ":exc:`~.commands.ThreadNotFound`"
 msgstr ":exc:`~.commands.ThreadNotFound`"
 
-#: ../../ext/commands/api.rst:742
+#: ../../ext/commands/api.rst:810
 msgid ":exc:`~.commands.FlagError`"
 msgstr ":exc:`~.commands.FlagError`"
 
-#: ../../ext/commands/api.rst:740
+#: ../../ext/commands/api.rst:808
 msgid ":exc:`~.commands.BadFlagArgument`"
 msgstr ":exc:`~.commands.BadFlagArgument`"
 
-#: ../../ext/commands/api.rst:741
+#: ../../ext/commands/api.rst:809
 msgid ":exc:`~.commands.MissingFlagArgument`"
 msgstr ":exc:`~.commands.MissingFlagArgument`"
 
-#: ../../ext/commands/api.rst:742
+#: ../../ext/commands/api.rst:810
 msgid ":exc:`~.commands.TooManyFlags`"
 msgstr ":exc:`~.commands.TooManyFlags`"
 
-#: ../../ext/commands/api.rst:743
+#: ../../ext/commands/api.rst:811
 msgid ":exc:`~.commands.MissingRequiredFlag`"
 msgstr ":exc:`~.commands.MissingRequiredFlag`"
 
-#: ../../ext/commands/api.rst:744
+#: ../../ext/commands/api.rst:812
 msgid ":exc:`~.commands.BadUnionArgument`"
 msgstr ":exc:`~.commands.BadUnionArgument`"
 
-#: ../../ext/commands/api.rst:745
+#: ../../ext/commands/api.rst:813
 msgid ":exc:`~.commands.BadLiteralArgument`"
 msgstr ":exc:`~.commands.BadLiteralArgument`"
 
-#: ../../ext/commands/api.rst:748
+#: ../../ext/commands/api.rst:816
 msgid ":exc:`~.commands.ArgumentParsingError`"
 msgstr ":exc:`~.commands.ArgumentParsingError`"
 
-#: ../../ext/commands/api.rst:747
+#: ../../ext/commands/api.rst:815
 msgid ":exc:`~.commands.UnexpectedQuoteError`"
 msgstr ":exc:`~.commands.UnexpectedQuoteError`"
 
-#: ../../ext/commands/api.rst:748
+#: ../../ext/commands/api.rst:816
 msgid ":exc:`~.commands.InvalidEndOfQuotedStringError`"
 msgstr ":exc:`~.commands.InvalidEndOfQuotedStringError`"
 
-#: ../../ext/commands/api.rst:749
+#: ../../ext/commands/api.rst:817
 msgid ":exc:`~.commands.ExpectedClosingQuoteError`"
 msgstr ":exc:`~.commands.ExpectedClosingQuoteError`"
 
-#: ../../ext/commands/api.rst:750
+#: ../../ext/commands/api.rst:818
 msgid ":exc:`~.commands.CommandNotFound`"
 msgstr ":exc:`~.commands.CommandNotFound`"
 
-#: ../../ext/commands/api.rst:761
+#: ../../ext/commands/api.rst:829
 msgid ":exc:`~.commands.CheckFailure`"
 msgstr ":exc:`~.commands.CheckFailure`"
 
-#: ../../ext/commands/api.rst:752
+#: ../../ext/commands/api.rst:820
 msgid ":exc:`~.commands.CheckAnyFailure`"
 msgstr ":exc:`~.commands.CheckAnyFailure`"
 
-#: ../../ext/commands/api.rst:753
+#: ../../ext/commands/api.rst:821
 msgid ":exc:`~.commands.PrivateMessageOnly`"
 msgstr ":exc:`~.commands.PrivateMessageOnly`"
 
-#: ../../ext/commands/api.rst:754
+#: ../../ext/commands/api.rst:822
 msgid ":exc:`~.commands.NoPrivateMessage`"
 msgstr ":exc:`~.commands.NoPrivateMessage`"
 
-#: ../../ext/commands/api.rst:755
+#: ../../ext/commands/api.rst:823
 msgid ":exc:`~.commands.NotOwner`"
 msgstr ":exc:`~.commands.NotOwner`"
 
-#: ../../ext/commands/api.rst:756
+#: ../../ext/commands/api.rst:824
 msgid ":exc:`~.commands.MissingPermissions`"
 msgstr ":exc:`~.commands.MissingPermissions`"
 
-#: ../../ext/commands/api.rst:757
+#: ../../ext/commands/api.rst:825
 msgid ":exc:`~.commands.BotMissingPermissions`"
 msgstr ":exc:`~.commands.BotMissingPermissions`"
 
-#: ../../ext/commands/api.rst:758
+#: ../../ext/commands/api.rst:826
 msgid ":exc:`~.commands.MissingRole`"
 msgstr ":exc:`~.commands.MissingRole`"
 
-#: ../../ext/commands/api.rst:759
+#: ../../ext/commands/api.rst:827
 msgid ":exc:`~.commands.BotMissingRole`"
 msgstr ":exc:`~.commands.BotMissingRole`"
 
-#: ../../ext/commands/api.rst:760
+#: ../../ext/commands/api.rst:828
 msgid ":exc:`~.commands.MissingAnyRole`"
 msgstr ":exc:`~.commands.MissingAnyRole`"
 
-#: ../../ext/commands/api.rst:761
+#: ../../ext/commands/api.rst:829
 msgid ":exc:`~.commands.BotMissingAnyRole`"
 msgstr ":exc:`~.commands.BotMissingAnyRole`"
 
-#: ../../ext/commands/api.rst:762
+#: ../../ext/commands/api.rst:830
 msgid ":exc:`~.commands.NSFWChannelRequired`"
 msgstr ":exc:`~.commands.NSFWChannelRequired`"
 
-#: ../../ext/commands/api.rst:763
+#: ../../ext/commands/api.rst:831
 msgid ":exc:`~.commands.DisabledCommand`"
 msgstr ":exc:`~.commands.DisabledCommand`"
 
-#: ../../ext/commands/api.rst:764
+#: ../../ext/commands/api.rst:832
 msgid ":exc:`~.commands.CommandInvokeError`"
 msgstr ":exc:`~.commands.CommandInvokeError`"
 
-#: ../../ext/commands/api.rst:765
+#: ../../ext/commands/api.rst:833
 msgid ":exc:`~.commands.CommandOnCooldown`"
 msgstr ":exc:`~.commands.CommandOnCooldown`"
 
-#: ../../ext/commands/api.rst:766
+#: ../../ext/commands/api.rst:834
 msgid ":exc:`~.commands.MaxConcurrencyReached`"
 msgstr ":exc:`~.commands.MaxConcurrencyReached`"
 
-#: ../../ext/commands/api.rst:767
+#: ../../ext/commands/api.rst:835
 msgid ":exc:`~.commands.HybridCommandError`"
 msgstr ":exc:`~.commands.HybridCommandError`"
 
-#: ../../ext/commands/api.rst:772
+#: ../../ext/commands/api.rst:840
 msgid ":exc:`~.commands.ExtensionError`"
 msgstr ":exc:`~.commands.ExtensionError`"
 
-#: ../../ext/commands/api.rst:769
+#: ../../ext/commands/api.rst:837
 msgid ":exc:`~.commands.ExtensionAlreadyLoaded`"
 msgstr ":exc:`~.commands.ExtensionAlreadyLoaded`"
 
-#: ../../ext/commands/api.rst:770
+#: ../../ext/commands/api.rst:838
 msgid ":exc:`~.commands.ExtensionNotLoaded`"
 msgstr ":exc:`~.commands.ExtensionNotLoaded`"
 
-#: ../../ext/commands/api.rst:771
+#: ../../ext/commands/api.rst:839
 msgid ":exc:`~.commands.NoEntryPointError`"
 msgstr ":exc:`~.commands.NoEntryPointError`"
 
-#: ../../ext/commands/api.rst:772
+#: ../../ext/commands/api.rst:840
 msgid ":exc:`~.commands.ExtensionFailed`"
 msgstr ":exc:`~.commands.ExtensionFailed`"
 
-#: ../../ext/commands/api.rst:773
+#: ../../ext/commands/api.rst:841
 msgid ":exc:`~.commands.ExtensionNotFound`"
 msgstr ":exc:`~.commands.ExtensionNotFound`"
 
-#: ../../ext/commands/api.rst:774
+#: ../../ext/commands/api.rst:842
 msgid ":exc:`~.ClientException`"
 msgstr ":exc:`~.ClientException`"
 
-#: ../../ext/commands/api.rst:775
+#: ../../ext/commands/api.rst:843
 msgid ":exc:`~.commands.CommandRegistrationError`"
 msgstr ":exc:`~.commands.CommandRegistrationError`"
 
