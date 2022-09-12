@@ -706,6 +706,11 @@ class HybridGroup(Group[CogT, P, T]):
             # This is a very lazy copy because the CogMeta will properly copy it
             # with bindings and all later
             copy.app_command._children = self.app_command._children.copy()
+
+        # Ensure the copy's fallback wraps the copy
+        if copy._fallback_command and self._fallback_command:
+            copy._fallback_command.wrapped = copy
+
         return copy
 
     def autocomplete(
