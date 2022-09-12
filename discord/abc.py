@@ -1513,7 +1513,7 @@ class Messageable:
             reference_dict = MISSING
 
         if view and not hasattr(view, '__discord_ui_view__'):
-            raise TypeError(f'view parameter must be View not {view.__class__!r}')
+            raise TypeError(f'view parameter must be View not {view.__class__.__name__}')
 
         if suppress_embeds:
             from .message import MessageFlags  # circular import

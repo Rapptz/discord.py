@@ -346,7 +346,7 @@ class CommandTree(Generic[ClientT]):
                 self._context_menus.update(current)
             return
         elif not isinstance(command, (Command, Group)):
-            raise TypeError(f'Expected an application command, received {command.__class__!r} instead')
+            raise TypeError(f'Expected an application command, received {command.__class__.__name__} instead')
 
         # todo: validate application command groups having children (required)
 
@@ -1002,7 +1002,7 @@ class CommandTree(Generic[ClientT]):
         """
 
         if translator is not None and not isinstance(translator, Translator):
-            raise TypeError(f'expected None or Translator instance, received {translator.__class__!r} instead')
+            raise TypeError(f'expected None or Translator instance, received {translator.__class__.__name__} instead')
 
         old_translator = self._state._translator
         if old_translator is not None:

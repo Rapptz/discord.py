@@ -490,7 +490,7 @@ class Cog(metaclass=CogMeta):
         """
 
         if name is not MISSING and not isinstance(name, str):
-            raise TypeError(f'Cog.listener expected str but received {name.__class__.__name__!r} instead.')
+            raise TypeError(f'Cog.listener expected str but received {name.__class__.__name__} instead.')
 
         def decorator(func: FuncT) -> FuncT:
             actual = func

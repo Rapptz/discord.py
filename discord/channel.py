@@ -2023,7 +2023,7 @@ class ForumTag(Hashable):
         elif isinstance(emoji, str):
             self.emoji = PartialEmoji.from_str(emoji)
         else:
-            raise TypeError(f'emoji must be a Emoji, PartialEmoji, or str not {emoji.__class__!r}')
+            raise TypeError(f'emoji must be a Emoji, PartialEmoji, or str not {emoji.__class__.__name__}')
 
     @classmethod
     def from_data(cls, *, state: ConnectionState, data: ForumTagPayload) -> Self:
@@ -2544,7 +2544,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             sticker_ids: SnowflakeList = [s.id for s in stickers]
 
         if view and not hasattr(view, '__discord_ui_view__'):
-            raise TypeError(f'view parameter must be View not {view.__class__!r}')
+            raise TypeError(f'view parameter must be View not {view.__class__.__name__}')
 
         if suppress_embeds:
             from .message import MessageFlags  # circular import

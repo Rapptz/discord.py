@@ -1850,7 +1850,7 @@ class Group:
         """
 
         if not isinstance(command, (Command, Group)):
-            raise TypeError(f'expected Command or Group not {command.__class__!r}')
+            raise TypeError(f'expected Command or Group not {command.__class__.__name__}')
 
         if isinstance(command, Group) and self.parent is not None:
             # In a tree like so:

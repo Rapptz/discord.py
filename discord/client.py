@@ -574,7 +574,7 @@ class Client:
             await self._async_setup_hook()
 
         if not isinstance(token, str):
-            raise TypeError(f'expected token to be a str, received {token.__class__!r} instead')
+            raise TypeError(f'expected token to be a str, received {token.__class__.__name__} instead')
         token = token.strip()
 
         data = await self.http.static_login(token)
@@ -888,7 +888,7 @@ class Client:
         if value is None or isinstance(value, AllowedMentions):
             self._connection.allowed_mentions = value
         else:
-            raise TypeError(f'allowed_mentions must be AllowedMentions not {value.__class__!r}')
+            raise TypeError(f'allowed_mentions must be AllowedMentions not {value.__class__.__name__}')
 
     @property
     def intents(self) -> Intents:
@@ -1964,7 +1964,7 @@ class Client:
         """
 
         if not isinstance(view, View):
-            raise TypeError(f'expected an instance of View not {view.__class__!r}')
+            raise TypeError(f'expected an instance of View not {view.__class__.__name__}')
 
         if not view.is_persistent():
             raise ValueError('View is not persistent. Items need to have a custom_id set and View must have no timeout')

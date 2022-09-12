@@ -383,7 +383,7 @@ class SelectOption:
             elif isinstance(value, _EmojiTag):
                 self._emoji = value._to_partial()
             else:
-                raise TypeError(f'expected str, Emoji, or PartialEmoji, received {value.__class__} instead')
+                raise TypeError(f'expected str, Emoji, or PartialEmoji, received {value.__class__.__name__} instead')
         else:
             self._emoji = None
 

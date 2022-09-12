@@ -976,7 +976,7 @@ class Member(discord.abc.Messageable, _UserTag):
         elif isinstance(until, datetime.datetime):
             timed_out_until = until
         else:
-            raise TypeError(f'expected None, datetime.datetime, or datetime.timedelta not {until.__class__!r}')
+            raise TypeError(f'expected None, datetime.datetime, or datetime.timedelta not {until.__class__.__name__}')
 
         await self.edit(timed_out_until=timed_out_until, reason=reason)
 
