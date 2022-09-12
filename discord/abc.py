@@ -582,11 +582,14 @@ class GuildChannel:
     def notification_settings(self) -> ChannelSettings:
         """:class:`~discord.ChannelSettings`: Returns the notification settings for this channel.
 
+        If not found, an instance is created with defaults applied. This follows Discord behaviour.
+
         .. versionadded:: 2.0
         """
         guild = self.guild
-        # guild.notification_settings will always be present at this point
-        return guild.notification_settings._channel_overrides.get(self.id) or ChannelSettings(guild.id, state=self._state)  # type: ignore
+        return guild.notification_settings._channel_overrides.get(
+            self.id, self._state.default_channel_settings(guild.id, self.id)
+        )
 
     @property
     def changed_roles(self) -> List[Role]:

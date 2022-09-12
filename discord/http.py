@@ -2379,6 +2379,12 @@ class HTTPClient:
     def edit_tracking(self, payload):
         return self.request(Route('POST', '/users/@me/consent'), json=payload)
 
+    def get_email_settings(self):
+        return self.request(Route('GET', '/users/@me/email-settings'))
+
+    def edit_email_settings(self, **payload):
+        return self.request(Route('PATCH', '/users/@me/email-settings'), json={'settings': payload})
+
     def mobile_report(  # Report v1
         self, guild_id: Snowflake, channel_id: Snowflake, message_id: Snowflake, reason: str
     ):  # TODO: return type

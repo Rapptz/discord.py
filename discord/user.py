@@ -856,6 +856,16 @@ class ClientUser(BaseUser):
             restricted_guilds = [str(x.id) for x in restricted_guilds]
             payload['restricted_guilds'] = restricted_guilds
 
+        activity_restricted_guilds = kwargs.pop('activity_restricted_guilds', None)
+        if activity_restricted_guilds:
+            activity_restricted_guilds = [str(x.id) for x in activity_restricted_guilds]
+            payload['activity_restricted_guild_ids'] = activity_restricted_guilds
+
+        activity_joining_restricted_guilds = kwargs.pop('activity_joining_restricted_guilds', None)
+        if activity_joining_restricted_guilds:
+            activity_joining_restricted_guilds = [str(x.id) for x in activity_joining_restricted_guilds]
+            payload['activity_joining_restricted_guild_ids'] = activity_joining_restricted_guilds
+
         status = kwargs.pop('status', None)
         if status:
             payload['status'] = status.value

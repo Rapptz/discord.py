@@ -71,8 +71,7 @@ from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
-from .settings import UserSettings, GuildSettings
-from .tracking import Tracking
+from .settings import UserSettings, GuildSettings, ChannelSettings, TrackingSettings
 from .interactions import Interaction
 from .permissions import Permissions, PermissionOverwrite
 from .member import _ClientStatus
@@ -457,7 +456,8 @@ class ConnectionState:
         self.user: Optional[ClientUser] = None
         self._users: weakref.WeakValueDictionary[int, User] = weakref.WeakValueDictionary()
         self.settings: Optional[UserSettings] = None
-        self.consents: Optional[Tracking] = None
+        self.guild_settings: Dict[Optional[int], GuildSettings] = {}
+        self.consents: Optional[TrackingSettings] = None
         self.connections: Dict[str, Connection] = {}
         self.analytics_token: Optional[str] = None
         self.preferred_regions: List[str] = []
@@ -817,7 +817,6 @@ class ConnectionState:
         self.clear()
 
         data = self._ready_data
-        guild_settings = data.get('user_guild_settings', {}).get('entries', [])
 
         # Temp user parsing
         temp_users: Dict[int, UserPayload] = {int(data['user']['id']): data['user']}
@@ -833,11 +832,6 @@ class ConnectionState:
             data.get('merged_members', []),
             extra_data['merged_presences'].get('guilds', []),
         ):
-            guild_data['settings'] = utils.find(  # type: ignore # This key does not actually exist in the payload
-                lambda i: i['guild_id'] == guild_data['id'],
-                guild_settings,
-            ) or {'guild_id': guild_data['id']}
-
             for presence in merged_presences:
                 presence['user'] = {'id': presence['user_id']}  # type: ignore # :(
 
@@ -892,7 +886,11 @@ class ConnectionState:
         self.analytics_token = data.get('analytics_token')
         self.preferred_regions = data.get('geo_ordered_rtc_regions', ['us-central'])
         self.settings = UserSettings(data=data.get('user_settings', {}), state=self)
-        self.consents = Tracking(data=data.get('consents', {}), state=self)
+        self.guild_settings = {
+            utils._get_as_snowflake(entry, 'guild_id'): GuildSettings(data=entry, state=self)
+            for entry in data.get('user_guild_settings', {}).get('entries', [])
+        }
+        self.consents = TrackingSettings(data=data.get('consents', {}), state=self)
         self.country_code = data.get('country_code', 'US')
         self.session_type = data.get('session_type', 'normal')
         self.connections = {c['id']: Connection(state=self, data=c) for c in data.get('connected_accounts', [])}
@@ -1079,13 +1077,9 @@ class ConnectionState:
         self.dispatch('internal_settings_update', old_settings, new_settings)
 
     def parse_user_guild_settings_update(self, data) -> None:
-        guild_id = int(data['guild_id'])
-        guild = self._get_guild(guild_id)
-        if guild is None:
-            _log.debug('USER_GUILD_SETTINGS_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
-            return
+        guild_id = utils._get_as_snowflake(data, 'guild_id')
 
-        settings = guild.notification_settings
+        settings = self.guild_settings.get(guild_id)
         if settings is not None:
             old_settings = copy.copy(settings)
             settings._update(data)
@@ -2316,3 +2310,9 @@ class ConnectionState:
 
     def create_interaction_application(self, data: dict) -> InteractionApplication:
         return InteractionApplication(state=self, data=data)
+
+    def default_guild_settings(self, guild_id: Optional[int]) -> GuildSettings:
+        return GuildSettings(data={'guild_id': guild_id}, state=self)
+
+    def default_channel_settings(self, guild_id: Optional[int], channel_id: int) -> ChannelSettings:
+        return ChannelSettings(guild_id, data={'channel_id': channel_id}, state=self)

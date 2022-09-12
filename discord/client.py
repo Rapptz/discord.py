@@ -88,6 +88,7 @@ if TYPE_CHECKING:
     from .message import Message
     from .member import Member
     from .voice_client import VoiceProtocol
+    from .settings import GuildSettings
     from .types.snowflake import Snowflake as _Snowflake
 
 # fmt: off
@@ -755,6 +756,18 @@ class Client:
     def voice_client(self) -> Optional[VoiceProtocol]:
         """Optional[:class:`.VoiceProtocol`]: Returns the :class:`.VoiceProtocol` associated with private calls, if any."""
         return self._connection._get_voice_client(self._connection.self_id)
+
+    @property
+    def notification_settings(self) -> GuildSettings:
+        """:class:`GuildSettings`: Returns the notification settings for private channels.
+
+        If not found, an instance is created with defaults applied. This follows Discord behaviour.
+
+        .. versionadded:: 2.0
+        """
+        # The private channel pseudo-guild settings have a guild ID of null
+        state = self._connection
+        return state.guild_settings.get(None, state.default_guild_settings(None))
 
     @property
     def initial_activity(self) -> Optional[ActivityTypes]:

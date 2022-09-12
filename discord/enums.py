@@ -41,6 +41,7 @@ __all__ = (
     'UserFlags',
     'ActivityType',
     'NotificationLevel',
+    'HighlightLevel',
     'TeamMembershipState',
     'WebhookType',
     'ExpireBehaviour',
@@ -384,6 +385,12 @@ class NotificationLevel(Enum, comparable=True):
 
     def __int__(self):
         return self.value
+
+
+class HighlightLevel(Enum):
+    default = 0
+    disabled = 1
+    enabled = 2
 
 
 class AuditLogActionCategory(Enum):

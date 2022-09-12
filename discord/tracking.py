@@ -28,7 +28,7 @@ from base64 import b64encode
 import json
 from random import choice
 
-from typing import Dict, overload, Optional, TYPE_CHECKING
+from typing import Dict, Optional, TYPE_CHECKING
 
 from .utils import MISSING
 
@@ -37,12 +37,12 @@ if TYPE_CHECKING:
 
     from .enums import ChannelType
     from .types.snowflake import Snowflake
-    from .state import ConnectionState
 
+# fmt: off
 __all__ = (
     'ContextProperties',
-    'Tracking',
 )
+# fmt: on
 
 
 class ContextProperties:  # Thank you Discord-S.C.U.M
@@ -281,60 +281,3 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
 
     def __hash__(self) -> int:
         return hash(self.value)
-
-
-class Tracking:
-    """Represents your Discord tracking settings.
-
-    Attributes
-    ----------
-    personalization: :class:`bool`
-        Whether you have consented to your data being used for personalization.
-    usage_statistics: :class:`bool`
-        Whether you have consented to your data being used for usage statistics.
-    """
-
-    __slots__ = ('_state', 'personalization', 'usage_statistics')
-
-    def __init__(self, *, data: Dict[str, Dict[str, bool]], state: ConnectionState) -> None:
-        self._state = state
-        self._update(data)
-
-    def __bool__(self) -> bool:
-        return any({self.personalization, self.usage_statistics})
-
-    def _update(self, data: Dict[str, Dict[str, bool]]):
-        self.personalization = data.get('personalization', {}).get('consented', False)
-        self.usage_statistics = data.get('usage_statistics', {}).get('consented', False)
-
-    @overload
-    async def edit(self) -> None:
-        ...
-
-    @overload
-    async def edit(
-        self,
-        *,
-        personalization: bool = ...,
-        usage_statistics: bool = ...,
-    ) -> None:
-        ...
-
-    async def edit(self, **kwargs) -> None:
-        """|coro|
-
-        Edits your tracking settings.
-
-        Parameters
-        ----------
-        personalization: :class:`bool`
-            Whether you have consented to your data being used for personalization.
-        usage_statistics: :class:`bool`
-            Whether you have consented to your data being used for usage statistics.
-        """
-        payload = {
-            'grant': [k for k, v in kwargs.items() if v is True],
-            'revoke': [k for k, v in kwargs.items() if v is False],
-        }
-        data = await self._state.http.edit_tracking(payload)
-        self._update(data)

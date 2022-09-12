@@ -1623,6 +1623,24 @@ of :class:`enum.Enum`.
 
         Members receive notifications for messages they are mentioned in.
 
+
+.. class:: HighlightLevel
+
+    Specifies whether a :class:`Guild` has highlights included in notifications.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: default
+
+        The highlight level is set to Discord default.
+        This seems to always be enabled, which makes the purpose of this enum unclear.
+    .. attribute:: disabled
+
+        Members do not receive additional notifications for highlights.
+    .. attribute:: enabled
+
+        Members receive additional notifications for highlights.
+
 .. class:: ContentFilter
 
     Specifies a :class:`Guild`\'s explicit content filter, which is the machine
@@ -4303,9 +4321,14 @@ Settings
 .. autoclass:: ChannelSettings()
     :members:
 
-.. attributetable:: Tracking
+.. attributetable:: TrackingSettings
 
-.. autoclass:: Tracking()
+.. autoclass:: TrackingSettings()
+    :members:
+
+.. attributetable:: EmailSettings
+
+.. autoclass:: EmailSettings()
     :members:
 
 .. attributetable:: GuildFolder

@@ -24,12 +24,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, overload
 
 from .activity import create_settings_activity
 from .enums import (
     FriendFlags,
+    HighlightLevel,
     Locale,
     NotificationLevel,
     Status,
@@ -39,19 +40,22 @@ from .enums import (
     try_enum,
 )
 from .guild_folder import GuildFolder
-from .utils import MISSING, parse_time, utcnow
+from .object import Object
+from .utils import MISSING, _get_as_snowflake, parse_time, utcnow, find
 
 if TYPE_CHECKING:
-    from .abc import GuildChannel
+    from .abc import GuildChannel, PrivateChannel
     from .activity import CustomActivity
     from .guild import Guild
     from .state import ConnectionState
-    from .tracking import Tracking
+    from .user import ClientUser
 
 __all__ = (
     'ChannelSettings',
     'GuildSettings',
     'UserSettings',
+    'TrackingSettings',
+    'EmailSettings',
     'MuteConfig',
 )
 
@@ -105,9 +109,13 @@ class UserSettings:
     show_current_game: :class:`bool`
         Whether or not to display the game that you are currently playing.
     stream_notifications_enabled: :class:`bool`
-        Unknown.
+        Whether stream notifications for friends will be received.
     timezone_offset: :class:`int`
         The timezone offset to use.
+    view_nsfw_commands: :class:`bool`
+        Whether or not to show NSFW application commands.
+
+        .. versionadded:: 2.0
     view_nsfw_guilds: :class:`bool`
         Whether or not to show NSFW guilds on iOS.
     """
@@ -133,6 +141,7 @@ class UserSettings:
         show_current_game: bool
         stream_notifications_enabled: bool
         timezone_offset: int
+        view_nsfw_commands: bool
         view_nsfw_guilds: bool
 
     def __init__(self, *, data, state: ConnectionState) -> None:
@@ -142,8 +151,8 @@ class UserSettings:
     def __repr__(self) -> str:
         return '<Settings>'
 
-    def _get_guild(self, id: int) -> Optional[Guild]:
-        return self._state._get_guild(int(id))
+    def _get_guild(self, id: int) -> Guild:
+        return self._state._get_guild(int(id)) or Object(id=int(id))  # type: ignore # Lying for better developer UX
 
     def _update(self, data: Dict[str, Any]) -> None:
         RAW_VALUES = {
@@ -167,6 +176,7 @@ class UserSettings:
             'show_current_game',
             'stream_notifications_enabled',
             'timezone_offset',
+            'view_nsfw_commands',
             'view_nsfw_guilds',
         }
 
@@ -186,6 +196,14 @@ class UserSettings:
 
         Parameters
         ----------
+        activity_restricted_guilds: List[:class:`abc.Snowflake`]
+            A list of guilds that your current activity will not be shown in.
+
+            .. versionadded:: 2.0
+        activity_joining_restricted_guilds: List[:class:`abc.Snowflake`]
+            A list of guilds that will not be able to join your current activity.
+
+            .. versionadded:: 2.0
         afk_timeout: :class:`int`
             How long (in seconds) the user needs to be AFK until Discord
             sends push notifications to your mobile device.
@@ -234,7 +252,7 @@ class UserSettings:
             Whether or not to enable the new Discord mobile phone number friend
             requesting features.
         passwordless: :class:`bool`
-            Unknown.
+            Whether the account is passwordless.
         render_embeds: :class:`bool`
             Whether or not to render embeds that are sent in the chat.
         render_reactions: :class:`bool`
@@ -244,11 +262,15 @@ class UserSettings:
         show_current_game: :class:`bool`
             Whether or not to display the game that you are currently playing.
         stream_notifications_enabled: :class:`bool`
-            Unknown.
+            Whether stream notifications for friends will be received.
         theme: :class:`Theme`
             The theme of the Discord UI.
         timezone_offset: :class:`int`
             The timezone offset to use.
+        view_nsfw_commands: :class:`bool`
+            Whether or not to show NSFW application commands.
+
+            .. versionadded:: 2.0
         view_nsfw_guilds: :class:`bool`
             Whether or not to show NSFW guilds on iOS.
 
@@ -264,10 +286,32 @@ class UserSettings:
         """
         return await self._state.user.edit_settings(**kwargs)  # type: ignore
 
-    async def fetch_tracking(self) -> Tracking:
+    async def email_settings(self) -> EmailSettings:
         """|coro|
 
-        Retrieves your :class:`Tracking` settings.
+        Retrieves your :class:`EmailSettings`.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        HTTPException
+            Getting the email settings failed.
+
+        Returns
+        -------
+        :class:`.EmailSettings`
+            The email settings.
+        """
+        data = await self._state.http.get_email_settings()
+        return EmailSettings(data=data, state=self._state)
+
+    async def fetch_tracking_settings(self) -> TrackingSettings:
+        """|coro|
+
+        Retrieves your :class:`TrackingSettings`.
+
+        .. versionadded:: 2.0
 
         Raises
         ------
@@ -280,12 +324,31 @@ class UserSettings:
             The tracking settings.
         """
         data = await self._state.http.get_tracking()
-        return Tracking(state=self._state, data=data)
+        return TrackingSettings(state=self._state, data=data)
 
     @property
-    def tracking(self) -> Optional[Tracking]:
-        """Optional[:class:`Tracking`]: Returns your tracking settings if available."""
+    def tracking_settings(self) -> Optional[TrackingSettings]:
+        """Optional[:class:`TrackingSettings`]: Returns your tracking settings if available.
+
+        .. versionadded:: 2.0
+        """
         return self._state.consents
+
+    @property
+    def activity_restricted_guilds(self) -> List[Guild]:
+        """List[:class:`abc.Snowflake`]: A list of guilds that your current activity will not be shown in.
+
+        .. versionadded:: 2.0
+        """
+        return list(map(self._get_guild, getattr(self, '_activity_restricted_guild_ids', [])))
+
+    @property
+    def activity_joining_restricted_guilds(self) -> List[Guild]:
+        """List[:class:`abc.Snowflake`]: A list of guilds that will not be able to join your current activity.
+
+        .. versionadded:: 2.0
+        """
+        return list(map(self._get_guild, getattr(self, '_activity_joining_restricted_guild_ids', [])))
 
     @property
     def animate_stickers(self) -> StickerAnimationOptions:
@@ -316,17 +379,21 @@ class UserSettings:
     @property
     def guild_positions(self) -> List[Guild]:
         """List[:class:`Guild`]: A list of guilds in order of the guild/guild icons that are on the left hand side of the UI."""
-        return list(filter(None, map(self._get_guild, getattr(self, '_guild_positions', []))))
+        return list(map(self._get_guild, getattr(self, '_guild_positions', [])))
 
     @property
     def locale(self) -> Locale:
         """:class:`Locale`: The :rfc:`3066` language identifier
-        of the locale to use for the language of the Discord client."""
+        of the locale to use for the language of the Discord client.
+
+        .. versionchanged:: 2.0
+            This now returns a :class:`Locale` object instead of a string.
+        """
         return try_enum(Locale, getattr(self, '_locale', 'en-US'))
 
     @property
     def passwordless(self) -> bool:
-        """:class:`bool`: Unknown."""
+        """:class:`bool`: Whether the account is passwordless."""
         return getattr(self, '_passwordless', False)
 
     @property
@@ -386,13 +453,7 @@ class MuteConfig:
         self.muted: bool = muted
         self.until: Optional[datetime] = until
 
-        for item in {'__bool__', '__eq__', '__float__', '__int__', '__str__'}:
-            setattr(self, item, getattr(muted, item))
-
     def __repr__(self) -> str:
-        return f'<MuteConfig muted={self.muted} until={self.until}>'
-
-    def __str__(self) -> str:
         return str(self.muted)
 
     def __int__(self) -> int:
@@ -411,6 +472,8 @@ class MuteConfig:
 class ChannelSettings:
     """Represents a channel's notification settings.
 
+    .. versionadded:: 2.0
+
     Attributes
     ----------
     level: :class:`NotificationLevel`
@@ -418,7 +481,8 @@ class ChannelSettings:
     muted: :class:`MuteConfig`
         The mute configuration for the channel.
     collapsed: :class:`bool`
-        Unknown.
+        Whether the channel is collapsed.
+        Only applicable to channels of type :attr:`ChannelType.category`.
     """
 
     if TYPE_CHECKING:
@@ -427,12 +491,17 @@ class ChannelSettings:
         muted: MuteConfig
         collapsed: bool
 
-    def __init__(self, guild_id, *, data: Dict[str, Any] = {}, state: ConnectionState) -> None:
-        self._guild_id: int = guild_id
+    def __init__(self, guild_id: Optional[int] = None, *, data: Dict[str, Any], state: ConnectionState) -> None:
+        self._guild_id = guild_id
         self._state = state
         self._update(data)
 
+    def __repr__(self) -> str:
+        return f'<ChannelSettings channel={self.channel} level={self.level} muted={self.muted} collapsed={self.collapsed}>'
+
     def _update(self, data: Dict[str, Any]) -> None:
+        # We consider everything optional because this class can be constructed with no data
+        # to represent the default settings
         self._channel_id = int(data['channel_id'])
         self.collapsed = data.get('collapsed', False)
 
@@ -440,19 +509,24 @@ class ChannelSettings:
         self.muted = MuteConfig(data.get('muted', False), data.get('mute_config') or {})
 
     @property
-    def channel(self) -> Optional[GuildChannel]:
-        """Optional[:class:`.abc.GuildChannel`]: Returns the channel these settings are for."""
+    def channel(self) -> Union[GuildChannel, PrivateChannel]:
+        """Union[:class:`.abc.GuildChannel`, :class:`.abc.PrivateChannel`]: Returns the channel these settings are for."""
         guild = self._state._get_guild(self._guild_id)
-        return guild and guild.get_channel(self._channel_id)
+        if guild:
+            channel = guild.get_channel(self._channel_id)
+        else:
+            channel = self._state._get_private_channel(self._channel_id)
+        if not channel:
+            channel = Object(id=self._channel_id)
+        return channel  # type: ignore # Lying for better developer UX
 
     async def edit(
         self,
         *,
-        muted: bool = MISSING,
-        duration: Optional[int] = MISSING,
+        muted_until: Optional[Union[bool, datetime]] = MISSING,
         collapsed: bool = MISSING,
         level: NotificationLevel = MISSING,
-    ) -> Optional[ChannelSettings]:
+    ) -> ChannelSettings:
         """|coro|
 
         Edits the channel's notification settings.
@@ -461,13 +535,14 @@ class ChannelSettings:
 
         Parameters
         -----------
-        muted: :class:`bool`
-            Indicates if the channel should be muted or not.
-        duration: Optional[Union[:class:`int`, :class:`float`]]
-            The amount of time in hours that the channel should be muted for.
-            Defaults to indefinite.
+        muted_until: Optional[Union[:class:`datetime.datetime`, :class:`bool`]]
+            The date this channel's mute should expire.
+            This can be ``True`` to mute indefinitely, or ``False``/``None`` to unmute.
+
+            This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
         collapsed: :class:`bool`
-            Unknown.
+            Indicates if the channel should be collapsed or not.
+            Only applicable to channels of type :attr:`ChannelType.category`.
         level: :class:`NotificationLevel`
             Determines what level of notifications you receive for the channel.
 
@@ -481,21 +556,29 @@ class ChannelSettings:
         :class:`ChannelSettings`
             The new notification settings.
         """
+        state = self._state
+        guild_id = self._guild_id
+        channel_id = self._channel_id
         payload = {}
 
-        if muted is not MISSING:
-            payload['muted'] = muted
-
-        if duration is not MISSING:
-            if muted is MISSING:
+        if muted_until is not MISSING:
+            if not muted_until:
+                payload['muted'] = False
+            else:
                 payload['muted'] = True
+                if muted_until is True:
+                    payload['mute_config'] = {'selected_time_window': -1, 'end_time': None}
+                else:
+                    if muted_until.tzinfo is None:
+                        raise TypeError(
+                            'muted_until must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                        )
 
-            if duration is not None:
-                mute_config = {
-                    'selected_time_window': duration * 3600,
-                    'end_time': (datetime.utcnow() + timedelta(hours=duration)).isoformat(),
-                }
-                payload['mute_config'] = mute_config
+                    mute_config = {
+                        'selected_time_window': (muted_until - utcnow()).total_seconds(),
+                        'end_time': muted_until.isoformat(),
+                    }
+                    payload['mute_config'] = mute_config
 
         if collapsed is not MISSING:
             payload['collapsed'] = collapsed
@@ -503,14 +586,19 @@ class ChannelSettings:
         if level is not MISSING:
             payload['message_notifications'] = level.value
 
-        fields = {'channel_overrides': {str(self._channel_id): payload}}
-        data = await self._state.http.edit_guild_settings(self._guild_id, fields)
+        fields = {'channel_overrides': {str(channel_id): payload}}
+        data = await state.http.edit_guild_settings(guild_id or '@me', fields)
 
-        return ChannelSettings(self._guild_id, data=data['channel_overrides'][str(self._channel_id)], state=self._state)
+        override = find(lambda x: x.get('channel_id') == str(channel_id), data['channel_overrides']) or {
+            'channel_id': channel_id
+        }
+        return ChannelSettings(guild_id, data=override, state=state)
 
 
 class GuildSettings:
     """Represents a guild's notification settings.
+
+    .. versionadded:: 2.0
 
     Attributes
     ----------
@@ -524,36 +612,49 @@ class GuildSettings:
         Whether to suppress role notifications.
     hide_muted_channels: :class:`bool`
         Whether to hide muted channels.
-    mobile_push_notifications: :class:`bool`
+    mobile_push: :class:`bool`
         Whether to enable mobile push notifications.
+    mute_scheduled_events: :class:`bool`
+        Whether to mute scheduled events.
+    notify_highlights: :class:`HighlightLevel`
+        Whether to include highlights in notifications.
     version: :class:`int`
         The version of the guild's settings.
     """
 
     if TYPE_CHECKING:
         _channel_overrides: Dict[int, ChannelSettings]
-        _guild_id: int
-        version: int
+        _guild_id: Optional[int]
+        level: NotificationLevel
         muted: MuteConfig
         suppress_everyone: bool
         suppress_roles: bool
         hide_muted_channels: bool
-        mobile_push_notifications: bool
-        level: NotificationLevel
+        mobile_push: bool
+        mute_scheduled_events: bool
+        notify_highlights: HighlightLevel
+        version: int
 
     def __init__(self, *, data: Dict[str, Any], state: ConnectionState) -> None:
         self._state = state
         self._update(data)
 
+    def __repr__(self) -> str:
+        return f'<GuildSettings guild={self.guild!r} level={self.level} muted={self.muted} suppress_everyone={self.suppress_everyone} suppress_roles={self.suppress_roles}>'
+
     def _update(self, data: Dict[str, Any]) -> None:
-        self._guild_id = guild_id = int(data['guild_id'])
-        self.version = data.get('version', -1)  # Overriden by real data
+        # We consider everything optional because this class can be constructed with no data
+        # to represent the default settings
+        self._guild_id = guild_id = _get_as_snowflake(data, 'guild_id')
+        self.level = try_enum(NotificationLevel, data.get('message_notifications', 3))
         self.suppress_everyone = data.get('suppress_everyone', False)
         self.suppress_roles = data.get('suppress_roles', False)
         self.hide_muted_channels = data.get('hide_muted_channels', False)
-        self.mobile_push_notifications = data.get('mobile_push', True)
+        self.mobile_push = data.get('mobile_push', True)
+        self.mute_scheduled_events = data.get('mute_scheduled_events', False)
+        self.notify_highlights = try_enum(HighlightLevel, data.get('notify_highlights', 0))
+        self.version = data.get('version', -1)  # Overriden by real data
 
-        self.level = try_enum(NotificationLevel, data.get('message_notifications', 3))
         self.muted = MuteConfig(data.get('muted', False), data.get('mute_config') or {})
         self._channel_overrides = overrides = {}
         state = self._state
@@ -562,9 +663,14 @@ class GuildSettings:
             overrides[channel_id] = ChannelSettings(guild_id, data=override, state=state)
 
     @property
-    def guild(self) -> Optional[Guild]:
-        """Optional[:class:`Guild`]: Returns the guild that these settings are for."""
-        return self._state._get_guild(self._guild_id)
+    def guild(self) -> Union[Guild, ClientUser]:
+        """Union[:class:`Guild`, :class:`ClientUser`]: Returns the guild that these settings are for.
+
+        If the returned value is a :class:`ClientUser` then the settings are for the user's private channels.
+        """
+        if self._guild_id:
+            return self._state._get_guild(self._guild_id) or Object(id=self._guild_id)  # type: ignore # Lying for better developer UX
+        return self._state.user  # type: ignore # Should always be present here
 
     @property
     def channel_overrides(self) -> List[ChannelSettings]:
@@ -573,13 +679,14 @@ class GuildSettings:
 
     async def edit(
         self,
-        muted: bool = MISSING,
-        duration: Optional[int] = MISSING,
+        muted_until: Optional[Union[bool, datetime]] = MISSING,
         level: NotificationLevel = MISSING,
         suppress_everyone: bool = MISSING,
         suppress_roles: bool = MISSING,
-        mobile_push_notifications: bool = MISSING,
+        mobile_push: bool = MISSING,
         hide_muted_channels: bool = MISSING,
+        mute_scheduled_events: bool = MISSING,
+        notify_highlights: HighlightLevel = MISSING,
     ) -> Optional[GuildSettings]:
         """|coro|
 
@@ -589,21 +696,25 @@ class GuildSettings:
 
         Parameters
         -----------
-        muted: :class:`bool`
-            Indicates if the guild should be muted or not.
-        duration: Optional[Union[:class:`int`, :class:`float`]]
-            The amount of time in hours that the guild should be muted for.
-            Defaults to indefinite.
+        muted_until: Optional[Union[:class:`datetime.datetime`, :class:`bool`]]
+            The date this guild's mute should expire.
+            This can be ``True`` to mute indefinitely, or ``False``/``None`` to unmute.
+
+            This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
         level: :class:`NotificationLevel`
             Determines what level of notifications you receive for the guild.
         suppress_everyone: :class:`bool`
             Indicates if @everyone mentions should be suppressed for the guild.
         suppress_roles: :class:`bool`
             Indicates if role mentions should be suppressed for the guild.
-        mobile_push_notifications: :class:`bool`
+        mobile_push: :class:`bool`
             Indicates if push notifications should be sent to mobile devices for this guild.
         hide_muted_channels: :class:`bool`
             Indicates if channels that are muted should be hidden from the sidebar.
+        mute_scheduled_events: :class:`bool`
+            Indicates if scheduled events should be muted.
+        notify_highlights: :class:`HighlightLevel`
+            Indicates if highlights should be included in notifications.
 
         Raises
         -------
@@ -617,19 +728,24 @@ class GuildSettings:
         """
         payload = {}
 
-        if muted is not MISSING:
-            payload['muted'] = muted
-
-        if duration is not MISSING:
-            if muted is MISSING:
+        if muted_until is not MISSING:
+            if not muted_until:
+                payload['muted'] = False
+            else:
                 payload['muted'] = True
+                if muted_until is True:
+                    payload['mute_config'] = {'selected_time_window': -1, 'end_time': None}
+                else:
+                    if muted_until.tzinfo is None:
+                        raise TypeError(
+                            'muted_until must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                        )
 
-            if duration is not None:
-                mute_config = {
-                    'selected_time_window': duration * 3600,
-                    'end_time': (datetime.utcnow() + timedelta(hours=duration)).isoformat(),
-                }
-                payload['mute_config'] = mute_config
+                    mute_config = {
+                        'selected_time_window': (muted_until - utcnow()).total_seconds(),
+                        'end_time': muted_until.isoformat(),
+                    }
+                    payload['mute_config'] = mute_config
 
         if level is not MISSING:
             payload['message_notifications'] = level.value
@@ -640,12 +756,187 @@ class GuildSettings:
         if suppress_roles is not MISSING:
             payload['suppress_roles'] = suppress_roles
 
-        if mobile_push_notifications is not MISSING:
-            payload['mobile_push'] = mobile_push_notifications
+        if mobile_push is not MISSING:
+            payload['mobile_push'] = mobile_push
 
         if hide_muted_channels is not MISSING:
             payload['hide_muted_channels'] = hide_muted_channels
 
-        data = await self._state.http.edit_guild_settings(self._guild_id, payload)
+        if mute_scheduled_events is not MISSING:
+            payload['mute_scheduled_events'] = mute_scheduled_events
 
+        if notify_highlights is not MISSING:
+            payload['notify_highlights'] = notify_highlights.value
+
+        data = await self._state.http.edit_guild_settings(self._guild_id or '@me', payload)
         return GuildSettings(data=data, state=self._state)
+
+
+class TrackingSettings:
+    """Represents your Discord tracking settings.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: bool(x)
+
+            Checks if any tracking settings are enabled.
+
+    Attributes
+    ----------
+    personalization: :class:`bool`
+        Whether you have consented to your data being used for personalization.
+    usage_statistics: :class:`bool`
+        Whether you have consented to your data being used for usage statistics.
+    """
+
+    __slots__ = ('_state', 'personalization', 'usage_statistics')
+
+    def __init__(self, *, data: Dict[str, Dict[str, bool]], state: ConnectionState) -> None:
+        self._state = state
+        self._update(data)
+
+    def __repr__(self) -> str:
+        return f'<TrackingSettings personalization={self.personalization} usage_statistics={self.usage_statistics}>'
+
+    def __bool__(self) -> bool:
+        return any({self.personalization, self.usage_statistics})
+
+    def _update(self, data: Dict[str, Dict[str, bool]]):
+        self.personalization = data.get('personalization', {}).get('consented', False)
+        self.usage_statistics = data.get('usage_statistics', {}).get('consented', False)
+
+    @overload
+    async def edit(self) -> None:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        personalization: bool = ...,
+        usage_statistics: bool = ...,
+    ) -> None:
+        ...
+
+    async def edit(self, **kwargs) -> None:
+        """|coro|
+
+        Edits your tracking settings.
+
+        Parameters
+        ----------
+        personalization: :class:`bool`
+            Whether you have consented to your data being used for personalization.
+        usage_statistics: :class:`bool`
+            Whether you have consented to your data being used for usage statistics.
+        """
+        payload = {
+            'grant': [k for k, v in kwargs.items() if v is True],
+            'revoke': [k for k, v in kwargs.items() if v is False],
+        }
+        data = await self._state.http.edit_tracking(payload)
+        self._update(data)
+
+
+class EmailSettings:
+    """Represents email communication preferences.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    initialized: :class:`bool`
+        Whether the email communication preferences have been initialized.
+    communication: :class:`bool`
+        Whether you want to receive emails for missed calls/messages.
+    social: :class:`bool`
+        Whether you want to receive emails for friend requests/suggestions or events.
+    recommendations_and_events: :class:`bool`
+        Whether you want to receive emails for recommended servers and events.
+    tips: :class:`bool`
+        Whether you want to receive emails for advice and tricks.
+    updates_and_announcements: :class:`bool`
+        Whether you want to receive emails for updates and new features.
+    """
+
+    __slots__ = (
+        '_state',
+        'initialized',
+        'communication',
+        'social',
+        'recommendations_and_events',
+        'tips',
+        'updates_and_announcements',
+    )
+
+    def __init__(self, *, data: dict, state: ConnectionState):
+        self._state = state
+        self._update(data)
+
+    def __repr__(self) -> str:
+        return f'<EmailSettings initialized={self.initialized}>'
+
+    def _update(self, data: dict):
+        self.initialized = data.get('initialized', False)
+        categories = data.get('categories', {})
+        self.communication = categories.get('communication', False)
+        self.social = categories.get('social', False)
+        self.recommendations_and_events = categories.get('recommendations_and_events', False)
+        self.tips = categories.get('tips', False)
+        self.updates_and_announcements = categories.get('updates_and_announcements', False)
+
+    @overload
+    async def edit(self) -> None:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        communication: bool = MISSING,
+        social: bool = MISSING,
+        recommendations_and_events: bool = MISSING,
+        tips: bool = MISSING,
+        updates_and_announcements: bool = MISSING,
+    ) -> None:
+        ...
+
+    async def edit(self, **kwargs) -> None:
+        """|coro|
+
+        Edits the email settings.
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        communication: :class:`bool`
+            Indicates if you want to receive communication emails.
+        social: :class:`bool`
+            Indicates if you want to receive social emails.
+        recommendations_and_events: :class:`bool`
+            Indicates if you want to receive recommendations and events emails.
+        tips: :class:`bool`
+            Indicates if you want to receive tips emails.
+        updates_and_announcements: :class:`bool`
+            Indicates if you want to receive updates and announcements emails.
+
+        Raises
+        -------
+        HTTPException
+            Editing the settings failed.
+        """
+        payload = {}
+
+        # It seems that initialized is settable, but it doesn't do anything
+        # So we support just in case but leave it undocumented
+        initialized = kwargs.pop('initialized', None)
+        if initialized is not None:
+            payload['initialized'] = initialized
+        if kwargs:
+            payload['categories'] = kwargs
+
+        data = await self._state.http.edit_email_settings(**payload)
+        self._update(data)

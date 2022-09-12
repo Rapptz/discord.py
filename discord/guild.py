@@ -86,7 +86,6 @@ from .sticker import GuildSticker
 from .file import File
 from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
-from .settings import GuildSettings
 from .profile import MemberProfile
 from .partial_emoji import PartialEmoji
 from .welcome_screen import *
@@ -119,6 +118,7 @@ if TYPE_CHECKING:
     from .webhook import Webhook
     from .state import ConnectionState
     from .voice_client import VoiceProtocol
+    from .settings import GuildSettings
     from .types.channel import (
         GuildChannel as GuildChannelPayload,
         TextChannel as TextChannelPayload,
@@ -260,10 +260,6 @@ class Guild(Hashable):
         Indicates if the guild has premium AKA server boost level progress bar enabled.
 
         .. versionadded:: 2.0
-    notification_settings: :class:`GuildSettings`
-        The notification settings for the guild.
-
-        .. versionadded:: 2.0
     keywords: Optional[:class:`str`]
         Discovery search keywords for the guild.
 
@@ -295,7 +291,6 @@ class Guild(Hashable):
         'mfa_level',
         'vanity_url_code',
         'owner_application_id',
-        'notification_settings',
         'command_counts',
         '_members',
         '_channels',
@@ -352,7 +347,6 @@ class Guild(Hashable):
         self._stage_instances: Dict[int, StageInstance] = {}
         self._scheduled_events: Dict[int, ScheduledEvent] = {}
         self._state: ConnectionState = state
-        self.notification_settings: Optional[GuildSettings] = None
         self.command_counts: Optional[CommandCounts] = None
         self._member_count: int = 0
         self._presence_count: Optional[int] = None
@@ -531,9 +525,6 @@ class Guild(Hashable):
         large = None if self._member_count == 0 else self._member_count >= 250
         self._large: Optional[bool] = guild.get('large', large)
 
-        if (settings := guild.get('settings')) is not None:
-            self.notification_settings = GuildSettings(state=state, data=settings)
-
         if (counts := guild.get('application_command_counts')) is not None:
             self.command_counts = CommandCounts(counts.get(0, 0), counts.get(1, 0), counts.get(2, 0))
 
@@ -643,6 +634,17 @@ class Guild(Hashable):
     def voice_client(self) -> Optional[VoiceProtocol]:
         """Optional[:class:`VoiceProtocol`]: Returns the :class:`VoiceProtocol` associated with this guild, if any."""
         return self._state._get_voice_client(self.id)
+
+    @property
+    def notification_settings(self) -> GuildSettings:
+        """:class:`GuildSettings`: Returns the notification settings for the guild.
+
+        If not found, an instance is created with defaults applied. This follows Discord behaviour.
+
+        .. versionadded:: 2.0
+        """
+        state = self._state
+        return state.guild_settings.get(self.id, state.default_guild_settings(self.id))
 
     @property
     def text_channels(self) -> List[TextChannel]:

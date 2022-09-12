@@ -83,6 +83,7 @@ if TYPE_CHECKING:
     from .file import File
     from .user import ClientUser, User
     from .guild import Guild, GuildChannel as GuildChannelType
+    from .settings import ChannelSettings
     from .types.channel import (
         TextChannel as TextChannelPayload,
         VoiceChannel as VoiceChannelPayload,
@@ -2270,6 +2271,19 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
 
     @property
+    def notification_settings(self) -> ChannelSettings:
+        """:class:`~discord.ChannelSettings`: Returns the notification settings for this channel.
+
+        If not found, an instance is created with defaults applied. This follows Discord behaviour.
+
+        .. versionadded:: 2.0
+        """
+        state = self._state
+        return state.client.notification_settings._channel_overrides.get(
+            self.id, state.default_channel_settings(None, self.id)
+        )
+
+    @property
     def call(self) -> Optional[PrivateCall]:
         """Optional[:class:`PrivateCall`]: The channel's currently active call."""
         return self._state._calls.get(self.id)
@@ -2525,6 +2539,19 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
     def __repr__(self) -> str:
         return f'<GroupChannel id={self.id} name={self.name!r}>'
+
+    @property
+    def notification_settings(self) -> ChannelSettings:
+        """:class:`~discord.ChannelSettings`: Returns the notification settings for this channel.
+
+        If not found, an instance is created with defaults applied. This follows Discord behaviour.
+
+        .. versionadded:: 2.0
+        """
+        state = self._state
+        return state.client.notification_settings._channel_overrides.get(
+            self.id, state.default_channel_settings(None, self.id)
+        )
 
     @property
     def owner(self) -> User:
