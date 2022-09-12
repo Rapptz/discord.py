@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-15 14:07+0000\n"
-"PO-Revision-Date: 2022-08-15 15:30\n"
+"POT-Creation-Date: 2022-08-23 11:53+0000\n"
+"PO-Revision-Date: 2022-09-07 14:31\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -217,7 +217,7 @@ msgstr "``'\\N{THUMBS UP SIGN}'``"
 #: ../../faq.rst:213
 #: ../../faq.rst:292
 #: ../../faq.rst:310
-#: ../../faq.rst:332
+#: ../../faq.rst:334
 msgid "Quick example:"
 msgstr "簡単な例:"
 
@@ -341,144 +341,144 @@ msgstr "リクエストを送るには、ノンブロッキングのライブラ
 msgid "See `aiohttp's full documentation <http://aiohttp.readthedocs.io/en/stable/>`_ for more information."
 msgstr "詳細は `aiohttpの完全なドキュメント <http://aiohttp.readthedocs.io/en/stable/>`_ を参照してください。"
 
-#: ../../faq.rst:322
+#: ../../faq.rst:324
 msgid "How do I use a local image file for an embed image?"
 msgstr "Embedの画像にローカルの画像を使用するにはどうすればいいですか。"
 
-#: ../../faq.rst:324
+#: ../../faq.rst:326
 msgid "Discord special-cases uploading an image attachment and using it within an embed so that it will not display separately, but instead in the embed's thumbnail, image, footer or author icon."
 msgstr "特殊なケースとして、画像が別々に表示されないようDiscordにembedを用いてアップロードする際、画像は代わりにembedのサムネイルや画像、フッター、製作者アイコンに表示されます。"
 
-#: ../../faq.rst:327
+#: ../../faq.rst:329
 msgid "To do so, upload the image normally with :meth:`abc.Messageable.send`, and set the embed's image URL to ``attachment://image.png``, where ``image.png`` is the filename of the image you will send."
 msgstr "これを行うには、通常通り :meth:`abc.Messageable.send` を用いて画像をアップロードし、Embedの画像URLに ``attachment://image.png`` を設定します。 ``image.png`` は送信する画像のファイル名になります。"
 
-#: ../../faq.rst:342
+#: ../../faq.rst:344
 msgid "Is there an event for audit log entries being created?"
 msgstr "監査ログのエントリが作成されるイベントはありますか。"
 
-#: ../../faq.rst:344
+#: ../../faq.rst:346
 msgid "Since Discord does not dispatch this information in the gateway, the library cannot provide this information. This is currently a Discord limitation."
 msgstr "Discordはゲートウェイでこの情報をディスパッチしないため、ライブラリによってこの情報を提供することはできません。これはDiscord側の制限によるものです。"
 
-#: ../../faq.rst:348
+#: ../../faq.rst:350
 msgid "Commands Extension"
 msgstr "コマンド拡張"
 
-#: ../../faq.rst:350
+#: ../../faq.rst:352
 msgid "Questions regarding ``discord.ext.commands`` belong here."
 msgstr "``discord.ext.commands`` に関する質問。"
 
-#: ../../faq.rst:353
+#: ../../faq.rst:355
 msgid "Why does ``on_message`` make my commands stop working?"
 msgstr "``on_message`` を使うとコマンドが動作しなくなります。どうしてですか。"
 
-#: ../../faq.rst:355
+#: ../../faq.rst:357
 msgid "Overriding the default provided ``on_message`` forbids any extra commands from running. To fix this, add a ``bot.process_commands(message)`` line at the end of your ``on_message``. For example: ::"
 msgstr "デフォルトで提供されている ``on_message`` をオーバーライドすると、コマンドが実行されなくなります。これを修正するには ``on_message`` の最後に ``bot.process_commands(message)`` を追加してみてください。"
 
-#: ../../faq.rst:364
+#: ../../faq.rst:366
 msgid "Alternatively, you can place your ``on_message`` logic into a **listener**. In this setup, you should not manually call ``bot.process_commands()``. This also allows you to do multiple things asynchronously in response to a message. Example::"
 msgstr "別の方法として、 ``on_message`` に書きたい処理を **リスナー** として登録することもできます。この方法では ``bot.process_commands()`` を呼び出す必要はありません。また、この方法ではメッセージの受信に対して複数の処理を非同期に実行することができます。使用例::"
 
-#: ../../faq.rst:374
+#: ../../faq.rst:376
 msgid "Why do my arguments require quotes?"
 msgstr "コマンドの引数に引用符が必要なのはなぜですか。"
 
-#: ../../faq.rst:376
+#: ../../faq.rst:378
 msgid "In a simple command defined as:"
 msgstr "次の簡単なコマンドを見てみましょう。"
 
-#: ../../faq.rst:384
+#: ../../faq.rst:386
 msgid "Calling it via ``?echo a b c`` will only fetch the first argument and disregard the rest. To fix this you should either call it via ``?echo \"a b c\"`` or change the signature to have \"consume rest\" behaviour. Example:"
 msgstr "このコマンドを ``?echo a b c`` のように実行したとき、コマンドに渡されるのは最初の引数だけです。その後の引数はすべて無視されます。これを正常に動かすためには ``?echo \"a b c\"`` のようにしてコマンドを実行するか、コマンドの引数を下記の例のようにしてみましょう。"
 
-#: ../../faq.rst:393
+#: ../../faq.rst:395
 msgid "This will allow you to use ``?echo a b c`` without needing the quotes."
 msgstr "これにより、クォーテーションなしで ``?echo a b c`` を使用することができます。"
 
-#: ../../faq.rst:396
+#: ../../faq.rst:398
 msgid "How do I get the original ``message``\\?"
 msgstr "元の ``message`` を取得するにはどうすればよいですか。"
 
-#: ../../faq.rst:398
+#: ../../faq.rst:400
 msgid "The :class:`~ext.commands.Context` contains an attribute, :attr:`~.Context.message` to get the original message."
 msgstr ":class:`~ext.commands.Context` は元のメッセージを取得するための属性である :attr:`~.Context.message` を持っています。"
 
-#: ../../faq.rst:401
-#: ../../faq.rst:415
+#: ../../faq.rst:403
+#: ../../faq.rst:417
 msgid "Example:"
 msgstr "例:"
 
-#: ../../faq.rst:410
+#: ../../faq.rst:412
 msgid "How do I make a subcommand?"
 msgstr "サブコマンドを作るにはどうすればいいですか。"
 
-#: ../../faq.rst:412
+#: ../../faq.rst:414
 msgid "Use the :func:`~ext.commands.group` decorator. This will transform the callback into a :class:`~ext.commands.Group` which will allow you to add commands into the group operating as \"subcommands\". These groups can be arbitrarily nested as well."
 msgstr ":func:`~ext.commands.group` デコレータを使います。これにより、コールバックが :class:`~ext.commands.Group` に変換され、groupに「サブコマンド」として動作するコマンドを追加できます。これらのグループは、ネストすることもできます。"
 
-#: ../../faq.rst:428
+#: ../../faq.rst:430
 msgid "This could then be used as ``?git push origin master``."
 msgstr "これは ``?git push origin master`` のように使うことができます。"
 
-#: ../../faq.rst:431
+#: ../../faq.rst:433
 msgid "Views and Modals"
 msgstr "ビューとモーダル"
 
-#: ../../faq.rst:433
+#: ../../faq.rst:435
 msgid "Questions regarding :class:`discord.ui.View`, :class:`discord.ui.Modal`, and their components such as buttons, select menus, etc."
 msgstr ":class:`discord.ui.View` 、 :class:`discord.ui.Modal` 、およびボタン、選択メニューなどそれらのコンポーネントに関する質問。"
 
-#: ../../faq.rst:436
+#: ../../faq.rst:438
 msgid "How can I disable all items on timeout?"
 msgstr "タイムアウト時にすべての項目を無効にするにはどうすればよいですか?"
 
-#: ../../faq.rst:438
+#: ../../faq.rst:440
 msgid "This requires three steps."
 msgstr "これには3つのステップが必要です。"
 
-#: ../../faq.rst:440
+#: ../../faq.rst:442
 msgid "Attach a message to the :class:`~discord.ui.View` using either the return type of :meth:`~abc.Messageable.send` or retrieving it via :meth:`Interaction.original_response`."
 msgstr ":meth:`~abc.Messageable.send` の戻り値の型を使用して、または :meth:`Interaction.original_response` から取得した :class:`~discord.ui.View` にメッセージを添付します。"
 
-#: ../../faq.rst:441
+#: ../../faq.rst:443
 msgid "Inside :meth:`~ui.View.on_timeout`, loop over all items inside the view and mark them disabled."
 msgstr ":meth:`~ui.View.on_timeout` 内で、ビュー内のすべての項目をループし無効にします。"
 
-#: ../../faq.rst:442
+#: ../../faq.rst:444
 msgid "Edit the message we retrieved in step 1 with the newly modified view."
 msgstr "ステップ1で取得したメッセージを新しく変更したビューで編集します。"
 
-#: ../../faq.rst:444
+#: ../../faq.rst:446
 msgid "Putting it all together, we can do this in a text command:"
 msgstr "すべてをまとめると、テキストコマンドではこのように行うことができます。"
 
-#: ../../faq.rst:468
+#: ../../faq.rst:470
 msgid "Application commands do not return a message when you respond with :meth:`InteractionResponse.send_message`, therefore in order to reliably do this we should retrieve the message using :meth:`Interaction.original_response`."
 msgstr "アプリケーションコマンドは :meth:`InteractionResponse.send_message` で応答したときメッセージを返さないため、信頼性の高い方法で行うには :meth:`Interaction.original_response` を使用してメッセージを取得すべきです。"
 
-#: ../../faq.rst:470
+#: ../../faq.rst:472
 msgid "Putting it all together, using the previous view definition:"
 msgstr "以前のビューの定義を使用して、すべてをまとめます。"
 
-#: ../../faq.rst:485
+#: ../../faq.rst:487
 msgid "Application Commands"
 msgstr "アプリケーションコマンド"
 
-#: ../../faq.rst:487
+#: ../../faq.rst:489
 msgid "Questions regarding Discord's new application commands, commonly known as \"slash commands\" or \"context menu commands\"."
 msgstr "一般的に「スラッシュコマンド」や「コンテキストメニューコマンド」と呼ばれている、Discordの新しいアプリケーションコマンドに関する質問。"
 
-#: ../../faq.rst:490
+#: ../../faq.rst:492
 msgid "My bot's commands are not showing up!"
 msgstr "私のボットのコマンドが一覧に表示されません！"
 
-#: ../../faq.rst:492
+#: ../../faq.rst:494
 msgid "Did you :meth:`~.CommandTree.sync` your command? Commands need to be synced before they will appear."
 msgstr "コマンドを :meth:`~.CommandTree.sync` しましたか？コマンドは出現する前に同期する必要があります。"
 
-#: ../../faq.rst:493
+#: ../../faq.rst:495
 msgid "Did you invite your bot with the correct permissions? Bots need to be invited with the ``applications.commands`` scope in addition to the ``bot`` scope. For example, invite the bot with the following URL: ``https://discord.com/oauth2/authorize?client_id=<client id>&scope=applications.commands+bot``. Alternatively, if you use :func:`utils.oauth_url`, you can call the function as such: ``oauth_url(<other options>, scopes=(\"bot\", \"applications.commands\"))``."
 msgstr "正しい権限でBotを招待しましたか？ ``bot`` スコープに加えて、 ``applications.commands`` スコープ付きでBotを招待する必要があります。例えば、以下の URL でBotを招待します: ``https://discord.com/oauth2/authorize?client_id=<client id>&scope=applications.commands+bot`` 。 あるいは、 :func:`utils.oauth_url` を使用している場合は、 ``oauth_url(<other options>, scopes=(\"bot\", \"applications.commands\"))`` のように関数を呼び出すことができます。"
 

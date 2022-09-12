@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-15 14:07+0000\n"
-"PO-Revision-Date: 2022-08-15 16:30\n"
+"POT-Creation-Date: 2022-09-06 06:27+0000\n"
+"PO-Revision-Date: 2022-09-07 14:32\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -160,6 +160,18 @@ msgstr "Optional[:class:`Locale`]"
 msgid "A dictionary that can be used to store extraneous data for use during interaction processing. The library will not touch any values or keys within this dictionary."
 msgstr "インタラクションの処理中に使用する追加のデータを保管できる辞書型。ライブラリは辞書型の中のキーや値を一切操作しません。"
 
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:85
+msgid "Whether the command associated with this interaction failed to execute. This includes checks and execution."
+msgstr "このインタラクションに関連付けられたコマンドの実行に失敗したかどうか。これにはチェックとコマンドの実行が含まれます。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:88
+#: ../../../discord/components.py:docstring of discord.components.Button:35
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:49
+#: ../../../discord/components.py:docstring of discord.components.TextInput:43
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:84
+msgid ":class:`bool`"
+msgstr ":class:`bool`"
+
 #: ../../../discord/interactions.py:docstring of discord.Interaction.client:1
 msgid "The client that is handling this interaction."
 msgstr "このインタラクションを処理するクライアント。"
@@ -276,8 +288,8 @@ msgstr ":class:`bool`：インタラクションが期限切れした場合に�
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_response:1
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_response:1
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.delete_original_response:1
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.translate:1
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:1
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.pong:1
 msgid "|coro|"
 msgstr "|coro|"
 
@@ -316,9 +328,9 @@ msgstr "インタラクションの応答のメッセージが存在しなかっ
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_response:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_response:0
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.translate:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:0
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:0
 msgid "Returns"
 msgstr "戻り値"
 
@@ -328,9 +340,9 @@ msgstr "元のインタラクションの応答メッセージ。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.original_response:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_response:0
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.translate:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:0
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:0
 msgid "Return type"
 msgstr "戻り値の型"
 
@@ -347,10 +359,10 @@ msgid "This method is also the only way to edit the original message if the mess
 msgstr "また、一時的なメッセージを送った場合、この方法でのみメッセージを編集することができます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_response:0
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.translate:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:0
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:0
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_modal:0
 msgid "Parameters"
 msgstr "パラメータ"
 
@@ -453,6 +465,34 @@ msgstr "インタラクションの応答のメッセージが存在しなかっ
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.delete_original_response:10
 msgid "Deleted a message that is not yours."
 msgstr "自分以外のメッセージを削除しようとした場合。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.translate:3
+msgid "Translates a string using the set :class:`~discord.app_commands.Translator`."
+msgstr ":class:`~discord.app_commands.Translator` を使用して文字列を翻訳します。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.translate:7
+msgid "The string to translate. :class:`~discord.app_commands.locale_str` can be used to add more context, information, or any metadata necessary."
+msgstr "翻訳する文字列。 :class:`~discord.app_commands.locale_str` を使用して、文脈、情報、または必要なメタデータを追加できます。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.translate:11
+msgid "The locale to use, this is handy if you want the translation for a specific locale. Defaults to the user's :attr:`.locale`."
+msgstr "使用するロケール。特定のロケールの翻訳が必要な場合に便利です。既定値はユーザの :attr:`.locale` です。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.translate:15
+msgid "The extraneous data that is being translated. If not specified, either :attr:`.command` or :attr:`.message` will be passed, depending on which is available in the context."
+msgstr "翻訳される追加のデータ。指定されない場合は、 :attr:`.command` または :attr:`.message` のうち利用できるものが渡されます。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.translate:20
+msgid "The translated string, or ``None`` if a translator was not set."
+msgstr "翻訳された文字列、またはトランスレータが設定されていない場合 ``None`` 。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.translate:21
+#: ../../../discord/components.py:docstring of discord.components.Button:23
+#: ../../../discord/components.py:docstring of discord.components.Button:29
+#: ../../../discord/components.py:docstring of discord.components.Button:41
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:17
+msgid "Optional[:class:`str`]"
+msgstr "Optional[:class:`str`]"
 
 #: ../../interactions/api.rst:24
 msgid "InteractionResponse"
@@ -1182,14 +1222,6 @@ msgstr ":class:`.ButtonStyle`"
 msgid "The ID of the button that gets received during an interaction. If this button is for a URL, it does not have a custom ID."
 msgstr "インタラクション中に受け取るボタンID。これがURLボタンの場合はカスタムIDは設定できません。"
 
-#: ../../../discord/components.py:docstring of discord.components.Button:23
-#: ../../../discord/components.py:docstring of discord.components.Button:29
-#: ../../../discord/components.py:docstring of discord.components.Button:41
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:17
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:23
-msgid "Optional[:class:`str`]"
-msgstr "Optional[:class:`str`]"
-
 #: ../../../discord/components.py:docstring of discord.components.Button:27
 #: ../../../discord/ui/button.py:docstring of discord.ui.button.Button:10
 #: ../../../discord/ui/button.py:docstring of discord.ui.Button.url:1
@@ -1201,14 +1233,6 @@ msgstr "ボタンの行き先のURL。"
 #: ../../../discord/ui/button.py:docstring of discord.ui.Button.disabled:1
 msgid "Whether the button is disabled or not."
 msgstr "ボタンが無効化されているかどうか。"
-
-#: ../../../discord/components.py:docstring of discord.components.Button:35
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:49
-#: ../../../discord/components.py:docstring of discord.components.TextInput:43
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:84
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:97
-msgid ":class:`bool`"
-msgstr ":class:`bool`"
 
 #: ../../../discord/components.py:docstring of discord.components.Button:39
 #: ../../../discord/ui/button.py:docstring of discord.ui.button.Button:14
@@ -1257,8 +1281,8 @@ msgstr "存在する場合、何も選択されていないときに表示する
 #: ../../../discord/components.py:docstring of discord.components.SelectMenu:27
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:14
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.select:21
-msgid "The minimum number of items that must be chosen for this select menu. Defaults to 1 and must be between 1 and 25."
-msgstr "選択メニューにて選択しないといけない最小の項目数。デフォルトは1で、値は1以上25以下でないといけません。"
+msgid "The minimum number of items that must be chosen for this select menu. Defaults to 1 and must be between 0 and 25."
+msgstr "選択メニューにて選択しないといけない最小の項目数。デフォルトは1で、値は0以上25以下でないといけません。"
 
 #: ../../../discord/components.py:docstring of discord.components.SelectMenu:34
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:17
@@ -2101,16 +2125,16 @@ msgid "Returns the choice's hash."
 msgstr "選択肢のハッシュ値を返します。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Choice:19
-msgid "The name of the choice. Used for display purposes."
-msgstr "選択肢の名前。表示用です。"
+msgid "The name of the choice. Used for display purposes. Can only be up to 100 characters."
+msgstr "選択肢の名前。表示用に使用されます。最大100文字まで可能です。"
 
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Choice:21
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Choice:22
 msgid "The localised names of the choice. Used for display purposes."
 msgstr "選択肢のローカライズされた名前。表示用に使用されます。"
 
-#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Choice:23
-msgid "The value of the choice."
-msgstr "選択肢の値。"
+#: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Choice:24
+msgid "The value of the choice. If it's a string, it can only be up to 100 characters long."
+msgstr "選択肢の値。文字列の場合は、最大100文字まで使用できます。"
 
 #: ../../interactions/api.rst:179
 msgid "Enumerations"
@@ -2895,6 +2919,117 @@ msgstr "アプリケーションコマンドの情報を取得するためのク
 msgid "If a guild-specific command is not found when invoked, then try falling back into a global command in the tree. For example, if the tree locally has a ``/ping`` command under the global namespace but the guild has a guild-specific ``/ping``, instead of failing to find the guild-specific ``/ping`` command it will fall back to the global ``/ping`` command. This has the potential to raise more :exc:`~discord.app_commands.CommandSignatureMismatch` errors than usual. Defaults to ``True``."
 msgstr "ギルド固有のコマンドが呼び出されたときに見つからない場合は、ツリー内のグローバルコマンドを呼び出します。 例えば、ローカル環境でグローバル名前空間の下に ``/ping`` コマンドがあるが、ギルド本体ではギルド固有の ``/ping`` がある場合、ギルド固有の ``/ping`` コマンドを見つけるのに失敗せずに、グローバルの ``/ping`` コマンドをフォールバックとして使用します。 これは :exc:`~discord.app_commands.CommandSignatureMismatch` エラーを通常より多く引き起こす可能性があります。デフォルトは ``True`` です。"
 
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:1
+msgid "A decorator that creates an application command from a regular function directly under this tree."
+msgstr "通常の関数からアプリケーションコマンドをこのツリーの下に直接作成するデコレータ。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:3
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.command:3
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.command:3
+msgid "The name of the application command. If not given, it defaults to a lower-case version of the callback name."
+msgstr "アプリケーションコマンドの名前。指定しない場合は、コールバック名を小文字化したものになります。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:6
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.command:6
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.command:6
+msgid "The description of the application command. This shows up in the UI to describe the application command. If not given, it defaults to the first line of the docstring of the callback shortened to 100 characters."
+msgstr "アプリケーションコマンドの説明。これは、アプリケーションコマンドを説明するためにUIに表示されます。 指定されていない場合は、コールバックの docstring の最初の行を 100 文字以内に短縮したものが使用されます。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:10
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:23
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:25
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:43
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.command:10
+msgid "Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.  Due to a Discord limitation, this does not work on subcommands."
+msgstr "コマンドに年齢制限をかけて、年齢制限つきチャンネルでのみ利用できるようにすべきか。デフォルトでは ``False`` です。Discordの制限により、サブコマンドでは利用できません。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:10
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:23
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:25
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:24
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:62
+msgid "Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``."
+msgstr "コマンドに年齢制限をかけて、年齢制限つきチャンネルでのみ利用できるようにすべきか。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:12
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:25
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:28
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:64
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:72
+msgid "Due to a Discord limitation, this does not work on subcommands."
+msgstr "Discord側の制限のため、サブコマンドでは動作しません。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:14
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:27
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.add_command:10
+msgid "The guild to add the command to. If not given or ``None`` then it becomes a global command instead."
+msgstr "コマンドを追加するギルド。指定されていない場合や ``None`` の場合これはグローバルコマンドになります。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:17
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:30
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.add_command:13
+msgid "The list of guilds to add the command to. This cannot be mixed with the ``guild`` parameter. If no guilds are given at all then it becomes a global command instead."
+msgstr "コマンドを追加するギルドのリスト。 ``guild`` パラメータと併用できません。指定されていない場合これは代わりにグローバルコマンドになります。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:21
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:34
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:19
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:18
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:25
+msgid "If this is set to ``True``, then all translatable strings will implicitly be wrapped into :class:`locale_str` rather than :class:`str`. This could avoid some repetition and be more ergonomic for certain defaults such as default command names, command descriptions, and parameter names. Defaults to ``True``."
+msgstr "これが ``True`` に設定されている場合、すべての翻訳可能な文字列が :class:`str` でなく:class:`locale_str` にラップされます。これを用いると、デフォルトのコマンド名、コマンド説明、パラメータ名などを繰り返し記述するのを避け、より使いやすくなるかもしれません。デフォルトは ``True`` です。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:27
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:40
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:32
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:92
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:27
+msgid "A dictionary that can be used to store extraneous data. The library will not touch any values or keys within this dictionary."
+msgstr "追加のデータを保管できる辞書型。ライブラリは辞書型の中のキーや値を一切操作しません。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:1
+msgid "A decorator that creates an application command context menu from a regular function directly under this tree."
+msgstr "通常の関数からアプリケーションコマンドコンテキストメニューをこのツリーの下に直接作成するデコレータ。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:3
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.context_menu:3
+msgid "This function must have a signature of :class:`~discord.Interaction` as its first parameter and taking either a :class:`~discord.Member`, :class:`~discord.User`, or :class:`~discord.Message`, or a :obj:`typing.Union` of ``Member`` and ``User`` as its second parameter."
+msgstr "関数は第一パラメータとして :class:`~discord.Interaction` を取り、第二パラメータとして :class:`~discord.Member` 、 :class:`~discord.User` 、 :class:`~discord.Message` 、または ``Member`` と ``User`` の :obj:`typing.Union` を取らないといけません。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:19
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.context_menu:19
+msgid "The name of the context menu command. If not given, it defaults to a title-case version of the callback name. Note that unlike regular slash commands this can have spaces and upper case characters in the name."
+msgstr "コンテキストメニューコマンドの名前。指定しない場合はデフォルトでコールバック名をタイトルケース化したものになります。 通常のスラッシュコマンドとは異なり、名前にスペースと大文字を含めることができます。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:1
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:1
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:1
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.error:1
+msgid "A decorator that registers a coroutine as a local error handler."
+msgstr "コルーチンをローカルエラーハンドラとして登録するデコレータ。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:3
+msgid "This must match the signature of the :meth:`on_error` callback."
+msgstr ":meth:`on_error` コールバックのシグネチャと一致する必要があります。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:5
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:7
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:7
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.error:6
+msgid "The error passed will be derived from :exc:`AppCommandError`."
+msgstr "渡されたエラーは :exc:`AppCommandError` を継承しています。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:7
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:9
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:9
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.error:8
+msgid "The coroutine to register as the local error handler."
+msgstr "ローカルエラーハンドラとして登録するコルーチン。"
+
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:10
+msgid "The coroutine passed is not actually a coroutine or does     not match the signature."
+msgstr "渡されたコルーチンが実際にはコルーチンでないか、シグネチャが一致しない場合。"
+
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.fetch_command:3
 msgid "Fetches an application command from the application."
 msgstr "アプリケーションからアプリケーションコマンドを取得します。"
@@ -2991,18 +3126,6 @@ msgstr "渡された種類に関係なく、コマンドの親も追加されま
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.add_command:8
 msgid "The application command or group to add."
 msgstr "追加するアプリケーションコマンドまたはグループ。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.add_command:10
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:14
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:27
-msgid "The guild to add the command to. If not given or ``None`` then it becomes a global command instead."
-msgstr "コマンドを追加するギルド。指定されていない場合や ``None`` の場合これはグローバルコマンドになります。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.add_command:13
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:17
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:30
-msgid "The list of guilds to add the command to. This cannot be mixed with the ``guild`` parameter. If no guilds are given at all then it becomes a global command instead."
-msgstr "コマンドを追加するギルドのリスト。 ``guild`` パラメータと併用できません。指定されていない場合これは代わりにグローバルコマンドになります。"
 
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.add_command:17
 msgid "Whether to override a command with the same name. If ``False`` an exception is raised. Default is ``False``."
@@ -3144,105 +3267,6 @@ msgstr "失敗したコマンドを取得するには、 :attr:`discord.Interact
 msgid "The interaction that is being handled."
 msgstr "処理中のインタラクション。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:1
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:1
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:1
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.error:1
-msgid "A decorator that registers a coroutine as a local error handler."
-msgstr "コルーチンをローカルエラーハンドラとして登録するデコレータ。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:3
-msgid "This must match the signature of the :meth:`on_error` callback."
-msgstr ":meth:`on_error` コールバックのシグネチャと一致する必要があります。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:5
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:7
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:7
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.error:6
-msgid "The error passed will be derived from :exc:`AppCommandError`."
-msgstr "渡されたエラーは :exc:`AppCommandError` を継承しています。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:7
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:9
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:9
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.error:8
-msgid "The coroutine to register as the local error handler."
-msgstr "ローカルエラーハンドラとして登録するコルーチン。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.error:10
-msgid "The coroutine passed is not actually a coroutine or does     not match the signature."
-msgstr "渡されたコルーチンが実際にはコルーチンでないか、シグネチャが一致しない場合。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:1
-msgid "Creates an application command directly under this tree."
-msgstr "このツリーの下にアプリケーションコマンドを作成します。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:3
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.command:3
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.command:3
-msgid "The name of the application command. If not given, it defaults to a lower-case version of the callback name."
-msgstr "アプリケーションコマンドの名前。指定しない場合は、コールバック名を小文字化したものになります。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:6
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.command:6
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.command:6
-msgid "The description of the application command. This shows up in the UI to describe the application command. If not given, it defaults to the first line of the docstring of the callback shortened to 100 characters."
-msgstr "アプリケーションコマンドの説明。これは、アプリケーションコマンドを説明するためにUIに表示されます。 指定されていない場合は、コールバックの docstring の最初の行を 100 文字以内に短縮したものが使用されます。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:10
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:23
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:25
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:43
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.command:10
-msgid "Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``.  Due to a Discord limitation, this does not work on subcommands."
-msgstr "コマンドに年齢制限をかけて、年齢制限つきチャンネルでのみ利用できるようにすべきか。デフォルトでは ``False`` です。Discordの制限により、サブコマンドでは利用できません。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:10
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:23
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:25
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:24
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:62
-msgid "Whether the command is NSFW and should only work in NSFW channels. Defaults to ``False``."
-msgstr "コマンドに年齢制限をかけて、年齢制限つきチャンネルでのみ利用できるようにすべきか。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:12
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:25
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:28
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:64
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:72
-msgid "Due to a Discord limitation, this does not work on subcommands."
-msgstr "Discord側の制限のため、サブコマンドでは動作しません。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:21
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:34
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:19
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:18
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:25
-msgid "If this is set to ``True``, then all translatable strings will implicitly be wrapped into :class:`locale_str` rather than :class:`str`. This could avoid some repetition and be more ergonomic for certain defaults such as default command names, command descriptions, and parameter names. Defaults to ``True``."
-msgstr "これが ``True`` に設定されている場合、すべての翻訳可能な文字列が :class:`str` でなく:class:`locale_str` にラップされます。これを用いると、デフォルトのコマンド名、コマンド説明、パラメータ名などを繰り返し記述するのを避け、より使いやすくなるかもしれません。デフォルトは ``True`` です。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.command:27
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:40
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:32
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:92
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:27
-msgid "A dictionary that can be used to store extraneous data. The library will not touch any values or keys within this dictionary."
-msgstr "追加のデータを保管できる辞書型。ライブラリは辞書型の中のキーや値を一切操作しません。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:1
-msgid "Creates an application command context menu from a regular function directly under this tree."
-msgstr "関数からこのツリーの下にアプリケーションコマンドコンテキストメニューを作成します。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:3
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.context_menu:3
-msgid "This function must have a signature of :class:`~discord.Interaction` as its first parameter and taking either a :class:`~discord.Member`, :class:`~discord.User`, or :class:`~discord.Message`, or a :obj:`typing.Union` of ``Member`` and ``User`` as its second parameter."
-msgstr "関数は第一パラメータとして :class:`~discord.Interaction` を取り、第二パラメータとして :class:`~discord.Member` 、 :class:`~discord.User` 、 :class:`~discord.Message` 、または ``Member`` と ``User`` の :obj:`typing.Union` を取らないといけません。"
-
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.context_menu:19
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.context_menu:19
-msgid "The name of the context menu command. If not given, it defaults to a title-case version of the callback name. Note that unlike regular slash commands this can have spaces and upper case characters in the name."
-msgstr "コンテキストメニューコマンドの名前。指定しない場合はデフォルトでコールバック名をタイトルケース化したものになります。 通常のスラッシュコマンドとは異なり、名前にスペースと大文字を含めることができます。"
-
 #: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.CommandTree.translator:1
 msgid "The translator, if any, responsible for handling translation of commands."
 msgstr "存在する場合、コマンドの翻訳を担当するトランスレータ。"
@@ -3323,11 +3347,11 @@ msgstr ":class:`~discord.Interaction` がツリーによって処理されるか
 msgid "The default implementation returns True (all interactions are processed), but can be overridden if custom behaviour is desired."
 msgstr "デフォルトの実装では、True が返されます （すべてのインタラクションが処理されます）が、カスタム動作が必要な場合は上書きできます。"
 
-#: ../../interactions/api.rst:477
+#: ../../interactions/api.rst:487
 msgid "Commands"
 msgstr "コマンド"
 
-#: ../../interactions/api.rst:480
+#: ../../interactions/api.rst:490
 msgid "Command"
 msgstr "Command"
 
@@ -3395,10 +3419,72 @@ msgstr "コマンドをギルド内でのみ使用できるようにするかど
 msgid "Optional[:class:`Group`]"
 msgstr "Optional[:class:`Group`]"
 
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:1
+msgid "A decorator that registers a coroutine as an autocomplete prompt for a parameter."
+msgstr "パラメータのオートコンプリートに使用されるコルーチンを登録するデコレータ。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:3
+msgid "The coroutine callback must have 2 parameters, the :class:`~discord.Interaction`, and the current value by the user (the string currently being typed by the user)."
+msgstr "コルーチンのコールバックは、 :class:`~discord.Interaction` とユーザーが現在入力している値 (入力された文字列) の 2 つのパラメータを受け取らないといけません。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:6
+msgid "To get the values from other parameters that may be filled in, accessing :attr:`.Interaction.namespace` will give a :class:`Namespace` object with those values."
+msgstr "入力される可能性のある他のパラメータの値を取得するには、 :attr:`.Interaction.namespace` にアクセスして、これらの値を持つ :class:`Namespace` オブジェクトを取得できます。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:10
+msgid "Parent :func:`checks <check>` are ignored within an autocomplete. However, checks can be added to the autocomplete callback and the ones added will be called. If the checks fail for any reason then an empty list is sent as the interaction response."
+msgstr "親の :func:`チェック <check>` はオートコンプリート内で無視されます。 ただし、チェックはautocomplete コールバックに追加することができ、追加したものが呼び出されます。 何らかの理由でチェックに失敗した場合、インタラクションの応答として空のリストが送信されます。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:14
+msgid "The coroutine decorator **must** return a list of :class:`~discord.app_commands.Choice` objects. Only up to 25 objects are supported."
+msgstr "コルーチンのデコレータは :class:`~discord.app_commands.Choice` オブジェクトのリストを **返さないといけません** 。オブジェクトは25個まで返すことができます。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:17
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:4
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:15
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:7
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.choices:3
+msgid "Example:"
+msgstr "例:"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:37
+msgid "The parameter name to register as autocomplete."
+msgstr "オートコンプリートに登録するパラメータ名。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:40
+msgid "The coroutine passed is not actually a coroutine or     the parameter is not found or of an invalid type."
+msgstr "渡されたコルーチンが実際にはコルーチンでない場合や、パラメータが見つからず、または無効な型であった場合。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:3
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:3
+msgid "The local error handler is called whenever an exception is raised in the body of the command or during handling of the command. The error handler must take 2 parameters, the interaction and the error."
+msgstr "ローカルのエラーハンドラは、コマンドの本体やコマンドの処理中に例外が発生するたびに呼び出されます。 エラーハンドラは、インタラクションとエラーの2つのパラメータを取らないといけません。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:12
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:12
+msgid "The coroutine passed is not actually a coroutine."
+msgstr "渡された関数がコルーチンではない場合。"
+
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Command.callback:3
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.ContextMenu.callback:3
 msgid ":ref:`coroutine <coroutine>`"
 msgstr ":ref:`coroutine <coroutine>`"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Command.parameters:1
+msgid "Returns a list of parameters for this command."
+msgstr "このコマンドのパラメータのリストを返します。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Command.parameters:3
+msgid "This does not include the ``self`` or ``interaction`` parameters."
+msgstr "これには ``self`` と ``interaction`` パラメータは含まれていません。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Command.parameters:5
+msgid "The parameters of this command."
+msgstr "このコマンドのパラメータ。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Command.parameters:6
+msgid "List[:class:`Parameter`]"
+msgstr "List[:class:`Parameter`]"
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.get_parameter:1
 msgid "Retrieves a parameter by its name."
@@ -3423,52 +3509,6 @@ msgstr "Optional[:class:`Parameter`]"
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Command.root_parent:1
 msgid "The root parent of this command."
 msgstr "コマンドの大元の親。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:3
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:3
-msgid "The local error handler is called whenever an exception is raised in the body of the command or during handling of the command. The error handler must take 2 parameters, the interaction and the error."
-msgstr "ローカルのエラーハンドラは、コマンドの本体やコマンドの処理中に例外が発生するたびに呼び出されます。 エラーハンドラは、インタラクションとエラーの2つのパラメータを取らないといけません。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.error:12
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.error:12
-msgid "The coroutine passed is not actually a coroutine."
-msgstr "渡された関数がコルーチンではない場合。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:1
-msgid "A decorator that registers a coroutine as an autocomplete prompt for a parameter."
-msgstr "パラメータのオートコンプリートに使用されるコルーチンを登録するデコレータ。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:3
-msgid "The coroutine callback must have 2 parameters, the :class:`~discord.Interaction`, and the current value by the user (usually either a :class:`str`, :class:`int`, or :class:`float`, depending on the type of the parameter being marked as autocomplete)."
-msgstr "コルーチンのコールバックは :class:`~discord.Interaction` とユーザーが現在入力している値 (オートコンプリートするパラメータのタイプによって、通常 :class:`str` 、 :class:`int` 、または :class:`float` )の2つのパラメータを取らないといけません。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:7
-msgid "To get the values from other parameters that may be filled in, accessing :attr:`.Interaction.namespace` will give a :class:`Namespace` object with those values."
-msgstr "入力される可能性のある他のパラメータの値を取得するには、 :attr:`.Interaction.namespace` にアクセスして、これらの値を持つ :class:`Namespace` オブジェクトを取得できます。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:11
-msgid "Parent :func:`checks <check>` are ignored within an autocomplete. However, checks can be added to the autocomplete callback and the ones added will be called. If the checks fail for any reason then an empty list is sent as the interaction response."
-msgstr "親の :func:`チェック <check>` はオートコンプリート内で無視されます。 ただし、チェックはautocomplete コールバックに追加することができ、追加したものが呼び出されます。 何らかの理由でチェックに失敗した場合、インタラクションの応答として空のリストが送信されます。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:15
-msgid "The coroutine decorator **must** return a list of :class:`~discord.app_commands.Choice` objects. Only up to 25 objects are supported."
-msgstr "コルーチンのデコレータは :class:`~discord.app_commands.Choice` オブジェクトのリストを **返さないといけません** 。オブジェクトは25個まで返すことができます。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:18
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:4
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:7
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.choices:3
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:12
-msgid "Example:"
-msgstr "例:"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:38
-msgid "The parameter name to register as autocomplete."
-msgstr "オートコンプリートに登録するパラメータ名。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:41
-msgid "The coroutine passed is not actually a coroutine or     the parameter is not found or of an invalid type."
-msgstr "渡されたコルーチンが実際にはコルーチンでない場合や、パラメータが見つからず、または無効な型であった場合。"
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.add_check:1
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu.add_check:1
@@ -3500,7 +3540,7 @@ msgstr "この関数は冪等性を保持しており、関数がコマンドの
 msgid "The function to remove from the checks."
 msgstr "チェックから除去する関数。"
 
-#: ../../interactions/api.rst:488
+#: ../../interactions/api.rst:505
 msgid "Parameter"
 msgstr "Parameter"
 
@@ -3566,7 +3606,7 @@ msgstr "このパラメータが属するコマンド。"
 msgid ":class:`Command`"
 msgstr ":class:`Command`"
 
-#: ../../interactions/api.rst:496
+#: ../../interactions/api.rst:513
 msgid "ContextMenu"
 msgstr "ContextMenu"
 
@@ -3604,7 +3644,7 @@ msgstr "コマンドをギルド内でのみ使用できるようにするかど
 msgid "The coroutine that is executed when the context menu is called."
 msgstr "コンテキストメニューが呼び出されたときに実行されるコルーチン。"
 
-#: ../../interactions/api.rst:504
+#: ../../interactions/api.rst:525
 msgid "Group"
 msgstr "Group"
 
@@ -3661,6 +3701,18 @@ msgstr "グループをギルド内でのみ使用できるようにするかど
 msgid "The parent group. ``None`` if there isn't one."
 msgstr "親グループ。存在しない場合は ``None`` 。"
 
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.command:1
+msgid "A decorator that creates an application command from a regular function under this group."
+msgstr "通常の関数からアプリケーションコマンドをこのグループの下に作成するデコレータ。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.error:3
+msgid "The local error handler is called whenever an exception is raised in a child command. The error handler must take 2 parameters, the interaction and the error."
+msgstr "ローカルのエラーハンドラは、子コマンドで例外が発生するたびに呼び出されます。 エラーハンドラは、インタラクションとエラーの2つのパラメータを取らないといけません。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.error:11
+msgid "The coroutine passed is not actually a coroutine, or is an invalid coroutine."
+msgstr "渡されたコルーチンが実際にはコルーチンでないか、無効なコルーチンである場合。"
+
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.Group.root_parent:1
 msgid "The parent of this group."
 msgstr "このグループの親。"
@@ -3698,14 +3750,6 @@ msgstr "子コマンドが :exc:`AppCommandError` を送出したときに呼び
 #: ../../../discord/app_commands/translator.py:docstring of discord.app_commands.translator.Translator.unload:5
 msgid "The default implementation does nothing."
 msgstr "デフォルトの実装では何もしません。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.error:3
-msgid "The local error handler is called whenever an exception is raised in a child command. The error handler must take 2 parameters, the interaction and the error."
-msgstr "ローカルのエラーハンドラは、子コマンドで例外が発生するたびに呼び出されます。 エラーハンドラは、インタラクションとエラーの2つのパラメータを取らないといけません。"
-
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.error:11
-msgid "The coroutine passed is not actually a coroutine, or is an invalid coroutine."
-msgstr "渡されたコルーチンが実際にはコルーチンでないか、無効なコルーチンである場合。"
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.interaction_check:3
 msgid "A callback that is called when an interaction happens within the group that checks whether a command inside the group should be executed."
@@ -3768,11 +3812,7 @@ msgstr "取得するコマンドまたはグループの名前。"
 msgid "The command or group that was retrieved. If nothing was found then ``None`` is returned instead."
 msgstr "取得されたコマンドまたはグループ。何も見つからなかった場合は ``None`` が返ります。"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group.command:1
-msgid "Creates an application command under this group."
-msgstr "このグループの下にアプリケーションコマンドを作成します。"
-
-#: ../../interactions/api.rst:512
+#: ../../interactions/api.rst:540
 msgid "Decorators"
 msgstr "デコレータ"
 
@@ -3789,10 +3829,14 @@ msgid "Describes the given parameters by their name using the key of the keyword
 msgstr "キーワード引数のキーを名前として使用して与えられたパラメータを説明します。"
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:13
+msgid "Alternatively, you can describe parameters using Google, Sphinx, or Numpy style docstrings."
+msgstr "または、Google、Sphinx、Numpy スタイルのドキュメント文字列を使用してパラメータを記述することもできます。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:30
 msgid "The description of the parameters."
 msgstr "パラメータの説明。"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:16
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:33
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:20
 msgid "The parameter name is not found."
 msgstr "パラメータ名が見つからない場合。"
@@ -3917,7 +3961,7 @@ msgstr "デフォルトとして設定する権限を示すキーワード引数
 msgid "Example"
 msgstr "例"
 
-#: ../../interactions/api.rst:542
+#: ../../interactions/api.rst:570
 msgid "Checks"
 msgstr "チェック"
 
@@ -4070,7 +4114,7 @@ msgstr "所有者以外の全員にクールダウンを設定します。"
 msgid "A function that takes an interaction and returns a cooldown that will apply to that interaction or ``None`` if the interaction should not have a cooldown."
 msgstr "インタラクションを受け取り、このインタラクションに適用されるクールダウンまたはクールダウンを回避する場合 ``None`` を返す関数。"
 
-#: ../../interactions/api.rst:566
+#: ../../interactions/api.rst:594
 msgid "Cooldown"
 msgstr "Cooldown"
 
@@ -4150,7 +4194,7 @@ msgstr "このクールダウンの新しいインスタンス。"
 msgid ":class:`Cooldown`"
 msgstr ":class:`Cooldown`"
 
-#: ../../interactions/api.rst:575
+#: ../../interactions/api.rst:603
 msgid "Namespace"
 msgstr "Namespace"
 
@@ -4258,11 +4302,11 @@ msgstr "オートコンプリートのインタラクションでは、名前空
 msgid "This is a Discord limitation."
 msgstr "これはDiscordの制限です。"
 
-#: ../../interactions/api.rst:583
+#: ../../interactions/api.rst:611
 msgid "Transformers"
 msgstr "トランスフォーマー"
 
-#: ../../interactions/api.rst:586
+#: ../../interactions/api.rst:614
 msgid "Transformer"
 msgstr "Transformer"
 
@@ -4366,7 +4410,7 @@ msgstr "ユーザーが入力した現在の値。"
 msgid "A list of choices to be displayed to the user, a maximum of 25."
 msgstr "ユーザーに表示される選択肢のリスト、最大25個です。"
 
-#: ../../interactions/api.rst:594
+#: ../../interactions/api.rst:622
 msgid "Transform"
 msgstr "Transform"
 
@@ -4383,7 +4427,7 @@ msgstr "型チェック時には型チェッカがコードの意図を理解で
 msgid "For example usage, check :class:`Transformer`."
 msgstr "使用例は、 :class:`Transformer` を確認してください。"
 
-#: ../../interactions/api.rst:602
+#: ../../interactions/api.rst:630
 msgid "Range"
 msgstr "Range"
 
@@ -4407,11 +4451,11 @@ msgstr "``Range[int, None, 10]`` は最小値なし、最大値10を意味しま
 msgid "``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10."
 msgstr "``Range[int, 1, 10]`` は最小値1、最大値10を意味します。"
 
-#: ../../interactions/api.rst:610
+#: ../../interactions/api.rst:638
 msgid "Translations"
 msgstr "翻訳"
 
-#: ../../interactions/api.rst:613
+#: ../../interactions/api.rst:641
 msgid "Translator"
 msgstr "Translator"
 
@@ -4495,7 +4539,7 @@ msgstr "翻訳先のローケル。"
 msgid "The translation context where the string originated from. For better type checking ergonomics, the ``TranslationContextTypes`` type can be used instead to aid with type narrowing. It is functionally equivalent to :class:`TranslationContext`."
 msgstr "文字列を翻訳するときの文脈。より良い型チェックのために、 ``TranslationContextTypes`` 型を使用して型の絞り込みを行うことができます。これは :class:`TranslationContext` と機能的に同じです。"
 
-#: ../../interactions/api.rst:621
+#: ../../interactions/api.rst:649
 msgid "locale_str"
 msgstr "locale_str"
 
@@ -4547,7 +4591,7 @@ msgstr "翻訳する文字列についての追加のデータを保管できる
 msgid "Since these are passed via keyword arguments, the keys are strings."
 msgstr "これらはキーワード引数で渡されるので、キーは文字列です。"
 
-#: ../../interactions/api.rst:629
+#: ../../interactions/api.rst:657
 msgid "TranslationContext"
 msgstr "TranslationContext"
 
@@ -4571,47 +4615,47 @@ msgstr ":class:`TranslationContextLocation`"
 msgid "The extraneous data that is being translated."
 msgstr "翻訳されている追加のデータ。"
 
-#: ../../interactions/api.rst:637
+#: ../../interactions/api.rst:665
 msgid "TranslationContextLocation"
 msgstr "TranslationContextLocation"
 
-#: ../../interactions/api.rst:642
+#: ../../interactions/api.rst:670
 msgid "An enum representing the location context that the translation occurs in when requested for translation."
 msgstr "翻訳が要求されたときに、翻訳すべき場所を示す列挙型。"
 
-#: ../../interactions/api.rst:648
+#: ../../interactions/api.rst:676
 msgid "The translation involved a command name."
 msgstr "コマンド名の翻訳。"
 
-#: ../../interactions/api.rst:651
+#: ../../interactions/api.rst:679
 msgid "The translation involved a command description."
 msgstr "コマンドの説明の翻訳。"
 
-#: ../../interactions/api.rst:655
+#: ../../interactions/api.rst:683
 msgid "The translation involved a group name."
 msgstr "グループ名の翻訳。"
 
-#: ../../interactions/api.rst:658
+#: ../../interactions/api.rst:686
 msgid "The translation involved a group description."
 msgstr "グループの説明の翻訳。"
 
-#: ../../interactions/api.rst:661
+#: ../../interactions/api.rst:689
 msgid "The translation involved a parameter name."
 msgstr "パラメータ名の翻訳。"
 
-#: ../../interactions/api.rst:664
+#: ../../interactions/api.rst:692
 msgid "The translation involved a parameter description."
 msgstr "パラメータの説明の翻訳。"
 
-#: ../../interactions/api.rst:667
+#: ../../interactions/api.rst:695
 msgid "The translation involved a choice name."
 msgstr "選択肢名の翻訳。"
 
-#: ../../interactions/api.rst:670
+#: ../../interactions/api.rst:698
 msgid "The translation involved something else entirely. This is useful for running :meth:`Translator.translate` for custom usage."
 msgstr "その他の翻訳。これは他の目的で :meth:`Translator.translate` を実行するときに役立ちます。"
 
-#: ../../interactions/api.rst:674
+#: ../../interactions/api.rst:702
 msgid "Exceptions"
 msgstr "例外"
 
@@ -4864,84 +4908,84 @@ msgstr "これにより、同期の失敗に関する情報が少し読みやす
 msgid "This inherits from :exc:`~discord.app_commands.AppCommandError` and :exc:`~discord.HTTPException`."
 msgstr "これは :exc:`~discord.app_commands.AppCommandError` と :exc:`~discord.HTTPException` を継承します。"
 
-#: ../../interactions/api.rst:728
+#: ../../interactions/api.rst:756
 msgid "Exception Hierarchy"
 msgstr "例外の階層構造"
 
-#: ../../interactions/api.rst:750
+#: ../../interactions/api.rst:778
 msgid ":exc:`~discord.DiscordException`"
 msgstr ":exc:`~discord.DiscordException`"
 
-#: ../../interactions/api.rst:748
+#: ../../interactions/api.rst:776
 msgid ":exc:`~discord.app_commands.AppCommandError`"
 msgstr ":exc:`~discord.app_commands.AppCommandError`"
 
-#: ../../interactions/api.rst:734
+#: ../../interactions/api.rst:762
 msgid ":exc:`~discord.app_commands.CommandInvokeError`"
 msgstr ":exc:`~discord.app_commands.CommandInvokeError`"
 
-#: ../../interactions/api.rst:735
+#: ../../interactions/api.rst:763
 msgid ":exc:`~discord.app_commands.TransformerError`"
 msgstr ":exc:`~discord.app_commands.TransformerError`"
 
-#: ../../interactions/api.rst:736
+#: ../../interactions/api.rst:764
 msgid ":exc:`~discord.app_commands.TranslationError`"
 msgstr ":exc:`~discord.app_commands.TranslationError`"
 
-#: ../../interactions/api.rst:742
+#: ../../interactions/api.rst:770
 msgid ":exc:`~discord.app_commands.CheckFailure`"
 msgstr ":exc:`~discord.app_commands.CheckFailure`"
 
-#: ../../interactions/api.rst:738
+#: ../../interactions/api.rst:766
 msgid ":exc:`~discord.app_commands.NoPrivateMessage`"
 msgstr ":exc:`~discord.app_commands.NoPrivateMessage`"
 
-#: ../../interactions/api.rst:739
+#: ../../interactions/api.rst:767
 msgid ":exc:`~discord.app_commands.MissingRole`"
 msgstr ":exc:`~discord.app_commands.MissingRole`"
 
-#: ../../interactions/api.rst:740
+#: ../../interactions/api.rst:768
 msgid ":exc:`~discord.app_commands.MissingAnyRole`"
 msgstr ":exc:`~discord.app_commands.MissingAnyRole`"
 
-#: ../../interactions/api.rst:741
+#: ../../interactions/api.rst:769
 msgid ":exc:`~discord.app_commands.MissingPermissions`"
 msgstr ":exc:`~discord.app_commands.MissingPermissions`"
 
-#: ../../interactions/api.rst:742
+#: ../../interactions/api.rst:770
 msgid ":exc:`~discord.app_commands.BotMissingPermissions`"
 msgstr ":exc:`~discord.app_commands.BotMissingPermissions`"
 
-#: ../../interactions/api.rst:743
+#: ../../interactions/api.rst:771
 msgid ":exc:`~discord.app_commands.CommandOnCooldown`"
 msgstr ":exc:`~discord.app_commands.CommandOnCooldown`"
 
-#: ../../interactions/api.rst:744
+#: ../../interactions/api.rst:772
 msgid ":exc:`~discord.app_commands.CommandLimitReached`"
 msgstr ":exc:`~discord.app_commands.CommandLimitReached`"
 
-#: ../../interactions/api.rst:745
+#: ../../interactions/api.rst:773
 msgid ":exc:`~discord.app_commands.CommandAlreadyRegistered`"
 msgstr ":exc:`~discord.app_commands.CommandAlreadyRegistered`"
 
-#: ../../interactions/api.rst:746
+#: ../../interactions/api.rst:774
 msgid ":exc:`~discord.app_commands.CommandSignatureMismatch`"
 msgstr ":exc:`~discord.app_commands.CommandSignatureMismatch`"
 
-#: ../../interactions/api.rst:747
+#: ../../interactions/api.rst:775
 msgid ":exc:`~discord.app_commands.CommandNotFound`"
 msgstr ":exc:`~discord.app_commands.CommandNotFound`"
 
-#: ../../interactions/api.rst:748
+#: ../../interactions/api.rst:776
 msgid ":exc:`~discord.app_commands.MissingApplicationID`"
 msgstr ":exc:`~discord.app_commands.MissingApplicationID`"
 
-#: ../../interactions/api.rst:749
-#: ../../interactions/api.rst:751
+#: ../../interactions/api.rst:777
+#: ../../interactions/api.rst:779
 msgid ":exc:`~discord.app_commands.CommandSyncFailure`"
 msgstr ":exc:`~discord.app_commands.CommandSyncFailure`"
 
-#: ../../interactions/api.rst:750
+#: ../../interactions/api.rst:778
 msgid ":exc:`~discord.HTTPException`"
 msgstr ":exc:`~discord.HTTPException`"
 
