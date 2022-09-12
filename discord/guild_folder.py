@@ -46,21 +46,15 @@ class GuildFolder:
 
     .. note::
         Guilds not in folders *are* actually in folders API wise, with them being the only member.
-        Because Discord.
+
+        These folders do not have an ID or name.
+
+    .. versionadded:: 1.9
+
+    .. versionchanged:: 2.0
+        Removed various operations and made ``id`` and ``name`` optional.
 
     .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two guild folders are equal.
-
-        .. describe:: x != y
-
-            Checks if two guild folders are not equal.
-
-        .. describe:: hash(x)
-
-            Return the folder's hash.
 
         .. describe:: str(x)
 
@@ -72,9 +66,9 @@ class GuildFolder:
 
     Attributes
     ----------
-    id: Union[:class:`str`, :class:`int`]
+    id: Optional[Union[:class:`str`, :class:`int`]]
         The ID of the folder.
-    name: :class:`str`
+    name: Optional[:class:`str`]
         The name of the folder.
     guilds: List[:class:`Guild`]
         The guilds in the folder.
@@ -84,27 +78,16 @@ class GuildFolder:
 
     def __init__(self, *, data, state: ConnectionState) -> None:
         self._state = state
-        self.id: Snowflake = data['id']
-        self.name: str = data['name']
-        self._colour: int = data['color']
+        self.id: Optional[Snowflake] = data['id']
+        self.name: Optional[str] = data['name']
+        self._colour: Optional[int] = data['color']
         self.guilds: List[Guild] = list(filter(None, map(self._get_guild, data['guild_ids'])))  # type: ignore # Lying for better developer UX
 
     def __str__(self) -> str:
-        return self.name or 'None'
+        return self.name or ', '.join(guild.name for guild in self.guilds)
 
     def __repr__(self) -> str:
-        return f'<GuildFolder id={self.id} name={self.name} guilds={self.guilds!r}>'
-
-    def __eq__(self, other) -> bool:
-        return isinstance(other, GuildFolder) and self.id == other.id
-
-    def __ne__(self, other) -> bool:
-        if isinstance(other, GuildFolder):
-            return self.id != other.id
-        return True
-
-    def __hash__(self) -> int:
-        return hash(self.id)
+        return f'<GuildFolder id={self.id} name={self.name!r} guilds={self.guilds!r}>'
 
     def __len__(self) -> int:
         return len(self.guilds)
