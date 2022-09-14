@@ -2013,7 +2013,7 @@ class Message(PartialMessage, Hashable):
         Parameters
         ----------
         query: Optional[:class:`str`]
-            The query to search for.
+            The query to search for. Specifying this limits results to 25 commands max.
 
             This parameter is faked if ``application`` is specified.
         limit: Optional[:class:`int`]
@@ -2025,7 +2025,7 @@ class Message(PartialMessage, Hashable):
             List of up to 100 command IDs to search for. If the command doesn't exist, it won't be returned.
 
             If ``limit`` is passed alongside this parameter, this parameter will serve as a "preferred commands" list.
-            This means that the endpoint will return the found commands + ``limit`` more, if available.
+            This means that the endpoint will return the found commands + up to ``limit`` more, if available.
         application: Optional[:class:`~discord.abc.Snowflake`]
             Whether to return this application's commands. Always set to DM recipient in a private channel context.
         include_applications: :class:`bool`

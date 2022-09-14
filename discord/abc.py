@@ -210,6 +210,7 @@ async def _handle_commands(
     state = messageable._state
     endpoint = state.http.search_application_commands
     channel = await messageable._get_channel()
+    _, cls = _command_factory(type.value)
 
     application_id = application.id if application else None
     if channel.type == ChannelType.private:
@@ -221,12 +222,13 @@ async def _handle_commands(
     elif channel.type == ChannelType.group:
         return
 
+    prev_cursor = MISSING
+    cursor = MISSING
     while True:
         # We keep two cursors because Discord just sends us an infinite loop sometimes
-        prev_cursor = MISSING
-        cursor = MISSING
         retrieve = min((25 if not command_ids else 0) if limit is None else limit, 25)
-        if limit is not None:
+
+        if not application_id and limit is not None:
             limit -= retrieve
         if (not command_ids and retrieve < 1) or cursor is None or (prev_cursor is not MISSING and prev_cursor == cursor):
             return
@@ -236,9 +238,9 @@ async def _handle_commands(
             type.value,
             limit=retrieve if not application_id else None,
             query=query if not command_ids and not application_id else None,
-            command_ids=command_ids if not application_id else None,  # type: ignore
+            command_ids=command_ids if not application_id and not cursor else None,  # type: ignore
             application_id=application_id,
-            include_applications=include_applications,
+            include_applications=include_applications if (not application_id or include_applications) else None,
             cursor=cursor,
         )
         prev_cursor = cursor
@@ -246,25 +248,28 @@ async def _handle_commands(
         cmds = data['application_commands']
         apps: Dict[int, dict] = {int(app['id']): app for app in data.get('applications') or []}
 
-        if len(cmds) <= min(limit if limit else 25, 25) or application_id:
-            limit = 0
-
         for cmd in cmds:
             # Handle faked parameters
-            if application_id and command_ids and int(cmd['id']) not in command_ids:
+            if application_id and query and query.lower() not in cmd['name']:
                 continue
-            elif application_id and query and query.lower() not in cmd['name']:
+            elif application_id and (not command_ids or int(cmd['id']) not in command_ids) and limit == 0:
                 continue
-            elif application_id and limit == 0:
-                return
 
             # We follow Discord behavior
-            if limit is not None and (not command_ids or int(cmd['id']) not in command_ids):
+            if application_id and limit is not None and (not command_ids or int(cmd['id']) not in command_ids):
                 limit -= 1
 
+            try:
+                command_ids.remove(int(cmd['id'])) if command_ids else None
+            except ValueError:
+                pass
+
             cmd['application'] = apps.get(int(cmd['application_id']))
-            _, cls = _command_factory(type.value)
             yield cls(state=state, data=cmd, channel=channel, target=target)
+
+        command_ids = None
+        if application_id or len(cmds) < min(limit if limit else 25, 25) or len(cmds) == limit == 25:
+            return
 
 
 @runtime_checkable
@@ -1882,7 +1887,7 @@ class Messageable:
         Parameters
         ----------
         query: Optional[:class:`str`]
-            The query to search for.
+            The query to search for. Specifying this limits results to 25 commands max.
 
             This parameter is faked if ``application`` is specified.
         limit: Optional[:class:`int`]
@@ -1894,7 +1899,7 @@ class Messageable:
             List of up to 100 command IDs to search for. If the command doesn't exist, it won't be returned.
 
             If ``limit`` is passed alongside this parameter, this parameter will serve as a "preferred commands" list.
-            This means that the endpoint will return the found commands + ``limit`` more, if available.
+            This means that the endpoint will return the found commands + up to ``limit`` more, if available.
         application: Optional[:class:`~discord.abc.Snowflake`]
             Whether to return this application's commands. Always set to DM recipient in a private channel context.
         include_applications: :class:`bool`
@@ -1958,7 +1963,7 @@ class Messageable:
         Parameters
         ----------
         query: Optional[:class:`str`]
-            The query to search for.
+            The query to search for. Specifying this limits results to 25 commands max.
 
             This parameter is faked if ``application`` is specified.
         limit: Optional[:class:`int`]
@@ -1970,7 +1975,7 @@ class Messageable:
             List of up to 100 command IDs to search for. If the command doesn't exist, it won't be returned.
 
             If ``limit`` is passed alongside this parameter, this parameter will serve as a "preferred commands" list.
-            This means that the endpoint will return the found commands + ``limit`` more, if available.
+            This means that the endpoint will return the found commands + up to ``limit`` more, if available.
         application: Optional[:class:`~discord.abc.Snowflake`]
             Whether to return this application's commands. Always set to DM recipient in a private channel context.
         include_applications: :class:`bool`
