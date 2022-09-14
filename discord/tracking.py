@@ -84,7 +84,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
 
     def _encode_data(self, data) -> str:
         library = {
-            'None': 'e30=',
+            None: 'e30=',
             # Locations
             'Friends': 'eyJsb2NhdGlvbiI6IkZyaWVuZHMifQ==',
             'ContextMenu': 'eyJsb2NhdGlvbiI6IkNvbnRleHRNZW51In0=',
@@ -99,13 +99,14 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
             'Verify Email': 'eyJsb2NhdGlvbiI6IlZlcmlmeSBFbWFpbCJ9',
             'New Group DM': 'eyJsb2NhdGlvbiI6Ik5ldyBHcm91cCBETSJ9',
             'Add Friends to DM': 'eyJsb2NhdGlvbiI6IkFkZCBGcmllbmRzIHRvIERNIn0=',
+            'Group DM Invite Create': 'eyJsb2NhdGlvbiI6Ikdyb3VwIERNIEludml0ZSBDcmVhdGUifQ==',
             # Sources
             'Chat Input Blocker - Lurker Mode': 'eyJzb3VyY2UiOiJDaGF0IElucHV0IEJsb2NrZXIgLSBMdXJrZXIgTW9kZSJ9',
             'Notice - Lurker Mode': 'eyJzb3VyY2UiOiJOb3RpY2UgLSBMdXJrZXIgTW9kZSJ9',
         }
 
         try:
-            return library[self.target or 'None']
+            return library[self.target]
         except KeyError:
             return b64encode(json.dumps(data, separators=(',', ':')).encode()).decode('utf-8')
 
@@ -156,6 +157,11 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
     @classmethod
     def _from_add_to_dm(cls) -> Self:
         data = {'location': 'Add Friends to DM'}
+        return cls(data)
+
+    @classmethod
+    def _from_group_dm_invite(cls) -> Self:
+        data = {'location': 'Group DM Invite Create'}
         return cls(data)
 
     @classmethod

@@ -1721,8 +1721,14 @@ class HTTPClient:
         payload = {
             'max_age': max_age,
         }
+        props = ContextProperties._from_group_dm_invite()
 
-        return self.request(Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id), json=payload)
+        return self.request(
+            Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id), json=payload, context_properties=props
+        )
+
+    def create_friend_invite(self) -> Response[invite.Invite]:
+        return self.request(Route('POST', '/users/@me/invites'), json={}, context_properties=ContextProperties._empty())
 
     def get_invite(
         self,
@@ -1748,8 +1754,14 @@ class HTTPClient:
     def invites_from_channel(self, channel_id: Snowflake) -> Response[List[invite.Invite]]:
         return self.request(Route('GET', '/channels/{channel_id}/invites', channel_id=channel_id))
 
-    def delete_invite(self, invite_id: str, *, reason: Optional[str] = None) -> Response[None]:
+    def get_friend_invites(self) -> Response[List[invite.Invite]]:
+        return self.request(Route('GET', '/users/@me/invites'), context_properties=ContextProperties._empty())
+
+    def delete_invite(self, invite_id: str, *, reason: Optional[str] = None) -> Response[invite.Invite]:
         return self.request(Route('DELETE', '/invites/{invite_id}', invite_id=invite_id), reason=reason)
+
+    def delete_friend_invites(self) -> Response[List[invite.Invite]]:
+        return self.request(Route('DELETE', '/users/@me/invites'), context_properties=ContextProperties._empty())
 
     # Role management
 

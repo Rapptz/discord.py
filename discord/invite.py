@@ -56,7 +56,6 @@ if TYPE_CHECKING:
     from .user import User
     from .appinfo import PartialApplication
     from .message import Message
-    from .channel import GroupChannel
 
     InviteGuildType = Union[Guild, 'PartialInviteGuild', Object]
     InviteChannelType = Union[GuildChannel, 'PartialInviteChannel', Object, PrivateChannel]
@@ -68,7 +67,7 @@ class PartialInviteChannel:
     """Represents a "partial" invite channel.
 
     This model will be given when the user is not part of the
-    guild the :class:`Invite` resolves to.
+    guild or group channel the :class:`Invite` resolves to.
 
     .. container:: operations
 
@@ -98,19 +97,21 @@ class PartialInviteChannel:
         The partial channel's type.
     """
 
-    __slots__ = ('id', 'name', 'type')
+    __slots__ = ('_state', 'id', 'name', 'type', '_icon')
 
-    def __new__(cls, data: Optional[InviteChannelPayload]):
+    def __new__(cls, data: Optional[InviteChannelPayload], *args, **kwargs):
         if data is None:
             return
         return super().__new__(cls)
 
-    def __init__(self, data: Optional[InviteChannelPayload]):
+    def __init__(self, data: Optional[InviteChannelPayload], state: ConnectionState):
         if data is None:
             return
+        self._state = state
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self.type: ChannelType = try_enum(ChannelType, data['type'])
+        self._icon: Optional[str] = data.get('icon')
 
     def __str__(self) -> str:
         return self.name
@@ -127,6 +128,18 @@ class PartialInviteChannel:
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return snowflake_time(self.id)
+
+    @property
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the channel's icon asset if available.
+
+        Only applicable to channels of type :attr:`ChannelType.group`.
+
+        .. versionadded:: 2.0
+        """
+        if self._icon is None:
+            return None
+        return Asset._from_icon(self._state, self.id, self._icon, path='channel')
 
 
 class PartialInviteGuild:
@@ -369,6 +382,22 @@ class Invite(Hashable):
         The guild's welcome screen, if available.
 
         .. versionadded:: 2.0
+    new_member: :class:`bool`
+        Whether the user was not previously a member of the guild.
+
+        .. versionadded:: 2.0
+
+        .. note::
+            This is only possibly ``True`` in accepted invite objects
+            (i.e. the objects received from :meth:`accept` and :meth:`use`).
+    show_verification_form: :class:`bool`
+        Whether the user should be shown the guild's member verification form.
+
+        .. versionadded:: 2.0
+
+        .. note::
+            This is only possibly ``True`` in accepted invite objects
+            (i.e. the objects received from :meth:`accept` and :meth:`use`).
     """
 
     __slots__ = (
@@ -394,6 +423,8 @@ class Invite(Hashable):
         '_message',
         'welcome_screen',
         'type',
+        'new_member',
+        'show_verification_form',
     )
 
     BASE = 'https://discord.gg'
@@ -420,6 +451,12 @@ class Invite(Hashable):
         self.approximate_presence_count: Optional[int] = data.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = data.get('approximate_member_count')
         self._message: Optional[Message] = data.get('message')
+
+        # We inject some missing data here since we can assume it
+        if self.type in (InviteType.group_dm, InviteType.friend):
+            self.temporary = False
+            if self.max_uses is None:
+                self.max_uses = 5 if self.type is InviteType.friend else 0
 
         expires_at = data.get('expires_at', None)
         self.expires_at: Optional[datetime.datetime] = parse_time(expires_at) if expires_at else None
@@ -454,6 +491,10 @@ class Invite(Hashable):
         )
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
 
+        # Only present on accepted invites
+        self.new_member: bool = data.get('new_member', False)
+        self.show_verification_form: bool = data.get('show_verification_form', False)
+
     @classmethod
     def from_incomplete(cls, *, state: ConnectionState, data: InvitePayload, message: Optional[Message] = None) -> Self:
         guild: Optional[Union[Guild, PartialInviteGuild]]
@@ -473,7 +514,7 @@ class Invite(Hashable):
             if welcome_screen is not None:
                 welcome_screen = WelcomeScreen(data=welcome_screen, guild=guild)
 
-        channel = PartialInviteChannel(data.get('channel'))
+        channel = PartialInviteChannel(data.get('channel'), state)
         channel = state.get_channel(getattr(channel, 'id', None)) or channel
 
         if message is not None:
@@ -519,7 +560,7 @@ class Invite(Hashable):
         if data is None:
             return None
 
-        return PartialInviteChannel(data)
+        return PartialInviteChannel(data, self._state)
 
     def __str__(self) -> str:
         return self.url
@@ -570,7 +611,7 @@ class Invite(Hashable):
 
         return self
 
-    async def use(self) -> Union[Guild, User, GroupChannel]:
+    async def use(self) -> Invite:
         """|coro|
 
         Uses the invite.
@@ -587,8 +628,8 @@ class Invite(Hashable):
 
         Returns
         -------
-        Union[:class:`Guild`, :class:`User`, :class:`GroupChannel`]
-            The guild/group DM joined, or user added as a friend.
+        :class:`Invite`
+            The accepted invite.
         """
         state = self._state
         type = self.type
@@ -601,22 +642,9 @@ class Invite(Hashable):
                 'channel_type': getattr(self.channel, 'type', MISSING),
             }
         data = await state.http.accept_invite(self.code, type, **kwargs)
-        if type is InviteType.guild:
-            from .guild import Guild
+        return Invite.from_incomplete(state=state, data=data, message=message)
 
-            guild = Guild(data=data['guild'], state=state)
-            guild._cs_joined = True
-            return guild
-        elif type is InviteType.group_dm:
-            from .channel import GroupChannel
-
-            return GroupChannel(data=data['channel'], state=state, me=state.user)  # type: ignore
-        else:
-            from .user import User
-
-            return User(data=data['inviter'], state=state)
-
-    async def accept(self) -> Union[Guild, User, GroupChannel]:
+    async def accept(self) -> Invite:
         """|coro|
 
         Uses the invite.
@@ -633,22 +661,28 @@ class Invite(Hashable):
 
         Returns
         -------
-        Union[:class:`Guild`, :class:`User`, :class:`GroupChannel`]
-            The guild/group DM joined, or user added as a friend.
+        :class:`Invite`
+            The accepted invite.
         """
         return await self.use()
 
-    async def delete(self, *, reason: Optional[str] = None) -> None:
+    async def delete(self, *, reason: Optional[str] = None) -> Invite:
         """|coro|
 
         Revokes the instant invite.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to do this.
+        In a guild context, you must have the :attr:`~Permissions.manage_channels` permission to do this.
+
+        .. versionchanged:: 2.0
+
+            The function now returns the deleted invite.
 
         Parameters
         -----------
         reason: Optional[:class:`str`]
             The reason for deleting this invite. Shows up on the audit log.
+
+            Only applicable to guild invites.
 
         Raises
         -------
@@ -658,5 +692,12 @@ class Invite(Hashable):
             The invite is invalid or expired.
         HTTPException
             Revoking the invite failed.
+
+        Returns
+        --------
+        :class:`Invite`
+            The deleted invite.
         """
-        await self._state.http.delete_invite(self.code, reason=reason)
+        state = self._state
+        data = await state.http.delete_invite(self.code, reason=reason)
+        return Invite.from_incomplete(state=state, data=data)

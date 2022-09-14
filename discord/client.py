@@ -54,7 +54,7 @@ from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
 from .channel import _private_channel_factory, _threaded_channel_factory, GroupChannel, PartialMessageable
-from .enums import ActivityType, ChannelType, ConnectionLinkType, ConnectionType, Status, InviteType, try_enum
+from .enums import ActivityType, ChannelType, ConnectionLinkType, ConnectionType, Status, try_enum
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status
@@ -1749,6 +1749,27 @@ class Client:
 
     # Invite management
 
+    async def invites(self) -> List[Invite]:
+        r"""|coro|
+
+        Gets a list of the user's friend :class:`.Invite`\s.
+
+        .. versionadded:: 2.0
+
+        Raises
+        ------
+        HTTPException
+            Getting the invites failed.
+
+        Returns
+        --------
+        List[:class:`.Invite`]
+            The list of invites.
+        """
+        state = self._connection
+        data = await state.http.get_friend_invites()
+        return [Invite.from_incomplete(state=state, data=d) for d in data]
+
     async def fetch_invite(
         self,
         url: Union[Invite, str],
@@ -1825,46 +1846,34 @@ class Client:
         )
         return Invite.from_incomplete(state=self._connection, data=data)
 
-    async def delete_invite(self, invite: Union[Invite, str], /) -> None:
+    async def create_invite(self) -> Invite:
         """|coro|
 
-        Revokes an :class:`.Invite`, URL, or ID to an invite.
+        Creates a new friend :class:`.Invite`.
 
-        You must have the :attr:`~.Permissions.manage_channels` permission in
-        the associated guild to do this.
-
-        .. versionchanged:: 2.0
-
-            ``invite`` parameter is now positional-only.
-
-        Parameters
-        ----------
-        invite: Union[:class:`.Invite`, :class:`str`]
-            The invite to revoke.
+        .. versionadded:: 2.0
 
         Raises
-        -------
-        Forbidden
-            You do not have permissions to revoke invites.
-        NotFound
-            The invite is invalid or expired.
+        ------
         HTTPException
-            Revoking the invite failed.
-        """
-        resolved = utils.resolve_invite(invite)
-        await self.http.delete_invite(resolved.code)
+            Creating the invite failed.
 
-    async def accept_invite(self, invite: Union[Invite, str], /) -> Union[Guild, User, GroupChannel]:
+        Returns
+        --------
+        :class:`.Invite`
+            The created friend invite.
+        """
+        state = self._connection
+        data = await state.http.create_friend_invite()
+        return Invite.from_incomplete(state=state, data=data)
+
+    async def accept_invite(self, invite: Union[Invite, str], /) -> Invite:
         """|coro|
 
         Uses an invite.
         Either joins a guild, joins a group DM, or adds a friend.
 
-        .. versionadded:: 1.9
-
-        .. versionchanged:: 2.0
-
-            ``invite`` parameter is now positional-only.
+        .. versionadded:: 2.0
 
         Parameters
         ----------
@@ -1878,9 +1887,8 @@ class Client:
 
         Returns
         -------
-        :class:`.Guild`
-            The guild joined. This is not the same guild that is
-            added to cache.
+        :class:`.Invite`
+            The accepted invite.
         """
         if not isinstance(invite, Invite):
             invite = await self.fetch_invite(invite, with_counts=False, with_expiration=False)
@@ -1896,14 +1904,68 @@ class Client:
                 'channel_type': getattr(invite.channel, 'type', MISSING),
             }
         data = await state.http.accept_invite(invite.code, type, **kwargs)
-        if type is InviteType.guild:
-            guild = Guild(data=data['guild'], state=state)
-            guild._cs_joined = True
-            return guild
-        elif type is InviteType.group_dm:
-            return GroupChannel(data=data['channel'], state=state, me=state.user)  # type: ignore
-        else:
-            return User(data=data['inviter'], state=state)
+        return Invite.from_incomplete(state=state, data=data, message=invite._message)
+
+    async def delete_invite(self, invite: Union[Invite, str], /) -> Invite:
+        """|coro|
+
+        Revokes an :class:`.Invite`, URL, or ID to an invite.
+
+        You must have the :attr:`~.Permissions.manage_channels` permission in
+        the associated guild to do this.
+
+        .. versionchanged:: 2.0
+
+            ``invite`` parameter is now positional-only.
+
+        .. versionchanged:: 2.0
+
+            The function now returns the deleted invite.
+
+        Parameters
+        ----------
+        invite: Union[:class:`.Invite`, :class:`str`]
+            The invite to revoke.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to revoke invites.
+        NotFound
+            The invite is invalid or expired.
+        HTTPException
+            Revoking the invite failed.
+
+        Returns
+        --------
+        :class:`.Invite`
+            The deleted invite.
+        """
+        resolved = utils.resolve_invite(invite)
+        state = self._connection
+        data = await state.http.delete_invite(resolved.code)
+        return Invite.from_incomplete(state=state, data=data)
+
+    async def revoke_invites(self) -> List[Invite]:
+        r"""|coro|
+
+        Revokes all of the user's friend :class:`.Invite`\s.
+
+        .. versionadded:: 2.0
+
+        Raises
+        ------
+        HTTPException
+            Revoking the invites failed.
+
+        Returns
+        --------
+        List[:class:`.Invite`]
+            The revoked invites.
+        """
+        state = self._connection
+        data = await state.http.delete_friend_invites()
+        return [Invite(state=state, data=d) for d in data]
 
     # Miscellaneous stuff
 
