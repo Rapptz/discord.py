@@ -2103,7 +2103,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         # This takes advantage of the fact that dicts are ordered since Python 3.7
         tags = [ForumTag.from_data(state=self._state, data=tag) for tag in data.get('available_tags', [])]
-        self.default_thread_slowmode_delay: int = data.get('default_thread_slowmode_delay', 0)
+        self.default_thread_slowmode_delay: int = data.get('default_thread_rate_limit_per_user', 0)
         self._available_tags: Dict[int, ForumTag] = {tag.id: tag for tag in tags}
 
         self.default_reaction_emoji: Optional[PartialEmoji] = None
