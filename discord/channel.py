@@ -2023,7 +2023,7 @@ class ForumTag(Hashable):
         elif isinstance(emoji, str):
             self.emoji = PartialEmoji.from_str(emoji)
         elif emoji is not None:
-            raise TypeError(f'emoji must be a Emoji, PartialEmoji, or str not {emoji.__class__.__name__}')
+            raise TypeError(f'emoji must be a Emoji, PartialEmoji, str or None not {emoji.__class__.__name__}')
 
     @classmethod
     def from_data(cls, *, state: ConnectionState, data: ForumTagPayload) -> Self:
