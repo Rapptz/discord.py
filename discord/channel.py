@@ -2013,7 +2013,7 @@ class ForumTag(Hashable):
 
     __slots__ = ('name', 'id', 'moderated', 'emoji')
 
-    def __init__(self, *, name: str, emoji: Optional[EmojiInputType], moderated: bool = False) -> None:
+    def __init__(self, *, name: str, emoji: Optional[EmojiInputType] = None, moderated: bool = False) -> None:
         self.name: str = name
         self.id: int = 0
         self.moderated: bool = moderated
@@ -2022,7 +2022,7 @@ class ForumTag(Hashable):
             self.emoji = emoji._to_partial()
         elif isinstance(emoji, str):
             self.emoji = PartialEmoji.from_str(emoji)
-        else:
+        elif emoji is not None:
             raise TypeError(f'emoji must be a Emoji, PartialEmoji, or str not {emoji.__class__.__name__}')
 
     @classmethod
