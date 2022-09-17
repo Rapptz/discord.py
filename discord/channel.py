@@ -1935,24 +1935,24 @@ class ForumTag(Hashable):
     moderated: :class:`bool`
         Whether this tag can only be added or removed by a moderator with
         the :attr:`~Permissions.manage_threads` permission.
-    emoji: :class:`PartialEmoji`
+    emoji: Optional[:class:`PartialEmoji`]
         The emoji that is used to represent this tag.
         Note that if the emoji is a custom emoji, it will *not* have name information.
     """
 
     __slots__ = ('name', 'id', 'moderated', 'emoji')
 
-    def __init__(self, *, name: str, emoji: EmojiInputType, moderated: bool = False) -> None:
+    def __init__(self, *, name: str, emoji: Optional[EmojiInputType] = None, moderated: bool = False) -> None:
         self.name: str = name
         self.id: int = 0
         self.moderated: bool = moderated
-        self.emoji: PartialEmoji
+        self.emoji: Optional[PartialEmoji] = None
         if isinstance(emoji, _EmojiTag):
             self.emoji = emoji._to_partial()
         elif isinstance(emoji, str):
             self.emoji = PartialEmoji.from_str(emoji)
-        else:
-            raise TypeError(f'emoji must be a Emoji, PartialEmoji, or str not {emoji.__class__!r}')
+        elif emoji is not None:
+            raise TypeError(f'emoji must be a Emoji, PartialEmoji, str or None not {emoji.__class__.__name__}')
 
     @classmethod
     def from_data(cls, *, state: ConnectionState, data: ForumTagPayload) -> Self:
@@ -1963,7 +1963,10 @@ class ForumTag(Hashable):
 
         emoji_name = data['emoji_name'] or ''
         emoji_id = utils._get_as_snowflake(data, 'emoji_id') or None  # Coerce 0 -> None
-        self.emoji = PartialEmoji.with_state(state=state, name=emoji_name, id=emoji_id)
+        if not emoji_name and not emoji_id:
+            self.emoji = None
+        else:
+            self.emoji = PartialEmoji.with_state(state=state, name=emoji_name, id=emoji_id)
         return self
 
     def to_dict(self) -> Dict[str, Any]:
@@ -1971,7 +1974,10 @@ class ForumTag(Hashable):
             'name': self.name,
             'moderated': self.moderated,
         }
-        payload.update(self.emoji._to_forum_tag_payload())
+        if self.emoji is not None:
+            payload.update(self.emoji._to_forum_tag_payload())
+        else:
+            payload.update(emoji_id=None, emoji_name=None)
 
         if self.id:
             payload['id'] = self.id
