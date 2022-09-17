@@ -62,7 +62,9 @@ instance.
   import discord
   from discord.ext import commands
 
-  bot = commands.Bot(command_prefix='!', help_command=commands.MinimalHelpCommand())
+  intents = discord.Intents.default()
+  intents.message_content = True
+  bot = commands.Bot(command_prefix='!', intents=intents, help_command=commands.MinimalHelpCommand())
     
   # an alternate way to do this is
   bot.help_command = commands.MinimalHelpCommand()
@@ -101,7 +103,9 @@ the other two classes as well.
       destination = self.get_destination()
       await destination.send('Oh no! An error has occurred!')
 
-  bot = commands.Bot(command_prefix='!', help_command=MyHelp())
+  intents = discord.Intents.default()
+  intents.message_content = True
+  bot = commands.Bot(command_prefix='!', intents=intents, help_command=MyHelp())
 
 First, we created a class called "MyHelp" which subclasses 
 :class:`~ext.commands.HelpCommand`. Next, we added a method which is called 
@@ -164,11 +168,19 @@ to help list out the commands our bot has via overriding as we previously did.
       destination = self.get_destination()
       await destination.send(embed=embed)
 
-We have instantiated an instance of :class:`~discord.Embed` and then
-we iterate over :meth:`~collections.abc.Mapping.items`. Since ``cog`` might be ``None`` in the event that the command is
+In this code, we do the following:
+
+1. Instantiated an instance of :class:`~discord.Embed`.
+
+2. Iterate over :meth:`~collections.abc.Mapping.items`. 
+
+3. Since ``cog`` might be ``None`` in the event that the command is
 not in a cog, we use ``getattr`` to get the name of the cog or make it "No Category" if it is not in a cog. 
-We then use a list comprehension and access the :attr:`~ext.commands.Command.name` attribute
-of all of the commands in the cog. We then use :meth:`~discord.Embed.add_field` to add the cog to the ``name``
+
+4. Use a list comprehension and access the :attr:`~ext.commands.Command.name` attribute
+of all of the commands in the cog.
+
+5. Use :meth:`~discord.Embed.add_field` to add the cog to the ``name``
 portion of the field and the command names to the ``value`` portion of the field.
 
 With this code, the output should look like this:
