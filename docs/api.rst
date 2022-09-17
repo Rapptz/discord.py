@@ -618,7 +618,7 @@ Guilds
 .. function:: on_invite_create(invite)
 
     Called when an :class:`Invite` is created.
-    You must have the :attr:`~Permissions.manage_channels` permission to receive this.
+    You must have :attr:`~Permissions.manage_channels` to receive this.
 
     .. versionadded:: 1.3
 
@@ -635,7 +635,7 @@ Guilds
 .. function:: on_invite_delete(invite)
 
     Called when an :class:`Invite` is deleted.
-    You must have the :attr:`~Permissions.manage_channels` permission to receive this.
+    You must have :attr:`~Permissions.manage_channels` to receive this.
 
     .. versionadded:: 1.3
 

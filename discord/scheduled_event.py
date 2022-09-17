@@ -315,7 +315,7 @@ class ScheduledEvent(Hashable):
 
         Edits the scheduled event.
 
-        Requires :attr:`~Permissions.manage_events` permissions.
+        You must have :attr:`~Permissions.manage_events` to do this.
 
         Parameters
         -----------
@@ -470,7 +470,7 @@ class ScheduledEvent(Hashable):
 
         Deletes the scheduled event.
 
-        Requires :attr:`~Permissions.manage_events` permissions.
+        You must have :attr:`~Permissions.manage_events` to do this.
 
         Parameters
         -----------

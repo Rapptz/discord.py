@@ -135,8 +135,7 @@ class StageInstance(Hashable):
 
         Edits the stage instance.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_channels` to do this.
 
         Parameters
         -----------
@@ -176,8 +175,7 @@ class StageInstance(Hashable):
 
         Deletes the stage instance.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_channels` to do this.
 
         Parameters
         -----------

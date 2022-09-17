@@ -922,8 +922,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Moves a member to a new voice channel (they must be connected first).
 
-        You must have the :attr:`~Permissions.move_members` permission to
-        use this.
+        You must have :attr:`~Permissions.move_members` to do this.
 
         This raises the same exceptions as :meth:`edit`.
 
@@ -948,8 +947,7 @@ class Member(discord.abc.Messageable, _UserTag):
         Applies a time out to a member until the specified date time or for the
         given :class:`datetime.timedelta`.
 
-        You must have the :attr:`~Permissions.moderate_members` permission to
-        use this.
+        You must have :attr:`~Permissions.moderate_members` to do this.
 
         This raises the same exceptions as :meth:`edit`.
 
@@ -985,7 +983,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Gives the member a number of :class:`Role`\s.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to
+        You must have :attr:`~Permissions.manage_roles` to
         use this, and the added :class:`Role`\s must appear lower in the list
         of roles than the highest role of the member.
 
@@ -1024,7 +1022,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Removes :class:`Role`\s from this member.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to
+        You must have :attr:`~Permissions.manage_roles` to
         use this, and the removed :class:`Role`\s must appear lower in the list
         of roles than the highest role of the member.
 

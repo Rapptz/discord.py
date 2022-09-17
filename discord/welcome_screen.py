@@ -160,8 +160,7 @@ class WelcomeScreen:
 
         Welcome channels can only accept custom emojis if :attr:`Guild.premium_tier` is level 2 or above.
 
-        You must have the :attr:`~Permissions.manage_guild` permission in the
-        guild to do this.
+        You must have :attr:`~Permissions.manage_guild` in the guild to do this.
 
         Usage: ::
 

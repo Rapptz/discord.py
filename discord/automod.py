@@ -344,7 +344,7 @@ class AutoModRule:
 
         Edits this auto moderation rule.
 
-        You must have the :attr:`Permissions.manage_guild` permission to edit rules.
+        You must have :attr:`Permissions.manage_guild` to edit rules.
 
         Parameters
         -----------
@@ -416,7 +416,7 @@ class AutoModRule:
 
         Deletes the auto moderation rule.
 
-        You must have the :attr:`Permissions.manage_guild` permission to delete rules.
+        You must have :attr:`Permissions.manage_guild` to delete rules.
 
         Parameters
         -----------
@@ -521,7 +521,7 @@ class AutoModAction:
 
         Fetch the rule whose action was taken.
 
-        You must have the :attr:`Permissions.manage_guild` permission to use this.
+        You must have :attr:`Permissions.manage_guild` to do this.
 
         Raises
         -------
