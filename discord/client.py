@@ -2015,7 +2015,7 @@ class Client:
 
         .. warning::
 
-            This API route is not used by the Discord client and may increase your chances at getting detected.
+            This API route is not well-used by the Discord client and may increase your chances at getting detected.
             Consider :meth:`fetch_user_profile` if you share a guild/relationship with the user.
 
         .. versionchanged:: 2.0
