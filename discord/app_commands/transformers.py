@@ -720,6 +720,7 @@ BUILT_IN_TRANSFORMERS: Dict[Any, Transformer] = {
     VoiceChannel: BaseChannelTransformer(VoiceChannel),
     TextChannel: BaseChannelTransformer(TextChannel),
     CategoryChannel: BaseChannelTransformer(CategoryChannel),
+    ForumChannel: BaseChannelTransformer(ForumChannel),
     Attachment: IdentityTransformer(AppCommandOptionType.attachment),
 }
 
