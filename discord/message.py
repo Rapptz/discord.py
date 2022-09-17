@@ -667,8 +667,7 @@ class PartialMessage(Hashable):
         Deletes the message.
 
         Your own messages could be deleted without any proper permissions. However to
-        delete other people's messages, you need the :attr:`~Permissions.manage_messages`
-        permission.
+        delete other people's messages, you must have :attr:`~Permissions.manage_messages`.
 
         .. versionchanged:: 1.1
             Added the new ``delay`` keyword-only parameter.
@@ -810,10 +809,10 @@ class PartialMessage(Hashable):
 
         Publishes this message to your announcement channel.
 
-        You must have the :attr:`~Permissions.send_messages` permission to do this.
+        You must have :attr:`~Permissions.send_messages` to do this.
 
-        If the message is not your own then the :attr:`~Permissions.manage_messages`
-        permission is also needed.
+        If the message is not your own then :attr:`~Permissions.manage_messages`
+        is also needed.
 
         Raises
         -------
@@ -829,7 +828,7 @@ class PartialMessage(Hashable):
 
         Pins the message.
 
-        You must have the :attr:`~Permissions.manage_messages` permission to do
+        You must have :attr:`~Permissions.manage_messages` to do
         this in a non-private channel context.
 
         Parameters
@@ -858,7 +857,7 @@ class PartialMessage(Hashable):
 
         Unpins the message.
 
-        You must have the :attr:`~Permissions.manage_messages` permission to do
+        You must have :attr:`~Permissions.manage_messages` to do
         this in a non-private channel context.
 
         Parameters
@@ -888,9 +887,9 @@ class PartialMessage(Hashable):
 
         The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
 
-        You must have the :attr:`~Permissions.read_message_history` permission
-        to use this. If nobody else has reacted to the message using this
-        emoji, the :attr:`~Permissions.add_reactions` permission is required.
+        You must have :attr:`~Permissions.read_message_history`
+        to do this. If nobody else has reacted to the message using this
+        emoji, :attr:`~Permissions.add_reactions` is required.
 
         .. versionchanged:: 2.0
 
@@ -927,7 +926,7 @@ class PartialMessage(Hashable):
         The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
 
         If the reaction is not your own (i.e. ``member`` parameter is not you) then
-        the :attr:`~Permissions.manage_messages` permission is needed.
+        :attr:`~Permissions.manage_messages` is needed.
 
         The ``member`` parameter must represent a member and meet
         the :class:`abc.Snowflake` abc.
@@ -968,7 +967,7 @@ class PartialMessage(Hashable):
 
         The emoji may be a unicode emoji or a custom guild :class:`Emoji`.
 
-        You need the :attr:`~Permissions.manage_messages` permission to use this.
+        You must have :attr:`~Permissions.manage_messages` to do this.
 
         .. versionadded:: 1.3
 
@@ -1000,7 +999,7 @@ class PartialMessage(Hashable):
 
         Removes all the reactions from the message.
 
-        You need the :attr:`~Permissions.manage_messages` permission to use this.
+        You must have :attr:`~Permissions.manage_messages` to do this.
 
         Raises
         --------

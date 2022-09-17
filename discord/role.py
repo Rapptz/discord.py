@@ -423,8 +423,8 @@ class Role(Hashable):
 
         Adds a number of :class:`Member`\s to this role.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to
-        use this, and the current :class:`Role` must appear lower in the list
+        You must have :attr:`~Permissions.manage_roles` to use this,
+        and the current :class:`Role` must appear lower in the list
         of roles than the highest role of the member.
 
         Parameters
@@ -465,8 +465,8 @@ class Role(Hashable):
 
         Removes :class:`Member`\s from this role.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to
-        use this, and the current :class:`Role` must appear lower in the list
+        You must have :attr:`~Permissions.manage_roles` to use this,
+        and the current :class:`Role` must appear lower in the list
         of roles than the highest role of the member.
 
         Parameters
@@ -514,8 +514,7 @@ class Role(Hashable):
 
         Edits the role.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_roles` to do this.
 
         All fields are optional.
 
@@ -638,8 +637,7 @@ class Role(Hashable):
 
         Deletes the role.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_roles` to do this.
 
         Parameters
         -----------

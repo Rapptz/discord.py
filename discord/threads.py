@@ -445,8 +445,7 @@ class Thread(Messageable, Hashable):
         Deletes a list of messages. This is similar to :meth:`Message.delete`
         except it bulk deletes multiple messages.
 
-        You must have the :attr:`~Permissions.manage_messages` permission to
-        use this (unless they're your own).
+        You must have :attr:`~Permissions.manage_messages` to use this (unless they're your own).
 
         .. note::
             Users do not have access to the message bulk-delete endpoint.
@@ -492,7 +491,7 @@ class Thread(Messageable, Hashable):
         ``check``. If a ``check`` is not provided then all messages are deleted
         without discrimination.
 
-        The :attr:`~Permissions.read_message_history` permission is needed to
+        Having :attr:`~Permissions.read_message_history` is needed to
         retrieve message history.
 
         Examples
@@ -639,11 +638,11 @@ class Thread(Messageable, Hashable):
 
         Adds the given forum tags to a thread.
 
-        You must have the :attr:`~Permissions.manage_threads` permission to
+        You must have :attr:`~Permissions.manage_threads` to
         use this or the thread must be owned by you.
 
-        Tags that have :attr:`ForumTag.moderated` set to ``True`` require the
-        :attr:`~Permissions.manage_threads` permissions to be added.
+        Tags that have :attr:`ForumTag.moderated` set to ``True`` require
+        :attr:`~Permissions.manage_threads` to be added.
 
         The maximum number of tags that can be added to a thread is 5.
 
@@ -677,7 +676,7 @@ class Thread(Messageable, Hashable):
 
         Remove the given forum tags to a thread.
 
-        You must have the :attr:`~Permissions.manage_threads` permission to
+        You must have :attr:`~Permissions.manage_threads` to
         use this or the thread must be owned by you.
 
         The parent channel must be a :class:`ForumChannel`.
@@ -743,7 +742,7 @@ class Thread(Messageable, Hashable):
         Adds a user to this thread.
 
         You must have :attr:`~Permissions.send_messages_in_threads` to add a user to a thread.
-        If the thread is private then and :attr:`invitable` is ``False`` then :attr:`~Permissions.manage_messages`
+        If the thread is private and :attr:`invitable` is ``False`` then :attr:`~Permissions.manage_messages`
         is required to add a user to the thread.
 
         Parameters

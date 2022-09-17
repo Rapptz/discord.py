@@ -688,7 +688,7 @@ class Invite(Hashable):
 
         Revokes the instant invite.
 
-        In a guild context, you must have the :attr:`~Permissions.manage_channels` permission to do this.
+        In a guild context, you must have :attr:`~Permissions.manage_channels` to do this.
 
         .. versionchanged:: 2.0
 

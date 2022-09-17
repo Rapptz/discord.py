@@ -2020,8 +2020,8 @@ class HTTPClient:
     def get_welcome_screen(self, guild_id: Snowflake) -> Response[welcome_screen.WelcomeScreen]:
         return self.request(Route('GET', '/guilds/{guild_id}/welcome-screen', guild_id=guild_id))
 
-    def edit_welcome_screen(self, guild_id: Snowflake, payload) -> Response[welcome_screen.WelcomeScreen]:
-        return self.request(Route('PATCH', '/guilds/{guild_id}/welcome-screen', guild_id=guild_id), json=payload)
+    def edit_welcome_screen(self, guild_id: Snowflake, payload: dict, reason: Optional[str] = None) -> Response[welcome_screen.WelcomeScreen]:
+        return self.request(Route('PATCH', '/guilds/{guild_id}/welcome-screen', guild_id=guild_id), json=payload, reason=reason)
 
     # Invite management
 

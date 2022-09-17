@@ -133,8 +133,7 @@ class Integration:
 
         Deletes the integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         Parameters
         -----------
@@ -231,8 +230,7 @@ class StreamIntegration(Integration):
 
         Edits the integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         Parameters
         -----------
@@ -267,8 +265,7 @@ class StreamIntegration(Integration):
 
         Syncs the integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         Raises
         -------
@@ -287,8 +284,7 @@ class StreamIntegration(Integration):
 
         This is an alias of :meth:`Integration.delete`.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         Parameters
         -----------
@@ -309,8 +305,7 @@ class StreamIntegration(Integration):
 
         Enables the integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         Parameters
         -----------

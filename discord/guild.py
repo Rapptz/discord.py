@@ -1270,8 +1270,7 @@ class Guild(Hashable):
 
         Creates a :class:`TextChannel` for the guild.
 
-        Note that you need the :attr:`~Permissions.manage_channels` permission
-        to create the channel.
+        Note that you must have :attr:`~Permissions.manage_channels` to create the channel.
 
         The ``overwrites`` parameter can be used to create a 'secret'
         channel upon creation. This parameter expects a :class:`dict` of
@@ -1767,7 +1766,7 @@ class Guild(Hashable):
 
         Edits the guild.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to edit the guild.
+        You must have :attr:`~Permissions.manage_guild` to edit the guild.
 
         .. versionchanged:: 1.4
             The ``rules_channel`` and ``public_updates_channel`` keyword parameters were added.
@@ -2139,8 +2138,7 @@ class Guild(Hashable):
 
         Retrieves the :class:`BanEntry` for a user.
 
-        You must have the :attr:`~Permissions.ban_members` permission
-        to get this information.
+        You must have :attr:`~Permissions.ban_members` to get this information.
 
         Parameters
         -----------
@@ -2219,8 +2217,7 @@ class Guild(Hashable):
     ) -> AsyncIterator[BanEntry]:
         """Retrieves an :term:`asynchronous iterator` of the users that are banned from the guild as a :class:`BanEntry`.
 
-        You must have the :attr:`~Permissions.ban_members` permission
-        to get this information.
+        You must have :attr:`~Permissions.ban_members` to get this information.
 
         .. versionchanged:: 2.0
             Due to a breaking change in Discord's API, this now returns a paginated iterator instead of a list.
@@ -2345,8 +2342,7 @@ class Guild(Hashable):
         The inactive members are denoted if they have not logged on in
         ``days`` number of days and they have no roles.
 
-        You must have the :attr:`~Permissions.kick_members` permission
-        to use this.
+        You must have :attr:`~Permissions.kick_members` to do this.
 
         To check how many members you would prune without actually pruning,
         see the :meth:`estimate_pruned_members` function.
@@ -2408,7 +2404,7 @@ class Guild(Hashable):
 
         Gets the list of templates from this guild.
 
-        Requires :attr:`~.Permissions.manage_guild` permissions.
+        You must have :attr:`~.Permissions.manage_guild` to do this.
 
         .. versionadded:: 1.7
 
@@ -2432,7 +2428,7 @@ class Guild(Hashable):
 
         Gets the list of webhooks from this guild.
 
-        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+        You must have :attr:`~.Permissions.manage_webhooks` to do this.
 
         Raises
         -------
@@ -2503,8 +2499,7 @@ class Guild(Hashable):
 
         Returns a list of all active instant invites from the guild.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to get
-        this information.
+        You must have :attr:`~Permissions.manage_guild` to get this information.
 
         Raises
         -------
@@ -2531,8 +2526,7 @@ class Guild(Hashable):
 
         Creates a template for the guild.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         .. versionadded:: 1.7
 
@@ -2559,8 +2553,7 @@ class Guild(Hashable):
 
         Attaches an integration to the guild. This "enables" an existing integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         .. versionadded:: 1.4
 
@@ -2589,8 +2582,7 @@ class Guild(Hashable):
 
         Returns a list of all integrations attached to the guild.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         .. versionadded:: 1.4
 
@@ -2690,8 +2682,7 @@ class Guild(Hashable):
 
         Creates a :class:`Sticker` for the guild.
 
-        You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_emojis_and_stickers` to do this.
 
         .. versionadded:: 2.0
 
@@ -2742,8 +2733,7 @@ class Guild(Hashable):
 
         Deletes the custom :class:`Sticker` from the guild.
 
-        You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_emojis_and_stickers` to do this.
 
         .. versionadded:: 2.0
 
@@ -2837,7 +2827,7 @@ class Guild(Hashable):
 
         Creates a scheduled event for the guild.
 
-        Requires :attr:`~Permissions.manage_events` permissions.
+        You must have :attr:`~Permissions.manage_events` to do this.
 
         .. versionadded:: 2.0
 
@@ -3042,8 +3032,7 @@ class Guild(Hashable):
         There is currently a limit of 50 static and animated emojis respectively per guild,
         unless the guild has the ``MORE_EMOJI`` feature which extends the limit to 200.
 
-        You must have the :attr:`~Permissions.manage_emojis` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_emojis` to do this.
 
         Parameters
         -----------
@@ -3083,8 +3072,7 @@ class Guild(Hashable):
 
         Deletes the custom :class:`Emoji` from the guild.
 
-        You must have :attr:`~Permissions.manage_emojis` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_emojis` to do this.
 
         .. versionchanged:: 2.0
 
@@ -3180,8 +3168,7 @@ class Guild(Hashable):
 
         All fields are optional.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_roles` to do this.
 
         .. versionchanged:: 1.6
             Can now pass ``int`` to ``colour`` keyword-only parameter.
@@ -3289,8 +3276,7 @@ class Guild(Hashable):
 
         Bulk edits a list of :class:`Role` in the guild.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_roles` to do this.
 
         .. versionadded:: 1.4
 
@@ -3359,8 +3345,7 @@ class Guild(Hashable):
 
         The user must meet the :class:`abc.Snowflake` abc.
 
-        You must have the :attr:`~Permissions.kick_members` permission to
-        do this.
+        You must have :attr:`~Permissions.kick_members` to do this.
 
         Parameters
         -----------
@@ -3392,8 +3377,7 @@ class Guild(Hashable):
 
         The user must meet the :class:`abc.Snowflake` abc.
 
-        You must have the :attr:`~Permissions.ban_members` permission to
-        do this.
+        You must have :attr:`~Permissions.ban_members` to do this.
 
         Parameters
         -----------
@@ -3443,8 +3427,7 @@ class Guild(Hashable):
 
         The user must meet the :class:`abc.Snowflake` abc.
 
-        You must have the :attr:`~Permissions.ban_members` permission to
-        do this.
+        You must have :attr:`~Permissions.ban_members` to do this.
 
         Parameters
         -----------
@@ -3481,8 +3464,7 @@ class Guild(Hashable):
 
         The guild must have ``VANITY_URL`` in :attr:`~Guild.features`.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to use
-        this as well.
+        You must have :attr:`~Permissions.manage_guild` to do this.as well.
 
         Raises
         -------
@@ -3525,7 +3507,7 @@ class Guild(Hashable):
     ) -> AsyncIterator[AuditLogEntry]:
         """Returns an :term:`asynchronous iterator` that enables receiving the guild's audit logs.
 
-        You must have the :attr:`~Permissions.view_audit_log` permission to use this.
+        You must have :attr:`~Permissions.view_audit_log` to do this.
 
         Examples
         ----------
@@ -3724,8 +3706,7 @@ class Guild(Hashable):
 
         Edits the widget of the guild.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        use this
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         .. versionadded:: 2.0
 
@@ -3758,8 +3739,7 @@ class Guild(Hashable):
 
         Returns the guild's welcome screen.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_guild` permission to use this.
 
         .. note::
 
@@ -3772,7 +3752,7 @@ class Guild(Hashable):
         NotFound
             The guild does not have a welcome screen.
         Forbidden
-            You do not have the :attr:`~Permissions.manage_guild` permission.
+            You do not have :attr:`~Permissions.manage_guild`.
         HTTPException
             Retrieving the welcome screen failed.
 
@@ -3790,13 +3770,34 @@ class Guild(Hashable):
         description: str = MISSING,
         welcome_channels: Sequence[WelcomeChannel] = MISSING,
         enabled: bool = MISSING,
+        reason: Optional[str] = None,
     ):
         """|coro|
 
         Edit the welcome screen.
-        You must have the :attr:`~Permissions.manage_guild` permission to do this.
+
+        Welcome channels can only accept custom emojis if :attr:`Guild.premium_tier` is level 2 or above.
+
+        You must have :attr:`~Permissions.manage_guild` in the guild to do this.
 
         All parameters are optional.
+
+        .. versionadded:: 2.0
+
+        Usage: ::
+
+            rules_channel = guild.get_channel(12345678)
+            announcements_channel = guild.get_channel(87654321)
+
+            custom_emoji = utils.get(guild.emojis, name='loudspeaker')
+
+            await welcome_screen.edit(
+                description='This is a very cool community server!',
+                welcome_channels=[
+                    WelcomeChannel(channel=rules_channel, description='Read the rules!', emoji='👨‍🏫'),
+                    WelcomeChannel(channel=announcements_channel, description='Watch out for announcements!', emoji=custom_emoji),
+                ]
+            )
 
         Parameters
         ------------
@@ -3806,6 +3807,8 @@ class Guild(Hashable):
             The welcome screen's description.
         welcome_channels: Optional[List[:class:`WelcomeChannel`]]
             The welcome channels (in order).
+        reason: Optional[:class:`str`]
+            The reason for editing the welcome screen. Shows up on the audit log.
 
         Raises
         -------
@@ -3827,7 +3830,7 @@ class Guild(Hashable):
             payload['welcome_channels'] = channels
 
         if payload:
-            await self._state.http.edit_welcome_screen(self.id, payload)
+            await self._state.http.edit_welcome_screen(self.id, payload, reason=reason)
 
     async def applications(
         self, *, with_team: bool = False, type: Optional[ApplicationType] = None, channel: Optional[Snowflake] = None
@@ -4220,7 +4223,7 @@ class Guild(Hashable):
 
         Fetches all automod rules from the guild.
 
-        You must have the :attr:`Permissions.manage_guild` to use this.
+        You must have :attr:`Permissions.manage_guild` to do this.
 
         .. versionadded:: 2.0
 
@@ -4244,7 +4247,7 @@ class Guild(Hashable):
 
         Fetches an active automod rule from the guild.
 
-        You must have the :attr:`Permissions.manage_guild` to use this.
+        You must have :attr:`Permissions.manage_guild` to do this.
 
         .. versionadded:: 2.0
 
@@ -4282,7 +4285,7 @@ class Guild(Hashable):
 
         Create an automod rule.
 
-        You must have the :attr:`Permissions.manage_guild` permission to use this.
+        You must have :attr:`Permissions.manage_guild` to do this.
 
         .. versionadded:: 2.0
 

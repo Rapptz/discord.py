@@ -62,9 +62,12 @@ class WelcomeChannel:
         The emoji shown under the description.
     """
 
-    def __init__(self, *, channel: Snowflake, description: str, emoji: Optional[Union[PartialEmoji, Emoji]] = None) -> None:
+    def __init__(self, *, channel: Snowflake, description: str, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None) -> None:
         self.channel = channel
         self.description = description
+
+        if isinstance(emoji, str):
+            emoji = PartialEmoji(name=emoji)
         self.emoji = emoji
 
     def __repr__(self) -> str:
@@ -146,13 +149,32 @@ class WelcomeScreen:
         description: str = MISSING,
         welcome_channels: List[WelcomeChannel] = MISSING,
         enabled: bool = MISSING,
+        reason: Optional[str] = None,
     ):
         """|coro|
 
         Edit the welcome screen.
-        You must have the :attr:`~Permissions.manage_guild` permission to do this.
+
+        Welcome channels can only accept custom emojis if :attr:`Guild.premium_tier` is level 2 or above.
+
+        You must have :attr:`~Permissions.manage_guild` in the guild to do this.
 
         All parameters are optional.
+
+        Usage: ::
+
+            rules_channel = guild.get_channel(12345678)
+            announcements_channel = guild.get_channel(87654321)
+
+            custom_emoji = utils.get(guild.emojis, name='loudspeaker')
+
+            await welcome_screen.edit(
+                description='This is a very cool community server!',
+                welcome_channels=[
+                    WelcomeChannel(channel=rules_channel, description='Read the rules!', emoji='👨‍🏫'),
+                    WelcomeChannel(channel=announcements_channel, description='Watch out for announcements!', emoji=custom_emoji),
+                ]
+            )
 
         Parameters
         ------------
@@ -162,6 +184,8 @@ class WelcomeScreen:
             The welcome screen's description.
         welcome_channels: Optional[List[:class:`WelcomeChannel`]]
             The welcome channels (in order).
+        reason: Optional[:class:`str`]
+            The reason for editing the welcome screen. Shows up on the audit log.
 
         Raises
         -------
@@ -182,5 +206,5 @@ class WelcomeScreen:
 
         if payload:
             guild = self.guild
-            data = await guild._state.http.edit_welcome_screen(guild.id, payload)
+            data = await guild._state.http.edit_welcome_screen(guild.id, payload, reason=reason)
             self._update(data)

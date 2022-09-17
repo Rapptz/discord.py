@@ -208,8 +208,7 @@ class Template:
 
         Sync the template to the guild's current state.
 
-        You must have the :attr:`~Permissions.manage_guild` permission in the
-        source guild to do this.
+        You must have :attr:`~Permissions.manage_guild` in the source guild to do this.
 
         .. versionadded:: 1.7
 
@@ -244,8 +243,7 @@ class Template:
 
         Edit the template metadata.
 
-        You must have the :attr:`~Permissions.manage_guild` permission in the
-        source guild to do this.
+        You must have :attr:`~Permissions.manage_guild` in the source guild to do this.
 
         .. versionadded:: 1.7
 
@@ -288,8 +286,7 @@ class Template:
 
         Delete the template.
 
-        You must have the :attr:`~Permissions.manage_guild` permission in the
-        source guild to do this.
+        You must have :attr:`~Permissions.manage_guild` in the source guild to do this.
 
         .. versionadded:: 1.7
 

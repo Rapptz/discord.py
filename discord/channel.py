@@ -305,8 +305,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Edits the channel.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_channels` to do this.
 
         .. versionchanged:: 1.3
             The ``overwrites`` keyword-only parameter was added.
@@ -390,8 +389,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         Deletes a list of messages. This is similar to :meth:`Message.delete`
         except it bulk deletes multiple messages.
 
-        You must have the :attr:`~Permissions.manage_messages` permission to
-        use this (unless they're your own).
+        You must have :attr:`~Permissions.manage_messages` to use this (unless they're your own).
 
         .. note::
             Users do not have access to the message bulk-delete endpoint.
@@ -443,7 +441,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         ``check``. If a ``check`` is not provided then all messages are deleted
         without discrimination.
 
-        The :attr:`~Permissions.read_message_history` permission is needed to
+        Having :attr:`~Permissions.read_message_history` is needed to
         retrieve message history.
 
         .. versionchanged:: 2.0
@@ -508,7 +506,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Gets the list of webhooks from this channel.
 
-        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+        You must have :attr:`~.Permissions.manage_webhooks` to do this.
 
         Raises
         -------
@@ -531,7 +529,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Creates a webhook for this channel.
 
-        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+        You must have :attr:`~.Permissions.manage_webhooks` to do this.
 
         .. versionchanged:: 1.1
             Added the ``reason`` keyword-only parameter.
@@ -764,7 +762,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """Returns an :term:`asynchronous iterator` that iterates over all archived threads in this text channel,
         in order of decreasing ID for joined threads, and decreasing :attr:`Thread.archive_timestamp` otherwise.
 
-        You must have :attr:`~Permissions.read_message_history` to use this. If iterating over private threads
+        You must have :attr:`~Permissions.read_message_history` to do this. If iterating over private threads
         then :attr:`~Permissions.manage_threads` is also required.
 
         .. versionadded:: 2.0
@@ -1093,8 +1091,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         Deletes a list of messages. This is similar to :meth:`Message.delete`
         except it bulk deletes multiple messages.
 
-        You must have the :attr:`~Permissions.manage_messages` permission to
-        use this (unless they're your own).
+        You must have :attr:`~Permissions.manage_messages` to use this (unless they're your own).
 
         .. note::
             Users do not have access to the message bulk-delete endpoint.
@@ -1142,7 +1139,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         ``check``. If a ``check`` is not provided then all messages are deleted
         without discrimination.
 
-        The :attr:`~Permissions.read_message_history` permission is needed to
+        Having :attr:`~Permissions.read_message_history` is needed to
         retrieve message history.
 
         .. versionadded:: 2.0
@@ -1205,7 +1202,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
 
         Gets the list of webhooks from this channel.
 
-        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+        You must have :attr:`~.Permissions.manage_webhooks` to do this.
 
         .. versionadded:: 2.0
 
@@ -1230,7 +1227,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
 
         Creates a webhook for this channel.
 
-        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+        You must have :attr:`~.Permissions.manage_webhooks` to do this.
 
         .. versionadded:: 2.0
 
@@ -1300,8 +1297,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
 
         Edits the channel.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_channels` to do this.
 
         .. versionchanged:: 1.3
             The ``overwrites`` keyword-only parameter was added.
@@ -1505,8 +1501,7 @@ class StageChannel(VocalGuildChannel):
 
         Create a stage instance.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_channels` to do this.
 
         .. versionadded:: 2.0
 
@@ -1596,8 +1591,7 @@ class StageChannel(VocalGuildChannel):
 
         Edits the channel.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_channels` to do this.
 
         .. versionchanged:: 2.0
             The ``topic`` parameter must now be set via :attr:`create_instance`.
@@ -1763,8 +1757,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         Edits the channel.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_channels` to do this.
 
         .. versionchanged:: 1.3
             The ``overwrites`` keyword-only parameter was added.
@@ -2219,8 +2212,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
         Edits the forum.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_channels` to do this.
 
         Parameters
         ----------
@@ -2333,8 +2325,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
         Creates a new tag in this forum.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_channels` to do this.
 
         Parameters
         ----------
@@ -2509,7 +2500,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
         Gets the list of webhooks from this channel.
 
-        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+        You must have :attr:`~.Permissions.manage_webhooks` to do this.
 
         Raises
         -------
@@ -2532,7 +2523,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
         Creates a webhook for this channel.
 
-        Requires :attr:`~.Permissions.manage_webhooks` permissions.
+        You must have :attr:`~.Permissions.manage_webhooks` to do this.
 
         Parameters
         -------------
