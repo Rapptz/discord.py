@@ -405,7 +405,7 @@ class GuildSticker(Sticker):
         The ID of the guild that this sticker is from.
     user: Optional[:class:`User`]
         The user that created this sticker. This can only be retrieved using :meth:`Guild.fetch_sticker` and
-        having the :attr:`~Permissions.manage_emojis_and_stickers` permission.
+        having :attr:`~Permissions.manage_emojis_and_stickers`.
     emoji: :class:`str`
         The name of a unicode emoji that represents this sticker.
     """
@@ -494,8 +494,7 @@ class GuildSticker(Sticker):
 
         Deletes the custom :class:`Sticker` from the guild.
 
-        You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_emojis_and_stickers` to do this.
 
         Parameters
         -----------

@@ -521,7 +521,7 @@ class AutoModAction:
 
         Fetch the rule whose action was taken.
 
-        You must have the :attr:`Permissions.manage_guild` permission to use this.
+        You must have :attr:`Permissions.manage_guild` to do this.
 
         Raises
         -------
