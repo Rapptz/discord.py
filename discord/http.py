@@ -2260,6 +2260,12 @@ class HTTPClient:
     def get_partial_application(self, app_id: Snowflake) -> Response[appinfo.PartialAppInfo]:
         return self.request(Route('GET', '/oauth2/applications/{app_id}/rpc', app_id=app_id))
 
+    def get_public_application(self, app_id: Snowflake) -> Response[appinfo.PartialAppInfo]:
+        return self.request(Route('GET', '/applications/{app_id}/public', app_id=app_id))
+
+    def get_public_applications(self, app_ids: Sequence[Snowflake]) -> Response[List[appinfo.PartialAppInfo]]:
+        return self.request(Route('GET', '/applications/public'), params={'application_ids': app_ids})
+
     def create_app(self, name: str):
         payload = {'name': name}
 

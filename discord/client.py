@@ -2681,6 +2681,65 @@ class Client:
         data = await state.http.get_partial_application(app_id)
         return PartialApplication(state=state, data=data)
 
+    async def fetch_public_application(self, app_id: int, /) -> PartialApplication:
+        """|coro|
+
+        Retrieves the public application with the given ID.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        app_id: :class:`int`
+            The ID of the public application to fetch.
+
+        Raises
+        -------
+        NotFound
+            The public application was not found.
+        HTTPException
+            Retrieving the public application failed.
+
+        Returns
+        --------
+        :class:`.PartialApplication`
+            The retrieved application.
+        """
+        state = self._connection
+        data = await state.http.get_public_application(app_id)
+        return PartialApplication(state=state, data=data)
+
+    async def fetch_public_applications(self, *app_ids: int) -> List[PartialApplication]:
+        r"""|coro|
+
+        Retrieves a list of public applications. Only found applications are returned.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        \*app_ids: :class:`int`
+            The IDs of the public applications to fetch.
+
+        Raises
+        -------
+        TypeError
+            Less than 1 ID was passed.
+        HTTPException
+            Retrieving the applications failed.
+
+        Returns
+        -------
+        List[:class:`.PartialApplication`]
+            The public applications.
+        """
+        if not app_ids:
+            raise TypeError('fetch_public_applications() takes at least 1 argument (0 given)')
+
+        state = self._connection
+        data = await state.http.get_public_applications(app_ids)
+        return [PartialApplication(state=state, data=d) for d in data]
+
     async def teams(self) -> List[Team]:
         """|coro|
 

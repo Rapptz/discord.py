@@ -73,7 +73,7 @@ class ApplicationBot(User):
         grant flow to join.
     """
 
-    __slots__ = ('public', 'require_code_grant')
+    __slots__ = ('application', 'public', 'require_code_grant')
 
     def __init__(self, *, data, state: ConnectionState, application: Application):
         super().__init__(state=state, data=data)
@@ -81,7 +81,7 @@ class ApplicationBot(User):
         self.public: bool = data['public']
         self.require_code_grant: bool = data['require_code_grant']
 
-    async def reset_token(self) -> None:
+    async def reset_token(self) -> str:
         """|coro|
 
         Resets the bot's token.
