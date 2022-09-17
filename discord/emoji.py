@@ -196,7 +196,7 @@ class Emoji(_EmojiTag, AssetMixin):
 
         Deletes the custom emoji.
 
-        You must have :attr:`~Permissions.manage_emojis` permission to
+        You must have the :attr:`~Permissions.manage_emojis` permission to
         do this.
 
         Parameters
@@ -221,7 +221,7 @@ class Emoji(_EmojiTag, AssetMixin):
 
         Edits the custom emoji.
 
-        You must have :attr:`~Permissions.manage_emojis` permission to
+        You must have the :attr:`~Permissions.manage_emojis` permission to
         do this.
 
         .. versionchanged:: 2.0

@@ -790,7 +790,7 @@ class GuildChannel:
 
         Deletes the channel.
 
-        You must have :attr:`~discord.Permissions.manage_channels` permission to use this.
+        You must have the :attr:`~discord.Permissions.manage_channels` permission to use this.
 
         Parameters
         -----------
@@ -1257,7 +1257,7 @@ class GuildChannel:
 
         Returns a list of all active instant invites from this channel.
 
-        You must have :attr:`~discord.Permissions.manage_channels` to get this information.
+        You must have the :attr:`~discord.Permissions.manage_channels` permission to get this information.
 
         Raises
         -------
@@ -1644,7 +1644,7 @@ class Messageable:
     ) -> AsyncIterator[Message]:
         """Returns an :term:`asynchronous iterator` that enables receiving the destination's message history.
 
-        You must have :attr:`~discord.Permissions.read_message_history` permissions to use this.
+        You must have the :attr:`~discord.Permissions.read_message_history` permission to use this.
 
         Examples
         ---------

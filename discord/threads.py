@@ -721,7 +721,7 @@ class Thread(Messageable, Hashable):
 
         Joins this thread.
 
-        You must have :attr:`~Permissions.send_messages_in_threads` to join a thread.
+        You must have the :attr:`~Permissions.send_messages_in_threads` permission to join a thread.
         If the thread is private, :attr:`~Permissions.manage_threads` is also needed.
 
         Raises
@@ -750,7 +750,7 @@ class Thread(Messageable, Hashable):
 
         Adds a user to this thread.
 
-        You must have :attr:`~Permissions.send_messages_in_threads` to add a user to a thread.
+        You must have the :attr:`~Permissions.send_messages_in_threads` permission to add a user to a thread.
         If the thread is private then and :attr:`invitable` is ``False`` then :attr:`~Permissions.manage_messages`
         is required to add a user to the thread.
 
@@ -773,7 +773,7 @@ class Thread(Messageable, Hashable):
 
         Removes a user from this thread.
 
-        You must have :attr:`~Permissions.manage_threads` or be the creator of the thread to remove a user.
+        You must have the :attr:`~Permissions.manage_threads` permission or be the creator of the thread to remove a user.
 
         Parameters
         -----------
@@ -837,7 +837,7 @@ class Thread(Messageable, Hashable):
 
         Deletes this thread.
 
-        You must have :attr:`~Permissions.manage_threads` to delete threads.
+        You must have the :attr:`~Permissions.manage_threads` permission to delete threads.
 
         Raises
         -------

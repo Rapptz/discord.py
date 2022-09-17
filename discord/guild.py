@@ -2675,7 +2675,7 @@ class Guild(Hashable):
 
         Creates a :class:`Sticker` for the guild.
 
-        You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
+        You must have the :attr:`~Permissions.manage_emojis_and_stickers` permission to
         do this.
 
         .. versionadded:: 2.0
@@ -2728,7 +2728,7 @@ class Guild(Hashable):
 
         Deletes the custom :class:`Sticker` from the guild.
 
-        You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
+        You must have the :attr:`~Permissions.manage_emojis_and_stickers` permission to
         do this.
 
         .. versionadded:: 2.0
@@ -3067,7 +3067,7 @@ class Guild(Hashable):
 
         Deletes the custom :class:`Emoji` from the guild.
 
-        You must have :attr:`~Permissions.manage_emojis` permission to
+        You must have the :attr:`~Permissions.manage_emojis` permission to
         do this.
 
         .. versionchanged:: 2.0
@@ -3921,7 +3921,7 @@ class Guild(Hashable):
 
         Fetches an active automod rule from the guild.
 
-        You must have the :attr:`Permissions.manage_guild` to use this.
+        You must have the :attr:`Permissions.manage_guild` permission to use this.
 
         .. versionadded:: 2.0
 
@@ -3950,7 +3950,7 @@ class Guild(Hashable):
 
         Fetches all automod rules from the guild.
 
-        You must have the :attr:`Permissions.manage_guild` to use this.
+        You must have the :attr:`Permissions.manage_guild` permission to use this.
 
         .. versionadded:: 2.0
 

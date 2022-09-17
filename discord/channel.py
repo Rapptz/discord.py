@@ -713,7 +713,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
         Creates a thread in this text channel.
 
-        To create a public thread, you must have :attr:`~discord.Permissions.create_public_threads`.
+        To create a public thread, you must have the :attr:`~discord.Permissions.create_public_threads` permission.
         For a private thread, :attr:`~discord.Permissions.create_private_threads` is needed instead.
 
         .. versionadded:: 2.0
@@ -792,7 +792,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         """Returns an :term:`asynchronous iterator` that iterates over all archived threads in this text channel,
         in order of decreasing ID for joined threads, and decreasing :attr:`Thread.archive_timestamp` otherwise.
 
-        You must have :attr:`~Permissions.read_message_history` to use this. If iterating over private threads
+        You must have the :attr:`~Permissions.read_message_history` permission to use this. If iterating over private threads
         then :attr:`~Permissions.manage_threads` is also required.
 
         .. versionadded:: 2.0

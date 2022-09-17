@@ -1166,7 +1166,7 @@ class PartialMessage(Hashable):
 
         Creates a public thread from this message.
 
-        You must have :attr:`~discord.Permissions.create_public_threads` in order to
+        You must have the :attr:`~discord.Permissions.create_public_threads` permission in order to
         create a public thread from a message.
 
         The channel this message belongs in must be a :class:`TextChannel`.
