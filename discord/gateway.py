@@ -37,6 +37,7 @@ import zlib
 from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar
 
 import aiohttp
+import yarl
 
 from . import utils
 from .activity import BaseActivity
@@ -287,11 +288,11 @@ class DiscordWebSocket:
         _initial_identify: bool
         shard_id: Optional[int]
         shard_count: Optional[int]
-        gateway: str
+        gateway: yarl.URL
         _max_heartbeat_timeout: float
 
     # fmt: off
-    DEFAULT_GATEWAY    = 'wss://gateway.discord.gg/'
+    DEFAULT_GATEWAY    = yarl.URL('wss://gateway.discord.gg/')
     DISPATCH           = 0
     HEARTBEAT          = 1
     IDENTIFY           = 2
@@ -346,7 +347,7 @@ class DiscordWebSocket:
         client: Client,
         *,
         initial: bool = False,
-        gateway: Optional[str] = None,
+        gateway: Optional[yarl.URL] = None,
         shard_id: Optional[int] = None,
         session: Optional[str] = None,
         sequence: Optional[int] = None,
@@ -364,11 +365,11 @@ class DiscordWebSocket:
         gateway = gateway or cls.DEFAULT_GATEWAY
 
         if zlib:
-            url = f'{gateway}?v={INTERNAL_API_VERSION}&encoding={encoding}&compress=zlib-stream'
+            url = gateway.with_query(v=INTERNAL_API_VERSION, encoding=encoding, compress='zlib-stream')
         else:
-            url = f'{gateway}?v={INTERNAL_API_VERSION}&encoding={encoding}'
+            url = gateway.with_query(v=INTERNAL_API_VERSION, encoding=encoding)
 
-        socket = await client.http.ws_connect(url)
+        socket = await client.http.ws_connect(str(url))
         ws = cls(socket, loop=client.loop)
 
         # dynamically add attributes needed
@@ -556,7 +557,7 @@ class DiscordWebSocket:
         if event == 'READY':
             self.sequence = msg['s']
             self.session_id = data['session_id']
-            self.gateway = data['resume_gateway_url']
+            self.gateway = yarl.URL(data['resume_gateway_url'])
             _log.info('Shard ID %s has connected to Gateway (Session ID: %s).', self.shard_id, self.session_id)
 
         elif event == 'RESUMED':
