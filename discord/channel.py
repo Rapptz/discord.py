@@ -2693,9 +2693,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
                     return
                 retrieve = max(2, min(retrieve, limit))
 
-            data = await self.guild._state.http.get_public_archived_threads(
-                self.id, before=before_timestamp, limit=retrieve
-            )
+            data = await self.guild._state.http.get_public_archived_threads(self.id, before=before_timestamp, limit=retrieve)
 
             threads = data.get('threads', [])
             for raw_thread in threads:
