@@ -497,4 +497,3 @@ My bot's commands are not showing up!
    ``https://discord.com/oauth2/authorize?client_id=<client id>&scope=applications.commands+bot``.
    Alternatively, if you use :func:`utils.oauth_url`, you can call the function as such:
    ``oauth_url(<other options>, scopes=("bot", "applications.commands"))``.
-3. You may need to change server to update the slash commands on the client side
