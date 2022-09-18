@@ -286,7 +286,7 @@ class Transformer:
 
     @property
     def choices(self) -> Optional[List[Choice[Union[int, float, str]]]]:
-        """Optional[List[:class:`~discord.app_commands.Choice`]]: A list of choices that are allowed to this parameter, 25 maximum.
+        """Optional[List[:class:`~discord.app_commands.Choice`]]: A list of up to 25 choices that are allowed to this parameter.
 
         Only valid if the :meth:`type` returns :attr:`~discord.AppCommandOptionType.number`
         :attr:`~discord.AppCommandOptionType.integer`, or :attr:`~discord.AppCommandOptionType.string`.
