@@ -647,14 +647,14 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 return list(attachments)
 
             if param.kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
-                return await self._transform_greedy_pos(ctx, param, param.required, converter.converter)
+                return await self._transform_greedy_pos(ctx, param, param.required, converter.constructed_converter)
             elif param.kind == param.VAR_POSITIONAL:
-                return await self._transform_greedy_var_pos(ctx, param, converter.converter)
+                return await self._transform_greedy_var_pos(ctx, param, converter.constructed_converter)
             else:
                 # if we're here, then it's a KEYWORD_ONLY param type
                 # since this is mostly useless, we'll helpfully transform Greedy[X]
                 # into just X and do the parsing that way.
-                converter = converter.converter
+                converter = converter.constructed_converter
 
         # Try to detect Optional[discord.Attachment] or discord.Attachment special converter
         if converter is discord.Attachment:

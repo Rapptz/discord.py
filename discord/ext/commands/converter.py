@@ -1033,6 +1033,17 @@ class Greedy(List[T]):
 
         return cls(converter=converter)
 
+    @property
+    def constructed_converter(self) -> Any:
+        # Only construct a converter once in order to maintain state between convert calls
+        if (
+            inspect.isclass(self.converter)
+            and issubclass(self.converter, Converter)
+            and not inspect.ismethod(self.converter.convert)
+        ):
+            return self.converter()
+        return self.converter
+
 
 if TYPE_CHECKING:
     from typing_extensions import Annotated as Range
