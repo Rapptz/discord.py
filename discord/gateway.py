@@ -443,8 +443,8 @@ class DiscordWebSocket:
                 'token': self.token,
                 'properties': {
                     'os': sys.platform,
-                    'browser': 'discord.py',
-                    'device': 'discord.py',
+                    'browser': 'Discord iOS',
+                    'device': 'Discord iOS',
                 },
                 'compress': True,
                 'large_threshold': 250,
