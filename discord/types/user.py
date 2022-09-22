@@ -69,6 +69,8 @@ class User(PartialUser, total=False):
     verified: bool
     email: Optional[str]
     flags: int
+    purchased_flags: int
+    premium_usage_flags: int
     premium_type: PremiumType
     public_flags: int
     banner: Optional[str]
@@ -77,6 +79,7 @@ class User(PartialUser, total=False):
     analytics_token: str
     phone: Optional[str]
     token: str
+    nsfw_allowed: Optional[bool]
 
 
 class PartialConnection(TypedDict):

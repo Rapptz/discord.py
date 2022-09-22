@@ -523,8 +523,9 @@ class ClientUser(BaseUser):
         The user's note. Not pre-fetched.
 
         .. versionadded:: 1.9
-    nsfw_allowed: :class:`bool`
+    nsfw_allowed: Optional[:class:`bool`]
         Specifies if the user should be allowed to access NSFW content.
+        If ``None``, then the user's date of birth is not known.
 
         .. versionadded:: 2.0
     """
@@ -554,7 +555,7 @@ class ClientUser(BaseUser):
         mfa_enabled: bool
         premium_type: Optional[PremiumType]
         bio: Optional[str]
-        nsfw_allowed: bool
+        nsfw_allowed: Optional[bool]
 
     def __init__(self, *, state: ConnectionState, data: UserPayload) -> None:
         self._state = state
@@ -579,9 +580,7 @@ class ClientUser(BaseUser):
         self.mfa_enabled = data.get('mfa_enabled', False)
         self.premium_type = try_enum(PremiumType, data['premium_type']) if 'premium_type' in data else None
         self.bio = data.get('bio')
-        self.nsfw_allowed = data.get('nsfw_allowed', False)
-        self.bio = data.get('bio') or None
-        self.nsfw_allowed = data.get('nsfw_allowed', False)
+        self.nsfw_allowed = data.get('nsfw_allowed')
 
     def get_relationship(self, user_id: int) -> Optional[Relationship]:
         """Retrieves the :class:`Relationship` if applicable.
