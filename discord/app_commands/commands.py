@@ -1149,7 +1149,7 @@ class ContextMenu:
     one of the following decorators:
 
     - :func:`~discord.app_commands.context_menu`
-    - :meth:`CommandTree.command <discord.app_commands.CommandTree.context_menu>`
+    - :meth:`CommandTree.context_menu <discord.app_commands.CommandTree.context_menu>`
 
     .. versionadded:: 2.0
 
