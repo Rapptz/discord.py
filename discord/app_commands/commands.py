@@ -1656,9 +1656,6 @@ class Group:
         copy._children = {}
         copy.extras = self.extras
 
-        if not hasattr(self.on_error, '__discord_app_commands_base_function__'):
-            copy.on_error = self.on_error
-
         bindings[self] = copy
 
         for child in self._children.values():
