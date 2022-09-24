@@ -830,6 +830,10 @@ class Command(Generic[GroupT, P, T]):
                 if not hasattr(parent.parent.on_error, '__discord_app_commands_base_function__'):
                     return True
 
+        # Check if we have a bound error handler
+        if hasattr(self.binding, '__discord_app_commands_error_handler__'):
+            return True
+
         return False
 
     async def _transform_arguments(self, interaction: Interaction, namespace: Namespace) -> Dict[str, Any]:
