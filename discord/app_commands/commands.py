@@ -461,6 +461,11 @@ def _get_context_menu_parameter(func: ContextMenuCallback) -> Tuple[str, Any, Ap
     return (parameter.name, resolved, type)
 
 
+def mark_overrideable(func: F) -> F:
+    func.__discord_app_commands_base_function__ = None
+    return func
+
+
 class Parameter:
     """A class that contains the parameter information of a :class:`Command` callback.
 
@@ -818,12 +823,11 @@ class Command(Generic[GroupT, P, T]):
         parent = self.parent
         if parent is not None:
             # Check if the on_error is overridden
-            if parent.__class__.on_error is not Group.on_error:
+            if not hasattr(parent.on_error, '__discord_app_commands_base_function__'):
                 return True
 
             if parent.parent is not None:
-                parent_cls = parent.parent.__class__
-                if parent_cls.on_error is not Group.on_error:
+                if not hasattr(parent.parent.on_error, '__discord_app_commands_base_function__'):
                     return True
 
         return False
@@ -1648,6 +1652,9 @@ class Group:
         copy._children = {}
         copy.extras = self.extras
 
+        if not hasattr(self.on_error, '__discord_app_commands_base_function__'):
+            copy.on_error = self.on_error
+
         bindings[self] = copy
 
         for child in self._children.values():
@@ -1747,6 +1754,7 @@ class Group:
             if isinstance(command, Group):
                 yield from command.walk_commands()
 
+    @mark_overrideable
     async def on_error(self, interaction: Interaction, error: AppCommandError, /) -> None:
         """|coro|
 
