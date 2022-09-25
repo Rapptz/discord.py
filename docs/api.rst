@@ -4266,6 +4266,11 @@ Application
 .. autoclass:: PartialApplication()
     :members:
 
+.. attributetable:: InteractionApplication
+
+.. autoclass:: InteractionApplication()
+    :members:
+
 .. attributetable:: ApplicationCompany
 
 .. autoclass:: ApplicationCompany()
@@ -4276,9 +4281,9 @@ Application
 .. autoclass:: ApplicationExecutable()
     :members:
 
-.. attributetable:: InteractionApplication
+.. attributetable:: ApplicationInstallParams
 
-.. autoclass:: InteractionApplication()
+.. autoclass:: ApplicationInstallParams()
     :members:
 
 Team

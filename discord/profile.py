@@ -24,14 +24,18 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
 
-from .connections import PartialConnection
-from .member import Member
-from .object import Object
-from .permissions import Permissions
-from .user import Note, User
 from . import utils
+from .appinfo import ApplicationInstallParams
+from .asset import Asset
+from .connections import PartialConnection
+from .enums import PremiumType, try_enum
+from .flags import ApplicationFlags
+from .member import Member
+from .mixins import Hashable
+from .object import Object
+from .user import Note, User
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -40,14 +44,13 @@ if TYPE_CHECKING:
     from .state import ConnectionState
 
 __all__ = (
+    'ApplicationProfile',
     'UserProfile',
     'MemberProfile',
 )
 
 
 class Profile:
-    """Represents a Discord profile."""
-
     if TYPE_CHECKING:
         id: int
         application_id: Optional[int]
@@ -65,10 +68,17 @@ class Profile:
 
         super().__init__(**kwargs)
 
-        self._flags: int = user.pop('flags', 0)
-        self.bio: Optional[str] = user.pop('bio') or None
-        self.note: Note = Note(kwargs['state'], self.id, user=self)
+        self.bio: Optional[str] = user.pop('bio', None) or None
+        self.note: Note = Note(kwargs['state'], self.id, user=getattr(self, '_user', self))  # type: ignore
 
+        # We need to do a bit of a hack here because premium_since is massively overloaded
+        guild_premium_since = getattr(self, 'premium_since', utils.MISSING)
+        if guild_premium_since is not utils.MISSING:
+            self.guild_premium_since = guild_premium_since
+
+        self.premium_type: Optional[PremiumType] = (
+            try_enum(PremiumType, user.pop('premium_type')) if user.get('premium_type') else None
+        )
         self.premium_since: Optional[datetime] = utils.parse_time(data['premium_since'])
         self.boosting_since: Optional[datetime] = utils.parse_time(data['premium_guild_since'])
         self.connections: List[PartialConnection] = [PartialConnection(d) for d in data['connected_accounts']]
@@ -77,9 +87,7 @@ class Profile:
         self.mutual_friends: Optional[List[User]] = self._parse_mutual_friends(data.get('mutual_friends'))
 
         application = data.get('application', {})
-        install_params = application.get('install_params', {})
-        self.application_id = app_id = utils._get_as_snowflake(application, 'id')
-        self.install_url = application.get('custom_install_url') if not install_params else utils.oauth_url(app_id, permissions=Permissions(int(install_params.get('permissions', 0))), scopes=install_params.get('scopes', utils.MISSING))  # type: ignore # app_id is always present here
+        self.application: Optional[ApplicationProfile] = ApplicationProfile(data=application) if application else None
 
     def _parse_mutual_guilds(self, mutual_guilds) -> Optional[List[Guild]]:
         if mutual_guilds is None:
@@ -90,7 +98,7 @@ class Profile:
         def get_guild(guild):
             return state._get_guild(int(guild['id'])) or Object(id=int(guild['id']))
 
-        return list(filter(None, map(get_guild, mutual_guilds)))  # type: ignore # Lying for better developer UX
+        return list(map(get_guild, mutual_guilds))  # type: ignore # Lying for better developer UX
 
     def _parse_mutual_friends(self, mutual_friends) -> Optional[List[User]]:
         if mutual_friends is None:
@@ -105,17 +113,79 @@ class Profile:
         return self.premium_since is not None
 
 
+class ApplicationProfile(Hashable):
+    """Represents a Discord application profile.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two applications are equal.
+
+        .. describe:: x != y
+
+            Checks if two applications are not equal.
+
+        .. describe:: hash(x)
+
+            Return the applications's hash.
+
+    Attributes
+    ------------
+    id: :class:`int`
+        The application's ID.
+    verified: :class:`bool`
+        Indicates if the application is verified.
+    popular_application_command_ids: List[:class:`int`]
+        A list of the IDs of the application's popular commands.
+    primary_sku_id: Optional[:class:`int`]
+        The application's primary SKU ID, if any.
+    custom_install_url: Optional[:class:`str`]
+        The custom URL to use for authorizing the application, if specified.
+    install_params: Optional[:class:`ApplicationInstallParams`]
+        The parameters to use for authorizing the application, if specified.
+    """
+
+    def __init__(self, data: dict) -> None:
+        self.id: int = int(data['id'])
+        self.verified: bool = data.get('verified', False)
+        self.popular_application_command_ids: List[int] = [int(id) for id in data.get('popular_application_command_ids', [])]
+        self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
+        self._flags: int = data.get('flags', 0)
+
+        params = data.get('install_params')
+        self.custom_install_url: Optional[str] = data.get('custom_install_url')
+        self.install_params: Optional[ApplicationInstallParams] = (
+            ApplicationInstallParams(self.id, params) if params else None
+        )
+
+    def __repr__(self) -> str:
+        return f'<ApplicationProfile id={self.id} verified={self.verified}>'
+
+    @property
+    def flags(self) -> ApplicationFlags:
+        """:class:`ApplicationFlags`: The flags of this application."""
+        return ApplicationFlags._from_value(self._flags)
+
+    @property
+    def install_url(self) -> Optional[str]:
+        """:class:`str`: The URL to install the application."""
+        return self.custom_install_url or self.install_params.url if self.install_params else None
+
+
 class UserProfile(Profile, User):
     """Represents a Discord user's profile. This is a :class:`User` with extended attributes.
 
     Attributes
     -----------
-    application_id: Optional[:class:`int`]
-        The ID of the application that this user is attached to, if applicable.
-    install_url: Optional[:class:`str`]
-        The URL to invite the application to your guild with.
+    application: Optional[:class:`ApplicationProfile`]
+        The application profile of the user, if a bot.
     bio: Optional[:class:`str`]
         The user's "about me" field. Could be ``None``.
+    premium_type: Optional[:class:`PremiumType`]
+        Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic). Could be None if the user is not premium.
     premium_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies how long a user has been premium (had Nitro).
         ``None`` if the user is not a premium user.
@@ -142,17 +212,28 @@ class MemberProfile(Profile, Member):
 
     Attributes
     -----------
-    application_id: Optional[:class:`int`]
-        The ID of the application that this user is attached to, if applicable.
-    install_url: Optional[:class:`str`]
-        The URL to invite the application to your guild with.
+    application: Optional[:class:`ApplicationProfile`]
+        The application profile of the user, if a bot.
     bio: Optional[:class:`str`]
         The user's "about me" field. Could be ``None``.
+    guild_bio: Optional[:class:`str`]
+        The user's "about me" field for the guild. Could be ``None``.
+    guild_premium_since: Optional[:class:`datetime.datetime`]
+        An aware datetime object that specifies the date and time in UTC when the member used their
+        "Nitro boost" on the guild, if available. This could be ``None``.
+
+        .. note::
+            This is renamed from :attr:`Member.premium_since` because of name collisions.
+    premium_type: Optional[:class:`PremiumType`]
+        Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic). Could be None if the user is not premium.
     premium_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies how long a user has been premium (had Nitro).
         ``None`` if the user is not a premium user.
+
+        .. note::
+            This is not the same as :attr:`Member.premium_since`. That is renamed to :attr:`guild_premium_since`
     boosting_since: Optional[:class:`datetime.datetime`]
-        An aware datetime object that specifies when a user first boosted a guild.
+        An aware datetime object that specifies when a user first boosted any guild.
     connections: Optional[List[:class:`PartialConnection`]]
         The connected accounts that show up on the profile.
     note: :class:`Note`
@@ -165,8 +246,33 @@ class MemberProfile(Profile, Member):
         ``None`` if you didn't fetch mutuals.
     """
 
+    def __init__(self, *, state: ConnectionState, data: dict, guild: Guild):
+        super().__init__(state=state, guild=guild, data=data)
+        member = data['guild_member']
+        self._banner: Optional[str] = member.get('banner')
+        self.guild_bio: Optional[str] = member.get('bio') or None
+
     def __repr__(self) -> str:
         return (
             f'<MemberProfile id={self._user.id} name={self._user.name!r} discriminator={self._user.discriminator!r}'
             f' bot={self._user.bot} nick={self.nick!r} premium={self.premium} guild={self.guild!r}>'
         )
+
+    @property
+    def display_banner(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the member's display banner.
+
+        For regular members this is just their banner (if available), but
+        if they have a guild specific banner then that
+        is returned instead.
+        """
+        return self.guild_banner or self._user.banner
+
+    @property
+    def guild_banner(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns an :class:`Asset` for the guild banner
+        the member has. If unavailable, ``None`` is returned.
+        """
+        if self._banner is None:
+            return None
+        return Asset._from_guild_banner(self._state, self.guild.id, self.id, self._banner)

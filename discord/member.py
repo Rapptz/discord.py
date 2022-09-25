@@ -215,9 +215,9 @@ class _ClientStatus:
 
 def flatten_user(cls: Any) -> Type[Member]:
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
-        # Ignore private/special methods (or not)
-        # if attr.startswith('_'):
-        #     continue
+        # Ignore private/special methods
+        if attr.startswith('_'):
+            continue
 
         # Don't override what we already have
         if attr in cls.__dict__:
@@ -460,6 +460,16 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             u.name, u._avatar, u.discriminator, u._public_flags = modified
             # Signal to dispatch user_update
             return to_return, u
+
+    def _get_voice_client_key(self) -> Tuple[int, str]:
+        return self._state.self_id, 'self_id'  # type: ignore # self_id is always set at this point
+
+    def _get_voice_state_pair(self) -> Tuple[int, int]:
+        return self._state.self_id, self.dm_channel.id  # type: ignore # self_id is always set at this point
+
+    async def _get_channel(self) -> DMChannel:
+        ch = await self.create_dm()
+        return ch
 
     @property
     def status(self) -> Status:
@@ -733,6 +743,8 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         voice_channel: Optional[VocalGuildChannel] = MISSING,
         timed_out_until: Optional[datetime.datetime] = MISSING,
         avatar: Optional[bytes] = MISSING,
+        banner: Optional[bytes] = MISSING,
+        bio: Optional[str] = MISSING,
         reason: Optional[str] = None,
     ) -> Optional[Member]:
         """|coro|
@@ -799,6 +811,16 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             You can only change your own guild avatar.
 
             .. versionadded:: 2.0
+        banner: Optional[:class:`bytes`]
+            The member's new guild banner. Pass ``None`` to remove the banner.
+            You can only change your own guild banner.
+
+            .. versionadded:: 2.0
+        bio: Optional[:class:`str`]
+            The member's new guild "about me". Pass ``None`` to remove the bio.
+            You can only change your own guild bio.
+
+            .. versionadded:: 2.0
         reason: Optional[:class:`str`]
             The reason for editing this member. Shows up on the audit log.
 
@@ -828,6 +850,12 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
 
         if avatar is not MISSING:
             payload['avatar'] = utils._bytes_to_base64_data(avatar) if avatar is not None else None
+
+        if banner is not MISSING:
+            payload['banner'] = utils._bytes_to_base64_data(banner) if banner is not None else None
+
+        if bio is not MISSING:
+            payload['bio'] = bio or ''
 
         if me and payload:
             data = await http.edit_me(self.guild.id, **payload)
