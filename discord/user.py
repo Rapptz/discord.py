@@ -39,17 +39,16 @@ from .enums import (
 )
 from .errors import ClientException, NotFound
 from .flags import PublicUserFlags, PrivateUserFlags, PremiumUsageFlags, PurchasedFlags
-from .object import Object
 from .relationship import Relationship
 from .settings import UserSettings
-from .utils import _bytes_to_base64_data, _get_as_snowflake, cached_slot_property, copy_doc, snowflake_time, MISSING
+from .utils import _bytes_to_base64_data, _get_as_snowflake, copy_doc, snowflake_time, MISSING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from datetime import datetime
 
-    from .abc import Snowflake as _Snowflake, T as ConnectReturn
+    from .abc import T as ConnectReturn
     from .calls import PrivateCall
     from .channel import DMChannel
     from .client import Client

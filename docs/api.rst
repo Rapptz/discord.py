@@ -4271,6 +4271,11 @@ Application
 .. autoclass:: InteractionApplication()
     :members:
 
+.. attributetable:: ApplicationProfile
+
+.. autoclass:: ApplicationProfile()
+    :members:
+
 .. attributetable:: ApplicationCompany
 
 .. autoclass:: ApplicationCompany()
