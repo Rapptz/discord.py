@@ -2326,8 +2326,13 @@ class HTTPClient:
             super_properties_to_track=True,
         )
 
-    def botify_app(self, app_id: Snowflake):
+    def botify_app(self, app_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/applications/{app_id}/bot', app_id=app_id), super_properties_to_track=True)
+
+    def edit_bot(self, app_id: Snowflake, payload: dict) -> Response[user.User]:
+        return self.request(
+            Route('PATCH', '/applications/{app_id}/bot', app_id=app_id), json=payload, super_properties_to_track=True
+        )
 
     def reset_secret(self, app_id: Snowflake) -> Response[appinfo.AppInfo]:
         return self.request(Route('POST', '/applications/{app_id}/reset', app_id=app_id), super_properties_to_track=True)

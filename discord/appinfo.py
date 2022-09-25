@@ -707,10 +707,37 @@ class Application(PartialApplication):
         data = await self._state.http.reset_secret(self.id)
         return data['secret']  # type: ignore # Usually not there
 
-    async def create_bot(self) -> ApplicationBot:
+    async def fetch_bot(self) -> ApplicationBot:
+        """|coro|
+
+        Fetches the bot attached to this application.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permissions to fetch the bot,
+            or the application does not have a bot.
+        HTTPException
+            Fetching the bot failed.
+
+        Returns
+        -------
+        :class:`ApplicationBot`
+            The bot attached to this application.
+        """
+        data = await self._state.http.edit_bot(self.id, {})
+        data['public'] = self.public  # type: ignore
+        data['require_code_grant'] = self.require_code_grant  # type: ignore
+
+        self.bot = bot = ApplicationBot(data=data, state=self._state, application=self)
+        return bot
+
+    async def create_bot(self) -> None:
         """|coro|
 
         Creates a bot attached to this application.
+
+        This does not fetch or cache the bot.
 
         Raises
         ------
@@ -718,21 +745,8 @@ class Application(PartialApplication):
             You do not have permissions to create bots.
         HTTPException
             Creating the bot failed.
-
-        Returns
-        -------
-        :class:`ApplicationBot`
-            The newly created bot.
         """
-        state = self._state
-        data = await state.http.botify_app(self.id)
-
-        data['public'] = self.public
-        data['require_code_grant'] = self.require_code_grant
-
-        bot = ApplicationBot(data=data, state=state, application=self)
-        self.bot = bot
-        return bot
+        await self._state.http.botify_app(self.id)
 
 
 class InteractionApplication(Hashable):
