@@ -1213,12 +1213,12 @@ class GuildChannel:
             .. versionadded:: 2.0
 
         target_user: Optional[:class:`User`]
-            The user whose stream to display for this invite, required if `target_type` is `TargetType.stream`. The user must be streaming in the channel.
+            The user whose stream to display for this invite, required if ``target_type`` is :attr:`.InviteTarget.stream`. The user must be streaming in the channel.
 
             .. versionadded:: 2.0
 
         target_application_id:: Optional[:class:`int`]
-            The id of the embedded application for the invite, required if `target_type` is `TargetType.embedded_application`.
+            The id of the embedded application for the invite, required if ``target_type`` is :attr:`.InviteTarget.embedded_application`.
 
             .. versionadded:: 2.0
 
