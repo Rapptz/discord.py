@@ -106,7 +106,7 @@ class Thread(Messageable, Hashable):
         Bots and users with :attr:`~Permissions.manage_channels` or
         :attr:`~Permissions.manage_messages` bypass slowmode.
     message_count: :class:`int`
-        An approximate number of messages in this thread. This caps at 50.
+        An approximate number of messages in this thread.
     member_count: :class:`int`
         An approximate number of members in this thread. This caps at 50.
     archived: :class:`bool`
