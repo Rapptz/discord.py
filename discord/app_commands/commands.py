@@ -831,7 +831,7 @@ class Command(Generic[GroupT, P, T]):
                     return True
 
         # Check if we have a bound error handler
-        if hasattr(self.binding, '__discord_app_commands_error_handler__'):
+        if getattr(self.binding, '__discord_app_commands_error_handler__', None) is not None:
             return True
 
         return False
