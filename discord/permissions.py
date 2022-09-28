@@ -192,6 +192,10 @@ class Permissions(BaseFlags):
         base.read_messages = True
         base.send_tts_messages = False
         base.manage_messages = False
+        base.create_private_threads = False
+        base.create_public_threads = False
+        base.manage_threads = False
+        base.send_messages_in_threads = False
         return base
 
     @classmethod
