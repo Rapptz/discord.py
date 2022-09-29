@@ -1472,6 +1472,8 @@ Miscellaneous Changes
 
     - To override a cog, the new ``override`` parameter can be used.
 
+- When passing a callable to ``type`` argument of :meth:`~ext.commands.cooldown`,
+  it now needs to accept :class:`~ext.commands.Context` rather than :class:`Message` as its only argument.
 - Metaclass of :class:`~ext.commands.Context` changed from :class:`abc.ABCMeta` to :class:`type`.
 - Changed type of :attr:`ext.commands.Command.clean_params` from :class:`collections.OrderedDict` to :class:`dict`.
   As the latter is guaranteed to preserve insertion order since Python 3.7.
