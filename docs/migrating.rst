@@ -153,7 +153,6 @@ The following have been changed to :func:`runtime-checkable <typing.runtime_chec
 
 - :class:`abc.Snowflake`
 - :class:`abc.User`
-- :class:`abc.PrivateChannel`
 
 The following have been changed to subclass :class:`~typing.Protocol`:
 
@@ -163,6 +162,7 @@ The following have been changed to subclass :class:`~typing.Protocol`:
 The following have been changed to use the default metaclass instead of :class:`abc.ABCMeta`:
 
 - :class:`abc.Messageable`
+- :class:`abc.PrivateChannel`
 
 ``datetime`` Objects Are Now UTC-Aware
 ----------------------------------------
