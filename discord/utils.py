@@ -225,7 +225,7 @@ class SequenceProxy(Sequence[T_co]):
         return self.__proxied
 
     def __repr__(self) -> str:
-        return repr(self.__proxied)
+        return f"SequenceProxy({self.__proxied!r})"
 
     def __getitem__(self, idx: int) -> T_co:
         return self.__copied[idx]
