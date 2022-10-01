@@ -528,7 +528,7 @@ else:
 
         def __class_getitem__(cls, items) -> _TransformMetadata:
             if not isinstance(items, tuple):
-                raise TypeError('expected tuple for arguments, received {items.__class__.__name__} instead')
+                raise TypeError(f'expected tuple for arguments, received {items.__class__.__name__} instead')
 
             if len(items) != 2:
                 raise TypeError('Transform only accepts exactly two arguments')
