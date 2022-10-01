@@ -1172,7 +1172,10 @@ class DefaultHelpCommand(HelpCommand):
             self.paginator.add_line(entry)
 
     async def send_pages(self) -> None:
-        """A helper utility to send the page output from :attr:`paginator` to the destination."""
+        """|coro|
+
+        A helper utility to send the page output from :attr:`paginator` to the destination.
+        """
         destination = self.get_destination()
         for page in self.paginator.pages:
             await destination.send(page)
@@ -1334,7 +1337,10 @@ class MinimalHelpCommand(HelpCommand):
         super().__init__(**options)
 
     async def send_pages(self) -> None:
-        """A helper utility to send the page output from :attr:`paginator` to the destination."""
+        """|coro|
+
+        A helper utility to send the page output from :attr:`paginator` to the destination.
+        """
         destination = self.get_destination()
         for page in self.paginator.pages:
             await destination.send(page)

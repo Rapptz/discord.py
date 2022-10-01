@@ -579,7 +579,9 @@ class Cog(metaclass=CogMeta):
 
     @_cog_special_method
     async def cog_command_error(self, ctx: Context[BotT], error: Exception) -> None:
-        """A special method that is called whenever an error
+        """|coro|
+
+        A special method that is called whenever an error
         is dispatched inside this cog.
 
         This is similar to :func:`.on_command_error` except only applying
@@ -598,7 +600,9 @@ class Cog(metaclass=CogMeta):
 
     @_cog_special_method
     async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError) -> None:
-        """A special method that is called whenever an error within
+        """|coro|
+
+        A special method that is called whenever an error within
         an application command is dispatched inside this cog.
 
         This is similar to :func:`discord.app_commands.CommandTree.on_error` except
@@ -617,7 +621,9 @@ class Cog(metaclass=CogMeta):
 
     @_cog_special_method
     async def cog_before_invoke(self, ctx: Context[BotT]) -> None:
-        """A special method that acts as a cog local pre-invoke hook.
+        """|coro|
+
+        A special method that acts as a cog local pre-invoke hook.
 
         This is similar to :meth:`.Command.before_invoke`.
 
@@ -632,7 +638,9 @@ class Cog(metaclass=CogMeta):
 
     @_cog_special_method
     async def cog_after_invoke(self, ctx: Context[BotT]) -> None:
-        """A special method that acts as a cog local post-invoke hook.
+        """|coro|
+
+        A special method that acts as a cog local post-invoke hook.
 
         This is similar to :meth:`.Command.after_invoke`.
 
