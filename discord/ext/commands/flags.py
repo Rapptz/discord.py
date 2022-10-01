@@ -340,9 +340,9 @@ class FlagsMeta(type):
             aliases = {key.casefold(): value.casefold() for key, value in aliases.items()}
             regex_flags = re.IGNORECASE
 
-        keys = list(re.escape(k) for k in flags)
+        keys = [re.escape(k) for k in flags]
         keys.extend(re.escape(a) for a in aliases)
-        keys = sorted(keys, key=lambda t: len(t), reverse=True)
+        keys = sorted(keys, key=len, reverse=True)
 
         joined = '|'.join(keys)
         pattern = re.compile(f'(({re.escape(prefix)})(?P<flag>{joined}){re.escape(delimiter)})', regex_flags)

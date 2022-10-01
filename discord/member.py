@@ -348,7 +348,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.premium_since: Optional[datetime.datetime] = utils.parse_time(data.get('premium_since'))
         self._roles: utils.SnowflakeList = utils.SnowflakeList(map(int, data['roles']))
         self._client_status: _ClientStatus = _ClientStatus()
-        self.activities: Tuple[ActivityTypes, ...] = tuple()
+        self.activities: Tuple[ActivityTypes, ...] = ()
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
         self._avatar: Optional[str] = data.get('avatar')

@@ -544,7 +544,7 @@ class Guild(Hashable):
             if cache_joined or member.id == self_id or (cache_voice and member.id in self._voice_states):
                 self._add_member(member)
 
-        empty_tuple = tuple()
+        empty_tuple = ()
         for presence in data.get('presences', []):
             user_id = int(presence['user']['id'])
             member = self.get_member(user_id)
