@@ -2820,10 +2820,18 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
 
         - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
         - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
+        - :attr:`~Permissions.create_private_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.create_public_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.manage_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.send_messages_in_threads`: There are no threads in a DM.
 
         .. versionchanged:: 2.0
 
             ``obj`` parameter is now positional-only.
+
+        .. versionchanged:: 2.0
+
+            Thread related permissions are now set to ``False``.
 
         Parameters
         -----------
@@ -2836,12 +2844,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         :class:`Permissions`
             The resolved permissions.
         """
-
-        base = Permissions.text()
-        base.read_messages = True
-        base.send_tts_messages = False
-        base.manage_messages = False
-        return base
+        return Permissions._dm_permissions()
 
     def get_partial_message(self, message_id: int, /) -> PartialMessage:
         """Creates a :class:`PartialMessage` from the message ID.
@@ -3181,12 +3184,20 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
 
         - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
         - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
+        - :attr:`~Permissions.create_private_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.create_public_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.manage_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.send_messages_in_threads`: There are no threads in a DM.
 
         This also checks the kick_members permission if the user is the owner.
 
         .. versionchanged:: 2.0
 
             ``obj`` parameter is now positional-only.
+
+        .. versionchanged:: 2.0
+
+            Thread related permissions are now set to ``False``.
 
         Parameters
         -----------
@@ -3199,10 +3210,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
             The resolved permissions for the user.
         """
         if obj.id in [x.id for x in self.recipients]:
-            base = Permissions.text()
-            base.read_messages = True
-            base.send_tts_messages = False
-            base.manage_messages = False
+            base = Permissions._dm_permissions()
             base.mention_everyone = True
             if not self.managed:
                 base.create_instant_invite = True

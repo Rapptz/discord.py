@@ -1790,7 +1790,7 @@ class Guild(Hashable):
         .. versionchanged:: 2.0
             The ``premium_progress_bar_enabled`` keyword parameter was added.
 
-        .. versionchanged:: 2.1
+        .. versionchanged:: 2.0
             The ``discoverable`` and ``invites_disabled`` keyword parameters were added.
 
         Parameters
