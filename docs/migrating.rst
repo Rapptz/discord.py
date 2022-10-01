@@ -82,7 +82,6 @@ The following have been changed to :func:`runtime-checkable <typing.runtime_chec
 
 - :class:`abc.Snowflake`
 - :class:`abc.User`
-- :class:`abc.PrivateChannel`
 
 The following have been changed to subclass :class:`~typing.Protocol`:
 
@@ -92,6 +91,7 @@ The following have been changed to subclass :class:`~typing.Protocol`:
 The following have been changed to use the default metaclass instead of :class:`abc.ABCMeta`:
 
 - :class:`abc.Messageable`
+- :class:`abc.PrivateChannel`
 
 ``datetime`` Objects Are Now UTC-Aware
 ----------------------------------------
@@ -1348,6 +1348,8 @@ Miscellaneous Changes
 
     - To override a cog, the new ``override`` parameter can be used.
 
+- When passing a callable to ``type`` argument of :meth:`~ext.commands.cooldown`,
+  it now needs to accept :class:`~ext.commands.Context` rather than :class:`Message` as its only argument.
 - Metaclass of :class:`~ext.commands.Context` changed from :class:`abc.ABCMeta` to :class:`type`.
 - Changed type of :attr:`ext.commands.Command.clean_params` from :class:`collections.OrderedDict` to :class:`dict`.
   as the latter is guaranteed to preserve insertion order since Python 3.7.

@@ -2378,6 +2378,10 @@ def cooldown(
 
         .. versionchanged:: 1.7
             Callables are now supported for custom bucket types.
+
+        .. versionchanged:: 2.0
+            When passing a callable, it now needs to accept :class:`.Context`
+            rather than :class:`~discord.Message` as its only argument.
     """
 
     def decorator(func: Union[Command, CoroFunc]) -> Union[Command, CoroFunc]:
