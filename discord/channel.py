@@ -566,7 +566,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return Webhook.from_state(data, state=self._state)
 
     async def follow(self, *, destination: TextChannel, reason: Optional[str] = None) -> Webhook:
-        """
+        """|coro|
+
         Follows a channel using a webhook.
 
         Only news channels can be followed.

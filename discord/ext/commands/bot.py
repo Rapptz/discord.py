@@ -902,7 +902,9 @@ class BotBase(GroupMixin[None]):
         await self._call_module_finalizers(lib, name)
 
     async def reload_extension(self, name: str, *, package: Optional[str] = None) -> None:
-        """Atomically reloads an extension.
+        """|coro|
+
+        Atomically reloads an extension.
 
         This replaces the extension with the same extension, only refreshed. This is
         equivalent to a :meth:`unload_extension` followed by a :meth:`load_extension`
