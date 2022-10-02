@@ -508,7 +508,9 @@ class View:
         return self.timeout is None and all(item.is_persistent() for item in self._children)
 
     async def wait(self) -> bool:
-        """Waits until the view has finished interacting.
+        """|coro|
+
+        Waits until the view has finished interacting.
 
         A view is considered finished when :meth:`stop` is called
         or it times out.

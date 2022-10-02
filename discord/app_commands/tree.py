@@ -983,7 +983,9 @@ class CommandTree(Generic[ClientT]):
         return self._state._translator
 
     async def set_translator(self, translator: Optional[Translator]) -> None:
-        """Sets the translator to use for translating commands.
+        """|coro|
+
+        Sets the translator to use for translating commands.
 
         If a translator was previously set, it will be unloaded using its
         :meth:`Translator.unload` method.
