@@ -68,7 +68,7 @@ if TYPE_CHECKING:
     from ..http import Response
     from ..guild import Guild
     from ..emoji import Emoji
-    from ..channel import TextChannel, VoiceChannel
+    from ..channel import ForumChannel, VoiceChannel
     from ..abc import Snowflake
     import datetime
     from ..types.webhook import (
@@ -794,8 +794,8 @@ class BaseWebhook(Hashable):
         return self._state and self._state._get_guild(self.guild_id)
 
     @property
-    def channel(self) -> Optional[Union[VoiceChannel, TextChannel]]:
-        """Optional[Union[:class:`VoiceChannel`, :class:`TextChannel`]]: The channel this webhook belongs to.
+    def channel(self) -> Optional[Union[ForumChannel, VoiceChannel, TextChannel]]:
+        """Optional[Union[:class:`ForumChannel`, :class:`VoiceChannel`, :class:`TextChannel`]]: The channel this webhook belongs to.
 
         If this is a partial webhook, then this will always return ``None``.
         """
@@ -847,7 +847,8 @@ class Webhook(BaseWebhook):
 
     There are two main ways to use Webhooks. The first is through the ones
     received by the library such as :meth:`.Guild.webhooks`,
-    :meth:`.TextChannel.webhooks` and :meth:`.VoiceChannel.webhooks`.
+    :meth:`.TextChannel.webhooks`, :meth:`.VoiceChannel.webhooks`
+    and :meth:`.ForumChannel.webhooks`.
     The ones received by the library will automatically be
     bound using the library's internal HTTP session.
 
