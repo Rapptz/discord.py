@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-06 06:27+0000\n"
-"PO-Revision-Date: 2022-09-07 14:32\n"
+"POT-Creation-Date: 2022-10-02 21:53+0000\n"
+"PO-Revision-Date: 2022-10-02 21:55\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -739,8 +739,8 @@ msgid "The emoji may be a unicode emoji or a custom guild :class:`Emoji`."
 msgstr "絵文字はユニコード絵文字かカスタムギルド絵文字の :class:`Emoji` でないといけません。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:7
-msgid "You must have the :attr:`~Permissions.read_message_history` permission to use this. If nobody else has reacted to the message using this emoji, the :attr:`~Permissions.add_reactions` permission is required."
-msgstr "これを行うためには、そのチャンネルの :attr:`~Permissions.read_message_history` 権限が必要です。 もし、他の人がその絵文字でリアクションしていない場合、さらに :attr:`~Permissions.add_reactions` 権限が必要です。"
+msgid "You must have :attr:`~Permissions.read_message_history` to do this. If nobody else has reacted to the message using this emoji, :attr:`~Permissions.add_reactions` is required."
+msgstr ""
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:13
 msgid "``emoji`` parameter is now positional-only."
@@ -793,8 +793,8 @@ msgstr "メッセージから特定のリアクションを消去します。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:7
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reactions:5
-msgid "You need the :attr:`~Permissions.manage_messages` permission to use this."
-msgstr "これを行うには、 :attr:`~Permissions.manage_messages` 権限が必要です。"
+msgid "You must have :attr:`~Permissions.manage_messages` to do this."
+msgstr ""
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:15
 msgid "The emoji to clear."
@@ -923,8 +923,8 @@ msgstr "メッセージをピン留めします。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:5
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:5
-msgid "You must have the :attr:`~Permissions.manage_messages` permission to do this in a non-private channel context."
-msgstr "プライベートチャンネルでない通常のチャンネルにおけるピン留めには、 :attr:`~Permissions.manage_messages` 権限が必要です。"
+msgid "You must have :attr:`~Permissions.manage_messages` to do this in a non-private channel context."
+msgstr ""
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:8
 msgid "The reason for pinning the message. Shows up on the audit log."
@@ -948,12 +948,12 @@ msgid "Publishes this message to your announcement channel."
 msgstr "このメッセージをアナウンスチャンネルに公開します。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:5
-msgid "You must have the :attr:`~Permissions.send_messages` permission to do this."
-msgstr "これを使うには、 :attr:`~Permissions.send_messages` 権限が必要です。"
+msgid "You must have :attr:`~Permissions.send_messages` to do this."
+msgstr ""
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:7
-msgid "If the message is not your own then the :attr:`~Permissions.manage_messages` permission is also needed."
-msgstr "自身のメッセージ以外の場合は :attr:`~Permissions.manage_messages` 権限も必要です。"
+msgid "If the message is not your own then :attr:`~Permissions.manage_messages` is also needed."
+msgstr ""
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:10
 msgid "You do not have the proper permissions to publish this message."
@@ -990,8 +990,8 @@ msgid "Remove a reaction by the member from the message."
 msgstr "メッセージからメンバーによるリアクションを除去します。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:7
-msgid "If the reaction is not your own (i.e. ``member`` parameter is not you) then the :attr:`~Permissions.manage_messages` permission is needed."
-msgstr "もしリアクションがあなたのものではなければ(つまり、 ``member`` パラメーターがあなたでないなら)、 :attr:`~Permissions.manage_messages` 権限が必要になります。"
+msgid "If the reaction is not your own (i.e. ``member`` parameter is not you) then :attr:`~Permissions.manage_messages` is needed."
+msgstr ""
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:10
 msgid "The ``member`` parameter must represent a member and meet the :class:`abc.Snowflake` abc."
@@ -2595,18 +2595,18 @@ msgstr ":class:`bool`: ビューが永続的と設定されているかどうか
 msgid "A persistent view has all their components with a set ``custom_id`` and a :attr:`timeout` set to ``None``."
 msgstr "永続的なビューは、すべてのコンポーネントに ``custom_id`` が設定されており、 :attr:`timeout` が ``None`` に設定されています。"
 
-#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.wait:1
-#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.wait:1
+#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.wait:3
+#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.wait:3
 msgid "Waits until the view has finished interacting."
 msgstr "ビューのインタラクションが終了するまで待ちます。"
 
-#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.wait:3
-#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.wait:3
+#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.wait:5
+#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.wait:5
 msgid "A view is considered finished when :meth:`stop` is called or it times out."
 msgstr "ビューは :meth:`stop` が呼び出されるかタイムアウトしたときに終了したとされます。"
 
-#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.wait:6
-#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.wait:6
+#: ../../../discord/ui/view.py:docstring of discord.ui.view.View.wait:8
+#: ../../../discord/ui/modal.py:docstring of discord.ui.view.View.wait:8
 msgid "If ``True``, then the view timed out. If ``False`` then the view finished normally."
 msgstr "``True`` の場合、ビューがタイムアウトしました。 ``False`` の場合、ビューは正常に終了しました。"
 
@@ -3279,23 +3279,23 @@ msgstr "トランスレータを変更するには、 :meth:`set_translator` を
 msgid "Optional[:class:`Translator`]"
 msgstr "Optional[:class:`Translator`]"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.set_translator:1
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.set_translator:3
 msgid "Sets the translator to use for translating commands."
 msgstr "コマンドの翻訳に使用するトランスレータを設定します。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.set_translator:3
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.set_translator:5
 msgid "If a translator was previously set, it will be unloaded using its :meth:`Translator.unload` method."
 msgstr "以前にトランスレータが設定されていた場合は、 :meth:`Translator.unload` メソッドを使用してアンロードされます。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.set_translator:6
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.set_translator:8
 msgid "When a translator is set, it will be loaded using its :meth:`Translator.load` method."
 msgstr "トランスレータが設定されると、 :meth:`Translator.load` メソッドを使用して読み込まれます。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.set_translator:8
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.set_translator:10
 msgid "The translator to use. If ``None`` then the translator is just removed and unloaded."
 msgstr "使用するトランスレータ。 ``None`` の場合、トランスレータは単に除去され、アンロードされます。"
 
-#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.set_translator:11
+#: ../../../discord/app_commands/tree.py:docstring of discord.app_commands.tree.CommandTree.set_translator:13
 msgid "The translator was not ``None`` or a :class:`Translator` instance."
 msgstr "トランスレータが ``None`` または :class:`Translator` インスタンスでない場合。"
 
@@ -3619,8 +3619,8 @@ msgid ":func:`~discord.app_commands.context_menu`"
 msgstr ":func:`~discord.app_commands.context_menu`"
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:7
-msgid ":meth:`CommandTree.command <discord.app_commands.CommandTree.context_menu>`"
-msgstr ":meth:`CommandTree.command <discord.app_commands.CommandTree.context_menu>`"
+msgid ":meth:`CommandTree.context_menu <discord.app_commands.CommandTree.context_menu>`"
+msgstr ""
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:11
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:33
@@ -4129,7 +4129,7 @@ msgstr ":attr:`per` 秒あたりのトークンの総数。"
 #: ../../../discord/app_commands/checks.py:docstring of discord.app_commands.checks.Cooldown:9
 #: ../../../discord/app_commands/checks.py:docstring of discord.app_commands.checks.Cooldown:15
 #: ../../../discord/app_commands/checks.py:docstring of discord.app_commands.checks.Cooldown.get_retry_after:8
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:42
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:47
 #: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandOnCooldown:17
 msgid ":class:`float`"
 msgstr ":class:`float`"
@@ -4206,99 +4206,103 @@ msgstr "ほとんど生の状態でコマンドに渡されるパラメータを
 msgid "This class is deliberately simple and just holds the option name and resolved value as a simple key-pair mapping. These attributes can be accessed using dot notation. For example, an option with the name of ``example`` can be accessed using ``ns.example``. If an attribute is not found, then ``None`` is returned rather than an attribute error."
 msgstr "このクラスは意図的にシンプルで、オプション名と解決された値を単純なキーペアマッピングとして保持します。 これらの属性はドット表記を使用してアクセスできます。 例えば、 ``example`` という名前のオプションは ``ns.example`` を使ってアクセスできます。 属性が見つからない場合は、属性エラーではなく ``None`` が返されます。"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:14
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:10
+msgid "The key names come from the raw Discord data, which means that if a parameter was renamed then the renamed key is used instead of the function parameter name."
+msgstr ""
+
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:19
 msgid "Checks if two namespaces are equal by checking if all attributes are equal."
 msgstr "二つの名前空間が等しいかを、すべての属性が等しいかによって確認します。"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:17
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:22
 msgid "Checks if two namespaces are not equal."
 msgstr "二つの名前空間が等しくないかを比較します。"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:20
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:25
 msgid "Returns an attribute if it is found, otherwise raises a :exc:`KeyError`."
 msgstr "見つかった場合は属性を返し、そうでなければ、 :exc:`KeyError` を送出します。"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:24
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:29
 msgid "Checks if the attribute is in the namespace."
 msgstr "属性が名前空間にあるかどうかを確認します。"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:27
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:32
 msgid "Returns an iterator of ``(name, value)`` pairs. This allows it to be, for example, constructed as a dict or a list of pairs."
 msgstr "``(name, value)`` ペアのイテレータを返します。これにより、例えば、辞書型やペアのリストに変換できます。"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:30
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:35
 msgid "This namespace object converts resolved objects into their appropriate form depending on their type. Consult the table below for conversion information."
 msgstr "この名前空間オブジェクトは、種類により解決されたオブジェクトを適切な形式に変換します。変換情報については、以下の表を参照してください。"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:34
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:39
 msgid "Option Type"
 msgstr "オプションの種類"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:34
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:39
 msgid "Resolved Type"
 msgstr "解決される型"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:36
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:41
 msgid ":attr:`.AppCommandOptionType.string`"
 msgstr ":attr:`.AppCommandOptionType.string`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:38
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:43
 msgid ":attr:`.AppCommandOptionType.integer`"
 msgstr ":attr:`.AppCommandOptionType.integer`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:40
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:45
 msgid ":attr:`.AppCommandOptionType.boolean`"
 msgstr ":attr:`.AppCommandOptionType.boolean`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:42
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:47
 msgid ":attr:`.AppCommandOptionType.number`"
 msgstr ":attr:`.AppCommandOptionType.number`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:44
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:49
 msgid ":attr:`.AppCommandOptionType.user`"
 msgstr ":attr:`.AppCommandOptionType.user`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:44
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:49
 msgid ":class:`~discord.User` or :class:`~discord.Member`"
 msgstr ":class:`~discord.User` または :class:`~discord.Member`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:46
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:51
 msgid ":attr:`.AppCommandOptionType.channel`"
 msgstr ":attr:`.AppCommandOptionType.channel`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:46
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:51
 msgid ":class:`.AppCommandChannel` or :class:`.AppCommandThread`"
 msgstr ":class:`.AppCommandChannel` または :class:`.AppCommandThread`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:48
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:53
 msgid ":attr:`.AppCommandOptionType.role`"
 msgstr ":attr:`.AppCommandOptionType.role`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:48
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:53
 msgid ":class:`~discord.Role`"
 msgstr ":class:`~discord.Role`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:50
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:55
 msgid ":attr:`.AppCommandOptionType.mentionable`"
 msgstr ":attr:`.AppCommandOptionType.mentionable`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:50
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:55
 msgid ":class:`~discord.User` or :class:`~discord.Member`, or :class:`~discord.Role`"
 msgstr ":class:`~discord.User` または :class:`~discord.Member` または :class:`~discord.Role`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:52
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:57
 msgid ":attr:`.AppCommandOptionType.attachment`"
 msgstr ":attr:`.AppCommandOptionType.attachment`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:52
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:57
 msgid ":class:`~discord.Attachment`"
 msgstr ":class:`~discord.Attachment`"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:57
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:62
 msgid "In autocomplete interactions, the namespace might not be validated or filled in. Discord does not send the resolved data as well, so this means that certain fields end up just as IDs rather than the resolved data. In these cases, a :class:`discord.Object` is returned instead."
 msgstr "オートコンプリートのインタラクションでは、名前空間が検証されていないか、入力されていない可能性があります。 Discordは解決されたデータも送信しません。このため、特定のフィールドには解決されたデータではなくIDが存在することがあります。 この場合、代わりに :class:`discord.Object` が返されます。"
 
-#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:61
+#: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:66
 msgid "This is a Discord limitation."
 msgstr "これはDiscordの制限です。"
 
@@ -4363,8 +4367,8 @@ msgid "Defaults to ``None``."
 msgstr "既定値は ``None`` です。"
 
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.choices:1
-msgid "A list of choices that are allowed to this parameter."
-msgstr "このパラメータにて利用できる選択肢のリスト。"
+msgid "A list of up to 25 choices that are allowed to this parameter."
+msgstr ""
 
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.choices:10
 msgid "Optional[List[:class:`~discord.app_commands.Choice`]]"

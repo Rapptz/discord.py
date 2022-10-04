@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-28 15:41+0000\n"
-"PO-Revision-Date: 2022-09-07 14:32\n"
+"POT-Creation-Date: 2022-10-02 21:53+0000\n"
+"PO-Revision-Date: 2022-10-02 21:55\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -310,29 +310,29 @@ msgstr ":class:`abc.Snowflake`"
 msgid ":class:`abc.User`"
 msgstr ":class:`abc.User`"
 
-#: ../../migrating.rst:156
-msgid ":class:`abc.PrivateChannel`"
-msgstr ":class:`abc.PrivateChannel`"
-
-#: ../../migrating.rst:158
+#: ../../migrating.rst:157
 msgid "The following have been changed to subclass :class:`~typing.Protocol`:"
 msgstr "以下のクラスは :class:`~typing.Protocol` のサブクラスに変更されました:"
 
-#: ../../migrating.rst:160
+#: ../../migrating.rst:159
 msgid ":class:`abc.GuildChannel`"
 msgstr ":class:`abc.GuildChannel`"
 
-#: ../../migrating.rst:161
+#: ../../migrating.rst:160
 msgid ":class:`abc.Connectable`"
 msgstr ":class:`abc.Connectable`"
 
-#: ../../migrating.rst:163
+#: ../../migrating.rst:162
 msgid "The following have been changed to use the default metaclass instead of :class:`abc.ABCMeta`:"
 msgstr "以下のクラスは :class:`abc.ABCMeta` の代わりにデフォルトのメタクラスを使用するよう変更されました:"
 
-#: ../../migrating.rst:165
+#: ../../migrating.rst:164
 msgid ":class:`abc.Messageable`"
 msgstr ":class:`abc.Messageable`"
+
+#: ../../migrating.rst:165
+msgid ":class:`abc.PrivateChannel`"
+msgstr ":class:`abc.PrivateChannel`"
 
 #: ../../migrating.rst:168
 msgid "``datetime`` Objects Are Now UTC-Aware"
@@ -2839,70 +2839,74 @@ msgid "To override a cog, the new ``override`` parameter can be used."
 msgstr "コグを上書きするには、新しい ``override`` パラメータが使用できます。"
 
 #: ../../migrating.rst:1475
+msgid "When passing a callable to ``type`` argument of :meth:`~ext.commands.cooldown`, it now needs to accept :class:`~ext.commands.Context` rather than :class:`Message` as its only argument."
+msgstr ""
+
+#: ../../migrating.rst:1477
 msgid "Metaclass of :class:`~ext.commands.Context` changed from :class:`abc.ABCMeta` to :class:`type`."
 msgstr ":class:`~ext.commands.Context` のメタクラスが :class:`abc.ABCMeta` から :class:`type` へと変更されました。"
 
-#: ../../migrating.rst:1476
+#: ../../migrating.rst:1478
 msgid "Changed type of :attr:`ext.commands.Command.clean_params` from :class:`collections.OrderedDict` to :class:`dict`. As the latter is guaranteed to preserve insertion order since Python 3.7."
 msgstr ":attr:`ext.commands.Command.clean_params` の型を :class:`collections.OrderedDict` からPython 3.7以降で追加順が必ず保持される :class:`dict` に変更しました。"
 
-#: ../../migrating.rst:1478
+#: ../../migrating.rst:1480
 msgid ":attr:`ext.commands.ChannelNotReadable.argument` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes."
 msgstr ":ref:`migrating_2_0_thread_support` の変更により、 :attr:`ext.commands.ChannelNotReadable.argument` は :class:`Thread` になる可能性があります。"
 
-#: ../../migrating.rst:1479
+#: ../../migrating.rst:1481
 msgid ":attr:`ext.commands.NSFWChannelRequired.channel` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes."
 msgstr ":ref:`migrating_2_0_thread_support` の変更により、 :attr:`ext.commands.NSFWChannelRequired.channel` は :class:`Thread` になる可能性があります。"
 
-#: ../../migrating.rst:1480
+#: ../../migrating.rst:1482
 msgid ":attr:`ext.commands.Context.channel` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes."
 msgstr ":ref:`migrating_2_0_thread_support` の変更により、 :attr:`ext.commands.Context.channel` は :class:`Thread` になる可能性があります。"
 
-#: ../../migrating.rst:1481
+#: ../../migrating.rst:1483
 msgid ":attr:`ext.commands.Context.channel` may now be a :class:`PartialMessageable`."
 msgstr ":attr:`ext.commands.Context.channel` が :class:`PartialMessageable` になりうるようになりました。"
 
-#: ../../migrating.rst:1482
+#: ../../migrating.rst:1484
 msgid "``MissingPermissions.missing_perms`` has been renamed to :attr:`ext.commands.MissingPermissions.missing_permissions`."
 msgstr "``MissingPermissions.missing_perms`` は :attr:`ext.commands.MissingPermissions.missing_permissions` へと名前が変更されました。"
 
-#: ../../migrating.rst:1483
+#: ../../migrating.rst:1485
 msgid "``BotMissingPermissions.missing_perms`` has been renamed to :attr:`ext.commands.BotMissingPermissions.missing_permissions`."
 msgstr "``BotMissingPermissions.missing_perms`` は :attr:`ext.commands.BotMissingPermissions.missing_permissions` へと名前が変更されました。"
 
-#: ../../migrating.rst:1484
+#: ../../migrating.rst:1486
 msgid ":meth:`ext.commands.Cog.cog_load` has been added as part of the :ref:`migrating_2_0_commands_extension_cog_async` changes."
 msgstr ":meth:`ext.commands.Cog.cog_load` が、 :ref:`migrating_2_0_commands_extension_cog_async` の変更に伴って追加されました。"
 
-#: ../../migrating.rst:1485
+#: ../../migrating.rst:1487
 msgid ":meth:`ext.commands.Cog.cog_unload` may now be a :term:`coroutine` due to the :ref:`migrating_2_0_commands_extension_cog_async` changes."
 msgstr ":meth:`ext.commands.Cog.cog_unload` は、 :ref:`migrating_2_0_commands_extension_cog_async` のため :term:`coroutine` になることができるようになりました。"
 
-#: ../../migrating.rst:1486
+#: ../../migrating.rst:1488
 msgid ":attr:`ext.commands.Command.clean_params` type now uses a custom :class:`inspect.Parameter` to handle defaults."
 msgstr ":attr:`ext.commands.Command.clean_params` 型は既定値を扱うためカスタム :class:`inspect.Parameter` を使用するようになりました。"
 
-#: ../../migrating.rst:1491
+#: ../../migrating.rst:1493
 msgid "Tasks Extension Changes"
 msgstr "タスク拡張機能の変更"
 
-#: ../../migrating.rst:1493
+#: ../../migrating.rst:1495
 msgid "Calling :meth:`ext.tasks.Loop.stop` in :meth:`~ext.tasks.Loop.before_loop` now stops the first iteration from running."
 msgstr ":meth:`~ext.tasks.Loop.stop` を :meth:`~ext.tasks.Loop.before_loop` で呼び出すと、最初のイテレーションが実行されなくなりました。"
 
-#: ../../migrating.rst:1494
+#: ../../migrating.rst:1496
 msgid "Calling :meth:`ext.tasks.Loop.change_interval` now changes the interval for the sleep time right away, rather than on the next loop iteration."
 msgstr ":meth:`ext.tasks.Loop.change_interval` を呼び出すと、次のループの繰り返しの時ではなく、直ちにスリープ時間の間隔が変更されるようになりました。"
 
-#: ../../migrating.rst:1496
+#: ../../migrating.rst:1498
 msgid "``loop`` parameter in :func:`ext.tasks.loop` can no longer be ``None``."
 msgstr ":func:`ext.tasks.loop` のパラメーター ``loop`` に ``None`` を渡せなくなりました。"
 
-#: ../../migrating.rst:1499
+#: ../../migrating.rst:1501
 msgid "Migrating to v1.0"
 msgstr "v1.0への移行"
 
-#: ../../migrating.rst:1501
+#: ../../migrating.rst:1503
 msgid "The contents of that migration has been moved to :ref:`migrating_1_0`."
 msgstr "この移行に関する内容は :ref:`migrating_1_0` に移動されました。"
 
