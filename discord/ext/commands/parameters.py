@@ -194,7 +194,7 @@ def parameter(
     description: str = empty,
     displayed_default: str = empty,
 ) -> Any:
-    r"""parameter(\*, converter=..., default=..., displayed_default=...)
+    r"""parameter(\*, converter=..., default=..., description=..., displayed_default=...)
 
     A way to assign custom metadata for a :class:`Command`\'s parameter.
 
