@@ -71,6 +71,7 @@ NoneType = type(None)
 if TYPE_CHECKING:
     from ..interactions import Interaction
     from .commands import Parameter
+    from ..ext.commands.converter import Choice
 
 
 @dataclass
@@ -411,8 +412,9 @@ class LiteralTransformer(IdentityTransformer):
 
 class ChoiceTransformer(IdentityTransformer):
     __discord_app_commands_is_choice__: ClassVar[bool] = True
+    _choices: Optional[List[Choice]] = None
 
-    def __init__(self, inner_type: Any) -> None:
+    def __init__(self, inner_type: Any, choices: Optional[List[Choice]] = None) -> None:
         if inner_type is int:
             opt_type = AppCommandOptionType.integer
         elif inner_type is float:
@@ -422,7 +424,13 @@ class ChoiceTransformer(IdentityTransformer):
         else:
             raise TypeError(f'expected int, str, or float values not {inner_type!r}')
 
+        if choices:
+            self._choices = [Choice(name=choice.name, value=choice.value) for choice in choices]
         super().__init__(opt_type)
+
+    @property
+    def choices(self):
+        return self._choices
 
 
 class EnumValueTransformer(Transformer):
@@ -782,9 +790,12 @@ def get_supported_annotation(
         args = annotation.__args__  # type: ignore
         return (LiteralTransformer(args), MISSING, True)
 
-    if origin is Choice:
-        arg = annotation.__args__[0]  # type: ignore
-        return (ChoiceTransformer(arg), MISSING, True)
+    if origin is Choice or hasattr(annotation, "__is_commands_choice__"):
+        if hasattr(annotation, "__is_commands_choice__"):
+            return (ChoiceTransformer(annotation._type, annotation._choices), MISSING, False)  # type: ignore # can't type this properly
+        else:
+            arg = annotation.__args__[0]  # type: ignore
+            return (ChoiceTransformer(arg), MISSING, True)
 
     if origin is not Union:
         # Only Union/Optional is supported right now so bail early

@@ -342,7 +342,7 @@ def _populate_choices(params: Dict[str, CommandParameter], all_choices: Dict[str
         if not all(param.type == choice._option_type for choice in choices):
             raise TypeError('choices must all have the same inner option type as the parameter choice type')
 
-        param.choices = choices
+        param.choices = choices  # type: ignore # choices are validated.
 
     if all_choices:
         first = next(iter(all_choices))
