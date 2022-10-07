@@ -48,7 +48,6 @@ import types
 import discord
 
 from .errors import *
-from .errors import BadChoice
 
 if TYPE_CHECKING:
     from discord.state import Channel
@@ -86,7 +85,6 @@ __all__ = (
     'clean_content',
     'Greedy',
     'Range',
-    'Choice',
     'run_converters',
 )
 
@@ -105,7 +103,6 @@ T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
 CT = TypeVar('CT', bound=discord.abc.GuildChannel)
 TT = TypeVar('TT', bound=discord.Thread)
-ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
 
 
 @runtime_checkable
@@ -1161,55 +1158,6 @@ else:
                 min=cast(min) if min is not None else None,
                 max=cast(max) if max is not None else None,
             )
-
-
-class Choice(Converter[ChoiceT]):
-    """Represents an argument choice
-
-    .. versionadded:: 2.1
-
-    Parameters
-    -----------
-    name: :class:`str`
-        The name of the choice.
-        This is the value that will be matched against.
-    value: Union[:class:`int`, :class:`str`, :class:`float`]
-        The value of the choice. This is the value that will be returned.
-    """
-
-    __is_commands_choice__: bool = True
-    _type: Type[ChoiceT]
-    _choices: List[Choice]
-    __slots__ = (
-        'name',
-        'value',
-    )
-
-    def __class_getitem__(cls, _type: Type[ChoiceT]):
-        if not _type:
-            raise TypeError('Choice[...] expected one of str, int, or float.')
-
-        if _type not in (str, int, float):
-            raise TypeError(f'Choice[...] expected one of str, int, or float, not {_type!r}.')
-
-        cls._type = _type
-        return cls
-
-    def __init__(self, *, name: str, value: ChoiceT):
-        self.name: str = name
-
-        if not isinstance(value, (str, int, float)):
-            raise TypeError(f'Choice value must be of type str, int, or float not {value!r}.')
-
-        self.value: ChoiceT = value
-
-    @classmethod
-    async def convert(cls, ctx: Context[BotT], argument: str) -> ChoiceT:
-        for choice in cls._choices:
-            if choice.name == argument:
-                return choice.value
-
-        raise BadChoice(choices=cls._choices, argument=argument)
 
 
 def _convert_to_bool(argument: str) -> bool:

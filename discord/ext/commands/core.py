@@ -51,7 +51,7 @@ import discord
 from ._types import _BaseCommand, CogT
 from .cog import Cog
 from .context import Context
-from .converter import Greedy, run_converters, Choice
+from .converter import Greedy, run_converters
 from .cooldowns import BucketType, Cooldown, CooldownMapping, DynamicCooldownMapping, MaxConcurrency
 from .errors import *
 from .parameters import Parameter, Signature
@@ -62,7 +62,6 @@ if TYPE_CHECKING:
 
     from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, Hook, UserCheck
 
-    from .converter import ChoiceT
 
 __all__ = (
     'Command',
@@ -89,7 +88,6 @@ __all__ = (
     'is_nsfw',
     'has_guild_permissions',
     'bot_has_guild_permissions',
-    'choices',
 )
 
 MISSING: Any = discord.utils.MISSING
@@ -166,44 +164,7 @@ def get_signature_parameters(
 
         params[name] = parameter.replace(annotation=annotation)
 
-    if hasattr(function, '__commands_param_choices__'):
-        _populate_choices(params, function.__commands_param_choices__)
-
     return params
-
-
-def _populate_choices(params: Dict[str, Parameter], all_choices: Dict[str, List[Choice]]) -> None:
-    for name, param in params.items():
-        choices = all_choices.pop(name, MISSING)
-        if choices is MISSING:
-            continue
-
-        if not (isinstance(choices, list) and all(isinstance(choice, Choice) for choice in choices)):
-            raise TypeError('choices must be a list of Choice')
-
-        if param.converter:
-
-            # is this neccessary?
-            if param.converter == Choice:
-                if not hasattr(param.converter, "_type"):
-                    return param.converter.__class_getitem__(None)
-                elif isinstance(param.converter._type, (str, int, float)):
-                    raise TypeError('choices are only supported for int, str, and float parameters.')
-            else:
-                raise TypeError(f'Parameter: {param.name} must be annotated with a Choice type to use choices.')
-        else:
-            raise TypeError(f'Parameter: {param.name} must be annotated with Choice to use choices.')
-
-        if not all(isinstance(choice.value, param.converter._type) for choice in choices):
-            raise TypeError(
-                f'choices must all have the same value type as the parameter choice type ({param.converter._type!r})'
-            )
-
-        param.converter._choices = choices
-
-    if all_choices:
-        first = next(iter(all_choices))
-        raise TypeError(f'unknown parameter given: {first}')
 
 
 PARAMETER_HEADING_REGEX = re.compile(r'Parameters?\n---+\n', re.I)
@@ -2461,66 +2422,6 @@ def is_nsfw() -> Check[Any]:
         decorator.predicate = wrapper
 
     return decorator  # type: ignore
-
-
-def choices(**parameters: List[Choice[ChoiceT]]):
-    """Instructs the given parameters by their name to use the given choices for their choices.
-
-    Example:
-
-    .. code-block:: python3
-
-        @commands.command()
-        @commands.choices(fruits=[
-            Choice(name='apple', value=1),
-            Choice(name='banana', value=2),
-            Choice(name='cherry', value=3),
-        ])
-        async def fruit(ctx: commands.Context, fruits: Choice[int] = commands.parameter(description='fruits to choose from')):
-            await ctx.send(f'Your favourite fruit is {fruits.name}.')
-
-    .. note::
-
-        This is not the only way to provide choices to a command. There is one more ergonomic ways
-        of doing this. Which is to use a :obj:`typing.Literal` annotation:
-
-        .. code-block:: python3
-
-            @commands.command()
-            async def fruit(ctx: commands.Context, fruits: Literal['apple', 'banana', 'cherry'] = commands.parameter(description='fruits to choose from')):
-                await ctx.send(f'Your favourite fruit is {fruits}.')
-
-
-    Parameters
-    -----------
-    **parameters
-        The choices of the parameters.
-
-    Raises
-    --------
-    TypeError
-        The parameter name is not found or the parameter type was incorrect.
-    """
-
-    def decorator(func: Union[Command, CoroFunc]) -> Union[Command, CoroFunc]:
-        if isinstance(func, Command):
-            _populate_choices(func.params, parameters)
-            if hasattr(func, '__commands_is_hybrid__'):
-                app_command = getattr(func, 'app_command', None)
-                if app_command:
-                    if hasattr(app_command._callback, '__discord_app_commands_param_choices__'):
-                        app_command._callback.__discord_app_commands_param_choices__.update(parameters)
-                    else:
-                        app_command._callback.__discord_app_commands_param_choices__ = parameters
-        else:
-            try:
-                func.__commands_param_choices__.update(parameters)
-            except AttributeError:
-                func.__commands_param_choices__ = parameters
-
-        return func
-
-    return decorator
 
 
 def cooldown(
