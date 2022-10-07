@@ -46,6 +46,7 @@ from typing import (
     Protocol,
     Set,
     Sequence,
+    SupportsIndex,
     Tuple,
     Type,
     TypeVar,
@@ -224,7 +225,18 @@ class SequenceProxy(Sequence[T_co]):
             self.__proxied = list(self.__proxied)
         return self.__proxied
 
-    def __getitem__(self, idx: int) -> T_co:
+    def __repr__(self) -> str:
+        return f"SequenceProxy({self.__proxied!r})"
+
+    @overload
+    def __getitem__(self, idx: SupportsIndex) -> T_co:
+        ...
+
+    @overload
+    def __getitem__(self, idx: slice) -> List[T_co]:
+        ...
+
+    def __getitem__(self, idx: Union[SupportsIndex, slice]) -> Union[T_co, List[T_co]]:
         return self.__copied[idx]
 
     def __len__(self) -> int:

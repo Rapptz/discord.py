@@ -594,7 +594,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return Webhook.from_state(data, state=self._state)
 
     async def follow(self, *, destination: TextChannel, reason: Optional[str] = None) -> Webhook:
-        """
+        """|coro|
+
         Follows a channel using a webhook.
 
         Only news channels can be followed.
@@ -2812,10 +2813,18 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
 
         - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
         - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
+        - :attr:`~Permissions.create_private_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.create_public_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.manage_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.send_messages_in_threads`: There are no threads in a DM.
 
         .. versionchanged:: 2.0
 
             ``obj`` parameter is now positional-only.
+
+        .. versionchanged:: 2.1
+
+            Thread related permissions are now set to ``False``.
 
         Parameters
         -----------
@@ -2978,12 +2987,20 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
 
         - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
         - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
+        - :attr:`~Permissions.create_private_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.create_public_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.manage_threads`: There are no threads in a DM.
+        - :attr:`~Permissions.send_messages_in_threads`: There are no threads in a DM.
 
         This also checks the kick_members permission if the user is the owner.
 
         .. versionchanged:: 2.0
 
             ``obj`` parameter is now positional-only.
+
+        .. versionchanged:: 2.1
+
+            Thread related permissions are now set to ``False``.
 
         Parameters
         -----------

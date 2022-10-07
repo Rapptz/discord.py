@@ -1776,7 +1776,7 @@ class Message(PartialMessage, Hashable):
                 return '@deleted-role'
 
             def resolve_channel(id: int) -> str:
-                return f'#deleted-channel'
+                return '#deleted-channel'
 
         transforms = {
             '@': resolve_member,
