@@ -48,7 +48,6 @@ import types
 import discord
 
 from .errors import *
-from .errors import BadChoice
 
 if TYPE_CHECKING:
     from discord.state import Channel
