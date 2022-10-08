@@ -104,7 +104,7 @@ __all__ = (
     'MissingRequiredFlag',
     'HybridCommandError',
     'RangeError',
-    'BadChoice'
+    'BadChoice',
 )
 
 
