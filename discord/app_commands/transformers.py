@@ -770,6 +770,7 @@ def get_supported_annotation(
                 return (EnumValueTransformer(annotation), MISSING, False)
             else:
                 return (EnumNameTransformer(annotation), MISSING, False)
+
         if annotation is Choice:
             raise TypeError('Choice requires a type argument of int, str, or float')
 
@@ -790,8 +791,8 @@ def get_supported_annotation(
         args = annotation.__args__  # type: ignore
         return (LiteralTransformer(args), MISSING, True)
 
-    if origin is Choice or hasattr(annotation, "__is_commands_choice__"):
-        if hasattr(annotation, "__is_commands_choice__"):
+    if origin is Choice or hasattr(annotation, "__commands_is_choice__"):
+        if hasattr(annotation, "__commands_is_choice__"):
             return (ChoiceTransformer(annotation._type, annotation._choices), MISSING, False)  # type: ignore # can't type this properly
         else:
             arg = annotation.__args__[0]  # type: ignore

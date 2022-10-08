@@ -181,18 +181,12 @@ def _populate_choices(params: Dict[str, Parameter], all_choices: Dict[str, List[
         if not (isinstance(choices, list) and all(isinstance(choice, Choice) for choice in choices)):
             raise TypeError('choices must be a list of Choice')
 
-        if param.converter:
+        # is this neccessary?
+        if not param.converter:
+            raise TypeError(f'Parameter: {param.name} must be annotated with a Choice type to use choices.')
 
-            # is this neccessary?
-            if param.converter == Choice:
-                if not hasattr(param.converter, "_type"):
-                    return param.converter.__class_getitem__(None)
-                elif isinstance(param.converter._type, (str, int, float)):
-                    raise TypeError('choices are only supported for int, str, and float parameters.')
-            else:
-                raise TypeError(f'Parameter: {param.name} must be annotated with a Choice type to use choices.')
-        else:
-            raise TypeError(f'Parameter: {param.name} must be annotated with Choice to use choices.')
+        if not isinstance(param.converter, Choice):
+            raise TypeError(f'Expected parameter ({param.name}) to be annotated with Choice but got {param.converter!r}')
 
         if not all(isinstance(choice.value, param.converter._type) for choice in choices):
             raise TypeError(
@@ -2513,9 +2507,9 @@ def choices(**parameters: List[Choice[ChoiceT]]):
                     else:
                         app_command._callback.__discord_app_commands_param_choices__ = parameters
         else:
-            try:
+            if hasattr(func, "__commands_param_choices__"):
                 func.__commands_param_choices__.update(parameters)
-            except AttributeError:
+            else:
                 func.__commands_param_choices__ = parameters
 
         return func

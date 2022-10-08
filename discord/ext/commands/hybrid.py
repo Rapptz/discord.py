@@ -500,14 +500,14 @@ class HybridCommand(Command[CogT, P, T]):
         if description is not MISSING:
             kwargs['description'] = description
 
+        # attribute doesn't exist on wrapped callback
         _choices = getattr(func, '__commands_param_choices__', {}).copy()
         super().__init__(func, **kwargs)
         self.with_app_command: bool = kwargs.pop('with_app_command', True)
         self._locale_name: Optional[app_commands.locale_str] = name_locale
         self._locale_description: Optional[app_commands.locale_str] = description_locale
 
-        # required to translate to actual choices
-        if self.with_app_command and _choices:
+        if _choices and self.with_app_command:
             try:
                 func.__commands_param_choices__.update(_choices)
             except AttributeError:
