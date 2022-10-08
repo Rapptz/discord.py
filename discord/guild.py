@@ -3386,11 +3386,15 @@ class Guild(Hashable):
         delete_message_days: :class:`int`
             The number of days worth of messages to delete from the user
             in the guild. The minimum is 0 and the maximum is 7.
+            Defaults to 1 day if neither ``delete_message_days`` nor
+            ``delete_message_seconds`` are passed.
 
             .. deprecated:: 2.0
-        delete_message_seconds: :class:`int`:
+        delete_message_seconds: :class:`int`
             The number of seconds worth of messages to delete from the user
             in the guild. The minimum is 0 and the maximum is 604800 (7 days).
+            Defaults to 1 day if neither ``delete_message_days`` nor
+            ``delete_message_seconds`` are passed.
 
             .. versionadded:: 2.0
         reason: Optional[:class:`str`]
