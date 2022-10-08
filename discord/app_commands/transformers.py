@@ -71,7 +71,7 @@ NoneType = type(None)
 if TYPE_CHECKING:
     from ..interactions import Interaction
     from .commands import Parameter
-    from ..ext.commands.converter import Choice
+    from ..ext.commands.converter import Choice as ExtChoice
 
 
 @dataclass
@@ -414,7 +414,7 @@ class ChoiceTransformer(IdentityTransformer):
     __discord_app_commands_is_choice__: ClassVar[bool] = True
     _choices: Optional[List[Choice]] = None
 
-    def __init__(self, inner_type: Any, choices: Optional[List[Choice]] = None) -> None:
+    def __init__(self, inner_type: Any, choices: Optional[List[ExtChoice]] = None) -> None:
         if inner_type is int:
             opt_type = AppCommandOptionType.integer
         elif inner_type is float:
