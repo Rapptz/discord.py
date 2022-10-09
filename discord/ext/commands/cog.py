@@ -519,7 +519,7 @@ class Cog(metaclass=CogMeta):
         """
         return not hasattr(self.cog_command_error.__func__, '__cog_special_method__')
 
-    def has_app_error_handler(self) -> bool:
+    def has_app_command_error_handler(self) -> bool:
         """:class:`bool`: Checks whether the cog has an app error handler.
 
         .. versionadded:: 2.1
