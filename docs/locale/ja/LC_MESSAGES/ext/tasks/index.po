@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-23 11:53+0000\n"
-"PO-Revision-Date: 2022-09-07 14:31\n"
+"PO-Revision-Date: 2022-10-09 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -59,7 +59,7 @@ msgstr "特定の回数ループさせる:"
 
 #: ../../ext/tasks/index.rst:77
 msgid "Waiting until the bot is ready before the loop starts:"
-msgstr "ループが始まる前に、Botの準備が整うまで待機する: "
+msgstr "ループが始まる前に、Botの準備が整うまで待機する:"
 
 #: ../../ext/tasks/index.rst:102
 msgid "Doing something during cancellation:"

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-23 11:53+0000\n"
-"PO-Revision-Date: 2022-09-07 14:31\n"
+"PO-Revision-Date: 2022-10-09 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -78,7 +78,7 @@ msgstr "v0.9.0でいくつかのイベントは、別の状態を持たないた
 
 #: ../../migrating_to_async.rst:93
 msgid "Note that ``on_status`` was removed. If you want its functionality, use :func:`on_member_update`. See :ref:`discord-api-events` for more information. Other removed events include ``on_socket_closed``, ``on_socket_receive``, and ``on_socket_opened``."
-msgstr "``on_status`` が削除されていることに注意してください。似たような機能が使いたい場合は、  :func:`on_member_update` を使用します。詳細は :ref:`discord-api-events` を参照してください。他に、 ``on_socket_closed`` 、 ``on_socket_receive`` や ``on_socket_opened`` も削除されています。"
+msgstr "``on_status`` が削除されていることに注意してください。似たような機能が使いたい場合は、 :func:`on_member_update` を使用します。詳細は :ref:`discord-api-events` を参照してください。他に、 ``on_socket_closed`` 、 ``on_socket_receive`` や ``on_socket_opened`` も削除されています。"
 
 #: ../../migrating_to_async.rst:98
 msgid "Coroutines"

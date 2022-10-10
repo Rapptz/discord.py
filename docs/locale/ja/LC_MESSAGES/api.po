@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-10-02 21:53+0000\n"
-"PO-Revision-Date: 2022-10-02 21:55\n"
+"PO-Revision-Date: 2022-10-09 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -1074,7 +1074,7 @@ msgstr ":class:`.Invite` や、招待のURL、IDを削除します。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.delete_invite:5
 msgid "You must have :attr:`~.Permissions.manage_channels` in the associated guild to do this."
-msgstr ""
+msgstr "これを行うには、関連付けられたGuildにて、 :attr:`~.Permissions.manage_channels` が必要です。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.delete_invite:10
 msgid "``invite`` parameter is now positional-only."
@@ -2807,7 +2807,7 @@ msgstr "誰かがメッセージを入力し始めたときに呼び出されま
 
 #: ../../api.rst:338
 msgid "The ``channel`` parameter can be a :class:`abc.Messageable` instance. Which could either be :class:`TextChannel`, :class:`GroupChannel`, or :class:`DMChannel`."
-msgstr "channelパラメータは :class:`abc.Messageable` インスタンスにすることができます。 :class:`TextChannel` 、 :class:`GroupChannel` 、または :class:`DMChannel` のいずれかです。"
+msgstr "``channel`` パラメータは :class:`abc.Messageable` インスタンスにすることができます。 :class:`TextChannel` 、 :class:`GroupChannel` 、または :class:`DMChannel` のいずれかです。"
 
 #: ../../api.rst:342
 msgid "If the ``channel`` is a :class:`TextChannel` then the ``user`` parameter is a :class:`Member`, otherwise it is a :class:`User`."
@@ -3108,7 +3108,7 @@ msgstr "更新後のスタンプのリスト。"
 
 #: ../../api.rst:620
 msgid "Called when an :class:`Invite` is created. You must have :attr:`~Permissions.manage_channels` to receive this."
-msgstr ""
+msgstr ":class:`Invite` が作成されたときに呼び出されます。 受け取るには :attr:`~Permissions.manage_channels` が必要です。"
 
 #: ../../api.rst:627
 #: ../../api.rst:644
@@ -3130,7 +3130,7 @@ msgstr "作成された招待。"
 
 #: ../../api.rst:637
 msgid "Called when an :class:`Invite` is deleted. You must have :attr:`~Permissions.manage_channels` to receive this."
-msgstr ""
+msgstr ":class:`Invite` が削除されたときに呼び出されます。 受け取るには :attr:`~Permissions.manage_channels` が必要です。"
 
 #: ../../api.rst:647
 msgid "Outside of those two attributes, the only other attribute guaranteed to be filled by the Discord gateway for this event is :attr:`Invite.code`."
@@ -7614,7 +7614,7 @@ msgstr "WebhookMessage"
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.WebhookMessage:1
 #: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhookMessage:1
 msgid "Represents a message sent from your webhook."
-msgstr "webhookから送信されたメッセージです。"
+msgstr "Webhookから送信されたメッセージです。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.WebhookMessage:3
 #: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhookMessage:3
@@ -7734,7 +7734,7 @@ msgstr "絵文字はユニコード絵文字かカスタムギルド絵文字の
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.add_reaction:7
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.add_reaction:7
 msgid "You must have :attr:`~Permissions.read_message_history` to do this. If nobody else has reacted to the message using this emoji, :attr:`~Permissions.add_reactions` is required."
-msgstr ""
+msgstr "これを行うためには、そのチャンネルにて :attr:`~Permissions.read_message_history` が必要です。 もし、他の人がその絵文字でリアクションしていない場合、さらに :attr:`~Permissions.add_reactions` が必要です。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.add_reaction:13
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.add_reaction:13
@@ -7804,7 +7804,7 @@ msgstr "メッセージから特定のリアクションを除去します。"
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.clear_reactions:5
 #: ../../../discord/reaction.py:docstring of discord.reaction.Reaction.clear:5
 msgid "You must have :attr:`~Permissions.manage_messages` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.manage_messages` が必要です。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.clear_reaction:15
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.clear_reaction:15
@@ -7990,7 +7990,7 @@ msgstr "メッセージをピン留めします。"
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.unpin:5
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.pin:5
 msgid "You must have :attr:`~Permissions.manage_messages` to do this in a non-private channel context."
-msgstr ""
+msgstr "プライベートチャンネルでない通常のチャンネルで行うには、 :attr:`~Permissions.manage_messages` が必要です。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.pin:8
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.pin:8
@@ -8028,13 +8028,13 @@ msgstr "アナウンスチャンネルのメッセージを公開します。"
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:5
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:5
 msgid "You must have :attr:`~Permissions.send_messages` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.send_messages` が必要です。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.publish:7
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:7
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:7
 msgid "If the message is not your own then :attr:`~Permissions.manage_messages` is also needed."
-msgstr ""
+msgstr "自身のメッセージ以外の場合は :attr:`~Permissions.manage_messages` も必要です。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.publish:10
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:10
@@ -8086,7 +8086,7 @@ msgstr "メッセージからあるメンバーによるリアクションをす
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.remove_reaction:7
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.remove_reaction:7
 msgid "If the reaction is not your own (i.e. ``member`` parameter is not you) then :attr:`~Permissions.manage_messages` is needed."
-msgstr ""
+msgstr "もしリアクションがあなたのものではなければ(つまり、 ``member`` パラメーターがあなたでないなら)、 :attr:`~Permissions.manage_messages` も必要になります。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.remove_reaction:10
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.remove_reaction:10
@@ -8318,7 +8318,7 @@ msgstr "ほぼすべての :ref:`Discord models <discord_api_models>` がこの�
 
 #: ../../../discord/abc.py:docstring of discord.abc.Snowflake:6
 msgid "If you want to create a snowflake on your own, consider using :class:`.Object`."
-msgstr "snowflakeを自分で作成したい場合は、 :class:`.Object` を使用することを検討してください。"
+msgstr "スノーフレークを自分で作成したい場合は、 :class:`.Object` を使用することを検討してください。"
 
 #: ../../../discord/abc.py:docstring of discord.abc.Snowflake:11
 msgid "The model's unique ID."
@@ -8772,7 +8772,7 @@ msgstr "チャンネルを削除します。"
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.clone:6
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.delete:5
 msgid "You must have :attr:`~discord.Permissions.manage_channels` to do this."
-msgstr ""
+msgstr "これを行うには :attr:`~discord.Permissions.manage_channels` が必要です。"
 
 #: ../../../discord/abc.py:docstring of discord.abc.GuildChannel.delete:7
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.delete:7
@@ -8844,7 +8844,7 @@ msgstr "``overwrite`` パラメータが ``None`` の場合は権限の上書き
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.set_permissions:18
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.set_permissions:18
 msgid "You must have :attr:`~discord.Permissions.manage_roles` to do this."
-msgstr ""
+msgstr "これを行うには :attr:`~discord.Permissions.manage_roles` が必要です。"
 
 #: ../../../discord/abc.py:docstring of discord.abc.GuildChannel.set_permissions:22
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.set_permissions:22
@@ -9132,7 +9132,7 @@ msgstr "テキストやボイスチャンネルから招待を作成します。
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.create_invite:5
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.create_invite:5
 msgid "You must have :attr:`~discord.Permissions.create_instant_invite` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~discord.Permissions.create_instant_invite` が必要です。"
 
 #: ../../../discord/abc.py:docstring of discord.abc.GuildChannel.create_invite:7
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.create_invite:7
@@ -9188,7 +9188,7 @@ msgstr "ボイスチャンネル招待の対象の種類。"
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.create_invite:26
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.create_invite:26
 msgid "The user whose stream to display for this invite, required if ``target_type`` is :attr:`.InviteTarget.stream`. The user must be streaming in the channel."
-msgstr ""
+msgstr "この招待に表示すべきストリームのユーザー。 ``target_type`` が :attr:`.InviteTarget.stream` の場合必須です。このユーザーはチャンネル内でストリームしていないといけません。"
 
 #: ../../../discord/abc.py:docstring of discord.abc.GuildChannel.create_invite:30
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.create_invite:30
@@ -9196,7 +9196,7 @@ msgstr ""
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.create_invite:30
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.create_invite:30
 msgid "Optional[:class:`int`]: The id of the embedded application for the invite, required if ``target_type`` is :attr:`.InviteTarget.embedded_application`."
-msgstr ""
+msgstr "Optional[:class:`int`]: 招待に紐づいた埋め込みアプリケーションのID。 ``target_type`` が :attr:`.InviteTarget.embedded_application` の場合必須です。"
 
 #: ../../../discord/abc.py:docstring of discord.abc.GuildChannel.create_invite:34
 #: ../../../discord/channel.py:docstring of discord.abc.GuildChannel.create_invite:34
@@ -9540,7 +9540,7 @@ msgstr "チャンネルのメッセージ履歴を取得する :term:`asynchrono
 #: ../../../discord/channel.py:docstring of discord.abc.Messageable.history:3
 #: ../../../discord/channel.py:docstring of discord.abc.Messageable.history:3
 msgid "You must have :attr:`~discord.Permissions.read_message_history` to do this."
-msgstr ""
+msgstr "これを行うためには、 :attr:`~discord.Permissions.read_message_history` が必要です。"
 
 #: ../../../discord/abc.py:docstring of discord.abc.Messageable.history:14
 #: ../../../discord/user.py:docstring of discord.abc.Messageable.history:14
@@ -10082,7 +10082,7 @@ msgstr "対応がとられたルールを取得します。"
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.fetch_automod_rules:5
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_automod_rule:5
 msgid "You must have :attr:`Permissions.manage_guild` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`Permissions.manage_guild` が必要です。"
 
 #: ../../../discord/automod.py:docstring of discord.automod.AutoModAction.fetch_rule:7
 msgid "You do not have permissions to view the rule."
@@ -10648,7 +10648,7 @@ msgstr "もしメッセージがギルドに属しているなら、これはメ
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.delete:5
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.delete:5
 msgid "Your own messages could be deleted without any proper permissions. However to delete other people's messages, you must have :attr:`~Permissions.manage_messages`."
-msgstr ""
+msgstr "自身が送信したメッセージは適切な権限が無くとも削除できます。しかし、他人の送信したメッセージを削除する場合には、:attr:`~Permissions.manage_messages` が必要です。"
 
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.delete:8
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.delete:8
@@ -10792,7 +10792,7 @@ msgstr "指定された :class:`User` からのリアクションをメッセー
 
 #: ../../../discord/reaction.py:docstring of discord.reaction.Reaction.remove:5
 msgid "If the reaction is not your own (i.e. ``user`` parameter is not you) then :attr:`~Permissions.manage_messages` is needed."
-msgstr ""
+msgstr "もしリアクションがあなたのものではなければ(つまり、 ``user`` パラメーターがあなたでないなら)、 :attr:`~Permissions.manage_messages` も必要になります。"
 
 #: ../../../discord/reaction.py:docstring of discord.reaction.Reaction.remove:8
 msgid "The ``user`` parameter must represent a user or member and meet the :class:`abc.Snowflake` abc."
@@ -11505,7 +11505,7 @@ msgstr "ギルドに :class:`TextChannel` を作成します。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_text_channel:5
 msgid "Note that you must have :attr:`~Permissions.manage_channels` to create the channel."
-msgstr ""
+msgstr "チャンネルを作成するには、:attr:`~Permissions.manage_channels` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_text_channel:7
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_forum:5
@@ -11711,7 +11711,7 @@ msgstr "ギルドを編集します。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit:5
 msgid "You must have :attr:`~Permissions.manage_guild` to edit the guild."
-msgstr ""
+msgstr "ルールを編集するには、 :attr:`~Permissions.manage_guild` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit:7
 msgid "The ``rules_channel`` and ``public_updates_channel`` keyword parameters were added."
@@ -11952,7 +11952,7 @@ msgstr "ユーザーの :class:`BanEntry` を返します。"
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.fetch_ban:5
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.bans:3
 msgid "You must have :attr:`~Permissions.ban_members` to get this information."
-msgstr ""
+msgstr "この情報を取得するためには、:attr:`~Permissions.ban_members` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.fetch_ban:7
 msgid "The user to get ban information from."
@@ -12025,7 +12025,7 @@ msgstr "``days`` 日間ログインせずロールを持たないメンバーが
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.prune_members:8
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.kick:7
 msgid "You must have :attr:`~Permissions.kick_members` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.kick_members` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.prune_members:10
 msgid "To check how many members you would prune without actually pruning, see the :meth:`estimate_pruned_members` function."
@@ -12076,7 +12076,7 @@ msgstr "ギルド内のテンプレートのリストを取得します。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.templates:5
 msgid "You must have :attr:`~.Permissions.manage_guild` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~.Permissions.manage_guild` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.templates:9
 msgid "You don't have permissions to get the templates."
@@ -12100,7 +12100,7 @@ msgstr "ギルド内のWebhookのリストを取得します。"
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.webhooks:5
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_webhook:5
 msgid "You must have :attr:`~.Permissions.manage_webhooks` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~.Permissions.manage_webhooks` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.webhooks:7
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.webhooks:7
@@ -12146,7 +12146,7 @@ msgstr "このギルドの全てのアクティブなインスタント招待の
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.invites:5
 msgid "You must have :attr:`~Permissions.manage_guild` to get this information."
-msgstr ""
+msgstr "この情報を取得するためには、:attr:`~Permissions.manage_guild` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.invites:11
 msgid "List[:class:`Invite`]"
@@ -12162,7 +12162,7 @@ msgstr "サーバーのテンプレートを作成します。"
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit_widget:5
 #: ../../../discord/integrations.py:docstring of discord.integrations.Integration.delete:5
 msgid "You must have :attr:`~Permissions.manage_guild` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.manage_guild` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_template:9
 #: ../../../discord/template.py:docstring of discord.template.Template:19
@@ -12275,7 +12275,7 @@ msgstr "ギルドに :class:`Sticker` を作成します。"
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.delete_sticker:5
 #: ../../../discord/sticker.py:docstring of discord.sticker.GuildSticker.delete:5
 msgid "You must have :attr:`~Permissions.manage_emojis_and_stickers` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.manage_emojis_and_stickers` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_sticker:9
 msgid "The sticker name. Must be at least 2 characters."
@@ -12393,7 +12393,7 @@ msgstr "ギルドのスケジュールイベントを作成します。"
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.edit:5
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent.delete:5
 msgid "You must have :attr:`~Permissions.manage_events` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.manage_events` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_scheduled_event:9
 #: ../../../discord/scheduled_event.py:docstring of discord.scheduled_event.ScheduledEvent:27
@@ -12552,7 +12552,7 @@ msgstr "現在ギルドには静的絵文字・アニメーション付き絵文
 #: ../../../discord/emoji.py:docstring of discord.emoji.Emoji.delete:5
 #: ../../../discord/emoji.py:docstring of discord.emoji.Emoji.edit:5
 msgid "You must have :attr:`~Permissions.manage_emojis` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.manage_emojis` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_custom_emoji:10
 msgid "The emoji name. Must be at least 2 characters."
@@ -12635,7 +12635,7 @@ msgstr "すべてのフィールドはオプションです。"
 #: ../../../discord/role.py:docstring of discord.role.Role.edit:5
 #: ../../../discord/role.py:docstring of discord.role.Role.delete:5
 msgid "You must have :attr:`~Permissions.manage_roles` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.manage_roles` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_role:9
 #: ../../../discord/role.py:docstring of discord.role.Role.edit:9
@@ -12729,7 +12729,7 @@ msgstr ":attr:`~Guild.features` に ``COMMUNITY`` が含まれている必要が
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit_welcome_screen:8
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.vanity_invite:7
 msgid "You must have :attr:`~Permissions.manage_guild` to do this.as well."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.manage_guild` も必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.welcome_screen:11
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.vanity_invite:9
@@ -12790,7 +12790,7 @@ msgstr "ギルドからユーザーをBANします。"
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.ban:7
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.unban:7
 msgid "You must have :attr:`~Permissions.ban_members` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.ban_members` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.ban:9
 msgid "The user to ban from their guild."
@@ -12875,7 +12875,7 @@ msgstr "ギルドの監査ログを取得する :term:`asynchronous iterator` �
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.audit_logs:3
 msgid "You must have :attr:`~Permissions.view_audit_log` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.view_audit_log` が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.audit_logs:7
 msgid "Getting the first 100 entries: ::"
@@ -14009,7 +14009,7 @@ msgstr "メンバーを別のボイスチャンネルに移動します。（メ
 
 #: ../../../discord/member.py:docstring of discord.member.Member.move_to:5
 msgid "You must have :attr:`~Permissions.move_members` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.move_members` が必要です。"
 
 #: ../../../discord/member.py:docstring of discord.member.Member.move_to:7
 #: ../../../discord/member.py:docstring of discord.member.Member.timeout:8
@@ -14030,7 +14030,7 @@ msgstr "指定された日時まで、または与えられた :class:`datetime.
 
 #: ../../../discord/member.py:docstring of discord.member.Member.timeout:6
 msgid "You must have :attr:`~Permissions.moderate_members` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.moderate_members` が必要です。"
 
 #: ../../../discord/member.py:docstring of discord.member.Member.timeout:10
 msgid "If this is a :class:`datetime.timedelta` then it represents the amount of time the member should be timed out for. If this is a :class:`datetime.datetime` then it's when the member's timeout should expire. If ``None`` is passed then the timeout is removed. Note that the API only allows for timeouts up to 28 days."
@@ -14046,7 +14046,7 @@ msgstr "メンバーに :class:`Role` を付与します。"
 
 #: ../../../discord/member.py:docstring of discord.member.Member.add_roles:5
 msgid "You must have :attr:`~Permissions.manage_roles` to use this, and the added :class:`Role`\\s must appear lower in the list of roles than the highest role of the member."
-msgstr ""
+msgstr "これを行うには :attr:`~Permissions.manage_roles` が必要で、また付与された :class:`Role` はメンバーの最高のロールより下の階層にないといけません。"
 
 #: ../../../discord/member.py:docstring of discord.member.Member.add_roles:9
 msgid "An argument list of :class:`abc.Snowflake` representing a :class:`Role` to give to the member."
@@ -14074,7 +14074,7 @@ msgstr "このメンバーから :class:`Role` を除去します。"
 
 #: ../../../discord/member.py:docstring of discord.member.Member.remove_roles:5
 msgid "You must have :attr:`~Permissions.manage_roles` to use this, and the removed :class:`Role`\\s must appear lower in the list of roles than the highest role of the member."
-msgstr ""
+msgstr "これを行うには :attr:`~Permissions.manage_roles` が必要で、また除去された :class:`Role` はメンバーの最高のロールより下の階層にないといけません。"
 
 #: ../../../discord/member.py:docstring of discord.member.Member.remove_roles:9
 msgid "An argument list of :class:`abc.Snowflake` representing a :class:`Role` to remove from the member."
@@ -14339,7 +14339,7 @@ msgstr "絵文字を使用できるかどうか。"
 
 #: ../../../discord/emoji.py:docstring of discord.emoji.Emoji:73
 msgid "The user that created the emoji. This can only be retrieved using :meth:`Guild.fetch_emoji` and having :attr:`~Permissions.manage_emojis`."
-msgstr ""
+msgstr "絵文字を作成したユーザー。これは :meth:`Guild.fetch_emoji` 経由で、かつ :attr:`~Permissions.manage_emojis` を持つユーザーによってのみ取得できます。"
 
 #: ../../../discord/emoji.py:docstring of discord.Emoji.created_at:1
 msgid "Returns the emoji's creation time in UTC."
@@ -15024,7 +15024,7 @@ msgstr "チャンネルを編集します。"
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.edit:5
 #: ../../../discord/channel.py:docstring of discord.channel.StageChannel.create_instance:5
 msgid "You must have :attr:`~Permissions.manage_channels` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.manage_channels` が必要です。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.edit:7
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.edit:7
@@ -15188,7 +15188,7 @@ msgstr "``check`` 関数の要件を満たすメッセージを一括削除し�
 #: ../../../discord/threads.py:docstring of discord.threads.Thread.purge:7
 #: ../../../discord/channel.py:docstring of discord.channel.VoiceChannel.purge:7
 msgid "You must have :attr:`~Permissions.manage_messages` to delete messages even if they are your own. Having :attr:`~Permissions.read_message_history` is also needed to retrieve message history."
-msgstr ""
+msgstr "メッセージを削除するときに、それが自分のものであったとしても、削除するには :attr:`~Permissions.manage_messages` が必要です。メッセージの履歴を取得するために :attr:`~Permissions.read_message_history` も必要になります。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.purge:18
 #: ../../../discord/threads.py:docstring of discord.threads.Thread.purge:14
@@ -15408,7 +15408,7 @@ msgstr "このテキストチャンネルのアーカイブされたスレッド
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.archived_threads:4
 msgid "You must have :attr:`~Permissions.read_message_history` to do this. If iterating over private threads then :attr:`~Permissions.manage_threads` is also required."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.read_message_history` が必要です。プライベートスレッドをイテレートする場合は、 :attr:`~Permissions.manage_threads` も必要です。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.archived_threads:9
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.archived_threads:8
@@ -15695,11 +15695,11 @@ msgstr "Tuple[:class:`Thread`, :class:`Message`]"
 
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.archived_threads:1
 msgid "Returns an :term:`asynchronous iterator` that iterates over all archived threads in this forum in order of decreasing :attr:`Thread.archive_timestamp`."
-msgstr ""
+msgstr "このフォーラムののアーカイブされたスレッドを :attr:`Thread.archive_timestamp` の降順でイテレートする :term:`asynchronous iterator` を返します。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.archived_threads:4
 msgid "You must have :attr:`~Permissions.read_message_history` to do this."
-msgstr ""
+msgstr "これを行うためには、 :attr:`~Permissions.read_message_history` が必要です。"
 
 #: ../../api.rst:4205
 msgid "Thread"
@@ -15755,7 +15755,7 @@ msgstr "このスレッドにメッセージを送信する間にメンバーが
 
 #: ../../../discord/threads.py:docstring of discord.threads.Thread:71
 msgid "An approximate number of messages in this thread."
-msgstr ""
+msgstr "このスレッドのおおよそのメッセージ数。"
 
 #: ../../../discord/threads.py:docstring of discord.threads.Thread:77
 msgid "An approximate number of members in this thread. This caps at 50."
@@ -15990,11 +15990,11 @@ msgstr "渡されたフォーラムタグをスレッドに追加します。"
 #: ../../../discord/threads.py:docstring of discord.threads.Thread.add_tags:5
 #: ../../../discord/threads.py:docstring of discord.threads.Thread.remove_tags:5
 msgid "You must have :attr:`~Permissions.manage_threads` to use this or the thread must be owned by you."
-msgstr ""
+msgstr "自身で作成したスレッド以外でこれを使用するには、 :attr:`~Permissions.manage_threads` が必要です。"
 
 #: ../../../discord/threads.py:docstring of discord.threads.Thread.add_tags:8
 msgid "Tags that have :attr:`ForumTag.moderated` set to ``True`` require :attr:`~Permissions.manage_threads` to be added."
-msgstr ""
+msgstr ":attr:`ForumTag.moderated` が ``True`` に設定されているタグを追加するには、 :attr:`~Permissions.manage_threads` が必要になります。"
 
 #: ../../../discord/threads.py:docstring of discord.threads.Thread.add_tags:11
 msgid "The maximum number of tags that can be added to a thread is 5."
@@ -16071,7 +16071,7 @@ msgstr "このスレッドにユーザーを追加します。"
 
 #: ../../../discord/threads.py:docstring of discord.threads.Thread.add_user:5
 msgid "You must have :attr:`~Permissions.send_messages_in_threads` to add a user to a thread. If the thread is private and :attr:`invitable` is ``False`` then :attr:`~Permissions.manage_messages` is required to add a user to the thread."
-msgstr ""
+msgstr "スレッドにユーザーを追加するには :attr:`~Permissions.send_messages_in_threads` 権限が必要です。このスレッドがプライベートで :attr:`invitable` が ``False`` ならば :attr:`~Permissions.manage_messages` 権限も必要です。"
 
 #: ../../../discord/threads.py:docstring of discord.threads.Thread.add_user:9
 msgid "The user to add to the thread."
@@ -16658,27 +16658,27 @@ msgstr ":attr:`~Permissions.manage_messages` ：DM内の他のメッセージは
 #: ../../../discord/channel.py:docstring of discord.channel.DMChannel.permissions_for:11
 #: ../../../discord/channel.py:docstring of discord.channel.GroupChannel.permissions_for:11
 msgid ":attr:`~Permissions.create_private_threads`: There are no threads in a DM."
-msgstr ""
+msgstr ":attr:`~Permissions.create_private_threads`: DMにはスレッドが存在しません。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.DMChannel.permissions_for:12
 #: ../../../discord/channel.py:docstring of discord.channel.GroupChannel.permissions_for:12
 msgid ":attr:`~Permissions.create_public_threads`: There are no threads in a DM."
-msgstr ""
+msgstr ":attr:`~Permissions.create_public_threads`: DMにはスレッドが存在しません。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.DMChannel.permissions_for:13
 #: ../../../discord/channel.py:docstring of discord.channel.GroupChannel.permissions_for:13
 msgid ":attr:`~Permissions.manage_threads`: There are no threads in a DM."
-msgstr ""
+msgstr ":attr:`~Permissions.manage_threads`: DMにはスレッドが存在しません。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.DMChannel.permissions_for:14
 #: ../../../discord/channel.py:docstring of discord.channel.GroupChannel.permissions_for:14
 msgid ":attr:`~Permissions.send_messages_in_threads`: There are no threads in a DM."
-msgstr ""
+msgstr ":attr:`~Permissions.send_messages_in_threads`: DMにはスレッドが存在しません。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.DMChannel.permissions_for:22
 #: ../../../discord/channel.py:docstring of discord.channel.GroupChannel.permissions_for:24
 msgid "Thread related permissions are now set to ``False``."
-msgstr ""
+msgstr "スレッド関連の権限が ``False`` に設定されるようになりました。"
 
 #: ../../api.rst:4275
 msgid "GroupChannel"
@@ -17102,7 +17102,7 @@ msgstr "テンプレートをギルドの現在の状態に同期します。"
 #: ../../../discord/template.py:docstring of discord.template.Template.edit:5
 #: ../../../discord/template.py:docstring of discord.template.Template.delete:5
 msgid "You must have :attr:`~Permissions.manage_guild` in the source guild to do this."
-msgstr ""
+msgstr "これを行うためには、元のギルドにて :attr:`~Permissions.manage_guild` が必要です。"
 
 #: ../../../discord/template.py:docstring of discord.template.Template.sync:9
 #: ../../../discord/template.py:docstring of discord.template.Template.edit:9
@@ -17195,7 +17195,7 @@ msgstr "ようこそ画面のチャンネルは、 :attr:`Guild.premium_tier` �
 
 #: ../../../discord/welcome_screen.py:docstring of discord.welcome_screen.WelcomeScreen.edit:7
 msgid "You must have :attr:`~Permissions.manage_guild` in the guild to do this."
-msgstr ""
+msgstr "これを行うためには、ギルドにて :attr:`~Permissions.manage_guild` が必要です。"
 
 #: ../../../discord/welcome_screen.py:docstring of discord.welcome_screen.WelcomeScreen.edit:9
 msgid "Usage: ::"
@@ -17630,7 +17630,7 @@ msgstr "このスタンプが属するギルドのID。"
 
 #: ../../../discord/sticker.py:docstring of discord.sticker.GuildSticker:57
 msgid "The user that created this sticker. This can only be retrieved using :meth:`Guild.fetch_sticker` and having :attr:`~Permissions.manage_emojis_and_stickers`."
-msgstr ""
+msgstr "スタンプを作成したユーザー。これは :meth:`Guild.fetch_sticker` 経由で、かつ :attr:`~Permissions.manage_emojis_and_stickers` を持つユーザーによってのみ取得できます。"
 
 #: ../../../discord/sticker.py:docstring of discord.sticker.GuildSticker:64
 msgid "The name of a unicode emoji that represents this sticker."

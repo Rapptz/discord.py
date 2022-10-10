@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-10-02 21:53+0000\n"
-"PO-Revision-Date: 2022-10-02 21:55\n"
+"PO-Revision-Date: 2022-10-09 16:05\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -552,7 +552,7 @@ msgstr "遅延メッセージが一時的かどうか。 :attr:`InteractionType.
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:17
 msgid "Indicates whether the deferred type should be :attr:`InteractionResponseType.deferred_channel_message` instead of the default :attr:`InteractionResponseType.deferred_message_update` if both are valid. In UI terms, this is represented as if the bot is thinking of a response. It is your responsibility to eventually send a followup message via :attr:`Interaction.followup` to make this thinking state go away. Application commands (AKA Slash commands) cannot use :attr:`InteractionResponseType.deferred_message_update`."
-msgstr "遅延の種類を両方が有効の場合にデフォルトの :attr:`InteractionResponseType.deferred_message_update` ではなく  :attr:`InteractionResponseType.deferred_channel_message` にするか。Discordのアプリ上では考え中として表示されます。 :attr:`Interaction.followup` で考え中の表示を解除できます。アプリケーションコマンド（スラッシュコマンド）は :attr:`InteractionResponseType.deferred_message_update` を使えません。"
+msgstr "遅延の種類を両方が利用可能の場合にデフォルトの :attr:`InteractionResponseType.deferred_message_update` ではなく :attr:`InteractionResponseType.deferred_channel_message` にするか。Discordのアプリ上では考え中として表示されます。 :attr:`Interaction.followup` で考え中の表示を解除できます。アプリケーションコマンド（スラッシュコマンド）は :attr:`InteractionResponseType.deferred_message_update` を使えません。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:24
 msgid "Deferring the interaction failed."
@@ -740,7 +740,7 @@ msgstr "絵文字はユニコード絵文字かカスタムギルド絵文字の
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:7
 msgid "You must have :attr:`~Permissions.read_message_history` to do this. If nobody else has reacted to the message using this emoji, :attr:`~Permissions.add_reactions` is required."
-msgstr ""
+msgstr "これを行うためには、そのチャンネルにて :attr:`~Permissions.read_message_history` が必要です。 もし、他の人がその絵文字でリアクションしていない場合、さらに :attr:`~Permissions.add_reactions` が必要です。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.add_reaction:13
 msgid "``emoji`` parameter is now positional-only."
@@ -794,7 +794,7 @@ msgstr "メッセージから特定のリアクションを消去します。"
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:7
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reactions:5
 msgid "You must have :attr:`~Permissions.manage_messages` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.manage_messages` が必要です。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.clear_reaction:15
 msgid "The emoji to clear."
@@ -924,7 +924,7 @@ msgstr "メッセージをピン留めします。"
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:5
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.unpin:5
 msgid "You must have :attr:`~Permissions.manage_messages` to do this in a non-private channel context."
-msgstr ""
+msgstr "プライベートチャンネルでない通常のチャンネルで行うには、 :attr:`~Permissions.manage_messages` が必要です。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.pin:8
 msgid "The reason for pinning the message. Shows up on the audit log."
@@ -949,11 +949,11 @@ msgstr "このメッセージをアナウンスチャンネルに公開します
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:5
 msgid "You must have :attr:`~Permissions.send_messages` to do this."
-msgstr ""
+msgstr "これを行うには、 :attr:`~Permissions.send_messages` が必要です。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:7
 msgid "If the message is not your own then :attr:`~Permissions.manage_messages` is also needed."
-msgstr ""
+msgstr "自身のメッセージ以外の場合は :attr:`~Permissions.manage_messages` も必要です。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:10
 msgid "You do not have the proper permissions to publish this message."
@@ -991,7 +991,7 @@ msgstr "メッセージからメンバーによるリアクションを除去し
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:7
 msgid "If the reaction is not your own (i.e. ``member`` parameter is not you) then :attr:`~Permissions.manage_messages` is needed."
-msgstr ""
+msgstr "もしリアクションがあなたのものではなければ(つまり、 ``member`` パラメーターがあなたでないなら)、 :attr:`~Permissions.manage_messages` も必要になります。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.remove_reaction:10
 msgid "The ``member`` parameter must represent a member and meet the :class:`abc.Snowflake` abc."
@@ -3620,7 +3620,7 @@ msgstr ":func:`~discord.app_commands.context_menu`"
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:7
 msgid ":meth:`CommandTree.context_menu <discord.app_commands.CommandTree.context_menu>`"
-msgstr ""
+msgstr ":meth:`CommandTree.context_menu <discord.app_commands.CommandTree.context_menu>`"
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:11
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:33
@@ -4208,7 +4208,7 @@ msgstr "このクラスは意図的にシンプルで、オプション名と解
 
 #: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:10
 msgid "The key names come from the raw Discord data, which means that if a parameter was renamed then the renamed key is used instead of the function parameter name."
-msgstr ""
+msgstr "キー名はDiscordの生データから得られたものなので、パラメータの名前が変更された場合、関数のパラメータ名ではなく改名後のキーが使用されます。"
 
 #: ../../../discord/app_commands/namespace.py:docstring of discord.app_commands.namespace.Namespace:19
 msgid "Checks if two namespaces are equal by checking if all attributes are equal."
@@ -4368,7 +4368,7 @@ msgstr "既定値は ``None`` です。"
 
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.choices:1
 msgid "A list of up to 25 choices that are allowed to this parameter."
-msgstr ""
+msgstr "このパラメータにて利用できる最大25個の選択肢のリスト。"
 
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.choices:10
 msgid "Optional[List[:class:`~discord.app_commands.Choice`]]"
