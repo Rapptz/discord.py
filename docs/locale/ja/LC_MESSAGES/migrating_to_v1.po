@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-23 11:53+0000\n"
-"PO-Revision-Date: 2022-09-07 14:32\n"
+"PO-Revision-Date: 2022-10-09 16:05\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -39,7 +39,7 @@ msgstr "Pythonのバージョンの変更"
 
 #: ../../migrating_to_v1.rst:22
 msgid "In order to make development easier and also to allow for our dependencies to upgrade to allow usage of 3.7 or higher, the library had to remove support for Python versions lower than 3.5.3, which essentially means that **support for Python 3.4 is dropped**."
-msgstr "discord.py の開発をより簡単にし，またその依存関係にあるライブラリをアップグレードして Python 3.7 以上を使えるようにするために，discord.py は Python 3.5.3 より古いバージョンに対するサポートを諦めざるを得ませんでした。これはつまり **Python 3.4 に対するサポートは打ち切られた** ということです。"
+msgstr "discord.py の開発をより簡単にし、またその依存関係にあるライブラリをアップグレードして Python 3.7 以上を使えるようにするために、 discord. py は Python 3.5.3 より古いバージョンに対するサポートを諦めざるを得ませんでした。これはつまり **Python 3.4 に対するサポートは打ち切られた** ということです。"
 
 #: ../../migrating_to_v1.rst:27
 msgid "Major Model Changes"
@@ -986,11 +986,11 @@ msgstr "不適切な表現のフィルターを取得する :attr:`Guild.explici
 
 #: ../../migrating_to_v1.rst:405
 msgid ":attr:`Guild.shard_id` to get a guild's Shard ID if you're sharding."
-msgstr "Shardingを使用している場合のみ、ギルドのShard IDを取得する :attr:`Guild.shard_id` 。"
+msgstr "シャードを使用している場合にて、ギルドのシャード IDを取得する :attr:`Guild.shard_id` 。"
 
 #: ../../migrating_to_v1.rst:406
 msgid ":attr:`Client.users` to get all visible :class:`User` instances."
-msgstr "Botによってみることができる :class:`User` インスタンスをすべて返す :attr:`Client.users` 。"
+msgstr "Botによって取得できる :class:`User` インスタンスをすべて返す :attr:`Client.users` 。"
 
 #: ../../migrating_to_v1.rst:407
 msgid ":meth:`Client.get_user` to get a :class:`User` by ID."
@@ -1370,7 +1370,7 @@ msgstr "v1.0以前のバージョンでは、イベントの発生を待つ方�
 
 #: ../../migrating_to_v1.rst:665
 msgid "In v1.0 the concept of waiting for another event has been generalised to work with any event as :meth:`Client.wait_for`."
-msgstr "v1.0では別のイベント待機の概念が :meth:`Client.wait_for` イベントのように一般化されました。"
+msgstr "v1.0では別のイベントを待つ概念が :meth:`Client.wait_for` として一般化され、どのイベントでも動くようになりました。"
 
 #: ../../migrating_to_v1.rst:667
 msgid "For example, to wait for a message: ::"
@@ -1398,7 +1398,7 @@ msgstr "ライブラリのv1.0への更新に伴い、要件が :doc:`aiohttp <a
 
 #: ../../migrating_to_v1.rst:708
 msgid "Since this is a backwards incompatible change, it is recommended that you see the `changes <http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_ and the :doc:`aio:migration_to_2xx` pages for details on the breaking changes in :doc:`aiohttp <aio:index>`."
-msgstr "これは後方互換性のない変更となるため、 :doc:`aiohttp <aio:index>` の変更点の詳細については `changes <http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_ と :doc:`aio:migration_to_2xx` ページを参照してください。"
+msgstr "これは後方互換性のない変更となるため、 :doc:`aiohttp <aio:index>` の変更点の詳細について `changes <http://aiohttp.readthedocs.io/en/stable/changes.html#rc1-2017-03-15>`_ と :doc:`aio:migration_to_2xx` ページを参照すべきです。"
 
 #: ../../migrating_to_v1.rst:713
 msgid "Of the most significant for common users is the removal of helper functions such as:"
@@ -1691,7 +1691,7 @@ msgstr "チェックの変更"
 
 #: ../../migrating_to_v1.rst:911
 msgid "Prior to v1.0, :func:`~ext.commands.check`\\s could only be synchronous. As of v1.0 checks can now be coroutines."
-msgstr "v1.0以前のバージョンでは :func:`~ext.commands.check` は同期関数でしたが、 v1.0のチェックはコルーチンになりました。"
+msgstr "v1.0以前のバージョンでは :func:`~ext.commands.check` は同期関数でしたが、 v1.0のチェックはコルーチンにもなれます。"
 
 #: ../../migrating_to_v1.rst:913
 msgid "Along with this change, a couple new checks were added."
@@ -1699,7 +1699,7 @@ msgstr "この変更に加え、新たなチェックが二つ追加されまし
 
 #: ../../migrating_to_v1.rst:915
 msgid ":func:`~ext.commands.guild_only` replaces the old ``no_pm=True`` functionality."
-msgstr "``no_pm=True`` の代わりとなる :func:`~ext.commands.guild_only` 。"
+msgstr ":func:`~ext.commands.guild_only` が以前の ``no_pm=True`` 機能を置き換えました。"
 
 #: ../../migrating_to_v1.rst:916
 msgid ":func:`~ext.commands.is_owner` uses the :meth:`Client.application_info` endpoint by default to fetch owner ID."
@@ -2007,7 +2007,7 @@ msgstr "このシステムは最終的に :class:`~ext.commands.Context` が組�
 
 #: ../../migrating_to_v1.rst:1151
 msgid "In v1.0 this converter system was revamped to allow instances of :class:`~ext.commands.Converter` derived classes to be passed. For consistency, the :meth:`~ext.commands.Converter.convert` method was changed to always be a coroutine and will now take the two arguments as parameters."
-msgstr "v1.0ではこのコンバーターシステムは :class:`~ext.commands.Converter` 派生のクラスを用いることができるよう変更されました。一貫性を保つため、 :meth:`~ext.commands.Converter.convert` は常にコルーチンとるよう変更され、二つのパラメータを受け取ります。"
+msgstr "v1.0ではこのコンバーターシステムは :class:`~ext.commands.Converter` 派生のクラスを使用できるよう変更されました。一貫性を保つため、 :meth:`~ext.commands.Converter.convert` は常にコルーチンとなるよう変更され、二つのパラメータを受け取ります。"
 
 #: ../../migrating_to_v1.rst:1155
 msgid "Essentially, before: ::"

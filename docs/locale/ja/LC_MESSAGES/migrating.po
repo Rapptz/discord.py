@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-10-02 21:53+0000\n"
-"PO-Revision-Date: 2022-10-02 21:55\n"
+"PO-Revision-Date: 2022-10-09 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -252,7 +252,7 @@ msgstr "この変更により、 :class:`Client` のコンストラクタは ``c
 
 #: ../../migrating.rst:115
 msgid "In parallel with this change, changes were made to loading and unloading of commands extension extensions and cogs, see :ref:`migrating_2_0_commands_extension_cog_async` for more information."
-msgstr "これらとともに、コマンドエクステンションのエクステンションやコグの読み込みと読み込み解除にも変更がありました。 :ref:`migrating_2_0_commands_extension_cog_async` を参照してください。"
+msgstr "これらとともに、コマンド拡張機能のエクステンションやコグの読み込みと読み込み解除にも変更がありました。 :ref:`migrating_2_0_commands_extension_cog_async` を参照してください。"
 
 #: ../../migrating.rst:119
 msgid "Intents Are Now Required"
@@ -2840,7 +2840,7 @@ msgstr "コグを上書きするには、新しい ``override`` パラメータ�
 
 #: ../../migrating.rst:1475
 msgid "When passing a callable to ``type`` argument of :meth:`~ext.commands.cooldown`, it now needs to accept :class:`~ext.commands.Context` rather than :class:`Message` as its only argument."
-msgstr ""
+msgstr ":meth:`~ext.commands.cooldown` の ``type`` 引数に呼び出し可能な引数を渡す場合、 :class:`Message` ではなく、 :class:`~ext.commands.Context` を引数として受け付けないといけないようになりました。"
 
 #: ../../migrating.rst:1477
 msgid "Metaclass of :class:`~ext.commands.Context` changed from :class:`abc.ABCMeta` to :class:`type`."

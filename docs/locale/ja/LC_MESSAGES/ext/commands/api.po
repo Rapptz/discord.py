@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-10-02 21:53+0000\n"
-"PO-Revision-Date: 2022-10-02 21:55\n"
+"PO-Revision-Date: 2022-10-09 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -383,7 +383,7 @@ msgstr "Callable[..., :class:`HybridGroup`]"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.listen:1
 msgid "A decorator that registers another function as an external event listener. Basically this allows you to listen to multiple events from different places e.g. such as :func:`.on_ready`"
-msgstr "関数を追加のイベントリスナーに登録するデコレータ。 基本的には異なる場所から複数のイベントを登録することに使われます（  :func:`.on_ready` など）。"
+msgstr "関数を追加のイベントリスナーとして登録するデコレータ。 基本的には異なる場所から複数のイベントを登録することに使われます（ :func:`.on_ready` など）。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.ext.commands.bot.BotBase.listen:5
 msgid "The functions being listened to must be a :ref:`coroutine <coroutine>`."
@@ -816,7 +816,7 @@ msgstr ":class:`.Invite` や、招待のURL、IDを削除します。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.delete_invite:5
 msgid "You must have :attr:`~.Permissions.manage_channels` in the associated guild to do this."
-msgstr ""
+msgstr "これを行うには、関連付けられたGuildにて、 :attr:`~.Permissions.manage_channels` が必要です。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.delete_invite:10
 msgid "``invite`` parameter is now positional-only."
@@ -868,7 +868,7 @@ msgstr "``channel_id`` 引数は位置限定引数になりました。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_channel:15
 msgid "An unknown channel type was received from Discord."
-msgstr "まだ定義されていないチャネルタイプがDiscord APIから受信された場合。"
+msgstr "まだ定義されていないチャンネルタイプがDiscord APIから受信された場合。"
 
 #: ../../../discord/ext/commands/bot.py:docstring of discord.client.Client.fetch_channel:16
 msgid "Retrieving the channel failed."
@@ -3481,7 +3481,7 @@ msgstr "デフォルトの実装では何もしません。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.prepare_help_command:12
 msgid "This is called *inside* the help command callback body. So all the usual rules that happen inside apply here as well."
-msgstr "これは *内部* ヘルプコマンドコールバック本体と呼ばれていますので、内部で発生する通常のルールはすべてここでも適用されます。 "
+msgstr "これは *内部* ヘルプコマンドコールバック本体と呼ばれていますので、内部で発生する通常のルールはすべてここでも適用されます。"
 
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.prepare_help_command:17
 msgid "``ctx`` and ``command`` parameters are now positional-only."
@@ -4104,7 +4104,7 @@ msgstr "カスタムされたBucketタイプの呼び出しをサポートする
 
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.cooldown:23
 msgid "When passing a callable, it now needs to accept :class:`.Context` rather than :class:`~discord.Message` as its only argument."
-msgstr ""
+msgstr "呼び出し可能オブジェクトを渡す場合、 :class:`~discord.Message` ではなく、 :class:`.Context` を引数として受け付けないといけないようになりました。"
 
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.dynamic_cooldown:1
 msgid "A decorator that adds a dynamic cooldown to a :class:`.Command`"
@@ -4584,7 +4584,7 @@ msgstr "出力先のメッセージ履歴を取得する :term:`asynchronous ite
 
 #: ../../../discord/ext/commands/context.py:docstring of discord.abc.Messageable.history:3
 msgid "You must have :attr:`~discord.Permissions.read_message_history` to do this."
-msgstr ""
+msgstr "これを行うためには、 :attr:`~discord.Permissions.read_message_history` が必要です。"
 
 #: ../../../discord/ext/commands/context.py:docstring of discord.abc.Messageable.history:14
 msgid "Flattening into a list: ::"

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-28 15:41+0000\n"
-"PO-Revision-Date: 2022-09-07 14:31\n"
+"PO-Revision-Date: 2022-10-09 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -31,7 +31,7 @@ msgstr "コマンドは、Pythonの関数と関連付けすることによって
 
 #: ../../ext/commands/commands.rst:16
 msgid "You must have access to the :attr:`~discord.Intents.message_content` intent for the commands extension to function. This must be set both in the developer portal and within your code."
-msgstr "コマンドエクステンションが機能するには、 :attr:`~discord.Intents.message_content` インテントが必要です。これは、デベロッパーポータルとコード内の両方で有効化しないといけません。"
+msgstr "コマンド拡張機能が機能するには、 :attr:`~discord.Intents.message_content` インテントが必要です。これは、デベロッパーポータルとコード内の両方で有効化しないといけません。"
 
 #: ../../ext/commands/commands.rst:19
 msgid "Failure to do this will result in your bot not responding to any of your commands."
@@ -546,7 +546,7 @@ msgstr "特殊なコンバーター"
 
 #: ../../ext/commands/commands.rst:477
 msgid "The command extension also has support for certain converters to allow for more advanced and intricate use cases that go beyond the generic linear parsing. These converters allow you to introduce some more relaxed and dynamic grammar to your commands in an easy to use manner."
-msgstr "コマンドエクステンションは一般的な線形解析を超える、より高度で複雑な使用法に対応するため、特殊なコンバーターをサポートしています。これらのコンバーターは、簡単な方法でコマンドに更に容易で動的な文法の導入を可能にします。"
+msgstr "コマンド拡張機能は一般的な線形解析を超える、より高度で複雑な使用法に対応するため、特殊なコンバーターをサポートしています。これらのコンバーターは、簡単な方法でコマンドに更に容易で動的な文法の導入を可能にします。"
 
 #: ../../ext/commands/commands.rst:482
 msgid "typing.Union"
@@ -902,7 +902,7 @@ msgstr "チェック"
 
 #: ../../ext/commands/commands.rst:1041
 msgid "There are cases when we don't want a user to use our commands. They don't have permissions to do so or maybe we blocked them from using our bot earlier. The commands extension comes with full support for these things in a concept called a :ref:`ext_commands_api_checks`."
-msgstr "コマンドをユーザーに使ってほしくない場合などがあります。例えば、使用者が権限を持っていない場合や、ボットによりブロックされている場合などです。コマンドエクステンションではこのような機能を :ref:`ext_commands_api_checks` と呼び、完全にサポートしています。"
+msgstr "コマンドをユーザーに使ってほしくない場合などがあります。例えば、使用者が権限を持っていない場合や、ボットによりブロックされている場合などです。コマンド拡張機能ではこのような機能を :ref:`ext_commands_api_checks` と呼び、完全にサポートしています。"
 
 #: ../../ext/commands/commands.rst:1045
 msgid "A check is a basic predicate that can take in a :class:`.Context` as its sole parameter. Within it, you have the following options:"

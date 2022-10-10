@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2022-08-28 15:41+0000\n"
-"PO-Revision-Date: 2022-09-07 14:31\n"
+"PO-Revision-Date: 2022-10-09 16:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -223,7 +223,7 @@ msgstr ":func:`utils.remove_markdown` ヘルパー関数を追加しました。
 
 #: ../../whats_new.rst:112
 msgid "Add support for passing scopes to :func:`utils.oauth_url` (:issue:`6568`)"
-msgstr ":func:`utils.oauth_url` にスコープを渡すことができるようになりました。 (:issue:`6568`)"
+msgstr ":func:`utils.oauth_url` にスコープを渡すことが可能になりました。 (:issue:`6568`)"
 
 #: ../../whats_new.rst:113
 msgid "|commands| Add support for ``rgb`` CSS function as a parameter to :class:`ColourConverter <ext.commands.ColourConverter>` (:issue:`6374`)"
@@ -1413,7 +1413,7 @@ msgstr ":attr:`Permissions.use_external_emojis`"
 
 #: ../../whats_new.rst:572
 msgid "Add support for passing keyword arguments when creating :class:`Permissions`."
-msgstr ":class:`Permissions` を作成する際に、キーワード引数を渡すことができるようになりました。"
+msgstr ":class:`Permissions` を作成する際に、キーワード引数を渡せるようになりました。"
 
 #: ../../whats_new.rst:574
 msgid "Add support for custom activities via :class:`CustomActivity`. (:issue:`2400`)"
@@ -1889,7 +1889,7 @@ msgstr "v1.1.0"
 
 #: ../../whats_new.rst:779
 msgid "**There is a new extension dedicated to making background tasks easier.**"
-msgstr "**バックグラウンドタスクを簡単にするための新しいエクステンションが追加されました。**"
+msgstr "**バックグラウンドタスクを簡単にするための新しい拡張機能が追加されました。**"
 
 #: ../../whats_new.rst:780
 msgid "You can check the documentation here: :ref:`ext_tasks_api`."
@@ -2456,7 +2456,7 @@ msgstr "これは厳密にいえば過去のもの (v0.10.0で追加) ですが�
 #: ../../whats_new.rst:1083
 #: ../../whats_new.rst:1129
 msgid "For the command extension, the following are new:"
-msgstr "コマンドエクステンションでは、以下の新機能が追加されました:"
+msgstr "コマンド拡張機能では、以下の新機能が追加されました:"
 
 #: ../../whats_new.rst:1085
 msgid "Add custom emoji converter."
@@ -2588,7 +2588,7 @@ msgstr "``HEARTBEAT`` のコードを受け取った場合を処理するよう�
 
 #: ../../whats_new.rst:1142
 msgid "For the command extension, the following bug fixes apply:"
-msgstr "コマンドエクステンションでは、以下のバグが修正されました:"
+msgstr "コマンド拡張機能では、以下のバグが修正されました:"
 
 #: ../../whats_new.rst:1144
 msgid "``Bot.check`` decorator is actually a decorator not requiring parentheses."
@@ -2628,7 +2628,7 @@ msgstr "ライブラリが429を完全に処理し、502で無条件に再試行
 
 #: ../../whats_new.rst:1162
 msgid "A new command extension module was added but is currently undocumented. Figuring it out is left as an exercise to the reader."
-msgstr "新しいコマンドエクステンションモジュールが追加されましたが、現在文書化されていません。詳細は読者が自身で調べることをおすすめします。"
+msgstr "新しいコマンド拡張機能モジュールが追加されましたが、現在文書化されていません。詳細は読者が自身で調べることをおすすめします。"
 
 #: ../../whats_new.rst:1163
 msgid "Two new exception types, :exc:`Forbidden` and :exc:`NotFound` to denote permission errors or 404 errors."
@@ -2676,7 +2676,7 @@ msgstr ":attr:`Client.user` の :class:`Member` を取得できる :attr:`Server
 
 #: ../../whats_new.rst:1175
 msgid "Most data classes now support a ``hash(obj)`` function to allow you to use them in ``set`` or ``dict`` classes or subclasses."
-msgstr "ほとんどのデータクラスが ``hash(obj)`` 関数をサポートするようになり、 ``set`` や ``dict`` クラス、サブクラスで使用することができるようになりました。"
+msgstr "ほとんどのデータクラスが ``hash(obj)`` 関数をサポートするようになり、 ``set`` や ``dict`` クラス、サブクラスで使用できるようになりました。"
 
 #: ../../whats_new.rst:1176
 msgid "Add :meth:`Message.clean_content` to get a text version of the content with the user and channel mentioned changed into their names."
