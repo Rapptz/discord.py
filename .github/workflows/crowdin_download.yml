@@ -15,7 +15,7 @@ jobs:
       - id: check
         if: env.CROWDIN_API_KEY != null
         run: |
-          echo "::set-output name=available::true"
+          echo "available=true" >> $GITHUB_OUTPUT
         env:
           CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
 
