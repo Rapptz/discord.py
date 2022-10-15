@@ -238,6 +238,7 @@ class BaseUser(_UserTag):
         'id',
         'discriminator',
         '_avatar',
+        '_avatar_decoration',
         '_banner',
         '_accent_colour',
         'bot',
@@ -254,6 +255,7 @@ class BaseUser(_UserTag):
         system: bool
         _state: ConnectionState
         _avatar: Optional[str]
+        _avatar_decoration: Optional[str]
         _banner: Optional[str]
         _accent_colour: Optional[int]
         _public_flags: int
@@ -285,6 +287,7 @@ class BaseUser(_UserTag):
         self.id = int(data['id'])
         self.discriminator = data['discriminator']
         self._avatar = data['avatar']
+        self._avatar_decoration = data.get('avatar_decoration')
         self._banner = data.get('banner', None)
         self._accent_colour = data.get('accent_color', None)
         self._public_flags = data.get('public_flags', 0)
@@ -299,24 +302,28 @@ class BaseUser(_UserTag):
         self.id = user.id
         self.discriminator = user.discriminator
         self._avatar = user._avatar
+        self._avatar_decoration = user._avatar_decoration
         self._banner = user._banner
         self._accent_colour = user._accent_colour
-        self.bot = user.bot
-        self._state = user._state
         self._public_flags = user._public_flags
+        self.bot = user.bot
+        self.system = user.system
+        self._state = user._state
 
         return self
 
-    def _to_minimal_user_json(self) -> Dict[str, Any]:
-        return {
+    def _to_minimal_user_json(self) -> UserPayload:
+        user: UserPayload = {
             'username': self.name,
             'id': self.id,
             'avatar': self._avatar,
+            'avatar_decoration': self._avatar_decoration,
             'discriminator': self.discriminator,
             'bot': self.bot,
             'system': self.system,
             'public_flags': self._public_flags,
         }
+        return user
 
     @property
     def voice(self) -> Optional[VoiceState]:
@@ -353,6 +360,18 @@ class BaseUser(_UserTag):
         .. versionadded:: 2.0
         """
         return self.avatar or self.default_avatar
+
+    @property
+    def avatar_decoration(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns an :class:`Asset` for the avatar decoration the user has.
+
+        If the user does not have a avatar decoration, ``None`` is returned.
+
+        .. versionadded:: 2.0
+        """
+        if self._avatar_decoration is not None:
+            return Asset._from_avatar_decoration(self._state, self.id, self._avatar_decoration)
+        return None
 
     @property
     def banner(self) -> Optional[Asset]:
@@ -668,6 +687,7 @@ class ClientUser(BaseUser):
         *,
         username: str = MISSING,
         avatar: Optional[bytes] = MISSING,
+        avatar_decoration: Optional[bool] = MISSING,
         password: str = MISSING,
         new_password: str = MISSING,
         email: str = MISSING,
@@ -717,11 +737,19 @@ class ClientUser(BaseUser):
         avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.
+        avatar_decoration: Optional[:class:`bool`]
+            A :term:`py:bytes-like object` representing the image to upload.
+            Could be ``None`` to denote no avatar decoration.
+
+            .. versionadded:: 2.0
         banner: :class:`bytes`
             A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no banner.
-        accent_colour/_color: :class:`Colour`
+        accent_colour: :class:`Colour`
             A :class:`Colour` object of the colour you want to set your profile to.
+        accent_color: :class:`Color`
+            A :class:`Color` object of the color you want to set your profile to.
+            Alias of `accent_colour`.
         bio: :class:`str`
             Your "about me" section.
             Could be ``None`` to represent no bio.

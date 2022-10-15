@@ -73,6 +73,7 @@ class User(PartialUser, total=False):
     premium_usage_flags: int
     premium_type: PremiumType
     public_flags: int
+    avatar_decoration: Optional[str]
     banner: Optional[str]
     accent_color: Optional[int]
     bio: str

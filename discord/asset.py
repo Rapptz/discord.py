@@ -225,6 +225,15 @@ class Asset(AssetMixin):
         )
 
     @classmethod
+    def _from_avatar_decoration(cls, state: _State, user_id: int, decoration: str) -> Self:
+        return cls(
+            state,
+            url=f'{cls.BASE}/avatar-decorations/{user_id}/{decoration}.png?size=128',
+            key=decoration,
+            animated=False,
+        )
+
+    @classmethod
     def _from_guild_avatar(cls, state: _State, guild_id: int, member_id: int, avatar: str) -> Self:
         animated = avatar.startswith('a_')
         format = 'gif' if animated else 'png'

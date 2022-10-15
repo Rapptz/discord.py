@@ -977,7 +977,7 @@ class Webhook(BaseWebhook):
             'name': name,
             'channel_id': channel.id,
             'guild_id': channel.guild.id,
-            'user': {'username': user.name, 'discriminator': user.discriminator, 'id': user.id, 'avatar': user._avatar},
+            'user': user._to_minimal_user_json(),
         }
 
         state = channel._state
