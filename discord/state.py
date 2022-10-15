@@ -178,9 +178,6 @@ class MemberSidebar:
         self.exception: Optional[Exception] = None
         self.waiters: List[asyncio.Future[Optional[List[Member]]]] = []
 
-    def __bool__(self) -> bool:
-        return self.subscribing
-
     @property
     def limit(self) -> int:
         guild = self.guild
@@ -207,7 +204,7 @@ class MemberSidebar:
         end = 99
         amount = self.limit
         if amount is None:
-            raise RuntimeError('cannot get ranges for a guild with no member/presence count')
+            raise RuntimeError('Member/presence count required to compute ranges')
 
         ceiling = ceil(amount / chunk) * chunk
         ranges = []
@@ -272,9 +269,6 @@ class MemberSidebar:
         return list(ret)
 
     def add_members(self, members: List[Member]) -> None:
-        if self.buffer is None:
-            return
-
         self.buffer.extend(members)
         if self.cache:
             guild = self.guild
@@ -1751,7 +1745,6 @@ class ConnectionState:
 
         if not force_scraping and any(
             {
-                guild.me.guild_permissions.administrator,
                 guild.me.guild_permissions.kick_members,
                 guild.me.guild_permissions.ban_members,
                 guild.me.guild_permissions.manage_roles,
