@@ -747,9 +747,6 @@ class ClientUser(BaseUser):
             Could be ``None`` to denote no banner.
         accent_colour: :class:`Colour`
             A :class:`Colour` object of the colour you want to set your profile to.
-        accent_color: :class:`Color`
-            A :class:`Color` object of the color you want to set your profile to.
-            Alias of `accent_colour`.
         bio: :class:`str`
             Your "about me" section.
             Could be ``None`` to represent no bio.
