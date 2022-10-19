@@ -58,9 +58,9 @@ class SelectOption(TypedDict):
 
 
 class SelectMenu(TypedDict):
-    type: Literal[3]
+    type: Literal[3, 5, 6, 7, 8]
     custom_id: str
-    options: List[SelectOption]
+    options: NotRequired[List[SelectOption]]
     placeholder: NotRequired[str]
     min_values: NotRequired[int]
     max_values: NotRequired[int]

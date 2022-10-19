@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
-from .enums import try_enum, ComponentType, ButtonStyle, TextStyle
+from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
 
@@ -251,28 +251,37 @@ class SelectMenu(Component):
     """
 
     __slots__: Tuple[str, ...] = (
+        '_type',
         'custom_id',
         'placeholder',
         'min_values',
         'max_values',
         'options',
         'disabled',
+        'channel_types',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
     def __init__(self, data: SelectMenuPayload, /) -> None:
+        self._type: int = data['type']
         self.custom_id: str = data['custom_id']
         self.placeholder: Optional[str] = data.get('placeholder')
         self.min_values: int = data.get('min_values', 1)
         self.max_values: int = data.get('max_values', 1)
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
+        self.channel_types: List[ChannelType] = [try_enum(ChannelType, t) for t in data.get('channel_types', [])]
 
     @property
-    def type(self) -> Literal[ComponentType.select]:
+    def type(self) -> Literal[ComponentType.string_select, ComponentType.user_select, ComponentType.role_select, ComponentType.mentionable_select, ComponentType.channel_select]:
         """:class:`ComponentType`: The type of component."""
-        return ComponentType.select
+        return try_enum(ComponentType, self._type)  # type: ignore
+
+    @property
+    def channel_types(self) -> List[ChannelType]:
+        """:class:`list`[:class:`ChannelType`]: The types of channels that can be selected."""
+        return self._channel_types
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
@@ -280,10 +289,12 @@ class SelectMenu(Component):
             'custom_id': self.custom_id,
             'min_values': self.min_values,
             'max_values': self.max_values,
-            'options': [op.to_dict() for op in self.options],
             'disabled': self.disabled,
         }
-
+        if self.options:
+            payload['options'] = [op.to_dict() for op in self.options]
+        if self.channel_types:
+            payload['channel_types'] = [t.value for t in self.channel_types]
         if self.placeholder:
             payload['placeholder'] = self.placeholder
 

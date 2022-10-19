@@ -575,8 +575,12 @@ class VideoQualityMode(Enum):
 class ComponentType(Enum):
     action_row = 1
     button = 2
-    select = 3
+    string_select = 3
     text_input = 4
+    user_select = 5
+    role_select = 6
+    mentionable_select = 7
+    channel_select = 8
 
     def __int__(self) -> int:
         return self.value
@@ -726,6 +730,13 @@ class AutoModRuleActionType(Enum):
     send_alert_message = 2
     timeout = 3
 
+
+class SelectType(Enum):
+    string = 3
+    user = 5
+    role = 6
+    mentionable = 7
+    channel = 8
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
     value_cls = cls._enum_value_cls_  # type: ignore # This is narrowed below

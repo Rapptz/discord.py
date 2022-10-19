@@ -23,13 +23,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union, Dict
+from typing import List, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union, Dict, Generic
 from contextvars import ContextVar
 import inspect
 import os
 
 from .item import Item, ItemCallbackType
-from ..enums import ComponentType
+from ..enums import  SelectType, try_enum, ChannelType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
 from ..utils import MISSING
@@ -52,12 +52,15 @@ if TYPE_CHECKING:
         MessageComponentInteractionData,
     )
 
-V = TypeVar('V', bound='View', covariant=True)
+    from discord.abc import GuildChannel
+    from discord import Role, Member
 
+V = TypeVar('V', bound='View', covariant=True)
+ValuesT = TypeVar('ValuesT', GuildChannel, Role, Member, str, Union[GuildChannel, Role, Member, str])
 selected_values: ContextVar[Dict[str, List[str]]] = ContextVar('selected_values')
 
 
-class Select(Item[V]):
+class Select(Item[V], Generic[ValuesT]):
     """Represents a UI select menu.
 
     This is usually represented as a drop down menu.
@@ -102,6 +105,7 @@ class Select(Item[V]):
     def __init__(
         self,
         *,
+        type: SelectType = SelectType.string,
         custom_id: str = MISSING,
         placeholder: Optional[str] = None,
         min_values: int = 1,
@@ -109,7 +113,17 @@ class Select(Item[V]):
         options: List[SelectOption] = MISSING,
         disabled: bool = False,
         row: Optional[int] = None,
+        channel_types: List[ChannelType] = MISSING,
     ) -> None:
+        if type is SelectType.string and options is MISSING:
+            raise TypeError('options cannot be missing for string type')
+        
+        if type is not SelectType.string and options is not MISSING:
+            raise TypeError('options can only be given for string type')
+        
+        if type is SelectType.channel and channel_types is MISSING:
+            raise TypeError('channel_types cannot be missing for channel type')
+
         super().__init__()
         self._provided_custom_id = custom_id is not MISSING
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
@@ -118,16 +132,18 @@ class Select(Item[V]):
 
         options = [] if options is MISSING else options
         self._underlying = SelectMenu._raw_construct(
+            type=type.value,
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,
             max_values=max_values,
             options=options,
             disabled=disabled,
+            channel_types=channel_types,
         )
         self.row = row
-        self._values: List[str] = []
-
+        self._values: List[ValuesT] = []
+        
     @property
     def custom_id(self) -> str:
         """:class:`str`: The ID of the select menu that gets received during an interaction."""
@@ -261,8 +277,8 @@ class Select(Item[V]):
         self._underlying.disabled = bool(value)
 
     @property
-    def values(self) -> List[str]:
-        """List[:class:`str`]: A list of values that have been selected by the user."""
+    def values(self) -> List[ValueT]:
+        """List[Union[:class:`~discord.abc.GuilcChannel`, :class:`~discord.Member`, :class:`~discord.Role`, :class:`str`]]: A list of values that have been selected by the user."""
         values = selected_values.get({})
         return values.get(self.custom_id, self._values)
 
@@ -284,6 +300,7 @@ class Select(Item[V]):
     @classmethod
     def from_component(cls, component: SelectMenu) -> Self:
         return cls(
+            # type=component.type,
             custom_id=component.custom_id,
             placeholder=component.placeholder,
             min_values=component.min_values,
@@ -294,8 +311,12 @@ class Select(Item[V]):
         )
 
     @property
-    def type(self) -> Literal[ComponentType.select]:
-        return self._underlying.type
+    def type(self) -> SelectType:
+        return try_enum(SelectType, self._underlying._type)
+
+    @property
+    def channel_types(self) -> List[ChannelType]:
+        return self._underlying.channel_types
 
     def is_dispatchable(self) -> bool:
         return True
