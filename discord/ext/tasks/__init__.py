@@ -415,7 +415,7 @@ class Loop(Generic[LF]):
             use :meth:`cancel` instead.
 
         .. versionchanged:: 2.0
-            Calling this method in :meth:`before_loop` will stop the first iteration from running.
+            Calling this method in :meth:`before_loop` will stop the loop before the initial iteration is run.
 
         .. versionadded:: 1.2
         """
@@ -545,7 +545,7 @@ class Loop(Generic[LF]):
         The coroutine must take no arguments (except ``self`` in a class context).
 
         .. versionchanged:: 2.0
-            Calling :meth:`stop` in this coroutine will stop the initial iteration from running.
+            Calling :meth:`stop` in this coroutine will stop the loop before the initial iteration is run.
 
         Parameters
         ------------
