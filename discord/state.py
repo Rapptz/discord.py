@@ -78,7 +78,7 @@ from .automod import AutoModRule, AutoModAction
 if TYPE_CHECKING:
     from .abc import PrivateChannel
     from .message import MessageableChannel
-    from .guild import GuildChannel, VocalGuildChannel
+    from .guild import GuildChannel
     from .http import HTTPClient
     from .voice_client import VoiceProtocol
     from .client import Client
@@ -98,7 +98,7 @@ if TYPE_CHECKING:
     from .types.command import GuildApplicationCommandPermissions as GuildApplicationCommandPermissionsPayload
 
     T = TypeVar('T')
-    Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable]
+    Channel = Union[GuildChannel, PrivateChannel, PartialMessageable]
 
 
 class ChunkRequest:
