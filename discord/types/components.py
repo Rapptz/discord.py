@@ -28,6 +28,7 @@ from typing import List, Literal, TypedDict, Union
 from typing_extensions import NotRequired
 
 from .emoji import PartialEmoji
+from .channel import ChannelType
 
 ComponentType = Literal[1, 2, 3, 4]
 ButtonStyle = Literal[1, 2, 3, 4, 5]
@@ -65,6 +66,7 @@ class SelectMenu(TypedDict):
     min_values: NotRequired[int]
     max_values: NotRequired[int]
     disabled: NotRequired[bool]
+    channel_types: NotRequired[List[ChannelType]]
 
 
 class TextInput(TypedDict):
