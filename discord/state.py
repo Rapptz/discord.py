@@ -101,7 +101,7 @@ if TYPE_CHECKING:
     from .abc import PrivateChannel, Snowflake as abcSnowflake
     from .activity import ActivityTypes
     from .message import MessageableChannel
-    from .guild import GuildChannel, VocalGuildChannel
+    from .guild import GuildChannel
     from .http import HTTPClient
     from .voice_client import VoiceProtocol
     from .client import Client
@@ -123,7 +123,7 @@ if TYPE_CHECKING:
     from .types.activity import ClientStatus as ClientStatusPayload
 
     T = TypeVar('T')
-    Channel = Union[GuildChannel, VocalGuildChannel, PrivateChannel, PartialMessageable, ForumChannel]
+    Channel = Union[GuildChannel, PrivateChannel, PartialMessageable]
 
 MISSING = utils.MISSING
 _log = logging.getLogger(__name__)
