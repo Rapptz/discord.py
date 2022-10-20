@@ -437,8 +437,21 @@ Button
 .. autofunction:: discord.ui.button
     :decorator:
 
+Select Menus
+~~~~~~~~~~~~~
+
+The library provides classes to help create the different types of select menus.
+
+BaseSelect
++++++++++++
+.. attributetable:: discord.ui.BaseSelect
+
+.. autoclass:: discord.ui.BaseSelect
+    :members:
+    :inherited-members:
+    
 Select
-~~~~~~~
++++++++
 
 .. attributetable:: discord.ui.Select
 
@@ -446,8 +459,45 @@ Select
     :members:
     :inherited-members:
 
+ChannelSelect
+++++++++++++++
+
+.. attributetable:: discord.ui.ChannelSelect
+
+.. autoclass:: discord.ui.ChannelSelect
+    :members:
+    :inherited-members:
+
+RoleSelect
++++++++++++
+
+.. attributetable:: discord.ui.RoleSelect
+
+.. autoclass:: discord.ui.RoleSelect
+    :members:
+    :inherited-members:
+
+MentionableSelect
+++++++++++++++++++
+
+.. attributetable:: discord.ui.MentionableSelect
+
+.. autoclass:: discord.ui.MentionableSelect
+    :members:
+    :inherited-members:
+
+UserSelect
++++++++++++
+
+.. attributetable:: discord.ui.UserSelect
+
+.. autoclass:: discord.ui.UserSelect
+    :members:
+    :inherited-members:
+
 .. autofunction:: discord.ui.select
     :decorator:
+
 
 TextInput
 ~~~~~~~~~~
