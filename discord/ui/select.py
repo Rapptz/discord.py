@@ -695,9 +695,10 @@ def select(
     the :class:`discord.ui.BaseSelect` being used.
     In order to get the selected items that the user has chosen within the callback
     use :attr:`BaseSelect.values`.
+
     Parameters
     ------------
-    cls: Type[:class:`iscord.ui.BaseSelect`]
+    cls: Type[:class:`discord.ui.BaseSelect`]
         The class to use for the select menu. Defaults to :class:`discord.ui.Select`.
     placeholder: Optional[:class:`str`]
         The placeholder text that is shown if nothing is selected, if any.
