@@ -639,6 +639,7 @@ class ChannelSelect(BaseSelect[V]):
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
+
     __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('channel_types',)
 
     def __init__(
@@ -689,7 +690,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
-    row: Optional[int] =  ...,
+    row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, SelectT]:
     ...
 
@@ -705,7 +706,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
-    row: Optional[int] =  ...,
+    row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, UserSelectT]:
     ...
 
@@ -721,7 +722,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
-    row: Optional[int] =  ...,
+    row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, RoleSelectT]:
     ...
 
@@ -737,7 +738,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
-    row: Optional[int] =  ...,
+    row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, ChannelSelectT]:
     ...
 
@@ -753,7 +754,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
-    row: Optional[int] =  ...,
+    row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, MentionableSelectT]:
     ...
 
