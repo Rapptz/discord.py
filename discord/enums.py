@@ -731,13 +731,6 @@ class AutoModRuleActionType(Enum):
     timeout = 3
 
 
-class SelectType(Enum):
-    string = 3
-    user = 5
-    role = 6
-    mentionable = 7
-    channel = 8
-
 def create_unknown_value(cls: Type[E], val: Any) -> E:
     value_cls = cls._enum_value_cls_  # type: ignore # This is narrowed below
     name = f'unknown_{val}'

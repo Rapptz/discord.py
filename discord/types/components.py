@@ -57,15 +57,30 @@ class SelectOption(TypedDict):
     description: NotRequired[str]
     emoji: NotRequired[PartialEmoji]
 
-
-class SelectMenu(TypedDict):
+class SelectComponent(TypedDict):
     type: Literal[3, 5, 6, 7, 8]
     custom_id: str
-    options: NotRequired[List[SelectOption]]
+    options: List[SelectOption]
     placeholder: NotRequired[str]
     min_values: NotRequired[int]
     max_values: NotRequired[int]
     disabled: NotRequired[bool]
+
+class StringSelect(SelectComponent):
+    type: Literal[3]
+    options: List[SelectOption]
+
+class UserSelect(SelectComponent):
+    type: Literal[5]
+
+class RoleSelect(SelectComponent):
+    type: Literal[6]
+
+class MentionableSelect(SelectComponent):
+    type: Literal[7]
+
+class ChannelSelect(SelectComponent):
+    type: Literal[8]
     channel_types: NotRequired[List[ChannelType]]
 
 
@@ -83,3 +98,4 @@ class TextInput(TypedDict):
 
 ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]
 Component = Union[ActionRow, ActionRowChildComponent]
+SelectMenu = Union[StringSelect, UserSelect, RoleSelect, MentionableSelect, ChannelSelect]

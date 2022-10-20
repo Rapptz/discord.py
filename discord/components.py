@@ -248,10 +248,12 @@ class SelectMenu(Component):
         A list of options that can be selected in this menu.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    channel_types: List[:class:`.ChannelType`]
+        A list of channel types that are allowed to be chosen in this select menu.
     """
 
     __slots__: Tuple[str, ...] = (
-        '_type',
+        'type',
         'custom_id',
         'placeholder',
         'min_values',
@@ -264,7 +266,7 @@ class SelectMenu(Component):
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
     def __init__(self, data: SelectMenuPayload, /) -> None:
-        self._type: int = data['type']
+        self.type: ComponentType = try_enum(ComponentType, data['type'])
         self.custom_id: str = data['custom_id']
         self.placeholder: Optional[str] = data.get('placeholder')
         self.min_values: int = data.get('min_values', 1)
@@ -272,16 +274,6 @@ class SelectMenu(Component):
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, t) for t in data.get('channel_types', [])]
-
-    @property
-    def type(self) -> Literal[ComponentType.string_select, ComponentType.user_select, ComponentType.role_select, ComponentType.mentionable_select, ComponentType.channel_select]:
-        """:class:`ComponentType`: The type of component."""
-        return try_enum(ComponentType, self._type)  # type: ignore
-
-    @property
-    def channel_types(self) -> List[ChannelType]:
-        """:class:`list`[:class:`ChannelType`]: The types of channels that can be selected."""
-        return self._channel_types
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {

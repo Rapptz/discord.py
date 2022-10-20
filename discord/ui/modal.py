@@ -172,7 +172,7 @@ class Modal(View):
                 if item is None:
                     _log.debug("Modal interaction referencing unknown item custom_id %s. Discarding", component['custom_id'])
                     continue
-                item._refresh_state(component)  # type: ignore
+                item._refresh_state(interaction, component)  # type: ignore
 
     async def _scheduled_task(self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]):
         try:

@@ -23,13 +23,14 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import List, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union, Dict, Generic
+from typing import Any, Literal, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union, Dict
 from contextvars import ContextVar
 import inspect
 import os
 
+from ..app_commands.namespace import Namespace
 from .item import Item, ItemCallbackType
-from ..enums import  SelectType, try_enum, ChannelType
+from ..enums import  ComponentType, ChannelType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
 from ..utils import MISSING
@@ -49,101 +50,94 @@ if TYPE_CHECKING:
     from .view import View
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import (
-        MessageComponentInteractionData,
+        SelectMessageComponentInteractionData,
     )
 
     from discord.abc import GuildChannel
-    from discord import Role, Member
+    from discord import Role, Member, Interaction, User, Thread
+"""
+PossibleValue = TypeVar(
+'ValuesT',
+# default
+str,
+# channel
+GuildChannel,
+Thread,
+Union[Thread, GuildChannel],
+# role
+Role,
+# user
+Member,
+User,
+# mentionable
+Union[Role, Member],
+Union[Role, User]
+)
+"""
 
 V = TypeVar('V', bound='View', covariant=True)
-ValuesT = TypeVar('ValuesT', GuildChannel, Role, Member, str, Union[GuildChannel, Role, Member, str])
-selected_values: ContextVar[Dict[str, List[str]]] = ContextVar('selected_values')
+selected_values: ContextVar[Dict[str, Any]] = ContextVar('selected_values')
 
+class BaseSelect(Item[V]): 
+    """The base select menu model that all select menus inherit from.
 
-class Select(Item[V], Generic[ValuesT]):
-    """Represents a UI select menu.
+    The following implement this class:
 
-    This is usually represented as a drop down menu.
+    - :class:`~discord.ui.Select`
+    - :class:`~discord.ui.ChannelSelect`
+    - :class:`~discord.ui.RoleSelect`
+    - :class:`~discord.ui.MentionableSelect`
+    - :class:`~discord.ui.UserSelect`
 
-    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
-
-    .. versionadded:: 2.0
-
-    Parameters
-    ------------
-    custom_id: :class:`str`
-        The ID of the select menu that gets received during an interaction.
-        If not given then one is generated for you.
-    placeholder: Optional[:class:`str`]
-        The placeholder text that is shown if nothing is selected, if any.
-    min_values: :class:`int`
-        The minimum number of items that must be chosen for this select menu.
-        Defaults to 1 and must be between 0 and 25.
-    max_values: :class:`int`
-        The maximum number of items that must be chosen for this select menu.
-        Defaults to 1 and must be between 1 and 25.
-    options: List[:class:`discord.SelectOption`]
-        A list of options that can be selected in this menu.
-    disabled: :class:`bool`
-        Whether the select is disabled or not.
-    row: Optional[:class:`int`]
-        The relative row this select menu belongs to. A Discord component can only have 5
-        rows. By default, items are arranged automatically into those 5 rows. If you'd
-        like to control the relative positioning of the row then passing an index is advised.
-        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
-        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    .. versionadded:: 2.2
     """
+    type: Literal[ComponentType.string_select, ComponentType.user_select, ComponentType.role_select, ComponentType.channel_select, ComponentType.mentionable_select]
+
+    __slots__ = ()
 
     __item_repr_attributes__: Tuple[str, ...] = (
         'placeholder',
         'min_values',
         'max_values',
-        'options',
         'disabled',
     )
 
     def __init__(
         self,
+        type: Literal[ComponentType.string_select, ComponentType.user_select, ComponentType.role_select, ComponentType.channel_select, ComponentType.mentionable_select],
         *,
-        type: SelectType = SelectType.string,
         custom_id: str = MISSING,
-        placeholder: Optional[str] = None,
-        min_values: int = 1,
-        max_values: int = 1,
-        options: List[SelectOption] = MISSING,
-        disabled: bool = False,
         row: Optional[int] = None,
-        channel_types: List[ChannelType] = MISSING,
+        placeholder: Optional[str] = None,
+        min_values: Optional[int] = None,
+        max_values: Optional[int] = None,
+        disabled: bool = False,
+        **extras: Any,
     ) -> None:
-        if type is SelectType.string and options is MISSING:
-            raise TypeError('options cannot be missing for string type')
-        
-        if type is not SelectType.string and options is not MISSING:
-            raise TypeError('options can only be given for string type')
-        
-        if type is SelectType.channel and channel_types is MISSING:
-            raise TypeError('channel_types cannot be missing for channel type')
-
         super().__init__()
         self._provided_custom_id = custom_id is not MISSING
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
         if not isinstance(custom_id, str):
             raise TypeError(f'expected custom_id to be str not {custom_id.__class__.__name__}')
-
-        options = [] if options is MISSING else options
+    
         self._underlying = SelectMenu._raw_construct(
-            type=type.value,
+            type=type,
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=min_values,
             max_values=max_values,
-            options=options,
             disabled=disabled,
-            channel_types=channel_types,
+            **extras,
         )
+            
         self.row = row
-        self._values: List[ValuesT] = []
-        
+        self._values: List[Any] = []
+
+    @property
+    def values(self) -> List[Any]:
+        values = selected_values.get({})
+        return values.get(self.custom_id, self._values)
+
     @property
     def custom_id(self) -> str:
         """:class:`str`: The ID of the select menu that gets received during an interaction."""
@@ -186,6 +180,81 @@ class Select(Item[V], Generic[ValuesT]):
     @max_values.setter
     def max_values(self, value: int) -> None:
         self._underlying.max_values = int(value)
+
+    @property
+    def disabled(self) -> bool:
+        """:class:`bool`: Whether the select is disabled or not."""
+        return self._underlying.disabled
+
+    @disabled.setter
+    def disabled(self, value: bool) -> None:
+        self._underlying.disabled = bool(value)
+
+    @property
+    def width(self) -> int:
+        return 5
+
+    def to_component_dict(self) -> SelectMenuPayload:
+        return self._underlying.to_dict()
+
+    def _refresh_component(self, component: SelectMenu) -> None:
+        self._underlying = component
+
+    def _refresh_state(self, intreaction: Interaction, data: SelectMessageComponentInteractionData) -> None:
+        values = selected_values.get({})
+        payload = []
+        if "resolved" in data:
+            resolved = Namespace._get_resolved_values(interaction, data["resolved"])
+            payload.extend(resolved.values())
+        else:
+            payload = data.extend("values", []))
+
+        self._values = values[self.custom_id] = payload
+        selected_values.set(values)
+
+    def is_dispatchable(self) -> bool:
+        return True
+
+    @classmethod
+    def from_component(cls, component: SelectMenu) -> Self:
+        return cls(
+            **{k: getattr(component, k) for k in cls.__item_repr_attributes__},
+            row=None,
+        )
+
+
+class Select(BaseSelect[V]):
+    type: Literal[ComponentType.string_select] = ComponentType.string_select
+    __item_repr_attributes__: Tuple[str, ...] = BaseSelect.__item_repr_attributes__ + ('options',)
+    __slots__ = __item_repr_attributes__
+
+    if TYPE_CHECKING:
+        values: List[str]
+
+    def __init__(
+        self,
+        *,
+        custom_id: str = MISSING,
+        placeholder: Optional[str] = None,
+        min_values: int = 1,
+        max_values: int = 1,
+        options: List[SelectOption] = MISSING,
+        disabled: bool = False,
+        row: Optional[int] = None,
+    ) -> None:
+        super().__init__(
+                self.__class__.type,
+                custom_id=custom_id,
+                placeholder=placeholder,
+                min_values=min_values,
+                max_values=max_values,
+                disabled=disabled,
+                options=[] if options is MISSING else options,
+                row=row,
+            )
+        
+    def _refresh_state(self, intreaction: Interaction, data: SelectMessageComponentInteractionData) -> None:
+        ...
 
     @property
     def options(self) -> List[SelectOption]:
@@ -267,59 +336,125 @@ class Select(Item[V], Generic[ValuesT]):
 
         self._underlying.options.append(option)
 
-    @property
-    def disabled(self) -> bool:
-        """:class:`bool`: Whether the select is disabled or not."""
-        return self._underlying.disabled
 
-    @disabled.setter
-    def disabled(self, value: bool) -> None:
-        self._underlying.disabled = bool(value)
+class UserSelect(BaseSelect[V]):
+    type: Literal[ComponentType.user_select] = ComponentType.user_select
+    __slots__ = BaseSelect.__item_repr_attributes__
 
-    @property
-    def values(self) -> List[ValueT]:
-        """List[Union[:class:`~discord.abc.GuilcChannel`, :class:`~discord.Member`, :class:`~discord.Role`, :class:`str`]]: A list of values that have been selected by the user."""
-        values = selected_values.get({})
-        return values.get(self.custom_id, self._values)
+    if TYPE_CHECKING:
+        values: List[Union[Member, User]]
 
-    @property
-    def width(self) -> int:
-        return 5
+    def __init__(
+        self,
+        *,
+        custom_id: str = MISSING,
+        placeholder: Optional[str] = None,
+        min_values: int = 1,
+        max_values: int = 1,
+        disabled: bool = False,
+        row: Optional[int] = None,
+    ) -> None:
+        super().__init__(
+                self.__class__.type,
+                custom_id=custom_id,
+                placeholder=placeholder,
+                min_values=min_values,
+                max_values=max_values,
+                disabled=disabled,
+                row=row,
+            )
 
-    def to_component_dict(self) -> SelectMenuPayload:
-        return self._underlying.to_dict()
 
-    def _refresh_component(self, component: SelectMenu) -> None:
-        self._underlying = component
+class RoleSelect(BaseSelect[V]):
+    type: Literal[ComponentType.role_select] = ComponentType.role_select
+    __slots__ = BaseSelect.__item_repr_attributes__
 
-    def _refresh_state(self, data: MessageComponentInteractionData) -> None:
-        values = selected_values.get({})
-        self._values = values[self.custom_id] = data.get('values', [])
-        selected_values.set(values)
+    if TYPE_CHECKING:
+        values: List[Role]
 
-    @classmethod
-    def from_component(cls, component: SelectMenu) -> Self:
-        return cls(
-            # type=component.type,
-            custom_id=component.custom_id,
-            placeholder=component.placeholder,
-            min_values=component.min_values,
-            max_values=component.max_values,
-            options=component.options,
-            disabled=component.disabled,
-            row=None,
+    def __init__(
+        self,
+        *,
+        custom_id: str = MISSING,
+        placeholder: Optional[str] = None,
+        min_values: int = 1,
+        max_values: int = 1,
+        disabled: bool = False,
+        row: Optional[int] = None,
+    ) -> None:
+        super().__init__(
+                self.__class__.type,
+                custom_id=custom_id,
+                placeholder=placeholder,
+                min_values=min_values,
+                max_values=max_values,
+                disabled=disabled,
+                row=row,
+            )
+
+
+class MentionableSelect(BaseSelect[V]):
+    type: Literal[ComponentType.mentionable_select] = ComponentType.mentionable_select
+    __slots__ = BaseSelect.__item_repr_attributes__
+
+    if TYPE_CHECKING:
+        values: List[Union[Member, User, Role]]
+
+    def __init__(
+        self,
+        *,
+        custom_id: str = MISSING,
+        placeholder: Optional[str] = None,
+        min_values: int = 1,
+        max_values: int = 1,
+        disabled: bool = False,
+        row: Optional[int] = None,
+    ) -> None:
+        super().__init__(
+                self.__class__.type,
+                custom_id=custom_id,
+                placeholder=placeholder,
+                min_values=min_values,
+                max_values=max_values,
+                disabled=disabled,
+                row=row,
+            )
+
+
+class ChannelSelect(BaseSelect[V]):
+    type: Literal[ComponentType.channel_select] = ComponentType.channel_select
+    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ("channel_types",)
+    __slots__ = __item_repr_attributes__
+
+    if TYPE_CHECKING:
+        values: List[Union[Thread, GuildChannel]]:
+
+    def __init__(
+        self,
+        *,
+        custom_id: str = MISSING,
+        channel_types: List[ChannelType] = MISSING,
+        placeholder: Optional[str] = None,
+        min_values: int = 1,
+        max_values: int = 1,
+        disabled: bool = False,
+        row: Optional[int] = None,
+    ) -> None:
+        super().__init__(
+            self.__class__.type,
+            custom_id=custom_id,
+            placeholder=placeholder,
+            min_values=min_values,
+            max_values=max_values,
+            disabled=disabled,
+            row=row,
+            channel_types = [] if channel_types is MISSING else channel_types,
         )
 
     @property
-    def type(self) -> SelectType:
-        return try_enum(SelectType, self._underlying._type)
-
-    @property
     def channel_types(self) -> List[ChannelType]:
+        """List[:class:`discord.ChannelType`]: A list of channel types that can be selected."""
         return self._underlying.channel_types
-
-    def is_dispatchable(self) -> bool:
-        return True
 
 
 def select(
