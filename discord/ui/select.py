@@ -84,7 +84,13 @@ selected_values: ContextVar[Dict[str, Any]] = ContextVar('selected_values')
 
 
 class BaseSelect(Item[V]):
-    """The base select menu model that all select menus inherit from.
+    """The base Select model that all other Select models inherit from.
+    This class inherits from :class:`Item` and implements the common attributes.
+
+    .. note ::
+        This class should not be created directly. Instead, use one of the
+        subclasses that inherit from this class.
+    
 
     The following implement this class:
 
@@ -228,6 +234,41 @@ class BaseSelect(Item[V]):
 
 
 class Select(BaseSelect[V]):
+    """Represents a UI "string" select menu with a list of custom options.
+
+    This is usually represented as a drop down menu.
+    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
+
+    .. versionadded:: 2.0
+
+    .. versionchanged:: 2.1
+        This class now inherits from :class:`BaseSelect` instead of :class:`Item`.
+    
+    Parameters
+    ------------
+    custom_id: :class:`str`
+        The ID of the select menu that gets received during an interaction.
+        If not given then one is generated for you.
+    placeholder: Optional[:class:`str`]
+        The placeholder text that is shown if nothing is selected, if any.
+    min_values: :class:`int`
+        The minimum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 0 and 25.
+    max_values: :class:`int`
+        The maximum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 1 and 25.
+    options: List[:class:`discord.SelectOption`]
+        A list of options that can be selected in this menu.
+    disabled: :class:`bool`
+        Whether the select is disabled or not.
+    row: Optional[:class:`int`]
+        The relative row this select menu belongs to. A Discord component can only have 5
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    """
+
     __item_repr_attributes__: Tuple[str, ...] = BaseSelect.__item_repr_attributes__ + ('options',)
     __slots__ = __item_repr_attributes__
 
@@ -342,6 +383,36 @@ class Select(BaseSelect[V]):
 
 
 class UserSelect(BaseSelect[V]):
+    """Represents a UI "user" select menu with a list of predefined options representing members of the guild.
+
+    This is usually represented as a drop down menu.
+    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
+
+    .. versionadded:: 2.1
+    
+    Parameters
+    ------------
+    custom_id: :class:`str`
+        The ID of the select menu that gets received during an interaction.
+        If not given then one is generated for you.
+    placeholder: Optional[:class:`str`]
+        The placeholder text that is shown if nothing is selected, if any.
+    min_values: :class:`int`
+        The minimum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 0 and 25.
+    max_values: :class:`int`
+        The maximum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 1 and 25.
+    disabled: :class:`bool`
+        Whether the select is disabled or not.
+    row: Optional[:class:`int`]
+        The relative row this select menu belongs to. A Discord component can only have 5
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    """
+
     __slots__ = BaseSelect.__item_repr_attributes__
 
     if TYPE_CHECKING:
@@ -404,6 +475,35 @@ class RoleSelect(BaseSelect[V]):
 
 
 class MentionableSelect(BaseSelect[V]):
+    """Represents a UI "mentionable" select menu with a list of predefined options representing members and roles in the guild.
+
+    This is usually represented as a drop down menu.
+    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
+
+    .. versionadded:: 2.1
+    
+    Parameters
+    ------------
+    custom_id: :class:`str`
+        The ID of the select menu that gets received during an interaction.
+        If not given then one is generated for you.
+    placeholder: Optional[:class:`str`]
+        The placeholder text that is shown if nothing is selected, if any.
+    min_values: :class:`int`
+        The minimum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 0 and 25.
+    max_values: :class:`int`
+        The maximum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 1 and 25.
+    disabled: :class:`bool`
+        Whether the select is disabled or not.
+    row: Optional[:class:`int`]
+        The relative row this select menu belongs to. A Discord component can only have 5
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    """
     __slots__ = BaseSelect.__item_repr_attributes__
 
     if TYPE_CHECKING:
@@ -435,6 +535,38 @@ class MentionableSelect(BaseSelect[V]):
 
 
 class ChannelSelect(BaseSelect[V]):
+    """Represents a UI "channel" select menu with a list of predefined options representing channels in the guild.
+    It is possible to filter the channels that are shown per type by passing the ``channel_types`` parameter.
+
+    This is usually represented as a drop down menu.
+    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
+
+    .. versionadded:: 2.1
+    
+    Parameters
+    ------------
+    custom_id: :class:`str`
+        The ID of the select menu that gets received during an interaction.
+        If not given then one is generated for you.
+    channel_types: List[:class:`ChannelType`]
+        The types of channels to show in the select menu. If not given then all channel types are shown.
+    placeholder: Optional[:class:`str`]
+        The placeholder text that is shown if nothing is selected, if any.
+    min_values: :class:`int`
+        The minimum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 0 and 25.
+    max_values: :class:`int`
+        The maximum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 1 and 25.
+    disabled: :class:`bool`
+        Whether the select is disabled or not.
+    row: Optional[:class:`int`]
+        The relative row this select menu belongs to. A Discord component can only have 5
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    """
     __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ("channel_types",)
     __slots__ = __item_repr_attributes__
 
@@ -563,10 +695,8 @@ def select(
     The function being decorated should have three parameters, ``self`` representing
     the :class:`discord.ui.View`, the :class:`discord.Interaction` you receive and
     the :class:`discord.ui.BaseSelect` being used.
-
     In order to get the selected items that the user has chosen within the callback
     use :attr:`BaseSelect.values`.
-
     Parameters
     ------------
     cls: Type[:class:`iscord.ui.BaseSelect`]
