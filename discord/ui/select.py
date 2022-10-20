@@ -80,7 +80,7 @@ SelectCallbackDecorator: TypeAlias = Callable[
     ItemCallbackType[V, BaseSelectT],
 ]
 
-selected_values: ContextVar[Dict[str, Any]] = ContextVar('selected_values')
+selected_values: ContextVar[Dict[str, List[Any]]] = ContextVar('selected_values')
 
 
 class BaseSelect(Item[V]):
