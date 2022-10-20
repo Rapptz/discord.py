@@ -23,13 +23,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union, overload
+from typing_extensions import TypeAlias
 
 import inspect
 import os
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union, overload
 
-from typing_extensions import TypeAlias
 
 from ..app_commands.namespace import Namespace
 from ..components import SelectMenu, SelectOption
