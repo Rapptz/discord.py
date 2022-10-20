@@ -99,6 +99,7 @@ class TextInput(TypedDict):
     min_length: NotRequired[int]
     max_length: NotRequired[int]
 
+
 class SelectMenu(SelectComponent):
     type: Literal[3, 5, 6, 7, 8]
     options: NotRequired[List[SelectOption]]
