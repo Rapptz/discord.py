@@ -337,7 +337,7 @@ class UserSelect(BaseSelect[V]):
         row: Optional[int] = None,
     ) -> None:
         super().__init__(
-                self.__class__.type,
+                self.type,
                 custom_id=custom_id,
                 placeholder=placeholder,
                 min_values=min_values,
@@ -368,7 +368,7 @@ class RoleSelect(BaseSelect[V]):
         row: Optional[int] = None,
     ) -> None:
         super().__init__(
-                self.__class__.type,
+                self.type,
                 custom_id=custom_id,
                 placeholder=placeholder,
                 min_values=min_values,
@@ -399,7 +399,7 @@ class MentionableSelect(BaseSelect[V]):
         row: Optional[int] = None,
     ) -> None:
         super().__init__(
-                self.__class__.type,
+                self.type,
                 custom_id=custom_id,
                 placeholder=placeholder,
                 min_values=min_values,
