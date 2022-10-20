@@ -269,8 +269,7 @@ class Select(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
-    __item_repr_attributes__: Tuple[str, ...] = BaseSelect.__item_repr_attributes__ + ('options',)
-    __slots__ = __item_repr_attributes__
+    __slots__ = BaseSelect.__item_repr_attributes__
 
     if TYPE_CHECKING:
         values: List[str]
@@ -567,8 +566,7 @@ class ChannelSelect(BaseSelect[V]):
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
-    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ("channel_types",)
-    __slots__ = __item_repr_attributes__
+    __slots__ = BaseSelect.__item_repr_attributes__
 
     if TYPE_CHECKING:
         values: List[Union[Thread, GuildChannel]]
