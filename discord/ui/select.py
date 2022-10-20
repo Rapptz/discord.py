@@ -90,7 +90,7 @@ class BaseSelect(Item[V]):
     .. note ::
         This class should not be created directly. Instead, use one of the
         subclasses that inherit from this class.
-    
+
 
     The following implement this class:
 
@@ -101,9 +101,18 @@ class BaseSelect(Item[V]):
     - :class:`~discord.ui.UserSelect`
 
     .. versionadded:: 2.2
+
+    Attributes
+    ------------
+    row: Optional[:class:`int`]
+        The relative row this select menu belongs to. A Discord component can only have 5
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
-    __slots__ = ()
+    __slots__ = ('_provided_custom_id', '_underlying', 'row', '_values')
 
     __item_repr_attributes__: Tuple[str, ...] = (
         'placeholder',
@@ -145,6 +154,15 @@ class BaseSelect(Item[V]):
 
     @property
     def values(self) -> List[Any]:
+        """The values the user has selected. This will be an empty list if the user has not selected anything.
+
+        If you want to determine what objects list will contain,
+        see the documentation for the subclass you're using.
+
+        Returns
+        --------
+        List[Any]
+        """
         values = selected_values.get({})
         return values.get(self.custom_id, self._values)
 
@@ -234,16 +252,14 @@ class BaseSelect(Item[V]):
 
 
 class Select(BaseSelect[V]):
-    """Represents a UI "string" select menu with a list of custom options.
-
-    This is usually represented as a drop down menu.
-    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
+    """Represents a UI "string" select menu with a list of custom options. This is represented
+    to the user as a dropdown menu.
 
     .. versionadded:: 2.0
 
     .. versionchanged:: 2.1
         This class now inherits from :class:`BaseSelect` instead of :class:`Item`.
-    
+
     Parameters
     ------------
     custom_id: :class:`str`
@@ -269,11 +285,6 @@ class Select(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
-    __slots__ = BaseSelect.__item_repr_attributes__
-
-    if TYPE_CHECKING:
-        values: List[str]
-
     def __init__(
         self,
         *,
@@ -295,6 +306,11 @@ class Select(BaseSelect[V]):
             options=[] if options is MISSING else options,
             row=row,
         )
+
+    @property
+    def values(self) -> List[str]:
+        """List[:class:`str`]: A list of values that have been selected by the user. This will be an empty list if the user has not selected anything."""
+        return super().values
 
     @property
     def type(self) -> Literal[ComponentType.string_select]:
@@ -384,11 +400,8 @@ class Select(BaseSelect[V]):
 class UserSelect(BaseSelect[V]):
     """Represents a UI "user" select menu with a list of predefined options representing members of the guild.
 
-    This is usually represented as a drop down menu.
-    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
-
     .. versionadded:: 2.1
-    
+
     Parameters
     ------------
     custom_id: :class:`str`
@@ -411,11 +424,6 @@ class UserSelect(BaseSelect[V]):
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
-
-    __slots__ = BaseSelect.__item_repr_attributes__
-
-    if TYPE_CHECKING:
-        values: List[Union[Member, User]]
 
     def __init__(
         self,
@@ -441,12 +449,47 @@ class UserSelect(BaseSelect[V]):
     def type(self) -> Literal[ComponentType.user_select]:
         return ComponentType.user_select
 
+    @property
+    def values(self) -> List[Union[Member, User]]:
+        """A list of members and users that have been selected by the user.
+
+        NOTE: Missing documentation for intents, and inside and out of a guild.
+
+        Returns
+        --------
+        List[Union[:class:`discord.Member`, :class:`discord.User`]]
+        """
+        return super().values
+
 
 class RoleSelect(BaseSelect[V]):
-    __slots__ = BaseSelect.__item_repr_attributes__
+    """Represents a UI select menu in which the user can select roles
+    by searching and clicking on them.
 
-    if TYPE_CHECKING:
-        values: List[Role]
+    .. versionadded:: 2.1
+
+    Parameters
+    ------------
+    custom_id: :class:`str`
+        The ID of the select menu that gets received during an interaction.
+        If not given then one is generated for you.
+    placeholder: Optional[:class:`str`]
+        The placeholder text that is shown if nothing is selected, if any.
+    min_values: :class:`int`
+        The minimum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 0 and 25.
+    max_values: :class:`int`
+        The maximum number of items that must be chosen for this select menu.
+        Defaults to 1 and must be between 1 and 25.
+    disabled: :class:`bool`
+        Whether the select is disabled or not.
+    row: Optional[:class:`int`]
+        The relative row this select menu belongs to. A Discord component can only have 5
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    """
 
     def __init__(
         self,
@@ -472,15 +515,17 @@ class RoleSelect(BaseSelect[V]):
     def type(self) -> Literal[ComponentType.role_select]:
         return ComponentType.role_select
 
+    @property
+    def values(self) -> List[Role]:
+        """List[:class:`discord.Role`]: A list of roles that have been selected by the user."""
+        return super().values
+
 
 class MentionableSelect(BaseSelect[V]):
     """Represents a UI "mentionable" select menu with a list of predefined options representing members and roles in the guild.
 
-    This is usually represented as a drop down menu.
-    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
-
     .. versionadded:: 2.1
-    
+
     Parameters
     ------------
     custom_id: :class:`str`
@@ -503,10 +548,6 @@ class MentionableSelect(BaseSelect[V]):
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
-    __slots__ = BaseSelect.__item_repr_attributes__
-
-    if TYPE_CHECKING:
-        values: List[Union[Member, User, Role]]
 
     def __init__(
         self,
@@ -532,22 +573,29 @@ class MentionableSelect(BaseSelect[V]):
     def type(self) -> Literal[ComponentType.mentionable_select]:
         return ComponentType.mentionable_select
 
+    @property
+    def values(self) -> List[Union[Member, User, Role]]:
+        """A list of roles, members, and users that have been selected by the user.
+
+        Returns
+        --------
+        List[Union[:class:`discord.Role`, :class:`discord.Member`, :class:`discord.User`]]
+        """
+        return super().values
+
 
 class ChannelSelect(BaseSelect[V]):
     """Represents a UI "channel" select menu with a list of predefined options representing channels in the guild.
     It is possible to filter the channels that are shown per type by passing the ``channel_types`` parameter.
 
-    This is usually represented as a drop down menu.
-    In order to get the selected items that the user has chosen, use :attr:`Select.values`.
-
     .. versionadded:: 2.1
-    
+
     Parameters
     ------------
     custom_id: :class:`str`
         The ID of the select menu that gets received during an interaction.
         If not given then one is generated for you.
-    channel_types: List[:class:`ChannelType`]
+    channel_types: List[:class:`~discord.ChannelType`]
         The types of channels to show in the select menu. If not given then all channel types are shown.
     placeholder: Optional[:class:`str`]
         The placeholder text that is shown if nothing is selected, if any.
@@ -566,10 +614,6 @@ class ChannelSelect(BaseSelect[V]):
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
-    __slots__ = BaseSelect.__item_repr_attributes__
-
-    if TYPE_CHECKING:
-        values: List[Union[Thread, GuildChannel]]
 
     def __init__(
         self,
@@ -599,8 +643,18 @@ class ChannelSelect(BaseSelect[V]):
 
     @property
     def channel_types(self) -> List[ChannelType]:
-        """List[:class:`discord.ChannelType`]: A list of channel types that can be selected."""
+        """List[:class:`~discord.ChannelType`]: A list of channel types that can be selected."""
         return self._underlying.channel_types
+
+    @property
+    def values(self) -> List[Union[Thread, GuildChannel]]:
+        """A list of channels selected by the user.
+
+        Returns
+        --------
+        List[Union[:class:`discord.Thread`, :class:`discord.abc.GuildChannel`]]
+        """
+        return super().values
 
 
 @overload
@@ -700,13 +754,30 @@ def select(
     The function being decorated should have three parameters, ``self`` representing
     the :class:`discord.ui.View`, the :class:`discord.Interaction` you receive and
     the :class:`discord.ui.BaseSelect` being used.
+
     In order to get the selected items that the user has chosen within the callback
-    use :attr:`BaseSelect.values`.
+    use :meth:`~discord.ui.BaseSelect.values`.
+
+    +----------------------------------------+-------------------------------------------------------------------------------------+
+    | Select Type                            | Values                                                                              |
+    +========================================+=====================================================================================+
+    | :class:`discord.ui.Select`             | List[:class:`str`]                                                                  |
+    +----------------------------------------+-------------------------------------------------------------------------------------+
+    | :class:`discord.ui.UserSelect`         | List[Union[:class:`discord.Member`, :class:`discord.User`]]                         |
+    +----------------------------------------+-------------------------------------------------------------------------------------+
+    | :class:`discord.ui.RoleSelect`         | List[:class:`discord.Role`]                                                         |
+    +----------------------------------------+-------------------------------------------------------------------------------------+
+    | :class:`discord.ui.MentionableSelect`  | List[Union[:class:`discord.Role`, :class:`discord.Member`, :class:`discord.User`]]  |
+    +----------------------------------------+-------------------------------------------------------------------------------------+
+    | :class:`discord.ui.ChannelSelect`      | List[Union[:class:`discord.Thread`, :class:`discord.abc.GuildChannel`]]             |
+    +----------------------------------------+-------------------------------------------------------------------------------------+
 
     Parameters
     ------------
     cls: Type[:class:`discord.ui.BaseSelect`]
-        The class to use for the select menu. Defaults to :class:`discord.ui.Select`.
+        The class to use for the select menu. Defaults to :class:`discord.ui.Select`. You can use other
+        select types to display different select menus to the user. See the table above for the different
+        values you can get from each select type.
     placeholder: Optional[:class:`str`]
         The placeholder text that is shown if nothing is selected, if any.
     custom_id: :class:`str`
@@ -727,7 +798,7 @@ def select(
     options: List[:class:`discord.SelectOption`]
         A list of options that can be selected in this menu. This can not be used with
         :class:`ChannelSelect` instances.
-    channel_types: List[:class:`discord.ChannelType`]
+    channel_types: List[:class:`~discord.ChannelType`]
         The types of channels you want to limit the selection to. This can only be used
         with :class:`ChannelSelect` instances.
     disabled: :class:`bool`
