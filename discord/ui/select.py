@@ -607,13 +607,14 @@ class ChannelSelect(BaseSelect[V]):
 def select(
     *,
     cls: Type[SelectT] = Select[V],
-    placeholder: Optional[str] = None,
-    custom_id: str = MISSING,
-    min_values: int = 1,
-    max_values: int = 1,
     options: List[SelectOption] = MISSING,
-    disabled: bool = False,
-    row: Optional[int] = None,
+    channel_types: List[ChannelType] = ...,
+    placeholder: Optional[str] = ...,
+    custom_id: str = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] =  ...,
 ) -> SelectCallbackDecorator[V, SelectT]:
     ...
 
@@ -622,12 +623,14 @@ def select(
 def select(
     *,
     cls: Type[UserSelectT] = UserSelect[V],
-    placeholder: Optional[str] = None,
-    custom_id: str = MISSING,
-    min_values: int = 1,
-    max_values: int = 1,
-    disabled: bool = False,
-    row: Optional[int] = None,
+    options: List[SelectOption] = MISSING,
+    channel_types: List[ChannelType] = ...,
+    placeholder: Optional[str] = ...,
+    custom_id: str = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] =  ...,
 ) -> SelectCallbackDecorator[V, UserSelectT]:
     ...
 
@@ -636,12 +639,14 @@ def select(
 def select(
     *,
     cls: Type[RoleSelectT] = RoleSelect[V],
-    placeholder: Optional[str] = None,
-    custom_id: str = MISSING,
-    min_values: int = 1,
-    max_values: int = 1,
-    disabled: bool = False,
-    row: Optional[int] = None,
+    options: List[SelectOption] = MISSING,
+    channel_types: List[ChannelType] = ...,
+    placeholder: Optional[str] = ...,
+    custom_id: str = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] =  ...,
 ) -> SelectCallbackDecorator[V, RoleSelectT]:
     ...
 
@@ -650,13 +655,14 @@ def select(
 def select(
     *,
     cls: Type[ChannelSelectT] = ChannelSelect[V],
-    placeholder: Optional[str] = None,
-    custom_id: str = MISSING,
-    channel_types: List[ChannelType] = MISSING,
-    min_values: int = 1,
-    max_values: int = 1,
-    disabled: bool = False,
-    row: Optional[int] = None,
+    options: List[SelectOption] = MISSING,
+    channel_types: List[ChannelType] = ...,
+    placeholder: Optional[str] = ...,
+    custom_id: str = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] =  ...,
 ) -> SelectCallbackDecorator[V, ChannelSelectT]:
     ...
 
@@ -665,13 +671,14 @@ def select(
 def select(
     *,
     cls: Type[MentionableSelectT] = MentionableSelect[V],
-    placeholder: Optional[str] = None,
-    custom_id: str = MISSING,
+    options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = MISSING,
-    min_values: int = 1,
-    max_values: int = 1,
-    disabled: bool = False,
-    row: Optional[int] = None,
+    placeholder: Optional[str] = ...,
+    custom_id: str = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] =  ...,
 ) -> SelectCallbackDecorator[V, MentionableSelectT]:
     ...
 
@@ -679,12 +686,12 @@ def select(
 def select(
     *,
     cls: Type[BaseSelectT] = Select[V],
+    options: List[SelectOption] = MISSING,
+    channel_types: List[ChannelType] = MISSING,
     placeholder: Optional[str] = None,
     custom_id: str = MISSING,
     min_values: int = 1,
     max_values: int = 1,
-    options: List[SelectOption] = MISSING,
-    channel_types: List[ChannelType] = MISSING,
     disabled: bool = False,
     row: Optional[int] = None,
 ) -> SelectCallbackDecorator[V, BaseSelectT]:
