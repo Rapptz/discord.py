@@ -833,17 +833,21 @@ def select(
         if not issubclass(cls, BaseSelect):
             raise TypeError(f'cls must be a subclass of BaseSelect, {cls.__name__} can not be used.')
 
-        func.__discord_ui_model_type__ = cls
-        func.__discord_ui_model_kwargs__ = {
+        payload = {
             'placeholder': placeholder,
             'custom_id': custom_id,
             'row': row,
             'min_values': min_values,
             'max_values': max_values,
-            'options': options,
-            'channel_types': channel_types,
             'disabled': disabled,
         }
+        if issubclass(cls, ChannelSelect):
+            payload['channel_types'] = channel_types
+        if issubclass(cls, Select):
+            payload['options'] = options
+
+        func.__discord_ui_model_type__ = cls
+        func.__discord_ui_model_kwargs__ = payload
 
         return func
 
