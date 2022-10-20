@@ -68,7 +68,7 @@ class SelectComponent(TypedDict):
 
 class StringSelectComponent(SelectComponent):
     type: Literal[3]
-    options: List[SelectOption]
+    options: NotRequired[List[SelectOption]]
 
 
 class UserSelectComponent(SelectComponent):
@@ -99,9 +99,11 @@ class TextInput(TypedDict):
     min_length: NotRequired[int]
     max_length: NotRequired[int]
 
+class SelectMenu(SelectComponent):
+    type: Literal[3, 5, 6, 7, 8]
+    options: NotRequired[List[SelectOption]]
+    channel_types: NotRequired[List[ChannelType]]
 
-SelectMenu = Union[
-    StringSelectComponent, UserSelectComponent, RoleSelectComponent, MentionableSelectComponent, ChannelSelectComponent
-]
+
 ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]
 Component = Union[ActionRow, ActionRowChildComponent]
