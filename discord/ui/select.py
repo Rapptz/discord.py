@@ -88,9 +88,9 @@ class BaseSelect(Item[V]):
     This class inherits from :class:`Item` and implements the common attributes.
 
     .. note ::
+
         This class should not be created directly. Instead, use one of the
         subclasses that inherit from this class.
-
 
     The following implement this class:
 
@@ -400,6 +400,9 @@ class Select(BaseSelect[V]):
 class UserSelect(BaseSelect[V]):
     """Represents a UI "user" select menu with a list of predefined options representing members of the guild.
 
+    If this is presented to the user in a private message, it will only allow the user to select the client,
+    or themselves. Every selected option in a private message will resolve to
+    a :class:`discord.User` regardless of intents.
     .. versionadded:: 2.1
 
     Parameters
@@ -453,7 +456,12 @@ class UserSelect(BaseSelect[V]):
     def values(self) -> List[Union[Member, User]]:
         """A list of members and users that have been selected by the user.
 
-        NOTE: Missing documentation for intents, and inside and out of a guild.
+        If this is presented to the user in a private message, it will only allow
+        the user to select the client, or themselves. Every selected option in a private
+        message will resolve to a :class:`discord.User` regardless of intents.
+
+        If invoked in a guild, then the values will always resolve to :class:`discord.Member`
+        regardless of the :attr:`discord.Intents.members` intent.
 
         Returns
         --------
@@ -465,6 +473,10 @@ class UserSelect(BaseSelect[V]):
 class RoleSelect(BaseSelect[V]):
     """Represents a UI select menu in which the user can select roles
     by searching and clicking on them.
+
+    Please note that this type of select does not work in direct messages.
+    If presented to a user in a direct message, the select menu will not give
+    the user any roles to select.
 
     .. versionadded:: 2.1
 
@@ -524,12 +536,15 @@ class RoleSelect(BaseSelect[V]):
 class MentionableSelect(BaseSelect[V]):
     """Represents a UI "mentionable" select menu with a list of predefined options representing members and roles in the guild.
 
-    .. versionadded:: 2.1
+    If this is presented to the user in a private message, it will only allow
+    the user to select the client, or themselves. Every selected option in a private
+    message will resolve to a :class:`discord.User`. It will not give the user any roles
+    to select.
 
     Parameters
     ------------
     custom_id: :class:`str`
-        The ID of the select menu that gets received during an interaction.
+        The ID of the select menu that get9 received during an interaction.
         If not given then one is generated for you.
     placeholder: Optional[:class:`str`]
         The placeholder text that is shown if nothing is selected, if any.
@@ -577,6 +592,11 @@ class MentionableSelect(BaseSelect[V]):
     def values(self) -> List[Union[Member, User, Role]]:
         """A list of roles, members, and users that have been selected by the user.
 
+        If invoked in a :class:`~discord.Guild`, the "user" values will always resolve to :class:`discord.Member`
+        regardless of the :attr:`discord.Intents.members` intent.
+
+        If invoked in a direct message, the "user" values will always resolve to a :class:`discord.User`.
+
         Returns
         --------
         List[Union[:class:`discord.Role`, :class:`discord.Member`, :class:`discord.User`]]
@@ -587,6 +607,9 @@ class MentionableSelect(BaseSelect[V]):
 class ChannelSelect(BaseSelect[V]):
     """Represents a UI "channel" select menu with a list of predefined options representing channels in the guild.
     It is possible to filter the channels that are shown per type by passing the ``channel_types`` parameter.
+
+    Please note that if you use this in a direct message with a user, no channels will be displayed to the user
+    and they will not be able to invoke the select menu.
 
     .. versionadded:: 2.1
 
@@ -648,12 +671,7 @@ class ChannelSelect(BaseSelect[V]):
 
     @property
     def values(self) -> List[Union[Thread, GuildChannel]]:
-        """A list of channels selected by the user.
-
-        Returns
-        --------
-        List[Union[:class:`discord.Thread`, :class:`discord.abc.GuildChannel`]]
-        """
+        """List[Union[:class:`discord.Thread`, :class:`discord.abc.GuildChannel`]]: A list of channels selected by the user."""
         return super().values
 
 
@@ -759,7 +777,7 @@ def select(
     use :meth:`~discord.ui.BaseSelect.values`.
 
     +----------------------------------------+-------------------------------------------------------------------------------------+
-    | Select Type                            | Values                                                                              |
+    | Select Type                            | Resolved Value                                                                      |
     +========================================+=====================================================================================+
     | :class:`discord.ui.Select`             | List[:class:`str`]                                                                  |
     +----------------------------------------+-------------------------------------------------------------------------------------+
