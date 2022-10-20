@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Literal, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union, Dict
+from typing import Any, Literal, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Callable, Union, Dict, TypeAlias
 from contextvars import ContextVar
 import inspect
 import os
@@ -55,28 +55,11 @@ if TYPE_CHECKING:
 
     from discord.abc import GuildChannel
     from discord import Role, Member, Interaction, User, Thread
-"""
-PossibleValue = TypeVar(
-'ValuesT',
-# default
-str,
-# channel
-GuildChannel,
-Thread,
-Union[Thread, GuildChannel],
-# role
-Role,
-# user
-Member,
-User,
-# mentionable
-Union[Role, Member],
-Union[Role, User]
-)
-"""
+
 
 V = TypeVar('V', bound='View', covariant=True)
 selected_values: ContextVar[Dict[str, Any]] = ContextVar('selected_values')
+ValidSelectTypes: TypeAlias = Literal[ComponentType.string_select, ComponentType.user_select, ComponentType.role_select, ComponentType.channel_select, ComponentType.mentionable_select]
 
 class BaseSelect(Item[V]): 
     """The base select menu model that all select menus inherit from.
@@ -91,7 +74,7 @@ class BaseSelect(Item[V]):
 
     .. versionadded:: 2.2
     """
-    type: Literal[ComponentType.string_select, ComponentType.user_select, ComponentType.role_select, ComponentType.channel_select, ComponentType.mentionable_select]
+    type: ValidSelectTypes
 
     __slots__ = ()
 
@@ -104,7 +87,7 @@ class BaseSelect(Item[V]):
 
     def __init__(
         self,
-        type: Literal[ComponentType.string_select, ComponentType.user_select, ComponentType.role_select, ComponentType.channel_select, ComponentType.mentionable_select],
+        type: ValidSelectTypes,
         *,
         custom_id: str = MISSING,
         row: Optional[int] = None,
@@ -200,11 +183,11 @@ class BaseSelect(Item[V]):
     def _refresh_component(self, component: SelectMenu) -> None:
         self._underlying = component
 
-    def _refresh_state(self, intreaction: Interaction, data: SelectMessageComponentInteractionData) -> None:
+    def _refresh_state(self, interaction: Interaction, data: SelectMessageComponentInteractionData) -> None:
         values = selected_values.get({})
         payload = []
         if "resolved" in data:
-            resolved = Namespace._get_resolved_values(interaction, data["resolved"])
+            resolved = Namespace._get_resolved_items(interaction, data["resolved"])
             payload = list(resolved.values())
         else:
             payload = data.get("values", []))
@@ -224,7 +207,6 @@ class BaseSelect(Item[V]):
 
 
 class Select(BaseSelect[V]):
-    type: Literal[ComponentType.string_select] = ComponentType.string_select
     __item_repr_attributes__: Tuple[str, ...] = BaseSelect.__item_repr_attributes__ + ('options',)
     __slots__ = __item_repr_attributes__
 
@@ -243,7 +225,7 @@ class Select(BaseSelect[V]):
         row: Optional[int] = None,
     ) -> None:
         super().__init__(
-                self.__class__.type,
+                self.type,
                 custom_id=custom_id,
                 placeholder=placeholder,
                 min_values=min_values,
@@ -252,6 +234,10 @@ class Select(BaseSelect[V]):
                 options=[] if options is MISSING else options,
                 row=row,
             )
+
+    @property
+    def type(self) -> Literal[ComponentType.string_select]:
+        return ComponentType.string_select
 
     @property
     def options(self) -> List[SelectOption]:
@@ -335,7 +321,6 @@ class Select(BaseSelect[V]):
 
 
 class UserSelect(BaseSelect[V]):
-    type: Literal[ComponentType.user_select] = ComponentType.user_select
     __slots__ = BaseSelect.__item_repr_attributes__
 
     if TYPE_CHECKING:
@@ -361,9 +346,12 @@ class UserSelect(BaseSelect[V]):
                 row=row,
             )
 
+    @property
+    def type(self) -> Literal[ComponentType.user_select]:
+        return ComponentType.user_select
+
 
 class RoleSelect(BaseSelect[V]):
-    type: Literal[ComponentType.role_select] = ComponentType.role_select
     __slots__ = BaseSelect.__item_repr_attributes__
 
     if TYPE_CHECKING:
@@ -389,9 +377,12 @@ class RoleSelect(BaseSelect[V]):
                 row=row,
             )
 
+    @property
+    def type(self) -> Literal[ComponentType.role_select]:
+        return ComponentType.role_select
+
 
 class MentionableSelect(BaseSelect[V]):
-    type: Literal[ComponentType.mentionable_select] = ComponentType.mentionable_select
     __slots__ = BaseSelect.__item_repr_attributes__
 
     if TYPE_CHECKING:
@@ -417,9 +408,12 @@ class MentionableSelect(BaseSelect[V]):
                 row=row,
             )
 
+    @property
+    def type(self) -> Literal[ComponentType.mentionable_select]:
+        return ComponentType.mentionable_select
+
 
 class ChannelSelect(BaseSelect[V]):
-    type: Literal[ComponentType.channel_select] = ComponentType.channel_select
     __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ("channel_types",)
     __slots__ = __item_repr_attributes__
 
@@ -447,6 +441,10 @@ class ChannelSelect(BaseSelect[V]):
             row=row,
             channel_types = [] if channel_types is MISSING else channel_types,
         )
+
+    @property
+    def type(self) -> Literal[ComponentType.channel_select]:
+        return ComponentType.channel_select
 
     @property
     def channel_types(self) -> List[ChannelType]:
