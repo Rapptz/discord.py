@@ -58,7 +58,6 @@ class SelectOption(TypedDict):
     emoji: NotRequired[PartialEmoji]
 
 class SelectComponent(TypedDict):
-    type: Literal[3, 5, 6, 7, 8]
     custom_id: str
     options: List[SelectOption]
     placeholder: NotRequired[str]
@@ -96,6 +95,6 @@ class TextInput(TypedDict):
     max_length: NotRequired[int]
 
 
+SelectMenu = Union[StringSelect, UserSelect, RoleSelect, MentionableSelect, ChannelSelect]
 ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]
 Component = Union[ActionRow, ActionRowChildComponent]
-SelectMenu = Union[StringSelect, UserSelect, RoleSelect, MentionableSelect, ChannelSelect]
