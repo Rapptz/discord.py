@@ -205,9 +205,9 @@ class BaseSelect(Item[V]):
         payload = []
         if "resolved" in data:
             resolved = Namespace._get_resolved_values(interaction, data["resolved"])
-            payload.extend(resolved.values())
+            payload = list(resolved.values())
         else:
-            payload = data.extend("values", []))
+            payload = data.get("values", []))
 
         self._values = values[self.custom_id] = payload
         selected_values.set(values)
@@ -252,9 +252,6 @@ class Select(BaseSelect[V]):
                 options=[] if options is MISSING else options,
                 row=row,
             )
-        
-    def _refresh_state(self, intreaction: Interaction, data: SelectMessageComponentInteractionData) -> None:
-        ...
 
     @property
     def options(self) -> List[SelectOption]:
