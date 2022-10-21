@@ -397,6 +397,7 @@ class UserSelect(BaseSelect[V]):
     If this is presented to the user in a private message, it will only allow the user to select the client
     or themselves. Every selected option in a private message will resolve to
     a :class:`discord.User` regardless of intents.
+
     .. versionadded:: 2.1
 
     Parameters
