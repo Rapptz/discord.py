@@ -457,7 +457,7 @@ class UserSelect(BaseSelect[V]):
 class RoleSelect(BaseSelect[V]):
     """Represents a UI select menu with a list of predefined options with the current roles of the guild.
 
-    If this is sent in a private message, the options will be empty.
+    Please note that if you use this in a private message with a user, no roles will be displayed to the user.
 
     .. versionadded:: 2.1
 
@@ -588,7 +588,7 @@ class MentionableSelect(BaseSelect[V]):
 class ChannelSelect(BaseSelect[V]):
     """Represents a UI select menu with a list of predefined options with the current channels in the guild.
 
-    If this is sent in a private message, the options will be empty.
+    Please note that if you use this in a private message with a user, no channels will be displayed to the user.
 
     .. versionadded:: 2.1
 
