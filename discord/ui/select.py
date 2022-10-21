@@ -59,6 +59,8 @@ if TYPE_CHECKING:
     from ..types.interactions import SelectMessageComponentInteractionData
     from .view import View
 
+    from ..app_commands import AppCommandChannel, AppCommandThread
+
     ValidSelectType: TypeAlias = Literal[
         ComponentType.string_select,
         ComponentType.user_select,
@@ -311,7 +313,7 @@ class Select(BaseSelect[V]):
 
     @property
     def values(self) -> List[str]:
-        """List[:class:`str`]: A list of values that have been selected by the user. This will be an empty list if the user has not selected anything."""
+        """List[:class:`str`]: A list of values that have been selected by the user."""
         return super().values
 
     @property
@@ -459,10 +461,10 @@ class UserSelect(BaseSelect[V]):
         """A list of members and users that have been selected by the user.
 
         If this is presented to the user in a private message, it will only allow
-        the user to select the client, or themselves. Every selected option in a private
+        the user to select the client or themselves. Every selected option in a private
         message will resolve to a :class:`discord.User` regardless of intents.
 
-        If invoked in a guild, then the values will always resolve to :class:`discord.Member`
+        If invoked in a guild, the values will always resolve to :class:`discord.Member`
         regardless of the :attr:`discord.Intents.members` intent.
 
         Returns
@@ -594,10 +596,12 @@ class MentionableSelect(BaseSelect[V]):
     def values(self) -> List[Union[Member, User, Role]]:
         """A list of roles, members, and users that have been selected by the user.
 
-        If invoked in a :class:`~discord.Guild`, the "user" values will always resolve to :class:`discord.Member`
-        regardless of the :attr:`discord.Intents.members` intent.
+        If this is presented to the user in a private message, it will only allow
+        the user to select the client or themselves. Every selected option in a private
+        message will resolve to a :class:`discord.User` regardless of intents.
 
-        If invoked in a direct message, the "user" values will always resolve to a :class:`discord.User`.
+        If invoked in a guild, the values will always resolve to :class:`discord.Member`
+        regardless of the :attr:`discord.Intents.members` intent.
 
         Returns
         --------
@@ -674,15 +678,21 @@ class ChannelSelect(BaseSelect[V]):
         return self._underlying.channel_types
 
     @property
-    def values(self) -> List[Union[Thread, GuildChannel]]:
-        """List[Union[:class:`discord.Thread`, :class:`discord.abc.GuildChannel`]]: A list of channels selected by the user."""
+    def values(self) -> List[Union[GuildChannel, AppCommandChannel, Thread, AppCommandThread]]:
+        """A list of channels selected by the user.
+
+        Returns
+        --------
+        List[Union[:class:`discord.Thread`, :class:`discord.abc.GuildChannel`, :class:`~discord.app_commands.AppCommandChannel`,
+        :class:`~discord.app_commands.AppCommandThread`]]
+        """
         return super().values
 
 
 @overload
 def select(
     *,
-    cls: Type[SelectT] = Select[V],
+    cls: Type[SelectT] = Select,
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -698,7 +708,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[UserSelectT] = UserSelect[V],
+    cls: Type[UserSelectT] = UserSelect,
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -714,7 +724,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[RoleSelectT] = RoleSelect[V],
+    cls: Type[RoleSelectT] = RoleSelect,
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -730,7 +740,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[ChannelSelectT] = ChannelSelect[V],
+    cls: Type[ChannelSelectT] = ChannelSelect,
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -746,7 +756,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[MentionableSelectT] = MentionableSelect[V],
+    cls: Type[MentionableSelectT] = MentionableSelect,
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = MISSING,
     placeholder: Optional[str] = ...,
@@ -761,7 +771,7 @@ def select(
 
 def select(
     *,
-    cls: Type[BaseSelectT] = Select[V],
+    cls: Type[BaseSelectT] = Select,
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = MISSING,
     placeholder: Optional[str] = None,
