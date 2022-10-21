@@ -220,7 +220,7 @@ class BaseSelect(Item[V]):
         values = selected_values.get({})
         payload: List[PossibleValue]
         try:
-            resolved = Namespace._get_resolved_items(interaction, data["resolved"])
+            resolved = Namespace._get_resolved_items(interaction, data['resolved'])
             payload = list(resolved.values())
         except KeyError:
             payload = data.get("values", [])  # type: ignore
