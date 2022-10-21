@@ -296,7 +296,7 @@ class Select(BaseSelect[V]):
     @property
     def values(self) -> List[str]:
         """List[:class:`str`]: A list of values that have been selected by the user."""
-        return super().values
+        return super().values  # type: ignore
 
     @property
     def type(self) -> Literal[ComponentType.string_select]:
@@ -450,7 +450,7 @@ class UserSelect(BaseSelect[V]):
 
         If invoked in a guild, the values will always resolve to :class:`discord.Member`.
         """
-        return super().values
+        return super().values  # type: ignore
 
 
 class RoleSelect(BaseSelect[V]):
@@ -510,7 +510,7 @@ class RoleSelect(BaseSelect[V]):
     @property
     def values(self) -> List[Role]:
         """List[:class:`discord.Role`]: A list of roles that have been selected by the user."""
-        return super().values
+        return super().values  # type: ignore
 
 
 class MentionableSelect(BaseSelect[V]):
@@ -579,7 +579,7 @@ class MentionableSelect(BaseSelect[V]):
 
         If invoked in a guild, the values will always resolve to :class:`discord.Member`.
         """
-        return super().values
+        return super().values  # type: ignore
 
 
 class ChannelSelect(BaseSelect[V]):
@@ -650,7 +650,7 @@ class ChannelSelect(BaseSelect[V]):
     @property
     def values(self) -> List[Union[AppCommandChannel, AppCommandThread]]:
         """List[Union[:class:`~discord.app_commands.AppCommandChannel`, :class:`~discord.app_commands.AppCommandThread`]]: A list of channels selected by the user."""
-        return super().values
+        return super().values  # type: ignore
 
 
 @overload
