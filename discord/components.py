@@ -234,6 +234,8 @@ class SelectMenu(Component):
 
     Attributes
     ------------
+    type: :class:`ComponentType`
+        The type of component.
     custom_id: Optional[:class:`str`]
         The ID of the select menu that gets received during an interaction.
     placeholder: Optional[:class:`str`]
