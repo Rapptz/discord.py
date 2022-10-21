@@ -156,7 +156,7 @@ class BaseSelect(Item[V]):
         see the documentation for the subclass you're using.
 
         Type
-        --------
+        -----
         List[Any]
         """
         values = selected_values.get({})
@@ -797,7 +797,8 @@ def select(
     cls: Type[:class:`discord.ui.BaseSelect`]
         The class to use for the select menu. Defaults to :class:`discord.ui.Select`. You can use other
         select types to display different select menus to the user. See the table above for the different
-        values you can get from each select type.
+        values you can get from each select type. Subclasses work as well, however the callback in the subclass will
+        get overridden.
     placeholder: Optional[:class:`str`]
         The placeholder text that is shown if nothing is selected, if any.
     custom_id: :class:`str`
