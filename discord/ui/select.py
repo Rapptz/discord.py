@@ -536,7 +536,7 @@ class MentionableSelect(BaseSelect[V]):
     Parameters
     ------------
     custom_id: :class:`str`
-        The ID of the select menu that get9 received during an interaction.
+        The ID of the select menu that gets received during an interaction.
         If not given then one is generated for you.
     placeholder: Optional[:class:`str`]
         The placeholder text that is shown if nothing is selected, if any.
