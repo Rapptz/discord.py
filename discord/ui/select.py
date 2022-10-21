@@ -69,12 +69,12 @@ if TYPE_CHECKING:
 
 
 V = TypeVar('V', bound='View', covariant=True)
-BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect[Any]')
-SelectT = TypeVar('SelectT', bound='Select[Any]')
-UserSelectT = TypeVar('UserSelectT', bound='UserSelect[Any]')
-RoleSelectT = TypeVar('RoleSelectT', bound='RoleSelect[Any]')
-ChannelSelectT = TypeVar('ChannelSelectT', bound='ChannelSelect[Any]')
-MentionableSelectT = TypeVar('MentionableSelectT', bound='MentionableSelect[Any]')
+BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect')
+SelectT = TypeVar('SelectT', bound='Select')
+UserSelectT = TypeVar('UserSelectT', bound='UserSelect')
+RoleSelectT = TypeVar('RoleSelectT', bound='RoleSelect')
+ChannelSelectT = TypeVar('ChannelSelectT', bound='ChannelSelect')
+MentionableSelectT = TypeVar('MentionableSelectT', bound='MentionableSelect')
 SelectCallbackDecorator: TypeAlias = Callable[
     [ItemCallbackType[V, BaseSelectT]],
     ItemCallbackType[V, BaseSelectT],
