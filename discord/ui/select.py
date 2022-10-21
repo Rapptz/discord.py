@@ -21,26 +21,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
-
 from __future__ import annotations
-
+from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict, overload
+from contextvars import ContextVar
 import inspect
 import os
-from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union, overload
 
-from typing_extensions import TypeAlias
-
-from ..app_commands.namespace import Namespace
-from ..components import SelectMenu, SelectOption
-from ..emoji import Emoji
+from .item import Item, ItemCallbackType
 from ..enums import ChannelType, ComponentType
 from ..partial_emoji import PartialEmoji
+from ..emoji import Emoji
 from ..utils import MISSING
-from .item import Item, ItemCallbackType
+from ..components import (
+    SelectOption,
+    SelectMenu,
+)
+from ..app_commands.namespace import Namespace
 
 __all__ = (
-    'BaseSelect',
     'Select',
     'UserSelect',
     'RoleSelect',
@@ -50,14 +48,14 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import TypeAlias, Self
 
-    from discord import Interaction, Member, Role, User
 
-    from ..app_commands import AppCommandChannel, AppCommandThread
+    from .view import View
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import SelectMessageComponentInteractionData
-    from .view import View
+    from ..app_commands import AppCommandChannel, AppCommandThread
+    from discord import Interaction, Member, Role, User
 
     ValidSelectType: TypeAlias = Literal[
         ComponentType.string_select,
@@ -66,9 +64,11 @@ if TYPE_CHECKING:
         ComponentType.channel_select,
         ComponentType.mentionable_select,
     ]
-
+    PossibleValue: TypeAlias = Union[str, User, Member, Role, AppCommandChannel, AppCommandThread, Union[Role, Member], Union[Role, User]]
 
 V = TypeVar('V', bound='View', covariant=True)
+ValueT = TypeVar('ValueT', str, User, Member, Role, AppCommandChannel, AppCommandThread, )
+
 BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect')
 SelectT = TypeVar('SelectT', bound='Select')
 UserSelectT = TypeVar('UserSelectT', bound='UserSelect')
@@ -80,7 +80,7 @@ SelectCallbackDecorator: TypeAlias = Callable[
     ItemCallbackType[V, BaseSelectT],
 ]
 
-selected_values: ContextVar[Dict[str, List[Any]]] = ContextVar('selected_values')
+selected_values: ContextVar[Dict[str, List[PossibleValue]]] = ContextVar('selected_values')
 
 
 class BaseSelect(Item[V]):
@@ -127,7 +127,8 @@ class BaseSelect(Item[V]):
         min_values: Optional[int] = None,
         max_values: Optional[int] = None,
         disabled: bool = False,
-        **extras: Any,
+        options: List[SelectOption] = MISSING,
+        channel_types: List[ChannelType] = MISSING,
     ) -> None:
         super().__init__()
         self._provided_custom_id = custom_id is not MISSING
@@ -142,19 +143,15 @@ class BaseSelect(Item[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
-            **extras,
+            channel_types=[] if channel_types is MISSING else channel_types,
+            options=[] if options is MISSING else options,
         )
 
         self.row = row
-        self._values: List[Any] = []
+        self._values: List[PossibleValue] = []
 
     @property
-    def values(self) -> List[Any]:
-        """List[Any]: The values the user has selected. This will be an empty list if the user has not selected anything.
-
-        If you want to determine what objects list will contain,
-        see the documentation for the select you're using.
-        """
+    def values(self) -> List[PossibleValue]:
         values = selected_values.get({})
         return values.get(self.custom_id, self._values)
 
@@ -222,12 +219,12 @@ class BaseSelect(Item[V]):
 
     def _refresh_state(self, interaction: Interaction, data: SelectMessageComponentInteractionData) -> None:
         values = selected_values.get({})
-        payload = []
-        if "resolved" in data:
+        payload: List[PossibleValue]
+        try:
             resolved = Namespace._get_resolved_items(interaction, data["resolved"])
             payload = list(resolved.values())
-        else:
-            payload = data.get("values", [])
+        except KeyError:
+            payload = data.get("values", [])  # type: ignore
 
         self._values = values[self.custom_id] = payload
         selected_values.set(values)
@@ -248,9 +245,6 @@ class Select(BaseSelect[V]):
     to the user as a dropdown menu.
 
     .. versionadded:: 2.0
-
-    .. versionchanged:: 2.1
-        This class now inherits from :class:`BaseSelect` instead of :class:`Item`.
 
     Parameters
     ------------
@@ -833,21 +827,17 @@ def select(
         if not issubclass(cls, BaseSelect):
             raise TypeError(f'cls must be a subclass of BaseSelect, {cls.__name__} can not be used.')
 
-        payload = {
+        func.__discord_ui_model_type__ = cls
+        func.__discord_ui_model_kwargs__  = {
             'placeholder': placeholder,
             'custom_id': custom_id,
             'row': row,
             'min_values': min_values,
             'max_values': max_values,
             'disabled': disabled,
+            'options': [] if not issubclass(cls, Select) else options,
+            'channel_types': [] if not issubclass(cls, ChannelSelect) else channel_types,
         }
-        if issubclass(cls, ChannelSelect):
-            payload['channel_types'] = channel_types
-        if issubclass(cls, Select):
-            payload['options'] = options
-
-        func.__discord_ui_model_type__ = cls
-        func.__discord_ui_model_kwargs__ = payload
 
         return func
 

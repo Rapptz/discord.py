@@ -460,14 +460,6 @@ Select Menus
 
 The library provides classes to help create the different types of select menus.
 
-BaseSelect
-~~~~~~~~~~~
-.. attributetable:: discord.ui.BaseSelect
-
-.. autoclass:: discord.ui.BaseSelect
-    :members:
-    :inherited-members:
-    
 Select
 ~~~~~~~
 

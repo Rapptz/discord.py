@@ -283,16 +283,12 @@ class SelectMenu(Component):
             'max_values': self.max_values,
             'disabled': self.disabled,
         }
-        options = getattr(self, 'options', None)
-        if options:
-            payload['options'] = [op.to_dict() for op in options]
-
-        channel_types = getattr(self, 'channel_types', None)
-        if channel_types:
-            payload['channel_types'] = [t.value for t in channel_types]
-
         if self.placeholder:
             payload['placeholder'] = self.placeholder
+        if self.options:
+            payload['options'] = [op.to_dict() for op in self.options]
+        if self.channel_types:
+            payload['channel_types'] = [t.value for t in self.channel_types]
 
         return payload
 
