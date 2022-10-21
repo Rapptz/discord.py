@@ -95,7 +95,7 @@ class BaseSelect(Item[V]):
     - :class:`~discord.ui.MentionableSelect`
     - :class:`~discord.ui.UserSelect`
 
-    .. versionadded:: 2.2
+    .. versionadded:: 2.1
 
     Attributes
     ------------
@@ -522,6 +522,8 @@ class MentionableSelect(BaseSelect[V]):
     will resolve to a :class:`discord.User`. It will not give the user any roles
     to select.
 
+    .. versionadded:: 2.1
+
     Parameters
     ------------
     custom_id: :class:`str`
@@ -769,6 +771,9 @@ def select(
     | :class:`discord.ui.ChannelSelect`      | List[Union[:class:`~discord.app_commands.AppCommandChannel`, :class:`~discord.app_commands.AppCommandThread`]]  |
     +----------------------------------------+-----------------------------------------------------------------------------------------------------------------+
 
+    .. versionchanged:: 2.1
+        Added the following keyword-arguments: ``cls``, ``channel_types``
+    
     Example
     ---------
     .. code-block:: python3
