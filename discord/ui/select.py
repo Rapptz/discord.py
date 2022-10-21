@@ -59,7 +59,7 @@ if TYPE_CHECKING:
     from ..types.interactions import SelectMessageComponentInteractionData
     from .view import View
 
-    ValidSelectTypes: TypeAlias = Literal[
+    ValidSelectType: TypeAlias = Literal[
         ComponentType.string_select,
         ComponentType.user_select,
         ComponentType.role_select,
@@ -123,7 +123,7 @@ class BaseSelect(Item[V]):
 
     def __init__(
         self,
-        type: ValidSelectTypes,
+        type: ValidSelectType,
         *,
         custom_id: str = MISSING,
         row: Optional[int] = None,
