@@ -67,8 +67,6 @@ if TYPE_CHECKING:
     PossibleValue: TypeAlias = Union[str, User, Member, Role, AppCommandChannel, AppCommandThread, Union[Role, Member], Union[Role, User]]
 
 V = TypeVar('V', bound='View', covariant=True)
-ValueT = TypeVar('ValueT', str, User, Member, Role, AppCommandChannel, AppCommandThread, )
-
 BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect')
 SelectT = TypeVar('SelectT', bound='Select')
 UserSelectT = TypeVar('UserSelectT', bound='UserSelect')
@@ -758,9 +756,9 @@ def select(
 
     The function being decorated should have three parameters, ``self`` representing
     the :class:`discord.ui.View`, the :class:`discord.Interaction` you receive and
-    the :class:`BaseSelect` being used.
+    the chosen select class.
 
-    To obtain the selected values inside the callback, you can use the :attr:`BaseSelect.values` attribute in the callback. The list of values
+    To obtain the selected values inside the callback, you can use the ``values`` attribute of the chosen class in the callback. The list of values
     will depend on the type of select menu used. View the table below for more information.
 
     +----------------------------------------+-----------------------------------------------------------------------------------------------------------------+
@@ -789,7 +787,8 @@ def select(
 
     Parameters
     ------------
-    cls: Type[:class:`BaseSelect`]
+    cls: Union[Type[:class:`discord.ui.Select`], Type[:class:`discord.ui.UserSelect`], Type[:class:`discord.ui.RoleSelect`], \
+        Type[:class:`discord.ui.MentionableSelect`], Type[:class:`discord.ui.ChannelSelect`]]
         The class to use for the select menu. Defaults to :class:`discord.ui.Select`. You can use other
         select types to display different select menus to the user. See the table above for the different
         values you can get from each select type. Subclasses work as well, however the callback in the subclass will
@@ -825,7 +824,7 @@ def select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError('select function must be a coroutine function')
         if not issubclass(cls, BaseSelect):
-            raise TypeError(f'cls must be a subclass of BaseSelect, {cls.__name__} can not be used.')
+            raise TypeError(f'cls must be one of {", ".join(c.__name__ for c in BaseSelect.__subclasses__())} or a subclass of one of them, not {cls!r}.')
 
         func.__discord_ui_model_type__ = cls
         func.__discord_ui_model_kwargs__  = {
@@ -835,9 +834,11 @@ def select(
             'min_values': min_values,
             'max_values': max_values,
             'disabled': disabled,
-            'options': [] if not issubclass(cls, Select) else options,
-            'channel_types': [] if not issubclass(cls, ChannelSelect) else channel_types,
         }
+        if issubclass(cls, Select):
+            func.__discord_ui_model_kwargs__['options'] = options
+        if issubclass(cls, ChannelSelect):
+            func.__discord_ui_model_kwargs__['channel_types'] = channel_types
 
         return func
 
