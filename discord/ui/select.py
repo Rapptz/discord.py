@@ -657,7 +657,7 @@ class ChannelSelect(BaseSelect[V]):
 @overload
 def select(
     *,
-    cls: Type[SelectT] = Select,
+    cls: Type[SelectT],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -673,7 +673,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[UserSelectT] = UserSelect,
+    cls: Type[UserSelectT],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -689,7 +689,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[RoleSelectT] = RoleSelect,
+    cls: Type[RoleSelectT],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -705,7 +705,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[ChannelSelectT] = ChannelSelect,
+    cls: Type[ChannelSelectT],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -721,7 +721,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[MentionableSelectT] = MentionableSelect,
+    cls: Type[MentionableSelectT],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = MISSING,
     placeholder: Optional[str] = ...,
