@@ -150,14 +150,10 @@ class BaseSelect(Item[V]):
 
     @property
     def values(self) -> List[Any]:
-        """The values the user has selected. This will be an empty list if the user has not selected anything.
+        """List[Any]: The values the user has selected. This will be an empty list if the user has not selected anything.
 
         If you want to determine what objects list will contain,
         see the documentation for the subclass you're using.
-
-        Type
-        -----
-        List[Any]
         """
         values = selected_values.get({})
         return values.get(self.custom_id, self._values)
@@ -398,7 +394,7 @@ class Select(BaseSelect[V]):
 class UserSelect(BaseSelect[V]):
     """Represents a UI "user" select menu with a list of predefined options representing members of the guild.
 
-    If this is presented to the user in a private message, it will only allow the user to select the client,
+    If this is presented to the user in a private message, it will only allow the user to select the client
     or themselves. Every selected option in a private message will resolve to
     a :class:`discord.User` regardless of intents.
     .. versionadded:: 2.1
@@ -452,7 +448,8 @@ class UserSelect(BaseSelect[V]):
 
     @property
     def values(self) -> List[Union[Member, User]]:
-        """A list of members and users that have been selected by the user.
+        """List[Union[:class:`discord.Member`, :class:`discord.User`]]: A list of members
+        and users that have been selected by the user.
 
         If this is presented to the user in a private message, it will only allow
         the user to select the client or themselves. Every selected option in a private
@@ -460,10 +457,6 @@ class UserSelect(BaseSelect[V]):
 
         If invoked in a guild, the values will always resolve to :class:`discord.Member`
         regardless of the :attr:`discord.Intents.members` intent.
-
-        Type
-        --------
-        List[Union[:class:`discord.Member`, :class:`discord.User`]]
         """
         return super().values
 
@@ -535,7 +528,7 @@ class MentionableSelect(BaseSelect[V]):
     """Represents a UI "mentionable" select menu with a list of predefined options representing members and roles in the guild.
 
     If this is presented to the user in a private message, it will only allow
-    the user to select the client, or themselves. Every selected option in a private
+    the user to select the client or themselves. Every selected option in a private
     message will resolve to a :class:`discord.User`. It will not give the user any roles
     to select.
 
@@ -588,7 +581,8 @@ class MentionableSelect(BaseSelect[V]):
 
     @property
     def values(self) -> List[Union[Member, User, Role]]:
-        """A list of roles, members, and users that have been selected by the user.
+        """List[Union[:class:`discord.Role`, :class:`discord.Member`, :class:`discord.User`]]: A list of roles, members,
+        and users that have been selected by the user.
 
         If this is presented to the user in a private message, it will only allow
         the user to select the client or themselves. Every selected option in a private
@@ -596,10 +590,6 @@ class MentionableSelect(BaseSelect[V]):
 
         If invoked in a guild, the values will always resolve to :class:`discord.Member`
         regardless of the :attr:`discord.Intents.members` intent.
-
-        Type
-        ----
-        List[Union[:class:`discord.Role`, :class:`discord.Member`, :class:`discord.User`]]
         """
         return super().values
 
