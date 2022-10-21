@@ -252,16 +252,34 @@ Enumerations
     .. attribute:: action_row
 
         Represents the group component which holds different components in a row.
+
     .. attribute:: button
 
         Represents a button component.
-    .. attribute:: select
-
-        Represents a select component.
 
     .. attribute:: text_input
 
         Represents a text box component.
+
+    .. attribute:: select
+
+        Represents a select component.
+
+    .. attribute:: string_select
+
+        An alias to :attr:`select`. Represents a default select component.
+    
+    .. attribute:: user_select
+        
+        Represents a user select component.
+    
+    .. attribute:: role_select
+        
+        Represents a role select component.
+    
+    .. attribute:: mentionable_select
+
+        Represents a select in which both users and roles can be selected.
 
 .. class:: ButtonStyle
 
