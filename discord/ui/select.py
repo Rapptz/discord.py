@@ -23,13 +23,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union, overload
-from typing_extensions import TypeAlias
 
 import inspect
 import os
 from contextvars import ContextVar
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union, overload
 
+from typing_extensions import TypeAlias
 
 from ..app_commands.namespace import Namespace
 from ..components import SelectMenu, SelectOption
@@ -52,14 +52,12 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from discord import Interaction, Member, Role, Thread, User
-    from discord.abc import GuildChannel
+    from discord import Interaction, Member, Role, User
 
+    from ..app_commands import AppCommandChannel, AppCommandThread
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import SelectMessageComponentInteractionData
     from .view import View
-
-    from ..app_commands import AppCommandChannel, AppCommandThread
 
     ValidSelectType: TypeAlias = Literal[
         ComponentType.string_select,
@@ -161,7 +159,7 @@ class BaseSelect(Item[V]):
         If you want to determine what objects list will contain,
         see the documentation for the subclass you're using.
 
-        Returns
+        Type
         --------
         List[Any]
         """
@@ -467,7 +465,7 @@ class UserSelect(BaseSelect[V]):
         If invoked in a guild, the values will always resolve to :class:`discord.Member`
         regardless of the :attr:`discord.Intents.members` intent.
 
-        Returns
+        Type
         --------
         List[Union[:class:`discord.Member`, :class:`discord.User`]]
         """
@@ -603,8 +601,8 @@ class MentionableSelect(BaseSelect[V]):
         If invoked in a guild, the values will always resolve to :class:`discord.Member`
         regardless of the :attr:`discord.Intents.members` intent.
 
-        Returns
-        --------
+        Type
+        ----
         List[Union[:class:`discord.Role`, :class:`discord.Member`, :class:`discord.User`]]
         """
         return super().values
@@ -678,14 +676,8 @@ class ChannelSelect(BaseSelect[V]):
         return self._underlying.channel_types
 
     @property
-    def values(self) -> List[Union[GuildChannel, AppCommandChannel, Thread, AppCommandThread]]:
-        """A list of channels selected by the user.
-
-        Returns
-        --------
-        List[Union[:class:`discord.Thread`, :class:`discord.abc.GuildChannel`, :class:`~discord.app_commands.AppCommandChannel`,
-        :class:`~discord.app_commands.AppCommandThread`]]
-        """
+    def values(self) -> List[Union[AppCommandChannel, AppCommandThread]]:
+        """List[Union[:class:`~discord.app_commands.AppCommandChannel`, :class:`~discord.app_commands.AppCommandThread`]]: A list of channels selected by the user."""
         return super().values
 
 
@@ -790,19 +782,19 @@ def select(
     In order to get the selected items that the user has chosen within the callback
     use :meth:`~discord.ui.BaseSelect.values`.
 
-    +----------------------------------------+-------------------------------------------------------------------------------------+
-    | Select Type                            | Resolved Value                                                                      |
-    +========================================+=====================================================================================+
-    | :class:`discord.ui.Select`             | List[:class:`str`]                                                                  |
-    +----------------------------------------+-------------------------------------------------------------------------------------+
-    | :class:`discord.ui.UserSelect`         | List[Union[:class:`discord.Member`, :class:`discord.User`]]                         |
-    +----------------------------------------+-------------------------------------------------------------------------------------+
-    | :class:`discord.ui.RoleSelect`         | List[:class:`discord.Role`]                                                         |
-    +----------------------------------------+-------------------------------------------------------------------------------------+
-    | :class:`discord.ui.MentionableSelect`  | List[Union[:class:`discord.Role`, :class:`discord.Member`, :class:`discord.User`]]  |
-    +----------------------------------------+-------------------------------------------------------------------------------------+
-    | :class:`discord.ui.ChannelSelect`      | List[Union[:class:`discord.Thread`, :class:`discord.abc.GuildChannel`]]             |
-    +----------------------------------------+-------------------------------------------------------------------------------------+
+    +----------------------------------------+--------------------------------------------------------------------------------------------------------------- +
+    | Select Type                            | Resolved Value                                                                                                 |
+    +========================================+=============================================================================================================== +
+    | :class:`discord.ui.Select`             | List[:class:`str`]                                                                                             |
+    +----------------------------------------+--------------------------------------------------------------------------------------------------------------- +
+    | :class:`discord.ui.UserSelect`         | List[Union[:class:`discord.Member`, :class:`discord.User`]]                                                    |
+    +----------------------------------------+--------------------------------------------------------------------------------------------------------------- +
+    | :class:`discord.ui.RoleSelect`         | List[:class:`discord.Role`]                                                                                    |
+    +----------------------------------------+--------------------------------------------------------------------------------------------------------------- +
+    | :class:`discord.ui.MentionableSelect`  | List[Union[:class:`discord.Role`, :class:`discord.Member`, :class:`discord.User`]]                             |
+    +----------------------------------------+----------------------------------------------------------------------------------------------------------------+
+    | :class:`discord.ui.ChannelSelect`      | List[Union[:class:`~discord.app_commands.AppCommandChannel`, :class:`~discord.app_commands.AppCommandThread`]] |
+    +----------------------------------------+----------------------------------------------------------------------------------------------------------------+
 
     Parameters
     ------------
