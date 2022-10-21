@@ -813,7 +813,7 @@ def select(
         A list of options that can be selected in this menu. This can only be used with
         :class:`Select` instances.
     channel_types: List[:class:`~discord.ChannelType`]
-        The types of channels you want to limit the selection to. This can only be used
+        The types of channels to show in the select menu. Defaults to all channels. This can only be used
         with :class:`ChannelSelect` instances.
     disabled: :class:`bool`
         Whether the select is disabled or not. Defaults to ``False``.
