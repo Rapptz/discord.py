@@ -50,7 +50,6 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias, Self
 
-
     from .view import View
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import SelectMessageComponentInteractionData
@@ -64,7 +63,9 @@ if TYPE_CHECKING:
         ComponentType.channel_select,
         ComponentType.mentionable_select,
     ]
-    PossibleValue: TypeAlias = Union[str, User, Member, Role, AppCommandChannel, AppCommandThread, Union[Role, Member], Union[Role, User]]
+    PossibleValue: TypeAlias = Union[
+        str, User, Member, Role, AppCommandChannel, AppCommandThread, Union[Role, Member], Union[Role, User]
+    ]
 
 V = TypeVar('V', bound='View', covariant=True)
 BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect')
@@ -817,10 +818,12 @@ def select(
         if not inspect.iscoroutinefunction(func):
             raise TypeError('select function must be a coroutine function')
         if not issubclass(cls, BaseSelect):
-            raise TypeError(f'cls must be one of {", ".join(c.__name__ for c in BaseSelect.__subclasses__())} or a subclass of one of them, not {cls!r}.')
+            raise TypeError(
+                f'cls must be one of {", ".join(c.__name__ for c in BaseSelect.__subclasses__())} or a subclass of one of them, not {cls!r}.'
+            )
 
         func.__discord_ui_model_type__ = cls
-        func.__discord_ui_model_kwargs__  = {
+        func.__discord_ui_model_kwargs__ = {
             'placeholder': placeholder,
             'custom_id': custom_id,
             'row': row,
