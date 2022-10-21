@@ -239,7 +239,7 @@ class BaseSelect(Item[V]):
 
 
 class Select(BaseSelect[V]):
-    """Represents a UI "string" select menu with a list of custom options. This is represented
+    """Represents a UI select menu with a list of custom options. This is represented
     to the user as a dropdown menu.
 
     .. versionadded:: 2.0
@@ -384,9 +384,9 @@ class Select(BaseSelect[V]):
 
 
 class UserSelect(BaseSelect[V]):
-    """Represents a UI "user" select menu with a list of predefined options representing members of the guild.
+    """Represents a UI select menu with a list of predefined options with the current members of the guild.
 
-    If this is presented to the user in a private message, it will only allow the user to select the client
+    If this is sent a private message, it will only allow the user to select the client
     or themselves. Every selected option in a private message will resolve to
     a :class:`discord.User` regardless of intents.
 
@@ -444,23 +444,19 @@ class UserSelect(BaseSelect[V]):
         """List[Union[:class:`discord.Member`, :class:`discord.User`]]: A list of members
         and users that have been selected by the user.
 
-        If this is presented to the user in a private message, it will only allow
+        If this is sent a private message, it will only allow
         the user to select the client or themselves. Every selected option in a private
-        message will resolve to a :class:`discord.User` regardless of intents.
+        message will resolve to a :class:`discord.User`.
 
-        If invoked in a guild, the values will always resolve to :class:`discord.Member`
-        regardless of the :attr:`discord.Intents.members` intent.
+        If invoked in a guild, the values will always resolve to :class:`discord.Member`.
         """
         return super().values
 
 
 class RoleSelect(BaseSelect[V]):
-    """Represents a UI select menu in which the user can select roles
-    by searching and clicking on them.
+    """Represents a UI select menu with a list of predefined options with the current roles of the guild.
 
-    Please note that this type of select does not work in direct messages.
-    If presented to a user in a direct message, the select menu will not give
-    the user any roles to select.
+    If this is sent in a private message, the options will be empty.
 
     .. versionadded:: 2.1
 
@@ -518,11 +514,11 @@ class RoleSelect(BaseSelect[V]):
 
 
 class MentionableSelect(BaseSelect[V]):
-    """Represents a UI "mentionable" select menu with a list of predefined options representing members and roles in the guild.
+    """Represents a UI select menu with a list of predefined options with the current members and roles in the guild.
 
-    If this is presented to the user in a private message, it will only allow
-    the user to select the client or themselves. Every selected option in a private
-    message will resolve to a :class:`discord.User`. It will not give the user any roles
+    If this is sent in a private message, it will only allow the user to select
+    the client or themselves. Every selected option in a private message
+    will resolve to a :class:`discord.User`. It will not give the user any roles
     to select.
 
     Parameters
@@ -577,22 +573,19 @@ class MentionableSelect(BaseSelect[V]):
         """List[Union[:class:`discord.Role`, :class:`discord.Member`, :class:`discord.User`]]: A list of roles, members,
         and users that have been selected by the user.
 
-        If this is presented to the user in a private message, it will only allow
+        If this is sent a private message, it will only allow
         the user to select the client or themselves. Every selected option in a private
-        message will resolve to a :class:`discord.User` regardless of intents.
+        message will resolve to a :class:`discord.User`.
 
-        If invoked in a guild, the values will always resolve to :class:`discord.Member`
-        regardless of the :attr:`discord.Intents.members` intent.
+        If invoked in a guild, the values will always resolve to :class:`discord.Member`.
         """
         return super().values
 
 
 class ChannelSelect(BaseSelect[V]):
-    """Represents a UI "channel" select menu with a list of predefined options representing channels in the guild.
-    It is possible to filter the channels that are shown per type by passing the ``channel_types`` parameter.
+    """Represents a UI select menu with a list of predefined options with the current channels in the guild.
 
-    Please note that if you use this in a direct message with a user, no channels will be displayed to the user
-    and they will not be able to invoke the select menu.
+    If this is sent in a private message, the options will be empty.
 
     .. versionadded:: 2.1
 
@@ -602,7 +595,7 @@ class ChannelSelect(BaseSelect[V]):
         The ID of the select menu that gets received during an interaction.
         If not given then one is generated for you.
     channel_types: List[:class:`~discord.ChannelType`]
-        The types of channels to show in the select menu. If not given then all channel types are shown.
+        The types of channels to show in the select menu. Defaults to all channels.
     placeholder: Optional[:class:`str`]
         The placeholder text that is shown if nothing is selected, if any.
     min_values: :class:`int`
