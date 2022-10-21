@@ -85,12 +85,8 @@ selected_values: ContextVar[Dict[str, List[Any]]] = ContextVar('selected_values'
 
 class BaseSelect(Item[V]):
     """The base Select model that all other Select models inherit from.
+
     This class inherits from :class:`Item` and implements the common attributes.
-
-    .. note ::
-
-        This class should not be created directly. Instead, use one of the
-        subclasses that inherit from this class.
 
     The following implement this class:
 
