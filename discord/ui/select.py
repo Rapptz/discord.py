@@ -153,7 +153,7 @@ class BaseSelect(Item[V]):
         """List[Any]: The values the user has selected. This will be an empty list if the user has not selected anything.
 
         If you want to determine what objects list will contain,
-        see the documentation for the subclass you're using.
+        see the documentation for the select you're using.
         """
         values = selected_values.get({})
         return values.get(self.custom_id, self._values)
@@ -764,10 +764,20 @@ def select(
 
     The function being decorated should have three parameters, ``self`` representing
     the :class:`discord.ui.View`, the :class:`discord.Interaction` you receive and
-    the :class:`discord.ui.BaseSelect` being used.
+    the :class:`BaseSelect` being used.
 
-    In order to get the selected items that the user has chosen within the callback
-    use :meth:`~discord.ui.BaseSelect.values`.
+    Example
+    ---------
+    .. code-block:: python3
+
+        class View(discord.ui.View):
+
+            @discord.ui.select(cls=ChannelSelect, channel_types=[discord.ChannelType.text])
+            async def select_channels(self, interaction: discord.Interaction, select: ChannelSelect):
+                return await interaction.response.send_message(f'You selected {select.values[0].mention}')
+
+    To obtain the selected values inside the callback, you can use the :attr:`BaseSelect.values` attribute in the callback. The list of values
+    will depend on the type of select menu used. View the table below for more information.
 
     +----------------------------------------+-----------------------------------------------------------------------------------------------------------------+
     | Select Type                            | Resolved Value                                                                                                  |
@@ -785,7 +795,7 @@ def select(
 
     Parameters
     ------------
-    cls: Type[:class:`discord.ui.BaseSelect`]
+    cls: Type[:class:`BaseSelect`]
         The class to use for the select menu. Defaults to :class:`discord.ui.Select`. You can use other
         select types to display different select menus to the user. See the table above for the different
         values you can get from each select type. Subclasses work as well, however the callback in the subclass will
@@ -808,8 +818,8 @@ def select(
         The maximum number of items that must be chosen for this select menu.
         Defaults to 1 and must be between 1 and 25.
     options: List[:class:`discord.SelectOption`]
-        A list of options that can be selected in this menu. This can not be used with
-        :class:`ChannelSelect` instances.
+        A list of options that can be selected in this menu. This can only be used with
+        :class:`Select` instances.
     channel_types: List[:class:`~discord.ChannelType`]
         The types of channels you want to limit the selection to. This can only be used
         with :class:`ChannelSelect` instances.
