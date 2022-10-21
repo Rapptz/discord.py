@@ -766,16 +766,6 @@ def select(
     the :class:`discord.ui.View`, the :class:`discord.Interaction` you receive and
     the :class:`BaseSelect` being used.
 
-    Example
-    ---------
-    .. code-block:: python3
-
-        class View(discord.ui.View):
-
-            @discord.ui.select(cls=ChannelSelect, channel_types=[discord.ChannelType.text])
-            async def select_channels(self, interaction: discord.Interaction, select: ChannelSelect):
-                return await interaction.response.send_message(f'You selected {select.values[0].mention}')
-
     To obtain the selected values inside the callback, you can use the :attr:`BaseSelect.values` attribute in the callback. The list of values
     will depend on the type of select menu used. View the table below for more information.
 
@@ -792,6 +782,16 @@ def select(
     +----------------------------------------+-----------------------------------------------------------------------------------------------------------------+
     | :class:`discord.ui.ChannelSelect`      | List[Union[:class:`~discord.app_commands.AppCommandChannel`, :class:`~discord.app_commands.AppCommandThread`]]  |
     +----------------------------------------+-----------------------------------------------------------------------------------------------------------------+
+
+    Example
+    ---------
+    .. code-block:: python3
+
+        class View(discord.ui.View):
+
+            @discord.ui.select(cls=ChannelSelect, channel_types=[discord.ChannelType.text])
+            async def select_channels(self, interaction: discord.Interaction, select: ChannelSelect):
+                return await interaction.response.send_message(f'You selected {select.values[0].mention}')
 
     Parameters
     ------------
