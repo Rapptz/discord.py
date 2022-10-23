@@ -93,7 +93,7 @@ if TYPE_CHECKING:
     from .types.gateway import MessageReactionRemoveEvent, MessageUpdateEvent
     from .abc import Snowflake
     from .abc import GuildChannel, MessageableChannel
-    from .components import Component
+    from .components import ActionRow
     from .state import ConnectionState
     from .channel import TextChannel
     from .mentions import AllowedMentions
@@ -1323,7 +1323,7 @@ class Message(PartialMessage, Hashable):
         self.content: str = data['content']
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
-        self.components: List[Component] = [_component_factory(d, self) for d in data.get('components', [])]
+        self.components: List[ActionRow] = [_component_factory(d, self) for d in data.get('components', [])]  # type: ignore # Will always be rows here
         self.call: Optional[CallMessage] = None
 
         try:
@@ -1558,7 +1558,7 @@ class Message(PartialMessage, Hashable):
         self.call = CallMessage(message=self, **call)
 
     def _handle_components(self, components: List[ComponentPayload]):
-        self.components = [_component_factory(d, self) for d in components]
+        self.components: List[ActionRow] = [_component_factory(d, self) for d in components]  # type: ignore # Will always be rows here
 
     def _handle_interaction(self, data: MessageInteractionPayload):
         self.interaction = Interaction._from_message(self, **data)

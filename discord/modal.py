@@ -33,7 +33,7 @@ from .utils import _generate_nonce
 
 if TYPE_CHECKING:
     from .appinfo import InteractionApplication
-    from .components import Component
+    from .components import ActionRow
     from .interactions import Interaction
 
 # fmt: off
@@ -91,7 +91,7 @@ class Modal(Hashable):
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
         self.title: str = data.get('title', '')
         self.custom_id: str = data.get('custom_id', '')
-        self.components: List[Component] = [_component_factory(d) for d in data.get('components', [])]
+        self.components: List[ActionRow] = [_component_factory(d) for d in data.get('components', [])]  # type: ignore # Will always be rows here
         self.application: InteractionApplication = interaction._state.create_interaction_application(data['application'])
 
     def __str__(self) -> str:
