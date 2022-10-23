@@ -151,7 +151,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         *not* point to an existing or valid message.
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
-        in this channel. A value of `0` denotes that it is disabled.
+        in this channel. A value of ``0`` denotes that it is disabled.
         Bots and users with :attr:`~Permissions.manage_channels` or
         :attr:`~Permissions.manage_messages` bypass slowmode.
     nsfw: :class:`bool`
@@ -343,7 +343,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             category.
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for user in this channel, in seconds.
-            A value of `0` disables slowmode. The maximum value possible is `21600`.
+            A value of ``0`` disables slowmode. The maximum value possible is ``21600``.
         type: :class:`ChannelType`
             Change the type of this text channel. Currently, only conversion between
             :attr:`ChannelType.text` and :attr:`ChannelType.news` is supported. This
@@ -739,7 +739,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Defaults to ``True``.
         slowmode_delay: Optional[:class:`int`]
             Specifies the slowmode rate limit for user in this channel, in seconds.
-            The maximum value possible is `21600`. By default no slowmode rate limit
+            The maximum value possible is ``21600``. By default no slowmode rate limit
             if this is ``None``.
 
         Raises
@@ -2101,7 +2101,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         It may *not* point to an existing or valid thread or message.
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between creating threads
-        in this forum. A value of `0` denotes that it is disabled.
+        in this forum. A value of ``0`` denotes that it is disabled.
         Bots and users with :attr:`~Permissions.manage_channels` or
         :attr:`~Permissions.manage_messages` bypass slowmode.
     nsfw: :class:`bool`
@@ -2307,7 +2307,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             category.
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for user in this forum, in seconds.
-            A value of `0` disables slowmode. The maximum value possible is `21600`.
+            A value of ``0`` disables slowmode. The maximum value possible is ``21600``.
         type: :class:`ChannelType`
             Change the type of this text forum. Currently, only conversion between
             :attr:`ChannelType.text` and :attr:`ChannelType.news` is supported. This
@@ -2475,7 +2475,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             If not provided, the channel's default auto archive duration is used.
         slowmode_delay: Optional[:class:`int`]
             Specifies the slowmode rate limit for user in this channel, in seconds.
-            The maximum value possible is `21600`. By default no slowmode rate limit
+            The maximum value possible is ``21600``. By default no slowmode rate limit
             if this is ``None``.
         content: Optional[:class:`str`]
             The content of the message to send with the thread.
