@@ -158,9 +158,7 @@ class Interaction(Hashable):
 
     def __repr__(self) -> str:
         s = self.successful
-        return (
-            f'<Interaction id={self.id} type={self.type!r}{f" successful={s}" if s is not MISSING else ""} user={self.user!r}>'
-        )
+        return f'<Interaction id={self.id} type={self.type!r}{f" successful={s}" if s is not MISSING else ""} user={self.user!r}>'
 
     def __str__(self) -> str:
         if self.name:

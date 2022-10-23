@@ -27,7 +27,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Tuple, Type, Union, runtime_checkable
 
 from .enums import AppCommandOptionType, AppCommandType, ChannelType, InteractionType, try_enum
-from .errors import InvalidData
 from .interactions import _wrapped_interaction
 from .mixins import Hashable
 from .permissions import Permissions
