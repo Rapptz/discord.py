@@ -769,7 +769,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         delete_after: :class:`float`
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
-            then it is silently ignored. This is ignored for interaction based contexts.
+            then it is silently ignored.
         allowed_mentions: :class:`~discord.AllowedMentions`
             Controls the mentions being processed in this message. If this is
             passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`.
@@ -876,6 +876,6 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             await self.interaction.response.send_message(**kwargs)
             msg = await self.interaction.original_response()
 
-        if delete_after is not None and not (ephemeral and self.interaction is not None):
+        if delete_after is not None:
             await msg.delete(delay=delete_after)
         return msg
