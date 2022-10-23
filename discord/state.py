@@ -2232,7 +2232,9 @@ class ConnectionState:
         id = int(data['id'])
         i = self._interactions.get(id, None)
         if i is None:
-            i = Interaction(id, nonce=data['nonce'], user=self.user)  # type: ignore # self.user is always present here
+            _log.warning('INTERACTION_SUCCESS referencing an unknown interaction ID: %s. Discarding.', id)
+            return
+
         i.successful = True
         self.dispatch('interaction_finish', i)
 
@@ -2240,7 +2242,9 @@ class ConnectionState:
         id = int(data['id'])
         i = self._interactions.pop(id, None)
         if i is None:
-            i = Interaction(id, nonce=data['nonce'], user=self.user)  # type: ignore # self.user is always present here
+            _log.warning('INTERACTION_FAILED referencing an unknown interaction ID: %s. Discarding.', id)
+            return
+
         i.successful = False
         self.dispatch('interaction_finish', i)
 

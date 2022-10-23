@@ -23,11 +23,11 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from .components import _component_factory
 from .enums import InteractionType
-from .errors import InvalidData
+from .interactions import _wrapped_interaction
 from .mixins import Hashable
 from .utils import _generate_nonce
 
@@ -127,22 +127,12 @@ class Modal(Hashable):
             The interaction that was created.
         """
         interaction = self.interaction
-        state = self._state
-        nonce = _generate_nonce()
-        type = InteractionType.modal_submit
-
-        state._interaction_cache[nonce] = (int(type), None, interaction.channel)
-        try:
-            await state.http.interact(
-                type, self.to_dict(), interaction.channel, nonce=nonce, application_id=self.application.id
-            )
-            i = await state.client.wait_for(
-                'interaction_finish',
-                check=lambda d: d.nonce == nonce,
-                timeout=6,
-            )
-        except TimeoutError as exc:
-            raise InvalidData('Did not receive a response from Discord') from exc
-        finally:  # Cleanup even if we failed
-            state._interaction_cache.pop(nonce, None)
-        return i
+        return await _wrapped_interaction(
+            self._state,
+            _generate_nonce(),
+            InteractionType.modal_submit,
+            None,
+            interaction.channel,
+            self.to_dict(),
+            application_id=self.application.id,
+        )

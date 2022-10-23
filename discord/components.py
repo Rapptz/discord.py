@@ -24,11 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from asyncio import TimeoutError
 from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
 
 from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, InteractionType
-from .errors import InvalidData
+from .interactions import _wrapped_interaction
 from .utils import _generate_nonce, get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
 
@@ -218,23 +217,15 @@ class Button(Component):
             return self.url
 
         message = self.message
-        state = message._state
-        nonce = _generate_nonce()
-        type = InteractionType.component
-
-        state._interaction_cache[nonce] = (int(type), None, message.channel)
-        try:
-            await state.http.interact(type, self.to_dict(), message.channel, message, nonce=nonce)
-            i = await state.client.wait_for(
-                'interaction_finish',
-                check=lambda d: d.nonce == nonce,
-                timeout=6,
-            )
-        except TimeoutError as exc:
-            raise InvalidData('Did not receive a response from Discord') from exc
-        finally:  # Cleanup even if we failed
-            state._interaction_cache.pop(nonce, None)
-        return i
+        return await _wrapped_interaction(
+            message._state,
+            _generate_nonce(),
+            InteractionType.component,
+            None,
+            message.channel,  # type: ignore # acc_channel is always correct here
+            self.to_dict(),
+            message=message,
+        )
 
 
 class SelectMenu(Component):
@@ -314,21 +305,15 @@ class SelectMenu(Component):
             The interaction that was created.
         """
         message = self.message
-        state = message._state
-        nonce = _generate_nonce()
-        type = InteractionType.component
-
-        state._interaction_cache[nonce] = (int(type), None, message.channel)
-        await state.http.interact(type, self.to_dict(options), message.channel, message, nonce=nonce)
-        try:
-            i = await state.client.wait_for(
-                'interaction_finish',
-                check=lambda d: d.nonce == nonce,
-                timeout=6,
-            )
-        except TimeoutError as exc:
-            raise InvalidData('Did not receive a response from Discord') from exc
-        return i
+        return await _wrapped_interaction(
+            message._state,
+            _generate_nonce(),
+            InteractionType.component,
+            None,
+            message.channel,  # type: ignore # acc_channel is always correct here
+            self.to_dict(options),
+            message=message,
+        )
 
 
 class SelectOption:

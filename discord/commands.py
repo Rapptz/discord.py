@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Tuple, Ty
 
 from .enums import AppCommandOptionType, AppCommandType, ChannelType, InteractionType, try_enum
 from .errors import InvalidData
+from .interactions import _wrapped_interaction
 from .mixins import Hashable
 from .permissions import Permissions
 from .utils import _generate_nonce, _get_as_snowflake
@@ -117,24 +118,17 @@ class ApplicationCommand(Protocol):
         channel = channel or self.target_channel
         if channel is None:
             raise TypeError('__call__() missing 1 required argument: \'channel\'')
-        state = self._state
-        acc_channel = await channel._get_channel()
-        nonce = _generate_nonce()
-        type = InteractionType.application_command
 
-        state._interaction_cache[nonce] = (type.value, data['name'], acc_channel)
-        try:
-            await state.http.interact(type, data, acc_channel, files=files, nonce=nonce, application_id=self.application_id)
-            i = await state.client.wait_for(
-                'interaction_finish',
-                check=lambda d: d.nonce == nonce,
-                timeout=6,
-            )
-        except TimeoutError as exc:
-            raise InvalidData('Did not receive a response from Discord') from exc
-        finally:  # Cleanup even if we failed
-            state._interaction_cache.pop(nonce, None)
-        return i
+        return await _wrapped_interaction(
+            self._state,
+            _generate_nonce(),
+            InteractionType.application_command,
+            data['name'],
+            await channel._get_channel(),  # type: ignore # acc_channel is always correct here
+            data,
+            files=files,
+            application_id=self.application_id,
+        )
 
     @property
     def guild(self) -> Optional[Guild]:
