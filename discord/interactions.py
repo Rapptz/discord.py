@@ -688,6 +688,7 @@ class InteractionResponse:
         ephemeral: bool = False,
         allowed_mentions: AllowedMentions = MISSING,
         suppress_embeds: bool = False,
+        delete_after: Optional[float] = None,
     ) -> None:
         """|coro|
 
@@ -720,6 +721,12 @@ class InteractionResponse:
             more information.
         suppress_embeds: :class:`bool`
             Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+        delete_after: :class:`float`
+            If provided, the number of seconds to wait in the background
+            before deleting the message we just sent. If the deletion fails,
+            then it is silently ignored.
+
+            .. versionadded:: 2.1
 
         Raises
         -------
@@ -778,6 +785,17 @@ class InteractionResponse:
             self._parent._state.store_view(view, entity_id)
 
         self._response_type = InteractionResponseType.channel_message
+
+        if delete_after is not None:
+
+            async def inner_call(delay: float = delete_after):
+                await asyncio.sleep(delay)
+                try:
+                    await self._parent.delete_original_response()
+                except HTTPException:
+                    pass
+
+            asyncio.create_task(inner_call())
 
     async def edit_message(
         self,
