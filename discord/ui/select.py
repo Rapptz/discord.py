@@ -298,6 +298,7 @@ class Select(BaseSelect[V]):
 
     @property
     def type(self) -> Literal[ComponentType.string_select]:
+        """:class:`.ComponentType`: The discord type of this component."""
         return ComponentType.string_select
 
     @property
@@ -435,6 +436,7 @@ class UserSelect(BaseSelect[V]):
 
     @property
     def type(self) -> Literal[ComponentType.user_select]:
+        """:class:`.ComponentType`: The discord type of this component."""
         return ComponentType.user_select
 
     @property
@@ -503,6 +505,7 @@ class RoleSelect(BaseSelect[V]):
 
     @property
     def type(self) -> Literal[ComponentType.role_select]:
+        """:class:`.ComponentType`: The discord type of this component."""
         return ComponentType.role_select
 
     @property
@@ -566,6 +569,7 @@ class MentionableSelect(BaseSelect[V]):
 
     @property
     def type(self) -> Literal[ComponentType.mentionable_select]:
+        """:class:`.ComponentType`: The discord type of this component."""
         return ComponentType.mentionable_select
 
     @property
@@ -640,6 +644,7 @@ class ChannelSelect(BaseSelect[V]):
 
     @property
     def type(self) -> Literal[ComponentType.channel_select]:
+        """:class:`.ComponentType`: The discord type of this component."""
         return ComponentType.channel_select
 
     @property
