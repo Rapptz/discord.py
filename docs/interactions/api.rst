@@ -461,7 +461,7 @@ Select Menus
 The library provides classes to help create the different types of select menus.
 
 Select
-~~~~~~~
++++++++
 
 .. attributetable:: discord.ui.Select
 
@@ -470,7 +470,7 @@ Select
     :inherited-members:
 
 ChannelSelect
-~~~~~~~~~~~~~~
+++++++++++++++
 
 .. attributetable:: discord.ui.ChannelSelect
 
@@ -479,7 +479,7 @@ ChannelSelect
     :inherited-members:
 
 RoleSelect
-~~~~~~~~~~~
+++++++++++
 
 .. attributetable:: discord.ui.RoleSelect
 
@@ -488,7 +488,7 @@ RoleSelect
     :inherited-members:
 
 MentionableSelect
-~~~~~~~~~~~~~~~~~
+++++++++++++++++++
 
 .. attributetable:: discord.ui.MentionableSelect
 
@@ -497,7 +497,7 @@ MentionableSelect
     :inherited-members:
 
 UserSelect
-~~~~~~~~~~~
++++++++++++
 
 .. attributetable:: discord.ui.UserSelect
 
@@ -505,6 +505,8 @@ UserSelect
     :members:
     :inherited-members:
 
+select
++++++++
 .. autofunction:: discord.ui.select
     :decorator:
 
