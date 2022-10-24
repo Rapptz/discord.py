@@ -170,6 +170,7 @@ class MemberSidebar:
         self.chunk = chunk
         self.delay = delay
         self.loop = loop
+        self.safe_override = False
 
         self.channels = [str(channel.id) for channel in (channels or self.get_channels(1 if chunk else 5))]
         self.ranges = self.get_ranges()
@@ -193,7 +194,7 @@ class MemberSidebar:
 
     @property
     def safe(self):
-        return self.guild._member_count >= 75000
+        return self.safe_override or self.guild._member_count >= 75000
 
     @staticmethod
     def amalgamate(original: Tuple[int, int], value: Tuple[int, int]) -> Tuple[int, int]:
@@ -342,14 +343,22 @@ class MemberSidebar:
             await ws.request_lazy_guild(guild.id, channels=requests)
 
             try:
-                await asyncio.wait_for(ws.wait_for('GUILD_MEMBER_LIST_UPDATE', predicate), timeout=15)
+                await asyncio.wait_for(ws.wait_for('GUILD_MEMBER_LIST_UPDATE', predicate), timeout=10)
             except asyncio.TimeoutError:
                 r = tuple(requests.values())[-1][-1]
                 if self.limit in range(r[0], r[1]) or self.limit < r[1]:
                     self.subscribing = False
                     break
                 else:
-                    raise InvalidData('Did not receive a response from Discord')
+                    if self.safe:
+                        raise InvalidData('Did not receive a response from Discord')
+
+                    # Sometimes servers require safe mode (they used to have 75k+ members)
+                    # so if we don't get a response we force safe mode and try again
+                    self.safe_override = True
+                    self.ranges = self.get_ranges()
+                    await self.scrape()
+                    return
 
             await asyncio.sleep(delay)
 
@@ -1696,7 +1705,7 @@ class ConnectionState:
         await ws.request_lazy_guild(guild.id, channels=requests)
 
         try:
-            await asyncio.wait_for(ws.wait_for('GUILD_MEMBER_LIST_UPDATE', predicate), timeout=15)
+            await asyncio.wait_for(ws.wait_for('GUILD_MEMBER_LIST_UPDATE', predicate), timeout=10)
         except asyncio.TimeoutError:
             pass
 
