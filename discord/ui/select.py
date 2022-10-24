@@ -74,10 +74,7 @@ UserSelectT = TypeVar('UserSelectT', bound='UserSelect')
 RoleSelectT = TypeVar('RoleSelectT', bound='RoleSelect')
 ChannelSelectT = TypeVar('ChannelSelectT', bound='ChannelSelect')
 MentionableSelectT = TypeVar('MentionableSelectT', bound='MentionableSelect')
-SelectCallbackDecorator: TypeAlias = Callable[
-    [ItemCallbackType[V, BaseSelectT]],
-    ItemCallbackType[V, BaseSelectT],
-]
+SelectCallbackDecorator: TypeAlias = Callable[[ItemCallbackType[V, BaseSelectT]], BaseSelectT]
 
 selected_values: ContextVar[Dict[str, List[PossibleValue]]] = ContextVar('selected_values')
 
@@ -659,7 +656,7 @@ class ChannelSelect(BaseSelect[V]):
 @overload
 def select(
     *,
-    cls: Type[SelectT],
+    cls: Type[SelectT] = Select,
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -843,4 +840,4 @@ def select(
 
         return func
 
-    return decorator
+    return decorator  # type: ignore
