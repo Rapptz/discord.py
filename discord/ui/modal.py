@@ -163,10 +163,10 @@ class Modal(View):
         """
         _log.error('Ignoring exception in modal %r:', self, exc_info=error)
 
-    def _refresh(self, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
+    def _refresh(self, interaction: Interaction, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
         for component in components:
             if component['type'] == 1:
-                self._refresh(component['components'])
+                self._refresh(interaction, component['components'])
             else:
                 item = find(lambda i: i.custom_id == component['custom_id'], self._children)  # type: ignore
                 if item is None:
@@ -177,7 +177,7 @@ class Modal(View):
     async def _scheduled_task(self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]):
         try:
             self._refresh_timeout()
-            self._refresh(components)
+            self._refresh(interaction, components)
 
             allow = await self.interaction_check(interaction)
             if not allow:
