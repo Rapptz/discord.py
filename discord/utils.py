@@ -1209,7 +1209,7 @@ def format_dt(dt: datetime.datetime, /, style: Optional[TimestampStyle] = None) 
 
 def stream_supports_colour(stream: Any) -> bool:
     # Pycharm and Vscode support colour in their inbuilt editors
-    if "PYCHARM_HOSTED" in os.environ or os.environ.get("TERM_PROGRAM") == "vscode":
+    if 'PYCHARM_HOSTED' in os.environ or os.environ.get('TERM_PROGRAM') == 'vscode':
         return True
 
     is_a_tty = hasattr(stream, 'isatty') and stream.isatty()
