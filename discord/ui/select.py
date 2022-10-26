@@ -54,7 +54,10 @@ if TYPE_CHECKING:
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import SelectMessageComponentInteractionData
     from ..app_commands import AppCommandChannel, AppCommandThread
-    from discord import Interaction, Member, Role, User
+    from ..member import Member
+    from ..role import Role
+    from ..user import User
+    from ..interactions import Interaction
 
     ValidSelectType: TypeAlias = Literal[
         ComponentType.string_select,
