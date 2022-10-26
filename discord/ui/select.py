@@ -187,7 +187,7 @@ class BaseSelect(Item[V]):
 
     @property
     def max_values(self) -> int:
-        """:class:`int`: The maximum number of items that must be chosen for this select menu."""
+        """:class:`int`: The maximum number of items that can be chosen for this select menu."""
         return self._underlying.max_values
 
     @max_values.setter
