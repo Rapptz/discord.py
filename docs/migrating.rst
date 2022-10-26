@@ -1145,7 +1145,7 @@ The following changes have been made:
 
 - :meth:`Permissions.stage_moderator` now includes the :attr:`Permissions.manage_channels` permission and the :attr:`Permissions.request_to_speak` permission is no longer included.
 
-- :attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to `'untitled'`.
+- :attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to ``'untitled'``.
 
 :meth:`VoiceProtocol.connect` signature changes.
 --------------------------------------------------

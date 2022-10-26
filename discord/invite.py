@@ -309,23 +309,23 @@ class Invite(Hashable):
 
     The following table illustrates what methods will obtain the attributes:
 
-    +------------------------------------+------------------------------------------------------------+
-    |             Attribute              |                          Method                            |
-    +====================================+============================================================+
-    | :attr:`max_age`                    | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`   |
-    +------------------------------------+------------------------------------------------------------+
-    | :attr:`max_uses`                   | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`   |
-    +------------------------------------+------------------------------------------------------------+
-    | :attr:`created_at`                 | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`   |
-    +------------------------------------+------------------------------------------------------------+
-    | :attr:`temporary`                  | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`   |
-    +------------------------------------+------------------------------------------------------------+
-    | :attr:`uses`                       | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`   |
-    +------------------------------------+------------------------------------------------------------+
-    | :attr:`approximate_member_count`   | :meth:`Client.fetch_invite` with `with_counts` enabled     |
-    +------------------------------------+------------------------------------------------------------+
-    | :attr:`approximate_presence_count` | :meth:`Client.fetch_invite` with `with_counts` enabled     |
-    +------------------------------------+------------------------------------------------------------+
+    +------------------------------------+--------------------------------------------------------------+
+    |             Attribute              |                          Method                              |
+    +====================================+==============================================================+
+    | :attr:`max_age`                    | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`     |
+    +------------------------------------+--------------------------------------------------------------+
+    | :attr:`max_uses`                   | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`     |
+    +------------------------------------+--------------------------------------------------------------+
+    | :attr:`created_at`                 | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`     |
+    +------------------------------------+--------------------------------------------------------------+
+    | :attr:`temporary`                  | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`     |
+    +------------------------------------+--------------------------------------------------------------+
+    | :attr:`uses`                       | :meth:`abc.GuildChannel.invites`\, :meth:`Guild.invites`     |
+    +------------------------------------+--------------------------------------------------------------+
+    | :attr:`approximate_member_count`   | :meth:`Client.fetch_invite` with ``with_counts`` enabled     |
+    +------------------------------------+--------------------------------------------------------------+
+    | :attr:`approximate_presence_count` | :meth:`Client.fetch_invite` with ``with_counts`` enabled     |
+    +------------------------------------+--------------------------------------------------------------+
 
     If it's not in the table above then it is available by all methods.
 
@@ -340,7 +340,6 @@ class Invite(Hashable):
         The type of invite.
 
         .. versionadded:: 2.0
-
     guild: Optional[Union[:class:`Guild`, :class:`Object`, :class:`PartialInviteGuild`]]
         The guild the invite is for. Can be ``None`` if not a guild invite.
     revoked: Optional[:class:`bool`]
@@ -364,22 +363,19 @@ class Invite(Hashable):
         This includes idle, dnd, online, and invisible members. Offline members are excluded.
     expires_at: Optional[:class:`datetime.datetime`]
         The expiration date of the invite. If the value is ``None`` (unless received through
-        `Client.fetch_invite` with `with_expiration` disabled), the invite will never expire.
+        :meth:`Client.fetch_invite` with ``with_expiration`` disabled), the invite will never expire.
 
         .. versionadded:: 2.0
-
     channel: Optional[Union[:class:`abc.GuildChannel`, :class:`GroupChannel`, :class:`Object`, :class:`PartialInviteChannel`]]
         The channel the invite is for. Can be ``None`` if not a guild invite.
     target_type: :class:`InviteTarget`
         The type of target for the voice channel invite.
 
         .. versionadded:: 2.0
-
     target_user: Optional[:class:`User`]
         The user whose stream to display for this invite, if any.
 
         .. versionadded:: 2.0
-
     target_application: Optional[:class:`PartialApplication`]
         The embedded application the invite targets, if any.
 
