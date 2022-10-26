@@ -829,9 +829,7 @@ def select(
             raise TypeError('select function must be a coroutine function')
         if not issubclass(cls, BaseSelect):
             supported_classes = ", ".join(["ChannelSelect", "MentionableSelect", "RoleSelect", "Select", "UserSelect"])
-            raise TypeError(
-                f'cls must be one of {supported_classes} or a subclass of one of them, not {cls!r}.'
-            )
+            raise TypeError(f'cls must be one of {supported_classes} or a subclass of one of them, not {cls!r}.')
 
         func.__discord_ui_model_type__ = cls
         func.__discord_ui_model_kwargs__ = {
