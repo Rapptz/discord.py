@@ -47,7 +47,7 @@ with the library.
 
 There's a lot going on here, so let's walk you through it step by step.
 
-1. The first line just imports the library, if this raises a `ModuleNotFoundError` or `ImportError`
+1. The first line just imports the library, if this raises a :exc:`ModuleNotFoundError` or :exc:`ImportError`
    then head on over to :ref:`installing` section to properly install.
 2. Next, we create an instance of a :class:`Client`. This client is our connection to Discord.
 3. We then use the :meth:`Client.event` decorator to register an event. This library has many events.

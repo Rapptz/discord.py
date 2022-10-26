@@ -1285,7 +1285,7 @@ class Guild(Hashable):
             The new channel's topic.
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for user in this channel, in seconds.
-            The maximum value possible is `21600`.
+            The maximum value possible is ``21600``.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
         news: :class:`bool`
@@ -1598,7 +1598,7 @@ class Guild(Hashable):
             To mark the channel as NSFW or not.
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for users in this channel, in seconds.
-            The maximum possible value is `21600`.
+            The maximum possible value is ``21600``.
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up in the audit log.
         default_auto_archive_duration: :class:`int`
@@ -1729,7 +1729,7 @@ class Guild(Hashable):
             The ``rules_channel`` and ``public_updates_channel`` keyword parameters were added.
 
         .. versionchanged:: 2.0
-            The ``discovery_splash`` and `community` keyword parameters were added.
+            The ``discovery_splash`` and ``community`` keyword parameters were added.
 
         .. versionchanged:: 2.0
             The newly updated guild is returned.
@@ -2856,7 +2856,7 @@ class Guild(Hashable):
         Raises
         -------
         TypeError
-            `image` was not a :term:`py:bytes-like object`, or ``privacy_level``
+            ``image`` was not a :term:`py:bytes-like object`, or ``privacy_level``
             was not a :class:`PrivacyLevel`, or ``entity_type`` was not an
             :class:`EntityType`, ``status`` was not an :class:`EventStatus`,
             or an argument was provided that was incompatible with the provided
