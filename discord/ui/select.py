@@ -287,7 +287,7 @@ class Select(BaseSelect[V]):
             min_values=min_values,
             max_values=max_values,
             disabled=disabled,
-            options=[] if options is MISSING else options,
+            options=options,
             row=row,
         )
 
@@ -639,7 +639,7 @@ class ChannelSelect(BaseSelect[V]):
             max_values=max_values,
             disabled=disabled,
             row=row,
-            channel_types=[] if channel_types is MISSING else channel_types,
+            channel_types=channel_types,
         )
 
     @property
