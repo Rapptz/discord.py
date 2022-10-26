@@ -1456,7 +1456,7 @@ class ConnectionState:
                     for s in guild.scheduled_events:
                         if s.channel_id == channel.id:
                             guild._scheduled_events.pop(s.id)
-                            self.dispatch('scheduled_event_delete', guild, s)
+                            self.dispatch('scheduled_event_delete', s)
         else:
             channel = self._get_private_channel(channel_id)
             if channel is not None:
