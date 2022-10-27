@@ -28,6 +28,7 @@ from typing import List, Literal, TypedDict, Union
 from typing_extensions import NotRequired
 
 from .emoji import PartialEmoji
+from .channel import ChannelType
 
 ComponentType = Literal[1, 2, 3, 4]
 ButtonStyle = Literal[1, 2, 3, 4, 5]
@@ -57,14 +58,34 @@ class SelectOption(TypedDict):
     emoji: NotRequired[PartialEmoji]
 
 
-class SelectMenu(TypedDict):
-    type: Literal[3]
+class SelectComponent(TypedDict):
     custom_id: str
-    options: List[SelectOption]
     placeholder: NotRequired[str]
     min_values: NotRequired[int]
     max_values: NotRequired[int]
     disabled: NotRequired[bool]
+
+
+class StringSelectComponent(SelectComponent):
+    type: Literal[3]
+    options: NotRequired[List[SelectOption]]
+
+
+class UserSelectComponent(SelectComponent):
+    type: Literal[5]
+
+
+class RoleSelectComponent(SelectComponent):
+    type: Literal[6]
+
+
+class MentionableSelectComponent(SelectComponent):
+    type: Literal[7]
+
+
+class ChannelSelectComponent(SelectComponent):
+    type: Literal[8]
+    channel_types: NotRequired[List[ChannelType]]
 
 
 class TextInput(TypedDict):
@@ -77,6 +98,12 @@ class TextInput(TypedDict):
     required: NotRequired[bool]
     min_length: NotRequired[int]
     max_length: NotRequired[int]
+
+
+class SelectMenu(SelectComponent):
+    type: Literal[3, 5, 6, 7, 8]
+    options: NotRequired[List[SelectOption]]
+    channel_types: NotRequired[List[ChannelType]]
 
 
 ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]

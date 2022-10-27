@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from ..types.components import TextInput as TextInputPayload
     from ..types.interactions import ModalSubmitTextInputInteractionData as ModalSubmitTextInputInteractionDataPayload
     from .view import View
+    from ..interactions import Interaction
 
 
 # fmt: off
@@ -218,7 +219,7 @@ class TextInput(Item[V]):
     def _refresh_component(self, component: TextInputComponent) -> None:
         self._underlying = component
 
-    def _refresh_state(self, data: ModalSubmitTextInputInteractionDataPayload) -> None:
+    def _refresh_state(self, interaction: Interaction, data: ModalSubmitTextInputInteractionDataPayload) -> None:
         self._value = data.get('value', None)
 
     @classmethod
