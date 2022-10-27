@@ -1455,14 +1455,17 @@ def _get_browser_version(user_agent: str) -> str:
 
 
 def stream_supports_colour(stream: Any) -> bool:
+    # Pycharm and Vscode support colour in their inbuilt editors
+    if 'PYCHARM_HOSTED' in os.environ or os.environ.get('TERM_PROGRAM') == 'vscode':
+        return True
+
     is_a_tty = hasattr(stream, 'isatty') and stream.isatty()
     if sys.platform != 'win32':
         return is_a_tty
 
     # ANSICON checks for things like ConEmu
     # WT_SESSION checks if this is Windows Terminal
-    # VSCode built-in terminal supports colour too
-    return is_a_tty and ('ANSICON' in os.environ or 'WT_SESSION' in os.environ or os.environ.get('TERM_PROGRAM') == 'vscode')
+    return is_a_tty and ('ANSICON' in os.environ or 'WT_SESSION' in os.environ)
 
 
 class _ColourFormatter(logging.Formatter):
