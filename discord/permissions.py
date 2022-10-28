@@ -113,7 +113,7 @@ class Permissions(BaseFlags):
         .. describe:: hash(x)
 
                Return the permission's hash.
-        
+
         .. describe:: int(x)
 
                Return the raw :attr:`value`.

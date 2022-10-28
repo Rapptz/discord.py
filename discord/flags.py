@@ -88,7 +88,7 @@ def fill_with_flags(*, inverted: bool = False) -> Callable[[Type[BF]], Type[BF]]
 
         if inverted:
             max_bits = max(cls.VALID_FLAGS.values()).bit_length()
-            cls.DEFAULT_VALUE = -1 + (2**max_bits)
+            cls.DEFAULT_VALUE = -1 + (2 ** max_bits)
         else:
             cls.DEFAULT_VALUE = 0
 
@@ -142,7 +142,7 @@ class BaseFlags:
 
     def __invert__(self) -> Self:
         max_bits = max(self.VALID_FLAGS.values()).bit_length()
-        max_value = -1 + (2**max_bits)
+        max_value = -1 + (2 ** max_bits)
         return self._from_value(self.value ^ max_value)
 
     def __bool__(self) -> bool:
@@ -159,7 +159,7 @@ class BaseFlags:
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} value={self.value}>'
-    
+
     def __int__(self) -> int:
         return self.value
 
@@ -234,7 +234,7 @@ class SystemChannelFlags(BaseFlags):
         .. describe:: hash(x)
 
                Return the flag's hash.
-        
+
         .. describe:: int(x)
 
             Return the raw :attr:`value`.
@@ -1380,7 +1380,7 @@ class ApplicationFlags(BaseFlags):
         .. describe:: hash(x)
 
             Return the flag's hash.
-        
+
         .. describe:: int(x)
 
             Return the raw :attr:`value`.
