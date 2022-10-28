@@ -159,6 +159,9 @@ class BaseFlags:
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} value={self.value}>'
+    
+    def __int__(self) -> int:
+        return self.value
 
     def __iter__(self) -> Iterator[Tuple[str, bool]]:
         for name, value in self.__class__.__dict__.items():
@@ -231,6 +234,10 @@ class SystemChannelFlags(BaseFlags):
         .. describe:: hash(x)
 
                Return the flag's hash.
+        
+        .. describe:: int(x)
+
+            Return the raw :attr:`value`.
 
         .. describe:: iter(x)
 
@@ -336,6 +343,11 @@ class MessageFlags(BaseFlags):
         .. describe:: hash(x)
 
                Return the flag's hash.
+
+        .. describe:: int(x)
+
+               Return the raw :attr:`value`.
+
         .. describe:: iter(x)
 
                Returns an iterator of ``(name, value)`` pairs. This allows it
@@ -459,6 +471,11 @@ class PublicUserFlags(BaseFlags):
         .. describe:: hash(x)
 
             Return the flag's hash.
+
+        .. describe:: int(x)
+
+               Return the raw :attr:`value`.
+
         .. describe:: iter(x)
 
             Returns an iterator of ``(name, value)`` pairs. This allows it
@@ -636,6 +653,11 @@ class Intents(BaseFlags):
         .. describe:: hash(x)
 
                Return the flag's hash.
+
+        .. describe:: int(x)
+
+               Return the raw :attr:`value`.
+
         .. describe:: iter(x)
 
                Returns an iterator of ``(name, value)`` pairs. This allows it
@@ -1211,6 +1233,11 @@ class MemberCacheFlags(BaseFlags):
         .. describe:: hash(x)
 
                Return the flag's hash.
+
+        .. describe:: int(x)
+
+               Return the raw :attr:`value`.
+
         .. describe:: iter(x)
 
                Returns an iterator of ``(name, value)`` pairs. This allows it
@@ -1353,6 +1380,11 @@ class ApplicationFlags(BaseFlags):
         .. describe:: hash(x)
 
             Return the flag's hash.
+        
+        .. describe:: int(x)
+
+            Return the raw :attr:`value`.
+
         .. describe:: iter(x)
 
             Returns an iterator of ``(name, value)`` pairs. This allows it
@@ -1470,6 +1502,11 @@ class ChannelFlags(BaseFlags):
         .. describe:: hash(x)
 
             Return the flag's hash.
+
+        .. describe:: int(x)
+
+               Return the raw :attr:`value`.
+
         .. describe:: iter(x)
 
             Returns an iterator of ``(name, value)`` pairs. This allows it
@@ -1558,6 +1595,11 @@ class AutoModPresets(ArrayFlags):
         .. describe:: hash(x)
 
             Return the flag's hash.
+
+        .. describe:: int(x)
+
+            Return the raw :attr:`value`.
+
         .. describe:: iter(x)
 
             Returns an iterator of ``(name, value)`` pairs. This allows it

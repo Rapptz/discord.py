@@ -113,6 +113,11 @@ class Permissions(BaseFlags):
         .. describe:: hash(x)
 
                Return the permission's hash.
+        
+        .. describe:: int(x)
+
+               Return the raw :attr:`value`.
+
         .. describe:: iter(x)
 
                Returns an iterator of ``(perm, value)`` pairs. This allows it
