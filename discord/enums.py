@@ -898,6 +898,7 @@ class ConnectionType(Enum):
     spotify = 'spotify'
     skype = 'skype'
     steam = 'steam'
+    tiktok = 'tiktok'
     twitch = 'twitch'
     twitter = 'twitter'
     youtube = 'youtube'

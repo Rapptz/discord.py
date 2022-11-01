@@ -135,6 +135,8 @@ class PartialConnection:
             return f'https://account.xbox.com/en-US/Profile?Gamertag={self.name}'
         elif self.type == ConnectionType.github:
             return f'https://github.com/{self.name}'
+        elif self.type == ConnectionType.tiktok:
+            return f'https://tiktok.com/@{self.name}'
 
 
 class Connection(PartialConnection):
