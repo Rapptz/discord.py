@@ -599,6 +599,7 @@ else:
             else:
                 raise TypeError(f'expected int, float, or str as range type, received {obj_type!r} instead')
 
+            # ensure min and max types are correct
             if obj_type is int or obj_type is str:
                 if min is None or type(min) != int:
                     raise TypeError(f'expected min to be int, got {type(min)}')
@@ -610,6 +611,7 @@ else:
                 if max is None or type(max) not in (int, float):
                     raise TypeError(f'expected max to be int or float, got {type(min)}')
 
+            # string ranges must have both values ≥ 1 (or unspecified)
             if obj_type is str and ((max is None or max < 1) or (min is None or min < 1)):
                 raise TypeError(f'max and min must be greater than or equal to 1 for str range type.')
 
