@@ -599,14 +599,14 @@ else:
 
             # ensure min and max types are correct
             if obj_type is int or obj_type is str:
-                if min is None or type(min) != int:
+                if min is not None and type(min) != int:
                     raise TypeError(f'expected min to be int, got {type(min)}')
-                if max is None or type(max) != int:
+                if max is not None and type(max) != int:
                     raise TypeError(f'expected max to be int, got {type(min)}')
             else:
-                if min is None or type(min) not in (int, float):
+                if min is not None and type(min) not in (int, float):
                     raise TypeError(f'expected min to be int or float, got {type(min)}')
-                if max is None or type(max) not in (int, float):
+                if max is not None and type(max) not in (int, float):
                     raise TypeError(f'expected max to be int or float, got {type(min)}')
 
             # string ranges must have both values ≥ 1 (or unspecified)
