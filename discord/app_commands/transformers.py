@@ -23,8 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-
 import inspect
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import (
@@ -47,15 +47,15 @@ from typing import (
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
 from .translator import TranslationContextLocation, TranslationContext, Translator, locale_str
-from ..abc import GuildChannel
 from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel, ForumChannel
+from ..abc import GuildChannel
+from ..threads import Thread
 from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType, Locale
+from ..utils import MISSING, maybe_coroutine
+from ..user import User
+from ..role import Role
 from ..member import Member
 from ..message import Attachment
-from ..role import Role
-from ..threads import Thread
-from ..user import User
-from ..utils import MISSING, maybe_coroutine
 
 __all__ = (
     'Transformer',
@@ -325,7 +325,7 @@ class Transformer:
         raise NotImplementedError('Derived classes need to implement this.')
 
     async def autocomplete(
-            self, interaction: Interaction, value: Union[int, float, str], /
+        self, interaction: Interaction, value: Union[int, float, str], /
     ) -> List[Choice[Union[int, float, str]]]:
         """|coro|
 
@@ -367,11 +367,11 @@ class IdentityTransformer(Transformer):
 
 class RangeTransformer(IdentityTransformer):
     def __init__(
-            self,
-            opt_type: AppCommandOptionType,
-            *,
-            min: Optional[Union[int, float]] = None,
-            max: Optional[Union[int, float]] = None,
+        self,
+        opt_type: AppCommandOptionType,
+        *,
+        min: Optional[Union[int, float]] = None,
+        max: Optional[Union[int, float]] = None,
     ) -> None:
         if min and max and min > max:
             raise TypeError('minimum cannot be larger than maximum')
@@ -540,11 +540,9 @@ else:
                     raise TypeError(f'second argument of Transform must be a Transformer class not {transformer!r}')
                 transformer = transformer()
             elif not isinstance(transformer, Transformer):
-                raise TypeError(
-                    f'second argument of Transform must be a Transformer not {transformer.__class__.__name__}')
+                raise TypeError(f'second argument of Transform must be a Transformer not {transformer.__class__.__name__}')
 
             return transformer
-
 
     class Range:
         """A type annotation that can be applied to a parameter to require a numeric or string
@@ -641,8 +639,7 @@ class BaseChannelTransformer(Transformer):
             display_name = channel_types[0].__name__
             types = CHANNEL_TO_TYPES[channel_types[0]]
         else:
-            display_name = '{}, and {}'.format(', '.join(t.__name__ for t in channel_types[:-1]),
-                                               channel_types[-1].__name__)
+            display_name = '{}, and {}'.format(', '.join(t.__name__ for t in channel_types[:-1]), channel_types[-1].__name__)
             types = []
 
             for t in channel_types:
@@ -747,10 +744,10 @@ ALLOWED_DEFAULTS: Dict[AppCommandOptionType, Tuple[Type[Any], ...]] = {
 
 
 def get_supported_annotation(
-        annotation: Any,
-        *,
-        _none: type = NoneType,
-        _mapping: Dict[Any, Transformer] = BUILT_IN_TRANSFORMERS,
+    annotation: Any,
+    *,
+    _none: type = NoneType,
+    _mapping: Dict[Any, Transformer] = BUILT_IN_TRANSFORMERS,
 ) -> Tuple[Any, Any, bool]:
     """Returns an appropriate, yet supported, annotation along with an optional default value.
 
