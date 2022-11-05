@@ -550,6 +550,9 @@ else:
         """A type annotation that can be applied to a parameter to require a numeric or string
         type to fit within the range provided.
 
+        for ints or floats, the parameter is restricted between the minimum and maximum value.
+        for strings, the length of the string is restricted between the minimum and maximum value.
+
         During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
         the intent of the code.
 
@@ -558,6 +561,8 @@ else:
         - ``Range[int, 10]`` means the minimum is 10 with no maximum.
         - ``Range[int, None, 10]`` means the maximum is 10 with no minimum.
         - ``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10.
+        - ``Range[float, 0.5, 3]`` means the minimum is 0.5 and the maximum is 3.
+        - ``Range[str, 5, 10]`` means the minimum length is 5 and the maximum length is 10.
 
         .. versionadded:: 2.0
 
