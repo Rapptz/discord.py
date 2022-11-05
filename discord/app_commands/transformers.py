@@ -585,7 +585,8 @@ else:
 
             if min is not None and max is not None:
                 # At this point max and min are both not none
-                if type(min) != type(max):
+                # they must both be strings or both not be strings (int or float)
+                if (type(min) == str) != (type(max) == str):
                     raise TypeError('Both min and max in Range must be the same type')
 
             if obj_type is int:
