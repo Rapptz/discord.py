@@ -23,8 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-import inspect
 
+import inspect
 from dataclasses import dataclass
 from enum import Enum
 from typing import (
@@ -47,15 +47,15 @@ from typing import (
 from .errors import AppCommandError, TransformerError
 from .models import AppCommandChannel, AppCommandThread, Choice
 from .translator import TranslationContextLocation, TranslationContext, Translator, locale_str
-from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel, ForumChannel
 from ..abc import GuildChannel
-from ..threads import Thread
+from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel, ForumChannel
 from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType, Locale
-from ..utils import MISSING, maybe_coroutine
-from ..user import User
-from ..role import Role
 from ..member import Member
 from ..message import Attachment
+from ..role import Role
+from ..threads import Thread
+from ..user import User
+from ..utils import MISSING, maybe_coroutine
 
 __all__ = (
     'Transformer',
@@ -325,7 +325,7 @@ class Transformer:
         raise NotImplementedError('Derived classes need to implement this.')
 
     async def autocomplete(
-        self, interaction: Interaction, value: Union[int, float, str], /
+            self, interaction: Interaction, value: Union[int, float, str], /
     ) -> List[Choice[Union[int, float, str]]]:
         """|coro|
 
@@ -367,11 +367,11 @@ class IdentityTransformer(Transformer):
 
 class RangeTransformer(IdentityTransformer):
     def __init__(
-        self,
-        opt_type: AppCommandOptionType,
-        *,
-        min: Optional[Union[int, float]] = None,
-        max: Optional[Union[int, float]] = None,
+            self,
+            opt_type: AppCommandOptionType,
+            *,
+            min: Optional[Union[int, float]] = None,
+            max: Optional[Union[int, float]] = None,
     ) -> None:
         if min and max and min > max:
             raise TypeError('minimum cannot be larger than maximum')
@@ -540,9 +540,11 @@ else:
                     raise TypeError(f'second argument of Transform must be a Transformer class not {transformer!r}')
                 transformer = transformer()
             elif not isinstance(transformer, Transformer):
-                raise TypeError(f'second argument of Transform must be a Transformer not {transformer.__class__.__name__}')
+                raise TypeError(
+                    f'second argument of Transform must be a Transformer not {transformer.__class__.__name__}')
 
             return transformer
+
 
     class Range:
         """A type annotation that can be applied to a parameter to require a numeric or string
@@ -583,12 +585,6 @@ else:
             if min is None and max is None:
                 raise TypeError('Range must not be empty')
 
-            if min is not None and max is not None:
-                # At this point max and min are both not none
-                # they must both be strings or both not be strings (int or float)
-                if (type(min) == str) != (type(max) == str):
-                    raise TypeError('Both min and max in Range must be the same type')
-
             if obj_type is int:
                 opt_type = AppCommandOptionType.integer
             elif obj_type is float:
@@ -598,15 +594,24 @@ else:
             else:
                 raise TypeError(f'expected int, float, or str as range type, received {obj_type!r} instead')
 
-            if obj_type in (str, int):
-                cast = int
+            if obj_type is int or obj_type is str:
+                if min is None or type(min) != int:
+                    raise TypeError(f'expected min to be int, got {type(min)}')
+                if max is None or type(max) != int:
+                    raise TypeError(f'expected max to be int, got {type(min)}')
             else:
-                cast = float
+                if min is None or type(min) not in (int, float):
+                    raise TypeError(f'expected min to be int or float, got {type(min)}')
+                if max is None or type(max) not in (int, float):
+                    raise TypeError(f'expected max to be int or float, got {type(min)}')
+
+            if obj_type is str and ((max is None or max < 1) or (min is None or min < 1)):
+                raise TypeError(f'max and min must be greater than or equal to 1 for str range type.')
 
             transformer = RangeTransformer(
                 opt_type,
-                min=cast(min) if min is not None else None,
-                max=cast(max) if max is not None else None,
+                min=min if min is not None else None,
+                max=max if max is not None else None,
             )
             return transformer
 
@@ -629,7 +634,8 @@ class BaseChannelTransformer(Transformer):
             display_name = channel_types[0].__name__
             types = CHANNEL_TO_TYPES[channel_types[0]]
         else:
-            display_name = '{}, and {}'.format(', '.join(t.__name__ for t in channel_types[:-1]), channel_types[-1].__name__)
+            display_name = '{}, and {}'.format(', '.join(t.__name__ for t in channel_types[:-1]),
+                                               channel_types[-1].__name__)
             types = []
 
             for t in channel_types:
@@ -734,10 +740,10 @@ ALLOWED_DEFAULTS: Dict[AppCommandOptionType, Tuple[Type[Any], ...]] = {
 
 
 def get_supported_annotation(
-    annotation: Any,
-    *,
-    _none: type = NoneType,
-    _mapping: Dict[Any, Transformer] = BUILT_IN_TRANSFORMERS,
+        annotation: Any,
+        *,
+        _none: type = NoneType,
+        _mapping: Dict[Any, Transformer] = BUILT_IN_TRANSFORMERS,
 ) -> Tuple[Any, Any, bool]:
     """Returns an appropriate, yet supported, annotation along with an optional default value.
 
