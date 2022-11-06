@@ -65,6 +65,7 @@ AutoModerationAction = Union[_AutoModerationActionBlockMessage, _AutoModerationA
 
 class _AutoModerationTriggerMetadataKeyword(TypedDict):
     keyword_filter: List[str]
+    regex_patterns: NotRequired[List[str]]
 
 
 class _AutoModerationTriggerMetadataKeywordPreset(TypedDict):
