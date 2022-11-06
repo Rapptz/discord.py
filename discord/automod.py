@@ -118,17 +118,17 @@ class AutoModTrigger:
 
     The following table illustrates relevant attributes for each :class:`AutoModRuleTriggerType`:
 
-    +-----------------------------------------------+--------------------------------------+
-    |                    Type                       |              Attributes              |
-    +===============================================+======================================+
-    | :attr:`AutoModRuleTriggerType.keyword`        | :attr:`keyword_filter`               |
-    +-----------------------------------------------+--------------------------------------+
-    | :attr:`AutoModRuleTriggerType.spam`           |                                      |
-    +-----------------------------------------------+--------------------------------------+
-    | :attr:`AutoModRuleTriggerType.keyword_preset` | :attr:`presets`\, :attr:`allow_list` |
-    +-----------------------------------------------+--------------------------------------+
-    | :attr:`AutoModRuleTriggerType.mention_spam`   | :attr:`mention_limit`                |
-    +-----------------------------------------------+--------------------------------------+
+    +-----------------------------------------------+------------------------------------------------+
+    |                    Type                       |                   Attributes                   |
+    +===============================================+================================================+
+    | :attr:`AutoModRuleTriggerType.keyword`        | :attr:`keyword_filter`, :attr:`regex_patterns` |
+    +-----------------------------------------------+------------------------------------------------+
+    | :attr:`AutoModRuleTriggerType.spam`           |                                                |
+    +-----------------------------------------------+------------------------------------------------+
+    | :attr:`AutoModRuleTriggerType.keyword_preset` | :attr:`presets`\, :attr:`allow_list`           |
+    +-----------------------------------------------+------------------------------------------------+
+    | :attr:`AutoModRuleTriggerType.mention_spam`   | :attr:`mention_limit`                          |
+    +-----------------------------------------------+------------------------------------------------+
 
     .. versionadded:: 2.0
 
@@ -137,7 +137,18 @@ class AutoModTrigger:
     type: :class:`AutoModRuleTriggerType`
         The type of trigger.
     keyword_filter: List[:class:`str`]
-        The list of strings that will trigger the keyword filter.
+        The list of strings that will trigger the keyword filter. Maximum of 1000.
+        Keywords can only be up to 30 characters in length.
+
+        This could be combined with :attr:`regex_patterns`.
+    regex_patterns: List[:class:`str`]
+        The regex pattern that will trigger the filter. The syntax is based off of
+        `Rust's regex syntax <https://docs.rs/regex/latest/regex/#syntax>`_.
+        Maximum of 10. Regex strings can only be up to 75 characters in length.
+
+        This could be combined with :attr:`keyword_filter`.
+
+        .. versionadded:: 2.1
     presets: :class:`AutoModPresets`
         The presets used with the preset keyword filter.
     allow_list: List[:class:`str`]
@@ -153,6 +164,7 @@ class AutoModTrigger:
         'presets',
         'allow_list',
         'mention_limit',
+        'regex_patterns',
     )
 
     def __init__(
@@ -163,13 +175,14 @@ class AutoModTrigger:
         presets: Optional[AutoModPresets] = None,
         allow_list: Optional[List[str]] = None,
         mention_limit: Optional[int] = None,
+        regex_patterns: Optional[List[str]] = None,
     ) -> None:
-        if type is None and sum(arg is not None for arg in (keyword_filter, presets, mention_limit)) > 1:
-            raise ValueError('Please pass only one of keyword_filter, presets, or mention_limit.')
+        if type is None and sum(arg is not None for arg in (keyword_filter or regex_patterns, presets, mention_limit)) > 1:
+            raise ValueError('Please pass only one of keyword_filter, regex_patterns, presets, or mention_limit.')
 
         if type is not None:
             self.type = type
-        elif keyword_filter is not None:
+        elif keyword_filter is not None or regex_patterns is not None:
             self.type = AutoModRuleTriggerType.keyword
         elif presets is not None:
             self.type = AutoModRuleTriggerType.keyword_preset
@@ -184,6 +197,7 @@ class AutoModTrigger:
         self.presets: AutoModPresets = presets if presets is not None else AutoModPresets()
         self.allow_list: List[str] = allow_list if allow_list is not None else []
         self.mention_limit: int = mention_limit if mention_limit is not None else 0
+        self.regex_patterns: List[str] = regex_patterns if regex_patterns is not None else []
 
     @classmethod
     def from_data(cls, type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
@@ -191,7 +205,7 @@ class AutoModTrigger:
         if data is None:
             return cls(type=type_)
         elif type_ is AutoModRuleTriggerType.keyword:
-            return cls(type=type_, keyword_filter=data.get('keyword_filter'))
+            return cls(type=type_, keyword_filter=data.get('keyword_filter'), regex_patterns=data.get('regex_patterns'))
         elif type_ is AutoModRuleTriggerType.keyword_preset:
             return cls(
                 type=type_, presets=AutoModPresets._from_value(data.get('presets', [])), allow_list=data.get('allow_list')
@@ -203,7 +217,7 @@ class AutoModTrigger:
 
     def to_metadata_dict(self) -> Optional[Dict[str, Any]]:
         if self.type is AutoModRuleTriggerType.keyword:
-            return {'keyword_filter': self.keyword_filter}
+            return {'keyword_filter': self.keyword_filter, 'regex_patterns': self.regex_patterns}
         elif self.type is AutoModRuleTriggerType.keyword_preset:
             return {'presets': self.presets.to_array(), 'allow_list': self.allow_list}
         elif self.type is AutoModRuleTriggerType.mention_spam:
