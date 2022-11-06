@@ -199,6 +199,14 @@ class AutoModTrigger:
         self.mention_limit: int = mention_limit if mention_limit is not None else 0
         self.regex_patterns: List[str] = regex_patterns if regex_patterns is not None else []
 
+    def __repr__(self) -> str:
+        data = self.to_metadata_dict()
+        if data:
+            joined = ' '.join(f'{k}={v!r}' for k, v in data.items())
+            return f'<AutoModTrigger type={self.type} {joined}>'
+
+        return f'<AutoModTrigger type={self.type}>'
+
     @classmethod
     def from_data(cls, type: int, data: Optional[AutoModerationTriggerMetadataPayload]) -> Self:
         type_ = try_enum(AutoModRuleTriggerType, type)
