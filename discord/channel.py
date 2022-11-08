@@ -2213,30 +2213,44 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
     Attributes
     ----------
+    id: :class:`int`
+        The direct message channel ID.
+    recipient: :class:`User`
+        The user you are participating with in the direct message channel.
+    me: :class:`ClientUser`
+        The user presenting yourself.
     last_message_id: Optional[:class:`int`]
         The last message ID of the message sent to this channel. It may
         *not* point to an existing or valid message.
 
         .. versionadded:: 2.0
-    recipient: Optional[:class:`User`]
-        The user you are participating with in the direct message channel.
-        If this channel is received through the gateway, the recipient information
-        may not be always available.
-    me: :class:`ClientUser`
-        The user presenting yourself.
-    id: :class:`int`
-        The direct message channel ID.
     """
 
-    __slots__ = ('id', 'recipient', 'me', 'last_message_id', '_state', '_accessed')
+    __slots__ = (
+        'id',
+        'recipient',
+        'me',
+        'last_message_id',
+        '_message_request',
+        '_requested_at',
+        '_spam',
+        '_state',
+        '_accessed',
+    )
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
         self._state: ConnectionState = state
-        self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self.recipient: User = state.store_user(data['recipients'][0])
         self.me: ClientUser = me
         self.id: int = int(data['id'])
+        self._update(data)
         self._accessed: bool = False
+
+    def _update(self, data: DMChannelPayload) -> None:
+        self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self._message_request: Optional[bool] = data.get('is_message_request')
+        self._requested_at: Optional[datetime.datetime] = utils.parse_time(data.get('is_message_request_timestamp'))
+        self._spam: bool = data.get('is_spam', False)
 
     def _get_voice_client_key(self) -> Tuple[int, str]:
         return self.me.id, 'self_id'
@@ -2249,7 +2263,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
     async def _get_channel(self) -> Self:
         if not self._accessed:
-            await self._state.access_private_channel(self.id)
+            await self._state.call_connect(self.id)
             self._accessed = True
         return self
 
@@ -2327,6 +2341,24 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         """
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
+    @property
+    def accepted(self) -> bool:
+        """:class:`bool`: Indicates if the message request is accepted. For regular direct messages, this is always ``True``."""
+        return self._message_request or True
+
+    @property
+    def requested_at(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: Returns the message request's creation time in UTC, if applicable."""
+        return self._requested_at
+
+    def is_message_request(self) -> bool:
+        """:class:`bool`: Indicates if the direct message is/was a message request."""
+        return self._message_request is not None
+
+    def is_spam(self) -> bool:
+        """:class:`bool`: Indicates if the direct message is a spam message."""
+        return self._spam
+
     def permissions_for(self, obj: Any = None, /) -> Permissions:
         """Handles permission resolution for a :class:`User`.
 
@@ -2391,7 +2423,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
     async def close(self):
         """|coro|
 
-        "Deletes" the channel.
+        Closes/"deletes" the channel.
 
         In reality, if you recreate a DM with the same user,
         all your message history will be there.
@@ -2401,7 +2433,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         HTTPException
             Closing the channel failed.
         """
-        await self._state.http.delete_channel(self.id)
+        await self._state.http.delete_channel(self.id, silent=False)
 
     async def connect(
         self,
@@ -2450,6 +2482,41 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         if call is None and ring:
             await self._initial_ring()
         return await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
+
+    async def accept(self) -> DMChannel:
+        """|coro|
+
+        Accepts a message request.
+
+        Raises
+        -------
+        HTTPException
+            Accepting the message request failed.
+        TypeError
+            The channel is not a message request or the request is already accepted.
+        """
+        data = await self._state.http.accept_message_request(self.id)
+        # Of course Discord does not actually include these fields
+        data['is_message_request'] = False
+        if self._requested_at:
+            data['is_message_request_timestamp'] = utils.utcnow().isoformat()
+        data['is_spam'] = self._spam
+
+        return DMChannel(state=self._state, data=data, me=self.me)
+
+    async def decline(self) -> None:
+        """|coro|
+
+        Declines a message request. This closes the channel.
+
+        Raises
+        -------
+        HTTPException
+            Declining the message request failed.
+        TypeError
+            The channel is not a message request or the request is already accepted.
+        """
+        await self._state.http.decline_message_request(self.id)
 
 
 class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
@@ -2500,10 +2567,10 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
         self.me: ClientUser = me
-        self._update_group(data)
+        self._update(data)
         self._accessed: bool = False
 
-    def _update_group(self, data: GroupChannelPayload) -> None:
+    def _update(self, data: GroupChannelPayload) -> None:
         self.owner_id: Optional[int] = utils._get_as_snowflake(data, 'owner_id')
         self._icon: Optional[str] = data.get('icon')
         self.name: Optional[str] = data.get('name')
@@ -2518,7 +2585,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
     async def _get_channel(self) -> Self:
         if not self._accessed:
-            await self._state.access_private_channel(self.id)
+            await self._state.call_connect(self.id)
             self._accessed = True
         return self
 

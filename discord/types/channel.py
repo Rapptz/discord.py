@@ -130,12 +130,16 @@ class DMChannel(_BaseChannel):
     type: Literal[1]
     last_message_id: Optional[Snowflake]
     recipients: List[PartialUser]
+    is_message_request: NotRequired[bool]
+    is_message_request_timestamp: NotRequired[str]
+    is_spam: NotRequired[bool]
 
 
 class GroupDMChannel(_BaseChannel):
     type: Literal[3]
     icon: Optional[str]
     owner_id: Snowflake
+    recipients: List[PartialUser]
 
 
 Channel = Union[GuildChannel, DMChannel, GroupDMChannel]

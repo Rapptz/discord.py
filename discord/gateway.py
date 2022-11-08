@@ -770,10 +770,10 @@ class DiscordWebSocket:
         _log.debug('Updating %s voice state to %s.', guild_id or 'client', payload)
         await self.send_as_json(payload)
 
-    async def access_dm(self, channel_id: Snowflake):
+    async def call_connect(self, channel_id: Snowflake):
         payload = {'op': self.CALL_CONNECT, 'd': {'channel_id': str(channel_id)}}
 
-        _log.debug('Sending ACCESS_DM for channel %s.', channel_id)
+        _log.debug('Requesting call connect for channel %s.', channel_id)
         await self.send_as_json(payload)
 
     async def request_commands(

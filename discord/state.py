@@ -668,14 +668,11 @@ class ConnectionState:
     def private_channels(self) -> List[PrivateChannel]:
         return list(self._private_channels.values())
 
-    async def access_private_channel(self, channel_id: int) -> None:
-        if (ws := self.ws) is None:
+    async def call_connect(self, channel_id: int) -> None:
+        if self.ws is None:
             return
 
-        try:
-            await ws.access_dm(channel_id)
-        except Exception as exc:
-            _log.warning('Sending ACCESS_DM failed for channel %s, (%s).', channel_id, exc)
+        await self.ws.call_connect(channel_id)
 
     def _get_private_channel(self, channel_id: Optional[int]) -> Optional[PrivateChannel]:
         # The keys of self._private_channels are ints
@@ -879,10 +876,10 @@ class ConnectionState:
                 self._relationships[r_id] = Relationship(state=self, data=relationship)
 
         # Private channel parsing
-        for pm in data.get('private_channels', []):
+        for pm in data.get('private_channels', []) + extra_data.get('lazy_private_channels', []):
             factory, _ = _private_channel_factory(pm['type'])
             if 'recipients' not in pm:
-                pm['recipients'] = [temp_users[int(u_id)] for u_id in pm.pop('recipient_ids')]  # type: ignore
+                pm['recipients'] = [temp_users[int(u_id)] for u_id in pm.pop('recipient_ids')]
             self._add_private_channel(factory(me=user, data=pm, state=self))  # type: ignore
 
         # Extras
@@ -1182,12 +1179,11 @@ class ConnectionState:
     def parse_channel_update(self, data: gw.ChannelUpdateEvent) -> None:
         channel_type = try_enum(ChannelType, data.get('type'))
         channel_id = int(data['id'])
-        if channel_type is ChannelType.group:
+        if channel_type in (ChannelType.private, ChannelType.group):
             channel = self._get_private_channel(channel_id)
             if channel is not None:
                 old_channel = copy.copy(channel)
-                # The channel is a GroupChannel
-                channel._update_group(data)  # type: ignore
+                channel._update(data)
                 self.dispatch('private_channel_update', old_channel, channel)
                 return
             else:

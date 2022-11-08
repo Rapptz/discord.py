@@ -698,6 +698,30 @@ class HTTPClient:
 
         return self.request(Route('POST', '/users/@me/channels'), json=payload, context_properties=props)
 
+    def accept_message_request(self, channel_id: Snowflake) -> Response[channel.DMChannel]:
+        payload = {
+            'consent_status': 2,
+        }
+
+        return self.request(Route('PUT', '/channels/{channel_id}/recipients/@me', channel_id=channel_id), json=payload)
+
+    def decline_message_request(self, channel_id: Snowflake) -> Response[channel.DMChannel]:
+        return self.request(Route('DELETE', '/channels/{channel_id}/recipients/@me', channel_id=channel_id))
+
+    def mark_message_request(self, channel_id: Snowflake) -> Response[channel.DMChannel]:
+        payload = {
+            'consent_status': 1,
+        }
+
+        return self.request(Route('PUT', '/channels/{channel_id}/recipients/@me', channel_id=channel_id), json=payload)
+
+    def reset_message_request(self, channel_id: Snowflake) -> Response[channel.DMChannel]:
+        payload = {
+            'consent_status': 0,
+        }
+
+        return self.request(Route('PUT', '/channels/{channel_id}/recipients/@me', channel_id=channel_id), json=payload)
+
     # Message management
 
     def send_message(
