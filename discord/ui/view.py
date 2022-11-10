@@ -187,7 +187,7 @@ class View:
         self.__cancel_callback: Optional[Callable[[View], None]] = None
         self.__timeout_expiry: Optional[float] = None
         self.__timeout_task: Optional[asyncio.Task[None]] = None
-        self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
+        self.__stopped: asyncio.Future[bool] = asyncio.get_event_loop().create_future()
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self._children)}>'
