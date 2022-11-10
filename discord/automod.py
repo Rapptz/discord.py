@@ -148,7 +148,7 @@ class AutoModTrigger:
 
         This could be combined with :attr:`keyword_filter`.
 
-        .. versionadded:: 2.1
+        .. versionadded:: 2.0
     presets: :class:`AutoModPresets`
         The presets used with the preset keyword filter.
     allow_list: List[:class:`str`]

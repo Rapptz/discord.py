@@ -641,6 +641,7 @@ class UserFlags(Enum):
     bot_http_interactions = 524288
     spammer = 1048576
     disable_premium = 2097152
+    active_developer = 4194304
     quarantined = 17592186044416
 
 
