@@ -1434,6 +1434,15 @@ class ApplicationFlags(BaseFlags):
         command. This shows up as a badge in the official client."""
         return 1 << 23
 
+    @flag_value
+    def active(self):
+        """:class:`bool`: Returns ``True`` if the application has had at least one global application
+        command used in the last 30 days.
+
+        .. versionadded:: 2.1
+        """
+        return 1 << 24
+
 
 @fill_with_flags()
 class ChannelFlags(BaseFlags):
