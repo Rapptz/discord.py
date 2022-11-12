@@ -45,7 +45,7 @@ from typing import (
 )
 
 import aiohttp
-
+from itertools import chain
 from .user import User, ClientUser
 from .invite import Invite
 from .template import Template
