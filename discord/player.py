@@ -30,7 +30,7 @@ import asyncio
 import logging
 import shlex
 import time
-import json
+import orjson
 import sys
 import re
 import io
@@ -549,7 +549,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         codec = bitrate = None
 
         if output:
-            data = json.loads(output)
+            data = orjson.loads(output)
             streamdata = data['streams'][0]
 
             codec = streamdata.get('codec_name')

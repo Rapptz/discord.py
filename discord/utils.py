@@ -62,7 +62,7 @@ import functools
 from inspect import isawaitable as _isawaitable, signature as _signature
 from operator import attrgetter
 from urllib.parse import urlencode
-import json
+import orjson
 import re
 import os
 import sys
@@ -633,16 +633,16 @@ def _is_submodule(parent: str, child: str) -> bool:
 if HAS_ORJSON:
 
     def _to_json(obj: Any) -> str:
-        return orjson.dumps(obj).decode('utf-8')
+        return ororjson.dumps(obj).decode('utf-8')
 
-    _from_json = orjson.loads  # type: ignore
+    _from_json = ororjson.loads  # type: ignore
 
 else:
 
     def _to_json(obj: Any) -> str:
-        return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
+        return orjson.dumps(obj, separators=(',', ':'), ensure_ascii=True)
 
-    _from_json = json.loads
+    _from_json = orjson.loads
 
 
 def _parse_ratelimit_header(request: Any, *, use_clock: bool = False) -> float:

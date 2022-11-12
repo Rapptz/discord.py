@@ -32,7 +32,7 @@ from __future__ import annotations
 
 import threading
 import logging
-import json
+import orjson
 import time
 import re
 
@@ -180,7 +180,7 @@ class WebhookAdapter:
                         data = response.text or None
                         try:
                             if data and response.headers['Content-Type'] == 'application/json':
-                                data = json.loads(data)
+                                data = orjson.loads(data)
                         except KeyError:
                             pass
 
