@@ -633,9 +633,9 @@ def _is_submodule(parent: str, child: str) -> bool:
 if HAS_ORJSON:
 
     def _to_json(obj: Any) -> str:
-        return ororjson.dumps(obj).decode('utf-8')
+        return orjson.dumps(obj).decode('utf-8')
 
-    _from_json = ororjson.loads  # type: ignore
+    _from_json = orjson.loads  # type: ignore
 
 else:
 
