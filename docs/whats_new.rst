@@ -11,6 +11,63 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p1p0:
+
+v2.1.0
+-------
+
+New Features
+~~~~~~~~~~~~
+
+- Add support for ``delete_message_seconds`` in :meth:`Guild.ban` (:issue:`8391`)
+- Add support for automod related audit log actions (:issue:`8389`)
+- Add support for :class:`ForumChannel` annotations in app commands
+- Add support for :attr:`ForumChannel.default_thread_slowmode_delay`.
+- Add support for :attr:`ForumChannel.default_reaction_emoji`.
+- Add support for forum tags under :class:`ForumTag`.
+    - Tags can be obtained using :attr:`ForumChannel.available_tags` or :meth:`ForumChannel.get_tag`.
+    - See :meth:`Thread.edit` and :meth:`ForumChannel.edit` for modifying tags and their usage.
+
+- Add support for new select types (:issue:`9013`, :issue:`9003`).
+    - These are split into separate classes, :class:`~discord.ui.ChannelSelect`, :class:`~discord.ui.RoleSelect`, :class:`~discord.ui.UserSelect`, :class:`~discord.ui.MentionableSelect`.
+    - The decorator still uses a single function, :meth:`~discord.ui.select`. Changing the select type is done by the ``cls`` keyword parameter.
+
+- Add support for toggling discoverable and invites_disabled features in :meth:`Guild.edit` (:issue:`8390`).
+- Add :meth:`Interaction.translate` helper method (:issue:`8425`).
+- Add :meth:`Forum.archived_threads` (:issue:`8476`).
+- Add :attr:`ApplicationFlags.active`, :attr:`UserFlags.active_developer`, and :attr:`PublicUserFlags.active_developer`.
+- Add ``delete_after`` to :meth:`InteractionResponse.send_message` (:issue:`9022`).
+- Add support for :attr:`AutoModTrigger.regex_patterns`.
+- |commands| Add :attr:`GroupCog.group_extras <discord.ext.commands.GroupCog.group_extras>` to set :attr:`app_commands.Group.extras` (:issue:`8405`).
+- |commands| Add support for NumPy style docstrings for regular commands to set parameter descriptions.
+- |commands| Allow :class:`~discord.ext.commands.Greedy` to potentially maintain state between calls.
+- |commands| Add :meth:`Cog.has_app_command_error_handler <discord.ext.commands.Cog.has_app_command_error_handler>` (:issue:`8991`).
+- |commands| Allow ``delete_after`` in :meth:`Context.send <discord.ext.commands.Context.send>` on ephemeral messages (:issue:`9021`).
+
+Bug Fixes
+~~~~~~~~~
+
+- Fix an :exc:`KeyError` being raised when constructing :class:`app_commands.Group` with no module (:issue:`8411`).
+- Fix unescaped period in webhook URL regex (:issue:`8443`).
+- Fix :exc:`app_commands.CommandSyncFailure` raising for other 400 status code errors.
+- Fix potential formatting issues showing `_errors` in :exc:`app_commands.CommandSyncFailure`.
+- Fix :attr:`Guild.stage_instances` and :attr:`Guild.schedule_events` clearing on ``GUILD_UPDATE``.
+- Fix detection of overriden :meth:`app_commands.Group.on_error`
+- Fix :meth:`app_commands.CommandTree.on_error` still being called when a bound error handler is set.
+- Fix thread permissions being set to ``True`` in :meth:`DMChannel.permissions_for` (:issue:`8965`).
+- Fix ``on_scheduled_event_delete`` occasionally dispatching with too many parameters (:issue:`9019`).
+- |commands| Fix :meth:`Context.from_interaction <discord.ext.commands.Context.from_interaction>` ignoring :attr:`~discord.ext.commands.Context.command_failed`.
+- |commands| Fix :class:`~discord.ext.commands.Range` to allow 3.10 Union syntax (:issue:`8446`).
+- |commands| Fix ``before_invoke`` not triggering for fallback commands in a hybrid group command (:issue:`8461`, :issue:`8462`).
+
+Miscellaneous
+~~~~~~~~~~~~~
+
+- Change error message for unbound callbacks in :class:`app_commands.ContextMenu` to make it clearer that bound methods are not allowed.
+- Normalize type formatting in TypeError exceptions (:issue:`8453`).
+- Change :meth:`VoiceProtocol.on_voice_state_update` and :meth:`VoiceProtocol.on_voice_server_update` parameters to be positional only (:issue:`8463`).
+- Add support for PyCharm when using the default coloured logger (:issue:`9015`).
+
 .. _vp2p0p1:
 
 v2.0.1
