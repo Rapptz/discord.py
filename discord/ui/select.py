@@ -655,6 +655,10 @@ class ChannelSelect(BaseSelect[V]):
         """List[:class:`~discord.ChannelType`]: A list of channel types that can be selected."""
         return self._underlying.channel_types
 
+    @channel_types.setter
+    def channel_types(self, value: List[ChannelType]) -> None:
+        self._underlying.channel_types = value
+    
     @property
     def values(self) -> List[Union[AppCommandChannel, AppCommandThread]]:
         """List[Union[:class:`~discord.app_commands.AppCommandChannel`, :class:`~discord.app_commands.AppCommandThread`]]: A list of channels selected by the user."""
