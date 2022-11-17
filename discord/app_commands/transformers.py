@@ -387,6 +387,46 @@ class RangeTransformer(IdentityTransformer):
     @property
     def max_value(self) -> Optional[Union[int, float]]:
         return self._max
+    
+    async def convert(self, ctx, argument):
+        # compatability with classic converters for hybrid command usage
+        # TransformerError used because i cant import BadArgument
+        if self._opt_type == AppCommandOptionType.string:
+            if self._min and len(argument) < self._min:
+                raise TransformerError(
+                    f'Parameter "{ctx.current_parameter.name}" must be longer than {self._min} character{"s" if self._min == 1 else ""}.',
+                    self._opt_type,
+                    self
+                )
+            if self._max and len(argument) > self._max:
+                raise TransformerError(
+                    f'Parameter "{ctx.current_parameter.name}" must be shorter than {self._min} character{"s" if self._min == 1 else ""}.',
+                    self._opt_type,
+                    self
+                )
+        else:
+            converterfunc = int if self._opt_type == AppCommandOptionType.integer else float
+            try:
+                argument = converterfunc(argument)
+            except ValueError:
+                raise TransformerError(
+                    f'Converting to "{converterfunc.annotation.__name__}" failed for parameter "{ctx.current_parameter.name}".',
+                    self._opt_type,
+                    self
+                )
+            if self._min and argument < self._min:
+                raise TransformerError(
+                    f'Parameter "{ctx.current_parameter.name}" must be greater than {self._min}.',
+                    self._opt_type,
+                    self
+                )
+            if self._max and argument > self._max:
+                raise TransformerError(
+                    f'Parameter "{ctx.current_parameter.name}" must be less than {self._max}.',
+                    self._opt_type,
+                    self
+                )
+        return argument
 
 
 class LiteralTransformer(IdentityTransformer):
