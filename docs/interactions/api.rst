@@ -268,15 +268,15 @@ Enumerations
     .. attribute:: string_select
 
         An alias to :attr:`select`. Represents a default select component.
-    
+
     .. attribute:: user_select
-        
+
         Represents a user select component.
-    
+
     .. attribute:: role_select
-        
+
         Represents a role select component.
-    
+
     .. attribute:: mentionable_select
 
         Represents a select in which both users and roles can be selected.
@@ -415,7 +415,7 @@ Enumerations
 Bot UI Kit
 -------------
 
-The library has helpers to aid create component-based UIs. These are all in the ``discord.ui`` package.
+The library has helpers to aid in creating component-based UIs. These are all in the ``discord.ui`` package.
 
 
 View
