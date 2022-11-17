@@ -411,7 +411,7 @@ class RangeTransformer(IdentityTransformer):
                 argument = converterfunc(argument)
             except ValueError:
                 raise TransformerError(
-                    f'Converting to "{converterfunc.annotation.__name__}" failed for parameter "{ctx.current_parameter.name}".',
+                    f'Converting to "{"int" if self._opt_type == AppCommandOptionType.integer else "float"}" failed for parameter "{ctx.current_parameter.name}".'
                     self._opt_type,
                     self
                 )
