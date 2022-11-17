@@ -409,12 +409,12 @@ class RangeTransformer(IdentityTransformer):
             converterfunc = int if self._opt_type == AppCommandOptionType.integer else float
             try:
                 argument = converterfunc(argument)
-            except ValueError:
+            except ValueError as exc:
                 raise TransformerError(
                     f'Converting to "{"int" if self._opt_type == AppCommandOptionType.integer else "float"}" failed for parameter "{ctx.current_parameter.name}".'
                     self._opt_type,
                     self
-                )
+                ) from exc
             if self._min and argument < self._min:
                 raise TransformerError(
                     f'Parameter "{ctx.current_parameter.name}" must be greater than {self._min}.',
