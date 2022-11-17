@@ -378,6 +378,7 @@ class RangeTransformer(IdentityTransformer):
 
         self._min: Optional[Union[int, float]] = min
         self._max: Optional[Union[int, float]] = max
+        self._opt_type: AppCommandOptionType = opt_type
         super().__init__(opt_type)
 
     @property
