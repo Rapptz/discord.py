@@ -391,7 +391,7 @@ class RangeTransformer(IdentityTransformer):
     
     async def convert(self, ctx, argument):
         # Compatability with classic converters for hybrid command usage
-        # TransformerError used because i cant import BadArgument
+        # TransformerError used because I can't import BadArgument
         if self._opt_type == AppCommandOptionType.string:
             if self._min and len(argument) < self._min:
                 raise TransformerError(
