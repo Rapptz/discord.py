@@ -1270,7 +1270,9 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                 if local_check is not None:
                     ret = await discord.utils.maybe_coroutine(local_check, ctx)
                     if not ret:
-                        return False
+                        raise CheckFailure(
+                            f'The check on cog {cog.qualified_name} failed for command {self.qualified_name}.'
+                        )
 
             predicates = self.checks
             if not predicates:
