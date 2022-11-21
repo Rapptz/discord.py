@@ -39,6 +39,7 @@ from typing import (
     List,
     Optional,
     TYPE_CHECKING,
+    Sequence,
     Tuple,
     TypeVar,
     Union,
@@ -660,7 +661,7 @@ class Cog(metaclass=CogMeta):
         """
         pass
 
-    async def _inject(self, bot: BotBase, override: bool, guild: Optional[Snowflake], guilds: List[Snowflake]) -> Self:
+    async def _inject(self, bot: BotBase, override: bool, guild: Optional[Snowflake], guilds: Sequence[Snowflake]) -> Self:
         cls = self.__class__
 
         # we'll call this first so that errors can propagate without
