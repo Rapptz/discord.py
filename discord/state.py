@@ -571,6 +571,8 @@ class ConnectionState:
 
         except asyncio.CancelledError:
             pass
+        except ConnectionResetError:
+            pass
         else:
             # dispatch the event
             self.call_handlers('ready')
