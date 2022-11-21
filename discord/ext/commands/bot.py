@@ -41,6 +41,7 @@ from typing import (
     Dict,
     TYPE_CHECKING,
     Optional,
+    Sequence,
     TypeVar,
     Type,
     Union,
@@ -703,7 +704,7 @@ class BotBase(GroupMixin[None]):
         *,
         override: bool = False,
         guild: Optional[Snowflake] = MISSING,
-        guilds: List[Snowflake] = MISSING,
+        guilds: Sequence[Snowflake] = MISSING,
     ) -> None:
         """|coro|
 
@@ -811,7 +812,7 @@ class BotBase(GroupMixin[None]):
         /,
         *,
         guild: Optional[Snowflake] = MISSING,
-        guilds: List[Snowflake] = MISSING,
+        guilds: Sequence[Snowflake] = MISSING,
     ) -> Optional[Cog]:
         """|coro|
 
