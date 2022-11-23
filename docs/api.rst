@@ -1858,7 +1858,7 @@ of :class:`enum.Enum`.
     .. attribute:: invisible
 
         The member is "invisible". In reality, this is only used in sending
-        a presence a la :meth:`Client.change_presence`. When you receive a
+        a presence update to :meth:`Client.change_presence`. When you receive a
         user's presence this will be :attr:`offline` instead.
 
 
