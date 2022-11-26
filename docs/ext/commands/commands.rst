@@ -39,7 +39,6 @@ as seen in the example above. The second is using the :func:`~ext.commands.comma
 :meth:`.Bot.add_command` on the instance.
 
 Essentially, these two are equivalent: ::
-    
     import discord
     from discord.ext import commands
     
