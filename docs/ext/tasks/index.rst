@@ -129,6 +129,57 @@ Doing something during cancellation:
                 # let's insert it to our database
                 await self.do_bulk()
 
+Doing something at a specific time each day:
+
+.. code-block:: python3
+
+    import datetime
+    from discord.ext import commands, tasks
+
+    utc = datetime.timezone.utc
+
+    # If no tzinfo is given then UTC is assumed.
+    time = datetime.time(hour=8, minute=30, tzinfo=utc)
+
+    class MyCog(commands.Cog):
+        def __init__(self, bot):
+            self.bot = bot
+            self.my_task.start()
+
+        def cog_unload(self):
+            self.my_task.cancel()
+
+        @tasks.loop(time=time)
+        async def my_task(self):
+            print("My task is running!")
+
+Doing something at multiple specific times each day:
+
+.. code-block:: python3
+
+    import datetime
+    from discord.ext import commands, tasks
+
+    utc = datetime.timezone.utc
+
+    # If no tzinfo is given then UTC is assumed.
+    times = [
+        datetime.time(hour=8, tzinfo=utc),
+        datetime.time(hour=12, minute=30, tzinfo=utc),
+        datetime.time(hour=16, minute=40, second=30, tzinfo=utc)
+    ]
+
+    class MyCog(commands.Cog):
+        def __init__(self, bot):
+            self.bot = bot
+            self.my_task.start()
+
+        def cog_unload(self):
+            self.my_task.cancel()
+
+        @tasks.loop(time=times)
+        async def my_task(self):
+            print("My task is running!")
 
 .. _ext_tasks_api:
 
