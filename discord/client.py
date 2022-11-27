@@ -1424,21 +1424,23 @@ class Client:
             predicate = lambda m: int(m['id']) > after.id
 
         while True:
-            retrieve = min(200 if limit is None else limit, 200)
+            retrieve = 200 if limit is None else min(limit, 200)
             if retrieve < 1:
                 return
 
             data, state, limit = await strategy(retrieve, state, limit)
 
-            # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 200:
-                limit = 0
-
             if predicate:
                 data = filter(predicate, data)
 
-            for raw_guild in data:
+            count = 0
+
+            for count, raw_guild in enumerate(data, 1):
                 yield Guild(state=self._connection, data=raw_guild)
+
+            if count < 200:
+                # There's no data left after this
+                break
 
     async def fetch_template(self, code: Union[Template, str]) -> Template:
         """|coro|

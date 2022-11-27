@@ -560,14 +560,11 @@ class ScheduledEvent(Hashable):
                 predicate = lambda u: u['user']['id'] > after.id
 
         while True:
-            retrieve = min(100 if limit is None else limit, 100)
+            retrieve = 100 if limit is None else min(limit, 100)
             if retrieve < 1:
                 return
 
             data, state, limit = await strategy(retrieve, state, limit)
-
-            if len(data) < 100:
-                limit = 0
 
             if reverse:
                 data = reversed(data)
@@ -575,9 +572,14 @@ class ScheduledEvent(Hashable):
                 data = filter(predicate, data)
 
             users = (self._state.store_user(raw_user['user']) for raw_user in data)
+            count = 0
 
-            for user in users:
+            for count, user in enumerate(users, 1):
                 yield user
+
+            if count < 100:
+                # There's no data left after this
+                break
 
     def _add_user(self, user: User) -> None:
         self._users[user.id] = user
