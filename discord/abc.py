@@ -1887,23 +1887,25 @@ class Messageable:
         channel = await self._get_channel()
 
         while True:
-            retrieve = min(100 if limit is None else limit, 100)
+            retrieve = 100 if limit is None else min(limit, 100)
             if retrieve < 1:
                 return
 
             data, state, limit = await strategy(retrieve, state, limit)
-
-            # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 100:
-                limit = 0
 
             if reverse:
                 data = reversed(data)
             if predicate:
                 data = filter(predicate, data)
 
-            for raw_message in data:
+            count = 0
+
+            for count, raw_message in enumerate(data, 1):
                 yield self._state.create_message(channel=channel, data=raw_message)
+
+            if count < 100:
+                # There's no data left after this
+                break
 
     def slash_commands(
         self,

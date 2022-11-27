@@ -2314,7 +2314,7 @@ class Guild(Hashable):
             strategy, state = _after_strategy, after
 
         while True:
-            retrieve = min(1000 if limit is None else limit, 1000)
+            retrieve = 1000 if limit is None else min(limit, 1000)
             if retrieve < 1:
                 return
 
@@ -3626,15 +3626,11 @@ class Guild(Hashable):
                 predicate = lambda m: int(m['id']) > after.id
 
         while True:
-            retrieve = min(100 if limit is None else limit, 100)
+            retrieve = 100 if limit is None else min(limit, 100)
             if retrieve < 1:
                 return
 
             data, raw_entries, state, limit = await strategy(retrieve, state, limit)
-
-            # Terminate loop on next iteration; there's no data left after this
-            if len(raw_entries) < 100:
-                limit = 0
 
             if reverse:
                 raw_entries = reversed(raw_entries)
@@ -3650,7 +3646,9 @@ class Guild(Hashable):
             )
             automod_rule_map = {rule.id: rule for rule in automod_rules}
 
-            for raw_entry in raw_entries:
+            count = 0
+
+            for count, raw_entry in enumerate(raw_entries, 1):
                 # Weird Discord quirk
                 if raw_entry['action_type'] is None:
                     continue
@@ -3661,6 +3659,10 @@ class Guild(Hashable):
                     automod_rules=automod_rule_map,
                     guild=self,
                 )
+
+            if count < 100:
+                # There's no data left after this
+                break
 
     async def ack(self) -> None:
         """|coro|
