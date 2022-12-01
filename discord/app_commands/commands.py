@@ -1066,7 +1066,7 @@ class Command(Generic[GroupT, P, T]):
         Only up to 25 objects are supported.
 
         .. warning::
-            The results presented to the user are suggestions. The user may ignore them and input their own value.
+            The choices returned from this coroutine are suggestions. The user may ignore them and input their own value.
 
         Example:
 
@@ -2275,7 +2275,7 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
     For more information, see the :meth:`Command.autocomplete` documentation.
 
     .. warning::
-        The results presented to the user are suggestions. The user may ignore them and input their own value.
+        The choices returned from this coroutine are suggestions. The user may ignore them and input their own value.
 
     Example:
 
