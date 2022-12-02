@@ -1065,6 +1065,9 @@ class Command(Generic[GroupT, P, T]):
         The coroutine decorator **must** return a list of :class:`~discord.app_commands.Choice` objects.
         Only up to 25 objects are supported.
 
+        .. warning::
+            The choices returned from this coroutine are suggestions. The user may ignore them and input their own value.
+
         Example:
 
         .. code-block:: python3
@@ -2270,6 +2273,9 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
     callback.
 
     For more information, see the :meth:`Command.autocomplete` documentation.
+
+    .. warning::
+        The choices returned from this coroutine are suggestions. The user may ignore them and input their own value.
 
     Example:
 
