@@ -40,9 +40,13 @@ as seen in the example above. The second is using the :func:`~ext.commands.comma
 
 Essentially, these two are equivalent: ::
 
+    import discord
     from discord.ext import commands
 
-    bot = commands.Bot(command_prefix='$')
+    intents = discord.Intents.default()
+    intents.message_content = True
+
+    bot = commands.Bot(command_prefix='$', intents=intents)
 
     @bot.command()
     async def test(ctx):
