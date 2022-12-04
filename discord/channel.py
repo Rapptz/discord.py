@@ -1407,6 +1407,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         rtc_region: Optional[:class:`str`]
             The new region for the voice channel's voice communication.
             A value of ``None`` indicates automatic voice region detection.
+
             .. versionadded:: 1.7
         video_quality_mode: :class:`VideoQualityMode`
             The camera video quality for the voice channel's participants.
