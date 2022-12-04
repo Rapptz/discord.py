@@ -121,7 +121,8 @@ class AutoModTrigger:
     +-----------------------------------------------+------------------------------------------------+
     |                    Type                       |                   Attributes                   |
     +===============================================+================================================+
-    | :attr:`AutoModRuleTriggerType.keyword`        | :attr:`keyword_filter`, :attr:`regex_patterns` |
+    | :attr:`AutoModRuleTriggerType.keyword`        | :attr:`keyword_filter`, :attr:`regex_patterns`,|
+    |                                               | :attr:`allow_list`                             |
     +-----------------------------------------------+------------------------------------------------+
     | :attr:`AutoModRuleTriggerType.spam`           |                                                |
     +-----------------------------------------------+------------------------------------------------+
@@ -146,7 +147,7 @@ class AutoModTrigger:
         `Rust's regex syntax <https://docs.rs/regex/latest/regex/#syntax>`_.
         Maximum of 10. Regex strings can only be up to 75 characters in length.
 
-        This could be combined with :attr:`keyword_filter`.
+        This may be combined with :attr:`keyword_filter` and :attr:`allow_list`
 
         .. versionadded:: 2.1
     presets: :class:`AutoModPresets`
@@ -225,7 +226,11 @@ class AutoModTrigger:
 
     def to_metadata_dict(self) -> Optional[Dict[str, Any]]:
         if self.type is AutoModRuleTriggerType.keyword:
-            return {'keyword_filter': self.keyword_filter, 'regex_patterns': self.regex_patterns}
+            return {
+                'keyword_filter': self.keyword_filter,
+                'regex_patterns': self.regex_patterns,
+                'allow_list': self.allow_list,
+            }
         elif self.type is AutoModRuleTriggerType.keyword_preset:
             return {'presets': self.presets.to_array(), 'allow_list': self.allow_list}
         elif self.type is AutoModRuleTriggerType.mention_spam:
