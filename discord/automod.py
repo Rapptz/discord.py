@@ -147,7 +147,7 @@ class AutoModTrigger:
         `Rust's regex syntax <https://docs.rs/regex/latest/regex/#syntax>`_.
         Maximum of 10. Regex strings can only be up to 75 characters in length.
 
-        This may be combined with :attr:`keyword_filter` and :attr:`allow_list`
+        This could be combined with :attr:`keyword_filter` and/or :attr:`allow_list`
 
         .. versionadded:: 2.1
     presets: :class:`AutoModPresets`
@@ -214,7 +214,12 @@ class AutoModTrigger:
         if data is None:
             return cls(type=type_)
         elif type_ is AutoModRuleTriggerType.keyword:
-            return cls(type=type_, keyword_filter=data.get('keyword_filter'), regex_patterns=data.get('regex_patterns'))
+            return cls(
+                type=type_,
+                keyword_filter=data.get('keyword_filter'),
+                regex_patterns=data.get('regex_patterns'),
+                allow_list=data.get('allow_list'),
+            )
         elif type_ is AutoModRuleTriggerType.keyword_preset:
             return cls(
                 type=type_, presets=AutoModPresets._from_value(data.get('presets', [])), allow_list=data.get('allow_list')
