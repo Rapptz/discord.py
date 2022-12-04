@@ -19,7 +19,7 @@ bot = commands.Bot(command_prefix='?', description=description, intents=intents)
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    print('------')
+    print('______')
 
 
 @bot.command()
@@ -58,8 +58,16 @@ async def repeat(ctx, times: int, content='repeating...'):
 async def joined(ctx, member: discord.Member):
     """Says when a member joined."""
     await ctx.send(f'{member.name} joined {discord.utils.format_dt(member.joined_at)}')
+    
 
+@bot.command()
+async def member_count(ctx):
+    """ Says the total number of members that joined a channel """
+    a=ctx.guild.member_count
+    b=discord.Embed(title=f"members in {ctx.guild.name}",description=a,color=discord.Color((0xffff00)))
+    await ctx.send(embed=b)
 
+    
 @bot.group()
 async def cool(ctx):
     """Says if a user is cool.
