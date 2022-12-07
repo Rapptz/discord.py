@@ -120,9 +120,9 @@ def convert_emoji_reaction(emoji: Union[EmojiInputType, Reaction]) -> str:
     if isinstance(emoji, PartialEmoji):
         return emoji._as_reaction()
     if isinstance(emoji, str):
-        # Reactions can be in :name:id format, but not <:name:id>.
+        # Reactions can be in name:id format, but not <:name:id>.
         # No existing emojis have <> in them, so this should be okay.
-        return emoji.strip('<>')
+        return emoji.strip('<:>')
 
     raise TypeError(f'emoji argument must be str, Emoji, or Reaction not {emoji.__class__.__name__}.')
 
