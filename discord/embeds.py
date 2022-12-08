@@ -228,9 +228,15 @@ class Embed:
         # try to fill in the more rich fields
 
         try:
-            self._colour = Colour(value=data['color'])
+            color = data['color']
         except KeyError:
-            pass
+            try:
+                color = data['colour']
+            except KeyError:
+                color = None
+
+        if color is not None:
+            self._colour = Colour(value=color)
 
         try:
             self._timestamp = utils.parse_time(data['timestamp'])
@@ -742,16 +748,16 @@ class Embed:
                     result['timestamp'] = timestamp.replace(tzinfo=datetime.timezone.utc).isoformat()
 
         # add in the non raw attribute ones
-        if self.type:
+        if self.type is not None:
             result['type'] = self.type
 
-        if self.description:
+        if self.description is not None:
             result['description'] = self.description
 
-        if self.url:
+        if self.url is not None:
             result['url'] = self.url
 
-        if self.title:
+        if self.title is not None:
             result['title'] = self.title
 
         return result  # type: ignore # This payload is equivalent to the EmbedData type
