@@ -552,12 +552,12 @@ class GuildChannel:
         """:class:`datetime.datetime`: Returns the channel's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
-    def overwrites_for(self, obj: Union[Role, User, Object]) -> PermissionOverwrite:
+    def overwrites_for(self, obj: Union[Role, User, Member, Object]) -> PermissionOverwrite:
         """Returns the channel-specific overwrites for a member or a role.
 
         Parameters
         -----------
-        obj: Union[:class:`~discord.Role`, :class:`~discord.abc.User`, :class:`~discord.Object`]
+        obj: Union[:class:`~discord.Role`, :class:`~discord.abc.User`, :class:`~discord.Discord`, :class:`~discord.Object`]
             The role or user denoting whose overwrite to get.
 
         Returns
