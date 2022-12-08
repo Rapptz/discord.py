@@ -722,7 +722,10 @@ def select(
 
     .. versionchanged:: 2.1
         Added the following keyword-arguments: ``cls``, ``channel_types``
-    
+
+    .. versionchanged:: 2.2
+        Now infers ``cls`` based on the callback if not supplied.
+
     Example
     ---------
     .. code-block:: python3
