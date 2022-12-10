@@ -885,6 +885,7 @@ class AppCommandType(Enum):
 class ConnectionType(Enum):
     battle_net = 'battlenet'
     contacts = 'contacts'
+    crunchyroll = 'crunchyroll'
     ebay = 'ebay'
     epic_games = 'epicgames'
     facebook = 'facebook'
