@@ -1353,6 +1353,7 @@ class Guild(Hashable):
         position: int = MISSING,
         bitrate: int = MISSING,
         user_limit: int = MISSING,
+        slowmode_delay: int = MISSING,
         rtc_region: Optional[str] = MISSING,
         video_quality_mode: VideoQualityMode = MISSING,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
@@ -1425,6 +1426,9 @@ class Guild(Hashable):
 
         if video_quality_mode is not MISSING:
             options['video_quality_mode'] = video_quality_mode.value
+
+        if slowmode_delay is not MISSING:
+            options['rate_limit_per_user'] = slowmode_delay
 
         data = await self._create_channel(
             name, overwrites=overwrites, channel_type=ChannelType.voice, category=category, reason=reason, **options
