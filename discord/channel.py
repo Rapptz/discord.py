@@ -890,6 +890,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         'rtc_region',
         'video_quality_mode',
         'last_message_id',
+		'slowmode_delay',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[VoiceChannelPayload, StageChannelPayload]):
@@ -914,6 +915,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         self.position: int = data['position']
         self.bitrate: int = data['bitrate']
         self.user_limit: int = data['user_limit']
+		self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self._fill_overwrites(data)
 
     @property
@@ -1321,7 +1323,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> VoiceChannel:
-        return await self._clone_impl({'bitrate': self.bitrate, 'user_limit': self.user_limit}, name=name, reason=reason)
+        return await self._clone_impl({'bitrate': self.bitrate, 'user_limit': self.user_limit, "rate_limit_per_user": self.slowmode_delay}, name=name, reason=reason)
 
     @overload
     async def edit(self) -> None:
@@ -1340,6 +1342,7 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         bitrate: int = ...,
         user_limit: int = ...,
         position: int = ...,
+        slowmode_delay: int = ...,
         sync_permissions: int = ...,
         category: Optional[CategoryChannel] = ...,
         overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
@@ -1381,6 +1384,8 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
             The new channel's user limit.
         position: :class:`int`
             The new channel's position.
+        slowmode_delay: :class:`int`
+            The new channel's slowmode interval in seconds.
         sync_permissions: :class:`bool`
             Whether to sync permissions with the channel's new or pre-existing
             category. Defaults to ``False``.
