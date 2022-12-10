@@ -363,6 +363,9 @@ class PrivateChannel(Snowflake, Protocol):
     def _add_call(self, **kwargs):
         raise NotImplementedError
 
+    def _update(self, **kwargs) -> None:
+        raise NotImplementedError
+
 
 class _Overwrites:
     __slots__ = ('id', 'allow', 'deny', 'type')
