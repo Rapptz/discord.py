@@ -1370,6 +1370,8 @@ class Guild(Hashable):
         -----------
         name: :class:`str`
             The channel's name.
+        slowmode_delay: :class:`int`
+            The slowmode interval in seconds for the channel.
         overwrites: Dict[Union[:class:`Role`, :class:`Member`], :class:`PermissionOverwrite`]
             A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply upon creation of a channel.
