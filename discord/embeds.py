@@ -228,15 +228,9 @@ class Embed:
         # try to fill in the more rich fields
 
         try:
-            color = data['color']
+            self._colour = Colour(value=data['color'])
         except KeyError:
-            try:
-                color = data['colour']
-            except KeyError:
-                color = None
-
-        if color is not None:
-            self._colour = Colour(value=color)
+            pass
 
         try:
             self._timestamp = utils.parse_time(data['timestamp'])
