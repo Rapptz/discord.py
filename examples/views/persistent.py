@@ -5,7 +5,7 @@ import discord
 
 
 # Define a simple View that persists between bot restarts
-# In order a view to persist between restarts it needs to meet the following conditions:
+# In order for a view to persist between restarts it needs to meet the following conditions:
 # 1) The timeout of the View has to be set to None
 # 2) Every item in the View has to have a custom_id set
 # It is recommended that the custom_id be sufficiently unique to
