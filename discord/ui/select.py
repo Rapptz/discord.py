@@ -778,7 +778,7 @@ def select(
         if cls is MISSING:
             callback_cls = _get_select_callback_parameter(func)
         else:
-            callback_cls = getattr(cls, "__origin__", cls)
+            callback_cls = getattr(cls, '__origin__', cls)
         if not issubclass(callback_cls, BaseSelect):
             supported_classes = ", ".join(["ChannelSelect", "MentionableSelect", "RoleSelect", "Select", "UserSelect"])
             raise TypeError(f'cls must be one of {supported_classes} or a subclass of one of them, not {callback_cls!r}.')
