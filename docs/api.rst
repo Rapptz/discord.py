@@ -2969,6 +2969,12 @@ of :class:`enum.Enum`.
 
         The ``cs`` locale.
 
+    .. attribute:: indonesian
+
+        The ``id`` locale.
+
+        .. versionadded:: 2.2
+
     .. attribute:: danish
 
         The ``da`` locale.

@@ -642,6 +642,7 @@ class Locale(Enum):
     taiwan_chinese = 'zh-TW'
     croatian = 'hr'
     czech = 'cs'
+    indonesian = 'id'
     danish = 'da'
     dutch = 'nl'
     finnish = 'fi'
