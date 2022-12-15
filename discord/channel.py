@@ -857,6 +857,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         'user_limit',
         '_state',
         'position',
+        'slowmode_delay',
         '_overwrites',
         'category_id',
         'rtc_region',
@@ -884,6 +885,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self.position: int = data['position']
+        self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self.bitrate: int = data['bitrate']
         self.user_limit: int = data['user_limit']
         self._fill_overwrites(data)
@@ -1014,6 +1016,13 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         *not* point to an existing or valid message.
 
         .. versionadded:: 2.0
+    slowmode_delay: :class:`int`
+        The number of seconds a member must wait between sending messages
+        in this channel. A value of ``0`` denotes that it is disabled.
+        Bots and users with :attr:`~Permissions.manage_channels` or
+        :attr:`~Permissions.manage_messages` bypass slowmode.
+
+        .. versionadded:: 2.2
     """
 
     __slots__ = ()
@@ -1331,6 +1340,9 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
         category: Optional[:class:`CategoryChannel`]
             The new category for this channel. Can be ``None`` to remove the
             category.
+        slowmode_delay: :class:`int`
+            Specifies the slowmode rate limit for user in this channel, in seconds.
+            A value of ``0`` disables slowmode. The maximum value possible is ``21600``.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
         overwrites: :class:`Mapping`
@@ -1361,7 +1373,6 @@ class VoiceChannel(discord.abc.Messageable, VocalGuildChannel):
             The newly edited voice channel. If the edit was only positional
             then ``None`` is returned instead.
         """
-
         payload = await self._edit(options, reason=reason)
         if payload is not None:
             # the payload will always be the proper channel payload
@@ -1421,6 +1432,13 @@ class StageChannel(VocalGuildChannel):
         The camera video quality for the stage channel's participants.
 
         .. versionadded:: 2.0
+    slowmode_delay: :class:`int`
+        The number of seconds a member must wait between sending messages
+        in this channel. A value of ``0`` denotes that it is disabled.
+        Bots and users with :attr:`~Permissions.manage_channels` or
+        :attr:`~Permissions.manage_messages` bypass slowmode.
+
+        .. versionadded:: 2.2
     """
 
     __slots__ = ('topic',)
@@ -1621,6 +1639,9 @@ class StageChannel(VocalGuildChannel):
         category: Optional[:class:`CategoryChannel`]
             The new category for this channel. Can be ``None`` to remove the
             category.
+        slowmode_delay: :class:`int`
+            Specifies the slowmode rate limit for user in this channel, in seconds.
+            A value of ``0`` disables slowmode. The maximum value possible is ``21600``.
         reason: Optional[:class:`str`]
             The reason for editing this channel. Shows up on the audit log.
         overwrites: :class:`Mapping`
