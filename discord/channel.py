@@ -2136,6 +2136,31 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         base.value &= ~denied.value
         return base
 
+    def get_thread(self, thread_id: int, /) -> Optional[Thread]:
+        """Returns a thread with the given ID.
+
+        .. note::
+
+            This does not always retrieve archived threads, as they are not retained in the internal
+            cache. Use :func:`Guild.fetch_channel` instead.
+
+        .. versionadded:: 2.2
+
+        Parameters
+        -----------
+        thread_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`Thread`]
+            The returned thread or ``None`` if not found.
+        """
+        thread = self.guild.get_thread(thread_id)
+        if thread is not None and thread.parent_id == self.id:
+            return thread
+        return None
+
     @property
     def threads(self) -> List[Thread]:
         """List[:class:`Thread`]: Returns all the threads that you can see."""
