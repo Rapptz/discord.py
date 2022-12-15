@@ -121,7 +121,8 @@ class AutoModTrigger:
     +-----------------------------------------------+------------------------------------------------+
     |                    Type                       |                   Attributes                   |
     +===============================================+================================================+
-    | :attr:`AutoModRuleTriggerType.keyword`        | :attr:`keyword_filter`, :attr:`regex_patterns` |
+    | :attr:`AutoModRuleTriggerType.keyword`        | :attr:`keyword_filter`, :attr:`regex_patterns`,|
+    |                                               | :attr:`allow_list`                             |
     +-----------------------------------------------+------------------------------------------------+
     | :attr:`AutoModRuleTriggerType.spam`           |                                                |
     +-----------------------------------------------+------------------------------------------------+
@@ -146,7 +147,7 @@ class AutoModTrigger:
         `Rust's regex syntax <https://docs.rs/regex/latest/regex/#syntax>`_.
         Maximum of 10. Regex strings can only be up to 75 characters in length.
 
-        This could be combined with :attr:`keyword_filter`.
+        This could be combined with :attr:`keyword_filter` and/or :attr:`allow_list`
 
         .. versionadded:: 2.0
     presets: :class:`AutoModPresets`
@@ -213,7 +214,12 @@ class AutoModTrigger:
         if data is None:
             return cls(type=type_)
         elif type_ is AutoModRuleTriggerType.keyword:
-            return cls(type=type_, keyword_filter=data.get('keyword_filter'), regex_patterns=data.get('regex_patterns'))
+            return cls(
+                type=type_,
+                keyword_filter=data.get('keyword_filter'),
+                regex_patterns=data.get('regex_patterns'),
+                allow_list=data.get('allow_list'),
+            )
         elif type_ is AutoModRuleTriggerType.keyword_preset:
             return cls(
                 type=type_, presets=AutoModPresets._from_value(data.get('presets', [])), allow_list=data.get('allow_list')
@@ -225,7 +231,11 @@ class AutoModTrigger:
 
     def to_metadata_dict(self) -> Optional[Dict[str, Any]]:
         if self.type is AutoModRuleTriggerType.keyword:
-            return {'keyword_filter': self.keyword_filter, 'regex_patterns': self.regex_patterns}
+            return {
+                'keyword_filter': self.keyword_filter,
+                'regex_patterns': self.regex_patterns,
+                'allow_list': self.allow_list,
+            }
         elif self.type is AutoModRuleTriggerType.keyword_preset:
             return {'presets': self.presets.to_array(), 'allow_list': self.allow_list}
         elif self.type is AutoModRuleTriggerType.mention_spam:
