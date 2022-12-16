@@ -675,10 +675,15 @@ def _get_select_callback_parameter(func: ItemCallbackType[V, BaseSelectT]) -> Ty
     for parameter in iterator:
         pass
 
-    if parameter.annotation is parameter.empty:
+    resolved = parameter.annotation
+    if resolved is parameter.empty:
         return Select
 
-    resolved = resolve_annotation(parameter.annotation, func.__globals__, func.__globals__, {})
+    if isinstance(resolved, str):
+        try:
+            resolved = resolve_annotation(parameter.annotation, func.__globals__, func.__globals__, {})
+        except NameError:
+            raise TypeError(f'Unable to resolve annotation {resolved!r} for select callback {func.__qualname__}') from None
     origin = getattr(resolved, '__origin__', resolved)
     if origin is BaseSelect or not isinstance(origin, type) or not issubclass(origin, BaseSelect):
         return Select
