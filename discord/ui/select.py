@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
-from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict
+from typing import Any, ForwardRef, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict
 from contextvars import ContextVar
 import inspect
 import os
@@ -662,6 +662,16 @@ class ChannelSelect(BaseSelect[V]):
         return super().values  # type: ignore
 
 
+class _ForwardRefDict(dict):
+    def __init__(self, *args, **kwargs):
+        self.cache: Dict[str, Any] = {}
+        super().__init__(*args, **kwargs)
+
+    def __missing__(self, key):
+        self.cache[key] = ref = ForwardRef(key)
+        return ref
+
+
 def _get_select_callback_parameter(func: ItemCallbackType[V, BaseSelectT]) -> Type[BaseSelect]:
     params = inspect.signature(func).parameters
     if len(params) != 3:
@@ -680,10 +690,15 @@ def _get_select_callback_parameter(func: ItemCallbackType[V, BaseSelectT]) -> Ty
         return Select
 
     if isinstance(resolved, str):
+        globs = _ForwardRefDict(func.__globals__)
         try:
-            resolved = resolve_annotation(parameter.annotation, func.__globals__, func.__globals__, {})
-        except NameError:
-            raise TypeError(f'Unable to resolve annotation {resolved!r} for select callback {func.__qualname__}') from None
+            resolved = resolve_annotation(parameter.annotation, globs, globs, globs.cache)
+        except (TypeError, NameError):
+            raise TypeError(
+                f"Unable to resolve annotation {parameter.annotation!r} for callback {func.__qualname__}"
+            ) from None
+        if isinstance(resolved, ForwardRef):
+            raise TypeError(f"Unable to resolve annotation {parameter.annotation!r} for callback {func.__qualname__}")
     origin = getattr(resolved, '__origin__', resolved)
     if origin is BaseSelect or not isinstance(origin, type) or not issubclass(origin, BaseSelect):
         return Select
