@@ -22,6 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
+import logging
 from typing import ForwardRef, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict
 from contextvars import ContextVar
 import inspect
@@ -67,6 +68,7 @@ if TYPE_CHECKING:
         str, User, Member, Role, AppCommandChannel, AppCommandThread, Union[Role, Member], Union[Role, User]
     ]
 
+_log = logging.getLogger(__name__)
 V = TypeVar('V', bound='View', covariant=True)
 BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect')
 SelectCallbackDecorator: TypeAlias = Callable[[ItemCallbackType[V, BaseSelectT]], BaseSelectT]
@@ -689,13 +691,26 @@ def _get_select_callback_parameter(func: ItemCallbackType[V, BaseSelectT]) -> Ty
         try:
             resolved = eval(resolved, globs, globs)
         except (TypeError, NameError):
-            raise TypeError(
-                f"Unable to resolve annotation {parameter.annotation!r} for callback {func.__qualname__}"
-            ) from None
+            _log.debug(
+                "Unable to resolve annotation %r for callback %s: falling back to Select",
+                parameter.annotation,
+                func.__qualname__,
+            )
+            return Select
         if isinstance(resolved, ForwardRef):
-            raise TypeError(f"Unable to resolve annotation {parameter.annotation!r} for callback {func.__qualname__}")
+            _log.debug(
+                "Unable to resolve annotation %r for callback %s: falling back to Select",
+                parameter.annotation,
+                func.__qualname__,
+            )
+            return Select
     origin = getattr(resolved, '__origin__', resolved)
     if origin is BaseSelect or not isinstance(origin, type) or not issubclass(origin, BaseSelect):
+        _log.debug(
+            "Annotation %r for callback %s is unsupported: falling back to Select",
+            parameter.annotation,
+            func.__qualname__,
+        )
         return Select
     return origin
 
