@@ -690,7 +690,7 @@ def _get_select_callback_parameter(func: ItemCallbackType[V, BaseSelectT]) -> Ty
         globs = _ForwardRefDict(func.__globals__)
         try:
             resolved = eval(resolved, globs, globs)
-        except (TypeError, NameError):
+        except Exception:
             _log.debug(
                 "Unable to resolve annotation %r for callback %s: falling back to Select",
                 parameter.annotation,
