@@ -31,7 +31,7 @@ from .item import Item, ItemCallbackType
 from ..enums import ChannelType, ComponentType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
-from ..utils import MISSING, resolve_annotation
+from ..utils import MISSING
 from ..components import SelectOption, SelectMenu
 from ..app_commands.namespace import Namespace
 
@@ -692,7 +692,7 @@ def _get_select_callback_parameter(func: ItemCallbackType[V, BaseSelectT]) -> Ty
     if isinstance(resolved, str):
         globs = _ForwardRefDict(func.__globals__)
         try:
-            resolved = resolve_annotation(parameter.annotation, globs, globs, globs.cache)
+            resolved = eval(resolved, globs, globs)
         except (TypeError, NameError):
             raise TypeError(
                 f"Unable to resolve annotation {parameter.annotation!r} for callback {func.__qualname__}"
