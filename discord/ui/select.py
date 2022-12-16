@@ -692,14 +692,14 @@ def _get_select_callback_parameter(func: ItemCallbackType[V, BaseSelectT]) -> Ty
             resolved = eval(resolved, globs, globs)
         except Exception:
             _log.debug(
-                "Unable to resolve annotation %r for callback %s: falling back to Select",
+                'Unable to resolve annotation %r for callback %s: falling back to Select',
                 parameter.annotation,
                 func.__qualname__,
             )
             return Select
         if isinstance(resolved, ForwardRef):
             _log.debug(
-                "Unable to resolve annotation %r for callback %s: falling back to Select",
+                'Unable to resolve annotation %r for callback %s: falling back to Select',
                 parameter.annotation,
                 func.__qualname__,
             )
@@ -707,7 +707,7 @@ def _get_select_callback_parameter(func: ItemCallbackType[V, BaseSelectT]) -> Ty
     origin = getattr(resolved, '__origin__', resolved)
     if origin is BaseSelect or not isinstance(origin, type) or not issubclass(origin, BaseSelect):
         _log.debug(
-            "Annotation %r for callback %s is unsupported: falling back to Select",
+            'Annotation %r for callback %s is unsupported: falling back to Select',
             parameter.annotation,
             func.__qualname__,
         )
