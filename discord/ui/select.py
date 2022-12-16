@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
-from typing import Any, ForwardRef, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict
+from typing import ForwardRef, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict
 from contextvars import ContextVar
 import inspect
 import os
@@ -663,13 +663,8 @@ class ChannelSelect(BaseSelect[V]):
 
 
 class _ForwardRefDict(dict):
-    def __init__(self, *args, **kwargs):
-        self.cache: Dict[str, Any] = {}
-        super().__init__(*args, **kwargs)
-
     def __missing__(self, key):
-        self.cache[key] = ref = ForwardRef(key)
-        return ref
+        return ForwardRef(key)
 
 
 def _get_select_callback_parameter(func: ItemCallbackType[V, BaseSelectT]) -> Type[BaseSelect]:
