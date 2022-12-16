@@ -836,11 +836,12 @@ def select(
     def decorator(func: ItemCallbackType[V, BaseSelectT]) -> ItemCallbackType[V, BaseSelectT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError('select function must be a coroutine function')
-        if not issubclass(cls, BaseSelect):
+        callback_cls = getattr(cls, '__origin__', cls)
+        if not issubclass(callback_cls, BaseSelect):
             supported_classes = ", ".join(["ChannelSelect", "MentionableSelect", "RoleSelect", "Select", "UserSelect"])
             raise TypeError(f'cls must be one of {supported_classes} or a subclass of one of them, not {cls!r}.')
 
-        func.__discord_ui_model_type__ = cls
+        func.__discord_ui_model_type__ = callback_cls
         func.__discord_ui_model_kwargs__ = {
             'placeholder': placeholder,
             'custom_id': custom_id,
@@ -849,9 +850,9 @@ def select(
             'max_values': max_values,
             'disabled': disabled,
         }
-        if issubclass(cls, Select):
+        if issubclass(callback_cls, Select):
             func.__discord_ui_model_kwargs__['options'] = options
-        if issubclass(cls, ChannelSelect):
+        if issubclass(callback_cls, ChannelSelect):
             func.__discord_ui_model_kwargs__['channel_types'] = channel_types
 
         return func
