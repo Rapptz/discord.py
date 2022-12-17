@@ -754,7 +754,8 @@ def select(
         Added the following keyword-arguments: ``cls``, ``channel_types``
 
     .. versionchanged:: 2.2
-        Now infers ``cls`` based on the callback if not supplied.
+        Now attempts to infer ``cls`` based on the callback if not supplied.
+        Unresolvable annotations still default to :class:`discord.ui.Select`.
 
     Example
     ---------
@@ -771,7 +772,7 @@ def select(
     cls: Union[Type[:class:`discord.ui.Select`], Type[:class:`discord.ui.UserSelect`], Type[:class:`discord.ui.RoleSelect`], \
         Type[:class:`discord.ui.MentionableSelect`], Type[:class:`discord.ui.ChannelSelect`]]
         The class to use for the select menu. Defaults to inferring the type from the
-        callback if available; otherwise defaults to :class:`discord.ui.Select`.
+        callback if available and resolvable; otherwise defaults to :class:`discord.ui.Select`.
         You can use other select types to display different select menus to the user.
         See the table above for the different values you can get from each select type.
         Subclasses work as well, however the callback in the subclass will get overridden.
