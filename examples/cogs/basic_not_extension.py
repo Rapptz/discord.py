@@ -1,4 +1,4 @@
-# In this example you will learn how to make cogs (not extension)
+# In this example you will learn how to make cogs (not extensions)
 
 import discord
 from discord.ext import commands
@@ -10,7 +10,7 @@ from typing import Optional, Type, Any
 
 class MyCog(commands.Cog):
     def __init__(self, bot) -> None:
-        self.bot = bot # Assign bot that is setuping cog
+        self.bot = bot # Assign bot who is setuping cog
     
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -43,7 +43,7 @@ class Bot(commands.Bot):
             intents=intents,
             **options
         )
-    async def on_ready(self):
+    async def on_ready(self): # Install cogs
         print('Start installing cogs!')
         await self.add_cog(MyCog(self))
         print('Finish installing cogs!')
@@ -55,4 +55,4 @@ intents.message_content = True
 
 bot = Bot(command_prefix='!', intents=intents)
 
-bot.run('YOUR_TOKEN')
+bot.run('YOUR_TOKEN') # Replace with your token
