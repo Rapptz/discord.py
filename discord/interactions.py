@@ -806,6 +806,7 @@ class InteractionResponse:
         attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
+        delete_after: Optional[float] = None,
     ) -> None:
         """|coro|
 
@@ -835,6 +836,12 @@ class InteractionResponse:
         allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
             Controls the mentions being processed in this message. See :meth:`.Message.edit`
             for more information.
+        delete_after: :class:`float`
+            If provided, the number of seconds to wait in the background
+            before deleting the message we just edited. If the deletion fails,
+            then it is silently ignored.
+
+            .. versionadded:: 2.2
 
         Raises
         -------
@@ -884,6 +891,17 @@ class InteractionResponse:
             state.store_view(view, message_id)
 
         self._response_type = InteractionResponseType.message_update
+
+        if delete_after is not None:
+
+            async def inner_call(delay: float = delete_after):
+                await asyncio.sleep(delay)
+                try:
+                    await self._parent.delete_original_response()
+                except HTTPException:
+                    pass
+
+            asyncio.create_task(inner_call())
 
     async def send_modal(self, modal: Modal, /) -> None:
         """|coro|
