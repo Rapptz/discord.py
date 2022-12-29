@@ -755,6 +755,20 @@ class GuildChannel:
         category = self.guild.get_channel(self.category_id)
         return bool(category and category.overwrites == self.overwrites)
 
+    def _apply_implicit_permissions(self, base: Permissions) -> None:
+        # if you can't send a message in a channel then you can't have certain
+        # permissions as well
+        if not base.send_messages:
+            base.send_tts_messages = False
+            base.mention_everyone = False
+            base.embed_links = False
+            base.attach_files = False
+
+        # if you can't read a channel then you have no permissions there
+        if not base.read_messages:
+            denied = Permissions.all_channel()
+            base.value &= ~denied.value
+
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         """Handles permission resolution for the :class:`~discord.Member`
         or :class:`~discord.Role`.
@@ -765,6 +779,7 @@ class GuildChannel:
         - Guild roles
         - Channel overrides
         - Member overrides
+        - Implicit permissions
         - Member timeout
 
         If a :class:`~discord.Role` is passed, then it checks the permissions
@@ -879,19 +894,6 @@ class GuildChannel:
             if overwrite.is_member() and overwrite.id == obj.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
                 break
-
-        # if you can't send a message in a channel then you can't have certain
-        # permissions as well
-        if not base.send_messages:
-            base.send_tts_messages = False
-            base.mention_everyone = False
-            base.embed_links = False
-            base.attach_files = False
-
-        # if you can't read a channel then you have no permissions there
-        if not base.read_messages:
-            denied = Permissions.all_channel()
-            base.value &= ~denied.value
 
         if obj.is_timed_out():
             # Timeout leads to every permission except VIEW_CHANNEL and READ_MESSAGE_HISTORY
