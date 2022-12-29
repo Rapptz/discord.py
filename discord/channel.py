@@ -231,6 +231,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         base = super().permissions_for(obj)
+        self._apply_implicit_permissions(base)
 
         # text channels do not have voice related permissions
         denied = Permissions.voice()
@@ -975,6 +976,7 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         base = super().permissions_for(obj)
+        self._apply_implicit_permissions(base)
 
         # voice channels cannot be edited by people who can't connect to them
         # It also implicitly denies all other voice perms
@@ -2219,6 +2221,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         base = super().permissions_for(obj)
+        self._apply_implicit_permissions(base)
 
         # text channels do not have voice related permissions
         denied = Permissions.voice()
