@@ -429,10 +429,10 @@ class AutoModRule:
             payload['enabled'] = enabled
 
         if exempt_roles is not MISSING:
-            payload['exempt_roles'] = exempt_roles
+            payload['exempt_roles'] = [x.id for x in exempt_roles]
 
         if exempt_channels is not MISSING:
-            payload['exempt_channels'] = exempt_channels
+            payload['exempt_channels'] = [x.id for x in exempt_channels]
 
         data = await self._state.http.edit_auto_moderation_rule(
             self.guild.id,
