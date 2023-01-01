@@ -10,8 +10,8 @@ from typing import Optional, Type, Any
 
 class MyCog(commands.Cog):
     def __init__(self, bot) -> None:
-        self.bot = bot # Assign bot who is setuping cog
-    
+        self.bot = bot  # Assign bot who is setuping cog
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
         if message.author.bot:
@@ -24,12 +24,14 @@ class MyCog(commands.Cog):
     async def admin_check(self, ctx: commands.Context):
         await ctx.send('You are admin!')
 
+
 # Create bot with cogs
 class Bot(commands.Bot):
     def __init__(
         self,
         command_prefix,
-        *, help_command: Optional[HelpCommand] = ...,
+        *,
+        help_command: Optional[HelpCommand] = ...,
         tree_cls: Type[app_commands.CommandTree[Any]] = app_commands.CommandTree,
         description: Optional[str] = None,
         intents: discord.Intents,
@@ -43,16 +45,18 @@ class Bot(commands.Bot):
             intents=intents,
             **options
         )
-    async def on_ready(self): # Install cogs
+
+    async def on_ready(self):  # Install cogs
         print('Start installing cogs!')
         await self.add_cog(MyCog(self))
         print('Finish installing cogs!')
-        
+
         print("I'm ready")
+
 
 intents = discord.Intents.default()
 intents.message_content = True
 
 bot = Bot(command_prefix='!', intents=intents)
 
-bot.run('YOUR_TOKEN') # Replace with your token
+bot.run('YOUR_TOKEN')  # Replace with your token
