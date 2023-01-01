@@ -1454,6 +1454,11 @@ def _get_browser_version(user_agent: str) -> str:
     return user_agent.split('Chrome/')[1].split()[0]
 
 
+def is_docker() -> bool:
+    path = '/proc/self/cgroup'
+    return os.path.exists('/.dockerenv') or (os.path.isfile(path) and any('docker' in line for line in open(path)))
+
+
 def stream_supports_colour(stream: Any) -> bool:
     # Pycharm and Vscode support colour in their inbuilt editors
     if 'PYCHARM_HOSTED' in os.environ or os.environ.get('TERM_PROGRAM') == 'vscode':
@@ -1461,7 +1466,8 @@ def stream_supports_colour(stream: Any) -> bool:
 
     is_a_tty = hasattr(stream, 'isatty') and stream.isatty()
     if sys.platform != 'win32':
-        return is_a_tty
+        # Docker does not consistently have a tty attached to it
+        return is_a_tty or is_docker()
 
     # ANSICON checks for things like ConEmu
     # WT_SESSION checks if this is Windows Terminal
