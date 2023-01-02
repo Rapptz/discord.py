@@ -46,12 +46,10 @@ class Bot(commands.Bot):
             **options
         )
 
-    async def on_ready(self):  # Install cogs
-        print('Start installing cogs!')
+    async def setup_hook(self):
+        print('The start of cogs installation')
         await self.add_cog(MyCog(self))
-        print('Finish installing cogs!')
-
-        print("I'm ready")
+        print('The end of cogs installation')
 
 
 intents = discord.Intents.default()
