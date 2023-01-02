@@ -28,9 +28,17 @@ class MyCog(commands.Cog):
     @app_commands.command()
     @app_commands.describe(first='First number', second='Second number', msg='Message')
     async def test_app_command(self, interaction: discord.Interaction, first: int, second: int, msg: str):
+        """
+        Test app command in cogs
+        """
         await interaction.response.send_message('Hello, world!')
         await async_sleep(1.0)  # Sleep by 1 second
         await interaction.response.edit_message(content=f'{first} + {second} = {first + second}. {msg}')
+    
+    @app_commands.context_menu()
+    @app_commands.default_permissions(administrator=True)  # Only admin can use this command
+    async def ban(self, interaction: discord.Interaction, member: discord.Member):
+        await member.ban(reason='Admin wants to ban you')
 
 
 # Create bot with cogs
