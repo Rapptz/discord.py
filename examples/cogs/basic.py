@@ -6,6 +6,7 @@ from discord.ext.commands import HelpCommand
 from discord import app_commands
 
 from typing import Optional, Type, Any
+from asyncio import sleep as async_sleep
 
 
 class MyCog(commands.Cog):
@@ -24,6 +25,13 @@ class MyCog(commands.Cog):
     async def admin_check(self, ctx: commands.Context):
         await ctx.send('You are admin!')
 
+    @app_commands.command()
+    @app_commands.describe(first='First number', second='Second number', msg='Message')
+    async def test_app_command(self, interaction: discord.Interaction, first: int, second: int, msg: str):
+        await interaction.response.send_message('Hello, world!')
+        await async_sleep(1.0)  # Sleep by 1 second
+        await interaction.response.edit_message(content=f'{first} + {second} = {first + second}. {msg}')
+
 
 # Create bot with cogs
 class Bot(commands.Bot):
@@ -35,7 +43,7 @@ class Bot(commands.Bot):
         tree_cls: Type[app_commands.CommandTree[Any]] = app_commands.CommandTree,
         description: Optional[str] = None,
         intents: discord.Intents,
-        **options: Any
+        **options: Any,
     ) -> None:
         super().__init__(
             command_prefix=command_prefix,
@@ -43,7 +51,7 @@ class Bot(commands.Bot):
             tree_cls=tree_cls,
             description=description,
             intents=intents,
-            **options
+            **options,
         )
 
     async def setup_hook(self):
