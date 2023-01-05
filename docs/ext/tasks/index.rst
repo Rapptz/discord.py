@@ -116,6 +116,9 @@ Doing something during cancellation:
             self.lock = asyncio.Lock()
             self.bulker.start()
 
+        async def cog_unload(self):
+            self.bulker.cancel()
+
         async def do_bulk(self):
             # bulk insert data here
             ...
