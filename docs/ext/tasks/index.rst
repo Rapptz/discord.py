@@ -63,6 +63,7 @@ Looping a certain amount of times before exiting:
 .. code-block:: python3
 
     from discord.ext import tasks
+    import discord
 
     @tasks.loop(seconds=5.0, count=5)
     async def slow_count():
@@ -72,7 +73,9 @@ Looping a certain amount of times before exiting:
     async def after_slow_count():
         print('done!')
 
-    slow_count.start()
+    class MyClient(discord.Client):
+        async def setup_hook(self):
+            slow_count.start()
 
 Waiting until the bot is ready before the loop starts:
 
