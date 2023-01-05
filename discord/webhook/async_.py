@@ -38,14 +38,14 @@ import aiohttp
 from .. import utils
 from ..errors import HTTPException, Forbidden, NotFound, DiscordServerError
 from ..message import Message
-from ..enums import try_enum, WebhookType
+from ..enums import try_enum, WebhookType, ChannelType
 from ..user import BaseUser, User
 from ..flags import MessageFlags
 from ..asset import Asset
 from ..partial_emoji import PartialEmoji
 from ..http import Route, handle_message_parameters, MultipartParameters, HTTPClient, json_or_text
 from ..mixins import Hashable
-from ..channel import TextChannel, PartialMessageable
+from ..channel import TextChannel, ForumChannel, PartialMessageable
 from ..file import File
 
 __all__ = (
@@ -68,7 +68,7 @@ if TYPE_CHECKING:
     from ..http import Response
     from ..guild import Guild
     from ..emoji import Emoji
-    from ..channel import ForumChannel, VoiceChannel
+    from ..channel import VoiceChannel
     from ..abc import Snowflake
     from ..ui.view import View
     import datetime
@@ -1492,10 +1492,18 @@ class Webhook(BaseWebhook):
         state = _WebhookState(self, parent=self._state, thread=thread)
         # state may be artificial (unlikely at this point...)
         if thread is MISSING:
-            channel = self.channel or PartialMessageable(state=self._state, guild_id=self.guild_id, id=int(data['channel_id']))  # type: ignore
+            channel_id = int(data['channel_id'])
+            channel = self.channel
+            # If this thread is created via thread_name then the channel_id would not be the same as the webhook's channel_id
+            # which would be the forum channel.
+            if self.channel_id != channel_id:
+                type = ChannelType.public_thread if isinstance(channel, ForumChannel) else (channel and channel.type)
+                channel = PartialMessageable(state=self._state, guild_id=self.guild_id, id=channel_id, type=type)  # type: ignore
+            else:
+                channel = self.channel or PartialMessageable(state=self._state, guild_id=self.guild_id, id=channel_id)  # type: ignore
         else:
             channel = self.channel
-            if isinstance(channel, TextChannel):
+            if isinstance(channel, (ForumChannel, TextChannel)):
                 channel = channel.get_thread(thread.id)
 
             if channel is None:
