@@ -573,11 +573,6 @@ else:
         .. code-block:: python3
 
             @app_commands.command()
-            async def numeric_range(interaction: discord.Interaction, value: app_commands.Range[int, 10, 12]):
-                await interaction.response.send_message(f'Your value is {value}', ephemeral=True)
-                
-            @app_commands.command()
-            async def string_range(interaction: discord.Interaction, value: app_commands.Range[str, 5, 10]):
                 await interaction.response.send_message(f'Your value is {value}', ephemeral=True)
         """
 
