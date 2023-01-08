@@ -551,7 +551,7 @@ else:
         During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
         the intent of the code.
 
-        Some example ranges limiting numeric input:
+        Some example ranges:
 
         - ``Range[int, 10]`` means the minimum is 10 with no maximum.
         - ``Range[int, None, 10]`` means the maximum is 10 with no minimum.
