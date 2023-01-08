@@ -548,6 +548,9 @@ else:
         """A type annotation that can be applied to a parameter to require a numeric or string
         type to fit within the range provided.
 
+        for ints or floats, the parameter is restricted between the minimum and maximum value.
+        for strings, the length of the string is restricted between the minimum and maximum value.
+
         During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
         the intent of the code.
 
@@ -556,6 +559,8 @@ else:
         - ``Range[int, 10]`` means the minimum is 10 with no maximum.
         - ``Range[int, None, 10]`` means the maximum is 10 with no minimum.
         - ``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10.
+        - ``Range[float, 0.5, 3]`` means the minimum is 0.5 and the maximum is 3.
+        - ``Range[str, 5, 10]`` means the minimum length is 5 and the maximum length is 10.
 
         .. versionadded:: 2.0
 
@@ -583,11 +588,6 @@ else:
             if min is None and max is None:
                 raise TypeError('Range must not be empty')
 
-            if min is not None and max is not None:
-                # At this point max and min are both not none
-                if type(min) != type(max):
-                    raise TypeError('Both min and max in Range must be the same type')
-
             if obj_type is int:
                 opt_type = AppCommandOptionType.integer
             elif obj_type is float:
@@ -597,15 +597,26 @@ else:
             else:
                 raise TypeError(f'expected int, float, or str as range type, received {obj_type!r} instead')
 
-            if obj_type in (str, int):
-                cast = int
+            # ensure min and max types are correct
+            if obj_type is int or obj_type is str:
+                if min is not None and type(min) != int:
+                    raise TypeError(f'expected min to be int, got {type(min)}')
+                if max is not None and type(max) != int:
+                    raise TypeError(f'expected max to be int, got {type(min)}')
             else:
-                cast = float
+                if min is not None and type(min) not in (int, float):
+                    raise TypeError(f'expected min to be int or float, got {type(min)}')
+                if max is not None and type(max) not in (int, float):
+                    raise TypeError(f'expected max to be int or float, got {type(min)}')
+
+            # string ranges must have both values ≥ 1 (or unspecified)
+            if obj_type is str and ((max is None or max < 1) or (min is None or min < 1)):
+                raise TypeError(f'max and min must be greater than or equal to 1 for str range type.')
 
             transformer = RangeTransformer(
                 opt_type,
-                min=cast(min) if min is not None else None,
-                max=cast(max) if max is not None else None,
+                min=min if min is not None else None,
+                max=max if max is not None else None,
             )
             return transformer
 
