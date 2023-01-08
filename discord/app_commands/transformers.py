@@ -553,10 +553,11 @@ else:
 
         Some example ranges limiting numeric input:
 
-        - ``Range[int, 10]`` means the input type is `int`, and the minimum is 10 with no maximum.
-        - ``Range[int, None, 10]`` means the input type is `int`, and the maximum is 10 with no minimum.
-        - ``Range[int, 1, 10]`` means the input type is `int`, and the minimum is 1 and the maximum is 10.
-        - ``Range[float, 1.0, 5.0]`` means the input type is `float`, and the minimum is 1.0 and the maximum is 5.0.
+        - ``Range[int, 10]`` means the minimum is 10 with no maximum.
+        - ``Range[int, None, 10]`` means the maximum is 10 with no minimum.
+        - ``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10.
+        - ``Range[float, 1.0, 5.0]`` means the minimum is 1.0 and the maximum is 5.0.
+        - ``Range[str, 1, 10]`` means the minimum length is 1 and the maximum length is 10.
 
         Some example ranges limiting string input:
 
