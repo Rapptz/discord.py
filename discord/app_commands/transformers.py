@@ -559,12 +559,6 @@ else:
         - ``Range[float, 1.0, 5.0]`` means the minimum is 1.0 and the maximum is 5.0.
         - ``Range[str, 1, 10]`` means the minimum length is 1 and the maximum length is 10.
 
-        Some example ranges limiting string input:
-
-        - ``Range[str, 10]`` means the minimum length is 10 with no maximum length.
-        - ``Range[str, None, 10]`` means the maximum length is 10 with no minimum length.
-        - ``Range[str, 1, 10]`` means the minimum length is 1 and the maximum length is 10.
-
         .. versionadded:: 2.0
 
         Examples
