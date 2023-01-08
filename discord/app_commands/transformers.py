@@ -551,11 +551,18 @@ else:
         During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
         the intent of the code.
 
-        Some example ranges:
+        Some example ranges limiting numeric input:
 
-        - ``Range[int, 10]`` means the minimum is 10 with no maximum.
-        - ``Range[int, None, 10]`` means the maximum is 10 with no minimum.
-        - ``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10.
+        - ``Range[int, 10]`` means the input type is `int`, and the minimum is 10 with no maximum.
+        - ``Range[int, None, 10]`` means the input type is `int`, and the maximum is 10 with no minimum.
+        - ``Range[int, 1, 10]`` means the input type is `int`, and the minimum is 1 and the maximum is 10.
+        - ``Range[float, 1.0, 5.0]`` means the input type is `float`, and the minimum is 1.0 and the maximum is 5.0.
+
+        Some example ranges limiting string input:
+
+        - ``Range[str, 10]`` means the minimum length is 10 with no maximum length.
+        - ``Range[str, None, 10]`` means the maximum length is 10 with no minimum length.
+        - ``Range[str, 1, 10]`` means the minimum length is 1 and the maximum length is 10.
 
         .. versionadded:: 2.0
 
@@ -565,7 +572,11 @@ else:
         .. code-block:: python3
 
             @app_commands.command()
-            async def range(interaction: discord.Interaction, value: app_commands.Range[int, 10, 12]):
+            async def numeric_range(interaction: discord.Interaction, value: app_commands.Range[int, 10, 12]):
+                await interaction.response.send_message(f'Your value is {value}', ephemeral=True)
+                
+            @app_commands.command()
+            async def string_range(interaction: discord.Interaction, value: app_commands.Range[str, 5, 10]):
                 await interaction.response.send_message(f'Your value is {value}', ephemeral=True)
         """
 
