@@ -126,6 +126,11 @@ class AppInfo:
         The settings for custom authorization URL of application, if enabled.
 
         .. versionadded:: 2.0
+    role_connections_verification_url: Optional[:class:`str`]
+        The application's connection verification URL which will render the application as
+        a verification method in the guild's role verification configuration.
+
+        .. versionadded:: 2.2
     """
 
     __slots__ = (
@@ -150,6 +155,7 @@ class AppInfo:
         'tags',
         'custom_install_url',
         'install_params',
+        'role_connections_verification_url',
     )
 
     def __init__(self, state: ConnectionState, data: AppInfoPayload):
@@ -180,6 +186,7 @@ class AppInfo:
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
         self.tags: List[str] = data.get('tags', [])
         self.custom_install_url: Optional[str] = data.get('custom_install_url')
+        self.role_connections_verification_url: Optional[str] = data.get('role_connections_verification_url')
 
         params = data.get('install_params')
         self.install_params: Optional[AppInstallParams] = AppInstallParams(params) if params else None
