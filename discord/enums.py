@@ -284,6 +284,7 @@ class MessageType(Enum):
     guild_invite_reminder = 22
     context_menu_command = 23
     auto_moderation_action = 24
+    role_subscription_purchase = 25
 
 
 class SpeakingState(Enum):

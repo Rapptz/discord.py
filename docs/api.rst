@@ -1691,6 +1691,11 @@ of :class:`enum.Enum`.
         sent if the rule is configured to sent an alert when triggered.
 
         .. versionadded:: 2.0
+    .. attribute:: role_subscription_purchase
+
+        The system message sent when a user purchases or renews a role subscription.
+
+        .. versionadded:: 2.0
 
 .. class:: InviteType
 
@@ -4801,7 +4806,7 @@ of :class:`enum.Enum`.
 
         The ``id`` locale.
 
-        .. versionadded:: 2.2
+        .. versionadded:: 2.0
 
     .. attribute:: danish
 
@@ -5374,7 +5379,7 @@ of :class:`enum.Enum`.
 
     Represents how a forum's posts are layed out in the client.
 
-    .. versionadded:: 2.2
+    .. versionadded:: 2.0
 
     .. attribute:: not_set
 
@@ -6973,7 +6978,7 @@ Message
 
 .. attributetable:: PartialMessage
 
-.. autoclass:: PartialMessage
+.. autoclass:: PartialMessage()
     :members:
 
 .. attributetable:: Attachment
@@ -6989,6 +6994,11 @@ Message
 .. attributetable:: DeletedReferencedMessage
 
 .. autoclass:: DeletedReferencedMessage()
+    :members:
+
+.. attributetable:: RoleSubscriptionInfo
+
+.. autoclass:: RoleSubscriptionInfo()
     :members:
 
 Reaction

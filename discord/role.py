@@ -66,22 +66,31 @@ class RoleTags:
         The bot's user ID that manages this role.
     integration_id: Optional[:class:`int`]
         The integration ID that manages the role.
+    subscription_listing_id: Optional[:class:`int`]
+        The ID of this role's subscription SKU and listing.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
         'bot_id',
         'integration_id',
         '_premium_subscriber',
+        '_available_for_purchase',
+        'subscription_listing_id',
     )
 
     def __init__(self, data: RoleTagPayload):
         self.bot_id: Optional[int] = _get_as_snowflake(data, 'bot_id')
         self.integration_id: Optional[int] = _get_as_snowflake(data, 'integration_id')
+        self.subscription_listing_id: Optional[int] = _get_as_snowflake(data, 'subscription_listing_id')
+
         # NOTE: The API returns "null" for this if it's valid, which corresponds to None.
         # This is different from other fields where "null" means "not there".
         # So in this case, a value of None is the same as True.
         # Which means we would need a different sentinel.
         self._premium_subscriber: Optional[Any] = data.get('premium_subscriber', MISSING)
+        self._available_for_purchase: Optional[Any] = data.get('available_for_purchase', MISSING)
 
     def is_bot_managed(self) -> bool:
         """:class:`bool`: Whether the role is associated with a bot."""
@@ -94,6 +103,13 @@ class RoleTags:
     def is_integration(self) -> bool:
         """:class:`bool`: Whether the role is managed by an integration."""
         return self.integration_id is not None
+
+    def is_available_for_purchase(self) -> bool:
+        """:class:`bool`: Whether the role is available for purchase.
+
+        .. versionadded:: 2.0
+        """
+        return self._available_for_purchase is None
 
     def __repr__(self) -> str:
         return (
