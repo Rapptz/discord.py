@@ -47,7 +47,7 @@ import datetime
 import discord.abc
 from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
+from .enums import ChannelType, ForumLayoutType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
 from .mixins import Hashable
 from . import utils
 from .utils import MISSING
@@ -2140,6 +2140,11 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         add reaction button.
 
         .. versionadded:: 2.1
+    default_layout: :class:`ForumLayoutType`
+        The default layout for posts in this forum channel.
+        Defaults to :attr:`ForumLayoutType.not_set`.
+
+        .. versionadded:: 2.2
     """
 
     __slots__ = (
@@ -2158,6 +2163,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         'default_auto_archive_duration',
         'default_thread_slowmode_delay',
         'default_reaction_emoji',
+        'default_layout',
         '_available_tags',
         '_flags',
     )
@@ -2191,6 +2197,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         # This takes advantage of the fact that dicts are ordered since Python 3.7
         tags = [ForumTag.from_data(state=self._state, data=tag) for tag in data.get('available_tags', [])]
         self.default_thread_slowmode_delay: int = data.get('default_thread_rate_limit_per_user', 0)
+        self.default_layout: ForumLayoutType = try_enum(ForumLayoutType, data.get('default_forum_layout', 0))
         self._available_tags: Dict[int, ForumTag] = {tag.id: tag for tag in tags}
 
         self.default_reaction_emoji: Optional[PartialEmoji] = None
@@ -2327,6 +2334,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         available_tags: Sequence[ForumTag] = ...,
         default_thread_slowmode_delay: int = ...,
         default_reaction_emoji: Optional[EmojiInputType] = ...,
+        default_layout: ForumLayoutType = ...,
         require_tag: bool = ...,
     ) -> ForumChannel:
         ...
@@ -2381,6 +2389,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             The new default reaction emoji for threads in this channel.
 
             .. versionadded:: 2.1
+        default_layout: :class:`ForumLayoutType`
+            The new default layout for posts in this forum.
+
+            .. versionadded:: 2.2
         require_tag: :class:`bool`
             Whether to require a tag for threads in this channel or not.
 
@@ -2391,7 +2403,8 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         ValueError
             The new ``position`` is less than 0 or greater than the number of channels.
         TypeError
-            The permission overwrite information is not in proper form.
+            The permission overwrite information is not in proper form or a type
+            is not the expected type.
         Forbidden
             You do not have permissions to edit the forum.
         HTTPException
@@ -2431,6 +2444,16 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             flags = self.flags
             flags.require_tag = require_tag
             options['flags'] = flags.value
+
+        try:
+            layout = options.pop('default_layout')
+        except KeyError:
+            pass
+        else:
+            if not isinstance(layout, ForumLayoutType):
+                raise TypeError(f'default_layout parameter must be a ForumLayoutType not {layout.__class__.__name__}')
+
+            options['default_forum_layout'] = layout.value
 
         payload = await self._edit(options, reason=reason)
         if payload is not None:

@@ -66,6 +66,7 @@ __all__ = (
     'AutoModRuleTriggerType',
     'AutoModRuleEventType',
     'AutoModRuleActionType',
+    'ForumLayoutType',
 )
 
 if TYPE_CHECKING:
@@ -732,6 +733,12 @@ class AutoModRuleActionType(Enum):
     block_message = 1
     send_alert_message = 2
     timeout = 3
+
+
+class ForumLayoutType(Enum):
+    not_set = 0
+    list_view = 1
+    gallery_view = 2
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
