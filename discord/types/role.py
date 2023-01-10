@@ -50,3 +50,4 @@ class RoleTags(TypedDict, total=False):
     subscription_listing_id: Snowflake
     premium_subscriber: None
     available_for_purchase: None
+    guild_connections: None

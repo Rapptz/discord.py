@@ -78,6 +78,7 @@ class RoleTags:
         '_premium_subscriber',
         '_available_for_purchase',
         'subscription_listing_id',
+        '_guild_connections',
     )
 
     def __init__(self, data: RoleTagPayload):
@@ -91,6 +92,7 @@ class RoleTags:
         # Which means we would need a different sentinel.
         self._premium_subscriber: Optional[Any] = data.get('premium_subscriber', MISSING)
         self._available_for_purchase: Optional[Any] = data.get('available_for_purchase', MISSING)
+        self._guild_connections: Optional[Any] = data.get('guild_connections', MISSING)
 
     def is_bot_managed(self) -> bool:
         """:class:`bool`: Whether the role is associated with a bot."""
@@ -110,6 +112,13 @@ class RoleTags:
         .. versionadded:: 2.0
         """
         return self._available_for_purchase is None
+
+    def is_guild_connection(self) -> bool:
+        """:class:`bool`: Whether the role is a guild's linked role.
+
+        .. versionadded:: 2.2
+        """
+        return self._guild_connections is None
 
     def __repr__(self) -> str:
         return (
