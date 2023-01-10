@@ -1618,6 +1618,11 @@ of :class:`enum.Enum`.
         sent if the rule is configured to sent an alert when triggered.
 
         .. versionadded:: 2.0
+    .. attribute:: role_subscription_purchase
+
+        The system message sent when a user purchases or renews a role subscription.
+
+        .. versionadded:: 2.2
 
 .. class:: UserFlags
 
@@ -4624,6 +4629,14 @@ MessageApplication
 .. attributetable:: MessageApplication
 
 .. autoclass:: MessageApplication
+    :members:
+
+RoleSubscriptionInfo
+~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RoleSubscriptionInfo
+
+.. autoclass:: RoleSubscriptionInfo
     :members:
 
 Intents

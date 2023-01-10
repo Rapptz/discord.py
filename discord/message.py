@@ -73,6 +73,7 @@ if TYPE_CHECKING:
         MessageReference as MessageReferencePayload,
         MessageApplication as MessageApplicationPayload,
         MessageActivity as MessageActivityPayload,
+        RoleSubscriptionData as RoleSubscriptionDataPayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -108,6 +109,7 @@ __all__ = (
     'MessageReference',
     'DeletedReferencedMessage',
     'MessageApplication',
+    'RoleSubscriptionInfo',
 )
 
 
@@ -655,6 +657,39 @@ class MessageApplication:
                 state=self._state, object_id=self.id, icon_hash=self._cover_image, asset_type='cover_image'
             )
         return None
+
+
+class RoleSubscriptionInfo:
+    """Represents a message's role subscription information.
+
+    This is currently only attached to messages of type :attr:`MessageType.role_subscription_purchase`.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    role_subscription_listing_id: :class:`int`
+        The ID of the SKU and listing that the user is subscribed to.
+    tier_name: :class:`str`
+        The name of the tier that the user is subscribed to.
+    total_months_subscribed: :class:`int`
+        The cumulative number of months that the user has been subscribed for.
+    is_renewal: :class:`bool`
+        Whether this notification is for a renewal rather than a new purchase.
+    """
+
+    __slots__ = (
+        'role_subscription_listing_id',
+        'tier_name',
+        'total_months_subscribed',
+        'is_renewal',
+    )
+
+    def __init__(self, data: RoleSubscriptionDataPayload) -> None:
+        self.role_subscription_listing_id: int = int(data['role_subscription_listing_id'])
+        self.tier_name: str = data['tier_name']
+        self.total_months_subscribed: int = data['total_months_subscribed']
+        self.is_renewal: bool = data['is_renewal']
 
 
 class PartialMessage(Hashable):
@@ -1399,6 +1434,11 @@ class Message(PartialMessage, Hashable):
         The interaction that this message is a response to.
 
         .. versionadded:: 2.0
+    role_subscription: Optional[:class:`RoleSubscriptionInfo`]
+        The data of the role subscription purchase or renewal that prompted this
+        :attr:`MessageType.role_subscription_purchase` message.
+
+        .. versionadded:: 2.2
     guild: Optional[:class:`Guild`]
         The guild that the message belongs to, if applicable.
     """
@@ -1431,6 +1471,7 @@ class Message(PartialMessage, Hashable):
         'stickers',
         'components',
         'interaction',
+        'role_subscription',
     )
 
     if TYPE_CHECKING:
@@ -1515,6 +1556,14 @@ class Message(PartialMessage, Hashable):
             pass
         else:
             self.application = MessageApplication(state=self._state, data=application)
+
+        self.role_subscription: Optional[RoleSubscriptionInfo] = None
+        try:
+            role_subscription = data['role_subscription_data']
+        except KeyError:
+            pass
+        else:
+            self.role_subscription = RoleSubscriptionInfo(role_subscription)
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'components'):
             try:
@@ -1938,6 +1987,12 @@ class Message(PartialMessage, Hashable):
 
         if self.type is MessageType.guild_invite_reminder:
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
+
+        if self.type is MessageType.role_subscription_purchase and self.role_subscription is not None:
+            # TODO: figure out how the message looks like for is_renewal: true
+            total_months = self.role_subscription.total_months_subscribed
+            months = '1 month' if total_months == 1 else f'{total_months} months'
+            return f'{self.author.name} joined {self.role_subscription.tier_name} and has been a subscriber of {self.guild} for {months}!'
 
         # Fallback for unknown message types
         return ''
