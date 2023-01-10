@@ -1696,6 +1696,17 @@ of :class:`enum.Enum`.
         The system message sent when a user purchases or renews a role subscription.
 
         .. versionadded:: 2.0
+    .. attribute:: interaction_premium_upsell
+
+        The system message sent when a user is given an advertisement to purchase a premium tier for
+        an application during an interaction.
+
+        .. versionadded:: 2.0
+    .. attribute:: guild_application_premium_subscription
+
+        The system message sent when an application's premium subscription is purchased for the guild.
+
+        .. versionadded:: 2.0
 
 .. class:: InviteType
 
