@@ -4099,9 +4099,7 @@ class Guild(Hashable):
     ) -> List[Member]:
         """|coro|
 
-        Request members that belong to this guild whose username starts with
-        the query given.
-
+        Request members of this guild whose username or nickname starts with the given query.
         This is a websocket operation.
 
         .. note::
@@ -4116,7 +4114,7 @@ class Guild(Hashable):
         Parameters
         -----------
         query: Optional[:class:`str`]
-            The string that the username's start with.
+            The string that the username or nickname should start with.
         limit: :class:`int`
             The maximum number of members to send back. This must be
             a number between 5 and 100.
