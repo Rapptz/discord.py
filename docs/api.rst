@@ -5369,6 +5369,26 @@ of :class:`enum.Enum`.
 
         The rule will timeout a user.
 
+
+.. class:: ForumLayoutType
+
+    Represents how a forum's posts are layed out in the client.
+
+    .. versionadded:: 2.2
+
+    .. attribute:: not_set
+
+        No default has been set, so it is up to the client to know how to lay it out.
+
+    .. attribute:: list_view
+
+        Displays posts as a list.
+
+    .. attribute:: gallery_view
+
+        Displays posts as a collection of tiles.
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
