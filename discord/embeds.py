@@ -742,16 +742,16 @@ class Embed:
                     result['timestamp'] = timestamp.replace(tzinfo=datetime.timezone.utc).isoformat()
 
         # add in the non raw attribute ones
-        if self.type is not None:
+        if self.type:
             result['type'] = self.type
 
-        if self.description is not None:
+        if self.description:
             result['description'] = self.description
 
-        if self.url is not None:
+        if self.url:
             result['url'] = self.url
 
-        if self.title is not None:
+        if self.title:
             result['title'] = self.title
 
         return result  # type: ignore # This payload is equivalent to the EmbedData type
