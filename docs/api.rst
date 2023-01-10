@@ -1673,7 +1673,7 @@ of :class:`enum.Enum`.
         The user is an Early Verified Bot Developer.
     .. attribute:: discord_certified_moderator
 
-        The user is a Discord Certified Moderator.
+        The user is a Moderator Programs Alumni.
     .. attribute:: bot_http_interactions
 
         The user is a bot that only uses HTTP interactions and is shown in the online member list.
