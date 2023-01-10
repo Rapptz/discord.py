@@ -145,7 +145,7 @@ class AutoModTrigger:
     regex_patterns: List[:class:`str`]
         The regex pattern that will trigger the filter. The syntax is based off of
         `Rust's regex syntax <https://docs.rs/regex/latest/regex/#syntax>`_.
-        Maximum of 10. Regex strings can only be up to 75 characters in length.
+        Maximum of 10. Regex strings can only be up to 250 characters in length.
 
         This could be combined with :attr:`keyword_filter` and/or :attr:`allow_list`
 
