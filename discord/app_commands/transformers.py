@@ -567,6 +567,7 @@ else:
         .. code-block:: python3
 
             @app_commands.command()
+            async def range(interaction: discord.Interaction, value: app_commands.Range[int, 10, 12]):
                 await interaction.response.send_message(f'Your value is {value}', ephemeral=True)
         """
 
