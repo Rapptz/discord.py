@@ -619,6 +619,28 @@ Guilds
     :param after: A list of stickers after the update.
     :type after: Sequence[:class:`GuildSticker`]
 
+.. function:: on_audit_log_entry_create(entry)
+
+    Called when a :class:`Guild` gets a new audit log entry.
+    You must have :attr:`~Permissions.view_audit_log` to receive this.
+
+    This requires :attr:`Intents.moderation` to be enabled.
+
+    .. versionadded:: 2.2
+
+    .. warning::
+
+        Audit log entries received through the gateway are subject to data retrieval
+        from cache rather than REST. This means that some data might not be present
+        when you expect it to be. For example, the :attr:`AuditLogEntry.target`
+        attribute will usually be a :class:`discord.Object` and the
+        :attr:`AuditLogEntry.user` attribute will depend on user and member cache.
+
+        To get the user ID of entry, :attr:`AuditLogEntry.user_id` can be used instead.
+
+    :param entry: The audit log entry that was created.
+    :type entry: :class:`AuditLogEntry`
+
 .. function:: on_invite_create(invite)
 
     Called when an :class:`Invite` is created.
@@ -813,7 +835,7 @@ Members
 
     Called when user gets banned from a :class:`Guild`.
 
-    This requires :attr:`Intents.bans` to be enabled.
+    This requires :attr:`Intents.moderation` to be enabled.
 
     :param guild: The guild the user got banned from.
     :type guild: :class:`Guild`
@@ -826,7 +848,7 @@ Members
 
     Called when a :class:`User` gets unbanned from a :class:`Guild`.
 
-    This requires :attr:`Intents.bans` to be enabled.
+    This requires :attr:`Intents.moderation` to be enabled.
 
     :param guild: The guild the user got unbanned from.
     :type guild: :class:`Guild`

@@ -74,6 +74,7 @@ from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
 from .automod import AutoModRule, AutoModAction
+from .audit_logs import AuditLogEntry
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel
@@ -1095,6 +1096,23 @@ class ConnectionState:
 
         guild.stickers = tuple(map(lambda d: self.store_sticker(guild, d), data['stickers']))
         self.dispatch('guild_stickers_update', guild, before_stickers, guild.stickers)
+
+    def parse_guild_audit_log_entry_create(self, data: gw.GuildAuditLogEntryCreate) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is None:
+            _log.debug('GUILD_AUDIT_LOG_ENTRY_CREATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        entry = AuditLogEntry(
+            users=self._users,  # type: ignore
+            integrations={},
+            app_commands={},
+            automod_rules={},
+            data=data,
+            guild=guild,
+        )
+
+        self.dispatch('audit_log_entry_create', entry)
 
     def parse_auto_moderation_rule_create(self, data: AutoModerationRule) -> None:
         guild = self._get_guild(int(data['guild_id']))

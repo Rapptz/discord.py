@@ -43,6 +43,7 @@ from .guild import Guild, UnavailableGuild
 from .user import User
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
+from .audit_log import AuditLogEntry
 
 
 class SessionStartLimit(TypedDict):
@@ -337,3 +338,7 @@ class AutoModerationActionExecution(TypedDict):
     content: str
     matched_keyword: Optional[str]
     matched_content: Optional[str]
+
+
+class GuildAuditLogEntryCreate(AuditLogEntry):
+    guild_id: Snowflake
