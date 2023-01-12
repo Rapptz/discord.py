@@ -48,6 +48,7 @@ from .subscriptions import PremiumGuildSubscriptionSlot
 from .payments import Payment
 from .entitlements import Entitlement, GatewayGift
 from .library import LibraryApplication
+from .audit_log import AuditLogEntry
 
 
 class UserPresenceUpdateEvent(TypedDict):
@@ -479,3 +480,7 @@ class AutoModerationActionExecution(TypedDict):
     content: str
     matched_keyword: Optional[str]
     matched_content: Optional[str]
+
+
+class GuildAuditLogEntryCreate(AuditLogEntry):
+    guild_id: Snowflake

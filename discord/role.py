@@ -116,7 +116,7 @@ class RoleTags:
     def is_guild_connection(self) -> bool:
         """:class:`bool`: Whether the role is a guild's linked role.
 
-        .. versionadded:: 2.2
+        .. versionadded:: 2.0
         """
         return self._guild_connections is None
 
