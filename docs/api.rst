@@ -2234,7 +2234,7 @@ of :class:`enum.Enum`.
         A member was kicked.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`User` who got kicked.
+        the :class:`User` or :class:`Object` who got kicked.
 
         When this is the action, :attr:`~AuditLogEntry.changes` is empty.
 
@@ -2258,7 +2258,7 @@ of :class:`enum.Enum`.
         A member was banned.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`User` who got banned.
+        the :class:`User` or :class:`Object` who got banned.
 
         When this is the action, :attr:`~AuditLogEntry.changes` is empty.
 
@@ -2267,7 +2267,7 @@ of :class:`enum.Enum`.
         A member was unbanned.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`User` who got unbanned.
+        the :class:`User` or :class:`Object` who got unbanned.
 
         When this is the action, :attr:`~AuditLogEntry.changes` is empty.
 
@@ -2279,7 +2279,7 @@ of :class:`enum.Enum`.
         - They were server muted or deafened (or it was undo'd)
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Member` or :class:`User` who got updated.
+        the :class:`Member`, :class:`User`, or :class:`Object` who got updated.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2294,7 +2294,7 @@ of :class:`enum.Enum`.
         either gains a role or loses a role.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Member` or :class:`User` who got the role.
+        the :class:`Member`, :class:`User`, or :class:`Object` who got the role.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2330,7 +2330,7 @@ of :class:`enum.Enum`.
         A bot was added to the guild.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Member` or :class:`User` which was added to the guild.
+        the :class:`Member`, :class:`User`, or :class:`Object` which was added to the guild.
 
         .. versionadded:: 1.3
 
@@ -2511,7 +2511,7 @@ of :class:`enum.Enum`.
         only triggers if the message was deleted by someone other than the author.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Member` or :class:`User` who had their message deleted.
+        the :class:`Member`, :class:`User`, or :class:`Object` who had their message deleted.
 
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
         set to an unspecified proxy object with two attributes:
@@ -2538,7 +2538,7 @@ of :class:`enum.Enum`.
         A message was pinned in a channel.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Member` or :class:`User` who had their message pinned.
+        the :class:`Member`, :class:`User`, or :class:`Object` who had their message pinned.
 
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
         set to an unspecified proxy object with two attributes:
@@ -2553,7 +2553,7 @@ of :class:`enum.Enum`.
         A message was unpinned in a channel.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
-        the :class:`Member` or :class:`User` who had their message unpinned.
+        the :class:`Member`, :class:`User`, or :class:`Object` who had their message unpinned.
 
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
         set to an unspecified proxy object with two attributes:

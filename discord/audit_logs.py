@@ -687,8 +687,8 @@ class AuditLogEntry(Hashable):
     def _convert_target_channel(self, target_id: int) -> Union[abc.GuildChannel, Object]:
         return self.guild.get_channel(target_id) or Object(id=target_id)
 
-    def _convert_target_user(self, target_id: int) -> Union[Member, User, None]:
-        return self._get_member(target_id)
+    def _convert_target_user(self, target_id: int) -> Union[Member, User, Object, None]:
+        return self._get_member(target_id) or Object(id=target_id, type=Member)
 
     def _convert_target_role(self, target_id: int) -> Union[Role, Object]:
         return self.guild.get_role(target_id) or Object(id=target_id, type=Role)
@@ -717,8 +717,8 @@ class AuditLogEntry(Hashable):
     def _convert_target_emoji(self, target_id: int) -> Union[Emoji, Object]:
         return self._state.get_emoji(target_id) or Object(id=target_id, type=Emoji)
 
-    def _convert_target_message(self, target_id: int) -> Union[Member, User, None]:
-        return self._get_member(target_id)
+    def _convert_target_message(self, target_id: int) -> Union[Member, User, Object, None]:
+        return self._get_member(target_id) or Object(id=target_id, type=Member)
 
     def _convert_target_stage_instance(self, target_id: int) -> Union[StageInstance, Object]:
         return self.guild.get_stage_instance(target_id) or Object(id=target_id, type=StageInstance)
