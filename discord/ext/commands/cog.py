@@ -752,7 +752,7 @@ class GroupCog(Cog):
     and :func:`~discord.app_commands.default_permissions` will apply to the group if used on top of the
     cog.
 
-    Hybrid commands will also be added to the Group, giving the ability categorize slash commands into 
+    Hybrid commands will also be added to the Group, giving the ability categorize slash commands into
     groups, while keeping the prefix-style commmand as a root-level command.
 
     For example:
