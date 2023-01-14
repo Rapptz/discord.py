@@ -239,10 +239,6 @@ def _transform_automod_trigger_metadata(
         except Exception:
             pass
 
-    # If cannot get trigger type from the rule and data is empty, then cannot determine trigger type
-    if not data:
-        return None
-
     # Try to infer trigger type from available keys in data
     if 'presets' in data:
         return AutoModTrigger(
@@ -251,9 +247,16 @@ def _transform_automod_trigger_metadata(
             allow_list=data.get('allow_list'),
         )
     elif 'keyword_filter' in data:
-        return AutoModTrigger(type=enums.AutoModRuleTriggerType.keyword, keyword_filter=data['keyword_filter'])  # type: ignore
+        return AutoModTrigger(
+            type=enums.AutoModRuleTriggerType.keyword,
+            keyword_filter=data['keyword_filter'],  # type: ignore
+            allow_list=data.get('allow_list'),
+            regex_patterns=data.get('regex_patterns'),
+        )
     elif 'mention_total_limit' in data:
         return AutoModTrigger(type=enums.AutoModRuleTriggerType.mention_spam, mention_limit=data['mention_total_limit'])  # type: ignore
+    else:
+        return AutoModTrigger(type=enums.AutoModRuleTriggerType.spam)
 
 
 def _transform_automod_actions(entry: AuditLogEntry, data: List[AutoModerationAction]) -> List[AutoModRuleAction]:
