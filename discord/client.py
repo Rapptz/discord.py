@@ -36,6 +36,7 @@ from typing import (
     Generator,
     List,
     Optional,
+    overload,
     Sequence,
     TYPE_CHECKING,
     Tuple,
@@ -75,7 +76,7 @@ from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, TypeGuard
     from types import TracebackType
     from .types.guild import Guild as GuildPayload
     from .abc import SnowflakeTime, Snowflake, PrivateChannel
@@ -1110,6 +1111,18 @@ class Client:
                 'Please use the login method or asynchronous context manager before calling this method'
             )
 
+    @overload
+    def wait_for(
+        self,
+        event: str,
+        /,
+        *,
+        check: Optional[Callable[..., TypeGuard[T]]] = None,
+        timeout: Optional[float] = None,
+    ) -> asyncio.Future[T]:
+        ...
+
+    @overload
     def wait_for(
         self,
         event: str,
@@ -1117,7 +1130,17 @@ class Client:
         *,
         check: Optional[Callable[..., bool]] = None,
         timeout: Optional[float] = None,
-    ) -> Any:
+    ) -> asyncio.Future[Any]:
+        ...
+
+    def wait_for(
+        self,
+        event: str,
+        /,
+        *,
+        check: Optional[Callable[..., bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> asyncio.Future[Any]:
         """|coro|
 
         Waits for a WebSocket event to be dispatched.
