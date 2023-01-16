@@ -1120,7 +1120,7 @@ class Client:
         *,
         check: Optional[Callable[..., TypeGuard[T]]] = None,
         timeout: Optional[float] = None,
-    ) -> Coro[T]:
+    ) -> Coroutine[Any, Any, T]:
         ...
 
     @overload
@@ -1131,7 +1131,7 @@ class Client:
         *,
         check: Optional[Callable[..., bool]] = None,
         timeout: Optional[float] = None,
-    ) -> Coro[Any]:
+    ) -> Coroutine[Any, Any, Any]:
         ...
 
     def wait_for(
@@ -1141,7 +1141,7 @@ class Client:
         *,
         check: Optional[Callable[..., bool]] = None,
         timeout: Optional[float] = None,
-    ) -> Coro[Any]:
+    ) -> Coroutine[Any, Any, Any]:
         """|coro|
 
         Waits for a WebSocket event to be dispatched.
