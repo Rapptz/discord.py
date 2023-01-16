@@ -92,6 +92,7 @@ __all__ = (
 )
 # fmt: on
 
+T = TypeVar("T")
 Coro = TypeVar('Coro', bound=Callable[..., Coroutine[Any, Any, Any]])
 
 _log = logging.getLogger(__name__)
@@ -1119,7 +1120,7 @@ class Client:
         *,
         check: Optional[Callable[..., TypeGuard[T]]] = None,
         timeout: Optional[float] = None,
-    ) -> asyncio.Future[T]:
+    ) -> Coro[T]:
         ...
 
     @overload
@@ -1130,7 +1131,7 @@ class Client:
         *,
         check: Optional[Callable[..., bool]] = None,
         timeout: Optional[float] = None,
-    ) -> asyncio.Future[Any]:
+    ) -> Coro[Any]:
         ...
 
     def wait_for(
@@ -1140,7 +1141,7 @@ class Client:
         *,
         check: Optional[Callable[..., bool]] = None,
         timeout: Optional[float] = None,
-    ) -> asyncio.Future[Any]:
+    ) -> Coro[Any]:
         """|coro|
 
         Waits for a WebSocket event to be dispatched.
