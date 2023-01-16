@@ -85,6 +85,7 @@ if TYPE_CHECKING:
     from .app_commands import Command, ContextMenu
     from .automod import AutoModAction, AutoModRule
     from .channel import DMChannel, GroupChannel
+    from .ext.commands import AutoShardedBot, Bot, Context, CommandError
     from .guild import GuildChannel
     from .integrations import Integration
     from .interactions import Interaction
@@ -1793,6 +1794,30 @@ class Client:
         check: Optional[Callable[[Member, VoiceState, VoiceState], bool]],
         timeout: Optional[float] = None,
     ) -> Tuple[Member, VoiceState, VoiceState]:
+        ...
+
+    # Commands
+
+    @overload
+    async def wait_for(
+        self: Union[Bot, AutoShardedBot],
+        event: Literal["command", "command_completion"],
+        /,
+        *,
+        check: Optional[Callable[[Context], bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> Context:
+        ...
+
+    @overload
+    async def wait_for(
+        self: Union[Bot, AutoShardedBot],
+        event: Literal["command_error"],
+        /,
+        *,
+        check: Optional[Callable[[Context, CommandError], bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> Tuple[Context, CommandError]:
         ...
 
     @overload
