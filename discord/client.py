@@ -1540,7 +1540,7 @@ class Client:
         icon: Optional[:class:`bytes`]
             The :term:`py:bytes-like object` representing the icon. See :meth:`.ClientUser.edit`
             for more details on what is expected.
-        code: :class:`str`
+        code: Optional[:class:`str`]
             The code for a template to create the guild with.
 
             .. versionadded:: 1.4
