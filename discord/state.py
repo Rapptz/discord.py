@@ -1987,7 +1987,7 @@ class ConnectionState:
             return
 
         entry = AuditLogEntry(
-            users=self._users,  # type: ignore
+            users=self._users,
             automod_rules={},
             data=data,
             guild=guild,
