@@ -673,7 +673,7 @@ class ChannelSelect(BaseSelect[V]):
 @overload
 def select(
     *,
-    cls: Type[SelectT] = Select,
+    cls: Type[SelectT] = Select[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -689,7 +689,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[UserSelectT],
+    cls: Type[UserSelectT] = UserSelect[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -705,7 +705,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[RoleSelectT],
+    cls: Type[RoleSelectT] = RoleSelect[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -721,7 +721,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[ChannelSelectT],
+    cls: Type[ChannelSelectT] = ChannelSelect[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -737,7 +737,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[MentionableSelectT],
+    cls: Type[MentionableSelectT] = MentionableSelect[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = MISSING,
     placeholder: Optional[str] = ...,
@@ -787,7 +787,7 @@ def select(
 
     .. versionchanged:: 2.1
         Added the following keyword-arguments: ``cls``, ``channel_types``
-    
+
     Example
     ---------
     .. code-block:: python3
