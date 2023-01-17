@@ -98,6 +98,7 @@ __all__ = (
     'remove_markdown',
     'escape_markdown',
     'escape_mentions',
+    'maybe_coroutine',
     'as_chunks',
     'format_dt',
     'set_target',
@@ -742,6 +743,30 @@ def _parse_ratelimit_header(request: Any, *, use_clock: bool = False) -> float:
 
 
 async def maybe_coroutine(f: MaybeAwaitableFunc[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
+    r"""|coro|
+
+    A helper function that will await the result of a function if it's a coroutine
+    or return the result if it's not.
+
+    This is useful for functions that may or may not be coroutines.
+
+    .. versionadded:: 2.2
+
+    Parameters
+    -----------
+    f: Callable[..., Any]
+        The function or coroutine to call.
+    \*args
+        The arguments to pass to the function.
+    \*\*kwargs
+        The keyword arguments to pass to the function.
+
+    Returns
+    --------
+    Any
+        The result of the function or coroutine.
+    """
+
     value = f(*args, **kwargs)
     if _isawaitable(value):
         return await value
