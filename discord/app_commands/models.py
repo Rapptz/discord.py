@@ -445,7 +445,7 @@ class Choice(Generic[ChoiceT]):
     def from_dict(cls, data: ApplicationCommandOptionChoice) -> Choice[ChoiceT]:
         self = cls.__new__(cls)
         self.name = data['name']
-        self.value = data['value']
+        self.value = data['value']  # type: ignore # This seems to break every other pyright release
         self.name_localizations = _to_locale_dict(data.get('name_localizations') or {})
         return self
 
