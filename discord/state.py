@@ -39,6 +39,7 @@ from typing import (
     TypeVar,
     Coroutine,
     Sequence,
+    Generic,
     Tuple,
     Deque,
     Literal,
@@ -75,6 +76,7 @@ from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
 from .automod import AutoModRule, AutoModAction
 from .audit_logs import AuditLogEntry
+from ._types import ClientT
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel
@@ -82,7 +84,6 @@ if TYPE_CHECKING:
     from .guild import GuildChannel
     from .http import HTTPClient
     from .voice_client import VoiceProtocol
-    from .client import Client
     from .gateway import DiscordWebSocket
     from .app_commands import CommandTree, Translator
 
@@ -160,10 +161,10 @@ async def logging_coroutine(coroutine: Coroutine[Any, Any, T], *, info: str) -> 
         _log.exception('Exception occurred during %s', info)
 
 
-class ConnectionState:
+class ConnectionState(Generic[ClientT]):
     if TYPE_CHECKING:
         _get_websocket: Callable[..., DiscordWebSocket]
-        _get_client: Callable[..., Client]
+        _get_client: Callable[..., ClientT]
         _parsers: Dict[str, Callable[[Dict[str, Any]], None]]
 
     def __init__(
@@ -1612,7 +1613,7 @@ class ConnectionState:
         return Message(state=self, channel=channel, data=data)
 
 
-class AutoShardedConnectionState(ConnectionState):
+class AutoShardedConnectionState(ConnectionState[ClientT]):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
 

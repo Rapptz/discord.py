@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, Optional, TYPE_CHECKING, Sequence, Tuple, Union
+from typing import Any, Dict, Optional, Generic, TYPE_CHECKING, Sequence, Tuple, Union
 import asyncio
 import datetime
 
@@ -34,6 +34,7 @@ from .enums import try_enum, Locale, InteractionType, InteractionResponseType
 from .errors import InteractionResponded, HTTPException, ClientException, DiscordException
 from .flags import MessageFlags
 from .channel import PartialMessageable, ChannelType
+from ._types import ClientT
 
 from .user import User
 from .member import Member
@@ -59,7 +60,6 @@ if TYPE_CHECKING:
     from .types.webhook import (
         Webhook as WebhookPayload,
     )
-    from .client import Client
     from .guild import Guild
     from .state import ConnectionState
     from .file import File
@@ -80,7 +80,7 @@ if TYPE_CHECKING:
 MISSING: Any = utils.MISSING
 
 
-class Interaction:
+class Interaction(Generic[ClientT]):
     """Represents a Discord interaction.
 
     An interaction happens when a user does an action that needs to
@@ -151,9 +151,9 @@ class Interaction:
         '_cs_command',
     )
 
-    def __init__(self, *, data: InteractionPayload, state: ConnectionState):
-        self._state: ConnectionState = state
-        self._client: Client = state._get_client()
+    def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT]):
+        self._state: ConnectionState[ClientT] = state
+        self._client: ClientT = state._get_client()
         self._session: ClientSession = state.http._HTTPClient__session  # type: ignore # Mangled attribute for __session
         self._original_response: Optional[InteractionMessage] = None
         # This baton is used for extra data that might be useful for the lifecycle of
@@ -207,7 +207,7 @@ class Interaction:
                 pass
 
     @property
-    def client(self) -> Client:
+    def client(self) -> ClientT:
         """:class:`Client`: The client that is handling this interaction.
 
         Note that :class:`AutoShardedClient`, :class:`~.commands.Bot`, and
