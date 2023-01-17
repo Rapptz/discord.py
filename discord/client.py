@@ -112,6 +112,7 @@ if TYPE_CHECKING:
     from .threads import ThreadMember
     from .types.guild import Guild as GuildPayload
     from .voice_client import VoiceProtocol
+    from .audit_logs import AuditLogEntry
 
 
 # fmt: off
@@ -1379,6 +1380,17 @@ class Client:
         check: Optional[Callable[[Invite], bool]],
         timeout: Optional[float] = None,
     ) -> Invite:
+        ...
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['audit_log_entry_create'],
+        /,
+        *,
+        check: Optional[Callable[[AuditLogEntry], bool]],
+        timeout: Optional[float] = None,
+    ) -> AuditLogEntry:
         ...
 
     # Integrations
