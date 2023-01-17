@@ -1266,7 +1266,7 @@ class Client:
     @overload
     async def wait_for(
         self,
-        event: Literal['on_raw_typing'],
+        event: Literal['raw_typing'],
         /,
         *,
         check: Optional[Callable[[RawTypingEvent], bool]],
