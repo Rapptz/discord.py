@@ -90,9 +90,9 @@ class RoleTags:
         # This is different from other fields where "null" means "not there".
         # So in this case, a value of None is the same as True.
         # Which means we would need a different sentinel.
-        self._premium_subscriber: Optional[Any] = data.get('premium_subscriber', MISSING)
-        self._available_for_purchase: Optional[Any] = data.get('available_for_purchase', MISSING)
-        self._guild_connections: Optional[Any] = data.get('guild_connections', MISSING)
+        self._premium_subscriber: bool = data.get('premium_subscriber', MISSING) is None
+        self._available_for_purchase: bool = data.get('available_for_purchase', MISSING) is None
+        self._guild_connections: bool = data.get('guild_connections', MISSING) is None
 
     def is_bot_managed(self) -> bool:
         """:class:`bool`: Whether the role is associated with a bot."""
@@ -100,7 +100,7 @@ class RoleTags:
 
     def is_premium_subscriber(self) -> bool:
         """:class:`bool`: Whether the role is the premium subscriber, AKA "boost", role for the guild."""
-        return self._premium_subscriber is None
+        return self._premium_subscriber
 
     def is_integration(self) -> bool:
         """:class:`bool`: Whether the role is managed by an integration."""
@@ -111,14 +111,14 @@ class RoleTags:
 
         .. versionadded:: 2.0
         """
-        return self._available_for_purchase is None
+        return self._available_for_purchase
 
     def is_guild_connection(self) -> bool:
         """:class:`bool`: Whether the role is a guild's linked role.
 
         .. versionadded:: 2.0
         """
-        return self._guild_connections is None
+        return self._guild_connections
 
     def __repr__(self) -> str:
         return (
