@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Generator, List, Optional, Tuple, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Mapping, Generator, List, Optional, Tuple, Type, TypeVar, Union
 
 from . import enums, flags, utils
 from .asset import Asset
@@ -315,7 +315,7 @@ Transformer = Callable[["AuditLogEntry", Any], Any]
 
 class AuditLogChanges:
     # fmt: off
-    TRANSFORMERS: ClassVar[Dict[str, Tuple[Optional[str], Optional[Transformer]]]] = {
+    TRANSFORMERS: ClassVar[Mapping[str, Tuple[Optional[str], Optional[Transformer]]]] = {
         'verification_level':                    (None, _enum_transformer(enums.VerificationLevel)),
         'explicit_content_filter':               (None, _enum_transformer(enums.ContentFilter)),
         'allow':                                 (None, _flag_transformer(Permissions)),
@@ -568,19 +568,19 @@ class AuditLogEntry(Hashable):
     def __init__(
         self,
         *,
-        users: Dict[int, User],
-        integrations: Dict[int, PartialIntegration],
-        app_commands: Dict[int, AppCommand],
-        automod_rules: Dict[int, AutoModRule],
+        users: Mapping[int, User],
+        integrations: Mapping[int, PartialIntegration],
+        app_commands: Mapping[int, AppCommand],
+        automod_rules: Mapping[int, AutoModRule],
         data: AuditLogEntryPayload,
         guild: Guild,
     ):
         self._state: ConnectionState = guild._state
         self.guild: Guild = guild
-        self._users: Dict[int, User] = users
-        self._integrations: Dict[int, PartialIntegration] = integrations
-        self._app_commands: Dict[int, AppCommand] = app_commands
-        self._automod_rules: Dict[int, AutoModRule] = automod_rules
+        self._users: Mapping[int, User] = users
+        self._integrations: Mapping[int, PartialIntegration] = integrations
+        self._app_commands: Mapping[int, AppCommand] = app_commands
+        self._automod_rules: Mapping[int, AutoModRule] = automod_rules
         self._from_data(data)
 
     def _from_data(self, data: AuditLogEntryPayload) -> None:

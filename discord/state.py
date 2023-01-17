@@ -1105,7 +1105,7 @@ class ConnectionState(Generic[ClientT]):
             return
 
         entry = AuditLogEntry(
-            users=self._users,  # type: ignore
+            users=self._users,
             integrations={},
             app_commands={},
             automod_rules={},
