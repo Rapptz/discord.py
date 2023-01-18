@@ -210,7 +210,7 @@ class FFmpegAudio(AudioSource):
             # arbitrarily large read size
             data = source.read(8192)
             if not data:
-                self._process.terminate()
+                self._stdin.close()
                 return
             try:
                 if self._stdin is not None:
