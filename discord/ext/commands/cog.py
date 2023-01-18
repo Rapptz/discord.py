@@ -586,6 +586,16 @@ class Cog(metaclass=CogMeta):
         return True
 
     @_cog_special_method
+    def interaction_check(self, interaction: discord.Interaction[BotT], /) -> bool:
+        """A special method that registers as a :func:`discord.app_commands.check`
+        for every app command and subcommand in this cog.
+
+        This function **can** be a coroutine and must take a sole parameter,
+        ``interaction``, to represent the :class:`~discord.Interaction`.
+        """
+        return True
+
+    @_cog_special_method
     async def cog_command_error(self, ctx: Context[BotT], error: Exception) -> None:
         """|coro|
 

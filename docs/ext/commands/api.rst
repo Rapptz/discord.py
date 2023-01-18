@@ -256,7 +256,7 @@ GroupCog
 .. attributetable:: discord.ext.commands.GroupCog
 
 .. autoclass:: discord.ext.commands.GroupCog
-    :members:
+    :members: interaction_check
 
 
 CogMeta
