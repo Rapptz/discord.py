@@ -2483,6 +2483,9 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         This thread is a public thread with the initial message given. Currently in order
         to start a thread in this forum, the user needs :attr:`~discord.Permissions.send_messages`.
 
+        You must send at least one of ``content``, ``embed``, ``embeds``, ``file``, ``files``,
+        or ``view`` to create a thread in a forum, since forum channels must have a starter message.
+
         Parameters
         -----------
         name: :class:`str`
