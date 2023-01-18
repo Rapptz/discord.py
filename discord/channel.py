@@ -2515,9 +2515,9 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         self,
         *,
         name: str,
+        content: str,
         auto_archive_duration: ThreadArchiveDuration = MISSING,
         slowmode_delay: Optional[int] = None,
-        content: Optional[str] = None,
         tts: bool = False,
         embed: Embed = MISSING,
         embeds: Sequence[Embed] = MISSING,
@@ -2542,6 +2542,8 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         -----------
         name: :class:`str`
             The name of the thread.
+        content: :class:`str`
+            The content of the message to send with the thread.
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
             If not provided, the channel's default auto archive duration is used.
@@ -2549,8 +2551,6 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             Specifies the slowmode rate limit for user in this channel, in seconds.
             The maximum value possible is ``21600``. By default no slowmode rate limit
             if this is ``None``.
-        content: Optional[:class:`str`]
-            The content of the message to send with the thread.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
         embed: :class:`~discord.Embed`
