@@ -27,6 +27,7 @@ from __future__ import annotations
 from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
 
 from ..interactions import Interaction
+from .._types import ClientT
 
 # fmt: off
 __all__ = (
@@ -119,7 +120,7 @@ class Item(Generic[V]):
         """Optional[:class:`View`]: The underlying view for this item."""
         return self._view
 
-    async def callback(self, interaction: Interaction) -> Any:
+    async def callback(self, interaction: Interaction[ClientT]) -> Any:
         """|coro|
 
         The callback associated with this UI item.

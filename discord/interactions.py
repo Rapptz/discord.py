@@ -302,7 +302,7 @@ class Interaction(Generic[ClientT]):
             return tree._get_context_menu(data)
 
     @utils.cached_slot_property('_cs_response')
-    def response(self) -> InteractionResponse:
+    def response(self) -> InteractionResponse[ClientT]:
         """:class:`InteractionResponse`: Returns an object responsible for handling responding to the interaction.
 
         A response can only be done once. If secondary messages need to be sent, consider using :attr:`followup`
@@ -548,7 +548,7 @@ class Interaction(Generic[ClientT]):
         return await translator.translate(string, locale=locale, context=context)
 
 
-class InteractionResponse:
+class InteractionResponse(Generic[ClientT]):
     """Represents a Discord interaction response.
 
     This type can be accessed through :attr:`Interaction.response`.
@@ -561,8 +561,8 @@ class InteractionResponse:
         '_parent',
     )
 
-    def __init__(self, parent: Interaction):
-        self._parent: Interaction = parent
+    def __init__(self, parent: Interaction[ClientT]):
+        self._parent: Interaction[ClientT] = parent
         self._response_type: Optional[InteractionResponseType] = None
 
     def is_done(self) -> bool:
