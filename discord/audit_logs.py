@@ -553,6 +553,8 @@ class AuditLogEntry(Hashable):
         .. versionadded:: 2.2
     id: :class:`int`
         The entry ID.
+    guild: :class:`Guild`
+        the guild that the action belongs to.
     target: Any
         The target that got changed. The exact type of this depends on
         the action being done.
