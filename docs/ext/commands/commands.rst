@@ -17,6 +17,13 @@ signature to the Python function.
     to function. This must be set both in the developer portal and within your code.
 
     Failure to do this will result in your bot not responding to any of your commands.
+    
+.. note::
+
+    These commands are not related to 
+    `application commands <https://discord.com/developers/docs/interactions/application-commands>`_.
+    For more information on these, check the 
+    `interactions API <https://discordpy.readthedocs.io/en/stable/interactions/api.html>`_.
 
 For example, in the given command definition:
 
