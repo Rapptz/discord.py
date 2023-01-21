@@ -104,6 +104,8 @@ class Interaction(Generic[ClientT]):
         The user or member that sent the interaction.
     message: Optional[:class:`Message`]
         The message that sent this interaction.
+
+        This is only available for :attr:`InteractionType.component` interactions.
     token: :class:`str`
         The token to continue the interaction. These are valid
         for 15 minutes.
