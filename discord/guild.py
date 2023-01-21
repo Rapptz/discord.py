@@ -1335,6 +1335,7 @@ class Guild(Hashable):
             .. versionadded:: 2.0
         default_auto_archive_duration: :class:`int`
             The default auto archive duration for threads created in the text channel (in minutes).
+            Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
 
             .. versionadded:: 2.0
         reason: Optional[:class:`str`]
@@ -1644,16 +1645,11 @@ class Guild(Hashable):
             The reason for creating this channel. Shows up in the audit log.
         default_auto_archive_duration: :class:`int`
             The default auto archive duration for threads created in the forum channel (in minutes).
-
-            .. versionadded:: 2.0
+            Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
         default_thread_slowmode_delay: :class:`int`
             The default slowmode delay in seconds for threads created in this forum.
-
-            .. versionadded:: 2.0
         available_tags: Sequence[:class:`ForumTag`]
             The available tags for this forum channel.
-
-            .. versionadded:: 2.0
 
         Raises
         -------
