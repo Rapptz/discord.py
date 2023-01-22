@@ -283,9 +283,11 @@ def _flag_transformer(cls: Type[F]) -> Callable[[AuditLogEntry, Union[int, str]]
     return _transform
 
 
-def _transform_type(entry: AuditLogEntry, data: int) -> Union[enums.ChannelType, enums.StickerType]:
+def _transform_type(entry: AuditLogEntry, data: Union[int, str]) -> Union[enums.ChannelType, enums.StickerType, str]:
     if entry.action.name.startswith('sticker_'):
         return enums.try_enum(enums.StickerType, data)
+    elif entry.action.name.startswith('integration_'):
+        return data  # type: ignore  # integration type is str
     else:
         return enums.try_enum(enums.ChannelType, data)
 
