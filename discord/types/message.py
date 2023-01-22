@@ -126,6 +126,7 @@ class Message(PartialMessage):
     referenced_message: NotRequired[Optional[Message]]
     interaction: NotRequired[MessageInteraction]
     components: NotRequired[List[Component]]
+    position: NotRequired[int]
     role_subscription_data: NotRequired[RoleSubscriptionData]
 
 
