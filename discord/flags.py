@@ -1664,22 +1664,22 @@ class MemberFlags(BaseFlags):
 
         .. describe:: x | y, x |= y
 
-            Returns an MemberFlags instance with all enabled flags from
+            Returns a MemberFlags instance with all enabled flags from
             both x and y.
 
         .. describe:: x & y, x &= y
 
-            Returns an MemberFlags instance with only flags enabled on
+            Returns a MemberFlags instance with only flags enabled on
             both x and y.
 
         .. describe:: x ^ y, x ^= y
 
-            Returns an MemberFlags instance with only flags enabled on
+            Returns a MemberFlags instance with only flags enabled on
             only one of x or y, not on both.
 
         .. describe:: ~x
 
-            Returns an MemberFlags instance with all flags inverted from x.
+            Returns a MemberFlags instance with all flags inverted from x.
 
         .. describe:: hash(x)
 
