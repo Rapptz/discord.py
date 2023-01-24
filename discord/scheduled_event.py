@@ -98,6 +98,10 @@ class ScheduledEvent(Hashable):
         The number of users subscribed to the scheduled event.
     creator: Optional[:class:`User`]
         The user that created the scheduled event.
+    creator_id: Optional[:class:`int`]
+        The ID of the user that created the scheduled event.
+
+        .. versionadded:: 2.2
     location: Optional[:class:`str`]
         The location of the scheduled event.
     """
@@ -119,6 +123,7 @@ class ScheduledEvent(Hashable):
         'user_count',
         'creator',
         'channel_id',
+        'creator_id',
         'location',
     )
 
@@ -139,9 +144,13 @@ class ScheduledEvent(Hashable):
         self.status: EventStatus = try_enum(EventStatus, data['status'])
         self._cover_image: Optional[str] = data.get('image', None)
         self.user_count: int = data.get('user_count', 0)
+        self.creator_id: Optional[int] = _get_as_snowflake(data, 'creator_id')
 
         creator = data.get('creator')
         self.creator: Optional[User] = self._state.store_user(creator) if creator else None
+
+        if self.creator_id is not None and self.creator is None:
+            self.creator = self._state.get_user(self.creator_id)
 
         self.end_time: Optional[datetime] = parse_time(data.get('scheduled_end_time'))
         self.channel_id: Optional[int] = _get_as_snowflake(data, 'channel_id')
@@ -151,13 +160,6 @@ class ScheduledEvent(Hashable):
 
     def _unroll_metadata(self, data: Optional[EntityMetadata]):
         self.location: Optional[str] = data.get('location') if data else None
-
-    @classmethod
-    def from_creation(cls, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
-        creator_id = data.get('creator_id')
-        self = cls(state=state, data=data)
-        if creator_id:
-            self.creator = self._state.get_user(int(creator_id))
 
     def __repr__(self) -> str:
         return f'<GuildScheduledEvent id={self.id} name={self.name!r} guild_id={self.guild_id!r} creator={self.creator!r}>'
