@@ -860,7 +860,15 @@ class InteractionResponse(Generic[ClientT]):
         parent = self._parent
         msg = parent.message
         state = parent._state
-        message_id = msg.id if msg else None
+        if msg is not None:
+            message_id = msg.id
+            # If this was invoked via an application command then we can use its original interaction ID
+            # Since this is used as a cache key for view updates
+            original_interaction_id = msg.interaction.id if msg.interaction is not None else None
+        else:
+            message_id = None
+            original_interaction_id = None
+
         if parent.type not in (InteractionType.component, InteractionType.modal_submit):
             return
 
@@ -890,7 +898,7 @@ class InteractionResponse(Generic[ClientT]):
         )
 
         if view and not view.is_finished():
-            state.store_view(view, message_id)
+            state.store_view(view, message_id, interaction_id=original_interaction_id)
 
         self._response_type = InteractionResponseType.message_update
 

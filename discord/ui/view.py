@@ -638,6 +638,7 @@ class ViewStore:
     def remove_interaction_mapping(self, interaction_id: int) -> None:
         # This is called before re-adding the view
         self._views.pop(interaction_id, None)
+        self._synced_message_views.pop(interaction_id, None)
 
     def is_message_tracked(self, message_id: int) -> bool:
         return message_id in self._synced_message_views
