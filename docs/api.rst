@@ -804,6 +804,7 @@ Members
     - pending
     - timeout
     - guild avatar
+    - flags
 
     Due to a Discord limitation, this event is not dispatched when a member's timeout expires.
 
@@ -4832,6 +4833,13 @@ PublicUserFlags
 .. autoclass:: PublicUserFlags
     :members:
 
+MemberFlags
+~~~~~~~~~~~~
+
+.. attributetable:: MemberFlags
+
+.. autoclass:: MemberFlags
+    :members:
 
 ForumTag
 ~~~~~~~~~

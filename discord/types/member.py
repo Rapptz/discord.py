@@ -36,6 +36,7 @@ class PartialMember(TypedDict):
     joined_at: str
     deaf: bool
     mute: bool
+    flags: int
 
 
 class Member(PartialMember, total=False):
