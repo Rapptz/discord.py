@@ -717,7 +717,7 @@ class Member(discord.abc.Messageable, _UserTag):
     @property
     def flags(self) -> MemberFlags:
         """:class:`MemberFlags`: Returns the member's flags.
-        
+
         .. versionadded:: 2.2
         """
         return MemberFlags._from_value(self._flags)
