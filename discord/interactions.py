@@ -1051,6 +1051,7 @@ class InteractionMessage(Message):
         attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
+        delete_after: Optional[float] = None,
     ) -> InteractionMessage:
         """|coro|
 
@@ -1079,6 +1080,12 @@ class InteractionMessage(Message):
         view: Optional[:class:`~discord.ui.View`]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+        delete_after: Optional[:class:`float`]
+            If provided, the number of seconds to wait in the background
+            before deleting the message we just sent. If the deletion fails,
+            then it is silently ignored.
+
+            .. versionadded:: 2.2
 
         Raises
         -------
@@ -1096,7 +1103,7 @@ class InteractionMessage(Message):
         :class:`InteractionMessage`
             The newly edited message.
         """
-        return await self._state._interaction.edit_original_response(
+        res = await self._state._interaction.edit_original_response(
             content=content,
             embeds=embeds,
             embed=embed,
@@ -1104,6 +1111,9 @@ class InteractionMessage(Message):
             view=view,
             allowed_mentions=allowed_mentions,
         )
+        if delete_after is not None:
+            await self.delete(delay=delete_after)
+        return res
 
     async def add_files(self, *files: File) -> InteractionMessage:
         r"""|coro|
