@@ -761,7 +761,7 @@ class Member(discord.abc.Messageable, _UserTag):
         roles: Collection[discord.abc.Snowflake] = MISSING,
         voice_channel: Optional[VocalGuildChannel] = MISSING,
         timed_out_until: Optional[datetime.datetime] = MISSING,
-        bypasses_verification: bool = MISSING,
+        bypass_verification: bool = MISSING,
         reason: Optional[str] = None,
     ) -> Optional[Member]:
         """|coro|
@@ -770,23 +770,23 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Depending on the parameter passed, this requires different permissions listed below:
 
-        +-----------------------+--------------------------------------+
-        |   Parameter           |              Permission              |
-        +-----------------------+--------------------------------------+
-        | nick                  | :attr:`Permissions.manage_nicknames` |
-        +-----------------------+--------------------------------------+
-        | mute                  | :attr:`Permissions.mute_members`     |
-        +-----------------------+--------------------------------------+
-        | deafen                | :attr:`Permissions.deafen_members`   |
-        +-----------------------+--------------------------------------+
-        | roles                 | :attr:`Permissions.manage_roles`     |
-        +-----------------------+--------------------------------------+
-        | voice_channel         | :attr:`Permissions.move_members`     |
-        +-----------------------+--------------------------------------+
-        | timed_out_until       | :attr:`Permissions.moderate_members` |
-        +-----------------------+--------------------------------------+
-        | bypasses_verification | :attr:`Permissions.manage_guild`     |
-        +-----------------------+--------------------------------------+
+        +---------------------+--------------------------------------+
+        |      Parameter      |              Permission              |
+        +---------------------+--------------------------------------+
+        | nick                | :attr:`Permissions.manage_nicknames` |
+        +---------------------+--------------------------------------+
+        | mute                | :attr:`Permissions.mute_members`     |
+        +---------------------+--------------------------------------+
+        | deafen              | :attr:`Permissions.deafen_members`   |
+        +---------------------+--------------------------------------+
+        | roles               | :attr:`Permissions.manage_roles`     |
+        +---------------------+--------------------------------------+
+        | voice_channel       | :attr:`Permissions.move_members`     |
+        +---------------------+--------------------------------------+
+        | timed_out_until     | :attr:`Permissions.moderate_members` |
+        +---------------------+--------------------------------------+
+        | bypass_verification | :attr:`Permissions.manage_guild`     |
+        +---------------------+--------------------------------------+
 
         All parameters are optional.
 
@@ -819,7 +819,7 @@ class Member(discord.abc.Messageable, _UserTag):
             This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
 
             .. versionadded:: 2.0
-        bypasses_verification: :class:`bool`
+        bypass_verification: :class:`bool`
             Indicates if the member should be allowed to bypass the guild verification requirements.
 
             .. versionadded:: 2.2
@@ -894,9 +894,9 @@ class Member(discord.abc.Messageable, _UserTag):
                     )
                 payload['communication_disabled_until'] = timed_out_until.isoformat()
 
-        if bypasses_verification is not MISSING:
+        if bypass_verification is not MISSING:
             flags = MemberFlags._from_value(self._flags)
-            flags.bypasses_verification = bypasses_verification
+            flags.bypasses_verification = bypass_verification
             payload['flags'] = flags.value
 
         if payload:
