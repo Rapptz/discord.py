@@ -1653,11 +1653,14 @@ class AutoModPresets(ArrayFlags):
 class MemberFlags(BaseFlags):
     r"""Wraps up the Discord Guild Member flags
 
+    .. versionadded:: 2.2
+
     .. container:: operations
 
         .. describe:: x == y
 
             Checks if two MemberFlags are equal.
+
         .. describe:: x != y
 
             Checks if two MemberFlags are not equal.
@@ -1684,13 +1687,13 @@ class MemberFlags(BaseFlags):
         .. describe:: hash(x)
 
             Return the flag's hash.
+
         .. describe:: iter(x)
 
             Returns an iterator of ``(name, value)`` pairs. This allows it
             to be, for example, constructed as a dict or a list of pairs.
             Note that aliases are not shown.
 
-    .. versionadded:: 2.2
 
     Attributes
     -----------
