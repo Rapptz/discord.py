@@ -101,7 +101,7 @@ class ScheduledEvent(Hashable):
     creator_id: Optional[:class:`int`]
         The ID of the user that created the scheduled event.
 
-        .. versionadded:: 2.2
+        .. versionadded:: 2.0
     location: Optional[:class:`str`]
         The location of the scheduled event.
     """

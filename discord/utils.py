@@ -750,7 +750,7 @@ async def maybe_coroutine(f: MaybeAwaitableFunc[P, T], *args: P.args, **kwargs: 
 
     This is useful for functions that may or may not be coroutines.
 
-    .. versionadded:: 2.2
+    .. versionadded:: 2.0
 
     Parameters
     -----------
