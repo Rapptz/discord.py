@@ -445,11 +445,11 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
             else:
                 exc = HybridCommandError(e)
                 exc.__cause__ = e
-            await command.dispatch_error(ctx, exc)
+            await command.dispatch_error(ctx, exc.with_traceback(e.__traceback__))
         except app_commands.AppCommandError as e:
             exc = HybridCommandError(e)
             exc.__cause__ = e
-            await command.dispatch_error(ctx, exc)
+            await command.dispatch_error(ctx, exc.with_traceback(e.__traceback__))
         except CommandError as e:
             await command.dispatch_error(ctx, e)
         finally:
