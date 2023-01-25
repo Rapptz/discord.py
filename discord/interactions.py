@@ -450,7 +450,7 @@ class Interaction(Generic[ClientT]):
         """
 
         previous_mentions: Optional[AllowedMentions] = self._state.allowed_mentions
-        params = handle_message_parameters(
+        with handle_message_parameters(
             content=content,
             attachments=attachments,
             embed=embed,
@@ -458,19 +458,19 @@ class Interaction(Generic[ClientT]):
             view=view,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
-        )
-        adapter = async_context.get()
-        http = self._state.http
-        data = await adapter.edit_original_interaction_response(
-            self.application_id,
-            self.token,
-            session=self._session,
-            proxy=http.proxy,
-            proxy_auth=http.proxy_auth,
-            payload=params.payload,
-            multipart=params.multipart,
-            files=params.files,
-        )
+        ) as params:
+            adapter = async_context.get()
+            http = self._state.http
+            data = await adapter.edit_original_interaction_response(
+                self.application_id,
+                self.token,
+                session=self._session,
+                proxy=http.proxy,
+                proxy_auth=http.proxy_auth,
+                payload=params.payload,
+                multipart=params.multipart,
+                files=params.files,
+            )
 
         # The message channel types should always match
         state = _InteractionMessageState(self, self._state)

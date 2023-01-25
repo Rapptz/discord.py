@@ -952,7 +952,7 @@ class PartialMessage(Hashable):
         if view is not MISSING:
             self._state.prevent_view_updates_for(self.id)
 
-        params = handle_message_parameters(
+        with handle_message_parameters(
             content=content,
             embed=embed,
             embeds=embeds,
@@ -960,9 +960,9 @@ class PartialMessage(Hashable):
             view=view,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_allowed_mentions,
-        )
-        data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
-        message = Message(state=self._state, channel=self.channel, data=data)
+        ) as params:
+            data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
+            message = Message(state=self._state, channel=self.channel, data=data)
 
         if view and not view.is_finished():
             interaction: Optional[MessageInteraction] = getattr(self, 'interaction', None)
@@ -2141,7 +2141,7 @@ class Message(PartialMessage, Hashable):
         if view is not MISSING:
             self._state.prevent_view_updates_for(self.id)
 
-        params = handle_message_parameters(
+        with handle_message_parameters(
             content=content,
             flags=flags,
             embed=embed,
@@ -2150,9 +2150,9 @@ class Message(PartialMessage, Hashable):
             view=view,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_allowed_mentions,
-        )
-        data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
-        message = Message(state=self._state, channel=self.channel, data=data)
+        ) as params:
+            data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
+            message = Message(state=self._state, channel=self.channel, data=data)
 
         if view and not view.is_finished():
             self._state.store_view(view, self.id)
