@@ -1462,7 +1462,7 @@ class Webhook(BaseWebhook):
         if thread_name is not MISSING and thread is not MISSING:
             raise TypeError('Cannot mix thread_name and thread keyword arguments.')
 
-        params = handle_message_parameters(
+        with handle_message_parameters(
             content=content,
             username=username,
             avatar_url=avatar_url,
@@ -1475,24 +1475,24 @@ class Webhook(BaseWebhook):
             thread_name=thread_name,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
-        )
-        adapter = async_context.get()
-        thread_id: Optional[int] = None
-        if thread is not MISSING:
-            thread_id = thread.id
+        ) as params:
+            adapter = async_context.get()
+            thread_id: Optional[int] = None
+            if thread is not MISSING:
+                thread_id = thread.id
 
-        data = await adapter.execute_webhook(
-            self.id,
-            self.token,
-            session=self.session,
-            proxy=self.proxy,
-            proxy_auth=self.proxy_auth,
-            payload=params.payload,
-            multipart=params.multipart,
-            files=params.files,
-            thread_id=thread_id,
-            wait=wait,
-        )
+            data = await adapter.execute_webhook(
+                self.id,
+                self.token,
+                session=self.session,
+                proxy=self.proxy,
+                proxy_auth=self.proxy_auth,
+                payload=params.payload,
+                multipart=params.multipart,
+                files=params.files,
+                thread_id=thread_id,
+                wait=wait,
+            )
 
         msg = None
         if wait:
@@ -1624,32 +1624,31 @@ class Webhook(BaseWebhook):
             raise ValueError('This webhook does not have a token associated with it')
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
-        params = handle_message_parameters(
+        with handle_message_parameters(
             content=content,
             attachments=attachments,
             embed=embed,
             embeds=embeds,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
-        )
+        ) as params:
+            thread_id: Optional[int] = None
+            if thread is not MISSING:
+                thread_id = thread.id
 
-        thread_id: Optional[int] = None
-        if thread is not MISSING:
-            thread_id = thread.id
-
-        adapter = async_context.get()
-        data = await adapter.edit_webhook_message(
-            self.id,
-            self.token,
-            message_id,
-            session=self.session,
-            proxy=self.proxy,
-            proxy_auth=self.proxy_auth,
-            payload=params.payload,
-            multipart=params.multipart,
-            files=params.files,
-            thread_id=thread_id,
-        )
+            adapter = async_context.get()
+            data = await adapter.edit_webhook_message(
+                self.id,
+                self.token,
+                message_id,
+                session=self.session,
+                proxy=self.proxy,
+                proxy_auth=self.proxy_auth,
+                payload=params.payload,
+                multipart=params.multipart,
+                files=params.files,
+                thread_id=thread_id,
+            )
 
         message = self._create_message(data, thread=thread)
         return message

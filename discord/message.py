@@ -825,14 +825,14 @@ class PartialMessage(Hashable):
         else:
             previous_allowed_mentions = None
 
-        params = handle_message_parameters(
+        with handle_message_parameters(
             content=content,
             attachments=attachments,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_allowed_mentions,
-        )
-        data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
-        message = Message(state=self._state, channel=self.channel, data=data)
+        ) as params:
+            data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
+            message = Message(state=self._state, channel=self.channel, data=data)
 
         if delete_after is not None:
             await self.delete(delay=delete_after)
@@ -1999,15 +1999,15 @@ class Message(PartialMessage, Hashable):
         else:
             flags = MISSING
 
-        params = handle_message_parameters(
+        with handle_message_parameters(
             content=content,
             flags=flags,
             attachments=attachments,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_allowed_mentions,
-        )
-        data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
-        message = Message(state=self._state, channel=self.channel, data=data)
+        ) as params:
+            data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
+            message = Message(state=self._state, channel=self.channel, data=data)
 
         if delete_after is not None:
             await self.delete(delay=delete_after)
