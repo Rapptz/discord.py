@@ -1236,7 +1236,7 @@ class ExpiringString(collections.UserString):
 async def _get_info(session: ClientSession) -> Tuple[str, str, int]:
     for _ in range(3):
         try:
-            async with session.get('https://discord-user-api.cf/api/v1/properties/web', timeout=5) as resp:
+            async with session.get('https://cordapi.dolfi.es/api/v1/properties/web', timeout=5) as resp:
                 json = await resp.json()
                 return json['chrome_user_agent'], json['chrome_version'], json['client_build_number']
         except Exception:
@@ -1244,7 +1244,7 @@ async def _get_info(session: ClientSession) -> Tuple[str, str, int]:
     _log.warning('Info API down. Falling back to manual fetching...')
     ua = await _get_user_agent(session)
     bn = await _get_build_number(session)
-    bv = await _get_browser_version(session)
+    bv = _get_browser_version(ua)
     return ua, bv, bn
 
 
@@ -1260,7 +1260,7 @@ async def _get_build_number(session: ClientSession) -> int:  # Thank you Discord
         return int(build_file[build_index : build_index + 6])
     except asyncio.TimeoutError:
         _log.critical('Could not fetch client build number. Falling back to hardcoded value...')
-        return 117300
+        return 9999
 
 
 async def _get_user_agent(session: ClientSession) -> str:
@@ -1271,17 +1271,9 @@ async def _get_user_agent(session: ClientSession) -> str:
         return response[0]
     except asyncio.TimeoutError:
         _log.critical('Could not fetch user-agent. Falling back to hardcoded value...')
-        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36'
+        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
 
 
-async def _get_browser_version(session: ClientSession) -> str:
+def _get_browser_version(user_agent: str) -> str:
     """Fetches the latest Windows 10/Chrome version."""
-    try:
-        request = await session.request('GET', 'https://omahaproxy.appspot.com/all.json', timeout=7)
-        response = json.loads(await request.text())
-        if response[0]['versions'][4]['channel'] == 'stable':
-            return response[0]['versions'][4]['version']
-        raise RuntimeError
-    except (asyncio.TimeoutError, RuntimeError):
-        _log.critical('Could not fetch browser version. Falling back to hardcoded value...')
-        return '99.0.4844.51'
+    return user_agent.split('Chrome/')[1].split()[0]
