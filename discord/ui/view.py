@@ -192,6 +192,12 @@ class View:
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self._children)}>'
 
+    async def __aenter__(self) -> Self:
+        return self
+
+    async def __aexit__(self, *args: Any) -> None:
+        await self.wait()
+
     async def __timeout_task_impl(self) -> None:
         while True:
             # Guard just in case someone changes the value of the timeout at runtime
