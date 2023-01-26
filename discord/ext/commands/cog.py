@@ -753,7 +753,7 @@ class GroupCog(Cog):
     cog.
 
     Hybrid commands will also be added to the Group, giving the ability categorize slash commands into
-    groups, while keeping the prefix-style commmand as a root-level command.
+    groups, while keeping the prefix-style command as a root-level command.
 
     For example:
 
