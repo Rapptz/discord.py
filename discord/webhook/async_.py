@@ -520,6 +520,10 @@ class _WebhookState:
         # state parameter is artificial
         return BaseUser(state=self, data=data)  # type: ignore
 
+    @property
+    def allowed_mentions(self) -> Optional[AllowedMentions]:
+        return None
+
     def get_reaction_emoji(self, data: PartialEmojiPayload) -> Union[PartialEmoji, Emoji, str]:
         if self._parent is not None:
             return self._parent.get_reaction_emoji(data)
