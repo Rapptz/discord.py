@@ -27,7 +27,7 @@ jobs:
       - name: Install dependencies
         id: install-deps
         run: |
-          python -m pip install --upgrade pip setuptools wheel black requests
+          python -m pip install --upgrade pip setuptools wheel black==22.6 requests
           pip install -U -r requirements.txt
 
       - name: Setup node.js
