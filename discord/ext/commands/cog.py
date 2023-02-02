@@ -26,7 +26,7 @@ from __future__ import annotations
 import inspect
 import discord
 from discord import app_commands
-from discord.utils import maybe_coroutine
+from discord.utils import maybe_coroutine, _to_kebab_case
 
 from typing import (
     Any,
@@ -182,7 +182,7 @@ class CogMeta(type):
             try:
                 group_name = kwargs.pop('group_name')
             except KeyError:
-                group_name = app_commands.commands._to_kebab_case(name)
+                group_name = _to_kebab_case(name)
         else:
             group_name = kwargs.pop('group_name', cog_name)
 

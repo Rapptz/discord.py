@@ -48,7 +48,7 @@ from collections import Counter
 
 from .namespace import Namespace, ResolveKey
 from .models import AppCommand
-from .commands import Command, ContextMenu, Group, _shorten
+from .commands import Command, ContextMenu, Group
 from .errors import (
     AppCommandError,
     CommandAlreadyRegistered,
@@ -61,7 +61,7 @@ from .errors import (
 from .translator import Translator, locale_str
 from ..errors import ClientException, HTTPException
 from ..enums import AppCommandType, InteractionType
-from ..utils import MISSING, _get_as_snowflake, _is_submodule
+from ..utils import MISSING, _get_as_snowflake, _is_submodule, _shorten
 from .._types import ClientT
 
 

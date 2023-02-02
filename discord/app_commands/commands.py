@@ -44,7 +44,6 @@ from typing import (
     Union,
     overload,
 )
-from textwrap import TextWrapper
 
 import re
 
@@ -57,7 +56,7 @@ from ..message import Message
 from ..user import User
 from ..member import Member
 from ..permissions import Permissions
-from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all
+from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all, _shorten, _to_kebab_case
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate
@@ -143,8 +142,6 @@ THAI_COMBINING = r'\u0e31-\u0e3a\u0e47-\u0e4e'
 DEVANAGARI_COMBINING = r'\u0900-\u0903\u093a\u093b\u093c\u093e\u093f\u0940-\u094f\u0955\u0956\u0957\u0962\u0963'
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[-_\w' + THAI_COMBINING + DEVANAGARI_COMBINING + r']{1,32}$')
 
-CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
-
 ARG_NAME_SUBREGEX = r'(?:\\?\*){0,2}(?P<name>\w+)'
 
 ARG_DESCRIPTION_SUBREGEX = r'(?P<description>(?:.|\n)+?(?:\Z|\r?\n(?=[\S\r\n])))'
@@ -167,19 +164,6 @@ NUMPY_DOCSTRING_ARG_REGEX = re.compile(
 )
 
 
-def _shorten(
-    input: str,
-    *,
-    _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='…'),
-) -> str:
-    try:
-        # split on the first double newline since arguments may appear after that
-        input, _ = re.split(r'\n\s*\n', input, maxsplit=1)
-    except ValueError:
-        pass
-    return _wrapper.fill(' '.join(input.strip().split()))
-
-
 def _parse_args_from_docstring(func: Callable[..., Any], params: Dict[str, CommandParameter]) -> Dict[str, str]:
     docstring = inspect.getdoc(func)
 
@@ -199,10 +183,6 @@ def _parse_args_from_docstring(func: Callable[..., Any], params: Dict[str, Comma
     return {
         m.group('name'): m.group('description') for matches in docstring_styles for m in matches if m.group('name') in params
     }
-
-
-def _to_kebab_case(text: str) -> str:
-    return CAMEL_CASE_REGEX.sub('-', text).lower()
 
 
 def validate_name(name: str) -> str:
@@ -227,7 +207,7 @@ def validate_context_menu_name(name: str) -> str:
     return name
 
 
-def _validate_auto_complete_callback(
+def validate_auto_complete_callback(
     callback: AutocompleteCallback[GroupT, ChoiceT]
 ) -> AutocompleteCallback[GroupT, ChoiceT]:
     # This function needs to ensure the following is true:
@@ -366,7 +346,7 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
                 'Choice annotation unsupported for autocomplete parameters, consider using a regular annotation instead'
             )
 
-        param.autocomplete = _validate_auto_complete_callback(callback)
+        param.autocomplete = validate_auto_complete_callback(callback)
 
     if autocomplete:
         first = next(iter(autocomplete))
@@ -1117,7 +1097,7 @@ class Command(Generic[GroupT, P, T]):
                     'Choice annotation unsupported for autocomplete parameters, consider using a regular annotation instead'
                 )
 
-            param.autocomplete = _validate_auto_complete_callback(coro)
+            param.autocomplete = validate_auto_complete_callback(coro)
             return coro
 
         return decorator
