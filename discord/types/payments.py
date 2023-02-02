@@ -1,7 +1,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-present Rapptz
+Copyright (c) 2021-present Dolfies
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -24,36 +24,38 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Literal, TypedDict, List, Optional
+from typing import List, Literal, TypedDict
 from typing_extensions import NotRequired
 
-from .user import PartialUser
+from .billing import PartialPaymentSource
 from .snowflake import Snowflake
+from .store import SKU
+from .subscriptions import PartialSubscription
 
 
-class TeamMember(TypedDict):
-    user: PartialUser
-    membership_state: int
-    permissions: List[str]
-    team_id: Snowflake
-
-
-class Team(TypedDict):
+class PartialPayment(TypedDict):
+    # TODO: There might be more, but I don't have an example payload
     id: Snowflake
-    name: str
-    owner_user_id: Snowflake
-    icon: Optional[str]
-    payout_account_status: NotRequired[Optional[Literal[1, 2, 3, 4, 5, 6]]]
-    stripe_connect_account_id: NotRequired[Optional[str]]
-    members: NotRequired[List[TeamMember]]
-
-
-class TeamPayout(TypedDict):
-    id: Snowflake
-    user_id: Snowflake
     amount: int
-    status: Literal[1, 2, 3, 4, 5]
-    period_start: str
-    period_end: Optional[str]
-    payout_date: Optional[str]
-    latest_tipalti_submission_response: NotRequired[dict]
+    tax: int
+    tax_inclusive: bool
+    currency: str
+
+
+class Payment(PartialPayment):
+    amount_refunded: int
+    description: str
+    status: Literal[0, 1, 2, 3, 4, 5]
+    created_at: str
+    sku_id: NotRequired[Snowflake]
+    sku_price: NotRequired[int]
+    sku_subscription_plan_id: NotRequired[Snowflake]
+    payment_gateway: NotRequired[Literal[1, 2, 3, 4, 5, 6]]
+    payment_gateway_payment_id: NotRequired[str]
+    downloadable_invoice: NotRequired[str]
+    downloadable_refund_invoices: NotRequired[List[str]]
+    refund_disqualification_reasons: NotRequired[List[str]]
+    flags: int
+    sku: NotRequired[SKU]
+    payment_source: NotRequired[PartialPaymentSource]
+    subscription: NotRequired[PartialSubscription]

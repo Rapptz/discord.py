@@ -460,7 +460,7 @@ class Role(Hashable):
         data = await state.http.add_members_to_role(guild.id, self.id, [m.id for m in members], reason=reason)
         return [Member(data=m, state=state, guild=guild) for m in data.values()]
 
-    async def remove_roles(self, *members: Snowflake, reason: Optional[str] = None) -> None:
+    async def remove_members(self, *members: Snowflake, reason: Optional[str] = None) -> None:
         r"""|coro|
 
         Removes :class:`Member`\s from this role.

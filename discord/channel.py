@@ -2286,7 +2286,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
     @property
     def notification_settings(self) -> ChannelSettings:
-        """:class:`~discord.ChannelSettings`: Returns the notification settings for this channel.
+        """:class:`ChannelSettings`: Returns the notification settings for this channel.
 
         If not found, an instance is created with defaults applied. This follows Discord behaviour.
 
@@ -2557,11 +2557,39 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         The owner ID that owns the group channel.
 
         .. versionadded:: 2.0
+    managed: :class:`bool`
+        Whether the group channel is managed by an application.
+
+        This restricts the operations that can be performed on the channel,
+        and means :attr:`owner` will usually be ``None``.
+
+        .. versionadded:: 2.0
+    application_id: Optional[:class:`int`]
+        The ID of the managing application, if any.
+
+        .. versionadded:: 2.0
     name: Optional[:class:`str`]
         The group channel's name if provided.
+    nicks: Dict[:class:`User`, :class:`str`]
+        A mapping of users to their respective nicknames in the group channel.
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('last_message_id', 'id', 'recipients', 'owner_id', '_icon', 'name', 'me', '_state', '_accessed')
+    __slots__ = (
+        'last_message_id',
+        'id',
+        'recipients',
+        'owner_id',
+        'managed',
+        'application_id',
+        'nicks',
+        '_icon',
+        'name',
+        'me',
+        '_state',
+        '_accessed',
+    )
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: GroupChannelPayload):
         self._state: ConnectionState = state
@@ -2571,11 +2599,14 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         self._accessed: bool = False
 
     def _update(self, data: GroupChannelPayload) -> None:
-        self.owner_id: Optional[int] = utils._get_as_snowflake(data, 'owner_id')
+        self.owner_id: int = int(data['owner_id'])
         self._icon: Optional[str] = data.get('icon')
         self.name: Optional[str] = data.get('name')
         self.recipients: List[User] = [self._state.store_user(u) for u in data.get('recipients', [])]
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self.managed: bool = data.get('managed', False)
+        self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
+        self.nicks: Dict[User, str] = {utils.get(self.recipients, id=int(k)): v for k, v in data.get('nicks', {}).items()}  # type: ignore
 
     def _get_voice_client_key(self) -> Tuple[int, str]:
         return self.me.id, 'self_id'
@@ -2599,17 +2630,19 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         if self.name:
             return self.name
 
-        if len(self.recipients) == 0:
+        recipients = [x for x in self.recipients if x.id != self.me.id]
+
+        if len(recipients) == 0:
             return 'Unnamed'
 
-        return ', '.join(map(lambda x: x.name, self.recipients))
+        return ', '.join(map(lambda x: x.name, recipients))
 
     def __repr__(self) -> str:
         return f'<GroupChannel id={self.id} name={self.name!r}>'
 
     @property
     def notification_settings(self) -> ChannelSettings:
-        """:class:`~discord.ChannelSettings`: Returns the notification settings for this channel.
+        """:class:`ChannelSettings`: Returns the notification settings for this channel.
 
         If not found, an instance is created with defaults applied. This follows Discord behaviour.
 
@@ -2621,9 +2654,10 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         )
 
     @property
-    def owner(self) -> User:
-        """:class:`User`: The owner that owns the group channel."""
-        return utils.find(lambda u: u.id == self.owner_id, self.recipients)  # type: ignore # All recipients are always present
+    def owner(self) -> Optional[User]:
+        """Optional[:class:`User`]: The owner that owns the group channel."""
+        # Only reason it wouldn't be in recipients is if it's a managed channel
+        return utils.get(self.recipients, id=self.owner_id) or self._state.get_user(self.owner_id)
 
     @property
     def call(self) -> Optional[PrivateCall]:
@@ -2683,7 +2717,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         Actual direct messages do not really have the concept of permissions.
 
-        This returns all the Text related permissions set to ``True`` except:
+        If a recipient, this returns all the Text related permissions set to ``True`` except:
 
         - :attr:`~Permissions.send_tts_messages`: You cannot send TTS messages in a DM.
         - :attr:`~Permissions.manage_messages`: You cannot delete others messages in a DM.
@@ -2704,18 +2738,24 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         :class:`Permissions`
             The resolved permissions for the user.
         """
-        base = Permissions.text()
-        base.read_messages = True
-        base.send_tts_messages = False
-        base.manage_messages = False
-        base.mention_everyone = True
+        if obj.id in [x.id for x in self.recipients]:
+            base = Permissions.text()
+            base.read_messages = True
+            base.send_tts_messages = False
+            base.manage_messages = False
+            base.mention_everyone = True
+            if not self.managed:
+                base.create_instant_invite = True
+        else:
+            base = Permissions.none()
 
         if obj.id == self.owner_id:
+            # Applications can kick members even without being a recipient
             base.kick_members = True
 
         return base
 
-    async def add_recipients(self, *recipients: Snowflake) -> None:
+    async def add_recipients(self, *recipients: Snowflake, nicks: Optional[Dict[Snowflake, str]] = None) -> None:
         r"""|coro|
 
         Adds recipients to this group.
@@ -2729,17 +2769,25 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         -----------
         \*recipients: :class:`~discord.abc.Snowflake`
             An argument list of users to add to this group.
+            If the user is of type :class:`Object`, then the ``nick`` attribute
+            is used as the nickname for the added recipient.
+        nicks: Optional[Dict[:class:`~discord.abc.Snowflake`, :class:`str`]]
+            A mapping of user IDs to nicknames to use for the added recipients.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
+        Forbidden
+            You do not have permissions to add a recipient to this group.
         HTTPException
             Adding a recipient to this group failed.
         """
-        # TODO: wait for the corresponding WS event
+        nicknames = {k.id: v for k, v in nicks.items()} if nicks else {}
         await self._get_channel()
         req = self._state.http.add_group_recipient
         for recipient in recipients:
-            await req(self.id, recipient.id)
+            await req(self.id, recipient.id, getattr(recipient, 'nick', (nicknames.get(recipient.id) if nicks else None)))
 
     async def remove_recipients(self, *recipients: Snowflake) -> None:
         r"""|coro|
@@ -2753,10 +2801,11 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         Raises
         -------
+        Forbidden
+            You do not have permissions to remove a recipient from this group.
         HTTPException
             Removing a recipient from this group failed.
         """
-        # TODO: wait for the corresponding WS event
         await self._get_channel()
         req = self._state.http.remove_group_recipient
         for recipient in recipients:
@@ -2787,7 +2836,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         owner: :class:`~discord.abc.Snowflake`
             The new owner of the group.
 
-                .. versionadded:: 2.0
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -2804,7 +2853,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
                 payload['icon'] = None
             else:
                 payload['icon'] = utils._bytes_to_base64_data(icon)
-        if owner is not MISSING:
+        if owner:
             payload['owner'] = owner.id
 
         data = await self._state.http.edit_channel(self.id, **payload)
@@ -2853,10 +2902,35 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
         """
         await self.leave(silent=silent)
 
+    async def invites(self) -> List[Invite]:
+        """|coro|
+
+        Returns a list of all active instant invites from this channel.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        Forbidden
+            You do not have proper permissions to get the information.
+        HTTPException
+            An error occurred while fetching the information.
+
+        Returns
+        -------
+        List[:class:`Invite`]
+            The list of invites that are currently active.
+        """
+        state = self._state
+        data = await state.http.invites_from_channel(self.id)
+        return [Invite(state=state, data=invite, channel=self) for invite in data]
+
     async def create_invite(self, *, max_age: int = 86400) -> Invite:
         """|coro|
 
         Creates an instant invite from a group channel.
+
+        .. versionadded:: 2.0
 
         Parameters
         ------------
@@ -2866,12 +2940,12 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, Hashable):
 
         Raises
         -------
-        ~discord.HTTPException
+        HTTPException
             Invite creation failed.
 
         Returns
         --------
-        :class:`~discord.Invite`
+        :class:`Invite`
             The invite that was created.
         """
         data = await self._state.http.create_group_invite(self.id, max_age=max_age)

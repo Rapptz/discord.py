@@ -79,6 +79,8 @@ except ModuleNotFoundError:
 else:
     HAS_ORJSON = True
 
+from .enums import Locale, try_enum
+
 
 __all__ = (
     'oauth_url',
@@ -145,6 +147,7 @@ if TYPE_CHECKING:
     from .message import Message
     from .template import Template
     from .commands import ApplicationCommand
+    from .entitlements import Gift
 
     class _RequestLike(Protocol):
         headers: Mapping[str, Any]
@@ -257,6 +260,27 @@ def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
 def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     if timestamp:
         return datetime.datetime.fromisoformat(timestamp)
+    return None
+
+
+@overload
+def parse_date(date: None) -> None:
+    ...
+
+
+@overload
+def parse_date(date: str) -> datetime.date:
+    ...
+
+
+@overload
+def parse_date(date: Optional[str]) -> Optional[datetime.date]:
+    ...
+
+
+def parse_date(date: Optional[str]) -> Optional[datetime.date]:
+    if date:
+        return parse_time(date).date()
     return None
 
 
@@ -574,7 +598,7 @@ def _get_as_snowflake(data: Any, key: str) -> Optional[int]:
         return value and int(value)
 
 
-def _get_mime_type_for_image(data: bytes):
+def _get_mime_type_for_image(data: bytes, with_video: bool = False, fallback: bool = False) -> str:
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
     elif data[0:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
@@ -583,13 +607,30 @@ def _get_mime_type_for_image(data: bytes):
         return 'image/gif'
     elif data.startswith(b'RIFF') and data[8:12] == b'WEBP':
         return 'image/webp'
+    elif data.startswith(b'\x66\x74\x79\x70\x69\x73\x6F\x6D') and with_video:
+        return 'video/mp4'
     else:
+        if fallback:
+            return 'application/octet-stream'
         raise ValueError('Unsupported image type given')
+
+
+def _get_extension_for_mime_type(mime_type: str) -> str:
+    if mime_type == 'image/png':
+        return 'png'
+    elif mime_type == 'image/jpeg':
+        return 'jpg'
+    elif mime_type == 'image/gif':
+        return 'gif'
+    elif mime_type == 'video/mp4':
+        return 'mp4'
+    else:
+        return 'webp'
 
 
 def _bytes_to_base64_data(data: bytes) -> str:
     fmt = 'data:{mime};base64,{data}'
-    mime = _get_mime_type_for_image(data)
+    mime = _get_mime_type_for_image(data, fallback=True)
     b64 = b64encode(data).decode('ascii')
     return fmt.format(mime=mime, data=b64)
 
@@ -598,17 +639,24 @@ def _is_submodule(parent: str, child: str) -> bool:
     return parent == child or child.startswith(parent + '.')
 
 
+def _handle_metadata(obj):
+    try:
+        return dict(obj)
+    except Exception:
+        raise TypeError(f'Type {obj.__class__.__name__} is not JSON serializable')
+
+
 if HAS_ORJSON:
 
     def _to_json(obj: Any) -> str:
-        return orjson.dumps(obj).decode('utf-8')
+        return orjson.dumps(obj, default=_handle_metadata).decode('utf-8')
 
     _from_json = orjson.loads  # type: ignore
 
 else:
 
     def _to_json(obj: Any) -> str:
-        return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
+        return json.dumps(obj, separators=(',', ':'), ensure_ascii=True, default=_handle_metadata)
 
     _from_json = json.loads
 
@@ -818,6 +866,34 @@ def resolve_template(code: Union[Template, str]) -> str:
         return code.code
     else:
         rx = r'(?:https?\:\/\/)?discord(?:\.new|(?:app)?\.com\/template)\/(.+)'
+        m = re.match(rx, code)
+        if m:
+            return m.group(1)
+    return code
+
+
+def resolve_gift(code: Union[Gift, str]) -> str:
+    """
+    Resolves a gift code from a :class:`~discord.Gift`, URL or code.
+
+    .. versionadded:: 2.0
+
+    Parameters
+    -----------
+    code: Union[:class:`~discord.Gift`, :class:`str`]
+        The code.
+
+    Returns
+    --------
+    :class:`str`
+        The gift code.
+    """
+    from .entitlements import Gift  # circular import
+
+    if isinstance(code, Gift):
+        return code.code
+    else:
+        rx = r'(?:https?\:\/\/)?(?:discord(?:app)?\.com\/(?:gifts|billing\/promotions)|promos\.discord\.gg|discord.gift)\/(.+)'
         m = re.match(rx, code)
         if m:
             return m.group(1)
@@ -1195,11 +1271,10 @@ def set_target(
 
     for item in items:
         for k, v in attrs.items():
-            if v is not None:
-                try:
-                    setattr(item, k, v)
-                except AttributeError:
-                    pass
+            try:
+                setattr(item, k, v)
+            except AttributeError:
+                pass
 
 
 def _generate_session_id() -> str:
@@ -1208,6 +1283,16 @@ def _generate_session_id() -> str:
 
 def _generate_nonce() -> str:
     return str(time_snowflake(utcnow()))
+
+
+def _parse_localizations(data: Any, key: str) -> tuple[Any, dict]:
+    values = data.get(key)
+    values = values if isinstance(values, dict) else {'default': values}
+    string = values['default']
+    localizations = {
+        try_enum(Locale, k): v for k, v in (values.get('localizations', data.get(f'{key}_localizations')) or {}).items()
+    }
+    return string, localizations
 
 
 class ExpiringString(collections.UserString):
@@ -1271,7 +1356,9 @@ async def _get_user_agent(session: ClientSession) -> str:
         return response[0]
     except asyncio.TimeoutError:
         _log.critical('Could not fetch user-agent. Falling back to hardcoded value...')
-        return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+        return (
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+        )
 
 
 def _get_browser_version(user_agent: str) -> str:

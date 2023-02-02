@@ -34,7 +34,7 @@ from .utils import _generate_nonce, _get_as_snowflake
 
 if TYPE_CHECKING:
     from .abc import Messageable, Snowflake
-    from .appinfo import InteractionApplication
+    from .appinfo import IntegrationApplication
     from .file import File
     from .guild import Guild
     from .interactions import Interaction
@@ -80,7 +80,7 @@ class ApplicationCommand(Protocol):
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
         Whether the command is marked NSFW and only available in NSFW channels.
-    application: Optional[:class:`~discord.InteractionApplication`]
+    application: Optional[:class:`~discord.IntegrationApplication`]
         The application this command belongs to.
         Only available if requested.
     application_id: :class:`int`
@@ -104,7 +104,7 @@ class ApplicationCommand(Protocol):
         dm_permission: bool
         nsfw: bool
         application_id: int
-        application: Optional[InteractionApplication]
+        application: Optional[IntegrationApplication]
         mention: str
         guild_id: Optional[int]
 
@@ -206,7 +206,7 @@ class BaseCommand(ApplicationCommand, Hashable):
         self.type = try_enum(AppCommandType, data['type'])
 
         application = data.get('application')
-        self.application = state.create_interaction_application(application) if application else None
+        self.application = state.create_integration_application(application) if application else None
 
         self._default_member_permissions = _get_as_snowflake(data, 'default_member_permissions')
         self.default_permission: bool = data.get('default_permission', True)
@@ -351,7 +351,7 @@ class UserCommand(BaseCommand):
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
         Whether the command is marked NSFW and only available in NSFW channels.
-    application: Optional[:class:`InteractionApplication`]
+    application: Optional[:class:`IntegrationApplication`]
         The application this command belongs to.
         Only available if requested.
     application_id: :class:`int`
@@ -456,7 +456,7 @@ class MessageCommand(BaseCommand):
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
         Whether the command is marked NSFW and only available in NSFW channels.
-    application: Optional[:class:`InteractionApplication`]
+    application: Optional[:class:`IntegrationApplication`]
         The application this command belongs to.
         Only available if requested.
     application_id: :class:`int`
@@ -562,7 +562,7 @@ class SlashCommand(BaseCommand, SlashMixin):
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
         Whether the command is marked NSFW and only available in NSFW channels.
-    application: Optional[:class:`InteractionApplication`]
+    application: Optional[:class:`IntegrationApplication`]
         The application this command belongs to.
         Only available if requested.
     application_id: :class:`int`
@@ -807,7 +807,7 @@ class SubCommand(SlashMixin):
 
     @property
     def application(self):
-        """Optional[:class:`InteractionApplication`]: The application this command belongs to.
+        """Optional[:class:`IntegrationApplication`]: The application this command belongs to.
         Only available if requested.
         """
         return self._parent.application

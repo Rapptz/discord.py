@@ -116,8 +116,6 @@ class Profile:
 class ApplicationProfile(Hashable):
     """Represents a Discord application profile.
 
-    .. versionadded:: 2.0
-
     .. container:: operations
 
         .. describe:: x == y
@@ -132,6 +130,8 @@ class ApplicationProfile(Hashable):
 
             Return the applications's hash.
 
+    .. versionadded:: 2.0
+
     Attributes
     ------------
     id: :class:`int`
@@ -142,6 +142,7 @@ class ApplicationProfile(Hashable):
         A list of the IDs of the application's popular commands.
     primary_sku_id: Optional[:class:`int`]
         The application's primary SKU ID, if any.
+        This can be an application's game SKU, subscription SKU, etc.
     custom_install_url: Optional[:class:`str`]
         The custom URL to use for authorizing the application, if specified.
     install_params: Optional[:class:`ApplicationInstallParams`]
@@ -158,7 +159,7 @@ class ApplicationProfile(Hashable):
         params = data.get('install_params')
         self.custom_install_url: Optional[str] = data.get('custom_install_url')
         self.install_params: Optional[ApplicationInstallParams] = (
-            ApplicationInstallParams(self.id, params) if params else None
+            ApplicationInstallParams.from_application(self, params) if params else None
         )
 
     def __repr__(self) -> str:
@@ -174,9 +175,37 @@ class ApplicationProfile(Hashable):
         """:class:`str`: The URL to install the application."""
         return self.custom_install_url or self.install_params.url if self.install_params else None
 
+    @property
+    def primary_sku_url(self) -> Optional[str]:
+        """:class:`str`: The URL to the primary SKU of the application, if any."""
+        if self.primary_sku_id:
+            return f'https://discord.com/store/skus/{self.primary_sku_id}/unknown'
+
 
 class UserProfile(Profile, User):
-    """Represents a Discord user's profile. This is a :class:`User` with extended attributes.
+    """Represents a Discord user's profile.
+
+    This is a :class:`User` with extended attributes.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two users are equal.
+
+        .. describe:: x != y
+
+            Checks if two users are not equal.
+
+        .. describe:: hash(x)
+
+            Return the user's hash.
+
+        .. describe:: str(x)
+
+            Returns the user's name with discriminator.
+
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -208,7 +237,31 @@ class UserProfile(Profile, User):
 
 
 class MemberProfile(Profile, Member):
-    """Represents a Discord member's profile. This is a :class:`Member` with extended attributes.
+    """Represents a Discord member's profile.
+
+    This is a :class:`Member` with extended attributes.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two members are equal.
+            Note that this works with :class:`User` instances too.
+
+        .. describe:: x != y
+
+            Checks if two members are not equal.
+            Note that this works with :class:`User` instances too.
+
+        .. describe:: hash(x)
+
+            Returns the member's hash.
+
+        .. describe:: str(x)
+
+            Returns the member's name with the discriminator.
+
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -225,13 +278,13 @@ class MemberProfile(Profile, Member):
         .. note::
             This is renamed from :attr:`Member.premium_since` because of name collisions.
     premium_type: Optional[:class:`PremiumType`]
-        Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic). Could be None if the user is not premium.
+        Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic). Could be ``None`` if the user is not premium.
     premium_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies how long a user has been premium (had Nitro).
         ``None`` if the user is not a premium user.
 
         .. note::
-            This is not the same as :attr:`Member.premium_since`. That is renamed to :attr:`guild_premium_since`
+            This is not the same as :attr:`Member.premium_since`. That is renamed to :attr:`guild_premium_since`.
     boosting_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies when a user first boosted any guild.
     connections: Optional[List[:class:`PartialConnection`]]

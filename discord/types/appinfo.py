@@ -24,49 +24,204 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TypedDict, List, Optional
+from typing import Dict, List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired
 
-from .user import User
-from .team import Team
+from .guild import PartialGuild
 from .snowflake import Snowflake
+from .team import Team
+from .user import PartialUser
 
 
-class BaseAppInfo(TypedDict):
+class BaseApplication(TypedDict):
     id: Snowflake
     name: str
-    verify_key: str
-    icon: Optional[str]
-    summary: str
     description: str
-    cover_image: Optional[str]
+    icon: Optional[str]
+    cover_image: NotRequired[Optional[str]]
+    type: Optional[int]
+    primary_sku_id: NotRequired[Snowflake]
+    summary: NotRequired[Literal['']]
+
+
+class IntegrationApplication(BaseApplication):
+    bot: NotRequired[PartialUser]
+    role_connections_verification_url: NotRequired[Optional[str]]
+
+
+class PartialApplication(BaseApplication):
+    owner: NotRequired[PartialUser]  # Not actually ever present in partial app
+    team: NotRequired[Team]
+    verify_key: str
+    description: str
+    cover_image: NotRequired[Optional[str]]
     flags: NotRequired[int]
-    rpc_origins: List[str]
-
-
-class AppInfo(BaseAppInfo):
-    owner: User
+    rpc_origins: NotRequired[List[str]]
+    hook: NotRequired[bool]
+    overlay: NotRequired[bool]
+    overlay_compatibility_hook: NotRequired[bool]
+    terms_of_service_url: NotRequired[str]
+    privacy_policy_url: NotRequired[str]
+    max_participants: NotRequired[Optional[int]]
     bot_public: NotRequired[bool]
     bot_require_code_grant: NotRequired[bool]
     integration_public: NotRequired[bool]
     integration_require_code_grant: NotRequired[bool]
-    team: NotRequired[Team]
     guild_id: NotRequired[Snowflake]
     primary_sku_id: NotRequired[Snowflake]
     slug: NotRequired[str]
-    terms_of_service_url: NotRequired[str]
-    privacy_policy_url: NotRequired[str]
-    hook: NotRequired[bool]
-    max_participants: NotRequired[int]
-    interactions_endpoint_url: NotRequired[str]
+    developers: NotRequired[List[Company]]
+    publishers: NotRequired[List[Company]]
+    aliases: NotRequired[List[str]]
+    eula_id: NotRequired[Snowflake]
+    embedded_activity_config: NotRequired[EmbeddedActivityConfig]
+    guild: NotRequired[PartialGuild]
+
+
+class ApplicationDiscoverability(TypedDict):
+    discoverability_state: int
+    discovery_eligibility_flags: int
+
+
+class Application(PartialApplication, IntegrationApplication, ApplicationDiscoverability):
+    redirect_uris: List[str]
+    interactions_endpoint_url: Optional[str]
     verification_state: int
     store_application_state: int
     rpc_application_state: int
-    interactions_endpoint_url: str
+    creator_monetization_state: int
+    role_connections_verification_url: NotRequired[Optional[str]]
 
 
-class PartialAppInfo(BaseAppInfo, total=False):
-    hook: bool
-    terms_of_service_url: str
-    privacy_policy_url: str
-    max_participants: int
+class WhitelistedUser(TypedDict):
+    user: PartialUser
+    state: Literal[1, 2]
+
+
+class Asset(TypedDict):
+    id: Snowflake
+    name: str
+    type: int
+
+
+class StoreAsset(TypedDict):
+    id: Snowflake
+    size: int
+    width: int
+    height: int
+    mime_type: str
+
+
+class Company(TypedDict):
+    id: Snowflake
+    name: str
+
+
+class EULA(TypedDict):
+    id: Snowflake
+    name: str
+    content: str
+
+
+class BaseAchievement(TypedDict):
+    id: Snowflake
+    name: Union[str, Dict[str, Union[str, Dict[str, str]]]]
+    name_localizations: NotRequired[Dict[str, str]]
+    description: Union[str, Dict[str, Union[str, Dict[str, str]]]]
+    description_localizations: NotRequired[Dict[str, str]]
+    icon_hash: str
+    secure: bool
+    secret: bool
+
+
+class Achievement(BaseAchievement):
+    application_id: Snowflake
+
+
+class Ticket(TypedDict):
+    ticket: str
+
+
+class Branch(TypedDict):
+    id: Snowflake
+    live_build_id: NotRequired[Optional[Snowflake]]
+    created_at: NotRequired[str]
+    name: NotRequired[str]
+
+
+class BranchSize(TypedDict):
+    size_kb: str  # Stringified float
+
+
+class DownloadSignature(TypedDict):
+    endpoint: str
+    expires: int
+    signature: str
+
+
+class Build(TypedDict):
+    application_id: NotRequired[Snowflake]
+    created_at: NotRequired[str]
+    id: Snowflake
+    manifests: List[Manifest]
+    status: Literal['CORRUPTED', 'INVALID', 'READY', 'VALIDATING', 'UPLOADED', 'UPLOADING', 'CREATED']
+    source_build_id: NotRequired[Optional[Snowflake]]
+    version: NotRequired[Optional[str]]
+
+
+class CreatedBuild(TypedDict):
+    build: Build
+    manifest_uploads: List[Manifest]
+
+
+class BuildFile(TypedDict):
+    id: Snowflake
+    md5_hash: NotRequired[str]
+
+
+class CreatedBuildFile(TypedDict):
+    id: str
+    url: str
+
+
+class ManifestLabel(TypedDict):
+    application_id: Snowflake
+    id: Snowflake
+    name: NotRequired[str]
+
+
+class Manifest(TypedDict):
+    id: Snowflake
+    label: ManifestLabel
+    redistributable_label_ids: NotRequired[List[Snowflake]]
+    url: Optional[str]
+
+
+class ActivityStatistics(TypedDict):
+    application_id: NotRequired[Snowflake]
+    user_id: NotRequired[Snowflake]
+    total_duration: int
+    total_discord_sku_duration: NotRequired[int]
+    last_played_at: str
+
+
+class GlobalActivityStatistics(TypedDict):
+    application_id: Snowflake
+    user_id: Snowflake
+    duration: int
+    updated_at: str
+
+
+class EmbeddedActivityConfig(TypedDict):
+    supported_platforms: List[Literal['web', 'android', 'ios']]
+    default_orientation_lock_state: Literal[1, 2, 3]
+    activity_preview_video_asset_id: NotRequired[Optional[Snowflake]]
+
+
+class ActiveDeveloperWebhook(TypedDict):
+    channel_id: Snowflake
+    webhook_id: Snowflake
+
+
+class ActiveDeveloperResponse(TypedDict):
+    follower: ActiveDeveloperWebhook

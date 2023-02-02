@@ -109,7 +109,7 @@ class CallMessage:
             The timedelta object representing the duration.
         """
         if self.ended_timestamp is None:
-            return datetime.datetime.utcnow() - self.message.created_at
+            return utils.utcnow() - self.message.created_at
         else:
             return self.ended_timestamp - self.message.created_at
 

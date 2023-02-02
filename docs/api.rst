@@ -307,7 +307,7 @@ Debug
 
     :param event_type: The event type from Discord that is received, e.g. ``'READY'``.
     :type event_type: :class:`str`
-    
+
 .. function:: on_socket_raw_receive(msg)
 
     Called whenever a message is completely received from the WebSocket, before
@@ -411,8 +411,159 @@ Client
     :param action: The action required.
     :type action: :class:`RequiredActionType`
 
+Billing
+~~~~~~~
+
+.. function:: on_payment_sources_update()
+
+    Called when your payment sources are updated.
+
+    .. versionadded:: 2.0
+
+.. function:: on_subscriptions_update()
+
+    Called when your subscriptions are updated.
+
+    .. versionadded:: 2.0
+
+.. function:: on_payment_client_add(purchase_token_hash, expires_at)
+
+    Called when a payment client is added to your account.
+
+    .. versionadded:: 2.0
+
+    :param purchase_token_hash: The purchase token hash.
+    :type purchase_token_hash: :class:`str`
+    :param expires_at: When the payment client expires.
+    :type expires_at: :class:`datetime.datetime`
+
+.. function:: on_payment_update(payment)
+
+    Called when a payment is created or updated.
+
+    .. versionadded:: 2.0
+
+    :param payment: The payment that was updated.
+    :type payment: :class:`Payment`
+
+.. function:: on_premium_guild_subscription_slot_create(slot)
+
+    Called when a premium guild subscription (boost) slot is added to your account.
+
+    .. versionadded:: 2.0
+
+    :param slot: The slot that was added.
+    :type slot: :class:`PremiumGuildSubscriptionSlot`
+
+.. function:: on_premium_guild_subscription_slot_update(slot)
+
+    Called when a premium guild subscription (boost) slot is updated.
+
+    .. versionadded:: 2.0
+
+    :param slot: The slot that was updated.
+    :type slot: :class:`PremiumGuildSubscriptionSlot`
+
+.. function:: on_billing_popup_bridge_callback(payment_source_type, path, query, state)
+
+    Called when a billing popup bridge callback is received.
+
+    .. versionadded:: 2.0
+
+    :param payment_source_type: The payment source type.
+    :type payment_source_type: :class:`PaymentSourceType`
+    :param path: The path of the callback.
+    :type path: :class:`str`
+    :param query: The query of the callback.
+    :type query: :class:`str`
+    :param state: The state of the callback.
+    :type state: :class:`str`
+
+Entitlements
+~~~~~~~~~~~~
+
+.. function:: on_library_application_update(application)
+
+    Called when a library entry is updated.
+
+    .. versionadded:: 2.0
+
+    :param application: The library entry that was updated.
+    :type application: :class:`LibraryApplication`
+
+.. function:: on_achievement_update(achievement, percent_complete)
+
+    Called when an achievement is updated.
+
+    .. versionadded:: 2.0
+
+    :param achievement: The achievement that was updated.
+    :type achievement: :class:`Achievement`
+    :param percent_complete: The percentage of the acheivement completed.
+    :type percent_complete: :class:`int`
+
+.. function:: on_entitlement_create(entitlement)
+
+    Called when an entitlement is added to your account.
+
+    .. versionadded:: 2.0
+
+    :param entitlement: The entitlement that was added.
+    :type entitlement: :class:`Entitlement`
+
+.. function:: on_entitlement_update(entitlement)
+
+    Called when an entitlement is updated.
+
+    .. versionadded:: 2.0
+
+    :param entitlement: The entitlement that was updated.
+    :type entitlement: :class:`Entitlement`
+
+.. function:: on_entitlement_delete(entitlement)
+
+    Called when an entitlement is removed from your account.
+
+    .. versionadded:: 2.0
+
+    :param entitlement: The entitlement that was removed.
+    :type entitlement: :class:`Entitlement`
+
+.. function:: on_gift_create(gift)
+
+    Called when a gift is created.
+
+    .. versionadded:: 2.0
+
+    .. note::
+
+        This event does not guarantee most gift attributes.
+
+    :param gift: The gift that was created.
+    :type gift: :class:`Gift`
+
+.. function:: on_gift_update(gift)
+
+    Called when a gift is updated.
+
+    .. versionadded:: 2.0
+
+    .. note::
+
+        This event does not guarantee most gift attributes.
+
+    :param gift: The gift that was updated.
+    :type gift: :class:`Gift`
+
 Connections
 ~~~~~~~~~~~~
+
+.. function:: on_connections_update()
+
+    Called when your account's connections are updated.
+    This may not be accompanied by an :meth:`on_connection_create` or :meth:`on_connection_update` event.
+
+    .. versionadded:: 2.0
 
 .. function:: on_connection_create(connection)
 
@@ -436,6 +587,19 @@ Connections
     :type before: :class:`Connection`
     :param after: The connection after being updated.
     :type after: :class:`Connection`
+
+.. function:: on_connections_link_callback(provider, code, state)
+
+    Called when a connection link callback is received.
+
+    .. versionadded:: 2.0
+
+    :param provider: The provider that the callback is for.
+    :type provider: :class:`str`
+    :param code: The callback code that was received.
+    :type code: :class:`str`
+    :param state: The callback state.
+    :type state: :class:`str`
 
 Relationships
 ~~~~~~~~~~~~~
@@ -1227,18 +1391,23 @@ of :class:`enum.Enum`.
     .. attribute:: text
 
         A text channel.
+
     .. attribute:: voice
 
         A voice channel.
+
     .. attribute:: private
 
         A private text channel. Also called a direct message.
+
     .. attribute:: group
 
         A private group text channel.
+
     .. attribute:: category
 
         A category channel.
+
     .. attribute:: news
 
         A guild news channel.
@@ -1290,27 +1459,34 @@ of :class:`enum.Enum`.
     .. attribute:: default
 
         The default message type. This is the same as regular messages.
+
     .. attribute:: recipient_add
 
         The system message when a user is added to a group private
         message or a thread.
+
     .. attribute:: recipient_remove
 
         The system message when a user is removed from a group private
         message or a thread.
+
     .. attribute:: call
 
         The system message denoting call state, e.g. missed call, started call,
         etc.
+
     .. attribute:: channel_name_change
 
         The system message denoting that a channel's name has been changed.
+
     .. attribute:: channel_icon_change
 
         The system message denoting that a channel's icon has been changed.
+
     .. attribute:: pins_add
 
         The system message denoting that a pinned message has been added to a channel.
+
     .. attribute:: new_member
 
         The system message denoting that a new member has joined a Guild.
@@ -1318,18 +1494,22 @@ of :class:`enum.Enum`.
     .. attribute:: premium_guild_subscription
 
         The system message denoting that a member has "nitro boosted" a guild.
+
     .. attribute:: premium_guild_tier_1
 
         The system message denoting that a member has "nitro boosted" a guild
         and it achieved level 1.
+
     .. attribute:: premium_guild_tier_2
 
         The system message denoting that a member has "nitro boosted" a guild
         and it achieved level 2.
+
     .. attribute:: premium_guild_tier_3
 
         The system message denoting that a member has "nitro boosted" a guild
         and it achieved level 3.
+
     .. attribute:: channel_follow_add
 
         The system message denoting that an announcement channel has been followed.
@@ -1406,9 +1586,11 @@ of :class:`enum.Enum`.
     .. attribute:: guild
 
         A guild invite.
+
     .. attribute:: group_dm
 
         A group DM invite.
+
     .. attribute:: friend
 
         A friend invite.
@@ -1420,15 +1602,19 @@ of :class:`enum.Enum`.
     .. attribute:: staff
 
         The user is a Discord Employee.
+
     .. attribute:: partner
 
         The user is a Discord Partner.
+
     .. attribute:: hypesquad
 
         The user is a HypeSquad Events member.
+
     .. attribute:: bug_hunter
 
         The user is a Bug Hunter.
+
     .. attribute:: bug_hunter_level_1
 
         The user is a Bug Hunter.
@@ -1437,27 +1623,35 @@ of :class:`enum.Enum`.
     .. attribute:: mfa_sms
 
         The user has SMS recovery for Multi Factor Authentication enabled.
+
     .. attribute:: premium_promo_dismissed
 
         The user has dismissed the Discord Nitro promotion.
+
     .. attribute:: hypesquad_bravery
 
         The user is a HypeSquad Bravery member.
+
     .. attribute:: hypesquad_brilliance
 
         The user is a HypeSquad Brilliance member.
+
     .. attribute:: hypesquad_balance
 
         The user is a HypeSquad Balance member.
+
     .. attribute:: early_supporter
 
         The user is an Early Supporter.
+
     .. attribute:: team_user
 
         The user is a Team User.
+
     .. attribute:: partner_or_verification_application
 
         The user has a partner or verification application.
+
     .. attribute:: system
 
         The user is a system user (i.e. represents Discord officially).
@@ -1466,9 +1660,11 @@ of :class:`enum.Enum`.
     .. attribute:: has_unread_urgent_messages
 
         The user has an unread system message.
+
     .. attribute:: bug_hunter_level_2
 
         The user is a Bug Hunter Level 2.
+
     .. attribute:: underage_deleted
 
         The user has been flagged for deletion for being underage.
@@ -1477,12 +1673,15 @@ of :class:`enum.Enum`.
     .. attribute:: verified_bot
 
         The user is a Verified Bot.
+
     .. attribute:: verified_bot_developer
 
         The user is an Early Verified Bot Developer.
+
     .. attribute:: discord_certified_moderator
 
         The user is a Discord Certified Moderator.
+
     .. attribute:: bot_http_interactions
 
         The user is a bot that only uses HTTP interactions and is shown in the online member list.
@@ -1498,6 +1697,11 @@ of :class:`enum.Enum`.
         The user bought premium but has it manually disabled.
 
         .. versionadded:: 2.0
+    .. attribute:: quarantined
+
+        The user is quarantined.
+
+        .. versionadded:: 2.0
 
 .. class:: ActivityType
 
@@ -1507,21 +1711,27 @@ of :class:`enum.Enum`.
     .. attribute:: unknown
 
         An unknown activity type. This should generally not happen.
+
     .. attribute:: playing
 
         A "Playing" activity type.
+
     .. attribute:: streaming
 
         A "Streaming" activity type.
+
     .. attribute:: listening
 
         A "Listening" activity type.
+
     .. attribute:: watching
 
         A "Watching" activity type.
+
     .. attribute:: custom
 
         A custom activity type.
+
     .. attribute:: competing
 
         A competing activity type.
@@ -1535,9 +1745,11 @@ of :class:`enum.Enum`.
     .. attribute:: bravery
 
         The "Bravery" house.
+
     .. attribute:: brilliance
 
         The "Brilliance" house.
+
     .. attribute:: balance
 
         The "Balance" house.
@@ -1573,18 +1785,22 @@ of :class:`enum.Enum`.
     .. attribute:: none
 
         No criteria set.
+
     .. attribute:: low
 
         Member must have a verified email on their Discord account.
+
     .. attribute:: medium
 
         Member must have a verified email and be registered on Discord for more
         than five minutes.
+
     .. attribute:: high
 
         Member must have a verified email, be registered on Discord for more
         than five minutes, and be a member of the guild itself for more than
         ten minutes.
+
     .. attribute:: highest
 
         Member must have a verified phone on their Discord account.
@@ -1619,10 +1835,10 @@ of :class:`enum.Enum`.
     .. attribute:: all_messages
 
         Members receive notifications for every message regardless of them being mentioned.
+
     .. attribute:: only_mentions
 
         Members receive notifications for messages they are mentioned in.
-
 
 .. class:: HighlightLevel
 
@@ -1634,9 +1850,11 @@ of :class:`enum.Enum`.
 
         The highlight level is set to Discord default.
         This seems to always be enabled, which makes the purpose of this enum unclear.
+
     .. attribute:: disabled
 
         Members do not receive additional notifications for highlights.
+
     .. attribute:: enabled
 
         Members receive additional notifications for highlights.
@@ -1673,9 +1891,11 @@ of :class:`enum.Enum`.
     .. attribute:: disabled
 
         The guild does not have the content filter enabled.
+
     .. attribute:: no_role
 
         The guild has the content filter enabled for members without a role.
+
     .. attribute:: all_members
 
         The guild has the content filter enabled for every member.
@@ -1687,24 +1907,28 @@ of :class:`enum.Enum`.
     .. attribute:: online
 
         The member is online.
+
     .. attribute:: offline
 
         The member is offline.
+
     .. attribute:: idle
 
         The member is idle.
+
     .. attribute:: dnd
 
         The member is "Do Not Disturb".
+
     .. attribute:: do_not_disturb
 
         An alias for :attr:`dnd`.
+
     .. attribute:: invisible
 
         The member is "invisible". In reality, this is only used in sending
         a presence a la :meth:`Client.change_presence`. When you receive a
         user's presence this will be :attr:`offline` instead.
-
 
 .. class:: AuditLogAction
 
@@ -2441,11 +2665,37 @@ of :class:`enum.Enum`.
 
         The action is the update of something.
 
-.. class:: TeamMembershipState
+.. class:: ApplicationType
 
-    Represents the membership state of a :class:`TeamMember`.
+    Represents the type of an :class:`Application`.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: game
+
+        The application is a game.
+
+    .. attribute:: music
+
+        The application is music-related.
+
+    .. attribute:: ticketed_events
+
+        The application can use ticketed event.
+
+    .. attribute:: guild_role_subscriptions
+
+        The application can make custom guild role subscriptions.
+
+.. class:: ApplicationMembershipState
+
+    Represents the membership state of a :class:`TeamMember` or :class:`ApplicationTester`.
 
     .. versionadded:: 1.3
+
+    .. versionchanged:: 2.0
+
+        Renamed from ``TeamMembershipState``.
 
     .. container:: operations
 
@@ -2472,37 +2722,15 @@ of :class:`enum.Enum`.
 
     .. attribute:: invited
 
-        Represents an invited member.
+        Represents an invited user.
 
     .. attribute:: accepted
 
-        Represents a member currently in the team.
-
-.. class:: ApplicationType
-
-    Represents the type of an application.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: none
-
-        The application does not have a special type.
-
-    .. attribute:: game
-
-        The application is a game.
-
-    .. attribute:: music
-    
-        The application is music-related.
-
-    .. attribute:: ticketed_events
-
-        The application can use ticketed event.
+        Represents a user that has accepted the given invite.
 
 .. class:: ApplicationVerificationState
 
-    Represents the verification application state of a :class:`Application`.
+    Represents the verification application state of an :class:`Application`.
 
     .. versionadded:: 2.0
 
@@ -2536,7 +2764,7 @@ of :class:`enum.Enum`.
         The application is has not submitted a verification request.
 
     .. attribute:: submitted
-            
+
         The application has submitted a verification request and is pending a response.
 
     .. attribute:: succeeded
@@ -2545,7 +2773,7 @@ of :class:`enum.Enum`.
 
 .. class:: StoreApplicationState
 
-    Represents the commerce application state of a :class:`Application`.
+    Represents the commerce application state of an :class:`Application`.
 
     .. versionadded:: 2.0
 
@@ -2579,7 +2807,7 @@ of :class:`enum.Enum`.
         The application has paid the commerce feature fee.
 
     .. attribute:: submitted
-            
+
         The application has submitted a commerce application and is pending a response.
 
     .. attribute:: approved
@@ -2596,7 +2824,7 @@ of :class:`enum.Enum`.
 
 .. class:: RPCApplicationState
 
-    Represents the RPC application state of a :class:`Application`.
+    Represents the RPC application state of an :class:`Application`.
 
     .. versionadded:: 2.0
 
@@ -2634,7 +2862,7 @@ of :class:`enum.Enum`.
         The application has not submitted a RPC application.
 
     .. attribute:: submitted
-            
+
         The application has submitted a RPC application and is pending a response.
 
     .. attribute:: approved
@@ -2648,6 +2876,231 @@ of :class:`enum.Enum`.
     .. attribute:: blocked
 
         The application has been blocked from using commerce features.
+
+.. class:: ApplicationDiscoverabilityState
+
+    Represents the discoverability state of an :class:`Application`.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two application states are equal.
+        .. describe:: x != y
+
+            Checks if two application states are not equal.
+        .. describe:: x > y
+
+            Checks if a application state is higher than another.
+        .. describe:: x < y
+
+            Checks if a application state is lower than another.
+        .. describe:: x >= y
+
+            Checks if a application state is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a application state is lower or equal to another.
+
+    .. attribute:: ineligible
+
+        The application is ineligible for appearing on app discovery.
+
+    .. attribute:: not_discoverable
+
+        The application is not discoverable on app discovery.
+
+    .. attribute:: discoverable
+
+        The application is discoverable on app discovery.
+
+    .. attribute:: featureable
+
+        The application is featureable on app discovery.
+
+    .. attribute:: blocked
+
+        The application is blocked from appearing on app discovery.
+
+.. class:: ApplicationBuildStatus
+
+    Represents the status of an :class:`ApplicationBuild`.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: created
+
+        The build has been created.
+
+    .. attribute:: uploading
+
+        The build is being uploaded.
+
+    .. attribute:: uploaded
+
+        The build has been uploaded.
+
+    .. attribute:: validating
+
+        The build is being validated.
+
+    .. attribute:: invalid
+
+        The build is invalid.
+
+    .. attribute:: corrupted
+
+        The build is corrupted.
+
+    .. attribute:: ready
+
+        The build is ready to be published.
+
+.. class:: EmbeddedActivityPlatform
+
+    Represents an available platform for a :class:`EmbeddedActivityConfig`.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: web
+
+        The activity is available on web/desktop.
+
+    .. attribute:: ios
+
+        The activity is available on iOS.
+
+    .. attribute:: android
+
+        The activity is available on Android.
+
+.. class:: EmbeddedActivityOrientation
+
+    Represents an orientation capability of a :class:`EmbeddedActivityConfig`.
+
+    This is only used by mobile clients.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: unlocked
+
+        The activity can be rotated.
+
+    .. attribute:: portrait
+
+        The activity is locked to portrait.
+
+    .. attribute:: landscape
+
+        The activity is locked to landscape.
+
+.. class:: PayoutAccountStatus
+
+    Represents the status of a team payout account.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: unsubmitted
+
+        The payout account application has not been submitted.
+
+    .. attribute:: pending
+
+        The payout account is pending.
+
+    .. attribute:: action_required
+
+        The payout account requires action.
+
+    .. attribute:: active
+
+        The payout account is active.
+
+    .. attribute:: blocked
+
+        The payout account is blocked.
+
+    .. attribute:: suspended
+
+        The payout account is suspended.
+
+.. class:: PayoutStatus
+
+    Represents the status of a team payout.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: open
+
+        The payout is open.
+
+    .. attribute:: paid
+
+        The payout has been paid out.
+
+    .. attribute:: pending
+
+        The payout is pending.
+
+    .. attribute:: manual
+
+        The payout has been manually made.
+
+    .. attribute:: cancelled
+
+        The payout has been cancelled.
+
+    .. attribute:: canceled
+
+        Alias for :attr:`cancelled`.
+
+    .. attribute:: deferred
+
+        The payout has been deferred.
+
+    .. attribute:: deferred_internal
+
+        The payout has been deferred internally.
+
+    .. attribute:: processing
+
+        The payout is processing.
+
+    .. attribute:: error
+
+        The payout has an error.
+
+    .. attribute:: rejected
+
+        The payout has been rejected.
+
+    .. attribute:: risk_review
+
+        The payout is under risk review.
+
+    .. attribute:: submitted
+
+        The payout has been submitted.
+
+    .. attribute:: pending_funds
+
+        The payout is pending fund transfer.
+
+.. class:: PayoutReportType
+
+    Represents the type of downloadable payout report.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: by_sku
+
+        The payout report is by SKU.
+
+    .. attribute:: by_transaction
+
+        The payout report is by transaction.
 
 .. class:: WebhookType
 
@@ -2695,21 +3148,26 @@ of :class:`enum.Enum`.
 
         Represents the default avatar with the color blurple.
         See also :attr:`Colour.blurple`
+
     .. attribute:: grey
 
         Represents the default avatar with the color grey.
         See also :attr:`Colour.greyple`
+
     .. attribute:: gray
 
         An alias for :attr:`grey`.
+
     .. attribute:: green
 
         Represents the default avatar with the color green.
         See also :attr:`Colour.green`
+
     .. attribute:: orange
 
         Represents the default avatar with the color orange.
         See also :attr:`Colour.orange`
+
     .. attribute:: red
 
         Represents the default avatar with the color red.
@@ -2903,36 +3361,1042 @@ of :class:`enum.Enum`.
 
     Represents the user's Discord Nitro subscription type.
 
-    .. container:: operations
-
-        .. versionadded:: 2.0
-
-        .. describe:: x == y
-
-            Checks if two premium types are equal.
-        .. describe:: x != y
-
-            Checks if two premium types are not equal.
-        .. describe:: x > y
-
-            Checks if a premium level is higher than another.
-        .. describe:: x < y
-
-            Checks if a premium level is lower than another.
-        .. describe:: x >= y
-
-            Checks if a premium level is higher or equal to another.
-        .. describe:: x <= y
-
-            Checks if a premium level is lower or equal to another.
-
     .. attribute:: nitro
 
-        Represents the Discord Nitro with Nitro-exclusive games.
+        Represents the new, full Discord Nitro.
 
     .. attribute:: nitro_classic
 
-        Represents the Discord Nitro with no Nitro-exclusive games.
+        Represents the classic Discord Nitro.
+
+    .. attribute:: nitro_basic
+
+        Represents the basic Discord Nitro.
+
+        .. versionadded:: 2.0
+
+.. class:: PaymentSourceType
+
+    Represents the type of a payment source.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: unknown
+
+        The payment source is unknown.
+
+    .. attribute:: credit_card
+
+        The payment source is a credit card.
+
+    .. attribute:: paypal
+
+        The payment source is a PayPal account.
+
+    .. attribute:: giropay
+
+        The payment source is a Giropay account.
+
+    .. attribute:: sofort
+
+        The payment source is a Sofort account.
+
+    .. attribute:: przelewy24
+
+        The payment source is a Przelewy24 account.
+
+    .. attribute:: sepa_debit
+
+        The payment source is a SEPA debit account.
+
+    .. attribute:: paysafecard
+
+        The payment source is a Paysafe card.
+
+    .. attribute:: gcash
+
+        The payment source is a GCash account.
+
+    .. attribute:: grabpay
+
+        The payment source is a GrabPay (Malaysia) account.
+
+    .. attribute:: momo_wallet
+
+        The payment source is a MoMo Wallet account.
+
+    .. attribute:: venmo
+
+        The payment source is a Venmo account.
+
+    .. attribute:: gopay_wallet
+
+        The payment source is a GoPay Wallet account.
+
+    .. attribute:: kakaopay
+
+        The payment source is a KakaoPay account.
+
+    .. attribute:: bancontact
+
+        The payment source is a Bancontact account.
+
+    .. attribute:: eps
+
+        The payment source is an EPS account.
+
+    .. attribute:: ideal
+
+        The payment source is an iDEAL account.
+
+.. class:: PaymentGateway
+
+    Represents the payment gateway used for a payment source.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: stripe
+
+        The payment source is a Stripe payment source.
+
+    .. attribute:: braintree
+
+        The payment source is a Braintree payment source.
+
+    .. attribute:: apple
+
+        The payment source is an Apple payment source.
+
+    .. attribute:: google
+
+        The payment source is a Google payment source.
+
+    .. attribute:: adyen
+
+        The payment source is an Adyen payment source.
+
+    .. attribute:: apple_pay
+
+        The payment source is an Apple Pay payment source (unconfirmed).
+
+.. class:: SubscriptionType
+
+    Represents the type of a subscription.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: premium
+
+        The subscription is a Discord premium (Nitro) subscription.
+
+    .. attribute:: guild
+
+        The subscription is a guild role subscription.
+
+    .. attribute:: application
+
+        The subscription is an application subscription.
+
+.. class:: SubscriptionStatus
+
+    Represents the status of a subscription.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: unpaid
+
+        The subscription is unpaid.
+
+    .. attribute:: active
+
+        The subscription is active.
+
+    .. attribute:: past_due
+
+        The subscription is past due.
+
+    .. attribute:: canceled
+
+        The subscription is canceled.
+
+    .. attribute:: ended
+
+        The subscription has ended.
+
+    .. attribute:: inactive
+
+        The subscription is inactive.
+
+    .. attribute:: account_hold
+
+        The subscription is on account hold.
+
+.. class:: SubscriptionInvoiceStatus
+
+    Represents the status of a subscription invoice.
+
+    .. versionadded:: 2.0
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two subscription invoice statuses are equal.
+        .. describe:: x != y
+
+            Checks if two subscription invoice statuses are not equal.
+        .. describe:: x > y
+
+            Checks if a subscription invoice status is higher than another.
+        .. describe:: x < y
+
+            Checks if a subscription invoice status is lower than another.
+        .. describe:: x >= y
+
+            Checks if a subscription invoice status is higher or equal to another.
+        .. describe:: x <= y
+
+            Checks if a subscription invoice status is lower or equal to another.
+
+    .. attribute:: open
+
+        The invoice is open.
+
+    .. attribute:: paid
+
+        The invoice is paid.
+
+    .. attribute:: void
+
+        The invoice is void.
+
+    .. attribute:: uncollectible
+
+        The invoice is uncollectible.
+
+.. class:: SubscriptionDiscountType
+
+    Represents the type of a subscription discount.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: subscription_plan
+
+        The discount is from an existing subscription plan's remaining credit.
+
+    .. attribute:: entitlement
+
+        The discount is from an applied entitlement.
+
+    .. attribute:: premium_legacy_upgrade_promotion
+
+        The discount is from a legacy premium plan promotion discount.
+
+    .. attribute:: premium_trial
+
+        The discount is from a premium trial.
+
+.. class:: SubscriptionInterval
+
+    Represents the interval of a subscription.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: month
+
+        The subscription is billed monthly.
+
+    .. attribute:: year
+
+        The subscription is billed yearly.
+
+    .. attribute:: day
+
+        The subscription is billed daily.
+
+.. class:: SubscriptionPlanPurchaseType
+
+    Represents the different types of subscription plan purchases.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: default
+
+        The plan is purchased with default pricing.
+
+    .. attribute:: gift
+
+        The plan is purchased with gift pricing.
+
+    .. attribute:: sale
+
+        The plan is purchased with sale pricing.
+
+    .. attribute:: nitro_classic
+
+        The plan is purchased with Nitro Classic discounted pricing.
+
+    .. attribute:: nitro
+
+        The plan is purchased with Nitro discounted pricing.
+
+.. class:: PaymentStatus
+
+    Represents the status of a payment.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: pending
+
+        The payment is pending.
+
+    .. attribute:: completed
+
+        The payment has gone through.
+
+    .. attribute:: failed
+
+        The payment has failed.
+
+    .. attribute:: reversed
+
+        The payment has been reversed.
+
+    .. attribute:: refunded
+
+        The payment has been refunded.
+
+    .. attribute:: cancelled
+
+        The payment has been canceled.
+
+    .. attribute:: canceled
+
+        Alias for :attr:`PaymentStatus.cancelled`.
+
+.. class:: EntitlementType
+
+    Represents the type of an entitlement.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: purchase
+
+        The entitlement is from a purchase.
+
+    .. attribute:: premium_subscription
+
+        The entitlement is a Discord premium subscription.
+
+    .. attribute:: developer_gift
+
+        The entitlement is gifted by the developer.
+
+    .. attribute:: test_mode_purchase
+
+        The entitlement is from a free test mode purchase.
+
+    .. attribute:: free_purchase
+
+        The entitlement is a free purchase.
+
+    .. attribute:: user_gift
+
+        The entitlement is gifted by a user.
+
+    .. attribute:: premium_purchase
+
+        The entitlement is a premium subscription perk.
+
+    .. attribute:: application_subscription
+
+        The entitlement is an application subscription.
+
+.. class:: SKUType
+
+    Represents the type of a SKU.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: durable_primary
+
+        Represents a primary SKU (game).
+
+    .. attribute:: durable
+
+        Represents a DLC.
+
+    .. attribute:: consumable
+
+        Represents a IAP (in-app purchase).
+
+    .. attribute:: bundle
+
+        Represents a bundle comprising the above.
+
+    .. attribute:: subscription
+
+        Represents a subscription-only SKU.
+
+    .. attribute:: group
+
+        Represents a group of SKUs.
+
+.. class:: SKUAccessLevel
+
+    Represents the access level of a SKU.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: full
+
+        The SKU is available to all users.
+
+    .. attribute:: early_access
+
+        The SKU is available in early access only.
+
+    .. attribute:: vip_access
+
+        The SKU is available to VIP users only.
+
+.. class:: SKUFeature
+
+    Represents a feature of a SKU.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: single_player
+
+        The SKU supports single player.
+
+    .. attribute:: online_multiplayer
+
+        The SKU supports online multiplayer.
+
+    .. attribute:: local_multiplayer
+
+        The SKU supports local multiplayer.
+
+    .. attribute:: pvp
+
+        The SKU supports PvP.
+
+    .. attribute:: local_coop
+
+        The SKU supports local co-op.
+
+    .. attribute:: cross_platform
+
+        The SKU supports cross-platform play.
+
+    .. attribute:: rich_presence
+
+        The SKU supports rich presence.
+
+    .. attribute:: discord_game_invites
+
+        The SKU supports Discord game invites.
+
+    .. attribute:: spectator_mode
+
+        The SKU supports spectator mode.
+
+    .. attribute:: controller_support
+
+        The SKU supports controller support.
+
+    .. attribute:: cloud_saves
+
+        The SKU supports cloud saves.
+
+    .. attribute:: online_coop
+
+        The SKU supports online co-op.
+
+    .. attribute:: secure_networking
+
+        The SKU supports secure networking.
+
+.. class:: SKUGenre
+
+    Represents the genre of a SKU.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: action
+
+        The SKU is an action game.
+
+    .. attribute:: action_adventure
+
+        The SKU is an action-adventure game.
+
+    .. attribute:: action_rpg
+
+        The SKU is an action RPG.
+
+    .. attribute:: adventure
+
+        The SKU is an adventure game.
+
+    .. attribute:: artillery
+
+        The SKU is an artillery game.
+
+    .. attribute:: baseball
+
+        The SKU is a baseball game.
+
+    .. attribute:: basketball
+
+        The SKU is a basketball game.
+
+    .. attribute:: billiards
+
+        The SKU is a billiards game.
+
+    .. attribute:: bowling
+
+        The SKU is a bowling game.
+
+    .. attribute:: boxing
+
+        The SKU is a boxing game.
+
+    .. attribute:: brawler
+
+        The SKU is a brawler.
+
+    .. attribute:: card_game
+
+        The SKU is a card game.
+
+    .. attribute:: driving_racing
+
+        The SKU is a driving/racing game.
+
+    .. attribute:: dual_joystick_shooter
+
+        The SKU is a dual joystick shooter.
+
+    .. attribute:: dungeon_crawler
+
+        The SKU is a dungeon crawler.
+
+    .. attribute:: education
+
+        The SKU is an education game.
+
+    .. attribute:: fighting
+
+        The SKU is a fighting game.
+
+    .. attribute:: fishing
+
+        The SKU is a fishing game.
+
+    .. attribute:: fitness
+
+        The SKU is a fitness game.
+
+    .. attribute:: flight_simulator
+
+        The SKU is a flight simulator.
+
+    .. attribute:: football
+
+        The SKU is a football game.
+
+    .. attribute:: four_x
+
+        The SKU is a 4X game.
+
+    .. attribute:: fps
+
+        The SKU is a first-person shooter.
+
+    .. attribute:: gambling
+
+        The SKU is a gambling game.
+
+    .. attribute:: golf
+
+        The SKU is a golf game.
+
+    .. attribute:: hack_and_slash
+
+        The SKU is a hack-and-slash game.
+
+    .. attribute:: hockey
+
+        The SKU is a hockey game.
+
+    .. attribute:: life_simulator
+
+        The SKU is a life simulator.
+
+    .. attribute:: light_gun
+
+        The SKU is a light gun game.
+
+    .. attribute:: massively_multiplayer
+
+        The SKU is a massively multiplayer game.
+
+    .. attribute:: music
+
+        The SKU is a music game.
+
+    .. attribute:: party
+
+        The SKU is a party game.
+
+    .. attribute:: pinball
+
+        The SKU is a pinball game.
+
+    .. attribute:: platformer
+
+        The SKU is a platformer.
+
+    .. attribute:: point_and_click
+
+        The SKU is a point-and-click game.
+
+    .. attribute:: puzzle
+
+        The SKU is a puzzle game.
+
+    .. attribute:: rpg
+
+        The SKU is an RPG.
+
+    .. attribute:: role_playing
+
+        The SKU is a role-playing game.
+
+    .. attribute:: rts
+
+        The SKU is a real-time strategy game.
+
+    .. attribute:: sandbox
+
+        The SKU is a sandbox game.
+
+    .. attribute:: shooter
+
+        The SKU is a shooter.
+
+    .. attribute:: shoot_em_up
+
+        The SKU is a shoot 'em up game.
+
+    .. attribute:: simulation
+
+        The SKU is a simulation game.
+
+    .. attribute:: skateboarding_skating
+
+        The SKU is a skateboarding/skating game.
+
+    .. attribute:: snowboarding_skiing
+
+        The SKU is a snowboarding/skiing game.
+
+    .. attribute:: soccer
+
+        The SKU is a soccer game.
+
+    .. attribute:: sports
+
+        The SKU is a sports game.
+
+    .. attribute:: stealth
+
+        The SKU is a stealth game.
+
+    .. attribute:: strategy
+
+        The SKU is a strategy game.
+
+    .. attribute:: surfing_wakeboarding
+
+        The SKU is a surfing/wakeboarding game.
+
+    .. attribute:: survival
+
+        The SKU is a survival game.
+
+    .. attribute:: tennis
+
+        The SKU is a tennis game.
+
+    .. attribute:: third_person_shooter
+
+        The SKU is a third-person shooter.
+
+    .. attribute:: turn_based_strategy
+
+        The SKU is a turn-based strategy game.
+
+    .. attribute:: vehicular_combat
+
+        The SKU is a vehicular combat game.
+
+    .. attribute:: visual_novel
+
+        The SKU is a visual novel.
+
+    .. attribute:: wargame
+
+        The SKU is a wargame.
+
+    .. attribute:: wrestling
+
+        The SKU is a wrestling game.
+
+.. class:: ContentRatingAgency
+
+    Represents the content rating agency of a SKU.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: esrb
+
+        The ESRB.
+
+    .. attribute:: pegi
+
+        The PEGI system.
+
+.. class:: ESRBRating
+
+    Represents the ESRB rating of a SKU.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: everyone
+
+        The SKU is rated E for everyone.
+
+    .. attribute:: everyone_ten_plus
+
+        The SKU is rated E10+ for everyone ten and older.
+
+    .. attribute:: teen
+
+        The SKU is rated T for teen.
+
+    .. attribute:: mature
+
+        The SKU is rated M for mature.
+
+    .. attribute:: adults_only
+
+        The SKU is rated AO for adults only.
+
+    .. attribute:: rating_pending
+
+        The SKU is pending a rating.
+
+.. class:: PEGIRating
+
+    Represents the PEGI rating of a SKU.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: three
+
+        The SKU is rated 3.
+
+    .. attribute:: seven
+
+        The SKU is rated 7.
+
+    .. attribute:: twelve
+
+        The SKU is rated 12.
+
+    .. attribute:: sixteen
+
+        The SKU is rated 16.
+
+    .. attribute:: eighteen
+
+        The SKU is rated 18.
+
+.. class:: ESRBContentDescriptor
+
+    Represents an ESRB rating content descriptor.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: alcohol_reference
+
+        The SKU contains alcohol references.
+
+    .. attribute:: animated_blood
+
+        The SKU contains animated blood.
+
+    .. attribute:: blood
+
+        The SKU contains blood.
+
+    .. attribute:: blood_and_gore
+
+        The SKU contains blood and gore.
+
+    .. attribute:: cartoon_violence
+
+        The SKU contains cartoon violence.
+
+    .. attribute:: comic_mischief
+
+        The SKU contains comic mischief.
+
+    .. attribute:: crude_humor
+
+        The SKU contains crude humor.
+
+    .. attribute:: drug_reference
+
+        The SKU contains drug references.
+
+    .. attribute:: fantasy_violence
+
+        The SKU contains fantasy violence.
+
+    .. attribute:: intense_violence
+
+        The SKU contains intense violence.
+
+    .. attribute:: language
+
+        The SKU contains language.
+
+    .. attribute:: lyrics
+
+        The SKU contains lyrics.
+
+    .. attribute:: mature_humor
+
+        The SKU contains mature humor.
+
+    .. attribute:: nudity
+
+        The SKU contains nudity.
+
+    .. attribute:: partial_nudity
+
+        The SKU contains partial nudity.
+
+    .. attribute:: real_gambling
+
+        The SKU contains real gambling.
+
+    .. attribute:: sexual_content
+
+        The SKU contains sexual content.
+
+    .. attribute:: sexual_themes
+
+        The SKU contains sexual themes.
+
+    .. attribute:: sexual_violence
+
+        The SKU contains sexual violence.
+
+    .. attribute:: simulated_gambling
+
+        The SKU contains simulated gambling.
+
+    .. attribute:: strong_language
+
+        The SKU contains strong language.
+
+    .. attribute:: strong_lyrics
+
+        The SKU contains strong lyrics.
+
+    .. attribute:: strong_sexual_content
+
+        The SKU contains strong sexual content.
+
+    .. attribute:: suggestive_themes
+
+        The SKU contains suggestive themes.
+
+    .. attribute:: tobacco_reference
+
+        The SKU contains tobacco references.
+
+    .. attribute:: use_of_alcohol
+
+        The SKU contains use of alcohol.
+
+    .. attribute:: use_of_drugs
+
+        The SKU contains use of drugs.
+
+    .. attribute:: use_of_tobacco
+
+        The SKU contains use of tobacco.
+
+    .. attribute:: violence
+
+        The SKU contains violence.
+
+    .. attribute:: violent_references
+
+        The SKU contains violent references.
+
+    .. attribute:: in_game_purchases
+
+        The SKU provides in-game purchases.
+
+    .. attribute:: users_interact
+
+        The SKU allows users to interact.
+
+    .. attribute:: shares_location
+
+        The SKU shares your location.
+
+    .. attribute:: unrestricted_internet
+
+        The SKU has unrestricted internet access.
+
+    .. attribute:: mild_blood
+
+        The SKU contains mild blood.
+
+    .. attribute:: mild_cartoon_violence
+
+        The SKU contains mild cartoon violence.
+
+    .. attribute:: mild_fantasy_violence
+
+        The SKU contains mild fantasy violence.
+
+    .. attribute:: mild_language
+
+        The SKU contains mild language.
+
+    .. attribute:: mild_lyrics
+
+        The SKU contains mild inappropriate lyrics.
+
+    .. attribute:: mild_sexual_themes
+
+        The SKU contains mild sexual themes.
+
+    .. attribute:: mild_suggestive_themes
+
+        The SKU contains mild suggestive themes.
+
+    .. attribute:: mild_violence
+
+        The SKU contains mild violence.
+
+    .. attribute:: animated_violence
+
+        The SKU contains animated violence.
+
+.. class:: PEGIContentDescriptor
+
+    Represents a PEGI rating content descriptor.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: violence
+
+        The SKU contains violence.
+
+    .. attribute:: bad_language
+
+        The SKU contains bad language.
+
+    .. attribute:: fear
+
+        The SKU instills fear.
+
+    .. attribute:: gambling
+
+        The SKU contains gambling.
+
+    .. attribute:: sex
+
+        The SKU contains sexual themes.
+
+    .. attribute:: drugs
+
+        The SKU contains drug references.
+
+    .. attribute:: discrimination
+
+        The SKU contains discrimination.
+
+.. class:: Distributor
+
+    Represents the distributor of a third-party SKU on Discord.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: discord
+
+        The SKU is distributed by Discord.
+
+    .. attribute:: steam
+
+        The SKU is distributed by Steam.
+
+    .. attribute:: twitch
+
+        The SKU is distributed by Twitch.
+
+    .. attribute:: uplay
+
+        The SKU is distributed by Ubisoft Connect.
+
+    .. attribute:: battle_net
+
+        The SKU is distributed by Battle.net.
+
+    .. attribute:: origin
+
+        The SKU is distributed by Origin.
+
+    .. attribute:: gog
+
+        The SKU is distributed by GOG.
+
+    .. attribute:: epic_games
+
+        The SKU is distributed by Epic Games.
+
+    .. attribute:: google_play
+
+        The SKU is distributed by Google Play.
+
+.. class:: OperatingSystem
+
+    Represents the operating system of a SKU's system requirements.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: windows
+
+        Represents Windows.
+
+    .. attribute:: mac
+
+        Represents macOS.
+
+    .. attribute:: linux
+
+        Represents Linux.
 
 .. class:: StickerAnimationOptions
 
@@ -3088,7 +4552,6 @@ of :class:`enum.Enum`.
 
         The ``vi`` locale.
 
-
 .. class:: MFALevel
 
     Represents the Multi-Factor Authentication requirement level of a guild.
@@ -3186,9 +4649,17 @@ of :class:`enum.Enum`.
 
         The user must complete a captcha.
 
-    .. attribute:: accept_terms
+    .. attribute:: update_agreements
 
-        The user must accept Discord's terms of service.
+        The user must update their agreement of Discord's terms of service and privacy policy.
+
+    .. attribute:: acknowledge_tos_update
+
+        The user must acknowledge the update to Discord's terms of service.
+
+    .. attribute:: none
+
+        The user does not need to take any more actions.
 
 .. class:: ConnectionType
 
@@ -3259,9 +4730,9 @@ of :class:`enum.Enum`.
     .. attribute:: steam
 
         The user has a Steam connection.
-    
+
     .. attribute:: tiktok
-    
+
          The user has a TikTok connection.
 
     .. attribute:: twitch
@@ -3298,6 +4769,20 @@ of :class:`enum.Enum`.
 
         The connection is linked via desktop.
 
+.. class:: GiftStyle
+
+    Represents the special style of a gift.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: snowglobe
+
+        The gift is a snowglobe.
+
+    .. attribute:: box
+
+        The gift is a box.
+
 .. class:: InteractionType
 
     Specifies the type of :class:`Interaction`.
@@ -3307,12 +4792,15 @@ of :class:`enum.Enum`.
     .. attribute:: application_command
 
         Represents a slash command interaction.
+
     .. attribute:: component
 
         Represents a component based interaction, i.e. clicking a button.
+
     .. attribute:: autocomplete
 
         Represents an autocomplete interaction.
+
     .. attribute:: modal_submit
 
         Represents submission of a modal interaction.
@@ -3326,9 +4814,11 @@ of :class:`enum.Enum`.
     .. attribute:: action_row
 
         Represents the group component which holds different components in a row.
+
     .. attribute:: button
 
         Represents a button component.
+
     .. attribute:: select
 
         Represents a select component.
@@ -3346,15 +4836,19 @@ of :class:`enum.Enum`.
     .. attribute:: primary
 
         Represents a blurple button for the primary action.
+
     .. attribute:: secondary
 
         Represents a grey button for the secondary action.
+
     .. attribute:: success
 
         Represents a green button for a successful action.
+
     .. attribute:: danger
 
         Represents a red button for a dangerous action.
+
     .. attribute:: link
 
         Represents a link button.
@@ -3362,18 +4856,23 @@ of :class:`enum.Enum`.
     .. attribute:: blurple
 
         An alias for :attr:`primary`.
+
     .. attribute:: grey
 
         An alias for :attr:`secondary`.
+
     .. attribute:: gray
 
         An alias for :attr:`secondary`.
+
     .. attribute:: green
 
         An alias for :attr:`success`.
+
     .. attribute:: red
 
         An alias for :attr:`danger`.
+
     .. attribute:: url
 
         An alias for :attr:`link`.
@@ -3387,9 +4886,11 @@ of :class:`enum.Enum`.
     .. attribute:: short
 
         Represents a short text box.
+
     .. attribute:: paragraph
 
         Represents a long form text box.
+
     .. attribute:: long
 
         An alias for :attr:`paragraph`.
@@ -3403,9 +4904,11 @@ of :class:`enum.Enum`.
     .. attribute:: chat_input
 
         A slash command.
+
     .. attribute:: user
 
         A user context menu command.
+
     .. attribute:: message
 
         A message context menu command.
@@ -3419,33 +4922,43 @@ of :class:`enum.Enum`.
     .. attribute:: subcommand
 
         A subcommand.
+
     .. attribute:: subcommand_group
 
         A subcommand group.
+
     .. attribute:: string
 
         A string parameter.
+
     .. attribute:: integer
 
         A integer parameter.
+
     .. attribute:: boolean
 
         A boolean parameter.
+
     .. attribute:: user
 
         A user parameter.
+
     .. attribute:: channel
 
         A channel parameter.
+
     .. attribute:: role
 
         A role parameter.
+
     .. attribute:: mentionable
 
         A mentionable parameter.
+
     .. attribute:: number
 
         A number parameter.
+
     .. attribute:: attachment
 
         An attachment parameter.
@@ -4235,6 +5748,24 @@ User
 .. autoclass:: Note()
     :members:
 
+Billing
+~~~~~~~
+
+.. attributetable:: BillingAddress
+
+.. autoclass:: BillingAddress()
+    :members:
+
+.. attributetable:: PaymentSource
+
+.. autoclass:: PaymentSource()
+    :members:
+
+.. attributetable:: PremiumUsage
+
+.. autoclass:: PremiumUsage()
+    :members:
+
 Connection
 ~~~~~~~~~~
 
@@ -4248,70 +5779,6 @@ Connection
 
 .. autoclass:: PartialConnection()
     :members:
-
-.. attributetable:: ConnectionMetadata
-
-.. autoclass:: ConnectionMetadata()
-    :members:
-
-Application
-~~~~~~~~~~~
-
-.. attributetable:: Application
-
-.. autoclass:: Application()
-    :members:
-    :inherited-members:
-
-.. attributetable:: ApplicationBot
-
-.. autoclass:: ApplicationBot()
-    :members:
-    :inherited-members:
-
-.. attributetable:: PartialApplication
-
-.. autoclass:: PartialApplication()
-    :members:
-
-.. attributetable:: InteractionApplication
-
-.. autoclass:: InteractionApplication()
-    :members:
-
-.. attributetable:: ApplicationProfile
-
-.. autoclass:: ApplicationProfile()
-    :members:
-
-.. attributetable:: ApplicationCompany
-
-.. autoclass:: ApplicationCompany()
-    :members:
-
-.. attributetable:: ApplicationExecutable
-
-.. autoclass:: ApplicationExecutable()
-    :members:
-
-.. attributetable:: ApplicationInstallParams
-
-.. autoclass:: ApplicationInstallParams()
-    :members:
-
-Team
-~~~~~
-
-.. attributetable:: Team
-
-.. autoclass:: Team()
-    :members:
-
-.. attributetable:: TeamMember
-
-.. autoclass:: TeamMember()
-    :members:
-    :inherited-members:
 
 Relationship
 ~~~~~~~~~~~~~
@@ -4358,6 +5825,301 @@ Settings
 
 .. autoclass:: MuteConfig()
     :members:
+
+Application
+~~~~~~~~~~~
+
+.. attributetable:: Application
+
+.. autoclass:: Application()
+    :members:
+    :inherited-members:
+
+.. attributetable:: PartialApplication
+
+.. autoclass:: PartialApplication()
+    :members:
+
+.. attributetable:: ApplicationProfile
+
+.. autoclass:: ApplicationProfile()
+    :members:
+
+.. attributetable:: ApplicationBot
+
+.. autoclass:: ApplicationBot()
+    :members:
+    :inherited-members:
+
+.. attributetable:: ApplicationExecutable
+
+.. autoclass:: ApplicationExecutable()
+    :members:
+
+.. attributetable:: ApplicationInstallParams
+
+.. autoclass:: ApplicationInstallParams()
+    :members:
+
+.. attributetable:: ApplicationAsset
+
+.. autoclass:: ApplicationAsset()
+    :members:
+
+.. attributetable:: ApplicationActivityStatistics
+
+.. autoclass:: ApplicationActivityStatistics()
+    :members:
+
+.. attributetable:: ApplicationTester
+
+.. autoclass:: ApplicationTester()
+    :members:
+
+.. attributetable:: EmbeddedActivityConfig
+
+.. autoclass:: EmbeddedActivityConfig()
+    :members:
+
+ApplicationBranch
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: ApplicationBranch
+
+.. autoclass:: ApplicationBranch()
+    :members:
+
+.. attributetable:: ApplicationBuild
+
+.. autoclass:: ApplicationBuild()
+    :members:
+
+.. attributetable:: ManifestLabel
+
+.. autoclass:: ManifestLabel()
+    :members:
+
+.. attributetable:: Manifest
+
+.. autoclass:: Manifest()
+    :members:
+
+Team
+~~~~~
+
+.. attributetable:: Team
+
+.. autoclass:: Team()
+    :members:
+
+.. attributetable:: TeamMember
+
+.. autoclass:: TeamMember()
+    :members:
+    :inherited-members:
+
+.. attributetable:: TeamPayout
+
+.. autoclass:: TeamPayout()
+    :members:
+
+.. attributetable:: Company
+
+.. autoclass:: Company()
+    :members:
+
+.. attributetable:: EULA
+
+.. autoclass:: EULA()
+    :members:
+
+Entitlement
+~~~~~~~~~~~
+
+.. attributetable:: Entitlement
+
+.. autoclass:: Entitlement()
+    :members:
+
+.. attributetable:: EntitlementPayment
+
+.. autoclass:: EntitlementPayment()
+    :members:
+
+.. attributetable:: Gift
+
+.. autoclass:: Gift()
+    :members:
+
+.. attributetable:: GiftBatch
+
+.. autoclass:: GiftBatch()
+    :members:
+
+.. attributetable:: Achievement
+
+.. autoclass:: Achievement()
+    :members:
+
+Library
+~~~~~~~
+
+.. attributetable:: LibraryApplication
+
+.. autoclass:: LibraryApplication()
+    :members:
+
+.. attributetable:: LibrarySKU
+
+.. autoclass:: LibrarySKU()
+    :members:
+
+Promotion
+~~~~~~~~~
+
+.. attributetable:: Promotion
+
+.. autoclass:: Promotion()
+    :members:
+
+.. attributetable:: PricingPromotion
+
+.. autoclass:: PricingPromotion()
+    :members:
+
+.. attributetable:: TrialOffer
+
+.. autoclass:: TrialOffer()
+    :members:
+
+Subscription
+~~~~~~~~~~~~
+
+.. attributetable:: Subscription
+
+.. autoclass:: Subscription()
+    :members:
+
+.. attributetable:: SubscriptionItem
+
+.. autoclass:: SubscriptionItem()
+    :members:
+
+.. attributetable:: SubscriptionDiscount
+
+.. autoclass:: SubscriptionDiscount()
+    :members:
+
+.. attributetable:: SubscriptionInvoice
+
+.. autoclass:: SubscriptionInvoice()
+    :members:
+
+.. attributetable:: SubscriptionInvoiceItem
+
+.. autoclass:: SubscriptionInvoiceItem()
+    :members:
+
+.. attributetable:: SubscriptionRenewalMutations
+
+.. autoclass:: SubscriptionRenewalMutations()
+    :members:
+
+.. attributetable:: SubscriptionTrial
+
+.. autoclass:: SubscriptionTrial()
+    :members:
+
+PremiumGuildSubscription
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PremiumGuildSubscription
+
+.. autoclass:: PremiumGuildSubscription()
+    :members:
+
+.. attributetable:: PremiumGuildSubscriptionSlot
+
+.. autoclass:: PremiumGuildSubscriptionSlot()
+    :members:
+
+.. attributetable:: PremiumGuildSubscriptionCooldown
+
+.. autoclass:: PremiumGuildSubscriptionCooldown()
+    :members:
+
+SubscriptionPlan
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SubscriptionPlan
+
+.. autoclass:: SubscriptionPlan()
+    :members:
+
+.. attributetable:: SubscriptionPlanPrices
+
+.. autoclass:: SubscriptionPlanPrices()
+    :members:
+
+Payment
+~~~~~~~
+
+.. attributetable:: Payment
+
+.. autoclass:: Payment()
+    :members:
+
+SKU
+~~~~
+
+.. attributetable:: SKU
+
+.. autoclass:: SKU()
+    :members:
+
+.. attributetable:: ThirdPartySKU
+
+.. autoclass:: ThirdPartySKU()
+    :members:
+
+.. attributetable:: SKUPrice
+
+.. autoclass:: SKUPrice()
+    :members:
+
+.. attributetable:: StoreListing
+
+.. autoclass:: StoreListing()
+    :members:
+
+.. attributetable:: StoreAsset
+
+.. autoclass:: StoreAsset()
+    :members:
+
+.. attributetable:: StoreNote
+
+.. autoclass:: StoreNote()
+    :members:
+
+.. attributetable:: ContentRating
+
+.. autoclass:: ContentRating()
+    :members:
+
+.. attributetable:: SystemRequirements
+
+.. autoclass:: SystemRequirements()
+    :members:
+
+Metadata
+~~~~~~~~~
+
+.. attributetable:: Metadata
+
+.. autoclass:: Metadata()
+    :members:
+    :inherited-members:
 
 Asset
 ~~~~~
@@ -4991,6 +6753,16 @@ Flags
 .. autoclass:: ApplicationFlags()
     :members:
 
+.. attributetable:: ApplicationDiscoveryFlags
+
+.. autoclass:: ApplicationDiscoveryFlags()
+    :members:
+
+.. attributetable:: LibraryApplicationFlags
+
+.. autoclass:: LibraryApplicationFlags()
+    :members:
+
 .. attributetable:: ChannelFlags
 
 .. autoclass:: ChannelFlags()
@@ -5001,14 +6773,24 @@ Flags
 .. autoclass:: SystemChannelFlags()
     :members:
 
+.. attributetable:: GiftFlags
+
+.. autoclass:: GiftFlags()
+    :members:
+
 .. attributetable:: MessageFlags
 
 .. autoclass:: MessageFlags()
     :members:
 
-.. attributetable:: PublicUserFlags
+.. attributetable:: PaymentFlags
 
-.. autoclass:: PublicUserFlags()
+.. autoclass:: PaymentFlags()
+    :members:
+
+.. attributetable:: PaymentSourceFlags
+
+.. autoclass:: PaymentSourceFlags()
     :members:
 
 .. attributetable:: PrivateUserFlags
@@ -5016,6 +6798,11 @@ Flags
 .. autoclass:: PrivateUserFlags()
     :members:
     :inherited-members:
+
+.. attributetable:: PublicUserFlags
+
+.. autoclass:: PublicUserFlags()
+    :members:
 
 .. attributetable:: PremiumUsageFlags
 
@@ -5025,6 +6812,16 @@ Flags
 .. attributetable:: PurchasedFlags
 
 .. autoclass:: PurchasedFlags()
+    :members:
+
+.. attributetable:: PromotionFlags
+
+.. autoclass:: PromotionFlags()
+    :members:
+
+.. attributetable:: SKUFlags
+
+.. autoclass:: SKUFlags()
     :members:
 
 .. attributetable:: MemberCacheFlags

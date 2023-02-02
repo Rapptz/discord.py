@@ -57,7 +57,7 @@ NSFWLevel = Literal[0, 1, 2, 3]
 PremiumTier = Literal[0, 1, 2, 3]
 
 
-class _BaseGuildPreview(UnavailableGuild):
+class PartialGuild(UnavailableGuild):
     name: str
     icon: Optional[str]
     splash: Optional[str]
@@ -73,11 +73,11 @@ class _GuildPreviewUnique(TypedDict):
     approximate_presence_count: int
 
 
-class GuildPreview(_BaseGuildPreview, _GuildPreviewUnique):
+class GuildPreview(PartialGuild, _GuildPreviewUnique):
     ...
 
 
-class Guild(_BaseGuildPreview):
+class Guild(PartialGuild):
     owner_id: Snowflake
     region: str
     afk_channel_id: Optional[Snowflake]

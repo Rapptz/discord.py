@@ -89,6 +89,9 @@ from .object import OLDEST_OBJECT, Object
 from .profile import MemberProfile
 from .partial_emoji import PartialEmoji
 from .welcome_screen import *
+from .appinfo import PartialApplication
+from .guild_premium import PremiumGuildSubscription
+from .entitlements import Entitlement
 
 
 # fmt: off
@@ -105,7 +108,7 @@ if TYPE_CHECKING:
     from .abc import Snowflake, SnowflakeTime
     from .types.guild import (
         Guild as GuildPayload,
-        GuildPreview as GuildPreviewPayload,
+        PartialGuild as PartialGuildPayload,
         RolePositionUpdate as RolePositionUpdatePayload,
     )
     from .types.threads import (
@@ -119,6 +122,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .voice_client import VoiceProtocol
     from .settings import GuildSettings
+    from .enums import ApplicationType
     from .types.channel import (
         GuildChannel as GuildChannelPayload,
         TextChannel as TextChannelPayload,
@@ -335,7 +339,7 @@ class Guild(Hashable):
         3: _GuildLimit(emoji=250, stickers=60, bitrate=384e3, filesize=104857600),
     }
 
-    def __init__(self, *, data: Union[GuildPayload, GuildPreviewPayload], state: ConnectionState) -> None:
+    def __init__(self, *, data: Union[GuildPayload, PartialGuildPayload], state: ConnectionState) -> None:
         self._chunked = False
         self._cs_joined: Optional[bool] = None
         self._roles: Dict[int, Role] = {}
@@ -446,7 +450,7 @@ class Guild(Hashable):
 
         return role
 
-    def _from_data(self, guild: Union[GuildPayload, GuildPreviewPayload]) -> None:
+    def _from_data(self, guild: Union[GuildPayload, PartialGuildPayload]) -> None:
         try:
             self._member_count: int = guild['member_count']  # type: ignore # Handled below
         except KeyError:
@@ -874,7 +878,7 @@ class Guild(Hashable):
 
     @property
     def premium_subscribers(self) -> List[Member]:
-        """List[:class:`Member`]: A list of members who have "boosted" this guild."""
+        """List[:class:`Member`]: A list of members who have subscribed to (boosted) this guild."""
         return [member for member in self.members if member.premium_since is not None]
 
     @property
@@ -2346,10 +2350,10 @@ class Guild(Hashable):
 
         return Template(state=self._state, data=data)
 
-    async def create_integration(self, *, type: IntegrationType, id: int) -> None:
+    async def create_integration(self, *, type: IntegrationType, id: int, reason: Optional[str] = None) -> None:
         """|coro|
 
-        Attaches an integration to the guild.
+        Attaches an integration to the guild. This "enables" an existing integration.
 
         You must have the :attr:`~Permissions.manage_guild` permission to
         do this.
@@ -2362,6 +2366,10 @@ class Guild(Hashable):
             The integration type (e.g. Twitch).
         id: :class:`int`
             The integration ID.
+        reason: Optional[:class:`str`]
+            The reason for creating this integration. Shows up on the audit log.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -2370,7 +2378,7 @@ class Guild(Hashable):
         HTTPException
             The account could not be found.
         """
-        await self._state.http.create_integration(self.id, type, id)
+        await self._state.http.create_integration(self.id, type, id, reason=reason)
 
     async def integrations(self, *, with_applications=True) -> List[Integration]:
         """|coro|
@@ -3556,6 +3564,161 @@ class Guild(Hashable):
 
         if payload:
             await self._state.http.edit_welcome_screen(self.id, payload)
+
+    async def applications(
+        self, *, with_team: bool = False, type: Optional[ApplicationType] = None, channel: Optional[Snowflake] = None
+    ) -> List[PartialApplication]:
+        """|coro|
+
+        Returns the list of applications that are attached to this guild.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        with_team: :class:`bool`
+            Whether to include the team of the application.
+        type: :class:`ApplicationType`
+            The type of application to restrict the returned applications to.
+
+        Raises
+        -------
+        HTTPException
+            Fetching the applications failed.
+
+        Returns
+        --------
+        List[:class:`PartialApplication`]
+            The applications that belong to this guild.
+        """
+        data = await self._state.http.get_guild_applications(
+            self.id, include_team=with_team, type=int(type) if type else None, channel_id=channel.id if channel else None
+        )
+        return [PartialApplication(state=self._state, data=app) for app in data]
+
+    async def premium_subscriptions(self) -> List[PremiumGuildSubscription]:
+        """|coro|
+
+        Returns the list of premium subscriptions (boosts) for this guild.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        Forbidden
+            You do not have permission to get the premium guild subscriptions.
+        HTTPException
+            Fetching the premium guild subscriptions failed.
+
+        Returns
+        --------
+        List[:class:`PremiumGuildSubscription`]
+            The premium guild subscriptions.
+        """
+        data = await self._state.http.get_guild_subscriptions(self.id)
+        return [PremiumGuildSubscription(state=self._state, data=sub) for sub in data]
+
+    async def apply_premium_subscription_slots(self, *subscription_slots: Snowflake) -> List[PremiumGuildSubscription]:
+        r"""|coro|
+
+        Applies premium subscription slots to the guild (boosts the guild).
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        \*subscription_slots: :class:`PremiumGuildSubscriptionSlot`
+            The subscription slots to apply.
+
+        Raises
+        -------
+        HTTPException
+            Applying the premium subscription slots failed.
+        """
+        if not subscription_slots:
+            return []
+
+        data = await self._state.http.apply_guild_subscription_slots(self.id, [slot.id for slot in subscription_slots])
+        return [PremiumGuildSubscription(state=self._state, data=sub) for sub in data]
+
+    async def entitlements(
+        self, *, with_sku: bool = True, with_application: bool = True, exclude_deleted: bool = False
+    ) -> List[Entitlement]:
+        """|coro|
+
+        Returns the list of entitlements for this guild.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        with_sku: :class:`bool`
+            Whether to include the SKU information in the returned entitlements.
+        with_application: :class:`bool`
+            Whether to include the application in the returned entitlements' SKUs.
+        exclude_deleted: :class:`bool`
+            Whether to exclude deleted entitlements.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the entitlements failed.
+
+        Returns
+        -------
+        List[:class:`Entitlement`]
+            The guild's entitlements.
+        """
+        state = self._state
+        data = await state.http.get_guild_entitlements(
+            self.id, with_sku=with_sku, with_application=with_application, exclude_deleted=exclude_deleted
+        )
+        return [Entitlement(state=state, data=d) for d in data]
+
+    async def price_tiers(self) -> List[int]:
+        """|coro|
+
+        Returns the list of price tiers available for use in this guild.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        HTTPException
+            Fetching the price tiers failed.
+
+        Returns
+        --------
+        List[:class:`int`]
+            The available price tiers.
+        """
+        return await self._state.http.get_price_tiers(1, self.id)
+
+    async def fetch_price_tier(self, price_tier: int, /) -> Dict[str, int]:
+        """|coro|
+
+        Returns a mapping of currency to price for the given price tier.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        price_tier: :class:`int`
+            The price tier to retrieve.
+
+        Raises
+        -------
+        NotFound
+            The price tier does not exist.
+        HTTPException
+            Fetching the price tier failed.
+
+        Returns
+        -------
+        Dict[:class:`str`, :class:`int`]
+            The price tier mapping.
+        """
+        return await self._state.http.get_price_tier(price_tier)
 
     async def chunk(self, channel: Snowflake = MISSING) -> List[Member]:
         """|coro|

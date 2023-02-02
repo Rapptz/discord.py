@@ -312,7 +312,7 @@ class BaseUser(_UserTag):
 
         return self
 
-    def _to_minimal_user_json(self) -> UserPayload:
+    def _to_minimal_user_json(self) -> PartialUserPayload:
         user: UserPayload = {
             'username': self.name,
             'id': self.id,
@@ -534,8 +534,6 @@ class ClientUser(BaseUser):
         The phone number of the user.
 
         .. versionadded:: 1.9
-    locale: Optional[:class:`Locale`]
-        The IETF language tag used to identify the language the user is using.
     mfa_enabled: :class:`bool`
         Specifies if the user has MFA turned on and working.
     premium_type: Optional[:class:`PremiumType`]
@@ -549,11 +547,19 @@ class ClientUser(BaseUser):
         If ``None``, then the user's date of birth is not known.
 
         .. versionadded:: 2.0
+    desktop: :class:`bool`
+        Specifies whether the user has used a desktop client.
+
+        .. versionadded:: 2.0
+    mobile: :class:`bool`
+        Specifies whether the user has used a mobile client.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
         '__weakref__',
-        'locale',
+        '_locale',
         '_flags',
         'verified',
         'mfa_enabled',
@@ -563,6 +569,8 @@ class ClientUser(BaseUser):
         'note',
         'bio',
         'nsfw_allowed',
+        'desktop',
+        'mobile',
         '_purchased_flags',
         '_premium_usage_flags',
     )
@@ -571,7 +579,7 @@ class ClientUser(BaseUser):
         verified: bool
         email: Optional[str]
         phone: Optional[int]
-        locale: Locale
+        _locale: str
         _flags: int
         mfa_enabled: bool
         premium_type: Optional[PremiumType]
@@ -594,14 +602,16 @@ class ClientUser(BaseUser):
         self.verified = data.get('verified', False)
         self.email = data.get('email')
         self.phone = _get_as_snowflake(data, 'phone')
-        self.locale = try_enum(Locale, data.get('locale', 'en-US'))
+        self._locale = data.get('locale', 'en-US')
         self._flags = data.get('flags', 0)
         self._purchased_flags = data.get('purchased_flags', 0)
         self._premium_usage_flags = data.get('premium_usage_flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
-        self.premium_type = try_enum(PremiumType, data['premium_type']) if 'premium_type' in data else None
+        self.premium_type = try_enum(PremiumType, data.get('premium_type')) if data.get('premium_type') else None
         self.bio = data.get('bio') or None
         self.nsfw_allowed = data.get('nsfw_allowed')
+        self.desktop: bool = data.get('desktop', False)
+        self.mobile: bool = data.get('mobile', False)
 
     def get_relationship(self, user_id: int) -> Optional[Relationship]:
         """Retrieves the :class:`Relationship` if applicable.
@@ -617,6 +627,11 @@ class ClientUser(BaseUser):
             The relationship if available or ``None``.
         """
         return self._state._relationships.get(user_id)
+
+    @property
+    def locale(self) -> Locale:
+        """:class:`Locale`: The IETF language tag used to identify the language the user is using."""
+        return self.settings.locale if self.settings else try_enum(Locale, self._locale)
 
     @property
     def premium(self) -> bool:
@@ -687,7 +702,7 @@ class ClientUser(BaseUser):
         *,
         username: str = MISSING,
         avatar: Optional[bytes] = MISSING,
-        avatar_decoration: Optional[bool] = MISSING,
+        avatar_decoration: Optional[bytes] = MISSING,
         password: str = MISSING,
         new_password: str = MISSING,
         email: str = MISSING,
@@ -737,7 +752,7 @@ class ClientUser(BaseUser):
         avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.
-        avatar_decoration: Optional[:class:`bool`]
+        avatar_decoration: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar decoration.
 
@@ -747,11 +762,17 @@ class ClientUser(BaseUser):
             Could be ``None`` to denote no banner.
         accent_colour: :class:`Colour`
             A :class:`Colour` object of the colour you want to set your profile to.
+
+            .. versionadded:: 2.0
         bio: :class:`str`
             Your "about me" section.
             Could be ``None`` to represent no bio.
+
+            .. versionadded:: 2.0
         date_of_birth: :class:`datetime.datetime`
             Your date of birth. Can only ever be set once.
+
+            .. versionadded:: 2.0
 
         Raises
         ------
@@ -780,6 +801,12 @@ class ClientUser(BaseUser):
                 args['avatar'] = _bytes_to_base64_data(avatar)
             else:
                 args['avatar'] = None
+
+        if avatar_decoration is not MISSING:
+            if avatar_decoration is not None:
+                args['avatar_decoration'] = _bytes_to_base64_data(avatar_decoration)
+            else:
+                args['avatar_decoration'] = None
 
         if banner is not MISSING:
             if banner is not None:

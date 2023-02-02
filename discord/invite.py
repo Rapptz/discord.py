@@ -53,6 +53,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .guild import Guild
     from .abc import GuildChannel, PrivateChannel, Snowflake
+    from .channel import GroupChannel
     from .user import User
     from .appinfo import PartialApplication
     from .message import Message
@@ -95,9 +96,13 @@ class PartialInviteChannel:
         The partial channel's ID.
     type: :class:`ChannelType`
         The partial channel's type.
+    recipients: Optional[List[:class:`str`]]
+        The partial channel's recipient names. This is only applicable to group DMs.
+
+        .. versionadded:: 2.0
     """
 
-    __slots__ = ('_state', 'id', 'name', 'type', '_icon')
+    __slots__ = ('_state', 'id', 'name', 'type', 'recipients', '_icon')
 
     def __new__(cls, data: Optional[InviteChannelPayload], *args, **kwargs):
         if data is None:
@@ -111,6 +116,9 @@ class PartialInviteChannel:
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self.type: ChannelType = try_enum(ChannelType, data['type'])
+        self.recipients: Optional[List[str]] = (
+            [user['username'] for user in data.get('recipients', [])] if self.type == ChannelType.group else None
+        )
         self._icon: Optional[str] = data.get('icon')
 
     def __str__(self) -> str:
@@ -310,8 +318,6 @@ class Invite(Hashable):
     +------------------------------------+------------------------------------------------------------+
     | :attr:`approximate_presence_count` | :meth:`Client.fetch_invite` with `with_counts` enabled     |
     +------------------------------------+------------------------------------------------------------+
-    | :attr:`expires_at`                 | :meth:`Client.fetch_invite` with `with_expiration` enabled |
-    +------------------------------------+------------------------------------------------------------+
 
     If it's not in the table above then it is available by all methods.
 
@@ -349,12 +355,12 @@ class Invite(Hashable):
         The approximate number of members currently active in the guild.
         This includes idle, dnd, online, and invisible members. Offline members are excluded.
     expires_at: Optional[:class:`datetime.datetime`]
-        The expiration date of the invite. If the value is ``None`` when received through
-        `Client.fetch_invite` with `with_expiration` enabled, the invite will never expire.
+        The expiration date of the invite. If the value is ``None`` (unless received through
+        `Client.fetch_invite` with `with_expiration` disabled), the invite will never expire.
 
         .. versionadded:: 2.0
 
-    channel: Optional[Union[:class:`abc.GuildChannel`, :class:`Object`, :class:`PartialInviteChannel`]]
+    channel: Optional[Union[:class:`abc.GuildChannel`, :class:`GroupChannel`, :class:`Object`, :class:`PartialInviteChannel`]]
         The channel the invite is for. Can be ``None`` if not a guild invite.
     target_type: :class:`InviteTarget`
         The type of target for the voice channel invite.
@@ -435,7 +441,7 @@ class Invite(Hashable):
         state: ConnectionState,
         data: InvitePayload,
         guild: Optional[Union[PartialInviteGuild, Guild]] = None,
-        channel: Optional[Union[PartialInviteChannel, GuildChannel]] = None,
+        channel: Optional[Union[PartialInviteChannel, GuildChannel, GroupChannel]] = None,
         welcome_screen: Optional[WelcomeScreen] = None,
     ):
         self._state: ConnectionState = state
@@ -552,7 +558,7 @@ class Invite(Hashable):
     def _resolve_channel(
         self,
         data: Optional[InviteChannelPayload],
-        channel: Optional[Union[PartialInviteChannel, GuildChannel]] = None,
+        channel: Optional[Union[PartialInviteChannel, GuildChannel, GroupChannel]] = None,
     ) -> Optional[InviteChannelType]:
         if channel is not None:
             return channel

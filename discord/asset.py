@@ -344,6 +344,26 @@ class Asset(AssetMixin):
             animated=animated,
         )
 
+    @classmethod
+    def _from_astore_asset(cls, state, app_id: int, hash: str) -> Asset:
+        animated = hash.startswith('a_')
+        format = 'gif' if animated else 'png'
+        return cls(
+            state,
+            url=f'{cls.BASE}/app-assets/{app_id}/{hash}.{format}',
+            key=hash,
+            animated=animated,
+        )
+
+    @classmethod
+    def _from_achievement_icon(cls, state, app_id: int, achievement_id: int, icon_hash: str) -> Asset:
+        return cls(
+            state,
+            url=f'{cls.BASE}/app-assets/{app_id}/achievements/{achievement_id}/icons/{icon_hash}.png',
+            key=icon_hash,
+            animated=False,
+        )
+
     def __str__(self) -> str:
         return self._url
 

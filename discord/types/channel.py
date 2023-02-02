@@ -57,8 +57,14 @@ class _BaseGuildChannel(_BaseChannel):
     parent_id: Optional[Snowflake]
 
 
+class PartialRecipient(TypedDict):
+    username: str
+
+
 class PartialChannel(_BaseChannel):
     type: ChannelType
+    icon: NotRequired[Optional[str]]
+    recipients: NotRequired[List[PartialRecipient]]
 
 
 class _BaseTextChannel(_BaseGuildChannel, total=False):

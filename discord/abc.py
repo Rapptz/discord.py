@@ -363,7 +363,7 @@ class PrivateChannel(Snowflake, Protocol):
     def _add_call(self, **kwargs):
         raise NotImplementedError
 
-    def _update(self, **kwargs) -> None:
+    def _update(self, *args) -> None:
         raise NotImplementedError
 
 

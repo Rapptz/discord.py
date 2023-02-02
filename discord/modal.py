@@ -32,7 +32,7 @@ from .mixins import Hashable
 from .utils import _generate_nonce
 
 if TYPE_CHECKING:
-    from .appinfo import InteractionApplication
+    from .appinfo import IntegrationApplication
     from .components import ActionRow
     from .interactions import Interaction
 
@@ -78,7 +78,7 @@ class Modal(Hashable):
         The ID of the modal that gets received during an interaction.
     components: List[:class:`Component`]
         A list of components in the modal.
-    application: :class:`InteractionApplication`
+    application: :class:`IntegrationApplication`
         The application that sent the modal.
     """
 
@@ -92,7 +92,7 @@ class Modal(Hashable):
         self.title: str = data.get('title', '')
         self.custom_id: str = data.get('custom_id', '')
         self.components: List[ActionRow] = [_component_factory(d) for d in data.get('components', [])]  # type: ignore # Will always be rows here
-        self.application: InteractionApplication = interaction._state.create_interaction_application(data['application'])
+        self.application: IntegrationApplication = interaction._state.create_integration_application(data['application'])
 
     def __str__(self) -> str:
         return self.title

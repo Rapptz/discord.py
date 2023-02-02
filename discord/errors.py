@@ -25,6 +25,8 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 from typing import Dict, List, Optional, TYPE_CHECKING, Any, Tuple, Union
 
+from .utils import _get_as_snowflake
+
 if TYPE_CHECKING:
     from aiohttp import ClientResponse, ClientWebSocketResponse
 
@@ -79,6 +81,11 @@ class GatewayNotFound(DiscordException):
 
 def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
     items: List[Tuple[str, str]] = []
+
+    if '_errors' in d:
+        items.append(('miscallenous', ' '.join(x.get('message', '') for x in d['_errors'])))
+        d.pop('_errors')
+
     for k, v in d.items():
         new_key = key + '.' + k if key else k
 
@@ -112,6 +119,12 @@ class HTTPException(DiscordException):
         The Discord specific error code for the failure.
     json: :class:`dict`
         The raw error JSON.
+
+        .. versionadded:: 2.0
+    payment_id: Optional[:class:`int`]
+        The ID of the payment that requires verification to continue.
+
+        .. versionadded:: 2.0
     """
 
     def __init__(self, response: _ResponseType, message: Optional[Union[str, Dict[str, Any]]]):
@@ -119,6 +132,8 @@ class HTTPException(DiscordException):
         self.status: int = response.status  # type: ignore # This attribute is filled by the library even if using requests
         self.code: int
         self.text: str
+        self.json: Dict[str, Any]
+        self.payment_id: Optional[int]
         if isinstance(message, dict):
             self.json = message
             self.code = message.get('code', 0)
@@ -130,9 +145,12 @@ class HTTPException(DiscordException):
                 self.text = base + '\n' + helpful
             else:
                 self.text = base
+            self.payment_id = _get_as_snowflake(message, 'payment_id')
         else:
             self.text = message or ''
             self.code = 0
+            self.json = {}
+            self.payment_id = None
 
         fmt = '{0.status} {0.reason} (error code: {1})'
         if len(self.text):

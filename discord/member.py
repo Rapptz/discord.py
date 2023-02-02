@@ -65,7 +65,7 @@ if TYPE_CHECKING:
         UserWithMember as UserWithMemberPayload,
     )
     from .types.gateway import GuildMemberUpdateEvent
-    from .types.user import User as UserPayload
+    from .types.user import PartialUser as PartialUserPayload
     from .abc import Snowflake
     from .state import ConnectionState
     from .message import Message
@@ -106,7 +106,7 @@ class VoiceState:
     suppress: :class:`bool`
         Indicates if the user is suppressed from speaking.
 
-        Only applies to stage channels.
+        Only applicable to stage channels.
 
         .. versionadded:: 1.7
 
@@ -440,7 +440,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         if any(getattr(self, attr) != getattr(old, attr) for attr in attrs):
             return old
 
-    def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
+    def _presence_update(self, data: PartialPresenceUpdate, user: PartialUserPayload) -> Optional[Tuple[User, User]]:
         if self._self:
             return
 
@@ -450,7 +450,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         if len(user) > 1:
             return self._update_inner_user(user)
 
-    def _update_inner_user(self, user: UserPayload) -> Optional[Tuple[User, User]]:
+    def _update_inner_user(self, user: PartialUserPayload) -> Optional[Tuple[User, User]]:
         u = self._user
         original = (u.name, u._avatar, u.discriminator, u._public_flags)
         # These keys seem to always be available

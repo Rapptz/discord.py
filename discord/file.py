@@ -23,12 +23,14 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+
+from base64 import b64encode
+from hashlib import md5
+import io
+import os
 from typing import Any, Dict, Optional, Tuple, Union
 
-import os
-import io
-
-from .utils import MISSING
+from .utils import MISSING, cached_slot_property
 
 # fmt: off
 __all__ = (
@@ -77,7 +79,7 @@ class File:
         .. versionadded:: 2.0
     """
 
-    __slots__ = ('fp', '_filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer')
+    __slots__ = ('fp', '_filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer', '_cs_md5')
 
     def __init__(
         self,
@@ -128,6 +130,13 @@ class File:
     @filename.setter
     def filename(self, value: str) -> None:
         self._filename, self.spoiler = _strip_spoiler(value)
+
+    @cached_slot_property('_cs_md5')
+    def md5(self) -> str:
+        try:
+            return b64encode(md5(self.fp.read()).digest()).decode('utf-8')
+        finally:
+            self.reset()
 
     def reset(self, *, seek: Union[int, bool] = True) -> None:
         # The `seek` parameter is needed because

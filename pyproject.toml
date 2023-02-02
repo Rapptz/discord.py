@@ -41,6 +41,7 @@ exclude = [
 ]
 reportUnnecessaryTypeIgnoreComment = "warning"
 reportUnusedImport = "error"
+reportShadowedImports = false
 pythonVersion = "3.8"
 typeCheckingMode = "basic"
 

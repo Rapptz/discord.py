@@ -37,12 +37,16 @@ from .member import MemberWithUser
 from .snowflake import Snowflake
 from .message import Message
 from .sticker import GuildSticker
-from .appinfo import PartialAppInfo
+from .appinfo import BaseAchievement, PartialApplication
 from .guild import Guild, UnavailableGuild, SupplementalGuild
-from .user import Connection, User
+from .user import Connection, User, PartialUser
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
 from .channel import DMChannel, GroupDMChannel
+from .subscriptions import PremiumGuildSubscriptionSlot
+from .payments import Payment
+from .entitlements import Entitlement, GatewayGift
+from .library import LibraryApplication
 
 
 PresenceUpdateEvent = PartialPresenceUpdate
@@ -57,8 +61,14 @@ class ShardInfo(TypedDict):
     shard_count: int
 
 
-class ReadyEvent(TypedDict):
+class ResumedEvent(TypedDict):
+    _trace: List[str]
+
+
+class ReadyEvent(ResumedEvent):
+    api_code_version: int
     analytics_token: str
+    auth_session_id_hash: str
     auth_token: NotRequired[str]
     connected_accounts: List[Connection]
     country_code: str
@@ -66,17 +76,19 @@ class ReadyEvent(TypedDict):
     geo_ordered_rtc_regions: List[str]
     guilds: List[Guild]
     merged_members: List[List[MemberWithUser]]
+    pending_payments: NotRequired[List[Payment]]
     private_channels: List[Union[DMChannel, GroupDMChannel]]
     relationships: List[dict]
     required_action: NotRequired[str]
     sessions: List[dict]
     session_id: str
     session_type: str
+    shard: NotRequired[ShardInfo]
     user: User
     user_guild_settings: dict
-    user_settings: dict
+    user_settings: NotRequired[dict]
     user_settings_proto: str
-    users: List[User]
+    users: List[PartialUser]
     v: int
 
 
@@ -91,7 +103,7 @@ class ReadySupplementalEvent(TypedDict):
     merged_presences: MergedPresences
 
 
-ResumedEvent = Literal[None]
+NoEvent = Literal[None]
 
 MessageCreateEvent = Message
 
@@ -157,10 +169,10 @@ class InviteCreateEvent(TypedDict):
     temporary: bool
     uses: Literal[0]
     guild_id: NotRequired[Snowflake]
-    inviter: NotRequired[User]
+    inviter: NotRequired[PartialUser]
     target_type: NotRequired[InviteTargetType]
-    target_user: NotRequired[User]
-    target_application: NotRequired[PartialAppInfo]
+    target_user: NotRequired[PartialUser]
+    target_application: NotRequired[PartialApplication]
 
 
 class InviteDeleteEvent(TypedDict):
@@ -203,6 +215,7 @@ class ThreadListSyncEvent(TypedDict):
     threads: List[Thread]
     members: List[ThreadMember]
     channel_ids: NotRequired[List[Snowflake]]
+    most_recent_messages: List[Message]
 
 
 class ThreadMemberUpdate(ThreadMember):
@@ -221,15 +234,19 @@ class GuildMemberAddEvent(MemberWithUser):
     guild_id: Snowflake
 
 
+class SnowflakeUser(TypedDict):
+    id: Snowflake
+
+
 class GuildMemberRemoveEvent(TypedDict):
     guild_id: Snowflake
-    user: User
+    user: Union[PartialUser, SnowflakeUser]
 
 
 class GuildMemberUpdateEvent(TypedDict):
     guild_id: Snowflake
     roles: List[Snowflake]
-    user: User
+    user: PartialUser
     avatar: Optional[str]
     joined_at: Optional[str]
     nick: NotRequired[str]
@@ -256,7 +273,7 @@ GuildDeleteEvent = UnavailableGuild
 
 class _GuildBanEvent(TypedDict):
     guild_id: Snowflake
-    user: User
+    user: PartialUser
 
 
 GuildBanAddEvent = GuildBanRemoveEvent = _GuildBanEvent
@@ -341,3 +358,58 @@ class TypingStartEvent(TypedDict):
     timestamp: int
     guild_id: NotRequired[Snowflake]
     member: NotRequired[MemberWithUser]
+
+
+ConnectionEvent = Connection
+
+
+class PartialConnectionEvent(TypedDict):
+    user_id: Snowflake
+
+
+class ConnectionsLinkCallbackEvent(TypedDict):
+    provider: str
+    callback_code: str
+    callback_state: str
+
+
+class OAuth2TokenRevokeEvent(TypedDict):
+    access_token: str
+
+
+class AuthSessionChangeEvent(TypedDict):
+    auth_session_id_hash: str
+
+
+class PaymentClientAddEvent(TypedDict):
+    purchase_token_hash: str
+    expires_at: str
+
+
+class AchievementUpdatePayload(TypedDict):
+    application_id: Snowflake
+    achievement: BaseAchievement
+    percent_complete: int
+
+
+PremiumGuildSubscriptionSlotEvent = PremiumGuildSubscriptionSlot
+
+
+class RequiredActionEvent(TypedDict):
+    required_action: str
+
+
+class BillingPopupBridgeCallbackEvent(TypedDict):
+    payment_source_type: int
+    state: str
+    path: str
+    query: str
+
+
+PaymentUpdateEvent = Payment
+
+GiftCreateEvent = GiftUpdateEvent = GatewayGift
+
+EntitlementEvent = Entitlement
+
+LibraryApplicationUpdateEvent = LibraryApplication

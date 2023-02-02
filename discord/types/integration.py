@@ -24,21 +24,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Literal, Optional, TypedDict, Union
+from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired
 
+from .appinfo import IntegrationApplication
 from .guild import Guild
 from .snowflake import Snowflake
 from .user import User
-
-
-class IntegrationApplication(TypedDict):
-    id: Snowflake
-    name: str
-    icon: Optional[str]
-    description: str
-    summary: str
-    bot: NotRequired[User]
 
 
 class IntegrationAccount(TypedDict):
@@ -54,6 +46,7 @@ class PartialIntegration(TypedDict):
     name: str
     type: IntegrationType
     account: IntegrationAccount
+    application_id: NotRequired[Snowflake]
 
 
 IntegrationType = Literal['twitch', 'youtube', 'discord']
@@ -61,11 +54,7 @@ IntegrationType = Literal['twitch', 'youtube', 'discord']
 
 class BaseIntegration(PartialIntegration):
     enabled: bool
-    syncing: bool
-    synced_at: str
-    user: User
-    expire_behavior: IntegrationExpireBehavior
-    expire_grace_period: int
+    user: NotRequired[User]
 
 
 class StreamIntegration(BaseIntegration):
@@ -73,10 +62,15 @@ class StreamIntegration(BaseIntegration):
     enable_emoticons: bool
     subscriber_count: int
     revoked: bool
+    expire_behavior: IntegrationExpireBehavior
+    expire_grace_period: int
+    syncing: bool
+    synced_at: str
 
 
 class BotIntegration(BaseIntegration):
     application: IntegrationApplication
+    scopes: List[str]
 
 
 class ConnectionIntegration(BaseIntegration):

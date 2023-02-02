@@ -263,24 +263,6 @@ In addition to this, :class:`Emoji` and :class:`PartialEmoji` now also share an 
 
 The following were affected by this change:
 
-- :attr:`AppInfo.cover_image`
-
-    - ``AppInfo.cover_image`` (replaced by :attr:`AppInfo.cover_image.key <Asset.key>`)
-    - ``AppInfo.cover_image_url`` (replaced by :attr:`AppInfo.cover_image`)
-
-        - The new attribute may now be ``None``.
-
-    - ``AppInfo.cover_image_url_as`` (replaced by :meth:`AppInfo.cover_image.replace <Asset.replace>`)
-
-- :attr:`AppInfo.icon`
-
-    - ``AppInfo.icon`` (replaced by :attr:`AppInfo.icon.key <Asset.key>`)
-    - ``AppInfo.icon_url`` (replaced by :attr:`AppInfo.icon`)
-
-        - The new attribute may now be ``None``.
-
-    - ``AppInfo.icon_url_as`` (replaced by :meth:`AppInfo.icon.replace <Asset.replace>`)
-
 - :class:`AuditLogDiff`
 
     - :attr:`AuditLogDiff.avatar` is now of :class:`Asset` type.
@@ -1028,17 +1010,13 @@ The following have been removed:
 
     - There is no replacement for this one. The current API version no longer provides enough data for this to be possible.
 
-- ``AppInfo.summary``
-
-    - There is no replacement for this one. The current API version no longer provides this field.
-
 - ``User.permissions_in`` and ``Member.permissions_in``
 
     - Use :meth:`abc.GuildChannel.permissions_for` instead.
 
 - ``guild_subscriptions`` parameter from :class:`Client` constructor
 
-    - The current API version no longer provides this functionality. Use ``intents`` parameter instead.
+    - The current API version no longer provides this functionality.
 
 - ``guild_subscription_options`` parameter from :class:`Client` constructor
 
@@ -1068,13 +1046,6 @@ The following have been removed:
 - ``region`` parameter from :meth:`Client.create_guild`
 - ``region`` parameter from :meth:`Template.create_guild`
 - ``region`` parameter from :meth:`Guild.edit`
-- ``on_private_channel_create`` event
-
-    - Discord API no longer sends channel create event for DMs.
-
-- ``on_private_channel_delete`` event
-
-    - Discord API no longer sends channel create event for DMs.
 
 - The undocumented private ``on_socket_response`` event
 
@@ -1092,29 +1063,6 @@ The following changes have been made:
 - :func:`utils.resolve_invite` now returns a :class:`ResolvedInvite` class.
 - :func:`utils.oauth_url` now defaults to ``bot`` and ``applications.commands`` scopes when not given instead of just ``bot``.
 - :meth:`abc.Messageable.typing` can no longer be used as a regular (non-async) context manager.
-- :attr:`Intents.emojis` is now an alias of :attr:`Intents.emojis_and_stickers`.
-
-    This may affect code that iterates through ``(name, value)`` pairs in an instance of this class:
-
-    .. code:: python
-
-        # before
-        friendly_names = {
-            ...,
-            'emojis': 'Emojis Intent',
-            ...,
-        }
-        for name, value in discord.Intents.all():
-            print(f'{friendly_names[name]}: {value}')
-
-        # after
-        friendly_names = {
-            ...,
-            'emojis_and_stickers': 'Emojis Intent',
-            ...,
-        }
-        for name, value in discord.Intents.all():
-            print(f'{friendly_names[name]}: {value}')
 
 - ``created_at`` is no longer part of :class:`abc.Snowflake`.
 

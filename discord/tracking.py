@@ -88,6 +88,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
             # Locations
             'Friends': 'eyJsb2NhdGlvbiI6IkZyaWVuZHMifQ==',
             'ContextMenu': 'eyJsb2NhdGlvbiI6IkNvbnRleHRNZW51In0=',
+            'Context Menu': 'eyJsb2NhdGlvbiI6IkNvbnRleHQgTWVudSJ9',
             'User Profile': 'eyJsb2NhdGlvbiI6IlVzZXIgUHJvZmlsZSJ9',
             'Add Friend': 'eyJsb2NhdGlvbiI6IkFkZCBGcmllbmQifQ==',
             'Guild Header': 'eyJsb2NhdGlvbiI6Ikd1aWxkIEhlYWRlciJ9',
@@ -100,6 +101,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
             'New Group DM': 'eyJsb2NhdGlvbiI6Ik5ldyBHcm91cCBETSJ9',
             'Add Friends to DM': 'eyJsb2NhdGlvbiI6IkFkZCBGcmllbmRzIHRvIERNIn0=',
             'Group DM Invite Create': 'eyJsb2NhdGlvbiI6Ikdyb3VwIERNIEludml0ZSBDcmVhdGUifQ==',
+            'Stage Channel': 'eyJsb2NhdGlvbiI6IlN0YWdlIENoYW5uZWwifQ==',
             # Sources
             'Chat Input Blocker - Lurker Mode': 'eyJzb3VyY2UiOiJDaGF0IElucHV0IEJsb2NrZXIgLSBMdXJrZXIgTW9kZSJ9',
             'Notice - Lurker Mode': 'eyJzb3VyY2UiOiJOb3RpY2UgLSBMdXJrZXIgTW9kZSJ9',
@@ -120,8 +122,13 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         return cls(data)
 
     @classmethod
-    def _from_context_menu(cls) -> Self:
+    def _from_contextmenu(cls) -> Self:
         data = {'location': 'ContextMenu'}
+        return cls(data)
+
+    @classmethod
+    def _from_context_menu(cls) -> Self:
+        data = {'location': 'Context Menu'}
         return cls(data)
 
     @classmethod
@@ -135,7 +142,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         return cls(data)
 
     @classmethod
-    def _from_guild_header_menu(cls) -> Self:
+    def _from_guild_header(cls) -> Self:
         data = {'location': 'Guild Header'}
         return cls(data)
 
@@ -182,6 +189,11 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
     @classmethod
     def _from_verification(cls) -> Self:
         data = {'location': 'Verify Email'}
+        return cls(data)
+
+    @classmethod
+    def _from_stage_channel(cls) -> Self:
+        data = {'location': 'Stage Channel'}
         return cls(data)
 
     @classmethod

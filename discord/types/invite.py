@@ -32,7 +32,7 @@ from .snowflake import Snowflake
 from .guild import InviteGuild, _GuildPreviewUnique
 from .channel import PartialChannel
 from .user import PartialUser
-from .appinfo import PartialAppInfo
+from .appinfo import PartialApplication
 
 InviteTargetType = Literal[1, 2]
 
@@ -61,7 +61,7 @@ class Invite(IncompleteInvite, total=False):
     inviter: PartialUser
     target_user: PartialUser
     target_type: InviteTargetType
-    target_application: PartialAppInfo
+    target_application: PartialApplication
     guild_scheduled_event: GuildScheduledEvent
 
 
@@ -81,7 +81,7 @@ class GatewayInviteCreate(TypedDict):
     inviter: NotRequired[PartialUser]
     target_type: NotRequired[InviteTargetType]
     target_user: NotRequired[PartialUser]
-    target_application: NotRequired[PartialAppInfo]
+    target_application: NotRequired[PartialApplication]
 
 
 class GatewayInviteDelete(TypedDict):

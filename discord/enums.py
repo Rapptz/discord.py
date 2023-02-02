@@ -42,7 +42,10 @@ __all__ = (
     'ActivityType',
     'NotificationLevel',
     'HighlightLevel',
-    'TeamMembershipState',
+    'ApplicationMembershipState',
+    'PayoutAccountStatus',
+    'PayoutStatus',
+    'PayoutReportType',
     'WebhookType',
     'ExpireBehaviour',
     'ExpireBehavior',
@@ -53,6 +56,7 @@ __all__ = (
     'ComponentType',
     'ButtonStyle',
     'TextStyle',
+    'GiftStyle',
     'PrivacyLevel',
     'InteractionType',
     'NSFWLevel',
@@ -76,12 +80,33 @@ __all__ = (
     'ApplicationVerificationState',
     'StoreApplicationState',
     'RPCApplicationState',
+    'ApplicationDiscoverabilityState',
     'InviteType',
     'ScheduledEventStatus',
     'ScheduledEventEntityType',
     'ApplicationType',
+    'EmbeddedActivityPlatform',
+    'EmbeddedActivityOrientation',
     'ConnectionType',
     'ConnectionLinkType',
+    'PaymentSourceType',
+    'PaymentGateway',
+    'SubscriptionType',
+    'SubscriptionStatus',
+    'SubscriptionInvoiceStatus',
+    'SubscriptionDiscountType',
+    'SubscriptionInterval',
+    'SubscriptionPlanPurchaseType',
+    'PaymentStatus',
+    'ApplicationAssetType',
+    'SKUType',
+    'SKUAccessLevel',
+    'SKUFeature',
+    'SKUGenre',
+    'OperatingSystem',
+    'ContentRatingAgency',
+    'Distributor',
+    'EntitlementType',
 )
 
 if TYPE_CHECKING:
@@ -564,6 +589,7 @@ class UserFlags(Enum):
     bot_http_interactions = 524288
     spammer = 1048576
     disable_premium = 2097152
+    quarantined = 17592186044416
 
 
 class ActivityType(Enum):
@@ -585,14 +611,61 @@ class HypeSquadHouse(Enum):
     balance = 3
 
 
-class PremiumType(Enum, comparable=True):
+class PremiumType(Enum):
+    none = 0
     nitro_classic = 1
     nitro = 2
+    nitro_basic = 3
+
+    @classmethod
+    def from_sku_id(cls, sku_id: int) -> Optional[PremiumType]:
+        if sku_id == 628379670982688768:
+            return cls.none
+        elif sku_id == 521846918637420545:
+            return cls.nitro_classic
+        elif sku_id in (521842865731534868, 521847234246082599):
+            return cls.nitro
+        elif sku_id == 978380684370378762:
+            return cls.nitro_basic
 
 
-class TeamMembershipState(Enum, comparable=True):
+class ApplicationMembershipState(Enum, comparable=True):
     invited = 1
     accepted = 2
+
+
+class PayoutAccountStatus(Enum):
+    unsubmitted = 1
+    pending = 2
+    action_required = 3
+    active = 4
+    blocked = 5
+    suspended = 6
+
+
+class PayoutStatus(Enum):
+    open = 1
+    paid = 2
+    pending = 3
+    manual = 4
+    canceled = 5
+    cancelled = 5
+    deferred = 6
+    deferred_internal = 7
+    processing = 8
+    error = 9
+    rejected = 10
+    risk_review = 11
+    submitted = 12
+    pending_funds = 13
+
+
+class PayoutReportType(Enum):
+    by_sku = 'sku'
+    by_transaction = 'transaction'
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class WebhookType(Enum):
@@ -604,6 +677,9 @@ class WebhookType(Enum):
 class ExpireBehaviour(Enum):
     remove_role = 0
     kick = 1
+
+    def __int__(self) -> int:
+        return self.value
 
 
 ExpireBehavior = ExpireBehaviour
@@ -661,7 +737,9 @@ class RequiredActionType(Enum):
     verify_phone = 'REQUIRE_VERIFIED_PHONE'
     verify_email = 'REQUIRE_VERIFIED_EMAIL'
     complete_captcha = 'REQUIRE_CAPTCHA'
-    accept_terms = 'AGREEMENTS'
+    update_agreements = 'AGREEMENTS'
+    acknowledge_tos_update = 'TOS_UPDATE_ACKNOWLEDGMENT'
+    none = None
 
 
 class InviteTarget(Enum):
@@ -735,6 +813,15 @@ class TextStyle(Enum):
         return self.value
 
 
+class GiftStyle(Enum):
+    snowglobe = 1
+    box = 2
+    cup = 3
+
+    def __int__(self) -> int:
+        return self.value
+
+
 class PrivacyLevel(Enum):
     public = 1
     closed = 2
@@ -791,12 +878,53 @@ class RPCApplicationState(Enum, comparable=True):
     rejected = 4
 
 
+class ApplicationDiscoverabilityState(Enum, comparable=True):
+    ineligible = 1
+    not_discoverable = 2
+    discoverable = 3
+    featureable = 4
+    blocked = 5
+
+
+class ApplicationBuildStatus(Enum):
+    created = 'CREATED'
+    uploading = 'UPLOADING'
+    uploaded = 'UPLOADED'
+    invalid = 'INVALID'
+    validating = 'VALIDATING'
+    corrupted = 'CORRUPTED'
+    ready = 'READY'
+
+    def __str__(self) -> str:
+        return self.value
+
+
 class ApplicationType(Enum):
-    none = None
     game = 1
     music = 2
     ticketed_events = 3
     guild_role_subscriptions = 4
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class EmbeddedActivityPlatform(Enum):
+    web = 'web'
+    ios = 'ios'
+    android = 'android'
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class EmbeddedActivityOrientation(Enum):
+    unlocked = 1
+    portrait = 2
+    landscape = 3
+
+    def __int__(self) -> int:
+        return self.value
 
 
 T = TypeVar('T')
@@ -915,6 +1043,338 @@ class ConnectionLinkType(Enum):
     desktop = 'desktop'
 
     def __str__(self) -> str:
+        return self.value
+
+
+class PaymentSourceType(Enum):
+    unknown = 0
+    card = 1
+    paypal = 2
+    giropay = 3
+    sofort = 4
+    przzelewy24 = 5
+    sepa_debit = 6
+    paysafecard = 7
+    gcash = 8
+    grabpay = 9
+    momo_wallet = 10
+    venmo = 11
+    gopay_wallet = 12
+    kakaopay = 13
+    bancontact = 14
+    eps = 15
+    ideal = 16
+    payment_request = 99
+
+
+class PaymentGateway(Enum):
+    stripe = 1
+    braintree = 2
+    apple = 3
+    google = 4
+    adyen = 5
+    apple_pay = 6
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class SubscriptionType(Enum):
+    premium = 1
+    guild = 2
+    application = 3
+
+
+class SubscriptionStatus(Enum):
+    unpaid = 0
+    active = 1
+    past_due = 2
+    canceled = 3
+    cancelled = 3
+    ended = 4
+    inactive = 5
+    account_hold = 6
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class SubscriptionInvoiceStatus(Enum, comparable=True):
+    open = 1
+    paid = 2
+    void = 3
+    uncollectible = 4
+
+
+class SubscriptionDiscountType(Enum):
+    subscription_plan = 1
+    entitlement = 2
+    premium_legacy_upgrade_promotion = 3
+    premium_trial = 4
+
+
+class SubscriptionInterval(Enum):
+    month = 1
+    year = 2
+    day = 3
+
+
+class SubscriptionPlanPurchaseType(Enum):
+    default = 0
+    gift = 1
+    sale = 2
+    nitro_classic = 3
+    nitro = 4
+
+
+class PaymentStatus(Enum):
+    pending = 0
+    completed = 1
+    failed = 2
+    reversed = 3
+    refunded = 4
+    canceled = 5
+    cancelled = 5
+
+
+class ApplicationAssetType(Enum):
+    one = 1
+    two = 2
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class SKUType(Enum):
+    durable_primary = 1
+    durable = 2
+    consumable = 3
+    bundle = 4
+    subscription = 5
+    group = 6
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class SKUAccessLevel(Enum, comparable=True):
+    full = 1
+    early_access = 2
+    vip_access = 3
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class SKUFeature(Enum):
+    single_player = 1
+    online_multiplayer = 2
+    local_multiplayer = 3
+    pvp = 4
+    local_coop = 5
+    cross_platform = 6
+    rich_presence = 7
+    discord_game_invites = 8
+    spectator_mode = 9
+    controller_support = 10
+    cloud_saves = 11
+    online_coop = 12
+    secure_networking = 13
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class SKUGenre(Enum):
+    action = 1
+    action_adventure = 9
+    action_rpg = 2
+    adventure = 8
+    artillery = 50
+    baseball = 34
+    basketball = 35
+    billiards = 36
+    bowling = 37
+    boxing = 38
+    brawler = 3
+    card_game = 58
+    driving_racing = 16
+    dual_joystick_shooter = 27
+    dungeon_crawler = 21
+    education = 59
+    fighting = 56
+    fishing = 32
+    fitness = 60
+    flight_simulator = 29
+    football = 39
+    four_x = 49
+    fps = 26
+    gambling = 61
+    golf = 40
+    hack_and_slash = 4
+    hockey = 41
+    life_simulator = 31
+    light_gun = 24
+    massively_multiplayer = 18
+    metroidvania = 10
+    mmorpg = 19
+    moba = 55
+    music_rhythm = 62
+    open_world = 11
+    party_mini_game = 63
+    pinball = 64
+    platformer = 5
+    psychological_horror = 12
+    puzzle = 57
+    rpg = 22
+    role_playing = 20
+    rts = 51
+    sandbox = 13
+    shooter = 23
+    shoot_em_up = 25
+    simulation = 28
+    skateboarding_skating = 42
+    snowboarding_skiing = 43
+    soccer = 44
+    sports = 33
+    stealth = 6
+    strategy = 48
+    surfing_wakeboarding = 46
+    survival = 7
+    survival_horror = 14
+    tower_defense = 52
+    track_field = 45
+    train_simulator = 30
+    trivia_board_game = 65
+    turn_based_strategy = 53
+    vehicular_combat = 17
+    visual_novel = 15
+    wargame = 54
+    wrestling = 47
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class OperatingSystem(Enum):
+    windows = 1
+    mac = 2
+    linux = 3
+
+
+class ContentRatingAgency(Enum):
+    esrb = 1
+    pegi = 2
+
+
+class ESRBRating(Enum):
+    everyone = 1
+    everyone_ten_plus = 2
+    teen = 3
+    mature = 4
+    adults_only = 5
+    rating_pending = 6
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class PEGIRating(Enum):
+    three = 1
+    seven = 2
+    twelve = 3
+    sixteen = 4
+    eighteen = 5
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class ESRBContentDescriptor(Enum):
+    alcohol_reference = 1
+    animated_blood = 2
+    blood = 3
+    blood_and_gore = 4
+    cartoon_violence = 5
+    comic_mischief = 6
+    crude_humor = 7
+    drug_reference = 8
+    fantasy_violence = 9
+    intense_violence = 10
+    language = 11
+    lyrics = 12
+    mature_humor = 13
+    nudity = 14
+    partial_nudity = 15
+    real_gambling = 16
+    sexual_content = 17
+    sexual_themes = 18
+    sexual_violence = 19
+    simulated_gambling = 20
+    strong_language = 21
+    strong_lyrics = 22
+    strong_sexual_content = 23
+    suggestive_themes = 24
+    tobacco_reference = 25
+    use_of_alcohol = 26
+    use_of_drugs = 27
+    use_of_tobacco = 28
+    violence = 29
+    violent_references = 30
+    in_game_purchases = 31
+    users_interact = 32
+    shares_location = 33
+    unrestricted_internet = 34
+    mild_blood = 35
+    mild_cartoon_violence = 36
+    mild_fantasy_violence = 37
+    mild_language = 38
+    mild_lyrics = 39
+    mild_sexual_themes = 40
+    mild_suggestive_themes = 41
+    mild_violence = 42
+    animated_violence = 43
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class PEGIContentDescriptor(Enum):
+    violence = 1
+    bad_language = 2
+    fear = 3
+    gambling = 4
+    sex = 5
+    drugs = 6
+    discrimination = 7
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class Distributor(Enum):
+    discord = 'discord'
+    steam = 'steam'
+    twitch = 'twitch'
+    uplay = 'uplay'
+    battle_net = 'battlenet'
+    origin = 'origin'
+    gog = 'gog'
+    epic_games = 'epic'
+    google_play = 'google_play'
+
+
+class EntitlementType(Enum):
+    purchase = 1
+    premium_subscription = 2
+    developer_gift = 3
+    test_mode_purchase = 4
+    free_purchase = 5
+    user_gift = 6
+    premium_purchase = 7
+    application_subscription = 8
+
+    def __int__(self) -> int:
         return self.value
 
 

@@ -23,10 +23,11 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional
 
 from .enums import ConnectionType, try_enum
 from .integrations import Integration
+from .metadata import Metadata
 from .utils import MISSING
 
 if TYPE_CHECKING:
@@ -38,7 +39,6 @@ if TYPE_CHECKING:
 __all__ = (
     'PartialConnection',
     'Connection',
-    'ConnectionMetadata',
 )
 
 
@@ -79,9 +79,13 @@ class PartialConnection:
         Whether the connection is verified.
     visible: :class:`bool`
         Whether the connection is visible on the user's profile.
+    metadata: Optional[:class:`Metadata`]
+        Various metadata about the connection.
+
+        The contents of this are always subject to change.
     """
 
-    __slots__ = ('id', 'name', 'type', 'verified', 'visible')
+    __slots__ = ('id', 'name', 'type', 'verified', 'visible', 'metadata')
 
     def __init__(self, data: PartialConnectionPayload):
         self._update(data)
@@ -111,6 +115,8 @@ class PartialConnection:
         self.type: ConnectionType = try_enum(ConnectionType, data['type'])
         self.verified: bool = data['verified']
         self.visible: bool = True  # If we have a partial connection, it's visible
+
+        self.metadata: Optional[Metadata] = Metadata(data['metadata']) if 'metadata' in data else None
 
     @property
     def url(self) -> Optional[str]:
@@ -174,7 +180,7 @@ class Connection(PartialConnection):
         Whether the connection is authorized both ways (i.e. it's both a connection and an authorization).
     metadata_visible: :class:`bool`
         Whether the connection's metadata is visible.
-    metadata: Optional[:class:`ConnectionMetadata`]
+    metadata: Optional[:class:`Metadata`]
         Various metadata about the connection.
 
         The contents of this are always subject to change.
@@ -191,7 +197,6 @@ class Connection(PartialConnection):
         'show_activity',
         'two_way_link',
         'metadata_visible',
-        'metadata',
         'access_token',
         'integrations',
     )
@@ -209,7 +214,6 @@ class Connection(PartialConnection):
         self.show_activity: bool = data.get('show_activity', True)
         self.two_way_link: bool = data.get('two_way_link', False)
         self.metadata_visible: bool = bool(data.get('metadata_visibility', False))
-        self.metadata: Optional[ConnectionMetadata] = ConnectionMetadata(data['metadata']) if 'metadata' in data else None
 
         # Only sometimes in the payload
         try:
@@ -328,66 +332,3 @@ class Connection(PartialConnection):
         """
         data = await self._state.http.get_connection_token(self.type.value, self.id)
         return data['access_token']
-
-
-class ConnectionMetadata:
-    """Represents a connection's metadata.
-
-    Because of how unstable and wildly varying this metadata can be, this is a simple class that just
-    provides access ro the raw data using dot notation. This means if an attribute is not present,
-    ``None`` will be returned instead of raising an AttributeError.
-
-    .. versionadded:: 2.0
-
-    .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two metadata objects are equal.
-
-        .. describe:: x != y
-
-            Checks if two metadata objects are not equal.
-
-        .. describe:: x[key]
-
-            Returns a metadata value if it is found, otherwise raises a :exc:`KeyError`.
-
-        .. describe:: key in x
-
-            Checks if a metadata value is present.
-
-        .. describe:: iter(x)
-            Returns an iterator of ``(field, value)`` pairs. This allows this class
-            to be used as an iterable in list/dict/etc constructions.
-    """
-
-    __slots__ = ()
-
-    def __init__(self, data: Optional[dict]) -> None:
-        self.__dict__.update(data or {})
-
-    def __repr__(self) -> str:
-        return f'<ConnectionMetadata {" ".join(f"{k}={v!r}" for k, v in self.__dict__.items())}>'
-
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, ConnectionMetadata):
-            return False
-        return self.__dict__ == other.__dict__
-
-    def __ne__(self, other: object) -> bool:
-        if not isinstance(other, ConnectionMetadata):
-            return True
-        return self.__dict__ != other.__dict__
-
-    def __iter__(self) -> Iterator[Tuple[str, Any]]:
-        yield from self.__dict__.items()
-
-    def __getitem__(self, key: str) -> Any:
-        return self.__dict__[key]
-
-    def __getattr__(self, attr: str) -> Any:
-        return None
-
-    def __contains__(self, key: str) -> bool:
-        return key in self.__dict__
