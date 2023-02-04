@@ -244,6 +244,11 @@ class Client:
         set to is ``30.0`` seconds.
 
         .. versionadded:: 2.0
+    ignore_pynacl_warning: :class:`bool`
+        An option to not log the PyNaCl warning. This is useful if you don't want to install 
+        the library just to silence the error and not for voice support. Defaults to ``False``.
+
+        .. versionadded:: 2.1
 
     Attributes
     -----------
@@ -292,7 +297,9 @@ class Client:
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
-            _log.warning("PyNaCl is not installed, voice will NOT be supported")
+            ignore_pynacl_warning: bool = options.pop('ignore_pynacl_warning', False)
+            if not ignore_pynacl_warning:
+              _log.warning("PyNaCl is not installed, voice will NOT be supported")
 
     async def __aenter__(self) -> Self:
         await self._async_setup_hook()
