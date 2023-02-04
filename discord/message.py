@@ -1991,7 +1991,7 @@ class Message(PartialMessage, Hashable):
         limit: Optional[int] = None,
         command_ids: Optional[List[int]] = None,
         application: Optional[Snowflake] = None,
-        include_applications: bool = True,
+        with_applications: bool = True,
     ) -> AsyncIterator[MessageCommand]:
         """Returns a :term:`asynchronous iterator` of the message commands available to use on the message.
 
@@ -2028,7 +2028,7 @@ class Message(PartialMessage, Hashable):
             This means that the endpoint will return the found commands + up to ``limit`` more, if available.
         application: Optional[:class:`~discord.abc.Snowflake`]
             Whether to return this application's commands. Always set to DM recipient in a private channel context.
-        include_applications: :class:`bool`
+        with_applications: :class:`bool`
             Whether to include applications in the response. Defaults to ``True``.
 
         Raises
@@ -2057,6 +2057,6 @@ class Message(PartialMessage, Hashable):
             limit=limit,
             command_ids=command_ids,
             application=application,
-            include_applications=include_applications,
+            with_applications=with_applications,
             target=self,
         )

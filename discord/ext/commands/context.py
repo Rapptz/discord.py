@@ -419,8 +419,8 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         limit: Optional[int] = None,
         command_ids: Optional[List[int]] = None,
         application: Optional[discord.abc.Snowflake] = None,
-        include_applications: bool = True,
+        with_applications: bool = True,
     ) -> AsyncIterator[MessageCommand]:
         return self.message.message_commands(
-            query, limit=limit, command_ids=command_ids, include_applications=include_applications, application=application
+            query, limit=limit, command_ids=command_ids, with_applications=with_applications, application=application
         )

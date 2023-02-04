@@ -155,7 +155,7 @@ def _handle_commands(
     limit: Optional[int] = ...,
     command_ids: Optional[List[int]] = ...,
     application: Optional[Snowflake] = ...,
-    include_applications: bool = ...,
+    with_applications: bool = ...,
     target: Optional[Snowflake] = ...,
 ) -> AsyncIterator[SlashCommand]:
     ...
@@ -170,7 +170,7 @@ def _handle_commands(
     limit: Optional[int] = ...,
     command_ids: Optional[List[int]] = ...,
     application: Optional[Snowflake] = ...,
-    include_applications: bool = ...,
+    with_applications: bool = ...,
     target: Optional[Snowflake] = ...,
 ) -> AsyncIterator[UserCommand]:
     ...
@@ -185,7 +185,7 @@ def _handle_commands(
     limit: Optional[int] = ...,
     command_ids: Optional[List[int]] = ...,
     application: Optional[Snowflake] = ...,
-    include_applications: bool = ...,
+    with_applications: bool = ...,
     target: Optional[Snowflake] = ...,
 ) -> AsyncIterator[MessageCommand]:
     ...
@@ -199,7 +199,7 @@ async def _handle_commands(
     limit: Optional[int] = None,
     command_ids: Optional[List[int]] = None,
     application: Optional[Snowflake] = None,
-    include_applications: bool = True,
+    with_applications: bool = True,
     target: Optional[Snowflake] = None,
 ) -> AsyncIterator[BaseCommand]:
     if limit is not None and limit < 0:
@@ -240,7 +240,7 @@ async def _handle_commands(
             query=query if not command_ids and not application_id else None,
             command_ids=command_ids if not application_id and not cursor else None,  # type: ignore
             application_id=application_id,
-            include_applications=include_applications if (not application_id or include_applications) else None,
+            include_applications=with_applications if (not application_id or with_applications) else None,
             cursor=cursor,
         )
         prev_cursor = cursor
@@ -1868,7 +1868,7 @@ class Messageable:
         limit: Optional[int] = None,
         command_ids: Optional[List[int]] = None,
         application: Optional[Snowflake] = None,
-        include_applications: bool = True,
+        with_applications: bool = True,
     ) -> AsyncIterator[SlashCommand]:
         """Returns a :term:`asynchronous iterator` of the slash commands available in the channel.
 
@@ -1905,7 +1905,7 @@ class Messageable:
             This means that the endpoint will return the found commands + up to ``limit`` more, if available.
         application: Optional[:class:`~discord.abc.Snowflake`]
             Whether to return this application's commands. Always set to DM recipient in a private channel context.
-        include_applications: :class:`bool`
+        with_applications: :class:`bool`
             Whether to include applications in the response. Defaults to ``True``.
 
         Raises
@@ -1934,7 +1934,7 @@ class Messageable:
             limit=limit,
             command_ids=command_ids,
             application=application,
-            include_applications=include_applications,
+            with_applications=with_applications,
         )
 
     def user_commands(
@@ -1944,7 +1944,7 @@ class Messageable:
         limit: Optional[int] = None,
         command_ids: Optional[List[int]] = None,
         application: Optional[Snowflake] = None,
-        include_applications: bool = True,
+        with_applications: bool = True,
     ) -> AsyncIterator[UserCommand]:
         """Returns a :term:`asynchronous iterator` of the user commands available to use on the user.
 
@@ -1981,7 +1981,7 @@ class Messageable:
             This means that the endpoint will return the found commands + up to ``limit`` more, if available.
         application: Optional[:class:`~discord.abc.Snowflake`]
             Whether to return this application's commands. Always set to DM recipient in a private channel context.
-        include_applications: :class:`bool`
+        with_applications: :class:`bool`
             Whether to include applications in the response. Defaults to ``True``.
 
         Raises
@@ -2010,7 +2010,7 @@ class Messageable:
             limit=limit,
             command_ids=command_ids,
             application=application,
-            include_applications=include_applications,
+            with_applications=with_applications,
         )
 
 
