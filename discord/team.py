@@ -441,6 +441,25 @@ class Team(Hashable):
             for payout in data:
                 yield TeamPayout(data=payout, team=self)
 
+    async def leave(self) -> None:
+        """|coro|
+
+        Leaves the team.
+
+        .. note::
+
+            You cannot leave a team that you own, you must delete it instead
+            via :meth:`delete`.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to leave the team.
+        HTTPException
+            Leaving the team failed.
+        """
+        await self._state.http.remove_team_member(self.id, self._state.self_id)  # type: ignore
+
     async def delete(self) -> None:
         """|coro|
 
