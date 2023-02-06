@@ -331,10 +331,19 @@ class Interaction(Generic[ClientT]):
     def expires_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the interaction expires."""
         return self.created_at + datetime.timedelta(minutes=15)
-
+    
+    @property
+    def initial_expires_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: When the interaction's initial response expires."""
+        return self.created_at + datetime.timedelta(seconds=3)
+    
     def is_expired(self) -> bool:
         """:class:`bool`: Returns ``True`` if the interaction is expired."""
         return utils.utcnow() >= self.expires_at
+
+    def is_initial_expired(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the interaction's initial response is expired."""
+        return utils.utcnow() >= self.initial_expires_at
 
     async def original_response(self) -> InteractionMessage:
         """|coro|
