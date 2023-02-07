@@ -185,6 +185,7 @@ class BotBase(GroupMixin[None]):
         self.owner_id: Optional[int] = options.get('owner_id')
         self.owner_ids: Optional[Collection[int]] = options.get('owner_ids', set())
         self.strip_after_prefix: bool = options.get('strip_after_prefix', False)
+        self.warn_message_content: bool = options.get('warn_message_content', True)
 
         if self.owner_id and self.owner_ids:
             raise TypeError('Both owner_id and owner_ids are set.')
@@ -212,7 +213,7 @@ class BotBase(GroupMixin[None]):
                 (callable(prefix) and prefix is not when_mentioned)
                 or isinstance(prefix, str)
                 or (isinstance(prefix, collections.abc.Iterable) and len(list(prefix)) >= 1)
-            )
+            ) and self.warn_message_content
             if trigger_warning:
                 _log.warning('Privileged message content intent is missing, commands may not work as expected.')
 
@@ -1479,6 +1480,11 @@ class Bot(BotBase, discord.Client):
         The type of application command tree to use. Defaults to :class:`~discord.app_commands.CommandTree`.
 
         .. versionadded:: 2.0
+        
+    warn_message_content: :class:`bool`
+        Whether to show the missing message_content warning. Defaults to ``True``.
+        
+        .. versionadded:: 2.2
     """
 
     pass
