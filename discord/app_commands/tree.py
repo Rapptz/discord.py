@@ -330,6 +330,7 @@ class CommandTree(Generic[ClientT]):
                 if total + to_add > 5:
                     raise CommandLimitReached(guild_id=guild_id, limit=5, type=AppCommandType(type))
                 data[key] = command
+                command.tree = self
 
             if guild_ids is None:
                 _context_menu_add_helper(None, self._context_menus)
@@ -367,6 +368,7 @@ class CommandTree(Generic[ClientT]):
             for guild_id in guild_ids:
                 commands = self._guild_commands.setdefault(guild_id, {})
                 commands[name] = root
+                command.tree = self
         else:
             found = name in self._global_commands
             if found and not override:
@@ -376,6 +378,7 @@ class CommandTree(Generic[ClientT]):
             if len(self._global_commands) + to_add > 100:
                 raise CommandLimitReached(guild_id=None, limit=100)
             self._global_commands[name] = root
+            command.tree = self
 
     @overload
     def remove_command(
@@ -443,6 +446,7 @@ class CommandTree(Generic[ClientT]):
 
         if type is AppCommandType.chat_input:
             if guild is None:
+                command.tree = None
                 return self._global_commands.pop(command, None)
             else:
                 try:
@@ -450,10 +454,12 @@ class CommandTree(Generic[ClientT]):
                 except KeyError:
                     return None
                 else:
+                    command.tree = None
                     return commands.pop(command, None)
         elif type in (AppCommandType.user, AppCommandType.message):
             guild_id = None if guild is None else guild.id
             key = (command, guild_id, type.value)
+            command.tree = None
             return self._context_menus.pop(key, None)
 
     def clear_commands(self, *, guild: Optional[Snowflake], type: Optional[AppCommandType] = None) -> None:
