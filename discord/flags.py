@@ -434,6 +434,22 @@ class MessageFlags(BaseFlags):
         """
         return 256
 
+    @flag_value
+    def suppress_notifications(self):
+        """:class:`bool`: Returns ``True`` if the message will not trigger push and desktop notifications.
+
+        .. versionadded:: 2.2
+        """
+        return 4096
+
+    @alias_flag_value
+    def silent(self):
+        """:class:`bool`: Alias for :attr:`suppress_notifications`.
+
+        .. versionadded:: 2.2
+        """
+        return 4096
+
 
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):

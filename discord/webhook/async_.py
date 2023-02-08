@@ -1535,6 +1535,7 @@ class Webhook(BaseWebhook):
         thread_name: str = MISSING,
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
+        silent: bool = MISSING,
     ) -> WebhookMessage:
         ...
 
@@ -1557,6 +1558,7 @@ class Webhook(BaseWebhook):
         thread_name: str = MISSING,
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
+        silent: bool = MISSING,
     ) -> None:
         ...
 
@@ -1578,6 +1580,7 @@ class Webhook(BaseWebhook):
         thread_name: str = MISSING,
         wait: bool = False,
         suppress_embeds: bool = False,
+        silent: bool = False,
     ) -> Optional[WebhookMessage]:
         """|coro|
 
@@ -1658,6 +1661,11 @@ class Webhook(BaseWebhook):
             Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
 
             .. versionadded:: 2.0
+        silent: :class:`bool`
+            Whether to suppress push and desktop notifications for the message. This will increment the mention counter
+            in the UI, but will not actually send a notification.
+
+            .. versionadded:: 2.2
 
         Raises
         --------
@@ -1688,10 +1696,11 @@ class Webhook(BaseWebhook):
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         if content is None:
             content = MISSING
-        if ephemeral or suppress_embeds:
+        if ephemeral or suppress_embeds or silent:
             flags = MessageFlags._from_value(0)
             flags.ephemeral = ephemeral
             flags.suppress_embeds = suppress_embeds
+            flags.suppress_notifications = silent
         else:
             flags = MISSING
 

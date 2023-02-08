@@ -690,6 +690,7 @@ class InteractionResponse(Generic[ClientT]):
         ephemeral: bool = False,
         allowed_mentions: AllowedMentions = MISSING,
         suppress_embeds: bool = False,
+        silent: bool = False,
         delete_after: Optional[float] = None,
     ) -> None:
         """|coro|
@@ -723,6 +724,11 @@ class InteractionResponse(Generic[ClientT]):
             more information.
         suppress_embeds: :class:`bool`
             Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+        silent: :class:`bool`
+            Whether to suppress push and desktop notifications for the message. This will increment the mention counter
+            in the UI, but will not actually send a notification.
+
+            .. versionadded:: 2.2
         delete_after: :class:`float`
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
@@ -744,10 +750,11 @@ class InteractionResponse(Generic[ClientT]):
         if self._response_type:
             raise InteractionResponded(self._parent)
 
-        if ephemeral or suppress_embeds:
+        if ephemeral or suppress_embeds or silent:
             flags = MessageFlags._from_value(0)
             flags.ephemeral = ephemeral
             flags.suppress_embeds = suppress_embeds
+            flags.suppress_notifications = silent
         else:
             flags = MISSING
 
