@@ -58,6 +58,7 @@ from ..user import User
 from ..member import Member
 from ..permissions import Permissions
 from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all
+from .tree import CommandTree
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate
@@ -646,6 +647,11 @@ class Command(Generic[GroupT, P, T]):
     extras: :class:`dict`
         A dictionary that can be used to store extraneous data.
         The library will not touch any values or keys within this dictionary.
+    tree: :class:`~discord.app_commands.CommandTree`:
+        The command tree registered with this command. ``None`` if not added
+        or removed. Using multiple command trees can overwrite this attribute.
+      
+    .. versionadded:: 2.2
     """
 
     def __init__(
@@ -693,6 +699,7 @@ class Command(Generic[GroupT, P, T]):
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
         self.nsfw: bool = nsfw
         self.extras: Dict[Any, Any] = extras or {}
+        self.tree: CommandTree = None
 
         if self._guild_ids is not None and self.parent is not None:
             raise ValueError('child commands cannot have default guilds set, consider setting them in the parent instead')
