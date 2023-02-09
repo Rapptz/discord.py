@@ -818,6 +818,9 @@ class AuditLogEntry(Hashable):
         target = self._get_integration_by_app_id(target_id) or self._get_app_command(target_id)
         if not target:
             try:
+                # circular import
+                from .app_commands import AppCommand
+
                 # get application id from extras
                 # if it matches target id, type should be integration
                 target_app = self.extra
