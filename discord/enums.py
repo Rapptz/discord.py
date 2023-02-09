@@ -536,7 +536,7 @@ class StickerFormatType(Enum):
             StickerFormatType.lottie: 'json',
         }
         # fmt: on
-        return lookup[self]
+        return lookup.get(self, 'png')
 
 
 class InviteTarget(Enum):
