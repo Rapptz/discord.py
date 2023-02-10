@@ -62,6 +62,7 @@ if TYPE_CHECKING:
     from types import TracebackType
 
     from ..embeds import Embed
+    from ..client import Client
     from ..mentions import AllowedMentions
     from ..message import Attachment
     from ..state import ConnectionState
@@ -1161,7 +1162,15 @@ class Webhook(BaseWebhook):
         return f'https://discord.com/api/webhooks/{self.id}/{self.token}'
 
     @classmethod
-    def partial(cls, id: int, token: str, *, session: aiohttp.ClientSession, bot_token: Optional[str] = None) -> Self:
+    def partial(
+        cls,
+        id: int,
+        token: str,
+        *,
+        session: aiohttp.ClientSession = MISSING,
+        client: Client = MISSING,
+        bot_token: Optional[str] = None,
+    ) -> Self:
         """Creates a partial :class:`Webhook`.
 
         Parameters
@@ -1176,11 +1185,22 @@ class Webhook(BaseWebhook):
             will not close it.
 
             .. versionadded:: 2.0
+        client: :class:`Client`
+            The client to initialise this webhook with. This allows it to
+            attach the client's internal state. If ``session`` is not given
+            while this is given then the client's internal session will be used.
+
+            .. versionadded:: 2.2
         bot_token: Optional[:class:`str`]
             The bot authentication token for authenticated requests
             involving the webhook.
 
             .. versionadded:: 2.0
+
+        Raises
+        -------
+        TypeError
+            Neither ``session`` nor ``client`` were given.
 
         Returns
         --------
@@ -1194,10 +1214,26 @@ class Webhook(BaseWebhook):
             'token': token,
         }
 
-        return cls(data, session, token=bot_token)
+        state = None
+        if client is not MISSING:
+            state = client._connection
+            if session is MISSING:
+                session = client.http._HTTPClient__session  # type: ignore
+
+        if session is MISSING:
+            raise TypeError('session or client must be given')
+
+        return cls(data, session, token=bot_token, state=state)
 
     @classmethod
-    def from_url(cls, url: str, *, session: aiohttp.ClientSession, bot_token: Optional[str] = None) -> Self:
+    def from_url(
+        cls,
+        url: str,
+        *,
+        session: aiohttp.ClientSession = MISSING,
+        client: Client = MISSING,
+        bot_token: Optional[str] = None,
+    ) -> Self:
         """Creates a partial :class:`Webhook` from a webhook URL.
 
         .. versionchanged:: 2.0
@@ -1214,6 +1250,12 @@ class Webhook(BaseWebhook):
             will not close it.
 
             .. versionadded:: 2.0
+        client: :class:`Client`
+            The client to initialise this webhook with. This allows it to
+            attach the client's internal state. If ``session`` is not given
+            while this is given then the client's internal session will be used.
+
+            .. versionadded:: 2.2
         bot_token: Optional[:class:`str`]
             The bot authentication token for authenticated requests
             involving the webhook.
@@ -1224,6 +1266,8 @@ class Webhook(BaseWebhook):
         -------
         ValueError
             The URL is invalid.
+        TypeError
+            Neither ``session`` nor ``client`` were given.
 
         Returns
         --------
@@ -1235,9 +1279,18 @@ class Webhook(BaseWebhook):
         if m is None:
             raise ValueError('Invalid webhook URL given.')
 
+        state = None
+        if client is not MISSING:
+            state = client._connection
+            if session is MISSING:
+                session = client.http._HTTPClient__session  # type: ignore
+
+        if session is MISSING:
+            raise TypeError('session or client must be given')
+
         data: Dict[str, Any] = m.groupdict()
         data['type'] = 1
-        return cls(data, session, token=bot_token)  # type: ignore
+        return cls(data, session, token=bot_token, state=state)  # type: ignore  # Casting dict[str, Any] to WebhookPayload
 
     @classmethod
     def _as_follower(cls, data, *, channel, user) -> Self:
