@@ -397,5 +397,21 @@ class Colour:
         """
         return cls(0xFEE75C)
 
+    @classmethod
+    def dark_embed(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0x2F3136``.
+
+        .. versionadded:: 2.2
+        """
+        return cls(0x2F3136)
+
+    @classmethod
+    def light_embed(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0xF2F3F5``.
+
+        .. versionadded:: 2.2
+        """
+        return cls(0xF2F3F5)
+
 
 Color = Colour
