@@ -156,8 +156,8 @@ class View:
     __discord_ui_modal__: ClassVar[bool] = False
     __view_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
 
-    def __init_subclass__(cls, **kwargs: Any) -> None:
-        super().__init_subclass__(**kwargs)
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
 
         children: Dict[str, ItemCallbackType[Any, Any]] = {}
         for base in reversed(cls.__mro__):
