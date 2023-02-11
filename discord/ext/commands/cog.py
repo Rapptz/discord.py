@@ -338,7 +338,7 @@ class Cog(metaclass=CogMeta):
                 app_command: Optional[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = getattr(
                     command, 'app_command', None
                 )
-                if app_command is not None:
+                if app_command:
                     group_parent = self.__cog_app_commands_group__
                     app_command = app_command._copy_with(parent=group_parent, binding=self)
                     # The type checker does not see the app_command attribute even though it exists
