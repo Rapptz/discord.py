@@ -2674,6 +2674,20 @@ class ConnectionState:
     def create_message(self, *, channel: MessageableChannel, data: MessagePayload) -> Message:
         return Message(state=self, channel=channel, data=data)
 
+    def _update_message_references(self) -> None:
+        # self._messages won't be None when this is called
+        for msg in self._messages:  # type: ignore
+            if not msg.guild:
+                continue
+
+            new_guild = self._get_guild(msg.guild.id)
+            if new_guild is not None and new_guild is not msg.guild:
+                channel_id = msg.channel.id
+                channel = new_guild._resolve_channel(channel_id) or PartialMessageable(
+                    state=self, id=channel_id, guild_id=new_guild.id
+                )
+                msg._rebind_cached_references(new_guild, channel)
+
     def create_integration_application(self, data: IntegrationApplicationPayload) -> IntegrationApplication:
         return IntegrationApplication(state=self, data=data)
 

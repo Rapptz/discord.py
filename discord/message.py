@@ -1646,9 +1646,13 @@ class Message(PartialMessage, Hashable):
     def _handle_interaction(self, data: MessageInteractionPayload):
         self.interaction = Interaction._from_message(self, **data)
 
-    def _rebind_cached_references(self, new_guild: Guild, new_channel: Union[TextChannel, Thread]) -> None:
+    def _rebind_cached_references(
+        self,
+        new_guild: Guild,
+        new_channel: Union[GuildChannel, Thread, PartialMessageable],
+    ) -> None:
         self.guild = new_guild
-        self.channel = new_channel
+        self.channel = new_channel  # type: ignore # Not all "GuildChannel" are messageable at the moment
 
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self) -> List[int]:
