@@ -401,6 +401,7 @@ class HTTPClient:
             'system_locale': 'en-US',
             'client_build_number': bn,
             'client_event_source': None,
+            'design_id': 0,
         }
         self.encoded_super_properties = b64encode(json.dumps(sp).encode()).decode('utf-8')
 
