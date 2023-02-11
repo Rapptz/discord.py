@@ -97,7 +97,6 @@ if TYPE_CHECKING:
     from .abc import GuildChannel, MessageableChannel
     from .components import ActionRow, ActionRowChildComponentType
     from .state import ConnectionState
-    from .channel import TextChannel
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
