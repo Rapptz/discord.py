@@ -592,6 +592,8 @@ class Cog(metaclass=CogMeta):
 
         This function **can** be a coroutine and must take a sole parameter,
         ``interaction``, to represent the :class:`~discord.Interaction`.
+
+        .. versionadded:: 2.0
         """
         return True
 
