@@ -157,6 +157,8 @@ class View:
     __view_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
 
     def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+
         children: Dict[str, ItemCallbackType[Any, Any]] = {}
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
