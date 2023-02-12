@@ -1,6 +1,9 @@
+# This example requires the 'message_content' privileged intent to function.
+
 import discord
 import random
 import asyncio
+
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -30,5 +33,9 @@ class MyClient(discord.Client):
             else:
                 await message.channel.send(f'Oops. It is actually {answer}.')
 
-client = MyClient()
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = MyClient(intents=intents)
 client.run('token')

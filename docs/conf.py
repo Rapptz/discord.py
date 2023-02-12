@@ -51,13 +51,14 @@ autodoc_typehints = 'none'
 
 extlinks = {
     'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),
+    'ddocs': ('https://discord.com/developers/docs/%s', None),
 }
 
 # Links used for cross-referencing stuff in other documentation
 intersphinx_mapping = {
   'py': ('https://docs.python.org/3', None),
   'aio': ('https://docs.aiohttp.org/en/stable/', None),
-  'req': ('https://docs.python-requests.org/en/latest/', None)
+  'req': ('https://requests.readthedocs.io/en/latest/', None)
 }
 
 rst_prolog = """
@@ -147,6 +148,7 @@ pygments_style = 'friendly'
 # Nitpicky mode options
 nitpick_ignore_files = [
   "migrating_to_async",
+  "migrating_to_v1",
   "migrating",
   "whats_new",
 ]

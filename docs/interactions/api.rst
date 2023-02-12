@@ -7,7 +7,7 @@ Interactions API Reference
 
 The following section outlines the API of interactions, as implemented by the library.
 
-For documentation about the rest of the library, check :doc:`api`.
+For documentation about the rest of the library, check :doc:`/api`.
 
 Models
 --------
@@ -36,6 +36,15 @@ InteractionMessage
 .. attributetable:: InteractionMessage
 
 .. autoclass:: InteractionMessage()
+    :members:
+    :inherited-members:
+
+MessageInteraction
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MessageInteraction
+
+.. autoclass:: MessageInteraction()
     :members:
 
 Component
@@ -114,12 +123,36 @@ AppCommandThread
 .. autoclass:: discord.app_commands.AppCommandThread()
     :members:
 
+AppCommandPermissions
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: discord.app_commands.AppCommandPermissions
+
+.. autoclass:: discord.app_commands.AppCommandPermissions()
+    :members:
+
+GuildAppCommandPermissions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: discord.app_commands.GuildAppCommandPermissions
+
+.. autoclass:: discord.app_commands.GuildAppCommandPermissions()
+    :members:
+
 Argument
 ~~~~~~~~~~
 
 .. attributetable:: discord.app_commands.Argument
 
 .. autoclass:: discord.app_commands.Argument()
+    :members:
+
+AllChannels
+~~~~~~~~~~~~
+
+.. attributetable:: discord.app_commands.AllChannels
+
+.. autoclass:: discord.app_commands.AllChannels()
     :members:
 
 Data Classes
@@ -221,16 +254,34 @@ Enumerations
     .. attribute:: action_row
 
         Represents the group component which holds different components in a row.
+
     .. attribute:: button
 
         Represents a button component.
-    .. attribute:: select
-
-        Represents a select component.
 
     .. attribute:: text_input
 
         Represents a text box component.
+
+    .. attribute:: select
+
+        Represents a select component.
+
+    .. attribute:: string_select
+
+        An alias to :attr:`select`. Represents a default select component.
+
+    .. attribute:: user_select
+
+        Represents a user select component.
+
+    .. attribute:: role_select
+
+        Represents a role select component.
+
+    .. attribute:: mentionable_select
+
+        Represents a select in which both users and roles can be selected.
 
 .. class:: ButtonStyle
 
@@ -345,12 +396,28 @@ Enumerations
 
         A message context menu command.
 
+.. class:: AppCommandPermissionType
+
+    The application command's permission type.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: role
+
+        The permission is for a role.
+    .. attribute:: channel
+
+        The permission is for one or all channels.
+    .. attribute:: user
+
+        The permission is for a user.
+
 .. _discord_ui_kit:
 
 Bot UI Kit
 -------------
 
-The library has helpers to aid create component-based UIs. These are all in the ``discord.ui`` package.
+The library has helpers to aid in creating component-based UIs. These are all in the ``discord.ui`` package.
 
 
 View
@@ -368,6 +435,7 @@ Modal
 
 .. autoclass:: discord.ui.Modal
     :members:
+    :inherited-members:
 
 Item
 ~~~~~~~
@@ -387,9 +455,15 @@ Button
     :inherited-members:
 
 .. autofunction:: discord.ui.button
+    :decorator:
+
+Select Menus
+~~~~~~~~~~~~~
+
+The library provides classes to help create the different types of select menus.
 
 Select
-~~~~~~~
++++++++
 
 .. attributetable:: discord.ui.Select
 
@@ -397,10 +471,50 @@ Select
     :members:
     :inherited-members:
 
+ChannelSelect
+++++++++++++++
+
+.. attributetable:: discord.ui.ChannelSelect
+
+.. autoclass:: discord.ui.ChannelSelect
+    :members:
+    :inherited-members:
+
+RoleSelect
+++++++++++
+
+.. attributetable:: discord.ui.RoleSelect
+
+.. autoclass:: discord.ui.RoleSelect
+    :members:
+    :inherited-members:
+
+MentionableSelect
+++++++++++++++++++
+
+.. attributetable:: discord.ui.MentionableSelect
+
+.. autoclass:: discord.ui.MentionableSelect
+    :members:
+    :inherited-members:
+
+UserSelect
++++++++++++
+
+.. attributetable:: discord.ui.UserSelect
+
+.. autoclass:: discord.ui.UserSelect
+    :members:
+    :inherited-members:
+
+select
++++++++
 .. autofunction:: discord.ui.select
+    :decorator:
+
 
 TextInput
-~~~~~~~~~~
+~~~~~~~~~~~
 
 .. attributetable:: discord.ui.TextInput
 
@@ -422,6 +536,16 @@ CommandTree
 
 .. autoclass:: discord.app_commands.CommandTree
     :members:
+    :exclude-members: error, command, context_menu
+
+    .. automethod:: CommandTree.command(*, name=..., description=..., nsfw=False, guild=..., guilds=..., auto_locale_strings=True, extras=...)
+        :decorator:
+
+    .. automethod:: CommandTree.context_menu(*, name=..., nsfw=False, guild=..., guilds=..., auto_locale_strings=True, extras=...)
+        :decorator:
+
+    .. automethod:: CommandTree.error(coro)
+        :decorator:
 
 Commands
 ~~~~~~~~~
@@ -433,6 +557,21 @@ Command
 
 .. autoclass:: discord.app_commands.Command
     :members:
+    :exclude-members: error, autocomplete
+
+    .. automethod:: Command.autocomplete(name)
+        :decorator:
+
+    .. automethod:: Command.error(coro)
+        :decorator:
+
+Parameter
+++++++++++
+
+.. attributetable:: discord.app_commands.Parameter
+
+.. autoclass:: discord.app_commands.Parameter()
+    :members:
 
 ContextMenu
 ++++++++++++
@@ -441,6 +580,10 @@ ContextMenu
 
 .. autoclass:: discord.app_commands.ContextMenu
     :members:
+    :exclude-members: error
+
+    .. automethod:: ContextMenu.error(coro)
+        :decorator:
 
 Group
 ++++++
@@ -449,9 +592,16 @@ Group
 
 .. autoclass:: discord.app_commands.Group
     :members:
+    :exclude-members: error, command
+
+    .. automethod:: Group.command(*, name=..., description=..., nsfw=False, auto_locale_strings=True, extras=...)
+        :decorator:
+
+    .. automethod:: Group.error(coro)
+        :decorator:
 
 Decorators
-+++++++++++
+~~~~~~~~~~~
 
 .. autofunction:: discord.app_commands.command
     :decorator:
@@ -462,8 +612,56 @@ Decorators
 .. autofunction:: discord.app_commands.describe
     :decorator:
 
+.. autofunction:: discord.app_commands.rename
+    :decorator:
+
 .. autofunction:: discord.app_commands.choices
     :decorator:
+
+.. autofunction:: discord.app_commands.autocomplete
+    :decorator:
+
+.. autofunction:: discord.app_commands.guilds
+    :decorator:
+
+.. autofunction:: discord.app_commands.guild_only
+    :decorator:
+
+.. autofunction:: discord.app_commands.default_permissions
+    :decorator:
+
+Checks
+~~~~~~~
+
+.. autofunction:: discord.app_commands.check
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.has_role
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.has_any_role
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.has_permissions
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.bot_has_permissions
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.cooldown
+    :decorator:
+
+.. autofunction:: discord.app_commands.checks.dynamic_cooldown
+    :decorator:
+
+Cooldown
+~~~~~~~~~
+
+.. attributetable:: discord.app_commands.Cooldown
+
+.. autoclass:: discord.app_commands.Cooldown
+    :members:
+
 
 Namespace
 ~~~~~~~~~~
@@ -500,6 +698,70 @@ Range
 .. autoclass:: discord.app_commands.Range
     :members:
 
+Translations
+~~~~~~~~~~~~~
+
+Translator
++++++++++++
+
+.. attributetable:: discord.app_commands.Translator
+
+.. autoclass:: discord.app_commands.Translator
+    :members:
+
+locale_str
++++++++++++
+
+.. attributetable:: discord.app_commands.locale_str
+
+.. autoclass:: discord.app_commands.locale_str
+    :members:
+
+TranslationContext
++++++++++++++++++++
+
+.. attributetable:: discord.app_commands.TranslationContext
+
+.. autoclass:: discord.app_commands.TranslationContext
+    :members:
+
+TranslationContextLocation
++++++++++++++++++++++++++++
+
+.. class:: TranslationContextLocation
+    :module: discord.app_commands
+
+    An enum representing the location context that the translation occurs in when requested for translation.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: command_name
+
+        The translation involved a command name.
+    .. attribute:: command_description
+
+        The translation involved a command description.
+
+    .. attribute:: group_name
+
+        The translation involved a group name.
+    .. attribute:: group_description
+
+        The translation involved a group description.
+    .. attribute:: parameter_name
+
+        The translation involved a parameter name.
+    .. attribute:: parameter_description
+
+        The translation involved a parameter description.
+    .. attribute:: choice_name
+
+        The translation involved a choice name.
+    .. attribute:: other
+
+        The translation involved something else entirely. This is useful for running
+        :meth:`Translator.translate` for custom usage.
+
 Exceptions
 ~~~~~~~~~~~
 
@@ -512,6 +774,33 @@ Exceptions
 .. autoexception:: discord.app_commands.TransformerError
     :members:
 
+.. autoexception:: discord.app_commands.TranslationError
+    :members:
+
+.. autoexception:: discord.app_commands.CheckFailure
+    :members:
+
+.. autoexception:: discord.app_commands.NoPrivateMessage
+    :members:
+
+.. autoexception:: discord.app_commands.MissingRole
+    :members:
+
+.. autoexception:: discord.app_commands.MissingAnyRole
+    :members:
+
+.. autoexception:: discord.app_commands.MissingPermissions
+    :members:
+
+.. autoexception:: discord.app_commands.BotMissingPermissions
+    :members:
+
+.. autoexception:: discord.app_commands.CommandOnCooldown
+    :members:
+
+.. autoexception:: discord.app_commands.CommandLimitReached
+    :members:
+
 .. autoexception:: discord.app_commands.CommandAlreadyRegistered
     :members:
 
@@ -521,8 +810,14 @@ Exceptions
 .. autoexception:: discord.app_commands.CommandNotFound
     :members:
 
+.. autoexception:: discord.app_commands.MissingApplicationID
+    :members:
+
+.. autoexception:: discord.app_commands.CommandSyncFailure
+    :members:
+
 Exception Hierarchy
-~~~~~~~~~~~~~~~~~~~~
+++++++++++++++++++++
 
 .. exception_hierarchy::
 
@@ -530,6 +825,19 @@ Exception Hierarchy
         - :exc:`~discord.app_commands.AppCommandError`
             - :exc:`~discord.app_commands.CommandInvokeError`
             - :exc:`~discord.app_commands.TransformerError`
+            - :exc:`~discord.app_commands.TranslationError`
+            - :exc:`~discord.app_commands.CheckFailure`
+                - :exc:`~discord.app_commands.NoPrivateMessage`
+                - :exc:`~discord.app_commands.MissingRole`
+                - :exc:`~discord.app_commands.MissingAnyRole`
+                - :exc:`~discord.app_commands.MissingPermissions`
+                - :exc:`~discord.app_commands.BotMissingPermissions`
+                - :exc:`~discord.app_commands.CommandOnCooldown`
+            - :exc:`~discord.app_commands.CommandLimitReached`
             - :exc:`~discord.app_commands.CommandAlreadyRegistered`
             - :exc:`~discord.app_commands.CommandSignatureMismatch`
             - :exc:`~discord.app_commands.CommandNotFound`
+            - :exc:`~discord.app_commands.MissingApplicationID`
+            - :exc:`~discord.app_commands.CommandSyncFailure`
+        - :exc:`~discord.HTTPException`
+            - :exc:`~discord.app_commands.CommandSyncFailure`

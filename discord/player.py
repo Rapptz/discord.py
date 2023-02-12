@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import threading
-import traceback
 import subprocess
 import audioop
 import asyncio
@@ -162,8 +161,10 @@ class FFmpegAudio(AudioSource):
         kwargs = {'stdout': subprocess.PIPE}
         kwargs.update(subprocess_kwargs)
 
-        self._process: subprocess.Popen = self._spawn_process(args, **kwargs)
-        self._stdout: IO[bytes] = self._process.stdout  # type: ignore - process stdout is explicitly set
+        # Ensure attribute is assigned even in the case of errors
+        self._process: subprocess.Popen = MISSING
+        self._process = self._spawn_process(args, **kwargs)
+        self._stdout: IO[bytes] = self._process.stdout  # type: ignore # process stdout is explicitly set
         self._stdin: Optional[IO[bytes]] = None
         self._pipe_thread: Optional[threading.Thread] = None
 
@@ -190,7 +191,7 @@ class FFmpegAudio(AudioSource):
         if proc is MISSING:
             return
 
-        _log.info('Preparing to terminate ffmpeg process %s.', proc.pid)
+        _log.debug('Preparing to terminate ffmpeg process %s.', proc.pid)
 
         try:
             proc.kill()
@@ -365,12 +366,11 @@ class FFmpegOpusAudio(FFmpegAudio):
         bitrate: Optional[int] = None,
         codec: Optional[str] = None,
         executable: str = 'ffmpeg',
-        pipe=False,
-        stderr=None,
-        before_options=None,
-        options=None,
+        pipe: bool = False,
+        stderr: Optional[IO[bytes]] = None,
+        before_options: Optional[str] = None,
+        options: Optional[str] = None,
     ) -> None:
-
         args = []
         subprocess_kwargs = {'stdin': subprocess.PIPE if pipe else subprocess.DEVNULL, 'stderr': stderr}
 
@@ -521,9 +521,9 @@ class FFmpegOpusAudio(FFmpegAudio):
             raise TypeError(f"Expected str or callable for parameter 'probe', not '{method.__class__.__name__}'")
 
         codec = bitrate = None
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         try:
-            codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))  # type: ignore
+            codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))
         except Exception:
             if not fallback:
                 _log.exception("Probe '%s' using '%s' failed", method, executable)
@@ -531,13 +531,13 @@ class FFmpegOpusAudio(FFmpegAudio):
 
             _log.exception("Probe '%s' using '%s' failed, trying fallback", method, executable)
             try:
-                codec, bitrate = await loop.run_in_executor(None, lambda: fallback(source, executable))  # type: ignore
+                codec, bitrate = await loop.run_in_executor(None, lambda: fallback(source, executable))
             except Exception:
                 _log.exception("Fallback probe using '%s' failed", executable)
             else:
-                _log.info("Fallback probe found codec=%s, bitrate=%s", codec, bitrate)
+                _log.debug("Fallback probe found codec=%s, bitrate=%s", codec, bitrate)
         else:
-            _log.info("Probe found codec=%s, bitrate=%s", codec, bitrate)
+            _log.debug("Probe found codec=%s, bitrate=%s", codec, bitrate)
         finally:
             return codec, bitrate
 
@@ -635,7 +635,13 @@ class PCMVolumeTransformer(AudioSource, Generic[AT]):
 class AudioPlayer(threading.Thread):
     DELAY: float = OpusEncoder.FRAME_LENGTH / 1000.0
 
-    def __init__(self, source: AudioSource, client: VoiceClient, *, after=None):
+    def __init__(
+        self,
+        source: AudioSource,
+        client: VoiceClient,
+        *,
+        after: Optional[Callable[[Optional[Exception]], Any]] = None,
+    ) -> None:
         threading.Thread.__init__(self)
         self.daemon: bool = True
         self.source: AudioSource = source
@@ -694,8 +700,8 @@ class AudioPlayer(threading.Thread):
             self._current_error = exc
             self.stop()
         finally:
-            self.source.cleanup()
             self._call_after()
+            self.source.cleanup()
 
     def _call_after(self) -> None:
         error = self._current_error
@@ -704,14 +710,10 @@ class AudioPlayer(threading.Thread):
             try:
                 self.after(error)
             except Exception as exc:
-                _log.exception('Calling the after function failed.')
                 exc.__context__ = error
-                traceback.print_exception(type(exc), exc, exc.__traceback__)
+                _log.exception('Calling the after function failed.', exc_info=exc)
         elif error:
-            msg = f'Exception in voice thread {self.name}'
-            _log.exception(msg, exc_info=error)
-            print(msg, file=sys.stderr)
-            traceback.print_exception(type(error), error, error.__traceback__)
+            _log.exception('Exception in voice thread %s', self.name, exc_info=error)
 
     def stop(self) -> None:
         self._end.set()
@@ -724,8 +726,8 @@ class AudioPlayer(threading.Thread):
             self._speak(SpeakingState.none)
 
     def resume(self, *, update_speaking: bool = True) -> None:
-        self.loops = 0
-        self._start = time.perf_counter()
+        self.loops: int = 0
+        self._start: float = time.perf_counter()
         self._resumed.set()
         if update_speaking:
             self._speak(SpeakingState.voice)
@@ -744,6 +746,6 @@ class AudioPlayer(threading.Thread):
 
     def _speak(self, speaking: SpeakingState) -> None:
         try:
-            asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.loop)
-        except Exception as e:
-            _log.info("Speaking call in player failed: %s", e)
+            asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.client.loop)
+        except Exception:
+            _log.exception("Speaking call in player failed")

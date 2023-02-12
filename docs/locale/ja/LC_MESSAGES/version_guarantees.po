@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-22 09:35-0400\n"
-"PO-Revision-Date: 2020-10-24 02:41\n"
+"POT-Creation-Date: 2023-01-24 11:01+0000\n"
+"PO-Revision-Date: 2023-01-30 13:38\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -66,14 +66,22 @@ msgid "Changing the behaviour of a function to fix a bug."
 msgstr "バグ修正のための関数の動作の変更。"
 
 #: ../../version_guarantees.rst:27
+msgid "Changes in the typing behaviour of the library"
+msgstr "ライブラリの型の動作の変更"
+
+#: ../../version_guarantees.rst:28
+msgid "Changes in the calling convention of functions that are primarily meant as callbacks"
+msgstr "主にコールバックとして使用される関数の呼び出し方法の変更"
+
+#: ../../version_guarantees.rst:29
 msgid "Changes in the documentation."
 msgstr "ドキュメントの変更。"
 
-#: ../../version_guarantees.rst:28
+#: ../../version_guarantees.rst:30
 msgid "Modifying the internal HTTP handling."
 msgstr "内部HTTP処理の変更。"
 
-#: ../../version_guarantees.rst:29
+#: ../../version_guarantees.rst:31
 msgid "Upgrading the dependencies to a new version, major or otherwise."
 msgstr "依存関係をメジャー、またはそれ以外の新しいバージョンへアップグレード。"
 

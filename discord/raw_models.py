@@ -24,7 +24,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import datetime
 from typing import TYPE_CHECKING, Optional, Set, List, Tuple, Union
+
+from .enums import ChannelType, try_enum
+from .utils import _get_as_snowflake
+from .app_commands import AppCommandPermissions
 
 if TYPE_CHECKING:
     from .types.gateway import (
@@ -36,10 +41,20 @@ if TYPE_CHECKING:
         MessageReactionRemoveEmojiEvent as ReactionClearEmojiEvent,
         MessageUpdateEvent,
         IntegrationDeleteEvent,
+        ThreadUpdateEvent,
+        ThreadDeleteEvent,
+        ThreadMembersUpdate,
+        TypingStartEvent,
+        GuildMemberRemoveEvent,
     )
+    from .types.command import GuildApplicationCommandPermissions
     from .message import Message
     from .partial_emoji import PartialEmoji
     from .member import Member
+    from .threads import Thread
+    from .user import User
+    from .state import ConnectionState
+    from .guild import Guild
 
     ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]
 
@@ -52,6 +67,12 @@ __all__ = (
     'RawReactionClearEvent',
     'RawReactionClearEmojiEvent',
     'RawIntegrationDeleteEvent',
+    'RawThreadUpdateEvent',
+    'RawThreadDeleteEvent',
+    'RawThreadMembersUpdate',
+    'RawTypingEvent',
+    'RawMemberRemoveEvent',
+    'RawAppCommandPermissionsUpdateEvent',
 )
 
 
@@ -135,7 +156,7 @@ class RawMessageUpdateEvent(_RawReprMixin):
         .. versionadded:: 1.7
 
     data: :class:`dict`
-        The raw data given by the `gateway <https://discord.com/developers/docs/topics/gateway#message-update>`_
+        The raw data given by the :ddocs:`gateway <topics/gateway#message-update>`
     cached_message: Optional[:class:`Message`]
         The cached message, if found in the internal message cache. Represents the message before
         it is modified by the data in :attr:`RawMessageUpdateEvent.data`.
@@ -172,7 +193,7 @@ class RawReactionActionEvent(_RawReprMixin):
     emoji: :class:`PartialEmoji`
         The custom or unicode emoji being used.
     member: Optional[:class:`Member`]
-        The member who added the reaction. Only available if `event_type` is `REACTION_ADD` and the reaction is inside a guild.
+        The member who added the reaction. Only available if ``event_type`` is ``REACTION_ADD`` and the reaction is inside a guild.
 
         .. versionadded:: 1.3
 
@@ -280,3 +301,169 @@ class RawIntegrationDeleteEvent(_RawReprMixin):
             self.application_id: Optional[int] = int(data['application_id'])
         except KeyError:
             self.application_id: Optional[int] = None
+
+
+class RawThreadUpdateEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_thread_update` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    thread_id: :class:`int`
+        The ID of the thread that was updated.
+    thread_type: :class:`discord.ChannelType`
+        The channel type of the updated thread.
+    guild_id: :class:`int`
+        The ID of the guild the thread is in.
+    parent_id: :class:`int`
+        The ID of the channel the thread belongs to.
+    data: :class:`dict`
+        The raw data given by the :ddocs:`gateway <topics/gateway#thread-update>`
+    thread: Optional[:class:`discord.Thread`]
+        The thread, if it could be found in the internal cache.
+    """
+
+    __slots__ = ('thread_id', 'thread_type', 'parent_id', 'guild_id', 'data', 'thread')
+
+    def __init__(self, data: ThreadUpdateEvent) -> None:
+        self.thread_id: int = int(data['id'])
+        self.thread_type: ChannelType = try_enum(ChannelType, data['type'])
+        self.guild_id: int = int(data['guild_id'])
+        self.parent_id: int = int(data['parent_id'])
+        self.data: ThreadUpdateEvent = data
+        self.thread: Optional[Thread] = None
+
+
+class RawThreadDeleteEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_thread_delete` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    thread_id: :class:`int`
+        The ID of the thread that was deleted.
+    thread_type: :class:`discord.ChannelType`
+        The channel type of the deleted thread.
+    guild_id: :class:`int`
+        The ID of the guild the thread was deleted in.
+    parent_id: :class:`int`
+        The ID of the channel the thread belonged to.
+    thread: Optional[:class:`discord.Thread`]
+        The thread, if it could be found in the internal cache.
+    """
+
+    __slots__ = ('thread_id', 'thread_type', 'parent_id', 'guild_id', 'thread')
+
+    def __init__(self, data: ThreadDeleteEvent) -> None:
+        self.thread_id: int = int(data['id'])
+        self.thread_type: ChannelType = try_enum(ChannelType, data['type'])
+        self.guild_id: int = int(data['guild_id'])
+        self.parent_id: int = int(data['parent_id'])
+        self.thread: Optional[Thread] = None
+
+
+class RawThreadMembersUpdate(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_thread_member_remove` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    thread_id: :class:`int`
+        The ID of the thread that was updated.
+    guild_id: :class:`int`
+        The ID of the guild the thread is in.
+    member_count: :class:`int`
+        The approximate number of members in the thread. This caps at 50.
+    data: :class:`dict`
+        The raw data given by the :ddocs:`gateway <topics/gateway#thread-members-update>`.
+    """
+
+    __slots__ = ('thread_id', 'guild_id', 'member_count', 'data')
+
+    def __init__(self, data: ThreadMembersUpdate) -> None:
+        self.thread_id: int = int(data['id'])
+        self.guild_id: int = int(data['guild_id'])
+        self.member_count: int = int(data['member_count'])
+        self.data: ThreadMembersUpdate = data
+
+
+class RawTypingEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_typing` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    channel_id: :class:`int`
+        The ID of the channel the user started typing in.
+    user_id: :class:`int`
+        The ID of the user that started typing.
+    user: Optional[Union[:class:`discord.User`, :class:`discord.Member`]]
+        The user that started typing, if they could be found in the internal cache.
+    timestamp: :class:`datetime.datetime`
+        When the typing started as an aware datetime in UTC.
+    guild_id: Optional[:class:`int`]
+        The ID of the guild the user started typing in, if applicable.
+    """
+
+    __slots__ = ('channel_id', 'user_id', 'user', 'timestamp', 'guild_id')
+
+    def __init__(self, data: TypingStartEvent, /) -> None:
+        self.channel_id: int = int(data['channel_id'])
+        self.user_id: int = int(data['user_id'])
+        self.user: Optional[Union[User, Member]] = None
+        self.timestamp: datetime.datetime = datetime.datetime.fromtimestamp(data['timestamp'], tz=datetime.timezone.utc)
+        self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
+
+
+class RawMemberRemoveEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_member_remove` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    user: Union[:class:`discord.User`, :class:`discord.Member`]
+        The user that left the guild.
+    guild_id: :class:`int`
+        The ID of the guild the user left.
+    """
+
+    __slots__ = ('user', 'guild_id')
+
+    def __init__(self, data: GuildMemberRemoveEvent, user: User, /) -> None:
+        self.user: Union[User, Member] = user
+        self.guild_id: int = int(data['guild_id'])
+
+
+class RawAppCommandPermissionsUpdateEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_app_command_permissions_update` event.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    target_id: :class:`int`
+        The ID of the command or application whose permissions were updated.
+        When this is the application ID instead of a command ID, the permissions
+        apply to all commands that do not contain explicit overwrites.
+    application_id: :class:`int`
+        The ID of the application that the command belongs to.
+    guild: :class:`~discord.Guild`
+        The guild where the permissions were updated.
+    permissions: List[:class:`~discord.app_commands.AppCommandPermissions`]
+        List of new permissions for the app command.
+    """
+
+    __slots__ = ('target_id', 'application_id', 'guild', 'permissions')
+
+    def __init__(self, *, data: GuildApplicationCommandPermissions, state: ConnectionState):
+        self.target_id: int = int(data['id'])
+        self.application_id: int = int(data['application_id'])
+        self.guild: Guild = state._get_or_create_unavailable_guild(int(data['guild_id']))
+        self.permissions: List[AppCommandPermissions] = [
+            AppCommandPermissions(data=perm, guild=self.guild, state=state) for perm in data['permissions']
+        ]

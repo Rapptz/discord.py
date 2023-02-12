@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, Optional, Tuple, TypeVar
+from typing import TYPE_CHECKING, Literal, Optional, Tuple, TypeVar
 
 from ..components import TextInput as TextInputComponent
 from ..enums import ComponentType, TextStyle
@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     from ..types.components import TextInput as TextInputPayload
     from ..types.interactions import ModalSubmitTextInputInteractionData as ModalSubmitTextInputInteractionDataPayload
     from .view import View
+    from ..interactions import Interaction
 
 
 # fmt: off
@@ -51,6 +52,12 @@ V = TypeVar('V', bound='View', covariant=True)
 
 class TextInput(Item[V]):
     """Represents a UI text input.
+
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Returns the value of the text input or an empty string if the value is ``None``.
 
     .. versionadded:: 2.0
 
@@ -104,8 +111,10 @@ class TextInput(Item[V]):
         self._value: Optional[str] = default
         self._provided_custom_id = custom_id is not MISSING
         custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
+        if not isinstance(custom_id, str):
+            raise TypeError(f'expected custom_id to be str not {custom_id.__class__.__name__}')
+
         self._underlying = TextInputComponent._raw_construct(
-            type=ComponentType.text_input,
             label=label,
             style=style,
             custom_id=custom_id,
@@ -115,11 +124,14 @@ class TextInput(Item[V]):
             min_length=min_length,
             max_length=max_length,
         )
-        self.row: Optional[int] = row
+        self.row = row
+
+    def __str__(self) -> str:
+        return self.value
 
     @property
     def custom_id(self) -> str:
-        """:class:`str`: The ID of the select menu that gets received during an interaction."""
+        """:class:`str`: The ID of the text input that gets received during an interaction."""
         return self._underlying.custom_id
 
     @custom_id.setter
@@ -134,9 +146,9 @@ class TextInput(Item[V]):
         return 5
 
     @property
-    def value(self) -> Optional[str]:
-        """Optional[:class:`str`]: The value of the text input."""
-        return self._value
+    def value(self) -> str:
+        """:class:`str`: The value of the text input."""
+        return self._value or ''
 
     @property
     def label(self) -> str:
@@ -204,10 +216,10 @@ class TextInput(Item[V]):
     def to_component_dict(self) -> TextInputPayload:
         return self._underlying.to_dict()
 
-    def refresh_component(self, component: TextInputComponent) -> None:
+    def _refresh_component(self, component: TextInputComponent) -> None:
         self._underlying = component
 
-    def refresh_state(self, data: ModalSubmitTextInputInteractionDataPayload) -> None:
+    def _refresh_state(self, interaction: Interaction, data: ModalSubmitTextInputInteractionDataPayload) -> None:
         self._value = data.get('value', None)
 
     @classmethod
@@ -225,8 +237,8 @@ class TextInput(Item[V]):
         )
 
     @property
-    def type(self) -> ComponentType:
-        return ComponentType.text_input
+    def type(self) -> Literal[ComponentType.text_input]:
+        return self._underlying.type
 
     def is_dispatchable(self) -> bool:
         return False
