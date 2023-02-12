@@ -1740,7 +1740,6 @@ class PartialApplication(Hashable):
 
         self._icon: Optional[str] = data.get('icon')
         self._cover_image: Optional[str] = data.get('cover_image')
-        self._splash: Optional[str] = data.get('splash')
 
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
@@ -1819,14 +1818,7 @@ class PartialApplication(Hashable):
         """Optional[:class:`Asset`]: Retrieves the application's cover image, if any."""
         if self._cover_image is None:
             return None
-        return Asset._from_cover_image(self._state, self.id, self._cover_image)
-
-    @property
-    def splash(self) -> Optional[Asset]:
-        """Optional[:class:`Asset`]: Retrieves the application's splash asset, if any."""
-        if self._splash is None:
-            return None
-        return Asset._from_application_asset(self._state, self.id, self._splash)
+        return Asset._from_icon(self._state, self.id, self._cover_image, path='app')
 
     @property
     def flags(self) -> ApplicationFlags:
@@ -3356,7 +3348,7 @@ class IntegrationApplication(Hashable):
         """Optional[:class:`Asset`]: Retrieves the application's cover image, if any."""
         if self._cover_image is None:
             return None
-        return Asset._from_cover_image(self._state, self.id, self._cover_image)
+        return Asset._from_icon(self._state, self.id, self._cover_image, path='app')
 
     @property
     def primary_sku_url(self) -> Optional[str]:

@@ -265,15 +265,6 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_cover_image(cls, state: _State, object_id: int, cover_image_hash: str) -> Self:
-        return cls(
-            state,
-            url=f'{cls.BASE}/app-assets/{object_id}/store/{cover_image_hash}.png?size=1024',
-            key=cover_image_hash,
-            animated=False,
-        )
-
-    @classmethod
     def _from_scheduled_event_cover_image(cls, state: _State, scheduled_event_id: int, cover_image_hash: str) -> Self:
         return cls(
             state,
@@ -331,28 +322,6 @@ class Asset(AssetMixin):
             url=f'{cls.BASE}/role-icons/{role_id}/{icon_hash}.png',
             key=icon_hash,
             animated=False,
-        )
-
-    @classmethod
-    def _from_application_asset(cls, state, app_id: int, hash: str) -> Asset:
-        animated = hash.startswith('a_')
-        format = 'gif' if animated else 'png'
-        return cls(
-            state,
-            url=f'{cls.BASE}/app-assets/{app_id}/{hash}.{format}',
-            key=hash,
-            animated=animated,
-        )
-
-    @classmethod
-    def _from_astore_asset(cls, state, app_id: int, hash: str) -> Asset:
-        animated = hash.startswith('a_')
-        format = 'gif' if animated else 'png'
-        return cls(
-            state,
-            url=f'{cls.BASE}/app-assets/{app_id}/{hash}.{format}',
-            key=hash,
-            animated=animated,
         )
 
     @classmethod
