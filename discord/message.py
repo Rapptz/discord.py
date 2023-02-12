@@ -1439,6 +1439,16 @@ class Message(PartialMessage, Hashable):
         :attr:`MessageType.role_subscription_purchase` message.
 
         .. versionadded:: 2.2
+    application_id: Optional[:class:`int`]
+        The application ID of the application that created this message if this
+        message was sent by an application-owned webhook or an interaction.
+
+        .. versionadded:: 2.2
+    position: Optional[:class:`int`]
+        A generally increasing integer with potentially gaps or duplicates that represents
+        the approximate position of the message in a thread.
+
+        .. versionadded:: 2.2
     guild: Optional[:class:`Guild`]
         The guild that the message belongs to, if applicable.
     """
@@ -1472,6 +1482,8 @@ class Message(PartialMessage, Hashable):
         'components',
         'interaction',
         'role_subscription',
+        'application_id',
+        'position',
     )
 
     if TYPE_CHECKING:
@@ -1507,6 +1519,8 @@ class Message(PartialMessage, Hashable):
         self.tts: bool = data['tts']
         self.content: str = data['content']
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
+        self.position: Optional[int] = data.get('position')
+        self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
 
         try:
