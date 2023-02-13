@@ -716,23 +716,23 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
 
         Depending on the parameter passed, this requires different permissions listed below:
 
-        +---------------------+--------------------------------------+
-        |      Parameter      |              Permission              |
-        +---------------------+--------------------------------------+
-        | nick                | :attr:`Permissions.manage_nicknames` |
-        +---------------------+--------------------------------------+
-        | mute                | :attr:`Permissions.mute_members`     |
-        +---------------------+--------------------------------------+
-        | deafen              | :attr:`Permissions.deafen_members`   |
-        +---------------------+--------------------------------------+
-        | roles               | :attr:`Permissions.manage_roles`     |
-        +---------------------+--------------------------------------+
-        | voice_channel       | :attr:`Permissions.move_members`     |
-        +---------------------+--------------------------------------+
-        | timed_out_until     | :attr:`Permissions.moderate_members` |
-        +---------------------+--------------------------------------+
-        | bypass_verification | :attr:`Permissions.manage_guild`     |
-        +---------------------+--------------------------------------+
+        +---------------------+---------------------------------------+
+        |      Parameter      |              Permission               |
+        +---------------------+---------------------------------------+
+        | nick                | :attr:`Permissions.manage_nicknames`  |
+        +---------------------+---------------------------------------+
+        | mute                | :attr:`Permissions.mute_members`      |
+        +---------------------+---------------------------------------+
+        | deafen              | :attr:`Permissions.deafen_members`    |
+        +---------------------+---------------------------------------+
+        | roles               | :attr:`Permissions.manage_roles`      |
+        +---------------------+---------------------------------------+
+        | voice_channel       | :attr:`Permissions.move_members`      |
+        +---------------------+---------------------------------------+
+        | timed_out_until     | :attr:`Permissions.moderate_members`  |
+        +---------------------+---------------------------------------+
+        | bypass_verification | :attr:`Permissions.moderate_members`  |
+        +---------------------+---------------------------------------+
 
         All parameters are optional.
 
