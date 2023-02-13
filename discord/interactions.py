@@ -954,8 +954,8 @@ class InteractionResponse(Generic[ClientT]):
             proxy_auth=http.proxy_auth,
             params=params,
         )
-
-        self._parent._state.store_view(modal)
+        if not modal.is_finished():
+            self._parent._state.store_view(modal)
         self._response_type = InteractionResponseType.modal
 
     async def autocomplete(self, choices: Sequence[Choice[ChoiceT]]) -> None:

@@ -2694,7 +2694,7 @@ class Client:
         TypeError
             A view was not passed.
         ValueError
-            The view is not persistent. A persistent view has no timeout
+            The view is not persistent or is already finished. A persistent view has no timeout
             and all their components have an explicitly provided custom_id.
         """
 
@@ -2703,6 +2703,9 @@ class Client:
 
         if not view.is_persistent():
             raise ValueError('View is not persistent. Items need to have a custom_id set and View must have no timeout')
+
+        if view.is_finished():
+            raise ValueError('View is already finished.')
 
         self._connection.store_view(view, message_id)
 
