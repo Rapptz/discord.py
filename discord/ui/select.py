@@ -752,7 +752,7 @@ def select(
 
 def select(
     *,
-    cls: Type[BaseSelectT] = Select,
+    cls: Type[BaseSelectT] = Select[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = MISSING,
     placeholder: Optional[str] = None,
