@@ -784,7 +784,7 @@ class InteractionResponse(Generic[ClientT]):
             params=params,
         )
 
-        if view is not MISSING:
+        if view is not MISSING and not view.is_finished():
             if ephemeral and view.timeout is None:
                 view.timeout = 15 * 60.0
 
@@ -954,8 +954,8 @@ class InteractionResponse(Generic[ClientT]):
             proxy_auth=http.proxy_auth,
             params=params,
         )
-
-        self._parent._state.store_view(modal)
+        if not modal.is_finished():
+            self._parent._state.store_view(modal)
         self._response_type = InteractionResponseType.modal
 
     async def autocomplete(self, choices: Sequence[Choice[ChoiceT]]) -> None:
