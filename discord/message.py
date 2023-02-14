@@ -978,8 +978,9 @@ class PartialMessage(Hashable):
     async def publish(self) -> None:
         """|coro|
 
-        Publishes this message to your announcement channel.
+        Publishes this message to the channel's followers.
 
+        The message must have been sent in a news channel.
         You must have :attr:`~Permissions.send_messages` to do this.
 
         If the message is not your own then :attr:`~Permissions.manage_messages`
@@ -988,7 +989,8 @@ class PartialMessage(Hashable):
         Raises
         -------
         Forbidden
-            You do not have the proper permissions to publish this message.
+            You do not have the proper permissions to publish this message
+            or the channel is not a news channel.
         HTTPException
             Publishing the message failed.
         """
