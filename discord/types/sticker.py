@@ -30,7 +30,7 @@ from typing_extensions import NotRequired
 from .snowflake import Snowflake
 from .user import User
 
-StickerFormatType = Literal[1, 2, 3]
+StickerFormatType = Literal[1, 2, 3, 4]
 
 
 class StickerItem(TypedDict):
