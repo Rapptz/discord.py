@@ -887,11 +887,11 @@ class Command(Generic[GroupT, P, T]):
         predicates = getattr(param.autocomplete, '__discord_app_commands_checks__', [])
         if predicates:
             try:
-                if not await async_all(f(interaction) for f in predicates):
-                    if not interaction.response.is_done():
-                        await interaction.response.autocomplete([])
-                    return
+                passed = await async_all(f(interaction) for f in predicates)
             except Exception:
+                passed = False
+
+            if not passed:
                 if not interaction.response.is_done():
                     await interaction.response.autocomplete([])
                 return

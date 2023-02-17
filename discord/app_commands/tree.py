@@ -1235,7 +1235,13 @@ class CommandTree(Generic[ClientT]):
             focused = next((opt['name'] for opt in options if opt.get('focused')), None)
             if focused is None:
                 raise AppCommandError('This should not happen, but there is no focused element. This is a Discord bug.')
-            await command._invoke_autocomplete(interaction, focused, namespace)
+
+            try:
+                await command._invoke_autocomplete(interaction, focused, namespace)
+            except Exception:
+                # Suppress exception since it can't be handled anyway.
+                pass
+
             return
 
         try:
