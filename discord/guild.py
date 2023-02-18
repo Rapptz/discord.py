@@ -1423,8 +1423,6 @@ class Guild(Hashable):
         rtc_region: Optional[str] = MISSING,
         video_quality_mode: VideoQualityMode = MISSING,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
-        
-        
     ) -> StageChannel:
         """|coro|
 
@@ -1933,7 +1931,6 @@ class Guild(Hashable):
             fields['system_channel_flags'] = system_channel_flags.value
 
         if any(feat is not MISSING for feat in (community, discoverable, invites_disabled)):
-
             features = set(self.features)
 
             if community is not MISSING:
@@ -3283,7 +3280,6 @@ class Guild(Hashable):
 
         role_positions = []
         for role, position in positions.items():
-
             payload: RolePositionUpdatePayload = {'id': role.id, 'position': position}
 
             role_positions.append(payload)
