@@ -1400,6 +1400,8 @@ class Guild(Hashable):
             options['rtc_region'] = None if rtc_region is None else rtc_region
 
         if video_quality_mode is not MISSING:
+            if not isinstance(video_quality_mode, VideoQualityMode):
+                raise TypeError('video_quality_mode must be of type VideoQualityMode')
             options['video_quality_mode'] = video_quality_mode.value
 
         data = await self._create_channel(
@@ -1451,13 +1453,21 @@ class Guild(Hashable):
             at 0. e.g. the top channel is position 0.
         bitrate: :class:`int`
             The channel's preferred audio bitrate in bits per second.
+
+            .. versionadded:: 2.2
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
+
+            .. versionadded:: 2.2
         rtc_region: Optional[:class:`str`]
             The region for the voice channel's voice communication.
             A value of ``None`` indicates automatic voice region detection.
+
+            .. versionadded:: 2.2
         video_quality_mode: :class:`VideoQualityMode`
             The camera video quality for the voice channel's participants.
+
+            .. versionadded:: 2.2
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
@@ -1490,6 +1500,8 @@ class Guild(Hashable):
             options['rtc_region'] = None if rtc_region is None else rtc_region
 
         if video_quality_mode is not MISSING:
+            if not isinstance(video_quality_mode, VideoQualityMode):
+                raise TypeError('video_quality_mode must be of type VideoQualityMode')
             options['video_quality_mode'] = video_quality_mode.value
 
         data = await self._create_channel(
