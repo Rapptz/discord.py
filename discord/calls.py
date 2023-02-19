@@ -275,7 +275,7 @@ class PrivateCall:
             The call has ended.
         """
         channel = self.channel
-        await self._state.http.ring(channel.id, channel.recipient.id)
+        await self._state.http.ring(channel.id)
 
     @_running_only
     async def stop_ringing(self) -> None:
@@ -489,7 +489,8 @@ class GroupCall(PrivateCall):
         ClientException
             The call has ended.
         """
-        await self._state.http.stop_ringing(self.channel.id, *{r.id for r in recipients})
+        channel = self.channel
+        await self._state.http.stop_ringing(channel.id, *{r.id for r in recipients or channel.recipients})
 
 
 Call = Union[PrivateCall, GroupCall]
