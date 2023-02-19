@@ -119,7 +119,7 @@ class _MissingSentinel:
 
 
 MISSING: Any = _MissingSentinel()
-
+MissingField = field(default_factory=lambda: MISSING)
 
 class _cached_property:
     def __init__(self, function) -> None:
