@@ -268,12 +268,7 @@ def parse_time(timestamp: None) -> None:
 @overload
 def parse_time(timestamp: str) -> datetime.datetime:
     ...
-
-
-@overload
-def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
-    ...
-
+    
 
 def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     if timestamp:
