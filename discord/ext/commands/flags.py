@@ -30,7 +30,7 @@ import sys
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Literal, Optional, Pattern, Set, Tuple, Type, Union
 
-from discord.utils import MISSING, maybe_coroutine, resolve_annotation
+from discord.utils import MISSING, MissingField, maybe_coroutine, resolve_annotation
 
 from .converter import run_converters
 from .errors import BadFlagArgument, MissingFlagArgument, MissingRequiredFlag, TooManyFlags, TooManyArguments
@@ -81,14 +81,14 @@ class Flag:
         used as application commands.
     """
 
-    name: str = MISSING
+    name: str = MissingField
     aliases: List[str] = field(default_factory=list)
-    attribute: str = MISSING
-    annotation: Any = MISSING
-    default: Any = MISSING
-    max_args: int = MISSING
-    override: bool = MISSING
-    description: str = MISSING
+    attribute: str = MissingField
+    annotation: Any = MissingField
+    default: Any = MissingField
+    max_args: int = MissingField
+    override: bool = MissingField
+    description: str = MissingField
     cast_to_dict: bool = False
 
     @property
