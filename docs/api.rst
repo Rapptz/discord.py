@@ -5660,9 +5660,9 @@ AuditLogDiff
 
     .. attribute:: type
 
-        The type of channel, sticker or integration.
+        The type of channel, sticker, webhook or integration.
 
-        :type: Union[:class:`ChannelType`, :class:`StickerType`, :class:`str`]
+        :type: Union[:class:`ChannelType`, :class:`StickerType`, :class:`WebhookType`, :class:`str`]
 
     .. attribute:: topic
 
