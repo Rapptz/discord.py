@@ -451,7 +451,7 @@ class Colour:
 
     @classmethod
     def dark_theme(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x36393F``.
+        """A factory method that returns a :class:`Colour` with a value of ``0x313338``.
 
         This will appear transparent on Discord's dark theme.
 
