@@ -2818,7 +2818,7 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
-    .. attribute:: automod_role_update
+    .. attribute:: automod_rule_update
 
         An automod rule was updated.
 
