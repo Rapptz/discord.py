@@ -451,15 +451,18 @@ class Colour:
 
     @classmethod
     def dark_theme(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x36393F``.
+        """A factory method that returns a :class:`Colour` with a value of ``0x313338``.
 
         This will appear transparent on Discord's dark theme.
 
-        .. colour:: #36393F
+        .. colour:: #313338
 
         .. versionadded:: 1.5
+
+        .. versionchanged:: 2.2
+            Updated colour from previous ``0x36393F`` to reflect discord theme changes.
         """
-        return cls(0x36393F)
+        return cls(0x313338)
 
     @classmethod
     def fuchsia(cls) -> Self:
@@ -483,23 +486,23 @@ class Colour:
 
     @classmethod
     def dark_embed(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x2F3136``.
+        """A factory method that returns a :class:`Colour` with a value of ``0x2B2D31``.
 
-        .. colour:: #2F3136
+        .. colour:: #2B2D31
 
         .. versionadded:: 2.2
         """
-        return cls(0x2F3136)
+        return cls(0x2B2D31)
 
     @classmethod
     def light_embed(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0xF2F3F5``.
+        """A factory method that returns a :class:`Colour` with a value of ``0xEEEFF1``.
 
-        .. colour:: #F2F3F5
+        .. colour:: #EEEFF1
 
         .. versionadded:: 2.2
         """
-        return cls(0xF2F3F5)
+        return cls(0xEEEFF1)
 
 
 Color = Colour
