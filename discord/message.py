@@ -1072,6 +1072,8 @@ class PartialMessage(Hashable):
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
             If not provided, the channel's default auto archive duration is used.
+
+            Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided.
         slowmode_delay: Optional[:class:`int`]
             Specifies the slowmode rate limit for user in this channel, in seconds.
             The maximum value possible is ``21600``. By default no slowmode rate limit
