@@ -750,6 +750,9 @@ class ForumLayoutType(Enum):
     list_view = 1
     gallery_view = 2
 
+class OnboardingPromptType(Enum):
+    multiple_choice = 0
+    dropdown = 1
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
     value_cls = cls._enum_value_cls_  # type: ignore # This is narrowed below

@@ -3276,6 +3276,20 @@ of :class:`enum.Enum`.
 
         Displays posts as a collection of tiles.
 
+.. class:: OnboardingPromptType
+
+    Represents the type of a guild onboarding prompt.
+
+    .. versionadded:: 2.2
+
+    .. attribute:: multiple_choice
+
+        The prompt will be a multiple choice.
+
+    .. attribute:: dropdown
+
+        The prompt will be a dropdown.
+
 
 .. _discord-api-audit-logs:
 
@@ -4607,6 +4621,31 @@ PartialWebhookChannel
 
 .. autoclass:: PartialWebhookChannel()
     :members:
+
+Onboarding
+~~~~~~~~~~~~
+
+.. attributetable:: Onboarding
+
+.. autoclass:: Onboarding()
+    :members:
+
+OnboardingPrompt
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: OnboardingPrompt
+
+.. autoclass:: OnboardingPrompt()
+    :members:
+
+OnboardingPromptOption
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: OnboardingPromptOption
+
+.. autoclass:: OnboardingPromptOption()
+    :members:
+
 
 .. _discord_api_data:
 

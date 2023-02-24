@@ -90,6 +90,7 @@ from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
 from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
+from .onboarding import Onboarding
 
 
 __all__ = (
@@ -4026,3 +4027,19 @@ class Guild(Hashable):
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)
+
+
+    async def fetch_onboarding(self) -> Optional[Onboarding]:
+        """|coro|
+
+        Fetches the onboarding information for this guild.
+
+        .. versionadded:: 2.2
+
+        Returns
+        --------
+        Optional[:class:`Onboarding`]
+            The onboarding information for this guild.
+        """
+        data = await self._state.http.get_guild_onboarding(self.id)
+        return Onboarding(guild=self, data=data)
