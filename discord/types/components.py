@@ -34,7 +34,6 @@ ComponentType = Literal[1, 2, 3, 4]
 ButtonStyle = Literal[1, 2, 3, 4, 5]
 TextStyle = Literal[1, 2]
 
-ButtonRow = Literal[0, 1, 2, 3, 4]
 
 class ActionRow(TypedDict):
     type: Literal[1]
@@ -49,7 +48,7 @@ class ButtonComponent(TypedDict):
     disabled: NotRequired[bool]
     emoji: NotRequired[PartialEmoji]
     label: NotRequired[str]
-    row: NotRequired[ButtonRow]
+    row: NotRequired[int]
 
 
 class SelectOption(TypedDict):
