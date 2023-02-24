@@ -126,8 +126,8 @@ class Button(Item[V]):
             label=label,
             style=style,
             emoji=emoji,
+            row=row,
         )
-        self.row = row
 
     @property
     def style(self) -> ButtonStyle:
@@ -199,6 +199,18 @@ class Button(Item[V]):
                 raise TypeError(f'expected str, Emoji, or PartialEmoji, received {value.__class__.__name__} instead')
         else:
             self._underlying.emoji = None
+
+    @property
+    def row(self) -> Optional[int]:
+        """Optional[:class:`int`]: The relative row this button belongs to.
+
+        Row number is between 0 and 4 (i.e.zero indexed) or ``None``  if automatic ordering.
+        """
+        return self._underlying.row
+
+    @row.setter
+    def row(self, value: Optional[int]) -> None:
+        self._underlying.row = int(value) if value is not None else value
 
     @classmethod
     def from_component(cls, button: ButtonComponent) -> Self:
