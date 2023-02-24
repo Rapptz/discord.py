@@ -4028,7 +4028,6 @@ class Guild(Hashable):
 
         return AutoModRule(data=data, guild=self, state=self._state)
 
-
     async def fetch_onboarding(self) -> Optional[Onboarding]:
         """|coro|
 

@@ -44,7 +44,6 @@ if TYPE_CHECKING:
     )
 
 
-
 class OnboardingPromptOption(Hashable):
     """Represents a guild's onboarding prompt's option.
 
@@ -65,7 +64,7 @@ class OnboardingPromptOption(Hashable):
         .. describe:: str(x)
 
             Returns the guild's name.
-    
+
     .. versionadded:: 2.2
 
     Attributes
@@ -79,8 +78,9 @@ class OnboardingPromptOption(Hashable):
     emoji: :class:`PartialEmoji`
         The emoji of the option.
     """
+
     __slots__ = ('id', 'title', 'description', 'emoji', '_channels', '_roles', '_onboarding')
-    
+
     def __init__(self, *, onboarding: Onboarding, data: OnboardingPromptOptionPayload) -> None:
         self._onboarding: Onboarding = onboarding
 
@@ -98,7 +98,7 @@ class OnboardingPromptOption(Hashable):
 
         emoji = PartialEmoji.from_dict(data['emoji'])
         emoji._state = state
-        self.emoji: PartialEmoji =  emoji
+        self.emoji: PartialEmoji = emoji
 
         channel_ids = data.get('channel_ids', [])
         for channel_id in channel_ids:
@@ -113,7 +113,6 @@ class OnboardingPromptOption(Hashable):
 
     def __repr__(self) -> str:
         return f'<OnboardingPromptOption id={self.id} title={self.title!r} description={self.description!r} emoji={self.emoji!r}>'
-
 
     @property
     def channels(self) -> SequenceProxy[Union[GuildChannel, Thread, PartialMessageable, Object]]:
@@ -148,8 +147,8 @@ class OnboardingPrompt(Hashable):
             Returns the guild's name.
 
     .. versionadded:: 2.2
-    
-    
+
+
     Attributes
     -----------
     id: :class:`int`
@@ -163,7 +162,9 @@ class OnboardingPrompt(Hashable):
     in_onboarding: :class:`bool`
         Whether the prompt is in the onboarding flow.
     """
+
     __slots__ = ('id', 'title', 'single_select', 'required', 'in_onboarding', '_oboarding', '_options', '_type')
+
     def __init__(self, *, onboarding: Onboarding, data: OnboardingPromptPayload) -> None:
         self._oboarding: Onboarding = onboarding
         self._from_data(data)
@@ -176,7 +177,7 @@ class OnboardingPrompt(Hashable):
         self._type: OnboardingPromptType = try_enum(OnboardingPromptType, data['type'])
         self.in_onboarding: bool = data['in_onboarding']
         self._options: List[OnboardingPromptOption] = [
-            OnboardingPromptOption(onboarding=self._oboarding, data=option)  for option in data['options']
+            OnboardingPromptOption(onboarding=self._oboarding, data=option) for option in data['options']
         ]
 
     def __repr__(self) -> str:
@@ -238,9 +239,7 @@ class Onboarding:
         self._guild_id: int = int(data['guild_id'])
 
         prompts = data.get('prompts', [])
-        self._prompts: List[OnboardingPrompt] = [
-            OnboardingPrompt(onboarding=self, data=prompt) for prompt in prompts
-        ]
+        self._prompts: List[OnboardingPrompt] = [OnboardingPrompt(onboarding=self, data=prompt) for prompt in prompts]
         default_channel_ids = data.get('default_channel_ids', [])
         for channel_id in default_channel_ids:
             channel = guild.get_channel_or_thread(int(channel_id)) or state.get_channel(int(channel_id))
