@@ -139,13 +139,13 @@ class AutoModTrigger:
         The type of trigger.
     keyword_filter: List[:class:`str`]
         The list of strings that will trigger the keyword filter. Maximum of 1000.
-        Keywords can only be up to 30 characters in length.
+        Keywords can only be up to 60 characters in length.
 
         This could be combined with :attr:`regex_patterns`.
     regex_patterns: List[:class:`str`]
         The regex pattern that will trigger the filter. The syntax is based off of
         `Rust's regex syntax <https://docs.rs/regex/latest/regex/#syntax>`_.
-        Maximum of 10. Regex strings can only be up to 250 characters in length.
+        Maximum of 10. Regex strings can only be up to 260 characters in length.
 
         This could be combined with :attr:`keyword_filter` and/or :attr:`allow_list`
 
