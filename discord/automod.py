@@ -153,7 +153,9 @@ class AutoModTrigger:
     presets: :class:`AutoModPresets`
         The presets used with the preset keyword filter.
     allow_list: List[:class:`str`]
-        The list of words that are exempt from the commonly flagged words.
+        The list of words that are exempt from the commonly flagged words. Maximum of 100.
+        Keywords can only be up to 60 characters in length.
+
     mention_limit: :class:`int`
         The total number of user and role mentions a message can contain.
         Has a maximum of 50.
