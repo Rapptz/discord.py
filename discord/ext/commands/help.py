@@ -206,7 +206,9 @@ class Paginator:
         # we have more than just the prefix in our current page
         if len(self._current_page) > (0 if self.prefix is None else 1):
             # Render and include current page without closing
-            current_page = self.linesep.join([*self._current_page, self.suffix] if self.suffix is not None else self._current_page)
+            current_page = self.linesep.join(
+                [*self._current_page, self.suffix] if self.suffix is not None else self._current_page
+            )
             return [*self._pages, current_page]
 
         return self._pages
