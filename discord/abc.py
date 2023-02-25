@@ -82,7 +82,15 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .member import Member
     from .message import Message, MessageReference, PartialMessage
-    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VoiceChannel, CategoryChannel
+    from .channel import (
+        TextChannel,
+        DMChannel,
+        GroupChannel,
+        PartialMessageable,
+        VocalGuildChannel,
+        VoiceChannel,
+        StageChannel,
+    )
     from .threads import Thread
     from .enums import InviteTarget
     from .types.channel import (
@@ -95,7 +103,7 @@ if TYPE_CHECKING:
         SnowflakeList,
     )
 
-    MessageableChannel = Union[TextChannel, VoiceChannel, Thread, DMChannel, PartialMessageable, GroupChannel]
+    MessageableChannel = Union[TextChannel, VoiceChannel, StageChannel, Thread, DMChannel, PartialMessageable, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
 
 MISSING = utils.MISSING
@@ -110,7 +118,7 @@ _undefined: Any = _Undefined()
 
 
 async def _purge_helper(
-    channel: Union[Thread, TextChannel, VoiceChannel],
+    channel: Union[Thread, TextChannel, VocalGuildChannel],
     *,
     limit: Optional[int] = 100,
     check: Callable[[Message], bool] = MISSING,

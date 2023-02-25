@@ -634,6 +634,7 @@ class PartialMessage(Hashable):
         if not isinstance(channel, PartialMessageable) and channel.type not in (
             ChannelType.text,
             ChannelType.voice,
+            ChannelType.stage_voice,
             ChannelType.news,
             ChannelType.private,
             ChannelType.news_thread,
@@ -641,7 +642,7 @@ class PartialMessage(Hashable):
             ChannelType.private_thread,
         ):
             raise TypeError(
-                f'expected PartialMessageable, TextChannel, VoiceChannel, DMChannel or Thread not {type(channel)!r}'
+                f'expected PartialMessageable, TextChannel, StageChannel, VoiceChannel, DMChannel or Thread not {type(channel)!r}'
             )
 
         self.channel: MessageableChannel = channel
