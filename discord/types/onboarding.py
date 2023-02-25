@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import Literal, Optional, TypedDict
 
-from .emoji import Emoji
+from .emoji import PartialEmoji
 from .snowflake import Snowflake
 
 
@@ -37,7 +37,7 @@ class PromptOption(TypedDict):
     id: Snowflake
     channel_ids: list[Snowflake]
     role_ids: list[Snowflake]
-    emoji: Emoji
+    emoji: PartialEmoji
     title: str
     description: Optional[str]
 

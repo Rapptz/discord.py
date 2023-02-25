@@ -63,7 +63,7 @@ class OnboardingPromptOption:
         The title of this prompt option.
     description: Optional[:class:`str`]
         The description of this prompt option.
-    emoji: Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]
+    emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
         The emoji tied to this option. May be a custom emoji, or a unicode emoji.
     channel_ids: Set[:class:`int`]
         The IDs of the channels that will be set visible if this option is selected.
@@ -90,7 +90,7 @@ class OnboardingPromptOption:
         self.id: int = int(data['id'])
         self.title: str = data['title']
         self.description: Optional[str] = data['description']
-        self.emoji: Union[PartialEmoji, Emoji, str] = self._state.get_reaction_emoji(data['emoji'])
+        self.emoji: Optional[Union[PartialEmoji, Emoji, str]] = self._state.get_reaction_emoji(data['emoji'])
         self.channel_ids: Set[int] = {int(channel_id) for channel_id in data['channel_ids']}
         self.role_ids: Set[int] = {int(role_id) for role_id in data['role_ids']}
 
