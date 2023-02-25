@@ -67,6 +67,7 @@ __all__ = (
     'AutoModRuleEventType',
     'AutoModRuleActionType',
     'ForumLayoutType',
+    'OnboardingPromptType',
 )
 
 if TYPE_CHECKING:
@@ -749,6 +750,11 @@ class ForumLayoutType(Enum):
     not_set = 0
     list_view = 1
     gallery_view = 2
+
+
+class OnboardingPromptType(Enum):
+    multiple_choice = 0
+    dropdown = 1
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

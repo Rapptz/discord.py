@@ -88,6 +88,7 @@ from .sticker import GuildSticker
 from .file import File
 from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
+from .onboarding import Onboarding
 from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 
@@ -4026,3 +4027,19 @@ class Guild(Hashable):
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)
+
+    async def fetch_onboarding(self) -> Onboarding:
+        """|coro|
+
+        Fetches the onboarding configuration for this guild.
+
+        .. versionadded:: 2.2
+
+        Returns
+        --------
+        :class:`Onboarding`
+            The onboarding configuration that was fetched.
+        """
+        data = await self._state.http.get_guild_onboarding(self.id)
+
+        return Onboarding(data=data, guild=self, state=self._state)
