@@ -1292,6 +1292,7 @@ class Messageable:
 
     - :class:`~discord.TextChannel`
     - :class:`~discord.VoiceChannel`
+    - :class:`~discord.StageChannel`
     - :class:`~discord.DMChannel`
     - :class:`~discord.GroupChannel`
     - :class:`~discord.PartialMessageable`
