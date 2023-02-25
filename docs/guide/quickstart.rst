@@ -20,6 +20,7 @@ You will need a bot application before being able to run a bot. A step-by-step t
 2. Create a new application if you have not made one already:
     .. image:: /images/discord_create_app_button.png
         :scale: 90 %
+
     Be sure to give it a good name!
 
 3. Navigate over to the ``bot`` tab:
