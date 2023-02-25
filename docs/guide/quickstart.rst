@@ -33,8 +33,11 @@ You will need a bot application before being able to run a bot. A step-by-step t
 5. If you need these intents, scroll down and click on these check boxes:
     .. image:: /images/discord_privileged_intents.png
 
-6. Copy your bot token here:
+6. Your bot token will only be retrievable upon creation and looks like this:
     .. image:: /images/discord_bot_token.png
+
+6a. Otherwise it will look like this:
+    .. image:: /images/discord_bot_token_no_copy.png
 
 .. danger::
 
