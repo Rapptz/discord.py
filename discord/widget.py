@@ -23,13 +23,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from sqlite3 import connect
 
-from typing import Any, List, Optional, TYPE_CHECKING, Union
+from typing import List, Optional, TYPE_CHECKING, Union
 
 from .utils import snowflake_time, _get_as_snowflake, resolve_invite
 from .user import BaseUser
-from .activity import Activity, BaseActivity, Spotify, create_activity
+from .activity import BaseActivity, Spotify, create_activity
 from .invite import Invite
 from .enums import Status, try_enum
 
@@ -122,7 +121,7 @@ class WidgetMember(BaseUser):
 
         .. describe:: str(x)
 
-            Returns the widget member's `name#discriminator`.
+            Returns the widget member's ``name#discriminator``.
 
     Attributes
     -----------
@@ -153,13 +152,9 @@ class WidgetMember(BaseUser):
     """
 
     __slots__ = (
-        'name',
         'status',
         'nick',
         'avatar',
-        'discriminator',
-        'id',
-        'bot',
         'activity',
         'deafened',
         'suppress',
@@ -189,7 +184,7 @@ class WidgetMember(BaseUser):
         except KeyError:
             activity = None
         else:
-            activity = create_activity(game)
+            activity = create_activity(game, state)
 
         self.activity: Optional[Union[BaseActivity, Spotify]] = activity
 
@@ -232,7 +227,7 @@ class Widget:
     channels: List[:class:`WidgetChannel`]
         The accessible voice channels in the guild.
     members: List[:class:`Member`]
-        The online members in the server. Offline members
+        The online members in the guild. Offline members
         do not appear in the widget.
 
         .. note::
@@ -241,10 +236,15 @@ class Widget:
             the users will be "anonymized" with linear IDs and discriminator
             information being incorrect. Likewise, the number of members
             retrieved is capped.
+    presence_count: :class:`int`
+        The approximate number of online members in the guild.
+        Offline members are not included in this count.
+
+        .. versionadded:: 2.0
 
     """
 
-    __slots__ = ('_state', 'channels', '_invite', 'id', 'members', 'name')
+    __slots__ = ('_state', 'channels', '_invite', 'id', 'members', 'name', 'presence_count')
 
     def __init__(self, *, state: ConnectionState, data: WidgetPayload) -> None:
         self._state = state
@@ -269,10 +269,12 @@ class Widget:
 
             self.members.append(WidgetMember(state=self._state, data=member, connected_channel=connected_channel))
 
+        self.presence_count: int = data['presence_count']
+
     def __str__(self) -> str:
         return self.json_url
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Widget):
             return self.id == other.id
         return False
@@ -291,11 +293,11 @@ class Widget:
         return f"https://discord.com/api/guilds/{self.id}/widget.json"
 
     @property
-    def invite_url(self) -> str:
+    def invite_url(self) -> Optional[str]:
         """Optional[:class:`str`]: The invite URL for the guild, if available."""
         return self._invite
 
-    async def fetch_invite(self, *, with_counts: bool = True) -> Invite:
+    async def fetch_invite(self, *, with_counts: bool = True) -> Optional[Invite]:
         """|coro|
 
         Retrieves an :class:`Invite` from the widget's invite URL.
@@ -311,9 +313,11 @@ class Widget:
 
         Returns
         --------
-        :class:`Invite`
-            The invite from the widget's invite URL.
+        Optional[:class:`Invite`]
+            The invite from the widget's invite URL, if available.
         """
-        invite_id = resolve_invite(self._invite)
-        data = await self._state.http.get_invite(invite_id, with_counts=with_counts)
-        return Invite.from_incomplete(state=self._state, data=data)
+        if self._invite:
+            resolved = resolve_invite(self._invite)
+            data = await self._state.http.get_invite(resolved.code, with_counts=with_counts)
+            return Invite.from_incomplete(state=self._state, data=data)
+        return None

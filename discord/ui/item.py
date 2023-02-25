@@ -27,6 +27,7 @@ from __future__ import annotations
 from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
 
 from ..interactions import Interaction
+from .._types import ClientT
 
 # fmt: off
 __all__ = (
@@ -41,7 +42,7 @@ if TYPE_CHECKING:
 
 I = TypeVar('I', bound='Item')
 V = TypeVar('V', bound='View', covariant=True)
-ItemCallbackType = Callable[[V, I, Interaction], Coroutine[Any, Any, Any]]
+ItemCallbackType = Callable[[V, Interaction[Any], I], Coroutine[Any, Any, Any]]
 
 
 class Item(Generic[V]):
@@ -51,6 +52,7 @@ class Item(Generic[V]):
 
     - :class:`discord.ui.Button`
     - :class:`discord.ui.Select`
+    - :class:`discord.ui.TextInput`
 
     .. versionadded:: 2.0
     """
@@ -72,10 +74,10 @@ class Item(Generic[V]):
     def to_component_dict(self) -> Dict[str, Any]:
         raise NotImplementedError
 
-    def refresh_component(self, component: Component) -> None:
+    def _refresh_component(self, component: Component) -> None:
         return None
 
-    def refresh_state(self, data: Dict[str, Any]) -> None:
+    def _refresh_state(self, interaction: Interaction, data: Dict[str, Any]) -> None:
         return None
 
     @classmethod
@@ -101,7 +103,7 @@ class Item(Generic[V]):
         return self._row
 
     @row.setter
-    def row(self, value: Optional[int]):
+    def row(self, value: Optional[int]) -> None:
         if value is None:
             self._row = None
         elif 5 > value >= 0:
@@ -118,12 +120,12 @@ class Item(Generic[V]):
         """Optional[:class:`View`]: The underlying view for this item."""
         return self._view
 
-    async def callback(self, interaction: Interaction):
+    async def callback(self, interaction: Interaction[ClientT]) -> Any:
         """|coro|
 
         The callback associated with this UI item.
 
-        This can be overriden by subclasses.
+        This can be overridden by subclasses.
 
         Parameters
         -----------

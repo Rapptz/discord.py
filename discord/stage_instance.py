@@ -26,10 +26,9 @@ from __future__ import annotations
 
 from typing import Optional, TYPE_CHECKING
 
-from .utils import MISSING, cached_slot_property
+from .utils import MISSING, cached_slot_property, _get_as_snowflake
 from .mixins import Hashable
-from .errors import InvalidArgument
-from .enums import StagePrivacyLevel, try_enum
+from .enums import PrivacyLevel, try_enum
 
 # fmt: off
 __all__ = (
@@ -42,6 +41,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .channel import StageChannel
     from .guild import Guild
+    from .scheduled_event import ScheduledEvent
 
 
 class StageInstance(Hashable):
@@ -73,10 +73,14 @@ class StageInstance(Hashable):
         The ID of the channel that the stage instance is running in.
     topic: :class:`str`
         The topic of the stage instance.
-    privacy_level: :class:`StagePrivacyLevel`
+    privacy_level: :class:`PrivacyLevel`
         The privacy level of the stage instance.
     discoverable_disabled: :class:`bool`
         Whether discoverability for the stage instance is disabled.
+    scheduled_event_id: Optional[:class:`int`]
+        The ID of scheduled event that belongs to the stage instance if any.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -87,20 +91,23 @@ class StageInstance(Hashable):
         'topic',
         'privacy_level',
         'discoverable_disabled',
+        'scheduled_event_id',
         '_cs_channel',
+        '_cs_scheduled_event',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: StageInstancePayload) -> None:
-        self._state = state
-        self.guild = guild
+        self._state: ConnectionState = state
+        self.guild: Guild = guild
         self._update(data)
 
-    def _update(self, data: StageInstancePayload):
+    def _update(self, data: StageInstancePayload) -> None:
         self.id: int = int(data['id'])
         self.channel_id: int = int(data['channel_id'])
         self.topic: str = data['topic']
-        self.privacy_level: StagePrivacyLevel = try_enum(StagePrivacyLevel, data['privacy_level'])
+        self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data['privacy_level'])
         self.discoverable_disabled: bool = data.get('discoverable_disabled', False)
+        self.scheduled_event_id: Optional[int] = _get_as_snowflake(data, 'guild_scheduled_event_id')
 
     def __repr__(self) -> str:
         return f'<StageInstance id={self.id} guild={self.guild!r} channel_id={self.channel_id} topic={self.topic!r}>'
@@ -111,35 +118,37 @@ class StageInstance(Hashable):
         # the returned channel will always be a StageChannel or None
         return self._state.get_channel(self.channel_id)  # type: ignore
 
-    def is_public(self) -> bool:
-        return self.privacy_level is StagePrivacyLevel.public
+    @cached_slot_property('_cs_scheduled_event')
+    def scheduled_event(self) -> Optional[ScheduledEvent]:
+        """Optional[:class:`ScheduledEvent`]: The scheduled event that belongs to the stage instance."""
+        # Guild.get_scheduled_event() expects an int, we are passing Optional[int]
+        return self.guild.get_scheduled_event(self.scheduled_event_id)  # type: ignore
 
     async def edit(
         self,
         *,
         topic: str = MISSING,
-        privacy_level: StagePrivacyLevel = MISSING,
+        privacy_level: PrivacyLevel = MISSING,
         reason: Optional[str] = None,
     ) -> None:
         """|coro|
 
         Edits the stage instance.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_channels` to do this.
 
         Parameters
         -----------
         topic: :class:`str`
             The stage instance's new topic.
-        privacy_level: :class:`StagePrivacyLevel`
+        privacy_level: :class:`PrivacyLevel`
             The stage instance's new privacy level.
         reason: :class:`str`
             The reason the stage instance was edited. Shows up on the audit log.
 
         Raises
         ------
-        InvalidArgument
+        TypeError
             If the ``privacy_level`` parameter is not the proper type.
         Forbidden
             You do not have permissions to edit the stage instance.
@@ -153,8 +162,8 @@ class StageInstance(Hashable):
             payload['topic'] = topic
 
         if privacy_level is not MISSING:
-            if not isinstance(privacy_level, StagePrivacyLevel):
-                raise InvalidArgument('privacy_level field must be of type PrivacyLevel')
+            if not isinstance(privacy_level, PrivacyLevel):
+                raise TypeError('privacy_level field must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value
 
@@ -166,8 +175,7 @@ class StageInstance(Hashable):
 
         Deletes the stage instance.
 
-        You must have the :attr:`~Permissions.manage_channels` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_channels` to do this.
 
         Parameters
         -----------

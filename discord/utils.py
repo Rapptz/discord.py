@@ -25,12 +25,14 @@ from __future__ import annotations
 
 import array
 import asyncio
-import inspect
+from textwrap import TextWrapper
 from typing import (
     Any,
     AsyncIterable,
     AsyncIterator,
+    Awaitable,
     Callable,
+    Collection,
     Coroutine,
     Dict,
     ForwardRef,
@@ -40,9 +42,12 @@ from typing import (
     List,
     Literal,
     Mapping,
+    NamedTuple,
     Optional,
     Protocol,
+    Set,
     Sequence,
+    SupportsIndex,
     Tuple,
     Type,
     TypeVar,
@@ -57,16 +62,19 @@ import datetime
 import functools
 from inspect import isawaitable as _isawaitable, signature as _signature
 from operator import attrgetter
+from urllib.parse import urlencode
 import json
 import re
+import os
 import sys
 import types
 import warnings
+import logging
 
-from .errors import InvalidArgument
+import yarl
 
 try:
-    import orjson
+    import orjson  # type: ignore
 except ModuleNotFoundError:
     HAS_ORJSON = False
 else:
@@ -84,19 +92,27 @@ __all__ = (
     'remove_markdown',
     'escape_markdown',
     'escape_mentions',
+    'maybe_coroutine',
     'as_chunks',
     'format_dt',
+    'MISSING',
+    'setup_logging',
 )
 
 DISCORD_EPOCH = 1420070400000
 
 
 class _MissingSentinel:
-    def __eq__(self, other):
+    __slots__ = ()
+
+    def __eq__(self, other) -> bool:
         return False
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return False
+
+    def __hash__(self) -> int:
+        return 0
 
     def __repr__(self):
         return '...'
@@ -106,7 +122,7 @@ MISSING: Any = _MissingSentinel()
 
 
 class _cached_property:
-    def __init__(self, function):
+    def __init__(self, function) -> None:
         self.function = function
         self.__doc__ = getattr(function, '__doc__')
 
@@ -123,7 +139,7 @@ class _cached_property:
 if TYPE_CHECKING:
     from functools import cached_property as cached_property
 
-    from typing_extensions import ParamSpec
+    from typing_extensions import ParamSpec, Self, TypeGuard
 
     from .permissions import Permissions
     from .abc import Snowflake
@@ -135,14 +151,20 @@ if TYPE_CHECKING:
 
     P = ParamSpec('P')
 
+    MaybeAwaitableFunc = Callable[P, 'MaybeAwaitable[T]']
+
+    _SnowflakeListBase = array.array[int]
+
 else:
     cached_property = _cached_property
+    _SnowflakeListBase = array.array
 
 
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
 _Iter = Union[Iterable[T], AsyncIterable[T]]
 Coro = Coroutine[Any, Any, T]
+MaybeAwaitable = Union[T, Awaitable[T]]
 
 
 class CachedSlotProperty(Generic[T, T_co]):
@@ -178,7 +200,7 @@ class classproperty(Generic[T_co]):
     def __get__(self, instance: Optional[Any], owner: Type[Any]) -> T_co:
         return self.fget(owner)
 
-    def __set__(self, instance, value) -> None:
+    def __set__(self, instance: Optional[Any], value: Any) -> None:
         raise AttributeError('cannot set attribute')
 
 
@@ -190,31 +212,52 @@ def cached_slot_property(name: str) -> Callable[[Callable[[T], T_co]], CachedSlo
 
 
 class SequenceProxy(Sequence[T_co]):
-    """Read-only proxy of a Sequence."""
+    """A proxy of a sequence that only creates a copy when necessary."""
 
-    def __init__(self, proxied: Sequence[T_co]):
-        self.__proxied = proxied
+    def __init__(self, proxied: Collection[T_co], *, sorted: bool = False):
+        self.__proxied: Collection[T_co] = proxied
+        self.__sorted: bool = sorted
 
-    def __getitem__(self, idx: int) -> T_co:
-        return self.__proxied[idx]
+    @cached_property
+    def __copied(self) -> List[T_co]:
+        if self.__sorted:
+            # The type checker thinks the variance is wrong, probably due to the comparison requirements
+            self.__proxied = sorted(self.__proxied)  # type: ignore
+        else:
+            self.__proxied = list(self.__proxied)
+        return self.__proxied
+
+    def __repr__(self) -> str:
+        return f"SequenceProxy({self.__proxied!r})"
+
+    @overload
+    def __getitem__(self, idx: SupportsIndex) -> T_co:
+        ...
+
+    @overload
+    def __getitem__(self, idx: slice) -> List[T_co]:
+        ...
+
+    def __getitem__(self, idx: Union[SupportsIndex, slice]) -> Union[T_co, List[T_co]]:
+        return self.__copied[idx]
 
     def __len__(self) -> int:
         return len(self.__proxied)
 
     def __contains__(self, item: Any) -> bool:
-        return item in self.__proxied
+        return item in self.__copied
 
     def __iter__(self) -> Iterator[T_co]:
-        return iter(self.__proxied)
+        return iter(self.__copied)
 
     def __reversed__(self) -> Iterator[T_co]:
-        return reversed(self.__proxied)
+        return reversed(self.__copied)
 
-    def index(self, value: Any, *args, **kwargs) -> int:
-        return self.__proxied.index(value, *args, **kwargs)
+    def index(self, value: Any, *args: Any, **kwargs: Any) -> int:
+        return self.__copied.index(value, *args, **kwargs)
 
     def count(self, value: Any) -> int:
-        return self.__proxied.count(value)
+        return self.__copied.count(value)
 
 
 @overload
@@ -238,11 +281,11 @@ def parse_time(timestamp: Optional[str]) -> Optional[datetime.datetime]:
     return None
 
 
-def copy_doc(original: Callable) -> Callable[[T], T]:
-    def decorator(overriden: T) -> T:
-        overriden.__doc__ = original.__doc__
-        overriden.__signature__ = _signature(original)  # type: ignore
-        return overriden
+def copy_doc(original: Callable[..., Any]) -> Callable[[T], T]:
+    def decorator(overridden: T) -> T:
+        overridden.__doc__ = original.__doc__
+        overridden.__signature__ = _signature(original)  # type: ignore
+        return overridden
 
     return decorator
 
@@ -274,13 +317,14 @@ def oauth_url(
     redirect_uri: str = MISSING,
     scopes: Iterable[str] = MISSING,
     disable_guild_select: bool = False,
+    state: str = MISSING,
 ) -> str:
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
 
     .. versionchanged:: 2.0
 
-        ``permissions``, ``guild``, ``redirect_uri``, and ``scopes`` parameters
+        ``permissions``, ``guild``, ``redirect_uri``, ``scopes`` and ``state`` parameters
         are now keyword-only.
 
     Parameters
@@ -295,11 +339,15 @@ def oauth_url(
     redirect_uri: :class:`str`
         An optional valid redirect URI.
     scopes: Iterable[:class:`str`]
-        An optional valid list of scopes. Defaults to ``('bot',)``.
+        An optional valid list of scopes. Defaults to ``('bot', 'applications.commands')``.
 
         .. versionadded:: 1.7
     disable_guild_select: :class:`bool`
         Whether to disallow the user from changing the guild dropdown.
+
+        .. versionadded:: 2.0
+    state: :class:`str`
+        The state to return after the authorization.
 
         .. versionadded:: 2.0
 
@@ -309,22 +357,26 @@ def oauth_url(
         The OAuth2 URL for inviting the bot into guilds.
     """
     url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
-    url += '&scope=' + '+'.join(scopes or ('bot',))
+    url += '&scope=' + '+'.join(scopes or ('bot', 'applications.commands'))
     if permissions is not MISSING:
         url += f'&permissions={permissions.value}'
     if guild is not MISSING:
         url += f'&guild_id={guild.id}'
-    if redirect_uri is not MISSING:
-        from urllib.parse import urlencode
-
-        url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
     if disable_guild_select:
         url += '&disable_guild_select=true'
+    if redirect_uri is not MISSING:
+        url += '&response_type=code&' + urlencode({'redirect_uri': redirect_uri})
+    if state is not MISSING:
+        url += f'&{urlencode({"state": state})}'
     return url
 
 
-def snowflake_time(id: int) -> datetime.datetime:
-    """
+def snowflake_time(id: int, /) -> datetime.datetime:
+    """Returns the creation time of the given snowflake.
+
+    .. versionchanged:: 2.0
+        The ``id`` parameter is now positional-only.
+
     Parameters
     -----------
     id: :class:`int`
@@ -339,14 +391,18 @@ def snowflake_time(id: int) -> datetime.datetime:
     return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
 
-def time_snowflake(dt: datetime.datetime, high: bool = False) -> int:
+def time_snowflake(dt: datetime.datetime, /, *, high: bool = False) -> int:
     """Returns a numeric snowflake pretending to be created at the given date.
 
-    When using as the lower end of a range, use ``time_snowflake(high=False) - 1``
+    When using as the lower end of a range, use ``time_snowflake(dt, high=False) - 1``
     to be inclusive, ``high=True`` to be exclusive.
 
-    When using as the higher end of a range, use ``time_snowflake(high=True) + 1``
-    to be inclusive, ``high=False`` to be exclusive
+    When using as the higher end of a range, use ``time_snowflake(dt, high=True) + 1``
+    to be inclusive, ``high=False`` to be exclusive.
+
+    .. versionchanged:: 2.0
+        The ``high`` parameter is now keyword-only and the ``dt`` parameter is now
+        positional-only.
 
     Parameters
     -----------
@@ -378,12 +434,12 @@ async def _afind(predicate: Callable[[T], Any], iterable: AsyncIterable[T], /) -
 
 
 @overload
-def find(predicate: Callable[[T], Any], iterable: Iterable[T], /) -> Optional[T]:
+def find(predicate: Callable[[T], Any], iterable: AsyncIterable[T], /) -> Coro[Optional[T]]:
     ...
 
 
 @overload
-def find(predicate: Callable[[T], Any], iterable: AsyncIterable[T], /) -> Coro[Optional[T]]:
+def find(predicate: Callable[[T], Any], iterable: Iterable[T], /) -> Optional[T]:
     ...
 
 
@@ -417,9 +473,9 @@ def find(predicate: Callable[[T], Any], iterable: _Iter[T], /) -> Union[Optional
     """
 
     return (
-        _find(predicate, iterable)  # type: ignore
-        if hasattr(iterable, '__iter__')  # isinstance(iterable, collections.abc.Iterable) is too slow
-        else _afind(predicate, iterable)  # type: ignore
+        _afind(predicate, iterable)  # type: ignore
+        if hasattr(iterable, '__aiter__')  # isinstance(iterable, collections.abc.AsyncIterable) is too slow
+        else _find(predicate, iterable)  # type: ignore
     )
 
 
@@ -464,12 +520,12 @@ async def _aget(iterable: AsyncIterable[T], /, **attrs: Any) -> Optional[T]:
 
 
 @overload
-def get(iterable: Iterable[T], /, **attrs: Any) -> Optional[T]:
+def get(iterable: AsyncIterable[T], /, **attrs: Any) -> Coro[Optional[T]]:
     ...
 
 
 @overload
-def get(iterable: AsyncIterable[T], /, **attrs: Any) -> Coro[Optional[T]]:
+def get(iterable: Iterable[T], /, **attrs: Any) -> Optional[T]:
     ...
 
 
@@ -533,9 +589,9 @@ def get(iterable: _Iter[T], /, **attrs: Any) -> Union[Optional[T], Coro[Optional
     """
 
     return (
-        _get(iterable, **attrs)  # type: ignore
-        if hasattr(iterable, '__iter__')  # isinstance(iterable, collections.abc.Iterable) is too slow
-        else _aget(iterable, **attrs)  # type: ignore
+        _aget(iterable, **attrs)  # type: ignore
+        if hasattr(iterable, '__aiter__')  # isinstance(iterable, collections.abc.AsyncIterable) is too slow
+        else _get(iterable, **attrs)  # type: ignore
     )
 
 
@@ -562,7 +618,7 @@ def _get_mime_type_for_image(data: bytes):
     elif data.startswith(b'RIFF') and data[8:12] == b'WEBP':
         return 'image/webp'
     else:
-        raise InvalidArgument('Unsupported image type given')
+        raise ValueError('Unsupported image type given')
 
 
 def _bytes_to_base64_data(data: bytes) -> str:
@@ -572,9 +628,13 @@ def _bytes_to_base64_data(data: bytes) -> str:
     return fmt.format(mime=mime, data=b64)
 
 
+def _is_submodule(parent: str, child: str) -> bool:
+    return parent == child or child.startswith(parent + '.')
+
+
 if HAS_ORJSON:
 
-    def _to_json(obj: Any) -> str:  # type: ignore
+    def _to_json(obj: Any) -> str:
         return orjson.dumps(obj).decode('utf-8')
 
     _from_json = orjson.loads  # type: ignore
@@ -598,15 +658,43 @@ def _parse_ratelimit_header(request: Any, *, use_clock: bool = False) -> float:
         return float(reset_after)
 
 
-async def maybe_coroutine(f, *args, **kwargs):
+async def maybe_coroutine(f: MaybeAwaitableFunc[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
+    r"""|coro|
+
+    A helper function that will await the result of a function if it's a coroutine
+    or return the result if it's not.
+
+    This is useful for functions that may or may not be coroutines.
+
+    .. versionadded:: 2.2
+
+    Parameters
+    -----------
+    f: Callable[..., Any]
+        The function or coroutine to call.
+    \*args
+        The arguments to pass to the function.
+    \*\*kwargs
+        The keyword arguments to pass to the function.
+
+    Returns
+    --------
+    Any
+        The result of the function or coroutine.
+    """
+
     value = f(*args, **kwargs)
     if _isawaitable(value):
         return await value
     else:
-        return value
+        return value  # type: ignore
 
 
-async def async_all(gen, *, check=_isawaitable):
+async def async_all(
+    gen: Iterable[Union[T, Awaitable[T]]],
+    *,
+    check: Callable[[Union[T, Awaitable[T]]], TypeGuard[Awaitable[T]]] = _isawaitable,
+) -> bool:
     for elem in gen:
         if check(elem):
             elem = await elem
@@ -615,7 +703,7 @@ async def async_all(gen, *, check=_isawaitable):
     return True
 
 
-async def sane_wait_for(futures, *, timeout):
+async def sane_wait_for(futures: Iterable[Awaitable[T]], *, timeout: Optional[float]) -> Set[asyncio.Task[T]]:
     ensured = [asyncio.ensure_future(fut) for fut in futures]
     done, pending = await asyncio.wait(ensured, timeout=timeout, return_when=asyncio.ALL_COMPLETED)
 
@@ -633,11 +721,21 @@ def get_slots(cls: Type[Any]) -> Iterator[str]:
             continue
 
 
-def compute_timedelta(dt: datetime.datetime):
+def compute_timedelta(dt: datetime.datetime) -> float:
     if dt.tzinfo is None:
         dt = dt.astimezone()
     now = datetime.datetime.now(datetime.timezone.utc)
     return max((dt - now).total_seconds(), 0)
+
+
+@overload
+async def sleep_until(when: datetime.datetime, result: T) -> T:
+    ...
+
+
+@overload
+async def sleep_until(when: datetime.datetime) -> None:
+    ...
 
 
 async def sleep_until(when: datetime.datetime, result: Optional[T] = None) -> Optional[T]:
@@ -682,7 +780,7 @@ def valid_icon_size(size: int) -> bool:
     return not size & (size - 1) and 4096 >= size >= 16
 
 
-class SnowflakeList(array.array):
+class SnowflakeList(_SnowflakeListBase):
     """Internal data storage class to efficiently store a list of snowflakes.
 
     This should have the following characteristics:
@@ -701,7 +799,7 @@ class SnowflakeList(array.array):
         def __init__(self, data: Iterable[int], *, is_sorted: bool = False):
             ...
 
-    def __new__(cls, data: Iterable[int], *, is_sorted: bool = False):
+    def __new__(cls, data: Iterable[int], *, is_sorted: bool = False) -> Self:
         return array.array.__new__(cls, 'Q', data if is_sorted else sorted(data))  # type: ignore
 
     def add(self, element: int) -> None:
@@ -717,23 +815,27 @@ class SnowflakeList(array.array):
         return i != len(self) and self[i] == element
 
 
-_IS_ASCII = re.compile(r'^[\x00-\x7f]+$')
-
-
-def _string_width(string: str, *, _IS_ASCII=_IS_ASCII) -> int:
+def _string_width(string: str) -> int:
     """Returns string's width."""
-    match = _IS_ASCII.match(string)
-    if match:
-        return match.endpos
+    if string.isascii():
+        return len(string)
 
     UNICODE_WIDE_CHAR_TYPE = 'WFA'
     func = unicodedata.east_asian_width
     return sum(2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1 for char in string)
 
 
-def resolve_invite(invite: Union[Invite, str]) -> str:
-    """
-    Resolves an invite from a :class:`~discord.Invite`, URL or code.
+class ResolvedInvite(NamedTuple):
+    code: str
+    event: Optional[int]
+
+
+def resolve_invite(invite: Union[Invite, str]) -> ResolvedInvite:
+    """Resolves an invite from a :class:`~discord.Invite`, URL or code.
+
+    .. versionchanged:: 2.0
+        Now returns a :class:`.ResolvedInvite` instead of a
+        :class:`str`.
 
     Parameters
     -----------
@@ -742,19 +844,24 @@ def resolve_invite(invite: Union[Invite, str]) -> str:
 
     Returns
     --------
-    :class:`str`
-        The invite code.
+    :class:`.ResolvedInvite`
+        A data class containing the invite code and the event ID.
     """
     from .invite import Invite  # circular import
 
     if isinstance(invite, Invite):
-        return invite.code
+        return ResolvedInvite(invite.code, invite.scheduled_event_id)
     else:
-        rx = r'(?:https?\:\/\/)?discord(?:\.gg|(?:app)?\.com\/invite)\/(.+)'
+        rx = r'(?:https?\:\/\/)?discord(?:\.gg|(?:app)?\.com\/invite)\/[^/]+'
         m = re.match(rx, invite)
+
         if m:
-            return m.group(1)
-    return invite
+            url = yarl.URL(invite)
+            code = url.parts[-1]
+            event_id = url.query.get('event')
+
+            return ResolvedInvite(code, int(event_id) if event_id else None)
+    return ResolvedInvite(invite, None)
 
 
 def resolve_template(code: Union[Template, str]) -> str:
@@ -928,12 +1035,12 @@ async def _achunk(iterator: AsyncIterable[T], max_size: int) -> AsyncIterator[Li
 
 
 @overload
-def as_chunks(iterator: Iterable[T], max_size: int) -> Iterator[List[T]]:
+def as_chunks(iterator: AsyncIterable[T], max_size: int) -> AsyncIterator[List[T]]:
     ...
 
 
 @overload
-def as_chunks(iterator: AsyncIterable[T], max_size: int) -> AsyncIterator[List[T]]:
+def as_chunks(iterator: Iterable[T], max_size: int) -> Iterator[List[T]]:
     ...
 
 
@@ -993,7 +1100,7 @@ def evaluate_annotation(
     cache: Dict[str, Any],
     *,
     implicit_str: bool = True,
-):
+) -> Any:
     if isinstance(tp, ForwardRef):
         tp = tp.__forward_arg__
         # ForwardRefs always evaluate their internals
@@ -1002,9 +1109,14 @@ def evaluate_annotation(
     if implicit_str and isinstance(tp, str):
         if tp in cache:
             return cache[tp]
-        evaluated = eval(tp, globals, locals)
+        evaluated = evaluate_annotation(eval(tp, globals, locals), globals, locals, cache)
         cache[tp] = evaluated
-        return evaluate_annotation(evaluated, globals, locals, cache)
+        return evaluated
+
+    if hasattr(tp, '__metadata__'):
+        # Annotated[X, Y] can access Y via __metadata__
+        metadata = tp.__metadata__[0]
+        return evaluate_annotation(metadata, globals, locals, cache)
 
     if hasattr(tp, '__args__'):
         implicit_str = True
@@ -1032,9 +1144,6 @@ def evaluate_annotation(
 
         if is_literal and not all(isinstance(x, (str, int, bool, type(None))) for x in evaluated_args):
             raise TypeError('Literal arguments must be of type str, int, bool, or NoneType.')
-
-        if evaluated_args == args:
-            return tp
 
         try:
             return tp.copy_with(evaluated_args)
@@ -1066,7 +1175,7 @@ def is_inside_class(func: Callable[..., Any]) -> bool:
     # denoting which class it belongs to. So, e.g. for A.foo the qualname
     # would be A.foo while a global foo() would just be foo.
     #
-    # Unfortuately, for nested functions this breaks. So inside an outer
+    # Unfortunately, for nested functions this breaks. So inside an outer
     # function named outer, those two would end up having a qualname with
     # outer.<locals>.A.foo and outer.<locals>.foo
 
@@ -1122,3 +1231,146 @@ def format_dt(dt: datetime.datetime, /, style: Optional[TimestampStyle] = None) 
     if style is None:
         return f'<t:{int(dt.timestamp())}>'
     return f'<t:{int(dt.timestamp())}:{style}>'
+
+
+def is_docker() -> bool:
+    path = '/proc/self/cgroup'
+    return os.path.exists('/.dockerenv') or (os.path.isfile(path) and any('docker' in line for line in open(path)))
+
+
+def stream_supports_colour(stream: Any) -> bool:
+    # Pycharm and Vscode support colour in their inbuilt editors
+    if 'PYCHARM_HOSTED' in os.environ or os.environ.get('TERM_PROGRAM') == 'vscode':
+        return True
+
+    is_a_tty = hasattr(stream, 'isatty') and stream.isatty()
+    if sys.platform != 'win32':
+        # Docker does not consistently have a tty attached to it
+        return is_a_tty or is_docker()
+
+    # ANSICON checks for things like ConEmu
+    # WT_SESSION checks if this is Windows Terminal
+    return is_a_tty and ('ANSICON' in os.environ or 'WT_SESSION' in os.environ)
+
+
+class _ColourFormatter(logging.Formatter):
+
+    # ANSI codes are a bit weird to decipher if you're unfamiliar with them, so here's a refresher
+    # It starts off with a format like \x1b[XXXm where XXX is a semicolon separated list of commands
+    # The important ones here relate to colour.
+    # 30-37 are black, red, green, yellow, blue, magenta, cyan and white in that order
+    # 40-47 are the same except for the background
+    # 90-97 are the same but "bright" foreground
+    # 100-107 are the same as the bright ones but for the background.
+    # 1 means bold, 2 means dim, 0 means reset, and 4 means underline.
+
+    LEVEL_COLOURS = [
+        (logging.DEBUG, '\x1b[40;1m'),
+        (logging.INFO, '\x1b[34;1m'),
+        (logging.WARNING, '\x1b[33;1m'),
+        (logging.ERROR, '\x1b[31m'),
+        (logging.CRITICAL, '\x1b[41m'),
+    ]
+
+    FORMATS = {
+        level: logging.Formatter(
+            f'\x1b[30;1m%(asctime)s\x1b[0m {colour}%(levelname)-8s\x1b[0m \x1b[35m%(name)s\x1b[0m %(message)s',
+            '%Y-%m-%d %H:%M:%S',
+        )
+        for level, colour in LEVEL_COLOURS
+    }
+
+    def format(self, record):
+        formatter = self.FORMATS.get(record.levelno)
+        if formatter is None:
+            formatter = self.FORMATS[logging.DEBUG]
+
+        # Override the traceback to always print in red
+        if record.exc_info:
+            text = formatter.formatException(record.exc_info)
+            record.exc_text = f'\x1b[31m{text}\x1b[0m'
+
+        output = formatter.format(record)
+
+        # Remove the cache layer
+        record.exc_text = None
+        return output
+
+
+def setup_logging(
+    *,
+    handler: logging.Handler = MISSING,
+    formatter: logging.Formatter = MISSING,
+    level: int = MISSING,
+    root: bool = True,
+) -> None:
+    """A helper function to setup logging.
+
+    This is superficially similar to :func:`logging.basicConfig` but
+    uses different defaults and a colour formatter if the stream can
+    display colour.
+
+    This is used by the :class:`~discord.Client` to set up logging
+    if ``log_handler`` is not ``None``.
+
+    .. versionadded:: 2.0
+
+    Parameters
+    -----------
+    handler: :class:`logging.Handler`
+        The log handler to use for the library's logger.
+
+        The default log handler if not provided is :class:`logging.StreamHandler`.
+    formatter: :class:`logging.Formatter`
+        The formatter to use with the given log handler. If not provided then it
+        defaults to a colour based logging formatter (if available). If colour
+        is not available then a simple logging formatter is provided.
+    level: :class:`int`
+        The default log level for the library's logger. Defaults to ``logging.INFO``.
+    root: :class:`bool`
+        Whether to set up the root logger rather than the library logger.
+        Unlike the default for :class:`~discord.Client`, this defaults to ``True``.
+    """
+
+    if level is MISSING:
+        level = logging.INFO
+
+    if handler is MISSING:
+        handler = logging.StreamHandler()
+
+    if formatter is MISSING:
+        if isinstance(handler, logging.StreamHandler) and stream_supports_colour(handler.stream):
+            formatter = _ColourFormatter()
+        else:
+            dt_fmt = '%Y-%m-%d %H:%M:%S'
+            formatter = logging.Formatter('[{asctime}] [{levelname:<8}] {name}: {message}', dt_fmt, style='{')
+
+    if root:
+        logger = logging.getLogger()
+    else:
+        library, _, _ = __name__.partition('.')
+        logger = logging.getLogger(library)
+
+    handler.setFormatter(formatter)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+
+def _shorten(
+    input: str,
+    *,
+    _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='…'),
+) -> str:
+    try:
+        # split on the first double newline since arguments may appear after that
+        input, _ = re.split(r'\n\s*\n', input, maxsplit=1)
+    except ValueError:
+        pass
+    return _wrapper.fill(' '.join(input.strip().split()))
+
+
+CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
+
+
+def _to_kebab_case(text: str) -> str:
+    return CAMEL_CASE_REGEX.sub('-', text).lower()

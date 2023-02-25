@@ -95,3 +95,19 @@ document.addEventListener('keydown', (event) => {
     activeModal.close();
   }
 });
+
+function searchBarClick(event, which) {
+  event.preventDefault();
+
+  if (event.button === 1 || event.buttons === 4) {
+      which.target = "_blank";  // Middle mouse button was clicked. Set our target to a new tab.
+  }
+  else if (event.button === 2) {
+    return  // Right button was clicked... Don't do anything here.
+  }
+  else {
+    which.target = "_self";  // Revert to same window.
+  }
+
+  which.submit();
+}

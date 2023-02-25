@@ -25,14 +25,18 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict, Union
+from typing_extensions import NotRequired
+
 from .webhook import Webhook
 from .guild import MFALevel, VerificationLevel, ExplicitContentFilterLevel, DefaultMessageNotificationLevel
 from .integration import IntegrationExpireBehavior, PartialIntegration
 from .user import User
+from .scheduled_event import EntityType, EventStatus, GuildScheduledEvent
 from .snowflake import Snowflake
 from .role import Role
-from .channel import ChannelType, VideoQualityMode, PermissionOverwrite
+from .channel import ChannelType, DefaultReaction, PrivacyLevel, VideoQualityMode, PermissionOverwrite, ForumTag
 from .threads import Thread
+from .command import ApplicationCommand, ApplicationCommandPermissions
 
 AuditLogEvent = Literal[
     1,
@@ -76,9 +80,19 @@ AuditLogEvent = Literal[
     90,
     91,
     92,
+    100,
+    101,
+    102,
     110,
     111,
     112,
+    121,
+    140,
+    141,
+    142,
+    143,
+    144,
+    145,
 ]
 
 
@@ -158,6 +172,9 @@ class _AuditLogChange_Int(TypedDict):
         'user_limit',
         'auto_archive_duration',
         'default_auto_archive_duration',
+        'default_thread_rate_limit_per_user',
+        'communication_disabled_until',
+        'flags',
     ]
     new_value: int
     old_value: int
@@ -217,6 +234,48 @@ class _AuditLogChange_Overwrites(TypedDict):
     old_value: List[PermissionOverwrite]
 
 
+class _AuditLogChange_PrivacyLevel(TypedDict):
+    key: Literal['privacy_level']
+    new_value: PrivacyLevel
+    old_value: PrivacyLevel
+
+
+class _AuditLogChange_Status(TypedDict):
+    key: Literal['status']
+    new_value: EventStatus
+    old_value: EventStatus
+
+
+class _AuditLogChange_EntityType(TypedDict):
+    key: Literal['entity_type']
+    new_value: EntityType
+    old_value: EntityType
+
+
+class _AuditLogChange_AppCommandPermissions(TypedDict):
+    key: str
+    new_value: ApplicationCommandPermissions
+    old_value: ApplicationCommandPermissions
+
+
+class _AuditLogChange_AppliedTags(TypedDict):
+    key: Literal['applied_tags']
+    new_value: List[Snowflake]
+    old_value: List[Snowflake]
+
+
+class _AuditLogChange_AvailableTags(TypedDict):
+    key: Literal['available_tags']
+    new_value: List[ForumTag]
+    old_value: List[ForumTag]
+
+
+class _AuditLogChange_DefaultReactionEmoji(TypedDict):
+    key: Literal['default_reaction_emoji']
+    new_value: Optional[DefaultReaction]
+    old_value: Optional[DefaultReaction]
+
+
 AuditLogChange = Union[
     _AuditLogChange_Str,
     _AuditLogChange_AssetHash,
@@ -232,6 +291,13 @@ AuditLogChange = Union[
     _AuditLogChange_IntegrationExpireBehaviour,
     _AuditLogChange_VideoQualityMode,
     _AuditLogChange_Overwrites,
+    _AuditLogChange_PrivacyLevel,
+    _AuditLogChange_Status,
+    _AuditLogChange_EntityType,
+    _AuditLogChange_AppCommandPermissions,
+    _AuditLogChange_AppliedTags,
+    _AuditLogChange_AvailableTags,
+    _AuditLogChange_DefaultReactionEmoji,
 ]
 
 
@@ -244,19 +310,20 @@ class AuditEntryInfo(TypedDict):
     id: Snowflake
     type: Literal['0', '1']
     role_name: str
+    application_id: Snowflake
+    guild_id: Snowflake
+    auto_moderation_rule_name: str
+    auto_moderation_rule_trigger_type: str
 
 
-class _AuditLogEntryOptional(TypedDict, total=False):
-    changes: List[AuditLogChange]
-    options: AuditEntryInfo
-    reason: str
-
-
-class AuditLogEntry(_AuditLogEntryOptional):
+class AuditLogEntry(TypedDict):
     target_id: Optional[str]
     user_id: Optional[Snowflake]
     id: Snowflake
     action_type: AuditLogEvent
+    changes: NotRequired[List[AuditLogChange]]
+    options: NotRequired[AuditEntryInfo]
+    reason: NotRequired[str]
 
 
 class AuditLog(TypedDict):
@@ -265,3 +332,5 @@ class AuditLog(TypedDict):
     audit_log_entries: List[AuditLogEntry]
     integrations: List[PartialIntegration]
     threads: List[Thread]
+    guild_scheduled_events: List[GuildScheduledEvent]
+    application_commands: List[ApplicationCommand]

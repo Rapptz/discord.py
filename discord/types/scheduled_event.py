@@ -22,39 +22,37 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Literal, Optional, TypedDict, Union
+from typing import List, Literal, Optional, TypedDict, Union
+from typing_extensions import NotRequired
 
 from .snowflake import Snowflake
 from .user import User
 from .member import Member
+from .channel import PrivacyLevel as PrivacyLevel
 
-GuildScheduledEventPrivacyLevel = Literal[1]
 EventStatus = Literal[1, 2, 3, 4]
+EntityType = Literal[1, 2, 3]
 
 
-class _BaseGuildScheduledEventOptional(TypedDict, total=False):
-    creator_id: Optional[Snowflake]
-    description: str
-    creator: User
-
-
-class _BaseGuildScheduledEvent(_BaseGuildScheduledEventOptional):
+class _BaseGuildScheduledEvent(TypedDict):
     id: Snowflake
     guild_id: Snowflake
+    entity_id: Optional[Snowflake]
     name: str
     scheduled_start_time: str
-    privacy_level: GuildScheduledEventPrivacyLevel
+    privacy_level: PrivacyLevel
     status: EventStatus
-    image: Optional[str]
+    creator_id: NotRequired[Optional[Snowflake]]
+    description: NotRequired[Optional[str]]
+    creator: NotRequired[User]
+    user_count: NotRequired[int]
+    image: NotRequired[Optional[str]]
 
 
-class _VoiceChannelScheduledEventOptional(_BaseGuildScheduledEvent, total=False):
-    scheduled_end_time: Optional[str]
-
-
-class _VoiceChannelScheduledEvent(_VoiceChannelScheduledEventOptional):
+class _VoiceChannelScheduledEvent(_BaseGuildScheduledEvent):
     channel_id: Snowflake
     entity_metadata: Literal[None]
+    scheduled_end_time: NotRequired[Optional[str]]
 
 
 class StageInstanceScheduledEvent(_VoiceChannelScheduledEvent):
@@ -72,7 +70,7 @@ class EntityMetadata(TypedDict):
 class ExternalScheduledEvent(_BaseGuildScheduledEvent):
     channel_id: Literal[None]
     entity_metadata: EntityMetadata
-    scheduled_end_time: Optional[str]
+    scheduled_end_time: str
     entity_type: Literal[3]
 
 
@@ -80,7 +78,7 @@ GuildScheduledEvent = Union[StageInstanceScheduledEvent, VoiceScheduledEvent, Ex
 
 
 class _WithUserCount(TypedDict):
-    user_count: str
+    user_count: int
 
 
 class _StageInstanceScheduledEventWithUserCount(StageInstanceScheduledEvent, _WithUserCount):
@@ -107,3 +105,7 @@ class ScheduledEventUser(TypedDict):
 
 class ScheduledEventUserWithMember(ScheduledEventUser):
     member: Member
+
+
+ScheduledEventUsers = List[ScheduledEventUser]
+ScheduledEventUsersWithMember = List[ScheduledEventUserWithMember]

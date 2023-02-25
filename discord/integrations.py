@@ -25,10 +25,9 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, Optional, TYPE_CHECKING, overload, Type, Tuple
+from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Tuple
 from .utils import _get_as_snowflake, parse_time, MISSING
 from .user import User
-from .errors import InvalidArgument
 from .enums import try_enum, ExpireBehaviour
 
 __all__ = (
@@ -37,9 +36,13 @@ __all__ = (
     'Integration',
     'StreamIntegration',
     'BotIntegration',
+    'PartialIntegration',
 )
 
 if TYPE_CHECKING:
+    from .guild import Guild
+    from .role import Role
+    from .state import ConnectionState
     from .types.integration import (
         IntegrationAccount as IntegrationAccountPayload,
         Integration as IntegrationPayload,
@@ -47,9 +50,8 @@ if TYPE_CHECKING:
         BotIntegration as BotIntegrationPayload,
         IntegrationType,
         IntegrationApplication as IntegrationApplicationPayload,
+        PartialIntegration as PartialIntegrationPayload,
     )
-    from .guild import Guild
-    from .role import Role
 
 
 class IntegrationAccount:
@@ -110,12 +112,12 @@ class Integration:
     )
 
     def __init__(self, *, data: IntegrationPayload, guild: Guild) -> None:
-        self.guild = guild
-        self._state = guild._state
+        self.guild: Guild = guild
+        self._state: ConnectionState = guild._state
         self._from_data(data)
 
-    def __repr__(self):
-        return f"<{self.__class__.__name__} id={self.id} name={self.name!r}>"
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
 
     def _from_data(self, data: IntegrationPayload) -> None:
         self.id: int = int(data['id'])
@@ -124,7 +126,7 @@ class Integration:
         self.account: IntegrationAccount = IntegrationAccount(data['account'])
 
         user = data.get('user')
-        self.user = User(state=self._state, data=user) if user else None
+        self.user: Optional[User] = User(state=self._state, data=user) if user else None
         self.enabled: bool = data['enabled']
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
@@ -132,8 +134,7 @@ class Integration:
 
         Deletes the integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         Parameters
         -----------
@@ -229,8 +230,11 @@ class StreamIntegration(Integration):
 
         Edits the integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
+
+        .. versionchanged:: 2.0
+            This function will now raise :exc:`TypeError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -247,13 +251,13 @@ class StreamIntegration(Integration):
             You do not have permission to edit the integration.
         HTTPException
             Editing the guild failed.
-        InvalidArgument
+        TypeError
             ``expire_behaviour`` did not receive a :class:`ExpireBehaviour`.
         """
         payload: Dict[str, Any] = {}
         if expire_behaviour is not MISSING:
             if not isinstance(expire_behaviour, ExpireBehaviour):
-                raise InvalidArgument('expire_behaviour field must be of type ExpireBehaviour')
+                raise TypeError('expire_behaviour field must be of type ExpireBehaviour')
 
             payload['expire_behavior'] = expire_behaviour.value
 
@@ -272,8 +276,7 @@ class StreamIntegration(Integration):
 
         Syncs the integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         Raises
         -------
@@ -316,7 +319,7 @@ class IntegrationApplication:
         'user',
     )
 
-    def __init__(self, *, data: IntegrationApplicationPayload, state):
+    def __init__(self, *, data: IntegrationApplicationPayload, state: ConnectionState) -> None:
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self.icon: Optional[str] = data['icon']
@@ -355,7 +358,54 @@ class BotIntegration(Integration):
 
     def _from_data(self, data: BotIntegrationPayload) -> None:
         super()._from_data(data)
-        self.application = IntegrationApplication(data=data['application'], state=self._state)
+        self.application: IntegrationApplication = IntegrationApplication(data=data['application'], state=self._state)
+
+
+class PartialIntegration:
+    """Represents a partial guild integration.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The integration ID.
+    name: :class:`str`
+        The integration name.
+    guild: :class:`Guild`
+        The guild of the integration.
+    type: :class:`str`
+        The integration type (i.e. Twitch).
+    account: :class:`IntegrationAccount`
+        The account linked to this integration.
+    application_id: Optional[:class:`int`]
+        The id of the application this integration belongs to.
+    """
+
+    __slots__ = (
+        'guild',
+        '_state',
+        'id',
+        'type',
+        'name',
+        'account',
+        'application_id',
+    )
+
+    def __init__(self, *, data: PartialIntegrationPayload, guild: Guild):
+        self.guild: Guild = guild
+        self._state: ConnectionState = guild._state
+        self._from_data(data)
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
+
+    def _from_data(self, data: PartialIntegrationPayload) -> None:
+        self.id: int = int(data['id'])
+        self.type: IntegrationType = data['type']
+        self.name: str = data['name']
+        self.account: IntegrationAccount = IntegrationAccount(data['account'])
+        self.application_id: Optional[int] = _get_as_snowflake(data, 'application_id')
 
 
 def _integration_factory(value: str) -> Tuple[Type[Integration], str]:

@@ -11,8 +11,6 @@ In version 1.5 comes the introduction of :class:`Intents`. This is a radical cha
 
 These intents are passed to the constructor of :class:`Client` or its subclasses (:class:`AutoShardedClient`, :class:`~.AutoShardedBot`, :class:`~.Bot`) with the ``intents`` argument.
 
-If intents are not passed, then the library defaults to every intent being enabled except the privileged intents, currently :attr:`Intents.members` and :attr:`Intents.presences`.
-
 What intents are needed?
 --------------------------
 

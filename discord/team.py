@@ -64,7 +64,7 @@ class Team:
 
     __slots__ = ('_state', 'id', 'name', '_icon', 'owner_id', 'members')
 
-    def __init__(self, state: ConnectionState, data: TeamPayload):
+    def __init__(self, state: ConnectionState, data: TeamPayload) -> None:
         self._state: ConnectionState = state
 
         self.id: int = int(data['id'])
@@ -120,8 +120,6 @@ class TeamMember(BaseUser):
         The team member's unique ID.
     discriminator: :class:`str`
         The team member's discriminator. This is given when the username has conflicts.
-    avatar: Optional[:class:`str`]
-        The avatar hash the team member has. Could be None.
     bot: :class:`bool`
         Specifies if the user is a bot account.
     team: :class:`Team`
@@ -132,7 +130,7 @@ class TeamMember(BaseUser):
 
     __slots__ = ('team', 'membership_state', 'permissions')
 
-    def __init__(self, team: Team, state: ConnectionState, data: TeamMemberPayload):
+    def __init__(self, team: Team, state: ConnectionState, data: TeamMemberPayload) -> None:
         self.team: Team = team
         self.membership_state: TeamMembershipState = try_enum(TeamMembershipState, data['membership_state'])
         self.permissions: List[str] = data['permissions']
