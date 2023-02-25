@@ -426,38 +426,37 @@ class ScheduledEvent(Hashable):
             payload['entity_type'] = entity_type.value
 
         _entity_type = entity_type or self.entity_type
+        _channel = channel or self.channel
+        _location = location or self.location
+        _end_time = end_time or self.end_time
 
         if _entity_type in (EntityType.stage_instance, EntityType.voice):
-            if channel is MISSING or channel is None:
+            if _channel in (MISSING, None):
                 raise TypeError('channel must be set when entity_type is voice or stage_instance')
+            payload['channel_id'] = _channel.id
 
-            payload['channel_id'] = channel.id
-
-            if location not in (MISSING, None):
+            if _location not in (MISSING, None):
                 raise TypeError('location cannot be set when entity_type is voice or stage_instance')
             payload['entity_metadata'] = None
         else:
-            if channel not in (MISSING, None):
-                raise TypeError('channel cannot be set when entity_type is external')
             payload['channel_id'] = None
 
-            if location is MISSING or location is None:
+            if _location in (MISSING, None):
                 raise TypeError('location must be set when entity_type is external')
+            metadata['location'] = _location
 
-            metadata['location'] = location
-
-            if end_time is MISSING or end_time is None:
+            if _end_time in (MISSING, None):
                 raise TypeError('end_time must be set when entity_type is external')
 
-        if end_time is not MISSING:
-            if end_time is not None:
-                if end_time.tzinfo is None:
+        if _end_time is not MISSING:
+            if _end_time is not None:
+                if _end_time.tzinfo is None:
                     raise ValueError(
                         'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
                     )
-                payload['scheduled_end_time'] = end_time.isoformat()
+                payload['scheduled_end_time'] = _end_time.isoformat()
             else:
-                payload['scheduled_end_time'] = end_time
+                payload['scheduled_end_time'] = _end_time
 
         if metadata:
             payload['entity_metadata'] = metadata
