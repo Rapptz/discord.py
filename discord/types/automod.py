@@ -45,9 +45,13 @@ class _AutoModerationActionMetadataTimeout(TypedDict):
     duration_seconds: int
 
 
+class _AutoModerationActionMetadataCustomMessage(TypedDict):
+    custom_message: str
+
+
 class _AutoModerationActionBlockMessage(TypedDict):
     type: Literal[1]
-    metadata: NotRequired[Empty]
+    metadata: NotRequired[_AutoModerationActionMetadataCustomMessage]
 
 
 class _AutoModerationActionAlert(TypedDict):
