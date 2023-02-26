@@ -414,6 +414,9 @@ class ScheduledEvent(Hashable):
             payload['image'] = image_as_str
 
         entity_type = entity_type or getattr(channel, '_scheduled_event_entity_type', MISSING)
+        if entity_type is MISSING and location not in (MISSING, None):
+            entity_type = EntityType.external
+
         if entity_type is None:
             raise TypeError(
                 f'invalid GuildChannel type passed, must be VoiceChannel or StageChannel not {channel.__class__.__name__}'
@@ -426,27 +429,30 @@ class ScheduledEvent(Hashable):
             payload['entity_type'] = entity_type.value
 
         _entity_type = entity_type or self.entity_type
-
+        _entity_type_chaned = _entity_type is not self.entity_type
+        print(_entity_type, entity_type, self.entity_type)
         if _entity_type in (EntityType.stage_instance, EntityType.voice):
             if channel is MISSING or channel is None:
-                raise TypeError('channel must be set when entity_type is voice or stage_instance')
+                if _entity_type_chaned:
+                    raise TypeError('channel must be set when entity_type is voice or stage_instance')
+            else:
+                payload['channel_id'] = channel.id
 
-            payload['channel_id'] = channel.id
-
-            if location not in (MISSING, None):
-                raise TypeError('location cannot be set when entity_type is voice or stage_instance')
-            payload['entity_metadata'] = None
+                if location not in (MISSING, None):
+                    raise TypeError('location cannot be set when entity_type is voice or stage_instance')
+                payload['entity_metadata'] = None
         else:
             if channel not in (MISSING, None):
                 raise TypeError('channel cannot be set when entity_type is external')
             payload['channel_id'] = None
 
             if location is MISSING or location is None:
-                raise TypeError('location must be set when entity_type is external')
+                if _entity_type_chaned:
+                    raise TypeError('location must be set when entity_type is external')
+            else:
+                metadata['location'] = location
 
-            metadata['location'] = location
-
-            if end_time is MISSING or end_time is None:
+            if not self.end_time and (end_time is MISSING or end_time is None):
                 raise TypeError('end_time must be set when entity_type is external')
 
         if end_time is not MISSING:
