@@ -430,7 +430,7 @@ class ScheduledEvent(Hashable):
 
         _entity_type = entity_type or self.entity_type
         _entity_type_chaned = _entity_type is not self.entity_type
-        print(_entity_type, entity_type, self.entity_type)
+
         if _entity_type in (EntityType.stage_instance, EntityType.voice):
             if channel is MISSING or channel is None:
                 if _entity_type_chaned:
