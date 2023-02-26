@@ -438,9 +438,9 @@ class ScheduledEvent(Hashable):
             else:
                 payload['channel_id'] = channel.id
 
-                if location not in (MISSING, None):
-                    raise TypeError('location cannot be set when entity_type is voice or stage_instance')
-                payload['entity_metadata'] = None
+            if location not in (MISSING, None):
+                raise TypeError('location cannot be set when entity_type is voice or stage_instance')
+            payload['entity_metadata'] = None
         else:
             if channel not in (MISSING, None):
                 raise TypeError('channel cannot be set when entity_type is external')
