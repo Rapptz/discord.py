@@ -118,7 +118,9 @@ class AutoModRuleAction:
 
     def to_dict(self) -> Dict[str, Any]:
         ret = {'type': self.type.value, 'metadata': {}}
-        if self.type is AutoModRuleActionType.timeout:
+        if self.type is AutoModRuleActionType.block_message and self.custom_message is not None:
+            ret['metadata'] = {'custom_message': self.custom_message}
+        elif self.type is AutoModRuleActionType.timeout:
             ret['metadata'] = {'duration_seconds': int(self.duration.total_seconds())}  # type: ignore # duration cannot be None here
         elif self.type is AutoModRuleActionType.send_alert_message:
             ret['metadata'] = {'channel_id': str(self.channel_id)}
