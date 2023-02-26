@@ -429,11 +429,11 @@ class ScheduledEvent(Hashable):
             payload['entity_type'] = entity_type.value
 
         _entity_type = entity_type or self.entity_type
-        _entity_type_chaned = _entity_type is not self.entity_type
+        _entity_type_changed = _entity_type is not self.entity_type
 
         if _entity_type in (EntityType.stage_instance, EntityType.voice):
             if channel is MISSING or channel is None:
-                if _entity_type_chaned:
+                if _entity_type_changed:
                     raise TypeError('channel must be set when entity_type is voice or stage_instance')
             else:
                 payload['channel_id'] = channel.id
@@ -447,7 +447,7 @@ class ScheduledEvent(Hashable):
             payload['channel_id'] = None
 
             if location is MISSING or location is None:
-                if _entity_type_chaned:
+                if _entity_type_changed:
                     raise TypeError('location must be set when entity_type is external')
             else:
                 metadata['location'] = location
