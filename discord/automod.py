@@ -114,7 +114,7 @@ class AutoModRuleAction:
         elif data['type'] == AutoModRuleActionType.send_alert_message.value:
             channel_id = int(data['metadata']['channel_id'])
             return cls(channel_id=channel_id)
-        return cls(custom_message=data.get('metadata', {'custom_message': None})['custom_message'])
+        return cls(custom_message=data.get('metadata', {}).get('custom_message'))
 
     def to_dict(self) -> Dict[str, Any]:
         ret = {'type': self.type.value, 'metadata': {}}
