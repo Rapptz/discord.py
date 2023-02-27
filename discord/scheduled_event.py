@@ -571,8 +571,8 @@ class ScheduledEvent(Hashable):
         oldest_first: bool = MISSING,
     ) -> AsyncIterator[User]:
         """|coro|
-        Returns an :term:`asynchronous iterator` that enables receiving :class:`User`s
-        thatare subscribed to this event.
+
+        Retrieves all :class:`User` that are subscribed to this event.
 
         This requires :attr:`Intents.members` to get information about members
         other than yourself.
@@ -582,10 +582,10 @@ class ScheduledEvent(Hashable):
         HTTPException
             Retrieving the members failed.
 
-        Yields
+        Returns
         --------
-        :class:`User`
-            The user subcribed to this event.
+        List[:class:`User`]
+            All subscribed users of this event.
         """
 
         async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
