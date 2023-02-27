@@ -495,8 +495,14 @@ class ScheduledEvent(Hashable):
             payload['image'] = image_as_str
 
         entity_type = entity_type or getattr(channel, '_scheduled_event_entity_type', MISSING)
-        if entity_type is MISSING and location not in (MISSING, None):
-            entity_type = EntityType.external
+        if entity_type is MISSING:
+            if channel and isinstance(channel, Object):
+                if channel.type is VoiceChannel:
+                    entity_type = EntityType.voice
+                elif channel.type is StageChannel:
+                    entity_type = EntityType.stage_instance
+            elif location not in (MISSING, None):
+                entity_type = EntityType.external
 
         if entity_type is None:
             raise TypeError(
