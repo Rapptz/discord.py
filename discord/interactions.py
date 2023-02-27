@@ -450,7 +450,7 @@ class Interaction(Generic[ClientT]):
         """
 
         previous_mentions: Optional[AllowedMentions] = self._state.allowed_mentions
-        params = handle_message_parameters(
+        with handle_message_parameters(
             content=content,
             attachments=attachments,
             embed=embed,
@@ -458,19 +458,19 @@ class Interaction(Generic[ClientT]):
             view=view,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
-        )
-        adapter = async_context.get()
-        http = self._state.http
-        data = await adapter.edit_original_interaction_response(
-            self.application_id,
-            self.token,
-            session=self._session,
-            proxy=http.proxy,
-            proxy_auth=http.proxy_auth,
-            payload=params.payload,
-            multipart=params.multipart,
-            files=params.files,
-        )
+        ) as params:
+            adapter = async_context.get()
+            http = self._state.http
+            data = await adapter.edit_original_interaction_response(
+                self.application_id,
+                self.token,
+                session=self._session,
+                proxy=http.proxy,
+                proxy_auth=http.proxy_auth,
+                payload=params.payload,
+                multipart=params.multipart,
+                files=params.files,
+            )
 
         # The message channel types should always match
         state = _InteractionMessageState(self, self._state)
@@ -690,6 +690,7 @@ class InteractionResponse(Generic[ClientT]):
         ephemeral: bool = False,
         allowed_mentions: AllowedMentions = MISSING,
         suppress_embeds: bool = False,
+        silent: bool = False,
         delete_after: Optional[float] = None,
     ) -> None:
         """|coro|
@@ -723,6 +724,11 @@ class InteractionResponse(Generic[ClientT]):
             more information.
         suppress_embeds: :class:`bool`
             Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
+        silent: :class:`bool`
+            Whether to suppress push and desktop notifications for the message. This will increment the mention counter
+            in the UI, but will not actually send a notification.
+
+            .. versionadded:: 2.2
         delete_after: :class:`float`
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
@@ -744,10 +750,11 @@ class InteractionResponse(Generic[ClientT]):
         if self._response_type:
             raise InteractionResponded(self._parent)
 
-        if ephemeral or suppress_embeds:
+        if ephemeral or suppress_embeds or silent:
             flags = MessageFlags._from_value(0)
             flags.ephemeral = ephemeral
             flags.suppress_embeds = suppress_embeds
+            flags.suppress_notifications = silent
         else:
             flags = MISSING
 
@@ -777,7 +784,7 @@ class InteractionResponse(Generic[ClientT]):
             params=params,
         )
 
-        if view is not MISSING:
+        if view is not MISSING and not view.is_finished():
             if ephemeral and view.timeout is None:
                 view.timeout = 15 * 60.0
 
@@ -860,7 +867,15 @@ class InteractionResponse(Generic[ClientT]):
         parent = self._parent
         msg = parent.message
         state = parent._state
-        message_id = msg.id if msg else None
+        if msg is not None:
+            message_id = msg.id
+            # If this was invoked via an application command then we can use its original interaction ID
+            # Since this is used as a cache key for view updates
+            original_interaction_id = msg.interaction.id if msg.interaction is not None else None
+        else:
+            message_id = None
+            original_interaction_id = None
+
         if parent.type not in (InteractionType.component, InteractionType.modal_submit):
             return
 
@@ -890,7 +905,7 @@ class InteractionResponse(Generic[ClientT]):
         )
 
         if view and not view.is_finished():
-            state.store_view(view, message_id)
+            state.store_view(view, message_id, interaction_id=original_interaction_id)
 
         self._response_type = InteractionResponseType.message_update
 
@@ -939,8 +954,8 @@ class InteractionResponse(Generic[ClientT]):
             proxy_auth=http.proxy_auth,
             params=params,
         )
-
-        self._parent._state.store_view(modal)
+        if not modal.is_finished():
+            self._parent._state.store_view(modal)
         self._response_type = InteractionResponseType.modal
 
     async def autocomplete(self, choices: Sequence[Choice[ChoiceT]]) -> None:
@@ -1043,6 +1058,7 @@ class InteractionMessage(Message):
         attachments: Sequence[Union[Attachment, File]] = MISSING,
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
+        delete_after: Optional[float] = None,
     ) -> InteractionMessage:
         """|coro|
 
@@ -1071,6 +1087,12 @@ class InteractionMessage(Message):
         view: Optional[:class:`~discord.ui.View`]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+        delete_after: Optional[:class:`float`]
+            If provided, the number of seconds to wait in the background
+            before deleting the message we just sent. If the deletion fails,
+            then it is silently ignored.
+
+            .. versionadded:: 2.2
 
         Raises
         -------
@@ -1088,7 +1110,7 @@ class InteractionMessage(Message):
         :class:`InteractionMessage`
             The newly edited message.
         """
-        return await self._state._interaction.edit_original_response(
+        res = await self._state._interaction.edit_original_response(
             content=content,
             embeds=embeds,
             embed=embed,
@@ -1096,6 +1118,9 @@ class InteractionMessage(Message):
             view=view,
             allowed_mentions=allowed_mentions,
         )
+        if delete_after is not None:
+            await self.delete(delay=delete_after)
+        return res
 
     async def add_files(self, *files: File) -> InteractionMessage:
         r"""|coro|

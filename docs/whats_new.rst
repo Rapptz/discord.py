@@ -11,6 +11,16 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p1p1:
+
+v2.1.1
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix crash involving GIF stickers when looking up their filename extension.
+
 .. _vp2p1p0:
 
 v2.1.0

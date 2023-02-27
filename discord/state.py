@@ -65,7 +65,6 @@ from .role import Role
 from .enums import ChannelType, try_enum, Status
 from . import utils
 from .flags import ApplicationFlags, Intents, MemberCacheFlags
-from .object import Object
 from .invite import Invite
 from .integrations import _integration_factory
 from .interactions import Interaction
@@ -1631,9 +1630,10 @@ class AutoShardedConnectionState(ConnectionState[ClientT]):
             new_guild = self._get_guild(msg.guild.id)
             if new_guild is not None and new_guild is not msg.guild:
                 channel_id = msg.channel.id
-                channel = new_guild._resolve_channel(channel_id) or Object(id=channel_id)
-                # channel will either be a TextChannel, Thread or Object
-                msg._rebind_cached_references(new_guild, channel)  # type: ignore
+                channel = new_guild._resolve_channel(channel_id) or PartialMessageable(
+                    state=self, id=channel_id, guild_id=new_guild.id
+                )
+                msg._rebind_cached_references(new_guild, channel)
 
     async def chunker(
         self,

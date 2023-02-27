@@ -48,7 +48,7 @@ from collections import Counter
 
 from .namespace import Namespace, ResolveKey
 from .models import AppCommand
-from .commands import Command, ContextMenu, Group, _shorten
+from .commands import Command, ContextMenu, Group
 from .errors import (
     AppCommandError,
     CommandAlreadyRegistered,
@@ -61,7 +61,7 @@ from .errors import (
 from .translator import Translator, locale_str
 from ..errors import ClientException, HTTPException
 from ..enums import AppCommandType, InteractionType
-from ..utils import MISSING, _get_as_snowflake, _is_submodule
+from ..utils import MISSING, _get_as_snowflake, _is_submodule, _shorten
 from .._types import ClientT
 
 
@@ -1235,7 +1235,13 @@ class CommandTree(Generic[ClientT]):
             focused = next((opt['name'] for opt in options if opt.get('focused')), None)
             if focused is None:
                 raise AppCommandError('This should not happen, but there is no focused element. This is a Discord bug.')
-            await command._invoke_autocomplete(interaction, focused, namespace)
+
+            try:
+                await command._invoke_autocomplete(interaction, focused, namespace)
+            except Exception:
+                # Suppress exception since it can't be handled anyway.
+                pass
+
             return
 
         try:

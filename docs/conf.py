@@ -42,6 +42,7 @@ extensions = [
     'attributetable',
     'resourcelinks',
     'nitpick_file_ignorer',
+    'colour_preview',
 ]
 
 autodoc_member_order = 'bysource'

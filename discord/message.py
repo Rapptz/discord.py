@@ -91,7 +91,6 @@ if TYPE_CHECKING:
     from .abc import GuildChannel, MessageableChannel
     from .components import ActionRow, ActionRowChildComponentType
     from .state import ConnectionState
-    from .channel import TextChannel
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
@@ -701,6 +700,7 @@ class PartialMessage(Hashable):
 
     - :meth:`TextChannel.get_partial_message`
     - :meth:`VoiceChannel.get_partial_message`
+    - :meth:`StageChannel.get_partial_message`
     - :meth:`Thread.get_partial_message`
     - :meth:`DMChannel.get_partial_message`
 
@@ -724,7 +724,7 @@ class PartialMessage(Hashable):
 
     Attributes
     -----------
-    channel: Union[:class:`PartialMessageable`, :class:`TextChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`]
+    channel: Union[:class:`PartialMessageable`, :class:`TextChannel`, :class:`StageChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`]
         The channel associated with this partial message.
     id: :class:`int`
         The message ID.
@@ -738,6 +738,7 @@ class PartialMessage(Hashable):
         if not isinstance(channel, PartialMessageable) and channel.type not in (
             ChannelType.text,
             ChannelType.voice,
+            ChannelType.stage_voice,
             ChannelType.news,
             ChannelType.private,
             ChannelType.news_thread,
@@ -745,7 +746,7 @@ class PartialMessage(Hashable):
             ChannelType.private_thread,
         ):
             raise TypeError(
-                f'expected PartialMessageable, TextChannel, VoiceChannel, DMChannel or Thread not {type(channel)!r}'
+                f'expected PartialMessageable, TextChannel, StageChannel, VoiceChannel, DMChannel or Thread not {type(channel)!r}'
             )
 
         self.channel: MessageableChannel = channel
@@ -952,7 +953,7 @@ class PartialMessage(Hashable):
         if view is not MISSING:
             self._state.prevent_view_updates_for(self.id)
 
-        params = handle_message_parameters(
+        with handle_message_parameters(
             content=content,
             embed=embed,
             embeds=embeds,
@@ -960,9 +961,9 @@ class PartialMessage(Hashable):
             view=view,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_allowed_mentions,
-        )
-        data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
-        message = Message(state=self._state, channel=self.channel, data=data)
+        ) as params:
+            data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
+            message = Message(state=self._state, channel=self.channel, data=data)
 
         if view and not view.is_finished():
             interaction: Optional[MessageInteraction] = getattr(self, 'interaction', None)
@@ -979,8 +980,9 @@ class PartialMessage(Hashable):
     async def publish(self) -> None:
         """|coro|
 
-        Publishes this message to your announcement channel.
+        Publishes this message to the channel's followers.
 
+        The message must have been sent in a news channel.
         You must have :attr:`~Permissions.send_messages` to do this.
 
         If the message is not your own then :attr:`~Permissions.manage_messages`
@@ -989,7 +991,8 @@ class PartialMessage(Hashable):
         Raises
         -------
         Forbidden
-            You do not have the proper permissions to publish this message.
+            You do not have the proper permissions to publish this message
+            or the channel is not a news channel.
         HTTPException
             Publishing the message failed.
         """
@@ -1214,6 +1217,8 @@ class PartialMessage(Hashable):
         auto_archive_duration: :class:`int`
             The duration in minutes before a thread is automatically archived for inactivity.
             If not provided, the channel's default auto archive duration is used.
+
+            Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided.
         slowmode_delay: Optional[:class:`int`]
             Specifies the slowmode rate limit for user in this channel, in seconds.
             The maximum value possible is ``21600``. By default no slowmode rate limit
@@ -1354,7 +1359,7 @@ class Message(PartialMessage, Hashable):
         A list of embeds the message has.
         If :attr:`Intents.message_content` is not enabled this will always be an empty list
         unless the bot is mentioned or the message is a direct message.
-    channel: Union[:class:`TextChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]
+    channel: Union[:class:`TextChannel`, :class:`StageChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]
         The :class:`TextChannel` or :class:`Thread` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     reference: Optional[:class:`~discord.MessageReference`]
@@ -1763,9 +1768,13 @@ class Message(PartialMessage, Hashable):
     def _handle_interaction(self, data: MessageInteractionPayload):
         self.interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
 
-    def _rebind_cached_references(self, new_guild: Guild, new_channel: Union[TextChannel, Thread]) -> None:
+    def _rebind_cached_references(
+        self,
+        new_guild: Guild,
+        new_channel: Union[GuildChannel, Thread, PartialMessageable],
+    ) -> None:
         self.guild = new_guild
-        self.channel = new_channel
+        self.channel = new_channel  # type: ignore # Not all "GuildChannel" are messageable at the moment
 
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self) -> List[int]:
@@ -2141,7 +2150,7 @@ class Message(PartialMessage, Hashable):
         if view is not MISSING:
             self._state.prevent_view_updates_for(self.id)
 
-        params = handle_message_parameters(
+        with handle_message_parameters(
             content=content,
             flags=flags,
             embed=embed,
@@ -2150,9 +2159,9 @@ class Message(PartialMessage, Hashable):
             view=view,
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_allowed_mentions,
-        )
-        data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
-        message = Message(state=self._state, channel=self.channel, data=data)
+        ) as params:
+            data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
+            message = Message(state=self._state, channel=self.channel, data=data)
 
         if view and not view.is_finished():
             self._state.store_view(view, self.id)

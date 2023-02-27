@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import array
 import asyncio
+from textwrap import TextWrapper
 from typing import (
     Any,
     AsyncIterable,
@@ -1353,3 +1354,23 @@ def setup_logging(
     handler.setFormatter(formatter)
     logger.setLevel(level)
     logger.addHandler(handler)
+
+
+def _shorten(
+    input: str,
+    *,
+    _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='…'),
+) -> str:
+    try:
+        # split on the first double newline since arguments may appear after that
+        input, _ = re.split(r'\n\s*\n', input, maxsplit=1)
+    except ValueError:
+        pass
+    return _wrapper.fill(' '.join(input.strip().split()))
+
+
+CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
+
+
+def _to_kebab_case(text: str) -> str:
+    return CAMEL_CASE_REGEX.sub('-', text).lower()

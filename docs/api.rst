@@ -804,6 +804,7 @@ Members
     - pending
     - timeout
     - guild avatar
+    - flags
 
     Due to a Discord limitation, this event is not dispatched when a member's timeout expires.
 
@@ -2668,7 +2669,7 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
-    .. attribute:: automod_role_update
+    .. attribute:: automod_rule_update
 
         An automod rule was updated.
 
@@ -3516,9 +3517,9 @@ AuditLogDiff
 
     .. attribute:: type
 
-        The type of channel, sticker or integration.
+        The type of channel, sticker, webhook or integration.
 
-        :type: Union[:class:`ChannelType`, :class:`StickerType`, :class:`str`]
+        :type: Union[:class:`ChannelType`, :class:`StickerType`, :class:`WebhookType`, :class:`str`]
 
     .. attribute:: topic
 
@@ -4832,6 +4833,13 @@ PublicUserFlags
 .. autoclass:: PublicUserFlags
     :members:
 
+MemberFlags
+~~~~~~~~~~~~
+
+.. attributetable:: MemberFlags
+
+.. autoclass:: MemberFlags
+    :members:
 
 ForumTag
 ~~~~~~~~~

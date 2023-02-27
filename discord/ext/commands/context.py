@@ -190,7 +190,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         command_failed: bool = False,
         current_parameter: Optional[Parameter] = None,
         current_argument: Optional[str] = None,
-        interaction: Optional[Interaction] = None,
+        interaction: Optional[Interaction[BotT]] = None,
     ):
         self.message: Message = message
         self.bot: BotT = bot
@@ -206,11 +206,11 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         self.command_failed: bool = command_failed
         self.current_parameter: Optional[Parameter] = current_parameter
         self.current_argument: Optional[str] = current_argument
-        self.interaction: Optional[Interaction] = interaction
+        self.interaction: Optional[Interaction[BotT]] = interaction
         self._state: ConnectionState = self.message._state
 
     @classmethod
-    async def from_interaction(cls, interaction: Interaction, /) -> Self:
+    async def from_interaction(cls, interaction: Interaction[BotT], /) -> Self:
         """|coro|
 
         Creates a context from a :class:`discord.Interaction`. This only
@@ -734,6 +734,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         view: Optional[View] = None,
         suppress_embeds: bool = False,
         ephemeral: bool = False,
+        silent: bool = False,
     ) -> Message:
         """|coro|
 
@@ -817,6 +818,11 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             is set to 15 minutes. **This is only applicable in contexts with an interaction**.
 
             .. versionadded:: 2.0
+        silent: :class:`bool`
+            Whether to suppress push and desktop notifications for the message. This will increment the mention counter
+            in the UI, but will not actually send a notification.
+
+            .. versionadded:: 2.2
 
         Raises
         --------
@@ -854,6 +860,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
                 mention_author=mention_author,
                 view=view,
                 suppress_embeds=suppress_embeds,
+                silent=silent,
             )  # type: ignore # The overloads don't support Optional but the implementation does
 
         # Convert the kwargs from None to MISSING to appease the remaining implementations
@@ -868,6 +875,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             'view': MISSING if view is None else view,
             'suppress_embeds': suppress_embeds,
             'ephemeral': ephemeral,
+            'silent': silent,
         }
 
         if self.interaction.response.is_done():

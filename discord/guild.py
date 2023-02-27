@@ -1400,6 +1400,8 @@ class Guild(Hashable):
             options['rtc_region'] = None if rtc_region is None else rtc_region
 
         if video_quality_mode is not MISSING:
+            if not isinstance(video_quality_mode, VideoQualityMode):
+                raise TypeError('video_quality_mode must be of type VideoQualityMode')
             options['video_quality_mode'] = video_quality_mode.value
 
         data = await self._create_channel(
@@ -1415,11 +1417,14 @@ class Guild(Hashable):
         self,
         name: str,
         *,
-        topic: str,
-        position: int = MISSING,
-        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
-        category: Optional[CategoryChannel] = None,
         reason: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        position: int = MISSING,
+        bitrate: int = MISSING,
+        user_limit: int = MISSING,
+        rtc_region: Optional[str] = MISSING,
+        video_quality_mode: VideoQualityMode = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
     ) -> StageChannel:
         """|coro|
 
@@ -1435,8 +1440,6 @@ class Guild(Hashable):
         -----------
         name: :class:`str`
             The channel's name.
-        topic: :class:`str`
-            The new channel's topic.
         overwrites: Dict[Union[:class:`Role`, :class:`Member`], :class:`PermissionOverwrite`]
             A :class:`dict` of target (either a role or a member) to
             :class:`PermissionOverwrite` to apply upon creation of a channel.
@@ -1448,6 +1451,23 @@ class Guild(Hashable):
         position: :class:`int`
             The position in the channel list. This is a number that starts
             at 0. e.g. the top channel is position 0.
+        bitrate: :class:`int`
+            The channel's preferred audio bitrate in bits per second.
+
+            .. versionadded:: 2.2
+        user_limit: :class:`int`
+            The channel's limit for number of members that can be in a voice channel.
+
+            .. versionadded:: 2.2
+        rtc_region: Optional[:class:`str`]
+            The region for the voice channel's voice communication.
+            A value of ``None`` indicates automatic voice region detection.
+
+            .. versionadded:: 2.2
+        video_quality_mode: :class:`VideoQualityMode`
+            The camera video quality for the voice channel's participants.
+
+            .. versionadded:: 2.2
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
@@ -1466,11 +1486,23 @@ class Guild(Hashable):
             The channel that was just created.
         """
 
-        options: Dict[str, Any] = {
-            'topic': topic,
-        }
+        options = {}
         if position is not MISSING:
             options['position'] = position
+
+        if bitrate is not MISSING:
+            options['bitrate'] = bitrate
+
+        if user_limit is not MISSING:
+            options['user_limit'] = user_limit
+
+        if rtc_region is not MISSING:
+            options['rtc_region'] = None if rtc_region is None else rtc_region
+
+        if video_quality_mode is not MISSING:
+            if not isinstance(video_quality_mode, VideoQualityMode):
+                raise TypeError('video_quality_mode must be of type VideoQualityMode')
+            options['video_quality_mode'] = video_quality_mode.value
 
         data = await self._create_channel(
             name, overwrites=overwrites, channel_type=ChannelType.stage_voice, category=category, reason=reason, **options
@@ -1911,7 +1943,6 @@ class Guild(Hashable):
             fields['system_channel_flags'] = system_channel_flags.value
 
         if any(feat is not MISSING for feat in (community, discoverable, invites_disabled)):
-
             features = set(self.features)
 
             if community is not MISSING:
@@ -3261,7 +3292,6 @@ class Guild(Hashable):
 
         role_positions = []
         for role, position in positions.items():
-
             payload: RolePositionUpdatePayload = {'id': role.id, 'position': position}
 
             role_positions.append(payload)
@@ -3600,7 +3630,7 @@ class Guild(Hashable):
                 if limit is not None:
                     limit -= len(entries)
 
-                after = Object(id=int(entries[0]['id']))
+                after = Object(id=int(entries[-1]['id']))
 
             return data, entries, after, limit
 
@@ -3617,20 +3647,19 @@ class Guild(Hashable):
         if isinstance(after, datetime.datetime):
             after = Object(id=utils.time_snowflake(after, high=True))
 
-        if oldest_first is MISSING:
-            reverse = after is not MISSING
-        else:
-            reverse = oldest_first
+        if oldest_first:
+            if after is MISSING:
+                after = OLDEST_OBJECT
 
         predicate = None
 
-        if reverse:
+        if oldest_first:
             strategy, state = _after_strategy, after
             if before:
                 predicate = lambda m: int(m['id']) < before.id
         else:
             strategy, state = _before_strategy, before
-            if after and after != OLDEST_OBJECT:
+            if after:
                 predicate = lambda m: int(m['id']) > after.id
 
         # avoid circular import
@@ -3643,8 +3672,6 @@ class Guild(Hashable):
 
             data, raw_entries, state, limit = await strategy(retrieve, state, limit)
 
-            if reverse:
-                raw_entries = reversed(raw_entries)
             if predicate:
                 raw_entries = filter(predicate, raw_entries)
 
