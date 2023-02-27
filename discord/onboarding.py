@@ -99,7 +99,7 @@ class OnboardingPromptOption:
 
     @cached_slot_property('_cs_channels')
     def channels(self) -> List[Union[GuildChannel, Thread]]:
-        """List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The list of channels which will be set visible if this option is selected."""
+        """List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The list of channels which will be made visible if this option is selected."""
         it = filter(None, map(self.guild._resolve_channel, self.channel_ids))
         return utils._unique(it)
 
