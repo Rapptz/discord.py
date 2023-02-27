@@ -1717,6 +1717,31 @@ of :class:`enum.Enum`.
         an application during an interaction.
 
         .. versionadded:: 2.0
+    .. attribute:: stage_start
+
+        The system message sent when the stage starts.
+
+        .. versionadded:: 2.0
+    .. attribute:: stage_end
+
+        The system message sent when the stage ends.
+
+        .. versionadded:: 2.0
+    .. attribute:: stage_speaker
+
+        The system message sent when the stage speaker changes.
+
+        .. versionadded:: 2.0
+    .. attribute:: stage_raise_hand
+
+        The system message sent when a user is requesting to speak by raising their hands.
+
+        .. versionadded:: 2.0
+    .. attribute:: stage_topic
+
+        The system message sent when the stage topic changes.
+
+        .. versionadded:: 2.0
     .. attribute:: guild_application_premium_subscription
 
         The system message sent when an application's premium subscription is purchased for the guild.

@@ -1520,20 +1520,20 @@ class Guild(Hashable):
         bitrate: :class:`int`
             The channel's preferred audio bitrate in bits per second.
 
-            .. versionadded:: 2.2
+            .. versionadded:: 2.0
         user_limit: :class:`int`
             The channel's limit for number of members that can be in a voice channel.
 
-            .. versionadded:: 2.2
+            .. versionadded:: 2.0
         rtc_region: Optional[:class:`str`]
             The region for the voice channel's voice communication.
             A value of ``None`` indicates automatic voice region detection.
 
-            .. versionadded:: 2.2
+            .. versionadded:: 2.0
         video_quality_mode: :class:`VideoQualityMode`
             The camera video quality for the voice channel's participants.
 
-            .. versionadded:: 2.2
+            .. versionadded:: 2.0
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 

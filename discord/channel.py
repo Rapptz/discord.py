@@ -1449,7 +1449,7 @@ class StageChannel(VocalGuildChannel):
         The last message ID of the message sent to this channel. It may
         *not* point to an existing or valid message.
 
-        .. versionadded:: 2.2
+        .. versionadded:: 2.0
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.

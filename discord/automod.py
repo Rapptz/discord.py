@@ -76,7 +76,7 @@ class AutoModRuleAction:
         A custom message which will be shown to a user when their message is blocked.
         Passing this sets :attr:`type` to :attr:`~AutoModRuleActionType.block_message`.
 
-        .. versionadded:: 2.2
+        .. versionadded:: 2.0
     """
 
     __slots__ = ('type', 'channel_id', 'duration', 'custom_message')

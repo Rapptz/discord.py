@@ -1899,6 +1899,21 @@ class Message(PartialMessage, Hashable):
             months = '1 month' if total_months == 1 else f'{total_months} months'
             return f'{self.author.name} joined {self.role_subscription.tier_name} and has been a subscriber of {self.guild} for {months}!'
 
+        if self.type is MessageType.stage_start:
+            return f'{self.author.name} started **{self.content}**.'
+
+        if self.type is MessageType.stage_end:
+            return f'{self.author.name} ended **{self.content}**.'
+
+        if self.type is MessageType.stage_speaker:
+            return f'{self.author.name} is now a speaker.'
+
+        if self.type is MessageType.stage_raise_hand:
+            return f'{self.author.name} requested to speak.'
+
+        if self.type is MessageType.stage_topic:
+            return f'{self.author.name} changed Stage topic: **{self.content}**.'
+
         # Fallback for unknown message types
         return self.content
 

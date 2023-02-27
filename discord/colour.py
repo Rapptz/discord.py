@@ -459,8 +459,8 @@ class Colour:
 
         .. versionadded:: 1.5
 
-        .. versionchanged:: 2.2
-            Updated colour from previous ``0x36393F`` to reflect discord theme changes.
+        .. versionchanged:: 2.0
+            Updated colour from previous ``0x36393F`` to reflect Discord theme changes.
         """
         return cls(0x313338)
 
@@ -490,7 +490,7 @@ class Colour:
 
         .. colour:: #2B2D31
 
-        .. versionadded:: 2.2
+        .. versionadded:: 2.0
         """
         return cls(0x2B2D31)
 
@@ -500,7 +500,7 @@ class Colour:
 
         .. colour:: #EEEFF1
 
-        .. versionadded:: 2.2
+        .. versionadded:: 2.0
         """
         return cls(0xEEEFF1)
 

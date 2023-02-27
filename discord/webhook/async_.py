@@ -978,7 +978,7 @@ class Webhook(BaseWebhook):
             attach the client's internal state. If ``session`` is not given
             while this is given then the client's internal session will be used.
 
-            .. versionadded:: 2.2
+            .. versionadded:: 2.0
         bot_token: Optional[:class:`str`]
             The bot authentication token for authenticated requests
             involving the webhook.
@@ -1043,7 +1043,7 @@ class Webhook(BaseWebhook):
             attach the client's internal state. If ``session`` is not given
             while this is given then the client's internal session will be used.
 
-            .. versionadded:: 2.2
+            .. versionadded:: 2.0
         bot_token: Optional[:class:`str`]
             The bot authentication token for authenticated requests
             involving the webhook.
