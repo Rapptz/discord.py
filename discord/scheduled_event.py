@@ -304,6 +304,21 @@ class ScheduledEvent(Hashable):
         *,
         name: str = ...,
         description: str = ...,
+        start_time: datetime = ...,
+        end_time: Optional[datetime] = ...,
+        privacy_level: PrivacyLevel = ...,
+        status: EventStatus = ...,
+        image: bytes = ...,
+        reason: Optional[str] = ...,
+    ) -> ScheduledEvent:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        name: str = ...,
+        description: str = ...,
         channel: VoiceChannel,
         start_time: datetime = ...,
         end_time: Optional[datetime] = ...,
@@ -344,7 +359,7 @@ class ScheduledEvent(Hashable):
         entity_type: Literal[EntityType.external] = ...,
         status: EventStatus = ...,
         image: bytes = ...,
-        location: str = ...,
+        location: str,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
