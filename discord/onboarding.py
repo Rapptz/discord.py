@@ -66,9 +66,9 @@ class OnboardingPromptOption:
     emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
         The emoji tied to this option. May be a custom emoji, or a unicode emoji.
     channel_ids: Set[:class:`int`]
-        The IDs of the channels that will be set visible if this option is selected.
+        The IDs of the channels that will be made visible if this option is selected.
     role_ids: Set[:class:`int`]
-        The IDs of the roles given to the user if this option is selected
+        The IDs of the roles given to the user if this option is selected.
     """
 
     __slots__ = (
