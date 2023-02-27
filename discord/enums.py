@@ -234,11 +234,11 @@ class MessageType(Enum):
     auto_moderation_action = 24
     role_subscription_purchase = 25
     interaction_premium_upsell = 26
-    # stage_start = 27
-    # stage_end = 28
-    # stage_speaker = 29
-    # stage_raise_hand = 30
-    # stage_topic = 31
+    stage_start = 27
+    stage_end = 28
+    stage_speaker = 29
+    stage_raise_hand = 30
+    stage_topic = 31
     guild_application_premium_subscription = 32
 
 
