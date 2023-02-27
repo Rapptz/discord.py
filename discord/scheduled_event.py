@@ -319,28 +319,11 @@ class ScheduledEvent(Hashable):
         *,
         name: str = ...,
         description: str = ...,
-        channel: VoiceChannel,
+        channel: Snowflake,
         start_time: datetime = ...,
         end_time: Optional[datetime] = ...,
         privacy_level: PrivacyLevel = ...,
-        entity_type: Literal[EntityType.voice] = ...,
-        status: EventStatus = ...,
-        image: bytes = ...,
-        reason: Optional[str] = ...,
-    ) -> ScheduledEvent:
-        ...
-
-    @overload
-    async def edit(
-        self,
-        *,
-        name: str = ...,
-        description: str = ...,
-        channel: StageChannel,
-        start_time: datetime = ...,
-        end_time: Optional[datetime] = ...,
-        privacy_level: PrivacyLevel = ...,
-        entity_type: Literal[EntityType.stage_instance] = ...,
+        entity_type: Literal[EntityType.voice, EntityType.stage_instance],
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
@@ -356,7 +339,7 @@ class ScheduledEvent(Hashable):
         start_time: datetime = ...,
         end_time: datetime = ...,
         privacy_level: PrivacyLevel = ...,
-        entity_type: Literal[EntityType.external] = ...,
+        entity_type: Literal[EntityType.external],
         status: EventStatus = ...,
         image: bytes = ...,
         location: str,
@@ -370,13 +353,28 @@ class ScheduledEvent(Hashable):
         *,
         name: str = ...,
         description: str = ...,
-        channel: Snowflake = ...,
+        channel: Union[VoiceChannel, StageChannel],
         start_time: datetime = ...,
         end_time: Optional[datetime] = ...,
         privacy_level: PrivacyLevel = ...,
-        entity_type: Literal[EntityType.voice, EntityType.stage_instance],
         status: EventStatus = ...,
         image: bytes = ...,
+        reason: Optional[str] = ...,
+    ) -> ScheduledEvent:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        name: str = ...,
+        description: str = ...,
+        start_time: datetime = ...,
+        end_time: datetime = ...,
+        privacy_level: PrivacyLevel = ...,
+        status: EventStatus = ...,
+        image: bytes = ...,
+        location: str,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
