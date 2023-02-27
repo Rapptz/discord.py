@@ -1717,7 +1717,7 @@ class HTTPClient:
         params: Dict[str, Any] = {'limit': limit}
         if before:
             params['before'] = before
-        if after:
+        if after is not None:
             params['after'] = after
         if user_id:
             params['user_id'] = user_id
