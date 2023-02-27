@@ -908,6 +908,9 @@ def hybrid_group(
 
     Parameters
     -----------
+    name: Union[:class:`str`, :class:`~discord.app_commands.locale_str`]
+        The name to create the group with. By default this uses the
+        function name unchanged.
     with_app_command: :class:`bool`
         Whether to register the command also as an application command.
 
