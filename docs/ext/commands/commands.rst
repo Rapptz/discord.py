@@ -1147,6 +1147,7 @@ If you want a more robust error system, you can derive from the exception and ra
             return True
         return commands.check(predicate)
 
+    @bot.command()
     @guild_only()
     async def test(ctx):
         await ctx.send('Hey this is not a DM! Nice.')
