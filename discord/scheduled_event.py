@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, AsyncIterator, Dict, Optional, Union
+from typing import TYPE_CHECKING, AsyncIterator, Dict, Optional, Union, overload, Literal
 
 from .asset import Asset
 from .enums import EventStatus, EntityType, PrivacyLevel, try_enum
@@ -298,6 +298,74 @@ class ScheduledEvent(Hashable):
 
         return await self.__modify_status(EventStatus.cancelled, reason)
 
+    @overload
+    async def edit(
+        self,
+        *,
+        name: str = ...,
+        description: str = ...,
+        channel: VoiceChannel,
+        start_time: datetime = ...,
+        end_time: Optional[datetime] = ...,
+        privacy_level: PrivacyLevel = ...,
+        entity_type: Literal[EntityType.voice] = ...,
+        status: EventStatus = ...,
+        image: bytes = ...,
+        reason: Optional[str] = ...,
+    ) -> ScheduledEvent:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        name: str = ...,
+        description: str = ...,
+        channel: StageChannel,
+        start_time: datetime = ...,
+        end_time: Optional[datetime] = ...,
+        privacy_level: PrivacyLevel = ...,
+        entity_type: Literal[EntityType.stage_instance] = ...,
+        status: EventStatus = ...,
+        image: bytes = ...,
+        reason: Optional[str] = ...,
+    ) -> ScheduledEvent:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        name: str = ...,
+        description: str = ...,
+        start_time: datetime = ...,
+        end_time: datetime = ...,
+        privacy_level: PrivacyLevel = ...,
+        entity_type: Literal[EntityType.external] = ...,
+        status: EventStatus = ...,
+        image: bytes = ...,
+        location: str = ...,
+        reason: Optional[str] = ...,
+    ) -> ScheduledEvent:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        name: str = ...,
+        description: str = ...,
+        channel: Snowflake = ...,
+        start_time: datetime = ...,
+        end_time: Optional[datetime] = ...,
+        privacy_level: PrivacyLevel = ...,
+        entity_type: Literal[EntityType.voice, EntityType.stage_instance],
+        status: EventStatus = ...,
+        image: bytes = ...,
+        reason: Optional[str] = ...,
+    ) -> ScheduledEvent:
+        ...
+
     async def edit(
         self,
         *,
@@ -503,8 +571,8 @@ class ScheduledEvent(Hashable):
         oldest_first: bool = MISSING,
     ) -> AsyncIterator[User]:
         """|coro|
-
-        Retrieves all :class:`User` that are subscribed to this event.
+        Returns an :term:`asynchronous iterator` that enables receiving :class:`User`s
+        thatare subscribed to this event.
 
         This requires :attr:`Intents.members` to get information about members
         other than yourself.
@@ -514,10 +582,10 @@ class ScheduledEvent(Hashable):
         HTTPException
             Retrieving the members failed.
 
-        Returns
+        Yields
         --------
-        List[:class:`User`]
-            All subscribed users of this event.
+        :class:`User`
+            The user subcribed to this event.
         """
 
         async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
