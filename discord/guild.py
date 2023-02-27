@@ -3618,7 +3618,7 @@ class Guild(Hashable):
                 if limit is not None:
                     limit -= len(data)
 
-                after = Object(id=int(entries[0]['id']))
+                after = Object(id=int(entries[-1]['id']))
 
             return data, entries, after, limit
 
@@ -3635,20 +3635,19 @@ class Guild(Hashable):
         if isinstance(after, datetime):
             after = Object(id=utils.time_snowflake(after, high=True))
 
-        if oldest_first is MISSING:
-            reverse = after is not MISSING
-        else:
-            reverse = oldest_first
+        if oldest_first:
+            if after is MISSING:
+                after = OLDEST_OBJECT
 
         predicate = None
 
-        if reverse:
+        if oldest_first:
             strategy, state = _after_strategy, after
             if before:
                 predicate = lambda m: int(m['id']) < before.id
         else:
             strategy, state = _before_strategy, before
-            if after and after != OLDEST_OBJECT:
+            if after:
                 predicate = lambda m: int(m['id']) > after.id
 
         while True:
@@ -3658,8 +3657,6 @@ class Guild(Hashable):
 
             data, raw_entries, state, limit = await strategy(retrieve, state, limit)
 
-            if reverse:
-                raw_entries = reversed(raw_entries)
             if predicate:
                 raw_entries = filter(predicate, raw_entries)
 
