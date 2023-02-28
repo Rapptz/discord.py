@@ -11,6 +11,86 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p2p0:
+
+v2.2.0
+-------
+
+New Features
+~~~~~~~~~~~~
+
+- Add support for new :func:`on_audit_log_entry_create` event
+- Add support for silent messages via ``silent`` parameter in :meth:`abc.Messageable.send`
+    - This is queryable via :attr:`MessageFlags.suppress_notifications`
+
+- Implement :class:`abc.Messageable` for :class:`StageChannel` (:issue:`9248`)
+- Add setter for :attr:`discord.ui.ChannelSelect.channel_types` (:issue:`9068`)
+- Add support for custom messages in automod via :attr:`AutoModRuleAction.custom_message` (:issue:`9267`)
+- Add :meth:`ForumChannel.get_thread` (:issue:`9106`)
+- Add :attr:`StageChannel.slowmode_delay` and :attr:`VoiceChannel.slowmode_delay` (:issue:`9111`)
+- Add support for editing the slowmode for :class:`StageChannel` and :class:`VoiceChannel` (:issue:`9111`)
+- Add :attr:`Locale.indonesian`
+- Add ``delete_after`` keyword argument to :meth:`Interaction.edit_message` (:issue:`9415`)
+- Add ``delete_after`` keyword argument to :meth:`InteractionMessage.edit` (:issue:`9206`)
+- Add support for member flags (:issue:`9204`)
+    - Accessible via :attr:`Member.flags` and has a type of :class:`MemberFlags`
+    - Support ``bypass_verification`` within :meth:`Member.edit`
+
+- Add support for passing a client to :meth:`Webhook.from_url` and :meth:`Webhook.partial`
+    - This allows them to use views (assuming they are "bot owned" webhooks)
+
+- Add :meth:`Colour.dark_embed` and :meth:`Colour.light_embed` (:issue:`9219`)
+- Add support for many more parameters within :meth:`Guild.create_stage_channel` (:issue:`9245`)
+- Add :attr:`AppInfo.role_connections_verification_url`
+- Add support for :attr:`ForumChannel.default_layout`
+- Add various new :class:`MessageType` values such as ones related to stage channel and role subscriptions
+- Add support for role subscription related attributes
+    - :class:`RoleSubscriptionInfo` within :attr:`Message.role_subscription`
+    - :attr:`MessageType.role_subscription_purchase`
+    - :attr:`SystemChannelFlags.role_subscription_purchase_notifications`
+    - :attr:`SystemChannelFlags.role_subscription_purchase_notification_replies`
+    - :attr:`RoleTags.subscription_listing_id`
+    - :meth:`RoleTags.is_available_for_purchase`
+
+- Add support for checking if a role is a linked role under :meth:`RoleTags.is_guild_connection`
+- Add support for GIF sticker type
+- Add support for :attr:`Message.application_id` and :attr:`Message.position`
+- Add :func:`utils.maybe_coroutine` helper
+- Add :attr:`ScheduledEvent.creator_id` attribute
+- |commands| Add support for :meth:`~ext.commands.Cog.interaction_check` for :class:`~ext.commands.GroupCog` (:issue:`9189`)
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix views not being removed from message store backing leading to a memory leak when used from an application command context
+- Fix async iterators requesting past their bounds when using ``oldest_first`` and ``after`` or ``before`` (:issue:`9093`)
+- Fix :meth:`Guild.audit_logs` pagination logic being buggy when using ``after`` (:issue:`9269`)
+- Fix :attr:`Message.channel` sometimes being :class:`Object` instead of :class:`PartialMessageable`
+- Fix :class:`ui.View` not properly calling ``super().__init_subclass__`` (:issue:`9231`)
+- Fix ``available_tags`` and ``default_thread_slowmode_delay`` not being respected in :meth:`Guild.create_forum`
+- Fix :class:`AutoModTrigger` ignoring ``allow_list`` with type keyword (:issue:`9107`)
+- Fix implicit permission resolution for :class:`Thread` (:issue:`9153`)
+- Fix :meth:`AutoModRule.edit` to work with actual snowflake types such as :class:`Object` (:issue:`9159`)
+- Fix :meth:`Webhook.send` returning :class:`ForumChannel` for :attr:`WebhookMessage.channel`
+- When a lookup for :attr:`AuditLogEntry.target` fails, it will fallback to :class:`Object` with the appropriate :attr:`Object.type` (:issue:`9171`)
+- Fix :attr:`AuditLogDiff.type` for integrations returning :class:`ChannelType` instead of :class:`str` (:issue:`9200`)
+- Fix :attr:`AuditLogDiff.type` for webhooks returning :class:`ChannelType` instead of :class:`WebhookType` (:issue:`9251`)
+- Fix webhooks and interactions not properly closing files after the request has completed
+- Fix :exc:`NameError` in audit log target for app commands
+- Fix :meth:`ScheduledEvent.edit` requiring some arguments to be passed in when unnecessary (:issue:`9261`, :issue:`9268`)
+- |commands| Explicit set a traceback for hybrid command invocations (:issue:`9205`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Add colour preview for the colours predefined in :class:`Colour`
+- Finished views are no longer stored by the library when sending them (:issue:`9235`)
+- Force enable colour logging for the default logging handler when run under Docker.
+- Add various overloads for :meth:`Client.wait_for` to aid in static analysis (:issue:`9184`)
+- :class:`Interaction` can now optionally take a generic parameter, ``ClientT`` to represent the type for :attr:`Interaction.client`
+- |commands| Respect :attr:`~ext.commands.Command.ignore_extra` for :class:`~discord.ext.commands.FlagConverter` keyword-only parameters
+- |commands| Change :attr:`Paginator.pages <ext.commands.Paginator.pages>` to not prematurely close (:issue:`9257`)
+
 .. _vp2p1p1:
 
 v2.1.1
