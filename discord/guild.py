@@ -3013,7 +3013,9 @@ class Guild(Hashable):
 
             metadata['location'] = location
 
-            if end_time is not MISSING:
+            if end_time in (MISSING, None):
+                raise TypeError('end_time must be set when entity_type is external')
+            else:
                 if end_time.tzinfo is None:
                     raise ValueError(
                         'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
