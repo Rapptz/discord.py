@@ -1593,6 +1593,10 @@ class Guild(Hashable):
         -----------
         name: :class:`str`
             The channel's name.
+        overwrites: Dict[Union[:class:`Role`, :class:`Member`], :class:`PermissionOverwrite`]
+            A :class:`dict` of target (either a role or a member) to
+            :class:`PermissionOverwrite` to apply upon creation of a channel.
+            Useful for creating secret channels.
         topic: :class:`str`
             The channel's topic.
         category: Optional[:class:`CategoryChannel`]
@@ -2782,7 +2786,7 @@ class Guild(Hashable):
 
         Parameters
         ------------
-        id: :class:`int`
+        scheduled_event_id: :class:`int`
             The scheduled event ID.
         with_counts: :class:`bool`
             Whether to include the number of users that are subscribed to the event.
@@ -2846,6 +2850,8 @@ class Guild(Hashable):
             datetime object. Consider using :func:`utils.utcnow`.
 
             Required if the entity type is :attr:`EntityType.external`.
+        privacy_level: :class:`PrivacyLevel`
+            The privacy level of the scheduled event.
         entity_type: :class:`EntityType`
             The entity type of the scheduled event. If the channel is a
             :class:`StageInstance` or :class:`VoiceChannel` then this is
