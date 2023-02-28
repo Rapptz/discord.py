@@ -1975,6 +1975,8 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.verification_level`
         - :attr:`~AuditLogDiff.widget_channel`
         - :attr:`~AuditLogDiff.widget_enabled`
+        - :attr:`~AuditLogDiff.premium_progress_bar_enabled`
+        - :attr:`~AuditLogDiff.system_channel_flags`
 
     .. attribute:: channel_create
 
