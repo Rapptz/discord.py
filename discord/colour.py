@@ -104,6 +104,11 @@ class Colour:
 
              Returns the raw colour value.
 
+    .. note::
+
+        The colour values in the classmethods are mostly provided as-is and can change between
+        versions should the Discord client's representation of that colour also change.
+
     Attributes
     ------------
     value: :class:`int`
