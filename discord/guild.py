@@ -2983,7 +2983,11 @@ class Guild(Hashable):
 
         payload['entity_type'] = entity_type.value
 
-        payload['privacy_level'] = PrivacyLevel.guild_only.value
+        if privacy_level is not MISSING:
+            if not isinstance(privacy_level, PrivacyLevel):
+                raise TypeError('privacy_level must be of type PrivacyLevel.')
+
+            payload['privacy_level'] = privacy_level.value
 
         if description is not MISSING:
             payload['description'] = description
