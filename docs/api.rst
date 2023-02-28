@@ -2148,6 +2148,8 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.verification_level`
         - :attr:`~AuditLogDiff.widget_channel`
         - :attr:`~AuditLogDiff.widget_enabled`
+        - :attr:`~AuditLogDiff.premium_progress_bar_enabled`
+        - :attr:`~AuditLogDiff.system_channel_flags`
 
     .. attribute:: channel_create
 
@@ -6079,6 +6081,20 @@ AuditLogDiff
         The list of channels or threads that are exempt from the automod rule.
 
         :type: List[:class:`abc.GuildChannel`, :class:`Thread`, :class:`Object`]
+
+    .. attribute:: premium_progress_bar_enabled
+
+        The guild’s display setting to show boost progress sidebar
+
+        :type: :class:`bool`
+
+    .. attribute:: system_channel_flags
+
+        The guild’s system channel settings.
+
+        See also :attr:`Guild.system_channel_flags`
+
+        :type: :class:`SystemChannelFlags`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
