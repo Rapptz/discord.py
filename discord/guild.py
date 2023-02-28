@@ -2974,14 +2974,14 @@ class Guild(Hashable):
         else:
             if not isinstance(entity_type, EntityType):
                 raise TypeError('entity_type must be of type EntityType')
+                
+            payload['entity_type'] = entity_type.value
 
         if entity_type is None:
             raise TypeError(
                 'invalid GuildChannel type passed, must be VoiceChannel or StageChannel '
                 f'not {channel.__class__.__name__}'
             )
-
-        payload['entity_type'] = entity_type.value
 
         if privacy_level is not MISSING:
             if not isinstance(privacy_level, PrivacyLevel):
