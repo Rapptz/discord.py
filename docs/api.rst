@@ -3939,6 +3939,20 @@ AuditLogDiff
 
         :type: List[:class:`abc.GuildChannel`, :class:`Thread`, :class:`Object`]
 
+    .. attribute:: premium_progress_bar_enabled
+
+        The guild’s display setting to show boost progress sidebar
+
+        :type: :class:`bool`
+
+    .. attribute:: system_channel_flags
+
+        The guild’s system channel settings.
+
+        See also :attr:`Guild.system_channel_flags`
+
+        :type: :class:`SystemChannelFlags`
+
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
 
