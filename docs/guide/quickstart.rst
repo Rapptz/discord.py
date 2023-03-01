@@ -46,7 +46,7 @@ You will need a bot application before being able to run a bot. A step-by-step t
 
 .. warning::
 
-    You may be thinking to use the ``Client Secret`` for your bot token. This is **NOT** what you are looking for, you need the bot **Token**, which is a completely different format.
+    You may be thinking of using the ``Client Secret`` for your bot token. This is **NOT** what you are looking for - you need the bot **Token**, which is a completely different format.
 
     .. image:: /images/discord_client_secret_big_nono.png
         :scale: 90 %
