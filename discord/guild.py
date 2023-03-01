@@ -2974,7 +2974,7 @@ class Guild(Hashable):
         else:
             if not isinstance(entity_type, EntityType):
                 raise TypeError('entity_type must be of type EntityType')
-                
+
             payload['entity_type'] = entity_type.value
 
         if entity_type is None:
