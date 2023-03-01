@@ -40,7 +40,7 @@ You will need a bot application before being able to run a bot. A step-by-step t
 .. danger::
 
     This token is **VERY IMPORTANT** and you should treat it like the password to your bot. Keep it as secure as possible and never give this to anyone.
-    If you ever leak it, you can click the ``Regenerate`` button to forcibly invalidate all copies of the token. This will also terminate all running instances of this bot.
+    If you ever leak it, you can click the ``Regenerate`` button to forcibly invalidate all copies of the token. This will also terminate all running instances of your bot.
 
 .. _guide_quickstart_client_secret:
 
