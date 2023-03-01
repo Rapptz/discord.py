@@ -30,7 +30,7 @@ Depending on the action taken, an entry in the audit log may contain additional 
 
     1. There is no guarantee on audit logs arriving when expected (if they arrive at all)
     2. No event is triggered when an audit log entry is created.
-    3. Audit logs are limited to 90 days.
+    3. Audit logs are limited to 45 days.
     4. No entry is created for message deletes if:
 
       - it is a bot deleting a single message, or
