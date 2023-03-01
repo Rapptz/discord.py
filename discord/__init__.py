@@ -65,6 +65,7 @@ from .sticker import *
 from .stage_instance import *
 from .scheduled_event import *
 from .interactions import *
+from .sink import *
 from .components import *
 from .threads import *
 from .automod import *

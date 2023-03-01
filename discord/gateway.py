@@ -814,18 +814,13 @@ class DiscordVoiceWebSocket:
     CLIENT_DISCONNECT   = 13
     # fmt: on
 
-    def __init__(
-        self,
-        socket: aiohttp.ClientWebSocketResponse,
-        loop: asyncio.AbstractEventLoop,
-        *,
-        hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
-    ) -> None:
-        self.ws: aiohttp.ClientWebSocketResponse = socket
-        self.loop: asyncio.AbstractEventLoop = loop
-        self._keep_alive: Optional[VoiceKeepAliveHandler] = None
-        self._close_code: Optional[int] = None
-        self.secret_key: Optional[str] = None
+    def __init__(self, socket, loop, *, hook=None):
+        self.ws = socket
+        self.loop = loop
+        self._keep_alive = None
+        self._close_code = None
+        self.secret_key = None
+        self.ssrc_map = {}
         if hook:
             self._hook = hook
 
@@ -939,7 +934,15 @@ class DiscordVoiceWebSocket:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
-
+        elif op == self.SPEAKING:
+            ssrc = data['ssrc']
+            user = int(data['user_id'])
+            speaking = data['speaking']
+            if ssrc in self.ssrc_map:
+                self.ssrc_map[ssrc]['speaking'] = speaking
+            else:
+                self.ssrc_map.update({ssrc: {'user_id': user, 'speaking': speaking}})
+                
         await self._hook(self, msg)
 
     async def initial_connection(self, data: Dict[str, Any]) -> None:
