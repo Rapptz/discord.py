@@ -47,8 +47,6 @@ Each entry is an instance of :class:`AuditLogEntry`, which contains information 
 
   - The id of a channel, member, message, or role involved in the action
   - The number of entities targeted by the action
-  - A number representing the number of days a member needed to be inactive for to be pruned
-  - The number of members removed by a prune action
   - A role name
   - A type representing what the changed entity is.
 
