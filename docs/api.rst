@@ -2191,6 +2191,9 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.rtc_region`
         - :attr:`~AuditLogDiff.video_quality_mode`
         - :attr:`~AuditLogDiff.default_auto_archive_duration`
+        - :attr:`~AuditLogDiff.nsfw`
+        - :attr:`~AuditLogDiff.slowmode_delay`
+        - :attr:`~AuditLogDiff.user_limit`
 
     .. attribute:: channel_delete
 
@@ -2207,6 +2210,9 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.type`
         - :attr:`~AuditLogDiff.overwrites`
+        - :attr:`~AuditLogDiff.flags`
+        - :attr:`~AuditLogDiff.nsfw`
+        - :attr:`~AuditLogDiff.slowmode_delay`
 
     .. attribute:: overwrite_create
 
@@ -6084,7 +6090,7 @@ AuditLogDiff
 
     .. attribute:: premium_progress_bar_enabled
 
-        The guild’s display setting to show boost progress sidebar
+        The guild’s display setting to show boost progress bar.
 
         :type: :class:`bool`
 
@@ -6095,6 +6101,28 @@ AuditLogDiff
         See also :attr:`Guild.system_channel_flags`
 
         :type: :class:`SystemChannelFlags`
+
+    .. attribute:: nsfw
+
+        Whether the channel is marked as “not safe for work” or “age restricted”.
+
+        :type: :class:`bool`
+
+    .. attribute:: user_limit
+
+        The channel’s limit for number of members that can be in a voice or stage channel.
+
+        See also :attr:`VoiceChannel.user_limit` and :attr:`StageChannel.user_limit`
+
+        :type: :class:`int`
+
+    .. attribute:: flags
+
+        The channel flags associated with this thread or forum post.
+
+        See also :attr:`ForumChannel.flags` and :attr:`Thread.flags`
+
+        :type: :class:`ChannelFlags`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
