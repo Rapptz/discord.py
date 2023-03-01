@@ -2979,8 +2979,7 @@ class Guild(Hashable):
 
         if entity_type is None:
             raise TypeError(
-                'invalid GuildChannel type passed, must be VoiceChannel or StageChannel '
-                f'not {channel.__class__.__name__}'
+                'invalid GuildChannel type passed, must be VoiceChannel or StageChannel ' f'not {channel.__class__.__name__}'
             )
 
         if privacy_level is not MISSING:
@@ -2998,16 +2997,12 @@ class Guild(Hashable):
 
         if entity_type in (EntityType.stage_instance, EntityType.voice):
             if channel in (MISSING, None):
-                raise TypeError(
-                    'channel must be set when entity_type is voice or stage_instance'
-                )
+                raise TypeError('channel must be set when entity_type is voice or stage_instance')
 
             payload['channel_id'] = channel.id
 
             if location is not MISSING:
-                raise TypeError(
-                    'location cannot be set when entity_type is voice or stage_instance'
-                )
+                raise TypeError('location cannot be set when entity_type is voice or stage_instance')
         else:
             if channel is not MISSING:
                 raise TypeError('channel cannot be set when entity_type is external')
