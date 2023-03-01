@@ -122,4 +122,13 @@ example, maybe we want to see how many messages were deleted in a specific timef
 
     If choosing to filter the audit log to entries after a specific time, the logs will be sorted from oldest to newest.
 
-You can find more information on the audit logs in the documentation for :meth:`~Guild.audit_logs`, :class:`AuditLogEntry`, :class:`AuditLogAction`, :class:`AuditLogActionCategory`, :class:`AuditLogChanges`, and :class:`AuditLogDiff`.
+Further Reading
+=================
+You can find more information on the audit logs in the documentation for the following:
+
+- `~Guild.audit_logs`
+- :class:`AuditLogEntry`
+- :class:`AuditLogAction`
+- :class:`AuditLogActionCategory`
+- :class:`AuditLogChanges`
+- :class:`AuditLogDiff`
