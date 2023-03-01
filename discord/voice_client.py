@@ -45,24 +45,23 @@ import logging
 import struct
 import threading
 import select
-import time
-from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple
+from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union, Dict
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
 from .gateway import *
-from .errors import ClientException, ConnectionClosed, RecordingException
+from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
-from .sink import Sink, RawData
 
 from .utils import MISSING
+from .sink import AudioSink, RawAudioData, AudioFrame
 
 if TYPE_CHECKING:
     from .client import Client
     from .guild import Guild
     from .state import ConnectionState
     from .user import ClientUser
-    from .opus import Encoder
+    from .opus import Encoder, Decoder
     from .channel import StageChannel, VoiceChannel
     from . import abc
 
@@ -252,6 +251,7 @@ class VoiceClient(VoiceProtocol):
         self._state: ConnectionState = state
         # this will be used in the AudioPlayer 
         self._connected: threading.Event = threading.Event()
+        self.listening = False
 
         self._handshaking: bool = False
         self._potentially_reconnecting: bool = False
@@ -265,8 +265,9 @@ class VoiceClient(VoiceProtocol):
         self.timeout: float = 0
         self._runner: asyncio.Task = MISSING
         self._player: Optional[AudioPlayer] = None
+        self.sink: Optional[AudioSink] = None
         self.encoder: Encoder = MISSING
-        self.decoder = None
+        self.decoders: Dict[int, Decoder] = {}
         self._lite_nonce: int = 0
         self.ws: DiscordVoiceWebSocket = MISSING
 
@@ -579,6 +580,17 @@ class VoiceClient(VoiceProtocol):
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
+    def _unpack_audio_packet(self, data):
+        data = RawAudioData(data, getattr(self, '_decrypt_' + self.mode))
+
+        # RTCP or frame of silence received
+        if data.audio is None or data.audio == b"\xf8\xff\xfe":
+            return
+
+        if data.ssrc not in self.decoders:
+            self.decoders[data.ssrc] = opus.Decoder()
+        return AudioFrame(self.decoders[data.ssrc].decode(data.audio), data)
+
     def _decrypt_xsalsa20_poly1305(self, header, data):
         box = nacl.secret.SecretBox(bytes(self.secret_key))
 
@@ -612,10 +624,7 @@ class VoiceClient(VoiceProtocol):
             data = data[offset:]
         return data
 
-    def get_ssrc(self, user_id):
-        return {info['user_id']: ssrc for ssrc, info in self.ws.ssrc_map.items()}[user_id]
-
-    def play(self, source: AudioSource, *, after: Callable[[Optional[Exception]], Any]=None) -> None:
+    def play(self, source: AudioSource, *, after: Optional[Callable[[Optional[Exception]], Any]] = None) -> None:
         """Plays an :class:`AudioSource`.
 
         The finalizer, ``after`` is called after the source has been exhausted
@@ -686,6 +695,24 @@ class VoiceClient(VoiceProtocol):
         if self._player:
             self._player.resume()
 
+    def listen(self, sink: AudioSink) -> None:
+        if not self.is_connected():
+            raise ClientException('Not connected to voice.')
+
+        if self.listening:
+            raise ClientException('Already listening.')
+
+        self.listening = True
+        self.sink = sink
+        poll = threading.Thread(target=self.poll_audio_packets)
+        poll.start()
+
+    def stop_listening(self):
+        if not self.listening:
+            raise ClientException("Cannot stop listening when not already listening.")
+
+        self.listening = False
+
     @property
     def source(self) -> Optional[AudioSource]:
         """Optional[:class:`AudioSource`]: The audio source being played, if playing.
@@ -737,157 +764,29 @@ class VoiceClient(VoiceProtocol):
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
 
-    def unpack_audio(self, data):
-        """Takes an audio packet received from Discord and decodes it into pcm audio data.
-        If there are no users talking in the channel, `None` will be returned.
-
-        You must be connected to receive audio.
-
-        Parameters
-        ---------
-        data: :class:`bytes`
-            Bytes received by Discord via the UDP connection used for sending and receiving voice data.
-        """
-        if 200 <= data[1] <= 204:
-            # RTCP received.
-            # RTCP provides information about the connection
-            # as opposed to actual audio data, so it's not
-            # important at the moment.
-            return
-        if self.paused:
-            return
-
-        data = RawData(data, self)
-
-        if data.decrypted_data == b'\xf8\xff\xfe':  # Frame of silence
-            return
-
-        self.decoder.decode(data)
-
-    def start_recording(self, sink, callback, *args):
-        """The bot will begin recording audio from the current voice channel it is in.
-        This function uses a thread so the current code line will not be stopped.
-
-        Must be in a voice channel to use.
-        Must not be already recording.
-
-        Parameters
-        ----------
-        sink: :class:`Sink`
-            A Sink which will "store" all the audio data.
-        callback: :class:`asynchronous function`
-            A function which is called after the bot has stopped recording.
-        *args:
-            Args which will be passed to the callback function.
-
-        Raises
-        ------
-        RecordingException
-            Not connected to a voice channel.
-        RecordingException
-            Already recording.
-        RecordingException
-            Must provide a Sink object.
-        """
-        if not self.is_connected():
-            raise RecordingException('Not connected to voice channel.')
-        if self.recording:
-            raise RecordingException("Already recording.")
-        if not isinstance(sink, Sink):
-            raise RecordingException("Must provide a Sink object.")
-
-        self.empty_socket()
-
-        self.decoder = opus.DecodeManager(self)
-        self.decoder.start()
-        self.recording = True
-        self.sink = sink
-        sink.init(self)
-
-        t = threading.Thread(target=self.recv_audio, args=(sink, callback, *args,))
-        t.start()
-
-    def stop_recording(self):
-        """Stops the recording.
-
-        Must be already recording.
-
-        Raises
-        ------
-        RecordingException
-            Not currently recording.
-        """
-        if not self.recording:
-            raise RecordingException("Not currently recording audio.")
-        self.decoder.stop()
-        self.recording = False
-        self.paused = False
-
-    def toggle_pause(self):
-        """Pauses or unpauses the recording.
-
-        Must be already recording.
-
-        Raises
-        ------
-        RecordingException
-            Not currently recording.
-         """
-        if not self.recording:
-            raise RecordingException("Not currently recording audio.")
-        self.paused = not self.paused
-
-    def empty_socket(self):
-        while True:
-            ready, _, _ = select.select([self.socket], [], [], 0.0)
-            if not ready:
-                break
-            for s in ready:
-                s.recv(4096)
-
-    def recv_audio(self, sink, callback, *args):
-        #  Gets data from _recv_audio and sorts
-        #  it by user, handles pcm files and
-        #  silence that should be added.
-
-        self.user_timestamps = {}
-        self.starting_time = time.perf_counter()
-        while self.recording:
+    def poll_audio_packets(self):
+        _log.info("Began polling for audio packets from Channel ID %d (Guild ID %d).",
+                  self.channel.id, self.guild.id)
+        while self.listening:
             ready, _, err = select.select([self.socket], [],
                                           [self.socket], 0.01)
+            if err:
+                _log.exception("Socket error occurred", exc_info=err[0])
+                self.stop_listening()
+                break
             if not ready:
-                if err:
-                    print(f"Socket error: {err}")
                 continue
 
             try:
                 data = self.socket.recv(4096)
             except OSError:
-                self.stop_recording()
+                self.listening = False
+                break
+
+            audio = self._unpack_audio_packet(data)
+            if audio is None:
                 continue
+            self.sink.on_audio(audio)
 
-            self.unpack_audio(data)
-
-        self.stopping_time = time.perf_counter()
-        self.sink.cleanup()
-        callback = asyncio.run_coroutine_threadsafe(callback(self.sink, *args), self.loop)
-        result = callback.result()
-
-        if result is not None:
-            print(result)
-
-    def recv_decoded_audio(self, data):
-        if data.ssrc not in self.user_timestamps:
-            self.user_timestamps.update({data.ssrc: data.timestamp})
-            # Add silence of when they were not being recorded.
-            data.decoded_data = struct.pack('<h', 0) * round(
-                self.decoder.CHANNELS * self.decoder.SAMPLING_RATE * (time.perf_counter() - self.starting_time)
-            ) + data.decoded_data
-        else:
-            self.user_timestamps[data.ssrc] = data.timestamp
-
-        silence = data.timestamp - self.user_timestamps[data.ssrc] - 960
-        data.decoded_data = struct.pack('<h', 0) * silence + data.decoded_data
-        while data.ssrc not in self.ws.ssrc_map:
-            time.sleep(0.05)
-        self.sink.write(data.decoded_data, self.ws.ssrc_map[data.ssrc]['user_id'])
+        _log.info("No longer polling for audio packets from Channel ID %d (Guild ID %d).",
+                  self.channel.id, self.guild.id)
