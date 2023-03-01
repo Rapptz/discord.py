@@ -18,10 +18,6 @@ Audit logs log various administrative actions taken in a guild. Examples include
 - When a webhook is created, updated, or deleted
 - When an emoji is created, updated, or deleted
 - When a message is deleted, bulk-deleted, pinned, or unpinned
-- When a guild integration is created, updated, or deleted
-- When a stage instance is created, updated, or deleted
-- When a sticker is created, updated, or deleted
-- When a scheduled event is created, updated, or deleted
 - When a thread is created, updated, or deleted
     
 Depending on the action taken, an entry in the audit log may contain additional info about that specific action, including:
