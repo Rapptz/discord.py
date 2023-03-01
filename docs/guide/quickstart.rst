@@ -65,7 +65,7 @@ This step-by-step walk-through will show you how to make a bot using the command
 
     .. warning::
 
-        Do not name the file ``discord.py``, this will cause conflicts with the discord.py library. Also, do not create a sub-folder in your project named ``discord``, as that too will cause conflicts.
+        Do not name the file ``discord.py``, as this will cause conflicts with the discord.py library. Also, do not create a sub-folder in your project named ``discord``, as that too will cause conflicts.
 
 2. Open the new Python file in your preferred editor.
 
