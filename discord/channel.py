@@ -37,16 +37,15 @@ from typing import (
     Optional,
     TYPE_CHECKING,
     Tuple,
-    Type,
-    TypeVar,
     Union,
     overload,
 )
 import datetime
 
 import discord.abc
+from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, StagePrivacyLevel, try_enum, VideoQualityMode
+from .enums import ChannelType, PrivacyLevel, try_enum, VideoQualityMode
 from .mixins import Hashable
 from .object import Object
 from . import utils
@@ -68,6 +67,8 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .types.threads import ThreadArchiveDuration
     from .role import Role
     from .member import Member, VoiceState
@@ -950,6 +951,14 @@ class VocalGuildChannel(discord.abc.Connectable, discord.abc.GuildChannel, Hasha
         }
         # fmt: on
 
+    @property
+    def scheduled_events(self) -> List[ScheduledEvent]:
+        """List[:class:`ScheduledEvent`]: Returns all scheduled events for this channel.
+
+        .. versionadded:: 2.0
+        """
+        return [event for event in self.guild.scheduled_events if event.channel_id == self.id]
+
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         base = super().permissions_for(obj)
@@ -1259,7 +1268,7 @@ class StageChannel(VocalGuildChannel):
         return utils.get(self.guild.stage_instances, channel_id=self.id)
 
     async def create_instance(
-        self, *, topic: str, privacy_level: StagePrivacyLevel = MISSING, reason: Optional[str] = None
+        self, *, topic: str, privacy_level: PrivacyLevel = MISSING, reason: Optional[str] = None
     ) -> StageInstance:
         """|coro|
 
@@ -1274,8 +1283,8 @@ class StageChannel(VocalGuildChannel):
         -----------
         topic: :class:`str`
             The stage instance's topic.
-        privacy_level: :class:`StagePrivacyLevel`
-            The stage instance's privacy level. Defaults to :attr:`StagePrivacyLevel.guild_only`.
+        privacy_level: :class:`PrivacyLevel`
+            The stage instance's privacy level. Defaults to :attr:`PrivacyLevel.guild_only`.
         reason: :class:`str`
             The reason the stage instance was created. Shows up on the audit log.
 
@@ -1297,7 +1306,7 @@ class StageChannel(VocalGuildChannel):
         payload: Dict[str, Any] = {'channel_id': self.id, 'topic': topic}
 
         if privacy_level is not MISSING:
-            if not isinstance(privacy_level, StagePrivacyLevel):
+            if not isinstance(privacy_level, PrivacyLevel):
                 raise TypeError('privacy_level field must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value
@@ -1818,9 +1827,6 @@ class StoreChannel(discord.abc.GuildChannel, Hashable):
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
 
 
-DMC = TypeVar('DMC', bound='DMChannel')
-
-
 class DMChannel(discord.abc.Messageable, Hashable):
     """Represents a Discord direct message channel.
 
@@ -1874,8 +1880,8 @@ class DMChannel(discord.abc.Messageable, Hashable):
         return f'<DMChannel id={self.id} recipient={self.recipient!r}>'
 
     @classmethod
-    def _from_message(cls: Type[DMC], state: ConnectionState, channel_id: int) -> DMC:
-        self: DMC = cls.__new__(cls)
+    def _from_message(cls, state: ConnectionState, channel_id: int) -> Self:
+        self = cls.__new__(cls)
         self._state = state
         self.id = channel_id
         self.recipient = None

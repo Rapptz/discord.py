@@ -52,7 +52,7 @@ Essentially, these two are equivalent: ::
 Since the :meth:`.Bot.command` decorator is shorter and easier to comprehend, it will be the one used throughout the
 documentation here.
 
-Any parameter that is accepted by the :class:`.Command` constructor can be passed into the decorator. For example, to change
+Any parameter that is accepted by the :class:`~discord.ext.commands.Command` constructor can be passed into the decorator. For example, to change
 the name to something other than the function would be as simple as doing this:
 
 .. code-block:: python3
@@ -771,7 +771,7 @@ In order to handle our errors, we must use something called an error handler. Th
 called for every error reached.
 
 Most of the time however, we want to handle an error local to the command itself. Luckily, commands come with local error
-handlers that allow us to do just that. First we decorate an error handler function with :meth:`.Command.error`:
+handlers that allow us to do just that. First we decorate an error handler function with :meth:`~discord.ext.commands.Command.error`:
 
 .. code-block:: python3
 

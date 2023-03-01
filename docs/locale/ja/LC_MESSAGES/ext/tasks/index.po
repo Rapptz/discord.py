@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-23 22:41-0400\n"
+"POT-Creation-Date: 2022-02-27 02:33+0900\n"
 "PO-Revision-Date: 2020-10-24 02:41+0000\n"
 "Last-Translator: \n"
 "Language: ja_JP\n"
@@ -12,7 +12,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.5.3\n"
+"Generated-By: Babel 2.9.1\n"
 
 #: ../../ext/tasks/index.rst:4
 msgid "``discord.ext.tasks`` -- asyncio.Task helpers"
@@ -81,12 +81,127 @@ msgstr "ループと再接続処理を抽象化するバックグラウンドタ
 msgid "The main interface to create this is through :func:`loop`."
 msgstr ":func:`loop` はこれを作成するための主要なインタフェースです。"
 
-#: discord.ext.tasks.Loop.current_loop:1 of
-msgid "The current iteration of the loop."
+#: discord.ext.tasks.Loop.after_loop:1 of
+msgid ""
+"A decorator that register a coroutine to be called after the loop "
+"finished running."
 msgstr ""
 
-#: discord.ext.tasks.Loop.current_loop discord.ext.tasks.Loop.next_iteration of
+#: discord.ext.tasks.Loop.after_loop:3 discord.ext.tasks.Loop.before_loop:6 of
+msgid "The coroutine must take no arguments (except ``self`` in a class context)."
+msgstr ""
+
+#: discord.ext.tasks.Loop.after_loop:7 of
+msgid ""
+"This coroutine is called even during cancellation. If it is desirable to "
+"tell apart whether something was cancelled or not, check to see whether "
+":meth:`is_being_cancelled` is ``True`` or not."
+msgstr ""
+
+#: discord.ext.tasks.Loop.__call__ discord.ext.tasks.Loop.add_exception_type
+#: discord.ext.tasks.Loop.after_loop discord.ext.tasks.Loop.before_loop
+#: discord.ext.tasks.Loop.change_interval discord.ext.tasks.Loop.error
+#: discord.ext.tasks.Loop.remove_exception_type discord.ext.tasks.Loop.restart
+#: discord.ext.tasks.Loop.start discord.ext.tasks.loop of
+msgid "Parameters"
+msgstr "パラメーター"
+
+#: discord.ext.tasks.Loop.after_loop:11 of
+msgid "The coroutine to register after the loop finishes."
+msgstr ""
+
+#: discord.ext.tasks.Loop.add_exception_type discord.ext.tasks.Loop.after_loop
+#: discord.ext.tasks.Loop.before_loop discord.ext.tasks.Loop.change_interval
+#: discord.ext.tasks.Loop.error discord.ext.tasks.Loop.start
+#: discord.ext.tasks.loop of
+#, fuzzy
+msgid "Raises"
+msgstr "例外"
+
+#: discord.ext.tasks.Loop.after_loop:14 discord.ext.tasks.Loop.before_loop:11
+#: discord.ext.tasks.Loop.error:13 of
+msgid "The function was not a coroutine."
+msgstr ""
+
+#: discord.ext.tasks.Loop.before_loop:1 of
+msgid ""
+"A decorator that registers a coroutine to be called before the loop "
+"starts running."
+msgstr ""
+
+#: discord.ext.tasks.Loop.before_loop:3 of
+msgid ""
+"This is useful if you want to wait for some bot state before the loop "
+"starts, such as :meth:`discord.Client.wait_until_ready`."
+msgstr ""
+
+#: discord.ext.tasks.Loop.before_loop:8 of
+msgid "The coroutine to register before the loop runs."
+msgstr ""
+
+#: discord.ext.tasks.Loop.error:1 of
+msgid ""
+"A decorator that registers a coroutine to be called if the task "
+"encounters an unhandled exception."
+msgstr ""
+
+#: discord.ext.tasks.Loop.error:3 of
+msgid ""
+"The coroutine must take only one argument the exception raised (except "
+"``self`` in a class context)."
+msgstr ""
+
+#: discord.ext.tasks.Loop.error:5 of
+msgid ""
+"By default this prints to :data:`sys.stderr` however it could be "
+"overridden to have a different implementation."
+msgstr ""
+
+#: discord.ext.tasks.Loop.error:10 of
+msgid "The coroutine to register in the event of an unhandled exception."
+msgstr ""
+
+#: discord.ext.tasks.Loop.seconds:1 of
+msgid ""
+"Read-only value for the number of seconds between each iteration. "
+"``None`` if an explicit ``time`` value was passed instead."
+msgstr ""
+
+#: discord.ext.tasks.Loop.current_loop discord.ext.tasks.Loop.hours
+#: discord.ext.tasks.Loop.minutes discord.ext.tasks.Loop.next_iteration
+#: discord.ext.tasks.Loop.seconds discord.ext.tasks.Loop.time of
 msgid "type"
+msgstr ""
+
+#: discord.ext.tasks.Loop.hours:6 discord.ext.tasks.Loop.minutes:6
+#: discord.ext.tasks.Loop.seconds:6 of
+msgid "Optional[:class:`float`]"
+msgstr ""
+
+#: discord.ext.tasks.Loop.minutes:1 of
+msgid ""
+"Read-only value for the number of minutes between each iteration. "
+"``None`` if an explicit ``time`` value was passed instead."
+msgstr ""
+
+#: discord.ext.tasks.Loop.hours:1 of
+msgid ""
+"Read-only value for the number of hours between each iteration. ``None`` "
+"if an explicit ``time`` value was passed instead."
+msgstr ""
+
+#: discord.ext.tasks.Loop.time:1 of
+msgid ""
+"Read-only list for the exact times this loop runs at. ``None`` if "
+"relative times were passed instead."
+msgstr ""
+
+#: discord.ext.tasks.Loop.time:6 of
+msgid "Optional[List[:class:`datetime.time`]]"
+msgstr ""
+
+#: discord.ext.tasks.Loop.current_loop:1 of
+msgid "The current iteration of the loop."
 msgstr ""
 
 #: discord.ext.tasks.Loop.current_loop:3 of
@@ -102,33 +217,27 @@ msgstr ""
 msgid "Optional[:class:`datetime.datetime`]"
 msgstr ""
 
-#: discord.ext.tasks.Loop.start:1 of
-msgid "Starts the internal task in the event loop."
+#: discord.ext.tasks.Loop.__call__:1 of
+msgid "|coro|"
 msgstr ""
 
-#: discord.ext.tasks.Loop.add_exception_type discord.ext.tasks.Loop.after_loop
-#: discord.ext.tasks.Loop.before_loop discord.ext.tasks.Loop.change_interval
-#: discord.ext.tasks.Loop.error discord.ext.tasks.Loop.remove_exception_type
-#: discord.ext.tasks.Loop.restart discord.ext.tasks.Loop.start
-#: discord.ext.tasks.loop of
-msgid "Parameters"
-msgstr "パラメーター"
+#: discord.ext.tasks.Loop.__call__:3 of
+msgid "Calls the internal callback that the task holds."
+msgstr ""
 
+#: discord.ext.tasks.Loop.__call__:7 discord.ext.tasks.Loop.restart:8
 #: discord.ext.tasks.Loop.start:3 of
 msgid "The arguments to use."
 msgstr ""
 
-#: discord.ext.tasks.Loop.restart:9 discord.ext.tasks.Loop.start:4 of
+#: discord.ext.tasks.Loop.__call__:8 discord.ext.tasks.Loop.restart:9
+#: discord.ext.tasks.Loop.start:4 of
 msgid "The keyword arguments to use."
 msgstr ""
 
-#: discord.ext.tasks.Loop.add_exception_type discord.ext.tasks.Loop.after_loop
-#: discord.ext.tasks.Loop.before_loop discord.ext.tasks.Loop.change_interval
-#: discord.ext.tasks.Loop.error discord.ext.tasks.Loop.start
-#: discord.ext.tasks.loop of
-#, fuzzy
-msgid "Raises"
-msgstr "例外"
+#: discord.ext.tasks.Loop.start:1 of
+msgid "Starts the internal task in the event loop."
+msgstr ""
 
 #: discord.ext.tasks.Loop.start:6 of
 msgid "A task has already been launched and is running."
@@ -184,10 +293,6 @@ msgstr ""
 msgid ""
 "Due to the way this function works, the task is not returned like "
 ":meth:`start`."
-msgstr ""
-
-#: discord.ext.tasks.Loop.restart:8 of
-msgid "The arguments to to use."
 msgstr ""
 
 #: discord.ext.tasks.Loop.add_exception_type:1 of
@@ -258,95 +363,50 @@ msgstr ""
 msgid ":class:`bool`: Check if the task is currently running."
 msgstr ""
 
-#: discord.ext.tasks.Loop.before_loop:1 of
-msgid ""
-"A decorator that registers a coroutine to be called before the loop "
-"starts running."
-msgstr ""
-
-#: discord.ext.tasks.Loop.before_loop:3 of
-msgid ""
-"This is useful if you want to wait for some bot state before the loop "
-"starts, such as :meth:`discord.Client.wait_until_ready`."
-msgstr ""
-
-#: discord.ext.tasks.Loop.after_loop:3 discord.ext.tasks.Loop.before_loop:6 of
-msgid "The coroutine must take no arguments (except ``self`` in a class context)."
-msgstr ""
-
-#: discord.ext.tasks.Loop.before_loop:8 of
-msgid "The coroutine to register before the loop runs."
-msgstr ""
-
-#: discord.ext.tasks.Loop.after_loop:14 discord.ext.tasks.Loop.before_loop:11
-#: discord.ext.tasks.Loop.error:13 discord.ext.tasks.loop:22 of
-msgid "The function was not a coroutine."
-msgstr ""
-
-#: discord.ext.tasks.Loop.after_loop:1 of
-msgid ""
-"A decorator that register a coroutine to be called after the loop "
-"finished running."
-msgstr ""
-
-#: discord.ext.tasks.Loop.after_loop:7 of
-msgid ""
-"This coroutine is called even during cancellation. If it is desirable to "
-"tell apart whether something was cancelled or not, check to see whether "
-":meth:`is_being_cancelled` is ``True`` or not."
-msgstr ""
-
-#: discord.ext.tasks.Loop.after_loop:11 of
-msgid "The coroutine to register after the loop finishes."
-msgstr ""
-
-#: discord.ext.tasks.Loop.error:1 of
-msgid ""
-"A decorator that registers a coroutine to be called if the task "
-"encounters an unhandled exception."
-msgstr ""
-
-#: discord.ext.tasks.Loop.error:3 of
-msgid ""
-"The coroutine must take only one argument the exception raised (except "
-"``self`` in a class context)."
-msgstr ""
-
-#: discord.ext.tasks.Loop.error:5 of
-msgid ""
-"By default this prints to :data:`sys.stderr` however it could be "
-"overridden to have a different implementation."
-msgstr ""
-
-#: discord.ext.tasks.Loop.error:10 of
-msgid "The coroutine to register in the event of an unhandled exception."
-msgstr ""
-
 #: discord.ext.tasks.Loop.change_interval:1 of
 msgid "Changes the interval for the sleep time."
 msgstr ""
 
-#: discord.ext.tasks.Loop.change_interval:5 of
-msgid ""
-"This only applies on the next loop iteration. If it is desirable for the "
-"change of interval to be applied right away, cancel the task with "
-":meth:`cancel`."
-msgstr ""
-
-#: discord.ext.tasks.Loop.change_interval:10 discord.ext.tasks.loop:4 of
+#: discord.ext.tasks.Loop.change_interval:5 discord.ext.tasks.loop:4 of
 msgid "The number of seconds between every iteration."
 msgstr ""
 
-#: discord.ext.tasks.Loop.change_interval:12 discord.ext.tasks.loop:6 of
+#: discord.ext.tasks.Loop.change_interval:7 discord.ext.tasks.loop:6 of
 msgid "The number of minutes between every iteration."
 msgstr ""
 
-#: discord.ext.tasks.Loop.change_interval:14 discord.ext.tasks.loop:8 of
+#: discord.ext.tasks.Loop.change_interval:9 discord.ext.tasks.loop:8 of
 msgid "The number of hours between every iteration."
 msgstr ""
 
-#: discord.ext.tasks.Loop.change_interval:17 discord.ext.tasks.loop:21 of
+#: discord.ext.tasks.Loop.change_interval:11 of
+msgid ""
+"The exact times to run this loop at. Either a non-empty list or a single "
+"value of :class:`datetime.time` should be passed. This cannot be used in "
+"conjunction with the relative time parameters.  .. versionadded:: 2.0  .."
+" note::      Duplicate times will be ignored, and only run once."
+msgstr ""
+
+#: discord.ext.tasks.Loop.change_interval:11 of
+msgid ""
+"The exact times to run this loop at. Either a non-empty list or a single "
+"value of :class:`datetime.time` should be passed. This cannot be used in "
+"conjunction with the relative time parameters."
+msgstr ""
+
+#: discord.ext.tasks.Loop.change_interval:19 discord.ext.tasks.loop:18 of
+msgid "Duplicate times will be ignored, and only run once."
+msgstr ""
+
+#: discord.ext.tasks.Loop.change_interval:22 discord.ext.tasks.loop:33 of
 msgid "An invalid value was given."
+msgstr ""
+
+#: discord.ext.tasks.Loop.change_interval:23 of
+msgid ""
+"An invalid value for the ``time`` parameter was passed, or the     "
+"``time`` parameter was passed in conjunction with relative time "
+"parameters."
 msgstr ""
 
 #: discord.ext.tasks.loop:1 of
@@ -356,19 +416,48 @@ msgid ""
 msgstr ""
 
 #: discord.ext.tasks.loop:10 of
+msgid ""
+"The exact times to run this loop at. Either a non-empty list or a single "
+"value of :class:`datetime.time` should be passed. Timezones are "
+"supported. If no timezone is given for the times, it is assumed to "
+"represent UTC time.  This cannot be used in conjunction with the relative"
+" time parameters.  .. note::      Duplicate times will be ignored, and "
+"only run once.  .. versionadded:: 2.0"
+msgstr ""
+
+#: discord.ext.tasks.loop:10 of
+msgid ""
+"The exact times to run this loop at. Either a non-empty list or a single "
+"value of :class:`datetime.time` should be passed. Timezones are "
+"supported. If no timezone is given for the times, it is assumed to "
+"represent UTC time."
+msgstr ""
+
+#: discord.ext.tasks.loop:14 of
+msgid "This cannot be used in conjunction with the relative time parameters."
+msgstr ""
+
+#: discord.ext.tasks.loop:22 of
 msgid "The number of loops to do, ``None`` if it should be an infinite loop."
 msgstr ""
 
-#: discord.ext.tasks.loop:13 of
+#: discord.ext.tasks.loop:25 of
 msgid ""
 "Whether to handle errors and restart the task using an exponential back-"
 "off algorithm similar to the one used in :meth:`discord.Client.connect`."
 msgstr ""
 
-#: discord.ext.tasks.loop:17 of
+#: discord.ext.tasks.loop:29 of
 msgid ""
 "The loop to use to register the task, if not given defaults to "
 ":func:`asyncio.get_event_loop`."
+msgstr ""
+
+#: discord.ext.tasks.loop:34 of
+msgid ""
+"The function was not a coroutine, an invalid value for the ``time`` "
+"parameter was passed,     or ``time`` parameter was passed in conjunction"
+" with relative time parameters."
 msgstr ""
 
 #~ msgid ":class:`int` -- The current iteration of the loop."
@@ -413,5 +502,16 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid ":class:`Loop`"
+#~ msgstr ""
+
+#~ msgid "The arguments to to use."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "This only applies on the next loop"
+#~ " iteration. If it is desirable for"
+#~ " the change of interval to be "
+#~ "applied right away, cancel the task "
+#~ "with :meth:`cancel`."
 #~ msgstr ""
 

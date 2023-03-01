@@ -39,9 +39,17 @@ extras_require = {
         'sphinx==4.4.0',
         'sphinxcontrib_trio==1.1.2',
         'sphinxcontrib-websupport',
+        'typing-extensions',
     ],
     'speed': [
         'orjson>=3.5.4',
+    ],
+    'test': [
+        'coverage[toml]',
+        'pytest',
+        'pytest-asyncio',
+        'pytest-cov',
+        'pytest-mock'
     ]
 }
 
@@ -50,6 +58,7 @@ packages = [
     'discord.types',
     'discord.ui',
     'discord.webhook',
+    'discord.app_commands',
     'discord.ext.commands',
     'discord.ext.tasks',
 ]

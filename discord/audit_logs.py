@@ -229,12 +229,14 @@ class AuditLogChanges:
         'tags':                          ('emoji', None),
         'default_message_notifications': ('default_notifications', _enum_transformer(enums.NotificationLevel)),
         'video_quality_mode':            (None, _enum_transformer(enums.VideoQualityMode)),
-        'privacy_level':                 (None, _enum_transformer(enums.StagePrivacyLevel)),
+        'privacy_level':                 (None, _enum_transformer(enums.PrivacyLevel)),
         'format_type':                   (None, _enum_transformer(enums.StickerFormatType)),
         'type':                          (None, _transform_type),
         'communication_disabled_until':  ('timed_out_until', _transform_timestamp),
         'expire_behavior':               (None, _enum_transformer(enums.ExpireBehaviour)),
         'mfa_level':                     (None, _enum_transformer(enums.MFALevel)),
+        'status':                        (None, _enum_transformer(enums.EventStatus)),
+        'entity_type':                   (None, _enum_transformer(enums.EntityType)),
     }
     # fmt: on
 

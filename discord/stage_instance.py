@@ -28,7 +28,7 @@ from typing import Optional, TYPE_CHECKING
 
 from .utils import MISSING, cached_slot_property
 from .mixins import Hashable
-from .enums import StagePrivacyLevel, try_enum
+from .enums import PrivacyLevel, try_enum
 
 # fmt: off
 __all__ = (
@@ -72,7 +72,7 @@ class StageInstance(Hashable):
         The ID of the channel that the stage instance is running in.
     topic: :class:`str`
         The topic of the stage instance.
-    privacy_level: :class:`StagePrivacyLevel`
+    privacy_level: :class:`PrivacyLevel`
         The privacy level of the stage instance.
     discoverable_disabled: :class:`bool`
         Whether discoverability for the stage instance is disabled.
@@ -98,7 +98,7 @@ class StageInstance(Hashable):
         self.id: int = int(data['id'])
         self.channel_id: int = int(data['channel_id'])
         self.topic: str = data['topic']
-        self.privacy_level: StagePrivacyLevel = try_enum(StagePrivacyLevel, data['privacy_level'])
+        self.privacy_level: PrivacyLevel = try_enum(PrivacyLevel, data['privacy_level'])
         self.discoverable_disabled: bool = data.get('discoverable_disabled', False)
 
     def __repr__(self) -> str:
@@ -110,14 +110,11 @@ class StageInstance(Hashable):
         # the returned channel will always be a StageChannel or None
         return self._state.get_channel(self.channel_id)  # type: ignore
 
-    def is_public(self) -> bool:
-        return self.privacy_level is StagePrivacyLevel.public
-
     async def edit(
         self,
         *,
         topic: str = MISSING,
-        privacy_level: StagePrivacyLevel = MISSING,
+        privacy_level: PrivacyLevel = MISSING,
         reason: Optional[str] = None,
     ) -> None:
         """|coro|
@@ -131,7 +128,7 @@ class StageInstance(Hashable):
         -----------
         topic: :class:`str`
             The stage instance's new topic.
-        privacy_level: :class:`StagePrivacyLevel`
+        privacy_level: :class:`PrivacyLevel`
             The stage instance's new privacy level.
         reason: :class:`str`
             The reason the stage instance was edited. Shows up on the audit log.
@@ -152,7 +149,7 @@ class StageInstance(Hashable):
             payload['topic'] = topic
 
         if privacy_level is not MISSING:
-            if not isinstance(privacy_level, StagePrivacyLevel):
+            if not isinstance(privacy_level, PrivacyLevel):
                 raise TypeError('privacy_level field must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value

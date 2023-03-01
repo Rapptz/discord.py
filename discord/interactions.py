@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, Dict, Generic, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 import asyncio
 
 from . import utils
@@ -53,6 +53,7 @@ if TYPE_CHECKING:
         Interaction as InteractionPayload,
         InteractionData,
     )
+    from .client import Client
     from .guild import Guild
     from .state import ConnectionState
     from .file import File
@@ -60,6 +61,7 @@ if TYPE_CHECKING:
     from aiohttp import ClientSession
     from .embeds import Embed
     from .ui.view import View
+    from .app_commands.models import Choice, ChoiceT
     from .ui.modal import Modal
     from .channel import VoiceChannel, StageChannel, TextChannel, CategoryChannel, StoreChannel, PartialMessageable
     from .threads import Thread
@@ -91,7 +93,7 @@ class Interaction:
         The channel ID the interaction was sent from.
     application_id: :class:`int`
         The application ID that the interaction was for.
-    user: Optional[Union[:class:`User`, :class:`Member`]]
+    user: Union[:class:`User`, :class:`Member`]
         The user or member that sent the interaction.
     message: Optional[:class:`Message`]
         The message that sent this interaction.
@@ -115,6 +117,7 @@ class Interaction:
         'version',
         '_permissions',
         '_state',
+        '_client',
         '_session',
         '_original_message',
         '_cs_response',
@@ -124,6 +127,7 @@ class Interaction:
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState):
         self._state: ConnectionState = state
+        self._client: Client = state._get_client()
         self._session: ClientSession = state.http._HTTPClient__session  # type: ignore - Mangled attribute for __session
         self._original_message: Optional[InteractionMessage] = None
         self._from_data(data)
@@ -145,7 +149,7 @@ class Interaction:
         except KeyError:
             self.message = None
 
-        self.user: Optional[Union[User, Member]] = None
+        self.user: Union[User, Member] = MISSING
         self._permissions: int = 0
 
         # TODO: there's a potential data loss here
@@ -158,12 +162,17 @@ class Interaction:
             else:
                 # The fallback to Object for guild causes a type check error but is explicitly allowed here
                 self.user = Member(state=self._state, guild=guild, data=member)  # type: ignore
-                self._permissions = int(member.get('permissions', 0))
+                self._permissions = self.user._permissions or 0
         else:
             try:
                 self.user = User(state=self._state, data=data['user'])  # type: ignore - The key is optional and handled
             except KeyError:
                 pass
+
+    @property
+    def client(self) -> Client:
+        """:class:`Client`: The client that is handling this interaction."""
+        return self._client
 
     @property
     def guild(self) -> Optional[Guild]:
@@ -684,6 +693,47 @@ class InteractionResponse:
         )
 
         self._parent._state.store_view(modal)
+        self._responded = True
+
+    async def autocomplete(self, choices: List[Choice[ChoiceT]]) -> None:
+        """|coro|
+
+        Responds to this interaction by giving the user the choices they can use.
+
+        Parameters
+        -----------
+        choices: List[:class:`~discord.app_commands.Choice`]
+            The list of new choices as the user is typing.
+
+        Raises
+        -------
+        HTTPException
+            Sending the choices failed.
+        ValueError
+            This interaction cannot respond with autocomplete.
+        InteractionResponded
+            This interaction has already been responded to before.
+        """
+        if self._responded:
+            raise InteractionResponded(self._parent)
+
+        payload: Dict[str, Any] = {
+            'choices': [option.to_dict() for option in choices],
+        }
+
+        parent = self._parent
+        if parent.type is not InteractionType.autocomplete:
+            raise ValueError('cannot respond to this interaction with autocomplete.')
+
+        adapter = async_context.get()
+        params = interaction_response_params(type=InteractionResponseType.autocomplete_result.value, data=payload)
+        await adapter.create_interaction_response(
+            parent.id,
+            parent.token,
+            session=parent._session,
+            params=params,
+        )
+
         self._responded = True
 
 

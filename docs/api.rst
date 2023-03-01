@@ -87,6 +87,7 @@ TeamMember
 
 .. autoclass:: TeamMember()
     :members:
+    :inherited-members:
 
 Voice Related
 ---------------
@@ -1020,6 +1021,53 @@ to handle it, which defaults to print a traceback and ignoring the exception.
     :param after: The stage instance after the update.
     :type after: :class:`StageInstance`
 
+.. function:: on_scheduled_event_create(event)
+              on_scheduled_event_delete(event)
+
+    Called when a :class:`ScheduledEvent` is created or deleted.
+
+    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param event: The scheduled event that was created or deleted.
+    :type event: :class:`ScheduledEvent`
+
+.. function:: on_scheduled_event_update(before, after)
+
+    Called when a :class:`ScheduledEvent` is updated.
+
+    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
+
+    The following, but not limited to, examples illustrate when this event is called:
+
+    - The scheduled start/end times are changed.
+    - The channel is changed.
+    - The description is changed.
+    - The status is changed.
+    - The image is changed.
+
+    .. versionadded:: 2.0
+
+    :param before: The scheduled event before the update.
+    :type before: :class:`ScheduledEvent`
+    :param after: The scheduled event after the update.
+    :type after: :class:`ScheduledEvent`
+
+.. function:: on_scheduled_event_user_add(event, user)
+              on_scheduled_event_user_remove(event, user)
+
+    Called when a user is added or removed from a :class:`ScheduledEvent`.
+
+    This requires :attr:`Intents.guild_scheduled_events` to be enabled.
+
+    .. versionadded:: 2.0
+
+    :param event: The scheduled event that the user was added or removed from.
+    :type event: :class:`ScheduledEvent`
+    :param user: The user that was added or removed.
+    :type user: :class:`User`
+
 .. function:: on_member_ban(guild, user)
 
     Called when user gets banned from a :class:`Guild`.
@@ -1109,6 +1157,22 @@ Utility Functions
 .. autofunction:: discord.utils.escape_markdown
 
 .. autofunction:: discord.utils.escape_mentions
+
+.. class:: ResolvedInvite
+
+    A data class which represents a resolved invite returned from :func:`discord.utils.resolve_invite`.
+
+    .. attribute:: code
+
+        The invite code.
+
+        :type: :class:`str`
+
+    ..  attribute:: event
+
+        The id of the scheduled event that the invite refers to.
+
+        :type: Optional[:class:`int`]
 
 .. autofunction:: discord.utils.resolve_invite
 
@@ -1399,141 +1463,6 @@ of :class:`enum.Enum`.
         A competing activity type.
 
         .. versionadded:: 1.5
-
-.. class:: InteractionType
-
-    Specifies the type of :class:`Interaction`.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: ping
-
-        Represents Discord pinging to see if the interaction response server is alive.
-    .. attribute:: application_command
-
-        Represents a slash command interaction.
-    .. attribute:: component
-
-        Represents a component based interaction, i.e. using the Discord Bot UI Kit.
-    .. attribute:: modal_submit
-
-        Represents submission of a modal interaction.
-
-.. class:: InteractionResponseType
-
-    Specifies the response type for the interaction.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: pong
-
-        Pongs the interaction when given a ping.
-
-        See also :meth:`InteractionResponse.pong`
-    .. attribute:: channel_message
-
-        Respond to the interaction with a message.
-
-        See also :meth:`InteractionResponse.send_message`
-    .. attribute:: deferred_channel_message
-
-        Responds to the interaction with a message at a later time.
-
-        See also :meth:`InteractionResponse.defer`
-    .. attribute:: deferred_message_update
-
-        Acknowledges the component interaction with a promise that
-        the message will update later (though there is no need to actually update the message).
-
-        See also :meth:`InteractionResponse.defer`
-    .. attribute:: message_update
-
-        Responds to the interaction by editing the message.
-
-        See also :meth:`InteractionResponse.edit_message`
-    .. attribute:: modal
-
-        Responds to the interaction with a modal.
-
-        See also :meth:`InteractionResponse.send_modal`
-
-.. class:: ComponentType
-
-    Represents the component type of a component.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: action_row
-
-        Represents the group component which holds different components in a row.
-    .. attribute:: button
-
-        Represents a button component.
-    .. attribute:: select
-
-        Represents a select component.
-
-    .. attribute:: text_input
-
-        Represents a text box component.
-
-
-.. class:: ButtonStyle
-
-    Represents the style of the button component.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: primary
-
-        Represents a blurple button for the primary action.
-    .. attribute:: secondary
-
-        Represents a grey button for the secondary action.
-    .. attribute:: success
-
-        Represents a green button for a successful action.
-    .. attribute:: danger
-
-        Represents a red button for a dangerous action.
-    .. attribute:: link
-
-        Represents a link button.
-
-    .. attribute:: blurple
-
-        An alias for :attr:`primary`.
-    .. attribute:: grey
-
-        An alias for :attr:`secondary`.
-    .. attribute:: gray
-
-        An alias for :attr:`secondary`.
-    .. attribute:: green
-
-        An alias for :attr:`success`.
-    .. attribute:: red
-
-        An alias for :attr:`danger`.
-    .. attribute:: url
-
-        An alias for :attr:`link`.
-
-.. class:: TextStyle
-
-    Represents the style of the text box component.
-
-    .. versionadded:: 2.0
-
-    .. attribute:: short
-
-        Represents a short text box.
-    .. attribute:: paragraph
-
-        Represents a long form text box.
-    .. attribute:: long
-
-        An alias for :attr:`paragraph`.
 
 .. class:: VerificationLevel
 
@@ -2503,23 +2432,15 @@ of :class:`enum.Enum`.
 
         Represents full camera video quality.
 
-.. class:: StagePrivacyLevel
+.. class:: PrivacyLevel
 
-    Represents a stage instance's privacy level.
+    Represents the privacy level of a stage instance or scheduled event.
 
     .. versionadded:: 2.0
 
-    .. attribute:: public
-
-        The stage instance can be joined by external users.
-
-    .. attribute:: closed
-
-        The stage instance can only be joined by members of the guild.
-
     .. attribute:: guild_only
 
-        Alias for :attr:`.closed`
+       The stage instance or scheduled event is only accessible within the guild.
 
 .. class:: NSFWLevel
 
@@ -2725,6 +2646,50 @@ of :class:`enum.Enum`.
     .. attribute:: require_2fa
 
         The guild requires 2 factor authentication.
+
+.. class:: EntityType
+
+    Represents the type of entity that a scheduled event is for.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: stage_instance
+
+        The scheduled event will occur in a stage instance.
+
+    .. attribute:: voice
+
+        The scheduled event will occur in a voice channel.
+
+    .. attribute:: external
+
+        The scheduled event will occur externally.
+
+.. class:: EventStatus
+
+    Represents the status of an event.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: scheduled
+
+        The event is scheduled.
+
+    .. attribute:: active
+
+        The event is active.
+
+    .. attribute:: completed
+
+        The event has ended.
+
+    .. attribute:: cancelled
+
+        The event has been cancelled.
+
+    .. attribute:: canceled
+
+        An alias for :attr:`cancelled`.
 
 .. _discord-api-audit-logs:
 
@@ -3007,9 +2972,9 @@ AuditLogDiff
 
     .. attribute:: privacy_level
 
-        The privacy level of the stage instance.
+        The privacy level of the stage instance or scheduled event
 
-        :type: :class:`StagePrivacyLevel`
+        :type: :class:`PrivacyLevel`
 
     .. attribute:: roles
 
@@ -3207,9 +3172,10 @@ AuditLogDiff
 
     .. attribute:: description
 
-        The description of a guild, or a sticker.
+        The description of a guild, a sticker, or a scheduled event.
 
-        See also :attr:`Guild.description`, or :attr:`GuildSticker.description`.
+        See also :attr:`Guild.description`, :attr:`GuildSticker.description`, or
+        :attr:`ScheduledEvent.description`.
 
         :type: :class:`str`
 
@@ -3263,7 +3229,7 @@ AuditLogDiff
 
         Integration emoticons were enabled or disabled.
 
-        see also :attr:`StreamIntegration.enable_emoticons`
+        See also :attr:`StreamIntegration.enable_emoticons`
 
         :type: :class:`bool`
 
@@ -3272,7 +3238,7 @@ AuditLogDiff
 
         The behaviour of expiring subscribers changed.
 
-        see also :attr:`StreamIntegration.expire_behaviour`
+        See also :attr:`StreamIntegration.expire_behaviour`
 
         :type: :class:`ExpireBehaviour`
 
@@ -3280,7 +3246,7 @@ AuditLogDiff
 
         The grace period before expiring subscribers changed.
 
-        see also :attr:`StreamIntegration.expire_grace_period`
+        See also :attr:`StreamIntegration.expire_grace_period`
 
         :type: :class:`int`
 
@@ -3288,7 +3254,7 @@ AuditLogDiff
 
         The preferred locale for the guild changed.
 
-        see also :attr:`Guild.preferred_locale`
+        See also :attr:`Guild.preferred_locale`
 
         :type: :class:`str`
 
@@ -3477,51 +3443,6 @@ Message
 .. autoclass:: Message()
     :members:
 
-Component
-~~~~~~~~~~
-
-.. attributetable:: Component
-
-.. autoclass:: Component()
-    :members:
-
-ActionRow
-~~~~~~~~~~
-
-.. attributetable:: ActionRow
-
-.. autoclass:: ActionRow()
-    :members:
-
-Button
-~~~~~~~
-
-.. attributetable:: Button
-
-.. autoclass:: Button()
-    :members:
-    :inherited-members:
-
-SelectMenu
-~~~~~~~~~~~
-
-.. attributetable:: SelectMenu
-
-.. autoclass:: SelectMenu()
-    :members:
-    :inherited-members:
-
-
-TextInput
-~~~~~~~~~~
-
-.. attributetable:: TextInput
-
-.. autoclass:: TextInput()
-    :members:
-    :inherited-members:
-
-
 DeletedReferencedMessage
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -3563,6 +3484,15 @@ Guild
         :type: :class:`User`
 
 
+ScheduledEvent
+~~~~~~~~~~~~~~
+
+.. attributetable:: ScheduledEvent
+
+.. autoclass:: ScheduledEvent()
+    :members:
+
+
 Integration
 ~~~~~~~~~~~~
 
@@ -3579,30 +3509,6 @@ Integration
     :members:
 
 .. autoclass:: StreamIntegration()
-    :members:
-
-Interaction
-~~~~~~~~~~~~
-
-.. attributetable:: Interaction
-
-.. autoclass:: Interaction()
-    :members:
-
-InteractionResponse
-~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: InteractionResponse
-
-.. autoclass:: InteractionResponse()
-    :members:
-
-InteractionMessage
-~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: InteractionMessage
-
-.. autoclass:: InteractionMessage()
     :members:
 
 Member
@@ -4008,14 +3914,6 @@ PartialMessage
 .. autoclass:: PartialMessage
     :members:
 
-SelectOption
-~~~~~~~~~~~~~
-
-.. attributetable:: SelectOption
-
-.. autoclass:: SelectOption
-    :members:
-
 Intents
 ~~~~~~~~~~
 
@@ -4143,68 +4041,6 @@ PublicUserFlags
 
 .. autoclass:: PublicUserFlags()
     :members:
-
-.. _discord_ui_kit:
-
-Bot UI Kit
--------------
-
-The library has helpers to help create component-based UIs.
-
-View
-~~~~~~~
-
-.. attributetable:: discord.ui.View
-
-.. autoclass:: discord.ui.View
-    :members:
-
-Modal
-~~~~~~
-
-.. attributetable:: discord.ui.Modal
-
-.. autoclass:: discord.ui.Modal
-    :members:
-
-Item
-~~~~~~~
-
-.. attributetable:: discord.ui.Item
-
-.. autoclass:: discord.ui.Item
-    :members:
-
-Button
-~~~~~~~
-
-.. attributetable:: discord.ui.Button
-
-.. autoclass:: discord.ui.Button
-    :members:
-    :inherited-members:
-
-.. autofunction:: discord.ui.button
-
-Select
-~~~~~~~
-
-.. attributetable:: discord.ui.Select
-
-.. autoclass:: discord.ui.Select
-    :members:
-    :inherited-members:
-
-.. autofunction:: discord.ui.select
-
-TextInput
-~~~~~~~~~~
-
-.. attributetable:: discord.ui.TextInput
-
-.. autoclass:: discord.ui.TextInput
-    :members:
-    :inherited-members:
 
 Exceptions
 ------------

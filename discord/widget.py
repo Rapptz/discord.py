@@ -314,6 +314,6 @@ class Widget:
         :class:`Invite`
             The invite from the widget's invite URL.
         """
-        invite_id = resolve_invite(self._invite)
-        data = await self._state.http.get_invite(invite_id, with_counts=with_counts)
+        resolved = resolve_invite(self._invite)
+        data = await self._state.http.get_invite(resolved.code, with_counts=with_counts)
         return Invite.from_incomplete(state=self._state, data=data)

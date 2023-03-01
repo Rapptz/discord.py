@@ -1359,11 +1359,7 @@ class Client:
         Bot accounts in more than 10 guilds are not allowed to create guilds.
 
         .. versionchanged:: 2.0
-            ``name`` and ``icon`` parameters are now keyword-only.
-            The `region`` parameter has been removed.
-
-        .. versionchanged:: 2.0
-            ``name`` and ``region``, and ``icon`` parameters are now keyword-only.
+            ``name`` and ``icon`` parameters are now keyword-only. The `region`` parameter has been removed.
 
         .. versionchanged:: 2.0
             This function no-longer raises ``InvalidArgument`` instead raising
@@ -1437,7 +1433,12 @@ class Client:
     # Invite management
 
     async def fetch_invite(
-        self, url: Union[Invite, str], *, with_counts: bool = True, with_expiration: bool = True
+        self,
+        url: Union[Invite, str],
+        *,
+        with_counts: bool = True,
+        with_expiration: bool = True,
+        scheduled_event_id: Optional[int] = None,
     ) -> Invite:
         """|coro|
 
@@ -1462,9 +1463,20 @@ class Client:
             :attr:`.Invite.expires_at` field.
 
             .. versionadded:: 2.0
+        scheduled_event_id: Optional[:class:`int`]
+            The ID of the scheduled event this invite is for.
+
+            .. note::
+
+                It is not possible to provide a url that contains an ``event_id`` parameter
+                when using this parameter.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
+        ValueError
+            The url contains an ``event_id``, but ``scheduled_event_id`` has also been provided.
         NotFound
             The invite has expired or is invalid.
         HTTPException
@@ -1476,8 +1488,19 @@ class Client:
             The invite from the URL/ID.
         """
 
-        invite_id = utils.resolve_invite(url)
-        data = await self.http.get_invite(invite_id, with_counts=with_counts, with_expiration=with_expiration)
+        resolved = utils.resolve_invite(url)
+
+        if scheduled_event_id and resolved.event:
+            raise ValueError('Cannot specify scheduled_event_id and contain an event_id in the url.')
+
+        scheduled_event_id = scheduled_event_id or resolved.event
+
+        data = await self.http.get_invite(
+            resolved.code,
+            with_counts=with_counts,
+            with_expiration=with_expiration,
+            guild_scheduled_event_id=scheduled_event_id,
+        )
         return Invite.from_incomplete(state=self._connection, data=data)
 
     async def delete_invite(self, invite: Union[Invite, str], /) -> None:
@@ -1507,8 +1530,8 @@ class Client:
             Revoking the invite failed.
         """
 
-        invite_id = utils.resolve_invite(invite)
-        await self.http.delete_invite(invite_id)
+        resolved = utils.resolve_invite(invite)
+        await self.http.delete_invite(resolved.code)
 
     # Miscellaneous stuff
 

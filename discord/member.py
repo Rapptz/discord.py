@@ -29,7 +29,7 @@ import inspect
 import itertools
 import sys
 from operator import attrgetter
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union, overload
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Tuple, Union
 
 import discord.abc
 
@@ -49,6 +49,8 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .asset import Asset
     from .channel import DMChannel, VoiceChannel, StageChannel
     from .flags import PublicUserFlags
@@ -203,9 +205,6 @@ def flatten_user(cls):
     return cls
 
 
-M = TypeVar('M', bound='Member')
-
-
 @flatten_user
 class Member(discord.abc.Messageable, _UserTag):
     """Represents a Discord member to a :class:`Guild`.
@@ -273,6 +272,7 @@ class Member(discord.abc.Messageable, _UserTag):
         'pending',
         'nick',
         'timed_out_until',
+        '_permissions',
         '_client_status',
         '_user',
         '_state',
@@ -308,6 +308,12 @@ class Member(discord.abc.Messageable, _UserTag):
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
         self._avatar: Optional[str] = data.get('avatar')
+        self._permissions: Optional[int]
+        try:
+            self._permissions = int(data['permissions'])
+        except KeyError:
+            self._permissions = None
+
         self.timed_out_until: Optional[datetime.datetime] = utils.parse_time(data.get('communication_disabled_until'))
 
     def __str__(self) -> str:
@@ -329,7 +335,7 @@ class Member(discord.abc.Messageable, _UserTag):
         return hash(self._user)
 
     @classmethod
-    def _from_message(cls: Type[M], *, message: Message, data: MemberPayload) -> M:
+    def _from_message(cls, *, message: Message, data: MemberPayload) -> Self:
         author = message.author
         data['user'] = author._to_minimal_user_json()  # type: ignore
         return cls(data=data, guild=message.guild, state=message._state)  # type: ignore
@@ -343,7 +349,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.timed_out_until = utils.parse_time(data.get('communication_disabled_until'))
 
     @classmethod
-    def _try_upgrade(cls: Type[M], *, data: UserWithMemberPayload, guild: Guild, state: ConnectionState) -> Union[User, M]:
+    def _try_upgrade(cls, *, data: UserWithMemberPayload, guild: Guild, state: ConnectionState) -> Union[User, Self]:
         # A User object with a 'member' key
         try:
             member_data = data.pop('member')
@@ -354,8 +360,8 @@ class Member(discord.abc.Messageable, _UserTag):
             return cls(data=member_data, guild=guild, state=state)  # type: ignore
 
     @classmethod
-    def _copy(cls: Type[M], member: M) -> M:
-        self: M = cls.__new__(cls)  # to bypass __init__
+    def _copy(cls, member: Self) -> Self:
+        self = cls.__new__(cls)  # to bypass __init__
 
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
@@ -366,6 +372,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.pending = member.pending
         self.activities = member.activities
         self.timed_out_until = member.timed_out_until
+        self._permissions = member._permissions
         self._state = member._state
         self._avatar = member._avatar
 
@@ -618,6 +625,22 @@ class Member(discord.abc.Messageable, _UserTag):
             return Permissions.all()
 
         return base
+
+    @property
+    def resolved_permissions(self) -> Optional[Permissions]:
+        """Optional[:class:`Permissions`]: Returns the member's resolved permissions
+        from an interaction.
+
+        This is only available in interaction contexts and represents the resolved
+        permissions of the member in the channel the interaction was executed in.
+        This is more or less equivalent to calling :meth:`abc.GuildChannel.permissions_for`
+        but stored and returned as an attribute by the Discord API rather than computed.
+
+        .. versionadded:: 2.0
+        """
+        if self._permissions is None:
+            return None
+        return Permissions(self._permissions)
 
     @property
     def voice(self) -> Optional[VoiceState]:

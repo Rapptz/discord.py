@@ -711,7 +711,7 @@ class NSFWChannelRequired(CheckFailure):
 
     .. versionadded:: 1.1
 
-    Parameters
+    Attributes
     -----------
     channel: Union[:class:`.abc.GuildChannel`, :class:`.Thread`]
         The channel that does not have NSFW enabled.

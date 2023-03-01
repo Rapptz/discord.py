@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Union
+from typing import Callable, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 import inspect
 import os
 
@@ -40,10 +40,11 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .view import View
     from ..emoji import Emoji
 
-B = TypeVar('B', bound='Button')
 V = TypeVar('V', bound='View', covariant=True)
 
 
@@ -196,7 +197,7 @@ class Button(Item[V]):
             self._underlying.emoji = None
 
     @classmethod
-    def from_component(cls: Type[B], button: ButtonComponent) -> B:
+    def from_component(cls, button: ButtonComponent) -> Self:
         return cls(
             style=button.style,
             label=button.label,

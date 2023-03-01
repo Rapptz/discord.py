@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import List, Literal, TypedDict, Union
 from .emoji import PartialEmoji
 
-ComponentType = Literal[1, 2, 3]
+ComponentType = Literal[1, 2, 3, 4]
 ButtonStyle = Literal[1, 2, 3, 4, 5]
 TextStyle = Literal[1, 2]
 

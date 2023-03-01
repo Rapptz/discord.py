@@ -40,6 +40,7 @@ from typing import (
     List,
     Literal,
     Mapping,
+    NamedTuple,
     Optional,
     Protocol,
     Sequence,
@@ -62,6 +63,8 @@ import re
 import sys
 import types
 import warnings
+
+import yarl
 
 try:
     import orjson
@@ -729,9 +732,17 @@ def _string_width(string: str, *, _IS_ASCII=_IS_ASCII) -> int:
     return sum(2 if func(char) in UNICODE_WIDE_CHAR_TYPE else 1 for char in string)
 
 
-def resolve_invite(invite: Union[Invite, str]) -> str:
-    """
-    Resolves an invite from a :class:`~discord.Invite`, URL or code.
+class ResolvedInvite(NamedTuple):
+    code: str
+    event: Optional[int]
+
+
+def resolve_invite(invite: Union[Invite, str]) -> ResolvedInvite:
+    """Resolves an invite from a :class:`~discord.Invite`, URL or code.
+
+    .. versionchanged:: 2.0
+        Now returns a :class:`.ResolvedInvite` instead of a
+        :class:`str`.
 
     Parameters
     -----------
@@ -740,19 +751,24 @@ def resolve_invite(invite: Union[Invite, str]) -> str:
 
     Returns
     --------
-    :class:`str`
-        The invite code.
+    :class:`.ResolvedInvite`
+        A data class containing the invite code and the event ID.
     """
     from .invite import Invite  # circular import
 
     if isinstance(invite, Invite):
-        return invite.code
+        return ResolvedInvite(invite.code, invite.scheduled_event_id)
     else:
-        rx = r'(?:https?\:\/\/)?discord(?:\.gg|(?:app)?\.com\/invite)\/(.+)'
+        rx = r'(?:https?\:\/\/)?discord(?:\.gg|(?:app)?\.com\/invite)\/[^/]+'
         m = re.match(rx, invite)
+
         if m:
-            return m.group(1)
-    return invite
+            url = yarl.URL(invite)
+            code = url.parts[-1]
+            event_id = url.query.get('event')
+
+            return ResolvedInvite(code, int(event_id) if event_id else None)
+    return ResolvedInvite(invite, None)
 
 
 def resolve_template(code: Union[Template, str]) -> str:
@@ -1030,9 +1046,6 @@ def evaluate_annotation(
 
         if is_literal and not all(isinstance(x, (str, int, bool, type(None))) for x in evaluated_args):
             raise TypeError('Literal arguments must be of type str, int, bool, or NoneType.')
-
-        if evaluated_args == args:
-            return tp
 
         try:
             return tp.copy_with(evaluated_args)
