@@ -1358,7 +1358,7 @@ class BotBase(GroupMixin[None]):
             exc = errors.CommandNotFound(f'Command "{ctx.invoked_with}" is not found')
             self.dispatch('command_error', ctx, exc)
 
-    async def process_commands(self, message: Message, /) -> None:
+    async def process_commands(self, message: Message, *, command_str: Optional[str] = MISSING) -> None:
         """|coro|
 
         This function processes the commands that have been registered
@@ -1383,11 +1383,20 @@ class BotBase(GroupMixin[None]):
         -----------
         message: :class:`discord.Message`
             The message to process commands for.
+        command_str: Optional[:class:`str`]
+            The command string which should be processed.
+            This can be useful to process multiple commands.
         """
         if message.author.bot:
             return
 
+        before_content = message.content
+        if command_str not in (MISSING, None):
+            message.content = command_str
+
         ctx = await self.get_context(message)
+        message.content = before_content
+
         # the type of the invocation context's bot attribute will be correct
         await self.invoke(ctx)  # type: ignore
 
