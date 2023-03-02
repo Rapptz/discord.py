@@ -168,8 +168,6 @@ class Template:
 
         Creates a :class:`.Guild` using the template.
 
-        Bot accounts in more than 10 guilds are not allowed to create guilds.
-
         .. versionchanged:: 2.0
             The ``region`` parameter has been removed.
 
