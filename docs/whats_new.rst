@@ -11,9 +11,9 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
-.. _vp2p2p1:
+.. _vp2p2p2:
 
-v2.2.1
+v2.2.2
 -------
 
 Bug Fixes
