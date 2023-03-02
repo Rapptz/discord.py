@@ -11,6 +11,16 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p2p1:
+
+v2.2.1
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix UDP discovery in voice not using new 74 byte layout which caused voice to break (:issue:`9277`, :issue:`9278`)
+
 .. _vp2p2p0:
 
 v2.2.0
