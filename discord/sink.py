@@ -1,8 +1,12 @@
 import struct
 import wave
 import os
+from typing import TYPE_CHECKING, Optional
 
 from .opus import _OpusStruct
+
+if TYPE_CHECKING:
+    from .member import Member
 
 
 __all__ = (
@@ -33,13 +37,14 @@ class RawAudioData:
 
 class AudioFrame:
     """Represents audio that has been fully decoded."""
-    __slots__ = ("sequence", "timestamp", "ssrc", "audio")
+    __slots__ = ("sequence", "timestamp", "ssrc", "audio", "user")
 
-    def __init__(self, frame: bytes, raw_audio: RawAudioData):
+    def __init__(self, frame: bytes, raw_audio: RawAudioData, user: Optional['Member']):
         self.sequence = raw_audio.sequence
         self.timestamp = raw_audio.timestamp
         self.ssrc = raw_audio.ssrc
         self.audio = frame
+        self.user = user
 
 
 class AudioSink:
@@ -48,13 +53,20 @@ class AudioSink:
 
 
 class AudioFileSink(AudioSink):
-    def __init__(self):
+    __slots__ = ("output_dir", "output_files", "_done")
+
+    def __init__(self, output_dir="/"):
+        if not os.path.isdir(output_dir):
+            raise ValueError("Invalid output directory")
+        self.output_dir = output_dir
         self.output_files = {}
         self._done = False
 
     def on_audio(self, frame):
         if frame.ssrc not in self.output_files:
-            self.output_files[frame.ssrc] = open(f"audio-{frame.ssrc}.pcm", "wb")
+            filename = f"audio-{frame.user.name}#{frame.user.discriminator}.pcm" \
+                if frame.user is not None else f"{frame.ssrc}.pcm"
+            self.output_files[frame.ssrc] = open(os.path.join(self.output_dir, filename), "wb")
         self.output_files[frame.ssrc].write(frame.audio)
 
     def cleanup(self):
