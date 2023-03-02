@@ -72,9 +72,9 @@ __all__ = (
 T = TypeVar('T')
 U = TypeVar('U')
 CogT = TypeVar('CogT', bound='Cog')
-CommandT = TypeVar('CommandT', bound='Command')
+CommandT = TypeVar('CommandT', bound='Command[Any, Any, Any]')
 # CHT = TypeVar('CHT', bound='Check')
-GroupT = TypeVar('GroupT', bound='Group')
+GroupT = TypeVar('GroupT', bound='Group[Any, Any, Any]')
 _NoneType = type(None)
 
 if TYPE_CHECKING:
