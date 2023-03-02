@@ -912,6 +912,9 @@ class BadLiteralArgument(UserInputError):
 
     .. versionadded:: 2.0
 
+    .. versionchanged:: 2.3
+        Added the ``argument`` parameter and matching attribute.
+
     Attributes
     -----------
     param: :class:`inspect.Parameter`
@@ -922,6 +925,8 @@ class BadLiteralArgument(UserInputError):
         A list of errors that were caught from failing the conversion.
     argument: :class:`str`
         The argument's value that failed to be converted. Defaults to an empty string for a non-breaking change.
+
+        .. versionadded:: 2.3
     """
 
     def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError], argument: str = "") -> None:
