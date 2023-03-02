@@ -2964,9 +2964,9 @@ class Guild(Hashable):
         entity_type = entity_type or getattr(channel, '_scheduled_event_entity_type', MISSING)
         if entity_type is MISSING:
             if channel and isinstance(channel, Object):
-                if channel.type == VoiceChannel:
+                if channel.type is VoiceChannel:
                     entity_type = EntityType.voice
-                elif channel.type == StageChannel:
+                elif channel.type is StageChannel:
                     entity_type = EntityType.stage_instance
 
             elif location not in (MISSING, None):
