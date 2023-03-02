@@ -819,8 +819,8 @@ class DiscordVoiceWebSocket:
         self.loop = loop
         self._keep_alive = None
         self._close_code = None
+        self._speaking_map = {}
         self.secret_key = None
-        self.ssrc_map = {}
         if hook:
             self._hook = hook
 
@@ -935,13 +935,16 @@ class DiscordVoiceWebSocket:
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
         elif op == self.SPEAKING:
-            ssrc = data['ssrc']
-            user = int(data['user_id'])
-            speaking = data['speaking']
-            if ssrc in self.ssrc_map:
-                self.ssrc_map[ssrc]['speaking'] = speaking
+            ssrc = data["ssrc"]
+            if ssrc in self._speaking_map:
+                self._speaking_map[ssrc]["speaking"] = data["speaking"]
             else:
-                self.ssrc_map.update({ssrc: {'user_id': user, 'speaking': speaking}})
+                user_id = int(data["user_id"])
+                user = self._connection.guild.get_member(user_id)
+                self._speaking_map[ssrc] = {
+                    "user": user if user is not None else user_id,
+                    "speaking": data["speaking"]
+                }
                 
         await self._hook(self, msg)
 
@@ -1014,3 +1017,11 @@ class DiscordVoiceWebSocket:
 
         self._close_code = code
         await self.ws.close(code=code)
+
+    def get_member_from_ssrc(self, ssrc):
+        if ssrc in self._speaking_map:
+            user = self._speaking_map[ssrc]["user"]
+            if type(user) == int and (member := self._connection.guild.get_member(user)) is not None:
+                self._speaking_map[ssrc]["user"] = member
+                return member
+            return user
