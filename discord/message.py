@@ -1685,7 +1685,7 @@ class Message(PartialMessage, Hashable):
         )
 
     @utils.cached_slot_property('_cs_system_content')
-    def system_content(self) -> Optional[str]:
+    def system_content(self) -> str:
         r""":class:`str`: A property that returns the content that is rendered
         regardless of the :attr:`Message.type`.
 
@@ -1693,15 +1693,6 @@ class Message(PartialMessage, Hashable):
         this just returns the regular :attr:`Message.content`. Otherwise this
         returns an English message denoting the contents of the system message.
         """
-
-        if self.type in {
-            MessageType.default,
-            MessageType.reply,
-            MessageType.chat_input_command,
-            MessageType.context_menu_command,
-        }:
-            return self.content
-
         if self.type is MessageType.recipient_add:
             if self.channel.type is ChannelType.group:
                 return f'{self.author.name} added {self.mentions[0].name} to the group.'
@@ -1749,7 +1740,7 @@ class Message(PartialMessage, Hashable):
             if self.channel.me in self.call.participants:  # type: ignore
                 return f'{self.author.name} started a call.'
             elif call_ended:
-                return f'You missed a call from {self.author.name}'
+                return f'You missed a call from {self.author.name} that lasted {int((utils.utcnow() - self.call.ended_timestamp).total_seconds())} seconds.'  # type: ignore
             else:
                 return f'{self.author.name} started a call \N{EM DASH} Join the call.'
 
@@ -1782,10 +1773,6 @@ class Message(PartialMessage, Hashable):
                 f'{self.author.name} has added {self.content} to this channel. Its most important updates will show up here.'
             )
 
-        if self.type is MessageType.guild_stream:
-            # The author will be a Member
-            return f'{self.author.name} is live! Now streaming {self.author.activity.name}'  # type: ignore
-
         if self.type is MessageType.guild_discovery_disqualified:
             return 'This server has been removed from Server Discovery because it no longer passes all the requirements. Check Server Settings for more details.'
 
@@ -1799,7 +1786,7 @@ class Message(PartialMessage, Hashable):
             return 'This server has failed Discovery activity requirements for 3 weeks in a row. If this server fails for 1 more week, it will be removed from Discovery.'
 
         if self.type is MessageType.thread_created:
-            return f'{self.author.name} started a thread: **{self.content}**. See all **threads**.'
+            return f'{self.author.name} started a thread: **{self.content}**. See all threads.'
 
         if self.type is MessageType.thread_starter_message:
             if self.reference is None or self.reference.resolved is None:
@@ -1810,6 +1797,8 @@ class Message(PartialMessage, Hashable):
 
         if self.type is MessageType.guild_invite_reminder:
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
+
+        return self.content
 
     @overload
     async def edit(
