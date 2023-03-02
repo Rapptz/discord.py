@@ -3014,12 +3014,13 @@ class Guild(Hashable):
 
             if end_time in (MISSING, None):
                 raise TypeError('end_time must be set when entity_type is external')
-            else:
-                if end_time.tzinfo is None:
-                    raise ValueError(
-                        'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
-                    )
-                payload['scheduled_end_time'] = end_time.isoformat()
+
+        if end_time not in (MISSING, None):
+            if end_time.tzinfo is None:
+                raise ValueError(
+                    'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                )
+            payload['scheduled_end_time'] = end_time.isoformat()
 
         if metadata:
             payload['entity_metadata'] = metadata
