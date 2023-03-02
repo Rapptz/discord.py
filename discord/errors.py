@@ -46,7 +46,6 @@ __all__ = (
     'LoginFailure',
     'ConnectionClosed',
     'PrivilegedIntentsRequired',
-    'RecordingException',
     'InteractionResponded',
 )
 
@@ -260,14 +259,6 @@ class PrivilegedIntentsRequired(ClientException):
             'possible, then consider disabling the privileged intents instead.'
         )
         super().__init__(msg % shard_id)
-
-
-        
-class RecordingException(ClientException):
-    """Exception that's thrown when there is an error while trying to record
-    audio from a voice channel.
-    """
-    pass
 
   
 class InteractionResponded(ClientException):
