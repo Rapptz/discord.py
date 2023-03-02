@@ -238,6 +238,8 @@ class VoiceClient(VoiceProtocol):
     secret_key: List[int]
     ssrc: int
 
+    SILENT_FRAME = b"\xf8\xff\xfe"
+
     def __init__(self, client: Client, channel: abc.Connectable):
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
@@ -356,7 +358,6 @@ class VoiceClient(VoiceProtocol):
 
     async def voice_connect(self, self_deaf: bool = False, self_mute: bool = False) -> None:
         await self.channel.guild.change_voice_state(channel=self.channel, self_deaf=self_deaf, self_mute=self_mute)
-
 
     async def voice_disconnect(self) -> None:
         _log.info('The voice handshake is being terminated for Channel ID %s (Guild ID %s)', self.channel.id, self.guild.id)
@@ -584,12 +585,13 @@ class VoiceClient(VoiceProtocol):
         data = RawAudioData(data, getattr(self, '_decrypt_' + self.mode))
 
         # RTCP or frame of silence received
-        if data.audio is None or data.audio == b"\xf8\xff\xfe":
+        if data.audio is None or data.audio == self.SILENT_FRAME:
             return
 
         if data.ssrc not in self.decoders:
             self.decoders[data.ssrc] = opus.Decoder()
-        return AudioFrame(self.decoders[data.ssrc].decode(data.audio), data)
+        return AudioFrame(self.decoders[data.ssrc].decode(data.audio), data,
+                          self.ws.get_member_from_ssrc(data.ssrc))
 
     def _decrypt_xsalsa20_poly1305(self, header, data):
         box = nacl.secret.SecretBox(bytes(self.secret_key))
@@ -767,6 +769,7 @@ class VoiceClient(VoiceProtocol):
     def poll_audio_packets(self):
         _log.info("Began polling for audio packets from Channel ID %d (Guild ID %d).",
                   self.channel.id, self.guild.id)
+
         while self.listening:
             ready, _, err = select.select([self.socket], [],
                                           [self.socket], 0.01)
