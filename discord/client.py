@@ -1161,9 +1161,9 @@ class Client:
         event: Literal['app_command_completion'],
         /,
         *,
-        check: Optional[Callable[[Interaction[Self], Union[Command[Any, Any, Any], ContextMenu]], bool]],
+        check: Optional[Callable[[Interaction[Self], Union[Command[Any, ..., Any], ContextMenu]], bool]],
         timeout: Optional[float] = None,
-    ) -> Tuple[Interaction[Self], Union[Command[Any, Any, Any], ContextMenu]]:
+    ) -> Tuple[Interaction[Self], Union[Command[Any, ..., Any], ContextMenu]]:
         ...
 
     # AutoMod
