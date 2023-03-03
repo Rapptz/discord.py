@@ -54,7 +54,7 @@ from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
 
 from .utils import MISSING
-from .sink import AudioSink, RawAudioData, AudioFrame
+from .sink import AudioSink, RawAudioData, AudioFrame, AudioReceiver
 
 if TYPE_CHECKING:
     from .client import Client
@@ -253,7 +253,6 @@ class VoiceClient(VoiceProtocol):
         self._state: ConnectionState = state
         # this will be used in the AudioPlayer 
         self._connected: threading.Event = threading.Event()
-        self.listening = False
 
         self._handshaking: bool = False
         self._potentially_reconnecting: bool = False
@@ -267,18 +266,11 @@ class VoiceClient(VoiceProtocol):
         self.timeout: float = 0
         self._runner: asyncio.Task = MISSING
         self._player: Optional[AudioPlayer] = None
-        self.sink: Optional[AudioSink] = None
+        self._receiver: Optional[AudioReceiver] = None
         self.encoder: Encoder = MISSING
         self.decoders: Dict[int, Decoder] = {}
         self._lite_nonce: int = 0
         self.ws: DiscordVoiceWebSocket = MISSING
-
-        self.paused = False
-        self.recording = False
-        self.user_timestamps = {}
-        self.sink = None
-        self.starting_time = None
-        self.stopping_time = None
 
     warn_nacl = not has_nacl
     supported_modes: Tuple[SupportedModes, ...] = (
@@ -653,7 +645,7 @@ class VoiceClient(VoiceProtocol):
         ClientException
             Already playing audio or not connected.
         TypeError
-            Source is not a :class:`AudioSource` or after is not a callable.
+            Source is not an :class:`AudioSource` or after is not a callable.
         OpusNotLoaded
             Source is not opus encoded and opus is not loaded.
         """
@@ -697,23 +689,68 @@ class VoiceClient(VoiceProtocol):
         if self._player:
             self._player.resume()
 
-    def listen(self, sink: AudioSink) -> None:
+    def listen(self, sink: AudioSink, *, after: Optional[Callable[[Optional[Exception]], Any]] = None) -> None:
+        """Receives audio into an :class:`AudioSink`
+
+        The finalizer, ``after`` is called after listening has stopped or
+        an error has occurred.
+
+        If an error happens while the audio receiver is running, the exception is
+        caught and the audio receiver is then stopped.  If no after callback is
+        passed, any caught exception will be logged using the library logger.
+
+        Parameters
+        -----------
+        sink: :class:`AudioSink`
+            The audio sink we're passing audio to.
+        after: Callable[[Optional[:class:`Exception`]], Any]
+            The finalizer that is called after the receiver stops.
+            This function must have two parameters, ``sink`` and ``error``,
+            that denote, respectfully, the sink passed to this function and
+            an optional exception that was raised during playing.
+
+        Raises
+        -------
+        ClientException
+            Already listening or not connected.
+        TypeError
+            sink is not an :class:`AudioSink` or after is not a callable.
+        OpusNotLoaded
+            Opus, required to decode audio, is not loaded.
+        """
         if not self.is_connected():
             raise ClientException('Not connected to voice.')
 
-        if self.listening:
+        if self.is_listening():
             raise ClientException('Already listening.')
 
-        self.listening = True
-        self.sink = sink
-        poll = threading.Thread(target=self.poll_audio_packets)
-        poll.start()
+        if not isinstance(sink, AudioSink):
+            raise TypeError(f"sink must be an AudioSink not {sink.__class__.__name__}")
 
-    def stop_listening(self):
-        if not self.listening:
-            raise ClientException("Cannot stop listening when not already listening.")
+        # Check that opus is loaded and throw error else
+        opus.Decoder.get_opus_version()
 
-        self.listening = False
+        self._receiver = AudioReceiver(sink, self, after=after)
+        self._receiver.start()
+
+    def is_listening(self) -> bool:
+        return self._receiver is not None and self._receiver.is_listening()
+
+    def is_listening_paused(self) -> bool:
+        return self._receiver is not None and self._receiver.is_paused()
+
+    def stop_listening(self) -> None:
+        if self._receiver:
+            self._receiver.stop()
+            self._receiver = None
+
+    def pause_listening(self) -> None:
+        if self._receiver:
+            self._receiver.pause()
+
+    def resume_listening(self) -> None:
+        if self._receiver:
+            self._receiver.resume()
 
     @property
     def source(self) -> Optional[AudioSource]:
@@ -766,30 +803,14 @@ class VoiceClient(VoiceProtocol):
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
 
-    def poll_audio_packets(self):
-        _log.info("Began polling for audio packets from Channel ID %d (Guild ID %d).",
-                  self.channel.id, self.guild.id)
+    def recv_audio_packet(self, dump=False):
+        ready, _, err = select.select([self.socket], [], [self.socket], 0.01)
+        if err:
+            raise err[0]
+        if not ready or not self._connected.is_set():
+            return
 
-        while self.listening:
-            ready, _, err = select.select([self.socket], [],
-                                          [self.socket], 0.01)
-            if err:
-                _log.exception("Socket error occurred", exc_info=err[0])
-                self.stop_listening()
-                break
-            if not ready:
-                continue
-
-            try:
-                data = self.socket.recv(4096)
-            except OSError:
-                self.listening = False
-                break
-
-            audio = self._unpack_audio_packet(data)
-            if audio is None:
-                continue
-            self.sink.on_audio(audio)
-
-        _log.info("No longer polling for audio packets from Channel ID %d (Guild ID %d).",
-                  self.channel.id, self.guild.id)
+        data = self.socket.recv(4096)
+        if dump: return
+        audio = self._unpack_audio_packet(data)
+        return audio if audio is not None else None
