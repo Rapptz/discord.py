@@ -3,10 +3,11 @@ import wave
 import os
 import threading
 import logging
-import asyncio
+import subprocess
 from typing import TYPE_CHECKING, Optional, Callable, Any
 
 from .opus import Decoder as OpusDecoder
+from .errors import ClientException
 
 if TYPE_CHECKING:
     from .member import Member
@@ -18,6 +19,7 @@ __all__ = (
     "AudioSink",
     "AudioFileSink",
     "WaveAudioFileSink",
+    "MP3AudioFileSink"
 )
 
 
@@ -109,27 +111,48 @@ class AudioFileSink(AudioSink):
         self.done = True
 
     def convert_files(self):
-        raise NotImplementedError()
-
-
-class WaveAudioFileSink(AudioFileSink):
-    def convert_files(self):
         if not self.done:
             self.cleanup()
         for ssrc, file in self.output_files.items():
             filepath = file.name
             with open(filepath, "rb") as f:
-                audio = f.read()
-
-                self.output_files[ssrc] = ".".join(filepath.split(".")[:-1]) + ".wav"
-                with wave.open(self.output_files[ssrc], "wb") as wavf:
-                    wavf.setnchannels(OpusDecoder.CHANNELS)
-                    wavf.setsampwidth(OpusDecoder.SAMPLE_SIZE // OpusDecoder.CHANNELS)
-                    wavf.setframerate(OpusDecoder.SAMPLING_RATE)
-                    wavf.writeframes(audio)
+                self.output_files[ssrc] = self.convert_file(f)
 
             os.remove(filepath)
         self.output_files = {}
+
+    def convert_file(self, file):
+        raise NotImplementedError()
+
+
+class WaveAudioFileSink(AudioFileSink):
+    CHUNK_WRITE_SIZE = 64
+
+    def convert_file(self, file):
+        wavfilepath = ".".join(file.name.split(".")[:-1]) + ".wav"
+        with wave.open(wavfilepath, "wb") as wavf:
+            wavf.setnchannels(OpusDecoder.CHANNELS)
+            wavf.setsampwidth(OpusDecoder.SAMPLE_SIZE // OpusDecoder.CHANNELS)
+            wavf.setframerate(OpusDecoder.SAMPLING_RATE)
+            while frames := file.read(OpusDecoder.FRAME_SIZE*self.CHUNK_WRITE_SIZE):
+                wavf.writeframes(frames)
+        return wavfilepath
+
+
+class MP3AudioFileSink(AudioFileSink):
+    def convert_file(self, file):
+        mp3_file = ".".join(file.name.split(".")[:-1]) + ".mp3"
+        args = ['ffmpeg', '-f', 's16le', '-ar', str(OpusDecoder.SAMPLING_RATE),
+                '-ac', str(OpusDecoder.CHANNELS), '-i', file.name, mp3_file]
+        if os.path.exists(mp3_file):
+            os.remove(mp3_file)  # process will get stuck asking whether or not to overwrite, if file already exists.
+        try:
+            process = subprocess.Popen(args, creationflags=subprocess.CREATE_NO_WINDOW)
+        except FileNotFoundError:
+            raise ClientException('ffmpeg was not found.') from None
+        except subprocess.SubprocessError as exc:
+            raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
+        process.wait()
 
 
 class AudioReceiver(threading.Thread):
