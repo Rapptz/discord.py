@@ -144,8 +144,9 @@ class MP3AudioFileSink(AudioFileSink):
         mp3_file = ".".join(file.name.split(".")[:-1]) + ".mp3"
         args = ['ffmpeg', '-f', 's16le', '-ar', str(OpusDecoder.SAMPLING_RATE),
                 '-ac', str(OpusDecoder.CHANNELS), '-i', file.name, mp3_file]
+        # process will get stuck asking whether or not to overwrite, if file already exists.
         if os.path.exists(mp3_file):
-            os.remove(mp3_file)  # process will get stuck asking whether or not to overwrite, if file already exists.
+            os.remove(mp3_file)
         try:
             process = subprocess.Popen(args, creationflags=subprocess.CREATE_NO_WINDOW)
         except FileNotFoundError:
