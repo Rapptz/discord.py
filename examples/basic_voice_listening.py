@@ -19,20 +19,41 @@ class Client(discord.Client):
         self.commands = {
             'start': self.start_listening,
             'stop': self.stop_listening,
+            'pause': self.pause_listening,
+            'resume': self.resume_listening,
         }
 
     # Commands
     @vc_required
     async def start_listening(self, msg, vc):
-        if vc.listening:
+        if vc.is_listening():
             return await msg.channel.send("Already listening")
-        vc.listen(discord.AudioFileSink("audio-output"))
+        vc.listen(discord.WaveAudioFileSink("audio-output"), after=self.on_listening_stopped)
         await msg.channel.send("Started listening")
 
     @vc_required
     async def stop_listening(self, msg, vc):
+        if not vc.is_listening():
+            return await msg.channel.send("Not currently listening")
         vc.stop_listening()
         await vc.disconnect()
+        await msg.channel.send("No longer listening.")
+
+    @vc_required
+    async def pause_listening(self, msg, vc):
+        if vc.is_listening_paused():
+            return await msg.channel.send("Listening already paused")
+        vc.pause_listening()
+        await self.change_deafen_state(vc, True)
+        await msg.channel.send("Listening has been paused")
+
+    @vc_required
+    async def resume_listening(self, msg, vc):
+        if not vc.is_listening_paused():
+            return await msg.channel.send("Already resumed")
+        vc.resume_listening()
+        await self.change_deafen_state(vc, False)
+        await msg.channel.send("Listening has been resumed")
 
     # Util
 
@@ -53,6 +74,11 @@ class Client(discord.Client):
             self.connections[message.guild.id] = vc
             return vc
 
+    async def change_deafen_state(self, vc, deafen):
+        state = vc.guild.me.voice
+        await vc.guild.change_voice_state(channel=vc.channel, self_mute=state.self_mute,
+                                          self_deaf=deafen)
+
     # Events
 
     async def on_message(self, msg):
@@ -67,11 +93,12 @@ class Client(discord.Client):
             return
 
         if before.channel is not None and after.channel is None:
-            sink = self.connections[member.guild.id].sink
-            if sink is not None:
-                sink.cleanup()
-                sink.convert_files()
             del self.connections[member.guild.id]
+
+    def on_listening_stopped(self, sink, exc=None):
+        sink.convert_files()  # convert whatever audio we have before throwing error
+        if exc:
+            raise exc
 
 
 with open(".env", "r") as f:
