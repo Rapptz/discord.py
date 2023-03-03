@@ -918,12 +918,17 @@ class BadLiteralArgument(UserInputError):
         A tuple of values compared against in conversion, in order of failure.
     errors: List[:class:`CommandError`]
         A list of errors that were caught from failing the conversion.
+    argument: :class:`str`
+        The argument's value that failed to be converted. Defaults to an empty string.
+
+        .. versionadded:: 2.3
     """
 
-    def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError]) -> None:
+    def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError], argument: str = "") -> None:
         self.param: Parameter = param
         self.literals: Tuple[Any, ...] = literals
         self.errors: List[CommandError] = errors
+        self.argument: str = argument
 
         to_string = [repr(l) for l in literals]
         if len(to_string) > 2:
