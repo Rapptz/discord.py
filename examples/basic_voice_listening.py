@@ -1,5 +1,5 @@
 import discord
-import os
+import argparse
 
 
 def vc_required(func):
@@ -11,10 +11,31 @@ def vc_required(func):
     return get_vc
 
 
+class ArgumentParser(argparse.ArgumentParser):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.error_msg = None
+
+    def convert_arg_line_to_args(self, arg_line: str):
+        return arg_line.split()  # this is good enough for our arguments
+
+    def parse_args(self, args=None):
+        self.error_msg = None
+        return super().parse_args(args)
+
+    def error(self, message: str):
+        self.error_msg = message
+
+
+start_arg_parser = ArgumentParser()
+start_arg_parser.add_argument('-o', '--out', choices=['wav', 'mp3'], default='mp3')
+
+
 class Client(discord.Client):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.connections = {voice.guild.id: voice for voice in self.voice_clients}
+        self.out = None
 
         self.commands = {
             'start': self.start_listening,
@@ -28,7 +49,11 @@ class Client(discord.Client):
     async def start_listening(self, msg, vc):
         if vc.is_listening():
             return await msg.channel.send("Already listening")
-        vc.listen(discord.WaveAudioFileSink("audio-output"), after=self.on_listening_stopped)
+        args = " ".join(msg.content.split()[1:])
+        args = start_arg_parser.parse_args(start_arg_parser.convert_arg_line_to_args(args))
+        if start_arg_parser.error_msg is not None:
+            return await msg.channel.send(start_arg_parser.error_msg)
+        vc.listen(self.get_sink(args.out), after=self.on_listening_stopped)
         await msg.channel.send("Started listening")
 
     @vc_required
@@ -78,6 +103,12 @@ class Client(discord.Client):
         state = vc.guild.me.voice
         await vc.guild.change_voice_state(channel=vc.channel, self_mute=state.self_mute,
                                           self_deaf=deafen)
+
+    def get_sink(self, out_type):
+        return {
+            "mp3": discord.MP3AudioFileSink,
+            "wav": discord.WaveAudioFileSink
+        }[out_type]('audio-output')
 
     # Events
 
