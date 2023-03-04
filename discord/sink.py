@@ -5,7 +5,7 @@ import threading
 import logging
 import subprocess
 from collections import namedtuple
-from typing import TYPE_CHECKING, Optional, Callable, Any
+from typing import TYPE_CHECKING, Optional, Callable, Any, IO, Union
 
 from .opus import Decoder as OpusDecoder
 from .errors import ClientException
@@ -21,7 +21,16 @@ __all__ = (
     "AudioSink",
     "AudioFileSink",
     "WaveAudioFileSink",
-    "MP3AudioFileSink"
+    "MP3AudioFileSink",
+    "RTCPPacket",
+    "RTCPSenderReportPacket",
+    "RTCPReceiverReportPacket",
+    "RTCPSourceDescriptionPacket",
+    "RTCPGoodbyePacket",
+    "RTCPApplicationDefinedPacket",
+    "RTCPReceiverReportBlock",
+    "RTCPSourceDescriptionChunk",
+    "RTCPSourceDescriptionItem"
 )
 
 
@@ -107,7 +116,7 @@ class RTCPPacket:
     """
     __slots__ = ("v", "p", "rc", "pt", "l")
 
-    def __init__(self, version_flag, rtcp_type, length):
+    def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int):
         self.v = version_flag >> 6
         self.p = bool((version_flag >> 5) & 0b1)
         self.rc = version_flag & 0b11111
@@ -168,8 +177,8 @@ class RTCPSenderReportPacket(RTCPPacket):
         "extension"
     )
 
-    def __init__(self, version_flag, rtcp_type, remaining_header, data):
-        super().__init__(version_flag, rtcp_type, remaining_header)
+    def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
+        super().__init__(version_flag, rtcp_type, length)
 
         fmt = ">IQ3I"
         buf_size = struct.calcsize(fmt)
@@ -199,7 +208,7 @@ class RTCPReceiverReportPacket(RTCPPacket):
         "ssrc", "report_blocks", "extension"
     )
 
-    def __init__(self, version_flag, rtcp_type, length, data):
+    def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
 
         fmt = ">I"
@@ -220,7 +229,7 @@ class RTCPSourceDescriptionPacket(RTCPPacket):
     """
     __slots__ = RTCPPacket.__slots__ + ("chunks",)
 
-    def __init__(self, version_flag, rtcp_type, length, data):
+    def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
 
         self.chunks = []
@@ -268,7 +277,7 @@ class RTCPGoodbyePacket(RTCPPacket):
     """
     __slots__ = RTCPPacket.__slots__ + ("ssrc_byes", "reason")
 
-    def __init__(self, version_flag, rtcp_type, length, data):
+    def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
 
         if self.rc == 0:
@@ -300,7 +309,7 @@ class RTCPApplicationDefinedPacket(RTCPPacket):
     """
     __slots__ = RTCPPacket.__slots__ + ("ssrc", "name", "app_data")
 
-    def __init__(self, version_flag, rtcp_type, length, data):
+    def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
 
         fmt = ">I4s"
@@ -342,7 +351,7 @@ class RawAudioData:
         "csrc_list", "extension_id", "extension_header", "extension_data", "audio"
     )
 
-    def __init__(self, data: bytes, decrypt_method):
+    def __init__(self, data: bytes, decrypt_method: Callable[[bytes, bytes], bytes]):
         fmt = ">BBHII"
         version_flag, payload_flag, self.sequence, self.timestamp, self.ssrc = \
             struct.unpack_from(fmt, buffer=data)
@@ -383,7 +392,9 @@ class AudioPacket:
         RTCPMessageType.application_defined: RTCPApplicationDefinedPacket,
     }
 
-    def __new__(cls, data: bytes, decrypt_method):
+    def __new__(cls, data: bytes, decrypt_method: Callable[[bytes, bytes], bytes]) -> \
+            Union[RTCPSenderReportPacket, RTCPReceiverReportPacket, RTCPSourceDescriptionPacket,
+                  RTCPGoodbyePacket, RTCPApplicationDefinedPacket, RawAudioData]:
         fmt = ">BBH"
         buf_size = struct.calcsize(fmt)
         version_flag, payload_type, length = struct.unpack_from(fmt, buffer=data)
@@ -394,7 +405,21 @@ class AudioPacket:
 
 
 class AudioFrame:
-    """Represents audio that has been fully decoded."""
+    """Represents audio that has been fully decoded.
+
+    sequence: :class:`int`
+        The sequence of this frame in accordance with other frames
+        that precede or follow it
+    timestamp: :class:`int`
+        Timestamp of the audio in accordance with its frame size
+    ssrc: :class:`int`
+        The source of the audio
+    audio: :class:`bytes`
+        Raw audio data
+    user: Optional[:class:`Member`]
+        If the ssrc can be resolved to a user then this attribute
+        contains the Member object for that user.
+    """
     __slots__ = ("sequence", "timestamp", "ssrc", "audio", "user")
 
     def __init__(self, frame: bytes, raw_audio: RawAudioData, user: Optional['Member']):
@@ -406,13 +431,37 @@ class AudioFrame:
 
 
 class AudioSink:
-    def on_audio(self, frame):
+    """An object that handles fully decoded and decrypted audio frames
+
+    This class defines three major functions that an audio sink object must outline
+    """
+    def on_audio(self, frame: AudioFrame) -> Any:
+        """This function receives :class:`AudioFrame` objects.
+
+        Parameters
+        ----------
+        frame: :class:`AudioFrame`
+            A frame of audio received from discord
+        """
         raise NotImplementedError()
 
-    def on_rtcp(self, packet):
+    def on_rtcp(self, packet: RTCPPacket) -> Any:
+        """This function receives RTCP Packets
+
+        Parameters
+        ----------
+        packet: :class:`RTCPPacket`
+            A RTCP Packet received from discord. Can be any of the following:
+            :class:`RTCPSenderReportPacket`, :class:`RTCPReceiverReportPacket`,
+            :class:`RTCPSourceDescriptionPacket`, :class:`RTCPGoodbyePacket`,
+            :class:`RTCPApplicationDefinedPacket`
+        """
         raise NotImplementedError()
 
-    def cleanup(self):
+    def cleanup(self) -> Any:
+        """This function is called when the bot is done receiving
+        audio and before the after callback is called.
+        """
         raise NotImplementedError()
 
 
@@ -432,12 +481,22 @@ class AudioFileSink(AudioSink):
         # This gives leeway for frames sent out of order
         self._frame_buffer = []
 
-    def on_audio(self, frame):
+    def on_audio(self, frame: AudioFrame) -> None:
+        """Takes an audio frame and adds it to a buffer. Once the buffer
+        reaches a certain size, all audio frames in the buffer are
+        written to file. The buffer allows leeway for packets that
+        arrive out of order to be reorganized.
+
+        Parameters
+        ----------
+        frame: :class:`AudioFrame`
+            The frame which will be added to the buffer.
+        """
         self._frame_buffer.append(frame)
         if len(self._frame_buffer) >= self.FRAME_BUFFER_LIMIT:
             self._write_buffer()
 
-    def on_rtcp(self, packet):
+    def on_rtcp(self, packet: RTCPPacket) -> None:
         pass
 
     def _write_buffer(self):
@@ -458,12 +517,17 @@ class AudioFileSink(AudioSink):
         self.output_files[frame.ssrc].write(frame.audio)
         self._timestamps[frame.ssrc] = frame.timestamp
 
-    def cleanup(self):
+    def cleanup(self) -> None:
+        """Closes all files"""
         for file in self.output_files.values():
             file.close()
         self.done = True
 
-    def convert_files(self):
+    def convert_files(self) -> None:
+        """Goes through all files, opens them and calls convert_file, then deletes them.
+
+        convert_file must be defined, else NotImplementedError will be raised
+        """
         if not self.done:
             self.cleanup()
         for ssrc, file in self.output_files.items():
@@ -474,7 +538,15 @@ class AudioFileSink(AudioSink):
             os.remove(filepath)
         self.output_files = {}
 
-    def convert_file(self, file):
+    def convert_file(self, file: IO) -> Any:
+        """Takes a file object with raw audio data and creates
+        another file object with formatted audio data
+
+        Parameters
+        ----------
+        file: :class:`IO`
+
+        """
         raise NotImplementedError()
 
 
@@ -482,6 +554,22 @@ class WaveAudioFileSink(AudioFileSink):
     CHUNK_WRITE_SIZE = 64
 
     def convert_file(self, file):
+        """Takes a file object that contains raw audio data and writes
+        it to a wave audio file.
+
+        Parameters
+        ----------
+        file: :class:`IO`
+            File object that contains raw audio data
+
+        Returns
+        -------
+        Path to the new audio file
+
+        Return type
+        -----------
+        :class:`str`
+        """
         wavfilepath = ".".join(file.name.split(".")[:-1]) + ".wav"
         with wave.open(wavfilepath, "wb") as wavf:
             wavf.setnchannels(OpusDecoder.CHANNELS)
@@ -494,6 +582,22 @@ class WaveAudioFileSink(AudioFileSink):
 
 class MP3AudioFileSink(AudioFileSink):
     def convert_file(self, file):
+        """Takes a file object that contains raw audio data and writes
+        it to a mp3 audio file.
+
+        Parameters
+        ----------
+        file: :class:`IO`
+            File object that contains raw audio data
+
+        Returns
+        -------
+        Path to the new audio file
+
+        Return type
+        -----------
+        :class:`str`
+        """
         mp3_file = ".".join(file.name.split(".")[:-1]) + ".mp3"
         args = ['ffmpeg', '-f', 's16le', '-ar', str(OpusDecoder.SAMPLING_RATE),
                 '-ac', str(OpusDecoder.CHANNELS), '-i', file.name, mp3_file]
@@ -541,8 +645,7 @@ class AudioReceiver(threading.Thread):
                 # wait until we are connected
                 self._connected.wait()
 
-            # dump audio while paused cuz discord sends you audio even
-            # while you're deafened
+            # dump audio while paused cuz we aren't using the audio
             packet = self.client.recv_audio_packet(dump=not self._resumed.is_set())
             if packet is None: continue
             if not isinstance(packet, AudioFrame):
@@ -561,8 +664,8 @@ class AudioReceiver(threading.Thread):
             self._current_error = exc
             self.stop()
         finally:
+            self.sink.cleanup()
             self._call_after()
-            self.client.cleanup()
 
     def _call_after(self) -> None:
         error = self._current_error

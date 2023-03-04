@@ -54,7 +54,7 @@ from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
 
 from .utils import MISSING
-from .sink import AudioSink, AudioReceiver, AudioPacket, AudioFrame, RawAudioData
+from .sink import AudioSink, AudioReceiver, AudioPacket, AudioFrame, RawAudioData, RTCPPacket
 
 if TYPE_CHECKING:
     from .client import Client
@@ -691,7 +691,8 @@ class VoiceClient(VoiceProtocol):
         if self._player:
             self._player.resume()
 
-    def listen(self, sink: AudioSink, *, after: Optional[Callable[[Optional[Exception]], Any]] = None) -> None:
+    def listen(self, sink: AudioSink, *,
+               after: Optional[Callable[[AudioSink, Optional[Exception]], Any]] = None) -> None:
         """Receives audio into an :class:`AudioSink`
 
         The finalizer, ``after`` is called after listening has stopped or
@@ -805,7 +806,7 @@ class VoiceClient(VoiceProtocol):
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
 
-    def recv_audio_packet(self, dump=False):
+    def recv_audio_packet(self, dump: bool = False) -> Optional[Union[RTCPPacket, AudioFrame]]:
         """Attempts to receive an audio packet and returns it, else None
 
         You must be connected to receive audio.
@@ -816,6 +817,16 @@ class VoiceClient(VoiceProtocol):
         ----------
         dump: :class:`bool`
             Will not return audio packet if true
+
+        Returns
+        -------
+        If a packet is received, it'll return either an audio frame or an rtcp packet.
+        If nothing is received then nothing is returned. If an rtcp packet is returned,
+        it'll be one of the rtcp packet classes that extend :class:`RTCPPacket`.
+
+        Return type
+        -----------
+        Optional[Union[:class:`RTCPPacket`, :class:`AudioFrame`]]
         """
         ready, _, err = select.select([self.socket], [], [self.socket], 0.01)
         if err:
