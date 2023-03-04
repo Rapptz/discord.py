@@ -54,7 +54,7 @@ from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
 
 from .utils import MISSING
-from .sink import AudioSink, RawAudioData, AudioFrame, AudioReceiver
+from .sink import AudioSink, AudioReceiver, AudioPacket, AudioFrame, RawAudioData
 
 if TYPE_CHECKING:
     from .client import Client
@@ -551,6 +551,20 @@ class VoiceClient(VoiceProtocol):
         encrypt_packet = getattr(self, '_encrypt_' + self.mode)
         return encrypt_packet(header, data)
 
+    def _unpack_audio_packet(self, data):
+        packet = AudioPacket(data, getattr(self, '_decrypt_' + self.mode))
+
+        if not isinstance(packet, RawAudioData):
+            return packet
+        if packet.audio == self.SILENT_FRAME:
+            return
+
+        if packet.ssrc not in self.decoders:
+            self.decoders[packet.ssrc] = opus.Decoder()
+
+        return AudioFrame(self.decoders[packet.ssrc].decode(packet.audio), packet,
+                          self.ws.get_member_from_ssrc(packet.ssrc))
+
     def _encrypt_xsalsa20_poly1305(self, header: bytes, data) -> bytes:
         box = nacl.secret.SecretBox(bytes(self.secret_key))
         nonce = bytearray(24)
@@ -572,18 +586,6 @@ class VoiceClient(VoiceProtocol):
         self.checked_add('_lite_nonce', 1, 4294967295)
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
-
-    def _unpack_audio_packet(self, data):
-        data = RawAudioData(data, getattr(self, '_decrypt_' + self.mode))
-
-        # RTCP or frame of silence received
-        if data.audio is None or data.audio == self.SILENT_FRAME:
-            return
-
-        if data.ssrc not in self.decoders:
-            self.decoders[data.ssrc] = opus.Decoder()
-        return AudioFrame(self.decoders[data.ssrc].decode(data.audio), data,
-                          self.ws.get_member_from_ssrc(data.ssrc))
 
     def _decrypt_xsalsa20_poly1305(self, header, data):
         box = nacl.secret.SecretBox(bytes(self.secret_key))
@@ -804,6 +806,17 @@ class VoiceClient(VoiceProtocol):
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
 
     def recv_audio_packet(self, dump=False):
+        """Attempts to receive an audio packet and returns it, else None
+
+        You must be connected to receive audio.
+
+        Raises any error thrown by the connection socket.
+
+        Parameters
+        ----------
+        dump: :class:`bool`
+            Will not return audio packet if true
+        """
         ready, _, err = select.select([self.socket], [], [self.socket], 0.01)
         if err:
             raise err[0]
@@ -812,5 +825,4 @@ class VoiceClient(VoiceProtocol):
 
         data = self.socket.recv(4096)
         if dump: return
-        audio = self._unpack_audio_packet(data)
-        return audio if audio is not None else None
+        return self._unpack_audio_packet(data)
