@@ -479,7 +479,8 @@ class AudioFileSink(AudioSink):
 
         self._timestamps = {}
         # This gives leeway for frames sent out of order
-        self._frame_buffer = []
+        self._frame_buffer = {}
+        self._ssrc_to_user = {}
 
     def on_audio(self, frame: AudioFrame) -> None:
         """Takes an audio frame and adds it to a buffer. Once the buffer
@@ -492,33 +493,37 @@ class AudioFileSink(AudioSink):
         frame: :class:`AudioFrame`
             The frame which will be added to the buffer.
         """
-        self._frame_buffer.append(frame)
-        if len(self._frame_buffer) >= self.FRAME_BUFFER_LIMIT:
-            self._write_buffer()
+        if frame.ssrc not in self.output_files:
+            self.output_files[frame.ssrc] = open(
+                os.path.join(self.output_dir, f"audio-{frame.ssrc}.pcm"), "wb")
+            self._frame_buffer[frame.ssrc] = []
+        self._frame_buffer[frame.ssrc].append(frame)
+        if len(self._frame_buffer[frame.ssrc]) >= self.FRAME_BUFFER_LIMIT:
+            self._write_buffer(frame.ssrc)
 
     def on_rtcp(self, packet: RTCPPacket) -> None:
         pass
 
-    def _write_buffer(self):
-        self._frame_buffer = sorted(self._frame_buffer, key=lambda frame: frame.sequence)
-        for frame in self._frame_buffer:
+    def _write_buffer(self, ssrc, empty=False):
+        self._frame_buffer[ssrc] = sorted(self._frame_buffer[ssrc], key=lambda frame: frame.sequence)
+        index = self.FRAME_BUFFER_LIMIT//2 if not empty else self.FRAME_BUFFER_LIMIT
+        for frame in self._frame_buffer[ssrc][:index]:
             self._write_frame(frame)
-        self._frame_buffer = []
+        self._frame_buffer[ssrc] = self._frame_buffer[ssrc][index:]
 
     def _write_frame(self, frame):
-        if frame.ssrc not in self.output_files:
-            filename = f"audio-{frame.user.name}#{frame.user.discriminator}-{frame.ssrc}.pcm" \
-                if frame.user is not None else f"{frame.ssrc}.pcm"
-            self.output_files[frame.ssrc] = open(os.path.join(self.output_dir, filename), "wb")
-        else:
+        if frame.ssrc in self._timestamps:
             # write silence
             silence = frame.timestamp - self._timestamps[frame.ssrc] - OpusDecoder.FRAME_SIZE
             if silence > 0: self.output_files[frame.ssrc].write(b"\x00"*silence*OpusDecoder.CHANNELS)
         self.output_files[frame.ssrc].write(frame.audio)
         self._timestamps[frame.ssrc] = frame.timestamp
+        self._ssrc_to_user[frame.ssrc] = frame.user
 
     def cleanup(self) -> None:
-        """Closes all files"""
+        """Writes remaining frames in buffer and closes all files"""
+        for ssrc in self._frame_buffer.keys():
+            self._write_buffer(ssrc, empty=True)
         for file in self.output_files.values():
             file.close()
         self.done = True
@@ -532,20 +537,22 @@ class AudioFileSink(AudioSink):
             self.cleanup()
         for ssrc, file in self.output_files.items():
             filepath = file.name
+            user = self._ssrc_to_user[ssrc]
+            new_name = f"audio-{user.name}#{user.discriminator}-{ssrc}" if user is not None else None
             with open(filepath, "rb") as f:
-                self.output_files[ssrc] = self.convert_file(f)
+                self.output_files[ssrc] = self.convert_file(f, new_name)
 
             os.remove(filepath)
         self.output_files = {}
 
-    def convert_file(self, file: IO) -> Any:
+    def convert_file(self, file: IO, new_name: Optional[str] = None) -> Any:
         """Takes a file object with raw audio data and creates
         another file object with formatted audio data
 
         Parameters
         ----------
         file: :class:`IO`
-
+        new_name: Optional[:class:`str`]
         """
         raise NotImplementedError()
 
@@ -553,7 +560,7 @@ class AudioFileSink(AudioSink):
 class WaveAudioFileSink(AudioFileSink):
     CHUNK_WRITE_SIZE = 64
 
-    def convert_file(self, file):
+    def convert_file(self, file, new_name=None):
         """Takes a file object that contains raw audio data and writes
         it to a wave audio file.
 
@@ -561,6 +568,8 @@ class WaveAudioFileSink(AudioFileSink):
         ----------
         file: :class:`IO`
             File object that contains raw audio data
+        new_name: Optional[:class:`str`]
+            Name for the wave file excluding ".wav". Defaults to current name if None.
 
         Returns
         -------
@@ -570,18 +579,20 @@ class WaveAudioFileSink(AudioFileSink):
         -----------
         :class:`str`
         """
-        wavfilepath = ".".join(file.name.split(".")[:-1]) + ".wav"
-        with wave.open(wavfilepath, "wb") as wavf:
+        directory, name = os.path.split(file.name)
+        name = new_name+".wav" if new_name is not None else ".".join(name.split(".")[:-1])+".wav"
+        path = os.path.join(directory, name)
+        with wave.open(path, "wb") as wavf:
             wavf.setnchannels(OpusDecoder.CHANNELS)
             wavf.setsampwidth(OpusDecoder.SAMPLE_SIZE // OpusDecoder.CHANNELS)
             wavf.setframerate(OpusDecoder.SAMPLING_RATE)
             while frames := file.read(OpusDecoder.FRAME_SIZE*self.CHUNK_WRITE_SIZE):
                 wavf.writeframes(frames)
-        return wavfilepath
+        return path
 
 
 class MP3AudioFileSink(AudioFileSink):
-    def convert_file(self, file):
+    def convert_file(self, file, new_name=None):
         """Takes a file object that contains raw audio data and writes
         it to a mp3 audio file.
 
@@ -589,6 +600,8 @@ class MP3AudioFileSink(AudioFileSink):
         ----------
         file: :class:`IO`
             File object that contains raw audio data
+        new_name: Optional[:class:`str`]
+            Name for the wave file excluding ".mp3". Defaults to current name if None.
 
         Returns
         -------
@@ -598,12 +611,11 @@ class MP3AudioFileSink(AudioFileSink):
         -----------
         :class:`str`
         """
-        mp3_file = ".".join(file.name.split(".")[:-1]) + ".mp3"
+        directory, name = os.path.split(file.name)
+        name = new_name+".mp3" if new_name is not None else ".".join(name.split(".")[:-1])+".mp3"
+        path = os.path.join(directory, name)
         args = ['ffmpeg', '-f', 's16le', '-ar', str(OpusDecoder.SAMPLING_RATE),
-                '-ac', str(OpusDecoder.CHANNELS), '-i', file.name, mp3_file]
-        # process will get stuck asking whether or not to overwrite, if file already exists.
-        if os.path.exists(mp3_file):
-            os.remove(mp3_file)
+                '-ac', str(OpusDecoder.CHANNELS), '-y', '-i', file.name, path]
         try:
             process = subprocess.Popen(args, creationflags=subprocess.CREATE_NO_WINDOW)
         except FileNotFoundError:
