@@ -115,15 +115,18 @@ class RTCPPacket:
         self.l = length
 
     def _parse_report_and_extension(self, data):
-        fmt = ">IB3s4I"
-        buf_size = struct.calcsize(fmt)
-        report_blocks = [struct.unpack_from(fmt, buffer=data, offset=buf_size * i)
-                         for i in range(self.rc)]
-        self.report_blocks = list(map(lambda args: RTCPReceiverReportBlock(
-            *args[:2], int.from_bytes(args[2], 'big'), *args[3:]
-        ), report_blocks))
+        # Tested this and it appears that discord does not send
+        # the specified amount of report blocks
+        # fmt = ">IB3s4I"
+        # buf_size = struct.calcsize(fmt)
+        # report_blocks = [struct.unpack_from(fmt, buffer=data, offset=buf_size * i)
+        #                  for i in range(self.rc)]
+        # self.report_blocks = list(map(lambda args: RTCPReceiverReportBlock(
+        #     *args[:2], int.from_bytes(args[2], 'big'), *args[3:]
+        # ), report_blocks))
+        self.report_blocks = []
 
-        self.extension = data[len(self.report_blocks) * buf_size:]
+        self.extension = data  # data[len(self.report_blocks) * buf_size:]
 
 
 class RTCPSenderReportPacket(RTCPPacket):
@@ -381,7 +384,7 @@ class AudioPacket:
     }
 
     def __new__(cls, data: bytes, decrypt_method):
-        fmt = ">BBI"
+        fmt = ">BBH"
         buf_size = struct.calcsize(fmt)
         version_flag, payload_type, length = struct.unpack_from(fmt, buffer=data)
         if 200 <= payload_type <= 204:
@@ -435,7 +438,7 @@ class AudioFileSink(AudioSink):
             self._write_buffer()
 
     def on_rtcp(self, packet):
-        print(packet)
+        pass
 
     def _write_buffer(self):
         self._frame_buffer = sorted(self._frame_buffer, key=lambda frame: frame.sequence)
