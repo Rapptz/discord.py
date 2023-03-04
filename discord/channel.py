@@ -1634,11 +1634,7 @@ class StageChannel(VocalGuildChannel):
 
             payload['privacy_level'] = privacy_level.value
 
-        if send_start_notification is not None:
-            if not isinstance(send_start_notification, bool):
-                raise TypeError('send_start_notification field must be of type bool')
-            else:
-                payload['send_start_notification'] = send_start_notification
+        payload['send_start_notification'] = send_start_notification
 
         data = await self._state.http.create_stage_instance(**payload, reason=reason)
         return StageInstance(guild=self.guild, state=self._state, data=data)
