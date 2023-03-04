@@ -34,7 +34,7 @@ import threading
 import traceback
 import zlib
 
-from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar
+from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar, Union
 
 import aiohttp
 import yarl
@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from .client import Client
     from .state import ConnectionState
     from .voice_client import VoiceClient
+    from .member import Member
 
 
 class ReconnectWebSocket(Exception):
@@ -1018,7 +1019,7 @@ class DiscordVoiceWebSocket:
         self._close_code = code
         await self.ws.close(code=code)
 
-    def get_member_from_ssrc(self, ssrc):
+    def get_member_from_ssrc(self, ssrc) -> Union['Member', int]:
         if ssrc in self._speaking_map:
             user = self._speaking_map[ssrc]["user"]
             if type(user) == int and (member := self._connection.guild.get_member(user)) is not None:
