@@ -1608,6 +1608,8 @@ class StageChannel(VocalGuildChannel):
         send_start_notification: :class:`bool`
             Whether to send a start notification. This sends a push notification to @everyone if ``True``. Defaults to ``False``.
             You must have :attr:`~Permissions.mention_everyone` to do this.
+            
+            .. versionadded:: 2.3
         reason: :class:`str`
             The reason the stage instance was created. Shows up on the audit log.
 
