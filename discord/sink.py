@@ -655,9 +655,6 @@ class AudioReceiver(threading.Thread):
         self._lock: threading.Lock = threading.Lock()
 
     def _do_run(self) -> None:
-        _log.info("Began polling for audio packets from Channel ID %d (Guild ID %d).",
-                  self.client.channel.id, self.client.guild.id)
-
         while not self._end.is_set():
 
             # are we disconnected from voice?
@@ -673,9 +670,6 @@ class AudioReceiver(threading.Thread):
                 continue
             if packet.audio is None: continue
             self.sink.on_audio(packet)
-
-        _log.info("No longer polling for audio packets from Channel ID %d (Guild ID %d).",
-                  self.client.channel.id, self.client.guild.id)
 
     def run(self) -> None:
         try:
