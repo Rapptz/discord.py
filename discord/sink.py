@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Optional, Callable, Any, IO, Union
 from .opus import Decoder as OpusDecoder
 from .errors import ClientException
 from .enums import RTCPMessageType
+from .utils import strip_namedtuple_docs
 
 if TYPE_CHECKING:
     from .member import Member
@@ -38,6 +39,7 @@ _log = logging.getLogger(__name__)
 
 
 RTCPReceiverReportBlock = namedtuple("RTCPReceiverReportBlock", ("ssrc", "f", "c", "ehsn", "j", "lsr", "dlsr"))
+strip_namedtuple_docs(RTCPReceiverReportBlock)
 RTCPReceiverReportBlock.__doc__ = """Receiver report block from :class:`RTCPSenderReportPacket` 
 or :class:`RTCPReceiverReportPacket`
 
@@ -45,6 +47,8 @@ Conveys statistics on the reception of RTP packets from a single synchronization
 
 Read in detail here: https://www.freesoft.org/CIE/RFC/1889/19.htm
 
+Attributes
+----------
 ssrc: :class:`int`
     The SSRC identifier of the source to which the information in this 
     reception report block pertains.
@@ -71,11 +75,15 @@ dlsr: :class:`int`
     SR packet has been received yet from SSRC, the DLSR field is set to zero.
 """
 
+
 RTCPSourceDescriptionChunk = namedtuple("RTCPSourceDescriptionChunk", ("ssrc", "items"))
+strip_namedtuple_docs(RTCPSourceDescriptionChunk)
 RTCPSourceDescriptionChunk.__doc__ = """A chunk of a :class:`RTCPSourceDescription` object.
 
 Contains items that describe a source.
 
+Attributes
+----------
 ssrc: :class:`int`
     The source which is being described.
 items: Sequence[:class:`RTCPSourceDescriptionItem`]
@@ -83,8 +91,11 @@ items: Sequence[:class:`RTCPSourceDescriptionItem`]
 """
 
 RTCPSourceDescriptionItem = namedtuple("RTCPSourceDescriptionItem", ("cname", "description"))
+strip_namedtuple_docs(RTCPSourceDescriptionItem)
 RTCPSourceDescriptionItem.__doc__ = """An item of a :class:`RTCPSourceDescriptionChunk` object
 
+Attributes
+----------
 cname: :class:`int`
     Type of description.
 description: :class:`bytes`
@@ -97,6 +108,8 @@ class RTCPPacket:
 
     Read in detail here: https://www.freesoft.org/CIE/RFC/1889/19.htm
 
+    Attributes
+    ----------
     v: :class:`int`
         Identifies the version of RTP, which is the same in RTCP packets
         as in RTP data packets.
@@ -145,6 +158,8 @@ class RTCPSenderReportPacket(RTCPPacket):
 
     Extends :class:`RTCPPacket` and inherits its attributes.
 
+    Attributes
+    ----------
     ssrc: :class:`int`
         The synchronization source identifier for the originator of this SR packet.
     nts: :class:`int`
@@ -160,7 +175,7 @@ class RTCPSenderReportPacket(RTCPPacket):
         The total number of RTP data packets transmitted by the sender since
         starting transmission up until the time this SR packet was generated.
         The count is reset if the sender changes its SSRC identifier.
-    soc:
+    soc: :class:`int`
         The total number of payload octets (i.e., not including header or padding)
         transmitted in RTP data packets by the sender since starting transmission
         up until the time this SR packet was generated. The count is reset if
@@ -195,6 +210,8 @@ class RTCPReceiverReportPacket(RTCPPacket):
 
     Extends :class:`RTCPPacket` and inherits its attributes.
 
+    Attributes
+    ----------
     ssrc: :class:`int`
         The synchronization source identifier for the originator of this SR packet.
     report_blocks: Sequence[:class:`RTCPReceiverReport`]
@@ -224,6 +241,8 @@ class RTCPSourceDescriptionPacket(RTCPPacket):
 
     Extends :class:`RTCPPacket` and inherits its attributes.
 
+    Attributes
+    ----------
     chunks: Sequence[:class:`RTCPSourceDescriptionChunk`]
         Sequence of chunks that contain items.
     """
@@ -270,6 +289,8 @@ class RTCPGoodbyePacket(RTCPPacket):
 
     Extends :class:`RTCPPacket` and inherits its attributes.
 
+    Attributes
+    ----------
     ssrc_byes: Sequence[:class:`int`]
         List of SSRCs that are disconnecting.
     reason: :class:`bytes`
@@ -297,6 +318,8 @@ class RTCPApplicationDefinedPacket(RTCPPacket):
 
     Extends :class:`RTCPPacket` and inherits its attributes.
 
+    Attributes
+    ----------
     rc: :class:`int`
         rc in this packet represents a subtype
     ssrc: :class:`int`
@@ -322,6 +345,8 @@ class RTCPApplicationDefinedPacket(RTCPPacket):
 class RawAudioData:
     """Takes in a raw audio frame from discord and extracts its characteristics.
 
+    Attributes
+    ----------
     version: :class:`int`
         RTP version
     extended :class:`bool`
@@ -407,6 +432,8 @@ class AudioPacket:
 class AudioFrame:
     """Represents audio that has been fully decoded.
 
+    Attributes
+    ----------
     sequence: :class:`int`
         The sequence of this frame in accordance with other frames
         that precede or follow it
@@ -438,6 +465,8 @@ class AudioSink:
     def on_audio(self, frame: AudioFrame) -> Any:
         """This function receives :class:`AudioFrame` objects.
 
+        Abstract method
+
         Parameters
         ----------
         frame: :class:`AudioFrame`
@@ -447,6 +476,8 @@ class AudioSink:
 
     def on_rtcp(self, packet: RTCPPacket) -> Any:
         """This function receives RTCP Packets
+
+        Abstract method
 
         Parameters
         ----------
@@ -461,12 +492,35 @@ class AudioSink:
     def cleanup(self) -> Any:
         """This function is called when the bot is done receiving
         audio and before the after callback is called.
+
+        Abstract method
         """
         raise NotImplementedError()
 
 
 class AudioFileSink(AudioSink):
-    __slots__ = ("output_dir", "output_files", "done", "_timestamps", "_frame_buffer")
+    """This implements :class:`AudioSink` with functionality for saving
+    the audio to file.
+
+    Parameters
+    ----------
+    output_dir: :class:`str`
+        The directory to save files to.
+
+    Attributes
+    ----------
+    output_dir: :class:`str`
+        The directory where files are being saved.
+    output_files: :class:`dict`
+        Dictionary that maps an ssrc to file object.
+    done: :class:`bool`
+        Whether the sink is finished being used. This attribute becomes true
+        after cleanup is called.
+    """
+    __slots__ = (
+        "output_dir", "output_files", "done", "_timestamps",
+        "_frame_buffer", "_ssrc_to_user"
+    )
 
     FRAME_BUFFER_LIMIT = 10
 
@@ -506,6 +560,17 @@ class AudioFileSink(AudioSink):
             self._write_buffer(frame.ssrc)
 
     def on_rtcp(self, packet: RTCPPacket) -> None:
+        """This function receives RTCP Packets, but does nothing with them since
+        there is no use for them in this sink.
+
+        Parameters
+        ----------
+        packet: :class:`RTCPPacket`
+            A RTCP Packet received from discord. Can be any of the following:
+            :class:`RTCPSenderReportPacket`, :class:`RTCPReceiverReportPacket`,
+            :class:`RTCPSourceDescriptionPacket`, :class:`RTCPGoodbyePacket`,
+            :class:`RTCPApplicationDefinedPacket`
+        """
         pass
 
     def _write_buffer(self, ssrc, empty=False):
@@ -526,6 +591,7 @@ class AudioFileSink(AudioSink):
 
     def cleanup(self) -> None:
         """Writes remaining frames in buffer and closes all files"""
+        if self.done: return
         for ssrc in self._frame_buffer.keys():
             self._write_buffer(ssrc, empty=True)
         for file in self.output_files.values():
@@ -553,6 +619,8 @@ class AudioFileSink(AudioSink):
         """Takes a file object with raw audio data and creates
         another file object with formatted audio data
 
+        Abstract method
+
         Parameters
         ----------
         file: :class:`IO`
@@ -568,6 +636,7 @@ class AudioFileSink(AudioSink):
 
 
 class WaveAudioFileSink(AudioFileSink):
+    """Extends :class:`AudioFileSink` and defines a convert_file method."""
     CHUNK_WRITE_SIZE = 64
 
     def convert_file(self, file, new_name=None):
@@ -583,11 +652,8 @@ class WaveAudioFileSink(AudioFileSink):
 
         Returns
         -------
-        Path to the new audio file
-
-        Return type
-        -----------
         :class:`str`
+            Path to the new audio file
         """
         path = self._get_new_path(file.name, "wav", new_name)
         with wave.open(path, "wb") as wavf:
@@ -600,6 +666,8 @@ class WaveAudioFileSink(AudioFileSink):
 
 
 class MP3AudioFileSink(AudioFileSink):
+    """Extends :class:`AudioFileSink` and defines a convert_file method."""
+
     def convert_file(self, file, new_name=None):
         """Takes a file object that contains raw audio data and writes
         it to a mp3 audio file.
@@ -613,11 +681,8 @@ class MP3AudioFileSink(AudioFileSink):
 
         Returns
         -------
-        Path to the new audio file
-
-        Return type
-        -----------
         :class:`str`
+            Path to the new audio file
         """
         path = self._get_new_path(file.name, "mp3", new_name)
         args = ['ffmpeg', '-f', 's16le', '-ar', str(OpusDecoder.SAMPLING_RATE),

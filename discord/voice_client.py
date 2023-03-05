@@ -742,21 +742,26 @@ class VoiceClient(VoiceProtocol):
         self._receiver.start()
 
     def is_listening(self) -> bool:
+        """Indicate if we're currently listening."""
         return self._receiver is not None and self._receiver.is_listening()
 
     def is_listening_paused(self) -> bool:
+        """Indicate if we're currently listening, but paused."""
         return self._receiver is not None and self._receiver.is_paused()
 
     def stop_listening(self) -> None:
+        """Stops listening"""
         if self._receiver:
             self._receiver.stop()
             self._receiver = None
 
     def pause_listening(self) -> None:
+        """Pauses listening"""
         if self._receiver:
             self._receiver.pause()
 
     def resume_listening(self) -> None:
+        """Resumes listening"""
         if self._receiver:
             self._receiver.resume()
 
@@ -827,13 +832,10 @@ class VoiceClient(VoiceProtocol):
 
         Returns
         -------
-        If a packet is received, it'll return either an audio frame or an rtcp packet.
-        If nothing is received then nothing is returned. If an rtcp packet is returned,
-        it'll be one of the rtcp packet classes that extend :class:`RTCPPacket`.
-
-        Return type
-        -----------
         Optional[Union[:class:`RTCPPacket`, :class:`AudioFrame`]]
+            If a packet is received, it'll return either an audio frame or an rtcp packet.
+            If nothing is received then nothing is returned. If an rtcp packet is returned,
+            it'll be one of the rtcp packet classes that extend :class:`RTCPPacket`.
         """
         ready, _, err = select.select([self.socket], [], [self.socket], 0.01)
         if err:

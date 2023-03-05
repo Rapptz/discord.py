@@ -1374,3 +1374,8 @@ CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 def _to_kebab_case(text: str) -> str:
     return CAMEL_CASE_REGEX.sub('-', text).lower()
+
+
+def strip_namedtuple_docs(cls):
+    for field in cls._fields:
+        setattr(getattr(cls, field), "__doc__", "")
