@@ -47,7 +47,7 @@ import datetime
 import discord.abc
 from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, ForumLayoutType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
+from .enums import ChannelType, ForumLayoutType, ForumOrderType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
 from .mixins import Hashable
 from . import utils
 from .utils import MISSING
@@ -2154,6 +2154,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         Defaults to :attr:`ForumLayoutType.not_set`.
 
         .. versionadded:: 2.2
+    default_sort_order: Optional[:class:`ForumOrderType`]
+        The default sort order for posts in this forum channel.
+
+        .. versionadded:: 2.3
     """
 
     __slots__ = (
@@ -2173,6 +2177,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         'default_thread_slowmode_delay',
         'default_reaction_emoji',
         'default_layout',
+        'default_sort_order',
         '_available_tags',
         '_flags',
     )
@@ -2217,6 +2222,11 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
                 id=utils._get_as_snowflake(default_reaction_emoji, 'emoji_id') or None,  # Coerce 0 -> None
                 name=default_reaction_emoji.get('emoji_name') or '',
             )
+
+        self.default_sort_order: Optional[ForumOrderType] = None
+        default_sort_order = data.get('default_sort_order')
+        if default_sort_order is not None:
+            self.default_sort_order = try_enum(ForumOrderType, default_sort_order)
 
         self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)

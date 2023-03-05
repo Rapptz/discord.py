@@ -1148,6 +1148,7 @@ class HTTPClient:
             'available_tags',
             'applied_tags',
             'default_forum_layout',
+            'default_sort_order',
         )
 
         payload = {k: v for k, v in options.items() if k in valid_keys}
