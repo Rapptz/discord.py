@@ -1379,6 +1379,7 @@ class HTTPClient:
             'available_tags',
             'applied_tags',
             'default_forum_layout',
+            'default_sort_order',
         )
 
         payload = {k: v for k, v in options.items() if k in valid_keys}
@@ -1419,6 +1420,7 @@ class HTTPClient:
             'video_quality_mode',
             'default_auto_archive_duration',
             'default_thread_rate_limit_per_user',
+            'default_sort_order',
             'available_tags',
         )
         payload.update({k: v for k, v in options.items() if k in valid_keys and v is not None})

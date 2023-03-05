@@ -140,6 +140,7 @@ class ForumTag(TypedDict):
     emoji_name: Optional[str]
 
 
+ForumOrderType = Literal[0, 1]
 ForumLayoutType = Literal[0, 1, 2]
 
 
@@ -147,6 +148,7 @@ class ForumChannel(_BaseTextChannel):
     type: Literal[15]
     available_tags: List[ForumTag]
     default_reaction_emoji: Optional[DefaultReaction]
+    default_sort_order: Optional[ForumOrderType]
     default_forum_layout: NotRequired[ForumLayoutType]
     flags: NotRequired[int]
 

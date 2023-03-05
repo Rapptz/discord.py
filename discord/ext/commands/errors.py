@@ -921,7 +921,7 @@ class BadLiteralArgument(UserInputError):
     argument: :class:`str`
         The argument's value that failed to be converted. Defaults to an empty string.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.0
     """
 
     def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError], argument: str = "") -> None:

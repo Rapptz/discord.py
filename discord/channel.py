@@ -47,7 +47,7 @@ import datetime
 import discord.abc
 from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, EntityType, ForumLayoutType, PrivacyLevel, try_enum, VideoQualityMode
+from .enums import ChannelType, EntityType, ForumLayoutType, ForumOrderType, PrivacyLevel, try_enum, VideoQualityMode
 from .calls import PrivateCall, GroupCall
 from .mixins import Hashable
 from . import utils
@@ -2043,8 +2043,6 @@ class ForumTag(Hashable):
 class ForumChannel(discord.abc.GuildChannel, Hashable):
     """Represents a Discord guild forum channel.
 
-    .. versionadded:: 2.0
-
     .. container:: operations
 
         .. describe:: x == y
@@ -2062,6 +2060,8 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         .. describe:: str(x)
 
             Returns the forum's name.
+
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -2094,18 +2094,14 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         The default auto archive duration in minutes for threads created in this forum.
     default_thread_slowmode_delay: :class:`int`
         The default slowmode delay in seconds for threads created in this forum.
-
-        .. versionadded:: 2.0
     default_reaction_emoji: Optional[:class:`PartialEmoji`]
         The default reaction emoji for threads created in this forum to show in the
         add reaction button.
-
-        .. versionadded:: 2.0
     default_layout: :class:`ForumLayoutType`
         The default layout for posts in this forum channel.
         Defaults to :attr:`ForumLayoutType.not_set`.
-
-        .. versionadded:: 2.0
+    default_sort_order: Optional[:class:`ForumOrderType`]
+        The default sort order for posts in this forum channel.
     """
 
     __slots__ = (
@@ -2125,6 +2121,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         'default_thread_slowmode_delay',
         'default_reaction_emoji',
         'default_layout',
+        'default_sort_order',
         '_available_tags',
         '_flags',
     )
@@ -2169,6 +2166,11 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
                 id=utils._get_as_snowflake(default_reaction_emoji, 'emoji_id') or None,  # Coerce 0 -> None
                 name=default_reaction_emoji.get('emoji_name') or '',
             )
+
+        self.default_sort_order: Optional[ForumOrderType] = None
+        default_sort_order = data.get('default_sort_order')
+        if default_sort_order is not None:
+            self.default_sort_order = try_enum(ForumOrderType, default_sort_order)
 
         self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)
@@ -2292,6 +2294,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         default_thread_slowmode_delay: int = ...,
         default_reaction_emoji: Optional[EmojiInputType] = ...,
         default_layout: ForumLayoutType = ...,
+        default_sort_order: ForumOrderType = ...,
         require_tag: bool = ...,
     ) -> ForumChannel:
         ...
@@ -2336,24 +2339,16 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
         available_tags: Sequence[:class:`ForumTag`]
             The new available tags for this forum.
-
-            .. versionadded:: 2.0
         default_thread_slowmode_delay: :class:`int`
             The new default slowmode delay for threads in this channel.
-
-            .. versionadded:: 2.0
         default_reaction_emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
             The new default reaction emoji for threads in this channel.
-
-            .. versionadded:: 2.0
         default_layout: :class:`ForumLayoutType`
             The new default layout for posts in this forum.
-
-            .. versionadded:: 2.0
+        default_sort_order: Optional[:class:`ForumOrderType`]
+            The new default sort order for posts in this forum.
         require_tag: :class:`bool`
             Whether to require a tag for threads in this channel or not.
-
-            .. versionadded:: 2.0
 
         Raises
         ------
@@ -2411,6 +2406,21 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
                 raise TypeError(f'default_layout parameter must be a ForumLayoutType not {layout.__class__.__name__}')
 
             options['default_forum_layout'] = layout.value
+
+        try:
+            sort_order = options.pop('default_sort_order')
+        except KeyError:
+            pass
+        else:
+            if sort_order is None:
+                options['default_sort_order'] = None
+            else:
+                if not isinstance(sort_order, ForumOrderType):
+                    raise TypeError(
+                        f'default_sort_order parameter must be a ForumOrderType not {sort_order.__class__.__name__}'
+                    )
+
+                options['default_sort_order'] = sort_order.value
 
         payload = await self._edit(options, reason=reason)
         if payload is not None:
