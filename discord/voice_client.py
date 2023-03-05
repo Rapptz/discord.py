@@ -551,7 +551,7 @@ class VoiceClient(VoiceProtocol):
         encrypt_packet = getattr(self, '_encrypt_' + self.mode)
         return encrypt_packet(header, data)
 
-    def _unpack_audio_packet(self, data):
+    def _unpack_audio_packet(self, data, *, decode=True):
         packet = AudioPacket(data, getattr(self, '_decrypt_' + self.mode))
 
         if not isinstance(packet, RawAudioData):
@@ -559,11 +559,13 @@ class VoiceClient(VoiceProtocol):
         if packet.audio == self.SILENT_FRAME:
             return
 
-        if packet.ssrc not in self.decoders:
-            self.decoders[packet.ssrc] = opus.Decoder()
+        audio = packet.audio
+        if decode:
+            if packet.ssrc not in self.decoders:
+                self.decoders[packet.ssrc] = opus.Decoder()
+            audio = self.decoders[packet.ssrc].decode(packet.audio)
 
-        return AudioFrame(self.decoders[packet.ssrc].decode(packet.audio), packet,
-                          self.ws.get_member_from_ssrc(packet.ssrc))
+        return AudioFrame(audio, packet, self.ws.get_member_from_ssrc(packet.ssrc))
 
     def _encrypt_xsalsa20_poly1305(self, header: bytes, data) -> bytes:
         box = nacl.secret.SecretBox(bytes(self.secret_key))
@@ -691,7 +693,7 @@ class VoiceClient(VoiceProtocol):
         if self._player:
             self._player.resume()
 
-    def listen(self, sink: AudioSink, *,
+    def listen(self, sink: AudioSink, *, decode: bool = True,
                after: Optional[Callable[[AudioSink, Optional[Exception]], Any]] = None) -> None:
         """Receives audio into an :class:`AudioSink`
 
@@ -706,6 +708,8 @@ class VoiceClient(VoiceProtocol):
         -----------
         sink: :class:`AudioSink`
             The audio sink we're passing audio to.
+        decode: :class:`bool`
+            Whether to decode data received from discord.
         after: Callable[[Optional[:class:`Exception`]], Any]
             The finalizer that is called after the receiver stops.
             This function must have two parameters, ``sink`` and ``error``,
@@ -730,8 +734,9 @@ class VoiceClient(VoiceProtocol):
         if not isinstance(sink, AudioSink):
             raise TypeError(f"sink must be an AudioSink not {sink.__class__.__name__}")
 
-        # Check that opus is loaded and throw error else
-        opus.Decoder.get_opus_version()
+        if decode:
+            # Check that opus is loaded and throw error else
+            opus.Decoder.get_opus_version()
 
         self._receiver = AudioReceiver(sink, self, after=after)
         self._receiver.start()
@@ -806,7 +811,7 @@ class VoiceClient(VoiceProtocol):
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
 
-    def recv_audio_packet(self, dump: bool = False) -> Optional[Union[RTCPPacket, AudioFrame]]:
+    def recv_audio_packet(self, *, decode: bool = True, dump: bool = False) -> Optional[Union[RTCPPacket, AudioFrame]]:
         """Attempts to receive an audio packet and returns it, else None
 
         You must be connected to receive audio.
@@ -815,6 +820,8 @@ class VoiceClient(VoiceProtocol):
 
         Parameters
         ----------
+        decode: :class:`bool`
+            Whether to decode data received from discord.
         dump: :class:`bool`
             Will not return audio packet if true
 
@@ -836,4 +843,4 @@ class VoiceClient(VoiceProtocol):
 
         data = self.socket.recv(4096)
         if dump: return
-        return self._unpack_audio_packet(data)
+        return self._unpack_audio_packet(data, decode=decode)
