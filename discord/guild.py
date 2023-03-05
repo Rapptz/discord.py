@@ -1309,7 +1309,7 @@ class Guild(Hashable):
             options['nsfw'] = nsfw
 
         if default_auto_archive_duration is not MISSING:
-            options["default_auto_archive_duration"] = default_auto_archive_duration
+            options['default_auto_archive_duration'] = default_auto_archive_duration
 
         if default_thread_slowmode_delay is not MISSING:
             options['default_thread_rate_limit_per_user'] = default_thread_slowmode_delay
