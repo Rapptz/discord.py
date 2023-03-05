@@ -1614,7 +1614,7 @@ class StageChannel(VocalGuildChannel):
         Raises
         ------
         TypeError
-            If the ``privacy_level`` or ``send_start_notification`` parameter is not the proper type.
+            If the ``privacy_level`` parameter is not the proper type.
         Forbidden
             You do not have permissions to create a stage instance.
         HTTPException
