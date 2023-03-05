@@ -73,6 +73,7 @@ from .enums import (
     MFALevel,
     Locale,
     AutoModRuleEventType,
+    ForumOrderType,
 )
 from .mixins import Hashable
 from .user import User
@@ -1576,6 +1577,7 @@ class Guild(Hashable):
         reason: Optional[str] = None,
         default_auto_archive_duration: int = MISSING,
         default_thread_slowmode_delay: int = MISSING,
+        default_sort_order: Optional[ForumOrderType] = None,
         available_tags: Sequence[ForumTag] = MISSING,
     ) -> ForumChannel:
         """|coro|
@@ -1620,6 +1622,10 @@ class Guild(Hashable):
             The default slowmode delay in seconds for threads created in this forum.
 
             .. versionadded:: 2.1
+        default_sort_order: Optional[:class:`ForumOrderType`]
+            The default sort order for posts in this forum channel.
+
+            .. versionadded:: 2.3
         available_tags: Sequence[:class:`ForumTag`]
             The available tags for this forum channel.
 
@@ -1658,6 +1664,16 @@ class Guild(Hashable):
 
         if default_thread_slowmode_delay is not MISSING:
             options['default_thread_rate_limit_per_user'] = default_thread_slowmode_delay
+
+        if default_sort_order is None:
+            options['default_sort_order'] = None
+        else:
+            if not isinstance(default_sort_order, ForumOrderType):
+                raise TypeError(
+                    f'default_sort_order parameter must be a ForumOrderType not {default_sort_order.__class__.__name__}'
+                )
+
+            options['default_sort_order'] = default_sort_order.value
 
         if available_tags is not MISSING:
             options['available_tags'] = [t.to_dict() for t in available_tags]
