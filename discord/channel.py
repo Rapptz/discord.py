@@ -2354,6 +2354,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         default_thread_slowmode_delay: int = ...,
         default_reaction_emoji: Optional[EmojiInputType] = ...,
         default_layout: ForumLayoutType = ...,
+        default_sort_order: ForumOrderType = ...,
         require_tag: bool = ...,
     ) -> ForumChannel:
         ...
@@ -2412,6 +2413,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             The new default layout for posts in this forum.
 
             .. versionadded:: 2.2
+        default_sort_order: Optional[:class:`ForumOrderType`]
+            The new default sort order for posts in this forum.
+
+            .. versionadded:: 2.3
         require_tag: :class:`bool`
             Whether to require a tag for threads in this channel or not.
 
@@ -2473,6 +2478,21 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
                 raise TypeError(f'default_layout parameter must be a ForumLayoutType not {layout.__class__.__name__}')
 
             options['default_forum_layout'] = layout.value
+
+        try:
+            sort_order = options.pop('default_sort_order')
+        except KeyError:
+            pass
+        else:
+            if sort_order is None:
+                options['default_sort_order'] = None
+            else:
+                if not isinstance(sort_order, ForumOrderType):
+                    raise TypeError(
+                        f'default_sort_order parameter must be a ForumOrderType not {sort_order.__class__.__name__}'
+                    )
+
+                options['default_sort_order'] = sort_order.value
 
         payload = await self._edit(options, reason=reason)
         if payload is not None:
