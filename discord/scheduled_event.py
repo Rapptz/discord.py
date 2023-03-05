@@ -499,17 +499,16 @@ class ScheduledEvent(Hashable):
                     entity_type = EntityType.stage_instance
             elif location not in (MISSING, None):
                 entity_type = EntityType.external
+        else:
+            if not isinstance(entity_type, EntityType):
+                raise TypeError('entity_type must be of type EntityType')
+
+            payload['entity_type'] = entity_type.value
 
         if entity_type is None:
             raise TypeError(
                 f'invalid GuildChannel type passed, must be VoiceChannel or StageChannel not {channel.__class__.__name__}'
             )
-
-        if entity_type is not MISSING:
-            if not isinstance(entity_type, EntityType):
-                raise TypeError('entity_type must be of type EntityType')
-
-            payload['entity_type'] = entity_type.value
 
         _entity_type = entity_type or self.entity_type
         _entity_type_changed = _entity_type is not self.entity_type
