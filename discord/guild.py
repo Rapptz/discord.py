@@ -4416,7 +4416,7 @@ class Guild(Hashable):
         event_type: AutoModRuleEventType,
         trigger: AutoModTrigger,
         actions: List[AutoModRuleAction],
-        enabled: bool = MISSING,
+        enabled: bool = False,
         exempt_roles: Sequence[Snowflake] = MISSING,
         exempt_channels: Sequence[Snowflake] = MISSING,
         reason: str = MISSING,
@@ -4441,7 +4441,7 @@ class Guild(Hashable):
             The actions that will be taken when the automod rule is triggered.
         enabled: :class:`bool`
             Whether the automod rule is enabled.
-            Discord will default to ``False``.
+            Defaults to ``False``.
         exempt_roles: Sequence[:class:`abc.Snowflake`]
             A list of roles that will be exempt from the automod rule.
         exempt_channels: Sequence[:class:`abc.Snowflake`]
