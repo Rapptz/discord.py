@@ -58,9 +58,9 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .client import Client
+    from .member import Member
     from .state import ConnectionState
     from .voice_client import VoiceClient
-    from .member import Member
 
 
 class ReconnectWebSocket(Exception):
@@ -826,7 +826,7 @@ class DiscordVoiceWebSocket:
         self.loop: asyncio.AbstractEventLoop = loop
         self._keep_alive: Optional[VoiceKeepAliveHandler] = None
         self._close_code: Optional[int] = None
-        self._speaking_map = {}
+        self._speaking_map: Dict[int, Dict[str, Union[Member, int]]] = {}
         self.secret_key: Optional[str] = None
         if hook:
             self._hook = hook
@@ -948,10 +948,7 @@ class DiscordVoiceWebSocket:
             else:
                 user_id = int(data["user_id"])
                 user = self._connection.guild.get_member(user_id)
-                self._speaking_map[ssrc] = {
-                    "user": user if user is not None else user_id,
-                    "speaking": data["speaking"]
-                }
+                self._speaking_map[ssrc] = {"user": user if user is not None else user_id, "speaking": data["speaking"]}
 
         await self._hook(self, msg)
 
@@ -1028,7 +1025,7 @@ class DiscordVoiceWebSocket:
     def get_member_from_ssrc(self, ssrc) -> Optional[Union['Member', int]]:
         if ssrc in self._speaking_map:
             user = self._speaking_map[ssrc]["user"]
-            if type(user) == int and (member := self._connection.guild.get_member(user)) is not None:
+            if isinstance(user, int) and (member := self._connection.guild.get_member(user)) is not None:
                 self._speaking_map[ssrc]["user"] = member
                 return member
             return user

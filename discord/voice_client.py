@@ -40,35 +40,34 @@ Some documentation to refer to:
 from __future__ import annotations
 
 import asyncio
-import socket
 import logging
+import select
+import socket
 import struct
 import threading
-import select
-from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union, Dict
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
-from .gateway import *
 from .errors import ClientException, ConnectionClosed
+from .gateway import *
 from .player import AudioPlayer, AudioSource
+from .sink import AudioFrame, AudioPacket, AudioReceiver, AudioSink, RawAudioData, RTCPPacket
 from .utils import MISSING
-from .sink import AudioSink, AudioReceiver, AudioPacket, AudioFrame, RawAudioData, RTCPPacket
 
 if TYPE_CHECKING:
+    from . import abc
+    from .channel import StageChannel, VoiceChannel
     from .client import Client
     from .guild import Guild
+    from .opus import Decoder, Encoder
     from .state import ConnectionState
-    from .user import ClientUser
-    from .opus import Encoder, Decoder
-    from .channel import StageChannel, VoiceChannel
-    from . import abc
-
     from .types.voice import (
         GuildVoiceState as GuildVoiceStatePayload,
-        VoiceServerUpdate as VoiceServerUpdatePayload,
         SupportedModes,
+        VoiceServerUpdate as VoiceServerUpdatePayload,
     )
+    from .user import ClientUser
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
 
@@ -586,7 +585,7 @@ class VoiceClient(VoiceProtocol):
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
-    def _decrypt_xsalsa20_poly1305(self, header, data):
+    def _decrypt_xsalsa20_poly1305(self, header, data) -> bytes:
         box = nacl.secret.SecretBox(bytes(self.secret_key))
 
         nonce = bytearray(24)
@@ -594,7 +593,7 @@ class VoiceClient(VoiceProtocol):
 
         return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
 
-    def _decrypt_xsalsa20_poly1305_suffix(self, header, data):
+    def _decrypt_xsalsa20_poly1305_suffix(self, header, data) -> bytes:
         box = nacl.secret.SecretBox(bytes(self.secret_key))
 
         nonce_size = nacl.secret.SecretBox.NONCE_SIZE
@@ -602,7 +601,7 @@ class VoiceClient(VoiceProtocol):
 
         return self.strip_header_ext(box.decrypt(bytes(data[:-nonce_size]), nonce))
 
-    def _decrypt_xsalsa20_poly1305_lite(self, header, data):
+    def _decrypt_xsalsa20_poly1305_lite(self, header, data) -> bytes:
         box = nacl.secret.SecretBox(bytes(self.secret_key))
 
         nonce = bytearray(24)
@@ -612,8 +611,8 @@ class VoiceClient(VoiceProtocol):
         return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
 
     @staticmethod
-    def strip_header_ext(data):
-        if data[0] == 0xbe and data[1] == 0xde and len(data) > 4:
+    def strip_header_ext(data: bytes) -> bytes:
+        if data[0] == 0xBE and data[1] == 0xDE and len(data) > 4:
             _, length = struct.unpack_from('>HH', data)
             offset = 4 + length * 4
             data = data[offset:]
@@ -690,8 +689,13 @@ class VoiceClient(VoiceProtocol):
         if self._player:
             self._player.resume()
 
-    def listen(self, sink: AudioSink, *, decode: bool = True,
-               after: Optional[Callable[[AudioSink, Optional[Exception]], Any]] = None) -> None:
+    def listen(
+        self,
+        sink: AudioSink,
+        *,
+        decode: bool = True,
+        after: Optional[Callable[[AudioSink, Optional[Exception]], Any]] = None,
+    ) -> None:
         """Receives audio into an :class:`AudioSink`
 
         The finalizer, ``after`` is called after listening has stopped or
@@ -841,5 +845,6 @@ class VoiceClient(VoiceProtocol):
             return
 
         data = self.socket.recv(4096)
-        if dump: return
+        if dump:
+            return
         return self._unpack_audio_packet(data, decode=decode)
