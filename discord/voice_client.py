@@ -44,7 +44,8 @@ import socket
 import logging
 import struct
 import threading
-from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union
+import select
+from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union, Dict
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
@@ -52,13 +53,14 @@ from .gateway import *
 from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
 from .utils import MISSING
+from .sink import AudioSink, AudioReceiver, AudioPacket, AudioFrame, RawAudioData, RTCPPacket
 
 if TYPE_CHECKING:
     from .client import Client
     from .guild import Guild
     from .state import ConnectionState
     from .user import ClientUser
-    from .opus import Encoder
+    from .opus import Encoder, Decoder
     from .channel import StageChannel, VoiceChannel
     from . import abc
 
@@ -233,6 +235,8 @@ class VoiceClient(VoiceProtocol):
     secret_key: List[int]
     ssrc: int
 
+    SILENT_FRAME = b"\xf8\xff\xfe"
+
     def __init__(self, client: Client, channel: abc.Connectable) -> None:
         if not has_nacl:
             raise RuntimeError("PyNaCl library needed in order to use voice")
@@ -259,7 +263,9 @@ class VoiceClient(VoiceProtocol):
         self.timeout: float = 0
         self._runner: asyncio.Task = MISSING
         self._player: Optional[AudioPlayer] = None
+        self._receiver: Optional[AudioReceiver] = None
         self.encoder: Encoder = MISSING
+        self.decoders: Dict[int, Decoder] = {}
         self._lite_nonce: int = 0
         self.ws: DiscordVoiceWebSocket = MISSING
 
@@ -542,6 +548,22 @@ class VoiceClient(VoiceProtocol):
         encrypt_packet = getattr(self, '_encrypt_' + self.mode)
         return encrypt_packet(header, data)
 
+    def _unpack_audio_packet(self, data, *, decode=True):
+        packet = AudioPacket(data, getattr(self, '_decrypt_' + self.mode))
+
+        if not isinstance(packet, RawAudioData):
+            return packet
+        if packet.audio == self.SILENT_FRAME:
+            return
+
+        audio = packet.audio
+        if decode:
+            if packet.ssrc not in self.decoders:
+                self.decoders[packet.ssrc] = opus.Decoder()
+            audio = self.decoders[packet.ssrc].decode(packet.audio)
+
+        return AudioFrame(audio, packet, self.ws.get_member_from_ssrc(packet.ssrc))
+
     def _encrypt_xsalsa20_poly1305(self, header: bytes, data) -> bytes:
         box = nacl.secret.SecretBox(bytes(self.secret_key))
         nonce = bytearray(24)
@@ -563,6 +585,39 @@ class VoiceClient(VoiceProtocol):
         self.checked_add('_lite_nonce', 1, 4294967295)
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
+
+    def _decrypt_xsalsa20_poly1305(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce = bytearray(24)
+        nonce[:12] = header
+
+        return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
+
+    def _decrypt_xsalsa20_poly1305_suffix(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce_size = nacl.secret.SecretBox.NONCE_SIZE
+        nonce = data[-nonce_size:]
+
+        return self.strip_header_ext(box.decrypt(bytes(data[:-nonce_size]), nonce))
+
+    def _decrypt_xsalsa20_poly1305_lite(self, header, data):
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce = bytearray(24)
+        nonce[:4] = data[-4:]
+        data = data[:-4]
+
+        return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
+
+    @staticmethod
+    def strip_header_ext(data):
+        if data[0] == 0xbe and data[1] == 0xde and len(data) > 4:
+            _, length = struct.unpack_from('>HH', data)
+            offset = 4 + length * 4
+            data = data[offset:]
+        return data
 
     def play(self, source: AudioSource, *, after: Optional[Callable[[Optional[Exception]], Any]] = None) -> None:
         """Plays an :class:`AudioSource`.
@@ -635,6 +690,78 @@ class VoiceClient(VoiceProtocol):
         if self._player:
             self._player.resume()
 
+    def listen(self, sink: AudioSink, *, decode: bool = True,
+               after: Optional[Callable[[AudioSink, Optional[Exception]], Any]] = None) -> None:
+        """Receives audio into an :class:`AudioSink`
+
+        The finalizer, ``after`` is called after listening has stopped or
+        an error has occurred.
+
+        If an error happens while the audio receiver is running, the exception is
+        caught and the audio receiver is then stopped.  If no after callback is
+        passed, any caught exception will be logged using the library logger.
+
+        Parameters
+        -----------
+        sink: :class:`AudioSink`
+            The audio sink we're passing audio to.
+        decode: :class:`bool`
+            Whether to decode data received from discord.
+        after: Callable[[Optional[:class:`Exception`]], Any]
+            The finalizer that is called after the receiver stops.
+            This function must have two parameters, ``sink`` and ``error``,
+            that denote, respectfully, the sink passed to this function and
+            an optional exception that was raised during playing.
+
+        Raises
+        -------
+        ClientException
+            Already listening or not connected.
+        TypeError
+            sink is not an :class:`AudioSink` or after is not a callable.
+        OpusNotLoaded
+            Opus, required to decode audio, is not loaded.
+        """
+        if not self.is_connected():
+            raise ClientException('Not connected to voice.')
+
+        if self.is_listening():
+            raise ClientException('Already listening.')
+
+        if not isinstance(sink, AudioSink):
+            raise TypeError(f"sink must be an AudioSink not {sink.__class__.__name__}")
+
+        if decode:
+            # Check that opus is loaded and throw error else
+            opus.Decoder.get_opus_version()
+
+        self._receiver = AudioReceiver(sink, self, after=after)
+        self._receiver.start()
+
+    def is_listening(self) -> bool:
+        """Indicate if we're currently listening."""
+        return self._receiver is not None and self._receiver.is_listening()
+
+    def is_listening_paused(self) -> bool:
+        """Indicate if we're currently listening, but paused."""
+        return self._receiver is not None and self._receiver.is_paused()
+
+    def stop_listening(self) -> None:
+        """Stops listening"""
+        if self._receiver:
+            self._receiver.stop()
+            self._receiver = None
+
+    def pause_listening(self) -> None:
+        """Pauses listening"""
+        if self._receiver:
+            self._receiver.pause()
+
+    def resume_listening(self) -> None:
+        """Resumes listening"""
+        if self._receiver:
+            self._receiver.resume()
+
     @property
     def source(self) -> Optional[AudioSource]:
         """Optional[:class:`AudioSource`]: The audio source being played, if playing.
@@ -685,3 +812,34 @@ class VoiceClient(VoiceProtocol):
             _log.warning('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
+
+    def recv_audio_packet(self, *, decode: bool = True, dump: bool = False) -> Optional[Union[RTCPPacket, AudioFrame]]:
+        """Attempts to receive an audio packet and returns it, else None
+
+        You must be connected to receive audio.
+
+        Raises any error thrown by the connection socket.
+
+        Parameters
+        ----------
+        decode: :class:`bool`
+            Whether to decode data received from discord.
+        dump: :class:`bool`
+            Will not return audio packet if true
+
+        Returns
+        -------
+        Optional[Union[:class:`RTCPPacket`, :class:`AudioFrame`]]
+            If a packet is received, it'll return either an audio frame or an rtcp packet.
+            If nothing is received then nothing is returned. If an rtcp packet is returned,
+            it'll be one of the rtcp packet classes that extend :class:`RTCPPacket`.
+        """
+        ready, _, err = select.select([self.socket], [], [self.socket], 0.01)
+        if err:
+            raise err[0]
+        if not ready or not self._connected.is_set():
+            return
+
+        data = self.socket.recv(4096)
+        if dump: return
+        return self._unpack_audio_packet(data, decode=decode)

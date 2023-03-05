@@ -34,7 +34,7 @@ import threading
 import traceback
 import zlib
 
-from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar
+from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar, Union
 
 import aiohttp
 import yarl
@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from .client import Client
     from .state import ConnectionState
     from .voice_client import VoiceClient
+    from .member import Member
 
 
 class ReconnectWebSocket(Exception):
@@ -825,6 +826,7 @@ class DiscordVoiceWebSocket:
         self.loop: asyncio.AbstractEventLoop = loop
         self._keep_alive: Optional[VoiceKeepAliveHandler] = None
         self._close_code: Optional[int] = None
+        self._speaking_map = {}
         self.secret_key: Optional[str] = None
         if hook:
             self._hook = hook
@@ -939,6 +941,17 @@ class DiscordVoiceWebSocket:
             interval = data['heartbeat_interval'] / 1000.0
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
+        elif op == self.SPEAKING:
+            ssrc = data["ssrc"]
+            if ssrc in self._speaking_map:
+                self._speaking_map[ssrc]["speaking"] = data["speaking"]
+            else:
+                user_id = int(data["user_id"])
+                user = self._connection.guild.get_member(user_id)
+                self._speaking_map[ssrc] = {
+                    "user": user if user is not None else user_id,
+                    "speaking": data["speaking"]
+                }
 
         await self._hook(self, msg)
 
@@ -1011,3 +1024,11 @@ class DiscordVoiceWebSocket:
 
         self._close_code = code
         await self.ws.close(code=code)
+
+    def get_member_from_ssrc(self, ssrc) -> Optional[Union['Member', int]]:
+        if ssrc in self._speaking_map:
+            user = self._speaking_map[ssrc]["user"]
+            if type(user) == int and (member := self._connection.guild.get_member(user)) is not None:
+                self._speaking_map[ssrc]["user"] = member
+                return member
+            return user

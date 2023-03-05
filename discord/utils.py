@@ -70,6 +70,7 @@ import sys
 import types
 import warnings
 import logging
+from collections import namedtuple
 
 import yarl
 
@@ -1374,3 +1375,8 @@ CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 def _to_kebab_case(text: str) -> str:
     return CAMEL_CASE_REGEX.sub('-', text).lower()
+
+
+def strip_namedtuple_docs(cls: namedtuple) -> None:
+    for field in cls._fields:
+        setattr(getattr(cls, field), "__doc__", "")
