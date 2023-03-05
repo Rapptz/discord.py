@@ -482,6 +482,10 @@ class AudioFileSink(AudioSink):
         self._frame_buffer = {}
         self._ssrc_to_user = {}
 
+    def __del__(self):
+        if not self.done:
+            self.cleanup()
+
     def on_audio(self, frame: AudioFrame) -> None:
         """Takes an audio frame and adds it to a buffer. Once the buffer
         reaches a certain size, all audio frames in the buffer are
@@ -556,6 +560,12 @@ class AudioFileSink(AudioSink):
         """
         raise NotImplementedError()
 
+    def _get_new_path(self, path, ext, new_name=None):
+        ext = "."+ext
+        directory, name = os.path.split(path)
+        name = new_name + ext if new_name is not None else ".".join(name.split(".")[:-1]) + ext
+        return os.path.join(directory, name)
+
 
 class WaveAudioFileSink(AudioFileSink):
     CHUNK_WRITE_SIZE = 64
@@ -579,9 +589,7 @@ class WaveAudioFileSink(AudioFileSink):
         -----------
         :class:`str`
         """
-        directory, name = os.path.split(file.name)
-        name = new_name+".wav" if new_name is not None else ".".join(name.split(".")[:-1])+".wav"
-        path = os.path.join(directory, name)
+        path = self._get_new_path(file.name, "wav", new_name)
         with wave.open(path, "wb") as wavf:
             wavf.setnchannels(OpusDecoder.CHANNELS)
             wavf.setsampwidth(OpusDecoder.SAMPLE_SIZE // OpusDecoder.CHANNELS)
@@ -611,9 +619,7 @@ class MP3AudioFileSink(AudioFileSink):
         -----------
         :class:`str`
         """
-        directory, name = os.path.split(file.name)
-        name = new_name+".mp3" if new_name is not None else ".".join(name.split(".")[:-1])+".mp3"
-        path = os.path.join(directory, name)
+        path = self._get_new_path(file.name, "mp3", new_name)
         args = ['ffmpeg', '-f', 's16le', '-ar', str(OpusDecoder.SAMPLING_RATE),
                 '-ac', str(OpusDecoder.CHANNELS), '-y', '-i', file.name, path]
         try:
@@ -631,12 +637,14 @@ class AudioReceiver(threading.Thread):
         sink: AudioSink,
         client: 'VoiceClient',
         *,
+        decode: bool = True,
         after: Optional[Callable[[AudioSink, Optional[Exception]], Any]] = None,
     ) -> None:
         threading.Thread.__init__(self)
         self.daemon = False
         self.sink = sink
         self.client = client
+        self.decode = decode
         self.after: Optional[Callable[[AudioSink, Optional[Exception]], Any]] = after
 
         self._end: threading.Event = threading.Event()
