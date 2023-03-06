@@ -160,19 +160,19 @@ class RTCPPacket:
         self.pt = rtcp_type
         self.l = length
 
-    def _parse_report_and_extension(self, data):
-        # Tested this and it appears that discord does not send
-        # the specified amount of report blocks
-        # fmt = ">IB3s4I"
-        # buf_size = struct.calcsize(fmt)
-        # report_blocks = [struct.unpack_from(fmt, buffer=data, offset=buf_size * i)
-        #                  for i in range(self.rc)]
-        # self.report_blocks = list(map(lambda args: RTCPReceiverReportBlock(
-        #     *args[:2], int.from_bytes(args[2], 'big'), *args[3:]
-        # ), report_blocks))
-        self.report_blocks = []
-
-        self.extension = data  # data[len(self.report_blocks) * buf_size:]
+    # This function parses the report blocks and extension attributes, but it's
+    # not being used because discord was sending invalid RTCP packets while testing
+    # and it caused invalid values to be parsed.
+    # def _parse_report_and_extension(self, data):
+    #     fmt = "!IB3s4I"
+    #     buf_size = struct.calcsize(fmt)
+    #     report_blocks = [struct.unpack_from(fmt, buffer=data, offset=buf_size * i)
+    #                      for i in range(self.rc)]
+    #     self.report_blocks = list(map(lambda args: RTCPReceiverReportBlock(
+    #         *args[:2], int.from_bytes(args[2], 'big'), *args[3:]
+    #     ), report_blocks))
+    #
+    #     self.extension = data[len(self.report_blocks) * buf_size:]
 
 
 class RTCPSenderReportPacket(RTCPPacket):
@@ -225,11 +225,9 @@ class RTCPSenderReportPacket(RTCPPacket):
     def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
 
-        fmt = ">IQ3I"
-        buf_size = struct.calcsize(fmt)
-        self.ssrc, self.nts, self.rts, self.spc, self.soc = struct.unpack(fmt, data[:buf_size])
-
-        self._parse_report_and_extension(data[buf_size:])
+        self.ssrc, self.nts, self.rts, self.spc, self.soc = struct.unpack_from("!IQ3I", buffer=data)
+        self.report_blocks = []
+        self.extension = data[24:]
 
 
 class RTCPReceiverReportPacket(RTCPPacket):
@@ -260,10 +258,9 @@ class RTCPReceiverReportPacket(RTCPPacket):
     def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
 
-        fmt = ">I"
-        buf_size = struct.calcsize(fmt)
-        self.ssrc = struct.unpack(fmt, data[:buf_size])[0]
-        self._parse_report_and_extension(data[buf_size:])
+        self.ssrc = struct.unpack_from("!I", buffer=data)[0]
+        self.report_blocks = []
+        self.extension = data[4:]
 
 
 class RTCPSourceDescriptionPacket(RTCPPacket):
@@ -291,20 +288,20 @@ class RTCPSourceDescriptionPacket(RTCPPacket):
             self.chunks.append(chunk)
 
     def _parse_chunk(self, data: bytes) -> Tuple[RTCPSourceDescriptionChunk, int]:
-        ssrc = struct.unpack(">I", data)[0]
+        ssrc = struct.unpack("!I", data)[0]
         items = []
         i = 4
         while True:
-            cname = struct.unpack_from(">B", buffer=data, offset=i)[0]
+            cname = struct.unpack_from("!B", buffer=data, offset=i)[0]
             i += 1
             if cname == 0:
                 break
 
-            length = struct.unpack_from(">B", buffer=data, offset=i)[0]
+            length = struct.unpack_from("!B", buffer=data, offset=i)[0]
             i += 1
             description = b""
             if length > 0:
-                description = struct.unpack_from(f">{length}s", buffer=data, offset=i)[0]
+                description = struct.unpack_from(f"!{length}s", buffer=data, offset=i)[0]
                 i += length
 
             items.append(RTCPSourceDescriptionItem(cname, description))
@@ -343,10 +340,12 @@ class RTCPGoodbyePacket(RTCPPacket):
             buf_size = 0
             self.ssrc_byes = []
         else:
-            buf_size = self.rc * struct.calcsize("I")
-            self.ssrc_byes = struct.unpack(f">{self.rc}I", data[:buf_size])
-        reason_length = struct.unpack(">B", data[buf_size : buf_size + 1])
-        self.reason = b"" if reason_length == 0 else struct.unpack(f">{reason_length}s", data[buf_size + 1 :])
+            buf_size = self.rc * 4
+            self.ssrc_byes = struct.unpack_from(f"!{self.rc}I", buffer=data)
+        reason_length = struct.unpack_from("!B", buffer=data, offset=buf_size)[0]
+        self.reason = (
+            b"" if reason_length == 0 else struct.unpack_from(f"!{reason_length}s", buffer=data, offset=buf_size + 1)[0]
+        )
 
 
 class RTCPApplicationDefinedPacket(RTCPPacket):
@@ -378,11 +377,9 @@ class RTCPApplicationDefinedPacket(RTCPPacket):
     def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
 
-        fmt = ">I4s"
-        buf_size = struct.calcsize(fmt)
-        self.ssrc, self.name = struct.unpack(fmt, data[:buf_size])
+        self.ssrc, self.name = struct.unpack_from("!I4s", buffer=data)
         self.name = self.name.decode("ascii")
-        self.app_data = data[buf_size:]
+        self.app_data = data[8:]
 
 
 class RawAudioData:
@@ -431,9 +428,8 @@ class RawAudioData:
     )
 
     def __init__(self, data: bytes, decrypt_method: Callable[[bytes, bytes], bytes]):
-        fmt = ">BBHII"
-        version_flag, payload_flag, self.sequence, self.timestamp, self.ssrc = struct.unpack_from(fmt, buffer=data)
-        i = struct.calcsize(fmt)
+        version_flag, payload_flag, self.sequence, self.timestamp, self.ssrc = struct.unpack_from(">BBHII", buffer=data)
+        i = 12
         self.version = version_flag >> 6
         padding = (version_flag >> 5) & 0b1
         self.extended = bool((version_flag >> 4) & 0b1)
@@ -442,9 +438,8 @@ class RawAudioData:
         csrc_count = version_flag & 0b1111
         self.csrc_list = []
         if csrc_count > 0:
-            fmt = f">{csrc_count}I"
-            self.csrc_list = struct.unpack_from(fmt, buffer=data, offset=i)
-            i += struct.calcsize(fmt)
+            self.csrc_list = struct.unpack_from(f">{csrc_count}I", buffer=data, offset=i)
+            i += csrc_count * 4
         # While testing, I received a packet marked as extended that did not
         # contain an extension, so I've commented this out.
         # if self.extended:
