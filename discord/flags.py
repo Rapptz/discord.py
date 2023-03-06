@@ -1055,9 +1055,14 @@ class SKUFlags(BaseFlags):
         return 1 << 6
 
     @flag_value
-    def application_subscription(self):
-        """:class:`bool`: Returns ``True`` if the SKU is a application subscription. These are subscriptions made to applications for premium perks."""
+    def application_guild_subscription(self):
+        """:class:`bool`: Returns ``True`` if the SKU is a application subscription. These are subscriptions made to applications for premium perks bound to a guild."""
         return 1 << 7
+
+    @flag_value
+    def application_user_subscription(self):
+        """:class:`bool`: Returns ``True`` if the SKU is a application subscription. These are subscriptions made to applications for premium perks bound to a user."""
+        return 1 << 8
 
 
 @fill_with_flags()
