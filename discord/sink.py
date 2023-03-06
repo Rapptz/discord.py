@@ -4,7 +4,7 @@ import struct
 import subprocess
 import threading
 import wave
-from typing import IO, TYPE_CHECKING, Any, Callable, NamedTuple, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, BinaryIO, Callable, NamedTuple, Optional, Sequence, Tuple, Union
 
 from .enums import RTCPMessageType
 from .errors import ClientException
@@ -685,7 +685,7 @@ class AudioFileSink(AudioSink):
             os.remove(filepath)
         self.output_files = {}
 
-    def convert_file(self, file: IO, new_name: Optional[str] = None) -> Any:
+    def convert_file(self, file: BinaryIO, new_name: Optional[str] = None) -> Any:
         """Takes a file object with raw audio data and creates
         another file object with formatted audio data
 
@@ -693,7 +693,7 @@ class AudioFileSink(AudioSink):
 
         Parameters
         ----------
-        file: :class:`IO`
+        file: :term:`py:file object`
         new_name: Optional[:class:`str`]
         """
         raise NotImplementedError()
@@ -710,14 +710,14 @@ class WaveAudioFileSink(AudioFileSink):
 
     CHUNK_WRITE_SIZE = 64
 
-    def convert_file(self, file: IO, new_name: Optional[str] = None) -> Any:
+    def convert_file(self, file: BinaryIO, new_name: Optional[str] = None) -> Any:
         """Takes a file object that contains raw audio data and writes
         it to a wave audio file.
 
         Parameters
         ----------
-        file: :class:`IO`
-            File object that contains raw audio data
+        file: :term:`py:file object`
+            File object that contains raw audio data.
         new_name: Optional[:class:`str`]
             Name for the wave file excluding ".wav". Defaults to current name if None.
 
@@ -739,14 +739,14 @@ class WaveAudioFileSink(AudioFileSink):
 class MP3AudioFileSink(AudioFileSink):
     """Extends :class:`AudioFileSink` and defines a convert_file method."""
 
-    def convert_file(self, file: IO, new_name: Optional[str] = None) -> Any:
+    def convert_file(self, file: BinaryIO, new_name: Optional[str] = None) -> Any:
         """Takes a file object that contains raw audio data and writes
         it to a mp3 audio file.
 
         Parameters
         ----------
-        file: :class:`IO`
-            File object that contains raw audio data
+        file: :term:`py:file object`
+            File object that contains raw audio data.
         new_name: Optional[:class:`str`]
             Name for the wave file excluding ".mp3". Defaults to current name if None.
 
