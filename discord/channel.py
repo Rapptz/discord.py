@@ -47,7 +47,7 @@ import datetime
 import discord.abc
 from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, ForumLayoutType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
+from .enums import ChannelType, ForumLayoutType, ForumOrderType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
 from .mixins import Hashable
 from . import utils
 from .utils import MISSING
@@ -160,6 +160,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         The default auto archive duration in minutes for threads created in this channel.
 
         .. versionadded:: 2.0
+    default_thread_slowmode_delay: :class:`int`
+        The default slowmode delay in seconds for threads created in this channel.
+
+        .. versionadded:: 2.3
     """
 
     __slots__ = (
@@ -176,6 +180,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         '_type',
         'last_message_id',
         'default_auto_archive_duration',
+        'default_thread_slowmode_delay',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[TextChannelPayload, NewsChannelPayload]):
@@ -206,6 +211,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         # Does this need coercion into `int`? No idea yet.
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.default_auto_archive_duration: ThreadArchiveDuration = data.get('default_auto_archive_duration', 1440)
+        self.default_thread_slowmode_delay: int = data.get('default_thread_rate_limit_per_user', 0)
         self._type: Literal[0, 5] = data.get('type', self._type)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
         self._fill_overwrites(data)
@@ -301,6 +307,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         category: Optional[CategoryChannel] = ...,
         slowmode_delay: int = ...,
         default_auto_archive_duration: ThreadArchiveDuration = ...,
+        default_thread_slowmode_delay: int = ...,
         type: ChannelType = ...,
         overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
     ) -> TextChannel:
@@ -359,7 +366,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
 
             .. versionadded:: 2.0
+        default_thread_slowmode_delay: :class:`int`
+            The new default slowmode delay in seconds for threads created in this channel.
 
+            .. versionadded:: 2.3
         Raises
         ------
         ValueError
@@ -2154,6 +2164,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         Defaults to :attr:`ForumLayoutType.not_set`.
 
         .. versionadded:: 2.2
+    default_sort_order: Optional[:class:`ForumOrderType`]
+        The default sort order for posts in this forum channel.
+
+        .. versionadded:: 2.3
     """
 
     __slots__ = (
@@ -2173,6 +2187,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         'default_thread_slowmode_delay',
         'default_reaction_emoji',
         'default_layout',
+        'default_sort_order',
         '_available_tags',
         '_flags',
     )
@@ -2217,6 +2232,11 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
                 id=utils._get_as_snowflake(default_reaction_emoji, 'emoji_id') or None,  # Coerce 0 -> None
                 name=default_reaction_emoji.get('emoji_name') or '',
             )
+
+        self.default_sort_order: Optional[ForumOrderType] = None
+        default_sort_order = data.get('default_sort_order')
+        if default_sort_order is not None:
+            self.default_sort_order = try_enum(ForumOrderType, default_sort_order)
 
         self._flags: int = data.get('flags', 0)
         self._fill_overwrites(data)
@@ -2344,6 +2364,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         default_thread_slowmode_delay: int = ...,
         default_reaction_emoji: Optional[EmojiInputType] = ...,
         default_layout: ForumLayoutType = ...,
+        default_sort_order: ForumOrderType = ...,
         require_tag: bool = ...,
     ) -> ForumChannel:
         ...
@@ -2402,6 +2423,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             The new default layout for posts in this forum.
 
             .. versionadded:: 2.2
+        default_sort_order: Optional[:class:`ForumOrderType`]
+            The new default sort order for posts in this forum.
+
+            .. versionadded:: 2.3
         require_tag: :class:`bool`
             Whether to require a tag for threads in this channel or not.
 
@@ -2463,6 +2488,21 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
                 raise TypeError(f'default_layout parameter must be a ForumLayoutType not {layout.__class__.__name__}')
 
             options['default_forum_layout'] = layout.value
+
+        try:
+            sort_order = options.pop('default_sort_order')
+        except KeyError:
+            pass
+        else:
+            if sort_order is None:
+                options['default_sort_order'] = None
+            else:
+                if not isinstance(sort_order, ForumOrderType):
+                    raise TypeError(
+                        f'default_sort_order parameter must be a ForumOrderType not {sort_order.__class__.__name__}'
+                    )
+
+                options['default_sort_order'] = sort_order.value
 
         payload = await self._edit(options, reason=reason)
         if payload is not None:
