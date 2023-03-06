@@ -40,6 +40,7 @@ __all__ = (
     'Game',
     'Spotify',
     'CustomActivity',
+    'Session',
 )
 
 """If curious, this is the current schema for an activity.

@@ -6705,8 +6705,13 @@ Colour
 .. autoclass:: Colour()
     :members:
 
-Activity
+Presence
 ~~~~~~~~~
+
+.. attributetable:: Session
+
+.. autoclass:: Session()
+    :members:
 
 .. attributetable:: BaseActivity
 
