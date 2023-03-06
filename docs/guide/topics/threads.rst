@@ -22,7 +22,7 @@ There are two types of threads: **public** and **private** threads.
 
 Public threads can be created in any channel where you have the :attr:`~Permissions.create_public_threads` permission.
 
-Private threads, however, require the :attr:`~Permissions.create_private_threads` permission, and can only be used in a server with a boost level of 2 or higher.
+Private threads, however, require the :attr:`~Permissions.create_private_threads` permission.
 
 Users with the :attr:`~Permissions.manage_threads` permission can see all threads, including private ones they are not explicitly invited to.
 
