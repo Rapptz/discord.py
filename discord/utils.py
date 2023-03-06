@@ -1254,7 +1254,6 @@ def stream_supports_colour(stream: Any) -> bool:
 
 
 class _ColourFormatter(logging.Formatter):
-
     # ANSI codes are a bit weird to decipher if you're unfamiliar with them, so here's a refresher
     # It starts off with a format like \x1b[XXXm where XXX is a semicolon separated list of commands
     # The important ones here relate to colour.
@@ -1374,8 +1373,3 @@ CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 def _to_kebab_case(text: str) -> str:
     return CAMEL_CASE_REGEX.sub('-', text).lower()
-
-
-def strip_namedtuple_docs(cls: NamedTuple) -> None:
-    for field in cls._fields:
-        setattr(getattr(cls, field), "__doc__", "")

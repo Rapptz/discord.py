@@ -559,7 +559,7 @@ class VoiceClient(VoiceProtocol):
         if decode:
             if packet.ssrc not in self.decoders:
                 self.decoders[packet.ssrc] = opus.Decoder()
-            audio = self.decoders[packet.ssrc].decode(packet.audio)
+            audio = self.decoders[packet.ssrc].decode(packet.audio)  # type: ignore
 
         return AudioFrame(audio, packet, self.ws.get_member_from_ssrc(packet.ssrc))
 

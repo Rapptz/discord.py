@@ -1022,7 +1022,7 @@ class DiscordVoiceWebSocket:
         self._close_code = code
         await self.ws.close(code=code)
 
-    def get_member_from_ssrc(self, ssrc) -> Optional[Union['Member', int]]:
+    def get_member_from_ssrc(self, ssrc: int) -> Optional[Union['Member', int]]:
         if ssrc in self._speaking_map:
             user = self._speaking_map[ssrc]["user"]
             if isinstance(user, int) and (member := self._connection.guild.get_member(user)) is not None:
