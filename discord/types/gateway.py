@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired, Required
 
-from .activity import PartialPresenceUpdate
+from .activity import Activity, ClientStatus, PartialPresenceUpdate, StatusType
 from .voice import GuildVoiceState
 from .integration import BaseIntegration, IntegrationApplication
 from .role import Role
@@ -39,7 +39,7 @@ from .message import Message
 from .sticker import GuildSticker
 from .appinfo import BaseAchievement, PartialApplication
 from .guild import Guild, UnavailableGuild, SupplementalGuild
-from .user import Connection, User, PartialUser
+from .user import Connection, User, PartialUser, Relationship, RelationshipType
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
 from .channel import DMChannel, GroupDMChannel
@@ -49,7 +49,15 @@ from .entitlements import Entitlement, GatewayGift
 from .library import LibraryApplication
 
 
-PresenceUpdateEvent = PartialPresenceUpdate
+class UserPresenceUpdateEvent(TypedDict):
+    user: PartialUser
+    status: StatusType
+    activities: List[Activity]
+    client_status: ClientStatus
+    last_modified: int
+
+
+PresenceUpdateEvent = Union[PartialPresenceUpdate, UserPresenceUpdateEvent]
 
 
 class Gateway(TypedDict):
@@ -61,11 +69,26 @@ class ShardInfo(TypedDict):
     shard_count: int
 
 
+class ClientInfo(TypedDict):
+    version: int
+    os: str
+    client: str
+
+
+class Session(TypedDict):
+    session_id: str
+    active: NotRequired[bool]
+    client_info: ClientInfo
+    status: StatusType
+    activities: List[Activity]
+
+
 class ResumedEvent(TypedDict):
     _trace: List[str]
 
 
 class ReadyEvent(ResumedEvent):
+    _trace: List[str]
     api_code_version: int
     analytics_token: str
     auth_session_id_hash: str
@@ -78,9 +101,9 @@ class ReadyEvent(ResumedEvent):
     merged_members: List[List[MemberWithUser]]
     pending_payments: NotRequired[List[Payment]]
     private_channels: List[Union[DMChannel, GroupDMChannel]]
-    relationships: List[dict]
+    relationships: List[Relationship]
     required_action: NotRequired[str]
-    sessions: List[dict]
+    sessions: List[Session]
     session_id: str
     session_type: str
     shard: NotRequired[ShardInfo]
@@ -93,8 +116,8 @@ class ReadyEvent(ResumedEvent):
 
 
 class MergedPresences(TypedDict):
-    friends: List[PresenceUpdateEvent]
-    guilds: List[List[PresenceUpdateEvent]]
+    friends: List[UserPresenceUpdateEvent]
+    guilds: List[List[PartialPresenceUpdate]]
 
 
 class ReadySupplementalEvent(TypedDict):
@@ -106,6 +129,9 @@ class ReadySupplementalEvent(TypedDict):
 NoEvent = Literal[None]
 
 MessageCreateEvent = Message
+
+
+SessionsReplaceEvent = List[Session]
 
 
 class MessageDeleteEvent(TypedDict):
@@ -298,7 +324,7 @@ class GuildMembersChunkEvent(TypedDict):
     chunk_index: int
     chunk_count: int
     not_found: NotRequired[List[Snowflake]]
-    presences: NotRequired[List[PresenceUpdateEvent]]
+    presences: NotRequired[List[PartialPresenceUpdate]]
     nonce: NotRequired[str]
 
 
@@ -413,3 +439,13 @@ GiftCreateEvent = GiftUpdateEvent = GatewayGift
 EntitlementEvent = Entitlement
 
 LibraryApplicationUpdateEvent = LibraryApplication
+
+
+class RelationshipAddEvent(Relationship):
+    should_notify: NotRequired[bool]
+
+
+class RelationshipEvent(TypedDict):
+    id: Snowflake
+    type: RelationshipType
+    nickname: Optional[str]

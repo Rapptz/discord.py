@@ -367,6 +367,9 @@ class Guild(Hashable):
 
     def _add_member(self, member: Member, /) -> None:
         self._members[member.id] = member
+        if member._presence:
+            self._state.store_presence(member.id, member._presence, self.id)
+            member._presence = None
 
     def _store_thread(self, payload: ThreadPayload, /) -> Thread:
         thread = Thread(guild=self, state=self._state, data=payload)
@@ -375,6 +378,7 @@ class Guild(Hashable):
 
     def _remove_member(self, member: Snowflake, /) -> None:
         self._members.pop(member.id, None)
+        self._state.remove_presence(member.id, self.id)
 
     def _add_thread(self, thread: Thread, /) -> None:
         self._threads[thread.id] = thread
@@ -541,12 +545,10 @@ class Guild(Hashable):
                     continue
                 self._add_member(member)
 
-        empty_tuple = tuple()
         for presence in guild.get('presences', []):
             user_id = int(presence['user']['id'])
-            member = self.get_member(user_id)
-            if member is not None:
-                member._presence_update(presence, empty_tuple)  # type: ignore
+            presence = state.create_presence(presence)
+            state.store_presence(user_id, presence, self.id)
 
     @property
     def channels(self) -> List[GuildChannel]:

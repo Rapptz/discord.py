@@ -37,7 +37,7 @@ from typing import Any, Callable, Coroutine, Dict, List, TYPE_CHECKING, NamedTup
 import aiohttp
 
 from . import utils
-from .activity import BaseActivity
+from .activity import BaseActivity, Spotify
 from .enums import SpeakingState
 from .errors import ConnectionClosed
 
@@ -54,6 +54,7 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from .activity import ActivityTypes
     from .client import Client
     from .enums import Status
     from .state import ConnectionState
@@ -427,18 +428,36 @@ class DiscordWebSocket:
 
     async def identify(self) -> None:
         """Sends the IDENTIFY packet."""
+
+        # User presence is weird...
+        # This payload is only sometimes respected; usually the gateway tells
+        # us our presence through the READY packet's sessions key
+        # However, when reidentifying, we should send our last known presence
+        # initial_status and initial_activities could probably also be sent here
+        # but that needs more testing...
+        presence = {
+            'status': 'unknown',
+            'since': 0,
+            'activities': [],
+            'afk': False,
+        }
+        existing = self._connection.current_session
+        if existing is not None:
+            presence['status'] = str(existing.status) if existing.status is not Status.offline else 'invisible'
+            if existing.status == Status.idle:
+                presence['since'] = int(time.time() * 1000)
+            presence['activities'] = [a.to_dict() for a in existing.activities]
+        # else:
+        #     presence['status'] = self._connection._status or 'unknown'
+        #     presence['activities'] = self._connection._activities
+
         payload = {
             'op': self.IDENTIFY,
             'd': {
                 'token': self.token,
                 'capabilities': 509,
                 'properties': self._super_properties,
-                'presence': {
-                    'status': 'online',
-                    'since': 0,
-                    'activities': [],
-                    'afk': False,
-                },
+                'presence': presence,
                 'compress': False,
                 'client_state': {
                     'guild_hashes': {},
@@ -450,6 +469,7 @@ class DiscordWebSocket:
         }
 
         if not self._zlib_enabled:
+            # We require at least one form of compression
             payload['d']['compress'] = True
 
         await self.call_hooks('before_identify', initial=self._initial_identify)
@@ -658,13 +678,13 @@ class DiscordWebSocket:
     async def change_presence(
         self,
         *,
-        activities: Optional[List[BaseActivity]] = None,
+        activities: Optional[List[ActivityTypes]] = None,
         status: Optional[Status] = None,
-        since: float = 0.0,
+        since: int = 0,
         afk: bool = False,
     ) -> None:
         if activities is not None:
-            if not all(isinstance(activity, BaseActivity) for activity in activities):
+            if not all(isinstance(activity, (BaseActivity, Spotify)) for activity in activities):
                 raise TypeError('activity must derive from BaseActivity')
             activities_data = [activity.to_dict() for activity in activities]
         else:

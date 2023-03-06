@@ -88,7 +88,7 @@ __all__ = (
     'EmbeddedActivityPlatform',
     'EmbeddedActivityOrientation',
     'ConnectionType',
-    'ConnectionLinkType',
+    'ClientType',
     'PaymentSourceType',
     'PaymentGateway',
     'SubscriptionType',
@@ -397,6 +397,8 @@ class RelationshipType(Enum):
     blocked = 2
     incoming_request = 3
     outgoing_request = 4
+    implicit = 5
+    suggestion = 6
 
 
 class NotificationLevel(Enum, comparable=True):
@@ -1039,10 +1041,11 @@ class ConnectionType(Enum):
         return self.value
 
 
-class ConnectionLinkType(Enum):
+class ClientType(Enum):
     web = 'web'
     mobile = 'mobile'
     desktop = 'desktop'
+    unknown = 'unknown'
 
     def __str__(self) -> str:
         return self.value
@@ -1258,10 +1261,29 @@ class SKUGenre(Enum):
         return self.value
 
 
+# There are tons of different operating system/client enums in the API,
+# so we try to unify them here
+# They're normalized as the numbered enum, and converted from the stringified enums
 class OperatingSystem(Enum):
     windows = 1
-    mac = 2
+    macos = 2
     linux = 3
+
+    android = -1
+    ios = -1
+    unknown = -1
+
+    @classmethod
+    def from_string(cls, value: str) -> Self:
+        lookup = {
+            'windows': cls.windows,
+            'macos': cls.macos,
+            'linux': cls.linux,
+            'android': cls.android,
+            'ios': cls.ios,
+            'unknown': cls.unknown,
+        }
+        return lookup.get(value, create_unknown_value(cls, value))
 
 
 class ContentRatingAgency(Enum):

@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict
 from typing_extensions import NotRequired
-from .user import User
+from .user import PartialUser
 from .snowflake import Snowflake
 
 
@@ -34,7 +34,7 @@ StatusType = Literal['idle', 'dnd', 'online', 'offline']
 
 
 class PartialPresenceUpdate(TypedDict):
-    user: User
+    user: PartialUser
     guild_id: Optional[Snowflake]
     status: StatusType
     activities: List[Activity]

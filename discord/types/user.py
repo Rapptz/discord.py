@@ -110,3 +110,14 @@ class ConnectionAccessToken(TypedDict):
 
 class ConnectionAuthorization(TypedDict):
     url: str
+
+
+RelationshipType = Literal[-1, 0, 1, 2, 3, 4, 5, 6]
+
+
+class Relationship(TypedDict):
+    id: Snowflake
+    type: RelationshipType
+    user: PartialUser
+    nickname: Optional[str]
+    since: NotRequired[str]

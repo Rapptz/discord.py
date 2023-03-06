@@ -36,7 +36,6 @@ from . import utils
 from .asset import Asset
 from .utils import MISSING
 from .user import BaseUser, User, _UserTag
-from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
 from .enums import RelationshipAction, Status, try_enum
 from .errors import ClientException
@@ -51,12 +50,12 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
+    from .activity import ActivityTypes
     from .asset import Asset
     from .channel import DMChannel, VoiceChannel, StageChannel, GroupChannel
     from .flags import PublicUserFlags
     from .guild import Guild
     from .types.activity import (
-        ClientStatus as ClientStatusPayload,
         PartialPresenceUpdate,
     )
     from .types.member import (
@@ -67,7 +66,7 @@ if TYPE_CHECKING:
     from .types.gateway import GuildMemberUpdateEvent
     from .types.user import PartialUser as PartialUserPayload
     from .abc import Snowflake
-    from .state import ConnectionState
+    from .state import ConnectionState, Presence
     from .message import Message
     from .role import Role
     from .types.voice import (
@@ -171,48 +170,6 @@ class VoiceState:
         return f'<{self.__class__.__name__} {inner}>'
 
 
-class _ClientStatus:
-    __slots__ = ('_status', '_this', 'desktop', 'mobile', 'web')
-
-    def __init__(self):
-        self._status: str = 'offline'
-        self._this: str = 'offline'
-
-        self.desktop: Optional[str] = None
-        self.mobile: Optional[str] = None
-        self.web: Optional[str] = None
-
-    def __repr__(self) -> str:
-        attrs = [
-            ('_status', self._status),
-            ('desktop', self.desktop),
-            ('mobile', self.mobile),
-            ('web', self.web),
-        ]
-        inner = ' '.join('%s=%r' % t for t in attrs)
-        return f'<{self.__class__.__name__} {inner}>'
-
-    def _update(self, status: str, data: ClientStatusPayload, /) -> None:
-        self._status = status
-
-        self.desktop = data.get('desktop')
-        self.mobile = data.get('mobile')
-        self.web = data.get('web')
-
-    @classmethod
-    def _copy(cls, client_status: Self, /) -> Self:
-        self = cls.__new__(cls)  # bypass __init__
-
-        self._status = client_status._status
-        self._this = client_status._this
-
-        self.desktop = client_status.desktop
-        self.mobile = client_status.mobile
-        self.web = client_status.web
-
-        return self
-
-
 def flatten_user(cls: Any) -> Type[Member]:
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
         # Ignore private/special methods
@@ -308,12 +265,11 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         '_roles',
         'joined_at',
         'premium_since',
-        '_activities',
         'guild',
         'pending',
         'nick',
         'timed_out_until',
-        '_client_status',
+        '_presence',
         '_user',
         '_state',
         '_avatar',
@@ -344,8 +300,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         self.joined_at: Optional[datetime.datetime] = utils.parse_time(data.get('joined_at'))
         self.premium_since: Optional[datetime.datetime] = utils.parse_time(data.get('premium_since'))
         self._roles: utils.SnowflakeList = utils.SnowflakeList(map(int, data['roles']))
-        self._client_status: _ClientStatus = _ClientStatus()
-        self._activities: Tuple[ActivityTypes, ...] = tuple()
+        self._presence: Optional[Presence] = None
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
         self._avatar: Optional[str] = data.get('avatar')
@@ -401,8 +356,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
         self.premium_since = member.premium_since
-        self._activities = member._activities
-        self._client_status = _ClientStatus._copy(member._client_status)
+        self._presence = member._presence
         self.guild = member.guild
         self.nick = member.nick
         self.pending = member.pending
@@ -440,26 +394,11 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         if any(getattr(self, attr) != getattr(old, attr) for attr in attrs):
             return old
 
-    def _presence_update(self, data: PartialPresenceUpdate, user: PartialUserPayload) -> Optional[Tuple[User, User]]:
-        if self._self:
-            return
-
-        self._activities = tuple(create_activity(d, self._state) for d in data['activities'])
-        self._client_status._update(data['status'], data['client_status'])
-
-        if len(user) > 1:
-            return self._update_inner_user(user)
-
-    def _update_inner_user(self, user: PartialUserPayload) -> Optional[Tuple[User, User]]:
-        u = self._user
-        original = (u.name, u._avatar, u.discriminator, u._public_flags)
-        # These keys seem to always be available
-        modified = (user['username'], user['avatar'], user['discriminator'], user.get('public_flags', 0))
-        if original != modified:
-            to_return = User._copy(self._user)
-            u.name, u._avatar, u.discriminator, u._public_flags = modified
-            # Signal to dispatch user_update
-            return to_return, u
+    def _presence_update(
+        self, data: PartialPresenceUpdate, user: Union[PartialUserPayload, Tuple[()]]
+    ) -> Optional[Tuple[User, User]]:
+        self._presence = self._state.create_presence(data)
+        return self._user._update_self(user)
 
     def _get_voice_client_key(self) -> Tuple[int, str]:
         return self._state.self_id, 'self_id'  # type: ignore # self_id is always set at this point
@@ -472,10 +411,14 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         return ch
 
     @property
+    def presence(self) -> Presence:
+        state = self._state
+        return self._presence or state.get_presence(self._user.id, self.guild.id) or state.create_offline_presence()
+
+    @property
     def status(self) -> Status:
-        """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
-        client_status = self._client_status if not self._self else self._state.client._client_status
-        return try_enum(Status, client_status._status)
+        """:class:`Status`: The member's overall status."""
+        return try_enum(Status, self.presence.client_status.status)
 
     @property
     def raw_status(self) -> str:
@@ -483,37 +426,26 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
 
         .. versionadded:: 1.5
         """
-        client_status = self._client_status if not self._self else self._state.client._client_status
-        return client_status._status
-
-    @status.setter
-    def status(self, value: Status) -> None:
-        # Internal use only
-        client_status = self._client_status if not self._self else self._state.client._client_status
-        client_status._status = str(value)
+        return self.presence.client_status.status
 
     @property
     def mobile_status(self) -> Status:
         """:class:`Status`: The member's status on a mobile device, if applicable."""
-        client_status = self._client_status if not self._self else self._state.client._client_status
-        return try_enum(Status, client_status.mobile or 'offline')
+        return try_enum(Status, self.presence.client_status.mobile or 'offline')
 
     @property
     def desktop_status(self) -> Status:
         """:class:`Status`: The member's status on the desktop client, if applicable."""
-        client_status = self._client_status if not self._self else self._state.client._client_status
-        return try_enum(Status, client_status.desktop or 'offline')
+        return try_enum(Status, self.presence.client_status.desktop or 'offline')
 
     @property
     def web_status(self) -> Status:
         """:class:`Status`: The member's status on the web client, if applicable."""
-        client_status = self._client_status if not self._self else self._state.client._client_status
-        return try_enum(Status, client_status.web or 'offline')
+        return try_enum(Status, self.presence.client_status.web or 'offline')
 
     def is_on_mobile(self) -> bool:
         """:class:`bool`: A helper function that determines if a member is active on a mobile device."""
-        client_status = self._client_status if not self._self else self._state.client._client_status
-        return client_status.mobile is not None
+        return self.presence.client_status.mobile is not None
 
     @property
     def colour(self) -> Colour:
@@ -608,11 +540,8 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             Due to a Discord API limitation, a user's Spotify activity may not appear
             if they are listening to a song with a title longer
             than 128 characters. See :issue:`1738` for more information.
-
         """
-        if self._self:
-            return self._state.client.activities
-        return self._activities
+        return self.presence.activities
 
     @property
     def activity(self) -> Optional[ActivityTypes]:
@@ -702,10 +631,6 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         """Optional[:class:`VoiceState`]: Returns the member's current voice state."""
         return self.guild._voice_state_for(self._user.id)
 
-    @property
-    def _self(self) -> bool:
-        return self._user.id == self._state.self_id
-
     async def ban(
         self,
         *,
@@ -773,7 +698,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
 
         .. note::
 
-            To upload an avatar, a :term:`py:bytes-like object` must be passed in that
+            To upload an avatar or banner, a :term:`py:bytes-like object` must be passed in that
             represents the image being uploaded. If this is done through a file
             then the file must be opened via ``open('some_filename', 'rb')`` and
             the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
@@ -841,7 +766,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         """
         http = self._state.http
         guild_id = self.guild.id
-        me = self._self
+        me = self._user.id == self._state.self_id
         payload: Dict[str, Any] = {}
         data = None
 
@@ -1122,7 +1047,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             return utils.utcnow() < self.timed_out_until
         return False
 
-    async def send_friend_request(self) -> None:  # TODO: check if the req returns a relationship obj
+    async def send_friend_request(self) -> None:
         """|coro|
 
         Sends the member a friend request.

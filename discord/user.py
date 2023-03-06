@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Any, Callable, Dict, Optional, Tuple, TYPE_CHECKING, Union
 
 import discord.abc
 from .asset import Asset
@@ -613,21 +613,6 @@ class ClientUser(BaseUser):
         self.desktop: bool = data.get('desktop', False)
         self.mobile: bool = data.get('mobile', False)
 
-    def get_relationship(self, user_id: int) -> Optional[Relationship]:
-        """Retrieves the :class:`Relationship` if applicable.
-
-        Parameters
-        -----------
-        user_id: :class:`int`
-            The user ID to check if we have a relationship with them.
-
-        Returns
-        --------
-        Optional[:class:`Relationship`]
-            The relationship if available or ``None``.
-        """
-        return self._state._relationships.get(user_id)
-
     @property
     def locale(self) -> Locale:
         """:class:`Locale`: The IETF language tag used to identify the language the user is using."""
@@ -637,33 +622,6 @@ class ClientUser(BaseUser):
     def premium(self) -> bool:
         """Indicates if the user is a premium user (i.e. has Discord Nitro)."""
         return self.premium_type is not None
-
-    @property
-    def relationships(self) -> List[Relationship]:
-        """List[:class:`Relationship`]: Returns all the relationships that the user has.
-
-        .. versionchanged:: 2.0
-            This now returns a :class:`Relationship`.
-        """
-        return list(self._state._relationships.values())
-
-    @property
-    def friends(self) -> List[Relationship]:
-        r"""List[:class:`Relationship`]: Returns all the users that the user is friends with.
-
-        .. versionchanged:: 2.0
-            This now returns a :class:`Relationship`.
-        """
-        return [r for r in self._state._relationships.values() if r.type is RelationshipType.friend]
-
-    @property
-    def blocked(self) -> List[Relationship]:
-        r"""List[:class:`Relationship`]: Returns all the users that the user has blocked.
-
-        .. versionchanged:: 2.0
-            This now returns a :class:`Relationship`.
-        """
-        return [r for r in self._state._relationships.values() if r.type is RelationshipType.blocked]
 
     @property
     def settings(self) -> Optional[UserSettings]:
@@ -988,6 +946,19 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
     def _get_voice_state_pair(self) -> Tuple[int, int]:
         return self._state.self_id, self.dm_channel.id  # type: ignore # self_id is always set at this point
 
+    def _update_self(self, user: Union[PartialUserPayload, Tuple[()]]) -> Optional[Tuple[User, User]]:
+        if len(user) == 0 or len(user) <= 1:  # Done because of typing
+            return
+
+        original = (self.name, self._avatar, self.discriminator, self._public_flags)
+        # These keys seem to always be available
+        modified = (user['username'], user.get('avatar'), user['discriminator'], user.get('public_flags', 0))
+        if original != modified:
+            to_return = User._copy(self)
+            self.name, self._avatar, self.discriminator, self._public_flags = modified
+            # Signal to dispatch user_update
+            return to_return, self
+
     async def _get_channel(self) -> DMChannel:
         ch = await self.create_dm()
         return ch
@@ -1009,7 +980,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
     @property
     def relationship(self) -> Optional[Relationship]:
         """Optional[:class:`Relationship`]: Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
-        return self._state.user.get_relationship(self.id)  # type: ignore # user is always present when logged in
+        return self._state._relationships.get(self.id)
 
     @copy_doc(discord.abc.Connectable.connect)
     async def connect(
@@ -1105,7 +1076,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         """
         await self._state.http.remove_relationship(self.id, action=RelationshipAction.unfriend)
 
-    async def send_friend_request(self) -> None:  # TODO: maybe return relationship
+    async def send_friend_request(self) -> None:
         """|coro|
 
         Sends the user a friend request.

@@ -56,13 +56,13 @@ from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
 from .channel import _private_channel_factory, _threaded_channel_factory, GroupChannel, PartialMessageable
-from .enums import ActivityType, ChannelType, ConnectionLinkType, ConnectionType, EntitlementType, Status, try_enum
+from .enums import ActivityType, ChannelType, ClientType, ConnectionType, EntitlementType, Status
 from .mentions import AllowedMentions
 from .errors import *
-from .enums import Status
+from .enums import RelationshipType, Status
 from .gateway import *
 from .gateway import ConnectionClosed
-from .activity import ActivityTypes, BaseActivity, create_activity
+from .activity import ActivityTypes, BaseActivity, Session, Spotify, create_activity
 from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
@@ -78,7 +78,6 @@ from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factor
 from .profile import UserProfile
 from .connections import Connection
 from .team import Team
-from .member import _ClientStatus
 from .handlers import CaptchaHandler
 from .billing import PaymentSource, PremiumUsage
 from .subscriptions import Subscription, SubscriptionItem, SubscriptionInvoice
@@ -88,12 +87,13 @@ from .entitlements import Entitlement, Gift
 from .store import SKU, StoreListing, SubscriptionPlan
 from .guild_premium import *
 from .library import LibraryApplication
+from .relationship import Relationship
 
 if TYPE_CHECKING:
     from typing_extensions import Self
     from types import TracebackType
     from .guild import GuildChannel
-    from .abc import PrivateChannel, GuildChannel, Snowflake, SnowflakeTime
+    from .abc import PrivateChannel, Snowflake, SnowflakeTime
     from .channel import DMChannel
     from .message import Message
     from .member import Member
@@ -251,13 +251,6 @@ class Client:
         self._closed: bool = False
         self._ready: asyncio.Event = MISSING
 
-        self._client_status: _ClientStatus = _ClientStatus()
-        self._client_activities: Dict[Optional[str], Tuple[ActivityTypes, ...]] = {
-            None: tuple(),
-            'this': tuple(),
-        }
-        self._session_count = 1
-
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
             _log.warning('PyNaCl is not installed, voice will NOT be supported.')
@@ -295,9 +288,10 @@ class Client:
         state = self._connection
         activities = self.initial_activities
         status = self.initial_status
-        if status is None:
-            status = getattr(state.settings, 'status', None) or Status.online
-        self.loop.create_task(self.change_presence(activities=activities, status=status))  # type: ignore
+        if status or activities:
+            if status is None:
+                status = getattr(state.settings, 'status', None) or Status.online
+            self.loop.create_task(self.change_presence(activities=activities, status=status))
 
     @property
     def latency(self) -> float:
@@ -344,6 +338,16 @@ class Client:
         return self._connection.stickers
 
     @property
+    def sessions(self) -> List[Session]:
+        """List[:class:`.Session`]: The gateway sessions that the current user is connected in with.
+
+        When connected, this includes a representation of the library's session and an "all" session representing the user's overall presence.
+
+        .. versionadded:: 2.0
+        """
+        return list(self._connection._sessions.values())
+
+    @property
     def cached_messages(self) -> Sequence[Message]:
         """Sequence[:class:`.Message`]: Read-only list of messages the connected client has cached.
 
@@ -369,6 +373,47 @@ class Client:
     def private_channels(self) -> List[PrivateChannel]:
         """List[:class:`.abc.PrivateChannel`]: The private channels that the connected client is participating on."""
         return self._connection.private_channels
+
+    @property
+    def relationships(self) -> List[Relationship]:
+        """List[:class:`.Relationship`]: Returns all the relationships that the connected client has.
+
+        .. versionadded:: 2.0
+        """
+        return list(self._connection._relationships.values())
+
+    @property
+    def friends(self) -> List[Relationship]:
+        r"""List[:class:`.Relationship`]: Returns all the users that the connected client is friends with.
+
+        .. versionadded:: 2.0
+        """
+        return [r for r in self._connection._relationships.values() if r.type is RelationshipType.friend]
+
+    @property
+    def blocked(self) -> List[Relationship]:
+        r"""List[:class:`.Relationship`]: Returns all the users that the connected client has blocked.
+
+        .. versionadded:: 2.0
+        """
+        return [r for r in self._connection._relationships.values() if r.type is RelationshipType.blocked]
+
+    def get_relationship(self, user_id: int, /) -> Optional[Relationship]:
+        """Retrieves the :class:`.Relationship`, if applicable.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        user_id: :class:`int`
+            The user ID to check if we have a relationship with them.
+
+        Returns
+        --------
+        Optional[:class:`.Relationship`]
+            The relationship, if available.
+        """
+        return self._connection._relationships.get(user_id)
 
     @property
     def voice_clients(self) -> List[VoiceProtocol]:
@@ -506,7 +551,7 @@ class Client:
         if (activity := new_settings.custom_activity) is not None:
             activities.append(activity)
 
-        await self.change_presence(status=status, activities=activities, edit_settings=False)  # type: ignore
+        await self.change_presence(status=status, activities=activities, edit_settings=False)
 
     # Hooks
 
@@ -547,9 +592,9 @@ class Client:
     async def setup_hook(self) -> None:
         """|coro|
 
-        A coroutine to be called to setup the bot, by default this is blank.
+        A coroutine to be called to setup the client, by default this is blank.
 
-        To perform asynchronous setup after the bot is logged in but before
+        To perform asynchronous setup after the user is logged in but before
         it has connected to the Websocket, overwrite this coroutine.
 
         This is only called once, in :meth:`login`, and will be called before
@@ -716,7 +761,7 @@ class Client:
     def clear(self) -> None:
         """Clears the internal state of the bot.
 
-        After this, the bot can be considered "re-opened", i.e. :meth:`is_closed`
+        After this, the client can be considered "re-opened", i.e. :meth:`is_closed`
         and :meth:`is_ready` both return ``False`` along with the bot's internal
         cache cleared.
         """
@@ -820,20 +865,19 @@ class Client:
     def initial_activities(self, values: Sequence[ActivityTypes]) -> None:
         if not values:
             self._connection._activities = []
-        elif all(isinstance(value, BaseActivity) for value in values):
+        elif all(isinstance(value, (BaseActivity, Spotify)) for value in values):
             self._connection._activities = [value.to_dict() for value in values]
         else:
             raise TypeError('activity must derive from BaseActivity')
 
     @property
-    def initial_status(self):
+    def initial_status(self) -> Optional[Status]:
         """Optional[:class:`.Status`]: The status set upon logging in.
 
         .. versionadded:: 2.0
         """
         if self._connection._status in {state.value for state in Status}:
             return Status(self._connection._status)
-        return
 
     @initial_status.setter
     def initial_status(self, value: Status):
@@ -850,10 +894,10 @@ class Client:
 
         .. versionadded:: 2.0
         """
-        status = try_enum(Status, self._client_status._status)
-        if status is Status.offline and not self.is_closed():
+        status = getattr(self._connection.all_session, 'status', None)
+        if status is None and not self.is_closed():
             status = getattr(self._connection.settings, 'status', status)
-        return status
+        return status or Status.offline
 
     @property
     def raw_status(self) -> str:
@@ -863,52 +907,23 @@ class Client:
         """
         return str(self.status)
 
-    @status.setter
-    def status(self, value: Status) -> None:
-        # Internal use only
-        self._client_status._status = str(value)
-
-    @property
-    def mobile_status(self) -> Status:
-        """:class:`.Status`: The user's status on a mobile device, if applicable.
-
-        .. versionadded:: 2.0
-        """
-        return try_enum(Status, self._client_status.mobile or 'offline')
-
-    @property
-    def desktop_status(self) -> Status:
-        """:class:`.Status`: The user's status on the desktop client, if applicable.
-
-        .. versionadded:: 2.0
-        """
-        return try_enum(Status, self._client_status.desktop or 'offline')
-
-    @property
-    def web_status(self) -> Status:
-        """:class:`.Status`: The user's status on the web client, if applicable.
-
-        .. versionadded:: 2.0
-        """
-        return try_enum(Status, self._client_status.web or 'offline')
-
     @property
     def client_status(self) -> Status:
         """:class:`.Status`: The library's status.
 
         .. versionadded:: 2.0
         """
-        status = try_enum(Status, self._client_status._this)
-        if status is Status.offline and not self.is_closed():
+        status = getattr(self._connection.current_session, 'status', None)
+        if status is None and not self.is_closed():
             status = getattr(self._connection.settings, 'status', status)
-        return status
+        return status or Status.offline
 
     def is_on_mobile(self) -> bool:
-        """:class:`bool`: A helper function that determines if a member is active on a mobile device.
+        """:class:`bool`: A helper function that determines if the user is active on a mobile device.
 
         .. versionadded:: 2.0
         """
-        return self._client_status.mobile is not None
+        return any(session.client == ClientType.mobile for session in self._connection._sessions.values())
 
     @property
     def activities(self) -> Tuple[ActivityTypes]:
@@ -924,11 +939,11 @@ class Client:
             than 128 characters. See :issue:`1738` for more information.
         """
         state = self._connection
-        activities = tuple(create_activity(d, state) for d in self._client_activities[None])  # type: ignore
+        activities = state.all_session.activities if state.all_session else None
         if activities is None and not self.is_closed():
-            activities = getattr(state.settings, 'custom_activity', [])
-            activities = [activities] if activities else activities
-        return activities
+            activity = getattr(state.settings, 'custom_activity', None)
+            activities = (activity,) if activity else activities
+        return activities or ()
 
     @property
     def activity(self) -> Optional[ActivityTypes]:
@@ -951,36 +966,6 @@ class Client:
             return activities[0]
 
     @property
-    def mobile_activities(self) -> Tuple[ActivityTypes]:
-        """Tuple[Union[:class:`.BaseActivity`, :class:`.Spotify`]]: Returns the activities
-        the client is currently doing on a mobile device, if applicable.
-
-        .. versionadded:: 2.0
-        """
-        state = self._connection
-        return tuple(create_activity(d, state) for d in self._client_activities.get('mobile', []))
-
-    @property
-    def desktop_activities(self) -> Tuple[ActivityTypes]:
-        """Tuple[Union[:class:`.BaseActivity`, :class:`.Spotify`]]: Returns the activities
-        the client is currently doing on the desktop client, if applicable.
-
-        .. versionadded:: 2.0
-        """
-        state = self._connection
-        return tuple(create_activity(d, state) for d in self._client_activities.get('desktop', []))
-
-    @property
-    def web_activities(self) -> Tuple[ActivityTypes]:
-        """Tuple[Union[:class:`.BaseActivity`, :class:`.Spotify`]]: Returns the activities
-        the client is currently doing on the web client, if applicable.
-
-        .. versionadded:: 2.0
-        """
-        state = self._connection
-        return tuple(create_activity(d, state) for d in self._client_activities.get('web', []))
-
-    @property
     def client_activities(self) -> Tuple[ActivityTypes]:
         """Tuple[Union[:class:`.BaseActivity`, :class:`.Spotify`]]: Returns the activities
         the client is currently doing through this library, if applicable.
@@ -988,11 +973,11 @@ class Client:
         .. versionadded:: 2.0
         """
         state = self._connection
-        activities = tuple(create_activity(d, state) for d in self._client_activities.get('this', []))
+        activities = state.current_session.activities if state.current_session else None
         if activities is None and not self.is_closed():
-            activities = getattr(state.settings, 'custom_activity', [])
-            activities = [activities] if activities else activities
-        return activities
+            activity = getattr(state.settings, 'custom_activity', None)
+            activities = (activity,) if activity else activities
+        return activities or ()
 
     @property
     def allowed_mentions(self) -> Optional[AllowedMentions]:
@@ -1013,7 +998,7 @@ class Client:
 
     @property
     def users(self) -> List[User]:
-        """List[:class:`~discord.User`]: Returns a list of all the users the bot can see."""
+        """List[:class:`~discord.User`]: Returns a list of all the users the current user can see."""
         return list(self._connection._users.values())
 
     def get_channel(self, id: int, /) -> Optional[Union[GuildChannel, Thread, PrivateChannel]]:
@@ -1357,8 +1342,8 @@ class Client:
     async def change_presence(
         self,
         *,
-        activity: Optional[BaseActivity] = None,
-        activities: Optional[List[BaseActivity]] = None,
+        activity: Optional[ActivityTypes] = None,
+        activities: Optional[List[ActivityTypes]] = None,
         status: Optional[Status] = None,
         afk: bool = False,
         edit_settings: bool = True,
@@ -1368,7 +1353,7 @@ class Client:
         Changes the client's presence.
 
         .. versionchanged:: 2.0
-            Edits are no longer in place most of the time.
+            Edits are no longer in place.
             Added option to update settings.
 
         .. versionchanged:: 2.0
@@ -1401,8 +1386,8 @@ class Client:
             Whether to update the settings with the new status and/or
             custom activity. This will broadcast the change and cause
             all connected (official) clients to change presence as well.
-            Required for setting/editing expires_at for custom activities.
-            It's not recommended to change this.
+            Required for setting/editing ``expires_at`` for custom activities.
+            It's not recommended to change this, as setting it to ``False`` causes undefined behavior.
 
         Raises
         ------
@@ -1437,14 +1422,6 @@ class Client:
                 payload['custom_activity'] = custom_activity
             if payload:
                 await self.user.edit_settings(**payload)  # type: ignore # user is always present when logged in
-
-        status_str = str(status)
-        activities_tuple = tuple(a.to_dict() for a in activities)
-        self._client_status._this = str(status)
-        self._client_activities['this'] = activities_tuple  # type: ignore
-        if self._session_count <= 1:
-            self._client_status._status = status_str
-            self._client_activities[None] = self._client_activities['this'] = activities_tuple  # type: ignore
 
     async def change_voice_state(
         self,
@@ -1887,7 +1864,7 @@ class Client:
         data = await state.http.create_friend_invite()
         return Invite.from_incomplete(state=state, data=data)
 
-    async def accept_invite(self, invite: Union[Invite, str], /) -> Invite:
+    async def accept_invite(self, url: Union[Invite, str], /) -> Invite:
         """|coro|
 
         Uses an invite.
@@ -1897,7 +1874,7 @@ class Client:
 
         Parameters
         ----------
-        invite: Union[:class:`.Invite`, :class:`str`]
+        url: Union[:class:`.Invite`, :class:`str`]
             The Discord invite ID, URL (must be a discord.gg URL), or :class:`.Invite`.
 
         Raises
@@ -1910,8 +1887,19 @@ class Client:
         :class:`.Invite`
             The accepted invite.
         """
-        if not isinstance(invite, Invite):
-            invite = await self.fetch_invite(invite, with_counts=False, with_expiration=False)
+        state = self._connection
+        resolved = utils.resolve_invite(url)
+
+        data = await state.http.get_invite(
+            resolved.code,
+            with_counts=True,
+            with_expiration=True,
+            input_value=resolved.code if isinstance(url, Invite) else url,
+        )
+        if isinstance(url, Invite):
+            invite = url
+        else:
+            invite = Invite.from_incomplete(state=state, data=data)
 
         state = self._connection
         type = invite.type
@@ -2266,7 +2254,7 @@ class Client:
         Raises
         -------
         HTTPException
-            Retreiving the notes failed.
+            Retrieving the notes failed.
 
         Returns
         --------
@@ -2296,7 +2284,7 @@ class Client:
         Raises
         -------
         HTTPException
-            Retreiving the note failed.
+            Retrieving the note failed.
 
         Returns
         --------
@@ -2317,7 +2305,7 @@ class Client:
         Raises
         -------
         HTTPException
-            Retreiving your connections failed.
+            Retrieving your connections failed.
 
         Returns
         -------
@@ -2331,7 +2319,7 @@ class Client:
     async def authorize_connection(
         self,
         type: ConnectionType,
-        two_way_link_type: Optional[ConnectionLinkType] = None,
+        two_way_link_type: Optional[ClientType] = None,
         two_way_user_code: Optional[str] = None,
         continuation: bool = False,
     ) -> str:
@@ -2345,7 +2333,7 @@ class Client:
         -----------
         type: :class:`.ConnectionType`
             The type of connection to authorize.
-        two_way_link_type: Optional[:class:`.ConnectionLinkType`]
+        two_way_link_type: Optional[:class:`.ClientType`]
             The type of two-way link to use, if any.
         two_way_user_code: Optional[:class:`str`]
             The device code to use for two-way linking, if any.
@@ -2426,10 +2414,14 @@ class Client:
 
         .. versionadded:: 2.0
 
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`private_channels` instead.
+
         Raises
         -------
         HTTPException
-            Retreiving your private channels failed.
+            Retrieving your private channels failed.
 
         Returns
         --------
@@ -2439,6 +2431,31 @@ class Client:
         state = self._connection
         channels = await state.http.get_private_channels()
         return [_private_channel_factory(data['type'])[0](me=self.user, data=data, state=state) for data in channels]  # type: ignore # user is always present when logged in
+
+    async def fetch_relationships(self) -> List[Relationship]:
+        """|coro|
+
+        Retrieves all your relationships.
+
+        .. versionadded:: 2.0
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`relationships` instead.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving your relationships failed.
+
+        Returns
+        --------
+        List[:class:`.Relationship`]
+            All your relationships.
+        """
+        state = self._connection
+        data = await state.http.get_relationships()
+        return [Relationship(state=state, data=d) for d in data]
 
     async def fetch_country_code(self) -> str:
         """|coro|

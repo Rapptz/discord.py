@@ -1842,12 +1842,14 @@ class HTTPClient:
         with_counts: bool = True,
         with_expiration: bool = True,
         guild_scheduled_event_id: Optional[Snowflake] = None,
+        input_value: Optional[str] = None,
     ) -> Response[invite.Invite]:
         params: Dict[str, Any] = {
-            'inputValue': invite_id,
             'with_counts': str(with_counts).lower(),
             'with_expiration': str(with_expiration).lower(),
         }
+        if input_value:
+            params['inputValue'] = input_value
         if guild_scheduled_event_id:
             params['guild_scheduled_event_id'] = guild_scheduled_event_id
 
@@ -2219,7 +2221,7 @@ class HTTPClient:
 
     # Relationships
 
-    def get_relationships(self):  # TODO: return type
+    def get_relationships(self) -> Response[List[user.Relationship]]:
         return self.request(Route('GET', '/users/@me/relationships'))
 
     def remove_relationship(self, user_id: Snowflake, *, action: RelationshipAction) -> Response[None]:
@@ -2232,16 +2234,10 @@ class HTTPClient:
                     ContextProperties._from_dm_channel,
                 )
             )()
-        elif action is RelationshipAction.unfriend:  # Friends, ContextMenu, User Profile, DM Channel
-            props = choice(
-                (
-                    ContextProperties._from_contextmenu,
-                    ContextProperties._from_user_profile,
-                    ContextProperties._from_friends_page,
-                    ContextProperties._from_dm_channel,
-                )
-            )()
-        elif action == RelationshipAction.unblock:  # Friends, ContextMenu, User Profile, DM Channel, NONE
+        elif action in (
+            RelationshipAction.unfriend,
+            RelationshipAction.unblock,
+        ):  # Friends, ContextMenu, User Profile, DM Channel
             props = choice(
                 (
                     ContextProperties._from_contextmenu,
@@ -2252,10 +2248,14 @@ class HTTPClient:
             )()
         elif action == RelationshipAction.remove_pending_request:  # Friends
             props = ContextProperties._from_friends_page()
+        else:
+            props = ContextProperties._empty()
 
-        return self.request(r, context_properties=props)  # type: ignore
+        return self.request(r, context_properties=props)
 
-    def add_relationship(self, user_id: Snowflake, type: int = MISSING, *, action: RelationshipAction):  # TODO: return type
+    def add_relationship(
+        self, user_id: Snowflake, type: Optional[int] = None, *, action: RelationshipAction
+    ) -> Response[None]:
         r = Route('PUT', '/users/@me/relationships/{user_id}', user_id=user_id)
         if action is RelationshipAction.accept_request:  # User Profile, Friends, DM Channel
             props = choice(
@@ -2282,11 +2282,10 @@ class HTTPClient:
                     ContextProperties._from_dm_channel,
                 )
             )()
-        kwargs = {'context_properties': props}  # type: ignore
-        if type:
-            kwargs['json'] = {'type': type}
+        else:
+            props = ContextProperties._empty()
 
-        return self.request(r, **kwargs)
+        return self.request(r, context_properties=props, json={'type': type} if type else None)
 
     def send_friend_request(self, username: str, discriminator: Snowflake) -> Response[None]:
         r = Route('POST', '/users/@me/relationships')
