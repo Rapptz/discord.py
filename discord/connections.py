@@ -319,6 +319,8 @@ class Connection(PartialConnection):
         """|coro|
 
         Retrieves a new access token for the connection.
+        Only applicable for connections of type:attr:`ConnectionType.twitch`,
+        :attr:`ConnectionType.youtube`, and :attr:`ConnectionType.spotify`.
 
         Raises
         ------
