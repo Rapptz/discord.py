@@ -840,7 +840,8 @@ class VoiceClient(VoiceProtocol):
         """
         ready, _, err = select.select([self.socket], [], [self.socket], 0.01)
         if err:
-            raise err[0]
+            _log.error(f"Socket error: {err[0]}")
+            return
         if not ready or not self._connected.is_set():
             return
 
