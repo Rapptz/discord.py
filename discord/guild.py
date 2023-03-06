@@ -73,6 +73,7 @@ from .enums import (
     MFALevel,
     Locale,
     AutoModRuleEventType,
+    ForumOrderType,
 )
 from .mixins import Hashable
 from .user import User
@@ -1199,6 +1200,7 @@ class Guild(Hashable):
         nsfw: bool = MISSING,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
         default_auto_archive_duration: int = MISSING,
+        default_thread_slowmode_delay: int = MISSING,
     ) -> TextChannel:
         """|coro|
 
@@ -1272,6 +1274,10 @@ class Guild(Hashable):
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
 
             .. versionadded:: 2.0
+        default_thread_slowmode_delay: :class:`int`
+            The default slowmode delay in seconds for threads created in the text channel.
+
+            .. versionadded:: 2.3
         reason: Optional[:class:`str`]
             The reason for creating this channel. Shows up on the audit log.
 
@@ -1304,7 +1310,10 @@ class Guild(Hashable):
             options['nsfw'] = nsfw
 
         if default_auto_archive_duration is not MISSING:
-            options["default_auto_archive_duration"] = default_auto_archive_duration
+            options['default_auto_archive_duration'] = default_auto_archive_duration
+
+        if default_thread_slowmode_delay is not MISSING:
+            options['default_thread_rate_limit_per_user'] = default_thread_slowmode_delay
 
         data = await self._create_channel(
             name,
@@ -1576,6 +1585,7 @@ class Guild(Hashable):
         reason: Optional[str] = None,
         default_auto_archive_duration: int = MISSING,
         default_thread_slowmode_delay: int = MISSING,
+        default_sort_order: Optional[ForumOrderType] = None,
         available_tags: Sequence[ForumTag] = MISSING,
     ) -> ForumChannel:
         """|coro|
@@ -1620,6 +1630,10 @@ class Guild(Hashable):
             The default slowmode delay in seconds for threads created in this forum.
 
             .. versionadded:: 2.1
+        default_sort_order: Optional[:class:`ForumOrderType`]
+            The default sort order for posts in this forum channel.
+
+            .. versionadded:: 2.3
         available_tags: Sequence[:class:`ForumTag`]
             The available tags for this forum channel.
 
@@ -1658,6 +1672,16 @@ class Guild(Hashable):
 
         if default_thread_slowmode_delay is not MISSING:
             options['default_thread_rate_limit_per_user'] = default_thread_slowmode_delay
+
+        if default_sort_order is None:
+            options['default_sort_order'] = None
+        else:
+            if not isinstance(default_sort_order, ForumOrderType):
+                raise TypeError(
+                    f'default_sort_order parameter must be a ForumOrderType not {default_sort_order.__class__.__name__}'
+                )
+
+            options['default_sort_order'] = default_sort_order.value
 
         if available_tags is not MISSING:
             options['available_tags'] = [t.to_dict() for t in available_tags]
@@ -2807,6 +2831,68 @@ class Guild(Hashable):
         data = await self._state.http.get_scheduled_event(self.id, scheduled_event_id, with_counts)
         return ScheduledEvent(state=self._state, data=data)
 
+    @overload
+    async def create_scheduled_event(
+        self,
+        *,
+        name: str,
+        start_time: datetime.datetime,
+        entity_type: Literal[EntityType.external] = ...,
+        privacy_level: PrivacyLevel = ...,
+        location: str = ...,
+        end_time: datetime.datetime = ...,
+        description: str = ...,
+        image: bytes = ...,
+        reason: Optional[str] = ...,
+    ) -> ScheduledEvent:
+        ...
+
+    @overload
+    async def create_scheduled_event(
+        self,
+        *,
+        name: str,
+        start_time: datetime.datetime,
+        entity_type: Literal[EntityType.stage_instance, EntityType.voice] = ...,
+        privacy_level: PrivacyLevel = ...,
+        channel: Snowflake = ...,
+        end_time: datetime.datetime = ...,
+        description: str = ...,
+        image: bytes = ...,
+        reason: Optional[str] = ...,
+    ) -> ScheduledEvent:
+        ...
+
+    @overload
+    async def create_scheduled_event(
+        self,
+        *,
+        name: str,
+        start_time: datetime.datetime,
+        privacy_level: PrivacyLevel = ...,
+        location: str = ...,
+        end_time: datetime.datetime = ...,
+        description: str = ...,
+        image: bytes = ...,
+        reason: Optional[str] = ...,
+    ) -> ScheduledEvent:
+        ...
+
+    @overload
+    async def create_scheduled_event(
+        self,
+        *,
+        name: str,
+        start_time: datetime.datetime,
+        privacy_level: PrivacyLevel = ...,
+        channel: Union[VoiceChannel, StageChannel] = ...,
+        end_time: datetime.datetime = ...,
+        description: str = ...,
+        image: bytes = ...,
+        reason: Optional[str] = ...,
+    ) -> ScheduledEvent:
+        ...
+
     async def create_scheduled_event(
         self,
         *,
@@ -2899,27 +2985,32 @@ class Guild(Hashable):
                 )
             payload['scheduled_start_time'] = start_time.isoformat()
 
+        entity_type = entity_type or getattr(channel, '_scheduled_event_entity_type', MISSING)
         if entity_type is MISSING:
-            if channel is MISSING:
+            if channel and isinstance(channel, Object):
+                if channel.type is VoiceChannel:
+                    entity_type = EntityType.voice
+                elif channel.type is StageChannel:
+                    entity_type = EntityType.stage_instance
+
+            elif location not in (MISSING, None):
                 entity_type = EntityType.external
-            else:
-                _entity_type = getattr(channel, '_scheduled_event_entity_type', MISSING)
-                if _entity_type is None:
-                    raise TypeError(
-                        'invalid GuildChannel type passed, must be VoiceChannel or StageChannel '
-                        f'not {channel.__class__.__name__}'
-                    )
-                if _entity_type is MISSING:
-                    raise TypeError('entity_type must be passed in when passing an ambiguous channel type')
+        else:
+            if not isinstance(entity_type, EntityType):
+                raise TypeError('entity_type must be of type EntityType')
 
-                entity_type = _entity_type
+            payload['entity_type'] = entity_type.value
 
-        if not isinstance(entity_type, EntityType):
-            raise TypeError('entity_type must be of type EntityType')
+        if entity_type is None:
+            raise TypeError(
+                'invalid GuildChannel type passed, must be VoiceChannel or StageChannel ' f'not {channel.__class__.__name__}'
+            )
 
-        payload['entity_type'] = entity_type.value
+        if privacy_level is not MISSING:
+            if not isinstance(privacy_level, PrivacyLevel):
+                raise TypeError('privacy_level must be of type PrivacyLevel.')
 
-        payload['privacy_level'] = PrivacyLevel.guild_only.value
+            payload['privacy_level'] = privacy_level.value
 
         if description is not MISSING:
             payload['description'] = description
@@ -2929,7 +3020,7 @@ class Guild(Hashable):
             payload['image'] = image_as_str
 
         if entity_type in (EntityType.stage_instance, EntityType.voice):
-            if channel is MISSING or channel is None:
+            if channel in (MISSING, None):
                 raise TypeError('channel must be set when entity_type is voice or stage_instance')
 
             payload['channel_id'] = channel.id
@@ -2945,12 +3036,15 @@ class Guild(Hashable):
 
             metadata['location'] = location
 
-            if end_time is not MISSING:
-                if end_time.tzinfo is None:
-                    raise ValueError(
-                        'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
-                    )
-                payload['scheduled_end_time'] = end_time.isoformat()
+            if end_time in (MISSING, None):
+                raise TypeError('end_time must be set when entity_type is external')
+
+        if end_time not in (MISSING, None):
+            if end_time.tzinfo is None:
+                raise ValueError(
+                    'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                )
+            payload['scheduled_end_time'] = end_time.isoformat()
 
         if metadata:
             payload['entity_metadata'] = metadata
@@ -3970,7 +4064,7 @@ class Guild(Hashable):
         event_type: AutoModRuleEventType,
         trigger: AutoModTrigger,
         actions: List[AutoModRuleAction],
-        enabled: bool = MISSING,
+        enabled: bool = False,
         exempt_roles: Sequence[Snowflake] = MISSING,
         exempt_channels: Sequence[Snowflake] = MISSING,
         reason: str = MISSING,
@@ -3995,7 +4089,7 @@ class Guild(Hashable):
             The actions that will be taken when the automod rule is triggered.
         enabled: :class:`bool`
             Whether the automod rule is enabled.
-            Discord will default to ``False``.
+            Defaults to ``False``.
         exempt_roles: Sequence[:class:`abc.Snowflake`]
             A list of roles that will be exempt from the automod rule.
         exempt_channels: Sequence[:class:`abc.Snowflake`]

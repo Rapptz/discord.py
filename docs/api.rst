@@ -3421,6 +3421,21 @@ of :class:`enum.Enum`.
         Displays posts as a collection of tiles.
 
 
+.. class:: ForumOrderType
+
+    Represents how a forum's posts are sorted in the client.
+
+    .. versionadded:: 2.3
+
+    .. attribute:: latest_activity
+
+        Sort forum posts by activity.
+
+    .. attribute:: creation_date
+
+        Sort forum posts by creation time (from most recent to oldest).
+
+
 .. class:: RTCPMessageType
 
 	Represents an RTCP type received from discord through a voice channel socket.
