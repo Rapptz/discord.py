@@ -4757,23 +4757,27 @@ of :class:`enum.Enum`.
 
         The user has an Xbox Live connection.
 
-.. class:: ConnectionLinkType
+.. class:: ClientType
 
-    Represents the type of two-way link a Discord connection has.
+    Represents a type of Discord client.
 
     .. versionadded:: 2.0
 
     .. attribute:: web
 
-        The connection is linked via web.
+        Represents the web client.
 
     .. attribute:: mobile
 
-        The connection is linked via mobile.
+        Represents a mobile client.
 
     .. attribute:: desktop
 
-        The connection is linked via desktop.
+        Represents a desktop client.
+
+    .. attribute:: unknown
+
+        Represents an unknown client.
 
 .. class:: GiftStyle
 
