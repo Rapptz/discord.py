@@ -1,3 +1,5 @@
+:orphan:
+
 .. currentmodule:: discord
 
 .. _guide_threads:
@@ -5,7 +7,7 @@
 Threads
 ========
 
-If you've been on a public Discord for a while, you've probably seen a `thread <https://discord.com/developers/docs/topics/threads>`__ or two in your time.
+If you've been on a public Discord for a while, you've probably seen a :ddocs:`topics/threads` or two in your time.
 
 They act as offshoots of regular text channels, allowing for a focused, but temporary, location to talk about a given topic.
 
