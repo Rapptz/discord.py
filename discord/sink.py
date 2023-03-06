@@ -9,6 +9,7 @@ from typing import IO, TYPE_CHECKING, Any, Callable, NamedTuple, Optional, Seque
 from .enums import RTCPMessageType
 from .errors import ClientException
 from .opus import Decoder as OpusDecoder
+from .player import CREATE_NO_WINDOW
 from .utils import strip_namedtuple_docs
 
 if TYPE_CHECKING:
@@ -769,7 +770,7 @@ class MP3AudioFileSink(AudioFileSink):
             path,
         ]
         try:
-            process = subprocess.Popen(args, creationflags=subprocess.CREATE_NO_WINDOW)
+            process = subprocess.Popen(args, creationflags=CREATE_NO_WINDOW)
         except FileNotFoundError:
             raise ClientException('ffmpeg was not found.') from None
         except subprocess.SubprocessError as exc:
