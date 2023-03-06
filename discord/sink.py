@@ -99,7 +99,7 @@ class RTCPSourceDescriptionItem(NamedTuple):
 
 
 class RTCPSourceDescriptionChunk(NamedTuple):
-    """A chunk of a :class:`RTCPSourceDescription` object.
+    """A chunk of a :class:`RTCPSourceDescriptionPacket` object.
 
     Contains items that describe a source.
 
@@ -205,8 +205,8 @@ class RTCPSenderReportPacket(RTCPPacket):
         transmitted in RTP data packets by the sender since starting transmission
         up until the time this SR packet was generated. The count is reset if
         the sender changes its SSRC identifier.
-    report_blocks: Sequence[:class:`RTCPReceiverReport`]
-        Sequence of :class:`RTCPReceiverReport` objects that tell statistics.
+    report_blocks: Sequence[:class:`RTCPReceiverReportPacket`]
+        Sequence of :class:`RTCPReceiverReportPacket` objects that tell statistics.
         Receivers do not carry over statistics when a source changes its SSRC
         identifier due to a collision.
     extension: :class:`bytes`
@@ -242,8 +242,8 @@ class RTCPReceiverReportPacket(RTCPPacket):
     ----------
     ssrc: :class:`int`
         The synchronization source identifier for the originator of this SR packet.
-    report_blocks: Sequence[:class:`RTCPReceiverReport`]
-        Sequence of :class:`RTCPReceiverReport` objects that tell statistics.
+    report_blocks: Sequence[:class:`RTCPReceiverReportPacket`]
+        Sequence of :class:`RTCPReceiverReportPacket` objects that tell statistics.
         Receivers do not carry over statistics when a source changes its SSRC
         identifier due to a collision.
     extension: :class:`bytes`
