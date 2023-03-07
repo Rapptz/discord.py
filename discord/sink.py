@@ -744,6 +744,7 @@ class AudioFile:
         "file",
         "ssrc",
         "done",
+        "path",
         "_last_timestamp",
         "_frame_buffer",
         "user",
@@ -755,6 +756,7 @@ class AudioFile:
         self.file: BinaryIO = open(path, "wb")
         self.ssrc: int = ssrc
         self.done: bool = False
+        self.path: str = self.file.name
 
         self._last_timestamp: Optional[int] = None
         # This gives leeway for frames sent out of order
@@ -828,13 +830,23 @@ class AudioFile:
         """
         raise NotImplementedError()
 
-    @property
-    def path(self) -> str:
-        return self.file.name
-
 
 class WaveAudioFile(AudioFile):
+    """Extends :class:`AudioFile` with a method for converting the raw audio file
+    to a wave file.
+
+    Attributes
+    ----------
+    CHUNK_WRITE_SIZE: :class:`int`
+        Indicates the number of chunks that will be read and written at a time when
+        creating the wave file.
+    file: Optional[:term:`py:file object`]
+        Same as in :class:`AudioFile`, but this attribute becomes None after convert is called.
+    """
+
     CHUNK_WRITE_SIZE = 64
+
+    file: Optional[BinaryIO]
 
     def convert(self, new_name: Optional[str] = None) -> None:
         """Write the raw audio data to a wave file.
@@ -851,16 +863,26 @@ class WaveAudioFile(AudioFile):
             wavf.setnchannels(OpusDecoder.CHANNELS)
             wavf.setsampwidth(OpusDecoder.SAMPLE_SIZE // OpusDecoder.CHANNELS)
             wavf.setframerate(OpusDecoder.SAMPLING_RATE)
-            while frames := self.file.read(OpusDecoder.FRAME_SIZE * self.CHUNK_WRITE_SIZE):
-                wavf.writeframes(frames)
+            with open(self.path, "rb") as file:
+                while frames := file.read(OpusDecoder.FRAME_SIZE * self.CHUNK_WRITE_SIZE):
+                    wavf.writeframes(frames)
 
         os.remove(self.path)
-        file = open(path, "rb")
-        file.close()
-        self.file = file
+        self.path = path
+        self.file = None
 
 
 class MP3AudioFile(AudioFile):
+    """Extends :class:`AudioFile` with a method for converting the raw audio file
+    to a mp3 file.
+    Attributes
+    ----------
+    file: Optional[:term:`py:file object`]
+        Same as in :class:`AudioFile`, but this attribute becomes None after convert is called.
+    """
+
+    file: Optional[BinaryIO]
+
     def convert(self, new_name: Optional[str] = None) -> None:
         """Write the raw audio data to an mp3 file.
 
@@ -894,9 +916,8 @@ class MP3AudioFile(AudioFile):
         process.wait()
 
         os.remove(self.path)
-        file = open(path, "rb")
-        file.close()
-        self.file = file
+        self.path = path
+        self.file = None
 
 
 class AudioReceiver(threading.Thread):
