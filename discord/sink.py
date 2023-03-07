@@ -727,7 +727,7 @@ class AudioFile:
 
     Attributes
     ----------
-    file: BinaryIO
+    file: :term:`py:file object`
         File object of the audio file this object refers to.
     ssrc: :class:`int`
         ssrc of the user associated with this audio file
