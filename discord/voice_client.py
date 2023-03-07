@@ -45,7 +45,7 @@ import select
 import socket
 import struct
 import threading
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, List, Optional, Tuple, Union
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
@@ -694,7 +694,8 @@ class VoiceClient(VoiceProtocol):
         sink: AudioSink,
         *,
         decode: bool = True,
-        after: Optional[Callable[[AudioSink, Optional[Exception]], Any]] = None,
+        after: Optional[Callable[..., Awaitable[Any]]] = None,
+        **kwargs,
     ) -> None:
         """Receives audio into an :class:`AudioSink`
 
@@ -711,11 +712,13 @@ class VoiceClient(VoiceProtocol):
             The audio sink we're passing audio to.
         decode: :class:`bool`
             Whether to decode data received from discord.
-        after: Callable[[Optional[:class:`Exception`]], Any]
-            The finalizer that is called after the receiver stops.
-            This function must have two parameters, ``sink`` and ``error``,
-            that denote, respectfully, the sink passed to this function and
-            an optional exception that was raised during playing.
+        after: Callable[..., Awaitable[Any]]
+            The finalizer that is called after the receiver stops. This function
+            must be a coroutine function. This function must have at least two
+            parameters, ``sink`` and ``error``, that denote, respectfully, the
+            sink passed to this function and an optional exception that was
+            raised during playing. The function can have additional arguments
+            that match the keyword arguments passed to this function.
 
         Raises
         -------
@@ -739,7 +742,7 @@ class VoiceClient(VoiceProtocol):
             # Check that opus is loaded and throw error else
             opus.Decoder.get_opus_version()
 
-        self._receiver = AudioReceiver(sink, self, after=after)
+        self._receiver = AudioReceiver(sink, self, after=after, after_kwargs=kwargs)
         self._receiver.start()
 
     def is_listening(self) -> bool:

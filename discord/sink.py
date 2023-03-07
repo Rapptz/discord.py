@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 import logging
 import os
@@ -5,7 +6,7 @@ import struct
 import subprocess
 import threading
 import wave
-from typing import TYPE_CHECKING, Any, BinaryIO, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from .enums import RTCPMessageType
 from .errors import ClientException
@@ -21,8 +22,9 @@ __all__ = (
     "AudioFrame",
     "AudioSink",
     "AudioFileSink",
-    "WaveAudioFileSink",
-    "MP3AudioFileSink",
+    "AudioFile",
+    "WaveAudioFile",
+    "MP3AudioFile",
     "RTCPPacket",
     "RTCPSenderReportPacket",
     "RTCPReceiverReportPacket",
@@ -75,6 +77,16 @@ class RTCPReceiverReportBlock:
         SR packet has been received yet from SSRC, the DLSR field is set to zero.
     """
 
+    __slots__ = (
+        "ssrc",
+        "f",
+        "c",
+        "ehsn",
+        "j",
+        "lsr",
+        "dlsr",
+    )
+
     ssrc: int
     f: int
     c: int
@@ -96,6 +108,11 @@ class RTCPSourceDescriptionItem:
         Description pertaining to the source of the chunk containing this item.
     """
 
+    __slots__ = (
+        "cname",
+        "description",
+    )
+
     cname: int
     description: bytes
 
@@ -113,6 +130,11 @@ class RTCPSourceDescriptionChunk:
     items: Sequence[:class:`RTCPSourceDescriptionItem`]
         A sequence of items which have a description.
     """
+
+    __slots__ = (
+        "ssrc",
+        "items",
+    )
 
     ssrc: int
     items: Sequence[RTCPSourceDescriptionItem]
@@ -216,7 +238,7 @@ class RTCPSenderReportPacket(RTCPPacket):
         Profile-specific extension that may or may not contain a value.
     """
 
-    __slots__ = RTCPPacket.__slots__ + (
+    __slots__ = (
         "ssrc",
         "nts",
         "rts",
@@ -261,7 +283,7 @@ class RTCPReceiverReportPacket(RTCPPacket):
         Profile-specific extension that may or may not contain a value.
     """
 
-    __slots__ = RTCPPacket.__slots__ + (
+    __slots__ = (
         "ssrc",
         "report_blocks",
         "extension",
@@ -292,7 +314,7 @@ class RTCPSourceDescriptionPacket(RTCPPacket):
         Sequence of chunks that contain items.
     """
 
-    __slots__ = RTCPPacket.__slots__ + ("chunks",)
+    __slots__ = ("chunks",)
 
     chunks: List
 
@@ -346,7 +368,7 @@ class RTCPGoodbyePacket(RTCPPacket):
         Reason for disconnect.
     """
 
-    __slots__ = RTCPPacket.__slots__ + (
+    __slots__ = (
         "ssrc_byes",
         "reason",
     )
@@ -389,7 +411,7 @@ class RTCPApplicationDefinedPacket(RTCPPacket):
         Application-dependent data may or may not appear in an APP packet.
     """
 
-    __slots__ = RTCPPacket.__slots__ + (
+    __slots__ = (
         "ssrc",
         "name",
         "app_data",
@@ -403,7 +425,7 @@ class RTCPApplicationDefinedPacket(RTCPPacket):
         super().__init__(version_flag, rtcp_type, length)
 
         self.ssrc, self.name = struct.unpack_from("!I4s", buffer=data)
-        self.name = self.name.decode("ascii")  # type: ignore
+        self.name = self.name.decode("ascii")
         self.app_data = data[8:]
 
 
@@ -603,53 +625,46 @@ class AudioFileSink(AudioSink):
 
     Parameters
     ----------
+    file_type: Callable[[str, int], :class:`AudioFile`]
+        A callable (such as a class or function) that returns an :class:`AudioFile` type.
+        Is used to create AudioFile objects.
     output_dir: :class:`str`
         The directory to save files to.
 
     Attributes
     ----------
+    file_type: Callable[[str, int], :class:`AudioFile`]
+        The file_type passed as an argument.
     output_dir: :class:`str`
         The directory where files are being saved.
-    output_files: Dict[int, Union[BinaryIO, :class:`str`]]
+    output_files: Dict[int, :class:`AudioFile`]
         Dictionary that maps an ssrc to file object or file path. It's a file object unless
         convert_files has been called.
     done: :class:`bool`
-        Whether the sink is finished being used. This attribute becomes true
-        after cleanup is called.
+        Indicates whether cleanup has been called.
     """
 
     __slots__ = (
+        "file_type",
         "output_dir",
         "output_files",
-        "done",
-        "_timestamps",
-        "_frame_buffer",
-        "_ssrc_to_user",
     )
 
-    FRAME_BUFFER_LIMIT = 10
-
-    def __init__(self, output_dir: str = "."):
+    def __init__(self, file_type: Callable[[str, int], 'AudioFile'], output_dir: str = "."):
         if not os.path.isdir(output_dir):
             raise ValueError("Invalid output directory")
+        self.file_type: Callable[[str, int], 'AudioFile'] = file_type
         self.output_dir: str = output_dir
-        self.output_files: Dict[int, Union[BinaryIO, str]] = {}
+        self.output_files: Dict[int, AudioFile] = {}
         self.done: bool = False
-
-        self._timestamps: Dict[int, int] = {}
-        # This gives leeway for frames sent out of order
-        self._frame_buffer: Dict[int, List[AudioFrame]] = {}
-        self._ssrc_to_user: Dict[int, Optional[Union[Member, int]]] = {}
 
     def __del__(self):
         if hasattr(self, "done") and not self.done:
             self.cleanup()
 
     def on_audio(self, frame: AudioFrame) -> None:
-        """Takes an audio frame and adds it to a buffer. Once the buffer
-        reaches a certain size, all audio frames in the buffer are
-        written to file. The buffer allows leeway for packets that
-        arrive out of order to be reorganized.
+        """Takes an audio frame and passes it to a :class:`AudioFile` object. If
+        the AudioFile object does not already exist then it is created.
 
         Parameters
         ----------
@@ -657,11 +672,10 @@ class AudioFileSink(AudioSink):
             The frame which will be added to the buffer.
         """
         if frame.ssrc not in self.output_files:
-            self.output_files[frame.ssrc] = open(os.path.join(self.output_dir, f"audio-{frame.ssrc}.pcm"), "wb")
-            self._frame_buffer[frame.ssrc] = []
-        self._frame_buffer[frame.ssrc].append(frame)
-        if len(self._frame_buffer[frame.ssrc]) >= self.FRAME_BUFFER_LIMIT:
-            self._write_buffer(frame.ssrc)
+            self.output_files[frame.ssrc] = self.file_type(
+                os.path.join(self.output_dir, f"audio-{frame.ssrc}.pcm"), frame.ssrc
+            )
+        self.output_files[frame.ssrc].on_audio(frame)
 
     def on_rtcp(self, packet: RTCPPacket) -> None:
         """This function receives RTCP Packets, but does nothing with them since
@@ -677,81 +691,115 @@ class AudioFileSink(AudioSink):
         """
         pass
 
-    def _write_buffer(self, ssrc: int, empty: bool = False) -> None:
-        self._frame_buffer[ssrc] = sorted(self._frame_buffer[ssrc], key=lambda frame: frame.sequence)
-        index = self.FRAME_BUFFER_LIMIT // 2 if not empty else self.FRAME_BUFFER_LIMIT
-        for frame in self._frame_buffer[ssrc][:index]:
-            self._write_frame(frame)
-        self._frame_buffer[ssrc] = self._frame_buffer[ssrc][index:]
-
-    def _write_frame(self, frame: AudioFrame) -> None:
-        if frame.ssrc in self._timestamps:
-            # write silence
-            silence = frame.timestamp - self._timestamps[frame.ssrc] - OpusDecoder.SAMPLES_PER_FRAME
-            if silence > 0:
-                self.output_files[frame.ssrc].write(b"\x00" * silence * OpusDecoder.SAMPLE_SIZE)  # type: ignore
-        self.output_files[frame.ssrc].write(frame.audio)  # type: ignore
-        self._timestamps[frame.ssrc] = frame.timestamp
-        self._cache_user(frame.ssrc, frame.user)
-
-    def _cache_user(self, ssrc: int, user: Optional[Union['Member', int]]):
-        if ssrc not in self._ssrc_to_user:
-            self._ssrc_to_user[ssrc] = user
-        elif user is not None and self._ssrc_to_user[ssrc] is None or isinstance(self._ssrc_to_user[ssrc], int):
-            self._ssrc_to_user[ssrc] = user
-
     def cleanup(self) -> None:
-        """Writes remaining frames in buffer and closes all files"""
+        """Calls cleanup on all :class:`AudioFile` objects."""
         if self.done:
             return
-        for ssrc in self._frame_buffer.keys():
-            self._write_buffer(ssrc, empty=True)
         for file in self.output_files.values():
-            file.close()  # type: ignore
+            file.cleanup()
         self.done = True
 
     def convert_files(self) -> None:
-        """Goes through all files, opens them and calls convert_file, then deletes them.
-
-        convert_file must be defined, else NotImplementedError will be raised
-        """
+        """Calls cleanup if it hasn't already been called and then calls cleanup on all :class:`AudioFile` objects."""
         if not self.done:
             self.cleanup()
-        for ssrc, file in self.output_files.items():
-            if ssrc not in self._ssrc_to_user:
-                continue
-            filepath = file.name  # type: ignore
-            new_name = self._create_name(ssrc, self._ssrc_to_user[ssrc])
-            with open(filepath, "rb") as f:
-                self.output_files[ssrc] = self.convert_file(f, new_name)
+        for file in self.output_files.values():
+            file.convert(self._create_name(file))
 
-            os.remove(filepath)
+    def _create_name(self, file: 'AudioFile'):
+        if file.user is None:
+            return f"audio-{file.ssrc}"
+        elif isinstance(file.user, int):
+            return f"audio-{file.user}-{file.ssrc}"
+        else:
+            return f"audio-{file.user.name}#{file.user.discriminator}-{file.ssrc}"
 
-    def convert_file(self, file: BinaryIO, new_name: Optional[str] = None) -> str:
-        """Takes a file object with raw audio data and creates
-        another file object with formatted audio data
 
-        Abstract method
+class AudioFile:
+    """Manages an audio file and its attributes.
+
+    Parameters
+    ----------
+    path: :class:`str`
+        Path to the audio file.
+    ssrc: :class:`int`
+        ssrc of the user this file belongs to
+
+    Attributes
+    ----------
+    file: BinaryIO
+        File object of the audio file this object refers to.
+    ssrc: :class:`int`
+        ssrc of the user associated with this audio file
+    done: :class:`bool`
+        Indicates whether cleanup has been called and file is closed. Does not
+        indicate that the convert has been called.
+    user: Optional[Union[:class:`Member`, :class:`int`]]
+        User of this audio file
+    path: :class:`str`
+        Path to the file object.
+    """
+
+    __slots__ = (
+        "file",
+        "ssrc",
+        "done",
+        "_last_timestamp",
+        "_frame_buffer",
+        "user",
+    )
+
+    FRAME_BUFFER_LIMIT = 10
+
+    def __init__(self, path: str, ssrc: int):
+        self.file: BinaryIO = open(path, "wb")
+        self.ssrc: int = ssrc
+        self.done: bool = False
+
+        self._last_timestamp: Optional[int] = None
+        # This gives leeway for frames sent out of order
+        self._frame_buffer: List[AudioFrame] = []
+        self.user: Optional[Union[Member, int]] = None
+
+    def on_audio(self, frame: AudioFrame) -> None:
+        """Takes an audio frame and adds it to a buffer. Once the buffer
+        reaches a certain size, all audio frames in the buffer are
+        written to file. The buffer allows leeway for packets that
+        arrive out of order to be reorganized.
 
         Parameters
         ----------
-        file: :term:`py:file object`
-        new_name: Optional[:class:`str`]
-
-        Returns
-        -------
-        :class:`str`
-            Path to the new audio file
+        frame: :class:`AudioFrame`
+            The frame which will be added to the buffer.
         """
-        raise NotImplementedError()
+        self._frame_buffer.append(frame)
+        if len(self._frame_buffer) >= self.FRAME_BUFFER_LIMIT:
+            self._write_buffer()
 
-    def _create_name(self, ssrc: int, user: Optional[Union['Member', int]]):
+    def _write_buffer(self, empty: bool = False) -> None:
+        self._frame_buffer = sorted(self._frame_buffer, key=lambda frame: frame.sequence)
+        index = self.FRAME_BUFFER_LIMIT // 2 if not empty else self.FRAME_BUFFER_LIMIT
+        for frame in self._frame_buffer[:index]:
+            self._write_frame(frame)
+        self._frame_buffer = self._frame_buffer[index:]
+
+    def _write_frame(self, frame: AudioFrame) -> None:
+        if self._last_timestamp is not None:
+            # write silence
+            silence = frame.timestamp - self._last_timestamp - OpusDecoder.SAMPLES_PER_FRAME
+            if silence > 0:
+                self.file.write(b"\x00" * silence * OpusDecoder.SAMPLE_SIZE)
+        self.file.write(frame.audio)
+        self._last_timestamp = frame.timestamp
+        self._cache_user(frame.user)
+
+    def _cache_user(self, user: Optional[Union['Member', int]]) -> None:
         if user is None:
-            return f"audio-{ssrc}"
-        elif isinstance(user, int):
-            return f"audio-{user}-{ssrc}"
-        else:
-            return f"audio-{user.name}#{user.discriminator}-{ssrc}"
+            return
+        if self.user is None:
+            self.user = user
+        elif self.user is None or isinstance(self.user, int):
+            self.user = user
 
     def _get_new_path(self, path: str, ext: str, new_name: Optional[str] = None) -> str:
         ext = "." + ext
@@ -759,58 +807,71 @@ class AudioFileSink(AudioSink):
         name = new_name + ext if new_name is not None else ".".join(name.split(".")[:-1]) + ext
         return os.path.join(directory, name)
 
+    def cleanup(self) -> None:
+        """Writes remaining frames in buffer to file and then closes it."""
+        if self.done:
+            return
+        if len(self._frame_buffer) > 0:
+            self._write_buffer(empty=True)
+        self.file.close()
+        self.done = True
 
-class WaveAudioFileSink(AudioFileSink):
-    """Extends :class:`AudioFileSink` and defines a convert_file method."""
+    def convert(self, new_name: Optional[str] = None) -> None:
+        """Converts the file to its formatted file type.
 
-    CHUNK_WRITE_SIZE = 64
-
-    def convert_file(self, file: BinaryIO, new_name: Optional[str] = None) -> str:
-        """Takes a file object that contains raw audio data and writes
-        it to a wave audio file.
+        This function is abstract.
 
         Parameters
         ----------
-        file: :term:`py:file object`
-            File object that contains raw audio data.
+        new_name: Optional[:class:`str`]
+            A new name for the file excluding the extension.
+        """
+        raise NotImplementedError()
+
+    @property
+    def path(self) -> str:
+        return self.file.name
+
+
+class WaveAudioFile(AudioFile):
+    CHUNK_WRITE_SIZE = 64
+
+    def convert(self, new_name: Optional[str] = None) -> None:
+        """Write the raw audio data to a wave file.
+
+        Extends :class:`AudioFile`
+
+        Parameters
+        ----------
         new_name: Optional[:class:`str`]
             Name for the wave file excluding ".wav". Defaults to current name if None.
-
-        Returns
-        -------
-        :class:`str`
-            Path to the new audio file
         """
-        path = self._get_new_path(file.name, "wav", new_name)
+        path = self._get_new_path(self.path, "wav", new_name)
         with wave.open(path, "wb") as wavf:
             wavf.setnchannels(OpusDecoder.CHANNELS)
             wavf.setsampwidth(OpusDecoder.SAMPLE_SIZE // OpusDecoder.CHANNELS)
             wavf.setframerate(OpusDecoder.SAMPLING_RATE)
-            while frames := file.read(OpusDecoder.FRAME_SIZE * self.CHUNK_WRITE_SIZE):
+            while frames := self.file.read(OpusDecoder.FRAME_SIZE * self.CHUNK_WRITE_SIZE):
                 wavf.writeframes(frames)
-        return path
+
+        os.remove(self.path)
+        file = open(path, "rb")
+        file.close()
+        self.file = file
 
 
-class MP3AudioFileSink(AudioFileSink):
-    """Extends :class:`AudioFileSink` and defines a convert_file method."""
+class MP3AudioFile(AudioFile):
+    def convert(self, new_name: Optional[str] = None) -> None:
+        """Write the raw audio data to an mp3 file.
 
-    def convert_file(self, file: BinaryIO, new_name: Optional[str] = None) -> str:
-        """Takes a file object that contains raw audio data and writes
-        it to a mp3 audio file.
+        Extends :class:`AudioFile`
 
         Parameters
         ----------
-        file: :term:`py:file object`
-            File object that contains raw audio data.
         new_name: Optional[:class:`str`]
             Name for the wave file excluding ".mp3". Defaults to current name if None.
-
-        Returns
-        -------
-        :class:`str`
-            Path to the new audio file
         """
-        path = self._get_new_path(file.name, "mp3", new_name)
+        path = self._get_new_path(self.path, "mp3", new_name)
         args = [
             'ffmpeg',
             '-f',
@@ -821,7 +882,7 @@ class MP3AudioFileSink(AudioFileSink):
             str(OpusDecoder.CHANNELS),
             '-y',
             '-i',
-            file.name,
+            self.path,
             path,
         ]
         try:
@@ -831,7 +892,11 @@ class MP3AudioFileSink(AudioFileSink):
         except subprocess.SubprocessError as exc:
             raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
         process.wait()
-        return path
+
+        os.remove(self.path)
+        file = open(path, "rb")
+        file.close()
+        self.file = file
 
 
 class AudioReceiver(threading.Thread):
@@ -841,14 +906,16 @@ class AudioReceiver(threading.Thread):
         client: 'VoiceClient',
         *,
         decode: bool = True,
-        after: Optional[Callable[[AudioSink, Optional[Exception]], Any]] = None,
+        after: Optional[Callable[..., Awaitable[Any]]] = None,
+        after_kwargs: Optional[dict] = None,
     ) -> None:
         super().__init__()
         self.daemon: bool = False
         self.sink: AudioSink = sink
         self.client: VoiceClient = client
         self.decode: bool = decode
-        self.after: Optional[Callable[[AudioSink, Optional[Exception]], Any]] = after
+        self.after: Optional[Callable[..., Awaitable[Any]]] = after
+        self.after_kwargs: Optional[dict] = after_kwargs
 
         self._end: threading.Event = threading.Event()
         self._resumed: threading.Event = threading.Event()
@@ -890,7 +957,8 @@ class AudioReceiver(threading.Thread):
 
         if self.after is not None:
             try:
-                self.after(self.sink, error)
+                kwargs = self.after_kwargs if self.after_kwargs is not None else {}
+                asyncio.run_coroutine_threadsafe(self.after(self.sink, error, **kwargs), self.client.client.loop)
             except Exception as exc:
                 exc.__context__ = error
                 _log.exception('Calling the after function failed.', exc_info=exc)
