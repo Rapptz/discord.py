@@ -1546,7 +1546,12 @@ class StageChannel(VocalGuildChannel):
         return utils.get(self.guild.stage_instances, channel_id=self.id)
 
     async def create_instance(
-        self, *, topic: str, privacy_level: PrivacyLevel = MISSING, reason: Optional[str] = None
+        self,
+        *,
+        topic: str,
+        privacy_level: PrivacyLevel = MISSING,
+        send_start_notification: bool = False,
+        reason: Optional[str] = None,
     ) -> StageInstance:
         """|coro|
 
@@ -1562,7 +1567,10 @@ class StageChannel(VocalGuildChannel):
             The stage instance's topic.
         privacy_level: :class:`PrivacyLevel`
             The stage instance's privacy level. Defaults to :attr:`PrivacyLevel.guild_only`.
-        reason: Optional[:class:`str`]
+        send_start_notification: :class:`bool`
+            Whether to send a start notification. This sends a push notification to @everyone if ``True``. Defaults to ``False``.
+            You must have :attr:`~Permissions.mention_everyone` to do this.
+        reason: :class:`str`
             The reason the stage instance was created. Shows up on the audit log.
 
         Raises
@@ -1587,6 +1595,8 @@ class StageChannel(VocalGuildChannel):
                 raise TypeError('privacy_level field must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value
+
+        payload['send_start_notification'] = send_start_notification
 
         data = await self._state.http.create_stage_instance(**payload, reason=reason)
         return StageInstance(guild=self.guild, state=self._state, data=data)
