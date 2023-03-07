@@ -165,6 +165,30 @@ PCMVolumeTransformer
 .. autoclass:: PCMVolumeTransformer
     :members:
 
+AudioFile
+~~~~~~~~~
+
+.. attributetable:: AudioFile
+
+.. autoclass:: AudioFile
+	:members:
+
+WaveAudioFile
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: WaveAudioFile
+
+.. autoclass:: WaveAudioFile
+	:members:
+
+MP3AudioFile
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: MP3AudioFile
+
+.. autoclass:: MP3AudioFile
+	:members:
+
 AudioSink
 ~~~~~~~~~
 
@@ -179,22 +203,6 @@ AudioFileSink
 .. attributetable:: AudioFileSink
 
 .. autoclass:: AudioFileSink
-	:members:
-
-WaveAudioFileSink
-~~~~~~~~~~~~~~~~~
-
-.. attributetable:: WaveAudioFileSink
-
-.. autoclass:: WaveAudioFileSink
-	:members:
-
-MP3AudioFileSink
-~~~~~~~~~~~~~~~~
-
-.. attributetable:: MP3AudioFileSink
-
-.. autoclass:: MP3AudioFileSink
 	:members:
 
 AudioFrame
