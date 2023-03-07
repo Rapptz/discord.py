@@ -613,6 +613,10 @@ class ClientUser(BaseUser):
         self.desktop: bool = data.get('desktop', False)
         self.mobile: bool = data.get('mobile', False)
 
+    def _update_self(self, *args: Any) -> None:
+        # ClientUser is kept up to date by USER_UPDATEs only
+        return
+
     @property
     def locale(self) -> Locale:
         """:class:`Locale`: The IETF language tag used to identify the language the user is using."""
