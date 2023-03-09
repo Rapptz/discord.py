@@ -119,11 +119,11 @@ class AutoModRuleAction:
 
     @classmethod
     def from_data(cls, data: AutoModerationActionPayload) -> Self:
-        type_ = try_enum(AutoModRuleActionType, data['type'])
-        if data['type'] == AutoModRuleActionType.timeout.value:
+        _type = try_enum(AutoModRuleActionType, data['type'])
+        if _type == AutoModRuleActionType.timeout:
             duration_seconds = data['metadata']['duration_seconds']
             return cls(duration=datetime.timedelta(seconds=duration_seconds))
-        elif data['type'] == AutoModRuleActionType.send_alert_message.value:
+        elif _type == AutoModRuleActionType.send_alert_message:
             channel_id = int(data['metadata']['channel_id'])
             return cls(channel_id=channel_id)
         return cls(custom_message=data.get('metadata', {}).get('custom_message'))
