@@ -1,6 +1,6 @@
 # This example uses slash commands. You can learn more about them by looking at examples/app_commands/basic.py
 
-from typing import Optional
+from typing import Optional, Literal
 
 import discord
 from discord import app_commands
@@ -59,12 +59,8 @@ async def change_deafen_state(vc: discord.VoiceClient, deafen: bool) -> None:
 
 async def send_audio_file(channel: discord.TextChannel, file: discord.AudioFile):
     # Get the user id of this audio file's user if possible
-    if file.user is None:
-        user = None
-    elif isinstance(file.user, int):
-        user = file.user
-    else:
-        user = file.user.id
+    # If it's not None, then it's either a `Member` or `Object` object, both of which have an `id` attribute.
+    user = file.user if file.user is None else file.user.id
 
     # Send the file and if the file is too big (ValueError is raised) then send a message
     # saying the audio file was too big to send.
@@ -75,7 +71,9 @@ async def send_audio_file(channel: discord.TextChannel, file: discord.AudioFile)
         )
     except ValueError:
         await channel.send(
-            f"Audio file for <@{user}> is too big to send" if user is not None else "Audio file for unknown user is too big"
+            f"Audio file for <@{user}> is too big to send"
+            if user is not None
+            else "Audio file for unknown user is too big to send"
         )
 
 
@@ -104,7 +102,7 @@ async def on_ready():
 @app_commands.describe(
     file_format=f"The file format to write the audio data to. Valid types: {', '.join(FILE_FORMATS.keys())}"
 )
-async def start(interaction: discord.Interaction, file_format: str = "mp3"):
+async def start(interaction: discord.Interaction, file_format: Literal["mp3", "wav"] = "mp3"):
     if not await is_in_guild(interaction):
         return
     # Check that a valid file format was provided.

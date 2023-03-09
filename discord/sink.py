@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List
 
 from .enums import RTCPMessageType
 from .errors import ClientException
+from .object import Object
 from .opus import Decoder as OpusDecoder
 from .player import CREATE_NO_WINDOW
 
@@ -569,12 +570,12 @@ class AudioFrame:
         "user",
     )
 
-    def __init__(self, frame: bytes, raw_audio: RawAudioData, user: Optional[Union['Member', int]]):
+    def __init__(self, frame: bytes, raw_audio: RawAudioData, user: Optional[Union['Member', 'Object']]):
         self.sequence: int = raw_audio.sequence
         self.timestamp: int = raw_audio.timestamp
         self.ssrc: int = raw_audio.ssrc
         self.audio: bytes = frame
-        self.user: Optional[Union[Member, int]] = user
+        self.user: Optional[Union[Member, Object]] = user
 
 
 class AudioSink:
@@ -671,6 +672,9 @@ class AudioFileSink(AudioSink):
         frame: :class:`AudioFrame`
             The frame which will be added to the buffer.
         """
+        if self.done:
+            return
+
         if frame.ssrc not in self.output_files:
             self.output_files[frame.ssrc] = self.file_type(
                 os.path.join(self.output_dir, f"audio-{frame.ssrc}.pcm"), frame.ssrc
@@ -709,8 +713,8 @@ class AudioFileSink(AudioSink):
     def _create_name(self, file: 'AudioFile'):
         if file.user is None:
             return f"audio-{file.ssrc}"
-        elif isinstance(file.user, int):
-            return f"audio-{file.user}-{file.ssrc}"
+        elif isinstance(file.user, Object):
+            return f"audio-{file.user.id}-{file.ssrc}"
         else:
             return f"audio-{file.user.name}#{file.user.discriminator}-{file.ssrc}"
 
@@ -734,7 +738,9 @@ class AudioFile:
     done: :class:`bool`
         Indicates whether cleanup has been called and file is closed. Does not
         indicate that the convert has been called.
-    user: Optional[Union[:class:`Member`, :class:`int`]]
+    converted: :class:`bool`
+        Indicates whether convert has been called already.
+    user: Optional[Union[:class:`Member`, :class:`Object`]]
         User of this audio file
     path: :class:`str`
         Path to the file object.
@@ -744,6 +750,7 @@ class AudioFile:
         "file",
         "ssrc",
         "done",
+        "converted",
         "path",
         "_last_timestamp",
         "_frame_buffer",
@@ -756,12 +763,13 @@ class AudioFile:
         self.file: BinaryIO = open(path, "wb")
         self.ssrc: int = ssrc
         self.done: bool = False
+        self.converted: bool = False
         self.path: str = self.file.name
 
         self._last_timestamp: Optional[int] = None
         # This gives leeway for frames sent out of order
         self._frame_buffer: List[AudioFrame] = []
-        self.user: Optional[Union[Member, int]] = None
+        self.user: Optional[Union[Member, Object]] = None
 
     def on_audio(self, frame: AudioFrame) -> None:
         """Takes an audio frame and adds it to a buffer. Once the buffer
@@ -795,12 +803,12 @@ class AudioFile:
         self._last_timestamp = frame.timestamp
         self._cache_user(frame.user)
 
-    def _cache_user(self, user: Optional[Union['Member', int]]) -> None:
+    def _cache_user(self, user: Optional[Union['Member', 'Object']]) -> None:
         if user is None:
             return
         if self.user is None:
             self.user = user
-        elif self.user is None or isinstance(self.user, int):
+        elif self.user is None or isinstance(self.user, Object):
             self.user = user
 
     def _get_new_path(self, path: str, ext: str, new_name: Optional[str] = None) -> str:
@@ -821,7 +829,10 @@ class AudioFile:
     def convert(self, new_name: Optional[str] = None) -> None:
         """Converts the file to its formatted file type.
 
-        This function is abstract.
+        This function is abstract. Any implementation of this function should
+        call AudioFile._convert_cleanup with the path of the formatted file
+        after it finishes. It will delete the raw audio file and update
+        some attributes.
 
         Parameters
         ----------
@@ -830,6 +841,12 @@ class AudioFile:
         """
         raise NotImplementedError()
 
+    def _convert_cleanup(self, new_path: str) -> None:
+        os.remove(self.path)
+        self.path = new_path
+        self.file = None
+        self.converted = True
+
 
 class WaveAudioFile(AudioFile):
     """Extends :class:`AudioFile` with a method for converting the raw audio file
@@ -837,9 +854,6 @@ class WaveAudioFile(AudioFile):
 
     Attributes
     ----------
-    CHUNK_WRITE_SIZE: :class:`int`
-        Indicates the number of chunks that will be read and written at a time when
-        creating the wave file.
     file: Optional[:term:`py:file object`]
         Same as in :class:`AudioFile`, but this attribute becomes None after convert is called.
     """
@@ -858,6 +872,9 @@ class WaveAudioFile(AudioFile):
         new_name: Optional[:class:`str`]
             Name for the wave file excluding ".wav". Defaults to current name if None.
         """
+        if self.converted:
+            return
+
         path = self._get_new_path(self.path, "wav", new_name)
         with wave.open(path, "wb") as wavf:
             wavf.setnchannels(OpusDecoder.CHANNELS)
@@ -867,14 +884,13 @@ class WaveAudioFile(AudioFile):
                 while frames := file.read(OpusDecoder.FRAME_SIZE * self.CHUNK_WRITE_SIZE):
                     wavf.writeframes(frames)
 
-        os.remove(self.path)
-        self.path = path
-        self.file = None
+        self._convert_cleanup(path)
 
 
 class MP3AudioFile(AudioFile):
     """Extends :class:`AudioFile` with a method for converting the raw audio file
     to a mp3 file.
+
     Attributes
     ----------
     file: Optional[:term:`py:file object`]
@@ -893,6 +909,9 @@ class MP3AudioFile(AudioFile):
         new_name: Optional[:class:`str`]
             Name for the wave file excluding ".mp3". Defaults to current name if None.
         """
+        if self.converted:
+            return
+
         path = self._get_new_path(self.path, "mp3", new_name)
         args = [
             'ffmpeg',
@@ -915,9 +934,7 @@ class MP3AudioFile(AudioFile):
             raise ClientException('Popen failed: {0.__class__.__name__}: {0}'.format(exc)) from exc
         process.wait()
 
-        os.remove(self.path)
-        self.path = path
-        self.file = None
+        self._convert_cleanup(path)
 
 
 class AudioReceiver(threading.Thread):
@@ -979,7 +996,9 @@ class AudioReceiver(threading.Thread):
         if self.after is not None:
             try:
                 kwargs = self.after_kwargs if self.after_kwargs is not None else {}
-                asyncio.run_coroutine_threadsafe(self.after(self.sink, error, **kwargs), self.client.client.loop)
+                future = asyncio.run_coroutine_threadsafe(self.after(self.sink, error, **kwargs), self.client.client.loop)
+                # There's nothing else to do after firing the callback, so we can just wait for the result
+                future.result()
             except Exception as exc:
                 exc.__context__ = error
                 _log.exception('Calling the after function failed.', exc_info=exc)

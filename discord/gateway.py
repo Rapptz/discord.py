@@ -43,6 +43,7 @@ from . import utils
 from .activity import BaseActivity
 from .enums import SpeakingState
 from .errors import ConnectionClosed
+from .object import Object
 
 _log = logging.getLogger(__name__)
 
@@ -826,7 +827,7 @@ class DiscordVoiceWebSocket:
         self.loop: asyncio.AbstractEventLoop = loop
         self._keep_alive: Optional[VoiceKeepAliveHandler] = None
         self._close_code: Optional[int] = None
-        self._speaking_map: Dict[int, Dict[str, Union[Member, int]]] = {}
+        self._speaking_map: Dict[int, Dict[str, Union[Member, Object]]] = {}
         self.secret_key: Optional[str] = None
         if hook:
             self._hook = hook
@@ -948,7 +949,10 @@ class DiscordVoiceWebSocket:
             else:
                 user_id = int(data["user_id"])
                 user = self._connection.guild.get_member(user_id)
-                self._speaking_map[ssrc] = {"user": user if user is not None else user_id, "speaking": data["speaking"]}
+                self._speaking_map[ssrc] = {
+                    "user": user if user is not None else Object(id=user_id, type=Member),
+                    "speaking": data["speaking"],
+                }
 
         await self._hook(self, msg)
 
@@ -1022,10 +1026,10 @@ class DiscordVoiceWebSocket:
         self._close_code = code
         await self.ws.close(code=code)
 
-    def get_member_from_ssrc(self, ssrc: int) -> Optional[Union['Member', int]]:
+    def get_member_from_ssrc(self, ssrc: int) -> Optional[Union['Member', Object]]:
         if ssrc in self._speaking_map:
             user = self._speaking_map[ssrc]["user"]
-            if isinstance(user, int) and (member := self._connection.guild.get_member(user)) is not None:
+            if isinstance(user, Object) and (member := self._connection.guild.get_member(user.id)) is not None:
                 self._speaking_map[ssrc]["user"] = member
                 return member
             return user
