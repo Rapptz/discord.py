@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 import datetime
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, List, Sequence, Set, Union, Sequence
+from typing import TYPE_CHECKING, Any, Dict, Optional, List, Set, Union, Sequence, overload
 
 from .enums import AutoModRuleTriggerType, AutoModRuleActionType, AutoModRuleEventType, try_enum
 from .flags import AutoModPresets
@@ -80,6 +80,18 @@ class AutoModRuleAction:
     """
 
     __slots__ = ('type', 'channel_id', 'duration', 'custom_message')
+
+    @overload
+    def __init__(self, channel_id: int = None) -> None:
+        ...
+
+    @overload
+    def __init__(self, duration: datetime.timedelta = None) -> None:
+        ...
+
+    @overload
+    def __init__(self, custom_message: str = None) -> None:
+        ...
 
     def __init__(
         self,
