@@ -85,15 +85,15 @@ class AutoModRuleAction:
     __slots__ = ('type', 'channel_id', 'duration', 'custom_message')
 
     @overload
-    def __init__(self, channel_id: int = None) -> None:
+    def __init__(self, *, channel_id: Optional[int] = ...) -> None:
         ...
 
     @overload
-    def __init__(self, duration: datetime.timedelta = None) -> None:
+    def __init__(self, *, duration: Optional[datetime.timedelta] = ...) -> None:
         ...
 
     @overload
-    def __init__(self, custom_message: str = None) -> None:
+    def __init__(self, *, custom_message: Optional[str] = ...) -> None:
         ...
 
     def __init__(
@@ -121,11 +121,10 @@ class AutoModRuleAction:
 
     @classmethod
     def from_data(cls, data: AutoModerationActionPayload) -> Self:
-        _type = try_enum(AutoModRuleActionType, data['type'])
-        if _type == AutoModRuleActionType.timeout:
+        if data['type'] == AutoModRuleActionType.timeout.value:
             duration_seconds = data['metadata']['duration_seconds']
             return cls(duration=datetime.timedelta(seconds=duration_seconds))
-        elif _type == AutoModRuleActionType.send_alert_message:
+        elif data['type'] == AutoModRuleActionType.send_alert_message.value:
             channel_id = int(data['metadata']['channel_id'])
             return cls(channel_id=channel_id)
         return cls(custom_message=data.get('metadata', {}).get('custom_message'))
