@@ -118,6 +118,9 @@ async def start(interaction: discord.Interaction, file_format: Literal["mp3", "w
     # Make sure we're not already recording.
     if is_recording(vc):
         return await interaction.response.send_message("Already recording.")
+    # Good practice to check this before calling listen, especially if it were being called within a loop.
+    if vc.is_listen_cleaning():
+        return await interaction.response.send_message("Currently busy cleaning... try again in a second.")
     # Start listening for audio and pass it to one of the AudioFileSink objects which will
     # record the audio to file for us. We're also passing the on_listen_finish function
     # which will be called when listening has finished.

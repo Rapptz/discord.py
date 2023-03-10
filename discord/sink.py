@@ -844,7 +844,8 @@ class AudioFile:
     def _convert_cleanup(self, new_path: str) -> None:
         os.remove(self.path)
         self.path = new_path
-        self.file = None
+        # this can be ignored because this function is meant to be used by subclasses.
+        self.file = None  # type: ignore
         self.converted = True
 
 
@@ -961,6 +962,7 @@ class AudioReceiver(threading.Thread):
         self._current_error: Optional[Exception] = None
         self._connected: threading.Event = client._connected
         self._lock: threading.Lock = threading.Lock()
+        self._cleaning: threading.Event = threading.Event()
 
     def _do_run(self) -> None:
         while not self._end.is_set():
@@ -987,8 +989,11 @@ class AudioReceiver(threading.Thread):
             self._current_error = exc
             self.stop()
         finally:
+            # _cleaning should be already set, but just to make sure
+            self._cleaning.set()
             self.sink.cleanup()
             self._call_after()
+            self._cleaning.clear()
 
     def _call_after(self) -> None:
         error = self._current_error
@@ -1006,6 +1011,8 @@ class AudioReceiver(threading.Thread):
             _log.exception('Exception in voice thread %s', self.name, exc_info=error)
 
     def stop(self) -> None:
+        # Set cleaning before setting end to avoid issues
+        self._cleaning.set()
         self._end.set()
         self._resumed.set()
 
@@ -1020,3 +1027,6 @@ class AudioReceiver(threading.Thread):
 
     def is_paused(self) -> bool:
         return not self._end.is_set() and not self._resumed.is_set()
+
+    def is_cleaning(self) -> bool:
+        return self._cleaning.is_set()

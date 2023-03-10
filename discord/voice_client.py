@@ -706,6 +706,9 @@ class VoiceClient(VoiceProtocol):
         caught and the audio receiver is then stopped.  If no after callback is
         passed, any caught exception will be logged using the library logger.
 
+        If this function is called multiple times, it is recommended to use
+        is_listen_cleaning before making the next call to avoid errors.
+
         Parameters
         -----------
         sink: :class:`AudioSink`
@@ -735,6 +738,11 @@ class VoiceClient(VoiceProtocol):
         if self.is_listening():
             raise ClientException('Already listening.')
 
+        if self.is_listen_cleaning():
+            _log.warning(
+                "Cleanup is still in process for the last call to listen and so errors may occur. It is recommended to use is_listen_cleaning to check before calling listen unless you know what you're doing."
+            )
+
         if not isinstance(sink, AudioSink):
             raise TypeError(f"sink must be an AudioSink not {sink.__class__.__name__}")
 
@@ -753,11 +761,14 @@ class VoiceClient(VoiceProtocol):
         """Indicate if we're currently listening, but paused."""
         return self._receiver is not None and self._receiver.is_paused()
 
+    def is_listen_cleaning(self) -> bool:
+        """Check if the receiver is cleaning up."""
+        return self._receiver is not None and self._receiver.is_cleaning()
+
     def stop_listening(self) -> None:
         """Stops listening"""
         if self._receiver:
             self._receiver.stop()
-            self._receiver = None
 
     def pause_listening(self) -> None:
         """Pauses listening"""
