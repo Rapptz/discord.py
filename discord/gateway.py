@@ -943,6 +943,9 @@ class DiscordVoiceWebSocket:
             self._keep_alive = VoiceKeepAliveHandler(ws=self, interval=min(interval, 5.0))
             self._keep_alive.start()
         elif op == self.SPEAKING:
+            # Imported here to avoid circular import
+            from .member import Member
+
             ssrc = data["ssrc"]
             if ssrc in self._speaking_map:
                 self._speaking_map[ssrc]["speaking"] = data["speaking"]
