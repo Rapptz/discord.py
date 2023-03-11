@@ -482,6 +482,9 @@ class FakeClientPresence(Presence):
     def __init__(self, state: ConnectionState, /) -> None:
         self._state = state
 
+    def _update(self, data: gw.PresenceUpdateEvent, state: ConnectionState, /) -> None:
+        return
+
     @property
     def client_status(self) -> ClientStatus:
         state = self._state
