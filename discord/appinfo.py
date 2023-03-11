@@ -161,8 +161,7 @@ class AppInfo:
         self.description: str = data['description']
         self._icon: Optional[str] = data['icon']
 
-        rpc_origins = data['rpc_origins']
-        self.rpc_origins: Optional[List[str]] = rpc_origins if rpc_origins else None
+        self.rpc_origins: Optional[List[str]] = data.get('rpc_origins')
 
         self.bot_public: bool = data['bot_public']
         self.bot_require_code_grant: bool = data['bot_require_code_grant']
