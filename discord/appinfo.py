@@ -160,7 +160,10 @@ class AppInfo:
         self.name: str = data['name']
         self.description: str = data['description']
         self._icon: Optional[str] = data['icon']
-        self.rpc_origins: List[str] = data['rpc_origins']
+
+        rpc_origins = data['rpc_origins']
+        self.rpc_origins: Optional[List[str]] = rpc_origins if rpc_origins else None
+
         self.bot_public: bool = data['bot_public']
         self.bot_require_code_grant: bool = data['bot_require_code_grant']
         self.owner: User = state.create_user(data['owner'])
