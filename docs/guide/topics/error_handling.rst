@@ -1,3 +1,5 @@
+:orphan:
+
 .. currentmodule:: discord
 
 
@@ -7,7 +9,7 @@ Errors and Error Handling
 Handling Errors
 ---------------
 
-When an error ocurrs in am ext.commands command, a client event, or a bot listener, it will by default show an error in the console 
+When an error occurs in am ext.commands command, a client event, or a bot listener, it will by default show an error in the console 
 to denote that the error ocurred. If you wish to handle errors a different way, an error handler is needed.
 
 In :ref:`Commands <discord_ext_commands>`
@@ -25,7 +27,7 @@ it will automatically get wrapped in a :exc:`~.ext.commands.CommandInvokeError`,
 
     @bot.event
     async def on_command_error(ctx: commands.Context, error: commands.CommandError):
-        """ a CommandInvokeError example """
+        """A CommandInvokeError example."""
 
         # if the error is a CommandInvokeError, we re-assign 
         # the "error" to the original error. 
@@ -50,8 +52,8 @@ the :ref:`discord-api-events`.
     :emphasize-lines: 1, 2
 
     @bot.listen()
-    async def on_command_error(ctx: commands.Context, error: commands.CommmandError) -> None:
-        """ This is an example global error handler. """
+    async def on_command_error(ctx: commands.Context, error: commands.CommandError) -> None:
+        """This is an example global error handler."""
 
         # First we unwrap any error that gets wrapped in a CommandInvokeError
         if isinstance(error, commands.CommandInvokeError):
@@ -85,7 +87,7 @@ In a :class:`~.ext.commands.Cog`
 
 +++++++++++++++++++++++++++++++++++
 
-To handle errors that occur in a specific :class:`~ext.commands.Cog` you override it's :meth:`~ext.commands.Cog.cog_command_error` method,
+To handle errors that occur in a specific :class:`~ext.commands.Cog` you override its :meth:`~ext.commands.Cog.cog_command_error` method,
 which gets called when an error occurs inside of Command defined within this Cog.
 
 **Example**
@@ -96,12 +98,12 @@ which gets called when an error occurs inside of Command defined within this Cog
     class ExampleCog(commands.Cog):
 
         async def cog_check(self, ctx: commands.Context):
-            """ Custom check for this cog only. """
+            """Custom check for this cog only."""
             if ctx.guild and ctx.guild.id != GUILD_ID:
                 raise commands.DisabledCommand
 
         async def cog_command_error(self, ctx: commands.Context, error: commands.CommandError):
-            """ This error handler is only for this specific Cog. """
+            """This error handler is only for this specific Cog."""
 
             if isinstance(error, commands.DisabledCommand):
                 await ctx.send(f"The command {ctx.command!r} cannot be used in this server!")
@@ -126,7 +128,7 @@ You can use the same function for multiple commands too, simply by adding multip
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
     async def kick(ctx: commands.Context, member: discord.Member):
-        """ Kicks a member from this server. """
+        """Kicks a member from this server."""
         await member.kick()
         await ctx.send(f"Kicked {member}! Bye bye.")
 
@@ -134,14 +136,14 @@ You can use the same function for multiple commands too, simply by adding multip
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def ban(ctx: commands.Context, member: discord.User):
-        """ Bans a member from this server. """
+        """Bans a member from this server."""
         await ctx.guild.ban(user)
         await ctx.send(f"Banned {member}! Begone.")
 
     @kick.error
     @ban.error
     async def kick_error(ctx: commands.Context, error: commands.CommandError):
-        """ This error handler is only for the `kick` and `ban` commands """
+        """This error handler is only for the `kick` and `ban` commands."""
 
         if isinstance(error, (commands.MissingPermissions, commands.BotMissingPermissions)):
             formatted_perms = ', '.join(error.missing_perms)
@@ -176,7 +178,7 @@ ways of checking if the error has already been handled before. There are many ap
 
     @ban.error
     async def ban_error(ctx: commands.Context, error: commands.CommandError):
-        """ Handles only the MissingRequiredArgument error. """
+        """Handles only the MissingRequiredArgument error."""
 
         if isinstance(error, commands.MissingRequiredArgument):
             # We set an attribute to the context that will then
@@ -192,7 +194,7 @@ ways of checking if the error has already been handled before. There are many ap
 
     @bot.listen('on_command_error')
     async def global_error_handler(ctx: commands.Context, error: commands.CommandError):
-        """ Global error handler that handles errors that aren't maked as ignored"""
+        """Global error handler that handles errors that aren't marked as ignored."""
 
         # Check if the `ctx.ignore_error` exists. 
         if hasattr(ctx, 'ignore_error'):
@@ -227,7 +229,7 @@ ways of checking if the error has already been handled before. There are many ap
                 # overwrite the get_context method of Bot, so it uses
                 # our custom Context class with our flag.
                 async def get_context(self, message: discord.Message, *, cls = None):
-                    #using our custom context if no class is given
+                    # using our custom context if no class is given
                     cls = cls or MyCustomContext
                     return await super().get_context(message, cls=cls)
             
@@ -268,7 +270,7 @@ ways of checking if the error has already been handled before. There are many ap
                     return
                 
                 # then our actual logic:
-                elif isinstance(erorr, commands.BadArgument):
+                elif isinstance(error, commands.BadArgument):
                     # errors inheriting BadArgument generally have a
                     # decent text when you str() them, so we send them
                     # as-is. But you can do something else here.
@@ -286,7 +288,7 @@ ways of checking if the error has already been handled before. There are many ap
 In :ref:`Events <discord-api-events>`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If an error ocurrs in an event, it does not go to any command error handler, as it is not a command. These errors are instead
+If an error occurs in an event, it does not go to any command error handler, as it is not a command. These errors are instead
 propagated to :meth:`~Client.on_error`, and can be retrieved with a standard call to :func:`sys.exc_info`. 
 
 .. note::
@@ -305,7 +307,7 @@ propagated to :meth:`~Client.on_error`, and can be retrieved with a standard cal
 
     @client.event
     async def on_error(event: str, *args, **kwargs):
-        """ Handles errors in events. """
+        """Handles errors in events."""
 
         # First we get the information of the error:
         err_type, err_value, err_traceback = sys.exc_info()
@@ -324,7 +326,7 @@ In :ref:`Interactions <interactions_api>`
 In :ref:`Views <discord_ui_kit>`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Handling errors in a :class:`~.ui.View` is as simple as overriding it's :meth:`~.ui.View.on_error`.
+Handling errors in a :class:`~.ui.View` is as simple as overriding its :meth:`~.ui.View.on_error`.
 
 **Example**
 
@@ -333,7 +335,7 @@ Handling errors in a :class:`~.ui.View` is as simple as overriding it's :meth:`~
     class ErrorHandledView(discord.ui.View):
 
         async def on_error(self, error: Exception, item: discord.ui.Item, interaction: discord.Interaction):
-            """ Handles errors for this view. """
+            """Handles errors for this view."""
             ...
 
 ..
@@ -361,9 +363,7 @@ to retrieve/unwrap this error we need to access the error's ``.original`` attrib
 
     @tree.error
     async def tree_error_handler(interaction: discord.Interaction, error: app_commands.CommandError):
-        """ Handles errors for all application commands
-            associated with this CommandTree.
-        """
+        """Handles errors for all application commands associated with this CommandTree."""
 
         # We unpack all CommandInvokeErrors first.
         if isinstance(error, app_commands.CommandInvokeError):
@@ -412,14 +412,14 @@ top of printing the error, or sending it to a channel or whatever you may want.
 
     @tasks.loop(hours=1)
     async def hourly_message():
-        """ Sends a message to a channel every hour """
+        """Sends a message to a channel every hour."""
 
         channel = bot.get_channel(GUILD_ID)
         await channel.send('Hello from the discord.py guide!')
 
     @hourly_message.error
     async def hourly_message_error(error: Exception):
-        """ Handles errors for my hourly task """
+        """Handles errors for my hourly task."""
 
         # We print the error, and then restart the task
         print(f"An error ocurred in hourly_task during run number {hourly_message.current_loop}")
