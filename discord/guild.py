@@ -1755,6 +1755,7 @@ class Guild(Hashable):
         premium_progress_bar_enabled: bool = MISSING,
         discoverable: bool = MISSING,
         invites_disabled: bool = MISSING,
+        mfa_level: MFALevel = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1786,6 +1787,9 @@ class Guild(Hashable):
 
         .. versionchanged:: 2.1
             The ``discoverable`` and ``invites_disabled`` keyword parameters were added.
+
+        .. versionchanged:: 2.3
+            The ``mfa_level`` keyword parameter was added.
 
         Parameters
         ----------
@@ -1852,6 +1856,9 @@ class Guild(Hashable):
             Whether joining via invites should be disabled for the guild.
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
+        mfa_level: :class:`MFALevel`
+            The new guild’s Multi-Factor Authentication requirement level.
+            Note that you must be owner of the guild to do this.
 
         Raises
         -------
@@ -1865,7 +1872,7 @@ class Guild(Hashable):
             guild and request an ownership transfer.
         TypeError
             The type passed to the ``default_notifications``, ``verification_level``,
-            ``explicit_content_filter``, or ``system_channel_flags`` parameter was
+            ``explicit_content_filter``, ``system_channel_flags``, or ``mfa_level`` parameter was
             of the incorrect type.
 
         Returns
@@ -2000,6 +2007,12 @@ class Guild(Hashable):
 
         if premium_progress_bar_enabled is not MISSING:
             fields['premium_progress_bar_enabled'] = premium_progress_bar_enabled
+
+        if mfa_level is not MISSING:
+            if not isinstance(mfa_level, MFALevel):
+                raise TypeError(f'mfa_level must be of type MFALevel not {mfa_level.__class__.__name__}')
+
+            await http.edit_guild_mfa_level(self.id, mfa_level=mfa_level.value)
 
         data = await http.edit_guild(self.id, reason=reason, **fields)
         return Guild(data=data, state=self._state)
