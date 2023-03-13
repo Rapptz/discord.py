@@ -74,6 +74,7 @@ from .enums import (
     Locale,
     AutoModRuleEventType,
     ForumOrderType,
+    ForumLayoutType,
 )
 from .mixins import Hashable
 from .user import User
@@ -91,6 +92,7 @@ from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
 from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
+from .partial_emoji import _EmojiTag, PartialEmoji
 
 
 __all__ = (
@@ -130,6 +132,7 @@ if TYPE_CHECKING:
     from .types.integration import IntegrationType
     from .types.snowflake import SnowflakeList
     from .types.widget import EditWidgetSettings
+    from .message import EmojiInputType
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
@@ -1605,7 +1608,9 @@ class Guild(Hashable):
         reason: Optional[str] = None,
         default_auto_archive_duration: int = MISSING,
         default_thread_slowmode_delay: int = MISSING,
-        default_sort_order: Optional[ForumOrderType] = None,
+        default_sort_order: Optional[ForumOrderType] = MISSING,
+        default_reaction_emoji: Optional[EmojiInputType] = MISSING,
+        default_layout: Optional[ForumLayoutType] = MISSING,
         available_tags: Sequence[ForumTag] = MISSING,
     ) -> ForumChannel:
         """|coro|
@@ -1654,6 +1659,15 @@ class Guild(Hashable):
             The default sort order for posts in this forum channel.
 
             .. versionadded:: 2.3
+        default_reaction_emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
+            The default reaction emoji for threads created in this forum to show in the
+            add reaction button.
+
+            .. versionadded:: 2.3
+        default_layout: Optional[:class:`ForumLayoutType`]
+            The default layout for posts in this forum.
+
+            .. versionadded:: 2.3
         available_tags: Sequence[:class:`ForumTag`]
             The available tags for this forum channel.
 
@@ -1693,15 +1707,29 @@ class Guild(Hashable):
         if default_thread_slowmode_delay is not MISSING:
             options['default_thread_rate_limit_per_user'] = default_thread_slowmode_delay
 
-        if default_sort_order is None:
-            options['default_sort_order'] = None
-        else:
+        if default_sort_order not in (MISSING, None):
             if not isinstance(default_sort_order, ForumOrderType):
                 raise TypeError(
                     f'default_sort_order parameter must be a ForumOrderType not {default_sort_order.__class__.__name__}'
                 )
 
             options['default_sort_order'] = default_sort_order.value
+
+        if default_reaction_emoji not in (MISSING, None):
+            if isinstance(default_reaction_emoji, _EmojiTag):
+                options['default_reaction_emoji'] = default_reaction_emoji._to_partial()._to_forum_tag_payload()
+            elif isinstance(default_reaction_emoji, str):
+                options['default_reaction_emoji'] = PartialEmoji.from_str(default_reaction_emoji)._to_forum_tag_payload()
+            else:
+                raise ValueError(f'default_reaction_emoji parameter must be either Emoji, PartialEmoji, or str')
+
+        if default_layout not in (MISSING, None):
+            if not isinstance(default_layout, ForumLayoutType):
+                raise TypeError(
+                    f'default_layout parameter must be a ForumLayoutType not {default_layout.__class__.__name__}'
+                )
+
+            options['default_forum_layout'] = default_layout.value
 
         if available_tags is not MISSING:
             options['available_tags'] = [t.to_dict() for t in available_tags]
