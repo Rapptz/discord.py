@@ -915,6 +915,7 @@ class DiscordVoiceWebSocket:
             'd': {
                 'speaking': int(state),
                 'delay': 0,
+                'ssrc': self._connection.ssrc,
             },
         }
 
