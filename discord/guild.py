@@ -1674,9 +1674,9 @@ class Guild(Hashable):
         reason: Optional[str] = None,
         default_auto_archive_duration: int = MISSING,
         default_thread_slowmode_delay: int = MISSING,
-        default_sort_order: Optional[ForumOrderType] = MISSING,
-        default_reaction_emoji: Optional[EmojiInputType] = MISSING,
-        default_layout: Optional[ForumLayoutType] = MISSING,
+        default_sort_order: ForumOrderType = MISSING,
+        default_reaction_emoji: EmojiInputType = MISSING,
+        default_layout: ForumLayoutType = MISSING,
         available_tags: Sequence[ForumTag] = MISSING,
     ) -> ForumChannel:
         """|coro|
@@ -1719,12 +1719,12 @@ class Guild(Hashable):
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
         default_thread_slowmode_delay: :class:`int`
             The default slowmode delay in seconds for threads created in this forum.
-        default_sort_order: Optional[:class:`ForumOrderType`]
+        default_sort_order: :class:`ForumOrderType`
             The default sort order for posts in this forum channel.
-        default_reaction_emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
+        default_reaction_emoji: Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]
             The default reaction emoji for threads created in this forum to show in the
             add reaction button.
-        default_layout: Optional[:class:`ForumLayoutType`]
+        default_layout: :class:`ForumLayoutType`
             The default layout for posts in this forum.
         available_tags: Sequence[:class:`ForumTag`]
             The available tags for this forum channel.
@@ -1763,7 +1763,7 @@ class Guild(Hashable):
         if default_thread_slowmode_delay is not MISSING:
             options['default_thread_rate_limit_per_user'] = default_thread_slowmode_delay
 
-        if default_sort_order not in (MISSING, None):
+        if default_sort_order is not MISSING:
             if not isinstance(default_sort_order, ForumOrderType):
                 raise TypeError(
                     f'default_sort_order parameter must be a ForumOrderType not {default_sort_order.__class__.__name__}'
@@ -1771,7 +1771,7 @@ class Guild(Hashable):
 
             options['default_sort_order'] = default_sort_order.value
 
-        if default_reaction_emoji not in (MISSING, None):
+        if default_reaction_emoji is not MISSING:
             if isinstance(default_reaction_emoji, _EmojiTag):
                 options['default_reaction_emoji'] = default_reaction_emoji._to_partial()._to_forum_tag_payload()
             elif isinstance(default_reaction_emoji, str):
@@ -1779,7 +1779,7 @@ class Guild(Hashable):
             else:
                 raise ValueError(f'default_reaction_emoji parameter must be either Emoji, PartialEmoji, or str')
 
-        if default_layout not in (MISSING, None):
+        if default_layout is not MISSING:
             if not isinstance(default_layout, ForumLayoutType):
                 raise TypeError(
                     f'default_layout parameter must be a ForumLayoutType not {default_layout.__class__.__name__}'
