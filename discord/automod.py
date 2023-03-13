@@ -103,18 +103,18 @@ class AutoModRuleAction:
         duration: Optional[datetime.timedelta] = None,
         custom_message: Optional[str] = None,
     ) -> None:
-        self.type: AutoModRuleActionType = AutoModRuleActionType.block_message
-        if channel_id:
-            self.type = AutoModRuleActionType.send_alert_message
-        elif duration:
-            self.type = AutoModRuleActionType.timeout
-
         self.channel_id: Optional[int] = channel_id
         self.duration: Optional[datetime.timedelta] = duration
         self.custom_message: Optional[str] = custom_message
 
         if sum(v is None for v in (channel_id, duration, custom_message)) < 2:
             raise ValueError('Only one of channel_id, duration, or custom_message can be passed.')
+
+        self.type: AutoModRuleActionType = AutoModRuleActionType.block_message
+        if channel_id:
+            self.type = AutoModRuleActionType.send_alert_message
+        elif duration:
+            self.type = AutoModRuleActionType.timeout
 
     def __repr__(self) -> str:
         return f'<AutoModRuleAction type={self.type.value} channel={self.channel_id} duration={self.duration}>'
