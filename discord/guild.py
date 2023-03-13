@@ -795,6 +795,26 @@ class Guild(Hashable):
         """
         return self._threads.get(thread_id)
 
+    def get_emoji(self, emoji_id: int, /) -> Optional[Emoji]:
+        """Returns an emoji with the given ID.
+
+        .. versionadded:: 2.3
+
+        Parameters
+        ----------
+        emoji_id: int
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`Emoji`]
+            The returned Emoji or ``None`` if not found.
+        """
+        emoji = self._state.get_emoji(emoji_id)
+        if emoji and emoji.guild == self:
+            return emoji
+        return None
+
     @property
     def system_channel(self) -> Optional[TextChannel]:
         """Optional[:class:`TextChannel`]: Returns the guild's channel used for system messages.
