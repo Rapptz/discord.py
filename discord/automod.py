@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 import datetime
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, List, Sequence, Set, Union, Sequence
+from typing import TYPE_CHECKING, Any, Dict, Optional, List, Set, Union, Sequence, overload
 
 from .enums import AutoModRuleTriggerType, AutoModRuleActionType, AutoModRuleEventType, try_enum
 from .flags import AutoModPresets
@@ -58,6 +58,9 @@ __all__ = (
 class AutoModRuleAction:
     """Represents an auto moderation's rule action.
 
+    .. note::
+        Only one of ``channel_id``, ``duration``, or ``custom_message`` can be used.
+
     .. versionadded:: 2.0
 
     Attributes
@@ -81,6 +84,18 @@ class AutoModRuleAction:
 
     __slots__ = ('type', 'channel_id', 'duration', 'custom_message')
 
+    @overload
+    def __init__(self, *, channel_id: Optional[int] = ...) -> None:
+        ...
+
+    @overload
+    def __init__(self, *, duration: Optional[datetime.timedelta] = ...) -> None:
+        ...
+
+    @overload
+    def __init__(self, *, custom_message: Optional[str] = ...) -> None:
+        ...
+
     def __init__(
         self,
         *,
@@ -95,19 +110,17 @@ class AutoModRuleAction:
         if sum(v is None for v in (channel_id, duration, custom_message)) < 2:
             raise ValueError('Only one of channel_id, duration, or custom_message can be passed.')
 
+        self.type: AutoModRuleActionType = AutoModRuleActionType.block_message
         if channel_id:
             self.type = AutoModRuleActionType.send_alert_message
         elif duration:
             self.type = AutoModRuleActionType.timeout
-        else:
-            self.type = AutoModRuleActionType.block_message
 
     def __repr__(self) -> str:
         return f'<AutoModRuleAction type={self.type.value} channel={self.channel_id} duration={self.duration}>'
 
     @classmethod
     def from_data(cls, data: AutoModerationActionPayload) -> Self:
-        type_ = try_enum(AutoModRuleActionType, data['type'])
         if data['type'] == AutoModRuleActionType.timeout.value:
             duration_seconds = data['metadata']['duration_seconds']
             return cls(duration=datetime.timedelta(seconds=duration_seconds))
