@@ -803,7 +803,13 @@ class Guild(Hashable):
 
     @property
     def widget_channel(self) -> Optional[Union[TextChannel, ForumChannel, VoiceChannel, StageChannel]]:
-        """"""
+        """Optional[Union[:class:`TextChannel`, :class:`ForumChannel`, :class:`VoiceChannel`, :class:`StageChannel`]]: Returns
+        the widget channel of the guild.
+
+        If no channel is set, then this returns ``None``.
+
+        .. versionadded:: 2.3
+        """
         channel_id = self._widget_channel_id
         return channel_id and self._channels.get(channel_id)  # type: ignore
 
