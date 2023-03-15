@@ -1260,9 +1260,10 @@ class GuildChannel:
         max_uses: int = 0,
         temporary: bool = False,
         unique: bool = True,
+        validate: Optional[Union[Invite, str]],
         target_type: Optional[InviteTarget] = None,
         target_user: Optional[User] = None,
-        target_application_id: Optional[int] = None,
+        target_application: Optional[Snowflake] = None,
     ) -> Invite:
         """|coro|
 
@@ -1286,8 +1287,11 @@ class GuildChannel:
             Indicates if a unique invite URL should be created. Defaults to True.
             If this is set to ``False`` then it will return a previously created
             invite.
-        reason: Optional[:class:`str`]
-            The reason for creating this invite. Shows up on the audit log.
+        validate: Union[:class:`Invite`, :class:`str`]
+            The existing channel invite to validate and return for reuse.
+            If this invite is invalid, a new invite will be created according to the parameters and returned.
+
+            .. versionadded:: 2.0
         target_type: Optional[:class:`.InviteTarget`]
             The type of target for the voice channel invite, if any.
 
@@ -1298,10 +1302,13 @@ class GuildChannel:
 
             .. versionadded:: 2.0
 
-        target_application_id:: Optional[:class:`int`]
-            The id of the embedded application for the invite, required if `target_type` is `TargetType.embedded_application`.
+        target_application:: Optional[:class:`Application`]
+            The embedded application for the invite, required if `target_type` is `TargetType.embedded_application`.
 
             .. versionadded:: 2.0
+
+        reason: Optional[:class:`str`]
+            The reason for creating this invite. Shows up on the audit log.
 
         Raises
         -------
@@ -1323,9 +1330,10 @@ class GuildChannel:
             max_uses=max_uses,
             temporary=temporary,
             unique=unique,
+            validate=utils.resolve_invite(validate).code if validate else None,
             target_type=target_type.value if target_type else None,
             target_user_id=target_user.id if target_user else None,
-            target_application_id=target_application_id,
+            target_application_id=target_application.id if target_application else None,
         )
         return Invite.from_incomplete(data=data, state=self._state)
 

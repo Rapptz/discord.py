@@ -1792,6 +1792,7 @@ class HTTPClient:
         max_uses: int = 0,
         temporary: bool = False,
         unique: bool = True,
+        validate: Optional[str] = None,
         target_type: Optional[invite.InviteTargetType] = None,
         target_user_id: Optional[Snowflake] = None,
         target_application_id: Optional[Snowflake] = None,
@@ -1799,11 +1800,12 @@ class HTTPClient:
         payload = {
             'max_age': max_age,
             'max_uses': max_uses,
+            'target_type': target_type,
             'temporary': temporary,
-            'unique': unique,
+            'validate': validate,
         }
-        if target_type:
-            payload['target_type'] = target_type
+        if unique:
+            payload['unique'] = unique
         if target_user_id:
             payload['target_user_id'] = target_user_id
         if target_application_id:
