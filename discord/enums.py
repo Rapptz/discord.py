@@ -750,6 +750,8 @@ class InviteTarget(Enum):
     unknown = 0
     stream = 1
     embedded_application = 2
+    role_subscriptions = 3
+    creator_page = 4
 
 
 class InviteType(Enum):

@@ -3234,6 +3234,18 @@ of :class:`enum.Enum`.
 
         A stream invite that targets an embedded application.
 
+    .. attribute:: role_subscriptions
+
+        A guild invite that redirects to the role subscriptions page of a guild when accepted.
+
+        .. versionadded:: 2.0
+
+    .. attribute:: creator_page
+
+        A guild invite that originates from the creator page of a guild.
+
+        .. versionadded:: 2.0
+
 .. class:: VideoQualityMode
 
     Represents the camera video quality mode for voice channel participants.
