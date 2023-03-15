@@ -90,7 +90,7 @@ class PartialInviteChannel:
 
     Attributes
     -----------
-    name: :class:`str`
+    name: Optional[:class:`str`]
         The partial channel's name.
     id: :class:`int`
         The partial channel's ID.
@@ -114,15 +114,23 @@ class PartialInviteChannel:
             return
         self._state = state
         self.id: int = int(data['id'])
-        self.name: str = data['name']
+        self.name: Optional[str] = data.get('name')
         self.type: ChannelType = try_enum(ChannelType, data['type'])
         self.recipients: Optional[List[str]] = (
-            [user['username'] for user in data.get('recipients', [])] if self.type == ChannelType.group else None
+            [user['username'] for user in data.get('recipients', [])]
+            if self.type in (ChannelType.private, ChannelType.group)
+            else None
         )
         self._icon: Optional[str] = data.get('icon')
 
     def __str__(self) -> str:
-        return self.name
+        if self.name:
+            return self.name
+
+        recipients = self.recipients or []
+        if self.type == ChannelType.group:
+            return ', '.join(recipients) if recipients else 'Unnamed'
+        return f'Direct Message with {recipients[0] if recipients else "Unknown User"}'
 
     def __repr__(self) -> str:
         return f'<PartialInviteChannel id={self.id} name={self.name} type={self.type!r}>'
@@ -520,7 +528,10 @@ class Invite(Hashable):
             if welcome_screen is not None:
                 welcome_screen = WelcomeScreen(data=welcome_screen, guild=guild)
 
-        channel = PartialInviteChannel(data.get('channel'), state)
+        channel_data = data.get('channel')
+        if channel_data and channel_data.get('type') == ChannelType.private.value:
+            channel_data['recipients'] = [data['inviter']] if 'inviter' in data else []
+        channel = PartialInviteChannel(channel_data, state)
         channel = state.get_channel(getattr(channel, 'id', None)) or channel
 
         if message is not None:
