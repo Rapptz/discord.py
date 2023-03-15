@@ -1287,7 +1287,7 @@ class GuildChannel:
             Indicates if a unique invite URL should be created. Defaults to True.
             If this is set to ``False`` then it will return a previously created
             invite.
-        validate: Union[:class:`Invite`, :class:`str`]
+        validate: Union[:class:`.Invite`, :class:`str`]
             The existing channel invite to validate and return for reuse.
             If this invite is invalid, a new invite will be created according to the parameters and returned.
 
@@ -1302,7 +1302,7 @@ class GuildChannel:
 
             .. versionadded:: 2.0
 
-        target_application:: Optional[:class:`Application`]
+        target_application:: Optional[:class:`.Application`]
             The embedded application for the invite, required if `target_type` is `TargetType.embedded_application`.
 
             .. versionadded:: 2.0
