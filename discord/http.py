@@ -1432,6 +1432,12 @@ class HTTPClient:
 
         return self.request(Route('PATCH', '/guilds/{guild_id}', guild_id=guild_id), json=payload, reason=reason)
 
+    def edit_guild_mfa_level(
+        self, guild_id: Snowflake, *, mfa_level: int, reason: Optional[str] = None
+    ) -> Response[guild.GuildMFALevel]:
+        payload = {'level': mfa_level}
+        return self.request(Route('POST', '/guilds/{guild_id}/mfa', guild_id=guild_id), json=payload, reason=reason)
+
     def get_template(self, code: str) -> Response[template.Template]:
         return self.request(Route('GET', '/guilds/templates/{code}', code=code))
 

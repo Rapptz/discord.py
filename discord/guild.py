@@ -1819,6 +1819,7 @@ class Guild(Hashable):
         invites_disabled: bool = MISSING,
         widget_enabled: bool = MISSING,
         widget_channel: Optional[Snowflake] = MISSING,
+        mfa_level: MFALevel = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1852,7 +1853,7 @@ class Guild(Hashable):
             The ``discoverable`` and ``invites_disabled`` keyword parameters were added.
 
         .. versionchanged:: 2.3
-            The ``widget_enabled`` and ``widget_channel`` keyword parameters were added.
+            The ``widget_enabled``, ``widget_channel``, and ``mfa_level`` keyword parameters were added.
 
         Parameters
         ----------
@@ -1923,6 +1924,9 @@ class Guild(Hashable):
              The new widget channel. ``None`` removes the widget channel.
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
+        mfa_level: :class:`MFALevel`
+            The new guild’s Multi-Factor Authentication requirement level.
+            Note that you must be owner of the guild to do this.
 
         Raises
         -------
@@ -1936,7 +1940,7 @@ class Guild(Hashable):
             guild and request an ownership transfer.
         TypeError
             The type passed to the ``default_notifications``, ``verification_level``,
-            ``explicit_content_filter``, or ``system_channel_flags`` parameter was
+            ``explicit_content_filter``, ``system_channel_flags``, or ``mfa_level`` parameter was
             of the incorrect type.
 
         Returns
@@ -2080,6 +2084,12 @@ class Guild(Hashable):
 
         if widget_payload:
             await self._state.http.edit_widget(self.id, payload=widget_payload, reason=reason)
+
+        if mfa_level is not MISSING:
+            if not isinstance(mfa_level, MFALevel):
+                raise TypeError(f'mfa_level must be of type MFALevel not {mfa_level.__class__.__name__}')
+
+            await http.edit_guild_mfa_level(self.id, mfa_level=mfa_level.value)
 
         data = await http.edit_guild(self.id, reason=reason, **fields)
         return Guild(data=data, state=self._state)
