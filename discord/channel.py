@@ -165,7 +165,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     default_thread_slowmode_delay: :class:`int`
         The default slowmode delay in seconds for threads created in this channel.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -368,7 +368,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         default_thread_slowmode_delay: :class:`int`
             The new default slowmode delay in seconds for threads created in this channel.
 
-            .. versionadded:: 2.3
+            .. versionadded:: 2.0
         Raises
         ------
         ValueError
