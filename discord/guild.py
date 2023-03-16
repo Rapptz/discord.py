@@ -293,6 +293,7 @@ class Guild(Hashable):
         'mfa_level',
         'vanity_url_code',
         'widget_enabled',
+        '_widget_channel_id',
         '_members',
         '_channels',
         '_icon',
@@ -481,6 +482,7 @@ class Guild(Hashable):
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
         self.widget_enabled: bool = guild.get('widget_enabled', False)
+        self._widget_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'widget_channel_id')
         self._system_channel_flags: int = guild.get('system_channel_flags', 0)
         self.preferred_locale: Locale = try_enum(Locale, guild.get('preferred_locale', 'en-US'))
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
@@ -797,6 +799,18 @@ class Guild(Hashable):
         .. versionadded:: 1.4
         """
         channel_id = self._public_updates_channel_id
+        return channel_id and self._channels.get(channel_id)  # type: ignore
+
+    @property
+    def widget_channel(self) -> Optional[Union[TextChannel, ForumChannel, VoiceChannel, StageChannel]]:
+        """Optional[Union[:class:`TextChannel`, :class:`ForumChannel`, :class:`VoiceChannel`, :class:`StageChannel`]]: Returns
+        the widget channel of the guild.
+
+        If no channel is set, then this returns ``None``.
+
+        .. versionadded:: 2.3
+        """
+        channel_id = self._widget_channel_id
         return channel_id and self._channels.get(channel_id)  # type: ignore
 
     @property
@@ -1803,6 +1817,8 @@ class Guild(Hashable):
         premium_progress_bar_enabled: bool = MISSING,
         discoverable: bool = MISSING,
         invites_disabled: bool = MISSING,
+        widget_enabled: bool = MISSING,
+        widget_channel: Optional[Snowflake] = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1834,6 +1850,9 @@ class Guild(Hashable):
 
         .. versionchanged:: 2.1
             The ``discoverable`` and ``invites_disabled`` keyword parameters were added.
+
+        .. versionchanged:: 2.3
+            The ``widget_enabled`` and ``widget_channel`` keyword parameters were added.
 
         Parameters
         ----------
@@ -1898,6 +1917,10 @@ class Guild(Hashable):
             Whether server discovery is enabled for this guild.
         invites_disabled: :class:`bool`
             Whether joining via invites should be disabled for the guild.
+        widget_enabled: :class:`bool`
+            Whether to enable the widget for the guild.
+        widget_channel: Optional[:class:`abc.Snowflake`]
+             The new widget channel. ``None`` removes the widget channel.
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 
@@ -2048,6 +2071,15 @@ class Guild(Hashable):
 
         if premium_progress_bar_enabled is not MISSING:
             fields['premium_progress_bar_enabled'] = premium_progress_bar_enabled
+
+        widget_payload: EditWidgetSettings = {}
+        if widget_channel is not MISSING:
+            widget_payload['channel_id'] = None if widget_channel is None else widget_channel.id
+        if widget_enabled is not MISSING:
+            widget_payload['enabled'] = widget_enabled
+
+        if widget_payload:
+            await self._state.http.edit_widget(self.id, payload=widget_payload, reason=reason)
 
         data = await http.edit_guild(self.id, reason=reason, **fields)
         return Guild(data=data, state=self._state)
@@ -3892,7 +3924,7 @@ class Guild(Hashable):
     ) -> None:
         """|coro|
 
-        Edits the widget of the guild.
+        Edits the widget of the guild. This can also be done with :attr:`~Guild.edit`.
 
         You must have :attr:`~Permissions.manage_guild` to do this.
 
@@ -3920,7 +3952,8 @@ class Guild(Hashable):
         if enabled is not MISSING:
             payload['enabled'] = enabled
 
-        await self._state.http.edit_widget(self.id, payload=payload, reason=reason)
+        if payload:
+            await self._state.http.edit_widget(self.id, payload=payload, reason=reason)
 
     async def chunk(self, *, cache: bool = True) -> List[Member]:
         """|coro|
