@@ -74,6 +74,7 @@ from .enums import (
     Locale,
     AutoModRuleEventType,
     ForumOrderType,
+    ForumLayoutType,
 )
 from .mixins import Hashable
 from .user import User
@@ -91,6 +92,7 @@ from .audit_logs import AuditLogEntry
 from .object import OLDEST_OBJECT, Object
 from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
+from .partial_emoji import _EmojiTag, PartialEmoji
 
 
 __all__ = (
@@ -130,6 +132,7 @@ if TYPE_CHECKING:
     from .types.integration import IntegrationType
     from .types.snowflake import SnowflakeList
     from .types.widget import EditWidgetSettings
+    from .message import EmojiInputType
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
@@ -290,6 +293,7 @@ class Guild(Hashable):
         'mfa_level',
         'vanity_url_code',
         'widget_enabled',
+        '_widget_channel_id',
         '_members',
         '_channels',
         '_icon',
@@ -478,6 +482,7 @@ class Guild(Hashable):
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
         self.widget_enabled: bool = guild.get('widget_enabled', False)
+        self._widget_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'widget_channel_id')
         self._system_channel_flags: int = guild.get('system_channel_flags', 0)
         self.preferred_locale: Locale = try_enum(Locale, guild.get('preferred_locale', 'en-US'))
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
@@ -737,6 +742,26 @@ class Guild(Hashable):
         """
         return self._threads.get(thread_id)
 
+    def get_emoji(self, emoji_id: int, /) -> Optional[Emoji]:
+        """Returns an emoji with the given ID.
+
+        .. versionadded:: 2.3
+
+        Parameters
+        ----------
+        emoji_id: int
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`Emoji`]
+            The returned Emoji or ``None`` if not found.
+        """
+        emoji = self._state.get_emoji(emoji_id)
+        if emoji and emoji.guild == self:
+            return emoji
+        return None
+
     @property
     def system_channel(self) -> Optional[TextChannel]:
         """Optional[:class:`TextChannel`]: Returns the guild's channel used for system messages.
@@ -774,6 +799,18 @@ class Guild(Hashable):
         .. versionadded:: 1.4
         """
         channel_id = self._public_updates_channel_id
+        return channel_id and self._channels.get(channel_id)  # type: ignore
+
+    @property
+    def widget_channel(self) -> Optional[Union[TextChannel, ForumChannel, VoiceChannel, StageChannel]]:
+        """Optional[Union[:class:`TextChannel`, :class:`ForumChannel`, :class:`VoiceChannel`, :class:`StageChannel`]]: Returns
+        the widget channel of the guild.
+
+        If no channel is set, then this returns ``None``.
+
+        .. versionadded:: 2.3
+        """
+        channel_id = self._widget_channel_id
         return channel_id and self._channels.get(channel_id)  # type: ignore
 
     @property
@@ -1585,7 +1622,9 @@ class Guild(Hashable):
         reason: Optional[str] = None,
         default_auto_archive_duration: int = MISSING,
         default_thread_slowmode_delay: int = MISSING,
-        default_sort_order: Optional[ForumOrderType] = None,
+        default_sort_order: ForumOrderType = MISSING,
+        default_reaction_emoji: EmojiInputType = MISSING,
+        default_layout: ForumLayoutType = MISSING,
         available_tags: Sequence[ForumTag] = MISSING,
     ) -> ForumChannel:
         """|coro|
@@ -1630,8 +1669,17 @@ class Guild(Hashable):
             The default slowmode delay in seconds for threads created in this forum.
 
             .. versionadded:: 2.1
-        default_sort_order: Optional[:class:`ForumOrderType`]
+        default_sort_order: :class:`ForumOrderType`
             The default sort order for posts in this forum channel.
+
+            .. versionadded:: 2.3
+        default_reaction_emoji: Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]
+            The default reaction emoji for threads created in this forum to show in the
+            add reaction button.
+
+            .. versionadded:: 2.3
+        default_layout: :class:`ForumLayoutType`
+            The default layout for posts in this forum.
 
             .. versionadded:: 2.3
         available_tags: Sequence[:class:`ForumTag`]
@@ -1673,15 +1721,29 @@ class Guild(Hashable):
         if default_thread_slowmode_delay is not MISSING:
             options['default_thread_rate_limit_per_user'] = default_thread_slowmode_delay
 
-        if default_sort_order is None:
-            options['default_sort_order'] = None
-        else:
+        if default_sort_order is not MISSING:
             if not isinstance(default_sort_order, ForumOrderType):
                 raise TypeError(
                     f'default_sort_order parameter must be a ForumOrderType not {default_sort_order.__class__.__name__}'
                 )
 
             options['default_sort_order'] = default_sort_order.value
+
+        if default_reaction_emoji is not MISSING:
+            if isinstance(default_reaction_emoji, _EmojiTag):
+                options['default_reaction_emoji'] = default_reaction_emoji._to_partial()._to_forum_tag_payload()
+            elif isinstance(default_reaction_emoji, str):
+                options['default_reaction_emoji'] = PartialEmoji.from_str(default_reaction_emoji)._to_forum_tag_payload()
+            else:
+                raise ValueError(f'default_reaction_emoji parameter must be either Emoji, PartialEmoji, or str')
+
+        if default_layout is not MISSING:
+            if not isinstance(default_layout, ForumLayoutType):
+                raise TypeError(
+                    f'default_layout parameter must be a ForumLayoutType not {default_layout.__class__.__name__}'
+                )
+
+            options['default_forum_layout'] = default_layout.value
 
         if available_tags is not MISSING:
             options['available_tags'] = [t.to_dict() for t in available_tags]
@@ -1755,6 +1817,8 @@ class Guild(Hashable):
         premium_progress_bar_enabled: bool = MISSING,
         discoverable: bool = MISSING,
         invites_disabled: bool = MISSING,
+        widget_enabled: bool = MISSING,
+        widget_channel: Optional[Snowflake] = MISSING,
         mfa_level: MFALevel = MISSING,
     ) -> Guild:
         r"""|coro|
@@ -1789,7 +1853,7 @@ class Guild(Hashable):
             The ``discoverable`` and ``invites_disabled`` keyword parameters were added.
 
         .. versionchanged:: 2.3
-            The ``mfa_level`` keyword parameter was added.
+            The ``widget_enabled``, ``widget_channel``, and ``mfa_level`` keyword parameters were added.
 
         Parameters
         ----------
@@ -1854,6 +1918,10 @@ class Guild(Hashable):
             Whether server discovery is enabled for this guild.
         invites_disabled: :class:`bool`
             Whether joining via invites should be disabled for the guild.
+        widget_enabled: :class:`bool`
+            Whether to enable the widget for the guild.
+        widget_channel: Optional[:class:`abc.Snowflake`]
+             The new widget channel. ``None`` removes the widget channel.
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
         mfa_level: :class:`MFALevel`
@@ -2007,6 +2075,15 @@ class Guild(Hashable):
 
         if premium_progress_bar_enabled is not MISSING:
             fields['premium_progress_bar_enabled'] = premium_progress_bar_enabled
+
+        widget_payload: EditWidgetSettings = {}
+        if widget_channel is not MISSING:
+            widget_payload['channel_id'] = None if widget_channel is None else widget_channel.id
+        if widget_enabled is not MISSING:
+            widget_payload['enabled'] = widget_enabled
+
+        if widget_payload:
+            await self._state.http.edit_widget(self.id, payload=widget_payload, reason=reason)
 
         if mfa_level is not MISSING:
             if not isinstance(mfa_level, MFALevel):
@@ -3857,7 +3934,7 @@ class Guild(Hashable):
     ) -> None:
         """|coro|
 
-        Edits the widget of the guild.
+        Edits the widget of the guild. This can also be done with :attr:`~Guild.edit`.
 
         You must have :attr:`~Permissions.manage_guild` to do this.
 
@@ -3885,7 +3962,8 @@ class Guild(Hashable):
         if enabled is not MISSING:
             payload['enabled'] = enabled
 
-        await self._state.http.edit_widget(self.id, payload=payload, reason=reason)
+        if payload:
+            await self._state.http.edit_widget(self.id, payload=payload, reason=reason)
 
     async def chunk(self, *, cache: bool = True) -> List[Member]:
         """|coro|
