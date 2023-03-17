@@ -1876,7 +1876,7 @@ of :class:`enum.Enum`.
 
         The user is an active developer.
 
-        .. versionadded:: 2.1
+        .. versionadded:: 2.0
 
 .. class:: ActivityType
 
