@@ -3335,31 +3335,21 @@ of :class:`enum.Enum`.
 
         Shield style widget with Discord icon and guild members online count.
 
-        `Example <https://discord.com/api/guilds/336642139381301249/widget.png?style=shield>`_
-
     .. attribute:: banner_medium_powered_by
 
         Large image with guild icon, name and online count. "POWERED BY DISCORD" as the footer of the widget.
-
-        `Example <https://discord.com/api/guilds/336642139381301249/widget.png?style=banner1>`_
 
     .. attribute:: banner_small
 
         Smaller widget style with guild icon, name and online count. Split on the right with Discord logo.
 
-        `Example <https://discord.com/api/guilds/336642139381301249/widget.png?style=banner2>`_
-
     .. attribute:: banner_medium_chat_now
 
         Large image with guild icon, name and online count. In the footer, Discord logo on the left and "Chat Now" on the right.
 
-        `Example <https://discord.com/api/guilds/336642139381301249/widget.png?style=banner3>`_
-
     .. attribute:: banner_large_logo
 
         Large Discord logo at the top of the widget. Guild icon, name and online count in the middle portion of the widget and a "JOIN MY SERVER" button at the bottom
-
-        `Example <https://discord.com/api/guilds/336642139381301249/widget.png?style=banner4>`_
 
 
 .. _discord-api-audit-logs:
