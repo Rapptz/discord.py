@@ -75,6 +75,7 @@ from .enums import (
     AutoModRuleEventType,
     ForumOrderType,
     ForumLayoutType,
+    WidgetStyle,
 )
 from .mixins import Hashable
 from .user import User
@@ -93,6 +94,7 @@ from .object import OLDEST_OBJECT, Object
 from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 from .partial_emoji import _EmojiTag, PartialEmoji
+from .http import Route
 
 
 __all__ = (
@@ -3930,6 +3932,36 @@ class Guild(Hashable):
         data = await self._state.http.get_widget(self.id)
 
         return Widget(state=self._state, data=data)
+
+    def widget_image_url(self, style: WidgetStyle = WidgetStyle.shield) -> Optional[str]:
+        """
+
+        Returns the widget image url of the guild.
+
+        .. note::
+
+            The guild must have the widget enabled to get this information.
+
+        Parameters
+        -----------
+        style: :class:`WidgetStyle`
+            The style which should be applied for the widget.
+            Default to :attr:`~WidgetStyle.shield`. Returns ``None`` if widget is not enabled.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the widget image url failed.
+
+        Returns
+        --------
+        Optional[:class:`str`]
+            The widget image url in the given style.
+        """
+        if not self.widget_enabled:
+            return None
+
+        return f"{Route.BASE}/guilds/{self.id}/widget.png?style={style.value}"
 
     async def edit_widget(
         self,
