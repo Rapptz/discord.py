@@ -1827,12 +1827,6 @@ class Guild(Hashable):
 
         You must have :attr:`~Permissions.manage_guild` to edit the guild.
 
-        .. versionchanged:: 1.4
-            The ``rules_channel`` and ``public_updates_channel`` keyword parameters were added.
-
-        .. versionchanged:: 2.0
-            The ``discovery_splash`` and ``community`` keyword parameters were added.
-
         .. versionchanged:: 2.0
             The newly updated guild is returned.
 
@@ -1842,18 +1836,6 @@ class Guild(Hashable):
         .. versionchanged:: 2.0
             This function will now raise :exc:`TypeError` or
             :exc:`ValueError` instead of ``InvalidArgument``.
-
-        .. versionchanged:: 2.0
-            The ``preferred_locale`` keyword parameter now accepts an enum instead of :class:`str`.
-
-        .. versionchanged:: 2.0
-            The ``premium_progress_bar_enabled`` keyword parameter was added.
-
-        .. versionchanged:: 2.1
-            The ``discoverable`` and ``invites_disabled`` keyword parameters were added.
-
-        .. versionchanged:: 2.3
-            The ``widget_enabled``, ``widget_channel``, and ``mfa_level`` keyword parameters were added.
 
         Parameters
         ----------
@@ -1880,9 +1862,13 @@ class Guild(Hashable):
             Only PNG/JPEG supported. Could be ``None`` to denote removing the
             splash. This is only available to guilds that contain ``DISCOVERABLE``
             in :attr:`Guild.features`.
+
+            .. versionadded:: 2.0
         community: :class:`bool`
             Whether the guild should be a Community guild. If set to ``True``\, both ``rules_channel``
             and ``public_updates_channel`` parameters are required.
+
+            .. versionadded:: 2.0
         afk_channel: Optional[:class:`VoiceChannel`]
             The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
         afk_timeout: :class:`int`
@@ -1904,29 +1890,49 @@ class Guild(Hashable):
             The new system channel settings to use with the new system channel.
         preferred_locale: :class:`Locale`
             The new preferred locale for the guild. Used as the primary language in the guild.
+
+            .. versionchanged:: 2.0
+
+                Now accepts an enum instead of :class:`str`.
         rules_channel: Optional[:class:`TextChannel`]
             The new channel that is used for rules. This is only available to
             guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no rules
             channel.
+
+            .. versionadded:: 1.4
         public_updates_channel: Optional[:class:`TextChannel`]
             The new channel that is used for public updates from Discord. This is only available to
             guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no
             public updates channel.
+
+            .. versionadded:: 1.4
         premium_progress_bar_enabled: :class:`bool`
             Whether the premium AKA server boost level progress bar should be enabled for the guild.
+
+            .. versionadded:: 2.0
         discoverable: :class:`bool`
             Whether server discovery is enabled for this guild.
+
+            .. versionadded:: 2.1
         invites_disabled: :class:`bool`
             Whether joining via invites should be disabled for the guild.
+
+            .. versionadded:: 2.1
         widget_enabled: :class:`bool`
             Whether to enable the widget for the guild.
+
+            .. versionadded:: 2.3
         widget_channel: Optional[:class:`abc.Snowflake`]
              The new widget channel. ``None`` removes the widget channel.
+
+            .. versionadded:: 2.3
+        mfa_level: :class:`MFALevel`
+            The new guild's Multi-Factor Authentication requirement level.
+            Note that you must be owner of the guild to do this.
+
+            .. versionadded:: 2.3
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
-        mfa_level: :class:`MFALevel`
-            The new guild’s Multi-Factor Authentication requirement level.
-            Note that you must be owner of the guild to do this.
 
         Raises
         -------
