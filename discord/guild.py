@@ -138,6 +138,7 @@ if TYPE_CHECKING:
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
     ByCategoryItem = Tuple[Optional[CategoryChannel], List[GuildChannel]]
+    WidgetStyle = Literal['shield', 'banner1', 'banner2', 'banner3', 'banner4']
 
 
 class BanEntry(NamedTuple):
@@ -3931,8 +3932,6 @@ class Guild(Hashable):
         data = await self._state.http.get_widget(self.id)
 
         return Widget(state=self._state, data=data)
-
-    WidgetStyle = Literal['shield', 'banner1', 'banner2', 'banner3', 'banner4']
 
     def widget_image_url(self, style: WidgetStyle = 'shield') -> Optional[str]:
         """
