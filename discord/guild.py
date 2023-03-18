@@ -75,7 +75,6 @@ from .enums import (
     AutoModRuleEventType,
     ForumOrderType,
     ForumLayoutType,
-    WidgetStyle,
 )
 from .mixins import Hashable
 from .user import User
@@ -3933,7 +3932,9 @@ class Guild(Hashable):
 
         return Widget(state=self._state, data=data)
 
-    def widget_image_url(self, style: WidgetStyle = WidgetStyle.shield) -> Optional[str]:
+    WidgetStyle = Literal['shield', 'banner1', 'banner2', 'banner3', 'banner4']
+
+    def widget_image_url(self, style: WidgetStyle = 'shield') -> Optional[str]:
         """
 
         Returns the widget image url of the guild.
@@ -3944,9 +3945,9 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        style: :class:`WidgetStyle`
+        style: :class:`str`
             The style which should be applied for the widget.
-            Default to :attr:`~WidgetStyle.shield`. Returns ``None`` if widget is not enabled.
+            Default to ``shield``. Returns ``None`` if widget is not enabled.
 
         Raises
         -------
@@ -3961,7 +3962,7 @@ class Guild(Hashable):
         if not self.widget_enabled:
             return None
 
-        return f"{Route.BASE}/guilds/{self.id}/widget.png?style={style.value}"
+        return f"{Route.BASE}/guilds/{self.id}/widget.png?style={style}"
 
     async def edit_widget(
         self,

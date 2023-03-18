@@ -68,7 +68,6 @@ __all__ = (
     'AutoModRuleActionType',
     'ForumLayoutType',
     'ForumOrderType',
-    'WidgetStyle',
 )
 
 if TYPE_CHECKING:
@@ -756,14 +755,6 @@ class ForumLayoutType(Enum):
 class ForumOrderType(Enum):
     latest_activity = 0
     creation_date = 1
-
-
-class WidgetStyle(Enum):
-    shield = 'shield'
-    banner_medium_powered_by = "banner1"
-    banner_small = "banner2"
-    banner_medium_chat_now = "banner3"
-    banner_large_logo = "banner4"
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

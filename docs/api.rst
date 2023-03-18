@@ -3325,33 +3325,6 @@ of :class:`enum.Enum`.
         Sort forum posts by creation time (from most recent to oldest).
 
 
-.. class:: WidgetStyle
-
-    Represents how a widget image is styled.
-
-    .. versionadded:: 2.3
-
-    .. attribute:: shield
-
-        Shield style widget with Discord icon and guild members online count.
-
-    .. attribute:: banner_medium_powered_by
-
-        Large image with guild icon, name and online count. "POWERED BY DISCORD" as the footer of the widget.
-
-    .. attribute:: banner_small
-
-        Smaller widget style with guild icon, name and online count. Split on the right with Discord logo.
-
-    .. attribute:: banner_medium_chat_now
-
-        Large image with guild icon, name and online count. In the footer, Discord logo on the left and "Chat Now" on the right.
-
-    .. attribute:: banner_large_logo
-
-        Large Discord logo at the top of the widget. Guild icon, name and online count in the middle portion of the widget and a "JOIN MY SERVER" button at the bottom
-
-
 .. _discord-api-audit-logs:
 
 Audit Log Data
