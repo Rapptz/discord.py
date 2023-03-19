@@ -762,6 +762,12 @@ class Guild(Hashable):
             return emoji
         return None
 
+    def get_sticker(self, sticker_id: int, /) -> Optional[GuildSticker]:
+        sticker = self._state.get_sticker(sticker_id)
+        if sticker is not None and sticker.guild == self:
+            return sticker
+        return None
+
     @property
     def system_channel(self) -> Optional[TextChannel]:
         """Optional[:class:`TextChannel`]: Returns the guild's channel used for system messages.
