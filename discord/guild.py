@@ -763,6 +763,20 @@ class Guild(Hashable):
         return None
 
     def get_sticker(self, sticker_id: int, /) -> Optional[GuildSticker]:
+        """Returns a sticker with the given ID.
+
+        .. versionadded:: 2.3
+
+        Parameters
+        ----------
+        sticker_id: int
+            The ID to search for.
+
+        Returns
+        -------
+        Optional[:class:`GuildSticker`]
+            The returned GuildSticker or ``None`` if not found.
+        """
         sticker = self._state.get_sticker(sticker_id)
         if sticker is not None and sticker.guild == self:
             return sticker
