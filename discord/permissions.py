@@ -177,7 +177,7 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
         """
-        return cls(0b11111111111111111111111111111111111111111)
+        return cls(0b1111111111111111111111111111111111111111111)
 
     @classmethod
     def _timeout_mask(cls) -> int:
@@ -265,7 +265,7 @@ class Permissions(BaseFlags):
     def voice(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to ``True``."""
-        return cls(0b1000000000000011111100000000001100000000)
+        return cls(0b1001000000000000011111100000000001100000000)
 
     @classmethod
     def stage(cls) -> Self:
