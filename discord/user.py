@@ -40,7 +40,6 @@ from .enums import (
 from .errors import ClientException, NotFound
 from .flags import PublicUserFlags, PrivateUserFlags, PremiumUsageFlags, PurchasedFlags
 from .relationship import Relationship
-from .settings import UserSettings
 from .utils import _bytes_to_base64_data, _get_as_snowflake, copy_doc, snowflake_time, MISSING
 
 if TYPE_CHECKING:
@@ -620,20 +619,12 @@ class ClientUser(BaseUser):
     @property
     def locale(self) -> Locale:
         """:class:`Locale`: The IETF language tag used to identify the language the user is using."""
-        return self.settings.locale if self.settings else try_enum(Locale, self._locale)
+        return self._state.settings.locale if self._state.settings else try_enum(Locale, self._locale)
 
     @property
     def premium(self) -> bool:
         """Indicates if the user is a premium user (i.e. has Discord Nitro)."""
         return self.premium_type is not None
-
-    @property
-    def settings(self) -> Optional[UserSettings]:
-        """Optional[:class:`UserSettings`]: Returns the user's settings.
-
-        .. versionadded:: 1.9
-        """
-        return self._state.settings
 
     @property
     def flags(self) -> PrivateUserFlags:
@@ -822,86 +813,6 @@ class ClientUser(BaseUser):
             pass
 
         return ClientUser(state=self._state, data=data)
-
-    async def fetch_settings(self) -> UserSettings:
-        """|coro|
-
-        Retrieves your settings.
-
-        .. note::
-
-            This method is an API call. For general usage, consider :attr:`settings` instead.
-
-        Raises
-        -------
-        HTTPException
-            Retrieving your settings failed.
-
-        Returns
-        --------
-        :class:`UserSettings`
-            The current settings for your account.
-        """
-        data = await self._state.http.get_settings()
-        return UserSettings(data=data, state=self._state)
-
-    @copy_doc(UserSettings.edit)
-    async def edit_settings(self, **kwargs) -> UserSettings:  # TODO: I really wish I didn't have to do this...
-        payload = {}
-
-        content_filter = kwargs.pop('explicit_content_filter', None)
-        if content_filter:
-            payload['explicit_content_filter'] = content_filter.value
-
-        animate_stickers = kwargs.pop('animate_stickers', None)
-        if animate_stickers:
-            payload['animate_stickers'] = animate_stickers.value
-
-        friend_flags = kwargs.pop('friend_source_flags', None)
-        if friend_flags:
-            payload['friend_source_flags'] = friend_flags.to_dict()
-
-        guild_positions = kwargs.pop('guild_positions', None)
-        if guild_positions:
-            guild_positions = [str(x.id) for x in guild_positions]
-            payload['guild_positions'] = guild_positions
-
-        restricted_guilds = kwargs.pop('restricted_guilds', None)
-        if restricted_guilds:
-            restricted_guilds = [str(x.id) for x in restricted_guilds]
-            payload['restricted_guilds'] = restricted_guilds
-
-        activity_restricted_guilds = kwargs.pop('activity_restricted_guilds', None)
-        if activity_restricted_guilds:
-            activity_restricted_guilds = [str(x.id) for x in activity_restricted_guilds]
-            payload['activity_restricted_guild_ids'] = activity_restricted_guilds
-
-        activity_joining_restricted_guilds = kwargs.pop('activity_joining_restricted_guilds', None)
-        if activity_joining_restricted_guilds:
-            activity_joining_restricted_guilds = [str(x.id) for x in activity_joining_restricted_guilds]
-            payload['activity_joining_restricted_guild_ids'] = activity_joining_restricted_guilds
-
-        status = kwargs.pop('status', None)
-        if status:
-            payload['status'] = status.value
-
-        custom_activity = kwargs.pop('custom_activity', MISSING)
-        if custom_activity is not MISSING:
-            payload['custom_status'] = custom_activity and custom_activity.to_settings_dict()
-
-        theme = kwargs.pop('theme', None)
-        if theme:
-            payload['theme'] = theme.value
-
-        locale = kwargs.pop('locale', None)
-        if locale:
-            payload['locale'] = str(locale)
-
-        payload.update(kwargs)
-
-        state = self._state
-        data = await state.http.edit_settings(**payload)
-        return UserSettings(data=data, state=self._state)
 
 
 class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):

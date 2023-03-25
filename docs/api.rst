@@ -3350,31 +3350,6 @@ of :class:`enum.Enum`.
 
         Don't scan any direct messages.
 
-.. class:: FriendFlags
-
-    Represents the options found in ``Settings > Privacy & Safety > Who Can Add You As A Friend``
-    in the Discord client.
-
-    .. attribute:: noone
-
-        This allows no-one to add you as a friend.
-
-    .. attribute:: mutual_guilds
-
-        This allows guild members to add you as a friend.
-
-    .. attribute:: mutual_friends
-
-        This allows friends of friends to add you as a friend.
-
-    .. attribute:: guild_and_friends
-
-        This is a superset of :attr:`mutual_guilds` and :attr:`mutual_friends`.
-
-    .. attribute:: everyone
-
-        This allows everyone to add you as a friend.
-
 .. class:: PremiumType
 
     Represents the user's Discord Nitro subscription type.
@@ -4431,6 +4406,114 @@ of :class:`enum.Enum`.
     .. attribute:: never
 
         Never animate stickers.
+
+.. class:: SpoilerRenderOptions
+
+    Represents the options found in ``Settings > Text and Images > Show Spoiler Content`` in the Discord client.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: always
+
+        Always render spoilers.
+
+    .. attribute:: on_click
+
+        Render spoilers when they are interacted with.
+
+    .. attribute:: if_moderator
+
+        Render spoilers if the user is a moderator.
+
+.. class:: InboxTab
+
+    Represents the tabs found in the Discord inbox.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: default
+
+        No inbox tab has been yet selected.
+
+    .. attribute:: mentions
+
+        The mentions tab.
+
+    .. attribute:: unreads
+
+        The unreads tab.
+
+    .. attribute:: todos
+
+        The todos tab.
+
+    .. attribute:: for_you
+
+        The for you tab.
+
+.. class:: EmojiPickerSection
+
+    Represents the sections found in the Discord emoji picker. Any guild is also a valid section.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: favorite
+
+        The favorite section.
+
+    .. attribute:: top_emojis
+
+        The top emojis section.
+
+    .. attribute:: recent
+
+        The recents section.
+
+    .. attribute:: people
+
+        The people emojis section.
+
+    .. attribute:: nature
+
+        The nature emojis section.
+
+    .. attribute:: food
+
+        The food emojis section.
+
+    .. attribute:: activity
+
+        The activity emojis section.
+
+    .. attribute:: travel
+
+        The travel emojis section.
+
+    .. attribute:: objects
+
+        The objects emojis section.
+
+    .. attribute:: symbols
+
+        The symbols emojis section.
+
+    .. attribute:: flags
+
+        The flags emojis section.
+
+.. class:: StickerPickerSection
+
+    Represents the sections found in the Discord sticker picker. Any guild and sticker pack SKU is also a valid section.
+
+    .. versionadded:: 2.0
+
+    .. attribute:: favorite
+
+        The favorite section.
+
+    .. attribute:: recent
+
+        The recents section.
 
 .. class:: Theme
 
@@ -5818,6 +5901,11 @@ Settings
 .. autoclass:: UserSettings()
     :members:
 
+.. attributetable:: LegacyUserSettings
+
+.. autoclass:: LegacyUserSettings()
+    :members:
+
 .. attributetable:: GuildSettings
 
 .. autoclass:: GuildSettings()
@@ -5841,6 +5929,16 @@ Settings
 .. attributetable:: GuildFolder
 
 .. autoclass:: GuildFolder()
+    :members:
+
+.. attributetable:: GuildProgress
+
+.. autoclass:: GuildProgress()
+    :members:
+
+.. attributetable:: AudioContext
+
+.. autoclass:: AudioContext()
     :members:
 
 .. attributetable:: MuteConfig
@@ -6800,14 +6898,34 @@ Flags
 .. autoclass:: SystemChannelFlags()
     :members:
 
+.. attributetable:: FriendSourceFlags
+
+.. autoclass:: FriendSourceFlags()
+    :members:
+
+.. attributetable:: FriendDiscoveryFlags
+
+.. autoclass:: FriendDiscoveryFlags()
+    :members:
+
 .. attributetable:: GiftFlags
 
 .. autoclass:: GiftFlags()
     :members:
 
+.. attributetable:: HubProgressFlags
+
+.. autoclass:: HubProgressFlags()
+    :members:
+
 .. attributetable:: MessageFlags
 
 .. autoclass:: MessageFlags()
+    :members:
+
+.. attributetable:: OnboardingProgressFlags
+
+.. autoclass:: OnboardingProgressFlags()
     :members:
 
 .. attributetable:: PaymentFlags

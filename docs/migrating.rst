@@ -561,7 +561,6 @@ The following have been changed:
     - Note that this method will return ``None`` instead of :class:`VoiceChannel` if the edit was only positional.
 
 - :meth:`ClientUser.edit`
-- :meth:`ClientUser.edit_settings`
 - :meth:`Emoji.edit`
 - :meth:`Guild.edit`
 - :meth:`Message.edit`

@@ -40,7 +40,6 @@ from .errors import *
 from .file import *
 from .flags import *
 from .guild import *
-from .guild_folder import *
 from .guild_premium import *
 from .handlers import *
 from .integrations import *

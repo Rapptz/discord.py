@@ -39,7 +39,7 @@ from .message import Message
 from .sticker import GuildSticker
 from .appinfo import BaseAchievement, PartialApplication
 from .guild import Guild, UnavailableGuild, SupplementalGuild
-from .user import Connection, User, PartialUser, Relationship, RelationshipType
+from .user import Connection, User, PartialUser, ProtoSettingsType, Relationship, RelationshipType
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
 from .channel import DMChannel, GroupDMChannel
@@ -449,3 +449,13 @@ class RelationshipEvent(TypedDict):
     id: Snowflake
     type: RelationshipType
     nickname: Optional[str]
+
+
+class ProtoSettings(TypedDict):
+    proto: str
+    type: ProtoSettingsType
+
+
+class ProtoSettingsEvent(TypedDict):
+    settings: ProtoSettings
+    partial: bool

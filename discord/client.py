@@ -88,6 +88,7 @@ from .store import SKU, StoreListing, SubscriptionPlan
 from .guild_premium import *
 from .library import LibraryApplication
 from .relationship import Relationship
+from .settings import UserSettings, LegacyUserSettings, TrackingSettings, EmailSettings
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -290,7 +291,7 @@ class Client:
         status = self.initial_status
         if status or activities:
             if status is None:
-                status = getattr(state.settings, 'status', None) or Status.online
+                status = getattr(state.settings, 'status', None) or Status.unknown
             self.loop.create_task(self.change_presence(activities=activities, status=status))
 
     @property
@@ -416,6 +417,22 @@ class Client:
         return self._connection._relationships.get(user_id)
 
     @property
+    def settings(self) -> Optional[UserSettings]:
+        """Optional[:class:`.UserSettings`]: Returns the user's settings.
+
+        .. versionadded:: 2.0
+        """
+        return self._connection.settings
+
+    @property
+    def tracking_settings(self) -> Optional[TrackingSettings]:
+        """Optional[:class:`.TrackingSettings`]: Returns your tracking consents, if available.
+
+        .. versionadded:: 2.0
+        """
+        return self._connection.consents
+
+    @property
     def voice_clients(self) -> List[VoiceProtocol]:
         """List[:class:`.VoiceProtocol`]: Represents a list of voice connections.
 
@@ -535,21 +552,21 @@ class Client:
         print(f'Ignoring exception in {event_method}', file=sys.stderr)
         traceback.print_exc()
 
-    async def on_internal_settings_update(self, old_settings, new_settings):
+    async def on_internal_settings_update(self, old_settings: UserSettings, new_settings: UserSettings):
         if not self._sync_presences:
             return
 
         if (
             old_settings is not None
-            and old_settings._status == new_settings._status
-            and old_settings._custom_status == new_settings._custom_status
+            and old_settings.status == new_settings.status
+            and old_settings.custom_activity == new_settings.custom_activity
         ):
             return  # Nothing changed
 
         status = new_settings.status
         activities = [a for a in self.activities if a.type != ActivityType.custom]
-        if (activity := new_settings.custom_activity) is not None:
-            activities.append(activity)
+        if new_settings.custom_activity is not None:
+            activities.append(new_settings.custom_activity)
 
         await self.change_presence(status=status, activities=activities, edit_settings=False)
 
@@ -1416,12 +1433,12 @@ class Client:
                     custom_activity = activity
 
             payload: Dict[str, Any] = {}
-            if status != getattr(self.user.settings, 'status', None):  # type: ignore # user is always present when logged in
+            if status != getattr(self.settings, 'status', None):
                 payload['status'] = status
-            if custom_activity != getattr(self.user.settings, 'custom_activity', None):  # type: ignore # user is always present when logged in
+            if custom_activity != getattr(self.settings, 'custom_activity', None):
                 payload['custom_activity'] = custom_activity
             if payload:
-                await self.user.edit_settings(**payload)  # type: ignore # user is always present when logged in
+                await self.edit_legacy_settings(**payload)
 
     async def change_voice_state(
         self,
@@ -2431,6 +2448,168 @@ class Client:
         state = self._connection
         channels = await state.http.get_private_channels()
         return [_private_channel_factory(data['type'])[0](me=self.user, data=data, state=state) for data in channels]  # type: ignore # user is always present when logged in
+
+    async def fetch_settings(self) -> UserSettings:
+        """|coro|
+
+        Retrieves your user settings.
+
+        .. versionadded:: 2.0
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`settings` instead.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving your settings failed.
+
+        Returns
+        --------
+        :class:`.UserSettings`
+            The current settings for your account.
+        """
+        state = self._connection
+        data = await state.http.get_proto_settings(1)
+        return UserSettings(state, data['settings'])
+
+    @utils.deprecated('Client.fetch_settings')
+    async def legacy_settings(self) -> LegacyUserSettings:
+        """|coro|
+
+        Retrieves your legacy user settings.
+
+        .. versionadded:: 2.0
+
+        .. deprecated:: 2.0
+
+        .. note::
+
+            This method is no longer the recommended way to fetch your settings. Use :meth:`fetch_settings` instead.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`settings` instead.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving your settings failed.
+
+        Returns
+        --------
+        :class:`.LegacyUserSettings`
+            The current settings for your account.
+        """
+        state = self._connection
+        data = await state.http.get_settings()
+        return LegacyUserSettings(data=data, state=state)
+
+    async def email_settings(self) -> EmailSettings:
+        """|coro|
+
+        Retrieves your email settings.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        HTTPException
+            Getting the email settings failed.
+
+        Returns
+        -------
+        :class:`.EmailSettings`
+            The email settings.
+        """
+        state = self._connection
+        data = await state.http.get_email_settings()
+        return EmailSettings(data=data, state=state)
+
+    async def fetch_tracking_settings(self) -> TrackingSettings:
+        """|coro|
+
+        Retrieves your Discord tracking consents.
+
+        .. versionadded:: 2.0
+
+        Raises
+        ------
+        HTTPException
+            Retrieving the tracking settings failed.
+
+        Returns
+        -------
+        :class:`.TrackingSettings`
+            The tracking settings.
+        """
+        state = self._connection
+        data = await state.http.get_tracking()
+        return TrackingSettings(state=state, data=data)
+
+    @utils.deprecated('Client.edit_settings')
+    @utils.copy_doc(LegacyUserSettings.edit)
+    async def edit_legacy_settings(self, **kwargs) -> LegacyUserSettings:
+        payload = {}
+
+        content_filter = kwargs.pop('explicit_content_filter', None)
+        if content_filter:
+            payload['explicit_content_filter'] = content_filter.value
+
+        animate_stickers = kwargs.pop('animate_stickers', None)
+        if animate_stickers:
+            payload['animate_stickers'] = animate_stickers.value
+
+        friend_source_flags = kwargs.pop('friend_source_flags', None)
+        if friend_source_flags:
+            payload['friend_source_flags'] = friend_source_flags.to_dict()
+
+        friend_discovery_flags = kwargs.pop('friend_discovery_flags', None)
+        if friend_discovery_flags:
+            payload['friend_discovery_flags'] = friend_discovery_flags.value
+
+        guild_positions = kwargs.pop('guild_positions', None)
+        if guild_positions:
+            guild_positions = [str(x.id) for x in guild_positions]
+            payload['guild_positions'] = guild_positions
+
+        restricted_guilds = kwargs.pop('restricted_guilds', None)
+        if restricted_guilds:
+            restricted_guilds = [str(x.id) for x in restricted_guilds]
+            payload['restricted_guilds'] = restricted_guilds
+
+        activity_restricted_guilds = kwargs.pop('activity_restricted_guilds', None)
+        if activity_restricted_guilds:
+            activity_restricted_guilds = [str(x.id) for x in activity_restricted_guilds]
+            payload['activity_restricted_guild_ids'] = activity_restricted_guilds
+
+        activity_joining_restricted_guilds = kwargs.pop('activity_joining_restricted_guilds', None)
+        if activity_joining_restricted_guilds:
+            activity_joining_restricted_guilds = [str(x.id) for x in activity_joining_restricted_guilds]
+            payload['activity_joining_restricted_guild_ids'] = activity_joining_restricted_guilds
+
+        status = kwargs.pop('status', None)
+        if status:
+            payload['status'] = status.value
+
+        custom_activity = kwargs.pop('custom_activity', MISSING)
+        if custom_activity is not MISSING:
+            payload['custom_status'] = custom_activity and custom_activity.to_legacy_settings_dict()
+
+        theme = kwargs.pop('theme', None)
+        if theme:
+            payload['theme'] = theme.value
+
+        locale = kwargs.pop('locale', None)
+        if locale:
+            payload['locale'] = str(locale)
+
+        payload.update(kwargs)
+
+        state = self._connection
+        data = await state.http.edit_settings(**payload)
+        return LegacyUserSettings(data=data, state=state)
 
     async def fetch_relationships(self) -> List[Relationship]:
         """|coro|

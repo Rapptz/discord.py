@@ -33,6 +33,7 @@ if TYPE_CHECKING:
 
 
 __all__ = (
+    'Capabilities',
     'SystemChannelFlags',
     'MessageFlags',
     'PublicUserFlags',
@@ -49,6 +50,10 @@ __all__ = (
     'GiftFlags',
     'LibraryApplicationFlags',
     'ApplicationDiscoveryFlags',
+    'FriendSourceFlags',
+    'FriendDiscoveryFlags',
+    'HubProgressFlags',
+    'OnboardingProgressFlags',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -156,6 +161,111 @@ class BaseFlags:
             self.value &= ~o
         else:
             raise TypeError(f'Value to set for {self.__class__.__name__} must be a bool.')
+
+
+@fill_with_flags()
+class Capabilities(BaseFlags):
+    """Wraps up the Discord gateway capabilities.
+
+    Capabilities are used to determine what gateway features a client support.
+
+    This is meant to be used internally by the library.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two capabilities are equal.
+        .. describe:: x != y
+
+            Checks if two capabilities are not equal.
+        .. describe:: hash(x)
+
+               Return the capability's hash.
+        .. describe:: iter(x)
+
+               Returns an iterator of ``(name, value)`` pairs. This allows it
+               to be, for example, constructed as a dict or a list of pairs.
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. This value is a bit array field of a 53-bit integer
+        representing the currently available flags. You should query
+        flags via the properties rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    # The unfortunate thing about capabilities is that while a lot of these options
+    # may be useful to the library (i.e. to expose to users for customization),
+    # we match the official client's values for anti-spam purposes :(
+
+    @classmethod
+    def default(cls: Type[Self]) -> Self:
+        """Returns a :class:`Capabilities` with the current value used by the library."""
+        return cls._from_value(2045)
+
+    @flag_value
+    def lazy_user_notes(self):
+        """:class:`bool`: Disable preloading of user notes in READY."""
+        return 1 << 0
+
+    @flag_value
+    def no_affine_user_ids(self):
+        """:class:`bool`: Disable implicit relationship updates."""
+        return 1 << 1
+
+    @flag_value
+    def versioned_read_states(self):
+        """:class:`bool`: Enable versioned read states (change READY ``read_state`` to an object with ``version``/``partial``)."""
+        return 1 << 2
+
+    @flag_value
+    def versioned_user_guild_settings(self):
+        """:class:`bool`: Enable versioned user guild settings (change READY ``user_guild_settings`` to an object with ``version``/``partial``)."""
+        return 1 << 3
+
+    @flag_value
+    def dedupe_user_objects(self):
+        """:class:`bool`: Enable dehydration of the READY payload (move all user objects to a ``users`` array and replace them in various places in the READY payload with ``user_id`` or ``recipient_id``, move member object(s) from initial guild objects to ``merged_members``)."""
+        return 1 << 4
+
+    @flag_value
+    def prioritized_ready_payload(self):
+        """:class:`bool`: Enable prioritized READY payload (enable READY_SUPPLEMENTAL, move ``voice_states`` and ``embedded_activities`` from initial guild objects and ``merged_presences`` from READY, as well as split ``merged_members`` and (sometimes) ``private_channels``/``lazy_private_channels`` between the events)."""
+        # Requires self.dedupe_user_objects
+        return 1 << 5 | 1 << 4
+
+    @flag_value
+    def multiple_guild_experiment_populations(self):
+        """:class:`bool`: Handle multiple guild experiment populations (change the fourth entry of arrays in the ``guild_experiments`` array in READY to have an array of population arrays)."""
+        return 1 << 6
+
+    @flag_value
+    def non_channel_read_states(self):
+        """:class:`bool`: Handle non-channel read states (change READY ``read_state`` to include read states tied to server events, server home, and the mobile notification center)."""
+        return 1 << 7
+
+    @flag_value
+    def auth_token_refresh(self):
+        """:class:`bool`: Enable auth token refresh (add ``auth_token?`` to READY; this is sent when Discord wants to change the client's token, and was used for the mfa. token migration)."""
+        return 1 << 8
+
+    @flag_value
+    def user_settings_proto(self):
+        """:class:`bool`: Disable legacy user settings (remove ``user_settings`` from READY and stop sending USER_SETTINGS_UPDATE)."""
+        return 1 << 9
+
+    @flag_value
+    def client_state_v2(self):
+        """:class:`bool`: Enable client caching v2 (move guild properties in guild objects to a ``properties`` subkey and add ``data_mode`` and ``version`` to the objects, as well as change ``client_state`` in IDENTIFY)."""
+        return 1 << 10
+
+    @flag_value
+    def passive_guild_update(self):
+        """:class:`bool`: Enable passive guild update (replace ``CHANNEL_UNREADS_UPDATE`` with ``PASSIVE_UPDATE_V1``, a similar event that includes a ``voice_states`` array and a ``members`` array that includes the members of aforementioned voice states)."""
+        return 1 << 11
 
 
 @fill_with_flags(inverted=True)
@@ -1420,3 +1530,240 @@ class ApplicationDiscoveryFlags(BaseFlags):
     def eligible(self):
         """:class:`bool`: Returns ``True`` if the application has met all the above criteria and is eligible for discovery."""
         return 1 << 16
+
+
+class FriendSourceFlags(BaseFlags):
+    r"""Wraps up the Discord friend source flags.
+
+    These are used in user settings to control who can add you as a friend.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two FriendSourceFlags are equal.
+        .. describe:: x != y
+
+            Checks if two FriendSourceFlags are not equal.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. This value is a bit array field of a 53-bit integer
+        representing the currently available flags. You should query
+        flags via the properties rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    @classmethod
+    def _from_dict(cls, data: dict) -> Self:
+        self = cls()
+        if data.get('mutual_friends'):
+            self.mutual_friends = True
+        if data.get('mutual_guilds'):
+            self.mutual_guilds = True
+        if data.get('all'):
+            self.no_relation = True
+        return self
+
+    def _to_dict(self) -> dict:
+        return {
+            'mutual_friends': self.mutual_friends,
+            'mutual_guilds': self.mutual_guilds,
+            'all': self.no_relation,
+        }
+
+    @classmethod
+    def none(cls) -> Self:
+        """A factory method that creates a :class:`FriendSourceFlags` that allows no friend request."""
+        return cls()
+
+    @classmethod
+    def all(cls) -> Self:
+        """A factory method that creates a :class:`FriendSourceFlags` that allows any friend requests."""
+        self = cls()
+        self.no_relation = True
+        return self
+
+    @flag_value
+    def mutual_friends(self):
+        """:class:`bool`: Returns ``True`` if a user can add you as a friend if you have mutual friends."""
+        return 1 << 1
+
+    @flag_value
+    def mutual_guilds(self):
+        """:class:`bool`: Returns ``True`` if a user can add you as a friend if you are in the same guild."""
+        return 1 << 2
+
+    @flag_value
+    def no_relation(self):
+        """:class:`bool`: Returns ``True`` if a user can always add you as a friend."""
+        # Requires all of the above
+        return 1 << 3 | 1 << 2 | 1 << 1
+
+
+@fill_with_flags()
+class FriendDiscoveryFlags(BaseFlags):
+    r"""Wraps up the Discord friend discovery flags.
+
+    These are used in user settings to control how you get recommended friends.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two FriendDiscoveryFlags are equal.
+        .. describe:: x != y
+
+            Checks if two FriendDiscoveryFlags are not equal.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. This value is a bit array field of a 53-bit integer
+        representing the currently available flags. You should query
+        flags via the properties rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    @classmethod
+    def none(cls) -> Self:
+        """A factory method that creates a :class:`FriendDiscoveryFlags` that allows no friend discovery."""
+        return cls()
+
+    @classmethod
+    def all(cls) -> Self:
+        """A factory method that creates a :class:`FriendDiscoveryFlags` that allows all friend discovery."""
+        self = cls()
+        self.find_by_email = True
+        self.find_by_phone = True
+        return self
+
+    @flag_value
+    def find_by_phone(self):
+        """:class:`bool`: Returns ``True`` if a user can add you as a friend if they have your phone number."""
+        return 1 << 1
+
+    @flag_value
+    def find_by_email(self):
+        """:class:`bool`: Returns ``True`` if a user can add you as a friend if they have your email address."""
+        return 1 << 2
+
+
+@fill_with_flags()
+class HubProgressFlags(BaseFlags):
+    """Wraps up the Discord hub progress flags.
+
+    These are used in user settings, specifically guild progress, to track engagement and feature usage in hubs.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two HubProgressFlags are equal.
+        .. describe:: x != y
+
+            Checks if two HubProgressFlags are not equal.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. This value is a bit array field of a 53-bit integer
+        representing the currently available flags. You should query
+        flags via the properties rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    @flag_value
+    def join_guild(self):
+        """:class:`bool`: Returns ``True`` if the user has joined a guild in the hub."""
+        return 1 << 0
+
+    @flag_value
+    def invite_user(self):
+        """:class:`bool`: Returns ``True`` if the user has sent an invite for the hub."""
+        return 1 << 1
+
+    @flag_value
+    def contact_sync(self):
+        """:class:`bool`: Returns ``True`` if the user has accepted the contact sync modal."""
+        return 1 << 2
+
+
+@fill_with_flags()
+class OnboardingProgressFlags(BaseFlags):
+    """Wraps up the Discord guild onboarding progress flags.
+
+    These are used in user settings, specifically guild progress, to track engagement and feature usage in guild onboarding.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two OnboardingProgressFlags are equal.
+        .. describe:: x != y
+
+            Checks if two OnboardingProgressFlags are not equal.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. This value is a bit array field of a 53-bit integer
+        representing the currently available flags. You should query
+        flags via the properties rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    @flag_value
+    def notice_shown(self):
+        """:class:`bool`: Returns ``True`` if the user has been shown the onboarding notice."""
+        return 1 << 0
+
+    @flag_value
+    def notice_cleared(self):
+        """:class:`bool`: Returns ``True`` if the user has cleared the onboarding notice."""
+        return 1 << 1

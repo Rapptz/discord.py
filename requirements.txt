@@ -1,1 +1,2 @@
 aiohttp>=3.7.4,<4
+discord_protos<1.0.0

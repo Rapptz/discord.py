@@ -40,6 +40,7 @@ from . import utils
 from .activity import BaseActivity, Spotify
 from .enums import SpeakingState
 from .errors import ConnectionClosed
+from .flags import Capabilities
 
 _log = logging.getLogger(__name__)
 
@@ -334,6 +335,10 @@ class DiscordWebSocket:
     def open(self) -> bool:
         return not self.socket.closed
 
+    @property
+    def capabilities(self) -> Capabilities:
+        return Capabilities.default()
+
     def is_ratelimited(self) -> bool:
         return self._rate_limiter.is_ratelimited()
 
@@ -455,10 +460,10 @@ class DiscordWebSocket:
             'op': self.IDENTIFY,
             'd': {
                 'token': self.token,
-                'capabilities': 509,
+                'capabilities': self.capabilities.value,
                 'properties': self._super_properties,
                 'presence': presence,
-                'compress': False,
+                'compress': not self._zlib_enabled,  # We require at least one form of compression
                 'client_state': {
                     'guild_hashes': {},
                     'highest_last_message_id': '0',
@@ -467,10 +472,6 @@ class DiscordWebSocket:
                 },
             },
         }
-
-        if not self._zlib_enabled:
-            # We require at least one form of compression
-            payload['d']['compress'] = True
 
         await self.call_hooks('before_identify', initial=self._initial_identify)
         await self.send_as_json(payload)

@@ -31,7 +31,7 @@ from .asset import Asset
 from .colour import Colour
 from .enums import ActivityType, ClientType, OperatingSystem, Status, try_enum
 from .partial_emoji import PartialEmoji
-from .utils import _get_as_snowflake
+from .utils import _get_as_snowflake, parse_time, parse_timestamp
 
 __all__ = (
     'BaseActivity',
@@ -796,6 +796,49 @@ class CustomActivity(BaseActivity):
         else:
             raise TypeError(f'Expected str, PartialEmoji, or None, received {type(emoji)!r} instead.')
 
+    @classmethod
+    def _from_legacy_settings(cls, *, data: Optional[dict], state: ConnectionState) -> Optional[Self]:
+        if not data:
+            return
+
+        emoji = None
+        if data.get('emoji_id'):
+            emoji = state.get_emoji(int(data['emoji_id']))
+            if not emoji:
+                emoji = PartialEmoji(id=int(data['emoji_id']), name=data['emoji_name'])
+                emoji._state = state
+            else:
+                emoji = emoji._to_partial()
+        elif data.get('emoji_name'):
+            emoji = PartialEmoji(name=data['emoji_name'])
+            emoji._state = state
+
+        return cls(name=data.get('text'), emoji=emoji, expires_at=parse_time(data.get('expires_at')))
+
+    @classmethod
+    def _from_settings(cls, *, data: Any, state: ConnectionState) -> Self:
+        """
+        message CustomStatus {
+            string text = 1;
+            fixed64 emoji_id = 2;
+            string emoji_name = 3;
+            fixed64 expires_at_ms = 4;
+        }
+        """
+        emoji = None
+        if data.emoji_id:
+            emoji = state.get_emoji(data.emoji_id)
+            if not emoji:
+                emoji = PartialEmoji(id=data.emoji_id, name=data.emoji_name)
+                emoji._state = state
+            else:
+                emoji = emoji._to_partial()
+        elif data.emoji_name:
+            emoji = PartialEmoji(name=data.emoji_name)
+            emoji._state = state
+
+        return cls(name=data.text, emoji=emoji, expires_at=parse_timestamp(data.expires_at_ms))
+
     @property
     def type(self) -> ActivityType:
         """:class:`ActivityType`: Returns the activity's type. This is for compatibility with :class:`Activity`.
@@ -814,17 +857,32 @@ class CustomActivity(BaseActivity):
             o['emoji'] = self.emoji.to_dict()
         return o  # type: ignore
 
-    def to_settings_dict(self) -> Dict[str, Any]:
+    def to_legacy_settings_dict(self) -> Dict[str, Any]:
         o: Dict[str, Optional[Union[str, int]]] = {}
 
-        if text := self.name:
-            o['text'] = text
-        if emoji := self.emoji:
+        if self.name:
+            o['text'] = self.name
+        if self.emoji:
+            emoji = self.emoji
             o['emoji_name'] = emoji.name
             if emoji.id:
                 o['emoji_id'] = emoji.id
-        if (expiry := self.expires_at) is not None:
-            o['expires_at'] = expiry.isoformat()
+        if self.expires_at is not None:
+            o['expires_at'] = self.expires_at.isoformat()
+        return o
+
+    def to_settings_dict(self) -> Dict[str, Any]:
+        o: Dict[str, Optional[Union[str, int]]] = {}
+
+        if self.name:
+            o['text'] = self.name
+        if self.emoji:
+            emoji = self.emoji
+            o['emoji_name'] = emoji.name
+            if emoji.id:
+                o['emoji_id'] = emoji.id
+        if self.expires_at is not None:
+            o['expires_at_ms'] = int(self.expires_at.timestamp() * 1000)
         return o
 
     def __eq__(self, other: object) -> bool:
@@ -1007,17 +1065,3 @@ def create_activity(data: Optional[ActivityPayload], state: ConnectionState) -> 
     if isinstance(ret.emoji, PartialEmoji):
         ret.emoji._state = state
     return ret
-
-
-def create_settings_activity(*, data, state):
-    if not data:
-        return
-
-    emoji = None
-    if (emoji_id := _get_as_snowflake(data, 'emoji_id')) is not None:
-        emoji = state.get_emoji(emoji_id)
-        emoji = emoji and emoji._to_partial()
-    elif (emoji_name := data.get('emoji_name')) is not None:
-        emoji = PartialEmoji(name=emoji_name)
-
-    return CustomActivity(name=data.get('text'), emoji=emoji, expires_at=data.get('expires_at'))

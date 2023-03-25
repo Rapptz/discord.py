@@ -618,6 +618,12 @@ def _get_as_snowflake(data: Any, key: str) -> Optional[int]:
         return value and int(value)
 
 
+def _ocast(value: Any, type: Any):
+    if value is MISSING:
+        return MISSING
+    return type(value)
+
+
 def _get_mime_type_for_image(data: bytes, with_video: bool = False, fallback: bool = False) -> str:
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'

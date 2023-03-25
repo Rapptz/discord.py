@@ -70,11 +70,12 @@ __all__ = (
     'HypeSquadHouse',
     'PremiumType',
     'UserContentFilter',
-    'FriendFlags',
     'Theme',
     'StickerAnimationOptions',
-    'RelationshipAction',
-    'UnavailableGuildType',
+    'SpoilerRenderOptions',
+    'InboxTab',
+    'EmojiPickerSection',
+    'StickerPickerSection',
     'RequiredActionType',
     'ReportType',
     'ApplicationVerificationState',
@@ -318,53 +319,77 @@ class UserContentFilter(Enum):
     non_friends = 1
     all_messages = 2
 
+    def __int__(self) -> int:
+        return self.value
+
 
 class StickerAnimationOptions(Enum):
     always = 0
     on_interaction = 1
     never = 2
 
+    def __int__(self) -> int:
+        return self.value
 
-class FriendFlags(Enum):
-    noone = 0
-    mutual_guilds = 1
-    mutual_friends = 2
-    guild_and_friends = 3
-    everyone = 4
 
-    def to_dict(self):
-        if self.value == 0:
-            return {'all': False, 'mutual_friends': False, 'mutual_guilds': False}
-        if self.value == 1:
-            return {'all': False, 'mutual_friends': False, 'mutual_guilds': True}
-        if self.value == 2:
-            return {'all': False, 'mutual_friends': True, 'mutual_guilds': False}
-        if self.value == 3:
-            return {'all': False, 'mutual_friends': True, 'mutual_guilds': True}
-        if self.value == 4:
-            return {'all': True, 'mutual_friends': True, 'mutual_guilds': True}
+class SpoilerRenderOptions(Enum):
+    always = 'ALWAYS'
+    on_click = 'ON_CLICK'
+    if_moderator = 'IF_MODERATOR'
 
-    @classmethod
-    def _from_dict(cls, data):
-        all = data.get('all')
-        mutual_guilds = data.get('mutual_guilds')
-        mutual_friends = data.get('mutual_friends')
+    def __str__(self) -> str:
+        return self.value
 
-        if all:
-            return cls.everyone
-        elif mutual_guilds and mutual_friends:
-            return cls.guild_and_friends
-        elif mutual_guilds:
-            return cls.mutual_guilds
-        elif mutual_friends:
-            return cls.mutual_friends
-        else:
-            return cls.noone
+
+class InboxTab(Enum):
+    default = 0
+    mentions = 1
+    unreads = 2
+    todos = 3
+    for_you = 4
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class EmojiPickerSection(Enum):
+    favorite = 'FAVORITES'
+    top_emojis = 'TOP_GUILD_EMOJI'
+    recent = 'RECENT'
+    people = 'people'
+    nature = 'nature'
+    food = 'food'
+    activity = 'activity'
+    travel = 'travel'
+    objects = 'objects'
+    symbols = 'symbols'
+    flags = 'flags'
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class StickerPickerSection(Enum):
+    favorite = 'FAVORITE'
+    recent = 'RECENT'
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class Theme(Enum):
     light = 'light'
     dark = 'dark'
+
+    @classmethod
+    def from_int(cls, value: int) -> Theme:
+        return cls.light if value == 2 else cls.dark
+
+    def to_int(self) -> int:
+        return 2 if self is Theme.light else 1
+
+    def __int__(self) -> int:
+        return self.to_int()
 
 
 class Status(Enum):
@@ -374,6 +399,7 @@ class Status(Enum):
     dnd = 'dnd'
     do_not_disturb = 'dnd'
     invisible = 'invisible'
+    unknown = 'unknown'
 
     def __str__(self) -> str:
         return self.value

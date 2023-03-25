@@ -3699,6 +3699,20 @@ class HTTPClient:
     def leave_hypesquad_house(self) -> Response[None]:
         return self.request(Route('DELETE', '/hypesquad/online'))
 
+    def get_proto_settings(self, type: int) -> Response[user.ProtoSettings]:
+        return self.request(Route('GET', '/users/@me/settings-proto/{type}', type=type))
+
+    def edit_proto_settings(
+        self, type: int, settings: str, required_data_version: Optional[int] = None
+    ) -> Response[user.ProtoSettings]:
+        payload: Dict[str, Snowflake] = {'settings': settings}
+        if required_data_version is not None:
+            # The required data version of the proto is set to the last known version when an offline edit is made
+            # so the PATCH doesn't overwrite newer edits made on a different client
+            payload['required_data_version'] = required_data_version
+
+        return self.request(Route('PATCH', '/users/@me/settings-proto/{type}', type=type), json=payload)
+
     def get_settings(self):  # TODO: return type
         return self.request(Route('GET', '/users/@me/settings'))
 
