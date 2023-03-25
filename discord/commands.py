@@ -359,8 +359,6 @@ class UserCommand(BaseCommand):
     guild_id: Optional[:class:`int`]
         The ID of the guild this command is registered in. A value of ``None``
         denotes that it is a global command.
-
-    .. automethod:: __call__
     """
 
     __slots__ = ('_user',)
@@ -380,6 +378,11 @@ class UserCommand(BaseCommand):
         channel: Optional[:class:`abc.Messageable`]
             The channel to use the command on. Overrides :attr:`target_channel`.
             Required if :attr:`target_channel` is not set.
+
+        Returns
+        -------
+        :class:`Interaction`
+            The interaction that was created.
         """
         user = user or self._user
         if user is None:
@@ -464,8 +467,6 @@ class MessageCommand(BaseCommand):
     guild_id: Optional[:class:`int`]
         The ID of the guild this command is registered in. A value of ``None``
         denotes that it is a global command.
-
-    .. automethod:: __call__
     """
 
     __slots__ = ('_message',)
@@ -485,6 +486,11 @@ class MessageCommand(BaseCommand):
         channel: Optional[:class:`abc.Messageable`]
             The channel to use the command on. Overrides :attr:`target_channel`.
             Required if :attr:`target_channel` is not set.
+
+        Returns
+        -------
+        :class:`Interaction`
+            The interaction that was created.
         """
         message = message or self._message
         if message is None:
@@ -574,8 +580,6 @@ class SlashCommand(BaseCommand, SlashMixin):
         The command's options.
     children: List[:class:`SubCommand`]
         The command's subcommands. If a command has subcommands, it is a group and cannot be used.
-
-    .. automethod:: __call__
     """
 
     __slots__ = ('_parent', 'options', 'children')
@@ -601,6 +605,11 @@ class SlashCommand(BaseCommand, SlashMixin):
         ------
         TypeError
             Attempted to use a group.
+
+        Returns
+        -------
+        :class:`Interaction`
+            The interaction that was created.
         """
         if self.is_group():
             raise TypeError('Cannot use a group')
@@ -653,8 +662,6 @@ class SubCommand(SlashMixin):
         The subcommand's options.
     children: List[:class:`SubCommand`]
         The subcommand's subcommands. If a subcommand has subcommands, it is a group and cannot be used.
-
-    .. automethod:: __call__
     """
 
     __slots__ = (
@@ -705,6 +712,11 @@ class SubCommand(SlashMixin):
         ------
         TypeError
             Attempted to use a group.
+
+        Returns
+        -------
+        :class:`Interaction`
+            The interaction that was created.
         """
         if self.is_group():
             raise TypeError('Cannot use a group')

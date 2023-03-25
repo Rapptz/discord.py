@@ -6639,11 +6639,15 @@ ApplicationCommand
     :members:
     :inherited-members:
 
+    .. automethod:: __call__
+
 .. attributetable:: MessageCommand
 
 .. autoclass:: MessageCommand()
     :members:
     :inherited-members:
+
+    .. automethod:: __call__
 
 .. attributetable:: SlashCommand
 
@@ -6651,11 +6655,15 @@ ApplicationCommand
     :members:
     :inherited-members:
 
+    .. automethod:: __call__
+
 .. attributetable:: SubCommand
 
 .. autoclass:: SubCommand()
     :members:
     :inherited-members:
+
+    .. automethod:: __call__
 
 .. attributetable:: Option
 
