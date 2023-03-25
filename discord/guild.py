@@ -2748,7 +2748,7 @@ class Guild(Hashable):
     async def top_emojis(self) -> List[Union[Emoji, PartialEmoji]]:
         """|coro|
 
-        Retrieves the most used custom emojis in the guild.
+        Retrieves the most used custom emojis in the guild. Emojis are returned in order of descending usage.
 
         .. versionadded:: 2.0
 
