@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
+from typing import List, Optional, TypedDict
 from .snowflake import Snowflake, SnowflakeList
 from .user import User
 
@@ -44,3 +44,12 @@ class Emoji(PartialEmoji, total=False):
 class EditEmoji(TypedDict):
     name: str
     roles: Optional[SnowflakeList]
+
+
+class TopEmoji(TypedDict):
+    emoji_id: Snowflake
+    emoji_rank: int
+
+
+class TopEmojis(TypedDict):
+    items: List[TopEmoji]

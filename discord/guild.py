@@ -2745,6 +2745,30 @@ class Guild(Hashable):
         data = await self._state.http.create_guild_scheduled_event(self.id, **payload, reason=reason)
         return ScheduledEvent(state=self._state, data=data)
 
+    async def top_emojis(self) -> List[Union[Emoji, PartialEmoji]]:
+        """|coro|
+
+        Retrieves the most used custom emojis in the guild.
+
+        .. versionadded:: 2.0
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the top emojis failed.
+
+        Returns
+        --------
+        List[Union[:class:`Emoji`, :class:`PartialEmoji`]]
+            The most used emojis. Falls back to a bare :class:`PartialEmoji` if the emoji is not found in cache.
+        """
+        state = self._state
+        data = await state.http.get_top_emojis(self.id)
+        return [
+            self._state.get_emoji(int(e['emoji_id'])) or PartialEmoji.with_state(state, name='', id=int(e['emoji_id']))
+            for e in data['items']
+        ]
+
     async def fetch_emojis(self) -> List[Emoji]:
         r"""|coro|
 

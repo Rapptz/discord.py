@@ -1614,6 +1614,9 @@ class HTTPClient:
     def get_custom_emoji(self, guild_id: Snowflake, emoji_id: Snowflake) -> Response[emoji.Emoji]:
         return self.request(Route('GET', '/guilds/{guild_id}/emojis/{emoji_id}', guild_id=guild_id, emoji_id=emoji_id))
 
+    def get_top_emojis(self, guild_id: Snowflake) -> Response[emoji.TopEmojis]:
+        return self.request(Route('GET', '/guilds/{guild_id}/top-emojis', guild_id=guild_id))
+
     def get_emoji_guild(self, emoji_id: Snowflake) -> Response[guild.Guild]:
         return self.request(Route('GET', '/emojis/{emoji_id}', emoji_id=emoji_id))
 
