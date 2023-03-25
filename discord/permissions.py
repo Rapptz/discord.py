@@ -221,9 +221,6 @@ class Permissions(BaseFlags):
            Added :attr:`create_public_threads`, :attr:`create_private_threads`, :attr:`manage_threads`,
            :attr:`use_external_stickers`, :attr:`send_messages_in_threads` and
            :attr:`request_to_speak` permissions.
-
-        .. versionchanged:: 2.3
-            Replaced :attr:`manage_emojis` with :attr:`manage_guild_expressions`
         """
         return cls(0b111110110110011111101111111111101010001)
 
@@ -313,9 +310,6 @@ class Permissions(BaseFlags):
         - :attr:`moderate_members`
 
         .. versionadded:: 2.0
-
-        .. versionchanged:: 2.3
-            Replaced :attr:`manage_emojis_and_stickers` with :attr:`manage_guild_expressions`
         """
         return cls(0b10000010001110000000000000010000000111110)
 
@@ -560,7 +554,6 @@ class Permissions(BaseFlags):
     @make_permission_alias('manage_guild_expressions')
     def manage_emojis(self) -> int:
         """:class:`bool`: An alias for :attr:`manage_guild_expressions`."""
-
         return 1 << 30
 
     @make_permission_alias('manage_guild_expressions')
