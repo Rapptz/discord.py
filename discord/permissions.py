@@ -775,6 +775,7 @@ class PermissionOverwrite:
         use_external_stickers: Optional[bool]
         use_embedded_activities: Optional[bool]
         moderate_members: Optional[bool]
+        use_soundboard: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}
