@@ -368,7 +368,9 @@ class UserCommand(BaseCommand):
         self._user = target
 
     async def __call__(self, user: Optional[Snowflake] = None, *, channel: Optional[Messageable] = None):
-        """Use the user command.
+        """|coro|
+
+        Use the user command.
 
         Parameters
         ----------
@@ -476,7 +478,9 @@ class MessageCommand(BaseCommand):
         self._message = target
 
     async def __call__(self, message: Optional[Message] = None, *, channel: Optional[Messageable] = None):
-        """Use the message command.
+        """|coro|
+
+        Use the message command.
 
         Parameters
         ----------
@@ -590,13 +594,15 @@ class SlashCommand(BaseCommand, SlashMixin):
         self._unwrap_options(data.get('options', []))
 
     async def __call__(self, channel: Optional[Messageable] = None, /, **kwargs):
-        r"""Use the slash command.
+        r"""|coro|
+
+        Use the slash command.
 
         Parameters
         ----------
         channel: Optional[:class:`abc.Messageable`]
             The channel to use the command on. Overrides :attr:`target_channel`.
-            Required if :attr:`target_message` is not set.
+            Required if :attr:`target_channel` is not set.
         \*\*kwargs: Any
             The options to use. These will be casted to the correct type.
             If an option has choices, they are automatically converted from name to value for you.
@@ -697,13 +703,15 @@ class SubCommand(SlashMixin):
                 parent = parent.parent
 
     async def __call__(self, channel: Optional[Messageable] = None, /, **kwargs):
-        r"""Use the sub command.
+        r"""|coro|
+
+        Use the sub command.
 
         Parameters
         ----------
         channel: Optional[:class:`abc.Messageable`]
             The channel to use the command on. Overrides :attr:`target_channel`.
-            Required if :attr:`target_message` is not set.
+            Required if :attr:`target_channel` is not set.
         \*\*kwargs: Any
             The options to use. These will be casted to the correct type.
             If an option has choices, they are automatically converted from name to value for you.
