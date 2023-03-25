@@ -1398,6 +1398,9 @@ class GuildProgress:
         self._dismissed_contents = self._pack_dismissed_contents(dismissed_contents or [])
         self._collapsed_channel_ids = [channel.id for channel in collapsed_channels] or []
 
+    def __repr__(self) -> str:
+        return f'<GuildProgress guild_id={self.guild_id} hub_progress={self.hub_progress!r} onboarding_progress={self.onboarding_progress!r}>'
+
     @classmethod
     def _from_settings(cls, guild_id: int, *, data: Any, state: ConnectionState) -> Self:
         """
@@ -1534,6 +1537,9 @@ class AudioContext:
         self.muted = muted
         self.volume = volume
         self.modified_at = utcnow()
+
+    def __repr__(self) -> str:
+        return f'<AudioContext user_id={self.user_id} muted={self.muted} volume={self.volume} modified_at={self.modified_at!r}>'
 
     @classmethod
     def _from_settings(cls, user_id: int, *, data: Any, state: ConnectionState) -> Self:
