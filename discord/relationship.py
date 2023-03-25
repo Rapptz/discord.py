@@ -113,6 +113,7 @@ class Relationship(Hashable):
     def _from_implicit(cls, *, state: ConnectionState, user: User) -> Relationship:
         self = cls.__new__(cls)
         self._state = state
+        self._presence = None
         self.type = RelationshipType.implicit
         self.nick = None
         self.since = None
