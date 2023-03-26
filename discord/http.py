@@ -3872,7 +3872,7 @@ class HTTPClient:
         guild_id: Optional[Snowflake] = None,
         roles: bool = True,
         everyone: bool = True,
-    ) -> Response[List[Message]]:
+    ) -> Response[List[message.Message]]:
         params = {
             'limit': limit,
             'roles': str(roles).lower(),
