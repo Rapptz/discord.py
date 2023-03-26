@@ -71,7 +71,7 @@ from .utils import MISSING
 from .object import Object, OLDEST_OBJECT
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
-from .appinfo import Application, ApplicationActivityStatistics, Company, EULA, PartialApplication
+from .application import Application, ApplicationActivityStatistics, Company, EULA, PartialApplication
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory

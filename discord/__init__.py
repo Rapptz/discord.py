@@ -22,7 +22,7 @@ from typing import Literal, NamedTuple
 from . import abc as abc, opus as opus, utils as utils
 from .activity import *
 from .affinity import *
-from .appinfo import *
+from .application import *
 from .asset import *
 from .audit_logs import *
 from .billing import *

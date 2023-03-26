@@ -40,7 +40,7 @@ __all__ = (
 if TYPE_CHECKING:
     from datetime import datetime
 
-    from .appinfo import IntegrationApplication
+    from .application import IntegrationApplication
     from .guild import Guild
     from .role import Role
     from .state import ConnectionState

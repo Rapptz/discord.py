@@ -86,7 +86,7 @@ from .interactions import Interaction
 from .permissions import Permissions, PermissionOverwrite
 from .modal import Modal
 from .member import VoiceState
-from .appinfo import IntegrationApplication, PartialApplication, Achievement
+from .application import IntegrationApplication, PartialApplication, Achievement
 from .connections import Connection
 from .payments import Payment
 from .entitlements import Entitlement, Gift
@@ -108,7 +108,7 @@ if TYPE_CHECKING:
 
     from .types.snowflake import Snowflake
     from .types.activity import Activity as ActivityPayload
-    from .types.appinfo import Achievement as AchievementPayload, IntegrationApplication as IntegrationApplicationPayload
+    from .types.application import Achievement as AchievementPayload, IntegrationApplication as IntegrationApplicationPayload
     from .types.channel import DMChannel as DMChannelPayload
     from .types.user import User as UserPayload, PartialUser as PartialUserPayload
     from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload

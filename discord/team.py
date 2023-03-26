@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     from datetime import date
 
     from .abc import Snowflake, SnowflakeTime
-    from .appinfo import Application, Company
+    from .application import Application, Company
     from .state import ConnectionState
     from .types.team import Team as TeamPayload, TeamMember as TeamMemberPayload, TeamPayout as TeamPayoutPayload
     from .types.user import PartialUser as PartialUserPayload
@@ -236,7 +236,7 @@ class Team(Hashable):
         HTTPException
             Retrieving the team applications failed.
         """
-        from .appinfo import Application
+        from .application import Application
 
         state = self._state
         data = await state.http.get_team_applications(self.id)
@@ -357,7 +357,7 @@ class Team(Hashable):
         :class:`.Company`
             The created company.
         """
-        from .appinfo import Company
+        from .application import Company
 
         state = self._state
         data = await state.http.create_team_company(self.id, name)

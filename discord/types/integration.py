@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired
 
-from .appinfo import IntegrationApplication
+from .application import IntegrationApplication
 from .guild import Guild
 from .snowflake import Snowflake
 from .user import User

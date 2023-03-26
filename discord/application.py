@@ -78,7 +78,7 @@ if TYPE_CHECKING:
     from .metadata import MetadataObject
     from .state import ConnectionState
     from .store import ContentRating
-    from .types.appinfo import (
+    from .types.application import (
         EULA as EULAPayload,
         Achievement as AchievementPayload,
         ActivityStatistics as ActivityStatisticsPayload,

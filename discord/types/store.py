@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import Dict, List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired
 
-from .appinfo import PartialApplication, StoreAsset
+from .application import PartialApplication, StoreAsset
 from .entitlements import Entitlement
 from .guild import PartialGuild
 from .library import LibraryApplication

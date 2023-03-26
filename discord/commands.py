@@ -34,7 +34,7 @@ from .utils import _generate_nonce, _get_as_snowflake
 
 if TYPE_CHECKING:
     from .abc import Messageable, Snowflake
-    from .appinfo import IntegrationApplication
+    from .application import IntegrationApplication
     from .file import File
     from .guild import Guild
     from .interactions import Interaction

@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import List, TypedDict
 from typing_extensions import NotRequired
 
-from .appinfo import Branch, PartialApplication
+from .application import Branch, PartialApplication
 from .entitlements import Entitlement
 from .snowflake import Snowflake
 from .store import PartialSKU

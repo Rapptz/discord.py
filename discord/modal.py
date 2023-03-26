@@ -32,7 +32,7 @@ from .mixins import Hashable
 from .utils import _generate_nonce
 
 if TYPE_CHECKING:
-    from .appinfo import IntegrationApplication
+    from .application import IntegrationApplication
     from .components import ActionRow
     from .interactions import Interaction
 

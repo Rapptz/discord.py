@@ -89,7 +89,7 @@ from .object import OLDEST_OBJECT, Object
 from .profile import MemberProfile
 from .partial_emoji import PartialEmoji
 from .welcome_screen import *
-from .appinfo import PartialApplication
+from .application import PartialApplication
 from .guild_premium import PremiumGuildSubscription
 from .entitlements import Entitlement
 

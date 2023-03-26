@@ -27,7 +27,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional
 
 from . import utils
-from .appinfo import ApplicationInstallParams
+from .application import ApplicationInstallParams
 from .asset import Asset
 from .connections import PartialConnection
 from .enums import PremiumType, try_enum

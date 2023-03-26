@@ -37,7 +37,7 @@ from .member import MemberWithUser
 from .snowflake import Snowflake
 from .message import Message
 from .sticker import GuildSticker
-from .appinfo import BaseAchievement, PartialApplication
+from .application import BaseAchievement, PartialApplication
 from .guild import Guild, UnavailableGuild, SupplementalGuild
 from .user import Connection, User, PartialUser, ProtoSettingsType, Relationship, RelationshipType
 from .threads import Thread, ThreadMember

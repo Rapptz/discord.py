@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, List, Optional
 
-from .appinfo import ApplicationActivityStatistics, ApplicationBranch, PartialApplication
+from .application import ApplicationActivityStatistics, ApplicationBranch, PartialApplication
 from .entitlements import Entitlement
 from .enums import SKUType, try_enum
 from .flags import LibraryApplicationFlags
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
     from .asset import Asset
     from .state import ConnectionState
-    from .types.appinfo import Branch as BranchPayload
+    from .types.application import Branch as BranchPayload
     from .types.library import LibraryApplication as LibraryApplicationPayload
     from .types.store import PartialSKU as PartialSKUPayload
 

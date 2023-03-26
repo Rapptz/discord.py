@@ -55,7 +55,7 @@ if TYPE_CHECKING:
     from .abc import GuildChannel, PrivateChannel, Snowflake
     from .channel import GroupChannel
     from .user import User
-    from .appinfo import PartialApplication
+    from .application import PartialApplication
     from .message import Message
 
     InviteGuildType = Union[Guild, 'PartialInviteGuild', Object]
@@ -487,7 +487,7 @@ class Invite(Hashable):
 
         application = data.get('target_application')
         if application is not None:
-            from .appinfo import PartialApplication
+            from .application import PartialApplication
 
             application = PartialApplication(data=application, state=state)
         self.target_application: Optional[PartialApplication] = application

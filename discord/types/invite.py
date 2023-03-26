@@ -32,7 +32,7 @@ from .snowflake import Snowflake
 from .guild import InviteGuild, _GuildPreviewUnique
 from .channel import PartialChannel
 from .user import PartialUser
-from .appinfo import PartialApplication
+from .application import PartialApplication
 
 InviteTargetType = Literal[1, 2]
 

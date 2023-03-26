@@ -64,12 +64,12 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .abc import Snowflake
-    from .appinfo import Application, PartialApplication
+    from .application import Application, PartialApplication
     from .entitlements import Entitlement, Gift, GiftBatch
     from .guild import Guild
     from .library import LibraryApplication
     from .state import ConnectionState
-    from .types.appinfo import StoreAsset as StoreAssetPayload
+    from .types.application import StoreAsset as StoreAssetPayload
     from .types.entitlements import Gift as GiftPayload
     from .types.snowflake import Snowflake as SnowflakeType
     from .types.store import (
@@ -1171,7 +1171,7 @@ class SKU(Hashable):
         return f'<SKU id={self.id} name={self.name!r} type={self.type!r}>'
 
     def _update(self, data: SKUPayload) -> None:
-        from .appinfo import PartialApplication
+        from .application import PartialApplication
 
         state = self._state
 
