@@ -131,8 +131,11 @@ class SubscriptionPrice(TypedDict):
     exponent: int
 
 
-class SubscriptionCountryPrice(TypedDict):
+class CountryCode(TypedDict):
     country_code: str
+
+
+class SubscriptionCountryPrice(CountryCode):
     prices: List[SubscriptionPrice]
 
 

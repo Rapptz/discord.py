@@ -1539,7 +1539,9 @@ class AudioContext:
         self.modified_at = utcnow()
 
     def __repr__(self) -> str:
-        return f'<AudioContext user_id={self.user_id} muted={self.muted} volume={self.volume} modified_at={self.modified_at!r}>'
+        return (
+            f'<AudioContext user_id={self.user_id} muted={self.muted} volume={self.volume} modified_at={self.modified_at!r}>'
+        )
 
     @classmethod
     def _from_settings(cls, user_id: int, *, data: Any, state: ConnectionState) -> Self:

@@ -5853,6 +5853,19 @@ User
 .. autoclass:: Note()
     :members:
 
+Affinity
+~~~~~~~~~
+
+.. attributetable:: UserAffinity
+
+.. autoclass:: UserAffinity()
+    :members:
+
+.. attributetable:: GuildAffinity
+
+.. autoclass:: GuildAffinity()
+    :members:
+
 Billing
 ~~~~~~~
 

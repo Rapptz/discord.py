@@ -3822,7 +3822,13 @@ class HTTPClient:
 
         return self.request(Route('POST', '/interactions'), json=payload, form=form, files=files)
 
-    def get_country_code(self) -> Response[dict]:
+    def get_user_affinities(self) -> Response[user.UserAffinities]:
+        return self.request(Route('GET', '/users/@me/affinities/users'))
+
+    def get_guild_affinities(self) -> Response[user.GuildAffinities]:
+        return self.request(Route('GET', '/users/@me/affinities/guilds'))
+
+    def get_country_code(self) -> Response[subscriptions.CountryCode]:
         return self.request(Route('GET', '/users/@me/billing/country-code'))
 
     def get_library_entries(

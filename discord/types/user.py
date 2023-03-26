@@ -128,3 +128,22 @@ class ProtoSettings(TypedDict):
 
 
 ProtoSettingsType = Literal[1, 2, 3]
+
+
+class UserAffinity(TypedDict):
+    user_id: Snowflake
+    affinity: float
+
+
+class UserAffinities(TypedDict):
+    user_affinities: List[UserAffinity]
+    inverse_user_affinities: List[UserAffinity]
+
+
+class GuildAffinity(TypedDict):
+    guild_id: Snowflake
+    affinity: float
+
+
+class GuildAffinities(TypedDict):
+    guild_affinities: List[GuildAffinity]

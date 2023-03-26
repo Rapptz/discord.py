@@ -89,6 +89,7 @@ from .guild_premium import *
 from .library import LibraryApplication
 from .relationship import Relationship
 from .settings import UserSettings, LegacyUserSettings, TrackingSettings, EmailSettings
+from .affinity import *
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -4364,6 +4365,52 @@ class Client:
         """
         data = await self._connection.http.get_premium_usage()
         return PremiumUsage(data=data)
+
+    async def user_affinities(self) -> List[UserAffinity]:
+        """|coro|
+
+        Retrieves the user affinities for the current user.
+
+        User affinities are the users you interact with most frecently.
+
+        .. versionadded:: 2.0
+
+        Raises
+        ------
+        HTTPException
+            Retrieving the user affinities failed.
+
+        Returns
+        -------
+        List[:class:`.UserAffinity`]
+            The user affinities.
+        """
+        state = self._connection
+        data = await state.http.get_user_affinities()
+        return [UserAffinity(data=d, state=state) for d in data['user_affinities']]
+
+    async def guild_affinities(self) -> List[GuildAffinity]:
+        """|coro|
+
+        Retrieves the guild affinities for the current user.
+
+        Guild affinities are the guilds you interact with most frecently.
+
+        .. versionadded:: 2.0
+
+        Raises
+        ------
+        HTTPException
+            Retrieving the guild affinities failed.
+
+        Returns
+        -------
+        List[:class:`.GuildAffinity`]
+            The guild affinities.
+        """
+        state = self._connection
+        data = await state.http.get_guild_affinities()
+        return [GuildAffinity(data=d, state=state) for d in data['guild_affinities']]
 
     async def join_active_developer_program(self, *, application: Snowflake, channel: Snowflake) -> int:
         """|coro|
