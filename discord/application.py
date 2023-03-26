@@ -84,12 +84,12 @@ if TYPE_CHECKING:
         ActivityStatistics as ActivityStatisticsPayload,
         Application as ApplicationPayload,
         Asset as AssetPayload,
+        BaseApplication as BaseApplicationPayload,
         Branch as BranchPayload,
         Build as BuildPayload,
         Company as CompanyPayload,
         EmbeddedActivityConfig as EmbeddedActivityConfigPayload,
         GlobalActivityStatistics as GlobalActivityStatisticsPayload,
-        IntegrationApplication as IntegrationApplicationPayload,
         Manifest as ManifestPayload,
         ManifestLabel as ManifestLabelPayload,
         PartialApplication as PartialApplicationPayload,
@@ -3360,14 +3360,14 @@ class IntegrationApplication(Hashable):
         '_cover_image',
     )
 
-    def __init__(self, *, state: ConnectionState, data: IntegrationApplicationPayload):
+    def __init__(self, *, state: ConnectionState, data: BaseApplicationPayload):
         self._state: ConnectionState = state
         self._update(data)
 
     def __str__(self) -> str:
         return self.name
 
-    def _update(self, data: IntegrationApplicationPayload) -> None:
+    def _update(self, data: BaseApplicationPayload) -> None:
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self.description: str = data.get('description') or ''
@@ -3375,7 +3375,7 @@ class IntegrationApplication(Hashable):
 
         self._icon: Optional[str] = data.get('icon')
         self._cover_image: Optional[str] = data.get('cover_image')
-        self.bot: Optional[User] = self._state.create_user(data['bot']) if 'bot' in data else None
+        self.bot: Optional[User] = self._state.create_user(data['bot']) if 'bot' in data else None  # type: ignore
         self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
         self.role_connections_verification_url: Optional[str] = data.get('role_connections_verification_url')
 

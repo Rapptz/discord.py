@@ -67,6 +67,7 @@ from .channel import PartialMessageable
 from .interactions import Interaction
 from .commands import MessageCommand
 from .abc import _handle_commands
+from .application import IntegrationApplication
 
 
 if TYPE_CHECKING:
@@ -76,7 +77,7 @@ if TYPE_CHECKING:
         Message as MessagePayload,
         Attachment as AttachmentPayload,
         MessageReference as MessageReferencePayload,
-        MessageApplication as MessageApplicationPayload,
+        BaseApplication as MessageApplicationPayload,
         MessageActivity as MessageActivityPayload,
     )
 
@@ -1224,16 +1225,12 @@ class Message(PartialMessage, Hashable):
 
         - ``type``: An integer denoting the type of message activity being requested.
         - ``party_id``: The party ID associated with the party.
-    application: Optional[:class:`dict`]
+    application: Optional[:class:`IntegrationApplication`]
         The rich presence enabled application associated with this message.
 
-        It is a dictionary with the following keys:
+        .. versionchanged:: 2.0
 
-        - ``id``: A string representing the application's ID.
-        - ``name``: A string representing the application's name.
-        - ``description``: A string representing the application's description.
-        - ``icon``: A string representing the icon ID of the application.
-        - ``cover_image``: A string representing the embed's image asset ID.
+            Type is now :class:`IntegrationApplication` instead of :class:`dict`.
     stickers: List[:class:`StickerItem`]
         A list of sticker items given to the message.
 
@@ -1311,7 +1308,6 @@ class Message(PartialMessage, Hashable):
         self.reactions: List[Reaction] = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
         self.attachments: List[Attachment] = [Attachment(data=a, state=self._state) for a in data['attachments']]
         self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
-        self.application: Optional[MessageApplicationPayload] = data.get('application')
         self.activity: Optional[MessageActivityPayload] = data.get('activity')
         self.channel: MessageableChannel = channel
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
@@ -1332,8 +1328,15 @@ class Message(PartialMessage, Hashable):
         except AttributeError:
             self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
 
-        self.interaction: Optional[Interaction] = None
+        self.application: Optional[IntegrationApplication] = None
+        try:
+            application = data['application']
+        except KeyError:
+            pass
+        else:
+            self.application = IntegrationApplication(state=self._state, data=application)
 
+        self.interaction: Optional[Interaction] = None
         try:
             interaction = data['interaction']
         except KeyError:
@@ -1467,7 +1470,8 @@ class Message(PartialMessage, Hashable):
         self.flags = MessageFlags._from_value(value)
 
     def _handle_application(self, value: MessageApplicationPayload) -> None:
-        self.application = value
+        application = IntegrationApplication(state=self._state, data=value)
+        self.application = application
 
     def _handle_activity(self, value: MessageActivityPayload) -> None:
         self.activity = value

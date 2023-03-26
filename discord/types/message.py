@@ -35,6 +35,7 @@ from .embed import Embed
 from .channel import ChannelType
 from .components import Component
 from .interactions import MessageInteraction
+from .application import BaseApplication
 from .sticker import StickerItem
 
 
@@ -78,14 +79,6 @@ class MessageActivity(TypedDict):
     party_id: str
 
 
-class MessageApplication(TypedDict):
-    id: Snowflake
-    description: str
-    icon: Optional[str]
-    name: str
-    cover_image: NotRequired[str]
-
-
 class MessageReference(TypedDict, total=False):
     message_id: Snowflake
     channel_id: Snowflake
@@ -116,7 +109,7 @@ class Message(PartialMessage):
     nonce: NotRequired[Union[int, str]]
     webhook_id: NotRequired[Snowflake]
     activity: NotRequired[MessageActivity]
-    application: NotRequired[MessageApplication]
+    application: NotRequired[BaseApplication]
     application_id: NotRequired[Snowflake]
     message_reference: NotRequired[MessageReference]
     flags: NotRequired[int]
