@@ -2029,6 +2029,7 @@ class Guild(Hashable):
         limit: Optional[int] = 1000,
         before: Snowflake = MISSING,
         after: Snowflake = MISSING,
+        paginate: bool = True,
     ) -> AsyncIterator[BanEntry]:
         """Retrieves an :term:`asynchronous iterator` of the users that are banned from the guild as a :class:`BanEntry`.
 
@@ -2063,6 +2064,11 @@ class Guild(Hashable):
             Retrieves bans before this user.
         after: :class:`.abc.Snowflake`
             Retrieve bans after this user.
+        paginate: :class:`bool`
+            Whether to paginate the results. If ``False``, all bans are fetched with a single request and yielded,
+            ``limit`` is ignored, and ``before`` and ``after`` must not be provided.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -2083,7 +2089,17 @@ class Guild(Hashable):
             raise TypeError('bans pagination does not support both before and after')
 
         # This endpoint paginates in ascending order
-        endpoint = self._state.http.get_bans
+        _state = self._state
+        endpoint = _state.http.get_bans
+
+        if not paginate:
+            # For user accounts, not providing a limit will return *every* ban,
+            # as they were too lazy to implement proper pagination in the client
+            # However, pagination may be wanted for guilds with massive ban lists
+            data = await endpoint(self.id)
+            for entry in data:
+                yield BanEntry(user=User(state=_state, data=entry['user']), reason=entry['reason'])
+            return
 
         async def _before_strategy(retrieve, before, limit):
             before_id = before.id if before else None
@@ -2126,7 +2142,7 @@ class Guild(Hashable):
                 limit = 0
 
             for e in data:
-                yield BanEntry(user=User(state=self._state, data=e['user']), reason=e['reason'])
+                yield BanEntry(user=User(state=_state, data=e['user']), reason=e['reason'])
 
     async def prune_members(
         self,

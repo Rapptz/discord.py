@@ -1462,12 +1462,12 @@ class HTTPClient:
     def get_bans(
         self,
         guild_id: Snowflake,
-        limit: int,
+        limit: Optional[int] = None,
         before: Optional[Snowflake] = None,
         after: Optional[Snowflake] = None,
     ) -> Response[List[guild.Ban]]:
         params: Dict[str, Any] = {}
-        if limit != 1000:
+        if limit is not None:
             params['limit'] = limit
         if before is not None:
             params['before'] = before
