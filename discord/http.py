@@ -3865,6 +3865,29 @@ class HTTPClient:
             )
         )
 
+    def get_recent_mentions(
+        self,
+        limit: int = 25,
+        before: Optional[Snowflake] = None,
+        guild_id: Optional[Snowflake] = None,
+        roles: bool = True,
+        everyone: bool = True,
+    ) -> Response[List[Message]]:
+        params = {
+            'limit': limit,
+            'roles': str(roles).lower(),
+            'everyone': str(everyone).lower(),
+        }
+        if before is not None:
+            params['before'] = before
+        if guild_id is not None:
+            params['guild_id'] = guild_id
+
+        return self.request(Route('GET', '/users/@me/mentions'), params=params)
+
+    def delete_recent_mention(self, message_id: Snowflake) -> Response[None]:
+        return self.request(Route('DELETE', '/users/@me/mentions/{message_id}', message_id=message_id))
+
     async def get_preferred_voice_regions(self) -> List[dict]:
         async with self.__session.get('https://latency.discord.media/rtc') as resp:
             if resp.status == 200:

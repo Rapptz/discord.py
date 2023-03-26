@@ -1034,6 +1034,27 @@ Messages
     :param payload: The raw event payload data.
     :type payload: :class:`RawBulkMessageDeleteEvent`
 
+.. function:: on_recent_mention_delete(message)
+
+    Called when a message you were mentioned in in the last week is acknowledged and deleted.
+    If the message is not found in the internal message cache, then this event will not be called.
+
+    .. versionadded:: 2.0
+
+    :param message: The message that was deleted.
+    :type message: :class:`Message`
+
+.. function:: on_raw_recent_mention_delete(message_id)
+
+    Called when a message you were mentioned in in the last week is acknowledged and deleted.
+    Unlike :func:`on_recent_mention_delete`, this is called regardless of the message being in the
+    internal message cache or not.
+
+    .. versionadded:: 2.0
+
+    :param message_id: The ID of the message that was deleted.
+    :type message_id: :class:`int`
+
 Reactions
 ~~~~~~~~~~
 

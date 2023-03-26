@@ -1178,6 +1178,13 @@ class ConnectionState:
                 if reaction:
                     self.dispatch('reaction_clear_emoji', reaction)
 
+    def parse_recent_mention_delete(self, data: gw.RecentMentionDeleteEvent) -> None:
+        message_id = int(data['message_id'])
+        message = self._get_message(message_id)
+        if message is not None:
+            self.dispatch('recent_mention_delete', message)
+        self.dispatch('raw_recent_mention_delete', message_id)
+
     def parse_presences_replace(self, data: List[gw.PartialPresenceUpdate]) -> None:
         for presence in data:
             self.parse_presence_update(presence)

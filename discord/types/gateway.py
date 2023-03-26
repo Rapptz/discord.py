@@ -459,3 +459,7 @@ class ProtoSettings(TypedDict):
 class ProtoSettingsEvent(TypedDict):
     settings: ProtoSettings
     partial: bool
+
+
+class RecentMentionDeleteEvent(TypedDict):
+    message_id: Snowflake

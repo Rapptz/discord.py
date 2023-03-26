@@ -4366,6 +4366,117 @@ class Client:
         data = await self._connection.http.get_premium_usage()
         return PremiumUsage(data=data)
 
+    async def recent_mentions(
+        self,
+        *,
+        limit: Optional[int] = 25,
+        before: SnowflakeTime = MISSING,
+        guild: Snowflake = MISSING,
+        roles: bool = True,
+        everyone: bool = True,
+    ) -> AsyncIterator[Message]:
+        """Returns an :term:`asynchronous iterator` that enables receiving your recent mentions.
+
+        .. versionadded:: 2.0
+
+        Examples
+        ---------
+
+        Usage ::
+
+            counter = 0
+            async for message in client.recent_mentions(limit=200):
+                if message.author == client.user:
+                    counter += 1
+
+        Flattening into a list: ::
+
+            messages = [message async for message in client.recent_mentions(limit=123)]
+            # messages is now a list of Message...
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        limit: Optional[:class:`int`]
+            The number of messages to retrieve.
+            If ``None``, retrieves every recent mention received in the past week. Note, however,
+            that this would make it a slow operation.
+        before: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
+            Retrieve messages before this date or message.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+        guild: :class:`.Guild`
+            The guild to retrieve recent mentions from.
+            If not provided, then the mentions are retrieved from all guilds.
+        roles: :class:`bool`
+            Whether to include role mentions.
+        everyone: :class:`bool`
+            Whether to include @everyone or @here mentions.
+
+        Raises
+        ------
+        HTTPException
+            The request to get recent message history failed.
+
+        Yields
+        -------
+        :class:`.Message`
+            The message with the message data parsed.
+        """
+        _state = self._connection
+
+        async def strategy(retrieve, before, limit):
+            before_id = before.id if before else None
+            data = await _state.http.get_recent_mentions(
+                retrieve, before=before_id, guild_id=guild.id if guild else None, roles=roles, everyone=everyone
+            )
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                before = Object(id=int(data[-1]['id']))
+
+            return data, before, limit
+
+        if isinstance(before, datetime):
+            before = Object(id=utils.time_snowflake(before, high=False))
+
+        while True:
+            retrieve = min(100 if limit is None else limit, 100)
+            if retrieve < 1:
+                return
+
+            data, before, limit = await strategy(retrieve, before, limit)
+
+            # Terminate loop on next iteration; there's no data left after this
+            if len(data) < 100:
+                limit = 0
+
+            for raw_message in data:
+                channel, _ = _state._get_guild_channel(raw_message)
+                yield _state.create_message(channel=channel, data=raw_message)  # type: ignore
+
+    async def delete_recent_mention(self, message: Snowflake) -> None:
+        """|coro|
+
+        Acknowledges a message the current user has been mentioned in.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        -----------
+        message: :class:`.abc.Snowflake`
+            The message to delete.
+
+        Raises
+        ------
+        HTTPException
+            Deleting the recent mention failed.
+        """
+        await self._connection.http.delete_recent_mention(message.id)
+
     async def user_affinities(self) -> List[UserAffinity]:
         """|coro|
 
