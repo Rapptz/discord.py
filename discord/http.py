@@ -53,8 +53,6 @@ import weakref
 
 import aiohttp
 
-from .types import application
-
 from .enums import RelationshipAction, InviteType
 from .errors import HTTPException, Forbidden, NotFound, LoginFailure, DiscordServerError, CaptchaRequired
 from .file import File
@@ -87,6 +85,7 @@ if TYPE_CHECKING:
     from .embeds import Embed
 
     from .types import (
+        application,
         audit_log,
         billing,
         channel,
@@ -2389,7 +2388,9 @@ class HTTPClient:
     def get_partial_application(self, app_id: Snowflake) -> Response[application.PartialApplication]:
         return self.request(Route('GET', '/oauth2/applications/{app_id}/rpc', app_id=app_id))
 
-    def get_public_application(self, app_id: Snowflake, with_guild: bool = False) -> Response[application.PartialApplication]:
+    def get_public_application(
+        self, app_id: Snowflake, with_guild: bool = False
+    ) -> Response[application.PartialApplication]:
         params = {'with_guild': str(with_guild).lower()}
         return self.request(Route('GET', '/applications/{app_id}/public', app_id=app_id), params=params)
 
@@ -2541,6 +2542,11 @@ class HTTPClient:
         *,
         supported_platforms: Optional[List[str]] = None,
         orientation_lock_state: Optional[int] = None,
+        tablet_orientation_lock_state: Optional[int] = None,
+        requires_age_gate: Optional[bool] = None,
+        shelf_rank: Optional[int] = None,
+        free_period_starts_at: Optional[str] = None,
+        free_period_ends_at: Optional[str] = None,
         preview_video_asset_id: Optional[Snowflake] = MISSING,
     ) -> Response[application.EmbeddedActivityConfig]:
         payload = {}
@@ -2548,6 +2554,16 @@ class HTTPClient:
             payload['supported_platforms'] = supported_platforms
         if orientation_lock_state is not None:
             payload['default_orientation_lock_state'] = orientation_lock_state
+        if tablet_orientation_lock_state is not None:
+            payload['default_tablet_orientation_lock_state'] = tablet_orientation_lock_state
+        if requires_age_gate is not None:
+            payload['requires_age_gate'] = requires_age_gate
+        if shelf_rank is not None:
+            payload['shelf_rank'] = shelf_rank
+        if free_period_starts_at is not None:
+            payload['free_period_starts_at'] = free_period_starts_at
+        if free_period_ends_at is not None:
+            payload['free_period_ends_at'] = free_period_ends_at
         if preview_video_asset_id is not MISSING:
             payload['activity_preview_video_asset_id'] = preview_video_asset_id
 
@@ -2562,7 +2578,9 @@ class HTTPClient:
             Route('GET', '/oauth2/applications/{app_id}/allowlist', app_id=app_id), super_properties_to_track=True
         )
 
-    def add_app_whitelist(self, app_id: Snowflake, username: str, discriminator: str) -> Response[application.WhitelistedUser]:
+    def add_app_whitelist(
+        self, app_id: Snowflake, username: str, discriminator: str
+    ) -> Response[application.WhitelistedUser]:
         payload = {'username': username, 'discriminator': discriminator}
 
         return self.request(
@@ -2815,7 +2833,9 @@ class HTTPClient:
 
         return self.request(Route('POST', '/branches'), json=payload)
 
-    def create_branch_build(self, app_id: Snowflake, branch_id: Snowflake, payload: dict) -> Response[application.CreatedBuild]:
+    def create_branch_build(
+        self, app_id: Snowflake, branch_id: Snowflake, payload: dict
+    ) -> Response[application.CreatedBuild]:
         return self.request(
             Route('POST', '/applications/{app_id}/branches/{branch_id}/builds', app_id=app_id, branch_id=branch_id),
             json=payload,
@@ -3229,7 +3249,9 @@ class HTTPClient:
             super_properties_to_track=True,
         )
 
-    def edit_achievement(self, app_id: Snowflake, achievement_id: Snowflake, payload: dict) -> Response[application.Achievement]:
+    def edit_achievement(
+        self, app_id: Snowflake, achievement_id: Snowflake, payload: dict
+    ) -> Response[application.Achievement]:
         return self.request(
             Route(
                 'PATCH', '/applications/{app_id}/achievements/{achievement_id}', app_id=app_id, achievement_id=achievement_id

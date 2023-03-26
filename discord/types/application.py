@@ -212,10 +212,26 @@ class GlobalActivityStatistics(TypedDict):
     updated_at: str
 
 
+EmbeddedActivityPlatform = Literal['web', 'android', 'ios']
+
+
+class ClientPlatformConfig(TypedDict):
+    label_type: int
+    label_until: Optional[str]
+    release_phase: str
+
+
 class EmbeddedActivityConfig(TypedDict):
-    supported_platforms: List[Literal['web', 'android', 'ios']]
-    default_orientation_lock_state: Literal[1, 2, 3]
     activity_preview_video_asset_id: NotRequired[Optional[Snowflake]]
+    client_platform_config: Dict[EmbeddedActivityPlatform, ClientPlatformConfig]
+    default_orientation_lock_state: Literal[1, 2, 3]
+    tablet_default_orientation_lock_state: Literal[1, 2, 3]
+    free_period_ends_at: NotRequired[Optional[str]]
+    free_period_starts_at: NotRequired[Optional[str]]
+    premium_tier_requirement: NotRequired[Optional[Literal[1, 2, 3]]]
+    requires_age_gate: bool
+    shelf_rank: int
+    supported_platforms: List[EmbeddedActivityPlatform]
 
 
 class ActiveDeveloperWebhook(TypedDict):

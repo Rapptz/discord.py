@@ -440,22 +440,42 @@ class EmbeddedActivityConfig:
     application: :class:`PartialApplication`
         The application that the configuration is for.
     supported_platforms: List[:class:`EmbeddedActivityPlatform`]
-        A list of platforms that the application supports.
+        A list of platforms that the activity supports.
     orientation_lock_state: :class:`EmbeddedActivityOrientation`
-        The mobile orientation lock state of the application.
+        The mobile orientation lock state of the activity.
+    tablet_orientation_lock_state: :class:`EmbeddedActivityOrientation`
+        The mobile orientation lock state of the activity on tablets.
+    premium_tier_requirement: :class:`int`
+        The guild premium tier required to use the activity.
+    requires_age_gate: :class:`bool`
+        Whether the activity should be blocked from underage users.
+    shelf_rank: :class:`int`
+        The sorting rank of the activity in the activity shelf.
+    free_period_starts_at: Optional[:class:`datetime.datetime`]
+        When the activity's free availability period starts.
+    free_period_ends_at: Optional[:class:`datetime.datetime`]
+        When the activity's free availability period ends.
     """
 
     __slots__ = (
         'application',
         'supported_platforms',
         'orientation_lock_state',
-        'premium_tier_level',
+        'tablet_orientation_lock_state',
+        'premium_tier_requirement',
+        'requires_age_gate',
+        'shelf_rank',
+        'free_period_starts_at',
+        'free_period_ends_at',
         '_preview_video_asset_id',
     )
 
     def __init__(self, *, data: EmbeddedActivityConfigPayload, application: PartialApplication) -> None:
         self.application: PartialApplication = application
         self._update(data)
+
+    def __repr__(self) -> str:
+        return f'<EmbeddedActivityConfig supported_platforms={self.supported_platforms!r} orientation_lock_state={self.orientation_lock_state!r} tablet_orientation_lock_state={self.tablet_orientation_lock_state!r} premium_tier_requirement={self.premium_tier_requirement!r} requires_age_gate={self.requires_age_gate!r}>'
 
     def _update(self, data: EmbeddedActivityConfigPayload) -> None:
         self.supported_platforms: List[EmbeddedActivityPlatform] = [
@@ -464,22 +484,33 @@ class EmbeddedActivityConfig:
         self.orientation_lock_state: EmbeddedActivityOrientation = try_enum(
             EmbeddedActivityOrientation, data.get('default_orientation_lock_state', 0)
         )
-        self.premium_tier_level: int = data.get('activity_premium_tier_level', 0)
+        self.tablet_orientation_lock_state: EmbeddedActivityOrientation = try_enum(
+            EmbeddedActivityOrientation, data.get('tablet_default_orientation_lock_state', 0)
+        )
+        self.premium_tier_requirement: int = data.get('premium_tier_requirement') or 0
+        self.requires_age_gate: bool = data.get('requires_age_gate', False)
+        self.shelf_rank: int = data.get('shelf_rank', 0)
+        self.free_period_starts_at: Optional[datetime] = utils.parse_time(data.get('free_period_starts_at'))
+        self.free_period_ends_at: Optional[datetime] = utils.parse_time(data.get('free_period_ends_at'))
         self._preview_video_asset_id = utils._get_as_snowflake(data, 'preview_video_asset_id')
 
     @property
     def preview_video_asset(self) -> Optional[ApplicationAsset]:
-        """Optional[:class:`ApplicationAsset`]: The preview video asset of the embedded activity, if available."""
+        """Optional[:class:`ApplicationAsset`]: The preview video asset of the activity, if available."""
         if self._preview_video_asset_id is None:
             return None
-        app = self.application
-        return ApplicationAsset._from_embedded_activity_config(app, self._preview_video_asset_id)
+        return ApplicationAsset._from_embedded_activity_config(self.application, self._preview_video_asset_id)
 
     async def edit(
         self,
         *,
-        supported_platforms: List[EmbeddedActivityPlatform] = MISSING,
+        supported_platforms: Collection[EmbeddedActivityPlatform] = MISSING,
         orientation_lock_state: EmbeddedActivityOrientation = MISSING,
+        tablet_orientation_lock_state: EmbeddedActivityOrientation = MISSING,
+        requires_age_gate: bool = MISSING,
+        shelf_rank: int = MISSING,
+        free_period_starts_at: Optional[datetime] = MISSING,
+        free_period_ends_at: Optional[datetime] = MISSING,
         preview_video_asset: Optional[Snowflake] = MISSING,
     ) -> None:
         """|coro|
@@ -489,11 +520,21 @@ class EmbeddedActivityConfig:
         Parameters
         -----------
         supported_platforms: List[:class:`EmbeddedActivityPlatform`]
-            A list of platforms that the application supports.
+            A list of platforms that the activity supports.
         orientation_lock_state: :class:`EmbeddedActivityOrientation`
-            The mobile orientation lock state of the application.
+            The mobile orientation lock state of the activity.
+        tablet_orientation_lock_state: :class:`EmbeddedActivityOrientation`
+            The mobile orientation lock state of the activity on tablets.
+        requires_age_gate: :class:`bool`
+            Whether the activity should be blocked from underage users.
+        shelf_rank: :class:`int`
+            The sorting rank of the activity in the activity shelf.
+        free_period_starts_at: Optional[:class:`datetime.datetime`]
+            When the activity's free availability period starts.
+        free_period_ends_at: Optional[:class:`datetime.datetime`]
+            When the activity's free availability period ends.
         preview_video_asset: Optional[:class:`ApplicationAsset`]
-            The preview video asset of the embedded activity.
+            The preview video asset of the activity.
 
         Raises
         -------
@@ -506,6 +547,11 @@ class EmbeddedActivityConfig:
             self.application.id,
             supported_platforms=[str(x) for x in (supported_platforms or [])],
             orientation_lock_state=int(orientation_lock_state),
+            tablet_orientation_lock_state=int(tablet_orientation_lock_state),
+            requires_age_gate=requires_age_gate,
+            shelf_rank=shelf_rank,
+            free_period_starts_at=free_period_starts_at.isoformat() if free_period_starts_at else None,
+            free_period_ends_at=free_period_ends_at.isoformat() if free_period_ends_at else None,
             preview_video_asset_id=(preview_video_asset.id if preview_video_asset else None)
             if preview_video_asset is not MISSING
             else None,
