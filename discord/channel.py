@@ -3023,7 +3023,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, discord.abc.Connectable], T] = VoiceClient,
+        cls: Callable[[Client, discord.abc.VocalChannel], T] = VoiceClient,
         ring: bool = True,
     ) -> T:
         """|coro|
@@ -3555,7 +3555,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, discord.abc.Connectable], T] = VoiceClient,
+        cls: Callable[[Client, discord.abc.VocalChannel], T] = VoiceClient,
         ring: bool = True,
     ) -> T:
         await self._get_channel()

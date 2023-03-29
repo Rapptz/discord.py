@@ -105,6 +105,7 @@ if TYPE_CHECKING:
     )
 
     MessageableChannel = Union[TextChannel, VoiceChannel, StageChannel, Thread, DMChannel, PartialMessageable, GroupChannel]
+    VocalChannel = Union[VoiceChannel, StageChannel, DMChannel, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
 
 MISSING = utils.MISSING
@@ -2115,7 +2116,7 @@ class Connectable(Protocol):
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, Connectable], T] = VoiceClient,
+        cls: Callable[[Client, VocalChannel], T] = VoiceClient,
         _channel: Optional[Connectable] = None,
         self_deaf: bool = False,
         self_mute: bool = False,
@@ -2168,7 +2169,7 @@ class Connectable(Protocol):
         if state._get_voice_client(key_id):
             raise ClientException('Already connected to a voice channel')
 
-        voice: T = cls(state.client, self)
+        voice: T = cls(state.client, channel)
 
         if not isinstance(voice, VoiceProtocol):
             raise TypeError('Type must meet VoiceProtocol abstract base class')

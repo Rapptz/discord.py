@@ -59,7 +59,6 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .user import ClientUser
     from .opus import Encoder
-    from .channel import StageChannel, VoiceChannel, DMChannel, GroupChannel
     from . import abc
 
     from .types.voice import (
@@ -68,7 +67,7 @@ if TYPE_CHECKING:
         SupportedModes,
     )
 
-    VocalChannel = Union[VoiceChannel, StageChannel, DMChannel, GroupChannel]
+    VocalChannel = abc.VocalChannel
 
 
 has_nacl: bool
