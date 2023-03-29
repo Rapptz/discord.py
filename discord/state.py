@@ -62,7 +62,7 @@ from .channel import _channel_factory
 from .raw_models import *
 from .member import Member
 from .role import Role
-from .enums import ChannelType, try_enum, Status
+from .enums import ChannelType, try_enum, Status, VoiceChannelEffectAnimationType
 from . import utils
 from .flags import ApplicationFlags, Intents, MemberCacheFlags
 from .invite import Invite
@@ -76,6 +76,7 @@ from .sticker import GuildSticker
 from .automod import AutoModRule, AutoModAction
 from .audit_logs import AuditLogEntry
 from ._types import ClientT
+from .voice_client import VoiceChannelEffect
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel
@@ -1537,6 +1538,24 @@ class ConnectionState(Generic[ClientT]):
                 self.dispatch('voice_state_update', member, before, after)
             else:
                 _log.debug('VOICE_STATE_UPDATE referencing an unknown member ID: %s. Discarding.', data['user_id'])
+
+    def parse_voice_channel_effect_send(self, data: gw.VoiceChannelEffectSendEvent):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            channel = guild.get_channel(int(data['channel_id']))
+            if channel is not None:
+                emoji = PartialEmoji.from_dict(data['emoji'])
+                animation_type = try_enum(VoiceChannelEffectAnimationType, data['animation_type'])
+                effect = VoiceChannelEffect(emoji=emoji, animation_id=data['animation_id'], animation_type=animation_type)
+
+                self.dispatch('voice_channel_effect', channel, effect)
+            else:
+                _log.debug(
+                    'VOICE_CHANNEL_EFFECT_SEND referencing an unknown channel ID: %s. Discarding.', data['channel_id']
+                )
+
+        else:
+            _log.debug('VOICE_CHANNEL_EFFECT_SEND referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_voice_server_update(self, data: gw.VoiceServerUpdateEvent) -> None:
         key_id = int(data['guild_id'])

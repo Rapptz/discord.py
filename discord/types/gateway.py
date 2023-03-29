@@ -27,7 +27,7 @@ from typing_extensions import NotRequired, Required
 
 from .automod import AutoModerationAction, AutoModerationRuleTriggerType
 from .activity import PartialPresenceUpdate
-from .voice import GuildVoiceState
+from .voice import GuildVoiceState, VoiceChannelEffect
 from .integration import BaseIntegration, IntegrationApplication
 from .role import Role
 from .channel import ChannelType, StageInstance
@@ -311,6 +311,7 @@ class _GuildScheduledEventUsersEvent(TypedDict):
 GuildScheduledEventUserAdd = GuildScheduledEventUserRemove = _GuildScheduledEventUsersEvent
 
 VoiceStateUpdateEvent = GuildVoiceState
+VoiceChannelEffectSendEvent = VoiceChannelEffect
 
 
 class VoiceServerUpdateEvent(TypedDict):

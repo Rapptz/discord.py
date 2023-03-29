@@ -44,7 +44,7 @@ import socket
 import logging
 import struct
 import threading
-from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union, NamedTuple
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
@@ -52,6 +52,7 @@ from .gateway import *
 from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
 from .utils import MISSING
+from .enums import VoiceChannelEffectAnimationType
 
 if TYPE_CHECKING:
     from .client import Client
@@ -61,6 +62,7 @@ if TYPE_CHECKING:
     from .opus import Encoder
     from .channel import StageChannel, VoiceChannel
     from . import abc
+    from .partial_emoji import PartialEmoji
 
     from .types.voice import (
         GuildVoiceState as GuildVoiceStatePayload,
@@ -84,10 +86,17 @@ except ImportError:
 __all__ = (
     'VoiceProtocol',
     'VoiceClient',
+    'VoiceChannelEffect',
 )
 
 
 _log = logging.getLogger(__name__)
+
+
+class VoiceChannelEffect(NamedTuple):
+    emoji: PartialEmoji
+    animation_id: int
+    animation_type: VoiceChannelEffectAnimationType
 
 
 class VoiceProtocol:

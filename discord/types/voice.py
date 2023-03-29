@@ -27,6 +27,7 @@ from typing_extensions import NotRequired
 
 from .snowflake import Snowflake
 from .member import MemberWithUser
+from .emoji import Emoji
 
 
 SupportedModes = Literal['xsalsa20_poly1305_lite', 'xsalsa20_poly1305_suffix', 'xsalsa20_poly1305']
@@ -82,3 +83,12 @@ class VoiceReady(TypedDict):
     port: int
     modes: List[SupportedModes]
     heartbeat_interval: int
+
+
+class VoiceChannelEffect(TypedDict):
+    user_id: Snowflake
+    channel_id: Snowflake
+    guild_id: Snowflake
+    emoji: Emoji
+    animation_type: int
+    animation_id: int

@@ -117,6 +117,30 @@ VoiceProtocol
 .. autoclass:: VoiceProtocol
     :members:
 
+VoiceChannelEffect
+~~~~~~~~~~~~~~~~~~~
+
+.. class:: VoiceChannelEffect
+
+    A namedtuple which represents a voice channel effect sent by a :class:`Member`.
+
+    .. attribute:: emoji
+
+        The emoji of the effect.
+
+        :type: :class:`PartialEmoji`
+    .. attribute:: animation_id
+
+        The ID of the animation.
+
+        :type: :class:`int`
+    .. attribute:: animation_type
+
+        The type of the animation.
+
+        :type: :class:`VoiceChannelEffectAnimationType`
+
+
 AudioSource
 ~~~~~~~~~~~~
 
@@ -1387,6 +1411,17 @@ Voice
     :type before: :class:`VoiceState`
     :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
+
+.. function:: on_voice_channel_effect(channel, effect)
+
+    Called when a :class:`Member` sends a :class:`VoiceChannelEffect` in a voice channel the bot is in.
+
+    This requires :attr:`Intents.voice_states` to be enabled.
+
+    :param channel: The channel in which the effect is sent.
+    :type channel: :class:`VoiceChannel`
+    :param effect: The sent effect.
+    :type effect: :class:`VoiceChannelEffect`
 
 .. _discord-api-utils:
 
@@ -3323,6 +3358,19 @@ of :class:`enum.Enum`.
     .. attribute:: creation_date
 
         Sort forum posts by creation time (from most recent to oldest).
+
+
+.. class:: VoiceChannelEffectAnimationType
+
+    Represents the animation type of a voice channel effect.
+
+    .. attribute:: premium
+
+        A fun animation, sent by a Nitro subscriber.
+
+    .. attribute:: normal
+
+        The standard animation.
 
 
 .. _discord-api-audit-logs:
