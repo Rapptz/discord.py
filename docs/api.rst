@@ -962,7 +962,7 @@ Members
 
 .. function:: on_presence_update(before, after)
 
-    Called when a :class:`Member` updates their presence.
+    Called when a :class:`Member` or :class:`Relationship` updates their presence.
 
     This is called when one or more of the following things change:
 
@@ -971,10 +971,10 @@ Members
 
     .. versionadded:: 2.0
 
-    :param before: The updated member's old info.
-    :type before: :class:`Member`
-    :param after: The updated member's updated info.
-    :type after: :class:`Member`
+    :param before: The updated member or friend's old info.
+    :type before: Union[:class:`Member`, :class:`Relationship`]
+    :param after: The updated member or friend's updated info.
+    :type after: Union[:class:`Member`, :class:`Relationship`]
 
 .. function:: on_raw_member_list_update(data)
 

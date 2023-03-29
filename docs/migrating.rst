@@ -615,6 +615,8 @@ From API perspective, these are separate events and as such, this change improve
 Presence updates usually are 90% of all handled events so splitting these should benefit listeners that were only interested
 in member updates.
 
+Note that this event is also called when a :class:`Relationship` presence is updated.
+
 Quick example:
 
 .. code:: python
