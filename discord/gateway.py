@@ -580,6 +580,7 @@ class DiscordWebSocket:
             self.session_id = data['session_id']
             self.gateway = yarl.URL(data['resume_gateway_url'])
             _log.info('Connected to Gateway: %s (Session ID: %s).', ', '.join(trace), self.session_id)
+            await self.voice_state()  # Initial OP 4
 
         elif event == 'RESUMED':
             self._trace = trace = data.get('_trace', [])

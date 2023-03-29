@@ -578,6 +578,15 @@ class MessageFlags(BaseFlags):
         return 256
 
     @flag_value
+    def link_not_discord_warning(self):
+        """:class:`bool`: Returns ``True`` if this message contains a link that impersonates
+        Discord and should show a warning.
+
+        .. versionadded:: 2.0
+        """
+        return 1024
+
+    @flag_value
     def suppress_notifications(self):
         """:class:`bool`: Returns ``True`` if the message will not trigger push and desktop notifications.
 
@@ -592,6 +601,14 @@ class MessageFlags(BaseFlags):
         .. versionadded:: 2.0
         """
         return 4096
+
+    @flag_value
+    def is_voice_message(self):
+        """:class:`bool`: Returns ``True`` if the message's audio attachments are rendered as voice messages.
+
+        .. versionadded:: 2.0
+        """
+        return 8192
 
 
 @fill_with_flags()
@@ -2223,6 +2240,7 @@ class AutoModPresets(ArrayFlags):
     r"""Wraps up the Discord :class:`AutoModRule` presets.
 
     .. container:: operations
+
         .. describe:: x == y
 
             Checks if two AutoModPresets flags are equal.

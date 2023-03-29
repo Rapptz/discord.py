@@ -196,7 +196,7 @@ class FFmpegAudio(AudioSource):
         try:
             proc.kill()
         except Exception:
-            _log.exception('Ignoring error attempting to kill ffmpeg process %s', proc.pid)
+            _log.exception('Ignoring error attempting to kill ffmpeg process %s.', proc.pid)
 
         if proc.poll() is None:
             _log.info('ffmpeg process %s has not terminated. Waiting to terminate...', proc.pid)
@@ -216,7 +216,7 @@ class FFmpegAudio(AudioSource):
                 if self._stdin is not None:
                     self._stdin.write(data)
             except Exception:
-                _log.debug('Write error for %s, this is probably not a problem', self, exc_info=True)
+                _log.debug('Write error for %s, this is probably not a problem.', self, exc_info=True)
                 # at this point the source data is either exhausted or the process is fubar
                 self._process.terminate()
                 return
@@ -509,7 +509,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         if isinstance(method, str):
             probefunc = getattr(cls, '_probe_codec_' + method, None)
             if probefunc is None:
-                raise AttributeError(f"Invalid probe method {method!r}")
+                raise AttributeError(f'Invalid probe method {method!r}.')
 
             if probefunc is cls._probe_codec_native:
                 fallback = cls._probe_codec_fallback
@@ -526,18 +526,18 @@ class FFmpegOpusAudio(FFmpegAudio):
             codec, bitrate = await loop.run_in_executor(None, lambda: probefunc(source, executable))
         except Exception:
             if not fallback:
-                _log.exception("Probe '%s' using '%s' failed", method, executable)
+                _log.exception("Probe '%s' using '%s' failed.", method, executable)
                 return  # type: ignore
 
-            _log.exception("Probe '%s' using '%s' failed, trying fallback", method, executable)
+            _log.exception("Probe '%s' using '%s' failed, trying fallback.", method, executable)
             try:
                 codec, bitrate = await loop.run_in_executor(None, lambda: fallback(source, executable))
             except Exception:
-                _log.exception("Fallback probe using '%s' failed", executable)
+                _log.exception("Fallback probe using '%s' failed.", executable)
             else:
-                _log.debug("Fallback probe found codec=%s, bitrate=%s", codec, bitrate)
+                _log.debug('Fallback probe found codec=%s, bitrate=%s.', codec, bitrate)
         else:
-            _log.debug("Probe found codec=%s, bitrate=%s", codec, bitrate)
+            _log.debug('Probe found codec=%s, bitrate=%s.', codec, bitrate)
         finally:
             return codec, bitrate
 

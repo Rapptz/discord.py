@@ -76,8 +76,9 @@ if TYPE_CHECKING:
     from .types.message import (
         Message as MessagePayload,
         Attachment as AttachmentPayload,
-        MessageReference as MessageReferencePayload,
         BaseApplication as MessageApplicationPayload,
+        Call as CallPayload,
+        MessageReference as MessageReferencePayload,
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
     )
@@ -1622,7 +1623,7 @@ class Message(PartialMessage, Hashable):
                 if role is not None:
                     self.role_mentions.append(role)
 
-    def _handle_call(self, call) -> None:
+    def _handle_call(self, call: Optional[CallPayload]) -> None:
         if call is None or self.type is not MessageType.call:
             self.call = None
             return
@@ -1636,8 +1637,7 @@ class Message(PartialMessage, Hashable):
                 if user is not None:
                     participants.append(user)
 
-        call['participants'] = participants
-        self.call = CallMessage(message=self, **call)
+        self.call = CallMessage(message=self, ended_timestamp=call.get('ended_timestamp'), participants=participants)
 
     def _handle_components(self, data: List[ComponentPayload]) -> None:
         self.components = []
@@ -1894,16 +1894,16 @@ class Message(PartialMessage, Hashable):
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
 
         if self.type is MessageType.role_subscription_purchase and self.role_subscription is not None:
-            # TODO: figure out how the message looks like for is_renewal: true
             total_months = self.role_subscription.total_months_subscribed
             months = '1 month' if total_months == 1 else f'{total_months} months'
-            return f'{self.author.name} joined {self.role_subscription.tier_name} and has been a subscriber of {self.guild} for {months}!'
+            action = 'renewed' if self.role_subscription.is_renewal else 'subscribed'
+            return f'{self.author.name} {action} **{self.role_subscription.tier_name}** and has been a subscriber of {self.guild} for {months}!'
 
         if self.type is MessageType.stage_start:
-            return f'{self.author.name} started **{self.content}**.'
+            return f'{self.author.name} started **{self.content}**'
 
         if self.type is MessageType.stage_end:
-            return f'{self.author.name} ended **{self.content}**.'
+            return f'{self.author.name} ended **{self.content}**'
 
         if self.type is MessageType.stage_speaker:
             return f'{self.author.name} is now a speaker.'
@@ -1912,7 +1912,10 @@ class Message(PartialMessage, Hashable):
             return f'{self.author.name} requested to speak.'
 
         if self.type is MessageType.stage_topic:
-            return f'{self.author.name} changed Stage topic: **{self.content}**.'
+            return f'{self.author.name} changed the Stage topic: **{self.content}**'
+
+        if self.type is MessageType.guild_application_premium_subscription:
+            return f'{self.author.name} upgraded {self.application.name if self.application else "a deleted application"} to premium for this server!'
 
         # Fallback for unknown message types
         return self.content

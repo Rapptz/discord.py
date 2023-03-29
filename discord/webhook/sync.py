@@ -615,7 +615,7 @@ class SyncWebhook(BaseWebhook):
         return f'https://discord.com/api/webhooks/{self.id}/{self.token}'
 
     @classmethod
-    def partial(cls, id: int, token: str, *, session: Session = MISSING, bot_token: Optional[str] = None) -> SyncWebhook:
+    def partial(cls, id: int, token: str, *, session: Session = MISSING, user_token: Optional[str] = None) -> SyncWebhook:
         """Creates a partial :class:`Webhook`.
 
         Parameters
@@ -629,7 +629,7 @@ class SyncWebhook(BaseWebhook):
             that the library does not manage the session and
             will not close it. If not given, the ``requests``
             auto session creation functions are used instead.
-        bot_token: Optional[:class:`str`]
+        user_token: Optional[:class:`str`]
             The bot authentication token for authenticated requests
             involving the webhook.
 
@@ -651,10 +651,10 @@ class SyncWebhook(BaseWebhook):
                 raise TypeError(f'expected requests.Session not {session.__class__!r}')
         else:
             session = requests  # type: ignore
-        return cls(data, session, token=bot_token)
+        return cls(data, session, token=user_token)
 
     @classmethod
-    def from_url(cls, url: str, *, session: Session = MISSING, bot_token: Optional[str] = None) -> SyncWebhook:
+    def from_url(cls, url: str, *, session: Session = MISSING, user_token: Optional[str] = None) -> SyncWebhook:
         """Creates a partial :class:`Webhook` from a webhook URL.
 
         Parameters
@@ -666,7 +666,7 @@ class SyncWebhook(BaseWebhook):
             that the library does not manage the session and
             will not close it. If not given, the ``requests``
             auto session creation functions are used instead.
-        bot_token: Optional[:class:`str`]
+        user_token: Optional[:class:`str`]
             The bot authentication token for authenticated requests
             involving the webhook.
 
@@ -694,7 +694,7 @@ class SyncWebhook(BaseWebhook):
                 raise TypeError(f'expected requests.Session not {session.__class__!r}')
         else:
             session = requests  # type: ignore
-        return cls(data, session, token=bot_token)  # type: ignore
+        return cls(data, session, token=user_token)  # type: ignore
 
     def fetch(self, *, prefer_auth: bool = True) -> SyncWebhook:
         """Fetches the current webhook.

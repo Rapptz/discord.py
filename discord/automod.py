@@ -519,12 +519,10 @@ class AutoModAction:
         The ID of the system message that was sent to the predefined alert channel.
     content: :class:`str`
         The content of the message that triggered the rule.
-        Requires the :attr:`Intents.message_content` or it will always return an empty string.
     matched_keyword: Optional[:class:`str`]
         The matched keyword from the triggering message.
     matched_content: Optional[:class:`str`]
         The matched content from the triggering message.
-        Requires the :attr:`Intents.message_content` or it will always return ``None``.
     """
 
     __slots__ = (

@@ -43,7 +43,7 @@ from ..user import BaseUser, User
 from ..flags import MessageFlags
 from ..asset import Asset
 from ..partial_emoji import PartialEmoji
-from ..http import Route, handle_message_parameters, HTTPClient
+from ..http import Route, handle_message_parameters, json_or_text, HTTPClient
 from ..mixins import Hashable
 from ..channel import TextChannel, ForumChannel, PartialMessageable
 from ..file import File
@@ -800,7 +800,7 @@ class BaseWebhook(Hashable):
 
     @property
     def channel(self) -> Optional[Union[ForumChannel, VoiceChannel, TextChannel]]:
-        """Optional[Union[:class:`ForumChannel`, :class:`VoiceChannel`, :class:`TextChannel`]]: The channel this webhook belongs to.
+        """Optional[Union[:class:`ForumChannel`, :class:`VoiceChannel`, :class:`StageChannel`, :class:`TextChannel`]]: The channel this webhook belongs to.
 
         If this is a partial webhook, then this will always return ``None``.
         """
@@ -957,7 +957,7 @@ class Webhook(BaseWebhook):
         *,
         session: aiohttp.ClientSession = MISSING,
         client: Client = MISSING,
-        bot_token: Optional[str] = None,
+        user_token: Optional[str] = None,
     ) -> Self:
         """Creates a partial :class:`Webhook`.
 
@@ -979,8 +979,8 @@ class Webhook(BaseWebhook):
             while this is given then the client's internal session will be used.
 
             .. versionadded:: 2.0
-        bot_token: Optional[:class:`str`]
-            The bot authentication token for authenticated requests
+        user_token: Optional[:class:`str`]
+            The user authentication token for authenticated requests
             involving the webhook.
 
             .. versionadded:: 2.0
@@ -1011,7 +1011,7 @@ class Webhook(BaseWebhook):
         if session is MISSING:
             raise TypeError('session or client must be given')
 
-        return cls(data, session, token=bot_token, state=state)
+        return cls(data, session, token=user_token, state=state)
 
     @classmethod
     def from_url(
@@ -1020,7 +1020,7 @@ class Webhook(BaseWebhook):
         *,
         session: aiohttp.ClientSession = MISSING,
         client: Client = MISSING,
-        bot_token: Optional[str] = None,
+        user_token: Optional[str] = None,
     ) -> Self:
         """Creates a partial :class:`Webhook` from a webhook URL.
 
@@ -1044,7 +1044,7 @@ class Webhook(BaseWebhook):
             while this is given then the client's internal session will be used.
 
             .. versionadded:: 2.0
-        bot_token: Optional[:class:`str`]
+        user_token: Optional[:class:`str`]
             The bot authentication token for authenticated requests
             involving the webhook.
 
@@ -1078,7 +1078,7 @@ class Webhook(BaseWebhook):
 
         data: Dict[str, Any] = m.groupdict()
         data['type'] = 1
-        return cls(data, session, token=bot_token, state=state)  # type: ignore  # Casting dict[str, Any] to WebhookPayload
+        return cls(data, session, token=user_token, state=state)  # type: ignore  # Casting dict[str, Any] to WebhookPayload
 
     @classmethod
     def _as_follower(cls, data, *, channel, user) -> Self:

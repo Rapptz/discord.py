@@ -772,8 +772,7 @@ class ApplicationInstallParams:
     application_id: :class:`int`
         The ID of the application to be authorized.
     scopes: List[:class:`str`]
-        The list of `OAuth2 scopes <https://discord.com/developers/docs/topics/oauth2#shared-resources-oauth2-scopes>`_
-        to add the application with.
+        The list of :ddocs:`OAuth2 scopes <topics/oauth2#shared-resources-oauth2-scopes>` to add the application with.
     permissions: :class:`Permissions`
         The permissions to grant to the added bot.
     """
@@ -1652,7 +1651,7 @@ class PartialApplication(Hashable):
         A list of RPC origin URLs, if RPC is enabled.
     verify_key: :class:`str`
         The hex encoded key for verification in interactions and the
-        GameSDK's `GetTicket <https://discord.com/developers/docs/game-sdk/applications#getticket>`_.
+        GameSDK's :ddocs:`GetTicket <game-sdk/applications#getticket`.
     terms_of_service_url: Optional[:class:`str`]
         The application's terms of service URL, if set.
     privacy_policy_url: Optional[:class:`str`]
@@ -2935,7 +2934,7 @@ class Application(PartialApplication):
 
         _state = self._state
 
-        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[Snowflake]):
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
             data = await _state.http.get_app_entitlements(
                 self.id,
@@ -2956,7 +2955,7 @@ class Application(PartialApplication):
 
             return data, after, limit
 
-        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[Snowflake]):
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             data = await _state.http.get_app_entitlements(
                 self.id,

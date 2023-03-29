@@ -55,7 +55,7 @@ extras_require = {
         'pytest-cov',
         'pytest-mock',
         'typing-extensions>=4.3,<5',
-    ]
+    ],
 }
 
 setup(
@@ -63,17 +63,17 @@ setup(
     author='Dolfies',
     url='https://github.com/dolfies/discord.py-self',
     project_urls={
-        "Documentation": "https://discordpy-self.readthedocs.io/en/latest/",
-        "Issue tracker": "https://github.com/dolfies/discord.py-self/issues",
-        "Project updates": "https://t.me/dpy_self",
-        "Discussion & support": "https://t.me/dpy_self_discussions",
+        'Documentation': 'https://discordpy-self.readthedocs.io/en/latest/',
+        'Issue tracker': 'https://github.com/dolfies/discord.py-self/issues',
+        'Project updates': 'https://t.me/dpy_self',
+        'Discussion & support': 'https://t.me/dpy_self_discussions',
     },
     version=version,
     packages=find_packages() + [f'{prefix}.ext.commands', f'{prefix}.ext.tasks'],
     license='MIT',
     description='A Python wrapper for the Discord user API',
     long_description=readme,
-    long_description_content_type="text/x-rst",
+    long_description_content_type='text/x-rst',
     include_package_data=True,
     install_requires=requirements,
     extras_require=extras_require,

@@ -1152,8 +1152,7 @@ Reactions
 
     .. note::
 
-        Consider using :func:`on_raw_reaction_remove` if you need this and do not want
-        to enable the members intent.
+        Consider using :func:`on_raw_reaction_remove` if you need this and do not have a complete member cache.
 
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
@@ -5722,9 +5721,9 @@ AuditLogDiff
 
     .. attribute:: bitrate
 
-        The bitrate of a :class:`VoiceChannel`.
+        The bitrate of a :class:`VoiceChannel` or :class:`StageChannel`.
 
-        See also :attr:`VoiceChannel.bitrate`.
+        See also :attr:`VoiceChannel.bitrate`, :attr:`StageChannel.bitrate`.
 
         :type: :class:`int`
 
@@ -6054,12 +6053,6 @@ AuditLogDiff
         See also :attr:`ScheduledEvent.cover_image`.
 
         :type: :class:`Asset`
-
-    .. attribute:: app_command_permissions
-
-        The permissions of the app command.
-
-        :type: :class:`~discord.app_commands.AppCommandPermissions`
 
     .. attribute:: enabled
 
@@ -7320,22 +7313,6 @@ RawEvent
 .. attributetable:: RawThreadDeleteEvent
 
 .. autoclass:: RawThreadDeleteEvent()
-    :members:
-
-PartialWebhookGuild
-~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: PartialWebhookGuild
-
-.. autoclass:: PartialWebhookGuild()
-    :members:
-
-PartialWebhookChannel
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: PartialWebhookChannel
-
-.. autoclass:: PartialWebhookChannel()
     :members:
 
 .. _discord_api_data:

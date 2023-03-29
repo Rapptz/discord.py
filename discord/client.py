@@ -3690,7 +3690,7 @@ class Client:
 
         _state = self._connection
 
-        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[Snowflake]):
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
             data = await _state.http.get_payments(retrieve, after=after_id)
 
@@ -3702,7 +3702,7 @@ class Client:
 
             return data, after, limit
 
-        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[Snowflake]):
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             data = await _state.http.get_payments(retrieve, before=before_id)
 
@@ -4537,7 +4537,7 @@ class Client:
         """
         _state = self._connection
 
-        async def strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[Snowflake]):
+        async def strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             data = await _state.http.get_recent_mentions(
                 retrieve, before=before_id, guild_id=guild.id if guild else None, roles=roles, everyone=everyone
@@ -4552,14 +4552,16 @@ class Client:
             return data, before, limit
 
         if isinstance(before, datetime):
-            before = Object(id=utils.time_snowflake(before, high=False))
+            state = Object(id=utils.time_snowflake(before, high=False))
+        else:
+            state = before
 
         while True:
             retrieve = min(100 if limit is None else limit, 100)
             if retrieve < 1:
                 return
 
-            data, before, limit = await strategy(retrieve, before, limit)
+            data, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
             if len(data) < 100:

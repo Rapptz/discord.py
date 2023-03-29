@@ -72,7 +72,7 @@ class Component:
     .. versionadded:: 2.0
     """
 
-    __slots__: Tuple[str, ...] = ('type', 'message')
+    __slots__ = ('message',)
 
     __repr_info__: ClassVar[Tuple[str, ...]]
     message: Message
@@ -119,7 +119,7 @@ class ActionRow(Component):
         The originating message.
     """
 
-    __slots__: Tuple[str, ...] = ('children',)
+    __slots__ = ('children',)
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
@@ -165,7 +165,7 @@ class Button(Component):
         The originating message.
     """
 
-    __slots__: Tuple[str, ...] = (
+    __slots__ = (
         'style',
         'custom_id',
         'url',
@@ -189,16 +189,16 @@ class Button(Component):
         except KeyError:
             self.emoji = None
 
+    @property
+    def type(self) -> Literal[ComponentType.button]:
+        """:class:`ComponentType`: The type of component."""
+        return ComponentType.button
+
     def to_dict(self) -> dict:
         return {
             'component_type': self.type.value,
             'custom_id': self.custom_id,
         }
-
-    @property
-    def type(self) -> Literal[ComponentType.button]:
-        """:class:`ComponentType`: The type of component."""
-        return ComponentType.button
 
     async def click(self) -> Union[str, Interaction]:
         """|coro|
@@ -261,7 +261,7 @@ class SelectMenu(Component):
         The originating message, if any.
     """
 
-    __slots__: Tuple[str, ...] = (
+    __slots__ = (
         'custom_id',
         'placeholder',
         'min_values',
@@ -350,7 +350,7 @@ class SelectOption:
         Whether this option is selected by default.
     """
 
-    __slots__: Tuple[str, ...] = (
+    __slots__ = (
         'label',
         'value',
         'description',
@@ -437,7 +437,7 @@ class TextInput(Component):
         The maximum length of the text input.
     """
 
-    __slots__: Tuple[str, ...] = (
+    __slots__ = (
         'style',
         'label',
         'custom_id',
@@ -465,13 +465,6 @@ class TextInput(Component):
     def type(self) -> Literal[ComponentType.text_input]:
         """:class:`ComponentType`: The type of component."""
         return ComponentType.text_input
-
-    def to_dict(self) -> dict:
-        return {
-            'type': self.type.value,
-            'custom_id': self.custom_id,
-            'value': self.value,
-        }
 
     @property
     def value(self) -> Optional[str]:
@@ -514,18 +507,31 @@ class TextInput(Component):
         """
         self.value = value
 
+    def to_dict(self) -> dict:
+        return {
+            'type': self.type.value,
+            'custom_id': self.custom_id,
+            'value': self.value,
+        }
+
 
 @overload
-def _component_factory(data: ActionRowChildComponentPayload, message: Message = ...) -> Optional[ActionRowChildComponentType]:
+def _component_factory(
+    data: ActionRowChildComponentPayload, message: Message = ...
+) -> Optional[ActionRowChildComponentType]:
     ...
 
 
 @overload
-def _component_factory(data: ComponentPayload, message: Message = ...) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
+def _component_factory(
+    data: ComponentPayload, message: Message = ...
+) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
     ...
 
 
-def _component_factory(data: ComponentPayload, message: Message = MISSING) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
+def _component_factory(
+    data: ComponentPayload, message: Message = MISSING
+) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
     if data['type'] == 1:
         return ActionRow(data, message)
     elif data['type'] == 2:

@@ -261,10 +261,7 @@ class Thread(Messageable, Hashable):
 
     @property
     def jump_url(self) -> str:
-        """:class:`str`: Returns a URL that allows the client to jump to the thread.
-
-        .. versionadded:: 2.0
-        """
+        """:class:`str`: Returns a URL that allows the client to jump to the thread."""
         return f'https://discord.com/channels/{self.guild.id}/{self.id}'
 
     @property
@@ -277,17 +274,14 @@ class Thread(Messageable, Hashable):
 
     @property
     def applied_tags(self) -> List[ForumTag]:
-        """List[:class:`ForumTag`]: A list of tags applied to this thread.
-
-        .. versionadded:: 2.0
-        """
+        """List[:class:`ForumTag`]: A list of tags applied to this thread."""
         tags = []
         if self.parent is None or self.parent.type != ChannelType.forum:
             return tags
 
         parent = self.parent
         for tag_id in self._applied_tags:
-            tag = parent.get_tag(tag_id)
+            tag = parent.get_tag(tag_id)  # type: ignore
             if tag is not None:
                 tags.append(tag)
 
@@ -607,8 +601,6 @@ class Thread(Messageable, Hashable):
             A value of ``0`` disables slowmode. The maximum value possible is ``21600``.
         applied_tags: Sequence[:class:`ForumTag`]
             The new tags to apply to the thread. There can only be up to 5 tags applied to a thread.
-
-            .. versionadded:: 2.0
         reason: Optional[:class:`str`]
             The reason for editing this thread. Shows up on the audit log.
 
@@ -663,8 +655,6 @@ class Thread(Messageable, Hashable):
 
         The parent channel must be a :class:`ForumChannel`.
 
-        .. versionadded:: 2.0
-
         Parameters
         -----------
         \*tags: :class:`abc.Snowflake`
@@ -695,8 +685,6 @@ class Thread(Messageable, Hashable):
         use this or the thread must be owned by you.
 
         The parent channel must be a :class:`ForumChannel`.
-
-        .. versionadded:: 2.0
 
         Parameters
         -----------
@@ -846,8 +834,6 @@ class Thread(Messageable, Hashable):
 
         This is useful if you want to work with a message and only have its ID without
         doing an unnecessary API call.
-
-        .. versionadded:: 2.0
 
         Parameters
         ------------

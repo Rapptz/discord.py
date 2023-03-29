@@ -28,7 +28,7 @@ import base64
 from datetime import datetime, timezone
 import struct
 import logging
-from typing import TYPE_CHECKING, Any, Collection, Dict, List, Optional, Sequence, Tuple, Type, Union, overload
+from typing import TYPE_CHECKING, Any, Collection, Dict, List, Literal, Optional, Sequence, Tuple, Type, Union, overload
 
 from google.protobuf.json_format import MessageToDict, ParseDict
 from discord_protos import PreloadedUserSettings  # , FrecencyUserSettings
@@ -125,8 +125,18 @@ class _ProtoSettings:
         new.settings.CopyFrom(self.settings)
         return new
 
-    def _get_guild(self, id: int, /) -> Union[Guild, Object]:
+    @overload
+    def _get_guild(self, id: int, /, *, always_guild: Literal[True] = ...) -> Guild:
+        ...
+
+    @overload
+    def _get_guild(self, id: int, /, *, always_guild: Literal[False] = ...) -> Union[Guild, Object]:
+        ...
+
+    def _get_guild(self, id: int, /, *, always_guild: bool = False) -> Union[Guild, Object]:
         id = int(id)
+        if always_guild:
+            return self._state._get_or_create_unavailable_guild(id)
         return self._state._get_guild(id) or Object(id=id)
 
     def to_dict(self, *, with_defaults: bool = False) -> Dict[str, Any]:
@@ -310,8 +320,8 @@ class UserSettings(_ProtoSettings):
         return try_enum(SpoilerRenderOptions, self.settings.text_and_images.render_spoilers.value or 'ON_CLICK')
 
     @property
-    def collapsed_emoji_picker_sections(self) -> Tuple[Union[EmojiPickerSection, Guild, Object], ...]:
-        """Tuple[Union[:class:`EmojiPickerSection`, :class:`Guild`, :class:`Object`]]: A list of emoji picker sections (including guild IDs) that are collapsed."""
+    def collapsed_emoji_picker_sections(self) -> Tuple[Union[EmojiPickerSection, Guild], ...]:
+        """Tuple[Union[:class:`EmojiPickerSection`, :class:`Guild`]]: A list of emoji picker sections (including guild IDs) that are collapsed."""
         return tuple(
             self._get_guild(section) if section.isdigit() else try_enum(EmojiPickerSection, section)
             for section in self.settings.text_and_images.emoji_picker_collapsed_sections
@@ -321,7 +331,7 @@ class UserSettings(_ProtoSettings):
     def collapsed_sticker_picker_sections(self) -> Tuple[Union[StickerPickerSection, Guild, Object], ...]:
         """Tuple[Union[:class:`StickerPickerSection`, :class:`Guild`, :class:`Object`]]: A list of sticker picker sections (including guild and sticker pack IDs) that are collapsed."""
         return tuple(
-            self._get_guild(section) if section.isdigit() else try_enum(StickerPickerSection, section)
+            self._get_guild(section, always_guild=False) if section.isdigit() else try_enum(StickerPickerSection, section)
             for section in self.settings.text_and_images.sticker_picker_collapsed_sections
         )
 
@@ -497,8 +507,8 @@ class UserSettings(_ProtoSettings):
         )
 
     @property
-    def restricted_guilds(self) -> List[Union[Guild, Object]]:
-        """List[Union[:class:`Guild`, :class:`Object`]]: A list of guilds that you will not receive DMs from."""
+    def restricted_guilds(self) -> List[Guild]:
+        """List[:class:`Guild`]: A list of guilds that you will not receive DMs from."""
         return list(map(self._get_guild, self.settings.privacy.restricted_guild_ids))
 
     @property
@@ -545,8 +555,8 @@ class UserSettings(_ProtoSettings):
         return FriendDiscoveryFlags._from_value(self.settings.privacy.friend_discovery_flags.value)
 
     @property
-    def activity_restricted_guilds(self) -> List[Union[Guild, Object]]:
-        """List[Union[:class:`Guild`, :class:`Object`]]: A list of guilds that your current activity will not be shown in."""
+    def activity_restricted_guilds(self) -> List[Guild]:
+        """List[:class:`Guild`]: A list of guilds that your current activity will not be shown in."""
         return list(map(self._get_guild, self.settings.privacy.activity_restricted_guild_ids))
 
     @property
@@ -555,13 +565,13 @@ class UserSettings(_ProtoSettings):
         return self.settings.privacy.default_guilds_activity_restricted
 
     @property
-    def activity_joining_restricted_guilds(self) -> List[Union[Guild, Object]]:
-        """List[Union[:class:`Guild`, :class:`Object`]]: A list of guilds that will not be able to join your current activity."""
+    def activity_joining_restricted_guilds(self) -> List[Guild]:
+        """List[:class:`Guild`]: A list of guilds that will not be able to join your current activity."""
         return list(map(self._get_guild, self.settings.privacy.activity_joining_restricted_guild_ids))
 
     @property
-    def message_request_restricted_guilds(self) -> List[Union[Guild, Object]]:
-        """List[Union[:class:`Guild`, :class:`Object`]]: A list of guilds whose originating DMs will not be filtered into your message requests."""
+    def message_request_restricted_guilds(self) -> List[Guild]:
+        """List[:class:`Guild`]: A list of guilds whose originating DMs will not be filtered into your message requests."""
         return list(map(self._get_guild, self.settings.privacy.message_request_restricted_guild_ids))
 
     @property
@@ -683,8 +693,8 @@ class UserSettings(_ProtoSettings):
         return [GuildFolder._from_settings(data=folder, state=state) for folder in self.settings.guild_folders.folders]
 
     @property
-    def guild_positions(self) -> List[Union[Guild, Object]]:
-        """List[Union[:class:`Guild`, :class:`Object`]]: A list of guilds in order of the guild/guild icons that are on the left hand side of the UI."""
+    def guild_positions(self) -> List[Guild]:
+        """List[:class:`Guild`]: A list of guilds in order of the guild/guild icons that are on the left hand side of the UI."""
         return list(map(self._get_guild, self.settings.guild_folders.guild_positions))
 
     # Favorites Settings
@@ -1208,8 +1218,10 @@ class GuildFolder:
         return self
 
     def _get_guild(self, id, /) -> Union[Guild, Object]:
+        from .guild import Guild  # circular import
+
         id = int(id)
-        return self._state._get_guild(id) or Object(id=id) if self._state else Object(id=id)
+        return self._state._get_or_create_unavailable_guild(id) if self._state else Object(id=id, type=Guild)
 
     def to_dict(self) -> dict:
         ret = {}
@@ -1460,7 +1472,7 @@ class GuildProgress:
     @property
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: The guild this progress belongs to. ``None`` if state is not attached."""
-        return self._state._get_guild(self.guild_id) if self._state is not None else None
+        return self._state._get_or_create_unavailable_guild(self.guild_id) if self._state is not None else None
 
     @property
     def hub_progress(self) -> HubProgressFlags:
@@ -1682,9 +1694,8 @@ class LegacyUserSettings:
     def __repr__(self) -> str:
         return '<LegacyUserSettings>'
 
-    def _get_guild(self, id: int, /) -> Union[Guild, Object]:
-        id = int(id)
-        return self._state._get_guild(id) or Object(id=id)
+    def _get_guild(self, id: int, /) -> Guild:
+        return self._state._get_or_create_unavailable_guild(int(id))
 
     def _update(self, data: Dict[str, Any]) -> None:
         RAW_VALUES = {
@@ -1824,16 +1835,16 @@ class LegacyUserSettings:
         return await self._state.client.edit_legacy_settings(**kwargs)
 
     @property
-    def activity_restricted_guilds(self) -> List[Union[Guild, Object]]:
-        """List[Union[:class:`Guild`, :class:`Object`]]: A list of guilds that your current activity will not be shown in.
+    def activity_restricted_guilds(self) -> List[Guild]:
+        """List[:class:`Guild`]: A list of guilds that your current activity will not be shown in.
 
         .. versionadded:: 2.0
         """
         return list(map(self._get_guild, getattr(self, '_activity_restricted_guild_ids', [])))
 
     @property
-    def activity_joining_restricted_guilds(self) -> List[Union[Guild, Object]]:
-        """List[Union[:class:`Guild`, :class:`Object`]]: A list of guilds that will not be able to join your current activity.
+    def activity_joining_restricted_guilds(self) -> List[Guild]:
+        """List[:class:`Guild`]: A list of guilds that will not be able to join your current activity.
 
         .. versionadded:: 2.0
         """
@@ -1873,8 +1884,8 @@ class LegacyUserSettings:
         ]
 
     @property
-    def guild_positions(self) -> List[Union[Guild, Object]]:
-        """List[Union[:class:`Guild`, :class:`Object`]]: A list of guilds in order of the guild/guild icons that are on the left hand side of the UI."""
+    def guild_positions(self) -> List[Guild]:
+        """List[:class:`Guild`]: A list of guilds in order of the guild/guild icons that are on the left hand side of the UI."""
         return list(map(self._get_guild, getattr(self, '_guild_positions', [])))
 
     @property
@@ -1893,8 +1904,8 @@ class LegacyUserSettings:
         return getattr(self, '_passwordless', False)
 
     @property
-    def restricted_guilds(self) -> List[Union[Guild, Object]]:
-        """List[Union[:class:`Guild`, :class:`Object`]]: A list of guilds that you will not receive DMs from."""
+    def restricted_guilds(self) -> List[Guild]:
+        """List[:class:`Guild`]: A list of guilds that you will not receive DMs from."""
         return list(map(self._get_guild, getattr(self, '_restricted_guilds', [])))
 
     @property
@@ -2007,7 +2018,7 @@ class ChannelSettings:
     @property
     def channel(self) -> Union[GuildChannel, PrivateChannel]:
         """Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`]: Returns the channel these settings are for."""
-        guild = self._state._get_guild(self._guild_id)
+        guild = self._state._get_or_create_unavailable_guild(self._guild_id) if self._guild_id else None
         if guild:
             channel = guild.get_channel(self._channel_id)
         else:
@@ -2165,7 +2176,7 @@ class GuildSettings:
         If the returned value is a :class:`ClientUser` then the settings are for the user's private channels.
         """
         if self._guild_id:
-            return self._state._get_guild(self._guild_id) or Object(id=self._guild_id)  # type: ignore # Lying for better developer UX
+            return self._state._get_or_create_unavailable_guild(self._guild_id)
         return self._state.user  # type: ignore # Should always be present here
 
     @property

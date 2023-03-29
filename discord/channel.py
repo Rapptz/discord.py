@@ -59,6 +59,8 @@ from .threads import Thread
 from .partial_emoji import _EmojiTag, PartialEmoji
 from .flags import ChannelFlags
 from .http import handle_message_parameters
+from .invite import Invite
+from .voice_client import VoiceClient
 
 __all__ = (
     'TextChannel',
@@ -80,7 +82,7 @@ if TYPE_CHECKING:
     from .role import Role
     from .object import Object
     from .member import Member, VoiceState
-    from .abc import Snowflake, SnowflakeTime
+    from .abc import Snowflake, SnowflakeTime, T
     from .message import Message, PartialMessage, EmojiInputType
     from .mentions import AllowedMentions
     from .webhook import Webhook
@@ -1974,8 +1976,6 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 class ForumTag(Hashable):
     """Represents a forum tag that can be applied to a thread within a :class:`ForumChannel`.
 
-    .. versionadded:: 2.0
-
     .. container:: operations
 
         .. describe:: x == y
@@ -1994,6 +1994,7 @@ class ForumTag(Hashable):
 
             Returns the forum tag's name.
 
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -2602,11 +2603,9 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         channel_payload = {
             'name': name,
             'auto_archive_duration': auto_archive_duration or self.default_auto_archive_duration,
-            'location': 'Forum Channel',
+            'rate_limit_per_user': slowmode_delay,
             'type': 11,  # Private threads don't seem to be allowed
         }
-        if slowmode_delay is not None:
-            extras['rate_limit_per_user'] = slowmode_delay
 
         if applied_tags is not MISSING:
             channel_payload['applied_tags'] = [str(tag.id) for tag in applied_tags]
@@ -2629,8 +2628,6 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             data = await state.http.start_thread_in_forum(self.id, params=params, reason=reason)
             thread = Thread(guild=self.guild, state=self._state, data=data)
             message = Message(state=self._state, channel=thread, data=data['message'])
-            if view:
-                self._state.store_view(view, message.id)
 
             return ThreadWithMessage(thread=thread, message=message)
 
@@ -3026,9 +3023,9 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, discord.abc.Connectable], ConnectReturn] = MISSING,
+        cls: Callable[[Client, discord.abc.Connectable], T] = VoiceClient,
         ring: bool = True,
-    ) -> ConnectReturn:
+    ) -> T:
         """|coro|
 
         Connects to voice and creates a :class:`~discord.VoiceClient` to establish
@@ -3558,9 +3555,9 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, discord.abc.Connectable], ConnectReturn] = MISSING,
+        cls: Callable[[Client, discord.abc.Connectable], T] = VoiceClient,
         ring: bool = True,
-    ) -> ConnectReturn:
+    ) -> T:
         await self._get_channel()
         call = self.call
         if call is None and ring:

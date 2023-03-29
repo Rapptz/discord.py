@@ -690,6 +690,8 @@ class Guild(Hashable):
         """List[:class:`ForumChannel`]: A list of forum channels that belongs to this guild.
 
         This is sorted by the position and are in UI order from top to bottom.
+
+        .. versionadded:: 2.0
         """
         r = [ch for ch in self._channels.values() if isinstance(ch, ForumChannel)]
         r.sort(key=lambda c: (c.position, c.id))
@@ -2946,11 +2948,11 @@ class Guild(Hashable):
         self,
         *,
         name: str,
-        start_time: datetime.datetime,
+        start_time: datetime,
         entity_type: Literal[EntityType.external] = ...,
         privacy_level: PrivacyLevel = ...,
         location: str = ...,
-        end_time: datetime.datetime = ...,
+        end_time: datetime = ...,
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
@@ -2962,11 +2964,11 @@ class Guild(Hashable):
         self,
         *,
         name: str,
-        start_time: datetime.datetime,
+        start_time: datetime,
         entity_type: Literal[EntityType.stage_instance, EntityType.voice] = ...,
         privacy_level: PrivacyLevel = ...,
         channel: Snowflake = ...,
-        end_time: datetime.datetime = ...,
+        end_time: datetime = ...,
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
@@ -2978,10 +2980,10 @@ class Guild(Hashable):
         self,
         *,
         name: str,
-        start_time: datetime.datetime,
+        start_time: datetime,
         privacy_level: PrivacyLevel = ...,
         location: str = ...,
-        end_time: datetime.datetime = ...,
+        end_time: datetime = ...,
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
@@ -2993,10 +2995,10 @@ class Guild(Hashable):
         self,
         *,
         name: str,
-        start_time: datetime.datetime,
+        start_time: datetime,
         privacy_level: PrivacyLevel = ...,
         channel: Union[VoiceChannel, StageChannel] = ...,
-        end_time: datetime.datetime = ...,
+        end_time: datetime = ...,
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
@@ -3008,7 +3010,7 @@ class Guild(Hashable):
         *,
         name: str,
         start_time: datetime,
-        entity_type: EntityType,
+        entity_type: EntityType = MISSING,
         privacy_level: PrivacyLevel = MISSING,
         channel: Optional[Snowflake] = MISSING,
         location: str = MISSING,
@@ -3032,7 +3034,9 @@ class Guild(Hashable):
         description: :class:`str`
             The description of the scheduled event.
         channel: Optional[:class:`abc.Snowflake`]
-            The channel to send the scheduled event to.
+            The channel to send the scheduled event to. If the channel is
+            a :class:`StageInstance` or :class:`VoiceChannel` then
+            it automatically sets the entity type.
 
             Required if ``entity_type`` is either :attr:`EntityType.voice` or
             :attr:`EntityType.stage_instance`.
@@ -3047,7 +3051,11 @@ class Guild(Hashable):
         privacy_level: :class:`PrivacyLevel`
             The privacy level of the scheduled event.
         entity_type: :class:`EntityType`
-            The entity type of the scheduled event.
+            The entity type of the scheduled event. If the channel is a
+            :class:`StageInstance` or :class:`VoiceChannel` then this is
+            automatically set to the appropriate entity type. If no channel
+            is passed then the entity type is assumed to be
+            :attr:`EntityType.external`
         image: :class:`bytes`
             The image of the scheduled event.
         location: :class:`str`

@@ -119,7 +119,8 @@ class Cooldown:
         if not current:
             current = time.time()
 
-        tokens = self._tokens
+        # the calculated tokens should be non-negative
+        tokens = max(self._tokens, 0)
 
         if current > self._window + self.per:
             tokens = self.rate
@@ -147,7 +148,7 @@ class Cooldown:
 
         return 0.0
 
-    def update_rate_limit(self, current: Optional[float] = None) -> Optional[float]:
+    def update_rate_limit(self, current: Optional[float] = None, *, tokens: int = 1) -> Optional[float]:
         """Updates the cooldown rate limit.
 
         Parameters
@@ -155,6 +156,10 @@ class Cooldown:
         current: Optional[:class:`float`]
             The time in seconds since Unix epoch to update the rate limit at.
             If not supplied, then :func:`time.time()` is used.
+        tokens: :class:`int`
+            The amount of tokens to deduct from the rate limit.
+
+            .. versionadded:: 2.0
 
         Returns
         -------
@@ -170,12 +175,12 @@ class Cooldown:
         if self._tokens == self.rate:
             self._window = current
 
-        # check if we are rate limited
-        if self._tokens == 0:
-            return self.per - (current - self._window)
+        # decrement tokens by specified number
+        self._tokens -= tokens
 
-        # we're not so decrement our tokens
-        self._tokens -= 1
+        # check if we are rate limited and return retry-after
+        if self._tokens < 0:
+            return self.per - (current - self._window)
 
     def reset(self) -> None:
         """Reset the cooldown to its initial state."""

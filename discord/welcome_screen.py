@@ -62,7 +62,9 @@ class WelcomeChannel:
         The emoji shown under the description.
     """
 
-    def __init__(self, *, channel: Snowflake, description: str, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None) -> None:
+    def __init__(
+        self, *, channel: Snowflake, description: str, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None
+    ) -> None:
         self.channel = channel
         self.description = description
 
@@ -129,7 +131,9 @@ class WelcomeScreen:
         state = self.guild._state
         channels = data.get('welcome_channels', [])
 
-        self.welcome_channels: List[WelcomeChannel] = [WelcomeChannel._from_dict(data=channel, state=state) for channel in channels]
+        self.welcome_channels: List[WelcomeChannel] = [
+            WelcomeChannel._from_dict(data=channel, state=state) for channel in channels
+        ]
         self.description: str = data.get('description', '')
 
     def __repr__(self) -> str:

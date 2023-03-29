@@ -90,6 +90,7 @@ if TYPE_CHECKING:
         VocalGuildChannel,
         VoiceChannel,
         StageChannel,
+        CategoryChannel,
     )
     from .threads import Thread
     from .enums import InviteTarget

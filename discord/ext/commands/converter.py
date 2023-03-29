@@ -1064,8 +1064,6 @@ else:
         - ``Range[float, 1.0, 5.0]`` means the minimum is 1.0 and the maximum is 5.0.
         - ``Range[str, 1, 10]`` means the minimum length is 1 and the maximum length is 10.
 
-        Inside a :class:`HybridCommand` this functions equivalently to :class:`discord.app_commands.Range`.
-
         If the value cannot be converted to the provided type or is outside the given range,
         :class:`~.ext.commands.BadArgument` or :class:`~.ext.commands.RangeError` is raised to
         the appropriate error handlers respectively.

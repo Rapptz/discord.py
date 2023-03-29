@@ -887,9 +887,7 @@ Text in Voice
 In order to support text in voice functionality, a few changes had to be made:
 
 - :class:`VoiceChannel` is now :class:`abc.Messageable` so it can have messages sent and received.
-- :attr:`Message.channel` can now be :class:`VoiceChannel`.
-
-In the future this may include :class:`StageChannel` when Discord implements it.
+- :attr:`Message.channel` can now be :class:`VoiceChannel` and :class:`StageChannel`.
 
 Removal of ``StoreChannel``
 -----------------------------

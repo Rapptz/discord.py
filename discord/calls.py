@@ -76,7 +76,7 @@ class CallMessage:
 
     __slots__ = ('message', 'ended_timestamp', 'participants')
 
-    def __init__(self, message: Message, *, participants: List[User], ended_timestamp: str) -> None:
+    def __init__(self, message: Message, *, participants: List[User], ended_timestamp: Optional[str]) -> None:
         self.message = message
         self.ended_timestamp = utils.parse_time(ended_timestamp)
         self.participants = participants
@@ -188,8 +188,8 @@ class PrivateCall:
         return list(self._ringing)
 
     @property
-    def initiator(self) -> User:
-        """:class:`.abc.User`: Returns the user that started the call."""
+    def initiator(self) -> Optional[User]:
+        """Optional[:class:`.abc.User`]: Returns the user that started the call. Returns ``None`` if the message is not cached."""
         return getattr(self.message, 'author', None)
 
     @property
@@ -211,10 +211,9 @@ class PrivateCall:
         }
 
     @cached_slot_property('_cs_message')
-    def message(self) -> Message:
-        """:class:`Message`: The message associated with this call."""
-        # Lying to the type checker for better developer UX, very unlikely for the message to not be received
-        return self._state._get_message(self._message_id)  # type: ignore
+    def message(self) -> Optional[Message]:
+        """Optional[:class:`Message`]: The message associated with this call. Sometimes may not be cached."""
+        return self._state._get_message(self._message_id)
 
     async def fetch_message(self) -> Message:
         """|coro|

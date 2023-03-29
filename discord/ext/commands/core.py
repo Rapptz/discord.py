@@ -55,7 +55,6 @@ from .converter import Greedy, run_converters
 from .cooldowns import BucketType, Cooldown, CooldownMapping, DynamicCooldownMapping, MaxConcurrency
 from .errors import *
 from .parameters import Parameter, Signature
-from discord.app_commands.commands import NUMPY_DOCSTRING_ARG_REGEX
 
 if TYPE_CHECKING:
     from typing_extensions import Concatenate, ParamSpec, Self
@@ -91,6 +90,14 @@ __all__ = (
 )
 
 MISSING: Any = discord.utils.MISSING
+
+ARG_NAME_SUBREGEX = r'(?:\\?\*){0,2}(?P<name>\w+)'
+ARG_DESCRIPTION_SUBREGEX = r'(?P<description>(?:.|\n)+?(?:\Z|\r?\n(?=[\S\r\n])))'
+ARG_TYPE_SUBREGEX = r'(?:.+)'
+NUMPY_DOCSTRING_ARG_REGEX = re.compile(
+    rf'^{ARG_NAME_SUBREGEX}(?:[ \t]*:)?(?:[ \t]+{ARG_TYPE_SUBREGEX})?[ \t]*\r?\n[ \t]+{ARG_DESCRIPTION_SUBREGEX}',
+    re.MULTILINE,
+)
 
 T = TypeVar('T')
 CommandT = TypeVar('CommandT', bound='Command[Any, ..., Any]')

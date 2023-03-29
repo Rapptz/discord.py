@@ -836,42 +836,42 @@ class CustomActivity(BaseActivity):
         return ActivityType.custom
 
     def to_dict(self) -> ActivityPayload:
-        o = {
+        payload = {
             'type': ActivityType.custom.value,
             'state': self.name,
             'name': 'Custom Status',  # Not a confusing API at all
         }
         if self.emoji:
-            o['emoji'] = self.emoji.to_dict()
-        return o  # type: ignore
+            payload['emoji'] = self.emoji.to_dict()
+        return payload  # type: ignore
 
-    def to_legacy_settings_dict(self) -> Dict[str, Any]:
-        o: Dict[str, Optional[Union[str, int]]] = {}
-
-        if self.name:
-            o['text'] = self.name
-        if self.emoji:
-            emoji = self.emoji
-            o['emoji_name'] = emoji.name
-            if emoji.id:
-                o['emoji_id'] = emoji.id
-        if self.expires_at is not None:
-            o['expires_at'] = self.expires_at.isoformat()
-        return o
-
-    def to_settings_dict(self) -> Dict[str, Any]:
-        o: Dict[str, Optional[Union[str, int]]] = {}
+    def to_legacy_settings_dict(self) -> Dict[str, Optional[Union[str, int]]]:
+        payload: Dict[str, Optional[Union[str, int]]] = {}
 
         if self.name:
-            o['text'] = self.name
+            payload['text'] = self.name
         if self.emoji:
             emoji = self.emoji
-            o['emoji_name'] = emoji.name
+            payload['emoji_name'] = emoji.name
             if emoji.id:
-                o['emoji_id'] = emoji.id
+                payload['emoji_id'] = emoji.id
         if self.expires_at is not None:
-            o['expires_at_ms'] = int(self.expires_at.timestamp() * 1000)
-        return o
+            payload['expires_at'] = self.expires_at.isoformat()
+        return payload
+
+    def to_settings_dict(self) -> Dict[str, Optional[Union[str, int]]]:
+        payload: Dict[str, Optional[Union[str, int]]] = {}
+
+        if self.name:
+            payload['text'] = self.name
+        if self.emoji:
+            emoji = self.emoji
+            payload['emoji_name'] = emoji.name
+            if emoji.id:
+                payload['emoji_id'] = emoji.id
+        if self.expires_at is not None:
+            payload['expires_at_ms'] = int(self.expires_at.timestamp() * 1000)
+        return payload
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, CustomActivity) and other.name == self.name and other.emoji == self.emoji

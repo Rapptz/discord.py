@@ -34,7 +34,6 @@ from .enums import PremiumType, try_enum
 from .flags import ApplicationFlags
 from .member import Member
 from .mixins import Hashable
-from .object import Object
 from .user import Note, User
 
 if TYPE_CHECKING:
@@ -96,9 +95,9 @@ class Profile:
         state = self._state
 
         def get_guild(guild):
-            return state._get_guild(int(guild['id'])) or Object(id=int(guild['id']))
+            return state._get_or_create_unavailable_guild(int(guild['id']))
 
-        return list(map(get_guild, mutual_guilds))  # type: ignore # Lying for better developer UX
+        return list(map(get_guild, mutual_guilds))
 
     def _parse_mutual_friends(self, mutual_friends) -> Optional[List[User]]:
         if mutual_friends is None:

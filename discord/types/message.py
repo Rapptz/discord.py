@@ -86,6 +86,11 @@ class MessageReference(TypedDict, total=False):
     fail_if_not_exists: bool
 
 
+class Call(TypedDict):
+    participants: List[Snowflake]
+    ended_timestamp: Optional[str]
+
+
 class RoleSubscriptionData(TypedDict):
     role_subscription_listing_id: Snowflake
     tier_name: str
@@ -127,6 +132,7 @@ class Message(PartialMessage):
     interaction: NotRequired[MessageInteraction]
     components: NotRequired[List[Component]]
     position: NotRequired[int]
+    call: NotRequired[Call]
     role_subscription_data: NotRequired[RoleSubscriptionData]
 
 

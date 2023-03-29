@@ -491,7 +491,7 @@ class Gift:
         payment_source: Optional[:class:`PaymentSource`]
             The payment source to use for the redemption.
             Only required if the gift's :attr:`flags` have :attr:`GiftFlags.payment_source_required` set to ``True``.
-        channel: Optional[Union[:class:`TextChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`]]
+        channel: Optional[Union[:class:`TextChannel`, :class:`VoiceChannel`, :class:`StageChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`]]
             The channel to redeem the gift in. This is usually the channel the gift was sent in.
             While this is optional, it is recommended to pass this in.
         gateway_checkout_context: Optional[:class:`str`]

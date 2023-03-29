@@ -407,7 +407,9 @@ class ScheduledEvent(Hashable):
         description: :class:`str`
             The description of the scheduled event.
         channel: Optional[:class:`~discord.abc.Snowflake`]
-            The channel to put the scheduled event in.
+            The channel to put the scheduled event in. If the channel is
+            a :class:`StageInstance` or :class:`VoiceChannel` then
+            it automatically sets the entity type.
 
             Required if the entity type is either :attr:`EntityType.voice` or
             :attr:`EntityType.stage_instance`.
@@ -426,7 +428,9 @@ class ScheduledEvent(Hashable):
         privacy_level: :class:`PrivacyLevel`
             The privacy level of the scheduled event.
         entity_type: :class:`EntityType`
-            The new entity type.
+            The new entity type. If the channel is a :class:`StageInstance`
+            or :class:`VoiceChannel` then this is automatically set to the
+            appropriate entity type.
         status: :class:`EventStatus`
             The new status of the scheduled event.
         image: Optional[:class:`bytes`]
@@ -467,7 +471,7 @@ class ScheduledEvent(Hashable):
         if start_time is not MISSING:
             if start_time.tzinfo is None:
                 raise ValueError(
-                    'start_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time'
+                    'start_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
                 )
             payload['scheduled_start_time'] = start_time.isoformat()
 
@@ -476,7 +480,7 @@ class ScheduledEvent(Hashable):
 
         if privacy_level is not MISSING:
             if not isinstance(privacy_level, PrivacyLevel):
-                raise TypeError('privacy_level must be of type PrivacyLevel')
+                raise TypeError('privacy_level must be of type PrivacyLevel.')
 
             payload['privacy_level'] = privacy_level.value
 
