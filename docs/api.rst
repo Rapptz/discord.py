@@ -1394,6 +1394,8 @@ Voice
 
     This requires :attr:`Intents.voice_states` to be enabled.
 
+    .. versionadded:: 2.3
+
     :param channel: The channel in which the effect is sent.
     :type channel: :class:`VoiceChannel`
     :param effect: The sent effect.
@@ -3340,6 +3342,8 @@ of :class:`enum.Enum`.
 
     Represents the animation type of a voice channel effect.
 
+    .. versionadded:: 2.3
+
     .. attribute:: premium
 
         A fun animation, sent by a Nitro subscriber.
@@ -4425,6 +4429,8 @@ VoiceChannel
 .. class:: VoiceChannelEffect
 
     A namedtuple which represents a voice channel effect sent by a :class:`Member`.
+
+    .. versionadded:: 2.3
 
     .. attribute:: emoji
 
