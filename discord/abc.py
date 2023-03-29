@@ -1659,6 +1659,85 @@ class Messageable:
             await ret.delete(delay=delete_after)
         return ret
 
+    async def greet(
+        self,
+        sticker: Union[GuildSticker, StickerItem],
+        *,
+        allowed_mentions: AllowedMentions = MISSING,
+        reference: Union[Message, MessageReference, PartialMessage] = MISSING,
+        mention_author: bool = MISSING,
+    ) -> Message:
+        """|coro|
+
+        Sends a sticker greeting to the destination.
+
+        A sticker greeting is used to begin a new DM or reply to a system message.
+
+        .. versionadded:: 2.0
+
+        Parameters
+        ------------
+        sticker: Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]
+            The sticker to greet with.
+        allowed_mentions: :class:`~discord.AllowedMentions`
+            Controls the mentions being processed in this message. If this is
+            passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`.
+            The merging behaviour only overrides attributes that have been explicitly passed
+            to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`.
+            If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions`
+            are used instead. In the case of greeting, only :attr:`~discord.AllowedMentions.replied_user` is
+            considered.
+        reference: Union[:class:`~discord.Message`, :class:`~discord.MessageReference`, :class:`~discord.PartialMessage`]
+            A reference to the :class:`~discord.Message` to which you are replying, this can be created using
+            :meth:`~discord.Message.to_reference` or passed directly as a :class:`~discord.Message`. You can control
+            whether this mentions the author of the referenced message using the :attr:`~discord.AllowedMentions.replied_user`
+            attribute of ``allowed_mentions`` or by setting ``mention_author``.
+        mention_author: :class:`bool`
+            If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
+
+        Raises
+        --------
+        ~discord.HTTPException
+            Sending the message failed.
+        ~discord.Forbidden
+            You do not have the proper permissions to send the message, or this is not a valid greet context.
+        TypeError
+            The ``reference`` object is not a :class:`~discord.Message`,
+            :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`.
+
+        Returns
+        ---------
+        :class:`~discord.Message`
+            The sticker greeting that was sent.
+        """
+        channel = await self._get_channel()
+        state = self._state
+        previous_allowed_mention = state.allowed_mentions
+
+        if reference:
+            try:
+                reference_dict = reference.to_message_reference_dict()
+            except AttributeError:
+                raise TypeError('reference parameter must be Message, MessageReference, or PartialMessage') from None
+        else:
+            reference_dict = MISSING
+
+        if allowed_mentions:
+            if previous_allowed_mention:
+                allowed_mentions = previous_allowed_mention.merge(allowed_mentions)
+        if mention_author is not MISSING:
+            if not allowed_mentions:
+                allowed_mentions = AllowedMentions()
+            allowed_mentions.replied_user = mention_author
+        if allowed_mentions and allowed_mentions.replied_user:
+            # No point sending them
+            allowed_mentions = MISSING
+
+        data = await state.http.send_greet(
+            channel.id, sticker.id, message_reference=reference_dict, allowed_mentions=allowed_mentions
+        )
+        return state.create_message(channel=channel, data=data)
+
     def typing(self) -> Typing:
         """Returns an asynchronous context manager that allows you to send a typing indicator to
         the destination for an indefinite period of time, or 10 seconds if the context manager

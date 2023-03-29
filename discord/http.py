@@ -1051,6 +1051,22 @@ class HTTPClient:
         else:
             return self.request(r, json=params.payload)
 
+    def send_greet(
+        self,
+        channel_id: Snowflake,
+        sticker_id: Snowflake,
+        *,
+        allowed_mentions: Optional[AllowedMentions] = None,
+        message_reference: Optional[message.MessageReference] = None,
+    ) -> Response[message.Message]:
+        payload: Dict[str, Any] = {'sticker_ids': [sticker_id]}
+        if allowed_mentions:
+            payload['allowed_mentions'] = allowed_mentions.to_dict()
+        if message_reference:
+            payload['message_reference'] = message_reference
+
+        return self.request(Route('POST', '/channels/{channel_id}/greet', channel_id=channel_id), json=payload)
+
     def send_typing(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 

@@ -99,6 +99,7 @@ if TYPE_CHECKING:
     from .components import ActionRow, ActionRowChildComponentType
     from .state import ConnectionState
     from .mentions import AllowedMentions
+    from .sticker import GuildSticker
     from .user import User
     from .role import Role
 
@@ -1154,6 +1155,28 @@ class PartialMessage(Hashable):
             The message that was sent.
         """
         return await self.channel.send(content, reference=self, **kwargs)
+
+    async def greet(self, sticker: Union[GuildSticker, StickerItem], **kwargs: Any) -> Message:
+        """|coro|
+
+        A shortcut method to :meth:`.abc.Messageable.greet` to reply to the
+        :class:`.Message` with a sticker greeting.
+
+        .. versionadded:: 2.0
+
+        Raises
+        --------
+        ~discord.HTTPException
+            Sending the message failed.
+        ~discord.Forbidden
+            You do not have the proper permissions to send the message, or this is not a valid greet context.
+
+        Returns
+        ---------
+        :class:`.Message`
+            The sticker greeting that was sent.
+        """
+        return await self.channel.greet(sticker, reference=self, **kwargs)
 
     def to_reference(self, *, fail_if_not_exists: bool = True) -> MessageReference:
         """Creates a :class:`~discord.MessageReference` from the current message.
