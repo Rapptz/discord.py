@@ -44,7 +44,7 @@ import socket
 import logging
 import struct
 import threading
-from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union
+from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple
 
 from . import opus, utils
 from .backoff import ExponentialBackoff

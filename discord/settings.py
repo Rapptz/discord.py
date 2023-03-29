@@ -323,7 +323,7 @@ class UserSettings(_ProtoSettings):
     def collapsed_emoji_picker_sections(self) -> Tuple[Union[EmojiPickerSection, Guild], ...]:
         """Tuple[Union[:class:`EmojiPickerSection`, :class:`Guild`]]: A list of emoji picker sections (including guild IDs) that are collapsed."""
         return tuple(
-            self._get_guild(section) if section.isdigit() else try_enum(EmojiPickerSection, section)
+            self._get_guild(section, always_guild=True) if section.isdigit() else try_enum(EmojiPickerSection, section)
             for section in self.settings.text_and_images.emoji_picker_collapsed_sections
         )
 
