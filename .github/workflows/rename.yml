@@ -24,7 +24,7 @@ jobs:
           rm -rf docs .github .readthedocs.yml tests
           mv discord selfcord
 
-          sed -i -e 's/import discord/import selfcord/g' -e 's/from discord/from selfcord/g' -e 's/from discord/from selfcord/g' -e 's/discord\.py-self/selfcord\.py/g' -e '/\(discord\.com\|discord\.gg\|discord\.new\)/! s/discord\./selfcord\./g' $(find selfcord examples -name "*.py")
+          sed -i -e 's/import discord/import selfcord/g' -e '/from discord_protos/!{s/from discord/from selfcord/g}' -e '/from discord_protos/!{s/from discord/from selfcord/g}' -e 's/discord\.py-self/selfcord\.py/g' -e '/\(discord\.com\|discord\.gg\|discord\.new\)/! s/discord\./selfcord\./g' $(find selfcord examples -name "*.py")
           sed -i -e 's/discord/selfcord/g' pyproject.toml MANIFEST.in
           sed -i -e "s/prefix = 'discord'/prefix = 'selfcord'/" setup.py
 
