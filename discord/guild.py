@@ -3948,11 +3948,6 @@ class Guild(Hashable):
             The style which should be applied for the widget.
             Default to ``shield``. Returns ``None`` if widget is not enabled.
 
-        Raises
-        -------
-        HTTPException
-            Retrieving the widget image url failed.
-
         Returns
         --------
         Optional[:class:`str`]
