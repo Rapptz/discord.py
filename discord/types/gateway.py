@@ -27,10 +27,10 @@ from typing_extensions import NotRequired, Required
 
 from .automod import AutoModerationAction, AutoModerationRuleTriggerType
 from .activity import PartialPresenceUpdate
-from .voice import GuildVoiceState, VoiceChannelEffect
+from .voice import GuildVoiceState
 from .integration import BaseIntegration, IntegrationApplication
 from .role import Role
-from .channel import ChannelType, StageInstance
+from .channel import ChannelType, StageInstance, VoiceChannelEffect
 from .interactions import Interaction
 from .invite import InviteTargetType
 from .emoji import Emoji, PartialEmoji

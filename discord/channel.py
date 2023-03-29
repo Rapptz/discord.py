@@ -47,7 +47,16 @@ import datetime
 import discord.abc
 from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, ForumLayoutType, ForumOrderType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
+from .enums import (
+    ChannelType,
+    ForumLayoutType,
+    ForumOrderType,
+    PrivacyLevel,
+    try_enum,
+    VideoQualityMode,
+    EntityType,
+    VoiceChannelEffectAnimationType,
+)
 from .mixins import Hashable
 from . import utils
 from .utils import MISSING
@@ -69,6 +78,7 @@ __all__ = (
     'ForumChannel',
     'GroupChannel',
     'PartialMessageable',
+    'VoiceChannelEffect',
 )
 
 if TYPE_CHECKING:
@@ -108,6 +118,12 @@ if TYPE_CHECKING:
 class ThreadWithMessage(NamedTuple):
     thread: Thread
     message: Message
+
+
+class VoiceChannelEffect(NamedTuple):
+    emoji: PartialEmoji
+    animation_id: int
+    animation_type: VoiceChannelEffectAnimationType
 
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):

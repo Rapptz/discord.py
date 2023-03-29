@@ -76,7 +76,6 @@ from .sticker import GuildSticker
 from .automod import AutoModRule, AutoModAction
 from .audit_logs import AuditLogEntry
 from ._types import ClientT
-from .voice_client import VoiceChannelEffect
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel

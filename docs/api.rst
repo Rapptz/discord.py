@@ -117,30 +117,6 @@ VoiceProtocol
 .. autoclass:: VoiceProtocol
     :members:
 
-VoiceChannelEffect
-~~~~~~~~~~~~~~~~~~~
-
-.. class:: VoiceChannelEffect
-
-    A namedtuple which represents a voice channel effect sent by a :class:`Member`.
-
-    .. attribute:: emoji
-
-        The emoji of the effect.
-
-        :type: :class:`PartialEmoji`
-    .. attribute:: animation_id
-
-        The ID of the animation.
-
-        :type: :class:`int`
-    .. attribute:: animation_type
-
-        The type of the animation.
-
-        :type: :class:`VoiceChannelEffectAnimationType`
-
-
 AudioSource
 ~~~~~~~~~~~~
 
@@ -4446,6 +4422,26 @@ VoiceChannel
     :members:
     :inherited-members:
 
+.. class:: VoiceChannelEffect
+
+    A namedtuple which represents a voice channel effect sent by a :class:`Member`.
+
+    .. attribute:: emoji
+
+        The emoji of the effect.
+
+        :type: :class:`PartialEmoji`
+    .. attribute:: animation_id
+
+        The ID of the animation.
+
+        :type: :class:`int`
+    .. attribute:: animation_type
+
+        The type of the animation.
+
+        :type: :class:`VoiceChannelEffectAnimationType`
+
 StageChannel
 ~~~~~~~~~~~~~
 
@@ -4454,7 +4450,6 @@ StageChannel
 .. autoclass:: StageChannel()
     :members:
     :inherited-members:
-
 
 StageInstance
 ~~~~~~~~~~~~~~

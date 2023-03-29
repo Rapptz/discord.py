@@ -28,6 +28,7 @@ from typing_extensions import NotRequired
 from .user import PartialUser
 from .snowflake import Snowflake
 from .threads import ThreadMetadata, ThreadMember, ThreadArchiveDuration, ThreadType
+from .emoji import Emoji
 
 
 OverwriteType = Literal[0, 1]
@@ -87,6 +88,15 @@ class VoiceChannel(_BaseTextChannel):
     user_limit: int
     rtc_region: NotRequired[Optional[str]]
     video_quality_mode: NotRequired[VideoQualityMode]
+
+
+class VoiceChannelEffect(TypedDict):
+    user_id: Snowflake
+    channel_id: Snowflake
+    guild_id: Snowflake
+    emoji: Emoji
+    animation_type: int
+    animation_id: int
 
 
 class CategoryChannel(_BaseGuildChannel):
