@@ -1938,6 +1938,7 @@ class ApplicationDiscoveryFlags(BaseFlags):
         return 1 << 16
 
 
+@fill_with_flags()
 class FriendSourceFlags(BaseFlags):
     r"""Wraps up the Discord friend source flags.
 

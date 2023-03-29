@@ -449,7 +449,16 @@ class TextInput(Component):
         'max_length',
     )
 
-    __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
+    __repr_info__: ClassVar[Tuple[str, ...]] = (
+        'style',
+        'label',
+        'custom_id',
+        'placeholder',
+        'required',
+        'min_length',
+        'max_length',
+        'default',
+    )
 
     def __init__(self, data: TextInputPayload, *args) -> None:
         self.style: TextStyle = try_enum(TextStyle, data['style'])

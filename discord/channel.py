@@ -190,6 +190,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[TextChannelPayload, NewsChannelPayload]):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
+        self._type: Literal[0, 5] = data['type']
         self._update(guild, data)
 
     def __repr__(self) -> str:
