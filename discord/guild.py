@@ -267,6 +267,10 @@ class Guild(Hashable):
         Indicates if the guild has widget enabled.
 
         .. versionadded:: 2.0
+    max_stage_video_channel_users: Optional[:class:`int`]
+        The maximum amount of users in a stage video channel.
+
+        .. versionadded:: 2.3
     """
 
     __slots__ = (
@@ -315,6 +319,8 @@ class Guild(Hashable):
         'approximate_member_count',
         'approximate_presence_count',
         'premium_progress_bar_enabled',
+        '_safety_alerts_channel_id',
+        'max_stage_video_channel_users',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -478,6 +484,7 @@ class Guild(Hashable):
         self.max_presences: Optional[int] = guild.get('max_presences')
         self.max_members: Optional[int] = guild.get('max_members')
         self.max_video_channel_users: Optional[int] = guild.get('max_video_channel_users')
+        self.max_stage_video_channel_users: Optional[int] = guild.get('max_stage_video_channel_users')
         self.premium_tier: int = guild.get('premium_tier', 0)
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
@@ -488,6 +495,7 @@ class Guild(Hashable):
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
         self._rules_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'public_updates_channel_id')
+        self._safety_alerts_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'safety_alerts_channel_id')
         self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, guild.get('nsfw_level', 0))
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
         self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
@@ -799,6 +807,18 @@ class Guild(Hashable):
         .. versionadded:: 1.4
         """
         channel_id = self._public_updates_channel_id
+        return channel_id and self._channels.get(channel_id)  # type: ignore
+
+    @property
+    def safety_alerts_channel(self) -> Optional[TextChannel]:
+        """Optional[:class:`TextChannel`]: Return's the guild's channel used for safety alerts. E.g. this is used in raid protection.
+        The guild must be a Community guild.
+
+        If no channel is set, then this returns ``None``.
+
+        .. versionadded:: 2.3
+        """
+        channel_id = self._safety_alerts_channel_id
         return channel_id and self._channels.get(channel_id)  # type: ignore
 
     @property
@@ -1812,14 +1832,16 @@ class Guild(Hashable):
         system_channel: Optional[TextChannel] = MISSING,
         system_channel_flags: SystemChannelFlags = MISSING,
         preferred_locale: Locale = MISSING,
-        rules_channel: Optional[TextChannel] = MISSING,
-        public_updates_channel: Optional[TextChannel] = MISSING,
+        rules_channel: TextChannel = MISSING,
+        public_updates_channel: TextChannel = MISSING,
         premium_progress_bar_enabled: bool = MISSING,
         discoverable: bool = MISSING,
         invites_disabled: bool = MISSING,
         widget_enabled: bool = MISSING,
         widget_channel: Optional[Snowflake] = MISSING,
         mfa_level: MFALevel = MISSING,
+        raid_alerts_disabled: bool = MISSING,
+        safety_alerts_channel: TextChannel = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1894,16 +1916,14 @@ class Guild(Hashable):
             .. versionchanged:: 2.0
 
                 Now accepts an enum instead of :class:`str`.
-        rules_channel: Optional[:class:`TextChannel`]
+        rules_channel: :class:`TextChannel`
             The new channel that is used for rules. This is only available to
-            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no rules
-            channel.
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`.
 
             .. versionadded:: 1.4
-        public_updates_channel: Optional[:class:`TextChannel`]
+        public_updates_channel: :class:`TextChannel`
             The new channel that is used for public updates from Discord. This is only available to
-            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no
-            public updates channel.
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`.
 
             .. versionadded:: 1.4
         premium_progress_bar_enabled: :class:`bool`
@@ -1934,6 +1954,17 @@ class Guild(Hashable):
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 
+        raid_alerts_disabled: :class:`bool`
+            Whether the alerts for raid protection should be disabled for the guild.
+
+            .. versionadded:: 2.3
+
+        safety_alerts_channel: :class:`TextChannel`
+            The new channel that is used for safety alerts. This is only available to
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`.
+
+            .. versionadded:: 2.3
+
         Raises
         -------
         Forbidden
@@ -1957,7 +1988,6 @@ class Guild(Hashable):
         """
 
         http = self._state.http
-
         if vanity_code is not MISSING:
             await http.change_vanity_code(self.id, vanity_code, reason=reason)
 
@@ -2016,16 +2046,26 @@ class Guild(Hashable):
                 fields['system_channel_id'] = system_channel.id
 
         if rules_channel is not MISSING:
-            if rules_channel is None:
-                fields['rules_channel_id'] = rules_channel
-            else:
-                fields['rules_channel_id'] = rules_channel.id
+            if not isinstance(rules_channel, TextChannel):
+                raise TypeError(f'rules_channel must be of type TextChannel not {rules_channel.__class__.__name__}')
+
+            fields['rules_channel_id'] = rules_channel.id
 
         if public_updates_channel is not MISSING:
-            if public_updates_channel is None:
-                fields['public_updates_channel_id'] = public_updates_channel
-            else:
-                fields['public_updates_channel_id'] = public_updates_channel.id
+            if not isinstance(public_updates_channel, TextChannel):
+                raise TypeError(
+                    f'public_updates_channel must be of type TextChannel not {public_updates_channel.__class__.__name__}'
+                )
+
+            fields['public_updates_channel_id'] = public_updates_channel.id
+
+        if safety_alerts_channel is not MISSING:
+            if not isinstance(safety_alerts_channel, TextChannel):
+                raise TypeError(
+                    f'safety_alerts_channel must be of type TextChannel not {safety_alerts_channel.__class__.__name__}'
+                )
+
+            fields['safety_alerts_channel_id'] = safety_alerts_channel.id
 
         if owner is not MISSING:
             if self.owner_id != self._state.self_id:
@@ -2051,7 +2091,7 @@ class Guild(Hashable):
 
             fields['system_channel_flags'] = system_channel_flags.value
 
-        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled)):
+        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled, raid_alerts_disabled)):
             features = set(self.features)
 
             if community is not MISSING:
@@ -2076,6 +2116,12 @@ class Guild(Hashable):
                     features.add('INVITES_DISABLED')
                 else:
                     features.discard('INVITES_DISABLED')
+
+            if raid_alerts_disabled is not MISSING:
+                if raid_alerts_disabled:
+                    features.add('RAID_ALERTS_DISABLED')
+                else:
+                    features.discard('RAID_ALERTS_DISABLED')
 
             fields['features'] = list(features)
 

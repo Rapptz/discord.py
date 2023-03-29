@@ -84,6 +84,7 @@ GuildFeature = Literal[
     'VERIFIED',
     'VIP_REGIONS',
     'WELCOME_SCREEN_ENABLED',
+    'RAID_ALERTS_DISABLED',
 ]
 
 
