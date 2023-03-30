@@ -62,7 +62,7 @@ from .utils import escape_mentions, MISSING
 from .http import handle_message_parameters
 from .guild import Guild
 from .mixins import Hashable
-from .sticker import StickerItem
+from .sticker import StickerItem, GuildSticker
 from .threads import Thread
 from .channel import PartialMessageable
 from .interactions import Interaction
@@ -1127,6 +1127,74 @@ class PartialMessage(Hashable):
         """
         await self._state.http.ack_message(self.channel.id, self.id)
 
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        file: File = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        files: Sequence[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        file: File = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        files: Sequence[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
     async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
         """|coro|
 
@@ -1156,6 +1224,23 @@ class PartialMessage(Hashable):
             The message that was sent.
         """
         return await self.channel.send(content, reference=self, **kwargs)
+
+    @overload
+    async def greet(
+        self,
+        sticker: Union[GuildSticker, StickerItem],
+        *,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def greet(
+        self,
+        sticker: Union[GuildSticker, StickerItem]
+    ) -> Message:
+        ...
 
     async def greet(self, sticker: Union[GuildSticker, StickerItem], **kwargs: Any) -> Message:
         """|coro|

@@ -24,12 +24,12 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any, AsyncIterator, Collection, Dict, Generic, List, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, AsyncIterator, Collection, Dict, Generic, List, Optional, overload, Sequence, TypeVar, Union
 
 import discord.abc
 import discord.utils
-from discord.utils import MISSING
 from discord.message import Message
+from discord.utils import MISSING
 
 from ._types import BotT
 
@@ -38,9 +38,12 @@ if TYPE_CHECKING:
 
     from discord.abc import MessageableChannel
     from discord.commands import MessageCommand
+    from discord.file import File
     from discord.guild import Guild
     from discord.member import Member
+    from discord.mentions import AllowedMentions
     from discord.state import ConnectionState
+    from discord.sticker import GuildSticker, StickerItem
     from discord.user import ClientUser, User
     from discord.voice_client import VoiceProtocol
 
@@ -410,6 +413,78 @@ class Context(discord.abc.Messageable, Generic[BotT]):
                 return None
         except CommandError as e:
             await cmd.on_help_command_error(self, e)
+
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        file: File = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        files: Sequence[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        file: File = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        files: Sequence[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
 
     @discord.utils.copy_doc(Message.reply)
     async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
