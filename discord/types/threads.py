@@ -65,7 +65,7 @@ class Thread(TypedDict):
     member_ids_preview: List[Snowflake]
     member: NotRequired[ThreadMember]
     last_message_id: NotRequired[Optional[Snowflake]]
-    last_pin_timestamp: NotRequired[Optional[Snowflake]]
+    last_pin_timestamp: NotRequired[Optional[str]]
     newly_created: NotRequired[bool]
     flags: NotRequired[int]
     applied_tags: NotRequired[List[Snowflake]]
