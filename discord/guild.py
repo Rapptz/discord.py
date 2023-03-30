@@ -500,9 +500,6 @@ class Guild(Hashable):
             stage_instance = StageInstance(guild=self, data=s, state=state)
             self._stage_instances[stage_instance.id] = stage_instance
 
-        for vs in guild.get('voice_states', []):
-            self._update_voice_state(vs, int(vs['channel_id']))
-
         for s in guild.get('guild_scheduled_events', []):
             scheduled_event = ScheduledEvent(data=s, state=state)
             self._scheduled_events[scheduled_event.id] = scheduled_event
@@ -549,13 +546,13 @@ class Guild(Hashable):
         if (counts := guild.get('application_command_counts')) is not None:
             self.command_counts = CommandCounts(counts.get(0, 0), counts.get(1, 0), counts.get(2, 0))
 
+        for vs in guild.get('voice_states', []):
+            self._update_voice_state(vs, int(vs['channel_id']))
+
         cache_flags = state.member_cache_flags
-        if cache_flags.other:
-            for mdata in guild.get('members', []):
-                try:
-                    member = Member(data=mdata, guild=self, state=state)
-                except KeyError:
-                    continue
+        for mdata in guild.get('members', []):
+            member = Member(data=mdata, guild=self, state=state)
+            if cache_flags.joined or member.id == state.self_id or (cache_flags.voice and member.id in self._voice_states):
                 self._add_member(member)
 
         for presence in guild.get('presences', []):

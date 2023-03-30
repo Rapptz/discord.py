@@ -600,6 +600,7 @@ class ConnectionState:
         self.analytics_token: Optional[str] = None
         self.preferred_regions: List[str] = []
         self.country_code: Optional[str] = None
+        self.api_code_version: int = 0
         self.session_type: Optional[str] = None
         self.auth_session_id: Optional[str] = None
         self._emojis: Dict[int, Emoji] = {}
@@ -977,6 +978,9 @@ class ConnectionState:
             for presence in merged_presences:
                 presence['user'] = {'id': presence['user_id']}  # type: ignore # :(
 
+            if 'properties' in guild_data:
+                guild_data.update(guild_data.pop('properties'))  # type: ignore # :(
+
             voice_states = guild_data.setdefault('voice_states', [])
             voice_states.extend(guild_extra.get('voice_states', []))
             members = guild_data.setdefault('members', [])
@@ -1036,6 +1040,7 @@ class ConnectionState:
         }
         self.consents = TrackingSettings(data=data.get('consents', {}), state=self)
         self.country_code = data.get('country_code', 'US')
+        self.api_code_version = data.get('api_code_version', 1)
         self.session_type = data.get('session_type', 'normal')
         self.auth_session_id = data.get('auth_session_id_hash')
         self.connections = {c['id']: Connection(state=self, data=c) for c in data.get('connected_accounts', [])}
@@ -1058,6 +1063,31 @@ class ConnectionState:
 
     def parse_resumed(self, data: gw.ResumedEvent) -> None:
         self.dispatch('resumed')
+
+    def parse_passive_update_v1(self, data: gw.PassiveUpdateEvent) -> None:
+        # PASSIVE_UPDATE_V1 is sent for large guilds you are not subscribed to
+        # in order to keep their read and voice states up-to-date; it replaces CHANNEL_UNREADS_UPDATE
+        guild = self._get_guild(int(data['guild_id']))
+        if not guild:
+            _log.debug('PASSIVE_UPDATE_V1 referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            return
+
+        for channel_data in data.get('channels', []):
+            channel = guild.get_channel(int(channel_data['id']))
+            if not channel:
+                continue
+            channel.last_message_id = utils._get_as_snowflake(channel_data, 'last_message_id')  # type: ignore
+            if 'last_pin_timestamp' in channel_data and hasattr(channel, 'last_pin_timestamp'):
+                channel.last_pin_timestamp = utils.parse_time(channel_data['last_pin_timestamp'])  # type: ignore
+
+        guild._voice_states = {}
+        members = {int(m['user']['id']): m for m in data.get('members', [])}
+        for voice_state in data.get('voice_states', []):
+            user_id = int(voice_state['user_id'])
+            member = members.get(user_id)
+            if member:
+                voice_state['member'] = member
+            guild._update_voice_state(voice_state, utils._get_as_snowflake(voice_state, 'channel_id'))
 
     def parse_message_create(self, data: gw.MessageCreateEvent) -> None:
         guild_id = utils._get_as_snowflake(data, 'guild_id')
@@ -1529,6 +1559,8 @@ class ConnectionState:
             return
 
         last_pin = utils.parse_time(data.get('last_pin_timestamp'))
+        if hasattr(channel, 'last_pin_timestamp'):
+            channel.last_pin_timestamp = last_pin  # type: ignore # Handled above
 
         if guild is None:
             self.dispatch('private_channel_pins_update', channel, last_pin)
@@ -2193,8 +2225,10 @@ class ConnectionState:
             self.dispatch('guild_join', guild)
 
     def parse_guild_create(self, data: gw.GuildCreateEvent):
-        guild = self._get_create_guild(data)
+        if 'properties' in data:
+            data.update(data.pop('properties'))  # type: ignore
 
+        guild = self._get_create_guild(data)
         if guild is None:
             return
 

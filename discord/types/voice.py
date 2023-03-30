@@ -50,7 +50,7 @@ class GuildVoiceState(_VoiceState):
 
 
 class VoiceState(_VoiceState, total=False):
-    channel_id: Optional[Snowflake]
+    channel_id: NotRequired[Optional[Snowflake]]
     guild_id: NotRequired[Optional[Snowflake]]
 
 

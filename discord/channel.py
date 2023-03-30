@@ -153,6 +153,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     last_message_id: Optional[:class:`int`]
         The last message ID of the message sent to this channel. It may
         *not* point to an existing or valid message.
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned. ``None`` if there are no pinned messages.
+
+        .. versionadded:: 2.0
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.
@@ -183,6 +187,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         '_overwrites',
         '_type',
         'last_message_id',
+        'last_pin_timestamp',
         'default_auto_archive_duration',
         'default_thread_slowmode_delay',
     )
@@ -218,6 +223,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         self.default_thread_slowmode_delay: int = data.get('default_thread_rate_limit_per_user', 0)
         self._type: Literal[0, 5] = data.get('type', self._type)
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self.last_pin_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('last_pin_timestamp'))
         self._fill_overwrites(data)
 
     async def _get_channel(self) -> Self:
@@ -883,6 +889,7 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         'rtc_region',
         'video_quality_mode',
         'last_message_id',
+        'last_pin_timestamp',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[VoiceChannelPayload, StageChannelPayload]):
@@ -907,6 +914,7 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         self.video_quality_mode: VideoQualityMode = try_enum(VideoQualityMode, data.get('video_quality_mode', 1))
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self.last_pin_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('last_pin_timestamp'))
         self.position: int = data['position']
         self.slowmode_delay = data.get('rate_limit_per_user', 0)
         self.bitrate: int = data['bitrate']
@@ -1263,6 +1271,10 @@ class VoiceChannel(VocalGuildChannel):
         *not* point to an existing or valid message.
 
         .. versionadded:: 2.0
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned. ``None`` if there are no pinned messages.
+
+        .. versionadded:: 2.0
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.
@@ -1461,6 +1473,10 @@ class StageChannel(VocalGuildChannel):
     last_message_id: Optional[:class:`int`]
         The last message ID of the message sent to this channel. It may
         *not* point to an existing or valid message.
+
+        .. versionadded:: 2.0
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned. ``None`` if there are no pinned messages.
 
         .. versionadded:: 2.0
     slowmode_delay: :class:`int`
@@ -2795,6 +2811,10 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         *not* point to an existing or valid message.
 
         .. versionadded:: 2.0
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned. ``None`` if there are no pinned messages.
+
+        .. versionadded:: 2.0
     """
 
     __slots__ = (
@@ -2802,6 +2822,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         'recipient',
         'me',
         'last_message_id',
+        'last_pin_timestamp',
         '_message_request',
         '_requested_at',
         '_spam',
@@ -2819,6 +2840,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
 
     def _update(self, data: DMChannelPayload) -> None:
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self.last_pin_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('last_pin_timestamp'))
         self._message_request: Optional[bool] = data.get('is_message_request')
         self._requested_at: Optional[datetime.datetime] = utils.parse_time(data.get('is_message_request_timestamp'))
         self._spam: bool = data.get('is_spam', False)
@@ -3131,6 +3153,10 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         *not* point to an existing or valid message.
 
         .. versionadded:: 2.0
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned. ``None`` if there are no pinned messages.
+
+        .. versionadded:: 2.0
     recipients: List[:class:`User`]
         The users you are participating with in the group channel.
     me: :class:`ClientUser`
@@ -3162,6 +3188,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
 
     __slots__ = (
         'last_message_id',
+        'last_pin_timestamp',
         'id',
         'recipients',
         'owner_id',
@@ -3188,6 +3215,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         self.name: Optional[str] = data.get('name')
         self.recipients: List[User] = [self._state.store_user(u) for u in data.get('recipients', [])]
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self.last_pin_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('last_pin_timestamp'))
         self.managed: bool = data.get('managed', False)
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.nicks: Dict[User, str] = {utils.get(self.recipients, id=int(k)): v for k, v in data.get('nicks', {}).items()}  # type: ignore
@@ -3606,6 +3634,7 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
         self.guild_id: Optional[int] = guild_id
         self.type: Optional[ChannelType] = type
         self.last_message_id: Optional[int] = None
+        self.last_pin_timestamp: Optional[datetime.datetime] = None
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} type={self.type!r}>'
@@ -3649,7 +3678,6 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
         :class:`Permissions`
             The resolved permissions.
         """
-
         return Permissions.none()
 
     def get_partial_message(self, message_id: int, /) -> PartialMessage:

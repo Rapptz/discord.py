@@ -485,3 +485,16 @@ class AutoModerationActionExecution(TypedDict):
 
 class GuildAuditLogEntryCreate(AuditLogEntry):
     guild_id: Snowflake
+
+
+class PartialUpdateChannel(TypedDict):
+    id: Snowflake
+    last_message_id: Optional[Snowflake]
+    last_pin_timestamp: NotRequired[Optional[str]]
+
+
+class PassiveUpdateEvent(TypedDict):
+    guild_id: Snowflake
+    channels: List[PartialUpdateChannel]
+    voice_states: NotRequired[List[GuildVoiceState]]
+    members: NotRequired[List[MemberWithUser]]

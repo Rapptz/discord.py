@@ -272,7 +272,7 @@ class Capabilities(BaseFlags):
     @classmethod
     def default(cls: Type[Self]) -> Self:
         """Returns a :class:`Capabilities` with the current value used by the library."""
-        return cls._from_value(2045)
+        return cls._from_value(8189)
 
     @flag_value
     def lazy_user_notes(self):
@@ -334,6 +334,11 @@ class Capabilities(BaseFlags):
     def passive_guild_update(self):
         """:class:`bool`: Enable passive guild update (replace ``CHANNEL_UNREADS_UPDATE`` with ``PASSIVE_UPDATE_V1``, a similar event that includes a ``voice_states`` array and a ``members`` array that includes the members of aforementioned voice states)."""
         return 1 << 11
+
+    @flag_value
+    def unknown_12(self):
+        """:class:`bool`: Unknown."""
+        return 1 << 12
 
 
 @fill_with_flags(inverted=True)

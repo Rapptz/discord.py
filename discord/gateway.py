@@ -469,6 +469,7 @@ class DiscordWebSocket:
         #     presence['status'] = self._connection._status or 'unknown'
         #     presence['activities'] = self._connection._activities
 
+        # TODO: Implement client state
         payload = {
             'op': self.IDENTIFY,
             'd': {
@@ -478,10 +479,13 @@ class DiscordWebSocket:
                 'presence': presence,
                 'compress': not self._zlib_enabled,  # We require at least one form of compression
                 'client_state': {
-                    'guild_hashes': {},
+                    'api_code_version': 0,
+                    'guild_versions': {},
                     'highest_last_message_id': '0',
+                    'private_channels_version': '0',
                     'read_state_version': 0,
                     'user_guild_settings_version': -1,
+                    'user_settings_version': -1,
                 },
             },
         }

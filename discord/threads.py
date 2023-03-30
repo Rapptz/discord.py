@@ -100,6 +100,8 @@ class Thread(Messageable, Hashable):
     last_message_id: Optional[:class:`int`]
         The last message ID of the message sent to this thread. It may
         *not* point to an existing or valid message.
+    last_pin_timestamp: Optional[:class:`datetime.datetime`]
+        When the last pinned message was pinned. ``None`` if there are no pinned messages.
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this thread. A value of ``0`` denotes that it is disabled.
@@ -133,6 +135,7 @@ class Thread(Messageable, Hashable):
         'owner_id',
         'parent_id',
         'last_message_id',
+        'last_pin_timestamp',
         'message_count',
         'member_count',
         'slowmode_delay',
@@ -172,6 +175,7 @@ class Thread(Messageable, Hashable):
         self.name: str = data['name']
         self._type: ChannelType = try_enum(ChannelType, data['type'])
         self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
+        self.last_pin_timestamp: Optional[datetime] = parse_time(data.get('last_pin_timestamp'))
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.message_count: int = data['message_count']
         self.member_count: int = data['member_count']
