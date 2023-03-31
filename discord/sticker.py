@@ -399,7 +399,7 @@ class GuildSticker(Sticker):
         The description of the sticker.
     format: :class:`StickerFormatType`
         The format for the sticker's image.
-    available: :class:`bool`
+    available: Optional[:class:`bool`]
         Whether this sticker is available for use.
     guild_id: :class:`int`
         The ID of the guild that this sticker is from.
