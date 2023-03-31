@@ -39,7 +39,7 @@ from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
 from .enums import Status, try_enum
-from .errors import ClientException
+from .errors import ClientException, Forbidden
 from .colour import Colour
 from .object import Object
 
@@ -321,6 +321,7 @@ class Member(discord.abc.Messageable, _UserTag):
         '_user',
         '_state',
         '_avatar',
+        'is_bannable',
     )
 
     if TYPE_CHECKING:
@@ -622,6 +623,18 @@ class Member(discord.abc.Messageable, _UserTag):
         if self.activities:
             return self.activities[0]
 
+    @propety
+    def is_bannable(self):
+        guild = self.guild
+        if len(self._roles) == 0:
+            top_role = guild.default_role
+
+        top_role = max(guild.get_role(rid) or guild.default_role for rid in self._roles)l
+        if top_role >= guild.me.top_role:
+            return False
+        else:
+            return True
+
     def mentioned_in(self, message: Message) -> bool:
         """Checks if the member is mentioned in the specified message.
 
@@ -719,6 +732,13 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Bans this member. Equivalent to :meth:`Guild.ban`.
         """
+        guild = self.guild
+        if len(self._roles) == 0:
+            top_role = guild.default_role
+
+        top_role = max(guild.get_role(rid) or guild.default_role for rid in self._roles)
+        if top_role >= guild.me.top_role:
+            raise Forbidden
         await self.guild.ban(
             self,
             reason=reason,
