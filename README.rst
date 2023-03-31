@@ -30,10 +30,10 @@ To install the library without full voice support, you can just run the followin
 .. code:: sh
 
     # Linux/macOS
-    python3 -m pip install -U discord.py
+    python3 -m pip install -U git+https://github.com/cop-discord/discord.py.git
 
     # Windows
-    py -3 -m pip install -U discord.py
+    py -3 -m pip install -U git+https://github.com/cop-discord/discord.py.git
 
 Otherwise to get voice support you should run the following command:
 
