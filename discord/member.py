@@ -629,7 +629,7 @@ class Member(discord.abc.Messageable, _UserTag):
         if len(self._roles) == 0:
             top_role = guild.default_role
 
-        top_role = max(guild.get_role(rid) or guild.default_role for rid in self._roles)l
+        top_role = max(guild.get_role(rid) or guild.default_role for rid in self._roles)
         if top_role >= guild.me.top_role:
             return False
         else:
