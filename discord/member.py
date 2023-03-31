@@ -628,9 +628,9 @@ class Member(discord.abc.Messageable, _UserTag):
         guild = self.guild
         if len(self._roles) == 0:
             top_role = guild.default_role
-
-        top_role = max(guild.get_role(rid) or guild.default_role for rid in self._roles)
-        if top_role >= guild.me.top_role:
+        else:
+            top_role = max(guild.get_role(rid) or guild.default_role for rid in self._roles)
+        if top_role >= guild.me.top_role or self.id == guild.owner_id:
             return False
         else:
             return True
@@ -735,9 +735,9 @@ class Member(discord.abc.Messageable, _UserTag):
         guild = self.guild
         if len(self._roles) == 0:
             top_role = guild.default_role
-
-        top_role = max(guild.get_role(rid) or guild.default_role for rid in self._roles)
-        if top_role >= guild.me.top_role:
+        else:
+            top_role = max(guild.get_role(rid) or guild.default_role for rid in self._roles)
+        if top_role >= guild.me.top_role or self.id == guild.owner_id:
             raise Forbidden
         await self.guild.ban(
             self,
@@ -758,6 +758,13 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Kicks this member. Equivalent to :meth:`Guild.kick`.
         """
+        guild = self.guild
+        if len(self._roles) == 0:
+            top_role = guild.default_role
+        else:
+            top_role = max(guild.get_role(rid) or guild.default_role for rid in self._roles)
+        if top_role >= guild.me.top_role or self.id == guild.owner_id:
+            raise Forbidden
         await self.guild.kick(self, reason=reason)
 
     async def edit(
