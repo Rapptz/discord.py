@@ -623,7 +623,7 @@ class Member(discord.abc.Messageable, _UserTag):
         if self.activities:
             return self.activities[0]
 
-    @propety
+    @property
     def is_bannable(self):
         guild = self.guild
         if len(self._roles) == 0:
