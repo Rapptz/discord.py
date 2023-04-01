@@ -55,7 +55,7 @@ class StandardSticker(BaseSticker):
 
 class GuildSticker(BaseSticker):
     type: Literal[2]
-    available: bool
+    available: NotRequired[bool]
     guild_id: Snowflake
     user: NotRequired[User]
 
