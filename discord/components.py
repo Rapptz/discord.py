@@ -128,7 +128,7 @@ class ActionRow(Component):
         self.children: List[ActionRowChildComponentType] = []
 
         for component_data in data.get('components', []):
-            component = _component_factory(component_data)
+            component = _component_factory(component_data, message)
 
             if component is not None:
                 self.children.append(component)
