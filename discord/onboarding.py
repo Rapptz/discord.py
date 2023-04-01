@@ -90,7 +90,7 @@ class OnboardingPromptOption:
         self.id: int = int(data['id'])
         self.title: str = data['title']
         self.description: Optional[str] = data['description']
-        self.emoji: Optional[Union[PartialEmoji, Emoji, str]] = self._state.get_reaction_emoji(data['emoji'])
+        self.emoji: Optional[Union[PartialEmoji, Emoji, str]] = self._state.get_emoji_from_partial_payload(data['emoji'])
         self.channel_ids: Set[int] = {int(channel_id) for channel_id in data['channel_ids']}
         self.role_ids: Set[int] = {int(role_id) for role_id in data['role_ids']}
 
