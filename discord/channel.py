@@ -2945,21 +2945,32 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     @property
-    def accepted(self) -> bool:
-        """:class:`bool`: Indicates if the message request is accepted. For regular direct messages, this is always ``True``."""
-        return self._message_request or True
-
-    @property
     def requested_at(self) -> Optional[datetime.datetime]:
-        """Optional[:class:`datetime.datetime`]: Returns the message request's creation time in UTC, if applicable."""
+        """Optional[:class:`datetime.datetime`]: Returns the message request's creation time in UTC, if applicable.
+
+        .. versionadded:: 2.0
+        """
         return self._requested_at
 
     def is_message_request(self) -> bool:
-        """:class:`bool`: Indicates if the direct message is/was a message request."""
+        """:class:`bool`: Indicates if the direct message is/was a message request.
+
+        .. versionadded:: 2.0
+        """
         return self._message_request is not None
 
+    def is_accepted(self) -> bool:
+        """:class:`bool`: Indicates if the message request is accepted. For regular direct messages, this is always ``True``.
+
+        .. versionadded:: 2.0
+        """
+        return self._message_request if self._message_request is not None else True
+
     def is_spam(self) -> bool:
-        """:class:`bool`: Indicates if the direct message is a spam message."""
+        """:class:`bool`: Indicates if the direct message is a spam message request.
+
+        .. versionadded:: 2.0
+        """
         return self._spam
 
     def permissions_for(self, obj: Any = None, /) -> Permissions:
@@ -3105,7 +3116,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         # Of course Discord does not actually include these fields
         data['is_message_request'] = False
         if self._requested_at:
-            data['is_message_request_timestamp'] = utils.utcnow().isoformat()
+            data['is_message_request_timestamp'] = self._requested_at.isoformat()
         data['is_spam'] = self._spam
 
         return DMChannel(state=self._state, data=data, me=self.me)
