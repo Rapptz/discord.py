@@ -113,14 +113,6 @@ if TYPE_CHECKING:
     Response = Coroutine[Any, Any, T]
     MessageableChannel = Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable, VoiceChannel, ForumChannel]
 
-CAPTCHA_VALUES = {
-    'incorrect-captcha',
-    'response-already-used',
-    'captcha-required',
-    'invalid-input-response',
-    'invalid-response',
-    'You need to update your app',  # Discord moment
-}
 INTERNAL_API_VERSION = 9
 _log = logging.getLogger(__name__)
 
@@ -634,7 +626,7 @@ class HTTPClient:
         route: Route,
         *,
         files: Optional[Sequence[File]] = None,
-        form: Optional[Iterable[Dict[str, Any]]] = None,
+        form: Optional[List[Dict[str, Any]]] = None,
         **kwargs: Any,
     ) -> Any:
         method = route.method
@@ -682,7 +674,8 @@ class HTTPClient:
         if reason:
             headers['X-Audit-Log-Reason'] = _uriquote(reason)
 
-        if (payload := kwargs.pop('json', None)) is not None:
+        payload = kwargs.pop('json', None)
+        if payload is not None:
             headers['Content-Type'] = 'application/json'
             kwargs['data'] = utils._to_json(payload)
 
@@ -707,6 +700,7 @@ class HTTPClient:
 
         response: Optional[aiohttp.ClientResponse] = None
         data: Optional[Union[Dict[str, Any], str]] = None
+        failed = 0  # Number of 500'd requests
         async with ratelimit:
             for tries in range(5):
                 if files:
@@ -719,6 +713,9 @@ class HTTPClient:
                     for params in form:
                         form_data.add_field(**params)
                     kwargs['data'] = form_data
+
+                if failed:
+                    kwargs['headers']['X-Failed-Requests'] = str(failed)
 
                 try:
                     async with self.__session.request(method, url, **kwargs) as response:
@@ -826,7 +823,8 @@ class HTTPClient:
                             continue
 
                         # Unconditional retry
-                        if response.status in {500, 502, 504, 524}:
+                        if response.status in {500, 502, 504, 507, 522, 523, 524}:
+                            failed += 1
                             await asyncio.sleep(1 + tries * 2)
                             continue
 
@@ -846,26 +844,53 @@ class HTTPClient:
                 except OSError as e:
                     # Connection reset by peer
                     if tries < 4 and e.errno in (54, 10054):
+                        failed += 1
                         await asyncio.sleep(1 + tries * 2)
                         continue
                     raise
 
                 # Captcha handling
                 except CaptchaRequired as e:
-                    values = [i for i in e.json['captcha_key'] if any(value in i for value in CAPTCHA_VALUES)]
+                    # The way captcha handling works is completely transparent
+                    # The user is expected to provide a handler that will be called to return a solution
+                    # Then, we just insert the solution + rqtoken (if applicable) into the payload and retry the request
                     if captcha_handler is None or tries == 4:
                         raise
-                    elif not values:
-                        raise
                     else:
-                        previous = payload or {}
+                        # We use the payload_json form field if we're not sending a JSON payload
+                        payload_json = None
+                        previous = payload
+                        if form:
+                            payload_json = utils.find(lambda f: f['name'] == 'payload_json', form)
+                            if payload_json:
+                                previous = utils._from_json(payload_json['value'])
+                        if previous is None:
+                            previous = {}
+
                         previous['captcha_key'] = await captcha_handler.fetch_token(e.json, self.proxy, self.proxy_auth)
-                        if (rqtoken := e.json.get('captcha_rqtoken')) is not None:
+                        rqtoken = e.json.get('captcha_rqtoken')
+                        if rqtoken:
                             previous['captcha_rqtoken'] = rqtoken
                         if 'nonce' in previous:
+                            # I don't want to step on users' toes
+                            # But the nonce is regenerated on requests retried after a captcha
+                            # So I'm going to do the same here, as there's no good way to differentiate
+                            # a library-generated nonce and a manually user-provided nonce
                             previous['nonce'] = utils._generate_nonce()
-                        kwargs['headers']['Content-Type'] = 'application/json'
-                        kwargs['data'] = utils._to_json(previous)
+
+                        # Reinsert the updated payload to the form, or update the JSON payload
+                        data = utils._to_json(previous)
+                        if payload:
+                            kwargs['data'] = data
+                        elif form:
+                            if payload_json:
+                                payload_json['value'] = data
+                            else:
+                                form.append({'name': 'payload_json', 'value': data})
+                        else:
+                            # We were not sending a payload in the first place
+                            kwargs['headers']['Content-Type'] = 'application/json'
+                            kwargs['data'] = data
 
             if response is not None:
                 # We've run out of retries, raise
