@@ -521,7 +521,7 @@ class _AuditLogProxyMessageBulkDelete(_AuditLogProxy):
 class _AuditLogProxyAutoModAction(_AuditLogProxy):
     automod_rule_name: str
     automod_rule_trigger_type: str
-    channel: Union[abc.GuildChannel, Thread]
+    channel: Optional[Union[abc.GuildChannel, Thread]]
 
 
 class AuditLogEntry(Hashable):
@@ -644,13 +644,17 @@ class AuditLogEntry(Hashable):
                 or self.action is enums.AuditLogAction.automod_flag_message
                 or self.action is enums.AuditLogAction.automod_timeout_member
             ):
-                channel_id = int(extra['channel_id'])
+                channel_id = utils._get_as_snowflake(extra, 'channel_id')
+                channel = None
+                if channel_id is not None:
+                    channel = self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id)
+
                 self.extra = _AuditLogProxyAutoModAction(
                     automod_rule_name=extra['auto_moderation_rule_name'],
                     automod_rule_trigger_type=enums.try_enum(
                         enums.AutoModRuleTriggerType, extra['auto_moderation_rule_trigger_type']
                     ),
-                    channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
+                    channel=channel,
                 )
 
             elif self.action.name.startswith('overwrite_'):
@@ -723,11 +727,12 @@ class AuditLogEntry(Hashable):
         if self.action.target_type is None:
             return None
 
+        if self._target_id is None:
+            return None
+
         try:
             converter = getattr(self, '_convert_target_' + self.action.target_type)
         except AttributeError:
-            if self._target_id is None:
-                return None
             return Object(id=self._target_id)
         else:
             return converter(self._target_id)

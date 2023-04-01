@@ -161,6 +161,10 @@ class GuildPrune(TypedDict):
     pruned: Optional[int]
 
 
+class GuildMFALevel(TypedDict):
+    level: MFALevel
+
+
 class ChannelPositionUpdate(TypedDict):
     id: Snowflake
     position: Optional[int]

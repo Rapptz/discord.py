@@ -1654,6 +1654,31 @@ of :class:`enum.Enum`.
         an application during an interaction.
 
         .. versionadded:: 2.2
+    .. attribute:: stage_start
+
+        The system message sent when the stage starts.
+
+        .. versionadded:: 2.2
+    .. attribute:: stage_end
+
+        The system message sent when the stage ends.
+
+        .. versionadded:: 2.2
+    .. attribute:: stage_speaker
+
+        The system message sent when the stage speaker changes.
+
+        .. versionadded:: 2.2
+    .. attribute:: stage_raise_hand
+
+        The system message sent when a user is requesting to speak by raising their hands.
+
+        .. versionadded:: 2.2
+    .. attribute:: stage_topic
+
+        The system message sent when the stage topic changes.
+
+        .. versionadded:: 2.2
     .. attribute:: guild_application_premium_subscription
 
         The system message sent when an application's premium subscription is purchased for the guild.
@@ -1950,6 +1975,8 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.verification_level`
         - :attr:`~AuditLogDiff.widget_channel`
         - :attr:`~AuditLogDiff.widget_enabled`
+        - :attr:`~AuditLogDiff.premium_progress_bar_enabled`
+        - :attr:`~AuditLogDiff.system_channel_flags`
 
     .. attribute:: channel_create
 
@@ -1991,6 +2018,9 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.rtc_region`
         - :attr:`~AuditLogDiff.video_quality_mode`
         - :attr:`~AuditLogDiff.default_auto_archive_duration`
+        - :attr:`~AuditLogDiff.nsfw`
+        - :attr:`~AuditLogDiff.slowmode_delay`
+        - :attr:`~AuditLogDiff.user_limit`
 
     .. attribute:: channel_delete
 
@@ -2007,6 +2037,9 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.name`
         - :attr:`~AuditLogDiff.type`
         - :attr:`~AuditLogDiff.overwrites`
+        - :attr:`~AuditLogDiff.flags`
+        - :attr:`~AuditLogDiff.nsfw`
+        - :attr:`~AuditLogDiff.slowmode_delay`
 
     .. attribute:: overwrite_create
 
@@ -2078,7 +2111,7 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
         set to an unspecified proxy object with two attributes:
 
-        - ``delete_members_days``: An integer specifying how far the prune was.
+        - ``delete_member_days``: An integer specifying how far the prune was.
         - ``members_removed``: An integer specifying how many members were removed.
 
         When this is the action, :attr:`~AuditLogEntry.changes` is empty.
@@ -3291,6 +3324,21 @@ of :class:`enum.Enum`.
         Prompt options are displayed as a drop-down.
 
 
+.. class:: ForumOrderType
+
+    Represents how a forum's posts are sorted in the client.
+
+    .. versionadded:: 2.3
+
+    .. attribute:: latest_activity
+
+        Sort forum posts by activity.
+
+    .. attribute:: creation_date
+
+        Sort forum posts by creation time (from most recent to oldest).
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -3925,6 +3973,42 @@ AuditLogDiff
         The list of channels or threads that are exempt from the automod rule.
 
         :type: List[:class:`abc.GuildChannel`, :class:`Thread`, :class:`Object`]
+
+    .. attribute:: premium_progress_bar_enabled
+
+        The guild’s display setting to show boost progress bar.
+
+        :type: :class:`bool`
+
+    .. attribute:: system_channel_flags
+
+        The guild’s system channel settings.
+
+        See also :attr:`Guild.system_channel_flags`
+
+        :type: :class:`SystemChannelFlags`
+
+    .. attribute:: nsfw
+
+        Whether the channel is marked as “not safe for work” or “age restricted”.
+
+        :type: :class:`bool`
+
+    .. attribute:: user_limit
+
+        The channel’s limit for number of members that can be in a voice or stage channel.
+
+        See also :attr:`VoiceChannel.user_limit` and :attr:`StageChannel.user_limit`
+
+        :type: :class:`int`
+
+    .. attribute:: flags
+
+        The channel flags associated with this thread or forum post.
+
+        See also :attr:`ForumChannel.flags` and :attr:`Thread.flags`
+
+        :type: :class:`ChannelFlags`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these

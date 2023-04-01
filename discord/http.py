@@ -1149,6 +1149,7 @@ class HTTPClient:
             'available_tags',
             'applied_tags',
             'default_forum_layout',
+            'default_sort_order',
         )
 
         payload = {k: v for k, v in options.items() if k in valid_keys}
@@ -1190,6 +1191,9 @@ class HTTPClient:
             'video_quality_mode',
             'default_auto_archive_duration',
             'default_thread_rate_limit_per_user',
+            'default_sort_order',
+            'default_reaction_emoji',
+            'default_forum_layout',
             'available_tags',
         )
         payload.update({k: v for k, v in options.items() if k in valid_keys and v is not None})
@@ -1428,6 +1432,12 @@ class HTTPClient:
         payload = {k: v for k, v in fields.items() if k in valid_keys}
 
         return self.request(Route('PATCH', '/guilds/{guild_id}', guild_id=guild_id), json=payload, reason=reason)
+
+    def edit_guild_mfa_level(
+        self, guild_id: Snowflake, *, mfa_level: int, reason: Optional[str] = None
+    ) -> Response[guild.GuildMFALevel]:
+        payload = {'level': mfa_level}
+        return self.request(Route('POST', '/guilds/{guild_id}/mfa', guild_id=guild_id), json=payload, reason=reason)
 
     def get_template(self, code: str) -> Response[template.Template]:
         return self.request(Route('GET', '/guilds/templates/{code}', code=code))
@@ -1718,7 +1728,7 @@ class HTTPClient:
         params: Dict[str, Any] = {'limit': limit}
         if before:
             params['before'] = before
-        if after:
+        if after is not None:
             params['after'] = after
         if user_id:
             params['user_id'] = user_id
@@ -1904,6 +1914,7 @@ class HTTPClient:
             'channel_id',
             'topic',
             'privacy_level',
+            'send_start_notification',
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 

@@ -72,9 +72,9 @@ __all__ = (
 T = TypeVar('T')
 U = TypeVar('U')
 CogT = TypeVar('CogT', bound='Cog')
-CommandT = TypeVar('CommandT', bound='Command')
+CommandT = TypeVar('CommandT', bound='Command[Any, ..., Any]')
 # CHT = TypeVar('CHT', bound='Check')
-GroupT = TypeVar('GroupT', bound='Group')
+GroupT = TypeVar('GroupT', bound='Group[Any, ..., Any]')
 _NoneType = type(None)
 
 if TYPE_CHECKING:
@@ -297,7 +297,7 @@ def replace_parameters(
 
 
 class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
-    def __init__(self, wrapped: Union[HybridCommand[CogT, Any, T], HybridGroup[CogT, Any, T]]) -> None:
+    def __init__(self, wrapped: Union[HybridCommand[CogT, ..., T], HybridGroup[CogT, ..., T]]) -> None:
         signature = inspect.signature(wrapped.callback)
         params = replace_parameters(wrapped.params, wrapped.callback, signature)
         wrapped.callback.__signature__ = signature.replace(parameters=params)
@@ -312,7 +312,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         finally:
             del wrapped.callback.__signature__
 
-        self.wrapped: Union[HybridCommand[CogT, Any, T], HybridGroup[CogT, Any, T]] = wrapped
+        self.wrapped: Union[HybridCommand[CogT, ..., T], HybridGroup[CogT, ..., T]] = wrapped
         self.binding: Optional[CogT] = wrapped.cog
         # This technically means only one flag converter is supported
         self.flag_converter: Optional[Tuple[str, Type[FlagConverter]]] = getattr(
@@ -908,6 +908,9 @@ def hybrid_group(
 
     Parameters
     -----------
+    name: Union[:class:`str`, :class:`~discord.app_commands.locale_str`]
+        The name to create the group with. By default this uses the
+        function name unchanged.
     with_app_command: :class:`bool`
         Whether to register the command also as an application command.
 

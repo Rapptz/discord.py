@@ -195,6 +195,11 @@ class Interaction(Generic[ClientT]):
 
         if self.guild_id:
             guild = self._state._get_or_create_unavailable_guild(self.guild_id)
+
+            # Upgrade Message.guild in case it's missing with partial guild data
+            if self.message is not None and self.message.guild is None:
+                self.message.guild = guild
+
             try:
                 member = data['member']  # type: ignore # The key is optional and handled
             except KeyError:

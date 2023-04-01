@@ -50,6 +50,7 @@ from ._types import _BaseCommand, BotT
 if TYPE_CHECKING:
     from typing_extensions import Self
     from discord.abc import Snowflake
+    from discord._types import ClientT
 
     from .bot import BotBase
     from .context import Context
@@ -582,6 +583,18 @@ class Cog(metaclass=CogMeta):
 
         This function **can** be a coroutine and must take a sole parameter,
         ``ctx``, to represent the :class:`.Context`.
+        """
+        return True
+
+    @_cog_special_method
+    def interaction_check(self, interaction: discord.Interaction[ClientT], /) -> bool:
+        """A special method that registers as a :func:`discord.app_commands.check`
+        for every app command and subcommand in this cog.
+
+        This function **can** be a coroutine and must take a sole parameter,
+        ``interaction``, to represent the :class:`~discord.Interaction`.
+
+        .. versionadded:: 2.0
         """
         return True
 
