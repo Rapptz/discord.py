@@ -3309,20 +3309,6 @@ of :class:`enum.Enum`.
 
         Displays posts as a collection of tiles.
 
-.. class:: OnboardingPromptType
-
-    Represents the type of onboarding prompt.
-
-    .. versionadded:: 2.2
-
-    .. attribute:: multiple_choice
-
-        Prompt options are multiple choice.
-
-    .. attribute:: dropdown
-
-        Prompt options are displayed as a drop-down.
-
 
 .. class:: ForumOrderType
 
@@ -3337,6 +3323,21 @@ of :class:`enum.Enum`.
     .. attribute:: creation_date
 
         Sort forum posts by creation time (from most recent to oldest).
+
+
+.. class:: OnboardingPromptType
+
+    Represents the type of onboarding prompt.
+
+    .. versionadded:: 2.3
+
+    .. attribute:: multiple_choice
+
+        Prompt options are multiple choice.
+
+    .. attribute:: dropdown
+
+        Prompt options are displayed as a drop-down.
 
 
 .. _discord-api-audit-logs:

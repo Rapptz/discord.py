@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 class OnboardingPromptOption:
     """Represents an onboarding prompt option.
 
-    .. versionadded:: 2.2
+    .. versionadded:: 2.3
 
     Attributes
     -----------
@@ -113,7 +113,7 @@ class OnboardingPromptOption:
 class OnboardingPrompt:
     """Represents an onboarding prompt.
 
-    .. versionadded:: 2.2
+    .. versionadded:: 2.3
 
     Attributes
     -----------
@@ -167,7 +167,7 @@ class OnboardingPrompt:
 class Onboarding:
     """Represents a guild's onboarding configuration.
 
-    .. versionadded:: 2.2
+    .. versionadded:: 2.3
 
     Attributes
     -----------
