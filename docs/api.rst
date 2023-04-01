@@ -491,8 +491,8 @@ Debug
         WebSocket. The voice WebSocket will not trigger this event.
 
     :param payload: The message that is about to be passed on to the
-                    WebSocket library. It can be :class:`bytes` to denote a binary
-                    message or :class:`str` to denote a regular text message.
+                    WebSocket library.
+    :type payload: :class:`str`
 
 
 Gateway
@@ -1363,7 +1363,7 @@ Threads
     .. versionadded:: 2.0
 
     :param payload: The raw event payload data.
-    :type member: :class:`RawThreadMembersUpdate`
+    :type payload: :class:`RawThreadMembersUpdate`
 
 Voice
 ~~~~~~
