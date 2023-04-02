@@ -146,9 +146,9 @@ class VoiceChannelEffect:
     animation: :class:`VoiceChannelEffectAnimation`
         The animation the effect has.
     emoji: Optional[:class:`PartialEmoji`]
-        The emoji of the effect.
+        The emoji of the effect. Returns ``None`` if it's a sound effect.
     sound: Optional[:class:`VoiceChannelSoundEffect`]
-        The sound of the effect if it's used within the soundboard.
+        The sound of the effect. Returns ``None`` if it's an emoji effect.
     """
 
     __slots__ = ('channel', 'user', 'animation', 'emoji', 'sound')
