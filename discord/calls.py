@@ -24,22 +24,24 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Callable, Dict, List, Optional, Set, TYPE_CHECKING, Union
+from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
 
 from . import utils
 from .errors import ClientException
-from .utils import cached_slot_property, MISSING
+from .utils import cached_slot_property
+from .voice_client import VoiceClient
 
 if TYPE_CHECKING:
-    from .abc import Connectable, PrivateChannel, User as abcUser, Snowflake as abcSnowflake, T as ConnectReturn
+    from . import abc
+    from .abc import T as ConnectReturn
     from .channel import DMChannel, GroupChannel
     from .client import Client
     from .member import VoiceState
     from .message import Message
     from .state import ConnectionState
-    from .user import User
+    from .user import BaseUser, User
 
-    _PrivateChannel = Union[DMChannel, GroupChannel]
+    _PrivateChannel = Union[abc.DMChannel, abc.GroupChannel]
 
 __all__ = (
     'CallMessage',
@@ -145,7 +147,7 @@ class PrivateCall:
         data: dict,
         state: ConnectionState,
         message: Optional[Message],
-        channel: PrivateChannel,
+        channel: abc.PrivateChannel,
     ) -> None:
         self._state = state
         self._cs_message = message
@@ -158,11 +160,11 @@ class PrivateCall:
         self._ringing = tuple()
         self._ended = True
 
-    def _get_recipients(self) -> Set[abcUser]:
+    def _get_recipients(self) -> Tuple[BaseUser, ...]:
         channel = self.channel
-        return {channel.me, channel.recipient}
+        return channel.me, channel.recipient
 
-    def _is_participating(self, user: abcUser) -> bool:
+    def _is_participating(self, user: BaseUser) -> bool:
         state = self.voice_state_for(user)
         return bool(state and state.channel and state.channel.id == self.channel.id)
 
@@ -183,7 +185,7 @@ class PrivateCall:
             self._state._update_voice_state(vs, channel.id)
 
     @property
-    def ringing(self) -> List[abcUser]:
+    def ringing(self) -> List[BaseUser]:
         """List[:class:`.abc.User`]: A list of users that are currently being rung to join the call."""
         return list(self._ringing)
 
@@ -198,7 +200,7 @@ class PrivateCall:
         return self._is_participating(self.channel.me)
 
     @property
-    def members(self) -> List[abcUser]:
+    def members(self) -> List[BaseUser]:
         """List[:class:`.abc.User`]: Returns all users that are currently in this call."""
         recipients = self._get_recipients()
         return [u for u in recipients if self._is_participating(u)]
@@ -298,7 +300,7 @@ class PrivateCall:
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, Connectable], ConnectReturn] = MISSING,
+        cls: Callable[[Client, abc.VocalChannel], ConnectReturn] = VoiceClient,
     ) -> ConnectReturn:
         """|coro|
 
@@ -341,7 +343,7 @@ class PrivateCall:
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, Connectable], ConnectReturn] = MISSING,
+        cls: Callable[[Client, abc.VocalChannel], ConnectReturn] = VoiceClient,
     ) -> ConnectReturn:
         """|coro|
 
@@ -402,7 +404,7 @@ class PrivateCall:
         """
         return await self.disconnect(force=force)
 
-    def voice_state_for(self, user: abcSnowflake) -> Optional[VoiceState]:
+    def voice_state_for(self, user: abc.Snowflake) -> Optional[VoiceState]:
         """Retrieves the :class:`VoiceState` for a specified :class:`User`.
 
         If the :class:`User` has no voice state then this function returns
@@ -410,7 +412,7 @@ class PrivateCall:
 
         Parameters
         ------------
-        user: :class:`~discord.abc.Snowflake`
+        user: :class:`User`
             The user to retrieve the voice state for.
 
         Returns
@@ -444,21 +446,19 @@ class GroupCall(PrivateCall):
     if TYPE_CHECKING:
         channel: GroupChannel
 
-    def _get_recipients(self) -> Set[abcUser]:
+    def _get_recipients(self) -> Tuple[BaseUser, ...]:
         channel = self.channel
-        ret: Set[abcUser] = set(channel.recipients)
-        ret.add(channel.me)
-        return ret
+        return *channel.recipients, channel.me
 
     @_running_only
-    async def ring(self, *recipients: abcSnowflake) -> None:
+    async def ring(self, *recipients: abc.Snowflake) -> None:
         r"""|coro|
 
         Rings the specified recipients.
 
         Parameters
         -----------
-        \*recipients: :class:`~discord.abc.Snowflake`
+        \*recipients: :class:`User`
             The recipients to ring. The default is to ring all recipients.
 
         Raises
@@ -471,14 +471,14 @@ class GroupCall(PrivateCall):
         await self._state.http.ring(self.channel.id, *{r.id for r in recipients})
 
     @_running_only
-    async def stop_ringing(self, *recipients: abcSnowflake) -> None:
+    async def stop_ringing(self, *recipients: abc.Snowflake) -> None:
         r"""|coro|
 
         Stops ringing the specified recipients.
 
         Parameters
         -----------
-        \*recipients: :class:`~discord.abc.Snowflake`
+        \*recipients: :class:`User`
             The recipients to stop ringing.
 
         Raises

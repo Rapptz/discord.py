@@ -41,13 +41,14 @@ from .errors import ClientException, NotFound
 from .flags import PublicUserFlags, PrivateUserFlags, PremiumUsageFlags, PurchasedFlags
 from .relationship import Relationship
 from .utils import _bytes_to_base64_data, _get_as_snowflake, copy_doc, snowflake_time, MISSING
+from .voice_client import VoiceClient
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from datetime import datetime
 
-    from .abc import T as ConnectReturn
+    from .abc import T as ConnectReturn, VocalChannel
     from .calls import PrivateCall
     from .channel import DMChannel
     from .client import Client
@@ -909,7 +910,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         *,
         timeout: float = 60.0,
         reconnect: bool = True,
-        cls: Callable[[Client, discord.abc.Connectable], ConnectReturn] = MISSING,
+        cls: Callable[[Client, VocalChannel], ConnectReturn] = VoiceClient,
         ring: bool = True,
     ) -> ConnectReturn:
         channel = await self._get_channel()
