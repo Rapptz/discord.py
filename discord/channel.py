@@ -127,7 +127,7 @@ class VoiceChannelEffectAnimation(NamedTuple):
 
 
 class VoiceChannelSoundEffect(NamedTuple):
-    id: Union[int, str]
+    id: int
     volume: float
     override_path: Optional[str]
 
@@ -166,7 +166,7 @@ class VoiceChannelEffect:
         self.emoji: Optional[PartialEmoji] = PartialEmoji.from_dict(emoji) if emoji is not None else None
         self.sound: Optional[VoiceChannelSoundEffect] = None
 
-        sound_id: Optional[Union[int, str]] = data.get('sound_id')
+        sound_id: Optional[int] = utils._get_as_snowflake(data, 'sound_id')
         if sound_id is None:
             self.sound: Optional[VoiceChannelSoundEffect] = None
         else:
