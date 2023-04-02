@@ -3239,6 +3239,11 @@ class Application(PartialApplication):
         *,
         supported_platforms: Collection[EmbeddedActivityPlatform] = MISSING,
         orientation_lock_state: EmbeddedActivityOrientation = MISSING,
+        tablet_orientation_lock_state: EmbeddedActivityOrientation = MISSING,
+        requires_age_gate: bool = MISSING,
+        shelf_rank: int = MISSING,
+        free_period_starts_at: Optional[datetime] = MISSING,
+        free_period_ends_at: Optional[datetime] = MISSING,
         preview_video_asset: Optional[Snowflake] = MISSING,
     ) -> EmbeddedActivityConfig:
         """|coro|
@@ -3248,11 +3253,21 @@ class Application(PartialApplication):
         Parameters
         -----------
         supported_platforms: List[:class:`EmbeddedActivityPlatform`]
-            A list of platforms that the application supports.
+            A list of platforms that the activity supports.
         orientation_lock_state: :class:`EmbeddedActivityOrientation`
-            The mobile orientation lock state of the application.
+            The mobile orientation lock state of the activity.
+        tablet_orientation_lock_state: :class:`EmbeddedActivityOrientation`
+            The mobile orientation lock state of the activity on tablets.
+        requires_age_gate: :class:`bool`
+            Whether the activity should be blocked from underage users.
+        shelf_rank: :class:`int`
+            The sorting rank of the activity in the activity shelf.
+        free_period_starts_at: Optional[:class:`datetime.datetime`]
+            When the activity's free availability period starts.
+        free_period_ends_at: Optional[:class:`datetime.datetime`]
+            When the activity's free availability period ends.
         preview_video_asset: Optional[:class:`ApplicationAsset`]
-            The preview video asset of the embedded activity.
+            The preview video asset of the activity.
 
         Raises
         -------
@@ -3270,6 +3285,11 @@ class Application(PartialApplication):
             self.id,
             supported_platforms=[str(x) for x in (supported_platforms or [])],
             orientation_lock_state=int(orientation_lock_state),
+            tablet_orientation_lock_state=int(tablet_orientation_lock_state),
+            requires_age_gate=requires_age_gate,
+            shelf_rank=shelf_rank,
+            free_period_starts_at=free_period_starts_at.isoformat() if free_period_starts_at else None,
+            free_period_ends_at=free_period_ends_at.isoformat() if free_period_ends_at else None,
             preview_video_asset_id=(preview_video_asset.id if preview_video_asset else None)
             if preview_video_asset is not MISSING
             else None,
