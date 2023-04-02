@@ -22,8 +22,8 @@ Fork Changes
 These changes have become too numerous to mention, so check out our `docs <https://discordpy-self.readthedocs.io/en/latest/index.html>`_.
 
 | **Credits:**
-| - `arandomnewaccount <https://www.reddit.com/user/obviouslymymain123/>`_ for Discord API help.
-|
+- `Rapptz <https://github.com/Rapptz>`_ for the original library this fork is based on. Without it, the project would not exist.
+- `arandomnewaccount <https://www.reddit.com/user/obviouslymymain123/>`_ for help when the project was first started.
 
 | **Note:**
 | Automating user accounts is against the Discord ToS. This library is a proof of concept and I cannot recommend using it. Do so at your own risk.
@@ -34,13 +34,23 @@ Key Features
 - Modern Pythonic API using ``async`` and ``await``.
 - Proper rate limit handling.
 - Optimised in both speed and memory.
-- Mostly compatible with the official ``discord.py``.
+- Mostly compatible with the upstream ``discord.py``.
 - Prevents user account automation detection.
+- Implements vast amounts of the user account-specific API. For a non-exhaustive list:
+
+  * Sessions
+  * Connections
+  * Relationships
+  * Protobuf user settings
+  * Application/team management
+  * Store/SKUs/entitlements
+  * Billing (e.g. subscriptions, payments, boosts, promotions, etc.)
+  * Interactions (slash commands, buttons, etc.)
 
 Installing
 ----------
 
-**Python 3.8 or higher is required**
+**Python 3.8 or higher is required.**
 
 To install the library without full voice support, you can just run the following command:
 
