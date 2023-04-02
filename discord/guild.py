@@ -104,6 +104,7 @@ if TYPE_CHECKING:
         Guild as GuildPayload,
         PartialGuild as PartialGuildPayload,
         RolePositionUpdate as RolePositionUpdatePayload,
+        UserGuild as UserGuildPayload,
     )
     from .types.threads import (
         Thread as ThreadPayload,
@@ -139,11 +140,13 @@ MISSING = utils.MISSING
 
 __all__ = (
     'Guild',
+    'UserGuild',
     'BanEntry',
+    'ApplicationCommandCounts',
 )
 
 
-class CommandCounts(NamedTuple):
+class ApplicationCommandCounts(NamedTuple):
     chat_input: int
     user: int
     message: int
@@ -159,6 +162,103 @@ class _GuildLimit(NamedTuple):
     stickers: int
     bitrate: float
     filesize: int
+
+
+class UserGuild(Hashable):
+    """Represents a partial joined guild.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two guilds are equal.
+
+        .. describe:: x != y
+
+            Checks if two guilds are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the guild's hash.
+
+        .. describe:: str(x)
+
+            Returns the guild's name.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The guild's ID.
+    name: :class:`str`
+        The guild name.
+    features: List[:class:`str`]
+        A list of features that the guild has. The features that a guild can have are
+        subject to arbitrary change by Discord.
+    owner: :class:`bool`
+        Whether the current user is the owner of the guild.
+    approximate_member_count: Optional[:class:`int`]
+        The approximate number of members in the guild. This is ``None`` unless the guild is obtained
+        using :meth:`Client.fetch_guilds` with ``with_counts=True``.
+    approximate_presence_count: Optional[:class:`int`]
+        The approximate number of members currently active in the guild.
+        Offline members are excluded. This is ``None`` unless the guild is obtained using
+        :meth:`Client.fetch_guilds` with ``with_counts=True``.
+    """
+
+    __slots__ = (
+        'id',
+        'name',
+        '_icon',
+        'owner',
+        '_permissions',
+        'features',
+        'approximate_member_count',
+        'approximate_presence_count',
+        '_state',
+    )
+
+    def __init__(self, *, state: ConnectionState, data: UserGuildPayload):
+        self._state: ConnectionState = state
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self._icon: Optional[str] = data.get('icon')
+        self.owner: bool = data.get('owner', False)
+        self._permissions: int = int(data.get('permissions', 0))
+        self.features: List[str] = data.get('features', [])
+        self.approximate_member_count: Optional[int] = data.get('approximate_member_count')
+        self.approximate_presence_count: Optional[int] = data.get('approximate_presence_count')
+
+    def __str__(self) -> str:
+        return self.name or ''
+
+    def __repr__(self) -> str:
+        return f'<UserGuild id={self.id} name={self.name!r}>'
+
+    @property
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the guild's icon asset, if available."""
+        if self._icon is None:
+            return None
+        return Asset._from_guild_icon(self._state, self.id, self._icon)
+
+    @property
+    def permissions(self) -> Permissions:
+        """:class:`Permissions`: Returns the calculated permissions the current user has in the guild."""
+        return Permissions(self._permissions)
+
+    def is_joined(self) -> bool:
+        """Returns whether you are a member of this guild.
+
+        Always returns ``True``.
+
+        Returns
+        -------
+        :class:`bool`
+            Whether you are a member of this guild.
+        """
+        return True
 
 
 class Guild(Hashable):
@@ -231,9 +331,6 @@ class Guild(Hashable):
     features: List[:class:`str`]
         A list of features that the guild has. The features that a guild can have are
         subject to arbitrary change by Discord.
-    premium_tier: :class:`int`
-        The premium tier for this guild. Corresponds to "Server Boost Level" in the official UI.
-        The number goes from 0 to 3 inclusive.
     premium_subscription_count: :class:`int`
         The number of "boosts" this guild currently has.
     preferred_locale: :class:`Locale`
@@ -251,7 +348,10 @@ class Guild(Hashable):
 
         .. versionchanged:: 2.0
             This field is now an enum instead of an :class:`int`.
+    application_command_counts: Optional[:class:`ApplicationCommandCounts`]
+        A namedtuple representing the number of application commands in the guild, separated by type.
 
+        .. versionadded:: 2.0
     approximate_member_count: Optional[:class:`int`]
         The approximate number of members in the guild. This is ``None`` unless the guild is obtained
         using :meth:`Client.fetch_guild` with ``with_counts=True``.
@@ -264,15 +364,9 @@ class Guild(Hashable):
 
         .. versionadded:: 2.0
     premium_progress_bar_enabled: :class:`bool`
-        Indicates if the guild has premium AKA server boost level progress bar enabled.
+        Indicates if the guild has the premium (server boost) progress bar enabled.
 
         .. versionadded:: 2.0
-    keywords: Optional[:class:`str`]
-        Discovery search keywords for the guild.
-
-        .. versionadded:: 2.0
-    primary_category_id: Optional[:class:`int`]
-        The ID of the primary discovery category for the guild.
     widget_enabled: :class:`bool`
         Indicates if the guild has widget enabled.
 
@@ -295,14 +389,13 @@ class Guild(Hashable):
         'max_presences',
         'max_members',
         'max_video_channel_users',
-        'premium_tier',
+        '_premium_tier',
         'premium_subscription_count',
         'preferred_locale',
         'nsfw_level',
         'mfa_level',
         'vanity_url_code',
         'owner_application_id',
-        'command_counts',
         'widget_enabled',
         '_widget_channel_id',
         '_members',
@@ -333,8 +426,7 @@ class Guild(Hashable):
         '_member_list',
         'keywords',
         'primary_category_id',
-        'application_command_count',
-        '_load_id',
+        'application_command_counts',
         '_joined_at',
         '_cs_joined',
     )
@@ -359,9 +451,10 @@ class Guild(Hashable):
         self._stage_instances: Dict[int, StageInstance] = {}
         self._scheduled_events: Dict[int, ScheduledEvent] = {}
         self._state: ConnectionState = state
-        self.command_counts: Optional[CommandCounts] = None
-        self._member_count: int = 0
+        self.application_command_counts: Optional[ApplicationCommandCounts] = None
+        self._member_count: Optional[int] = None
         self._presence_count: Optional[int] = None
+        self._large: Optional[bool] = None
         self._from_data(data)
 
     def _add_channel(self, channel: GuildChannel, /) -> None:
@@ -468,7 +561,7 @@ class Guild(Hashable):
 
     def _from_data(self, guild: Union[GuildPayload, PartialGuildPayload]) -> None:
         try:
-            self._member_count: int = guild['member_count']  # type: ignore # Handled below
+            self._member_count: Optional[int] = guild['member_count']  # type: ignore # Handled below
         except KeyError:
             pass
 
@@ -481,6 +574,8 @@ class Guild(Hashable):
         self.explicit_content_filter: ContentFilter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
         self.afk_timeout: int = guild.get('afk_timeout', 0)
         self.unavailable: bool = guild.get('unavailable', False)
+        if self.unavailable:
+            self._member_count = 0
 
         state = self._state  # Speed up attribute access
 
@@ -509,7 +604,6 @@ class Guild(Hashable):
             map(lambda d: state.store_sticker(self, d), guild.get('stickers', []))
         )
         self.features: List[str] = guild.get('features', [])
-        self.keywords: List[str] = guild.get('keywords', [])
         self._icon: Optional[str] = guild.get('icon')
         self._banner: Optional[str] = guild.get('banner')
         self._splash: Optional[str] = guild.get('splash')
@@ -518,7 +612,7 @@ class Guild(Hashable):
         self.max_presences: Optional[int] = guild.get('max_presences')
         self.max_members: Optional[int] = guild.get('max_members')
         self.max_video_channel_users: Optional[int] = guild.get('max_video_channel_users')
-        self.premium_tier: int = guild.get('premium_tier', 0)
+        self._premium_tier = guild.get('premium_tier')
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
         self.widget_enabled: bool = guild.get('widget_enabled', False)
@@ -536,15 +630,16 @@ class Guild(Hashable):
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self.owner_application_id: Optional[int] = utils._get_as_snowflake(guild, 'application_id')
         self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
-        self.application_command_count: int = guild.get('application_command_count', 0)
-        self.primary_category_id: Optional[int] = guild.get('primary_category_id')
         self._joined_at = guild.get('joined_at')
 
-        large = None if self._member_count == 0 else self._member_count >= 250
-        self._large: Optional[bool] = guild.get('large', large)
+        try:
+            self._large = guild['large']  # type: ignore
+        except KeyError:
+            pass
 
-        if (counts := guild.get('application_command_counts')) is not None:
-            self.command_counts = CommandCounts(counts.get(0, 0), counts.get(1, 0), counts.get(2, 0))
+        counts = guild.get('application_command_counts')
+        if counts:
+            self.application_command_counts = ApplicationCommandCounts(counts.get(1, 0), counts.get(2, 0), counts.get(3, 0))
 
         for vs in guild.get('voice_states', []):
             self._update_voice_state(vs, int(vs['channel_id']))
@@ -588,7 +683,7 @@ class Guild(Hashable):
 
     @property
     def _offline_members_hidden(self) -> bool:
-        return self._member_count > 1000
+        return (self._member_count or 0) > 1000
 
     @property
     def voice_channels(self) -> List[VoiceChannel]:
@@ -613,12 +708,17 @@ class Guild(Hashable):
         return r
 
     @property
-    def me(self) -> Member:
-        """:class:`Member`: Similar to :attr:`Client.user` except an instance of :class:`Member`.
+    def me(self) -> Optional[Member]:
+        """Optional[:class:`Member`]: Similar to :attr:`Client.user` except an instance of :class:`Member`.
         This is essentially used to get the member version of yourself.
+
+        .. versionchanged:: 2.0
+
+            The type has been updated to be optional, which properly reflects cases where the current user
+            is not a member of the guild, or the current user's member object is not cached.
         """
         self_id = self._state.self_id
-        return self.get_member(self_id)  # type: ignore # The self member is *always* cached
+        return self.get_member(self_id)  # type: ignore
 
     def is_joined(self) -> bool:
         """Returns whether you are a member of this guild.
@@ -928,6 +1028,28 @@ class Guild(Hashable):
         return self._members.get(user_id)
 
     @property
+    def premium_tier(self) -> int:
+        """:class:`int`: The premium tier for this guild. Corresponds to "Server Boost Level" in the official UI.
+        The number goes from 0 to 3 inclusive.
+        """
+        tier = self._premium_tier
+        if tier is not None:
+            return tier
+        if 'PREMIUM_TIER_3_OVERRIDE' in self.features:
+            return 3
+
+        # Fallback to calculating by the number of boosts
+        count = self.premium_subscription_count
+        if count < 2:
+            return 0
+        elif count < 7:
+            return 1
+        elif count < 14:
+            return 2
+        else:
+            return 3
+
+    @property
     def premium_subscribers(self) -> List[Member]:
         """List[:class:`Member`]: A list of members who have subscribed to (boosted) this guild."""
         return [member for member in self.members if member.premium_since is not None]
@@ -1068,32 +1190,30 @@ class Guild(Hashable):
         .. warning::
 
             Due to a Discord limitation, this may not always be up-to-date and accurate.
-
-        .. versionchanged:: 2.0
-
-            Now returns an ``Optional[int]``.
         """
-        return self._member_count
+        return self._member_count if self._member_count is not None else self.approximate_member_count
 
     @property
     def online_count(self) -> Optional[int]:
         """Optional[:class:`int`]: Returns the online member count.
 
-        This is not always populated.
+        .. versionadded:: 1.9
 
-        This is an alias of :attr:`presence_count`.
+        .. warning::
+
+            Due to a Discord limitation, this may not always be up-to-date and accurate.
         """
         return self._presence_count
 
     @property
-    def presence_count(self) -> Optional[int]:
-        """Optional[:class:`int`]: Returns the online member count.
+    def application_command_count(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns the application command count if available.
 
-        This is not always populated.
-
-        There is an alias of this called :attr:`online_count`.
+        .. versionadded:: 2.0
         """
-        return self._presence_count
+        counts = self.application_command_counts
+        if counts:
+            sum(counts)
 
     @property
     def chunked(self) -> bool:
@@ -4132,8 +4252,9 @@ class Guild(Hashable):
         if not subscription_slots:
             return []
 
-        data = await self._state.http.apply_guild_subscription_slots(self.id, [slot.id for slot in subscription_slots])
-        return [PremiumGuildSubscription(state=self._state, data=sub) for sub in data]
+        state = self._state
+        data = await state.http.apply_guild_subscription_slots(self.id, [slot.id for slot in subscription_slots])
+        return [PremiumGuildSubscription(state=state, data=sub) for sub in data]
 
     async def entitlements(
         self, *, with_sku: bool = True, with_application: bool = True, exclude_deleted: bool = False

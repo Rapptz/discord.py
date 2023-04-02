@@ -526,7 +526,7 @@ class Invite(Hashable):
 
         channel_data = data.get('channel')
         if channel_data and channel_data.get('type') == ChannelType.private.value:
-            channel_data['recipients'] = [data['inviter']] if 'inviter' in data else []  # type: ignore
+            channel_data['recipients'] = [data['inviter']] if 'inviter' in data else []
         channel = PartialInviteChannel(channel_data, state)
         channel = state.get_channel(getattr(channel, 'id', None)) or channel
 

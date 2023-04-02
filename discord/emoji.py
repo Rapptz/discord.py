@@ -188,7 +188,7 @@ class Emoji(_EmojiTag, AssetMixin):
             return False
         if not self._roles:
             return True
-        emoji_roles, my_roles = self._roles, self.guild.me._roles
+        emoji_roles, my_roles = self._roles, self.guild.me._roles  # type: ignore # Should just error ATP
         return any(my_roles.has(role_id) for role_id in emoji_roles)
 
     async def delete(self, *, reason: Optional[str] = None) -> None:

@@ -1646,9 +1646,8 @@ class HTTPClient:
 
     # Guild management
 
-    def get_guilds(self, with_counts: bool = True) -> Response[List[guild.Guild]]:
+    def get_guilds(self, with_counts: bool = True) -> Response[List[guild.UserGuild]]:
         params = {'with_counts': str(with_counts).lower()}
-
         return self.request(Route('GET', '/users/@me/guilds'), params=params, super_properties_to_track=True)
 
     def join_guild(
@@ -1686,7 +1685,6 @@ class HTTPClient:
 
     def get_guild(self, guild_id: Snowflake, with_counts: bool = True) -> Response[guild.Guild]:
         params = {'with_counts': str(with_counts).lower()}
-
         return self.request(Route('GET', '/guilds/{guild_id}', guild_id=guild_id), params=params)
 
     def get_guild_preview(self, guild_id: Snowflake) -> Response[guild.GuildPreview]:

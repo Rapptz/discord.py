@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Literal, Optional, TypedDict
+from typing import Dict, List, Literal, Optional, TypedDict
 from typing_extensions import NotRequired
 
 from .scheduled_event import GuildScheduledEvent
@@ -55,9 +55,17 @@ MFALevel = Literal[0, 1]
 VerificationLevel = Literal[0, 1, 2, 3, 4]
 NSFWLevel = Literal[0, 1, 2, 3]
 PremiumTier = Literal[0, 1, 2, 3]
+ApplicationCommandCounts = Dict[Literal[1, 2, 3], int]
 
 
-class PartialGuild(UnavailableGuild):
+class BaseGuild(TypedDict):
+    id: Snowflake
+    name: str
+    icon: Optional[str]
+    features: List[str]
+
+
+class PartialGuild(BaseGuild):
     name: str
     icon: Optional[str]
     splash: Optional[str]
@@ -77,7 +85,7 @@ class GuildPreview(PartialGuild, _GuildPreviewUnique):
     ...
 
 
-class Guild(PartialGuild):
+class Guild(UnavailableGuild, PartialGuild):
     owner_id: Snowflake
     region: str
     afk_channel_id: Optional[Snowflake]
@@ -100,7 +108,6 @@ class Guild(PartialGuild):
     stickers: List[GuildSticker]
     stage_instances: List[StageInstance]
     guild_scheduled_events: List[GuildScheduledEvent]
-    icon_hash: NotRequired[Optional[str]]
     owner: NotRequired[bool]
     permissions: NotRequired[str]
     widget_enabled: NotRequired[bool]
@@ -117,6 +124,14 @@ class Guild(PartialGuild):
     max_members: NotRequired[int]
     premium_subscription_count: NotRequired[int]
     max_video_channel_users: NotRequired[int]
+    application_command_counts: ApplicationCommandCounts
+
+
+class UserGuild(BaseGuild):
+    owner: bool
+    permissions: str
+    approximate_member_count: NotRequired[int]
+    approximate_presence_count: NotRequired[int]
 
 
 class InviteGuild(Guild, total=False):

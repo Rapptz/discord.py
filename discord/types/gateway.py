@@ -39,7 +39,7 @@ from .snowflake import Snowflake
 from .message import Message
 from .sticker import GuildSticker
 from .application import BaseAchievement, PartialApplication
-from .guild import Guild, UnavailableGuild, SupplementalGuild
+from .guild import ApplicationCommandCounts, Guild, UnavailableGuild, SupplementalGuild
 from .user import Connection, User, PartialUser, ProtoSettingsType, Relationship, RelationshipType
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
@@ -498,3 +498,8 @@ class PassiveUpdateEvent(TypedDict):
     channels: List[PartialUpdateChannel]
     voice_states: NotRequired[List[GuildVoiceState]]
     members: NotRequired[List[MemberWithUser]]
+
+
+class GuildApplicationCommandIndexUpdateEvent(TypedDict):
+    guild_id: Snowflake
+    application_command_counts: ApplicationCommandCounts

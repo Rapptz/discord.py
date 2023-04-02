@@ -51,7 +51,7 @@ from .user import _UserTag, User, ClientUser, Note
 from .invite import Invite
 from .template import Template
 from .widget import Widget
-from .guild import Guild
+from .guild import Guild, UserGuild
 from .emoji import Emoji
 from .channel import _private_channel_factory, _threaded_channel_factory, GroupChannel, PartialMessageable
 from .enums import ActivityType, ChannelType, ClientType, ConnectionType, EntitlementType, Status
@@ -1597,19 +1597,18 @@ class Client:
 
     # Guild stuff
 
-    async def fetch_guilds(self, *, with_counts: bool = True) -> List[Guild]:
+    async def fetch_guilds(self, *, with_counts: bool = True) -> List[UserGuild]:
         """|coro|
 
-        Retrieves all your your guilds.
-
-        .. note::
-
-            Using this, you will only receive :attr:`.Guild.owner`, :attr:`.Guild.icon`,
-            :attr:`.Guild.id`, and :attr:`.Guild.name` per :class:`.Guild`.
+        Retrieves all your guilds.
 
         .. note::
 
             This method is an API call. For general usage, consider :attr:`guilds` instead.
+
+        .. versionchanged:: 2.0
+
+            This method now returns a list of :class:`.UserGuild` instead of :class:`.Guild`.
 
         Parameters
         -----------
@@ -1623,15 +1622,12 @@ class Client:
 
         Returns
         --------
-        List[:class:`.Guild`]
+        List[:class:`.UserGuild`]
             A list of all your guilds.
         """
         state = self._connection
         guilds = await state.http.get_guilds(with_counts)
-        guilds = [Guild(data=data, state=state) for data in guilds]
-        for guild in guilds:
-            guild._cs_joined = True
-        return guilds
+        return [UserGuild(data=data, state=state) for data in guilds]
 
     async def fetch_template(self, code: Union[Template, str]) -> Template:
         """|coro|
@@ -1664,10 +1660,6 @@ class Client:
 
         Retrieves a :class:`.Guild` from an ID.
 
-        .. versionchanged:: 2.0
-
-            ``guild_id`` parameter is now positional-only.
-
         .. note::
 
             Using this, you will **not** receive :attr:`.Guild.channels` and :attr:`.Guild.members`.
@@ -1685,7 +1677,7 @@ class Client:
         guild_id: :class:`int`
             The guild's ID to fetch from.
         with_counts: :class:`bool`
-            Whether to include count information in the guild. This fills the
+            Whether to include count information in the guild. This fills in
             :attr:`.Guild.approximate_member_count` and :attr:`.Guild.approximate_presence_count`.
 
             .. versionadded:: 2.0

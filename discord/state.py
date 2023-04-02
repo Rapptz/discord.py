@@ -52,7 +52,7 @@ from math import ceil
 from discord_protos import UserSettingsType
 
 from .errors import ClientException, InvalidData, NotFound
-from .guild import CommandCounts, Guild
+from .guild import ApplicationCommandCounts, Guild
 from .activity import BaseActivity, create_activity, Session
 from .user import User, ClientUser
 from .emoji import Emoji
@@ -216,7 +216,7 @@ class MemberSidebar:
 
     @property
     def safe(self):
-        return self.safe_override or self.guild._member_count >= 75000
+        return self.safe_override or (self.guild._member_count or 0) >= 75000
 
     @staticmethod
     def amalgamate(original: Tuple[int, int], value: Tuple[int, int]) -> Tuple[int, int]:
@@ -269,7 +269,7 @@ class MemberSidebar:
         channels = [
             channel
             for channel in self.guild.channels
-            if channel.type != ChannelType.stage_voice and channel.permissions_for(guild.me).read_messages
+            if channel.type != ChannelType.stage_voice and channel.permissions_for(guild.me).read_messages  # type: ignore
         ]
         if guild.rules_channel is not None:
             channels.insert(0, guild.rules_channel)
@@ -755,12 +755,16 @@ class ConnectionState:
     def store_emoji(self, guild: Guild, data: EmojiPayload) -> Emoji:
         # The id will be present here
         emoji_id = int(data['id'])  # type: ignore
-        self._emojis[emoji_id] = emoji = Emoji(guild=guild, state=self, data=data)
+        emoji = Emoji(guild=guild, state=self, data=data)
+        if not self.is_guild_evicted(guild):
+            self._emojis[emoji_id] = emoji
         return emoji
 
     def store_sticker(self, guild: Guild, data: GuildStickerPayload) -> GuildSticker:
         sticker_id = int(data['id'])
-        self._stickers[sticker_id] = sticker = GuildSticker(state=self, data=data)
+        sticker = GuildSticker(state=self, data=data)
+        if not self.is_guild_evicted(guild):
+            self._stickers[sticker_id] = sticker
         return sticker
 
     @property
@@ -936,7 +940,7 @@ class ConnectionState:
                 try:
                     await asyncio.wait_for(future, timeout=10)
                 except asyncio.TimeoutError:
-                    _log.warning('Timed out waiting for chunks for guild_id %s.', guild.id)
+                    _log.warning('Timed out waiting for member list subscriptions for guild_id %s.', guild.id)
                 except (ClientException, InvalidData):
                     pass
         except asyncio.CancelledError:
@@ -1685,7 +1689,7 @@ class ConnectionState:
                 continue
 
             # channel will be the correct type here
-            message = Message(channel=channel, data=message, state=self)  # type: ignore
+            message = Message(channel=channel, data=message, state=self)
             if self._messages is not None:
                 self._messages.append(message)
 
@@ -1974,17 +1978,20 @@ class ConnectionState:
             for member in actually_add:
                 self.dispatch('member_join', member)
 
-    def parse_guild_application_command_counts_update(self, data) -> None:
+    def parse_guild_application_command_index_update(self, data: gw.GuildApplicationCommandIndexUpdateEvent) -> None:
         guild = self._get_guild(int(data['guild_id']))
         if guild is None:
             _log.debug(
-                'GUILD_APPLICATION_COMMAND_COUNTS_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id']
+                'GUILD_APPLICATION_COMMAND_INDEX_UPDATE referencing an unknown guild ID: %s. Discarding.', data['guild_id']
             )
             return
 
-        guild.command_counts = CommandCounts(data.get(0, 0), data.get(1, 0), data.get(2, 0))
-
-    parse_guild_application_command_index_update = parse_guild_application_command_counts_update
+        counts = data['application_command_counts']
+        old_counts = guild.application_command_counts or ApplicationCommandCounts(0, 0, 0)
+        guild.application_command_counts = new_counts = ApplicationCommandCounts(
+            counts.get(1, 0), counts.get(2, 0), counts.get(3, 0)
+        )
+        self.dispatch('application_command_counts_update', guild, old_counts, new_counts)
 
     def parse_guild_emojis_update(self, data: gw.GuildEmojisUpdateEvent) -> None:
         guild = self._get_guild(int(data['guild_id']))
@@ -2083,7 +2090,7 @@ class ConnectionState:
         ws = self.ws
         channel = None
         for channel in guild.channels:
-            if channel.permissions_for(guild.me).read_messages and channel.type != ChannelType.stage_voice:
+            if channel.permissions_for(guild.me).read_messages and channel.type != ChannelType.stage_voice:  # type: ignore
                 break
         else:
             raise RuntimeError('No channels viewable')
@@ -2143,12 +2150,16 @@ class ConnectionState:
         if not guild.me:
             await guild.query_members(user_ids=[self.self_id], cache=True)  # type: ignore # self_id is always present here
 
-        if not force_scraping and any(
-            {
-                guild.me.guild_permissions.kick_members,
-                guild.me.guild_permissions.ban_members,
-                guild.me.guild_permissions.manage_roles,
-            }
+        if (
+            not force_scraping
+            and guild.me
+            and any(
+                {
+                    guild.me.guild_permissions.kick_members,
+                    guild.me.guild_permissions.ban_members,
+                    guild.me.guild_permissions.manage_roles,
+                }
+            )
         ):
             request = self._chunk_requests.get(guild.id)
             if request is None:

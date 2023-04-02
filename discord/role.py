@@ -319,7 +319,7 @@ class Role(Hashable):
         .. versionadded:: 2.0
         """
         me = self.guild.me
-        return not self.is_default() and not self.managed and (me.top_role > self or me.id == self.guild.owner_id)
+        return not self.is_default() and not self.managed and (me.top_role > self or me.id == self.guild.owner_id)  # type: ignore # Should just error ATP
 
     @property
     def permissions(self) -> Permissions:
