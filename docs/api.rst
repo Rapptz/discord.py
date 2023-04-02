@@ -4447,27 +4447,11 @@ VoiceChannel
 
         :type: :class:`VoiceChannelEffectAnimationType`
 
-.. class:: VoiceChannelSoundEffect
+.. attributetable:: VoiceChannelSoundEffect
 
-    A namedtuple which represents a voice channel sound effect.
-
-    .. versionadded:: 2.3
-
-    .. attribute:: id
-
-        The ID of the sound.
-
-        :type: Union[:class:`int`, :class:`str`]
-    .. attribute:: volume
-
-        The volume of the sound as floating point percentage (e.g. ``1.0`` for 100%).
-
-        :type: :class:`float`
-    .. attribute:: override_path
-
-        The override path of the sound (e.g. 'default_quack.mp3').
-
-        :type: Optional[:class:`str`]
+.. autoclass:: VoiceChannelSoundEffect()
+    :members:
+    :inherited-members:
 
 StageChannel
 ~~~~~~~~~~~~~

@@ -67,6 +67,7 @@ from .threads import Thread
 from .partial_emoji import _EmojiTag, PartialEmoji
 from .flags import ChannelFlags
 from .http import handle_message_parameters
+from .object import Object
 
 __all__ = (
     'TextChannel',
@@ -79,6 +80,7 @@ __all__ = (
     'GroupChannel',
     'PartialMessageable',
     'VoiceChannelEffect',
+    'VoiceChannelSoundEffect',
 )
 
 if TYPE_CHECKING:
@@ -86,7 +88,6 @@ if TYPE_CHECKING:
 
     from .types.threads import ThreadArchiveDuration
     from .role import Role
-    from .object import Object
     from .member import Member, VoiceState
     from .abc import Snowflake, SnowflakeTime
     from .embeds import Embed
@@ -126,10 +127,42 @@ class VoiceChannelEffectAnimation(NamedTuple):
     type: VoiceChannelEffectAnimationType
 
 
-class VoiceChannelSoundEffect(NamedTuple):
-    id: int
-    volume: float
-    override_path: Optional[str]
+class VoiceChannelSoundEffect(Object):
+    """Represents a Discord voice channel sound effect.
+
+    This inherits from :class:`Object`
+
+    .. versionadded:: 2.3
+
+    Attributes
+    ------------
+    id: :class:`int`
+        The ID of the sound.
+    volume: :class:`float`
+        The volume of the sound as floating point percentage (e.g. ``1.0`` for 100%).
+    override_path: Optional[:class:`str`]
+        The override path of the sound (e.g. 'default_quack.mp3').
+    """
+
+    __slots__ = ('volume', 'override_path')
+
+    def __init__(self, *, id: int, volume: float, override_path: Optional[str] = None):
+        self.volume: float = volume
+        self.override_path: Optional[str] = override_path
+        super().__init__(id=id)
+
+    def is_default(self) -> bool:
+        """:class:`bool`: Whether it's a default sound or not."""
+        return self.id in [1, 2, 3, 4, 5, 6]
+
+    @property
+    def created_at(self) -> Optional[datetime.datetime]:
+        """:class:`datetime.datetime`: Returns the snowflake's creation time in UTC.
+        Returns ``None`` if it's a built-in sound."""
+        if self.is_default():
+            return None
+        else:
+            return super().created_at
 
 
 class VoiceChannelEffect:
@@ -167,10 +200,8 @@ class VoiceChannelEffect:
         self.sound: Optional[VoiceChannelSoundEffect] = None
 
         sound_id: Optional[int] = utils._get_as_snowflake(data, 'sound_id')
-        if sound_id is None:
-            self.sound: Optional[VoiceChannelSoundEffect] = None
-        else:
-            self.sound: Optional[VoiceChannelSoundEffect] = VoiceChannelSoundEffect(
+        if sound_id is not None:
+            self.sound = VoiceChannelSoundEffect(
                 id=sound_id, volume=data['sound_volume'], override_path=data.get('sound_override_path')  # type: ignore # sound_volume won't be None here
             )
 
