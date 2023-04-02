@@ -32,6 +32,7 @@ from os import PathLike
 from typing import (
     AsyncIterator,
     Dict,
+    Collection,
     TYPE_CHECKING,
     Sequence,
     Union,
@@ -2121,7 +2122,7 @@ class Message(PartialMessage, Hashable):
         query: Optional[str] = None,
         *,
         limit: Optional[int] = None,
-        command_ids: Optional[List[int]] = None,
+        command_ids: Optional[Collection[int]] = None,
         application: Optional[Snowflake] = None,
         with_applications: bool = True,
     ) -> AsyncIterator[MessageCommand]:

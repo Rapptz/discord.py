@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any, AsyncIterator, Dict, Generic, List, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, AsyncIterator, Collection, Dict, Generic, List, Optional, TypeVar, Union
 
 import discord.abc
 import discord.utils
@@ -421,7 +421,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         query: Optional[str] = None,
         *,
         limit: Optional[int] = None,
-        command_ids: Optional[List[int]] = None,
+        command_ids: Optional[Collection[int]] = None,
         application: Optional[discord.abc.Snowflake] = None,
         with_applications: bool = True,
     ) -> AsyncIterator[MessageCommand]:

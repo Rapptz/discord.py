@@ -31,6 +31,7 @@ from typing import (
     Any,
     AsyncIterator,
     Callable,
+    Collection,
     Dict,
     List,
     Literal,
@@ -163,7 +164,7 @@ def _handle_commands(
     *,
     query: Optional[str] = ...,
     limit: Optional[int] = ...,
-    command_ids: Optional[List[int]] = ...,
+    command_ids: Optional[Collection[int]] = ...,
     application: Optional[Snowflake] = ...,
     with_applications: bool = ...,
     target: Optional[Snowflake] = ...,
@@ -178,7 +179,7 @@ def _handle_commands(
     *,
     query: Optional[str] = ...,
     limit: Optional[int] = ...,
-    command_ids: Optional[List[int]] = ...,
+    command_ids: Optional[Collection[int]] = ...,
     application: Optional[Snowflake] = ...,
     with_applications: bool = ...,
     target: Optional[Snowflake] = ...,
@@ -193,7 +194,7 @@ def _handle_commands(
     *,
     query: Optional[str] = ...,
     limit: Optional[int] = ...,
-    command_ids: Optional[List[int]] = ...,
+    command_ids: Optional[Collection[int]] = ...,
     application: Optional[Snowflake] = ...,
     with_applications: bool = ...,
     target: Optional[Snowflake] = ...,
@@ -207,7 +208,7 @@ async def _handle_commands(
     *,
     query: Optional[str] = None,
     limit: Optional[int] = None,
-    command_ids: Optional[List[int]] = None,
+    command_ids: Optional[Collection[int]] = None,
     application: Optional[Snowflake] = None,
     with_applications: bool = True,
     target: Optional[Snowflake] = None,
@@ -221,6 +222,7 @@ async def _handle_commands(
     endpoint = state.http.search_application_commands
     channel = await messageable._get_channel()
     _, cls = _command_factory(type.value)
+    cmd_ids = list(command_ids) if command_ids else None
 
     application_id = application.id if application else None
     if channel.type == ChannelType.private:
@@ -236,19 +238,19 @@ async def _handle_commands(
     cursor = MISSING
     while True:
         # We keep two cursors because Discord just sends us an infinite loop sometimes
-        retrieve = min((25 if not command_ids else 0) if limit is None else limit, 25)
+        retrieve = min((25 if not cmd_ids else 0) if limit is None else limit, 25)
 
         if not application_id and limit is not None:
             limit -= retrieve
-        if (not command_ids and retrieve < 1) or cursor is None or (prev_cursor is not MISSING and prev_cursor == cursor):
+        if (not cmd_ids and retrieve < 1) or cursor is None or (prev_cursor is not MISSING and prev_cursor == cursor):
             return
 
         data = await endpoint(
             channel.id,
             type.value,
             limit=retrieve if not application_id else None,
-            query=query if not command_ids and not application_id else None,
-            command_ids=command_ids if not application_id and not cursor else None,  # type: ignore
+            query=query if not cmd_ids and not application_id else None,
+            command_ids=cmd_ids if not application_id and not cursor else None,  # type: ignore
             application_id=application_id,
             include_applications=with_applications if (not application_id or with_applications) else None,
             cursor=cursor,
@@ -262,22 +264,22 @@ async def _handle_commands(
             # Handle faked parameters
             if application_id and query and query.lower() not in cmd['name']:
                 continue
-            elif application_id and (not command_ids or int(cmd['id']) not in command_ids) and limit == 0:
+            elif application_id and (not cmd_ids or int(cmd['id']) not in cmd_ids) and limit == 0:
                 continue
 
             # We follow Discord behavior
-            if application_id and limit is not None and (not command_ids or int(cmd['id']) not in command_ids):
+            if application_id and limit is not None and (not cmd_ids or int(cmd['id']) not in cmd_ids):
                 limit -= 1
 
             try:
-                command_ids.remove(int(cmd['id'])) if command_ids else None
+                cmd_ids.remove(int(cmd['id'])) if cmd_ids else None
             except ValueError:
                 pass
 
             cmd['application'] = apps.get(int(cmd['application_id']))
             yield cls(state=state, data=cmd, channel=channel, target=target)
 
-        command_ids = None
+        cmd_ids = None
         if application_id or len(cmds) < min(limit if limit else 25, 25) or len(cmds) == limit == 25:
             return
 
@@ -2016,7 +2018,7 @@ class Messageable:
         query: Optional[str] = None,
         *,
         limit: Optional[int] = None,
-        command_ids: Optional[List[int]] = None,
+        command_ids: Optional[Collection[int]] = None,
         application: Optional[Snowflake] = None,
         with_applications: bool = True,
     ) -> AsyncIterator[SlashCommand]:
@@ -2092,7 +2094,7 @@ class Messageable:
         query: Optional[str] = None,
         *,
         limit: Optional[int] = None,
-        command_ids: Optional[List[int]] = None,
+        command_ids: Optional[Collection[int]] = None,
         application: Optional[Snowflake] = None,
         with_applications: bool = True,
     ) -> AsyncIterator[UserCommand]:

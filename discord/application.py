@@ -780,10 +780,10 @@ class ApplicationInstallParams:
     __slots__ = ('application_id', 'scopes', 'permissions')
 
     def __init__(
-        self, application_id: int, *, scopes: Optional[List[str]] = None, permissions: Optional[Permissions] = None
+        self, application_id: int, *, scopes: Optional[Collection[str]] = None, permissions: Optional[Permissions] = None
     ):
         self.application_id: int = application_id
-        self.scopes: List[str] = scopes or ['bot', 'applications.commands']
+        self.scopes: List[str] = [scope for scope in scopes] if scopes else ['bot', 'applications.commands']
         self.permissions: Permissions = permissions or Permissions(0)
 
     @classmethod
@@ -3237,7 +3237,7 @@ class Application(PartialApplication):
     async def edit_embedded_activity_config(
         self,
         *,
-        supported_platforms: List[EmbeddedActivityPlatform] = MISSING,
+        supported_platforms: Collection[EmbeddedActivityPlatform] = MISSING,
         orientation_lock_state: EmbeddedActivityOrientation = MISSING,
         preview_video_asset: Optional[Snowflake] = MISSING,
     ) -> EmbeddedActivityConfig:
