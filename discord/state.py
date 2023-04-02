@@ -62,7 +62,7 @@ from .channel import _channel_factory
 from .raw_models import *
 from .member import Member
 from .role import Role
-from .enums import ChannelType, try_enum, Status, VoiceChannelEffectAnimationType
+from .enums import ChannelType, try_enum, Status
 from . import utils
 from .flags import ApplicationFlags, Intents, MemberCacheFlags
 from .invite import Invite
@@ -1541,18 +1541,8 @@ class ConnectionState(Generic[ClientT]):
     def parse_voice_channel_effect_send(self, data: gw.VoiceChannelEffectSendEvent):
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
-            channel = guild.get_channel(int(data['channel_id']))
-            if channel is not None:
-                emoji = PartialEmoji.from_dict(data['emoji'])
-                animation_type = try_enum(VoiceChannelEffectAnimationType, data['animation_type'])
-                effect = VoiceChannelEffect(emoji=emoji, animation_id=data['animation_id'], animation_type=animation_type)
-
-                self.dispatch('voice_channel_effect', channel, effect)
-            else:
-                _log.debug(
-                    'VOICE_CHANNEL_EFFECT_SEND referencing an unknown channel ID: %s. Discarding.', data['channel_id']
-                )
-
+            effect = VoiceChannelEffect(data=data, guild=guild)
+            self.dispatch('voice_channel_effect', effect)
         else:
             _log.debug('VOICE_CHANNEL_EFFECT_SEND referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
 

@@ -109,6 +109,7 @@ if TYPE_CHECKING:
         GroupDMChannel as GroupChannelPayload,
         ForumChannel as ForumChannelPayload,
         ForumTag as ForumTagPayload,
+        VoiceChannelEffect as VoiceChannelEffectPayload,
     )
     from .types.snowflake import SnowflakeList
 
@@ -120,10 +121,73 @@ class ThreadWithMessage(NamedTuple):
     message: Message
 
 
-class VoiceChannelEffect(NamedTuple):
-    emoji: PartialEmoji
-    animation_id: int
-    animation_type: VoiceChannelEffectAnimationType
+class VoiceChannelEffectAnimation(NamedTuple):
+    id: int
+    type: VoiceChannelEffectAnimationType
+
+
+class VoiceChannelSoundEffect(NamedTuple):
+    id: Union[int, str]
+    volume: float
+    override_path: Optional[str]
+
+
+class VoiceChannelEffect:
+    """Represents a Discord voice channel effect.
+
+    .. versionadded:: 2.3
+
+    Attributes
+    ------------
+    channel: :class:`VoiceChannel`
+        The channel in which the effect is sent.
+    user: :class:`Member`
+        The user who sent the effect.
+    animation: :class:`VoiceChannelEffectAnimation`
+        The animation the effect has.
+    emoji: Optional[:class:`PartialEmoji`]
+        The emoji of the effect.
+    sound: Optional[:class:`VoiceChannelSoundEffect`]
+        The sound of the effect if it's used within the soundboard.
+    """
+
+    __slots__ = ('channel', 'user', 'animation', 'emoji', 'sound')
+
+    def __init__(self, *, data: VoiceChannelEffectPayload, guild: Guild):
+        self.channel: VoiceChannel = guild.get_channel(int(data['channel_id']))  # type: ignore # will always be a VoiceChannel
+        self.user: Member = guild.get_member(int(data['user_id']))  # type: ignore # will always be a Member
+
+        animation_type = try_enum(VoiceChannelEffectAnimationType, data['animation_type'])
+        self.animation: VoiceChannelEffectAnimation = VoiceChannelEffectAnimation(
+            id=data['animation_id'], type=animation_type
+        )
+
+        emoji = data['emoji']
+        self.emoji: Optional[PartialEmoji] = PartialEmoji.from_dict(emoji) if emoji is not None else None
+        self.sound: Optional[VoiceChannelSoundEffect] = None
+
+        sound_id: Optional[Union[int, str]] = data.get('sound_id')
+        if sound_id is None:
+            self.sound: Optional[VoiceChannelSoundEffect] = None
+        else:
+            self.sound: Optional[VoiceChannelSoundEffect] = VoiceChannelSoundEffect(
+                id=sound_id, volume=data['sound_volume'], override_path=data.get('sound_override_path')  # type: ignore # sound_volume won't be None here
+            )
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('channel', self.channel),
+            ('user', self.user),
+            ('animation', self.animation),
+            ('emoji', self.emoji),
+            ('sound', self.sound),
+        ]
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f"<{self.__class__.__name__} {inner}>"
+
+    def is_sound(self) -> bool:
+        """:class:`bool`: Whether the effect is a sound or not."""
+        return self.sound is not None
 
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):

@@ -1388,7 +1388,7 @@ Voice
     :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
 
-.. function:: on_voice_channel_effect(channel, effect)
+.. function:: on_voice_channel_effect(effect)
 
     Called when a :class:`Member` sends a :class:`VoiceChannelEffect` in a voice channel the bot is in.
 
@@ -1396,9 +1396,7 @@ Voice
 
     .. versionadded:: 2.3
 
-    :param channel: The channel in which the effect is sent.
-    :type channel: :class:`VoiceChannel`
-    :param effect: The sent effect.
+    :param effect: The effect that is sent.
     :type effect: :class:`VoiceChannelEffect`
 
 .. _discord-api-utils:
@@ -4426,27 +4424,50 @@ VoiceChannel
     :members:
     :inherited-members:
 
-.. class:: VoiceChannelEffect
+.. attributetable:: VoiceChannelEffect
 
-    A namedtuple which represents a voice channel effect sent by a :class:`Member`.
+.. autoclass:: VoiceChannelEffect()
+    :members:
+    :inherited-members:
+
+.. class:: VoiceChannelEffectAnimation
+
+    A namedtuple which represents a voice channel effect animation.
 
     .. versionadded:: 2.3
 
-    .. attribute:: emoji
-
-        The emoji of the effect.
-
-        :type: :class:`PartialEmoji`
-    .. attribute:: animation_id
+    .. attribute:: id
 
         The ID of the animation.
 
         :type: :class:`int`
-    .. attribute:: animation_type
+    .. attribute:: type
 
         The type of the animation.
 
         :type: :class:`VoiceChannelEffectAnimationType`
+
+.. class:: VoiceChannelSoundEffect
+
+    A namedtuple which represents a voice channel sound effect.
+
+    .. versionadded:: 2.3
+
+    .. attribute:: id
+
+        The ID of the sound.
+
+        :type: Union[:class:`int`, :class:`str`]
+    .. attribute:: volume
+
+        The volume of the sound as floating point percentage (e.g. ``1.0`` for 100%).
+
+        :type: :class:`float`
+    .. attribute:: override_path
+
+        The override path of the sound (e.g. 'default_quack.mp3').
+
+        :type: Optional[:class:`str`]
 
 StageChannel
 ~~~~~~~~~~~~~
