@@ -361,11 +361,11 @@ class VoiceClient(VoiceProtocol):
         self._voice_state_complete.clear()
         self._voice_server_complete.clear()
         self._handshaking = True
-        _log.info('Starting voice handshake... (connection attempt %d)', self._connections + 1)
+        _log.info('Starting voice handshake (connection attempt %d)...', self._connections + 1)
         self._connections += 1
 
     def finish_handshake(self) -> None:
-        _log.info('Voice handshake complete. Endpoint found %s', self.endpoint)
+        _log.info('Voice handshake complete. Endpoint found: %s.', self.endpoint)
         self._handshaking = False
         self._voice_server_complete.clear()
         self._voice_state_complete.clear()
