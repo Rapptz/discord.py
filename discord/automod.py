@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 import datetime
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, List, Set, Union, Sequence, overload
+from typing import TYPE_CHECKING, Any, Dict, Optional, List, Set, Union, Sequence, overload, Literal
 
 from .enums import AutoModRuleTriggerType, AutoModRuleActionType, AutoModRuleEventType, try_enum
 from .flags import AutoModPresets
@@ -67,7 +67,6 @@ class AutoModRuleAction:
     -----------
     type: :class:`AutoModRuleActionType`
         The type of action to take.
-        Defaults to :attr:`~AutoModRuleActionType.block_message`.
     channel_id: Optional[:class:`int`]
         The ID of the channel or thread to send the alert message to, if any.
         Passing this sets :attr:`type` to :attr:`~AutoModRuleActionType.send_alert_message`.
@@ -96,9 +95,14 @@ class AutoModRuleAction:
     def __init__(self, *, custom_message: Optional[str] = ...) -> None:
         ...
 
+    @overload
+    def __init__(self, *, type: Literal[AutoModRuleActionType.block_member_interactions] = ...) -> None:
+        ...
+
     def __init__(
         self,
         *,
+        type: Optional[AutoModRuleActionType] = None,
         channel_id: Optional[int] = None,
         duration: Optional[datetime.timedelta] = None,
         custom_message: Optional[str] = None,
@@ -110,24 +114,36 @@ class AutoModRuleAction:
         if sum(v is None for v in (channel_id, duration, custom_message)) < 2:
             raise ValueError('Only one of channel_id, duration, or custom_message can be passed.')
 
-        self.type: AutoModRuleActionType = AutoModRuleActionType.block_message
-        if channel_id:
+        if type is not None:
+            self.type = type
+        elif channel_id is not None:
             self.type = AutoModRuleActionType.send_alert_message
-        elif duration:
+        elif duration is not None:
             self.type = AutoModRuleActionType.timeout
+        elif custom_message is not None:
+            self.type = AutoModRuleActionType.block_message
+        else:
+            raise ValueError(
+                'Please pass the action type explicitly if not using channel_id, custom_message, or duration.'
+            )
 
     def __repr__(self) -> str:
-        return f'<AutoModRuleAction type={self.type.value} channel={self.channel_id} duration={self.duration}>'
+        return f'<AutoModRuleAction type={self.type} channel={self.channel_id} duration={self.duration}>'
 
     @classmethod
     def from_data(cls, data: AutoModerationActionPayload) -> Self:
-        if data['type'] == AutoModRuleActionType.timeout.value:
+        type_ = try_enum(AutoModRuleActionType, data['type'])
+        if type_ is AutoModRuleActionType.timeout:
             duration_seconds = data['metadata']['duration_seconds']
             return cls(duration=datetime.timedelta(seconds=duration_seconds))
-        elif data['type'] == AutoModRuleActionType.send_alert_message.value:
+        elif type_ is AutoModRuleActionType.send_alert_message:
             channel_id = int(data['metadata']['channel_id'])
             return cls(channel_id=channel_id)
-        return cls(custom_message=data.get('metadata', {}).get('custom_message'))
+        elif type_ is AutoModRuleActionType.block_message:
+            custom_message = data.get('metadata', {}).get('custom_message')
+            return cls(custom_message=custom_message)
+
+        return cls(type=type_)
 
     def to_dict(self) -> Dict[str, Any]:
         ret = {'type': self.type.value, 'metadata': {}}
@@ -155,7 +171,11 @@ class AutoModTrigger:
     +-----------------------------------------------+------------------------------------------------+
     | :attr:`AutoModRuleTriggerType.keyword_preset` | :attr:`presets`\, :attr:`allow_list`           |
     +-----------------------------------------------+------------------------------------------------+
-    | :attr:`AutoModRuleTriggerType.mention_spam`   | :attr:`mention_limit`                          |
+    | :attr:`AutoModRuleTriggerType.mention_spam`   | :attr:`mention_limit`,                         |
+    |                                               | :attr:`mention_raid_protection`                |
+    +-----------------------------------------------+------------------------------------------------+
+    | :attr:`AutoModRuleTriggerType.member_profile` | :attr:`keyword_filter`, :attr:`regex_patterns`,|
+    |                                               | :attr:`allow_list                              |
     +-----------------------------------------------+------------------------------------------------+
 
     .. versionadded:: 2.0
@@ -185,6 +205,10 @@ class AutoModTrigger:
     mention_limit: :class:`int`
         The total number of user and role mentions a message can contain.
         Has a maximum of 50.
+    mention_raid_protection: :class:`bool`
+        Whether mention raid protection is enabled or not.
+
+        .. versionadded:: 2.3
     """
 
     __slots__ = (
@@ -194,6 +218,7 @@ class AutoModTrigger:
         'allow_list',
         'mention_limit',
         'regex_patterns',
+        'mention_raid_protection',
     )
 
     def __init__(
@@ -205,6 +230,7 @@ class AutoModTrigger:
         allow_list: Optional[List[str]] = None,
         mention_limit: Optional[int] = None,
         regex_patterns: Optional[List[str]] = None,
+        mention_raid_protection: Optional[bool] = None,
     ) -> None:
         if type is None and sum(arg is not None for arg in (keyword_filter or regex_patterns, presets, mention_limit)) > 1:
             raise ValueError('Please pass only one of keyword_filter, regex_patterns, presets, or mention_limit.')
@@ -215,7 +241,7 @@ class AutoModTrigger:
             self.type = AutoModRuleTriggerType.keyword
         elif presets is not None:
             self.type = AutoModRuleTriggerType.keyword_preset
-        elif mention_limit is not None:
+        elif mention_limit is not None or mention_raid_protection is not None:
             self.type = AutoModRuleTriggerType.mention_spam
         else:
             raise ValueError(
@@ -226,6 +252,7 @@ class AutoModTrigger:
         self.presets: AutoModPresets = presets if presets is not None else AutoModPresets()
         self.allow_list: List[str] = allow_list if allow_list is not None else []
         self.mention_limit: int = mention_limit if mention_limit is not None else 0
+        self.mention_raid_protection: bool = mention_raid_protection if mention_raid_protection is not None else False
         self.regex_patterns: List[str] = regex_patterns if regex_patterns is not None else []
 
     def __repr__(self) -> str:
@@ -253,7 +280,11 @@ class AutoModTrigger:
                 type=type_, presets=AutoModPresets._from_value(data.get('presets', [])), allow_list=data.get('allow_list')
             )
         elif type_ is AutoModRuleTriggerType.mention_spam:
-            return cls(type=type_, mention_limit=data.get('mention_total_limit'))
+            return cls(
+                type=type_,
+                mention_limit=data.get('mention_total_limit'),
+                mention_raid_protection=data.get('mention_raid_protection_enabled'),
+            )
         else:
             return cls(type=type_)
 
@@ -267,7 +298,10 @@ class AutoModTrigger:
         elif self.type is AutoModRuleTriggerType.keyword_preset:
             return {'presets': self.presets.to_array(), 'allow_list': self.allow_list}
         elif self.type is AutoModRuleTriggerType.mention_spam:
-            return {'mention_total_limit': self.mention_limit}
+            return {
+                'mention_total_limit': self.mention_limit,
+                'mention_raid_protection_enabled': self.mention_raid_protection,
+            }
 
 
 class AutoModRule:
