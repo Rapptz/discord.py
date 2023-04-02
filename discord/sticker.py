@@ -414,7 +414,7 @@ class GuildSticker(Sticker):
 
     def _from_data(self, data: GuildStickerPayload) -> None:
         super()._from_data(data)
-        self.available: bool = data['available']
+        self.available: bool = data.get('available', True)
         self.guild_id: int = int(data['guild_id'])
         user = data.get('user')
         self.user: Optional[User] = self._state.store_user(user) if user else None
