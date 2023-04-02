@@ -88,11 +88,33 @@ class AutoModRuleAction:
         ...
 
     @overload
-    def __init__(self, *, duration: Optional[datetime.timedelta] = ...) -> None:
+    def __init__(
+        self, *, type: Literal[AutoModRuleActionType.send_alert_message] = ..., channel_id: Optional[int] = ...
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(self, *, duration: datetime.timedelta = ...) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self, *, type: Literal[AutoModRuleActionType.timeout] = ..., duration: Optional[datetime.timedelta] = ...
+    ) -> None:
         ...
 
     @overload
     def __init__(self, *, custom_message: Optional[str] = ...) -> None:
+        ...
+
+    @overload
+    def __init__(self, *, type: Literal[AutoModRuleActionType.block_message] = ...) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self, *, type: Literal[AutoModRuleActionType.block_message] = ..., custom_message: Optional[str] = ...
+    ) -> None:
         ...
 
     @overload
@@ -123,27 +145,24 @@ class AutoModRuleAction:
         elif custom_message is not None:
             self.type = AutoModRuleActionType.block_message
         else:
-            raise ValueError(
-                'Please pass the action type explicitly if not using channel_id, custom_message, or duration.'
-            )
+            raise ValueError('Please pass the action type explicitly if not using channel_id, custom_message, or duration.')
 
     def __repr__(self) -> str:
         return f'<AutoModRuleAction type={self.type} channel={self.channel_id} duration={self.duration}>'
 
     @classmethod
     def from_data(cls, data: AutoModerationActionPayload) -> Self:
-        type_ = try_enum(AutoModRuleActionType, data['type'])
-        if type_ is AutoModRuleActionType.timeout:
+        if data['type'] == AutoModRuleActionType.timeout.value:
             duration_seconds = data['metadata']['duration_seconds']
             return cls(duration=datetime.timedelta(seconds=duration_seconds))
-        elif type_ is AutoModRuleActionType.send_alert_message:
+        elif data['type'] == AutoModRuleActionType.send_alert_message.value:
             channel_id = int(data['metadata']['channel_id'])
             return cls(channel_id=channel_id)
-        elif type_ is AutoModRuleActionType.block_message:
+        elif data['type'] == AutoModRuleActionType.block_message.value:
             custom_message = data.get('metadata', {}).get('custom_message')
-            return cls(custom_message=custom_message)
+            return cls(type=AutoModRuleActionType.block_message, custom_message=custom_message)
 
-        return cls(type=type_)
+        return cls(type=AutoModRuleActionType.block_member_interactions)
 
     def to_dict(self) -> Dict[str, Any]:
         ret = {'type': self.type.value, 'metadata': {}}
