@@ -52,7 +52,7 @@ from .backoff import ExponentialBackoff
 from .errors import ClientException, ConnectionClosed
 from .gateway import *
 from .player import AudioPlayer, AudioSource
-from .sink import AudioFrame, AudioPacket, AudioReceiver, AudioSink, RawAudioData, RTCPPacket
+from .sink import AudioReceiver, AudioSink
 from .utils import MISSING
 
 if TYPE_CHECKING:
@@ -233,8 +233,6 @@ class VoiceClient(VoiceProtocol):
     port: int
     secret_key: List[int]
     ssrc: int
-
-    SILENT_FRAME = b"\xf8\xff\xfe"
 
     def __init__(self, client: Client, channel: abc.Connectable) -> None:
         if not has_nacl:
@@ -504,6 +502,7 @@ class VoiceClient(VoiceProtocol):
             return
 
         self.stop()
+        self.stop_listening()
         self._connected.clear()
 
         try:
@@ -547,22 +546,6 @@ class VoiceClient(VoiceProtocol):
         encrypt_packet = getattr(self, '_encrypt_' + self.mode)
         return encrypt_packet(header, data)
 
-    def _unpack_audio_packet(self, data, *, decode=True):
-        packet = AudioPacket(data, getattr(self, '_decrypt_' + self.mode))
-
-        if not isinstance(packet, RawAudioData):
-            return packet
-        if packet.audio == self.SILENT_FRAME:
-            return
-
-        audio = packet.audio
-        if decode:
-            if packet.ssrc not in self.decoders:
-                self.decoders[packet.ssrc] = opus.Decoder()
-            audio = self.decoders[packet.ssrc].decode(packet.audio)  # type: ignore
-
-        return AudioFrame(audio, packet, self.ws.get_member_from_ssrc(packet.ssrc))
-
     def _encrypt_xsalsa20_poly1305(self, header: bytes, data) -> bytes:
         box = nacl.secret.SecretBox(bytes(self.secret_key))
         nonce = bytearray(24)
@@ -584,39 +567,6 @@ class VoiceClient(VoiceProtocol):
         self.checked_add('_lite_nonce', 1, 4294967295)
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
-
-    def _decrypt_xsalsa20_poly1305(self, header, data) -> bytes:
-        box = nacl.secret.SecretBox(bytes(self.secret_key))
-
-        nonce = bytearray(24)
-        nonce[:12] = header
-
-        return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
-
-    def _decrypt_xsalsa20_poly1305_suffix(self, header, data) -> bytes:
-        box = nacl.secret.SecretBox(bytes(self.secret_key))
-
-        nonce_size = nacl.secret.SecretBox.NONCE_SIZE
-        nonce = data[-nonce_size:]
-
-        return self.strip_header_ext(box.decrypt(bytes(data[:-nonce_size]), nonce))
-
-    def _decrypt_xsalsa20_poly1305_lite(self, header, data) -> bytes:
-        box = nacl.secret.SecretBox(bytes(self.secret_key))
-
-        nonce = bytearray(24)
-        nonce[:4] = data[-4:]
-        data = data[:-4]
-
-        return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
-
-    @staticmethod
-    def strip_header_ext(data: bytes) -> bytes:
-        if data[0] == 0xBE and data[1] == 0xDE and len(data) > 4:
-            _, length = struct.unpack_from('>HH', data)
-            offset = 4 + length * 4
-            data = data[offset:]
-        return data
 
     def play(self, source: AudioSource, *, after: Optional[Callable[[Optional[Exception]], Any]] = None) -> None:
         """Plays an :class:`AudioSource`.
@@ -694,10 +644,15 @@ class VoiceClient(VoiceProtocol):
         sink: AudioSink,
         *,
         decode: bool = True,
+        supress_warning: bool = False,
         after: Optional[Callable[..., Awaitable[Any]]] = None,
         **kwargs,
     ) -> None:
         """Receives audio into an :class:`AudioSink`
+
+        IMPORTANT: If you call this function, the running section of your code should be
+        contained within an 'if __name__ == "__main__"' statement to avoid conflicts with
+        multiprocessing that result in the asyncio event loop dying.
 
         The finalizer, ``after`` is called after listening has stopped or
         an error has occurred.
@@ -715,6 +670,8 @@ class VoiceClient(VoiceProtocol):
             The audio sink we're passing audio to.
         decode: :class:`bool`
             Whether to decode data received from discord.
+        supress_warning: :class:`bool`
+            Whether to supress the warning raised when listen is run unsafely.
         after: Callable[..., Awaitable[Any]]
             The finalizer that is called after the receiver stops. This function
             must be a coroutine function. This function must have at least two
@@ -735,12 +692,14 @@ class VoiceClient(VoiceProtocol):
         if not self.is_connected():
             raise ClientException('Not connected to voice.')
 
-        if self.is_listening():
+        if self.is_listen_receiving():
             raise ClientException('Already listening.')
 
-        if self.is_listen_cleaning():
+        if not supress_warning and self.is_listen_cleaning():
             _log.warning(
-                "Cleanup is still in process for the last call to listen and so errors may occur. It is recommended to use is_listen_cleaning to check before calling listen unless you know what you're doing."
+                "Cleanup is still in process for the last call to listen and so errors may occur. "
+                "It is recommended to use wait_for_listen_ready before calling listen unless you "
+                "know what you're doing."
             )
 
         if not isinstance(sink, AudioSink):
@@ -750,7 +709,7 @@ class VoiceClient(VoiceProtocol):
             # Check that opus is loaded and throw error else
             opus.Decoder.get_opus_version()
 
-        self._receiver = AudioReceiver(sink, self, after=after, after_kwargs=kwargs)
+        self._receiver = AudioReceiver(sink, self, decode=decode, after=after, after_kwargs=kwargs)
         self._receiver.start()
 
     def is_listening(self) -> bool:
@@ -760,6 +719,10 @@ class VoiceClient(VoiceProtocol):
     def is_listening_paused(self) -> bool:
         """Indicate if we're currently listening, but paused."""
         return self._receiver is not None and self._receiver.is_paused()
+
+    def is_listen_receiving(self) -> bool:
+        """Indicates whether the audio receiver is running, regardless of if it's paused."""
+        return self._receiver is not None and not self._receiver.is_done()
 
     def is_listen_cleaning(self) -> bool:
         """Check if the receiver is cleaning up."""
@@ -779,6 +742,15 @@ class VoiceClient(VoiceProtocol):
         """Resumes listening"""
         if self._receiver:
             self._receiver.resume()
+
+    async def wait_for_listen_ready(self) -> None:
+        """Wait till it's safe to make a call to listen.
+        Basically waits for is_listen_receiving and is_listen_cleaning to be false.
+        """
+        if self._receiver is None:
+            return
+        await self._receiver.wait_for_done()
+        await self._receiver.wait_for_clean()
 
     @property
     def source(self) -> Optional[AudioSource]:
@@ -831,7 +803,7 @@ class VoiceClient(VoiceProtocol):
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
 
-    def recv_audio_packet(self, *, decode: bool = True, dump: bool = False) -> Optional[Union[RTCPPacket, AudioFrame]]:
+    def recv_audio_packet(self, *, dump: bool = False) -> Optional[bytes]:
         """Attempts to receive an audio packet and returns it, else None
 
         You must be connected to receive audio.
@@ -862,4 +834,4 @@ class VoiceClient(VoiceProtocol):
         data = self.socket.recv(4096)
         if dump:
             return
-        return self._unpack_audio_packet(data, decode=decode)
+        return data

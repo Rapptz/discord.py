@@ -26,11 +26,6 @@ client = Client(intents=intents)
 FILE_FORMATS = {"mp3": discord.MP3AudioFile, "wav": discord.WaveAudioFile}
 
 
-def is_recording(vc: discord.VoiceClient) -> bool:
-    # True if either the bot is listening, or it's "listening," but paused
-    return vc.is_listening() or vc.is_listening_paused()
-
-
 async def is_in_guild(interaction: discord.Interaction):
     # If this interaction was invoked outside a guild
     if interaction.guild is None:
@@ -116,7 +111,7 @@ async def start(interaction: discord.Interaction, file_format: Literal["mp3", "w
     if vc is None:
         return await interaction.response.send_message("You're not currently in a vc.")
     # Make sure we're not already recording.
-    if is_recording(vc):
+    if vc.is_listen_receiving():
         return await interaction.response.send_message("Already recording.")
     # Good practice to check this before calling listen, especially if it were being called within a loop.
     if vc.is_listen_cleaning():
@@ -135,7 +130,9 @@ async def stop(interaction: discord.Interaction):
     if not await is_in_guild(interaction):
         return
     # Make sure we're currently in vc and recording.
-    if interaction.guild.voice_client is None or not is_recording(vc := await get_vc(interaction)):
+    # Using the walrus operator here instead of defining the vc before the if statement insures that
+    # get_vc is not called if we're not already in a voice channel and simplifies some logic.
+    if interaction.guild.voice_client is None or not (vc := await get_vc(interaction)).is_listen_receiving():
         return await interaction.response.send_message("Not currently recording.")
     # Stop listening and disconnect from vc. The after function passed to vc.listen in the start command
     # will be called after listening stops.
@@ -149,7 +146,8 @@ async def pause(interaction: discord.Interaction):
     if not await is_in_guild(interaction):
         return
     # Make sure we're currently in vc and recording.
-    if interaction.guild.voice_client is None or not is_recording(vc := await get_vc(interaction)):
+    # Walrus operator used for the same reason as in the stop function.
+    if interaction.guild.voice_client is None or not (vc := await get_vc(interaction)).is_listen_receiving():
         return await interaction.response.send_message("Not currently recording.")
     # Make sure we're not already paused
     if vc.is_listening_paused():
@@ -166,7 +164,8 @@ async def resume(interaction: discord.Interaction):
     if not await is_in_guild(interaction):
         return
     # Make sure we're currently in vc and recording.
-    if interaction.guild.voice_client is None or not is_recording(vc := await get_vc(interaction)):
+    # Walrus operator used for the same reason as in the stop function.
+    if interaction.guild.voice_client is None or not (vc := await get_vc(interaction)).is_listen_receiving():
         return await interaction.response.send_message("Not currently recording.")
     # Make sure we're paused
     if not vc.is_listening_paused():
@@ -177,4 +176,6 @@ async def resume(interaction: discord.Interaction):
     await interaction.response.send_message("Recording resumed.")
 
 
-client.run("token")
+# THIS IF STATEMENT IS IMPORTANT FOR USING THE LISTEN FUNCTIONALITY OF THIS LIBRARY
+if __name__ == "__main__":
+    client.run("token")

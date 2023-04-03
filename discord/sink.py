@@ -1,11 +1,13 @@
 import asyncio
-from dataclasses import dataclass
 import logging
+import multiprocessing
 import os
+import queue
 import struct
 import subprocess
 import threading
 import wave
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from .enums import RTCPMessageType
@@ -13,6 +15,13 @@ from .errors import ClientException
 from .object import Object
 from .opus import Decoder as OpusDecoder
 from .player import CREATE_NO_WINDOW
+
+try:
+    import nacl.secret
+    import nacl.utils
+except ImportError:
+    # Warning is given in VoiceClient
+    pass
 
 if TYPE_CHECKING:
     from .member import Member
@@ -39,6 +48,7 @@ __all__ = (
 
 
 _log = logging.getLogger(__name__)
+_mp_ctx = multiprocessing.get_context("spawn")
 
 
 @dataclass
@@ -317,7 +327,7 @@ class RTCPSourceDescriptionPacket(RTCPPacket):
 
     __slots__ = ("chunks",)
 
-    chunks: List
+    chunks: List[RTCPSourceDescriptionChunk]
 
     def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
@@ -363,8 +373,8 @@ class RTCPGoodbyePacket(RTCPPacket):
 
     Attributes
     ----------
-    ssrc_byes: Sequence[:class:`int`]
-        List of SSRCs that are disconnecting.
+    ssrc_byes: Tuple[:class:`int`]
+        List of SSRCs that are disconnecting. Not guaranteed to contain any values.
     reason: :class:`bytes`
         Reason for disconnect.
     """
@@ -374,7 +384,7 @@ class RTCPGoodbyePacket(RTCPPacket):
         "reason",
     )
 
-    ssrc_byes: Tuple
+    ssrc_byes: Union[Tuple[int], Tuple]
     reason: bytes
 
     def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
@@ -649,6 +659,7 @@ class AudioFileSink(AudioSink):
         "file_type",
         "output_dir",
         "output_files",
+        "_lock",
     )
 
     def __init__(self, file_type: Callable[[str, int], 'AudioFile'], output_dir: str = "."):
@@ -658,6 +669,8 @@ class AudioFileSink(AudioSink):
         self.output_dir: str = output_dir
         self.output_files: Dict[int, AudioFile] = {}
         self.done: bool = False
+
+        self._lock = threading.Lock()
 
     def __del__(self):
         if hasattr(self, "done") and not self.done:
@@ -675,10 +688,13 @@ class AudioFileSink(AudioSink):
         if self.done:
             return
 
+        self._lock.acquire()
         if frame.ssrc not in self.output_files:
             self.output_files[frame.ssrc] = self.file_type(
                 os.path.join(self.output_dir, f"audio-{frame.ssrc}.pcm"), frame.ssrc
             )
+        self._lock.release()
+
         self.output_files[frame.ssrc].on_audio(frame)
 
     def on_rtcp(self, packet: RTCPPacket) -> None:
@@ -693,7 +709,7 @@ class AudioFileSink(AudioSink):
             :class:`RTCPSourceDescriptionPacket`, :class:`RTCPGoodbyePacket`,
             :class:`RTCPApplicationDefinedPacket`
         """
-        pass
+        return
 
     def cleanup(self) -> None:
         """Calls cleanup on all :class:`AudioFile` objects."""
@@ -755,6 +771,7 @@ class AudioFile:
         "_last_timestamp",
         "_frame_buffer",
         "user",
+        "_lock",
     )
 
     FRAME_BUFFER_LIMIT = 10
@@ -770,6 +787,7 @@ class AudioFile:
         # This gives leeway for frames sent out of order
         self._frame_buffer: List[AudioFrame] = []
         self.user: Optional[Union[Member, Object]] = None
+        self._lock = threading.Lock()
 
     def on_audio(self, frame: AudioFrame) -> None:
         """Takes an audio frame and adds it to a buffer. Once the buffer
@@ -782,9 +800,11 @@ class AudioFile:
         frame: :class:`AudioFrame`
             The frame which will be added to the buffer.
         """
+        self._lock.acquire()
         self._frame_buffer.append(frame)
         if len(self._frame_buffer) >= self.FRAME_BUFFER_LIMIT:
             self._write_buffer()
+        self._lock.release()
 
     def _write_buffer(self, empty: bool = False) -> None:
         self._frame_buffer = sorted(self._frame_buffer, key=lambda frame: frame.sequence)
@@ -938,6 +958,32 @@ class MP3AudioFile(AudioFile):
         self._convert_cleanup(path)
 
 
+class AsyncEventWrapper:
+    def __init__(self, event: Optional[threading.Event] = None):
+        self.event: threading.Event = event or threading.Event()
+        self._waiters: queue.Queue = queue.Queue()
+
+    def __getattr__(self, item):
+        return getattr(self.event, item)
+
+    def set(self) -> None:
+        self.event.set()
+        # Queue.empty() is not reliable, so instead we just catch when the queue throws an Empty error
+        try:
+            while True:
+                future = self._waiters.get_nowait()
+                future._loop.call_soon_threadsafe(future.set_result, True)
+        except queue.Empty:
+            pass
+
+    async def async_wait(self, loop) -> None:
+        if self.is_set():
+            return
+        future = loop.create_future()
+        self._waiters.put(future)
+        await future
+
+
 class AudioReceiver(threading.Thread):
     def __init__(
         self,
@@ -949,70 +995,66 @@ class AudioReceiver(threading.Thread):
         after_kwargs: Optional[dict] = None,
     ) -> None:
         super().__init__()
-        self.daemon: bool = False
         self.sink: AudioSink = sink
         self.client: VoiceClient = client
-        self.decode: bool = decode
+        self.loop = self.client.client.loop
+
         self.after: Optional[Callable[..., Awaitable[Any]]] = after
         self.after_kwargs: Optional[dict] = after_kwargs
 
-        self._end: threading.Event = threading.Event()
-        self._resumed: threading.Event = threading.Event()
-        self._resumed.set()  # we are not paused
-        self._current_error: Optional[Exception] = None
+        self._end: AsyncEventWrapper = AsyncEventWrapper()
+        self._resumed: AsyncEventWrapper = AsyncEventWrapper()
+        self._resumed.set()
+        self._clean: AsyncEventWrapper = AsyncEventWrapper()
         self._connected: threading.Event = client._connected
-        self._lock: threading.Lock = threading.Lock()
-        self._cleaning: threading.Event = threading.Event()
 
-    def _do_run(self) -> None:
+        self.pipe, child_pipe = _mp_ctx.Pipe(duplex=True)
+        self.unpacker: AudioUnpacker = AudioUnpacker(child_pipe, client.mode, client.secret_key, decode=decode)
+
+    def _do_run(self):
+        self.unpacker.start()
         while not self._end.is_set():
-            # are we disconnected from voice?
             if not self._connected.is_set():
-                # wait until we are connected
                 self._connected.wait()
 
-            # dump audio while paused cuz we aren't using the audio
-            packet = self.client.recv_audio_packet(dump=not self._resumed.is_set())
+            data = self.client.recv_audio_packet(dump=not self._resumed.is_set())
+            if data is None:
+                continue
+
+            self.pipe.send(data)
+            packet = self.pipe.recv()
             if packet is None:
                 continue
-            if not isinstance(packet, AudioFrame):
-                self.sink.on_rtcp(packet)
-                continue
-            if packet.audio is None:
-                continue
-            self.sink.on_audio(packet)
+
+            if isinstance(packet, AudioFrame):
+                callback = self.sink.on_audio
+                packet.user = self.client.ws.get_member_from_ssrc(packet.ssrc)
+            else:
+                callback = self.sink.on_rtcp
+                packet.pt = RTCPMessageType(packet.pt)
+            threading.Thread(target=callback, args=(packet,)).start()
+        self.unpacker.terminate()
 
     def run(self) -> None:
         try:
             self._do_run()
         except Exception as exc:
-            self._current_error = exc
             self.stop()
+            _log.exception("Exception occurred in voice receiver", exc_info=exc)
         finally:
-            # _cleaning should be already set, but just to make sure
-            self._cleaning.set()
             self.sink.cleanup()
             self._call_after()
-            self._cleaning.clear()
+            self._clean.set()
 
     def _call_after(self) -> None:
-        error = self._current_error
-
         if self.after is not None:
             try:
                 kwargs = self.after_kwargs if self.after_kwargs is not None else {}
-                future = asyncio.run_coroutine_threadsafe(self.after(self.sink, error, **kwargs), self.client.client.loop)
-                # There's nothing else to do after firing the callback, so we can just wait for the result
-                future.result()
+                asyncio.run_coroutine_threadsafe(self.after(self.sink, **kwargs), self.loop)
             except Exception as exc:
-                exc.__context__ = error
                 _log.exception('Calling the after function failed.', exc_info=exc)
-        elif error:
-            _log.exception('Exception in voice thread %s', self.name, exc_info=error)
 
     def stop(self) -> None:
-        # Set cleaning before setting end to avoid issues
-        self._cleaning.set()
         self._end.set()
         self._resumed.set()
 
@@ -1022,6 +1064,9 @@ class AudioReceiver(threading.Thread):
     def resume(self) -> None:
         self._resumed.set()
 
+    def is_done(self) -> bool:
+        return self._end.is_set()
+
     def is_listening(self) -> bool:
         return self._resumed.is_set() and not self._end.is_set()
 
@@ -1029,4 +1074,84 @@ class AudioReceiver(threading.Thread):
         return not self._end.is_set() and not self._resumed.is_set()
 
     def is_cleaning(self) -> bool:
-        return self._cleaning.is_set()
+        return self._end.is_set() and not self._clean.is_set()
+
+    async def wait_for_resumed(self, *, loop=None) -> None:
+        await self._resumed.async_wait(self.loop if loop is None else loop)
+
+    async def wait_for_done(self, *, loop=None) -> None:
+        await self._end.async_wait(self.loop if loop is None else loop)
+
+    async def wait_for_clean(self, *, loop=None) -> None:
+        await self._clean.async_wait(self.loop if loop is None else loop)
+
+
+class AudioUnpacker(_mp_ctx.Process):
+    SILENT_FRAME = b"\xf8\xff\xfe"
+
+    def __init__(self, pipe, mode: str, secret_key: List[int], *, decode: bool = True):
+        super().__init__(daemon=True)
+
+        self.pipe = pipe
+        self.mode: str = mode
+        self.secret_key: List[int] = secret_key
+        self.decode: bool = decode
+        self.decoders: Dict[int, OpusDecoder] = {}
+
+    def run(self) -> None:
+        while True:
+            data = self.pipe.recv()
+            packet = self.unpack_audio_packet(data)
+            if isinstance(packet, RTCPPacket):
+                # enum not picklable
+                packet.pt = packet.pt.value
+            self.pipe.send(packet)
+
+    def _decrypt_xsalsa20_poly1305(self, header, data) -> bytes:
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce = bytearray(24)
+        nonce[:12] = header
+
+        return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
+
+    def _decrypt_xsalsa20_poly1305_suffix(self, header, data) -> bytes:
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce_size = nacl.secret.SecretBox.NONCE_SIZE
+        nonce = data[-nonce_size:]
+
+        return self.strip_header_ext(box.decrypt(bytes(data[:-nonce_size]), nonce))
+
+    def _decrypt_xsalsa20_poly1305_lite(self, header, data) -> bytes:
+        box = nacl.secret.SecretBox(bytes(self.secret_key))
+
+        nonce = bytearray(24)
+        nonce[:4] = data[-4:]
+        data = data[:-4]
+
+        return self.strip_header_ext(box.decrypt(bytes(data), bytes(nonce)))
+
+    @staticmethod
+    def strip_header_ext(data: bytes) -> bytes:
+        if data[0] == 0xBE and data[1] == 0xDE and len(data) > 4:
+            _, length = struct.unpack_from('>HH', data)
+            offset = 4 + length * 4
+            data = data[offset:]
+        return data
+
+    def unpack_audio_packet(self, data) -> Optional[Union[RTCPPacket, AudioFrame]]:
+        packet = AudioPacket(data, getattr(self, '_decrypt_' + self.mode))
+
+        if not isinstance(packet, RawAudioData):
+            return packet
+        if packet.audio == self.SILENT_FRAME:
+            return
+
+        audio = packet.audio
+        if self.decode:
+            if packet.ssrc not in self.decoders:
+                self.decoders[packet.ssrc] = OpusDecoder()
+            audio = self.decoders[packet.ssrc].decode(packet.audio)  # type: ignore
+
+        return AudioFrame(audio, packet, None)
