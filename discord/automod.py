@@ -67,6 +67,9 @@ class AutoModRuleAction:
     -----------
     type: :class:`AutoModRuleActionType`
         The type of action to take.
+
+        .. versionchanged:: 2.3
+            This is an optional parameter.
     channel_id: Optional[:class:`int`]
         The ID of the channel or thread to send the alert message to, if any.
         Passing this sets :attr:`type` to :attr:`~AutoModRuleActionType.send_alert_message`.
@@ -194,7 +197,7 @@ class AutoModTrigger:
     |                                               | :attr:`mention_raid_protection`                |
     +-----------------------------------------------+------------------------------------------------+
     | :attr:`AutoModRuleTriggerType.member_profile` | :attr:`keyword_filter`, :attr:`regex_patterns`,|
-    |                                               | :attr:`allow_list                              |
+    |                                               | :attr:`allow_list`                             |
     +-----------------------------------------------+------------------------------------------------+
 
     .. versionadded:: 2.0

@@ -3262,6 +3262,12 @@ of :class:`enum.Enum`.
         The rule will trigger when combined number of role and user mentions
         is greater than the set limit.
 
+    .. attribute:: member_profile
+
+        The rule will trigger when a user's profile contains a keyword.
+
+        .. versionadded:: 2.3
+
 .. class:: AutoModRuleEventType
 
     Represents the event type of an automod rule.
@@ -3271,6 +3277,11 @@ of :class:`enum.Enum`.
     .. attribute:: message_send
 
         The rule will trigger when a message is sent.
+
+    .. attribute:: member_update
+        The rule will trigger when a member's profile is updated.
+
+        .. versionadded:: 2.3
 
 .. class:: AutoModRuleActionType
 
@@ -3290,6 +3301,12 @@ of :class:`enum.Enum`.
 
         The rule will timeout a user.
 
+    .. attribute:: block_member_interactions
+
+        Similar to :attr:`timeout` the rule will timeout a user except of having a duration.
+        This will request the user to edit it's profile.
+
+        .. versionadded:: 2.3
 
 .. class:: ForumLayoutType
 
