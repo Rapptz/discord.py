@@ -24,7 +24,20 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any, AsyncIterator, Collection, Dict, Generic, List, Optional, overload, Sequence, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncIterator,
+    Collection,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    overload,
+    Sequence,
+    TypeVar,
+    Union,
+)
 
 import discord.abc
 import discord.utils

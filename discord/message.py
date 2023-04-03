@@ -1236,10 +1236,7 @@ class PartialMessage(Hashable):
         ...
 
     @overload
-    async def greet(
-        self,
-        sticker: Union[GuildSticker, StickerItem]
-    ) -> Message:
+    async def greet(self, sticker: Union[GuildSticker, StickerItem]) -> Message:
         ...
 
     async def greet(self, sticker: Union[GuildSticker, StickerItem], **kwargs: Any) -> Message:
