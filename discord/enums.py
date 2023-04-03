@@ -433,6 +433,7 @@ class DefaultAvatar(Enum):
 
 
 class RelationshipType(Enum):
+    none = 0  # :husk:
     friend = 1
     blocked = 2
     incoming_request = 3

@@ -3645,6 +3645,12 @@ of :class:`enum.Enum`.
 
         You have sent a friend request to this user.
 
+    .. attribute:: implicit
+
+        You frecently interact with this user. See :class:`UserAffinity` for more information.
+
+        .. versionadded:: 2.0
+
 .. class:: UserContentFilter
 
     Represents the options found in ``Settings > Privacy & Safety > Safe Direct Messaging``
@@ -5075,10 +5081,6 @@ of :class:`enum.Enum`.
     .. attribute:: update_agreements
 
         The user must update their agreement of Discord's terms of service and privacy policy.
-
-    .. attribute:: acknowledge_tos_update
-
-        The user must acknowledge the update to Discord's terms of service.
 
     .. attribute:: none
 
