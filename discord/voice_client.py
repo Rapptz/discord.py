@@ -803,8 +803,8 @@ class VoiceClient(VoiceProtocol):
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)
 
-    def recv_audio_packet(self, *, dump: bool = False) -> Optional[bytes]:
-        """Attempts to receive an audio packet and returns it, else None
+    def recv_audio(self, *, dump: bool = False) -> Optional[bytes]:
+        """Attempts to receive raw audio and returns it, otherwise nothing.
 
         You must be connected to receive audio.
 
@@ -812,17 +812,13 @@ class VoiceClient(VoiceProtocol):
 
         Parameters
         ----------
-        decode: :class:`bool`
-            Whether to decode data received from discord.
         dump: :class:`bool`
             Will not return audio packet if true
 
         Returns
         -------
-        Optional[Union[:class:`RTCPPacket`, :class:`AudioFrame`]]
-            If a packet is received, it'll return either an audio frame or an rtcp packet.
-            If nothing is received then nothing is returned. If an rtcp packet is returned,
-            it'll be one of the rtcp packet classes that extend :class:`RTCPPacket`.
+        Optional[bytes]
+            If audio was received then it's returned.
         """
         ready, _, err = select.select([self.socket], [], [self.socket], 0.01)
         if err:

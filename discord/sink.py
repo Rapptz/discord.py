@@ -17,8 +17,8 @@ from .opus import Decoder as OpusDecoder
 from .player import CREATE_NO_WINDOW
 
 try:
-    import nacl.secret
-    import nacl.utils
+    import nacl.secret  # type: ignore
+    import nacl.utils  # type: ignore
 except ImportError:
     # Warning is given in VoiceClient
     pass
@@ -599,6 +599,8 @@ class AudioSink:
 
         Abstract method
 
+        IMPORTANT: This method must be thread-safe.
+
         Parameters
         ----------
         frame: :class:`AudioFrame`
@@ -610,6 +612,8 @@ class AudioSink:
         """This function receives RTCP Packets
 
         Abstract method
+
+        IMPORTANT: This method must be thread-safe.
 
         Parameters
         ----------
@@ -1017,7 +1021,7 @@ class AudioReceiver(threading.Thread):
             if not self._connected.is_set():
                 self._connected.wait()
 
-            data = self.client.recv_audio_packet(dump=not self._resumed.is_set())
+            data = self.client.recv_audio(dump=not self._resumed.is_set())
             if data is None:
                 continue
 
@@ -1140,7 +1144,7 @@ class AudioUnpacker(_mp_ctx.Process):
             data = data[offset:]
         return data
 
-    def unpack_audio_packet(self, data) -> Optional[Union[RTCPPacket, AudioFrame]]:
+    def unpack_audio_packet(self, data: bytes) -> Optional[Union[RTCPPacket, AudioFrame]]:
         packet = AudioPacket(data, getattr(self, '_decrypt_' + self.mode))
 
         if not isinstance(packet, RawAudioData):
