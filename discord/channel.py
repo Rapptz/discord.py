@@ -68,6 +68,7 @@ from .partial_emoji import _EmojiTag, PartialEmoji
 from .flags import ChannelFlags
 from .http import handle_message_parameters
 from .object import Object
+from .soundboard import BaseSoundboardSound
 
 __all__ = (
     'TextChannel',
@@ -113,6 +114,7 @@ if TYPE_CHECKING:
         VoiceChannelEffect as VoiceChannelEffectPayload,
     )
     from .types.snowflake import SnowflakeList
+    from .types.soundboard import SoundboardSound as SoundboardSoundPayload
 
     OverwriteKeyT = TypeVar('OverwriteKeyT', Role, BaseUser, Object, Union[Role, Member, Object])
 
@@ -127,12 +129,24 @@ class VoiceChannelEffectAnimation(NamedTuple):
     type: VoiceChannelEffectAnimationType
 
 
-class VoiceChannelSoundEffect(Object):
+class VoiceChannelSoundEffect(BaseSoundboardSound):
     """Represents a Discord voice channel sound effect.
 
-    This inherits from :class:`Object`
-
     .. versionadded:: 2.3
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two sound effects are equal.
+
+        .. describe:: x != y
+
+            Checks if two sound effects are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the sound effect's hash.
 
     Attributes
     ------------
@@ -144,16 +158,14 @@ class VoiceChannelSoundEffect(Object):
         The override path of the sound (e.g. 'default_quack.mp3').
     """
 
-    __slots__ = ('volume', 'override_path')
+    __slots__ = ()
 
-    def __init__(self, *, id: int, volume: float, override_path: Optional[str] = None):
-        self.volume: float = volume
-        self.override_path: Optional[str] = override_path
-        super().__init__(id=id)
+    def __init__(self, *, data: SoundboardSoundPayload):
+        super().__init__(data=data)
 
     def is_default(self) -> bool:
         """:class:`bool`: Whether it's a default sound or not."""
-        return self.id in [1, 2, 3, 4, 5, 6]
+        return 1 <= self.id <= 6
 
     @property
     def created_at(self) -> Optional[datetime.datetime]:
@@ -201,9 +213,13 @@ class VoiceChannelEffect:
 
         sound_id: Optional[int] = utils._get_as_snowflake(data, 'sound_id')
         if sound_id is not None:
-            self.sound = VoiceChannelSoundEffect(
-                id=sound_id, volume=data['sound_volume'], override_path=data.get('sound_override_path')  # type: ignore # sound_volume won't be None here
-            )
+            sound_volume = data['sound_volume']  # type: ignore # sound_volume cannot be None here
+            sound_payload: SoundboardSoundPayload = {
+                'id': sound_id,
+                'volume': sound_volume,
+                'override_path': data.get('sound_override_path'),
+            }
+            self.sound = VoiceChannelSoundEffect(data=sound_payload)
 
     def __repr__(self) -> str:
         attrs = [
