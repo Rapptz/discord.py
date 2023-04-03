@@ -441,7 +441,9 @@ class Role(Hashable):
 
         guild = self.guild
         data = await self._state.http.get_role_members(guild.id, self.id)
-        return await guild.query_members(user_ids=data, subscribe=subscribe)  # type: ignore # user_ids is cast to str anyway
+        if data:
+            return await guild.query_members(user_ids=data, subscribe=subscribe)  # type: ignore # user_ids is cast to str anyway
+        return []
 
     async def add_members(self, *members: Snowflake, reason: Optional[str] = None) -> List[Member]:
         r"""|coro|
