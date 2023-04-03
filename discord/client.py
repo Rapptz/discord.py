@@ -1574,7 +1574,7 @@ class Client:
 
         Changes client's private channel voice state.
 
-        .. versionadded:: 1.10
+        .. versionadded:: 2.0
 
         Parameters
         -----------
@@ -1589,9 +1589,6 @@ class Client:
             (do not use).
         preferred_region: Optional[:class:`str`]
             The preferred region to connect to.
-
-            .. versionchanged:: 2.0
-                The type of this parameter has changed to :class:`str`.
         """
         state = self._connection
         ws = self.ws
