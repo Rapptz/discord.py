@@ -158,7 +158,7 @@ class VoiceChannelSoundEffect(Object):
     @property
     def created_at(self) -> Optional[datetime.datetime]:
         """:class:`datetime.datetime`: Returns the snowflake's creation time in UTC.
-        Returns ``None`` if it's a built-in sound."""
+        Returns ``None`` if it's a default sound."""
         if self.is_default():
             return None
         else:
@@ -179,7 +179,7 @@ class VoiceChannelEffect:
     animation: :class:`VoiceChannelEffectAnimation`
         The animation the effect has.
     emoji: Optional[:class:`PartialEmoji`]
-        The emoji of the effect. Returns ``None`` if it's a sound effect.
+        The emoji of the effect.
     sound: Optional[:class:`VoiceChannelSoundEffect`]
         The sound of the effect. Returns ``None`` if it's an emoji effect.
     """
