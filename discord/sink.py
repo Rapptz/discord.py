@@ -609,7 +609,7 @@ class AudioSink:
         raise NotImplementedError()
 
     def on_rtcp(self, packet: RTCPPacket) -> Any:
-        """This function receives RTCP Packets
+        """This function receives :class:`RTCPPacket` objects.
 
         Abstract method
 
@@ -642,7 +642,8 @@ class AudioFileSink(AudioSink):
     ----------
     file_type: Callable[[str, int], :class:`AudioFile`]
         A callable (such as a class or function) that returns an :class:`AudioFile` type.
-        Is used to create AudioFile objects.
+        Is used to create AudioFile objects. Its two arguments are the default audio file path and
+        audio ssrc respectfully.
     output_dir: :class:`str`
         The directory to save files to.
 
@@ -724,7 +725,7 @@ class AudioFileSink(AudioSink):
         self.done = True
 
     def convert_files(self) -> None:
-        """Calls cleanup if it hasn't already been called and then calls cleanup on all :class:`AudioFile` objects."""
+        """Calls cleanup if it hasn't already been called and then calls convert on all :class:`AudioFile` objects."""
         if not self.done:
             self.cleanup()
         for file in self.output_files.values():
@@ -785,12 +786,12 @@ class AudioFile:
         self.ssrc: int = ssrc
         self.done: bool = False
         self.converted: bool = False
+        self.user: Optional[Union[Member, Object]] = None
         self.path: str = self.file.name
 
         self._last_timestamp: Optional[int] = None
         # This gives leeway for frames sent out of order
         self._frame_buffer: List[AudioFrame] = []
-        self.user: Optional[Union[Member, Object]] = None
         self._lock = threading.Lock()
 
     def on_audio(self, frame: AudioFrame) -> None:

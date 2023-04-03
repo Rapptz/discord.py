@@ -662,7 +662,7 @@ class VoiceClient(VoiceProtocol):
         passed, any caught exception will be logged using the library logger.
 
         If this function is called multiple times, it is recommended to use
-        is_listen_cleaning before making the next call to avoid errors.
+        wait_for_listen_ready before making the next call to avoid errors.
 
         Parameters
         -----------
