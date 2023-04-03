@@ -28,7 +28,7 @@ from base64 import b64encode
 import json
 from random import choice
 
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import Any, Callable, Dict, Optional, Tuple, TYPE_CHECKING
 
 from .utils import MISSING
 
@@ -45,178 +45,111 @@ __all__ = (
 # fmt: on
 
 
-class ContextProperties:  # Thank you Discord-S.C.U.M
+class ContextPropertiesMeta(type):
+    if TYPE_CHECKING:
+
+        def __getattribute__(self, name: str) -> Callable[[], Self]:
+            ...
+
+    def __new__(cls, name: str, bases: Tuple[type, ...], attrs: Dict[str, Any]):
+        cls = super().__new__(cls, name, bases, attrs)
+        locations = attrs.get('LOCATIONS', {})
+        sources = attrs.get('SOURCES', {})
+
+        def build_location(location: str) -> classmethod:
+            def f(cls) -> Self:
+                data = {'location': location}
+                return cls(data)
+
+            return classmethod(f)
+
+        def build_source(source: str) -> classmethod:
+            def f(cls) -> Self:
+                data = {'source': source}
+                return cls(data)
+
+            return classmethod(f)
+
+        for location in locations:
+            if location:
+                setattr(cls, f'from_{location.lower().replace(" ", "_").replace("/", "")}', build_location(location))
+
+        for source in sources:
+            if source:
+                setattr(cls, f'from_{source.lower().replace(" ", "_")}', build_source(source))
+
+        return cls
+
+
+class ContextProperties(metaclass=ContextPropertiesMeta):
     """Represents the Discord X-Context-Properties header.
 
     This header is essential for certain actions (e.g. joining guilds, friend requesting).
-
-    .. versionadded:: 1.9
-
-    .. container:: operations
-
-        .. describe:: x == y
-
-            Checks if two context properties are equal.
-
-        .. describe:: x != y
-
-            Checks if two context properties are not equal.
-
-        .. describe:: hash(x)
-
-            Return the context property's hash.
-
-        .. describe:: str(x)
-
-            Returns the context property's name.
-
-    Attributes
-    ----------
-    value: :class:`str`
-        The encoded header value.
     """
 
-    __slots__ = ('_data', 'value')
+    __slots__ = ('_data',)
 
-    def __init__(self, data) -> None:
+    LOCATIONS = {
+        None: 'e30=',
+        'Friends': 'eyJsb2NhdGlvbiI6IkZyaWVuZHMifQ==',
+        'ContextMenu': 'eyJsb2NhdGlvbiI6IkNvbnRleHRNZW51In0=',
+        'Context Menu': 'eyJsb2NhdGlvbiI6IkNvbnRleHQgTWVudSJ9',
+        'User Profile': 'eyJsb2NhdGlvbiI6IlVzZXIgUHJvZmlsZSJ9',
+        'Add Friend': 'eyJsb2NhdGlvbiI6IkFkZCBGcmllbmQifQ==',
+        'Guild Header': 'eyJsb2NhdGlvbiI6Ikd1aWxkIEhlYWRlciJ9',
+        'Group DM': 'eyJsb2NhdGlvbiI6Ikdyb3VwIERNIn0=',
+        'DM Channel': 'eyJsb2NhdGlvbiI6IkRNIENoYW5uZWwifQ==',
+        '/app': 'eyJsb2NhdGlvbiI6ICIvYXBwIn0=',
+        'Login': 'eyJsb2NhdGlvbiI6IkxvZ2luIn0=',
+        'Register': 'eyJsb2NhdGlvbiI6IlJlZ2lzdGVyIn0=',
+        'Verify Email': 'eyJsb2NhdGlvbiI6IlZlcmlmeSBFbWFpbCJ9',
+        'New Group DM': 'eyJsb2NhdGlvbiI6Ik5ldyBHcm91cCBETSJ9',
+        'Add Friends to DM': 'eyJsb2NhdGlvbiI6IkFkZCBGcmllbmRzIHRvIERNIn0=',
+        'Group DM Invite Create': 'eyJsb2NhdGlvbiI6Ikdyb3VwIERNIEludml0ZSBDcmVhdGUifQ==',
+        'Stage Channel': 'eyJsb2NhdGlvbiI6IlN0YWdlIENoYW5uZWwifQ==',
+    }
+
+    SOURCES = {
+        None: 'e30=',
+        'Chat Input Blocker - Lurker Mode': 'eyJzb3VyY2UiOiJDaGF0IElucHV0IEJsb2NrZXIgLSBMdXJrZXIgTW9kZSJ9',
+        'Notice - Lurker Mode': 'eyJzb3VyY2UiOiJOb3RpY2UgLSBMdXJrZXIgTW9kZSJ9',
+    }
+
+    def __init__(self, data: dict) -> None:
         self._data: Dict[str, Snowflake] = data
-        self.value: str = self._encode_data(data)
 
-    def _encode_data(self, data) -> str:
-        library = {
-            None: 'e30=',
-            # Locations
-            'Friends': 'eyJsb2NhdGlvbiI6IkZyaWVuZHMifQ==',
-            'ContextMenu': 'eyJsb2NhdGlvbiI6IkNvbnRleHRNZW51In0=',
-            'Context Menu': 'eyJsb2NhdGlvbiI6IkNvbnRleHQgTWVudSJ9',
-            'User Profile': 'eyJsb2NhdGlvbiI6IlVzZXIgUHJvZmlsZSJ9',
-            'Add Friend': 'eyJsb2NhdGlvbiI6IkFkZCBGcmllbmQifQ==',
-            'Guild Header': 'eyJsb2NhdGlvbiI6Ikd1aWxkIEhlYWRlciJ9',
-            'Group DM': 'eyJsb2NhdGlvbiI6Ikdyb3VwIERNIn0=',
-            'DM Channel': 'eyJsb2NhdGlvbiI6IkRNIENoYW5uZWwifQ==',
-            '/app': 'eyJsb2NhdGlvbiI6ICIvYXBwIn0=',
-            'Login': 'eyJsb2NhdGlvbiI6IkxvZ2luIn0=',
-            'Register': 'eyJsb2NhdGlvbiI6IlJlZ2lzdGVyIn0=',
-            'Verify Email': 'eyJsb2NhdGlvbiI6IlZlcmlmeSBFbWFpbCJ9',
-            'New Group DM': 'eyJsb2NhdGlvbiI6Ik5ldyBHcm91cCBETSJ9',
-            'Add Friends to DM': 'eyJsb2NhdGlvbiI6IkFkZCBGcmllbmRzIHRvIERNIn0=',
-            'Group DM Invite Create': 'eyJsb2NhdGlvbiI6Ikdyb3VwIERNIEludml0ZSBDcmVhdGUifQ==',
-            'Stage Channel': 'eyJsb2NhdGlvbiI6IlN0YWdlIENoYW5uZWwifQ==',
-            # Sources
-            'Chat Input Blocker - Lurker Mode': 'eyJzb3VyY2UiOiJDaGF0IElucHV0IEJsb2NrZXIgLSBMdXJrZXIgTW9kZSJ9',
-            'Notice - Lurker Mode': 'eyJzb3VyY2UiOiJOb3RpY2UgLSBMdXJrZXIgTW9kZSJ9',
-        }
-
+    def _encode_data(self) -> str:
         try:
-            return library[self.target]
+            target = self.target
+            return self.LOCATIONS.get(target, self.SOURCES[target])
         except KeyError:
-            return b64encode(json.dumps(data, separators=(',', ':')).encode()).decode('utf-8')
+            return b64encode(json.dumps(self._data, separators=(',', ':')).encode()).decode('utf-8')
 
     @classmethod
-    def _empty(cls) -> Self:
+    def empty(cls) -> Self:
         return cls({})
 
     @classmethod
-    def _from_friends_page(cls) -> Self:
-        data = {'location': 'Friends'}
-        return cls(data)
-
-    @classmethod
-    def _from_contextmenu(cls) -> Self:
-        data = {'location': 'ContextMenu'}
-        return cls(data)
-
-    @classmethod
-    def _from_context_menu(cls) -> Self:
-        data = {'location': 'Context Menu'}
-        return cls(data)
-
-    @classmethod
-    def _from_user_profile(cls) -> Self:
-        data = {'location': 'User Profile'}
-        return cls(data)
-
-    @classmethod
-    def _from_add_friend_page(cls) -> Self:
-        data = {'location': 'Add Friend'}
-        return cls(data)
-
-    @classmethod
-    def _from_guild_header(cls) -> Self:
-        data = {'location': 'Guild Header'}
-        return cls(data)
-
-    @classmethod
-    def _from_group_dm(cls) -> Self:
-        data = {'location': 'Group DM'}
-        return cls(data)
-
-    @classmethod
-    def _from_new_group_dm(cls) -> Self:
-        data = {'location': 'New Group DM'}
-        return cls(data)
-
-    @classmethod
-    def _from_dm_channel(cls) -> Self:
-        data = {'location': 'DM Channel'}
-        return cls(data)
-
-    @classmethod
-    def _from_add_to_dm(cls) -> Self:
-        data = {'location': 'Add Friends to DM'}
-        return cls(data)
-
-    @classmethod
-    def _from_group_dm_invite(cls) -> Self:
-        data = {'location': 'Group DM Invite Create'}
-        return cls(data)
-
-    @classmethod
-    def _from_app(cls) -> Self:
-        data = {'location': '/app'}
-        return cls(data)
-
-    @classmethod
-    def _from_login(cls) -> Self:
-        data = {'location': 'Login'}
-        return cls(data)
-
-    @classmethod
-    def _from_register(cls) -> Self:
-        data = {'location': 'Register'}
-        return cls(data)
-
-    @classmethod
-    def _from_verification(cls) -> Self:
-        data = {'location': 'Verify Email'}
-        return cls(data)
-
-    @classmethod
-    def _from_stage_channel(cls) -> Self:
-        data = {'location': 'Stage Channel'}
-        return cls(data)
-
-    @classmethod
-    def _from_accept_invite_page(
+    def from_accept_invite_page(
         cls,
         *,
-        guild_id: Snowflake = MISSING,
-        channel_id: Snowflake = MISSING,
-        channel_type: ChannelType = MISSING,
+        guild_id: Optional[Snowflake] = None,
+        channel_id: Optional[Snowflake] = None,
+        channel_type: Optional[ChannelType] = None,
     ) -> Self:
         data: Dict[str, Snowflake] = {
             'location': 'Accept Invite Page',
         }
-        if guild_id is not MISSING:
+        if guild_id:
             data['location_guild_id'] = str(guild_id)
-        if channel_id is not MISSING:
+        if channel_id:
             data['location_channel_id'] = str(channel_id)
-        if channel_type is not MISSING:
+        if channel_type:
             data['location_channel_type'] = int(channel_type)
         return cls(data)
 
     @classmethod
-    def _from_join_guild_popup(
+    def from_join_guild(
         cls,
         *,
         guild_id: Snowflake = MISSING,
@@ -235,7 +168,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         return cls(data)
 
     @classmethod
-    def _from_invite_embed(
+    def from_invite_button_embed(
         cls,
         *,
         guild_id: Optional[Snowflake],
@@ -253,7 +186,7 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         return cls(data)
 
     @classmethod
-    def _from_lurking(cls, source: str = MISSING) -> Self:
+    def from_lurking(cls, source: str = MISSING) -> Self:
         data = {'source': source or choice(('Chat Input Blocker - Lurker Mode', 'Notice - Lurker Mode'))}
         return cls(data)
 
@@ -262,26 +195,8 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         return self._data.get('location', self._data.get('source'))  # type: ignore
 
     @property
-    def guild_id(self) -> Optional[int]:
-        data = self._data.get('location_guild_id')
-        if data is not None:
-            return int(data)
-
-    @property
-    def channel_id(self) -> Optional[int]:
-        data = self._data.get('location_channel_id')
-        if data is not None:
-            return int(data)
-
-    @property
-    def channel_type(self) -> Optional[int]:
-        return self._data.get('location_channel_type')  # type: ignore
-
-    @property
-    def message_id(self) -> Optional[int]:
-        data = self._data.get('location_message_id')
-        if data is not None:
-            return int(data)
+    def value(self) -> str:
+        return self._encode_data()
 
     def __str__(self) -> str:
         return self.target or 'None'
@@ -296,6 +211,3 @@ class ContextProperties:  # Thank you Discord-S.C.U.M
         if isinstance(other, ContextProperties):
             return self.value != other.value
         return True
-
-    def __hash__(self) -> int:
-        return hash(self.value)

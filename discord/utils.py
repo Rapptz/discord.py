@@ -1431,19 +1431,38 @@ class ExpiringString(collections.UserString):
         self._timer.cancel()
 
 
-async def _get_info(session: ClientSession) -> Tuple[str, str, int]:
+async def _get_info(session: ClientSession) -> Tuple[Dict[str, Any], str]:
     for _ in range(3):
         try:
-            async with session.get('https://cordapi.dolfi.es/api/v1/properties/web', timeout=5) as resp:
+            async with session.post('https://cordapi.dolfi.es/api/v2/properties/web', timeout=5) as resp:
                 json = await resp.json()
-                return json['chrome_user_agent'], json['chrome_version'], json['client_build_number']
+                return json['properties'], json['encoded']
         except Exception:
             continue
+
     _log.warning('Info API down. Falling back to manual fetching...')
     ua = await _get_user_agent(session)
     bn = await _get_build_number(session)
     bv = _get_browser_version(ua)
-    return ua, bv, bn
+
+    properties = {
+        'os': 'Windows',
+        'browser': 'Chrome',
+        'device': '',
+        'browser_user_agent': ua,
+        'browser_version': bv,
+        'os_version': '10',
+        'referrer': '',
+        'referring_domain': '',
+        'referrer_current': '',
+        'referring_domain_current': '',
+        'release_channel': 'stable',
+        'system_locale': 'en-US',
+        'client_build_number': bn,
+        'client_event_source': None,
+        'design_id': 0,
+    }
+    return properties, b64encode(_to_json(properties).encode()).decode('utf-8')
 
 
 async def _get_build_number(session: ClientSession) -> int:  # Thank you Discord-S.C.U.M
