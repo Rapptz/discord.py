@@ -603,6 +603,7 @@ class ConnectionState:
         self.api_code_version: int = 0
         self.session_type: Optional[str] = None
         self.auth_session_id: Optional[str] = None
+        self.required_action: Optional[RequiredActionType] = None
         self._emojis: Dict[int, Emoji] = {}
         self._stickers: Dict[int, GuildSticker] = {}
         self._guilds: Dict[int, Guild] = {}
@@ -1049,9 +1050,7 @@ class ConnectionState:
         self.auth_session_id = data.get('auth_session_id_hash')
         self.connections = {c['id']: Connection(state=self, data=c) for c in data.get('connected_accounts', [])}
         self.pending_payments = {int(p['id']): Payment(state=self, data=p) for p in data.get('pending_payments', [])}
-
-        if 'required_action' in data:
-            self.parse_user_required_action_update(data)
+        self.required_action = try_enum(RequiredActionType, data['required_action']) if 'required_action' in data else None
 
         if 'sessions' in data:
             self.parse_sessions_replace(data['sessions'], from_ready=True)
@@ -1314,8 +1313,9 @@ class ConnectionState:
             settings = GuildSettings(data=data, state=self)
         self.dispatch('guild_settings_update', old_settings, settings)
 
-    def parse_user_required_action_update(self, data: Union[gw.RequiredActionEvent, gw.ReadyEvent]) -> None:
-        required_action = try_enum(RequiredActionType, data['required_action'])  # type: ignore
+    def parse_user_required_action_update(self, data: gw.RequiredActionEvent) -> None:
+        required_action = try_enum(RequiredActionType, data['required_action']) if data['required_action'] else None
+        self.required_action = required_action
         self.dispatch('required_action_update', required_action)
 
     def parse_user_connections_update(self, data: Union[gw.ConnectionEvent, gw.PartialConnectionEvent]) -> None:

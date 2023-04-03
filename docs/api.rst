@@ -446,12 +446,12 @@ Client
 
 .. function:: on_required_action_update(action)
 
-    Called when Discord requires you to do something to verify your account.
+    Called when Discord requires you to do something to continue using your account.
 
     .. versionadded:: 2.0
 
-    :param action: The action required.
-    :type action: :class:`RequiredActionType`
+    :param action: The action required. If ``None``, then no further action is required.
+    :type action: Optional[:class:`RequiredActionType`]
 
 Billing
 ~~~~~~~
@@ -5066,25 +5066,42 @@ of :class:`enum.Enum`.
 
     .. versionadded:: 2.0
 
-    .. attribute:: verify_phone
+    .. attribute:: update_agreements
 
-        The user must verify their phone number.
-
-    .. attribute:: verify_email
-
-        The user must verify their email address.
+        The user must update their agreement of Discord's terms of service and privacy policy.
+        This does not limit the user from using Discord.
 
     .. attribute:: complete_captcha
 
         The user must complete a captcha.
 
-    .. attribute:: update_agreements
+    .. attribute:: verify_email
 
-        The user must update their agreement of Discord's terms of service and privacy policy.
+        The user must add and verify an email address to their account.
 
-    .. attribute:: none
+    .. attribute:: reverify_email
 
-        The user does not need to take any more actions.
+        The user must reverify their existing email address.
+
+    .. attribute:: verify_phone
+
+        The user must add a phone number to their account.
+
+    .. attribute:: reverify_phone
+
+        The user must reverify their existing phone number.
+
+    .. attribute:: reverify_email_or_verify_phone
+
+        The user must reverify their existing email address or add a phone number to their account.
+
+    .. attribute:: verify_email_or_reverify_phone
+
+        The user must add and verify an email address to their account or reverify their existing phone number.
+
+    .. attribute:: reverify_email_or_reverify_phone
+
+        The user must reverify their existing email address or reverify their existing phone number.
 
 .. class:: ConnectionType
 

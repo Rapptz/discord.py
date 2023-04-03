@@ -800,12 +800,16 @@ class UnavailableGuildType(Enum):
 
 
 class RequiredActionType(Enum):
-    verify_phone = 'REQUIRE_VERIFIED_PHONE'
-    verify_email = 'REQUIRE_VERIFIED_EMAIL'
-    complete_captcha = 'REQUIRE_CAPTCHA'
     update_agreements = 'AGREEMENTS'
     acknowledge_tos_update = 'TOS_UPDATE_ACKNOWLEDGMENT'
-    none = None
+    complete_captcha = 'REQUIRE_CAPTCHA'
+    verify_email = 'REQUIRE_VERIFIED_EMAIL'
+    reverify_email = 'REQUIRE_REVERIFIED_EMAIL'
+    verify_phone = 'REQUIRE_VERIFIED_PHONE'
+    reverify_phone = 'REQUIRE_REVERIFIED_PHONE'
+    reverify_email_or_verify_phone = 'REQUIRE_REVERIFIED_EMAIL_OR_VERIFIED_PHONE'
+    verify_email_or_reverify_phone = 'REQUIRE_VERIFIED_EMAIL_OR_REVERIFIED_PHONE'
+    reverify_email_or_reverify_phone = 'REQUIRE_REVERIFIED_EMAIL_OR_REVERIFIED_PHONE'
 
 
 class InviteTarget(Enum):

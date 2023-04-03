@@ -100,7 +100,7 @@ if TYPE_CHECKING:
     from .voice_client import VoiceProtocol
     from .settings import GuildSettings
     from .billing import BillingAddress
-    from .enums import PaymentGateway
+    from .enums import PaymentGateway, RequiredActionType
     from .metadata import MetadataObject
     from .types.snowflake import Snowflake as _Snowflake
 
@@ -336,6 +336,15 @@ class Client:
     def user(self) -> Optional[ClientUser]:
         """Optional[:class:`.ClientUser`]: Represents the connected client. ``None`` if not logged in."""
         return self._connection.user
+
+    @property
+    def required_action(self) -> Optional[RequiredActionType]:
+        """Optional[:class:`.RequiredActionType`]: The required action for the current user.
+        A required action is something Discord requires you to do to continue using your account.
+
+        .. versionadded:: 2.0
+        """
+        return self._connection.required_action
 
     @property
     def guilds(self) -> Sequence[Guild]:
