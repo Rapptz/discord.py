@@ -667,7 +667,7 @@ class Permissions(BaseFlags):
     def use_external_sounds(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can use sounds from other guilds.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.0
         """
         return 1 << 45
 
