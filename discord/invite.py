@@ -465,8 +465,8 @@ class Invite(Hashable):
         # We inject some missing data here since we can assume it
         if self.type in (InviteType.group_dm, InviteType.friend):
             self.temporary = False
-            if self.max_uses is None:
-                self.max_uses = 5 if self.type is InviteType.friend else 0
+            if self.max_uses is None and self.type is InviteType.group_dm:
+                self.max_uses = 0
 
         expires_at = data.get('expires_at', None)
         self.expires_at: Optional[datetime.datetime] = parse_time(expires_at) if expires_at else None
