@@ -3860,6 +3860,7 @@ class Guild(Hashable):
 
         # avoid circular import
         from .app_commands import AppCommand
+        from .webhook import Webhook
 
         while True:
             retrieve = 100 if limit is None else min(limit, 100)
@@ -3886,6 +3887,9 @@ class Guild(Hashable):
             )
             automod_rule_map = {rule.id: rule for rule in automod_rules}
 
+            webhooks = (Webhook.from_state(data=raw_webhook, state=self._state) for raw_webhook in data.get('webhooks', []))
+            webhook_map = {webhook.id: webhook for webhook in webhooks}
+
             count = 0
 
             for count, raw_entry in enumerate(raw_entries, 1):
@@ -3899,6 +3903,7 @@ class Guild(Hashable):
                     integrations=integration_map,
                     app_commands=app_command_map,
                     automod_rules=automod_rule_map,
+                    webhooks=webhook_map,
                     guild=self,
                 )
 
