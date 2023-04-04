@@ -69,6 +69,7 @@ from .flags import ChannelFlags
 from .http import handle_message_parameters
 from .object import Object
 from .soundboard import BaseSoundboardSound
+from .utils import snowflake_time
 
 __all__ = (
     'TextChannel',
@@ -160,8 +161,22 @@ class VoiceChannelSoundEffect(BaseSoundboardSound):
 
     __slots__ = ()
 
-    def __init__(self, *, data: SoundboardSoundPayload):
+    def __init__(self, *, id: int, volume: float, override_path: Optional[str]):
+        data: SoundboardSoundPayload = {
+            'id': id,
+            'volume': volume,
+            'override_path': override_path,
+        }
         super().__init__(data=data)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('id', self.id),
+            ('volume', self.volume),
+            ('is_default', self.is_default()),
+        ]
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f"<{self.__class__.__name__} {inner}>"
 
     def is_default(self) -> bool:
         """:class:`bool`: Whether it's a default sound or not."""
@@ -174,7 +189,7 @@ class VoiceChannelSoundEffect(BaseSoundboardSound):
         if self.is_default():
             return None
         else:
-            return super().created_at
+            return snowflake_time(self.id)
 
 
 class VoiceChannelEffect:
@@ -214,12 +229,8 @@ class VoiceChannelEffect:
         sound_id: Optional[int] = utils._get_as_snowflake(data, 'sound_id')
         if sound_id is not None:
             sound_volume = data['sound_volume']  # type: ignore # sound_volume cannot be None here
-            sound_payload: SoundboardSoundPayload = {
-                'id': sound_id,
-                'volume': sound_volume,
-                'override_path': data.get('sound_override_path'),
-            }
-            self.sound = VoiceChannelSoundEffect(data=sound_payload)
+            sound_override_path = data.get('sound_override_path')
+            self.sound = VoiceChannelSoundEffect(id=sound_id, volume=sound_volume, override_path=sound_override_path)
 
     def __repr__(self) -> str:
         attrs = [

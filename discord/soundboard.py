@@ -27,10 +27,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
 from .mixins import Hashable
-from .utils import snowflake_time
 
 if TYPE_CHECKING:
-    import datetime
     from .types.soundboard import SoundboardSound as SoundboardSoundPayload
 
 __all__ = ()
@@ -68,9 +66,9 @@ class BaseSoundboardSound(Hashable):
     __slots__ = ('id', 'volume', 'override_path')
 
     def __init__(self, *, data: SoundboardSoundPayload):
-        self.id: int = int(data['id'])
+        self.id: int = data['id']
         self.volume: float = data['volume']
-        self.override_path: Optional[str] = data.get('override_path')
+        self.override_path: Optional[str] = data['override_path']
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
@@ -78,8 +76,3 @@ class BaseSoundboardSound(Hashable):
         return NotImplemented
 
     __hash__ = Hashable.__hash__
-
-    @property
-    def created_at(self) -> datetime.datetime:
-        """:class:`datetime.datetime`: Returns the snowflake's creation time in UTC."""
-        return snowflake_time(self.id)

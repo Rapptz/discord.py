@@ -22,10 +22,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import TypedDict, Union, Optional
+from typing import TypedDict, Optional
 
 
 class SoundboardSound(TypedDict):
-    id: Union[int, str]
+    id: int
     volume: float
     override_path: Optional[str]
