@@ -3279,6 +3279,7 @@ of :class:`enum.Enum`.
         The rule will trigger when a message is sent.
 
     .. attribute:: member_update
+
         The rule will trigger when a member's profile is updated.
 
         .. versionadded:: 2.3
