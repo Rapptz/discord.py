@@ -1988,6 +1988,7 @@ class Guild(Hashable):
         """
 
         http = self._state.http
+
         if vanity_code is not MISSING:
             await http.change_vanity_code(self.id, vanity_code, reason=reason)
 
