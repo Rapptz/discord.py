@@ -153,13 +153,14 @@ GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, St
 class DMChannel(_BaseChannel):
     type: Literal[1]
     last_message_id: Optional[Snowflake]
-    recipients: List[PartialUser]
+    recipients: NotRequired[List[PartialUser]]
 
 
 class GroupDMChannel(_BaseChannel):
     type: Literal[3]
     icon: Optional[str]
     owner_id: Snowflake
+    recipients: NotRequired[List[PartialUser]]
 
 
 Channel = Union[GuildChannel, DMChannel, GroupDMChannel]

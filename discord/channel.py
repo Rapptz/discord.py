@@ -2887,7 +2887,12 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
         self._state: ConnectionState = state
-        self.recipient: Optional[User] = state.store_user(data['recipients'][0])
+        self.recipient: Optional[User] = None
+
+        recipients = data.get('recipients')
+        if recipients is not None:
+            self.recipient = state.store_user(recipients[0])
+
         self.me: ClientUser = me
         self.id: int = int(data['id'])
 
@@ -3056,7 +3061,11 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
         self.owner_id: Optional[int] = utils._get_as_snowflake(data, 'owner_id')
         self._icon: Optional[str] = data.get('icon')
         self.name: Optional[str] = data.get('name')
-        self.recipients: List[User] = [self._state.store_user(u) for u in data.get('recipients', [])]
+        self.recipients: List[User] = []
+
+        recipients = data.get('recipients')
+        if recipients is not None:
+            self.recipients = [self._state.store_user(u) for u in recipients]
 
         self.owner: Optional[BaseUser]
         if self.owner_id == self.me.id:
