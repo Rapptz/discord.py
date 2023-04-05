@@ -52,14 +52,14 @@ if TYPE_CHECKING:
     )
     from .state import ConnectionState
     from .guild import Guild
-    from .abc import GuildChannel, PrivateChannel, Snowflake
-    from .channel import GroupChannel
+    from .abc import GuildChannel, Snowflake
+    from .channel import DMChannel, GroupChannel
     from .user import User
     from .application import PartialApplication
     from .message import Message
 
     InviteGuildType = Union[Guild, 'PartialInviteGuild', Object]
-    InviteChannelType = Union[GuildChannel, 'PartialInviteChannel', Object, PrivateChannel]
+    InviteChannelType = Union[GuildChannel, 'PartialInviteChannel', Object, DMChannel, GroupChannel]
 
     import datetime
 

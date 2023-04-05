@@ -93,7 +93,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
     from types import TracebackType
     from .guild import GuildChannel
-    from .abc import PrivateChannel, Snowflake, SnowflakeTime
+    from .abc import Snowflake, SnowflakeTime
     from .channel import DMChannel
     from .message import Message
     from .member import Member
@@ -103,6 +103,8 @@ if TYPE_CHECKING:
     from .enums import PaymentGateway, RequiredActionType
     from .metadata import MetadataObject
     from .types.snowflake import Snowflake as _Snowflake
+
+    PrivateChannel = Union[DMChannel, GroupChannel]
 
 # fmt: off
 __all__ = (

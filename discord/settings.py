@@ -57,10 +57,13 @@ if TYPE_CHECKING:
     from google.protobuf.message import Message
     from typing_extensions import Self
 
-    from .abc import GuildChannel, PrivateChannel, Snowflake
+    from .abc import GuildChannel, Snowflake
+    from .channel import DMChannel, GroupChannel
     from .guild import Guild
     from .state import ConnectionState
     from .user import ClientUser, User
+
+    PrivateChannel = Union[DMChannel, GroupChannel]
 
 __all__ = (
     'UserSettings',

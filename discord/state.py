@@ -98,7 +98,7 @@ from .audit_logs import AuditLogEntry
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .abc import PrivateChannel, Snowflake as abcSnowflake
+    from .abc import Snowflake as abcSnowflake
     from .activity import ActivityTypes
     from .message import MessageableChannel
     from .guild import GuildChannel
@@ -123,6 +123,7 @@ if TYPE_CHECKING:
     from .types.activity import ClientStatus as ClientStatusPayload
 
     T = TypeVar('T')
+    PrivateChannel = Union[DMChannel, GroupChannel]
     Channel = Union[GuildChannel, PrivateChannel, PartialMessageable]
 
 MISSING = utils.MISSING
@@ -689,7 +690,7 @@ class ConnectionState:
     ) -> Tuple[Optional[User], VoiceState, VoiceState]:
         user_id = int(data['user_id'])
         user = self.get_user(user_id)
-        channel: Optional[Union[DMChannel, GroupChannel]] = self._get_private_channel(channel_id)  # type: ignore
+        channel: Optional[Union[DMChannel, GroupChannel]] = self._get_private_channel(channel_id)
 
         try:
             # Check if we should remove the voice state from cache
@@ -1489,7 +1490,7 @@ class ConnectionState:
             channel = self._get_private_channel(channel_id)
             if channel is not None:
                 old_channel = copy.copy(channel)
-                channel._update(data)
+                channel._update(data)  # type: ignore # the data payload varies based on the channel type
                 self.dispatch('private_channel_update', old_channel, channel)
                 return
             else:
@@ -1501,7 +1502,7 @@ class ConnectionState:
             channel = guild.get_channel(channel_id)
             if channel is not None:
                 old_channel = copy.copy(channel)
-                channel._update(guild, data)  # type: ignore # the data payload varies based on the channel type.
+                channel._update(guild, data)  # type: ignore # the data payload varies based on the channel type
                 self.dispatch('guild_channel_update', old_channel, channel)
             else:
                 _log.debug('CHANNEL_UPDATE referencing an unknown channel ID: %s. Discarding.', channel_id)
