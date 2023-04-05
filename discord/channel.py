@@ -2240,8 +2240,6 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             This does not always retrieve archived threads, as they are not retained in the internal
             cache. Use :func:`Guild.fetch_channel` instead.
 
-        .. versionadded:: 2.0
-
         Parameters
         -----------
         thread_id: :class:`int`
@@ -2264,24 +2262,16 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def flags(self) -> ChannelFlags:
-        """:class:`ChannelFlags`: The flags associated with this thread.
-
-        .. versionadded:: 2.0
-        """
+        """:class:`ChannelFlags`: The flags associated with this forum."""
         return ChannelFlags._from_value(self._flags)
 
     @property
     def available_tags(self) -> Sequence[ForumTag]:
-        """Sequence[:class:`ForumTag`]: Returns all the available tags for this forum.
-
-        .. versionadded:: 2.0
-        """
+        """Sequence[:class:`ForumTag`]: Returns all the available tags for this forum."""
         return utils.SequenceProxy(self._available_tags.values())
 
     def get_tag(self, tag_id: int, /) -> Optional[ForumTag]:
         """Returns the tag with the given ID.
-
-        .. versionadded:: 2.0
 
         Parameters
         ----------
@@ -2719,8 +2709,6 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         in order of decreasing :attr:`Thread.archive_timestamp`.
 
         You must have :attr:`~Permissions.read_message_history` to do this.
-
-        .. versionadded:: 2.0
 
         Parameters
         -----------
@@ -3367,7 +3355,8 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
 
         .. versionchanged:: 2.0
 
-            Thread related permissions are now set to ``False``.
+            Thread related permissions are now set to ``False``,
+            and managed channel permissions are taken into account.
 
         Parameters
         -----------

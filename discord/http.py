@@ -53,7 +53,16 @@ import datetime
 import aiohttp
 
 from .enums import RelationshipAction, InviteType
-from .errors import HTTPException, RateLimited, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound, CaptchaRequired
+from .errors import (
+    HTTPException,
+    RateLimited,
+    Forbidden,
+    NotFound,
+    LoginFailure,
+    DiscordServerError,
+    GatewayNotFound,
+    CaptchaRequired,
+)
 from .file import File
 from .tracking import ContextProperties
 from . import utils

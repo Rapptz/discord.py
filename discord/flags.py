@@ -1349,11 +1349,7 @@ class ChannelFlags(BaseFlags):
 
     @flag_value
     def require_tag(self):
-        """:class:`bool`: Returns ``True`` if a tag is required to be specified when creating a thread
-        in a :class:`ForumChannel`.
-
-        .. versionadded:: 2.0
-        """
+        """:class:`bool`: Returns ``True`` if a tag is required to be specified when creating a thread in a :class:`ForumChannel`."""
         return 1 << 4
 
 
