@@ -194,13 +194,7 @@ class Interaction(Generic[ClientT]):
 
             channel = data['channel']
             if ch_type in (ChannelType.group, ChannelType.private):
-                try:
-                    channel = factory(me=self._client.user, data=channel, state=self._state)  # type: ignore
-                except KeyError:
-                    # Discord limitation
-                    channel = PartialMessageable(
-                        state=self._state, guild_id=self.guild_id, id=int(channel['id']), type=ch_type
-                    )
+                channel = factory(me=self._client.user, data=channel, state=self._state)  # type: ignore
             else:
                 guild = self._state._get_guild(self.guild_id)
                 channel = factory(guild=guild, state=self._state, data=channel)  # type: ignore
