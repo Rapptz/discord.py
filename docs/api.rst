@@ -7628,6 +7628,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: InvalidData
 
+.. autoexception:: GatewayNotFound
+
 .. autoexception:: ConnectionClosed
 
 .. autoexception:: discord.opus.OpusError
@@ -7645,6 +7647,7 @@ Exception Hierarchy
                 - :exc:`InvalidData`
                 - :exc:`LoginFailure`
                 - :exc:`ConnectionClosed`
+            - :exc:`GatewayNotFound`
             - :exc:`HTTPException`
                 - :exc:`Forbidden`
                 - :exc:`NotFound`

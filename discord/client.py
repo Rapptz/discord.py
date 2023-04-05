@@ -718,6 +718,9 @@ class Client:
 
         Raises
         -------
+        GatewayNotFound
+            If the gateway to connect to Discord is not found. Usually if this
+            is thrown then there is a Discord API outage.
         ConnectionClosed
             The websocket connection has been terminated.
         """

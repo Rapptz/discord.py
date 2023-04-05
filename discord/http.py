@@ -53,7 +53,7 @@ import datetime
 import aiohttp
 
 from .enums import RelationshipAction, InviteType
-from .errors import HTTPException, RateLimited, Forbidden, NotFound, LoginFailure, DiscordServerError, CaptchaRequired
+from .errors import HTTPException, RateLimited, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound, CaptchaRequired
 from .file import File
 from .tracking import ContextProperties
 from . import utils
@@ -4050,7 +4050,10 @@ class HTTPClient:
     # Misc
 
     async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
-        data = await self.request(Route('GET', '/gateway'))
+        try:
+            data = await self.request(Route('GET', '/gateway'))
+        except HTTPException as exc:
+            raise GatewayNotFound() from exc
         if zlib:
             value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
         else:
