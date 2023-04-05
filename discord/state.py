@@ -72,7 +72,6 @@ from .enums import (
     RequiredActionType,
     Status,
     try_enum,
-    UnavailableGuildType,
 )
 from . import utils
 from .flags import MemberCacheFlags
@@ -607,8 +606,6 @@ class ConnectionState:
         self._emojis: Dict[int, Emoji] = {}
         self._stickers: Dict[int, GuildSticker] = {}
         self._guilds: Dict[int, Guild] = {}
-        self._queued_guilds: Dict[int, Guild] = {}
-        self._unavailable_guilds: Dict[int, UnavailableGuildType] = {}
 
         self._calls: Dict[int, Call] = {}
         self._call_message_cache: Dict[int, Message] = {}  # Hopefully this won't be a memory leak
@@ -774,10 +771,7 @@ class ConnectionState:
 
     def _get_guild(self, guild_id: Optional[int]) -> Optional[Guild]:
         # The keys of self._guilds are ints
-        guild = self._guilds.get(guild_id)  # type: ignore
-        if guild is None:
-            guild = self._queued_guilds.get(guild_id)  # type: ignore
-        return guild
+        return self._guilds.get(guild_id)  # type: ignore
 
     def _get_or_create_unavailable_guild(self, guild_id: int) -> Guild:
         return self._guilds.get(guild_id) or Guild._create_unavailable(state=self, guild_id=guild_id)
@@ -857,21 +851,13 @@ class ConnectionState:
             else utils.find(lambda m: m.id == msg_id, reversed(self._call_message_cache.values()))
         )
 
-    def _add_guild_from_data(self, data: GuildPayload, *, from_ready: bool = False) -> Optional[Guild]:
-        guild_id = int(data['id'])
-        unavailable = data.get('unavailable', False)
-
-        if not unavailable:
-            guild = Guild(data=data, state=self)
-            self._add_guild(guild)
-            return guild
-        else:
-            self._unavailable_guilds[guild_id] = UnavailableGuildType.existing if from_ready else UnavailableGuildType.joined
-            _log.debug('Forcing GUILD_CREATE for unavailable guild %s.' % guild_id)
-            asyncio.ensure_future(self.request_guild(guild_id), loop=self.loop)
+    def _add_guild_from_data(self, data: GuildPayload) -> Optional[Guild]:
+        guild = Guild(data=data, state=self)
+        self._add_guild(guild)
+        return guild
 
     def _guild_needs_chunking(self, guild: Guild) -> bool:
-        return self._chunk_guilds and not guild.chunked and not guild._offline_members_hidden
+        return self._chunk_guilds and not guild.chunked and not guild._offline_members_hidden and not guild.unavailable
 
     def _get_guild_channel(
         self, data: PartialMessagePayload, guild_id: Optional[int] = None
@@ -1010,7 +996,7 @@ class ConnectionState:
 
         # Guild parsing
         for guild_data in data.get('guilds', []):
-            self._add_guild_from_data(guild_data, from_ready=True)
+            self._add_guild_from_data(guild_data)
 
         # Relationship parsing
         for relationship in data.get('relationships', []):
@@ -1083,6 +1069,7 @@ class ConnectionState:
             if 'last_pin_timestamp' in channel_data and hasattr(channel, 'last_pin_timestamp'):
                 channel.last_pin_timestamp = utils.parse_time(channel_data['last_pin_timestamp'])  # type: ignore
 
+        # Apparently, voice states not being in the payload means there are no longer any voice states
         guild._voice_states = {}
         members = {int(m['user']['id']): m for m in data.get('members', [])}
         for voice_state in data.get('voice_states', []):
@@ -1093,10 +1080,7 @@ class ConnectionState:
             guild._update_voice_state(voice_state, utils._get_as_snowflake(voice_state, 'channel_id'))
 
     def parse_message_create(self, data: gw.MessageCreateEvent) -> None:
-        guild_id = utils._get_as_snowflake(data, 'guild_id')
         channel, _ = self._get_guild_channel(data)
-        if guild_id in self._unavailable_guilds:  # I don't know how I feel about this :(
-            return
 
         # channel will be the correct type here
         message = Message(channel=channel, data=data, state=self)  # type: ignore
@@ -1685,8 +1669,6 @@ class ConnectionState:
         for message in data.get('most_recent_messages', []):
             guild_id = utils._get_as_snowflake(message, 'guild_id')
             channel, _ = self._get_guild_channel(message)
-            if guild_id in self._unavailable_guilds:  # I don't know how I feel about this :(
-                continue
 
             # channel will be the correct type here
             message = Message(channel=channel, data=message, state=self)
@@ -2070,15 +2052,19 @@ class ConnectionState:
         execution = AutoModAction(data=data, state=self)
         self.dispatch('automod_action', execution)
 
-    def _get_create_guild(self, data: gw.GuildCreateEvent):
+    def _get_create_guild(self, data: gw.GuildCreateEvent) -> Optional[Guild]:
         guild = self._get_guild(int(data['id']))
+        unavailable = data.get('unavailable')
+
         # Discord being Discord sometimes sends a GUILD_CREATE after an OPCode 14 is sent (a la bots)
-        # However, we want that if we forced a GUILD_CREATE for an unavailable guild
+        # In this case, we just update it and return None to avoid a double dispatch
+        # However, if the guild became available, then we gotta go through the motions
         if guild is not None:
             guild._from_data(data)
-            return
+            if unavailable != False:
+                return
 
-        return self._add_guild_from_data(data)
+        return guild or self._add_guild_from_data(data)
 
     def is_guild_evicted(self, guild: Guild) -> bool:
         return guild.id not in self._guilds
@@ -2212,9 +2198,7 @@ class ConnectionState:
             return await request.wait()
         return request.get_future()
 
-    async def _chunk_and_dispatch(self, guild, chunk) -> None:
-        self._queued_guilds[guild.id] = guild
-
+    async def _chunk_and_dispatch(self, guild: Guild, chunk: bool, unavailable: Optional[bool]) -> None:
         if chunk:
             try:
                 await asyncio.wait_for(self.chunk_guild(guild), timeout=10)
@@ -2223,15 +2207,8 @@ class ConnectionState:
             except (ClientException, InvalidData):
                 pass
 
-        self._queued_guilds.pop(guild.id)
-
-        # Dispatch available/join depending on circumstances
-        if guild.id in self._unavailable_guilds:
-            type = self._unavailable_guilds.pop(guild.id)
-            if type is UnavailableGuildType.existing:
-                self.dispatch('guild_available', guild)
-            else:
-                self.dispatch('guild_join', guild)
+        if unavailable is False:
+            self.dispatch('guild_available', guild)
         else:
             self.dispatch('guild_join', guild)
 
@@ -2243,12 +2220,12 @@ class ConnectionState:
         if guild is None:
             return
 
-        if self._request_guilds:
+        if self._request_guilds and not guild.unavailable:
             asyncio.ensure_future(self.request_guild(guild.id), loop=self.loop)
 
         # Chunk if needed
         needs_chunking = self._guild_needs_chunking(guild)
-        asyncio.ensure_future(self._chunk_and_dispatch(guild, needs_chunking), loop=self.loop)
+        asyncio.ensure_future(self._chunk_and_dispatch(guild, needs_chunking, data.get('unavailable')), loop=self.loop)
 
     def parse_guild_update(self, data: gw.GuildUpdateEvent) -> None:
         guild = self._get_guild(int(data['id']))

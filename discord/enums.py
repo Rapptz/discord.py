@@ -794,11 +794,6 @@ class RelationshipAction(Enum):
     remove_pending_request = 'remove'
 
 
-class UnavailableGuildType(Enum):
-    existing = 'ready'
-    joined = 'joined'
-
-
 class RequiredActionType(Enum):
     update_agreements = 'AGREEMENTS'
     acknowledge_tos_update = 'TOS_UPDATE_ACKNOWLEDGMENT'
