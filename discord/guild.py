@@ -267,7 +267,7 @@ class Guild(Hashable):
         Indicates if the guild has widget enabled.
 
         .. versionadded:: 2.0
-    max_stage_video_channel_users: Optional[:class:`int`]
+    max_stage_video_users: Optional[:class:`int`]
         The maximum amount of users in a stage video channel.
 
         .. versionadded:: 2.3
@@ -320,7 +320,7 @@ class Guild(Hashable):
         'approximate_presence_count',
         'premium_progress_bar_enabled',
         '_safety_alerts_channel_id',
-        'max_stage_video_channel_users',
+        'max_stage_video_users',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -484,7 +484,7 @@ class Guild(Hashable):
         self.max_presences: Optional[int] = guild.get('max_presences')
         self.max_members: Optional[int] = guild.get('max_members')
         self.max_video_channel_users: Optional[int] = guild.get('max_video_channel_users')
-        self.max_stage_video_channel_users: Optional[int] = guild.get('max_stage_video_channel_users')
+        self.max_stage_video_users: Optional[int] = guild.get('max_stage_video_channel_users')
         self.premium_tier: int = guild.get('premium_tier', 0)
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
