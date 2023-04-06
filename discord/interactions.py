@@ -107,7 +107,7 @@ class Interaction(Generic[ClientT]):
         The guild ID the interaction was sent from.
     channel_id: Optional[:class:`int`]
         The channel ID the interaction was sent from.
-    channel: Optional[Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`, :class:`PartialMessageable`]]
+    channel: Optional[Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]]
         The channel the interaction was sent from.
     application_id: :class:`int`
         The application ID that the interaction was for.
