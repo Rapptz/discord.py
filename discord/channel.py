@@ -221,9 +221,7 @@ class VoiceChannelEffect:
         animation_id = data.get('animation_id')
         if animation_id is not None:
             animation_type = try_enum(VoiceChannelEffectAnimationType, data['animation_type'])  # type: ignore # cannot be None here
-            self.animation = VoiceChannelEffectAnimation(
-                id=animation_id, type=animation_type
-            )
+            self.animation = VoiceChannelEffectAnimation(id=animation_id, type=animation_type)
 
         emoji = data['emoji']
         self.emoji: Optional[PartialEmoji] = PartialEmoji.from_dict(emoji) if emoji is not None else None
