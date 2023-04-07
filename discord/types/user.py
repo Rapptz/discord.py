@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from .snowflake import Snowflake
 from typing import Literal, Optional, TypedDict
+from typing_extensions import NotRequired
 
 
 class PartialUser(TypedDict):
@@ -31,6 +32,7 @@ class PartialUser(TypedDict):
     username: str
     discriminator: str
     avatar: Optional[str]
+    avatar_decoration: NotRequired[str]
 
 
 PremiumType = Literal[0, 1, 2]

@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from typing import Optional, TypedDict
 from .snowflake import SnowflakeList
 from .user import User
+from typing_extensions import NotRequired
 
 
 class Nickname(TypedDict):
@@ -47,6 +48,7 @@ class Member(PartialMember, total=False):
     pending: bool
     permissions: str
     communication_disabled_until: str
+    avatar_decoration: NotRequired[str]
 
 
 class _OptionalMemberWithUser(PartialMember, total=False):
@@ -56,6 +58,7 @@ class _OptionalMemberWithUser(PartialMember, total=False):
     pending: bool
     permissions: str
     communication_disabled_until: str
+    avatar_decoration: NotRequired[str]
 
 
 class MemberWithUser(_OptionalMemberWithUser):

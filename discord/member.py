@@ -323,6 +323,7 @@ class Member(discord.abc.Messageable, _UserTag):
         '_state',
         '_avatar',
         '_flags',
+        '_avatar_decoration',
     )
 
     if TYPE_CHECKING:
@@ -341,6 +342,7 @@ class Member(discord.abc.Messageable, _UserTag):
         banner: Optional[Asset]
         accent_color: Optional[Colour]
         accent_colour: Optional[Colour]
+        avatar_decoration: Optional[Asset]
 
     def __init__(self, *, data: MemberWithUserPayload, guild: Guild, state: ConnectionState):
         self._state: ConnectionState = state
@@ -356,6 +358,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._avatar: Optional[str] = data.get('avatar')
         self._permissions: Optional[int]
         self._flags: int = data['flags']
+        self._avatar_decoration: Optional[str] = data.get('avatar_decoration')
         try:
             self._permissions = int(data['permissions'])
         except KeyError:
@@ -424,6 +427,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._permissions = member._permissions
         self._state = member._state
         self._avatar = member._avatar
+        self._avatar_decoration = member._avatar_decoration
 
         # Reference will not be copied unless necessary by PRESENCE_UPDATE
         # See below
@@ -452,6 +456,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._roles = utils.SnowflakeList(map(int, data['roles']))
         self._avatar = data.get('avatar')
         self._flags = data.get('flags', 0)
+        self._avatar_decoration = data.get('avatar_decoration')
 
     def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
         self.activities = tuple(create_activity(d, self._state) for d in data['activities'])
@@ -463,12 +468,18 @@ class Member(discord.abc.Messageable, _UserTag):
 
     def _update_inner_user(self, user: UserPayload) -> Optional[Tuple[User, User]]:
         u = self._user
-        original = (u.name, u._avatar, u.discriminator, u._public_flags)
+        original = (u.name, u._avatar, u.discriminator, u._public_flags, u._avatar_decoration)
         # These keys seem to always be available
-        modified = (user['username'], user['avatar'], user['discriminator'], user.get('public_flags', 0))
+        modified = (
+            user['username'],
+            user['avatar'],
+            user['discriminator'],
+            user.get('public_flags', 0),
+            user.get('avatar_decoration'),
+        )
         if original != modified:
             to_return = User._copy(self._user)
-            u.name, u._avatar, u.discriminator, u._public_flags = modified
+            u.name, u._avatar, u.discriminator, u._public_flags, u._avatar_decoration = modified
             # Signal to dispatch on_user_update
             return to_return, u
 

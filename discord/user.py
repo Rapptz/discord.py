@@ -72,6 +72,7 @@ class BaseUser(_UserTag):
         'system',
         '_public_flags',
         '_state',
+        '_avatar_decoration',
     )
 
     if TYPE_CHECKING:
@@ -85,6 +86,7 @@ class BaseUser(_UserTag):
         _banner: Optional[str]
         _accent_colour: Optional[int]
         _public_flags: int
+        _avatar_decoration: Optional[str]
 
     def __init__(self, *, state: ConnectionState, data: Union[UserPayload, PartialUserPayload]) -> None:
         self._state = state
@@ -118,6 +120,7 @@ class BaseUser(_UserTag):
         self._public_flags = data.get('public_flags', 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
+        self._avatar_decoration = data.get('avatar_decoration')
 
     @classmethod
     def _copy(cls, user: Self) -> Self:
@@ -132,6 +135,7 @@ class BaseUser(_UserTag):
         self.bot = user.bot
         self._state = user._state
         self._public_flags = user._public_flags
+        self._avatar_decoration = user._avatar_decoration
 
         return self
 
@@ -174,6 +178,18 @@ class BaseUser(_UserTag):
         .. versionadded:: 2.0
         """
         return self.avatar or self.default_avatar
+
+    @property
+    def avatar_decoration(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns an :class:`Asset` for the avatar decoration the user has.
+
+        If the user has not set an avatar decoration, ``None`` is returned.
+
+        .. versionadded:: 2.3
+        """
+        if self._avatar_decoration is not None:
+            return Asset._from_avatar_decoration(self._state, self._avatar_decoration)
+        return None
 
     @property
     def banner(self) -> Optional[Asset]:

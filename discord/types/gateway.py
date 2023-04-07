@@ -223,6 +223,7 @@ class GuildMemberUpdateEvent(TypedDict):
     mute: NotRequired[bool]
     pending: NotRequired[bool]
     communication_disabled_until: NotRequired[str]
+    avatar_decoration: NotRequired[str]
 
 
 class GuildEmojisUpdateEvent(TypedDict):
