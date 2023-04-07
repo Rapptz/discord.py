@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
-
 from .mixins import Hashable
 
 if TYPE_CHECKING:
