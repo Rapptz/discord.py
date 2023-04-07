@@ -204,15 +204,17 @@ class Asset(AssetMixin):
         '_state',
         '_url',
         '_animated',
+        '_passthrough',
         '_key',
     )
 
     BASE = 'https://cdn.discordapp.com'
 
-    def __init__(self, state: _State, *, url: str, key: str, animated: bool = False) -> None:
+    def __init__(self, state: _State, *, url: str, key: str, animated: bool = False, passthrough: bool = MISSING) -> None:
         self._state: _State = state
         self._url: str = url
         self._animated: bool = animated
+        self._passthrough: bool = passthrough
         self._key: str = key
 
     @classmethod
@@ -222,6 +224,7 @@ class Asset(AssetMixin):
             url=f'{cls.BASE}/embed/avatars/{index}.png',
             key=str(index),
             animated=False,
+            passthrough=True,  # Cannot be overridden
         )
 
     @classmethod
@@ -237,12 +240,12 @@ class Asset(AssetMixin):
 
     @classmethod
     def _from_avatar_decoration(cls, state: _State, user_id: int, decoration: str) -> Self:
-        return cls(
-            state,
-            url=f'{cls.BASE}/avatar-decorations/{user_id}/{decoration}.png?size=128',
-            key=decoration,
-            animated=False,
-        )
+        # Avatar decoration presets are not available through the regular CDN endpoint
+        if decoration.startswith(('v1_', 'v2_')):
+            url = f'{cls.BASE}/avatar-decoration-presets/{decoration}.png?size=256&passthrough=true'
+        else:
+            url = f'{cls.BASE}/avatar-decorations/{user_id}/{decoration}.png?size=256&passthrough=true'
+        return cls(state, url=url, key=decoration, animated=False, passthrough=True)
 
     @classmethod
     def _from_guild_avatar(cls, state: _State, guild_id: int, member_id: int, avatar: str) -> Self:
@@ -374,15 +377,25 @@ class Asset(AssetMixin):
         """:class:`bool`: Returns whether the asset is animated."""
         return self._animated
 
+    def is_passthrough(self) -> bool:
+        """:class:`bool`: Returns whether the asset is passed through.
+
+        .. versionadded:: 2.0
+        """
+        # The default when not set appears to be True, but this is not set in stone
+        # So we just return the MISSING value
+        return self._passthrough
+
     def replace(
         self,
         *,
         size: int = MISSING,
         format: ValidAssetFormatTypes = MISSING,
         static_format: ValidStaticFormatTypes = MISSING,
+        passthrough: Optional[bool] = MISSING,
+        keep_aspect_ratio: bool = False,
     ) -> Self:
         """Returns a new asset with the passed components replaced.
-
 
         .. versionchanged:: 2.0
             ``static_format`` is now preferred over ``format``
@@ -402,6 +415,19 @@ class Asset(AssetMixin):
         static_format: :class:`str`
             The new format to change it to if the asset isn't animated.
             Must be either 'webp', 'jpeg', 'jpg', or 'png'.
+        passthrough: :class:`bool`
+            Whether to return the asset in the original, Discord-defined quality and format (usually APNG).
+            This only has an affect on specific asset types. This will cause the ``format``
+            and ``size`` parameters to be ignored by the CDN. By default, this is set to ``False``
+            if a size or format parameter is passed and the asset is marked as passed through, else untouched.
+            A value of ``None`` will unconditionally omit the parameter from the query string.
+
+            .. versionadded:: 2.0
+        keep_aspect_ratio: :class:`bool`
+            Whether to return the original aspect ratio of the asset instead of
+            having it resized to the endpoint's enforced aspect ratio.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -423,25 +449,45 @@ class Asset(AssetMixin):
             else:
                 if static_format is MISSING and format not in VALID_STATIC_FORMATS:
                     raise ValueError(f'format must be one of {VALID_STATIC_FORMATS}')
-            url = url.with_path(f'{path}.{format}')
+            query = url.query
+            if self._passthrough:
+                query['passthrough'] = 'false'
+            url = url.with_path(f'{path}.{format}').with_query(query)
 
         if static_format is not MISSING and not self._animated:
             if static_format not in VALID_STATIC_FORMATS:
                 raise ValueError(f'static_format must be one of {VALID_STATIC_FORMATS}')
-            url = url.with_path(f'{path}.{static_format}')
+            query = url.query
+            if self._passthrough:
+                query['passthrough'] = 'false'
+            url = url.with_path(f'{path}.{static_format}').with_query(query)
 
-        if size is not MISSING:
-            if not utils.valid_icon_size(size):
+        if size is not MISSING or passthrough is not MISSING or keep_aspect_ratio:
+            if size is not MISSING and not utils.valid_icon_size(size):
                 raise ValueError('size must be a power of 2 between 16 and 4096')
-            url = url.with_query(size=size)
+            query = url.query
+            if size is not MISSING:
+                query['size'] = str(size)
+                if passthrough is MISSING and self._passthrough:
+                    passthrough = False
+            if passthrough is not MISSING:
+                if passthrough is None:
+                    passthrough = MISSING
+                    query.pop('passthrough', None)
+                else:
+                    query['passthrough'] = str(passthrough).lower()
+            if keep_aspect_ratio:
+                query['keep_aspect_ratio'] = 'true'
+            url = url.with_query(query)
         else:
             url = url.with_query(url.raw_query_string)
 
         url = str(url)
-        return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
+        return Asset(state=self._state, url=url, key=self._key, animated=self._animated, passthrough=passthrough)  # type: ignore
 
     def with_size(self, size: int, /) -> Self:
         """Returns a new asset with the specified size.
+        Also sets ``passthrough`` to ``False`` if the asset is marked as passed through.
 
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
@@ -465,11 +511,17 @@ class Asset(AssetMixin):
         if not utils.valid_icon_size(size):
             raise ValueError('size must be a power of 2 between 16 and 4096')
 
-        url = str(yarl.URL(self._url).with_query(size=size))
+        url = yarl.URL(self._url)
+        query = {**url.query, 'size': str(size)}
+        if self._passthrough:
+            query['passthrough'] = 'false'
+
+        url = str(url.with_query(query))
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
     def with_format(self, format: ValidAssetFormatTypes, /) -> Self:
         """Returns a new asset with the specified format.
+        Also sets ``passthrough`` to ``False`` if the asset is marked as passed through.
 
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
@@ -490,7 +542,6 @@ class Asset(AssetMixin):
         :class:`Asset`
             The new updated asset.
         """
-
         if self._animated:
             if format not in VALID_ASSET_FORMATS:
                 raise ValueError(f'format must be one of {VALID_ASSET_FORMATS}')
@@ -500,11 +551,16 @@ class Asset(AssetMixin):
 
         url = yarl.URL(self._url)
         path, _ = os.path.splitext(url.path)
-        url = str(url.with_path(f'{path}.{format}').with_query(url.raw_query_string))
+        query = url.query
+        if self._passthrough:
+            query['passthrough'] = 'false'
+
+        url = str(url.with_path(f'{path}.{format}').with_query(query))
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
     def with_static_format(self, format: ValidStaticFormatTypes, /) -> Self:
         """Returns a new asset with the specified static format.
+        Also sets ``passthrough`` to ``False`` if the asset is marked as passed through.
 
         This only changes the format if the underlying asset is
         not animated. Otherwise, the asset is not changed.
@@ -528,7 +584,6 @@ class Asset(AssetMixin):
         :class:`Asset`
             The new updated asset.
         """
-
         if self._animated:
             return self
         return self.with_format(format)

@@ -861,7 +861,8 @@ def utcnow() -> datetime.datetime:
 
 def valid_icon_size(size: int) -> bool:
     """Icons must be power of 2 within [16, 4096]."""
-    return not size & (size - 1) and 4096 >= size >= 16
+    ADDITIONAL_SIZES = (20, 22, 24, 28, 40, 44, 48, 56, 60, 80, 96, 100, 160, 240, 300, 320, 480, 600, 640, 1280, 1536, 3072)
+    return (not size & (size - 1) and 4096 >= size >= 16) or size in ADDITIONAL_SIZES
 
 
 class SnowflakeList(_SnowflakeListBase):
