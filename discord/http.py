@@ -97,6 +97,7 @@ if TYPE_CHECKING:
         member,
         message,
         payments,
+        profile,
         promotions,
         template,
         role,
@@ -4069,14 +4070,22 @@ class HTTPClient:
             value = '{0}?encoding={1}&v={2}'
         return value.format(data['url'], encoding, INTERNAL_API_VERSION)
 
-    def get_user(self, user_id: Snowflake) -> Response[user.User]:
+    def get_user(self, user_id: Snowflake) -> Response[user.APIUser]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
 
     def get_user_profile(
-        self, user_id: Snowflake, guild_id: Snowflake = MISSING, *, with_mutual_guilds: bool = True
-    ):  # TODO: return type
-        params: Dict[str, Any] = {'with_mutual_guilds': str(with_mutual_guilds).lower()}
-        if guild_id is not MISSING:
+        self,
+        user_id: Snowflake,
+        guild_id: Optional[Snowflake] = None,
+        *,
+        with_mutual_guilds: bool = True,
+        with_mutual_friends_count: bool = False,
+    ) -> Response[profile.Profile]:
+        params: Dict[str, Any] = {
+            'with_mutual_guilds': str(with_mutual_guilds).lower(),
+            'with_mutual_friends_count': str(with_mutual_friends_count).lower(),
+        }
+        if guild_id:
             params['guild_id'] = guild_id
 
         return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id), params=params)
@@ -4084,10 +4093,10 @@ class HTTPClient:
     def get_mutual_friends(self, user_id: Snowflake):  # TODO: return type
         return self.request(Route('GET', '/users/{user_id}/relationships', user_id=user_id))
 
-    def get_notes(self):  # TODO: return type
+    def get_notes(self) -> Response[Dict[Snowflake, str]]:
         return self.request(Route('GET', '/users/@me/notes'))
 
-    def get_note(self, user_id: Snowflake):  # TODO: return type
+    def get_note(self, user_id: Snowflake) -> Response[user.Note]:
         return self.request(Route('GET', '/users/@me/notes/{user_id}', user_id=user_id))
 
     def set_note(self, user_id: Snowflake, *, note: Optional[str] = None) -> Response[None]:

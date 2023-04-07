@@ -665,6 +665,16 @@ Relationships
     :param after: The updated relationship.
     :type after: :class:`Relationship`
 
+Notes
+~~~~~~
+
+.. function:: on_note_update(note)
+
+    Called when a :class:`User`\'s note is updated.
+
+    :param note: The note that was updated.
+    :type note: :class:`Note`
+
 Calls
 ~~~~~
 
@@ -6785,6 +6795,11 @@ Guild
 .. attributetable:: UserGuild
 
 .. autoclass:: UserGuild()
+    :members:
+
+.. attributetable:: MutualGuild
+
+.. autoclass:: MutualGuild()
     :members:
 
 .. class:: BanEntry

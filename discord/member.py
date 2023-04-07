@@ -58,6 +58,7 @@ if TYPE_CHECKING:
     from .channel import DMChannel, VoiceChannel, StageChannel, GroupChannel
     from .flags import PublicUserFlags
     from .guild import Guild
+    from .profile import MemberProfile
     from .types.activity import (
         PartialPresenceUpdate,
     )
@@ -1107,3 +1108,54 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             Sending the friend request failed.
         """
         await self._state.http.add_relationship(self._user.id, action=RelationshipAction.send_friend_request)
+
+    async def profile(
+        self,
+        *,
+        with_mutual_guilds: bool = True,
+        with_mutual_friends_count: bool = False,
+        with_mutual_friends: bool = True,
+    ) -> MemberProfile:
+        """|coro|
+
+        A shorthand method to retrieve a :class:`MemberProfile` for the member.
+
+        Parameters
+        ------------
+        with_mutual_guilds: :class:`bool`
+            Whether to fetch mutual guilds.
+            This fills in :attr:`MemberProfile.mutual_guilds`.
+
+            .. versionadded:: 2.0
+        with_mutual_friends_count: :class:`bool`
+            Whether to fetch the number of mutual friends.
+            This fills in :attr:`MemberProfile.mutual_friends_count`.
+
+            .. versionadded:: 2.0
+        with_mutual_friends: :class:`bool`
+            Whether to fetch mutual friends.
+            This fills in :attr:`MemberProfile.mutual_friends` and :attr:`MemberProfile.mutual_friends_count`,
+            but requires an extra API call.
+
+            .. versionadded:: 2.0
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to fetch this profile.
+        HTTPException
+            Fetching the profile failed.
+        InvalidData
+            The member is not in this guild or has blocked you.
+
+        Returns
+        --------
+        :class:`MemberProfile`
+            The profile of the member.
+        """
+        return await self.guild.fetch_member_profile(
+            self._user.id,
+            with_mutual_guilds=with_mutual_guilds,
+            with_mutual_friends_count=with_mutual_friends_count,
+            with_mutual_friends=with_mutual_friends,
+        )

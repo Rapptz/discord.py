@@ -54,7 +54,7 @@ from discord_protos import UserSettingsType
 from .errors import ClientException, InvalidData, NotFound
 from .guild import ApplicationCommandCounts, Guild
 from .activity import BaseActivity, create_activity, Session
-from .user import User, ClientUser
+from .user import User, ClientUser, Note
 from .emoji import Emoji
 from .mentions import AllowedMentions
 from .partial_emoji import PartialEmoji
@@ -1262,6 +1262,20 @@ class ConnectionState:
     def parse_user_update(self, data: gw.UserUpdateEvent) -> None:
         if self.user:
             self.user._full_update(data)
+
+    def parse_user_note_update(self, data: gw.UserNoteUpdateEvent) -> None:
+        # The gateway does not provide note objects on READY anymore,
+        # so we cannot have (old, new) event dispatches
+        user_id = int(data['id'])
+        text = data['note']
+        user = self.get_user(user_id)
+        if user:
+            note = user.note
+            note._value = text
+        else:
+            note = Note(self, user_id, note=text)
+
+        self.dispatch('note_update', note)
 
     # def parse_user_settings_update(self, data) -> None:
     #     new_settings = self.settings

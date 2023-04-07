@@ -503,3 +503,8 @@ class PassiveUpdateEvent(TypedDict):
 class GuildApplicationCommandIndexUpdateEvent(TypedDict):
     guild_id: Snowflake
     application_command_counts: ApplicationCommandCounts
+
+
+class UserNoteUpdateEvent(TypedDict):
+    id: Snowflake
+    note: str

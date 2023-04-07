@@ -67,7 +67,12 @@ ConnectionVisibilty = Literal[0, 1]
 PremiumType = Literal[0, 1, 2, 3]
 
 
-class User(PartialUser, total=False):
+class APIUser(PartialUser):
+    banner: Optional[str]
+    accent_color: Optional[int]
+
+
+class User(APIUser, total=False):
     mfa_enabled: bool
     locale: str
     verified: bool
@@ -76,8 +81,6 @@ class User(PartialUser, total=False):
     purchased_flags: int
     premium_usage_flags: int
     premium_type: PremiumType
-    banner: Optional[str]
-    accent_color: Optional[int]
     bio: str
     analytics_token: str
     phone: Optional[str]
@@ -147,3 +150,9 @@ class GuildAffinity(TypedDict):
 
 class GuildAffinities(TypedDict):
     guild_affinities: List[GuildAffinity]
+
+
+class Note(TypedDict):
+    note: str
+    user_id: Snowflake
+    note_user_id: Snowflake

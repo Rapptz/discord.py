@@ -34,16 +34,23 @@ from .enums import PremiumType, try_enum
 from .flags import ApplicationFlags
 from .member import Member
 from .mixins import Hashable
-from .user import Note, User
+from .user import User
 
 if TYPE_CHECKING:
     from datetime import datetime
 
     from .guild import Guild
     from .state import ConnectionState
+    from .types.profile import (
+        Profile as ProfilePayload,
+        ProfileApplication as ProfileApplicationPayload,
+        MutualGuild as MutualGuildPayload,
+    )
+    from .types.user import PartialUser as PartialUserPayload
 
 __all__ = (
     'ApplicationProfile',
+    'MutualGuild',
     'UserProfile',
     'MemberProfile',
 )
@@ -52,23 +59,29 @@ __all__ = (
 class Profile:
     if TYPE_CHECKING:
         id: int
-        application_id: Optional[int]
+        bot: bool
         _state: ConnectionState
 
-    def __init__(self, **kwargs) -> None:  # TODO: type data
-        data = kwargs.pop('data')
+    def __init__(self, **kwargs) -> None:
+        data: ProfilePayload = kwargs.pop('data')
         user = data['user']
+        mutual_friends: List[PartialUserPayload] = kwargs.pop('mutual_friends', None)
 
-        if (member := data.get('guild_member')) is not None:
+        member = data.get('guild_member')
+        if member is not None:
             member['user'] = user
             kwargs['data'] = member
         else:
             kwargs['data'] = user
 
+        # n.b. this class is subclassed by UserProfile and MemberProfile
+        # which subclass either User or Member respectively
+        # Because of this, we call super().__init__ here
+        # after ensuring the data kwarg is set correctly
         super().__init__(**kwargs)
+        state = self._state
 
-        self.bio: Optional[str] = user.pop('bio', None) or None
-        self.note: Note = Note(kwargs['state'], self.id, user=getattr(self, '_user', self))  # type: ignore
+        self.bio: Optional[str] = user['bio'] or None
 
         # We need to do a bit of a hack here because premium_since is massively overloaded
         guild_premium_since = getattr(self, 'premium_since', utils.MISSING)
@@ -76,35 +89,41 @@ class Profile:
             self.guild_premium_since = guild_premium_since
 
         self.premium_type: Optional[PremiumType] = (
-            try_enum(PremiumType, user.pop('premium_type')) if user.get('premium_type') else None
+            try_enum(PremiumType, data['premium_type']) if user.get('premium_type') else None
         )
         self.premium_since: Optional[datetime] = utils.parse_time(data['premium_since'])
-        self.boosting_since: Optional[datetime] = utils.parse_time(data['premium_guild_since'])
+        self.premium_guild_since: Optional[datetime] = utils.parse_time(data['premium_guild_since'])
         self.connections: List[PartialConnection] = [PartialConnection(d) for d in data['connected_accounts']]
 
-        self.mutual_guilds: Optional[List[Guild]] = self._parse_mutual_guilds(data.get('mutual_guilds'))
-        self.mutual_friends: Optional[List[User]] = self._parse_mutual_friends(data.get('mutual_friends'))
+        self.mutual_guilds: Optional[List[MutualGuild]] = (
+            [MutualGuild(state=state, data=d) for d in data['mutual_guilds']] if 'mutual_guilds' in data else None
+        )
+        self.mutual_friends: Optional[List[User]] = self._parse_mutual_friends(mutual_friends)
+        self._mutual_friends_count: Optional[int] = data.get('mutual_friends_count')
 
-        application = data.get('application', {})
+        application = data.get('application')
         self.application: Optional[ApplicationProfile] = ApplicationProfile(data=application) if application else None
 
-    def _parse_mutual_guilds(self, mutual_guilds) -> Optional[List[Guild]]:
-        if mutual_guilds is None:
-            return
-
-        state = self._state
-
-        def get_guild(guild):
-            return state._get_or_create_unavailable_guild(int(guild['id']))
-
-        return list(map(get_guild, mutual_guilds))
-
-    def _parse_mutual_friends(self, mutual_friends) -> Optional[List[User]]:
+    def _parse_mutual_friends(self, mutual_friends: List[PartialUserPayload]) -> Optional[List[User]]:
+        if self.bot:
+            # Bots don't have friends
+            return []
         if mutual_friends is None:
             return
 
         state = self._state
         return [state.store_user(friend) for friend in mutual_friends]
+
+    @property
+    def mutual_friends_count(self) -> Optional[int]:
+        """Optional[:class:`int`]: The number of mutual friends the user has with the client user."""
+        if self.bot:
+            # Bots don't have friends
+            return 0
+        if self._mutual_friends_count is not None:
+            return self._mutual_friends_count
+        if self.mutual_friends is not None:
+            return len(self.mutual_friends)
 
     @property
     def premium(self) -> bool:
@@ -148,7 +167,17 @@ class ApplicationProfile(Hashable):
         The parameters to use for authorizing the application, if specified.
     """
 
-    def __init__(self, data: dict) -> None:
+    __slots__ = (
+        'id',
+        'verified',
+        'popular_application_command_ids',
+        'primary_sku_id',
+        '_flags',
+        'custom_install_url',
+        'install_params',
+    )
+
+    def __init__(self, data: ProfileApplicationPayload) -> None:
         self.id: int = int(data['id'])
         self.verified: bool = data.get('verified', False)
         self.popular_application_command_ids: List[int] = [int(id) for id in data.get('popular_application_command_ids', [])]
@@ -181,6 +210,49 @@ class ApplicationProfile(Hashable):
             return f'https://discord.com/store/skus/{self.primary_sku_id}/unknown'
 
 
+class MutualGuild(Hashable):
+    """Represents a mutual guild between a user and the client user.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two guilds are equal.
+
+        .. describe:: x != y
+
+            Checks if two guilds are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the guild's hash.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    id: :class:`int`
+        The guild's ID.
+    nick: Optional[:class:`str`]
+        The guild specific nickname of the user.
+    """
+
+    __slots__ = ('id', 'nick', '_state')
+
+    def __init__(self, *, state: ConnectionState, data: MutualGuildPayload) -> None:
+        self._state = state
+        self.id: int = int(data['id'])
+        self.nick: Optional[str] = data.get('nick')
+
+    def __repr__(self) -> str:
+        return f'<MutualGuild guild={self.guild!r} nick={self.nick!r}>'
+
+    @property
+    def guild(self) -> Guild:
+        """:class:`Guild`: The guild that the user is mutual with."""
+        return self._state._get_or_create_unavailable_guild(self.id)
+
+
 class UserProfile(Profile, User):
     """Represents a Discord user's profile.
 
@@ -209,7 +281,7 @@ class UserProfile(Profile, User):
     Attributes
     -----------
     application: Optional[:class:`ApplicationProfile`]
-        The application profile of the user, if a bot.
+        The application profile of the user, if it is a bot.
     bio: Optional[:class:`str`]
         The user's "about me" field. Could be ``None``.
     premium_type: Optional[:class:`PremiumType`]
@@ -217,22 +289,40 @@ class UserProfile(Profile, User):
     premium_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies how long a user has been premium (had Nitro).
         ``None`` if the user is not a premium user.
-    boosting_since: Optional[:class:`datetime.datetime`]
-        An aware datetime object that specifies when a user first boosted a guild.
+    premium_guild_since: Optional[:class:`datetime.datetime`]
+        An aware datetime object that specifies when a user first Nitro boosted a guild.
     connections: Optional[List[:class:`PartialConnection`]]
         The connected accounts that show up on the profile.
-    note: :class:`Note`
-        Represents the note on the profile.
-    mutual_guilds: Optional[List[:class:`Guild`]]
+    mutual_guilds: Optional[List[:class:`MutualGuild`]]
         A list of guilds that you share with the user.
-        ``None`` if you didn't fetch mutuals.
+        ``None`` if you didn't fetch mutual guilds.
     mutual_friends: Optional[List[:class:`User`]]
         A list of friends that you share with the user.
-        ``None`` if you didn't fetch mutuals.
+        ``None`` if you didn't fetch mutual friends.
     """
+
+    __slots__ = (
+        'bio',
+        'premium_type',
+        'premium_since',
+        'premium_guild_since',
+        'connections',
+        'mutual_guilds',
+        'mutual_friends',
+        '_mutual_friends_count',
+        'application',
+    )
 
     def __repr__(self) -> str:
         return f'<UserProfile id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot} system={self.system} premium={self.premium}>'
+
+    @property
+    def display_bio(self) -> Optional[str]:
+        """Optional[:class:`str`]: Returns the user's display bio.
+
+        This is the same as :attr:`bio` and is here for compatibility.
+        """
+        return self.bio
 
 
 class MemberProfile(Profile, Member):
@@ -265,7 +355,7 @@ class MemberProfile(Profile, Member):
     Attributes
     -----------
     application: Optional[:class:`ApplicationProfile`]
-        The application profile of the user, if a bot.
+        The application profile of the user, if it is a bot.
     bio: Optional[:class:`str`]
         The user's "about me" field. Could be ``None``.
     guild_bio: Optional[:class:`str`]
@@ -275,6 +365,7 @@ class MemberProfile(Profile, Member):
         "Nitro boost" on the guild, if available. This could be ``None``.
 
         .. note::
+
             This is renamed from :attr:`Member.premium_since` because of name collisions.
     premium_type: Optional[:class:`PremiumType`]
         Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic). Could be ``None`` if the user is not premium.
@@ -283,14 +374,13 @@ class MemberProfile(Profile, Member):
         ``None`` if the user is not a premium user.
 
         .. note::
+
             This is not the same as :attr:`Member.premium_since`. That is renamed to :attr:`guild_premium_since`.
-    boosting_since: Optional[:class:`datetime.datetime`]
-        An aware datetime object that specifies when a user first boosted any guild.
+    premium_guild_since: Optional[:class:`datetime.datetime`]
+        An aware datetime object that specifies when a user first Nitro boosted a guild.
     connections: Optional[List[:class:`PartialConnection`]]
         The connected accounts that show up on the profile.
-    note: :class:`Note`
-        Represents the note on the profile.
-    mutual_guilds: Optional[List[:class:`Guild`]]
+    mutual_guilds: Optional[List[:class:`MutualGuild`]]
         A list of guilds that you share with the user.
         ``None`` if you didn't fetch mutuals.
     mutual_friends: Optional[List[:class:`User`]]
@@ -298,8 +388,24 @@ class MemberProfile(Profile, Member):
         ``None`` if you didn't fetch mutuals.
     """
 
-    def __init__(self, *, state: ConnectionState, data: dict, guild: Guild):
-        super().__init__(state=state, guild=guild, data=data)
+    __slots__ = (
+        'bio',
+        'guild_premium_since',
+        'premium_type',
+        'premium_since',
+        'premium_guild_since',
+        'connections',
+        'mutual_guilds',
+        'mutual_friends',
+        '_mutual_friends_count',
+        'application',
+        '_banner',
+        'guild_bio',
+    )
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        data = kwargs['data']
         member = data['guild_member']
         self._banner: Optional[str] = member.get('banner')
         self.guild_bio: Optional[str] = member.get('bio') or None
@@ -328,3 +434,13 @@ class MemberProfile(Profile, Member):
         if self._banner is None:
             return None
         return Asset._from_guild_banner(self._state, self.guild.id, self.id, self._banner)
+
+    @property
+    def display_bio(self) -> Optional[str]:
+        """Optional[:class:`str`]: Returns the member's display bio.
+
+        For regular members this is just their bio (if available), but
+        if they have a guild specific bio then that
+        is returned instead.
+        """
+        return self.guild_bio or self.bio

@@ -44,8 +44,11 @@ class BaseApplication(TypedDict):
     summary: NotRequired[Literal['']]
 
 
-class IntegrationApplication(BaseApplication):
+class MetadataApplication(BaseApplication):
     bot: NotRequired[PartialUser]
+
+
+class IntegrationApplication(MetadataApplication):
     role_connections_verification_url: NotRequired[Optional[str]]
 
 
@@ -76,6 +79,7 @@ class PartialApplication(BaseApplication):
     eula_id: NotRequired[Snowflake]
     embedded_activity_config: NotRequired[EmbeddedActivityConfig]
     guild: NotRequired[PartialGuild]
+    install_params: NotRequired[ApplicationInstallParams]
 
 
 class ApplicationDiscoverability(TypedDict):
@@ -234,6 +238,11 @@ class EmbeddedActivityConfig(TypedDict):
     supported_platforms: List[EmbeddedActivityPlatform]
 
 
+class ApplicationInstallParams(TypedDict):
+    scopes: List[str]
+    permissions: int
+
+
 class ActiveDeveloperWebhook(TypedDict):
     channel_id: Snowflake
     webhook_id: Snowflake
@@ -241,3 +250,23 @@ class ActiveDeveloperWebhook(TypedDict):
 
 class ActiveDeveloperResponse(TypedDict):
     follower: ActiveDeveloperWebhook
+
+
+class RoleConnectionMetadata(TypedDict):
+    type: Literal[1, 2, 3, 4, 5, 6, 7, 8]
+    key: str
+    name: str
+    description: str
+    name_localizations: NotRequired[Dict[str, str]]
+    description_localizations: NotRequired[Dict[str, str]]
+
+
+class PartialRoleConnection(TypedDict):
+    platform_name: Optional[str]
+    platform_username: Optional[str]
+    metadata: Dict[str, str]
+
+
+class RoleConnection(PartialRoleConnection):
+    application: MetadataApplication
+    application_metadata: List[RoleConnectionMetadata]

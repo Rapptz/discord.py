@@ -2333,32 +2333,45 @@ class Guild(Hashable):
         return Member(data=data, state=self._state, guild=self)
 
     async def fetch_member_profile(
-        self, member_id: int, /, *, with_mutuals: bool = True, fetch_note: bool = True
+        self,
+        member_id: int,
+        /,
+        *,
+        with_mutual_guilds: bool = True,
+        with_mutual_friends_count: bool = False,
+        with_mutual_friends: bool = True,
     ) -> MemberProfile:
         """|coro|
 
-        Gets an arbitrary member's profile.
+        Retrieves a :class:`.MemberProfile` from a guild ID, and a member ID.
+
+        .. versionadded:: 2.0
 
         Parameters
         ------------
         member_id: :class:`int`
             The ID of the member to fetch their profile for.
-        with_mutuals: :class:`bool`
-            Whether to fetch mutual guilds and friends.
-            This fills in :attr:`.MemberProfile.mutual_guilds` & :attr:`.MemberProfile.mutual_friends`.
-        fetch_note: :class:`bool`
-            Whether to pre-fetch the user's note.
+        with_mutual_guilds: :class:`bool`
+            Whether to fetch mutual guilds.
+            This fills in :attr:`.MemberProfile.mutual_guilds`.
+        with_mutual_friends_count: :class:`bool`
+            Whether to fetch the number of mutual friends.
+            This fills in :attr:`.MemberProfile.mutual_friends_count`.
+        with_mutual_friends: :class:`bool`
+            Whether to fetch mutual friends.
+            This fills in :attr:`.MemberProfile.mutual_friends` and :attr:`.MemberProfile.mutual_friends_count`,
+            but requires an extra API call.
 
         Raises
         -------
         NotFound
             A user with this ID does not exist.
         Forbidden
-            Not allowed to fetch this profile.
+            You do not have a mutual with this user, and and the user is not a bot.
         HTTPException
             Fetching the profile failed.
         InvalidData
-            The member is not in this guild.
+            The member is not in this guild or has blocked you.
 
         Returns
         --------
@@ -2366,23 +2379,18 @@ class Guild(Hashable):
             The profile of the member.
         """
         state = self._state
-        data = await state.http.get_user_profile(member_id, self.id, with_mutual_guilds=with_mutuals)
-
+        data = await state.http.get_user_profile(
+            member_id, self.id, with_mutual_guilds=with_mutual_guilds, with_mutual_friends_count=with_mutual_friends_count
+        )
+        if 'guild_member_profile' not in data:
+            raise InvalidData('Member is not in this guild')
         if 'guild_member' not in data:
-            raise InvalidData('Member not in this guild')
+            raise InvalidData('Member has blocked you')
+        mutual_friends = None
+        if with_mutual_friends and not data['user'].get('bot', False):
+            mutual_friends = await state.http.get_mutual_friends(member_id)
 
-        if with_mutuals:
-            if not data['user'].get('bot', False):
-                data['mutual_friends'] = await state.http.get_mutual_friends(member_id)
-            else:
-                data['mutual_friends'] = []
-
-        profile = MemberProfile(state=state, data=data, guild=self)
-
-        if fetch_note:
-            await profile.note.fetch()
-
-        return profile
+        return MemberProfile(state=state, data=data, mutual_friends=mutual_friends, guild=self)
 
     async def fetch_ban(self, user: Snowflake) -> BanEntry:
         """|coro|

@@ -40,7 +40,7 @@ from .enums import (
 from .errors import ClientException, NotFound
 from .flags import PublicUserFlags, PrivateUserFlags, PremiumUsageFlags, PurchasedFlags
 from .relationship import Relationship
-from .utils import _bytes_to_base64_data, _get_as_snowflake, copy_doc, snowflake_time, MISSING
+from .utils import _bytes_to_base64_data, _get_as_snowflake, cached_slot_property, copy_doc, snowflake_time, MISSING
 from .voice_client import VoiceClient
 
 if TYPE_CHECKING:
@@ -74,8 +74,6 @@ __all__ = (
 class Note:
     """Represents a Discord note.
 
-    .. versionadded:: 2.0
-
     .. container:: operations
 
         .. describe:: x == y
@@ -97,19 +95,21 @@ class Note:
         .. describe:: len(x)
             Returns the note's length.
 
+    .. versionadded:: 1.9
+
     Attributes
     -----------
     user_id: :class:`int`
         The user ID the note is for.
     """
 
-    __slots__ = ('_state', '_note', 'user_id', '_user')
+    __slots__ = ('_state', '_value', 'user_id', '_user')
 
     def __init__(
         self, state: ConnectionState, user_id: int, *, user: Optional[User] = None, note: Optional[str] = MISSING
     ) -> None:
         self._state = state
-        self._note: Optional[str] = note
+        self._value: Optional[str] = note
         self.user_id: int = user_id
         self._user: Optional[User] = user
 
@@ -124,9 +124,9 @@ class Note:
         ClientException
             Attempted to access note without fetching it.
         """
-        if self._note is MISSING:
+        if self._value is MISSING:
             raise ClientException('Note is not fetched')
-        return self._note
+        return self._value
 
     @property
     def value(self) -> Optional[str]:
@@ -143,8 +143,8 @@ class Note:
 
     @property
     def user(self) -> Optional[User]:
-        """Optional[:class:`User`]: Returns the :class:`User` the note belongs to."""
-        return self._user or self._state.get_user(self.user_id)
+        """Optional[:class:`User`]: Returns the user the note belongs to."""
+        return self._state.get_user(self.user_id) or self._user
 
     async def fetch(self) -> Optional[str]:
         """|coro|
@@ -163,16 +163,18 @@ class Note:
         """
         try:
             data = await self._state.http.get_note(self.user_id)
-            self._note = data['note']
+            self._value = data['note']
             return data['note']
-        except NotFound:  # 404 = no note
-            self._note = None
+        except NotFound:
+            # A 404 means the note doesn't exist
+            # However, this is bad UX, so we just return None
+            self._value = None
             return None
 
     async def edit(self, note: Optional[str]) -> None:
         """|coro|
 
-        Changes the note.
+        Modifies the note. Can be at most 256 characters.
 
         Raises
         -------
@@ -180,7 +182,7 @@ class Note:
             Changing the note failed.
         """
         await self._state.http.set_note(self.user_id, note=note)
-        self._note = note
+        self._value = note or ''
 
     async def delete(self) -> None:
         """|coro|
@@ -196,14 +198,14 @@ class Note:
 
     def __repr__(self) -> str:
         base = f'<Note user={self.user!r}'
-        note = self._note
+        note = self._value
         if note is not MISSING:
             note = note or ''
-            base += f' note={note!r}'
-        return base + '>'
+            return f'{base} note={note!r}>'
+        return f'{base}>'
 
     def __str__(self) -> str:
-        note = self._note
+        note = self._value
         if note is MISSING:
             raise ClientException('Note is not fetched')
         return note or ''
@@ -212,15 +214,15 @@ class Note:
         return bool(str(self))
 
     def __eq__(self, other: object) -> bool:
-        return isinstance(other, Note) and self._note == other._note and self.user_id == other.user_id
+        return isinstance(other, Note) and self.user_id == other.user_id
 
     def __ne__(self, other: object) -> bool:
         if isinstance(other, Note):
-            return self._note != other._note or self.user_id != other.user_id
+            return self._value != other._value or self.user_id != other.user_id
         return True
 
     def __hash__(self) -> int:
-        return hash((self._note, self.user_id))
+        return hash((self._value, self.user_id))
 
     def __len__(self) -> int:
         note = str(self)
@@ -244,6 +246,7 @@ class BaseUser(_UserTag):
         'bot',
         'system',
         '_public_flags',
+        '_cs_note',
         '_state',
     )
 
@@ -313,7 +316,7 @@ class BaseUser(_UserTag):
         return self
 
     def _to_minimal_user_json(self) -> PartialUserPayload:
-        user: UserPayload = {
+        user: PartialUserPayload = {
             'username': self.name,
             'id': self.id,
             'avatar': self._avatar,
@@ -472,6 +475,18 @@ class BaseUser(_UserTag):
         is returned instead.
         """
         return self.name
+
+    @cached_slot_property('_cs_note')
+    def note(self) -> Note:
+        """:class:`Note`: Returns an object representing the user's note.
+
+        .. versionadded:: 2.0
+
+        .. note::
+
+            The underlying note is cached and updated from gateway events.
+        """
+        return Note(self._state, self.id, user=self)  # type: ignore
 
     def mentioned_in(self, message: Message) -> bool:
         """Checks if the user is mentioned in the specified message.
@@ -1012,18 +1027,35 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         """
         await self._state.http.send_friend_request(self.name, self.discriminator)
 
-    async def profile(self, *, with_mutuals: bool = True, fetch_note: bool = True) -> UserProfile:
+    async def profile(
+        self,
+        *,
+        with_mutual_guilds: bool = True,
+        with_mutual_friends_count: bool = False,
+        with_mutual_friends: bool = True,
+    ) -> UserProfile:
         """|coro|
 
-        Gets the user's profile.
+        A shorthand method to retrieve a :class:`UserProfile` for the user.
 
         Parameters
         ------------
-        with_mutuals: :class:`bool`
-            Whether to fetch mutual guilds and friends.
-            This fills in :attr:`.UserProfile.mutual_guilds` & :attr:`.UserProfile.mutual_friends`.
-        fetch_note: :class:`bool`
-            Whether to pre-fetch the user's note.
+        with_mutual_guilds: :class:`bool`
+            Whether to fetch mutual guilds.
+            This fills in :attr:`UserProfile.mutual_guilds`.
+
+            .. versionadded:: 2.0
+        with_mutual_friends_count: :class:`bool`
+            Whether to fetch the number of mutual friends.
+            This fills in :attr:`UserProfile.mutual_friends_count`.
+
+            .. versionadded:: 2.0
+        with_mutual_friends: :class:`bool`
+            Whether to fetch mutual friends.
+            This fills in :attr:`UserProfile.mutual_friends` and :attr:`UserProfile.mutual_friends_count`,
+            but requires an extra API call.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -1037,21 +1069,9 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         :class:`UserProfile`
             The profile of the user.
         """
-        from .profile import UserProfile
-
-        user_id = self.id
-        state = self._state
-        data = await state.http.get_user_profile(user_id, with_mutual_guilds=with_mutuals)
-
-        if with_mutuals:
-            if not data['user'].get('bot', False):
-                data['mutual_friends'] = await self._state.http.get_mutual_friends(user_id)
-            else:
-                data['mutual_friends'] = []
-
-        profile = UserProfile(state=state, data=data)
-
-        if fetch_note:
-            await profile.note.fetch()
-
-        return profile
+        return await self._state.client.fetch_user_profile(
+            self.id,
+            with_mutual_guilds=with_mutual_guilds,
+            with_mutual_friends_count=with_mutual_friends_count,
+            with_mutual_friends=with_mutual_friends,
+        )

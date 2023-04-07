@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from typing import Optional, TypedDict
 from .snowflake import SnowflakeList
-from .user import User
+from .user import PartialUser
 
 
 class Nickname(TypedDict):
@@ -40,27 +40,30 @@ class PartialMember(TypedDict):
 
 
 class Member(PartialMember, total=False):
-    avatar: str
-    user: User
+    avatar: Optional[str]
+    user: PartialUser
     nick: str
     premium_since: Optional[str]
     pending: bool
-    permissions: str
     communication_disabled_until: str
 
 
 class _OptionalMemberWithUser(PartialMember, total=False):
-    avatar: str
+    avatar: Optional[str]
     nick: str
     premium_since: Optional[str]
     pending: bool
-    permissions: str
     communication_disabled_until: str
 
 
 class MemberWithUser(_OptionalMemberWithUser):
-    user: User
+    user: PartialUser
 
 
-class UserWithMember(User, total=False):
+class PrivateMember(MemberWithUser):
+    bio: str
+    banner: Optional[str]
+
+
+class UserWithMember(PartialUser, total=False):
     member: _OptionalMemberWithUser

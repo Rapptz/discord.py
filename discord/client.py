@@ -2162,13 +2162,20 @@ class Client:
         return User(state=self._connection, data=data)
 
     async def fetch_user_profile(
-        self, user_id: int, /, *, with_mutuals: bool = True, fetch_note: bool = True
+        self,
+        user_id: int,
+        /,
+        *,
+        with_mutual_guilds: bool = True,
+        with_mutual_friends_count: bool = False,
+        with_mutual_friends: bool = True,
     ) -> UserProfile:
         """|coro|
 
-        Gets an arbitrary user's profile.
+        Retrieves a :class:`.UserProfile` based on their user ID.
 
-        You must share a guild or be friends with this user to
+        You must share a guild, be friends with this user,
+        or have an incoming friend request from them to
         get this information (unless the user is a bot).
 
         .. versionchanged:: 2.0
@@ -2179,11 +2186,22 @@ class Client:
         ------------
         user_id: :class:`int`
             The ID of the user to fetch their profile for.
-        with_mutuals: :class:`bool`
-            Whether to fetch mutual guilds and friends.
-            This fills in :attr:`.UserProfile.mutual_guilds` & :attr:`.UserProfile.mutual_friends`.
-        fetch_note: :class:`bool`
-            Whether to pre-fetch the user's note.
+        with_mutual_guilds: :class:`bool`
+            Whether to fetch mutual guilds.
+            This fills in :attr:`.UserProfile.mutual_guilds`.
+
+            .. versionadded:: 2.0
+        with_mutual_friends_count: :class:`bool`
+            Whether to fetch the number of mutual friends.
+            This fills in :attr:`.UserProfile.mutual_friends_count`.
+
+            .. versionadded:: 2.0
+        with_mutual_friends: :class:`bool`
+            Whether to fetch mutual friends.
+            This fills in :attr:`.UserProfile.mutual_friends` and :attr:`.UserProfile.mutual_friends_count`,
+            but requires an extra API call.
+
+            .. versionadded:: 2.0
 
         Raises
         -------
@@ -2200,19 +2218,14 @@ class Client:
             The profile of the user.
         """
         state = self._connection
-        data = await state.http.get_user_profile(user_id, with_mutual_guilds=with_mutuals)
+        data = await state.http.get_user_profile(
+            user_id, with_mutual_guilds=with_mutual_guilds, with_mutual_friends_count=with_mutual_friends_count
+        )
+        mutual_friends = None
+        if with_mutual_friends and not data['user'].get('bot', False):
+            mutual_friends = await state.http.get_mutual_friends(user_id)
 
-        if with_mutuals:
-            if not data['user'].get('bot', False):
-                data['mutual_friends'] = await state.http.get_mutual_friends(user_id)
-            else:
-                data['mutual_friends'] = []
-        profile = UserProfile(state=state, data=data)
-
-        if fetch_note:
-            await profile.note.fetch()
-
-        return profile
+        return UserProfile(state=state, data=data, mutual_friends=mutual_friends)
 
     async def fetch_channel(self, channel_id: int, /) -> Union[GuildChannel, PrivateChannel, Thread]:
         """|coro|

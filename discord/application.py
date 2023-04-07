@@ -83,6 +83,7 @@ if TYPE_CHECKING:
         Achievement as AchievementPayload,
         ActivityStatistics as ActivityStatisticsPayload,
         Application as ApplicationPayload,
+        ApplicationInstallParams as ApplicationInstallParamsPayload,
         Asset as AssetPayload,
         BaseApplication as BaseApplicationPayload,
         Branch as BranchPayload,
@@ -787,7 +788,7 @@ class ApplicationInstallParams:
         self.permissions: Permissions = permissions or Permissions(0)
 
     @classmethod
-    def from_application(cls, application: Snowflake, data: dict) -> ApplicationInstallParams:
+    def from_application(cls, application: Snowflake, data: ApplicationInstallParamsPayload) -> ApplicationInstallParams:
         return cls(
             application.id,
             scopes=data.get('scopes', []),
