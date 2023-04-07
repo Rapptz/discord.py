@@ -121,7 +121,7 @@ def test_valid_icon_size():
         assert utils.valid_icon_size(size)
 
     # Some not valid icon sizes
-    for size in [-1, 0, 20, 103, 500, 8192]:
+    for size in [-1, 0, 21, 103, 500, 8192]:
         assert not utils.valid_icon_size(size)
 
 
