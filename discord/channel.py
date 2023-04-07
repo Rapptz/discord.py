@@ -203,8 +203,8 @@ class VoiceChannelEffect:
         The channel in which the effect is sent.
     user: :class:`Member`
         The user who sent the effect.
-    animation: :class:`VoiceChannelEffectAnimation`
-        The animation the effect has.
+    animation: Optional[:class:`VoiceChannelEffectAnimation`]
+        The animation the effect has. Returns ``None`` if the effect has no animation.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji of the effect.
     sound: Optional[:class:`VoiceChannelSoundEffect`]
@@ -216,11 +216,14 @@ class VoiceChannelEffect:
     def __init__(self, *, data: VoiceChannelEffectPayload, guild: Guild):
         self.channel: VoiceChannel = guild.get_channel(int(data['channel_id']))  # type: ignore # will always be a VoiceChannel
         self.user: Member = guild.get_member(int(data['user_id']))  # type: ignore # will always be a Member
+        self.animation: Optional[VoiceChannelEffectAnimation] = None
 
-        animation_type = try_enum(VoiceChannelEffectAnimationType, data['animation_type'])
-        self.animation: VoiceChannelEffectAnimation = VoiceChannelEffectAnimation(
-            id=data['animation_id'], type=animation_type
-        )
+        animation_id = data.get('animation_id')
+        if animation_id is not None:
+            animation_type = try_enum(VoiceChannelEffectAnimationType, data['animation_type'])  # type: ignore # cannot be None here
+            self.animation = VoiceChannelEffectAnimation(
+                id=animation_id, type=animation_type
+            )
 
         emoji = data['emoji']
         self.emoji: Optional[PartialEmoji] = PartialEmoji.from_dict(emoji) if emoji is not None else None

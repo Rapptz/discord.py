@@ -95,8 +95,8 @@ class VoiceChannelEffect(TypedDict):
     channel_id: Snowflake
     user_id: Snowflake
     emoji: Optional[PartialEmoji]
-    animation_type: int
-    animation_id: int
+    animation_type: NotRequired[int]
+    animation_id: NotRequired[int]
     sound_id: NotRequired[Union[int, str]]
     sound_volume: NotRequired[float]
     sound_override_path: NotRequired[Optional[str]]
