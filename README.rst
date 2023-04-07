@@ -16,17 +16,18 @@ discord.py-self
 
 A modern, easy to use, feature-rich, and async ready API wrapper for Discord's user API written in Python.
 
+| **Note:**
+| Automating user accounts is against the Discord ToS. This library is a proof of concept and I cannot recommend using it. Do so at your own risk.
+
 Fork Changes
 ------------
 
 These changes have become too numerous to mention, so check out our `docs <https://discordpy-self.readthedocs.io/en/latest/index.html>`_.
 
-| **Credits:**
+**Credits:**
+
 - `Rapptz <https://github.com/Rapptz>`_ for the original library this fork is based on. Without it, the project would not exist.
 - `arandomnewaccount <https://www.reddit.com/user/obviouslymymain123/>`_ for help when the project was first started.
-
-| **Note:**
-| Automating user accounts is against the Discord ToS. This library is a proof of concept and I cannot recommend using it. Do so at your own risk.
 
 Key Features
 -------------
