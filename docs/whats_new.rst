@@ -16,4 +16,4 @@ in specific versions.
 v2.0
 -----
 
-Initial stable version.
+This is considered the initial stable version. All previous versions were mostly a stepping stone to this one. The changes are too enormous to list here, so please check out the rest of the documentation.
