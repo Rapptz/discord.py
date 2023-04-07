@@ -887,12 +887,18 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         if len(user) == 0 or len(user) <= 1:  # Done because of typing
             return
 
-        original = (self.name, self._avatar, self.discriminator, self._public_flags)
+        original = (self.name, self._avatar, self.discriminator, self._public_flags, self._avatar_decoration)
         # These keys seem to always be available
-        modified = (user['username'], user.get('avatar'), user['discriminator'], user.get('public_flags', 0))
+        modified = (
+            user['username'],
+            user.get('avatar'),
+            user['discriminator'],
+            user.get('public_flags', 0),
+            user.get('avatar_decoration'),
+        )
         if original != modified:
             to_return = User._copy(self)
-            self.name, self._avatar, self.discriminator, self._public_flags = modified
+            self.name, self._avatar, self.discriminator, self._public_flags, self._avatar_decoration = modified
             # Signal to dispatch user_update
             return to_return, self
 

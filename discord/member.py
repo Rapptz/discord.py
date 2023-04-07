@@ -289,6 +289,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         created_at: datetime.datetime
         default_avatar: Asset
         avatar: Optional[Asset]
+        avatar_decoration: Optional[Asset]
         dm_channel: Optional[DMChannel]
         create_dm: Callable[[], Awaitable[DMChannel]]
         mutual_guilds: List[Guild]
