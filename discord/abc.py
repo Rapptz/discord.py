@@ -248,7 +248,10 @@ class User(Snowflake, Protocol):
 
     @property
     def avatar_decoration(self) -> Optional[Asset]:
-        """Optional[:class:`~discord.Asset`]: Returns an Asset that represents the user's avatar decoration, if present."""
+        """Optional[:class:`~discord.Asset`]: Returns an Asset that represents the user's avatar decoration, if present.
+
+        .. versionadded:: 2.3
+        """
         raise NotImplementedError
 
     @property
