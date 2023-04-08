@@ -785,13 +785,14 @@ class ReportType(Enum):
 
 
 class RelationshipAction(Enum):
-    send_friend_request = 'request'
-    unfriend = 'unfriend'
-    accept_request = 'accept'
-    deny_request = 'deny'
-    block = 'block'
-    unblock = 'unblock'
-    remove_pending_request = 'remove'
+    send_friend_request = 1
+    unfriend = 2
+    accept_request = 3
+    deny_request = 4
+    block = 5
+    unblock = 6
+    remove_pending_request = 7
+    friend_suggestion = 8
 
 
 class RequiredActionType(Enum):

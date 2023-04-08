@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Tuple, Union
 
-from .enums import RelationshipAction, RelationshipType, Status, try_enum
+from .enums import ConnectionType, RelationshipAction, RelationshipType, Status, try_enum
 from .mixins import Hashable
 from .object import Object
 from .utils import MISSING, parse_time
@@ -38,14 +38,18 @@ if TYPE_CHECKING:
     from .activity import ActivityTypes
     from .state import ConnectionState, Presence
     from .types.gateway import RelationshipEvent
-    from .types.user import Relationship as RelationshipPayload
+    from .types.user import (
+        FriendSuggestion as FriendSuggestionPayload,
+        FriendSuggestionReason as FriendSuggestionReasonPayload,
+        Relationship as RelationshipPayload,
+    )
     from .user import User
 
-# fmt: off
 __all__ = (
     'Relationship',
+    'FriendSuggestionReason',
+    'FriendSuggestion',
 )
-# fmt: on
 
 
 class Relationship(Hashable):
@@ -323,3 +327,92 @@ class Relationship(Hashable):
             payload['nickname'] = nick
 
         await self._state.http.edit_relationship(self.user.id, **payload)
+
+
+class FriendSuggestionReason:
+    """Represents a reason why a user was suggested as a friend to you.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    -----------
+    platform: :class:`ConnectionType`
+        The platform the user was suggested from.
+    name: :class:`str`
+        The user's name on the platform.
+    """
+
+    __slots__ = ('type', 'platform', 'name')
+
+    def __init__(self, data: FriendSuggestionReasonPayload):
+        # This entire model is unused by any client, so I have no idea what the type is
+        # Also because of this, I'm treating everything as optional just in case
+        self.type: int = data.get('type', 0)
+        self.platform: ConnectionType = try_enum(ConnectionType, data.get('platform', 'contacts'))
+        self.name: str = data.get('name', '')
+
+    def __repr__(self) -> str:
+        return f'<FriendSuggestionReason platform={self.platform!r} name={self.name!r}>'
+
+
+class FriendSuggestion(Hashable):
+    """Represents a friend suggestion on Discord.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two friend suggestions are equal.
+
+        .. describe:: x != y
+
+            Checks if two friend suggestions are not equal.
+
+        .. describe:: hash(x)
+
+            Return the suggestion's hash.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    -----------
+    user: :class:`User`
+        The suggested user.
+    reasons: List[:class:`FriendSuggestionReason`]
+        The reasons why the user was suggested.
+    """
+
+    __slots__ = ('user', 'reasons', '_state')
+
+    def __init__(self, *, state: ConnectionState, data: FriendSuggestionPayload):
+        self._state = state
+        self.user = state.store_user(data['suggested_user'])
+        self.reasons = [FriendSuggestionReason(r) for r in data.get('reasons', [])]
+
+    def __repr__(self) -> str:
+        return f'<FriendSuggestion user={self.user!r} reasons={self.reasons!r}>'
+
+    async def accept(self) -> None:
+        """|coro|
+
+        Accepts the friend suggestion.
+        This creates a :class:`Relationship` of type :class:`RelationshipType.outgoing_request`.
+
+        Raises
+        -------
+        HTTPException
+            Accepting the relationship failed.
+        """
+        await self._state.http.add_relationship(self.user.id, action=RelationshipAction.friend_suggestion)
+
+    async def delete(self) -> None:
+        """|coro|
+
+        Ignores the friend suggestion.
+
+        Raises
+        ------
+        HTTPException
+            Deleting the relationship failed.
+        """
+        await self._state.http.delete_friend_suggestion(self.user.id)

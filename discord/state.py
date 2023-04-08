@@ -63,7 +63,7 @@ from .channel import *
 from .channel import _channel_factory, _private_channel_factory
 from .raw_models import *
 from .member import Member
-from .relationship import Relationship
+from .relationship import Relationship, FriendSuggestion
 from .role import Role
 from .enums import (
     ChannelType,
@@ -2624,6 +2624,16 @@ class ConnectionState:
             old = copy.copy(new)
             new._update(data)
             self.dispatch('relationship_update', old, new)
+
+    def parse_friend_suggestion_create(self, data: gw.FriendSuggestionCreateEvent):
+        self.dispatch('friend_suggestion_add', FriendSuggestion(state=self, data=data))
+
+    def parse_friend_suggestion_delete(self, data: gw.FriendSuggestionDeleteEvent):
+        user_id = int(data['suggested_user_id'])
+        user = self.get_user(user_id)
+        if user:
+            self.dispatch('friend_suggestion_remove', user)
+        self.dispatch('raw_friend_suggestion_remove', user_id)
 
     def parse_interaction_create(self, data) -> None:
         if 'nonce' not in data:  # Sometimes interactions seem to be missing the nonce

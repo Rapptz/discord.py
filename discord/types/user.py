@@ -156,3 +156,14 @@ class Note(TypedDict):
     note: str
     user_id: Snowflake
     note_user_id: Snowflake
+
+
+class FriendSuggestionReason(TypedDict):
+    name: str
+    platform_type: ConnectionType
+    type: int
+
+
+class FriendSuggestion(TypedDict):
+    suggested_user: PartialUser
+    reasons: List[FriendSuggestionReason]

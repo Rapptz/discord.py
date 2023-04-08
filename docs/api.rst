@@ -665,6 +665,35 @@ Relationships
     :param after: The updated relationship.
     :type after: :class:`Relationship`
 
+.. function:: on_friend_suggestion_add(friend_suggestion)
+
+    Called when a :class:`FriendSuggestion` is created.
+
+    .. versionadded:: 2.1
+
+    :param friend_suggestion: The friend suggestion that was created.
+    :type friend_suggestion: :class:`FriendSuggestion`
+
+.. function:: on_friend_suggestion_remove(user)
+
+    Called when a :class:`FriendSuggestion` is removed.
+
+    .. versionadded:: 2.1
+
+    :param user: The friend suggestion that was removed.
+    :type user: :class:`User`
+
+.. function:: on_raw_friend_suggestion_remove(user_id)
+
+    Called when a :class:`FriendSuggestion` is removed.
+    Unlike :func:`on_message_edit`, this is called regardless
+    of the user being in the internal user cache or not.
+
+    .. versionadded:: 2.1
+
+    :param user_id: The ID of the friend suggestion that was removed.
+    :type user_id: :class:`int`
+
 Notes
 ~~~~~~
 
@@ -6424,6 +6453,16 @@ Relationship
 .. attributetable:: Relationship
 
 .. autoclass:: Relationship()
+    :members:
+
+.. attributetable:: FriendSuggestion
+
+.. autoclass:: FriendSuggestion()
+    :members:
+
+.. attributetable:: FriendSuggestionReason
+
+.. autoclass:: FriendSuggestionReason()
     :members:
 
 Settings

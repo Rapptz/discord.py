@@ -2556,7 +2556,6 @@ class HTTPClient:
         return self.request(Route('GET', '/users/@me/relationships'))
 
     def remove_relationship(self, user_id: Snowflake, *, action: RelationshipAction) -> Response[None]:
-        r = Route('DELETE', '/users/@me/relationships/{user_id}', user_id=user_id)
         if action is RelationshipAction.deny_request:  # User Profile, Friends, DM Channel
             props = choice(
                 (
@@ -2582,12 +2581,16 @@ class HTTPClient:
         else:
             props = ContextProperties.empty()
 
-        return self.request(r, context_properties=props)
+        return self.request(Route('DELETE', '/users/@me/relationships/{user_id}', user_id=user_id), context_properties=props)
 
     def add_relationship(
         self, user_id: Snowflake, type: Optional[int] = None, *, action: RelationshipAction
     ) -> Response[None]:
         r = Route('PUT', '/users/@me/relationships/{user_id}', user_id=user_id)
+        payload = {}
+        if type is not None:
+            payload['type'] = type
+
         if action is RelationshipAction.accept_request:  # User Profile, Friends, DM Channel
             props = choice(
                 (
@@ -2613,10 +2616,13 @@ class HTTPClient:
                     ContextProperties.from_dm_channel,
                 )
             )()
+        elif action is RelationshipAction.friend_suggestion:  # Friends
+            props = ContextProperties.from_friends()
+            payload['from_friend_suggestion'] = True
         else:
             props = ContextProperties.empty()
 
-        return self.request(r, context_properties=props, json={'type': type} if type else None)
+        return self.request(r, context_properties=props, json=payload if payload else None)
 
     def send_friend_request(self, username: str, discriminator: Snowflake) -> Response[None]:
         r = Route('POST', '/users/@me/relationships')
@@ -2627,6 +2633,12 @@ class HTTPClient:
 
     def edit_relationship(self, user_id: Snowflake, **payload) -> Response[None]:
         return self.request(Route('PATCH', '/users/@me/relationships/{user_id}', user_id=user_id), json=payload)
+
+    def get_friend_suggestions(self) -> Response[List[user.FriendSuggestion]]:
+        return self.request(Route('GET', '/friend-suggestions'))
+
+    def delete_friend_suggestion(self, user_id: Snowflake) -> Response[None]:
+        return self.request(Route('DELETE', '/friend-suggestions/{user_id}', user_id=user_id))
 
     # Connections
 

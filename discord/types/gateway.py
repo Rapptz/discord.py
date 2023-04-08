@@ -40,7 +40,7 @@ from .message import Message
 from .sticker import GuildSticker
 from .application import BaseAchievement, PartialApplication
 from .guild import ApplicationCommandCounts, Guild, UnavailableGuild, SupplementalGuild
-from .user import Connection, User, PartialUser, ProtoSettingsType, Relationship, RelationshipType
+from .user import Connection, FriendSuggestion, User, PartialUser, ProtoSettingsType, Relationship, RelationshipType
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
 from .channel import DMChannel, GroupDMChannel
@@ -453,6 +453,13 @@ class RelationshipEvent(TypedDict):
     id: Snowflake
     type: RelationshipType
     nickname: Optional[str]
+
+
+FriendSuggestionCreateEvent = FriendSuggestion
+
+
+class FriendSuggestionDeleteEvent(TypedDict):
+    suggested_user_id: Snowflake
 
 
 class ProtoSettings(TypedDict):

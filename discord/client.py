@@ -85,7 +85,7 @@ from .entitlements import Entitlement, Gift
 from .store import SKU, StoreListing, SubscriptionPlan
 from .guild_premium import *
 from .library import LibraryApplication
-from .relationship import Relationship
+from .relationship import FriendSuggestion, Relationship
 from .settings import UserSettings, LegacyUserSettings, TrackingSettings, EmailSettings
 from .affinity import *
 
@@ -2742,6 +2742,27 @@ class Client:
         state = self._connection
         data = await state.http.get_relationships()
         return [Relationship(state=state, data=d) for d in data]
+
+    async def friend_suggestions(self) -> List[FriendSuggestion]:
+        """|coro|
+
+        Retrieves all your friend suggestions.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        HTTPException
+            Retrieving your friend suggestions failed.
+
+        Returns
+        --------
+        List[:class:`.FriendSuggestion`]
+            All your current friend suggestions.
+        """
+        state = self._connection
+        data = await state.http.get_friend_suggestions()
+        return [FriendSuggestion(state=state, data=d) for d in data]
 
     async def fetch_country_code(self) -> str:
         """|coro|
