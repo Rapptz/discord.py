@@ -67,6 +67,7 @@ class AutoModRuleAction:
     -----------
     type: :class:`AutoModRuleActionType`
         The type of action to take.
+        Defaults to :attr:`~AutoModRuleActionType.block_message`.
 
         .. versionchanged:: 2.3
             This is an optional parameter.
@@ -139,16 +140,13 @@ class AutoModRuleAction:
         if sum(v is None for v in (channel_id, duration, custom_message)) < 2:
             raise ValueError('Only one of channel_id, duration, or custom_message can be passed.')
 
+        self.type: AutoModRuleActionType = AutoModRuleActionType.block_message
         if type is not None:
             self.type = type
         elif channel_id is not None:
             self.type = AutoModRuleActionType.send_alert_message
         elif duration is not None:
             self.type = AutoModRuleActionType.timeout
-        elif custom_message is not None:
-            self.type = AutoModRuleActionType.block_message
-        else:
-            raise ValueError('Please pass the action type explicitly if not using channel_id, custom_message, or duration.')
 
     def __repr__(self) -> str:
         return f'<AutoModRuleAction type={self.type} channel={self.channel_id} duration={self.duration}>'
