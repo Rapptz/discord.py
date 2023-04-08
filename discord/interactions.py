@@ -33,7 +33,7 @@ from . import utils
 from .enums import try_enum, Locale, InteractionType, InteractionResponseType
 from .errors import InteractionResponded, HTTPException, ClientException, DiscordException, InvalidData
 from .flags import MessageFlags
-from .channel import PartialMessageable, ChannelType
+from .channel import ChannelType
 from ._types import ClientT
 
 from .user import User
@@ -81,7 +81,6 @@ if TYPE_CHECKING:
         ForumChannel,
         CategoryChannel,
         Thread,
-        PartialMessageable,
         DMChannel,
         GroupChannel,
     ]
@@ -107,8 +106,9 @@ class Interaction(Generic[ClientT]):
         The guild ID the interaction was sent from.
     channel_id: Optional[:class:`int`]
         The channel ID the interaction was sent from.
-    channel: Optional[Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]]
-        The channel the interaction was sent from.
+
+        .. deprecated:: 2.3
+            Use :attr:`channel` instead.
     application_id: :class:`int`
         The application ID that the interaction was for.
     user: Union[:class:`User`, :class:`Member`]
@@ -161,7 +161,7 @@ class Interaction(Generic[ClientT]):
         '_cs_followup',
         '_cs_namespace',
         '_cs_command',
-        'channel',
+        '_channel',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT]):
@@ -183,24 +183,8 @@ class Interaction(Generic[ClientT]):
         self.token: str = data['token']
         self.version: int = data['version']
         self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
+        self._channel = data.get('channel')
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
-        self.channel: Optional[InteractionChannel] = None
-
-        channel_type = data.get('channel', {}).get('type')
-        if channel_type is not None:
-            factory, ch_type = _threaded_channel_factory(channel_type)
-            if factory is None:
-                raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
-
-            channel = data['channel']
-            if ch_type in (ChannelType.group, ChannelType.private):
-                channel = factory(me=self._client.user, data=channel, state=self._state)  # type: ignore
-            else:
-                guild = self._state._get_guild(self.guild_id)
-                channel = factory(guild=guild, state=self._state, data=channel)  # type: ignore
-
-            self.channel = channel
-
         self.application_id: int = int(data['application_id'])
 
         self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
@@ -240,6 +224,30 @@ class Interaction(Generic[ClientT]):
                 self.user = User(state=self._state, data=data['user'])  # type: ignore # The key is optional and handled
             except KeyError:
                 pass
+
+    @property
+    def channel(self) -> Optional[InteractionChannel]:
+        """Optional[Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]]: The channel
+        the interaction was sent from.
+
+        .. versionadded:: 2.3
+        """
+        _ch_type = self._channel.get('type')
+        if _ch_type is not None:
+            factory, ch_type = _threaded_channel_factory(_ch_type)
+            _channel_id = self._channel['id']
+            if factory is None:
+                raise InvalidData(f'Unknown channel type {_ch_type} for channel ID {_channel_id}.')
+
+            if ch_type in (ChannelType.group, ChannelType.private):
+                channel = factory(me=self._client.user, data=self._channel, state=self._state)  # type: ignore
+            else:
+                guild = self._state._get_guild(self.guild_id)
+                channel = factory(guild=guild, state=self._state, data=self._channel)  # type: ignore
+
+            return channel
+
+        return None
 
     @property
     def client(self) -> ClientT:
