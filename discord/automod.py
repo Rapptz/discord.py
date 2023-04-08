@@ -92,9 +92,7 @@ class AutoModRuleAction:
         ...
 
     @overload
-    def __init__(
-        self, *, type: Literal[AutoModRuleActionType.send_alert_message] = ..., channel_id: int = ...
-    ) -> None:
+    def __init__(self, *, type: Literal[AutoModRuleActionType.send_alert_message] = ..., channel_id: int = ...) -> None:
         ...
 
     @overload
@@ -102,9 +100,7 @@ class AutoModRuleAction:
         ...
 
     @overload
-    def __init__(
-        self, *, type: Literal[AutoModRuleActionType.timeout] = ..., duration: datetime.timedelta = ...
-    ) -> None:
+    def __init__(self, *, type: Literal[AutoModRuleActionType.timeout] = ..., duration: datetime.timedelta = ...) -> None:
         ...
 
     @overload
@@ -117,7 +113,7 @@ class AutoModRuleAction:
 
     @overload
     def __init__(
-        self, *, type: Literal[AutoModRuleActionType.block_message] = ..., custom_message: str = ...
+        self, *, type: Literal[AutoModRuleActionType.block_message] = ..., custom_message: Optional[str] = ...
     ) -> None:
         ...
 
