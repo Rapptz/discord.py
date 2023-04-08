@@ -88,12 +88,12 @@ class AutoModRuleAction:
     __slots__ = ('type', 'channel_id', 'duration', 'custom_message')
 
     @overload
-    def __init__(self, *, channel_id: Optional[int] = ...) -> None:
+    def __init__(self, *, channel_id: int = ...) -> None:
         ...
 
     @overload
     def __init__(
-        self, *, type: Literal[AutoModRuleActionType.send_alert_message] = ..., channel_id: Optional[int] = ...
+        self, *, type: Literal[AutoModRuleActionType.send_alert_message] = ..., channel_id: int = ...
     ) -> None:
         ...
 
@@ -103,12 +103,12 @@ class AutoModRuleAction:
 
     @overload
     def __init__(
-        self, *, type: Literal[AutoModRuleActionType.timeout] = ..., duration: Optional[datetime.timedelta] = ...
+        self, *, type: Literal[AutoModRuleActionType.timeout] = ..., duration: datetime.timedelta = ...
     ) -> None:
         ...
 
     @overload
-    def __init__(self, *, custom_message: Optional[str] = ...) -> None:
+    def __init__(self, *, custom_message: str = ...) -> None:
         ...
 
     @overload
@@ -117,7 +117,7 @@ class AutoModRuleAction:
 
     @overload
     def __init__(
-        self, *, type: Literal[AutoModRuleActionType.block_message] = ..., custom_message: Optional[str] = ...
+        self, *, type: Literal[AutoModRuleActionType.block_message] = ..., custom_message: str = ...
     ) -> None:
         ...
 
