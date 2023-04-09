@@ -4620,7 +4620,7 @@ GuildSticker
     :members:
 
 DefaultSoundboardSound
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: DefaultSoundboardSound
 
