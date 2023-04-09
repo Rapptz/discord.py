@@ -605,6 +605,8 @@ def _get_as_snowflake(data: Any, key: str) -> Optional[int]:
     except KeyError:
         return None
     else:
+        if value == '':
+            return None
         return value and int(value)
 
 
