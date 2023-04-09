@@ -22,10 +22,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import TypedDict, Optional
+from typing import TypedDict, Optional, Union
+from .snowflake import Snowflake
 
 
-class SoundboardSound(TypedDict):
-    id: int
+class BaseSoundboardSound(TypedDict):
+    sound_id: Union[str, int]
     volume: float
     override_path: Optional[str]
+
+
+class SoundboardSound(BaseSoundboardSound):
+    name: str
+    emoji_id: Optional[Snowflake]
+    emoji_name: str
+    user_id: Snowflake

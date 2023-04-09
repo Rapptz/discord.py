@@ -4619,6 +4619,14 @@ GuildSticker
 .. autoclass:: GuildSticker()
     :members:
 
+DefaultSoundboardSound
+~~~~~~~~~~~~~
+
+.. attributetable:: DefaultSoundboardSound
+
+.. autoclass:: DefaultSoundboardSound()
+    :members:
+
 ShardInfo
 ~~~~~~~~~~~
 

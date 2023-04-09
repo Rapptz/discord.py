@@ -26,11 +26,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional
 from .mixins import Hashable
+from .partial_emoji import PartialEmoji
 
 if TYPE_CHECKING:
-    from .types.soundboard import SoundboardSound as SoundboardSoundPayload
+    from .types.soundboard import (
+        BaseSoundboardSound as BaseSoundboardSoundPayload,
+        SoundboardSound as SoundboardSoundPayload,
+    )
 
-__all__ = ()
+__all__ = ('DefaultSoundboardSound',)
 
 
 class BaseSoundboardSound(Hashable):
@@ -64,8 +68,8 @@ class BaseSoundboardSound(Hashable):
 
     __slots__ = ('id', 'volume', 'override_path')
 
-    def __init__(self, *, data: SoundboardSoundPayload):
-        self.id: int = data['id']
+    def __init__(self, *, data: BaseSoundboardSoundPayload):
+        self.id: int = int(data['sound_id'])
         self.volume: float = data['volume']
         self.override_path: Optional[str] = data['override_path']
 
@@ -75,3 +79,54 @@ class BaseSoundboardSound(Hashable):
         return NotImplemented
 
     __hash__ = Hashable.__hash__
+
+
+class DefaultSoundboardSound(BaseSoundboardSound):
+    """Represents a Discord default soundboard sound.
+
+    .. versionadded:: 2.3
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two sounds are equal.
+
+        .. describe:: x != y
+
+            Checks if two sounds are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the sound's hash.
+
+    Attributes
+    ------------
+    id: :class:`int`
+        The ID of the sound.
+    volume: :class:`float`
+        The volume of the sound as floating point percentage (e.g. ``1.0`` for 100%).
+    override_path: Optional[:class:`str`]
+        The override path of the sound (e.g. 'default_quack.mp3').
+    name: :class:`str`
+        The name of the sound.
+    emoji: :class:`PartialEmoji`
+        The emoji of the sound.
+    """
+
+    __slots__ = ('name', 'emoji')
+
+    def __init__(self, *, data: SoundboardSoundPayload):
+        self.name: str = data['name']
+        self.emoji: PartialEmoji = PartialEmoji(name=data['emoji_name'])
+        super().__init__(data=data)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('id', self.id),
+            ('name', self.name),
+            ('volume', self.volume),
+            ('emoji', self.emoji),
+        ]
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f"<{self.__class__.__name__} {inner}>"

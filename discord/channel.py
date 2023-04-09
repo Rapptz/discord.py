@@ -115,7 +115,7 @@ if TYPE_CHECKING:
         VoiceChannelEffect as VoiceChannelEffectPayload,
     )
     from .types.snowflake import SnowflakeList
-    from .types.soundboard import SoundboardSound as SoundboardSoundPayload
+    from .types.soundboard import BaseSoundboardSound as BaseSoundboardSoundPayload
 
     OverwriteKeyT = TypeVar('OverwriteKeyT', Role, BaseUser, Object, Union[Role, Member, Object])
 
@@ -159,11 +159,12 @@ class VoiceChannelSoundEffect(BaseSoundboardSound):
         The override path of the sound (e.g. 'default_quack.mp3').
     """
 
-    __slots__ = ()
+    __slots__ = ('_state',)
 
-    def __init__(self, *, id: int, volume: float, override_path: Optional[str]):
-        data: SoundboardSoundPayload = {
-            'id': id,
+    def __init__(self, *, state: ConnectionState, id: int, volume: float, override_path: Optional[str]):
+        self._state: ConnectionState = state
+        data: BaseSoundboardSoundPayload = {
+            'sound_id': id,
             'volume': volume,
             'override_path': override_path,
         }
@@ -173,14 +174,9 @@ class VoiceChannelSoundEffect(BaseSoundboardSound):
         attrs = [
             ('id', self.id),
             ('volume', self.volume),
-            ('is_default', self.is_default()),
         ]
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f"<{self.__class__.__name__} {inner}>"
-
-    def is_default(self) -> bool:
-        """:class:`bool`: Whether it's a default sound or not."""
-        return 1 <= self.id <= 6
 
     @property
     def created_at(self) -> Optional[datetime.datetime]:
@@ -190,6 +186,21 @@ class VoiceChannelSoundEffect(BaseSoundboardSound):
             return None
         else:
             return snowflake_time(self.id)
+
+    async def is_default(self) -> bool:
+        """|coro|
+
+        Checks if the sound is a default sound.
+
+        Returns
+        ---------
+        :class:`bool`
+            Whether it's a default sound or not.
+        """
+        default_sounds = await self._state.http.get_default_soundboard_sounds()
+        default_sounds = [int(sound['sound_id']) for sound in default_sounds]
+
+        return self.id in default_sounds
 
 
 class VoiceChannelEffect:
@@ -213,7 +224,7 @@ class VoiceChannelEffect:
 
     __slots__ = ('channel', 'user', 'animation', 'emoji', 'sound')
 
-    def __init__(self, *, data: VoiceChannelEffectPayload, guild: Guild):
+    def __init__(self, *, state: ConnectionState, data: VoiceChannelEffectPayload, guild: Guild):
         self.channel: VoiceChannel = guild.get_channel(int(data['channel_id']))  # type: ignore # will always be a VoiceChannel
         self.user: Member = guild.get_member(int(data['user_id']))  # type: ignore # will always be a Member
         self.animation: Optional[VoiceChannelEffectAnimation] = None
@@ -231,7 +242,9 @@ class VoiceChannelEffect:
         if sound_id is not None:
             sound_volume = data['sound_volume']  # type: ignore # sound_volume cannot be None here
             sound_override_path = data.get('sound_override_path')
-            self.sound = VoiceChannelSoundEffect(id=sound_id, volume=sound_volume, override_path=sound_override_path)
+            self.sound = VoiceChannelSoundEffect(
+                state=state, id=sound_id, volume=sound_volume, override_path=sound_override_path
+            )
 
     def __repr__(self) -> str:
         attrs = [
