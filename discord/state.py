@@ -76,6 +76,7 @@ from .sticker import GuildSticker
 from .automod import AutoModRule, AutoModAction
 from .audit_logs import AuditLogEntry
 from ._types import ClientT
+from .soundboard import SoundboardSound
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel
@@ -1507,6 +1508,41 @@ class ConnectionState(Generic[ClientT]):
                 )
         else:
             _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_guild_soundboard_sound_create(self, data: gw.GuildSoundBoardSoundCreateEvent) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            sound = SoundboardSound(state=self, data=data)
+            guild._soundboard_sounds[sound.id] = sound
+            self.dispatch('soundboard_sound_create', sound)
+        else:
+            _log.debug('GUILD_SOUNDBOARD_SOUND_CREATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_guild_soundboard_sound_update(self, data: gw.GuildSoundBoardSoundCreateEvent) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            sound = guild._soundboard_sounds.get(int(data['sound_id']))
+            if sound is not None:
+                print(data)
+                old_sound = copy.copy(sound)
+                sound._update(data)
+                self.dispatch('soundboard_sound_update', old_sound, sound)
+            else:
+                _log.warning('GUILD_SOUNDBOARD_SOUND_UPDATE referencing unknown sound ID: %s. Discarding.', data['sound_id'])
+        else:
+            _log.debug('GUILD_SOUNDBOARD_SOUND_UPDATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
+    def parse_guild_soundboard_sound_delete(self, data: gw.GuildSoundBoardSoundDeleteEvent) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            try:
+                sound = guild._soundboard_sounds.pop(int(data['sound_id']))
+            except KeyError:
+                pass
+            else:
+                self.dispatch('soundboard_sound_delete', sound)
+        else:
+            _log.debug('GUILD_SOUNDBOARD_SOUND_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_application_command_permissions_update(self, data: GuildApplicationCommandPermissionsPayload):
         raw = RawAppCommandPermissionsUpdateEvent(data=data, state=self)

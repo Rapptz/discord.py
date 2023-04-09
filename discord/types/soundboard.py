@@ -23,7 +23,9 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import TypedDict, Optional, Union
+
 from .snowflake import Snowflake
+from .user import User
 
 
 class BaseSoundboardSound(TypedDict):
@@ -32,8 +34,18 @@ class BaseSoundboardSound(TypedDict):
     override_path: Optional[str]
 
 
+class DefaultSoundboardSound(BaseSoundboardSound):
+    name: str
+    emoji_id: Optional[Snowflake]
+    emoji_name: str
+    user_id: Snowflake
+
+
 class SoundboardSound(BaseSoundboardSound):
     name: str
     emoji_id: Optional[Snowflake]
     emoji_name: str
     user_id: Snowflake
+    available: bool
+    guild_id: Snowflake
+    user: User

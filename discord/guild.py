@@ -133,6 +133,7 @@ if TYPE_CHECKING:
     from .types.snowflake import SnowflakeList
     from .types.widget import EditWidgetSettings
     from .message import EmojiInputType
+    from .soundboard import SoundboardSound
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
@@ -315,6 +316,7 @@ class Guild(Hashable):
         'approximate_member_count',
         'approximate_presence_count',
         'premium_progress_bar_enabled',
+        '_soundboard_sounds',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -332,6 +334,7 @@ class Guild(Hashable):
         self._threads: Dict[int, Thread] = {}
         self._stage_instances: Dict[int, StageInstance] = {}
         self._scheduled_events: Dict[int, ScheduledEvent] = {}
+        self._soundboard_sounds: Dict[int, SoundboardSound] = {}
         self._state: ConnectionState = state
         self._member_count: Optional[int] = None
         self._from_data(data)

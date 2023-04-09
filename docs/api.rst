@@ -1203,6 +1203,35 @@ Scheduled Events
     :type user: :class:`User`
 
 
+Soundboard
+~~~~~~~~~~~
+
+.. function:: on_soundboard_sound_create(sound)
+              on_soundboard_sound_delete(sound)
+
+    Called when a :class:`SoundboardSound` is created or deleted.
+
+    .. versionadded:: 2.3
+
+    :param sound: The soundboard sound that was created or deleted.
+    :type sound: :class:`SoundboardSound`
+
+.. function:: on_soundboard_sound_update(before, after)
+
+    Called when a :class:`SoundboardSound` is updated.
+
+    The following examples illustrate when this event is called:
+
+    - The name is changed.
+    - The emoji is changed.
+    - The volume is changed.
+
+    .. versionadded:: 2.3
+
+    :param sound: The soundboard sound that was updated.
+    :type sound: :class:`SoundboardSound`
+
+
 Stages
 ~~~~~~~
 
@@ -4617,6 +4646,14 @@ GuildSticker
 .. attributetable:: GuildSticker
 
 .. autoclass:: GuildSticker()
+    :members:
+
+SoundboardSound
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SoundboardSound
+
+.. autoclass:: SoundboardSound()
     :members:
 
 DefaultSoundboardSound

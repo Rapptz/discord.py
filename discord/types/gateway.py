@@ -44,6 +44,7 @@ from .user import User
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
 from .audit_log import AuditLogEntry
+from .soundboard import SoundboardSound
 
 
 class SessionStartLimit(TypedDict):
@@ -343,4 +344,12 @@ class AutoModerationActionExecution(TypedDict):
 
 
 class GuildAuditLogEntryCreate(AuditLogEntry):
+    guild_id: Snowflake
+
+
+GuildSoundBoardSoundCreateEvent = SoundboardSound
+
+
+class GuildSoundBoardSoundDeleteEvent(TypedDict):
+    sound_id: Snowflake
     guild_id: Snowflake
