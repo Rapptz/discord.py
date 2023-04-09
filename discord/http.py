@@ -1824,6 +1824,9 @@ class HTTPClient:
     def get_all_guild_channels(self, guild_id: Snowflake) -> Response[List[guild.GuildChannel]]:
         return self.request(Route('GET', '/guilds/{guild_id}/channels', guild_id=guild_id))
 
+    def get_top_guild_channels(self, guild_id: Snowflake) -> Response[List[Snowflake]]:
+        return self.request(Route('GET', '/guilds/{guild_id}/top-read-channels', guild_id=guild_id))
+
     def get_member(self, guild_id: Snowflake, member_id: Snowflake) -> Response[member.MemberWithUser]:
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
 

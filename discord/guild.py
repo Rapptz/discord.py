@@ -2264,6 +2264,31 @@ class Guild(Hashable):
         data = await http.edit_guild(self.id, reason=reason, **fields)
         return Guild(data=data, state=self._state)
 
+    async def top_channels(self) -> List[Union[TextChannel, VoiceChannel, StageChannel, PartialMessageable]]:
+        """|coro|
+
+        Retrieves the top 10 most read channels in the guild. Channels are returned in order of descending usage.
+
+        .. note::
+
+            For guilds without many members, this may return an empty list.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the top channels failed.
+
+        Returns
+        --------
+        List[Union[:class:`TextChannel`, :class:`VoiceChannel`, :class:`StageChannel`]]
+            The top 10 most read channels. Falls back to :class:`PartialMessageable` if the channel is not found in cache.
+        """
+        state = self._state
+        data = await state.http.get_top_guild_channels(self.id)
+        return [self.get_channel(int(c)) or PartialMessageable(id=int(c), state=state, guild_id=self.id) for c in data]  # type: ignore
+
     async def fetch_channels(self) -> Sequence[GuildChannel]:
         """|coro|
 
