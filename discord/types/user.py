@@ -159,7 +159,7 @@ class Note(TypedDict):
 
 
 class FriendSuggestionReason(TypedDict):
-    name: str
+    name: Optional[str]
     platform_type: ConnectionType
     type: int
 

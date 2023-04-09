@@ -439,7 +439,7 @@ class RelationshipType(Enum):
     incoming_request = 3
     outgoing_request = 4
     implicit = 5
-    suggestion = 6
+    suggestion = 6  # Unused
 
 
 class NotificationLevel(Enum, comparable=True):
