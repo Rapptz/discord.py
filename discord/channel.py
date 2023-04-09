@@ -47,7 +47,16 @@ import datetime
 import discord.abc
 from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, ForumLayoutType, ForumOrderType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
+from .enums import (
+    ChannelType,
+    ForumLayoutType,
+    ForumOrderType,
+    PrivacyLevel,
+    try_enum,
+    VideoQualityMode,
+    EntityType,
+    VoiceChannelEffectAnimationType,
+)
 from .mixins import Hashable
 from . import utils
 from .utils import MISSING
@@ -58,6 +67,9 @@ from .threads import Thread
 from .partial_emoji import _EmojiTag, PartialEmoji
 from .flags import ChannelFlags
 from .http import handle_message_parameters
+from .object import Object
+from .soundboard import BaseSoundboardSound
+from .utils import snowflake_time
 
 __all__ = (
     'TextChannel',
@@ -69,6 +81,8 @@ __all__ = (
     'ForumChannel',
     'GroupChannel',
     'PartialMessageable',
+    'VoiceChannelEffect',
+    'VoiceChannelSoundEffect',
 )
 
 if TYPE_CHECKING:
@@ -76,7 +90,6 @@ if TYPE_CHECKING:
 
     from .types.threads import ThreadArchiveDuration
     from .role import Role
-    from .object import Object
     from .member import Member, VoiceState
     from .abc import Snowflake, SnowflakeTime
     from .embeds import Embed
@@ -99,8 +112,10 @@ if TYPE_CHECKING:
         GroupDMChannel as GroupChannelPayload,
         ForumChannel as ForumChannelPayload,
         ForumTag as ForumTagPayload,
+        VoiceChannelEffect as VoiceChannelEffectPayload,
     )
     from .types.snowflake import SnowflakeList
+    from .types.soundboard import BaseSoundboardSound as BaseSoundboardSoundPayload
 
     OverwriteKeyT = TypeVar('OverwriteKeyT', Role, BaseUser, Object, Union[Role, Member, Object])
 
@@ -108,6 +123,143 @@ if TYPE_CHECKING:
 class ThreadWithMessage(NamedTuple):
     thread: Thread
     message: Message
+
+
+class VoiceChannelEffectAnimation(NamedTuple):
+    id: int
+    type: VoiceChannelEffectAnimationType
+
+
+class VoiceChannelSoundEffect(BaseSoundboardSound):
+    """Represents a Discord voice channel sound effect.
+
+    .. versionadded:: 2.3
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two sound effects are equal.
+
+        .. describe:: x != y
+
+            Checks if two sound effects are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the sound effect's hash.
+
+    Attributes
+    ------------
+    id: :class:`int`
+        The ID of the sound.
+    volume: :class:`float`
+        The volume of the sound as floating point percentage (e.g. ``1.0`` for 100%).
+    override_path: Optional[:class:`str`]
+        The override path of the sound (e.g. 'default_quack.mp3').
+    """
+
+    __slots__ = ('_state',)
+
+    def __init__(self, *, state: ConnectionState, id: int, volume: float, override_path: Optional[str]):
+        self._state: ConnectionState = state
+        data: BaseSoundboardSoundPayload = {
+            'sound_id': id,
+            'volume': volume,
+            'override_path': override_path,
+        }
+        super().__init__(data=data)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('id', self.id),
+            ('volume', self.volume),
+        ]
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f"<{self.__class__.__name__} {inner}>"
+
+    @property
+    def created_at(self) -> Optional[datetime.datetime]:
+        """:class:`datetime.datetime`: Returns the snowflake's creation time in UTC.
+        Returns ``None`` if it's a default sound."""
+        if self.is_default():
+            return None
+        else:
+            return snowflake_time(self.id)
+
+    async def is_default(self) -> bool:
+        """|coro|
+
+        Checks if the sound is a default sound.
+
+        Returns
+        ---------
+        :class:`bool`
+            Whether it's a default sound or not.
+        """
+        default_sounds = await self._state.http.get_default_soundboard_sounds()
+        default_sounds = [int(sound['sound_id']) for sound in default_sounds]
+
+        return self.id in default_sounds
+
+
+class VoiceChannelEffect:
+    """Represents a Discord voice channel effect.
+
+    .. versionadded:: 2.3
+
+    Attributes
+    ------------
+    channel: :class:`VoiceChannel`
+        The channel in which the effect is sent.
+    user: :class:`Member`
+        The user who sent the effect.
+    animation: Optional[:class:`VoiceChannelEffectAnimation`]
+        The animation the effect has. Returns ``None`` if the effect has no animation.
+    emoji: Optional[:class:`PartialEmoji`]
+        The emoji of the effect.
+    sound: Optional[:class:`VoiceChannelSoundEffect`]
+        The sound of the effect. Returns ``None`` if it's an emoji effect.
+    """
+
+    __slots__ = ('channel', 'user', 'animation', 'emoji', 'sound')
+
+    def __init__(self, *, state: ConnectionState, data: VoiceChannelEffectPayload, guild: Guild):
+        self.channel: VoiceChannel = guild.get_channel(int(data['channel_id']))  # type: ignore # will always be a VoiceChannel
+        self.user: Member = guild.get_member(int(data['user_id']))  # type: ignore # will always be a Member
+        self.animation: Optional[VoiceChannelEffectAnimation] = None
+
+        animation_id = data.get('animation_id')
+        if animation_id is not None:
+            animation_type = try_enum(VoiceChannelEffectAnimationType, data['animation_type'])  # type: ignore # cannot be None here
+            self.animation = VoiceChannelEffectAnimation(id=animation_id, type=animation_type)
+
+        emoji = data['emoji']
+        self.emoji: Optional[PartialEmoji] = PartialEmoji.from_dict(emoji) if emoji is not None else None
+        self.sound: Optional[VoiceChannelSoundEffect] = None
+
+        sound_id: Optional[int] = utils._get_as_snowflake(data, 'sound_id')
+        if sound_id is not None:
+            sound_volume = data['sound_volume']  # type: ignore # sound_volume cannot be None here
+            sound_override_path = data.get('sound_override_path')
+            self.sound = VoiceChannelSoundEffect(
+                state=state, id=sound_id, volume=sound_volume, override_path=sound_override_path
+            )
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('channel', self.channel),
+            ('user', self.user),
+            ('animation', self.animation),
+            ('emoji', self.emoji),
+            ('sound', self.sound),
+        ]
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f"<{self.__class__.__name__} {inner}>"
+
+    def is_sound(self) -> bool:
+        """:class:`bool`: Whether the effect is a sound or not."""
+        return self.sound is not None
 
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):

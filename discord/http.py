@@ -90,6 +90,7 @@ if TYPE_CHECKING:
         scheduled_event,
         sticker,
         welcome_screen,
+        soundboard,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -2369,6 +2370,11 @@ class HTTPClient:
             Route('DELETE', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
             reason=reason,
         )
+
+    # Soundboard
+
+    def get_default_soundboard_sounds(self) -> Response[List[soundboard.SoundboardSound]]:
+        return self.request(Route('GET', '/soundboard-default-sounds'))
 
     # Misc
 

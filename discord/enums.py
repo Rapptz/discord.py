@@ -68,6 +68,7 @@ __all__ = (
     'AutoModRuleActionType',
     'ForumLayoutType',
     'ForumOrderType',
+    'VoiceChannelEffectAnimationType',
 )
 
 if TYPE_CHECKING:
@@ -755,6 +756,11 @@ class ForumLayoutType(Enum):
 class ForumOrderType(Enum):
     latest_activity = 0
     creation_date = 1
+
+
+class VoiceChannelEffectAnimationType(Enum):
+    premium = 0
+    normal = 1
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

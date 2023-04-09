@@ -75,6 +75,7 @@ from .ui.view import View
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
+from .soundboard import DefaultSoundboardSound
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -2641,6 +2642,26 @@ class Client:
         """
         data = await self.http.list_premium_sticker_packs()
         return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
+
+    async def fetch_default_soundboard_sounds(self) -> List[DefaultSoundboardSound]:
+        """|coro|
+
+        Retrieves all default soundboard sounds.
+
+        .. versionadded:: 2.3
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the default soundboard sounds failed.
+
+        Returns
+        ---------
+        List[:class:`.DefaultSoundboardSound`]
+            All default soundboard sounds.
+        """
+        data = await self.http.get_default_soundboard_sounds()
+        return [DefaultSoundboardSound(data=sound) for sound in data]
 
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|

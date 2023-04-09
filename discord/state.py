@@ -1538,6 +1538,14 @@ class ConnectionState(Generic[ClientT]):
             else:
                 _log.debug('VOICE_STATE_UPDATE referencing an unknown member ID: %s. Discarding.', data['user_id'])
 
+    def parse_voice_channel_effect_send(self, data: gw.VoiceChannelEffectSendEvent):
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            effect = VoiceChannelEffect(state=self, data=data, guild=guild)
+            self.dispatch('voice_channel_effect', effect)
+        else:
+            _log.debug('VOICE_CHANNEL_EFFECT_SEND referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+
     def parse_voice_server_update(self, data: gw.VoiceServerUpdateEvent) -> None:
         key_id = int(data['guild_id'])
 

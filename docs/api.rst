@@ -1388,6 +1388,17 @@ Voice
     :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
 
+.. function:: on_voice_channel_effect(effect)
+
+    Called when a :class:`Member` sends a :class:`VoiceChannelEffect` in a voice channel the bot is in.
+
+    This requires :attr:`Intents.voice_states` to be enabled.
+
+    .. versionadded:: 2.3
+
+    :param effect: The effect that is sent.
+    :type effect: :class:`VoiceChannelEffect`
+
 .. _discord-api-utils:
 
 Utility Functions
@@ -3325,6 +3336,21 @@ of :class:`enum.Enum`.
         Sort forum posts by creation time (from most recent to oldest).
 
 
+.. class:: VoiceChannelEffectAnimationType
+
+    Represents the animation type of a voice channel effect.
+
+    .. versionadded:: 2.3
+
+    .. attribute:: premium
+
+        A fun animation, sent by a Nitro subscriber.
+
+    .. attribute:: normal
+
+        The standard animation.
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -4398,6 +4424,35 @@ VoiceChannel
     :members:
     :inherited-members:
 
+.. attributetable:: VoiceChannelEffect
+
+.. autoclass:: VoiceChannelEffect()
+    :members:
+    :inherited-members:
+
+.. class:: VoiceChannelEffectAnimation
+
+    A namedtuple which represents a voice channel effect animation.
+
+    .. versionadded:: 2.3
+
+    .. attribute:: id
+
+        The ID of the animation.
+
+        :type: :class:`int`
+    .. attribute:: type
+
+        The type of the animation.
+
+        :type: :class:`VoiceChannelEffectAnimationType`
+
+.. attributetable:: VoiceChannelSoundEffect
+
+.. autoclass:: VoiceChannelSoundEffect()
+    :members:
+    :inherited-members:
+
 StageChannel
 ~~~~~~~~~~~~~
 
@@ -4562,6 +4617,14 @@ GuildSticker
 .. attributetable:: GuildSticker
 
 .. autoclass:: GuildSticker()
+    :members:
+
+DefaultSoundboardSound
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: DefaultSoundboardSound
+
+.. autoclass:: DefaultSoundboardSound()
     :members:
 
 ShardInfo

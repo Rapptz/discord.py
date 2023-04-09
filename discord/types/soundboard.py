@@ -22,27 +22,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
-from typing_extensions import NotRequired
-from .snowflake import Snowflake, SnowflakeList
-from .user import User
+from typing import TypedDict, Optional, Union
+from .snowflake import Snowflake
 
 
-class PartialEmoji(TypedDict):
-    id: Optional[Snowflake]
-    name: Optional[str]
-    animated: NotRequired[bool]
+class BaseSoundboardSound(TypedDict):
+    sound_id: Union[str, int]
+    volume: float
+    override_path: Optional[str]
 
 
-class Emoji(PartialEmoji, total=False):
-    roles: SnowflakeList
-    user: User
-    require_colons: bool
-    managed: bool
-    animated: bool
-    available: bool
-
-
-class EditEmoji(TypedDict):
+class SoundboardSound(BaseSoundboardSound):
     name: str
-    roles: Optional[SnowflakeList]
+    emoji_id: Optional[Snowflake]
+    emoji_name: str
+    user_id: Snowflake
