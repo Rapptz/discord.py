@@ -117,7 +117,11 @@ if TYPE_CHECKING:
     from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload
     from .types.sticker import GuildSticker as GuildStickerPayload
     from .types.guild import Guild as GuildPayload
-    from .types.message import Message as MessagePayload, PartialMessage as PartialMessagePayload
+    from .types.message import (
+        Message as MessagePayload,
+        MessageSearchResult as MessageSearchResultPayload,
+        PartialMessage as PartialMessagePayload,
+    )
     from .types import gateway as gw
     from .types.voice import GuildVoiceState
     from .types.activity import ClientStatus as ClientStatusPayload
@@ -2718,8 +2722,14 @@ class ConnectionState:
             if channel is not None:
                 return channel
 
-    def create_message(self, *, channel: MessageableChannel, data: MessagePayload) -> Message:
-        return Message(state=self, channel=channel, data=data)
+    def create_message(
+        self,
+        *,
+        channel: MessageableChannel,
+        data: MessagePayload,
+        search_result: Optional[MessageSearchResultPayload] = None,
+    ) -> Message:
+        return Message(state=self, channel=channel, data=data, search_result=search_result)
 
     def _update_message_references(self) -> None:
         # self._messages won't be None when this is called

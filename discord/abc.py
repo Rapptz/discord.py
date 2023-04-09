@@ -101,6 +101,8 @@ if TYPE_CHECKING:
         GuildChannel as GuildChannelPayload,
         OverwriteType,
     )
+    from .types.embed import EmbedType
+    from .types.message import MessageSearchAuthorType, MessageSearchHasType
     from .types.snowflake import (
         SnowflakeList,
     )
@@ -282,6 +284,132 @@ async def _handle_commands(
         cmd_ids = None
         if application_id or len(cmds) < min(limit if limit else 25, 25) or len(cmds) == limit == 25:
             return
+
+
+async def _handle_message_search(
+    destination: Union[Messageable, Guild],
+    *,
+    limit: Optional[int] = 25,
+    offset: int = 0,
+    before: SnowflakeTime = MISSING,
+    after: SnowflakeTime = MISSING,
+    include_nsfw: bool = MISSING,
+    content: str = MISSING,
+    channels: Collection[Snowflake] = MISSING,
+    authors: Collection[Snowflake] = MISSING,
+    author_types: Collection[MessageSearchAuthorType] = MISSING,
+    mentions: Collection[Snowflake] = MISSING,
+    mention_everyone: bool = MISSING,
+    pinned: bool = MISSING,
+    has: Collection[MessageSearchHasType] = MISSING,
+    embed_types: Collection[EmbedType] = MISSING,
+    embed_providers: Collection[str] = MISSING,
+    link_hostnames: Collection[str] = MISSING,
+    attachment_filenames: Collection[str] = MISSING,
+    attachment_extensions: Collection[str] = MISSING,
+    application_commands: Collection[Snowflake] = MISSING,
+    oldest_first: bool = False,
+    most_relevant: bool = False,
+) -> AsyncIterator[Message]:
+    if limit is not None and limit < 0:
+        raise ValueError('limit must be greater than or equal to 0')
+    if offset < 0:
+        raise ValueError('offset must be greater than or equal to 0')
+
+    _state = destination._state
+    endpoint = _state.http.search_channel if isinstance(destination, Messageable) else _state.http.search_guild
+    entity_id = (await destination._get_channel()).id if isinstance(destination, Messageable) else destination.id
+    payload = {}
+
+    if isinstance(before, datetime):
+        before = Object(id=utils.time_snowflake(before, high=False))
+    if isinstance(after, datetime):
+        after = Object(id=utils.time_snowflake(after, high=True))
+    if (
+        include_nsfw is MISSING
+        and not isinstance(destination, Messageable)
+        and _state.user
+        and _state.user.nsfw_allowed is not None
+    ):
+        include_nsfw = _state.user.nsfw_allowed
+
+    if before:
+        payload['max_id'] = before.id
+    if after:
+        payload['min_id'] = after.id
+    if include_nsfw is not MISSING:
+        payload['include_nsfw'] = str(include_nsfw).lower()
+    if content:
+        payload['content'] = content
+    if channels:
+        payload['channel_id'] = [c.id for c in channels]
+    if authors:
+        payload['author_id'] = [a.id for a in authors]
+    if author_types:
+        payload['author_type'] = list(author_types)
+    if mentions:
+        payload['mentions'] = [m.id for m in mentions]
+    if mention_everyone is not MISSING:
+        payload['mention_everyone'] = str(mention_everyone).lower()
+    if pinned is not MISSING:
+        payload['pinned'] = str(pinned).lower()
+    if has:
+        payload['has'] = list(has)
+    if embed_types:
+        payload['embed_type'] = list(embed_types)
+    if embed_providers:
+        payload['embed_provider'] = list(embed_providers)
+    if link_hostnames:
+        payload['link_hostname'] = list(link_hostnames)
+    if attachment_filenames:
+        payload['attachment_filename'] = list(attachment_filenames)
+    if attachment_extensions:
+        payload['attachment_extension'] = list(attachment_extensions)
+    if application_commands:
+        payload['command_id'] = [c.id for c in application_commands]
+    if oldest_first:
+        payload['sort_order'] = 'asc'
+    if most_relevant:
+        payload['sort_by'] = 'relevance'
+
+    while True:
+        retrieve = min(25 if limit is None else limit, 25)
+        if retrieve < 1:
+            return
+        if retrieve != 25:
+            payload['limit'] = retrieve
+        if offset:
+            payload['offset'] = offset
+
+        data = await endpoint(entity_id, payload)
+        threads = {int(thread['id']): thread for thread in data.get('threads', [])}
+        for member in data.get('members', []):
+            thread_id = int(member['id'])
+            thread = threads.get(thread_id)
+            if thread:
+                thread['member'] = member
+
+        length = len(data['messages'])
+        offset += length
+        if limit is not None:
+            limit -= length
+
+        # Terminate loop on next iteration; there's no data left after this
+        if len(data['messages']) < 25:
+            limit = 0
+
+        for raw_messages in data['messages']:
+            if not raw_messages:
+                continue
+
+            # Context is no longer sent, so this is probably fine
+            raw_message = raw_messages[0]
+            channel_id = int(raw_message['channel_id'])
+            if channel_id in threads:
+                raw_message['thread'] = threads[channel_id]
+
+            channel, _ = _state._get_guild_channel(raw_message)
+            yield _state.create_message(channel=channel, data=raw_message, search_result=data)  # type: ignore
 
 
 @runtime_checkable
@@ -1349,17 +1477,17 @@ class GuildChannel:
             If this invite is invalid, a new invite will be created according to the parameters and returned.
 
             .. versionadded:: 2.0
-        target_type: Optional[:class:`.InviteTarget`]
+        target_type: Optional[:class:`~discord.InviteTarget`]
             The type of target for the voice channel invite, if any.
 
             .. versionadded:: 2.0
 
-        target_user: Optional[:class:`User`]
+        target_user: Optional[:class:`~discord.User`]
             The user whose stream to display for this invite, required if ``target_type`` is :attr:`.InviteTarget.stream`. The user must be streaming in the channel.
 
             .. versionadded:: 2.0
 
-        target_application:: Optional[:class:`.Application`]
+        target_application:: Optional[:class:`~discord.Application`]
             The embedded application for the invite, required if ``target_type`` is :attr:`.InviteTarget.embedded_application`.
 
             .. versionadded:: 2.0
@@ -2021,6 +2149,146 @@ class Messageable:
                 # There's no data left after this
                 break
 
+    def search(
+        self,
+        content: str = MISSING,
+        *,
+        limit: Optional[int] = 25,
+        offset: int = 0,
+        before: SnowflakeTime = MISSING,
+        after: SnowflakeTime = MISSING,
+        authors: Collection[Snowflake] = MISSING,
+        author_types: Collection[MessageSearchAuthorType] = MISSING,
+        mentions: Collection[Snowflake] = MISSING,
+        mention_everyone: bool = MISSING,
+        pinned: bool = MISSING,
+        has: Collection[MessageSearchHasType] = MISSING,
+        embed_types: Collection[EmbedType] = MISSING,
+        embed_providers: Collection[str] = MISSING,
+        link_hostnames: Collection[str] = MISSING,
+        attachment_filenames: Collection[str] = MISSING,
+        attachment_extensions: Collection[str] = MISSING,
+        application_commands: Collection[Snowflake] = MISSING,
+        oldest_first: bool = False,
+        most_relevant: bool = False,
+    ) -> AsyncIterator[Message]:
+        """Returns an :term:`asynchronous iterator` that enables searching the channel's messages.
+
+        You must have :attr:`~discord.Permissions.read_message_history` to do this.
+
+        .. note::
+
+            Due to a limitation with the Discord API, the :class:`.Message`
+            objects returned by this method do not contain complete
+            :attr:`.Message.reactions` data.
+
+        .. versionadded:: 2.1
+
+        Examples
+        ---------
+
+        Usage ::
+
+            counter = 0
+            async for message in channel.search('hi', limit=200):
+                if message.author == client.user:
+                    counter += 1
+
+        Flattening into a list: ::
+
+            messages = [message async for message in channel.search('test', limit=123)]
+            # messages is now a list of Message...
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        content: :class:`str`
+            The message content to search for.
+        limit: Optional[:class:`int`]
+            The number of messages to retrieve.
+            If ``None``, retrieves every message in the results. Note, however,
+            that this would make it a slow operation. Additionally, note that the
+            search API has a maximum pagination offset of 5000 (subject to change),
+            so a limit of over 5000 or ``None`` may eventually raise an exception.
+        offset: :class:`int`
+            The pagination offset to start at.
+        before: Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]
+            Retrieve messages before this date or message.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+        after: Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]
+            Retrieve messages after this date or message.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+        authors: List[:class:`~discord.User`]
+            The authors to filter by.
+        author_types: List[:class:`str`]
+            The author types to filter by. Can be one of ``user``, ``bot``, or ``webhook``.
+            These can be negated by prefixing with ``-``, which will exclude them.
+        mentions: List[:class:`~discord.User`]
+            The mentioned users to filter by.
+        mention_everyone: :class:`bool`
+            Whether to filter by messages that do or do not mention @everyone.
+        pinned: :class:`bool`
+            Whether to filter by messages that are or are not pinned.
+        has: List[:class:`str`]
+            The message attributes to filter by. Can be one of ``image``, ``sound``,
+            ``video``, ``file``, ``sticker``, ``embed``, or ``link``. These can be
+            negated by prefixing with ``-``, which will exclude them.
+        embed_types: List[:class:`str`]
+            The embed types to filter by.
+        embed_providers: List[:class:`str`]
+            The embed providers to filter by (e.g. tenor).
+        link_hostnames: List[:class:`str`]
+            The link hostnames to filter by (e.g. google.com).
+        attachment_filenames: List[:class:`str`]
+            The attachment filenames to filter by.
+        attachment_extensions: List[:class:`str`]
+            The attachment extensions to filter by (e.g. txt).
+        application_commands: List[:class:`~discord.abc.ApplicationCommand`]
+            The used application commands to filter by.
+        oldest_first: :class:`bool`
+            Whether to return the oldest results first.
+        most_relevant: :class:`bool`
+            Whether to sort the results by relevance. Using this with ``oldest_first``
+            will return the least relevant results first.
+
+        Raises
+        ------
+        ~discord.Forbidden
+            You do not have permissions to search the channel's messages.
+        ~discord.HTTPException
+            The request to search messages failed.
+
+        Yields
+        -------
+        :class:`~discord.Message`
+            The message with the message data parsed.
+        """
+        return _handle_message_search(
+            self,
+            limit=limit,
+            offset=offset,
+            before=before,
+            after=after,
+            content=content,
+            authors=authors,
+            author_types=author_types,
+            mentions=mentions,
+            mention_everyone=mention_everyone,
+            pinned=pinned,
+            has=has,
+            embed_types=embed_types,
+            embed_providers=embed_providers,
+            link_hostnames=link_hostnames,
+            attachment_filenames=attachment_filenames,
+            attachment_extensions=attachment_extensions,
+            application_commands=application_commands,
+            oldest_first=oldest_first,
+            most_relevant=most_relevant,
+        )
+
     def slash_commands(
         self,
         query: Optional[str] = None,
@@ -2084,7 +2352,7 @@ class Messageable:
 
         Yields
         -------
-        :class:`.SlashCommand`
+        :class:`~discord.SlashCommand`
             A slash command.
         """
         return _handle_commands(
@@ -2160,7 +2428,7 @@ class Messageable:
 
         Yields
         -------
-        :class:`.UserCommand`
+        :class:`~discord.UserCommand`
             A user command.
         """
         return _handle_commands(

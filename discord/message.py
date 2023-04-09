@@ -82,6 +82,7 @@ if TYPE_CHECKING:
         MessageReference as MessageReferencePayload,
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
+        MessageSearchResult as MessageSearchResultPayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -1426,6 +1427,24 @@ class Message(PartialMessage, Hashable):
         The interaction that this message is a response to.
 
         .. versionadded:: 2.0
+    hit: :class:`bool`
+        Whether the message was a hit in a search result. As surrounding messages
+        are no longer returned in search results, this is always ``True`` for search results.
+
+        .. versionadded:: 2.1
+    total_results: Optional[:class:`int`]
+        The total number of results for the search query. This is only present in search results.
+
+        .. versionadded:: 2.1
+    analytics_id: Optional[:class:`str`]
+        The search results analytics ID. This is only present in search results.
+
+        .. versionadded:: 2.1
+    doing_deep_historical_index: Optional[:class:`bool`]
+        The status of the document's current deep historical indexing operation, if any.
+        This is only present in search results.
+
+        .. versionadded:: 2.1
     """
 
     __slots__ = (
@@ -1460,6 +1479,10 @@ class Message(PartialMessage, Hashable):
         'role_subscription',
         'application_id',
         'position',
+        'hit',
+        'total_results',
+        'analytics_id',
+        'doing_deep_historical_index',
     )
 
     if TYPE_CHECKING:
@@ -1477,6 +1500,7 @@ class Message(PartialMessage, Hashable):
         state: ConnectionState,
         channel: MessageableChannel,
         data: MessagePayload,
+        search_result: Optional[MessageSearchResultPayload] = None,
     ) -> None:
         self.channel: MessageableChannel = channel
         self.id: int = int(data['id'])
@@ -1553,6 +1577,12 @@ class Message(PartialMessage, Hashable):
             pass
         else:
             self.role_subscription = RoleSubscriptionInfo(role_subscription)
+
+        search_payload = search_result or {}
+        self.hit: bool = data.get('hit', False)
+        self.total_results: Optional[int] = search_payload.get('total_results')
+        self.analytics_id: Optional[str] = search_payload.get('analytics_id')
+        self.doing_deep_historical_index: Optional[bool] = search_payload.get('doing_deep_historical_index')
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'call', 'interaction', 'components'):
             try:

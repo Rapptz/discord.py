@@ -127,10 +127,12 @@ if TYPE_CHECKING:
         StageChannel as StageChannelPayload,
         ForumChannel as ForumChannelPayload,
     )
+    from .types.embed import EmbedType
     from .types.integration import IntegrationType
+    from .types.message import MessageSearchAuthorType, MessageSearchHasType
     from .types.snowflake import SnowflakeList, Snowflake as _Snowflake
     from .types.widget import EditWidgetSettings
-    from .message import EmojiInputType
+    from .message import EmojiInputType, Message
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
@@ -2585,6 +2587,154 @@ class Guild(Hashable):
 
             for e in data:
                 yield BanEntry(user=User(state=_state, data=e['user']), reason=e['reason'])
+
+    def search(
+        self,
+        content: str = MISSING,
+        *,
+        limit: Optional[int] = 25,
+        offset: int = 0,
+        before: SnowflakeTime = MISSING,
+        after: SnowflakeTime = MISSING,
+        include_nsfw: bool = MISSING,
+        channels: Collection[Snowflake] = MISSING,
+        authors: Collection[Snowflake] = MISSING,
+        author_types: Collection[MessageSearchAuthorType] = MISSING,
+        mentions: Collection[Snowflake] = MISSING,
+        mention_everyone: bool = MISSING,
+        pinned: bool = MISSING,
+        has: Collection[MessageSearchHasType] = MISSING,
+        embed_types: Collection[EmbedType] = MISSING,
+        embed_providers: Collection[str] = MISSING,
+        link_hostnames: Collection[str] = MISSING,
+        attachment_filenames: Collection[str] = MISSING,
+        attachment_extensions: Collection[str] = MISSING,
+        application_commands: Collection[Snowflake] = MISSING,
+        oldest_first: bool = False,
+        most_relevant: bool = False,
+    ) -> AsyncIterator[Message]:
+        """Returns an :term:`asynchronous iterator` that enables searching the guild's messages.
+
+        You must have :attr:`~Permissions.read_message_history` to do this.
+
+        .. note::
+
+            Due to a limitation with the Discord API, the :class:`.Message`
+            objects returned by this method do not contain complete
+            :attr:`.Message.reactions` data.
+
+        .. versionadded:: 2.1
+
+        Examples
+        ---------
+
+        Usage ::
+
+            counter = 0
+            async for message in guild.search('hi', limit=200):
+                if message.author == client.user:
+                    counter += 1
+
+        Flattening into a list: ::
+
+            messages = [message async for message in guild.search('test', limit=123)]
+            # messages is now a list of Message...
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        content: :class:`str`
+            The message content to search for.
+        limit: Optional[:class:`int`]
+            The number of messages to retrieve.
+            If ``None``, retrieves every message in the results. Note, however,
+            that this would make it a slow operation. Additionally, note that the
+            search API has a maximum pagination offset of 5000 (subject to change),
+            so a limit of over 5000 or ``None`` may eventually raise an exception.
+        offset: :class:`int`
+            The pagination offset to start at.
+        before: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
+            Retrieve messages before this date or message.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+        after: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
+            Retrieve messages after this date or message.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+        nsfw_allowed: :class:`bool`
+            Whether to include messages from NSFW channels. Defaults to :attr:`~discord.ClientUser.nsfw_allowed`.
+        channels: List[Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]]
+            The channels to filter by.
+        authors: List[:class:`User`]
+            The authors to filter by.
+        author_types: List[:class:`str`]
+            The author types to filter by. Can be one of ``user``, ``bot``, or ``webhook``.
+            These can be negated by prefixing with ``-``, which will exclude them.
+        mentions: List[:class:`User`]
+            The mentioned users to filter by.
+        mention_everyone: :class:`bool`
+            Whether to filter by messages that do or do not mention @everyone.
+        pinned: :class:`bool`
+            Whether to filter by messages that are or are not pinned.
+        has: List[:class:`str`]
+            The message attributes to filter by. Can be one of ``image``, ``sound``,
+            ``video``, ``file``, ``sticker``, ``embed``, or ``link``. These can be
+            negated by prefixing with ``-``, which will exclude them.
+        embed_types: List[:class:`str`]
+            The embed types to filter by.
+        embed_providers: List[:class:`str`]
+            The embed providers to filter by (e.g. tenor).
+        link_hostnames: List[:class:`str`]
+            The link hostnames to filter by (e.g. google.com).
+        attachment_filenames: List[:class:`str`]
+            The attachment filenames to filter by.
+        attachment_extensions: List[:class:`str`]
+            The attachment extensions to filter by (e.g. txt).
+        application_commands: List[:class:`abc.ApplicationCommand`]
+            The used application commands to filter by.
+        oldest_first: :class:`bool`
+            Whether to return the oldest results first.
+        most_relevant: :class:`bool`
+            Whether to sort the results by relevance. Using this with ``oldest_first``
+            will return the least relevant results first.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permissions to search the channel's messages.
+        HTTPException
+            The request to search messages failed.
+
+        Yields
+        -------
+        :class:`Message`
+            The message with the message data parsed.
+        """
+        return abc._handle_message_search(
+            self,
+            limit=limit,
+            offset=offset,
+            before=before,
+            after=after,
+            content=content,
+            include_nsfw=include_nsfw,
+            channels=channels,
+            authors=authors,
+            author_types=author_types,
+            mentions=mentions,
+            mention_everyone=mention_everyone,
+            pinned=pinned,
+            has=has,
+            embed_types=embed_types,
+            embed_providers=embed_providers,
+            link_hostnames=link_hostnames,
+            attachment_filenames=attachment_filenames,
+            attachment_extensions=attachment_extensions,
+            application_commands=application_commands,
+            oldest_first=oldest_first,
+            most_relevant=most_relevant,
+        )
 
     async def prune_members(
         self,

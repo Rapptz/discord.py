@@ -760,6 +760,14 @@ class HTTPClient:
                                         discord_hash or route_key,
                                     )
 
+                        # 202s must be retried
+                        if response.status == 202 and isinstance(data, dict) and 'retry_after' in data:
+                            # Sometimes retry_after is 0, but that's undesirable
+                            retry_after: float = data['retry_after'] or 0.25
+                            _log.debug('%s %s received a 202. Retrying in %s seconds...', method, url, retry_after)
+                            await asyncio.sleep(retry_after)
+                            continue
+
                         # Request was successful so just return the text/json
                         if 300 > response.status >= 200:
                             _log.debug('%s %s has received %s.', method, url, data)
@@ -798,7 +806,7 @@ class HTTPClient:
                             _log.warning(fmt, method, url, retry_after)
 
                             _log.debug(
-                                'Rate limit is being handled by bucket hash %s with %r major parameters',
+                                'Rate limit is being handled by bucket hash %s with %r major parameters.',
                                 bucket_hash,
                                 route.major_parameters,
                             )
@@ -833,8 +841,8 @@ class HTTPClient:
                         elif response.status >= 500:
                             raise DiscordServerError(response, data)
                         else:
-                            if 'captcha_key' in data:
-                                raise CaptchaRequired(response, data)  # type: ignore # Should not be text at this point
+                            if isinstance(data, dict) and 'captcha_key' in data:
+                                raise CaptchaRequired(response, data)
                             raise HTTPException(response, data)
 
                 # This is handling exceptions from the request
@@ -1258,6 +1266,15 @@ class HTTPClient:
             params['around'] = around
 
         return self.request(Route('GET', '/channels/{channel_id}/messages', channel_id=channel_id), params=params)
+
+    def search_guild(self, guild_id: Snowflake, payload: Dict[str, Any]) -> Response[message.MessageSearchResult]:
+        return self.request(Route('GET', '/guilds/{guild_id}/messages/search', guild_id=guild_id), params=payload)
+
+    def search_channel(self, channel_id: Snowflake, payload: Dict[str, Any]) -> Response[message.MessageSearchResult]:
+        return self.request(Route('GET', '/channels/{channel_id}/messages/search', channel_id=channel_id), params=payload)
+
+    def search_user(self, payload: Dict[str, Any]) -> Response[message.MessageSearchResult]:
+        return self.request(Route('GET', '/users/@me/messages/search'), json=payload)
 
     def publish_message(self, channel_id: Snowflake, message_id: Snowflake) -> Response[message.Message]:
         r = Route(

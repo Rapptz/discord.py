@@ -37,6 +37,7 @@ from .components import Component
 from .interactions import MessageInteraction
 from .application import BaseApplication
 from .sticker import StickerItem
+from .threads import Thread, ThreadMember
 
 
 class PartialMessage(TypedDict):
@@ -134,6 +135,8 @@ class Message(PartialMessage):
     position: NotRequired[int]
     call: NotRequired[Call]
     role_subscription_data: NotRequired[RoleSubscriptionData]
+    hit: NotRequired[bool]
+    thread: NotRequired[Thread]
 
 
 AllowedMentionType = Literal['roles', 'users', 'everyone']
@@ -144,3 +147,41 @@ class AllowedMentions(TypedDict):
     roles: SnowflakeList
     users: SnowflakeList
     replied_user: bool
+
+
+class MessageSearchIndexingResult(TypedDict):
+    # Error but not quite
+    message: str
+    code: int
+    documents_indexed: int
+    retry_after: int
+
+
+class MessageSearchResult(TypedDict):
+    messages: List[List[Message]]
+    threads: NotRequired[List[Thread]]
+    members: NotRequired[List[ThreadMember]]
+    total_results: int
+    analytics_id: str
+    doing_deep_historical_index: NotRequired[bool]
+
+
+MessageSearchAuthorType = Literal['user', '-user', 'bot', '-bot', 'webhook', '-webhook']
+MessageSearchHasType = Literal[
+    'image',
+    '-image',
+    'sound',
+    '-sound',
+    'video',
+    '-video',
+    'file',
+    '-file',
+    'sticker',
+    '-sticker',
+    'embed',
+    '-embed',
+    'link',
+    '-link',
+]
+MessageSearchSortType = Literal['timestamp', 'relevance']
+MessageSearchSortOrder = Literal['desc', 'asc']
