@@ -132,6 +132,7 @@ if TYPE_CHECKING:
     from .types.message import MessageSearchAuthorType, MessageSearchHasType
     from .types.snowflake import SnowflakeList, Snowflake as _Snowflake
     from .types.widget import EditWidgetSettings
+    from .types.oauth2 import OAuth2Guild as OAuth2GuildPayload
     from .message import EmojiInputType, Message
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
@@ -197,15 +198,19 @@ class UserGuild(Hashable):
         The guild name.
     features: List[:class:`str`]
         A list of features that the guild has. The features that a guild can have are
-        subject to arbitrary change by Discord.
+        subject to arbitrary change by Discord. Incomplete when retrieved from :attr:`OAuth2Authorization.guilds`.
     owner: :class:`bool`
-        Whether the current user is the owner of the guild.
+        Whether the current user is the owner of the guild. Inaccurate when retrieved from :attr:`OAuth2Authorization.guilds`.
+    mfa_level: :class:`MFALevel`
+        The guild's Multi-Factor Authentication requirement level. Only available from :attr:`OAuth2Authorization.guilds`.
+
+        .. versionadded:: 2.1
     approximate_member_count: Optional[:class:`int`]
-        The approximate number of members in the guild. This is ``None`` unless the guild is obtained
+        The approximate number of members in the guild. Only available using
         using :meth:`Client.fetch_guilds` with ``with_counts=True``.
     approximate_presence_count: Optional[:class:`int`]
         The approximate number of members currently active in the guild.
-        Offline members are excluded. This is ``None`` unless the guild is obtained using
+        Offline members are excluded. Only available using
         :meth:`Client.fetch_guilds` with ``with_counts=True``.
     """
 
@@ -215,19 +220,21 @@ class UserGuild(Hashable):
         '_icon',
         'owner',
         '_permissions',
+        'mfa_level',
         'features',
         'approximate_member_count',
         'approximate_presence_count',
         '_state',
     )
 
-    def __init__(self, *, state: ConnectionState, data: UserGuildPayload):
+    def __init__(self, *, state: ConnectionState, data: Union[UserGuildPayload, OAuth2GuildPayload]):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self._icon: Optional[str] = data.get('icon')
         self.owner: bool = data.get('owner', False)
         self._permissions: int = int(data.get('permissions', 0))
+        self.mfa_level: MFALevel = try_enum(MFALevel, data.get('mfa_level', 0))
         self.features: List[str] = data.get('features', [])
         self.approximate_member_count: Optional[int] = data.get('approximate_member_count')
         self.approximate_presence_count: Optional[int] = data.get('approximate_presence_count')
@@ -2282,12 +2289,34 @@ class Guild(Hashable):
 
         Returns
         --------
-        List[Union[:class:`TextChannel`, :class:`VoiceChannel`, :class:`StageChannel`]]
+        List[Union[:class:`TextChannel`, :class:`VoiceChannel`, :class:`StageChannel`, :class:`PartialMessageable`]]
             The top 10 most read channels. Falls back to :class:`PartialMessageable` if the channel is not found in cache.
         """
         state = self._state
         data = await state.http.get_top_guild_channels(self.id)
         return [self.get_channel(int(c)) or PartialMessageable(id=int(c), state=state, guild_id=self.id) for c in data]  # type: ignore
+
+    async def webhook_channels(self) -> List[Union[TextChannel, VoiceChannel, StageChannel, PartialMessageable]]:
+        """|coro|
+
+        Retrieves the channels that the current user can create webhooks in for the guild.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the webhook channels failed.
+
+        Returns
+        --------
+        List[Union[:class:`TextChannel`, :class:`VoiceChannel`, :class:`StageChannel`, :class:`PartialMessageable`]]
+            The channels that the current user can create webhooks in. Falls back to :class:`PartialMessageable` if the channel is not found in cache.
+            Any :class:`PartialMessageable` will have its :attr:`PartialMessageable.name` filled in.
+        """
+        state = self._state
+        data = await state.http.get_guild_webhook_channels(self.id)
+        return [self.get_channel(int(c['id'])) or PartialMessageable._from_webhook_channel(self, c) for c in data]  # type: ignore
 
     async def fetch_channels(self) -> Sequence[GuildChannel]:
         """|coro|

@@ -31,6 +31,7 @@ from typing import (
     Any,
     AsyncIterator,
     Callable,
+    Collection,
     Coroutine,
     Dict,
     Generator,
@@ -88,6 +89,7 @@ from .library import LibraryApplication
 from .relationship import FriendSuggestion, Relationship
 from .settings import UserSettings, LegacyUserSettings, TrackingSettings, EmailSettings
 from .affinity import *
+from .oauth2 import OAuth2Authorization, OAuth2Token
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -102,6 +104,7 @@ if TYPE_CHECKING:
     from .billing import BillingAddress
     from .enums import PaymentGateway, RequiredActionType
     from .metadata import MetadataObject
+    from .permissions import Permissions
     from .types.snowflake import Snowflake as _Snowflake
 
     PrivateChannel = Union[DMChannel, GroupChannel]
@@ -3896,6 +3899,167 @@ class Client:
         state = self._connection
         data = await state.http.get_library_entries(state.country_code or 'US')
         return [LibraryApplication(state=state, data=d) for d in data]
+
+    async def authorizations(self) -> List[OAuth2Token]:
+        """|coro|
+
+        Retrieves the OAuth2 applications authorized on your account.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the authorized applications failed.
+
+        Returns
+        -------
+        List[:class:`.OAuth2Token`]
+            The OAuth2 applications authorized on your account.
+        """
+        state = self._connection
+        data = await state.http.get_oauth2_tokens()
+        return [OAuth2Token(state=state, data=d) for d in data]
+
+    async def fetch_authorization(
+        self,
+        application_id: int,
+        /,
+        *,
+        scopes: Collection[str],
+        response_type: Optional[str] = None,
+        redirect_uri: Optional[str] = None,
+        code_challenge_method: Optional[str] = None,
+        code_challenge: Optional[str] = None,
+        state: Optional[str] = None,
+    ) -> OAuth2Authorization:
+        """|coro|
+
+        Retrieves an OAuth2 authorization for the given application.
+        This provides information about the application before you authorize it.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        application_id: :class:`int`
+            The ID of the application to fetch the authorization for.
+        scopes: List[:class:`str`]
+            The scopes to request for the authorization.
+        response_type: Optional[:class:`str`]
+            The response type that will be used for the authorization, if using the full OAuth2 flow.
+        redirect_uri: Optional[:class:`str`]
+            The redirect URI that will be used for the authorization, if using the full OAuth2 flow.
+            If this isn't provided and ``response_type`` is provided, then the default redirect URI
+            for the application will be provided in the returned authorization.
+        code_challenge_method: Optional[:class:`str`]
+            The code challenge method that will be used for the PKCE authorization, if using the full OAuth2 flow.
+        code_challenge: Optional[:class:`str`]
+            The code challenge that will be used for the PKCE authorization, if using the full OAuth2 flow.
+        state: Optional[:class:`str`]
+            The state that will be used for authorization security.
+
+        Raises
+        -------
+        HTTPException
+            Fetching the authorization failed.
+
+        Returns
+        -------
+        :class:`.OAuth2Authorization`
+            The authorization for the application.
+        """
+        _state = self._connection
+        data = await _state.http.get_oauth2_authorization(
+            application_id,
+            list(scopes),
+            response_type,
+            redirect_uri,
+            code_challenge_method,
+            code_challenge,
+            state,
+        )
+        return OAuth2Authorization(
+            _state=_state,
+            data=data,
+            scopes=list(scopes),
+            response_type=response_type,
+            code_challenge_method=code_challenge_method,
+            code_challenge=code_challenge,
+            state=state,
+        )
+
+    async def create_authorization(
+        self,
+        application_id: int,
+        /,
+        *,
+        scopes: Collection[str],
+        response_type: Optional[str] = None,
+        redirect_uri: Optional[str] = None,
+        code_challenge_method: Optional[str] = None,
+        code_challenge: Optional[str] = None,
+        state: Optional[str] = None,
+        guild: Snowflake = MISSING,
+        channel: Snowflake = MISSING,
+        permissions: Permissions = MISSING,
+    ) -> str:
+        """|coro|
+
+        Creates an OAuth2 authorization for the given application. It is recommended to instead first
+        fetch the authorization information using :meth:`fetch_authorization` and then call :meth:`.OAuth2Authorization.authorize`.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        application_id: :class:`int`
+            The ID of the application to create the authorization for.
+        scopes: List[:class:`str`]
+            The scopes to request for the authorization.
+        response_type: Optional[:class:`str`]
+            The response type to use for the authorization, if using the full OAuth2 flow.
+        redirect_uri: Optional[:class:`str`]
+            The redirect URI to use for the authorization, if using the full OAuth2 flow.
+            If this isn't provided and ``response_type`` is provided, then the default redirect URI
+            for the application will be used.
+        code_challenge_method: Optional[:class:`str`]
+            The code challenge method to use for the PKCE authorization, if using the full OAuth2 flow.
+        code_challenge: Optional[:class:`str`]
+            The code challenge to use for the PKCE authorization, if using the full OAuth2 flow.
+        state: Optional[:class:`str`]
+            The state to use for authorization security.
+        guild: :class:`.Guild`
+            The guild to authorize for, if authorizing with the ``applications.commands`` or ``bot`` scopes.
+        channel: Union[:class:`.TextChannel`, :class:`.VoiceChannel`, :class:`.StageChannel`]
+            The channel to authorize for, if authorizing with the ``webhooks.incoming`` scope. See :meth:`.Guild.webhook_channels`.
+        permissions: :class:`.Permissions`
+            The permissions to grant, if authorizing with the ``bot`` scope.
+
+        Raises
+        -------
+        HTTPException
+            Creating the authorization failed.
+
+        Returns
+        -------
+        :class:`str`
+            The URL to redirect the user to for authorization.
+        """
+        _state = self._connection
+        data = await _state.http.authorize_oauth2(
+            application_id,
+            list(scopes),
+            response_type,
+            redirect_uri,
+            code_challenge_method,
+            code_challenge,
+            state,
+            guild_id=guild.id if guild else None,
+            webhook_channel_id=channel.id if channel else None,
+            permissions=permissions.value if permissions else None,
+        )
+        return data['location']
 
     async def entitlements(
         self, *, with_sku: bool = True, with_application: bool = True, entitlement_type: Optional[EntitlementType] = None

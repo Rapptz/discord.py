@@ -96,6 +96,7 @@ if TYPE_CHECKING:
         library,
         member,
         message,
+        oauth2,
         payments,
         profile,
         promotions,
@@ -2570,6 +2571,63 @@ class HTTPClient:
             params=params,
         )
 
+    def get_auto_moderation_rules(self, guild_id: Snowflake) -> Response[List[automod.AutoModerationRule]]:
+        return self.request(Route('GET', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id))
+
+    def get_auto_moderation_rule(self, guild_id: Snowflake, rule_id: Snowflake) -> Response[automod.AutoModerationRule]:
+        return self.request(
+            Route('GET', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id)
+        )
+
+    def create_auto_moderation_rule(
+        self, guild_id: Snowflake, *, reason: Optional[str], **payload: Any
+    ) -> Response[automod.AutoModerationRule]:
+        valid_keys = (
+            'name',
+            'event_type',
+            'trigger_type',
+            'trigger_metadata',
+            'actions',
+            'enabled',
+            'exempt_roles',
+            'exempt_channels',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys and v is not None}
+
+        return self.request(
+            Route('POST', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id), json=payload, reason=reason
+        )
+
+    def edit_auto_moderation_rule(
+        self, guild_id: Snowflake, rule_id: Snowflake, *, reason: Optional[str], **payload: Any
+    ) -> Response[automod.AutoModerationRule]:
+        valid_keys = (
+            'name',
+            'event_type',
+            'trigger_metadata',
+            'actions',
+            'enabled',
+            'exempt_roles',
+            'exempt_channels',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys and v is not None}
+
+        return self.request(
+            Route('PATCH', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
+            json=payload,
+            reason=reason,
+        )
+
+    def delete_auto_moderation_rule(
+        self, guild_id: Snowflake, rule_id: Snowflake, *, reason: Optional[str]
+    ) -> Response[None]:
+        return self.request(
+            Route('DELETE', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
+            reason=reason,
+        )
+
     # Relationships
 
     def get_relationships(self) -> Response[List[user.Relationship]]:
@@ -4022,6 +4080,79 @@ class HTTPClient:
     def get_premium_usage(self) -> Response[billing.PremiumUsage]:
         return self.request(Route('GET', '/users/@me/premium-usage'))
 
+    # OAuth2
+
+    def get_oauth2_tokens(self) -> Response[List[oauth2.OAuth2Token]]:
+        return self.request(Route('GET', '/oauth2/tokens'))
+
+    def revoke_oauth2_token(self, token_id: Snowflake) -> Response[None]:
+        return self.request(Route('DELETE', '/oauth2/tokens/{token_id}', token_id=token_id))
+
+    def get_guild_webhook_channels(self, guild_id: Snowflake) -> Response[List[oauth2.WebhookChannel]]:
+        params = {'guild_id': guild_id}
+        return self.request(Route('GET', '/oauth2/authorize/webhook-channels'), params=params)
+
+    def get_oauth2_authorization(
+        self,
+        application_id: Snowflake,
+        scopes: List[str],
+        response_type: Optional[str] = None,
+        redirect_uri: Optional[str] = None,
+        code_challenge_method: Optional[str] = None,
+        code_challenge: Optional[str] = None,
+        state: Optional[str] = None,
+    ) -> Response[oauth2.OAuth2Authorization]:
+        params = {'client_id': application_id, 'scope': ' '.join(scopes)}
+        if response_type:
+            params['response_type'] = response_type
+        if redirect_uri:
+            params['redirect_uri'] = redirect_uri
+        if code_challenge_method:
+            params['code_challenge_method'] = code_challenge_method
+        if code_challenge:
+            params['code_challenge'] = code_challenge
+        if state:
+            params['state'] = state
+
+        return self.request(Route('GET', '/oauth2/authorize'), params=params)
+
+    def authorize_oauth2(
+        self,
+        application_id: Snowflake,
+        scopes: List[str],
+        response_type: Optional[str] = None,
+        redirect_uri: Optional[str] = None,
+        code_challenge_method: Optional[str] = None,
+        code_challenge: Optional[str] = None,
+        state: Optional[str] = None,
+        guild_id: Optional[Snowflake] = None,
+        webhook_channel_id: Optional[Snowflake] = None,
+        permissions: Optional[Snowflake] = None,
+    ) -> Response[oauth2.OAuth2Location]:
+        params = {'client_id': application_id, 'scope': ' '.join(scopes)}
+        payload: Dict[str, Any] = {'authorize': True}
+        if response_type:
+            params['response_type'] = response_type
+        if redirect_uri:
+            params['redirect_uri'] = redirect_uri
+        if code_challenge_method:
+            params['code_challenge_method'] = code_challenge_method
+        if code_challenge:
+            params['code_challenge'] = code_challenge
+        if state:
+            params['state'] = state
+        if guild_id:
+            payload['guild_id'] = str(guild_id)
+            payload['permissions'] = '0'
+        if webhook_channel_id:
+            payload['webhook_channel_id'] = str(webhook_channel_id)
+        if permissions:
+            payload['permissions'] = str(permissions)
+
+        return self.request(Route('POST', '/oauth2/authorize'), params=params, json=payload)
+
+    # Active Developer Program
+
     def enroll_active_developer(
         self, application_id: Snowflake, channel_id: Snowflake
     ) -> Response[application.ActiveDeveloperResponse]:
@@ -4031,63 +4162,6 @@ class HTTPClient:
 
     def unenroll_active_developer(self) -> Response[None]:
         return self.request(Route('DELETE', '/developers/active-program'), super_properties_to_track=True)
-
-    def get_auto_moderation_rules(self, guild_id: Snowflake) -> Response[List[automod.AutoModerationRule]]:
-        return self.request(Route('GET', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id))
-
-    def get_auto_moderation_rule(self, guild_id: Snowflake, rule_id: Snowflake) -> Response[automod.AutoModerationRule]:
-        return self.request(
-            Route('GET', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id)
-        )
-
-    def create_auto_moderation_rule(
-        self, guild_id: Snowflake, *, reason: Optional[str], **payload: Any
-    ) -> Response[automod.AutoModerationRule]:
-        valid_keys = (
-            'name',
-            'event_type',
-            'trigger_type',
-            'trigger_metadata',
-            'actions',
-            'enabled',
-            'exempt_roles',
-            'exempt_channels',
-        )
-
-        payload = {k: v for k, v in payload.items() if k in valid_keys and v is not None}
-
-        return self.request(
-            Route('POST', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id), json=payload, reason=reason
-        )
-
-    def edit_auto_moderation_rule(
-        self, guild_id: Snowflake, rule_id: Snowflake, *, reason: Optional[str], **payload: Any
-    ) -> Response[automod.AutoModerationRule]:
-        valid_keys = (
-            'name',
-            'event_type',
-            'trigger_metadata',
-            'actions',
-            'enabled',
-            'exempt_roles',
-            'exempt_channels',
-        )
-
-        payload = {k: v for k, v in payload.items() if k in valid_keys and v is not None}
-
-        return self.request(
-            Route('PATCH', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
-            json=payload,
-            reason=reason,
-        )
-
-    def delete_auto_moderation_rule(
-        self, guild_id: Snowflake, rule_id: Snowflake, *, reason: Optional[str]
-    ) -> Response[None]:
-        return self.request(
-            Route('DELETE', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
-            reason=reason,
-        )
 
     # Misc
 

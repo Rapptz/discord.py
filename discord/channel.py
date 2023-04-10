@@ -103,7 +103,7 @@ if TYPE_CHECKING:
         ForumChannel as ForumChannelPayload,
         ForumTag as ForumTagPayload,
     )
-
+    from .types.oauth2 import WebhookChannel as WebhookChannelPayload
     from .types.snowflake import SnowflakeList
 
     OverwriteKeyT = TypeVar('OverwriteKeyT', Role, BaseUser, Object, Union[Role, Member, Object])
@@ -3602,8 +3602,6 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
 
     Note that this class is trimmed down and has no rich attributes.
 
-    .. versionadded:: 2.0
-
     .. container:: operations
 
         .. describe:: x == y
@@ -3618,21 +3616,34 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
 
             Returns the partial messageable's hash.
 
+    .. versionadded:: 2.0
+
     Attributes
     -----------
     id: :class:`int`
         The channel ID associated with this partial messageable.
-    guild_id: Optional[:class:`int`]
-        The guild ID associated with this partial messageable.
     type: Optional[:class:`ChannelType`]
         The channel type associated with this partial messageable, if given.
+    name: Optional[:class:`str`]
+        The channel name associated with this partial messageable, if given.
+    guild_id: Optional[:class:`int`]
+        The guild ID associated with this partial messageable.
     """
 
-    def __init__(self, state: ConnectionState, id: int, guild_id: Optional[int] = None, type: Optional[ChannelType] = None):
+    def __init__(
+        self,
+        *,
+        state: ConnectionState,
+        id: int,
+        guild_id: Optional[int] = None,
+        type: Optional[ChannelType] = None,
+        name: Optional[str] = None,
+    ):
         self._state: ConnectionState = state
         self.id: int = id
         self.guild_id: Optional[int] = guild_id
         self.type: Optional[ChannelType] = type
+        self.name: Optional[str] = name
         self.last_message_id: Optional[int] = None
         self.last_pin_timestamp: Optional[datetime.datetime] = None
 
@@ -3641,6 +3652,15 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
 
     async def _get_channel(self) -> PartialMessageable:
         return self
+
+    @classmethod
+    def _from_webhook_channel(cls, guild: Guild, channel: WebhookChannelPayload) -> Self:
+        return cls(
+            state=guild._state,
+            id=int(channel['id']),
+            guild_id=guild.id,
+            name=channel['name'],
+        )
 
     @property
     def guild(self) -> Optional[Guild]:

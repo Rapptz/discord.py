@@ -701,8 +701,22 @@ Notes
 
     Called when a :class:`User`\'s note is updated.
 
+    .. versionadded:: 2.0
+
     :param note: The note that was updated.
     :type note: :class:`Note`
+
+OAuth2
+~~~~~~~
+
+.. function:: on_oauth2_token_revoke(token)
+
+    Called when an authorized application is revoked.
+
+    .. versionadded:: 2.0
+
+    :param token: The token that was revoked.
+    :type token: :class:`str`
 
 Calls
 ~~~~~
@@ -6664,6 +6678,19 @@ Library
 .. attributetable:: LibrarySKU
 
 .. autoclass:: LibrarySKU()
+    :members:
+
+OAuth2
+~~~~~~
+
+.. attributetable:: OAuth2Token
+
+.. autoclass:: OAuth2Token()
+    :members:
+
+.. attributetable:: OAuth2Authorization
+
+.. autoclass:: OAuth2Authorization()
     :members:
 
 Promotion
