@@ -165,6 +165,10 @@ class RolePositionUpdate(_RolePositionRequired, total=False):
     position: Optional[Snowflake]
 
 
+class AdminServerEligibility(TypedDict):
+    eligible_for_admin_server: bool
+
+
 class SupplementalGuild(UnavailableGuild):
     embedded_activities: list
     voice_states: List[GuildVoiceState]

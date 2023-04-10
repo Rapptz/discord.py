@@ -4893,3 +4893,48 @@ class Guild(Hashable):
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)
+
+    async def admin_community_eligibility(self) -> bool:
+        """|coro|
+
+        Checks if the user is eligible to join the Discord Admin Community through the guild.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to join through the guild.
+        HTTPException
+            Checking eligibility failed.
+
+        Returns
+        --------
+        :class:`bool`
+            Whether the user is eligible to join the Discord Admin Community through the guild.
+        """
+        data = await self._state.http.get_admin_server_eligibility(self.id)
+        return data['eligible_for_admin_server']
+
+    async def join_admin_community(self) -> Guild:
+        """|coro|
+
+        Joins the Discord Admin Community through the guild.
+        You should check your eligibility with :meth:`admin_community_eligibility` before calling this.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to join through the guild.
+        HTTPException
+            Joining failed.
+
+        Returns
+        --------
+        :class:`Guild`
+            The Discord Admin Community guild.
+        """
+        data = await self._state.http.join_admin_server(self.id)
+        return Guild(state=self._state, data=data)

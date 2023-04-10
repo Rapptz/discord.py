@@ -2628,6 +2628,12 @@ class HTTPClient:
             reason=reason,
         )
 
+    def get_admin_server_eligibility(self, guild_id: Snowflake) -> Response[guild.AdminServerEligibility]:
+        return self.request(Route('GET', '/guilds/{guild_id}/admin-server-eligibility', guild_id=guild_id))
+
+    def join_admin_server(self, guild_id: Snowflake) -> Response[guild.Guild]:
+        return self.request(Route('POST', '/guilds/{guild_id}/join-admin-server', guild_id=guild_id))
+
     # Relationships
 
     def get_relationships(self) -> Response[List[user.Relationship]]:
