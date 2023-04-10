@@ -2406,8 +2406,14 @@ class HTTPClient:
         ...
 
     def get_scheduled_events(self, guild_id: Snowflake, with_user_count: bool) -> Response[Any]:
-        params = {'with_user_count': int(with_user_count)}
+        params = {'with_user_count': str(with_user_count).lower()}
         return self.request(Route('GET', '/guilds/{guild_id}/scheduled-events', guild_id=guild_id), params=params)
+
+    def get_subscribed_scheduled_events(
+        self, guild_id: Snowflake
+    ) -> Response[List[scheduled_event.SubscribedGuildScheduledEvent]]:
+        params = {'guild_ids': guild_id}
+        return self.request(Route('GET', '/users/@me/scheduled-events'), params=params)
 
     def create_guild_scheduled_event(
         self, guild_id: Snowflake, *, reason: Optional[str] = None, **payload: Any
@@ -2555,7 +2561,6 @@ class HTTPClient:
             'limit': limit,
             'with_member': str(with_member).lower(),
         }
-
         if before is not None:
             params['before'] = before
         if after is not None:
@@ -2570,6 +2575,36 @@ class HTTPClient:
             ),
             params=params,
         )
+
+    def create_scheduled_event_user(
+        self,
+        guild_id: Snowflake,
+        guild_scheduled_event_id: Snowflake,
+    ) -> Response[scheduled_event.SubscribedGuildScheduledEvent]:
+        return self.request(
+            Route(
+                'PUT',
+                '/guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/users/@me',
+                guild_id=guild_id,
+                guild_scheduled_event_id=guild_scheduled_event_id,
+            ),
+        )
+
+    def delete_scheduled_event_user(
+        self,
+        guild_id: Snowflake,
+        guild_scheduled_event_id: Snowflake,
+    ) -> Response[None]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/users/@me',
+                guild_id=guild_id,
+                guild_scheduled_event_id=guild_scheduled_event_id,
+            ),
+        )
+
+    # Guild automod management
 
     def get_auto_moderation_rules(self, guild_id: Snowflake) -> Response[List[automod.AutoModerationRule]]:
         return self.request(Route('GET', '/guilds/{guild_id}/auto-moderation/rules', guild_id=guild_id))

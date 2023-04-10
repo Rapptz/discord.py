@@ -98,17 +98,18 @@ GuildScheduledEventWithUserCount = Union[
 ]
 
 
-class ScheduledEventUser(User):
-    ...
-
-
-class ScheduledEventUserWithMember(ScheduledEventUser):
+class UserWithMember(User):
     guild_member: Member
 
 
 class ScheduledEventUsers(TypedDict):
-    users: List[ScheduledEventUser]
+    users: List[User]
 
 
 class ScheduledEventUsersWithMember(TypedDict):
-    users: ScheduledEventUserWithMember
+    users: List[UserWithMember]
+
+
+class SubscribedGuildScheduledEvent(TypedDict):
+    guild_scheduled_event_id: Snowflake
+    user_id: Snowflake

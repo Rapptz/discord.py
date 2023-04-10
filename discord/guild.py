@@ -3216,6 +3216,29 @@ class Guild(Hashable):
         """
         await self._state.http.delete_guild_sticker(self.id, sticker.id, reason)
 
+    async def subscribed_scheduled_events(self) -> List[Union[ScheduledEvent, Object]]:
+        """|coro|
+
+        Retrieves a list of all scheduled events that the current user is subscribed to.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the subscribed scheduled events failed.
+
+        Returns
+        --------
+        List[Union[:class:`ScheduledEvent`, :class:`Object`]]
+            The subscribed scheduled events. Falls back to an object if the event is not found in cache.
+        """
+        data = await self._state.http.get_subscribed_scheduled_events(self.id)
+        return [
+            self.get_scheduled_event(int(d['guild_scheduled_event_id'])) or Object(id=int(d['guild_scheduled_event_id']))
+            for d in data
+        ]
+
     async def fetch_scheduled_events(self, *, with_counts: bool = True) -> List[ScheduledEvent]:
         """|coro|
 

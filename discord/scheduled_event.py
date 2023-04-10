@@ -58,8 +58,6 @@ __all__ = (
 class ScheduledEvent(Hashable):
     """Represents a scheduled event in a guild.
 
-    .. versionadded:: 2.0
-
     .. container:: operations
 
         .. describe:: x == y
@@ -73,6 +71,8 @@ class ScheduledEvent(Hashable):
         .. describe:: hash(x)
 
             Returns the scheduled event's hash.
+
+    .. versionadded:: 2.0
 
     Attributes
     ----------
@@ -100,8 +100,6 @@ class ScheduledEvent(Hashable):
         The user that created the scheduled event.
     creator_id: Optional[:class:`int`]
         The ID of the user that created the scheduled event.
-
-        .. versionadded:: 2.0
     location: Optional[:class:`str`]
         The location of the scheduled event.
     """
@@ -673,6 +671,34 @@ class ScheduledEvent(Hashable):
             if count < 100:
                 # There's no data left after this
                 break
+
+    async def subscribe(self) -> None:
+        """|coro|
+
+        Subscribes the current user to this event.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        HTTPException
+            Subscribing failed.
+        """
+        await self._state.http.create_scheduled_event_user(self.guild_id, self.id)
+
+    async def unsubscribe(self) -> None:
+        """|coro|
+
+        Unsubscribes the current user from this event.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        HTTPException
+            Unsubscribing failed.
+        """
+        await self._state.http.delete_scheduled_event_user(self.guild_id, self.id)
 
     def _add_user(self, user: User) -> None:
         self._users[user.id] = user

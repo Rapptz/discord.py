@@ -1348,6 +1348,20 @@ Scheduled Events
     :param user: The user that was added or removed.
     :type user: :class:`User`
 
+.. function:: on_raw_scheduled_event_user_add(event, user_id)
+              on_raw_scheduled_event_user_remove(event, user_id)
+
+    Called when a user is added or removed from a :class:`ScheduledEvent`.
+    Unlike :func:`on_scheduled_event_user_add` and :func:`on_scheduled_event_user_remove`
+    these are called regardless of the user being in the internal user cache or not.
+
+    .. versionadded:: 2.1
+
+    :param event: The scheduled event that the user was added or removed from.
+    :type event: :class:`ScheduledEvent`
+    :param user_id: The ID of the user that was added or removed.
+    :type user_id: :class:`int`
+
 Stages
 ~~~~~~~
 

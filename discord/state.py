@@ -2477,12 +2477,12 @@ class ConnectionState:
         if guild is not None:
             scheduled_event = guild._scheduled_events.get(int(data['guild_scheduled_event_id']))
             if scheduled_event is not None:
-                user = self.get_user(int(data['user_id']))
+                user_id = int(data['user_id'])
+                user = self.get_user(user_id)
                 if user is not None:
                     scheduled_event._add_user(user)
                     self.dispatch('scheduled_event_user_add', scheduled_event, user)
-                else:
-                    _log.debug('SCHEDULED_EVENT_USER_ADD referencing unknown user ID: %s. Discarding.', data['user_id'])
+                self.dispatch('raw_scheduled_event_user_add', scheduled_event, user_id)
             else:
                 _log.debug(
                     'SCHEDULED_EVENT_USER_ADD referencing unknown scheduled event ID: %s. Discarding.',
@@ -2496,12 +2496,12 @@ class ConnectionState:
         if guild is not None:
             scheduled_event = guild._scheduled_events.get(int(data['guild_scheduled_event_id']))
             if scheduled_event is not None:
-                user = self.get_user(int(data['user_id']))
+                user_id = int(data['user_id'])
+                user = self.get_user(user_id)
                 if user is not None:
                     scheduled_event._pop_user(user.id)
                     self.dispatch('scheduled_event_user_remove', scheduled_event, user)
-                else:
-                    _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown user ID: %s. Discarding.', data['user_id'])
+                self.dispatch('raw_scheduled_event_user_remove', scheduled_event, user_id)
             else:
                 _log.debug(
                     'SCHEDULED_EVENT_USER_REMOVE referencing unknown scheduled event ID: %s. Discarding.',
