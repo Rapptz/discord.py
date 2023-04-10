@@ -1820,6 +1820,7 @@ class Guild(Hashable):
         widget_enabled: bool = MISSING,
         widget_channel: Optional[Snowflake] = MISSING,
         mfa_level: MFALevel = MISSING,
+        clyde_enabled: bool = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1929,6 +1930,10 @@ class Guild(Hashable):
         mfa_level: :class:`MFALevel`
             The new guild's Multi-Factor Authentication requirement level.
             Note that you must be owner of the guild to do this.
+
+            .. versionadded:: 2.3
+        clyde_enabled: :class:`bool`
+            Whether to enable the Clyde AI integration.
 
             .. versionadded:: 2.3
         reason: Optional[:class:`str`]
@@ -2051,7 +2056,7 @@ class Guild(Hashable):
 
             fields['system_channel_flags'] = system_channel_flags.value
 
-        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled)):
+        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled, clyde_enabled)):
             features = set(self.features)
 
             if community is not MISSING:
@@ -2076,6 +2081,12 @@ class Guild(Hashable):
                     features.add('INVITES_DISABLED')
                 else:
                     features.discard('INVITES_DISABLED')
+
+            if clyde_enabled is not MISSING:
+                if clyde_enabled:
+                    features.add('CLYDE_ENABLED')
+                else:
+                    features.discard('CLYDE_ENABLED')
 
             fields['features'] = list(features)
 
