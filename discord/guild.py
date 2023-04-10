@@ -4961,3 +4961,25 @@ class Guild(Hashable):
         """
         data = await self._state.http.join_admin_server(self.id)
         return Guild(state=self._state, data=data)
+
+    async def migrate_command_scope(self) -> List[int]:
+        """|coro|
+
+        Migrates the guild's bot integrations to the applications.commands scope.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to migrate the guild's bots.
+        HTTPException
+            Migrating failed.
+
+        Returns
+        --------
+        List[:class:`int`]
+            The integration IDs that have newly-added application commands.
+        """
+        data = await self._state.http.migrate_command_scope(self.id)
+        return list(map(int, data['integration_ids_with_app_commands']))

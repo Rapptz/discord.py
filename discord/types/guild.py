@@ -169,6 +169,10 @@ class AdminServerEligibility(TypedDict):
     eligible_for_admin_server: bool
 
 
+class CommandScopeMigration(TypedDict):
+    integration_ids_with_app_commands: List[Snowflake]
+
+
 class SupplementalGuild(UnavailableGuild):
     embedded_activities: list
     voice_states: List[GuildVoiceState]

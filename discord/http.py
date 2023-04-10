@@ -2663,11 +2663,16 @@ class HTTPClient:
             reason=reason,
         )
 
+    # Misc. guild management
+
     def get_admin_server_eligibility(self, guild_id: Snowflake) -> Response[guild.AdminServerEligibility]:
         return self.request(Route('GET', '/guilds/{guild_id}/admin-server-eligibility', guild_id=guild_id))
 
     def join_admin_server(self, guild_id: Snowflake) -> Response[guild.Guild]:
         return self.request(Route('POST', '/guilds/{guild_id}/join-admin-server', guild_id=guild_id))
+
+    def migrate_command_scope(self, guild_id: Snowflake) -> Response[guild.CommandScopeMigration]:
+        return self.request(Route('POST', '/guilds/{guild_id}/migrate-command-scope', guild_id=guild_id))
 
     # Relationships
 
