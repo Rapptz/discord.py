@@ -1523,7 +1523,6 @@ class ConnectionState(Generic[ClientT]):
         if guild is not None:
             sound = guild._soundboard_sounds.get(int(data['sound_id']))
             if sound is not None:
-                print(data)
                 old_sound = copy.copy(sound)
                 sound._update(data)
                 self.dispatch('soundboard_sound_update', old_sound, sound)
