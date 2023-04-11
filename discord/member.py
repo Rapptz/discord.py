@@ -321,7 +321,6 @@ class Member(discord.abc.Messageable, _UserTag):
         '_user',
         '_state',
         '_avatar',
-        '_is_bannable',
     )
 
     if TYPE_CHECKING:
