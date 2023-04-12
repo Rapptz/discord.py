@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-23 11:53+0000\n"
-"PO-Revision-Date: 2022-10-09 15:02\n"
+"POT-Creation-Date: 2023-01-24 11:01+0000\n"
+"PO-Revision-Date: 2023-01-30 13:38\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -358,8 +358,8 @@ msgid "Is there an event for audit log entries being created?"
 msgstr "監査ログのエントリが作成されるイベントはありますか。"
 
 #: ../../faq.rst:346
-msgid "Since Discord does not dispatch this information in the gateway, the library cannot provide this information. This is currently a Discord limitation."
-msgstr "Discordはゲートウェイでこの情報をディスパッチしないため、ライブラリによってこの情報を提供することはできません。これはDiscord側の制限によるものです。"
+msgid "This event is now available in the library and Discord as of version 2.2. It can be found under :func:`on_audit_log_entry_create`."
+msgstr "このイベントはバージョン2.2の時期にDiscordで利用可能になりました。 :func:`on_audit_log_entry_create` にあります。"
 
 #: ../../faq.rst:350
 msgid "Commands Extension"
@@ -476,7 +476,7 @@ msgstr "私のボットのコマンドが一覧に表示されません！"
 
 #: ../../faq.rst:494
 msgid "Did you :meth:`~.CommandTree.sync` your command? Commands need to be synced before they will appear."
-msgstr "コマンドを :meth:`~.CommandTree.sync` しましたか？コマンドは出現する前に同期する必要があります。"
+msgstr "コマンドを :meth:`~.CommandTree.sync` しましたか？コマンドが表示されるにはその前に同期する必要があります。"
 
 #: ../../faq.rst:495
 msgid "Did you invite your bot with the correct permissions? Bots need to be invited with the ``applications.commands`` scope in addition to the ``bot`` scope. For example, invite the bot with the following URL: ``https://discord.com/oauth2/authorize?client_id=<client id>&scope=applications.commands+bot``. Alternatively, if you use :func:`utils.oauth_url`, you can call the function as such: ``oauth_url(<other options>, scopes=(\"bot\", \"applications.commands\"))``."

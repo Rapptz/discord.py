@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-23 11:53+0000\n"
-"PO-Revision-Date: 2022-10-09 16:15\n"
+"POT-Creation-Date: 2023-01-24 11:01+0000\n"
+"PO-Revision-Date: 2023-01-30 13:38\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -57,15 +57,23 @@ msgstr "再接続中に処理する例外を追加します:"
 msgid "Looping a certain amount of times before exiting:"
 msgstr "特定の回数ループさせる:"
 
-#: ../../ext/tasks/index.rst:77
+#: ../../ext/tasks/index.rst:80
 msgid "Waiting until the bot is ready before the loop starts:"
 msgstr "ループが始まる前に、Botの準備が整うまで待機する:"
 
-#: ../../ext/tasks/index.rst:102
+#: ../../ext/tasks/index.rst:105
 msgid "Doing something during cancellation:"
 msgstr "キャンセルする場合、その間に何らかの処理を行う:"
 
-#: ../../ext/tasks/index.rst:136
+#: ../../ext/tasks/index.rst:138
+msgid "Doing something at a specific time each day:"
+msgstr "毎日特定の時間に何かを行う:"
+
+#: ../../ext/tasks/index.rst:162
+msgid "Doing something at multiple specific times each day:"
+msgstr "毎日複数の特定の時間に何かを行う:"
+
+#: ../../ext/tasks/index.rst:193
 msgid "API Reference"
 msgstr "APIリファレンス"
 
@@ -125,8 +133,8 @@ msgid "This is useful if you want to wait for some bot state before the loop sta
 msgstr ":meth:`discord.Client.wait_until_ready` などを用いて、ループ開始前にボットの状態が整うまで待つのに便利です。"
 
 #: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.before_loop:8
-msgid "Calling :meth:`stop` in this coroutine will stop the initial iteration from running."
-msgstr "このコルーチンで :meth:`stop` を呼び出すと、最初のループが実行されなくなります。"
+msgid "Calling :meth:`stop` in this coroutine will stop the loop before the initial iteration is run."
+msgstr "このコルーチンで :meth:`stop` を呼び出すと、最初のループの実行前にループが停止します。"
 
 #: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.before_loop:11
 msgid "The coroutine to register before the loop runs."
@@ -265,8 +273,8 @@ msgid "If this is undesirable, either remove the error handling before stopping 
 msgstr "この動作が望ましくない場合は、停止前に :meth:`clear_exception_types` を用いてエラー処理を除去するか、代わりに :meth:`cancel` を使用してください。"
 
 #: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.stop:16
-msgid "Calling this method in :meth:`before_loop` will stop the first iteration from running."
-msgstr ":meth:`before_loop` にてこのメソッドを呼び出すと、最初のループが実行されなくなります。"
+msgid "Calling this method in :meth:`before_loop` will stop the loop before the initial iteration is run."
+msgstr ":meth:`before_loop` にてこのメソッドを呼び出すと、最初のループの実行前にループが停止します。"
 
 #: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.cancel:1
 msgid "Cancels the internal task, if it is running."

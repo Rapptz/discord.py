@@ -104,6 +104,11 @@ class Colour:
 
              Returns the raw colour value.
 
+    .. note::
+
+        The colour values in the classmethods are mostly provided as-is and can change between
+        versions should the Discord client's representation of that colour also change.
+
     Attributes
     ------------
     value: :class:`int`
@@ -181,7 +186,7 @@ class Colour:
         - ``rgb(<number>, <number>, <number>)``
 
         Like CSS, ``<number>`` can be either 0-255 or 0-100% and ``<hex>`` can be
-        either a 6 digit hex number or a 3 digit hex shortcut (e.g. #fff).
+        either a 6 digit hex number or a 3 digit hex shortcut (e.g. #FFF).
 
         .. versionadded:: 2.0
 
@@ -209,7 +214,10 @@ class Colour:
 
     @classmethod
     def default(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0``.
+
+        .. colour:: #000000
+        """
         return cls(0)
 
     @classmethod
@@ -235,17 +243,26 @@ class Colour:
 
     @classmethod
     def teal(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x1abc9c``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x1ABC9C``.
+
+        .. colour:: #1ABC9C
+        """
         return cls(0x1ABC9C)
 
     @classmethod
     def dark_teal(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x11806a``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x11806A``.
+
+        .. colour:: #11806A
+        """
         return cls(0x11806A)
 
     @classmethod
     def brand_green(cls) -> Self:
         """A factory method that returns a :class:`Colour` with a value of ``0x57F287``.
+
+        .. colour:: #57F287
+
 
         .. versionadded:: 2.0
         """
@@ -253,67 +270,105 @@ class Colour:
 
     @classmethod
     def green(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x2ecc71``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x2ECC71``.
+
+        .. colour:: #2ECC71
+        """
         return cls(0x2ECC71)
 
     @classmethod
     def dark_green(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x1f8b4c``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x1F8B4C``.
+
+        .. colour:: #1F8B4C
+        """
         return cls(0x1F8B4C)
 
     @classmethod
     def blue(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x3498db``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x3498DB``.
+
+        .. colour:: #3498DB
+        """
         return cls(0x3498DB)
 
     @classmethod
     def dark_blue(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x206694``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x206694``.
+
+        .. colour:: #206694
+        """
         return cls(0x206694)
 
     @classmethod
     def purple(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x9b59b6``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x9B59B6``.
+
+        .. colour:: #9B59B6
+        """
         return cls(0x9B59B6)
 
     @classmethod
     def dark_purple(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x71368a``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x71368A``.
+
+        .. colour:: #71368A
+        """
         return cls(0x71368A)
 
     @classmethod
     def magenta(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0xe91e63``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0xE91E63``.
+
+        .. colour:: #E91E63
+        """
         return cls(0xE91E63)
 
     @classmethod
     def dark_magenta(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0xad1457``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0xAD1457``.
+
+        .. colour:: #AD1457
+        """
         return cls(0xAD1457)
 
     @classmethod
     def gold(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0xf1c40f``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0xF1C40F``.
+
+        .. colour:: #F1C40F
+        """
         return cls(0xF1C40F)
 
     @classmethod
     def dark_gold(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0xc27c0e``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0xC27C0E``.
+
+        .. colour:: #C27C0E
+        """
         return cls(0xC27C0E)
 
     @classmethod
     def orange(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0xe67e22``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0xE67E22``.
+
+        .. colour:: #E67E22
+        """
         return cls(0xE67E22)
 
     @classmethod
     def dark_orange(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0xa84300``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0xA84300``.
+
+        .. colour:: #A84300
+        """
         return cls(0xA84300)
 
     @classmethod
     def brand_red(cls) -> Self:
         """A factory method that returns a :class:`Colour` with a value of ``0xED4245``.
+
+        .. colour:: #ED4245
 
         .. versionadded:: 2.0
         """
@@ -321,69 +376,104 @@ class Colour:
 
     @classmethod
     def red(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0xe74c3c``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0xE74C3C``.
+
+        .. colour:: #E74C3C
+        """
         return cls(0xE74C3C)
 
     @classmethod
     def dark_red(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x992d22``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x992D22``.
+
+        .. colour:: #992D22
+        """
         return cls(0x992D22)
 
     @classmethod
     def lighter_grey(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x95a5a6``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x95A5A6``.
+
+        .. colour:: #95A5A6
+        """
         return cls(0x95A5A6)
 
     lighter_gray = lighter_grey
 
     @classmethod
     def dark_grey(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x607d8b``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x607d8b``.
+
+        .. colour:: #607d8b
+        """
         return cls(0x607D8B)
 
     dark_gray = dark_grey
 
     @classmethod
     def light_grey(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x979c9f``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x979C9F``.
+
+        .. colour:: #979C9F
+        """
         return cls(0x979C9F)
 
     light_gray = light_grey
 
     @classmethod
     def darker_grey(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x546e7a``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x546E7A``.
+
+        .. colour:: #546E7A
+        """
         return cls(0x546E7A)
 
     darker_gray = darker_grey
 
     @classmethod
     def og_blurple(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x7289da``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x7289DA``.
+
+        .. colour:: #7289DA
+        """
         return cls(0x7289DA)
 
     @classmethod
     def blurple(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x5865F2``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x5865F2``.
+
+        .. colour:: #5865F2
+        """
         return cls(0x5865F2)
 
     @classmethod
     def greyple(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x99aab5``."""
+        """A factory method that returns a :class:`Colour` with a value of ``0x99AAB5``.
+
+        .. colour:: #99AAB5
+        """
         return cls(0x99AAB5)
 
     @classmethod
     def dark_theme(cls) -> Self:
-        """A factory method that returns a :class:`Colour` with a value of ``0x36393F``.
+        """A factory method that returns a :class:`Colour` with a value of ``0x313338``.
+
         This will appear transparent on Discord's dark theme.
 
+        .. colour:: #313338
+
         .. versionadded:: 1.5
+
+        .. versionchanged:: 2.2
+            Updated colour from previous ``0x36393F`` to reflect discord theme changes.
         """
-        return cls(0x36393F)
+        return cls(0x313338)
 
     @classmethod
     def fuchsia(cls) -> Self:
         """A factory method that returns a :class:`Colour` with a value of ``0xEB459E``.
+
+        .. colour:: #EB459E
 
         .. versionadded:: 2.0
         """
@@ -393,9 +483,31 @@ class Colour:
     def yellow(cls) -> Self:
         """A factory method that returns a :class:`Colour` with a value of ``0xFEE75C``.
 
+        .. colour:: #FEE75C
+
         .. versionadded:: 2.0
         """
         return cls(0xFEE75C)
+
+    @classmethod
+    def dark_embed(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0x2B2D31``.
+
+        .. colour:: #2B2D31
+
+        .. versionadded:: 2.2
+        """
+        return cls(0x2B2D31)
+
+    @classmethod
+    def light_embed(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0xEEEFF1``.
+
+        .. colour:: #EEEFF1
+
+        .. versionadded:: 2.2
+        """
+        return cls(0xEEEFF1)
 
 
 Color = Colour

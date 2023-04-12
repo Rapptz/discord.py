@@ -83,7 +83,15 @@ if TYPE_CHECKING:
     from .channel import CategoryChannel
     from .embeds import Embed
     from .message import Message, MessageReference, PartialMessage
-    from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VoiceChannel
+    from .channel import (
+        TextChannel,
+        DMChannel,
+        GroupChannel,
+        PartialMessageable,
+        VocalGuildChannel,
+        VoiceChannel,
+        StageChannel,
+    )
     from .threads import Thread
     from .enums import InviteTarget
     from .ui.view import View
@@ -97,7 +105,7 @@ if TYPE_CHECKING:
         SnowflakeList,
     )
 
-    PartialMessageableChannel = Union[TextChannel, VoiceChannel, Thread, DMChannel, PartialMessageable]
+    PartialMessageableChannel = Union[TextChannel, VoiceChannel, StageChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
     SnowflakeTime = Union["Snowflake", datetime]
 
@@ -118,7 +126,7 @@ async def _single_delete_strategy(messages: Iterable[Message], *, reason: Option
 
 
 async def _purge_helper(
-    channel: Union[Thread, TextChannel, VoiceChannel],
+    channel: Union[Thread, TextChannel, VocalGuildChannel],
     *,
     limit: Optional[int] = 100,
     check: Callable[[Message], bool] = MISSING,
@@ -639,6 +647,20 @@ class GuildChannel:
         category = self.guild.get_channel(self.category_id)
         return bool(category and category.overwrites == self.overwrites)
 
+    def _apply_implicit_permissions(self, base: Permissions) -> None:
+        # if you can't send a message in a channel then you can't have certain
+        # permissions as well
+        if not base.send_messages:
+            base.send_tts_messages = False
+            base.mention_everyone = False
+            base.embed_links = False
+            base.attach_files = False
+
+        # if you can't read a channel then you have no permissions there
+        if not base.read_messages:
+            denied = Permissions.all_channel()
+            base.value &= ~denied.value
+
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         """Handles permission resolution for the :class:`~discord.Member`
         or :class:`~discord.Role`.
@@ -649,6 +671,7 @@ class GuildChannel:
         - Guild roles
         - Channel overrides
         - Member overrides
+        - Implicit permissions
         - Member timeout
 
         If a :class:`~discord.Role` is passed, then it checks the permissions
@@ -763,19 +786,6 @@ class GuildChannel:
             if overwrite.is_member() and overwrite.id == obj.id:
                 base.handle_overwrite(allow=overwrite.allow, deny=overwrite.deny)
                 break
-
-        # if you can't send a message in a channel then you can't have certain
-        # permissions as well
-        if not base.send_messages:
-            base.send_tts_messages = False
-            base.mention_everyone = False
-            base.embed_links = False
-            base.attach_files = False
-
-        # if you can't read a channel then you have no permissions there
-        if not base.read_messages:
-            denied = Permissions.all_channel()
-            base.value &= ~denied.value
 
         if obj.is_timed_out():
             # Timeout leads to every permission except VIEW_CHANNEL and READ_MESSAGE_HISTORY
@@ -1282,6 +1292,7 @@ class Messageable:
 
     - :class:`~discord.TextChannel`
     - :class:`~discord.VoiceChannel`
+    - :class:`~discord.StageChannel`
     - :class:`~discord.DMChannel`
     - :class:`~discord.GroupChannel`
     - :class:`~discord.PartialMessageable`
@@ -1313,6 +1324,7 @@ class Messageable:
         mention_author: bool = ...,
         view: View = ...,
         suppress_embeds: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
@@ -1332,6 +1344,7 @@ class Messageable:
         mention_author: bool = ...,
         view: View = ...,
         suppress_embeds: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
@@ -1351,6 +1364,7 @@ class Messageable:
         mention_author: bool = ...,
         view: View = ...,
         suppress_embeds: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
@@ -1370,6 +1384,7 @@ class Messageable:
         mention_author: bool = ...,
         view: View = ...,
         suppress_embeds: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
@@ -1390,6 +1405,7 @@ class Messageable:
         mention_author: Optional[bool] = None,
         view: Optional[View] = None,
         suppress_embeds: bool = False,
+        silent: bool = False,
     ) -> Message:
         """|coro|
 
@@ -1470,6 +1486,11 @@ class Messageable:
             Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``.
 
             .. versionadded:: 2.0
+        silent: :class:`bool`
+            Whether to suppress push and desktop notifications for the message. This will increment the mention counter
+            in the UI, but will not actually send a notification.
+
+            .. versionadded:: 2.2
 
         Raises
         --------
@@ -1512,10 +1533,12 @@ class Messageable:
         if view and not hasattr(view, '__discord_ui_view__'):
             raise TypeError(f'view parameter must be View not {view.__class__.__name__}')
 
-        if suppress_embeds:
+        if suppress_embeds or silent:
             from .message import MessageFlags  # circular import
 
-            flags = MessageFlags._from_value(4)
+            flags = MessageFlags._from_value(0)
+            flags.suppress_embeds = suppress_embeds
+            flags.suppress_notifications = silent
         else:
             flags = MISSING
 
@@ -1538,7 +1561,7 @@ class Messageable:
             data = await state.http.send_message(channel.id, params=params)
 
         ret = state.create_message(channel=channel, data=data)
-        if view:
+        if view and not view.is_finished():
             state.store_view(view, ret.id)
 
         if delete_after is not None:
@@ -1774,23 +1797,25 @@ class Messageable:
         channel = await self._get_channel()
 
         while True:
-            retrieve = min(100 if limit is None else limit, 100)
+            retrieve = 100 if limit is None else min(limit, 100)
             if retrieve < 1:
                 return
 
             data, state, limit = await strategy(retrieve, state, limit)
-
-            # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 100:
-                limit = 0
 
             if reverse:
                 data = reversed(data)
             if predicate:
                 data = filter(predicate, data)
 
-            for raw_message in data:
+            count = 0
+
+            for count, raw_message in enumerate(data, 1):
                 yield self._state.create_message(channel=channel, data=raw_message)
+
+            if count < 100:
+                # There's no data left after this
+                break
 
 
 class Connectable(Protocol):

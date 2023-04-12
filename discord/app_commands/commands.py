@@ -44,7 +44,6 @@ from typing import (
     Union,
     overload,
 )
-from textwrap import TextWrapper
 
 import re
 
@@ -57,7 +56,7 @@ from ..message import Message
 from ..user import User
 from ..member import Member
 from ..permissions import Permissions
-from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all
+from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all, _shorten, _to_kebab_case
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec, Concatenate
@@ -99,19 +98,19 @@ T = TypeVar('T')
 F = TypeVar('F', bound=Callable[..., Any])
 GroupT = TypeVar('GroupT', bound='Binding')
 Coro = Coroutine[Any, Any, T]
-UnboundError = Callable[['Interaction', AppCommandError], Coro[Any]]
+UnboundError = Callable[['Interaction[Any]', AppCommandError], Coro[Any]]
 Error = Union[
-    Callable[[GroupT, 'Interaction', AppCommandError], Coro[Any]],
+    Callable[[GroupT, 'Interaction[Any]', AppCommandError], Coro[Any]],
     UnboundError,
 ]
-Check = Callable[['Interaction'], Union[bool, Coro[bool]]]
+Check = Callable[['Interaction[Any]'], Union[bool, Coro[bool]]]
 Binding = Union['Group', 'commands.Cog']
 
 
 if TYPE_CHECKING:
     CommandCallback = Union[
-        Callable[Concatenate[GroupT, 'Interaction', P], Coro[T]],
-        Callable[Concatenate['Interaction', P], Coro[T]],
+        Callable[Concatenate[GroupT, 'Interaction[Any]', P], Coro[T]],
+        Callable[Concatenate['Interaction[Any]', P], Coro[T]],
     ]
 
     ContextMenuCallback = Union[
@@ -120,15 +119,15 @@ if TYPE_CHECKING:
         # Callable[[GroupT, 'Interaction', User], Coro[Any]],
         # Callable[[GroupT, 'Interaction', Message], Coro[Any]],
         # Callable[[GroupT, 'Interaction', Union[Member, User]], Coro[Any]],
-        Callable[['Interaction', Member], Coro[Any]],
-        Callable[['Interaction', User], Coro[Any]],
-        Callable[['Interaction', Message], Coro[Any]],
-        Callable[['Interaction', Union[Member, User]], Coro[Any]],
+        Callable[['Interaction[Any]', Member], Coro[Any]],
+        Callable[['Interaction[Any]', User], Coro[Any]],
+        Callable[['Interaction[Any]', Message], Coro[Any]],
+        Callable[['Interaction[Any]', Union[Member, User]], Coro[Any]],
     ]
 
     AutocompleteCallback = Union[
-        Callable[[GroupT, 'Interaction', str], Coro[List[Choice[ChoiceT]]]],
-        Callable[['Interaction', str], Coro[List[Choice[ChoiceT]]]],
+        Callable[[GroupT, 'Interaction[Any]', str], Coro[List[Choice[ChoiceT]]]],
+        Callable[['Interaction[Any]', str], Coro[List[Choice[ChoiceT]]]],
     ]
 else:
     CommandCallback = Callable[..., Coro[T]]
@@ -142,8 +141,6 @@ CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', 'CommandCal
 THAI_COMBINING = r'\u0e31-\u0e3a\u0e47-\u0e4e'
 DEVANAGARI_COMBINING = r'\u0900-\u0903\u093a\u093b\u093c\u093e\u093f\u0940-\u094f\u0955\u0956\u0957\u0962\u0963'
 VALID_SLASH_COMMAND_NAME = re.compile(r'^[-_\w' + THAI_COMBINING + DEVANAGARI_COMBINING + r']{1,32}$')
-
-CAMEL_CASE_REGEX = re.compile(r'(?<!^)(?=[A-Z])')
 
 ARG_NAME_SUBREGEX = r'(?:\\?\*){0,2}(?P<name>\w+)'
 
@@ -167,19 +164,6 @@ NUMPY_DOCSTRING_ARG_REGEX = re.compile(
 )
 
 
-def _shorten(
-    input: str,
-    *,
-    _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='…'),
-) -> str:
-    try:
-        # split on the first double newline since arguments may appear after that
-        input, _ = re.split(r'\n\s*\n', input, maxsplit=1)
-    except ValueError:
-        pass
-    return _wrapper.fill(' '.join(input.strip().split()))
-
-
 def _parse_args_from_docstring(func: Callable[..., Any], params: Dict[str, CommandParameter]) -> Dict[str, str]:
     docstring = inspect.getdoc(func)
 
@@ -199,10 +183,6 @@ def _parse_args_from_docstring(func: Callable[..., Any], params: Dict[str, Comma
     return {
         m.group('name'): m.group('description') for matches in docstring_styles for m in matches if m.group('name') in params
     }
-
-
-def _to_kebab_case(text: str) -> str:
-    return CAMEL_CASE_REGEX.sub('-', text).lower()
 
 
 def validate_name(name: str) -> str:
@@ -227,7 +207,7 @@ def validate_context_menu_name(name: str) -> str:
     return name
 
 
-def _validate_auto_complete_callback(
+def validate_auto_complete_callback(
     callback: AutocompleteCallback[GroupT, ChoiceT]
 ) -> AutocompleteCallback[GroupT, ChoiceT]:
     # This function needs to ensure the following is true:
@@ -366,7 +346,7 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
                 'Choice annotation unsupported for autocomplete parameters, consider using a regular annotation instead'
             )
 
-        param.autocomplete = _validate_auto_complete_callback(callback)
+        param.autocomplete = validate_auto_complete_callback(callback)
 
     if autocomplete:
         first = next(iter(autocomplete))
@@ -907,11 +887,11 @@ class Command(Generic[GroupT, P, T]):
         predicates = getattr(param.autocomplete, '__discord_app_commands_checks__', [])
         if predicates:
             try:
-                if not await async_all(f(interaction) for f in predicates):
-                    if not interaction.response.is_done():
-                        await interaction.response.autocomplete([])
-                    return
+                passed = await async_all(f(interaction) for f in predicates)
             except Exception:
+                passed = False
+
+            if not passed:
                 if not interaction.response.is_done():
                     await interaction.response.autocomplete([])
                 return
@@ -1010,7 +990,7 @@ class Command(Generic[GroupT, P, T]):
         if self.binding is not None:
             check: Optional[Check] = getattr(self.binding, 'interaction_check', None)
             if check:
-                ret = await maybe_coroutine(check, interaction)
+                ret = await maybe_coroutine(check, interaction)  # type: ignore # Probable pyright bug
                 if not ret:
                     return False
 
@@ -1065,6 +1045,9 @@ class Command(Generic[GroupT, P, T]):
         The coroutine decorator **must** return a list of :class:`~discord.app_commands.Choice` objects.
         Only up to 25 objects are supported.
 
+        .. warning::
+            The choices returned from this coroutine are suggestions. The user may ignore them and input their own value.
+
         Example:
 
         .. code-block:: python3
@@ -1114,7 +1097,7 @@ class Command(Generic[GroupT, P, T]):
                     'Choice annotation unsupported for autocomplete parameters, consider using a regular annotation instead'
                 )
 
-            param.autocomplete = _validate_auto_complete_callback(coro)
+            param.autocomplete = validate_auto_complete_callback(coro)
             return coro
 
         return decorator
@@ -2270,6 +2253,9 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
     callback.
 
     For more information, see the :meth:`Command.autocomplete` documentation.
+
+    .. warning::
+        The choices returned from this coroutine are suggestions. The user may ignore them and input their own value.
 
     Example:
 

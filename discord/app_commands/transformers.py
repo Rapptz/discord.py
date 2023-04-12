@@ -556,6 +556,8 @@ else:
         - ``Range[int, 10]`` means the minimum is 10 with no maximum.
         - ``Range[int, None, 10]`` means the maximum is 10 with no minimum.
         - ``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10.
+        - ``Range[float, 1.0, 5.0]`` means the minimum is 1.0 and the maximum is 5.0.
+        - ``Range[str, 1, 10]`` means the minimum length is 1 and the maximum length is 10.
 
         .. versionadded:: 2.0
 
@@ -868,8 +870,8 @@ def annotation_to_parameter(annotation: Any, parameter: inspect.Parameter) -> Co
 
     # Check if the method is overridden
     if inner.autocomplete.__func__ is not Transformer.autocomplete:
-        from .commands import _validate_auto_complete_callback
+        from .commands import validate_auto_complete_callback
 
-        result.autocomplete = _validate_auto_complete_callback(inner.autocomplete)
+        result.autocomplete = validate_auto_complete_callback(inner.autocomplete)
 
     return result

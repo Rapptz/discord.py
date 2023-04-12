@@ -33,7 +33,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Literal, Optional, 
 from discord.utils import MISSING, maybe_coroutine, resolve_annotation
 
 from .converter import run_converters
-from .errors import BadFlagArgument, MissingFlagArgument, MissingRequiredFlag, TooManyFlags
+from .errors import BadFlagArgument, MissingFlagArgument, MissingRequiredFlag, TooManyFlags, TooManyArguments
 from .view import StringView
 
 __all__ = (
@@ -496,7 +496,7 @@ class FlagConverter(metaclass=FlagsMeta):
         return f'<{self.__class__.__name__} {pairs}>'
 
     @classmethod
-    def parse_flags(cls, argument: str) -> Dict[str, List[str]]:
+    def parse_flags(cls, argument: str, *, ignore_extra: bool = True) -> Dict[str, List[str]]:
         result: Dict[str, List[str]] = {}
         flags = cls.__commands_flags__
         aliases = cls.__commands_flag_aliases__
@@ -531,9 +531,11 @@ class FlagConverter(metaclass=FlagsMeta):
             last_position = end
             last_flag = flag
 
+        # Get the remaining string, if applicable
+        value = argument[last_position:].strip()
+
         # Add the remaining string to the last available flag
-        if last_position and last_flag is not None:
-            value = argument[last_position:].strip()
+        if last_flag is not None:
             if not value:
                 raise MissingFlagArgument(last_flag)
 
@@ -545,6 +547,9 @@ class FlagConverter(metaclass=FlagsMeta):
                 result[name] = [value]
             else:
                 values.append(value)
+        elif value and not ignore_extra:
+            # If we're here then we passed extra arguments that aren't flags
+            raise TooManyArguments(f'Too many arguments passed to {cls.__name__}')
 
         # Verification of values will come at a later stage
         return result
@@ -572,7 +577,17 @@ class FlagConverter(metaclass=FlagsMeta):
         :class:`FlagConverter`
             The flag converter instance with all flags parsed.
         """
-        arguments = cls.parse_flags(argument)
+
+        # Only respect ignore_extra if the parameter is a keyword-only parameter
+        ignore_extra = True
+        if (
+            ctx.command is not None
+            and ctx.current_parameter is not None
+            and ctx.current_parameter.kind == ctx.current_parameter.KEYWORD_ONLY
+        ):
+            ignore_extra = ctx.command.ignore_extra
+
+        arguments = cls.parse_flags(argument, ignore_extra=ignore_extra)
         flags = cls.__commands_flags__
 
         self = cls.__new__(cls)

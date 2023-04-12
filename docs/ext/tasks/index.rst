@@ -63,6 +63,7 @@ Looping a certain amount of times before exiting:
 .. code-block:: python3
 
     from discord.ext import tasks
+    import discord
 
     @tasks.loop(seconds=5.0, count=5)
     async def slow_count():
@@ -72,7 +73,9 @@ Looping a certain amount of times before exiting:
     async def after_slow_count():
         print('done!')
 
-    slow_count.start()
+    class MyClient(discord.Client):
+        async def setup_hook(self):
+            slow_count.start()
 
 Waiting until the bot is ready before the loop starts:
 
@@ -113,6 +116,9 @@ Doing something during cancellation:
             self.lock = asyncio.Lock()
             self.bulker.start()
 
+        async def cog_unload(self):
+            self.bulker.cancel()
+
         async def do_bulk(self):
             # bulk insert data here
             ...
@@ -129,6 +135,57 @@ Doing something during cancellation:
                 # let's insert it to our database
                 await self.do_bulk()
 
+Doing something at a specific time each day:
+
+.. code-block:: python3
+
+    import datetime
+    from discord.ext import commands, tasks
+
+    utc = datetime.timezone.utc
+
+    # If no tzinfo is given then UTC is assumed.
+    time = datetime.time(hour=8, minute=30, tzinfo=utc)
+
+    class MyCog(commands.Cog):
+        def __init__(self, bot):
+            self.bot = bot
+            self.my_task.start()
+
+        def cog_unload(self):
+            self.my_task.cancel()
+
+        @tasks.loop(time=time)
+        async def my_task(self):
+            print("My task is running!")
+
+Doing something at multiple specific times each day:
+
+.. code-block:: python3
+
+    import datetime
+    from discord.ext import commands, tasks
+
+    utc = datetime.timezone.utc
+
+    # If no tzinfo is given then UTC is assumed.
+    times = [
+        datetime.time(hour=8, tzinfo=utc),
+        datetime.time(hour=12, minute=30, tzinfo=utc),
+        datetime.time(hour=16, minute=40, second=30, tzinfo=utc)
+    ]
+
+    class MyCog(commands.Cog):
+        def __init__(self, bot):
+            self.bot = bot
+            self.my_task.start()
+
+        def cog_unload(self):
+            self.my_task.cancel()
+
+        @tasks.loop(time=times)
+        async def my_task(self):
+            print("My task is running!")
 
 .. _ext_tasks_api:
 

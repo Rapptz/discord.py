@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-02 21:53+0000\n"
-"PO-Revision-Date: 2022-10-09 16:05\n"
+"POT-Creation-Date: 2023-01-29 20:45+0000\n"
+"PO-Revision-Date: 2023-01-30 13:38\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -64,8 +64,8 @@ msgstr "型"
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:12
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:36
 #: ../../../discord/message.py:docstring of discord.message.MessageInteraction:23
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:30
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:37
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:36
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:43
 msgid ":class:`int`"
 msgstr ":class:`int`"
 
@@ -113,14 +113,18 @@ msgid "The message that sent this interaction."
 msgstr "このインタラクションを送信したメッセージ。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:48
+msgid "This is only available for :attr:`InteractionType.component` interactions."
+msgstr "これは :attr:`InteractionType.component` インタラクションの場合にのみ使用できます。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:50
 msgid "Optional[:class:`Message`]"
 msgstr "Optional[:class:`Message`]"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:52
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:54
 msgid "The token to continue the interaction. These are valid for 15 minutes."
 msgstr "インタラクションを続行するのに使うトークン。有効期限は15分です。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:55
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:57
 #: ../../docstring of discord.InteractionMessage.clean_content:15
 #: ../../../discord/interactions.py:docstring of discord.InteractionMessage.jump_url:3
 #: ../../docstring of discord.InteractionMessage.system_content:8
@@ -128,45 +132,45 @@ msgstr "インタラクションを続行するのに使うトークン。有効
 msgid ":class:`str`"
 msgstr ":class:`str`"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:59
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:61
 msgid "The raw interaction data."
 msgstr "生のインタラクションデータ。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:61
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:81
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:63
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:83
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:95
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:80
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:105
 msgid ":class:`dict`"
 msgstr ":class:`dict`"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:65
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:67
 msgid "The locale of the user invoking the interaction."
 msgstr "インタラクションを呼び出したユーザーのロケール。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:67
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:69
 msgid ":class:`Locale`"
 msgstr ":class:`Locale`"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:71
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:73
 msgid "The preferred locale of the guild the interaction was sent from, if any."
 msgstr "インタラクションの送信元のギルドの優先ロケール。もし無ければ ``None`` となります。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:73
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:75
 msgid "Optional[:class:`Locale`]"
 msgstr "Optional[:class:`Locale`]"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:77
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:79
 msgid "A dictionary that can be used to store extraneous data for use during interaction processing. The library will not touch any values or keys within this dictionary."
 msgstr "インタラクションの処理中に使用する追加のデータを保管できる辞書型。ライブラリは辞書型の中のキーや値を一切操作しません。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:85
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:87
 msgid "Whether the command associated with this interaction failed to execute. This includes checks and execution."
 msgstr "このインタラクションに関連付けられたコマンドの実行に失敗したかどうか。これにはチェックとコマンドの実行が含まれます。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:88
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:90
 #: ../../../discord/components.py:docstring of discord.components.Button:35
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:49
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:55
 #: ../../../discord/components.py:docstring of discord.components.TextInput:43
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:84
 msgid ":class:`bool`"
@@ -408,38 +412,38 @@ msgid "The updated view to update this message with. If ``None`` is passed then 
 msgstr "このメッセージを更新するために更新されたビュー。 ``None`` が渡された場合、ビューは削除されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_response:32
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:27
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:26
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:33
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:32
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:10
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:10
 msgid "Editing the message failed."
 msgstr "メッセージの編集に失敗した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_response:34
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:27
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:33
 msgid "Edited a message that is not yours."
 msgstr "自分以外のメッセージを編集しようとした場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_response:35
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:28
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:34
 msgid "You specified both ``embed`` and ``embeds``"
 msgstr "``embed`` と ``embeds`` の両方を指定した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_response:36
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:33
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:29
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:39
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:35
 msgid "The length of ``embeds`` was invalid."
 msgstr "``embeds`` の長さが無効だった場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_response:38
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:31
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:37
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:13
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:13
 msgid "The newly edited message."
 msgstr "編集された新しいメッセージ。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_response:39
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:32
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:38
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.add_files:14
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.remove_attachments:14
 msgid ":class:`InteractionMessage`"
@@ -490,7 +494,7 @@ msgstr "翻訳された文字列、またはトランスレータが設定され
 #: ../../../discord/components.py:docstring of discord.components.Button:23
 #: ../../../discord/components.py:docstring of discord.components.Button:29
 #: ../../../discord/components.py:docstring of discord.components.Button:41
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:17
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:23
 msgid "Optional[:class:`str`]"
 msgstr "Optional[:class:`str`]"
 
@@ -560,8 +564,8 @@ msgstr "インタラクションの遅延に失敗した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:25
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.pong:8
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:34
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:29
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:40
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:35
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_modal:9
 msgid "This interaction has already been responded to before."
 msgstr "既にインタラクションに応答していた場合。"
@@ -618,12 +622,17 @@ msgstr "メッセージがインタラクションを開始したユーザーだ
 msgid "Whether to suppress embeds for the message. This sends the message without any embeds if set to ``True``."
 msgstr "メッセージの埋め込みを抑制するかどうか。これが ``True`` に設定されている場合、埋め込みなしでメッセージを送信します。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:31
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:30
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:25
+msgid "If provided, the number of seconds to wait in the background before deleting the message we just sent. If the deletion fails, then it is silently ignored."
+msgstr "指定すると、これはメッセージを送信したあと削除するまでにバックグラウンドで待機する秒数となります。もし削除が失敗しても、それは静かに無視されます。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:37
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:12
 msgid "Sending the message failed."
 msgstr "メッセージの送信に失敗した場合。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:32
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:38
 msgid "You specified both ``embed`` and ``embeds`` or ``file`` and ``files``."
 msgstr "``embed`` と ``embeds`` または ``file`` と ``files`` の両方を指定した場合。"
 
@@ -639,7 +648,11 @@ msgstr "現在のメッセージと置き換える新しい内容。 ``None`` �
 msgid "Controls the mentions being processed in this message. See :meth:`.Message.edit` for more information."
 msgstr "このメッセージで処理されるメンションを制御します。詳細は :meth:`.Message.edit` を参照してください。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:28
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:26
+msgid "If provided, the number of seconds to wait in the background before deleting the message we just edited. If the deletion fails, then it is silently ignored."
+msgstr "もし指定したなら、これはメッセージを編集したあと待機し削除するまでの秒数です。もし削除が失敗しても、それは静かに無視されます。"
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:34
 msgid "You specified both ``embed`` and ``embeds``."
 msgstr "``embed`` と ``embeds`` の両方を指定した場合。"
 
@@ -842,8 +855,8 @@ msgid "The duration in minutes before a thread is automatically archived for ina
 msgstr "スレッドが非アクティブ時に、自動的にアーカイブされるまでの分単位の長さ。指定しない場合は、チャンネルのデフォルトの自動アーカイブ期間が使用されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:17
-msgid "Specifies the slowmode rate limit for user in this channel, in seconds. The maximum value possible is `21600`. By default no slowmode rate limit if this is ``None``."
-msgstr "このチャンネルの秒単位でのスローモードレート制限。 最大値は `21600` です。デフォルトは ``None`` でこの場合はスローモードレート制限が無しとなります。"
+msgid "Specifies the slowmode rate limit for user in this channel, in seconds. The maximum value possible is ``21600``. By default no slowmode rate limit if this is ``None``."
+msgstr "このチャンネルの秒単位での低速モードレート制限。 最大値は ``21600`` です。デフォルトは ``None`` でこの場合は低速モードレート制限が無しとなります。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:21
 msgid "The reason for creating a new thread. Shows up on the audit log."
@@ -1156,7 +1169,7 @@ msgstr "これは抽象クラスでインスタンス化できません。"
 #: ../../../discord/components.py:docstring of discord.Component.type:1
 #: ../../../discord/components.py:docstring of discord.ActionRow.type:1
 #: ../../../discord/components.py:docstring of discord.Button.type:1
-#: ../../../discord/components.py:docstring of discord.SelectMenu.type:1
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:15
 #: ../../../discord/components.py:docstring of discord.TextInput.type:1
 msgid "The type of component."
 msgstr "コンポーネントの種類。"
@@ -1164,7 +1177,7 @@ msgstr "コンポーネントの種類。"
 #: ../../../discord/components.py:docstring of discord.Component.type:3
 #: ../../../discord/components.py:docstring of discord.ActionRow.type:3
 #: ../../../discord/components.py:docstring of discord.Button.type:3
-#: ../../../discord/components.py:docstring of discord.SelectMenu.type:3
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:17
 #: ../../../discord/components.py:docstring of discord.TextInput.type:3
 msgid ":class:`ComponentType`"
 msgstr ":class:`ComponentType`"
@@ -1195,7 +1208,7 @@ msgid "List[Union[:class:`Button`, :class:`SelectMenu`, :class:`TextInput`]]"
 msgstr "List[Union[:class:`Button`, :class:`SelectMenu`, :class:`TextInput`]]"
 
 #: ../../interactions/api.rst:65
-#: ../../interactions/api.rst:429
+#: ../../interactions/api.rst:447
 msgid "Button"
 msgstr "Button"
 
@@ -1266,49 +1279,66 @@ msgstr "選択メニューは機能的にはドロップダウンと同じです
 msgid "The user constructible and usable type to create a select menu is :class:`discord.ui.Select` not this one."
 msgstr "選択メニューを作成するためにユーザーが構築でき利用できる型はこれではなく :class:`discord.ui.Select` です。"
 
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:15
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:21
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.custom_id:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.custom_id:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.RoleSelect.custom_id:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.MentionableSelect.custom_id:1
 msgid "The ID of the select menu that gets received during an interaction."
 msgstr "インタラクション中に受け取る選択メニューID。"
 
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:21
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:12
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:27
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:9
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.placeholder:1
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:10
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.ChannelSelect:12
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.placeholder:1
 msgid "The placeholder text that is shown if nothing is selected, if any."
 msgstr "存在する場合、何も選択されていないときに表示するプレースホルダーテキスト。"
 
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:27
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:14
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:21
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:33
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:11
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.ChannelSelect:14
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.RoleSelect:12
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.MentionableSelect:15
 msgid "The minimum number of items that must be chosen for this select menu. Defaults to 1 and must be between 0 and 25."
 msgstr "選択メニューにて選択しないといけない最小の項目数。デフォルトは1で、値は0以上25以下でないといけません。"
 
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:34
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:17
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:24
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:40
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:14
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.ChannelSelect:17
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.RoleSelect:15
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.MentionableSelect:18
 msgid "The maximum number of items that must be chosen for this select menu. Defaults to 1 and must be between 1 and 25."
 msgstr "選択メニューにて選択できる最大の項目数。デフォルトは1で、値は1以上25以下でないといけません。"
 
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:41
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:20
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:47
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:17
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.options:1
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:27
 msgid "A list of options that can be selected in this menu."
 msgstr "このメニューで選択できるオプションのリスト。"
 
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:43
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:49
 msgid "List[:class:`SelectOption`]"
 msgstr "List[:class:`SelectOption`]"
 
-#: ../../../discord/components.py:docstring of discord.components.SelectMenu:47
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:22
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:53
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:19
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.disabled:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.ChannelSelect:20
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.disabled:1
 msgid "Whether the select is disabled or not."
 msgstr "選択メニューが無効化されているかどうか。"
 
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:59
+msgid "A list of channel types that are allowed to be chosen in this select menu."
+msgstr "この選択メニューで選択できるチャンネルの種類のリスト。"
+
+#: ../../../discord/components.py:docstring of discord.components.SelectMenu:61
+msgid "List[:class:`.ChannelType`]"
+msgstr "List[:class:`.ChannelType`]"
+
 #: ../../interactions/api.rst:84
-#: ../../interactions/api.rst:453
+#: ../../interactions/api.rst:515
 msgid "TextInput"
 msgstr "TextInput"
 
@@ -1999,6 +2029,7 @@ msgid "The channel types that are allowed for this parameter."
 msgstr "このパラメータにて利用できるチャンネルの種類。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.Argument:57
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.channel_types:3
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Parameter:63
 #: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.Transformer.channel_types:9
 msgid "List[:class:`~discord.ChannelType`]"
@@ -2229,168 +2260,184 @@ msgstr "コンポーネントのコンポーネントタイプを表します。
 msgid "Represents the group component which holds different components in a row."
 msgstr "行内に異なるコンポーネントを保持するグループコンポーネント。"
 
-#: ../../interactions/api.rst:257
+#: ../../interactions/api.rst:258
 msgid "Represents a button component."
 msgstr "ボタンコンポーネント。"
 
-#: ../../interactions/api.rst:260
-msgid "Represents a select component."
-msgstr "選択メニューコンポーネント。"
-
-#: ../../interactions/api.rst:264
+#: ../../interactions/api.rst:262
 msgid "Represents a text box component."
 msgstr "テキストボックスコンポーネント。"
 
-#: ../../interactions/api.rst:268
+#: ../../interactions/api.rst:266
+msgid "Represents a select component."
+msgstr "選択メニューコンポーネント。"
+
+#: ../../interactions/api.rst:270
+msgid "An alias to :attr:`select`. Represents a default select component."
+msgstr ":attr:`select` のエイリアス。デフォルトの選択コンポーネントを表します。"
+
+#: ../../interactions/api.rst:274
+msgid "Represents a user select component."
+msgstr "ユーザー選択メニューコンポーネント。"
+
+#: ../../interactions/api.rst:278
+msgid "Represents a role select component."
+msgstr "ロール選択メニューコンポーネント。"
+
+#: ../../interactions/api.rst:282
+msgid "Represents a select in which both users and roles can be selected."
+msgstr "ユーザとロールの両方を選択できる選択メニュー。"
+
+#: ../../interactions/api.rst:286
 msgid "Represents the style of the button component."
 msgstr "ボタンコンポーネントのスタイルを表します。"
 
-#: ../../interactions/api.rst:274
+#: ../../interactions/api.rst:292
 msgid "Represents a blurple button for the primary action."
 msgstr "主なアクションのためのブループル色のボタンを表します。"
 
-#: ../../interactions/api.rst:277
+#: ../../interactions/api.rst:295
 msgid "Represents a grey button for the secondary action."
 msgstr "主でないアクションのための灰色のボタンを表します。"
 
-#: ../../interactions/api.rst:280
+#: ../../interactions/api.rst:298
 msgid "Represents a green button for a successful action."
 msgstr "成功したアクションを意味する緑色のボタンを表します。"
 
-#: ../../interactions/api.rst:283
+#: ../../interactions/api.rst:301
 msgid "Represents a red button for a dangerous action."
 msgstr "危険な操作を意味する赤いボタンを表します。"
 
-#: ../../interactions/api.rst:286
+#: ../../interactions/api.rst:304
 msgid "Represents a link button."
 msgstr "リンクボタンを表します。"
 
-#: ../../interactions/api.rst:290
+#: ../../interactions/api.rst:308
 msgid "An alias for :attr:`primary`."
 msgstr ":attr:`primary` のエイリアス。"
 
-#: ../../interactions/api.rst:293
-#: ../../interactions/api.rst:296
+#: ../../interactions/api.rst:311
+#: ../../interactions/api.rst:314
 msgid "An alias for :attr:`secondary`."
 msgstr ":attr:`secondary` のエイリアス。"
 
-#: ../../interactions/api.rst:299
+#: ../../interactions/api.rst:317
 msgid "An alias for :attr:`success`."
 msgstr ":attr:`success` のエイリアス。"
 
-#: ../../interactions/api.rst:302
+#: ../../interactions/api.rst:320
 msgid "An alias for :attr:`danger`."
 msgstr ":attr:`danger` のエイリアス。"
 
-#: ../../interactions/api.rst:305
+#: ../../interactions/api.rst:323
 msgid "An alias for :attr:`link`."
 msgstr ":attr:`link` のエイリアス。"
 
-#: ../../interactions/api.rst:309
+#: ../../interactions/api.rst:327
 msgid "Represents the style of the text box component."
 msgstr "テキストボックスコンポーネントのスタイルを表します。"
 
-#: ../../interactions/api.rst:315
+#: ../../interactions/api.rst:333
 msgid "Represents a short text box."
 msgstr "短いテキストボックスを表します。"
 
-#: ../../interactions/api.rst:318
+#: ../../interactions/api.rst:336
 msgid "Represents a long form text box."
 msgstr "長いフォームのテキストボックスを表します。"
 
-#: ../../interactions/api.rst:321
+#: ../../interactions/api.rst:339
 msgid "An alias for :attr:`paragraph`."
 msgstr ":attr:`paragraph` のエイリアス。"
 
-#: ../../interactions/api.rst:325
+#: ../../interactions/api.rst:343
 msgid "The application command's option type. This is usually the type of parameter an application command takes."
 msgstr "アプリケーションコマンドのオプションタイプ。これは通常アプリケーションコマンドがとるパラメータの型です。"
 
-#: ../../interactions/api.rst:331
+#: ../../interactions/api.rst:349
 msgid "A subcommand."
 msgstr "サブコマンド。"
 
-#: ../../interactions/api.rst:334
+#: ../../interactions/api.rst:352
 msgid "A subcommand group."
 msgstr "サブコマンドグループ。"
 
-#: ../../interactions/api.rst:337
+#: ../../interactions/api.rst:355
 msgid "A string parameter."
 msgstr "文字列パラメータ。"
 
-#: ../../interactions/api.rst:340
+#: ../../interactions/api.rst:358
 msgid "A integer parameter."
 msgstr "整数パラメータ。"
 
-#: ../../interactions/api.rst:343
+#: ../../interactions/api.rst:361
 msgid "A boolean parameter."
 msgstr "真偽値パラメータ。"
 
-#: ../../interactions/api.rst:346
+#: ../../interactions/api.rst:364
 msgid "A user parameter."
 msgstr "ユーザーパラメータ。"
 
-#: ../../interactions/api.rst:349
+#: ../../interactions/api.rst:367
 msgid "A channel parameter."
 msgstr "チャンネルパラメータ。"
 
-#: ../../interactions/api.rst:352
+#: ../../interactions/api.rst:370
 msgid "A role parameter."
 msgstr "ロールパラメータ。"
 
-#: ../../interactions/api.rst:355
+#: ../../interactions/api.rst:373
 msgid "A mentionable parameter."
 msgstr "メンション可能なもののパラメータ。"
 
-#: ../../interactions/api.rst:358
+#: ../../interactions/api.rst:376
 msgid "A number parameter."
 msgstr "数値のパラメータ。"
 
-#: ../../interactions/api.rst:361
+#: ../../interactions/api.rst:379
 msgid "An attachment parameter."
 msgstr "添付ファイルのパラメータ。"
 
-#: ../../interactions/api.rst:365
+#: ../../interactions/api.rst:383
 msgid "The type of application command."
 msgstr "アプリケーションコマンドの種類。"
 
-#: ../../interactions/api.rst:371
+#: ../../interactions/api.rst:389
 msgid "A slash command."
 msgstr "スラッシュコマンド。"
 
-#: ../../interactions/api.rst:374
+#: ../../interactions/api.rst:392
 msgid "A user context menu command."
 msgstr "ユーザーコンテキストメニューコマンド。"
 
-#: ../../interactions/api.rst:377
+#: ../../interactions/api.rst:395
 msgid "A message context menu command."
 msgstr "メッセージコンテキストメニューコマンド。"
 
-#: ../../interactions/api.rst:381
+#: ../../interactions/api.rst:399
 msgid "The application command's permission type."
 msgstr "アプリケーションコマンドの権限タイプ。"
 
-#: ../../interactions/api.rst:387
+#: ../../interactions/api.rst:405
 msgid "The permission is for a role."
 msgstr "権限はロール用です。"
 
-#: ../../interactions/api.rst:390
+#: ../../interactions/api.rst:408
 msgid "The permission is for one or all channels."
 msgstr "権限は一つ、またはすべてのチャンネル用です。"
 
-#: ../../interactions/api.rst:393
+#: ../../interactions/api.rst:411
 msgid "The permission is for a user."
 msgstr "権限はユーザー用です。"
 
-#: ../../interactions/api.rst:398
+#: ../../interactions/api.rst:416
 msgid "Bot UI Kit"
 msgstr "Bot UIキット"
 
-#: ../../interactions/api.rst:400
-msgid "The library has helpers to aid create component-based UIs. These are all in the ``discord.ui`` package."
+#: ../../interactions/api.rst:418
+msgid "The library has helpers to aid in creating component-based UIs. These are all in the ``discord.ui`` package."
 msgstr "ライブラリにはコンポーネントベースの UI の作成を支援するヘルパーがあります。これらはすべて ``discord.ui`` パッケージにあります。"
 
-#: ../../interactions/api.rst:404
+#: ../../interactions/api.rst:422
 msgid "View"
 msgstr "View"
 
@@ -2610,7 +2657,7 @@ msgstr "ビューは :meth:`stop` が呼び出されるかタイムアウトし�
 msgid "If ``True``, then the view timed out. If ``False`` then the view finished normally."
 msgstr "``True`` の場合、ビューがタイムアウトしました。 ``False`` の場合、ビューは正常に終了しました。"
 
-#: ../../interactions/api.rst:412
+#: ../../interactions/api.rst:430
 msgid "Modal"
 msgstr "Modal"
 
@@ -2658,7 +2705,7 @@ msgstr "このモーダルを送信したインタラクション。"
 msgid "A callback that is called when :meth:`on_submit` fails with an error."
 msgstr ":meth:`on_submit` がエラーで失敗したときに呼び出されるコールバック。"
 
-#: ../../interactions/api.rst:421
+#: ../../interactions/api.rst:439
 msgid "Item"
 msgstr "Item"
 
@@ -2675,6 +2722,7 @@ msgid ":class:`discord.ui.Button`"
 msgstr ":class:`discord.ui.Button`"
 
 #: ../../../discord/ui/item.py:docstring of discord.ui.item.Item:6
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:13
 msgid ":class:`discord.ui.Select`"
 msgstr ":class:`discord.ui.Select`"
 
@@ -2685,35 +2733,40 @@ msgstr ":class:`discord.ui.TextInput`"
 #: ../../../discord/ui/item.py:docstring of discord.ui.Item.view:1
 #: ../../../discord/ui/button.py:docstring of discord.ui.Button.view:1
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.view:1
-#: ../../../discord/ui/text_input.py:docstring of discord.ui.TextInput.view:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.view:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.RoleSelect.view:1
 msgid "The underlying view for this item."
 msgstr "この項目が属するビュー。"
 
 #: ../../../discord/ui/item.py:docstring of discord.ui.Item.view:3
 #: ../../../discord/ui/button.py:docstring of discord.ui.Button.view:3
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.view:3
-#: ../../../discord/ui/text_input.py:docstring of discord.ui.TextInput.view:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.view:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.RoleSelect.view:3
 msgid "Optional[:class:`View`]"
 msgstr "Optional[:class:`View`]"
 
 #: ../../../discord/ui/item.py:docstring of discord.ui.item.Item.callback:3
 #: ../../../discord/ui/button.py:docstring of discord.ui.item.Item.callback:3
 #: ../../../discord/ui/select.py:docstring of discord.ui.item.Item.callback:3
-#: ../../../discord/ui/text_input.py:docstring of discord.ui.item.Item.callback:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.item.Item.callback:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.item.Item.callback:3
 msgid "The callback associated with this UI item."
 msgstr "このUI 項目に関連付けられたコールバック。"
 
 #: ../../../discord/ui/item.py:docstring of discord.ui.item.Item.callback:5
 #: ../../../discord/ui/button.py:docstring of discord.ui.item.Item.callback:5
 #: ../../../discord/ui/select.py:docstring of discord.ui.item.Item.callback:5
-#: ../../../discord/ui/text_input.py:docstring of discord.ui.item.Item.callback:5
+#: ../../../discord/ui/select.py:docstring of discord.ui.item.Item.callback:5
+#: ../../../discord/ui/select.py:docstring of discord.ui.item.Item.callback:5
 msgid "This can be overridden by subclasses."
 msgstr "これはサブクラスによって上書きできます。"
 
 #: ../../../discord/ui/item.py:docstring of discord.ui.item.Item.callback:7
 #: ../../../discord/ui/button.py:docstring of discord.ui.item.Item.callback:7
 #: ../../../discord/ui/select.py:docstring of discord.ui.item.Item.callback:7
-#: ../../../discord/ui/text_input.py:docstring of discord.ui.item.Item.callback:7
+#: ../../../discord/ui/select.py:docstring of discord.ui.item.Item.callback:7
+#: ../../../discord/ui/select.py:docstring of discord.ui.item.Item.callback:7
 msgid "The interaction that triggered this UI item."
 msgstr "このUI項目を呼び出したインタラクション。"
 
@@ -2770,38 +2823,65 @@ msgstr "ボタンを無効にするかどうか。デフォルトは ``False`` �
 msgid "The emoji of the button. This can be in string form or a :class:`.PartialEmoji` or a full :class:`.Emoji`."
 msgstr "ボタンの絵文字。文字列形式または :class:`.PartialEmoji` または完全な :class:`.Emoji` が渡せます。"
 
-#: ../../interactions/api.rst:441
+#: ../../interactions/api.rst:459
+msgid "Select Menus"
+msgstr "選択メニュー"
+
+#: ../../interactions/api.rst:461
+msgid "The library provides classes to help create the different types of select menus."
+msgstr "ライブラリには、さまざまな種類の選択メニューを作成するのに役立つクラスが用意されています。"
+
+#: ../../interactions/api.rst:464
 msgid "Select"
 msgstr "Select"
 
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:1
-msgid "Represents a UI select menu."
-msgstr "UI の選択メニューを表します。"
+msgid "Represents a UI select menu with a list of custom options. This is represented to the user as a dropdown menu."
+msgstr "カスタムのオプションから選択するUI選択メニューを表します。ユーザー側ではドロップダウンメニューとして表示されます。"
 
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:3
-msgid "This is usually represented as a drop down menu."
-msgstr "これは通常、ドロップダウンメニューとして表されます。"
-
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:5
-msgid "In order to get the selected items that the user has chosen, use :attr:`Select.values`."
-msgstr "ユーザーが選択した項目を取得するには、 :attr:`Select.values` を使用します。"
-
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:9
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:6
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.ChannelSelect:7
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.RoleSelect:7
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.MentionableSelect:10
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.UserSelect:9
 msgid "The ID of the select menu that gets received during an interaction. If not given then one is generated for you."
 msgstr "インタラクション中に受け取る選択メニューID。指定されていない場合は、自動で生成されます。"
 
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:24
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:15
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.Select:21
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.ChannelSelect:22
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.RoleSelect:20
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.MentionableSelect:23
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.UserSelect:22
 msgid "The relative row this select menu belongs to. A Discord component can only have 5 rows. By default, items are arranged automatically into those 5 rows. If you'd like to control the relative positioning of the row then passing an index is advised. For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic ordering. The row number must be between 0 and 4 (i.e. zero indexed)."
 msgstr "この選択メニューが属する相対的な行。Discordコンポーネントは5行しか持てません。デフォルトでは、項目は自動的にこの5行に配置されます。 行の相対位置を制御したい場合は、インデックスを渡すことをお勧めします。 例えば、row=1 は row=2 の前に表示されます。デフォルトは ``None`` です。これは自動順序です。 行番号は 0 から 4 の間（つまり、0始まり）でなければなりません。"
 
-#: ../../../discord/ui/select.py:docstring of discord.ui.Select.min_values:1
-msgid "The minimum number of items that must be chosen for this select menu."
-msgstr "選択メニューにて選択しないといけない最小の項目数。"
+#: ../../../discord/ui/select.py:docstring of discord.ui.Select.values:1
+msgid "A list of values that have been selected by the user."
+msgstr "ユーザーが選択した値のリスト。"
 
-#: ../../../discord/ui/select.py:docstring of discord.ui.Select.max_values:1
-msgid "The maximum number of items that must be chosen for this select menu."
-msgstr "選択メニューにて選択できる最大の項目数。"
+#: ../../../discord/ui/select.py:docstring of discord.ui.Select.values:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:13
+#: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.MissingPermissions:12
+#: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.BotMissingPermissions:12
+#: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandNotFound:18
+msgid "List[:class:`str`]"
+msgstr "List[:class:`str`]"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.Select.type:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.type:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.RoleSelect.type:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.MentionableSelect.type:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.UserSelect.type:1
+msgid "The type of this component."
+msgstr "このコンポーネントの種類。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.Select.type:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.type:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.RoleSelect.type:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.MentionableSelect.type:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.UserSelect.type:3
+msgid ":class:`.ComponentType`"
+msgstr ":class:`.ComponentType`"
 
 #: ../../../discord/ui/select.py:docstring of discord.ui.Select.options:3
 msgid "List[:class:`discord.SelectOption`]"
@@ -2836,34 +2916,189 @@ msgstr "選択メニューにオプションを追加します。"
 msgid "The option to append to the select menu."
 msgstr "選択メニューに追加するオプション。"
 
-#: ../../../discord/ui/select.py:docstring of discord.ui.Select.values:1
-msgid "A list of values that have been selected by the user."
-msgstr "ユーザーが選択した値のリスト。"
+#: ../../../discord/ui/select.py:docstring of discord.ui.Select.max_values:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.max_values:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.RoleSelect.max_values:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.MentionableSelect.max_values:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.UserSelect.max_values:1
+msgid "The maximum number of items that can be chosen for this select menu."
+msgstr "選択メニューにて選択できる最大の項目数。"
 
-#: ../../../discord/ui/select.py:docstring of discord.ui.Select.values:3
-#: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.MissingPermissions:12
-#: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.BotMissingPermissions:12
-#: ../../../discord/app_commands/errors.py:docstring of discord.app_commands.errors.CommandNotFound:18
-msgid "List[:class:`str`]"
-msgstr "List[:class:`str`]"
+#: ../../../discord/ui/select.py:docstring of discord.ui.Select.min_values:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.min_values:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.RoleSelect.min_values:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.MentionableSelect.min_values:1
+#: ../../../discord/ui/select.py:docstring of discord.ui.UserSelect.min_values:1
+msgid "The minimum number of items that must be chosen for this select menu."
+msgstr "選択メニューにて選択しないといけない最小の項目数。"
+
+#: ../../interactions/api.rst:473
+msgid "ChannelSelect"
+msgstr "ChannelSelect"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.ChannelSelect:1
+msgid "Represents a UI select menu with a list of predefined options with the current channels in the guild."
+msgstr "事前に指定されたギルド内のチャンネルから選択するUI選択メニューを表します。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.ChannelSelect:3
+msgid "Please note that if you use this in a private message with a user, no channels will be displayed to the user."
+msgstr "これをプライベートメッセージで使用すると、チャンネルの選択肢は表示されません。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.ChannelSelect:10
+msgid "The types of channels to show in the select menu. Defaults to all channels."
+msgstr "選択メニューに表示するチャンネルの種類。デフォルトはすべてのチャンネルです。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.channel_types:1
+msgid "A list of channel types that can be selected."
+msgstr "選択可能なチャンネルの種類のリスト。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.values:1
+msgid "A list of channels selected by the user."
+msgstr "ユーザーによって選択されたチャンネルのリスト。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.ChannelSelect.values:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:21
+msgid "List[Union[:class:`~discord.app_commands.AppCommandChannel`, :class:`~discord.app_commands.AppCommandThread`]]"
+msgstr "List[Union[:class:`~discord.app_commands.AppCommandChannel`, :class:`~discord.app_commands.AppCommandThread`]]"
+
+#: ../../interactions/api.rst:482
+msgid "RoleSelect"
+msgstr "RoleSelect"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.RoleSelect:1
+msgid "Represents a UI select menu with a list of predefined options with the current roles of the guild."
+msgstr "事前に指定されたギルド内のロールから選択するUI選択メニューを表します。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.RoleSelect:3
+msgid "Please note that if you use this in a private message with a user, no roles will be displayed to the user."
+msgstr "これをプライベートメッセージで使用すると、ロールの選択肢は表示されません。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.RoleSelect.values:1
+msgid "A list of roles that have been selected by the user."
+msgstr "ユーザーが選択したロールのリスト。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.RoleSelect.values:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:17
+msgid "List[:class:`discord.Role`]"
+msgstr "List[:class:`discord.Role`]"
+
+#: ../../interactions/api.rst:491
+msgid "MentionableSelect"
+msgstr "MentionableSelect"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.MentionableSelect:1
+msgid "Represents a UI select menu with a list of predefined options with the current members and roles in the guild."
+msgstr "事前に指定されたギルド内のメンバーとロールから選択するUI選択メニューを表します。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.MentionableSelect:3
+msgid "If this is sent in a private message, it will only allow the user to select the client or themselves. Every selected option in a private message will resolve to a :class:`discord.User`. It will not give the user any roles to select."
+msgstr "これがプライベートメッセージで送信された場合、ユーザーはこのクライアントまたは自分自身のみ選択できます。 プライベートメッセージ内で選択されたオプションは、すべて :class:`discord.User` に解決されます。ロールは選択できません。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.MentionableSelect.values:1
+msgid "A list of roles, members, and users that have been selected by the user."
+msgstr "ユーザーが選択したロール、メンバー、またはユーザーのリスト。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.MentionableSelect.values:4
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.UserSelect:3
+#: ../../../discord/ui/select.py:docstring of discord.ui.UserSelect.values:4
+msgid "If this is sent a private message, it will only allow the user to select the client or themselves. Every selected option in a private message will resolve to a :class:`discord.User`."
+msgstr "これがプライベートメッセージで送信された場合、ユーザーはこのクライアントまたは自分自身のみ選択できます。 プライベートメッセージ内で選択されたオプションは、すべて :class:`discord.User` に解決されます。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.MentionableSelect.values:8
+#: ../../../discord/ui/select.py:docstring of discord.ui.UserSelect.values:8
+msgid "If invoked in a guild, the values will always resolve to :class:`discord.Member`."
+msgstr "ギルドで呼び出された場合、値は常に :class:`discord.Member` に解決されます。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.MentionableSelect.values:10
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:19
+msgid "List[Union[:class:`discord.Role`, :class:`discord.Member`, :class:`discord.User`]]"
+msgstr "List[Union[:class:`discord.Role`, :class:`discord.Member`, :class:`discord.User`]]"
+
+#: ../../interactions/api.rst:500
+msgid "UserSelect"
+msgstr "UserSelect"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.UserSelect:1
+msgid "Represents a UI select menu with a list of predefined options with the current members of the guild."
+msgstr "事前に指定されたギルド内のメンバーから選択するUI選択メニューを表します。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.UserSelect.values:1
+msgid "A list of members and users that have been selected by the user."
+msgstr "ユーザーが選択したメンバーまたはユーザーのリスト。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.UserSelect.values:10
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:15
+msgid "List[Union[:class:`discord.Member`, :class:`discord.User`]]"
+msgstr "List[Union[:class:`discord.Member`, :class:`discord.User`]]"
+
+#: ../../interactions/api.rst:509
+msgid "select"
+msgstr "select"
 
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.select:1
 msgid "A decorator that attaches a select menu to a component."
 msgstr "コンポーネントに選択メニューを付属させるデコレータ。"
 
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.select:3
-msgid "The function being decorated should have three parameters, ``self`` representing the :class:`discord.ui.View`, the :class:`discord.Interaction` you receive and the :class:`discord.ui.Select` being used."
-msgstr "デコレートされる関数には、 :class:`discord.ui.View` を表す ``self`` 、受け取った :class:`discord.Interaction` と使用された :class:`discord.ui.Select` の3つのパラメータが必要です。"
+msgid "The function being decorated should have three parameters, ``self`` representing the :class:`discord.ui.View`, the :class:`discord.Interaction` you receive and the chosen select class."
+msgstr "デコレートされる関数には、 :class:`discord.ui.View` を表す ``self`` 、受け取った :class:`discord.Interaction` と選択クラスの3つのパラメータが必要です。"
 
 #: ../../../discord/ui/select.py:docstring of discord.ui.select.select:7
-msgid "In order to get the selected items that the user has chosen within the callback use :attr:`Select.values`."
-msgstr "コールバック内でユーザーが選択した項目を取得するには、 :attr:`Select.values` を使用します。"
+msgid "To obtain the selected values inside the callback, you can use the ``values`` attribute of the chosen class in the callback. The list of values will depend on the type of select menu used. View the table below for more information."
+msgstr "コールバック内で選択した値を取得するには、コールバック内で選択したクラスの ``values`` 属性を使用します。 値のリストは、使用される選択メニューの種類によって異なります。詳細については、以下の表を参照してください。"
 
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:12
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:11
+msgid "Select Type"
+msgstr "選択種類"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:11
+msgid "Resolved Values"
+msgstr "解決された値"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:15
+msgid ":class:`discord.ui.UserSelect`"
+msgstr ":class:`discord.ui.UserSelect`"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:17
+msgid ":class:`discord.ui.RoleSelect`"
+msgstr ":class:`discord.ui.RoleSelect`"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:19
+msgid ":class:`discord.ui.MentionableSelect`"
+msgstr ":class:`discord.ui.MentionableSelect`"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:21
+msgid ":class:`discord.ui.ChannelSelect`"
+msgstr ":class:`discord.ui.ChannelSelect`"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:24
+msgid "Added the following keyword-arguments: ``cls``, ``channel_types``"
+msgstr "次のキーワード引数を追加しました: ``cls``, ``channel_types``"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:28
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.default_permissions:24
+#: ../../../discord/app_commands/checks.py:docstring of discord.app_commands.checks.has_any_role:23
+#: ../../../discord/app_commands/checks.py:docstring of discord.app_commands.checks.has_permissions:25
+msgid "Example"
+msgstr "例"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:37
+msgid "The class to use for the select menu. Defaults to :class:`discord.ui.Select`. You can use other select types to display different select menus to the user. See the table above for the different values you can get from each select type. Subclasses work as well, however the callback in the subclass will get overridden."
+msgstr "選択メニューに使用するクラス。デフォルトは :class:`discord.ui.Select` です。 他の選択メニューを使用して、ユーザーに対し異なる選択メニューを表示できます。 それぞれの選択メニューから得られる値については、上の表を参照してください。 サブクラスも同様に機能しますが、サブクラスのコールバックはオーバーライドされます。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:44
 msgid "The ID of the select menu that gets received during an interaction. It is recommended not to set this parameter to prevent conflicts."
 msgstr "インタラクション中に受け取る選択メニューID。衝突を防ぐためこのパラメータを設定しないことをおすすめします。"
 
-#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:29
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:59
+msgid "A list of options that can be selected in this menu. This can only be used with :class:`Select` instances."
+msgstr "このメニューで選択できるオプションのリスト。 :class:`Select` インスタンスでのみ使用できます。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:62
+msgid "The types of channels to show in the select menu. Defaults to all channels. This can only be used with :class:`ChannelSelect` instances."
+msgstr "選択メニューに表示するチャンネルの種類。デフォルトはすべてのチャンネルです。これは :class:`ChannelSelect` インスタンスでのみ使用できます。"
+
+#: ../../../discord/ui/select.py:docstring of discord.ui.select.select:65
 msgid "Whether the select is disabled or not. Defaults to ``False``."
 msgstr "選択メニューを無効にするかどうか。デフォルトは ``False`` です。"
 
@@ -2895,15 +3130,15 @@ msgstr "テキスト入力のラベル。"
 msgid ":class:`discord.TextStyle`"
 msgstr ":class:`discord.TextStyle`"
 
-#: ../../interactions/api.rst:464
+#: ../../interactions/api.rst:526
 msgid "Application Commands"
 msgstr "アプリケーションコマンド"
 
-#: ../../interactions/api.rst:466
+#: ../../interactions/api.rst:528
 msgid "The library has helpers to aid in creation of application commands. These are all in the ``discord.app_commands`` package."
 msgstr "ライブラリにはアプリケーションコマンドの作成を支援するヘルパーがあります。これらはすべて ``discord.app_commands`` パッケージにあります。"
 
-#: ../../interactions/api.rst:469
+#: ../../interactions/api.rst:531
 msgid "CommandTree"
 msgstr "CommandTree"
 
@@ -3347,11 +3582,11 @@ msgstr ":class:`~discord.Interaction` がツリーによって処理されるか
 msgid "The default implementation returns True (all interactions are processed), but can be overridden if custom behaviour is desired."
 msgstr "デフォルトの実装では、True が返されます （すべてのインタラクションが処理されます）が、カスタム動作が必要な場合は上書きできます。"
 
-#: ../../interactions/api.rst:487
+#: ../../interactions/api.rst:549
 msgid "Commands"
 msgstr "コマンド"
 
-#: ../../interactions/api.rst:490
+#: ../../interactions/api.rst:552
 msgid "Command"
 msgstr "Command"
 
@@ -3439,7 +3674,12 @@ msgstr "親の :func:`チェック <check>` はオートコンプリート内で
 msgid "The coroutine decorator **must** return a list of :class:`~discord.app_commands.Choice` objects. Only up to 25 objects are supported."
 msgstr "コルーチンのデコレータは :class:`~discord.app_commands.Choice` オブジェクトのリストを **返さないといけません** 。オブジェクトは25個まで返すことができます。"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:17
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:18
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:13
+msgid "The choices returned from this coroutine are suggestions. The user may ignore them and input their own value."
+msgstr "このコルーチンから返される選択肢はあくまで提案であって、ユーザーはそれらを無視して自分の値を入力することができます。"
+
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:20
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:4
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.describe:15
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.rename:7
@@ -3447,11 +3687,11 @@ msgstr "コルーチンのデコレータは :class:`~discord.app_commands.Choic
 msgid "Example:"
 msgstr "例:"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:37
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:40
 msgid "The parameter name to register as autocomplete."
 msgstr "オートコンプリートに登録するパラメータ名。"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:40
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command.autocomplete:43
 msgid "The coroutine passed is not actually a coroutine or     the parameter is not found or of an invalid type."
 msgstr "渡されたコルーチンが実際にはコルーチンでない場合や、パラメータが見つからず、または無効な型であった場合。"
 
@@ -3540,7 +3780,7 @@ msgstr "この関数は冪等性を保持しており、関数がコマンドの
 msgid "The function to remove from the checks."
 msgstr "チェックから除去する関数。"
 
-#: ../../interactions/api.rst:505
+#: ../../interactions/api.rst:567
 msgid "Parameter"
 msgstr "Parameter"
 
@@ -3606,7 +3846,7 @@ msgstr "このパラメータが属するコマンド。"
 msgid ":class:`Command`"
 msgstr ":class:`Command`"
 
-#: ../../interactions/api.rst:513
+#: ../../interactions/api.rst:575
 msgid "ContextMenu"
 msgstr "ContextMenu"
 
@@ -3644,7 +3884,7 @@ msgstr "コマンドをギルド内でのみ使用できるようにするかど
 msgid "The coroutine that is executed when the context menu is called."
 msgstr "コンテキストメニューが呼び出されたときに実行されるコルーチン。"
 
-#: ../../interactions/api.rst:525
+#: ../../interactions/api.rst:587
 msgid "Group"
 msgstr "Group"
 
@@ -3812,7 +4052,7 @@ msgstr "取得するコマンドまたはグループの名前。"
 msgid "The command or group that was retrieved. If nothing was found then ``None`` is returned instead."
 msgstr "取得されたコマンドまたはグループ。何も見つからなかった場合は ``None`` が返ります。"
 
-#: ../../interactions/api.rst:540
+#: ../../interactions/api.rst:602
 msgid "Decorators"
 msgstr "デコレータ"
 
@@ -3874,7 +4114,7 @@ msgid "The choices of the parameters."
 msgstr "パラメータの選択肢。"
 
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.choices:46
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:33
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:36
 msgid "The parameter name is not found or the parameter type was incorrect."
 msgstr "パラメータ名が見つからないか、パラメータの型が正しくない場合。"
 
@@ -3894,7 +4134,7 @@ msgstr ":func:`チェック <check>` はサポートされていますが、動�
 msgid "For more information, see the :meth:`Command.autocomplete` documentation."
 msgstr "詳細については、 :meth:`Command.autocomplete` ドキュメントを参照してください。"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:31
+#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.autocomplete:34
 msgid "The parameters to mark as autocomplete."
 msgstr "オートコンプリートに登録するパラメータ。"
 
@@ -3955,13 +4195,7 @@ msgstr "これは *ヒント* として機能し、メンバーはこれらの�
 msgid "Keyword arguments denoting the permissions to set as the default."
 msgstr "デフォルトとして設定する権限を示すキーワード引数。"
 
-#: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.default_permissions:24
-#: ../../../discord/app_commands/checks.py:docstring of discord.app_commands.checks.has_any_role:23
-#: ../../../discord/app_commands/checks.py:docstring of discord.app_commands.checks.has_permissions:25
-msgid "Example"
-msgstr "例"
-
-#: ../../interactions/api.rst:570
+#: ../../interactions/api.rst:632
 msgid "Checks"
 msgstr "チェック"
 
@@ -4114,7 +4348,7 @@ msgstr "所有者以外の全員にクールダウンを設定します。"
 msgid "A function that takes an interaction and returns a cooldown that will apply to that interaction or ``None`` if the interaction should not have a cooldown."
 msgstr "インタラクションを受け取り、このインタラクションに適用されるクールダウンまたはクールダウンを回避する場合 ``None`` を返す関数。"
 
-#: ../../interactions/api.rst:594
+#: ../../interactions/api.rst:656
 msgid "Cooldown"
 msgstr "Cooldown"
 
@@ -4194,7 +4428,7 @@ msgstr "このクールダウンの新しいインスタンス。"
 msgid ":class:`Cooldown`"
 msgstr ":class:`Cooldown`"
 
-#: ../../interactions/api.rst:603
+#: ../../interactions/api.rst:665
 msgid "Namespace"
 msgstr "Namespace"
 
@@ -4306,11 +4540,11 @@ msgstr "オートコンプリートのインタラクションでは、名前空
 msgid "This is a Discord limitation."
 msgstr "これはDiscordの制限です。"
 
-#: ../../interactions/api.rst:611
+#: ../../interactions/api.rst:673
 msgid "Transformers"
 msgstr "トランスフォーマー"
 
-#: ../../interactions/api.rst:614
+#: ../../interactions/api.rst:676
 msgid "Transformer"
 msgstr "Transformer"
 
@@ -4414,7 +4648,7 @@ msgstr "ユーザーが入力した現在の値。"
 msgid "A list of choices to be displayed to the user, a maximum of 25."
 msgstr "ユーザーに表示される選択肢のリスト、最大25個です。"
 
-#: ../../interactions/api.rst:622
+#: ../../interactions/api.rst:684
 msgid "Transform"
 msgstr "Transform"
 
@@ -4431,7 +4665,7 @@ msgstr "型チェック時には型チェッカがコードの意図を理解で
 msgid "For example usage, check :class:`Transformer`."
 msgstr "使用例は、 :class:`Transformer` を確認してください。"
 
-#: ../../interactions/api.rst:630
+#: ../../interactions/api.rst:692
 msgid "Range"
 msgstr "Range"
 
@@ -4455,11 +4689,19 @@ msgstr "``Range[int, None, 10]`` は最小値なし、最大値10を意味しま
 msgid "``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10."
 msgstr "``Range[int, 1, 10]`` は最小値1、最大値10を意味します。"
 
-#: ../../interactions/api.rst:638
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Range:12
+msgid "``Range[float, 1.0, 5.0]`` means the minimum is 1.0 and the maximum is 5.0."
+msgstr "``Range[float, 1.0, 5.0]`` は最小値1.0、最大値5.0を意味します。"
+
+#: ../../../discord/app_commands/transformers.py:docstring of discord.app_commands.transformers.Range:13
+msgid "``Range[str, 1, 10]`` means the minimum length is 1 and the maximum length is 10."
+msgstr "``Range[str, 1, 10]`` は最小1文字、最大10文字を意味します。"
+
+#: ../../interactions/api.rst:700
 msgid "Translations"
 msgstr "翻訳"
 
-#: ../../interactions/api.rst:641
+#: ../../interactions/api.rst:703
 msgid "Translator"
 msgstr "Translator"
 
@@ -4543,7 +4785,7 @@ msgstr "翻訳先のローケル。"
 msgid "The translation context where the string originated from. For better type checking ergonomics, the ``TranslationContextTypes`` type can be used instead to aid with type narrowing. It is functionally equivalent to :class:`TranslationContext`."
 msgstr "文字列を翻訳するときの文脈。より良い型チェックのために、 ``TranslationContextTypes`` 型を使用して型の絞り込みを行うことができます。これは :class:`TranslationContext` と機能的に同じです。"
 
-#: ../../interactions/api.rst:649
+#: ../../interactions/api.rst:711
 msgid "locale_str"
 msgstr "locale_str"
 
@@ -4595,7 +4837,7 @@ msgstr "翻訳する文字列についての追加のデータを保管できる
 msgid "Since these are passed via keyword arguments, the keys are strings."
 msgstr "これらはキーワード引数で渡されるので、キーは文字列です。"
 
-#: ../../interactions/api.rst:657
+#: ../../interactions/api.rst:719
 msgid "TranslationContext"
 msgstr "TranslationContext"
 
@@ -4619,47 +4861,47 @@ msgstr ":class:`TranslationContextLocation`"
 msgid "The extraneous data that is being translated."
 msgstr "翻訳されている追加のデータ。"
 
-#: ../../interactions/api.rst:665
+#: ../../interactions/api.rst:727
 msgid "TranslationContextLocation"
 msgstr "TranslationContextLocation"
 
-#: ../../interactions/api.rst:670
+#: ../../interactions/api.rst:732
 msgid "An enum representing the location context that the translation occurs in when requested for translation."
 msgstr "翻訳が要求されたときに、翻訳すべき場所を示す列挙型。"
 
-#: ../../interactions/api.rst:676
+#: ../../interactions/api.rst:738
 msgid "The translation involved a command name."
 msgstr "コマンド名の翻訳。"
 
-#: ../../interactions/api.rst:679
+#: ../../interactions/api.rst:741
 msgid "The translation involved a command description."
 msgstr "コマンドの説明の翻訳。"
 
-#: ../../interactions/api.rst:683
+#: ../../interactions/api.rst:745
 msgid "The translation involved a group name."
 msgstr "グループ名の翻訳。"
 
-#: ../../interactions/api.rst:686
+#: ../../interactions/api.rst:748
 msgid "The translation involved a group description."
 msgstr "グループの説明の翻訳。"
 
-#: ../../interactions/api.rst:689
+#: ../../interactions/api.rst:751
 msgid "The translation involved a parameter name."
 msgstr "パラメータ名の翻訳。"
 
-#: ../../interactions/api.rst:692
+#: ../../interactions/api.rst:754
 msgid "The translation involved a parameter description."
 msgstr "パラメータの説明の翻訳。"
 
-#: ../../interactions/api.rst:695
+#: ../../interactions/api.rst:757
 msgid "The translation involved a choice name."
 msgstr "選択肢名の翻訳。"
 
-#: ../../interactions/api.rst:698
+#: ../../interactions/api.rst:760
 msgid "The translation involved something else entirely. This is useful for running :meth:`Translator.translate` for custom usage."
 msgstr "その他の翻訳。これは他の目的で :meth:`Translator.translate` を実行するときに役立ちます。"
 
-#: ../../interactions/api.rst:702
+#: ../../interactions/api.rst:764
 msgid "Exceptions"
 msgstr "例外"
 
@@ -4912,84 +5154,84 @@ msgstr "これにより、同期の失敗に関する情報が少し読みやす
 msgid "This inherits from :exc:`~discord.app_commands.AppCommandError` and :exc:`~discord.HTTPException`."
 msgstr "これは :exc:`~discord.app_commands.AppCommandError` と :exc:`~discord.HTTPException` を継承します。"
 
-#: ../../interactions/api.rst:756
+#: ../../interactions/api.rst:818
 msgid "Exception Hierarchy"
 msgstr "例外の階層構造"
 
-#: ../../interactions/api.rst:778
+#: ../../interactions/api.rst:840
 msgid ":exc:`~discord.DiscordException`"
 msgstr ":exc:`~discord.DiscordException`"
 
-#: ../../interactions/api.rst:776
+#: ../../interactions/api.rst:838
 msgid ":exc:`~discord.app_commands.AppCommandError`"
 msgstr ":exc:`~discord.app_commands.AppCommandError`"
 
-#: ../../interactions/api.rst:762
+#: ../../interactions/api.rst:824
 msgid ":exc:`~discord.app_commands.CommandInvokeError`"
 msgstr ":exc:`~discord.app_commands.CommandInvokeError`"
 
-#: ../../interactions/api.rst:763
+#: ../../interactions/api.rst:825
 msgid ":exc:`~discord.app_commands.TransformerError`"
 msgstr ":exc:`~discord.app_commands.TransformerError`"
 
-#: ../../interactions/api.rst:764
+#: ../../interactions/api.rst:826
 msgid ":exc:`~discord.app_commands.TranslationError`"
 msgstr ":exc:`~discord.app_commands.TranslationError`"
 
-#: ../../interactions/api.rst:770
+#: ../../interactions/api.rst:832
 msgid ":exc:`~discord.app_commands.CheckFailure`"
 msgstr ":exc:`~discord.app_commands.CheckFailure`"
 
-#: ../../interactions/api.rst:766
+#: ../../interactions/api.rst:828
 msgid ":exc:`~discord.app_commands.NoPrivateMessage`"
 msgstr ":exc:`~discord.app_commands.NoPrivateMessage`"
 
-#: ../../interactions/api.rst:767
+#: ../../interactions/api.rst:829
 msgid ":exc:`~discord.app_commands.MissingRole`"
 msgstr ":exc:`~discord.app_commands.MissingRole`"
 
-#: ../../interactions/api.rst:768
+#: ../../interactions/api.rst:830
 msgid ":exc:`~discord.app_commands.MissingAnyRole`"
 msgstr ":exc:`~discord.app_commands.MissingAnyRole`"
 
-#: ../../interactions/api.rst:769
+#: ../../interactions/api.rst:831
 msgid ":exc:`~discord.app_commands.MissingPermissions`"
 msgstr ":exc:`~discord.app_commands.MissingPermissions`"
 
-#: ../../interactions/api.rst:770
+#: ../../interactions/api.rst:832
 msgid ":exc:`~discord.app_commands.BotMissingPermissions`"
 msgstr ":exc:`~discord.app_commands.BotMissingPermissions`"
 
-#: ../../interactions/api.rst:771
+#: ../../interactions/api.rst:833
 msgid ":exc:`~discord.app_commands.CommandOnCooldown`"
 msgstr ":exc:`~discord.app_commands.CommandOnCooldown`"
 
-#: ../../interactions/api.rst:772
+#: ../../interactions/api.rst:834
 msgid ":exc:`~discord.app_commands.CommandLimitReached`"
 msgstr ":exc:`~discord.app_commands.CommandLimitReached`"
 
-#: ../../interactions/api.rst:773
+#: ../../interactions/api.rst:835
 msgid ":exc:`~discord.app_commands.CommandAlreadyRegistered`"
 msgstr ":exc:`~discord.app_commands.CommandAlreadyRegistered`"
 
-#: ../../interactions/api.rst:774
+#: ../../interactions/api.rst:836
 msgid ":exc:`~discord.app_commands.CommandSignatureMismatch`"
 msgstr ":exc:`~discord.app_commands.CommandSignatureMismatch`"
 
-#: ../../interactions/api.rst:775
+#: ../../interactions/api.rst:837
 msgid ":exc:`~discord.app_commands.CommandNotFound`"
 msgstr ":exc:`~discord.app_commands.CommandNotFound`"
 
-#: ../../interactions/api.rst:776
+#: ../../interactions/api.rst:838
 msgid ":exc:`~discord.app_commands.MissingApplicationID`"
 msgstr ":exc:`~discord.app_commands.MissingApplicationID`"
 
-#: ../../interactions/api.rst:777
-#: ../../interactions/api.rst:779
+#: ../../interactions/api.rst:839
+#: ../../interactions/api.rst:841
 msgid ":exc:`~discord.app_commands.CommandSyncFailure`"
 msgstr ":exc:`~discord.app_commands.CommandSyncFailure`"
 
-#: ../../interactions/api.rst:778
+#: ../../interactions/api.rst:840
 msgid ":exc:`~discord.HTTPException`"
 msgstr ":exc:`~discord.HTTPException`"
 

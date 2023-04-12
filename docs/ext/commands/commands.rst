@@ -40,9 +40,13 @@ as seen in the example above. The second is using the :func:`~ext.commands.comma
 
 Essentially, these two are equivalent: ::
 
+    import discord
     from discord.ext import commands
 
-    bot = commands.Bot(command_prefix='$')
+    intents = discord.Intents.default()
+    intents.message_content = True
+
+    bot = commands.Bot(command_prefix='$', intents=intents)
 
     @bot.command()
     async def test(ctx):
@@ -1143,6 +1147,7 @@ If you want a more robust error system, you can derive from the exception and ra
             return True
         return commands.check(predicate)
 
+    @bot.command()
     @guild_only()
     async def test(ctx):
         await ctx.send('Hey this is not a DM! Nice.')

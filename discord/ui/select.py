@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
-from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict, overload
+from typing import Any, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict, overload
 from contextvars import ContextVar
 import inspect
 import os
@@ -71,12 +71,12 @@ if TYPE_CHECKING:
     ]
 
 V = TypeVar('V', bound='View', covariant=True)
-BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect')
-SelectT = TypeVar('SelectT', bound='Select')
-UserSelectT = TypeVar('UserSelectT', bound='UserSelect')
-RoleSelectT = TypeVar('RoleSelectT', bound='RoleSelect')
-ChannelSelectT = TypeVar('ChannelSelectT', bound='ChannelSelect')
-MentionableSelectT = TypeVar('MentionableSelectT', bound='MentionableSelect')
+BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect[Any]')
+SelectT = TypeVar('SelectT', bound='Select[Any]')
+UserSelectT = TypeVar('UserSelectT', bound='UserSelect[Any]')
+RoleSelectT = TypeVar('RoleSelectT', bound='RoleSelect[Any]')
+ChannelSelectT = TypeVar('ChannelSelectT', bound='ChannelSelect[Any]')
+MentionableSelectT = TypeVar('MentionableSelectT', bound='MentionableSelect[Any]')
 SelectCallbackDecorator: TypeAlias = Callable[[ItemCallbackType[V, BaseSelectT]], BaseSelectT]
 
 selected_values: ContextVar[Dict[str, List[PossibleValue]]] = ContextVar('selected_values')
@@ -655,6 +655,15 @@ class ChannelSelect(BaseSelect[V]):
         """List[:class:`~discord.ChannelType`]: A list of channel types that can be selected."""
         return self._underlying.channel_types
 
+    @channel_types.setter
+    def channel_types(self, value: List[ChannelType]) -> None:
+        if not isinstance(value, list):
+            raise TypeError('channel_types must be a list of ChannelType')
+        if not all(isinstance(obj, ChannelType) for obj in value):
+            raise TypeError('all list items must be a ChannelType')
+
+        self._underlying.channel_types = value
+
     @property
     def values(self) -> List[Union[AppCommandChannel, AppCommandThread]]:
         """List[Union[:class:`~discord.app_commands.AppCommandChannel`, :class:`~discord.app_commands.AppCommandThread`]]: A list of channels selected by the user."""
@@ -664,7 +673,7 @@ class ChannelSelect(BaseSelect[V]):
 @overload
 def select(
     *,
-    cls: Type[SelectT] = Select,
+    cls: Type[SelectT] = Select[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -680,7 +689,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[UserSelectT],
+    cls: Type[UserSelectT] = UserSelect[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -696,7 +705,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[RoleSelectT],
+    cls: Type[RoleSelectT] = RoleSelect[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -712,7 +721,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[ChannelSelectT],
+    cls: Type[ChannelSelectT] = ChannelSelect[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = ...,
     placeholder: Optional[str] = ...,
@@ -728,7 +737,7 @@ def select(
 @overload
 def select(
     *,
-    cls: Type[MentionableSelectT],
+    cls: Type[MentionableSelectT] = MentionableSelect[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = MISSING,
     placeholder: Optional[str] = ...,
@@ -743,7 +752,7 @@ def select(
 
 def select(
     *,
-    cls: Type[BaseSelectT] = Select,
+    cls: Type[BaseSelectT] = Select[V],
     options: List[SelectOption] = MISSING,
     channel_types: List[ChannelType] = MISSING,
     placeholder: Optional[str] = None,
@@ -778,7 +787,7 @@ def select(
 
     .. versionchanged:: 2.1
         Added the following keyword-arguments: ``cls``, ``channel_types``
-    
+
     Example
     ---------
     .. code-block:: python3
@@ -827,11 +836,12 @@ def select(
     def decorator(func: ItemCallbackType[V, BaseSelectT]) -> ItemCallbackType[V, BaseSelectT]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError('select function must be a coroutine function')
-        if not issubclass(cls, BaseSelect):
+        callback_cls = getattr(cls, '__origin__', cls)
+        if not issubclass(callback_cls, BaseSelect):
             supported_classes = ", ".join(["ChannelSelect", "MentionableSelect", "RoleSelect", "Select", "UserSelect"])
             raise TypeError(f'cls must be one of {supported_classes} or a subclass of one of them, not {cls!r}.')
 
-        func.__discord_ui_model_type__ = cls
+        func.__discord_ui_model_type__ = callback_cls
         func.__discord_ui_model_kwargs__ = {
             'placeholder': placeholder,
             'custom_id': custom_id,
@@ -840,9 +850,9 @@ def select(
             'max_values': max_values,
             'disabled': disabled,
         }
-        if issubclass(cls, Select):
+        if issubclass(callback_cls, Select):
             func.__discord_ui_model_kwargs__['options'] = options
-        if issubclass(cls, ChannelSelect):
+        if issubclass(callback_cls, ChannelSelect):
             func.__discord_ui_model_kwargs__['channel_types'] = channel_types
 
         return func

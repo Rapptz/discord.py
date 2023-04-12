@@ -44,10 +44,14 @@ class BaseAppInfo(TypedDict):
     icon: Optional[str]
     summary: str
     description: str
+    flags: int
+    cover_image: NotRequired[str]
+    terms_of_service_url: NotRequired[str]
+    privacy_policy_url: NotRequired[str]
+    rpc_origins: NotRequired[List[str]]
 
 
 class AppInfo(BaseAppInfo):
-    rpc_origins: List[str]
     owner: User
     bot_public: bool
     bot_require_code_grant: bool
@@ -55,23 +59,21 @@ class AppInfo(BaseAppInfo):
     guild_id: NotRequired[Snowflake]
     primary_sku_id: NotRequired[Snowflake]
     slug: NotRequired[str]
-    terms_of_service_url: NotRequired[str]
-    privacy_policy_url: NotRequired[str]
     hook: NotRequired[bool]
     max_participants: NotRequired[int]
     tags: NotRequired[List[str]]
     install_params: NotRequired[InstallParams]
     custom_install_url: NotRequired[str]
+    role_connections_verification_url: NotRequired[str]
 
 
 class PartialAppInfo(BaseAppInfo, total=False):
-    rpc_origins: List[str]
-    cover_image: str
     hook: bool
-    terms_of_service_url: str
-    privacy_policy_url: str
     max_participants: int
-    flags: int
+    approximate_guild_count: int
+    redirect_uris: List[str]
+    interactions_endpoint_url: Optional[str]
+    role_connections_verification_url: Optional[str]
 
 
 class GatewayAppInfo(TypedDict):

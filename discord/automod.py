@@ -25,8 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 import datetime
 
-from typing import TYPE_CHECKING, Any, Dict, Optional, List, Sequence, Set, Union, Sequence
-
+from typing import TYPE_CHECKING, Any, Dict, Optional, List, Set, Union, Sequence, overload
 
 from .enums import AutoModRuleTriggerType, AutoModRuleActionType, AutoModRuleEventType, try_enum
 from .flags import AutoModPresets
@@ -59,6 +58,9 @@ __all__ = (
 class AutoModRuleAction:
     """Represents an auto moderation's rule action.
 
+    .. note::
+        Only one of ``channel_id``, ``duration``, or ``custom_message`` can be used.
+
     .. versionadded:: 2.0
 
     Attributes
@@ -73,40 +75,65 @@ class AutoModRuleAction:
         The duration of the timeout to apply, if any.
         Has a maximum of 28 days.
         Passing this sets :attr:`type` to :attr:`~AutoModRuleActionType.timeout`.
+    custom_message: Optional[:class:`str`]
+        A custom message which will be shown to a user when their message is blocked.
+        Passing this sets :attr:`type` to :attr:`~AutoModRuleActionType.block_message`.
+
+        .. versionadded:: 2.2
     """
 
-    __slots__ = ('type', 'channel_id', 'duration')
+    __slots__ = ('type', 'channel_id', 'duration', 'custom_message')
 
-    def __init__(self, *, channel_id: Optional[int] = None, duration: Optional[datetime.timedelta] = None) -> None:
+    @overload
+    def __init__(self, *, channel_id: Optional[int] = ...) -> None:
+        ...
+
+    @overload
+    def __init__(self, *, duration: Optional[datetime.timedelta] = ...) -> None:
+        ...
+
+    @overload
+    def __init__(self, *, custom_message: Optional[str] = ...) -> None:
+        ...
+
+    def __init__(
+        self,
+        *,
+        channel_id: Optional[int] = None,
+        duration: Optional[datetime.timedelta] = None,
+        custom_message: Optional[str] = None,
+    ) -> None:
         self.channel_id: Optional[int] = channel_id
         self.duration: Optional[datetime.timedelta] = duration
-        if channel_id and duration:
-            raise ValueError('Please provide only one of ``channel`` or ``duration``')
+        self.custom_message: Optional[str] = custom_message
 
+        if sum(v is None for v in (channel_id, duration, custom_message)) < 2:
+            raise ValueError('Only one of channel_id, duration, or custom_message can be passed.')
+
+        self.type: AutoModRuleActionType = AutoModRuleActionType.block_message
         if channel_id:
             self.type = AutoModRuleActionType.send_alert_message
         elif duration:
             self.type = AutoModRuleActionType.timeout
-        else:
-            self.type = AutoModRuleActionType.block_message
 
     def __repr__(self) -> str:
         return f'<AutoModRuleAction type={self.type.value} channel={self.channel_id} duration={self.duration}>'
 
     @classmethod
     def from_data(cls, data: AutoModerationActionPayload) -> Self:
-        type_ = try_enum(AutoModRuleActionType, data['type'])
         if data['type'] == AutoModRuleActionType.timeout.value:
             duration_seconds = data['metadata']['duration_seconds']
             return cls(duration=datetime.timedelta(seconds=duration_seconds))
         elif data['type'] == AutoModRuleActionType.send_alert_message.value:
             channel_id = int(data['metadata']['channel_id'])
             return cls(channel_id=channel_id)
-        return cls()
+        return cls(custom_message=data.get('metadata', {}).get('custom_message'))
 
     def to_dict(self) -> Dict[str, Any]:
         ret = {'type': self.type.value, 'metadata': {}}
-        if self.type is AutoModRuleActionType.timeout:
+        if self.type is AutoModRuleActionType.block_message and self.custom_message is not None:
+            ret['metadata'] = {'custom_message': self.custom_message}
+        elif self.type is AutoModRuleActionType.timeout:
             ret['metadata'] = {'duration_seconds': int(self.duration.total_seconds())}  # type: ignore # duration cannot be None here
         elif self.type is AutoModRuleActionType.send_alert_message:
             ret['metadata'] = {'channel_id': str(self.channel_id)}
@@ -121,7 +148,8 @@ class AutoModTrigger:
     +-----------------------------------------------+------------------------------------------------+
     |                    Type                       |                   Attributes                   |
     +===============================================+================================================+
-    | :attr:`AutoModRuleTriggerType.keyword`        | :attr:`keyword_filter`, :attr:`regex_patterns` |
+    | :attr:`AutoModRuleTriggerType.keyword`        | :attr:`keyword_filter`, :attr:`regex_patterns`,|
+    |                                               | :attr:`allow_list`                             |
     +-----------------------------------------------+------------------------------------------------+
     | :attr:`AutoModRuleTriggerType.spam`           |                                                |
     +-----------------------------------------------+------------------------------------------------+
@@ -138,21 +166,22 @@ class AutoModTrigger:
         The type of trigger.
     keyword_filter: List[:class:`str`]
         The list of strings that will trigger the keyword filter. Maximum of 1000.
-        Keywords can only be up to 30 characters in length.
+        Keywords can only be up to 60 characters in length.
 
         This could be combined with :attr:`regex_patterns`.
     regex_patterns: List[:class:`str`]
         The regex pattern that will trigger the filter. The syntax is based off of
         `Rust's regex syntax <https://docs.rs/regex/latest/regex/#syntax>`_.
-        Maximum of 10. Regex strings can only be up to 75 characters in length.
+        Maximum of 10. Regex strings can only be up to 260 characters in length.
 
-        This could be combined with :attr:`keyword_filter`.
+        This could be combined with :attr:`keyword_filter` and/or :attr:`allow_list`
 
         .. versionadded:: 2.1
     presets: :class:`AutoModPresets`
         The presets used with the preset keyword filter.
     allow_list: List[:class:`str`]
-        The list of words that are exempt from the commonly flagged words.
+        The list of words that are exempt from the commonly flagged words. Maximum of 100.
+        Keywords can only be up to 60 characters in length.
     mention_limit: :class:`int`
         The total number of user and role mentions a message can contain.
         Has a maximum of 50.
@@ -213,7 +242,12 @@ class AutoModTrigger:
         if data is None:
             return cls(type=type_)
         elif type_ is AutoModRuleTriggerType.keyword:
-            return cls(type=type_, keyword_filter=data.get('keyword_filter'), regex_patterns=data.get('regex_patterns'))
+            return cls(
+                type=type_,
+                keyword_filter=data.get('keyword_filter'),
+                regex_patterns=data.get('regex_patterns'),
+                allow_list=data.get('allow_list'),
+            )
         elif type_ is AutoModRuleTriggerType.keyword_preset:
             return cls(
                 type=type_, presets=AutoModPresets._from_value(data.get('presets', [])), allow_list=data.get('allow_list')
@@ -225,7 +259,11 @@ class AutoModTrigger:
 
     def to_metadata_dict(self) -> Optional[Dict[str, Any]]:
         if self.type is AutoModRuleTriggerType.keyword:
-            return {'keyword_filter': self.keyword_filter, 'regex_patterns': self.regex_patterns}
+            return {
+                'keyword_filter': self.keyword_filter,
+                'regex_patterns': self.regex_patterns,
+                'allow_list': self.allow_list,
+            }
         elif self.type is AutoModRuleTriggerType.keyword_preset:
             return {'presets': self.presets.to_array(), 'allow_list': self.allow_list}
         elif self.type is AutoModRuleTriggerType.mention_spam:
@@ -419,10 +457,10 @@ class AutoModRule:
             payload['enabled'] = enabled
 
         if exempt_roles is not MISSING:
-            payload['exempt_roles'] = exempt_roles
+            payload['exempt_roles'] = [x.id for x in exempt_roles]
 
         if exempt_channels is not MISSING:
-            payload['exempt_channels'] = exempt_channels
+            payload['exempt_channels'] = [x.id for x in exempt_channels]
 
         data = await self._state.http.edit_auto_moderation_rule(
             self.guild.id,

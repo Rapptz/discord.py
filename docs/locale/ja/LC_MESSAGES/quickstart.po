@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-08-23 11:53+0000\n"
-"PO-Revision-Date: 2022-10-09 15:02\n"
+"POT-Creation-Date: 2023-01-24 11:01+0000\n"
+"PO-Revision-Date: 2023-01-30 13:38\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -46,8 +46,8 @@ msgid "There's a lot going on here, so let's walk you through it step by step."
 msgstr "さて、では順を追って一つづつ説明していきます。"
 
 #: ../../quickstart.rst:50
-msgid "The first line just imports the library, if this raises a `ModuleNotFoundError` or `ImportError` then head on over to :ref:`installing` section to properly install."
-msgstr "最初の行は、ただライブラリをインポートしただけです。 `ModuleNotFoundError` や `ImportError` が発生した場合は :ref:`installing` を見て、ライブラリをきちんとインストールしましょう。"
+msgid "The first line just imports the library, if this raises a :exc:`ModuleNotFoundError` or :exc:`ImportError` then head on over to :ref:`installing` section to properly install."
+msgstr "最初の行は、ただライブラリをインポートしただけです。 :exc:`ModuleNotFoundError` や :exc:`ImportError` が発生した場合は :ref:`installing` を見て、ライブラリをきちんとインストールしましょう。"
 
 #: ../../quickstart.rst:52
 msgid "Next, we create an instance of a :class:`Client`. This client is our connection to Discord."

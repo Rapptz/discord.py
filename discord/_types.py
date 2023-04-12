@@ -23,31 +23,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+from typing import TypeVar, TYPE_CHECKING
 
-from typing import TypedDict, Optional
-from typing_extensions import NotRequired
+if TYPE_CHECKING:
+    from typing_extensions import TypeVar
+    from .client import Client
 
-from .snowflake import Snowflake
-
-
-class Role(TypedDict):
-    id: Snowflake
-    name: str
-    color: int
-    hoist: bool
-    position: int
-    permissions: str
-    managed: bool
-    mentionable: bool
-    icon: NotRequired[Optional[str]]
-    unicode_emoji: NotRequired[Optional[str]]
-    tags: NotRequired[RoleTags]
-
-
-class RoleTags(TypedDict, total=False):
-    bot_id: Snowflake
-    integration_id: Snowflake
-    subscription_listing_id: Snowflake
-    premium_subscriber: None
-    available_for_purchase: None
-    guild_connections: None
+    ClientT = TypeVar('ClientT', bound=Client, covariant=True, default=Client)
+else:
+    ClientT = TypeVar('ClientT', bound='Client', covariant=True)

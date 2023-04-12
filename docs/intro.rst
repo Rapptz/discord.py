@@ -88,6 +88,11 @@ However, for the quick and dirty:
 
 Congratulations. You now have a virtual environment all set up.
 
+.. note::
+
+    Scripts executed with ``py -3`` will ignore any currently active virtual
+    environment, as the ``-3`` specifies a global scope.
+
 Basic Concepts
 ---------------
 

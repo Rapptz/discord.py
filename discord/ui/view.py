@@ -157,6 +157,8 @@ class View:
     __view_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
 
     def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+
         children: Dict[str, ItemCallbackType[Any, Any]] = {}
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
@@ -638,6 +640,7 @@ class ViewStore:
     def remove_interaction_mapping(self, interaction_id: int) -> None:
         # This is called before re-adding the view
         self._views.pop(interaction_id, None)
+        self._synced_message_views.pop(interaction_id, None)
 
     def is_message_tracked(self, message_id: int) -> bool:
         return message_id in self._synced_message_views

@@ -66,6 +66,8 @@ __all__ = (
     'AutoModRuleTriggerType',
     'AutoModRuleEventType',
     'AutoModRuleActionType',
+    'ForumLayoutType',
+    'ForumOrderType',
 )
 
 if TYPE_CHECKING:
@@ -231,6 +233,14 @@ class MessageType(Enum):
     guild_invite_reminder = 22
     context_menu_command = 23
     auto_moderation_action = 24
+    role_subscription_purchase = 25
+    interaction_premium_upsell = 26
+    stage_start = 27
+    stage_end = 28
+    stage_speaker = 29
+    stage_raise_hand = 30
+    stage_topic = 31
+    guild_application_premium_subscription = 32
 
 
 class SpeakingState(Enum):
@@ -526,6 +536,7 @@ class StickerFormatType(Enum):
     png = 1
     apng = 2
     lottie = 3
+    gif = 4
 
     @property
     def file_extension(self) -> str:
@@ -534,9 +545,10 @@ class StickerFormatType(Enum):
             StickerFormatType.png: 'png',
             StickerFormatType.apng: 'png',
             StickerFormatType.lottie: 'json',
+            StickerFormatType.gif: 'gif',
         }
         # fmt: on
-        return lookup[self]
+        return lookup.get(self, 'png')
 
 
 class InviteTarget(Enum):
@@ -642,6 +654,7 @@ class Locale(Enum):
     taiwan_chinese = 'zh-TW'
     croatian = 'hr'
     czech = 'cs'
+    indonesian = 'id'
     danish = 'da'
     dutch = 'nl'
     finnish = 'fi'
@@ -731,6 +744,17 @@ class AutoModRuleActionType(Enum):
     block_message = 1
     send_alert_message = 2
     timeout = 3
+
+
+class ForumLayoutType(Enum):
+    not_set = 0
+    list_view = 1
+    gallery_view = 2
+
+
+class ForumOrderType(Enum):
+    latest_activity = 0
+    creation_date = 1
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

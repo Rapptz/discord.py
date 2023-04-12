@@ -126,6 +126,11 @@ class AppInfo:
         The settings for custom authorization URL of application, if enabled.
 
         .. versionadded:: 2.0
+    role_connections_verification_url: Optional[:class:`str`]
+        The application's connection verification URL which will render the application as
+        a verification method in the guild's role verification configuration.
+
+        .. versionadded:: 2.2
     """
 
     __slots__ = (
@@ -150,6 +155,7 @@ class AppInfo:
         'tags',
         'custom_install_url',
         'install_params',
+        'role_connections_verification_url',
     )
 
     def __init__(self, state: ConnectionState, data: AppInfoPayload):
@@ -160,7 +166,7 @@ class AppInfo:
         self.name: str = data['name']
         self.description: str = data['description']
         self._icon: Optional[str] = data['icon']
-        self.rpc_origins: List[str] = data['rpc_origins']
+        self.rpc_origins: Optional[List[str]] = data.get('rpc_origins')
         self.bot_public: bool = data['bot_public']
         self.bot_require_code_grant: bool = data['bot_require_code_grant']
         self.owner: User = state.create_user(data['owner'])
@@ -180,6 +186,7 @@ class AppInfo:
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
         self.tags: List[str] = data.get('tags', [])
         self.custom_install_url: Optional[str] = data.get('custom_install_url')
+        self.role_connections_verification_url: Optional[str] = data.get('role_connections_verification_url')
 
         params = data.get('install_params')
         self.install_params: Optional[AppInstallParams] = AppInstallParams(params) if params else None
@@ -248,6 +255,24 @@ class PartialAppInfo:
         The application's terms of service URL, if set.
     privacy_policy_url: Optional[:class:`str`]
         The application's privacy policy URL, if set.
+    approximate_guild_count: :class:`int`
+        The approximate count of the guilds the bot was added to.
+
+        .. versionadded:: 2.3
+    redirect_uris: List[:class:`str`]
+        A list of authentication redirect URIs.
+
+        .. versionadded:: 2.3
+    interactions_endpoint_url: Optional[:class:`str`]
+        The interactions endpoint url of the application to receive interactions over this endpoint rather than
+        over the gateway, if configured.
+
+        .. versionadded:: 2.3
+    role_connections_verification_url: Optional[:class:`str`]
+        The application's connection verification URL which will render the application as
+        a verification method in the guild's role verification configuration.
+
+        .. versionadded:: 2.3
     """
 
     __slots__ = (
@@ -261,6 +286,11 @@ class PartialAppInfo:
         'privacy_policy_url',
         '_icon',
         '_flags',
+        '_cover_image',
+        'approximate_guild_count',
+        'redirect_uris',
+        'interactions_endpoint_url',
+        'role_connections_verification_url',
     )
 
     def __init__(self, *, state: ConnectionState, data: PartialAppInfoPayload):
@@ -269,11 +299,16 @@ class PartialAppInfo:
         self.name: str = data['name']
         self._icon: Optional[str] = data.get('icon')
         self._flags: int = data.get('flags', 0)
+        self._cover_image: Optional[str] = data.get('cover_image')
         self.description: str = data['description']
         self.rpc_origins: Optional[List[str]] = data.get('rpc_origins')
         self.verify_key: str = data['verify_key']
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
+        self.approximate_guild_count: int = data.get('approximate_guild_count', 0)
+        self.redirect_uris: List[str] = data.get('redirect_uris', [])
+        self.interactions_endpoint_url: Optional[str] = data.get('interactions_endpoint_url')
+        self.role_connections_verification_url: Optional[str] = data.get('role_connections_verification_url')
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>'
@@ -284,6 +319,18 @@ class PartialAppInfo:
         if self._icon is None:
             return None
         return Asset._from_icon(self._state, self.id, self._icon, path='app')
+
+    @property
+    def cover_image(self) -> Optional[Asset]:
+        """Optional[:class:`.Asset`]: Retrieves the cover image of the application's default rich presence.
+
+        This is only available if the application is a game sold on Discord.
+
+        .. versionadded:: 2.3
+        """
+        if self._cover_image is None:
+            return None
+        return Asset._from_cover_image(self._state, self.id, self._cover_image)
 
     @property
     def flags(self) -> ApplicationFlags:

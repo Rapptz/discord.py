@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-02 21:53+0000\n"
-"PO-Revision-Date: 2022-10-09 16:15\n"
+"POT-Creation-Date: 2023-01-29 20:45+0000\n"
+"PO-Revision-Date: 2023-01-30 13:38\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -2898,6 +2898,10 @@ msgstr "関数がコルーチンではないか、文字列が名前として渡
 msgid ":class:`bool`: Checks whether the cog has an error handler."
 msgstr ":class:`bool`: コグにエラーハンドラが登録されているかどうかをチェックします。"
 
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.has_app_command_error_handler:1
+msgid ":class:`bool`: Checks whether the cog has an app error handler."
+msgstr ":class:`bool`: コグにアプリケーションエラーハンドラが登録されているかどうかをチェックします。"
+
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.cog_load:1
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.Cog.cog_unload:1
 #: ../../../discord/ext/commands/help.py:docstring of discord.ext.commands.help.HelpCommand.command_not_found:1
@@ -3015,6 +3019,10 @@ msgid "Decorators such as :func:`~discord.app_commands.guild_only`, :func:`~disc
 msgstr ":func:`~discord.app_commands.guild_only` 、 :func:`~discord.app_commands.guilds` 、 :func:`~discord.app_commands.default_permissions` のようなデコレータはコグの上に使用されている場合、グループに適用されます。"
 
 #: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.GroupCog:11
+msgid "Hybrid commands will also be added to the Group, giving the ability categorize slash commands into groups, while keeping the prefix-style command as a root-level command."
+msgstr "グループにもハイブリッドコマンドが追加され、プレフィックス形式のコマンドをルートレベルのコマンドとして保持しながら、スラッシュコマンドをグループに分類できるようになります。"
+
+#: ../../../discord/ext/commands/cog.py:docstring of discord.ext.commands.cog.GroupCog:14
 msgid "For example:"
 msgstr "例："
 
@@ -4012,8 +4020,8 @@ msgid "If this check is called in a DM context, it will raise an exception, :exc
 msgstr "このチェックがDMのコンテキストで呼び出されると、 :exc:`.NoPrivateMessage` 例外が発生します。"
 
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.has_any_role:1
-msgid "A :func:`.check` that is added that checks if the member invoking the command has **any** of the roles specified. This means that if they have one out of the three roles specified, then this check will return `True`."
-msgstr "コマンドを呼び出したメンバーが、指定された名前またはIDのロールのうちの **どれか** を持っているかをチェックを追加する :func:`.check` 。 これは、指定された3つのうちのどのロールが指定されていても、このチェックが `True` を返すことを意味します。"
+msgid "A :func:`.check` that is added that checks if the member invoking the command has **any** of the roles specified. This means that if they have one out of the three roles specified, then this check will return ``True``."
+msgstr "コマンドを呼び出したメンバーが、指定された名前またはIDのロールのうちの **どれか** を持っているかをチェックを追加する :func:`.check` 。 これは、指定された3つのうちのどのロールが指定されていても、このチェックが ``True`` を返すことを意味します。"
 
 #: ../../../discord/ext/commands/core.py:docstring of discord.ext.commands.core.has_any_role:5
 msgid "Similar to :func:`.has_role`\\, the names or IDs passed in must be exact."
@@ -4695,8 +4703,8 @@ msgid "The nonce to use for sending this message. If the message was successfull
 msgstr "メッセージの送信時に使用するナンス値。メッセージが正常に送信された場合、このメッセージにはこの値のナンス値が含まれます。"
 
 #: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:30
-msgid "If provided, the number of seconds to wait in the background before deleting the message we just sent. If the deletion fails, then it is silently ignored. This is ignored for interaction based contexts."
-msgstr "指定したなら、これはメッセージを送信したあと待機し、すぐ削除する秒数となります。もし削除が失敗しても、それは静かに無視されます。インタラクションベースのコンテキストでは無視されます。"
+msgid "If provided, the number of seconds to wait in the background before deleting the message we just sent. If the deletion fails, then it is silently ignored."
+msgstr "指定すると、これはメッセージを送信したあと削除するまでにバックグラウンドで待機する秒数となります。もし削除が失敗しても、それは静かに無視されます。"
 
 #: ../../../discord/ext/commands/context.py:docstring of discord.ext.commands.context.Context.send:34
 msgid "Controls the mentions being processed in this message. If this is passed, then the object is merged with :attr:`~discord.Client.allowed_mentions`. The merging behaviour only overrides attributes that have been explicitly passed to the object, otherwise it uses the attributes set in :attr:`~discord.Client.allowed_mentions`. If no object is passed at all then the defaults given by :attr:`~discord.Client.allowed_mentions` are used instead."
@@ -4811,8 +4819,8 @@ msgid "Converts to a :class:`~discord.Object`."
 msgstr ":class:`~discord.Object` に変換します。"
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.ObjectConverter:3
-msgid "The argument must follow the valid ID or mention formats (e.g. `<@80088516616269824>`)."
-msgstr "引数は有効なIDかメンション(例: `<@80088516616269824>`)でないといけません。"
+msgid "The argument must follow the valid ID or mention formats (e.g. ``<@80088516616269824>``)."
+msgstr "引数は有効なIDかメンション(例: ``<@80088516616269824>``)でないといけません。"
 
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.ObjectConverter:7
 #: ../../../discord/ext/commands/converter.py:docstring of discord.ext.commands.converter.MemberConverter:6

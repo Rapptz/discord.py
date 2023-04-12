@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-10-02 21:53+0000\n"
-"PO-Revision-Date: 2022-10-09 16:15\n"
+"POT-Creation-Date: 2023-01-24 11:01+0000\n"
+"PO-Revision-Date: 2023-01-30 13:38\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -1798,8 +1798,8 @@ msgid "Removal of ``StoreChannel``"
 msgstr "``StoreChannel`` の削除"
 
 #: ../../migrating.rst:986
-msgid "Discord's API has removed store channels as of `March 10th, 2022 <https://support-dev.discord.com/hc/en-us/articles/4414590563479>`_. Therefore, the library has removed support for it as well."
-msgstr "DiscordのAPIは、 `2022年3月10日 <https://support-dev.discord.com/hc/en-us/articles/4414590563479>`_ をもって、ストアチャンネルを削除しました。そのため、ライブラリもそれに対するサポートを削除しました。"
+msgid "Discord's API has removed store channels as of `March 10th, 2022 <https://support-dev.discord.com/hc/en-us/articles/6309018858647>`_. Therefore, the library has removed support for it as well."
+msgstr "DiscordのAPIは、 `2022年3月10日 <https://support-dev.discord.com/hc/ja/articles/6309018858647>`_ をもって、ストアチャンネルを削除しました。そのため、ライブラリもそれに対するサポートを削除しました。"
 
 #: ../../migrating.rst:988
 msgid "This removes the following:"
@@ -2435,8 +2435,8 @@ msgid ":meth:`Permissions.stage_moderator` now includes the :attr:`Permissions.m
 msgstr ":meth:`Permissions.stage_moderator` に :attr:`Permissions.manage_channels` 権限が含まれるようになり、 :attr:`Permissions.request_to_speak` 権限が含まれなくなりました。"
 
 #: ../../migrating.rst:1270
-msgid ":attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to `'untitled'`."
-msgstr ":attr:`File.filename` が ``None`` になることはなくなりました。以前そうなった場合ではファイル名は `'untitled'` になります。"
+msgid ":attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to ``'untitled'``."
+msgstr ":attr:`File.filename` が ``None`` になることはなくなりました。以前そうなった場合ではファイル名は ``'untitled'`` になります。"
 
 #: ../../migrating.rst:1272
 msgid ":attr:`Message.application` will no longer be a raw :class:`dict` of the API payload and now returns an instance of :class:`MessageApplication`."

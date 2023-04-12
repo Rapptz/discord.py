@@ -111,7 +111,7 @@ class Template:
         An aware datetime in UTC representing when the template was last updated.
         This is referred to as "last synced" in the official Discord client.
     source_guild: :class:`Guild`
-        The source guild.
+        The guild snapshot that represents the data that this template currently holds.
     is_dirty: Optional[:class:`bool`]
         Whether the template has unsynced changes.
 
