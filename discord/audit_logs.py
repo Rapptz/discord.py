@@ -90,6 +90,9 @@ if TYPE_CHECKING:
         Object,
         PartialIntegration,
         AutoModRule,
+        ScheduledEvent,
+        Webhook,
+        AppCommand,
         None,
     ]
 
