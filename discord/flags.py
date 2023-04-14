@@ -450,6 +450,14 @@ class MessageFlags(BaseFlags):
         """
         return 4096
 
+    @alias_flag_value
+    def voice(self):
+        """:class:`bool`: Returns ``True`` if the message is a voice message.
+
+        .. versionadded:: 2.3
+        """
+        return 8192
+
 
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):
