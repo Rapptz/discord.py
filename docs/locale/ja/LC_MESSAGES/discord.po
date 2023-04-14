@@ -56,16 +56,8 @@ msgid "The new application form filled in."
 msgstr "記入された新しいアプリケーションフォーム"
 
 #: ../../discord.rst:24
-msgid "Create a Bot User by navigating to the \"Bot\" tab and clicking \"Add Bot\"."
-msgstr "「Bot」タブへ移動し、「Add Bot」をクリックしてBotユーザーを作成します。"
-
-#: ../../discord.rst:26
-msgid "Click \"Yes, do it!\" to continue."
-msgstr "「Yes, do it!」をクリックして続行します。"
-
-#: ../../discord.rst:0
-msgid "The Add Bot button."
-msgstr "「Add Bot」ボタン"
+msgid "Navigate to the \"Bot\" tab to configure it."
+msgstr "「Bot」タブへ移動し、「Add Bot」をクリックしてBotユーザーを作成します。" # TODO
 
 #: ../../discord.rst:30
 msgid "Make sure that **Public Bot** is ticked if you want others to invite your bot."
