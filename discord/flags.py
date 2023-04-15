@@ -450,7 +450,7 @@ class MessageFlags(BaseFlags):
         """
         return 4096
 
-    @alias_flag_value
+    @flag_value
     def voice(self):
         """:class:`bool`: Returns ``True`` if the message is a voice message.
 
