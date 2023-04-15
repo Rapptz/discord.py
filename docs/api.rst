@@ -2838,6 +2838,42 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.1
 
+    .. attribute:: soundboard_sound_create
+
+        A soundboard sound was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.emoji`
+        - :attr:`~AuditLogDiff.volume`
+
+        .. versionadded:: 2.3
+
+    .. attribute:: soundboard_sound_update
+
+        A soundboard sound was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.emoji`
+        - :attr:`~AuditLogDiff.volume`
+
+        .. versionadded:: 2.3
+
+    .. attribute:: soundboard_sound_delete
+
+        A soundboard sound was deleted.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.emoji`
+        - :attr:`~AuditLogDiff.volume`
+
+        .. versionadded:: 2.3
+
 .. class:: AuditLogActionCategory
 
     Represents the category that the :class:`AuditLogAction` belongs to.
@@ -3839,11 +3875,12 @@ AuditLogDiff
 
     .. attribute:: emoji
 
-        The name of the emoji that represents a sticker being changed.
+        The emoji which represents one of the following:
 
-        See also :attr:`GuildSticker.emoji`.
+        * :attr:`GuildSticker.emoji`
+        * :attr:`SoundboardSound.emoji`
 
-        :type: :class:`str`
+        :type: Union[:class:`str`, :class:`PartialEmoji`]
 
     .. attribute:: unicode_emoji
 
@@ -3864,9 +3901,10 @@ AuditLogDiff
 
     .. attribute:: available
 
-        The availability of a sticker being changed.
+        The availability of one of the following being changed:
 
-        See also :attr:`GuildSticker.available`
+        * :attr:`GuildSticker.available`
+        * :attr:`SoundboardSound.available`
 
         :type: :class:`bool`
 
@@ -4050,6 +4088,22 @@ AuditLogDiff
         See also :attr:`ForumChannel.flags` and :attr:`Thread.flags`
 
         :type: :class:`ChannelFlags`
+
+    .. attribute:: user
+
+        The user that represents the uploader of a soundboard sound.
+
+        See also :attr:`SoundboardSound.user`
+
+        :type: Union[:class:`Member`, :class:`User`]
+
+    .. attribute:: volume
+
+        The volume of a soundboard sound.
+
+        See also :attr:`SoundboardSound.volume`
+
+        :type: :class:`float`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these

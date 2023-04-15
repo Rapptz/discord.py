@@ -177,7 +177,7 @@ class SoundboardSound(BaseSoundboardSound):
     user: Optional[:class:`User`]
         The user who uploaded the sound.
     available: :class:`bool`
-        Whether the sound is available or not.
+        Whether this sound is available for use.
     """
 
     __slots__ = ('_state', 'guild_id', 'name', 'emoji', 'user', 'available')
