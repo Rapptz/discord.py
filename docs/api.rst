@@ -4016,11 +4016,11 @@ AuditLogDiff
 
         See also :attr:`Thread.applied_tags`
 
-        :type: List[:class:`ForumTag`]
+        :type: List[Union[:class:`ForumTag`, :class:`Object`]]
 
     .. attribute:: available_tags
 
-        The available flags of a forum.
+        The available tags of a forum.
 
         See also :attr:`ForumChannel.available_tags`
 
