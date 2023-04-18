@@ -811,7 +811,7 @@ class Guild(Hashable):
 
     @property
     def safety_alerts_channel(self) -> Optional[TextChannel]:
-        """Optional[:class:`TextChannel`]: Return's the guild's channel used for safety alerts, if set. 
+        """Optional[:class:`TextChannel`]: Return's the guild's channel used for safety alerts, if set.
 
         For example, this is used for the raid protection setting. The guild must have the ``COMMUNITY`` feature.
 
@@ -1831,8 +1831,8 @@ class Guild(Hashable):
         system_channel: Optional[TextChannel] = MISSING,
         system_channel_flags: SystemChannelFlags = MISSING,
         preferred_locale: Locale = MISSING,
-        rules_channel: TextChannel = MISSING,
-        public_updates_channel: TextChannel = MISSING,
+        rules_channel: Optional[TextChannel] = MISSING,
+        public_updates_channel: Optional[TextChannel] = MISSING,
         premium_progress_bar_enabled: bool = MISSING,
         discoverable: bool = MISSING,
         invites_disabled: bool = MISSING,
@@ -1915,14 +1915,16 @@ class Guild(Hashable):
             .. versionchanged:: 2.0
 
                 Now accepts an enum instead of :class:`str`.
-        rules_channel: :class:`TextChannel`
+        rules_channel: Optional[:class:`TextChannel`]
             The new channel that is used for rules. This is only available to
-            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`.
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no rules
+            channel.
 
             .. versionadded:: 1.4
-        public_updates_channel: :class:`TextChannel`
+        public_updates_channel: Optional[:class:`TextChannel`]
             The new channel that is used for public updates from Discord. This is only available to
-            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`.
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no
+            public updates channel.
 
             .. versionadded:: 1.4
         premium_progress_bar_enabled: :class:`bool`
@@ -1958,9 +1960,10 @@ class Guild(Hashable):
 
             .. versionadded:: 2.3
 
-        safety_alerts_channel: :class:`TextChannel`
+        safety_alerts_channel: Optional[:class:`TextChannel`]
             The new channel that is used for safety alerts. This is only available to
-            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`.
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no
+            safety alerts channel.
 
             .. versionadded:: 2.3
 
@@ -1975,9 +1978,9 @@ class Guild(Hashable):
             PNG or JPG. This is also raised if you are not the owner of the
             guild and request an ownership transfer.
         TypeError
-            The type passed to the ``default_notifications``, ``rules_channel``, ``public_updates_channel``,
-            ``safety_alerts_channel`` ``verification_level``, ``explicit_content_filter``,
-            ``system_channel_flags``, or ``mfa_level`` parameter was of the incorrect type.
+            The type passed to the ``default_notifications``, ``verification_level``,
+            ``explicit_content_filter``, ``system_channel_flags``, or ``mfa_level`` parameter was
+            of the incorrect type.
 
         Returns
         --------
@@ -2046,24 +2049,33 @@ class Guild(Hashable):
                 fields['system_channel_id'] = system_channel.id
 
         if rules_channel is not MISSING:
-            if not isinstance(rules_channel, TextChannel):
-                raise TypeError(f'rules_channel must be of type TextChannel not {rules_channel.__class__.__name__}')
+            if rules_channel is None:
+                fields['rules_channel_id'] = rules_channel
+            else:
+                if not isinstance(rules_channel, TextChannel):
+                    raise TypeError(f'rules_channel must be of type TextChannel not {rules_channel.__class__.__name__}')
 
-            fields['rules_channel_id'] = rules_channel.id
+                fields['rules_channel_id'] = rules_channel.id
 
         if public_updates_channel is not MISSING:
-            if not isinstance(public_updates_channel, TextChannel):
-                raise TypeError(
-                    f'public_updates_channel must be of type TextChannel not {public_updates_channel.__class__.__name__}'
-                )
+            if public_updates_channel is None:
+                fields['public_updates_channel_id'] = public_updates_channel
+            else:
+                if not isinstance(public_updates_channel, TextChannel):
+                    raise TypeError(
+                        f'public_updates_channel must be of type TextChannel not {public_updates_channel.__class__.__name__}'
+                    )
 
-            fields['public_updates_channel_id'] = public_updates_channel.id
+                fields['public_updates_channel_id'] = public_updates_channel.id
 
         if safety_alerts_channel is not MISSING:
-            if not isinstance(safety_alerts_channel, TextChannel):
-                raise TypeError(
-                    f'safety_alerts_channel must be of type TextChannel not {safety_alerts_channel.__class__.__name__}'
-                )
+            if safety_alerts_channel is None:
+                fields['safety_alerts_channel_id'] = safety_alerts_channel
+            else:
+                if not isinstance(safety_alerts_channel, TextChannel):
+                    raise TypeError(
+                        f'safety_alerts_channel must be of type TextChannel not {safety_alerts_channel.__class__.__name__}'
+                    )
 
             fields['safety_alerts_channel_id'] = safety_alerts_channel.id
 
