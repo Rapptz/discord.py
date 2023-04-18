@@ -1462,6 +1462,8 @@ of :class:`enum.Enum`.
 
 .. class:: ChannelType
 
+    .. attributetable:: ChannelType
+
     Specifies the type of channel.
 
     .. attribute:: text
@@ -1514,6 +1516,8 @@ of :class:`enum.Enum`.
         .. versionadded:: 2.0
 
 .. class:: MessageType
+
+    .. attributetable:: MessageType
 
     Specifies the type of :class:`Message`. This is used to denote if a message
     is to be interpreted as a system message or a regular message.
@@ -1688,6 +1692,8 @@ of :class:`enum.Enum`.
 
 .. class:: UserFlags
 
+    .. attributetable:: UserFlags
+
     Represents Discord User flags.
 
     .. attribute:: staff
@@ -1760,6 +1766,8 @@ of :class:`enum.Enum`.
 
 .. class:: ActivityType
 
+    .. attributetable:: ActivityType
+
     Specifies the type of :class:`Activity`. This is used to check how to
     interpret the activity itself.
 
@@ -1788,6 +1796,8 @@ of :class:`enum.Enum`.
         .. versionadded:: 1.5
 
 .. class:: VerificationLevel
+
+    .. attributetable:: VerificationLevel
 
     Specifies a :class:`Guild`\'s verification level, which is the criteria in
     which a member must meet before being able to send messages to the guild.
@@ -1836,6 +1846,8 @@ of :class:`enum.Enum`.
 
 .. class:: NotificationLevel
 
+    .. attributetable:: NotificationLevel
+
     Specifies whether a :class:`Guild` has notifications on for all messages or mentions only by default.
 
     .. container:: operations
@@ -1869,6 +1881,8 @@ of :class:`enum.Enum`.
         Members receive notifications for messages they are mentioned in.
 
 .. class:: ContentFilter
+
+    .. attributetable:: ContentFilter
 
     Specifies a :class:`Guild`\'s explicit content filter, which is the machine
     learning algorithms that Discord uses to detect if an image contains
@@ -1909,6 +1923,8 @@ of :class:`enum.Enum`.
 
 .. class:: Status
 
+    .. attributetable:: Status
+
     Specifies a :class:`Member` 's status.
 
     .. attribute:: online
@@ -1934,6 +1950,8 @@ of :class:`enum.Enum`.
 
 
 .. class:: AuditLogAction
+
+    .. attributetable:: AuditLogAction
 
     Represents the type of action being done for a :class:`AuditLogEntry`\,
     which is retrievable via :meth:`Guild.audit_logs`.
@@ -2801,6 +2819,8 @@ of :class:`enum.Enum`.
 
 .. class:: AuditLogActionCategory
 
+    .. attributetable:: AuditLogActionCategory
+
     Represents the category that the :class:`AuditLogAction` belongs to.
 
     This can be retrieved via :attr:`AuditLogEntry.category`.
@@ -2819,6 +2839,8 @@ of :class:`enum.Enum`.
 
 .. class:: TeamMembershipState
 
+    .. attributetable:: TeamMembershipState
+
     Represents the membership state of a team member retrieved through :func:`Client.application_info`.
 
     .. versionadded:: 1.3
@@ -2832,6 +2854,8 @@ of :class:`enum.Enum`.
         Represents a member currently in the team.
 
 .. class:: WebhookType
+
+    .. attributetable:: WebhookType
 
     Represents the type of webhook that can be received.
 
@@ -2853,6 +2877,8 @@ of :class:`enum.Enum`.
 
 .. class:: ExpireBehaviour
 
+    .. attributetable:: ExpireBehaviour
+
     Represents the behaviour the :class:`Integration` should perform
     when a user's subscription has finished.
 
@@ -2870,6 +2896,8 @@ of :class:`enum.Enum`.
         This will kick the user when their subscription is finished.
 
 .. class:: DefaultAvatar
+
+    .. attributetable:: DefaultAvatar
 
     Represents the default avatar of a Discord :class:`User`
 
@@ -2899,6 +2927,8 @@ of :class:`enum.Enum`.
 
 .. class:: StickerType
 
+    .. attributetable:: StickerType
+
     Represents the type of sticker.
 
     .. versionadded:: 2.0
@@ -2912,6 +2942,8 @@ of :class:`enum.Enum`.
         Represents a custom sticker created in a guild.
 
 .. class:: StickerFormatType
+
+    .. attributetable:: StickerFormatType
 
     Represents the type of sticker images.
 
@@ -2937,6 +2969,8 @@ of :class:`enum.Enum`.
 
 .. class:: InviteTarget
 
+    .. attributetable:: InviteTarget
+
     Represents the invite type for voice channel invites.
 
     .. versionadded:: 2.0
@@ -2955,6 +2989,8 @@ of :class:`enum.Enum`.
 
 .. class:: VideoQualityMode
 
+    .. attributetable:: VideoQualityMode
+
     Represents the camera video quality mode for voice channel participants.
 
     .. versionadded:: 2.0
@@ -2969,6 +3005,8 @@ of :class:`enum.Enum`.
 
 .. class:: PrivacyLevel
 
+    .. attributetable:: PrivacyLevel
+
     Represents the privacy level of a stage instance or scheduled event.
 
     .. versionadded:: 2.0
@@ -2978,6 +3016,8 @@ of :class:`enum.Enum`.
        The stage instance or scheduled event is only accessible within the guild.
 
 .. class:: NSFWLevel
+
+    .. attributetable:: NSFWLevel
 
     Represents the NSFW level of a guild.
 
@@ -3021,6 +3061,8 @@ of :class:`enum.Enum`.
         The guild may contain NSFW content.
 
 .. class:: Locale
+
+    .. attributetable:: Locale
 
     Supported locales by Discord. Mainly used for application command localisation.
 
@@ -3155,6 +3197,8 @@ of :class:`enum.Enum`.
 
 .. class:: MFALevel
 
+    .. attributetable:: MFALevel
+
     Represents the Multi-Factor Authentication requirement level of a guild.
 
     .. versionadded:: 2.0
@@ -3190,6 +3234,8 @@ of :class:`enum.Enum`.
 
 .. class:: EntityType
 
+    .. attributetable:: EntityType
+
     Represents the type of entity that a scheduled event is for.
 
     .. versionadded:: 2.0
@@ -3207,6 +3253,8 @@ of :class:`enum.Enum`.
         The scheduled event will occur externally.
 
 .. class:: EventStatus
+
+    .. attributetable:: EventStatus
 
     Represents the status of an event.
 
@@ -3238,6 +3286,8 @@ of :class:`enum.Enum`.
 
 .. class:: AutoModRuleTriggerType
 
+    .. attributetable:: AutoModRuleTriggerType
+
     Represents the trigger type of an automod rule.
 
     .. versionadded:: 2.0
@@ -3265,6 +3315,8 @@ of :class:`enum.Enum`.
 
 .. class:: AutoModRuleEventType
 
+    .. attributetable:: AutoModRuleEventType
+
     Represents the event type of an automod rule.
 
     .. versionadded:: 2.0
@@ -3274,6 +3326,8 @@ of :class:`enum.Enum`.
         The rule will trigger when a message is sent.
 
 .. class:: AutoModRuleActionType
+
+    .. attributetable:: AutoModRuleActionType
 
     Represents the action type of an automod rule.
 
@@ -3294,6 +3348,8 @@ of :class:`enum.Enum`.
 
 .. class:: ForumLayoutType
 
+    .. attributetable:: ForumLayoutType
+
     Represents how a forum's posts are layed out in the client.
 
     .. versionadded:: 2.2
@@ -3312,6 +3368,8 @@ of :class:`enum.Enum`.
 
 
 .. class:: ForumOrderType
+
+    .. attributetable:: ForumOrderType
 
     Represents how a forum's posts are sorted in the client.
 
