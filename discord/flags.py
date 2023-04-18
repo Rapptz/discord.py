@@ -1423,6 +1423,15 @@ class ApplicationFlags(BaseFlags):
     """
 
     @flag_value
+    def auto_mod_badge(self):
+        """:class:`bool`: Returns ``True`` if the application uses auto moderation.
+        This shows up as a badge in the official client.
+
+        .. versionadded:: 2.3
+        """
+        return 1 << 6
+
+    @flag_value
     def gateway_presence(self):
         """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
         receive presence information over the gateway.
