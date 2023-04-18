@@ -119,7 +119,7 @@ class Thread(Messageable, Hashable):
         Whether non-moderators can add other non-moderators to this thread.
         This is always ``True`` for public threads.
     auto_archive_duration: :class:`int`
-        The duration in minutes until the thread is automatically archived due to inactivity.
+        The duration in minutes until the thread is automatically hidden from the channel list.
         Usually a value of 60, 1440, 4320 and 10080.
     archive_timestamp: :class:`datetime.datetime`
         An aware timestamp of when the thread's archived status was last updated in UTC.
@@ -669,7 +669,7 @@ class Thread(Messageable, Hashable):
             Whether non-moderators can add other non-moderators to this thread.
             Only available for private threads.
         auto_archive_duration: :class:`int`
-            The new duration in minutes before a thread is automatically archived for inactivity.
+            The new duration in minutes before a thread is automatically hidden from the channel list.
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``.
         slowmode_delay: :class:`int`
             Specifies the slowmode rate limit for user in this thread, in seconds.

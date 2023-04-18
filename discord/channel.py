@@ -794,7 +794,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             If ``None`` is passed then a private thread is created.
             Defaults to ``None``.
         auto_archive_duration: :class:`int`
-            The duration in minutes before a thread is automatically archived for inactivity.
+            The duration in minutes before a thread is automatically hidden from the channel list.
             If not provided, the channel's default auto archive duration is used.
 
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided.
@@ -2759,7 +2759,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         name: :class:`str`
             The name of the thread.
         auto_archive_duration: :class:`int`
-            The duration in minutes before a thread is automatically archived for inactivity.
+            The duration in minutes before a thread is automatically hidden from the channel list.
             If not provided, the channel's default auto archive duration is used.
 
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided.
