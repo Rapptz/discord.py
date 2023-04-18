@@ -250,7 +250,7 @@ class Asset(AssetMixin):
     def _from_avatar_decoration(cls, state: _State, avatar_decoration: str) -> Self:
         return cls(
             state,
-            url=f'{cls.BASE}/avatar-decoration-presets/{avatar_decoration}.png?size=96',
+            url=f'{cls.BASE}/avatar-decoration-presets/{avatar_decoration}.png',
             key=avatar_decoration,
             animated=True,
         )
