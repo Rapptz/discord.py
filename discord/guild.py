@@ -811,10 +811,9 @@ class Guild(Hashable):
 
     @property
     def safety_alerts_channel(self) -> Optional[TextChannel]:
-        """Optional[:class:`TextChannel`]: Return's the guild's channel used for safety alerts. E.g. this is used in raid protection.
-        The guild must be a Community guild.
+        """Optional[:class:`TextChannel`]: Return's the guild's channel used for safety alerts, if set. 
 
-        If no channel is set, then this returns ``None``.
+        For example, this is used for the raid protection setting. The guild must have the ``COMMUNITY`` feature.
 
         .. versionadded:: 2.3
         """
