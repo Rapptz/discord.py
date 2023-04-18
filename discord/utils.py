@@ -629,9 +629,7 @@ def _bytes_to_base64_data(data: bytes) -> str:
 
 
 def _base64_to_bytes(data: str) -> bytes:
-    encoded = data.encode('ascii')
-    bytes_ = b64decode(encoded)
-    return bytes_
+    return b64decode(data.encode('ascii'))
 
 
 def _is_submodule(parent: str, child: str) -> bool:
