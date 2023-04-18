@@ -184,7 +184,7 @@ class Attachment(Hashable):
 
         .. versionadded:: 2.0
     duration: Optional[:class:`float`]
-        The duration of the audio file. Returns ``None`` if it's not a voice message.
+        The duration of the audio file in seconds. Returns ``None`` if it's not a voice message.
 
         .. versionadded:: 2.3
     waveform: Optional[:class:`bytes`]
