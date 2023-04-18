@@ -74,6 +74,7 @@ if TYPE_CHECKING:
     from .types.automod import AutoModerationTriggerMetadata, AutoModerationAction
     from .user import User
     from .app_commands import AppCommand
+    from .webhook import Webhook
 
     TargetType = Union[
         Guild,
@@ -89,6 +90,9 @@ if TYPE_CHECKING:
         Object,
         PartialIntegration,
         AutoModRule,
+        ScheduledEvent,
+        Webhook,
+        AppCommand,
         None,
     ]
 
@@ -580,6 +584,7 @@ class AuditLogEntry(Hashable):
         integrations: Mapping[int, PartialIntegration],
         app_commands: Mapping[int, AppCommand],
         automod_rules: Mapping[int, AutoModRule],
+        webhooks: Mapping[int, Webhook],
         data: AuditLogEntryPayload,
         guild: Guild,
     ):
@@ -589,6 +594,7 @@ class AuditLogEntry(Hashable):
         self._integrations: Mapping[int, PartialIntegration] = integrations
         self._app_commands: Mapping[int, AppCommand] = app_commands
         self._automod_rules: Mapping[int, AutoModRule] = automod_rules
+        self._webhooks: Mapping[int, Webhook] = webhooks
         self._from_data(data)
 
     def _from_data(self, data: AuditLogEntryPayload) -> None:
@@ -845,3 +851,9 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_auto_moderation(self, target_id: int) -> Union[AutoModRule, Object]:
         return self._automod_rules.get(target_id) or Object(target_id, type=AutoModRule)
+
+    def _convert_target_webhook(self, target_id: int) -> Union[Webhook, Object]:
+        # circular import
+        from .webhook import Webhook
+
+        return self._webhooks.get(target_id) or Object(target_id, type=Webhook)
