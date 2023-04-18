@@ -1017,7 +1017,7 @@ _MARKDOWN_ESCAPE_REGEX = re.compile(fr'(?P<markdown>{_MARKDOWN_ESCAPE_SUBREGEX}|
 
 _URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
 
-_MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`]|{_MARKDOWN_ESCAPE_COMMON})'
+_MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`#-]|{_MARKDOWN_ESCAPE_COMMON})'
 
 
 def remove_markdown(text: str, *, ignore_links: bool = True) -> str:
