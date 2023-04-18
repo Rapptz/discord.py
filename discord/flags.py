@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from functools import reduce
+from operator import or_
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, overload
 
 from .enums import UserFlags
@@ -201,7 +202,15 @@ class ArrayFlags(BaseFlags):
     @classmethod
     def _from_value(cls: Type[Self], value: List[int]) -> Self:
         self = cls.__new__(cls)
-        self.value = reduce(lambda a, b: a | (1 << b - 1), value, 0)
+        # This is a micro-optimization given the frequency this object can be created.
+        # (1).__lshift__ is used in place of lambda x: 1 << x
+        # prebinding to a method of a constant rather than define a lambda.
+        # Pairing this with map, is essentially equivalent to (1 << x for x in value)
+        # reduction using operator.or_ instead of defining a lambda each call
+        # Discord sends these starting with a value of 1
+        # Rather than subtract 1 from each element prior to left shift,
+        # we shift right by 1 once at the end.
+        self.value = reduce(or_, map((1).__lshift__, value), 0) >> 1
         return self
 
     def to_array(self) -> List[int]:
