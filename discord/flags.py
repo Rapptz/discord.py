@@ -1561,6 +1561,14 @@ class ChannelFlags(BaseFlags):
         """
         return 1 << 4
 
+    @flag_value
+    def clyde_ai(self):
+        """:class:`bool`: Returns ``True`` if the thread is created by Clyde AI.
+
+        .. versionadded:: 2.3
+        """
+        return 1 << 8
+
 
 class ArrayFlags(BaseFlags):
     @classmethod
