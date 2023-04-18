@@ -156,7 +156,6 @@ class Interaction(Generic[ClientT]):
         '_cs_channel',
         '_cs_namespace',
         '_cs_command',
-        '_channel',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT]):
