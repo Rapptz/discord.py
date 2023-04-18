@@ -186,17 +186,19 @@ class Interaction(Generic[ClientT]):
         self.channel: Optional[InteractionChannel] = None
 
         raw_channel = data.get('channel', {})
-        factory, ch_type = _threaded_channel_factory(raw_channel.get('type'))  # type is never None
-        if factory is None:
-            logging.info('Unknown channel type {type} for channel ID {id}.'.format_map(raw_channel))
-        else:
-            if ch_type in (ChannelType.group, ChannelType.private):
-                channel = factory(me=self._client.user, data=raw_channel, state=self._state)  # type: ignore
+        raw_ch_type = raw_channel.get('type')
+        if raw_ch_type is not None:
+            factory, ch_type = _threaded_channel_factory(raw_ch_type)  # type is never None
+            if factory is None:
+                logging.info('Unknown channel type {type} for channel ID {id}.'.format_map(raw_channel))
             else:
-                guild = self._state._get_or_create_unavailable_guild(self.guild_id)  # type: ignore
-                channel = factory(guild=guild, state=self._state, data=raw_channel)  # type: ignore
+                if ch_type in (ChannelType.group, ChannelType.private):
+                    channel = factory(me=self._client.user, data=raw_channel, state=self._state)  # type: ignore
+                else:
+                    guild = self._state._get_or_create_unavailable_guild(self.guild_id)  # type: ignore
+                    channel = factory(guild=guild, state=self._state, data=raw_channel)  # type: ignore
 
-            self.channel = channel
+                self.channel = channel
 
         self.application_id: int = int(data['application_id'])
 
