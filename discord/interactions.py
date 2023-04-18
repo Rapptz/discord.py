@@ -177,23 +177,6 @@ class Interaction(Generic[ClientT]):
         self.data: Optional[InteractionData] = data.get('data')
         self.token: str = data['token']
         self.version: int = data['version']
-        self._channel: Optional[InteractionChannel] = None
-
-        _channel = data.get('channel', {})
-        _channel_type = _channel.get('type')
-        if _channel_type is not None:
-            factory, channel_type = _threaded_channel_factory(_channel_type)
-            if factory is None:
-                raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(_channel))
-
-            if channel_type in (ChannelType.group, ChannelType.private):
-                channel = factory(me=self._client.user, data=_channel, state=self._state)  # type: ignore
-            else:
-                guild = self._state._get_guild(self.guild_id)
-                channel = factory(guild=guild, state=self._state, data=_channel)  # type: ignore
-
-            self._channel = channel
-
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.application_id: int = int(data['application_id'])
 
