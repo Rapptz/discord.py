@@ -1978,9 +1978,9 @@ class Guild(Hashable):
             PNG or JPG. This is also raised if you are not the owner of the
             guild and request an ownership transfer.
         TypeError
-            The type passed to the ``default_notifications``, ``verification_level``,
-            ``explicit_content_filter``, ``system_channel_flags``, or ``mfa_level`` parameter was
-            of the incorrect type.
+            The type passed to the ``default_notifications``, ``rules_channel``, ``public_updates_channel``,
+            ``safety_alerts_channel`` ``verification_level``, ``explicit_content_filter``,
+            ``system_channel_flags``, or ``mfa_level`` parameter was of the incorrect type.
 
         Returns
         --------
