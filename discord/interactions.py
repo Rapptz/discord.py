@@ -186,7 +186,7 @@ class Interaction(Generic[ClientT]):
         self.channel: Optional[InteractionChannel] = None
 
         raw_channel = data.get('channel', {})
-        factory, ch_type = _threaded_channel_factory(raw_channel['type'])
+        factory, ch_type = _threaded_channel_factory(raw_channel.get('type'))  # type is never None
         if factory is None:
             logging.info('Unknown channel type {type} for channel ID {id}.'.format_map(raw_channel))
         else:
