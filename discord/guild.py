@@ -4283,6 +4283,9 @@ class Guild(Hashable):
             if after:
                 predicate = lambda m: int(m['id']) > after.id
 
+        # Circular import
+        from .webhook import Webhook
+
         while True:
             retrieve = 100 if limit is None else min(limit, 100)
             if retrieve < 1:
@@ -4302,6 +4305,9 @@ class Guild(Hashable):
             )
             automod_rule_map = {rule.id: rule for rule in automod_rules}
 
+            webhooks = (Webhook.from_state(data=raw_webhook, state=self._state) for raw_webhook in data.get('webhooks', []))
+            webhook_map = {webhook.id: webhook for webhook in webhooks}
+
             count = 0
 
             for count, raw_entry in enumerate(raw_entries, 1):
@@ -4313,6 +4319,7 @@ class Guild(Hashable):
                     data=raw_entry,
                     users=user_map,
                     automod_rules=automod_rule_map,
+                    webhooks=webhook_map,
                     guild=self,
                 )
 

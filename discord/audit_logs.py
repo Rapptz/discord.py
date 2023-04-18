@@ -71,10 +71,7 @@ if TYPE_CHECKING:
     from .types.snowflake import Snowflake
     from .types.automod import AutoModerationTriggerMetadata, AutoModerationAction
     from .user import User
-    from .stage_instance import StageInstance
-    from .sticker import GuildSticker
-    from .threads import Thread
-    from .automod import AutoModRule, AutoModTrigger
+    from .webhook import Webhook
 
     TargetType = Union[
         Guild,
@@ -89,6 +86,8 @@ if TYPE_CHECKING:
         Thread,
         Object,
         AutoModRule,
+        ScheduledEvent,
+        Webhook,
         None,
     ]
 
@@ -542,6 +541,7 @@ class AuditLogEntry(Hashable):
         *,
         users: Mapping[int, User],
         automod_rules: Mapping[int, AutoModRule],
+        webhooks: Mapping[int, Webhook],
         data: AuditLogEntryPayload,
         guild: Guild,
     ):
@@ -549,6 +549,7 @@ class AuditLogEntry(Hashable):
         self.guild: Guild = guild
         self._users: Mapping[int, User] = users
         self._automod_rules: Mapping[int, AutoModRule] = automod_rules
+        self._webhooks: Mapping[int, Webhook] = webhooks
         self._from_data(data)
 
     def _from_data(self, data: AuditLogEntryPayload) -> None:
@@ -750,3 +751,9 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_auto_moderation(self, target_id: int) -> Union[AutoModRule, Object]:
         return self._automod_rules.get(target_id) or Object(target_id, type=AutoModRule)
+
+    def _convert_target_webhook(self, target_id: int) -> Union[Webhook, Object]:
+        # circular import
+        from .webhook import Webhook
+
+        return self._webhooks.get(target_id) or Object(target_id, type=Webhook)

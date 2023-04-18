@@ -2134,6 +2134,7 @@ class ConnectionState:
         entry = AuditLogEntry(
             users=self._users,
             automod_rules={},
+            webhooks={},
             data=data,
             guild=guild,
         )
