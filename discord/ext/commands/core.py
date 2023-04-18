@@ -2033,7 +2033,7 @@ def has_role(item: Union[int, str], /) -> Check[Any]:
 
         # ctx.guild is None doesn't narrow ctx.author to Member
         if isinstance(item, int):
-            role = discord.utils.get(ctx.author.roles, id=item)  # type: ignore
+            role = ctx.author.get_role(item)  # type: ignore
         else:
             role = discord.utils.get(ctx.author.roles, name=item)  # type: ignore
         if role is None:
@@ -2080,8 +2080,12 @@ def has_any_role(*items: Union[int, str]) -> Callable[[T], T]:
             raise NoPrivateMessage()
 
         # ctx.guild is None doesn't narrow ctx.author to Member
-        getter = functools.partial(discord.utils.get, ctx.author.roles)
-        if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
+        if any(
+            ctx.author.get_role(item) is not None
+            if isinstance(item, int)
+            else discord.utils.get(ctx.author.roles, name=item) is not None
+            for item in items
+        ):
             return True
         raise MissingAnyRole(list(items))
 
@@ -2110,11 +2114,10 @@ def bot_has_role(item: int, /) -> Callable[[T], T]:
         if ctx.guild is None:
             raise NoPrivateMessage()
 
-        me = ctx.me
         if isinstance(item, int):
-            role = discord.utils.get(me.roles, id=item)
+            role = ctx.me.get_role(item)
         else:
-            role = discord.utils.get(me.roles, name=item)
+            role = discord.utils.get(ctx.me.roles, name=item)
         if role is None:
             raise BotMissingRole(item)
         return True
@@ -2141,8 +2144,10 @@ def bot_has_any_role(*items: int) -> Callable[[T], T]:
             raise NoPrivateMessage()
 
         me = ctx.me
-        getter = functools.partial(discord.utils.get, me.roles)
-        if any(getter(id=item) is not None if isinstance(item, int) else getter(name=item) is not None for item in items):
+        if any(
+            me.get_role(item) is not None if isinstance(item, int) else discord.utils.get(me.roles, name=item) is not None
+            for item in items
+        ):
             return True
         raise BotMissingAnyRole(list(items))
 
