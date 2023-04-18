@@ -1423,8 +1423,8 @@ class ApplicationFlags(BaseFlags):
 
     @flag_value
     def auto_mod_badge(self):
-        """:class:`bool`: Returns ``True`` if the application has registered 2 global application
-        commands using auto moderation. This shows up as a badge in the official client.
+        """:class:`bool`: Returns ``True`` if the application uses auto moderation.
+        This shows up as a badge in the official client.
 
         .. versionadded:: 2.3
         """
