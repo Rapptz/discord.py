@@ -112,9 +112,7 @@ class AutoModRuleAction:
         ...
 
     @overload
-    def __init__(
-        self, *, type: Literal[AutoModRuleActionType.block_message], custom_message: Optional[str] = ...
-    ) -> None:
+    def __init__(self, *, type: Literal[AutoModRuleActionType.block_message], custom_message: Optional[str] = ...) -> None:
         ...
 
     @overload
@@ -154,7 +152,7 @@ class AutoModRuleAction:
             self.type = AutoModRuleActionType.block_message
 
     def __repr__(self) -> str:
-        return f'<AutoModRuleAction type={self.type} channel={self.channel_id} duration={self.duration}>'
+        return f'<AutoModRuleAction type={self.type.value} channel={self.channel_id} duration={self.duration}>'
 
     @classmethod
     def from_data(cls, data: AutoModerationActionPayload) -> Self:
