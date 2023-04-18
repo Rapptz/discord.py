@@ -150,9 +150,16 @@ class ForumChannel(_BaseTextChannel):
 GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel, ForumChannel]
 
 
-class DMChannel(_BaseChannel):
+class _BaseDMChannel(_BaseChannel):
     type: Literal[1]
     last_message_id: Optional[Snowflake]
+
+
+class DMChannel(_BaseDMChannel):
+    recipients: List[PartialUser]
+
+
+class InteractionDMChannel(_BaseDMChannel):
     recipients: NotRequired[List[PartialUser]]
 
 
@@ -160,7 +167,7 @@ class GroupDMChannel(_BaseChannel):
     type: Literal[3]
     icon: Optional[str]
     owner_id: Snowflake
-    recipients: NotRequired[List[PartialUser]]
+    recipients: List[PartialUser]
 
 
 Channel = Union[GuildChannel, DMChannel, GroupDMChannel]

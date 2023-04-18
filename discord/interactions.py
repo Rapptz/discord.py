@@ -104,11 +104,6 @@ class Interaction(Generic[ClientT]):
         The interaction type.
     guild_id: Optional[:class:`int`]
         The guild ID the interaction was sent from.
-    channel_id: Optional[:class:`int`]
-        The channel ID the interaction was sent from.
-
-        .. deprecated:: 2.3
-            Use :attr:`channel` instead.
     application_id: :class:`int`
         The application ID that the interaction was for.
     user: Union[:class:`User`, :class:`Member`]
@@ -139,7 +134,6 @@ class Interaction(Generic[ClientT]):
         'id',
         'type',
         'guild_id',
-        'channel_id',
         'data',
         'application_id',
         'message',
@@ -159,6 +153,7 @@ class Interaction(Generic[ClientT]):
         '_original_response',
         '_cs_response',
         '_cs_followup',
+        '_cs_channel',
         '_cs_namespace',
         '_cs_command',
         '_channel',
@@ -182,8 +177,23 @@ class Interaction(Generic[ClientT]):
         self.data: Optional[InteractionData] = data.get('data')
         self.token: str = data['token']
         self.version: int = data['version']
-        self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
-        self._channel = data.get('channel', {})
+        self._channel: Optional[InteractionChannel] = None
+
+        _channel = data.get('channel', {})
+        _channel_type = _channel.get('type')
+        if _channel_type is not None:
+            factory, channel_type = _threaded_channel_factory(_channel_type)
+            if factory is None:
+                raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(_channel))
+
+            if channel_type in (ChannelType.group, ChannelType.private):
+                channel = factory(me=self._client.user, data=_channel, state=self._state)  # type: ignore
+            else:
+                guild = self._state._get_guild(self.guild_id)
+                channel = factory(guild=guild, state=self._state, data=_channel)  # type: ignore
+
+            self._channel = channel
+
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.application_id: int = int(data['application_id'])
 
@@ -226,30 +236,6 @@ class Interaction(Generic[ClientT]):
                 pass
 
     @property
-    def channel(self) -> Optional[InteractionChannel]:
-        """Optional[Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]]: The channel
-        the interaction was sent from.
-
-        .. versionadded:: 2.3
-        """
-        _ch_type = self._channel.get('type')
-        if _ch_type is not None:
-            factory, ch_type = _threaded_channel_factory(_ch_type)
-            _channel_id = self._channel['id']
-            if factory is None:
-                raise InvalidData(f'Unknown channel type {_ch_type} for channel ID {_channel_id}.')
-
-            if ch_type in (ChannelType.group, ChannelType.private):
-                channel = factory(me=self._client.user, data=self._channel, state=self._state)  # type: ignore
-            else:
-                guild = self._state._get_guild(self.guild_id)
-                channel = factory(guild=guild, state=self._state, data=self._channel)  # type: ignore
-
-            return channel
-
-        return None
-
-    @property
     def client(self) -> ClientT:
         """:class:`Client`: The client that is handling this interaction.
 
@@ -262,6 +248,20 @@ class Interaction(Generic[ClientT]):
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: The guild the interaction was sent from."""
         return self._state and self._state._get_guild(self.guild_id)
+
+    @utils.cached_slot_property('_cs_channel')
+    def channel(self) -> Optional[InteractionChannel]:
+        """Optional[Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]]: The channel
+        the interaction was sent from.
+
+        Note that due to a Discord limitation, if sent from a DM channel :attr:`~DMChannel.recipient` is ``None``.
+        """
+        return self._channel
+
+    @property
+    def channel_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of the channel the interaction was sent from."""
+        return self.channel.id if self.channel is not None else None
 
     @property
     def permissions(self) -> Permissions:
