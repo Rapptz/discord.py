@@ -368,6 +368,11 @@ class AuditLogAction(Enum):
     automod_block_message         = 143
     automod_flag_message          = 144
     automod_timeout_member        = 145
+    onboarding_question_create    = 163
+    onboarding_question_update    = 164
+    onboarding_update             = 167
+    server_guide_create           = 190
+    server_guide_update           = 191
     # fmt: on
 
     @property
@@ -428,6 +433,9 @@ class AuditLogAction(Enum):
             AuditLogAction.automod_block_message:         None,
             AuditLogAction.automod_flag_message:          None,
             AuditLogAction.automod_timeout_member:        None,
+            AuditLogAction.onboarding_question_create:    AuditLogActionCategory.create,
+            AuditLogAction.onboarding_question_update:    AuditLogActionCategory.update,
+            AuditLogAction.onboarding_update:             AuditLogActionCategory.update,
         }
         # fmt: on
         return lookup[self]
@@ -471,6 +479,10 @@ class AuditLogAction(Enum):
             return 'auto_moderation'
         elif v < 146:
             return 'user'
+        elif v < 165:
+            return 'onboarding_question'
+        elif v < 168:
+            return 'onboarding'
 
 
 class UserFlags(Enum):
