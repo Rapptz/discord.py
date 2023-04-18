@@ -92,7 +92,7 @@ class AutoModRuleAction:
         ...
 
     @overload
-    def __init__(self, *, type: Literal[AutoModRuleActionType.send_alert_message] = ..., channel_id: int = ...) -> None:
+    def __init__(self, *, type: Literal[AutoModRuleActionType.send_alert_message], channel_id: int = ...) -> None:
         ...
 
     @overload
@@ -100,7 +100,7 @@ class AutoModRuleAction:
         ...
 
     @overload
-    def __init__(self, *, type: Literal[AutoModRuleActionType.timeout] = ..., duration: datetime.timedelta = ...) -> None:
+    def __init__(self, *, type: Literal[AutoModRuleActionType.timeout], duration: datetime.timedelta = ...) -> None:
         ...
 
     @overload
@@ -108,17 +108,24 @@ class AutoModRuleAction:
         ...
 
     @overload
-    def __init__(self, *, type: Literal[AutoModRuleActionType.block_message] = ...) -> None:
+    def __init__(self, *, type: Literal[AutoModRuleActionType.block_message]) -> None:
         ...
 
     @overload
     def __init__(
-        self, *, type: Literal[AutoModRuleActionType.block_message] = ..., custom_message: Optional[str] = ...
+        self, *, type: Literal[AutoModRuleActionType.block_message], custom_message: Optional[str] = ...
     ) -> None:
         ...
 
     @overload
-    def __init__(self, *, type: Literal[AutoModRuleActionType.block_member_interactions] = ...) -> None:
+    def __init__(
+        self,
+        *,
+        type: Optional[AutoModRuleActionType] = ...,
+        channel_id: Optional[int] = ...,
+        duration: Optional[datetime.timedelta] = ...,
+        custom_message: Optional[str] = ...,
+    ) -> None:
         ...
 
     def __init__(
