@@ -5772,6 +5772,12 @@ AuditLogDiff
 
         :type: :class:`str`
 
+    .. attribute:: guild
+
+        The guild of something.
+
+        :type: :class:`Guild`
+
     .. attribute:: icon
 
         A guild's or role's icon. See also :attr:`Guild.icon` or :attr:`Role.icon`.
@@ -6339,6 +6345,38 @@ AuditLogDiff
         See also :attr:`ForumChannel.flags` and :attr:`Thread.flags`
 
         :type: :class:`ChannelFlags`
+
+    .. attribute:: default_thread_slowmode_delay
+
+        The default slowmode delay for threads created in this text channel or forum.
+
+        See also :attr:`TextChannel.default_thread_slowmode_delay` and :attr:`ForumChannel.default_thread_slowmode_delay`
+
+        :type: :class:`int`
+
+    .. attribute:: applied_tags
+
+        The applied tags of a forum post.
+
+        See also :attr:`Thread.applied_tags`
+
+        :type: List[Union[:class:`ForumTag`, :class:`Object`]]
+
+    .. attribute:: available_tags
+
+        The available tags of a forum.
+
+        See also :attr:`ForumChannel.available_tags`
+
+        :type: Sequence[:class:`ForumTag`]
+
+    .. attribute:: default_reaction_emoji
+
+        The default_reaction_emoji for forum posts.
+
+        See also :attr:`ForumChannel.default_reaction_emoji`
+
+        :type: :class:`default_reaction_emoji`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
