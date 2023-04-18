@@ -136,20 +136,15 @@ class AutoModRuleAction:
         if sum(v is None for v in (channel_id, duration, custom_message)) < 2:
             raise ValueError('Only one of channel_id, duration, or custom_message can be passed.')
 
-        for action_type, attribute, required in (
-            (AutoModRuleActionType.send_alert_message, 'channel_id', True),
-            (AutoModRuleActionType.timeout, 'duration', True),
-            (AutoModRuleActionType.block_message, 'custom_message', False),
-        ):
-            if getattr(self, attribute) is not None:
-                if type is None:
-                    type = action_type
-                elif type != action_type:
-                    raise ValueError(f'{attribute} can only be passed if type is {action_type.name} or None.')
-            elif required and type == action_type:
-                raise ValueError(f'{attribute} is required if type is {action_type.name}.')
-
-        self.type: AutoModRuleActionType = type or AutoModRuleActionType.block_message
+        self.type: AutoModRuleActionType
+        if type is not None:
+            self.type = type
+        elif channel_id is not None:
+            self.type = AutoModRuleActionType.send_alert_message
+        elif duration is not None:
+            self.type = AutoModRuleActionType.timeout
+        else:
+            self.type = AutoModRuleActionType.block_message
 
     def __repr__(self) -> str:
         return f'<AutoModRuleAction type={self.type} channel={self.channel_id} duration={self.duration}>'
