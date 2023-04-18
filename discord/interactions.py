@@ -256,7 +256,24 @@ class Interaction(Generic[ClientT]):
 
         Note that due to a Discord limitation, if sent from a DM channel :attr:`~DMChannel.recipient` is ``None``.
         """
-        return self._channel
+        data = self.data.get('channel', {})
+        raw_type = data.get('type')
+
+        # Shouldn't be possible
+        if raw_type is None:
+            return None
+    
+        factory, channel_type = _threaded_channel_factory(raw_type)
+        if factory is None:
+            raise InvalidData('Unknown channel type {type} for channel ID {id}.'.format_map(data))
+
+        if channel_type in (ChannelType.group, ChannelType.private):
+            return factory(me=self._client.user, data=data, state=self._state)  # type: ignore
+        else:
+            guild = self._state._get_or_create_unavailable_guild(self.guild_id)
+            return factory(guild=guild, state=self._state, data=data)  # type: ignore
+
+        return None
 
     @property
     def channel_id(self) -> Optional[int]:
