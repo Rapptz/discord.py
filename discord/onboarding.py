@@ -30,7 +30,11 @@ from . import utils
 from .enums import OnboardingPromptType, try_enum
 from .utils import cached_slot_property
 
-__all__ = ('Onboarding', 'OnboardingPrompt', 'OnboardingPromptOption')
+__all__ = (
+    'Onboarding',
+    'OnboardingPrompt',
+    'OnboardingPromptOption',
+)
 
 
 if TYPE_CHECKING:

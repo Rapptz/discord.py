@@ -4222,7 +4222,7 @@ class Guild(Hashable):
 
         return AutoModRule(data=data, guild=self, state=self._state)
 
-    async def fetch_onboarding(self) -> Onboarding:
+    async def onboarding(self) -> Onboarding:
         """|coro|
 
         Fetches the onboarding configuration for this guild.
@@ -4235,5 +4235,4 @@ class Guild(Hashable):
             The onboarding configuration that was fetched.
         """
         data = await self._state.http.get_guild_onboarding(self.id)
-
         return Onboarding(data=data, guild=self, state=self._state)
