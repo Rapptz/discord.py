@@ -3304,7 +3304,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: block_member_interactions
 
-        Similar to :attr:`timeout` the rule will timeout a user except of having a duration.
+        Similar to :attr:`timeout`, except the user will be timed out indefinitely.
         This will request the user to edit it's profile.
 
         .. versionadded:: 2.3
