@@ -2099,6 +2099,7 @@ class Client:
             .. versionchanged:: 2.0
 
                 The default has been changed to 200.
+
         before: Union[:class:`.abc.Snowflake`, :class:`datetime.datetime`]
             Retrieves guilds before this date or object.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
