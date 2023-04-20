@@ -619,10 +619,10 @@ class MessageFlags(BaseFlags):
         return 4096
 
     @flag_value
-    def is_voice_message(self):
-        """:class:`bool`: Returns ``True`` if the message's audio attachments are rendered as voice messages.
+    def voice(self):
+        """:class:`bool`: Returns ``True`` if the message is a voice message.
 
-        .. versionadded:: 2.0
+        .. versionadded:: 2.1
         """
         return 8192
 
