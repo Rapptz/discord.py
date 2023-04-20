@@ -267,6 +267,10 @@ class Guild(Hashable):
         Indicates if the guild has widget enabled.
 
         .. versionadded:: 2.0
+    max_stage_video_users: Optional[:class:`int`]
+        The maximum amount of users in a stage video channel.
+
+        .. versionadded:: 2.3
     """
 
     __slots__ = (
@@ -315,12 +319,14 @@ class Guild(Hashable):
         'approximate_member_count',
         'approximate_presence_count',
         'premium_progress_bar_enabled',
+        '_safety_alerts_channel_id',
+        'max_stage_video_users',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
-        None: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=8388608),
-        0: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=8388608),
-        1: _GuildLimit(emoji=100, stickers=15, bitrate=128e3, filesize=8388608),
+        None: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=26214400),
+        0: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=26214400),
+        1: _GuildLimit(emoji=100, stickers=15, bitrate=128e3, filesize=26214400),
         2: _GuildLimit(emoji=150, stickers=30, bitrate=256e3, filesize=52428800),
         3: _GuildLimit(emoji=250, stickers=60, bitrate=384e3, filesize=104857600),
     }
@@ -478,6 +484,7 @@ class Guild(Hashable):
         self.max_presences: Optional[int] = guild.get('max_presences')
         self.max_members: Optional[int] = guild.get('max_members')
         self.max_video_channel_users: Optional[int] = guild.get('max_video_channel_users')
+        self.max_stage_video_users: Optional[int] = guild.get('max_stage_video_channel_users')
         self.premium_tier: int = guild.get('premium_tier', 0)
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
@@ -488,6 +495,7 @@ class Guild(Hashable):
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
         self._rules_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'public_updates_channel_id')
+        self._safety_alerts_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'safety_alerts_channel_id')
         self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, guild.get('nsfw_level', 0))
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
         self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
@@ -799,6 +807,17 @@ class Guild(Hashable):
         .. versionadded:: 1.4
         """
         channel_id = self._public_updates_channel_id
+        return channel_id and self._channels.get(channel_id)  # type: ignore
+
+    @property
+    def safety_alerts_channel(self) -> Optional[TextChannel]:
+        """Optional[:class:`TextChannel`]: Return's the guild's channel used for safety alerts, if set.
+
+        For example, this is used for the raid protection setting. The guild must have the ``COMMUNITY`` feature.
+
+        .. versionadded:: 2.3
+        """
+        channel_id = self._safety_alerts_channel_id
         return channel_id and self._channels.get(channel_id)  # type: ignore
 
     @property
@@ -1820,6 +1839,8 @@ class Guild(Hashable):
         widget_enabled: bool = MISSING,
         widget_channel: Optional[Snowflake] = MISSING,
         mfa_level: MFALevel = MISSING,
+        raid_alerts_disabled: bool = MISSING,
+        safety_alerts_channel: TextChannel = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1934,6 +1955,18 @@ class Guild(Hashable):
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 
+        raid_alerts_disabled: :class:`bool`
+            Whether the alerts for raid protection should be disabled for the guild.
+
+            .. versionadded:: 2.3
+
+        safety_alerts_channel: Optional[:class:`TextChannel`]
+            The new channel that is used for safety alerts. This is only available to
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no
+            safety alerts channel.
+
+            .. versionadded:: 2.3
+
         Raises
         -------
         Forbidden
@@ -1945,9 +1978,9 @@ class Guild(Hashable):
             PNG or JPG. This is also raised if you are not the owner of the
             guild and request an ownership transfer.
         TypeError
-            The type passed to the ``default_notifications``, ``verification_level``,
-            ``explicit_content_filter``, ``system_channel_flags``, or ``mfa_level`` parameter was
-            of the incorrect type.
+            The type passed to the ``default_notifications``, ``rules_channel``, ``public_updates_channel``,
+            ``safety_alerts_channel`` ``verification_level``, ``explicit_content_filter``,
+            ``system_channel_flags``, or ``mfa_level`` parameter was of the incorrect type.
 
         Returns
         --------
@@ -2019,13 +2052,32 @@ class Guild(Hashable):
             if rules_channel is None:
                 fields['rules_channel_id'] = rules_channel
             else:
+                if not isinstance(rules_channel, TextChannel):
+                    raise TypeError(f'rules_channel must be of type TextChannel not {rules_channel.__class__.__name__}')
+
                 fields['rules_channel_id'] = rules_channel.id
 
         if public_updates_channel is not MISSING:
             if public_updates_channel is None:
                 fields['public_updates_channel_id'] = public_updates_channel
             else:
+                if not isinstance(public_updates_channel, TextChannel):
+                    raise TypeError(
+                        f'public_updates_channel must be of type TextChannel not {public_updates_channel.__class__.__name__}'
+                    )
+
                 fields['public_updates_channel_id'] = public_updates_channel.id
+
+        if safety_alerts_channel is not MISSING:
+            if safety_alerts_channel is None:
+                fields['safety_alerts_channel_id'] = safety_alerts_channel
+            else:
+                if not isinstance(safety_alerts_channel, TextChannel):
+                    raise TypeError(
+                        f'safety_alerts_channel must be of type TextChannel not {safety_alerts_channel.__class__.__name__}'
+                    )
+
+            fields['safety_alerts_channel_id'] = safety_alerts_channel.id
 
         if owner is not MISSING:
             if self.owner_id != self._state.self_id:
@@ -2051,7 +2103,7 @@ class Guild(Hashable):
 
             fields['system_channel_flags'] = system_channel_flags.value
 
-        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled)):
+        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled, raid_alerts_disabled)):
             features = set(self.features)
 
             if community is not MISSING:
@@ -2076,6 +2128,12 @@ class Guild(Hashable):
                     features.add('INVITES_DISABLED')
                 else:
                     features.discard('INVITES_DISABLED')
+
+            if raid_alerts_disabled is not MISSING:
+                if raid_alerts_disabled:
+                    features.add('RAID_ALERTS_DISABLED')
+                else:
+                    features.discard('RAID_ALERTS_DISABLED')
 
             fields['features'] = list(features)
 
@@ -3860,6 +3918,7 @@ class Guild(Hashable):
 
         # avoid circular import
         from .app_commands import AppCommand
+        from .webhook import Webhook
 
         while True:
             retrieve = 100 if limit is None else min(limit, 100)
@@ -3886,6 +3945,9 @@ class Guild(Hashable):
             )
             automod_rule_map = {rule.id: rule for rule in automod_rules}
 
+            webhooks = (Webhook.from_state(data=raw_webhook, state=self._state) for raw_webhook in data.get('webhooks', []))
+            webhook_map = {webhook.id: webhook for webhook in webhooks}
+
             count = 0
 
             for count, raw_entry in enumerate(raw_entries, 1):
@@ -3899,6 +3961,7 @@ class Guild(Hashable):
                     integrations=integration_map,
                     app_commands=app_command_map,
                     automod_rules=automod_rule_map,
+                    webhooks=webhook_map,
                     guild=self,
                 )
 

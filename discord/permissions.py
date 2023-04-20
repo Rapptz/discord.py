@@ -177,7 +177,7 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
         """
-        return cls(0b1111111111111111111111111111111111111111111)
+        return cls(0b11111111111111111111111111111111111111111111111)
 
     @classmethod
     def _timeout_mask(cls) -> int:
@@ -261,14 +261,17 @@ class Permissions(BaseFlags):
         .. versionchanged:: 2.0
            Added :attr:`create_public_threads`, :attr:`create_private_threads`, :attr:`manage_threads`,
            :attr:`send_messages_in_threads` and :attr:`use_external_stickers` permissions.
+
+        .. versionchanged:: 2.3
+            Added :attr:`send_voice_messages` permission.
         """
-        return cls(0b111110010000000000001111111100001000000)
+        return cls(0b10000000111110010000000000001111111100001000000)
 
     @classmethod
     def voice(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to ``True``."""
-        return cls(0b1001000000000000011111100000000001100000000)
+        return cls(0b1001001000000000000011111100000000001100000000)
 
     @classmethod
     def stage(cls) -> Self:
@@ -663,6 +666,22 @@ class Permissions(BaseFlags):
         """
         return 1 << 42
 
+    @flag_value
+    def use_external_sounds(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can use sounds from other guilds.
+
+        .. versionadded:: 2.3
+        """
+        return 1 << 45
+
+    @flag_value
+    def send_voice_messages(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can send voice messages.
+
+        .. versionadded:: 2.3
+        """
+        return 1 << 46
+
 
 def _augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
@@ -779,6 +798,8 @@ class PermissionOverwrite:
         use_embedded_activities: Optional[bool]
         moderate_members: Optional[bool]
         use_soundboard: Optional[bool]
+        use_external_sounds: Optional[bool]
+        send_voice_messages: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}

@@ -56,7 +56,7 @@ from typing import (
     TYPE_CHECKING,
 )
 import unicodedata
-from base64 import b64encode
+from base64 import b64encode, b64decode
 from bisect import bisect_left
 import datetime
 import functools
@@ -628,6 +628,10 @@ def _bytes_to_base64_data(data: bytes) -> str:
     return fmt.format(mime=mime, data=b64)
 
 
+def _base64_to_bytes(data: str) -> bytes:
+    return b64decode(data.encode('ascii'))
+
+
 def _is_submodule(parent: str, child: str) -> bool:
     return parent == child or child.startswith(parent + '.')
 
@@ -900,7 +904,7 @@ _MARKDOWN_ESCAPE_REGEX = re.compile(fr'(?P<markdown>{_MARKDOWN_ESCAPE_SUBREGEX}|
 
 _URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
 
-_MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`]|{_MARKDOWN_ESCAPE_COMMON})'
+_MARKDOWN_STOCK_REGEX = fr'(?P<markdown>[_\\~|\*`#-]|{_MARKDOWN_ESCAPE_COMMON})'
 
 
 def remove_markdown(text: str, *, ignore_links: bool = True) -> str:
