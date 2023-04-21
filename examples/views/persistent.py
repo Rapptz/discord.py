@@ -1,5 +1,6 @@
 # This example requires the 'message_content' privileged intent to function.
 
+import logging
 from discord.ext import commands
 import discord
 
@@ -45,8 +46,8 @@ class PersistentViewBot(commands.Bot):
         self.add_view(PersistentView())
 
     async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
+        logging.info(f'Logged in as {self.user} (ID: {self.user.id})')
+        logging.info('------')
 
 
 bot = PersistentViewBot()
@@ -63,4 +64,4 @@ async def prepare(ctx: commands.Context):
     await ctx.send("What's your favourite colour?", view=PersistentView())
 
 
-bot.run('token')
+bot.run('token', root_logger=True)

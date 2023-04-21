@@ -1,5 +1,6 @@
 # This example requires the 'members' and 'message_content' privileged intents to function.
 
+import logging
 import discord
 from discord.ext import commands
 import random
@@ -18,8 +19,8 @@ bot = commands.Bot(command_prefix='?', description=description, intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f'Logged in as {bot.user} (ID: {bot.user.id})')
-    print('------')
+    logging.info(f'Logged in as {bot.user} (ID: {bot.user.id})')
+    logging.info('------')
 
 
 @bot.command()
@@ -76,4 +77,4 @@ async def _bot(ctx):
     await ctx.send('Yes, the bot is cool.')
 
 
-bot.run('token')
+bot.run('token', root_logger=True)

@@ -30,7 +30,6 @@ class CustomBot(commands.Bot):
         self.initial_extensions = initial_extensions
 
     async def setup_hook(self) -> None:
-
         # here, we are loading extensions prior to sync to ensure we are syncing interactions defined in those extensions.
 
         for extension in self.initial_extensions:
@@ -52,7 +51,6 @@ class CustomBot(commands.Bot):
 
 
 async def main():
-
     # When taking over how the bot process is run, you become responsible for a few additional things.
 
     # 1. logging
@@ -89,7 +87,6 @@ async def main():
 
         exts = ['general', 'mod', 'dice']
         async with CustomBot(commands.when_mentioned, db_pool=pool, web_client=our_client, initial_extensions=exts) as bot:
-
             await bot.start(os.getenv('TOKEN', ''))
 
 

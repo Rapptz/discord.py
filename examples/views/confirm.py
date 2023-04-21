@@ -1,5 +1,6 @@
 # This example requires the 'message_content' privileged intent to function.
 
+import logging
 from discord.ext import commands
 
 import discord
@@ -13,8 +14,8 @@ class Bot(commands.Bot):
         super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
 
     async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
+        logging.info(f'Logged in as {self.user} (ID: {self.user.id})')
+        logging.info('------')
 
 
 # Define a simple View that gives us a confirmation menu
@@ -52,11 +53,11 @@ async def ask(ctx: commands.Context):
     # Wait for the View to stop listening for input...
     await view.wait()
     if view.value is None:
-        print('Timed out...')
+        logging.info('Timed out...')
     elif view.value:
-        print('Confirmed...')
+        logging.info('Confirmed...')
     else:
-        print('Cancelled...')
+        logging.info('Cancelled...')
 
 
-bot.run('token')
+bot.run('token', root_logger=True)

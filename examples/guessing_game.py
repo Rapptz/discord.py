@@ -1,5 +1,6 @@
 # This example requires the 'message_content' privileged intent to function.
 
+import logging
 import discord
 import random
 import asyncio
@@ -7,8 +8,8 @@ import asyncio
 
 class MyClient(discord.Client):
     async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
+        logging.info(f'Logged in as {self.user} (ID: {self.user.id})')
+        logging.info('------')
 
     async def on_message(self, message):
         # we do not want the bot to reply to itself
@@ -38,4 +39,4 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 client = MyClient(intents=intents)
-client.run('token')
+client.run('token', root_logger=True)

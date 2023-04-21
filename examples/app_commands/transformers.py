@@ -1,6 +1,7 @@
 # This example builds on the concepts of the app_commands/basic.py example
 # It's suggested to look at that one to understand certain concepts first.
 
+import logging
 from typing import Literal, Union, NamedTuple
 from enum import Enum
 
@@ -26,8 +27,8 @@ client = MyClient()
 
 @client.event
 async def on_ready():
-    print(f'Logged in as {client.user} (ID: {client.user.id})')
-    print('------')
+    logging.info(f'Logged in as {client.user} (ID: {client.user.id})')
+    logging.infot('------')
 
 
 # A transformer is a class that specifies how a parameter in your code
@@ -57,6 +58,7 @@ async def add(
 # Examples of these include int, str, float, bool, User, Member, Role, and any channel type.
 # Since there are a lot of these, for brevity only a channel example will be included.
 
+
 # This command shows how to only show text and voice channels to a user using the Union type hint
 # combined with the VoiceChannel and TextChannel types.
 @client.tree.command(name='channel-info')
@@ -79,6 +81,7 @@ async def channel_info(interaction: discord.Interaction, channel: Union[discord.
 
 # In order to support choices, the library has a few ways of doing this.
 # The first one is using a typing.Literal for basic choices.
+
 
 # On Discord, this will show up as two choices, Buy and Sell.
 # In the code, you will receive either 'Buy' or 'Sell' as a string.
@@ -160,4 +163,4 @@ async def graph3d(interaction: discord.Interaction, point: Point3D):
     await interaction.response.send_message(str(point))
 
 
-client.run('token')
+client.run('token', root_logger=True)

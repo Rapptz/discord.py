@@ -1,3 +1,4 @@
+import logging
 from discord.ext import tasks
 
 import discord
@@ -15,8 +16,8 @@ class MyClient(discord.Client):
         self.my_background_task.start()
 
     async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
+        logging.info(f'Logged in as {self.user} (ID: {self.user.id})')
+        logging.info('------')
 
     @tasks.loop(seconds=60)  # task runs every 60 seconds
     async def my_background_task(self):
@@ -30,4 +31,4 @@ class MyClient(discord.Client):
 
 
 client = MyClient(intents=discord.Intents.default())
-client.run('token')
+client.run('token', root_logger=True)

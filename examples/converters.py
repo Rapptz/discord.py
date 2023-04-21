@@ -1,7 +1,7 @@
 # This example requires the 'members' privileged intent to use the Member converter.
 # This example also requires the 'message_content' privileged intent to function.
 
-import traceback
+import logging
 import typing
 
 import discord
@@ -45,7 +45,7 @@ async def userinfo_error(ctx: commands.Context, error: commands.CommandError):
     # because we made our own command-specific error handler,
     # so we need to log tracebacks ourselves.
     else:
-        traceback.print_exception(type(error), error, error.__traceback__)
+        logging.error('', exc_info=(type(error), error, error.__traceback__))
 
 
 # Custom Converter here
@@ -122,4 +122,4 @@ async def multiply(ctx: commands.Context, number: int, maybe: bool):
     await ctx.send(number * 5)
 
 
-bot.run('token')
+bot.run('token', root_logger=True)

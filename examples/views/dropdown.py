@@ -1,14 +1,15 @@
 # This example requires the 'message_content' privileged intent to function.
 
+import logging
 import discord
 from discord.ext import commands
+
 
 # Defines a custom Select containing colour options
 # that the user can choose. The callback function
 # of this class is called when the user changes their choice
 class Dropdown(discord.ui.Select):
     def __init__(self):
-
         # Set the options that will be presented inside the dropdown
         options = [
             discord.SelectOption(label='Red', description='Your favourite colour is red', emoji='🟥'),
@@ -45,8 +46,8 @@ class Bot(commands.Bot):
         super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
 
     async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
+        logging.info(f'Logged in as {self.user} (ID: {self.user.id})')
+        logging.info('------')
 
 
 bot = Bot()
@@ -63,4 +64,4 @@ async def colour(ctx):
     await ctx.send('Pick your favourite colour:', view=view)
 
 
-bot.run('token')
+bot.run('token', root_logger=True)

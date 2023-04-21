@@ -62,6 +62,7 @@ def core(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
 
 _bot_template = """#!/usr/bin/env python3
 
+import logging
 from discord.ext import commands
 import discord
 import config
@@ -75,7 +76,7 @@ class Bot(commands.{base}):
             try:
                 await self.load_extension(cog)
             except Exception as exc:
-                print(f'Could not load extension {{cog}} due to {{exc.__class__.__name__}}: {{exc}}')
+                logging.error(f'Could not load extension {{cog}} due to {{exc.__class__.__name__}}: {{exc}}')
 
     async def on_ready(self):
         print(f'Logged on as {{self.user}} (ID: {{self.user.id}})')
@@ -87,7 +88,7 @@ bot = Bot(intents=intents)
 
 # write general commands here
 
-bot.run(config.token)
+bot.run(config.token, root_logger=True)
 """
 
 _gitignore_template = """# Byte-compiled / optimized / DLL files
@@ -157,7 +158,7 @@ _cog_extras = '''
     async def cog_command_error(self, ctx, error):
         # error handling to every command in here
         pass
-        
+
     async def cog_app_command_error(self, interaction, error):
         # error handling to every application command in here
         pass

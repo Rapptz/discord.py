@@ -1,12 +1,13 @@
 # This example requires the 'members' privileged intent to function.
 
+import logging
 import discord
 
 
 class MyClient(discord.Client):
     async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
+        logging.info(f'Logged in as {self.user} (ID: {self.user.id})')
+        logging.info('------')
 
     async def on_member_join(self, member):
         guild = member.guild
@@ -19,4 +20,4 @@ intents = discord.Intents.default()
 intents.members = True
 
 client = MyClient(intents=intents)
-client.run('token')
+client.run('token', root_logger=True)

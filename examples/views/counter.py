@@ -1,5 +1,6 @@
 # This example requires the 'message_content' privileged intent to function.
 
+import logging
 from discord.ext import commands
 
 import discord
@@ -13,13 +14,12 @@ class CounterBot(commands.Bot):
         super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
 
     async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
+        logging.info(f'Logged in as {self.user} (ID: {self.user.id})')
+        logging.info('------')
 
 
 # Define a simple View that gives us a counter button
 class Counter(discord.ui.View):
-
     # Define the actual button
     # When pressed, this increments the number displayed until it hits 5.
     # When it hits 5, the counter button is disabled and it turns green.
@@ -45,4 +45,4 @@ async def counter(ctx: commands.Context):
     await ctx.send('Press!', view=Counter())
 
 
-bot.run('token')
+bot.run('token', root_logger=True)

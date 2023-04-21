@@ -1,7 +1,6 @@
+import logging
 import discord
 from discord import app_commands
-
-import traceback
 
 # The guild in which this slash command will be registered.
 # It is recommended to have a test guild to separate from your "production" bot
@@ -21,8 +20,8 @@ class MyClient(discord.Client):
         self.tree = app_commands.CommandTree(self)
 
     async def on_ready(self):
-        print(f'Logged in as {self.user} (ID: {self.user.id})')
-        print('------')
+        logging.info(f'Logged in as {self.user} (ID: {self.user.id})')
+        logging.info('------')
 
     async def setup_hook(self) -> None:
         # Sync the application command with Discord.
@@ -61,7 +60,7 @@ class Feedback(discord.ui.Modal, title='Feedback'):
         await interaction.response.send_message('Oops! Something went wrong.', ephemeral=True)
 
         # Make sure we know what the error actually is
-        traceback.print_exception(type(error), error, error.__traceback__)
+        logging.error('', exc_info=(type(error), error, error.__traceback__))
 
 
 client = MyClient()
@@ -75,4 +74,4 @@ async def feedback(interaction: discord.Interaction):
     await interaction.response.send_modal(Feedback())
 
 
-client.run('token')
+client.run('token', root_logger=True)
