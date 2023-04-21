@@ -1446,7 +1446,7 @@ class GuildChannel:
         max_uses: int = 0,
         temporary: bool = False,
         unique: bool = True,
-        validate: Optional[Union[Invite, str]],
+        validate: Optional[Union[Invite, str]] = None,
         target_type: Optional[InviteTarget] = None,
         target_user: Optional[User] = None,
         target_application: Optional[Snowflake] = None,
