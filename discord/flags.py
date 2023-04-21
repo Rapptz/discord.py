@@ -1432,7 +1432,7 @@ class ApplicationFlags(BaseFlags):
 
     @flag_value
     def auto_mod_badge(self):
-        """:class:`bool`: Returns ``True`` if the application uses auto moderation.
+        """:class:`bool`: Returns ``True`` if the application uses at least 100 automod rules across all guilds.
         This shows up as a badge in the official client.
 
         .. versionadded:: 2.3
