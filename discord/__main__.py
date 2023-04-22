@@ -79,7 +79,7 @@ class Bot(commands.{base}):
                 logging.error(f'Could not load extension {{cog}} due to {{exc.__class__.__name__}}: {{exc}}')
 
     async def on_ready(self):
-        print(f'Logged on as {{self.user}} (ID: {{self.user.id}})')
+        logging.info(f'Logged on as {{self.user}} (ID: {{self.user.id}})')
 
 
 intents = discord.Intents.default()
