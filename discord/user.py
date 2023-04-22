@@ -506,6 +506,74 @@ class BaseUser(_UserTag):
 
         return any(user.id == self.id for user in message.mentions)
 
+    @property
+    def relationship(self) -> Optional[Relationship]:
+        """Optional[:class:`Relationship`]: Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
+        return self._state._relationships.get(self.id)
+
+    def is_friend(self) -> bool:
+        """:class:`bool`: Checks if the user is your friend."""
+        r = self.relationship
+        if r is None:
+            return False
+        return r.type is RelationshipType.friend
+
+    def is_blocked(self) -> bool:
+        """:class:`bool`: Checks if the user is blocked."""
+        r = self.relationship
+        if r is None:
+            return False
+        return r.type is RelationshipType.blocked
+
+    async def profile(
+        self,
+        *,
+        with_mutual_guilds: bool = True,
+        with_mutual_friends_count: bool = False,
+        with_mutual_friends: bool = True,
+    ) -> UserProfile:
+        """|coro|
+
+        A shorthand method to retrieve a :class:`UserProfile` for the user.
+
+        Parameters
+        ------------
+        with_mutual_guilds: :class:`bool`
+            Whether to fetch mutual guilds.
+            This fills in :attr:`UserProfile.mutual_guilds`.
+
+            .. versionadded:: 2.0
+        with_mutual_friends_count: :class:`bool`
+            Whether to fetch the number of mutual friends.
+            This fills in :attr:`UserProfile.mutual_friends_count`.
+
+            .. versionadded:: 2.0
+        with_mutual_friends: :class:`bool`
+            Whether to fetch mutual friends.
+            This fills in :attr:`UserProfile.mutual_friends` and :attr:`UserProfile.mutual_friends_count`,
+            but requires an extra API call.
+
+            .. versionadded:: 2.0
+
+        Raises
+        -------
+        Forbidden
+            Not allowed to fetch this profile.
+        HTTPException
+            Fetching the profile failed.
+
+        Returns
+        --------
+        :class:`UserProfile`
+            The profile of the user.
+        """
+        return await self._state.client.fetch_user_profile(
+            self.id,
+            with_mutual_guilds=with_mutual_guilds,
+            with_mutual_friends_count=with_mutual_friends_count,
+            with_mutual_friends=with_mutual_friends,
+        )
+
 
 class ClientUser(BaseUser):
     """Represents your Discord user.
@@ -920,11 +988,6 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         """Optional[:class:`PrivateCall`]: Returns the call associated with this user if it exists."""
         return getattr(self.dm_channel, 'call', None)
 
-    @property
-    def relationship(self) -> Optional[Relationship]:
-        """Optional[:class:`Relationship`]: Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
-        return self._state._relationships.get(self.id)
-
     @copy_doc(discord.abc.Connectable.connect)
     async def connect(
         self,
@@ -961,21 +1024,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         data: DMChannelPayload = await state.http.start_private_message(self.id)
         return state.add_dm_channel(data)
 
-    def is_friend(self) -> bool:
-        """:class:`bool`: Checks if the user is your friend."""
-        r = self.relationship
-        if r is None:
-            return False
-        return r.type is RelationshipType.friend
-
-    def is_blocked(self) -> bool:
-        """:class:`bool`: Checks if the user is blocked."""
-        r = self.relationship
-        if r is None:
-            return False
-        return r.type is RelationshipType.blocked
-
-    async def block(self) -> None:  # TODO: maybe return relationship
+    async def block(self) -> None:
         """|coro|
 
         Blocks the user.
@@ -1032,52 +1081,3 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
             Sending the friend request failed.
         """
         await self._state.http.send_friend_request(self.name, self.discriminator)
-
-    async def profile(
-        self,
-        *,
-        with_mutual_guilds: bool = True,
-        with_mutual_friends_count: bool = False,
-        with_mutual_friends: bool = True,
-    ) -> UserProfile:
-        """|coro|
-
-        A shorthand method to retrieve a :class:`UserProfile` for the user.
-
-        Parameters
-        ------------
-        with_mutual_guilds: :class:`bool`
-            Whether to fetch mutual guilds.
-            This fills in :attr:`UserProfile.mutual_guilds`.
-
-            .. versionadded:: 2.0
-        with_mutual_friends_count: :class:`bool`
-            Whether to fetch the number of mutual friends.
-            This fills in :attr:`UserProfile.mutual_friends_count`.
-
-            .. versionadded:: 2.0
-        with_mutual_friends: :class:`bool`
-            Whether to fetch mutual friends.
-            This fills in :attr:`UserProfile.mutual_friends` and :attr:`UserProfile.mutual_friends_count`,
-            but requires an extra API call.
-
-            .. versionadded:: 2.0
-
-        Raises
-        -------
-        Forbidden
-            Not allowed to fetch this profile.
-        HTTPException
-            Fetching the profile failed.
-
-        Returns
-        --------
-        :class:`UserProfile`
-            The profile of the user.
-        """
-        return await self._state.client.fetch_user_profile(
-            self.id,
-            with_mutual_guilds=with_mutual_guilds,
-            with_mutual_friends_count=with_mutual_friends_count,
-            with_mutual_friends=with_mutual_friends,
-        )

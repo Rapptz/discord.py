@@ -77,6 +77,9 @@ if TYPE_CHECKING:
         GuildVoiceState as GuildVoiceStatePayload,
         VoiceState as VoiceStatePayload,
     )
+    from .user import Note
+    from .relationship import Relationship
+    from .calls import PrivateCall
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     ConnectableChannel = Union[VocalGuildChannel, DMChannel, GroupChannel]
@@ -290,8 +293,16 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         default_avatar: Asset
         avatar: Optional[Asset]
         avatar_decoration: Optional[Asset]
+        note: Note
+        relationship: Optional[Relationship]
+        is_friend: Callable[[], bool]
+        is_blocked: Callable[[], bool]
         dm_channel: Optional[DMChannel]
+        call: Optional[PrivateCall]
         create_dm: Callable[[], Awaitable[DMChannel]]
+        block: Callable[[], Awaitable[None]]
+        unblock: Callable[[], Awaitable[None]]
+        remove_friend: Callable[[], Awaitable[None]]
         mutual_guilds: List[Guild]
         public_flags: PublicUserFlags
         banner: Optional[Asset]
