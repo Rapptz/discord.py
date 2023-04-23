@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, AsyncIterator, Dict, Optional, Union, overload, Literal
+from typing import TYPE_CHECKING, AsyncIterator, Dict, List, Optional, Union, overload, Literal
 
 from .asset import Asset
 from .enums import EventStatus, EntityType, PrivacyLevel, ReadStateType, try_enum
@@ -102,6 +102,10 @@ class ScheduledEvent(Hashable):
         The ID of the user that created the scheduled event.
     location: Optional[:class:`str`]
         The location of the scheduled event.
+    sku_ids: List[:class:`int`]
+        The IDs of the SKUs associated with the ticketed scheduled event.
+
+        .. versionadded:: 2.1
     """
 
     __slots__ = (
@@ -123,6 +127,7 @@ class ScheduledEvent(Hashable):
         'channel_id',
         'creator_id',
         'location',
+        'sku_ids',
     )
 
     def __init__(self, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
@@ -152,6 +157,7 @@ class ScheduledEvent(Hashable):
 
         self.end_time: Optional[datetime] = parse_time(data.get('scheduled_end_time'))
         self.channel_id: Optional[int] = _get_as_snowflake(data, 'channel_id')
+        self.sku_ids: List[int] = [int(sku_id) for sku_id in data.get('sku_ids', [])]
 
         metadata = data.get('entity_metadata')
         self._unroll_metadata(metadata)
