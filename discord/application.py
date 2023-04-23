@@ -1373,7 +1373,7 @@ class ApplicationBranch(Hashable):
 
         .. note::
 
-            This may be innacurate for the master branch if the data is not provided,
+            This may be inaccurate for the master branch if the data is not provided,
             as the ID is shared with the application ID.
         """
         return utils.parse_time(self._created_at) if self._created_at else utils.snowflake_time(self.id)
