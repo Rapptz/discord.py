@@ -54,6 +54,10 @@ extras_require = {
         'pytest-mock',
         'typing-extensions>=4.3,<5',
     ],
+    'web' : [
+        'fastapi',
+        'PyNaCl'
+    ]
 }
 
 packages = [

@@ -177,6 +177,8 @@ class Namespace:
     def _get_resolved_items(cls, interaction: Interaction, resolved: ResolvedData) -> Dict[ResolveKey, Any]:
         completed: Dict[ResolveKey, Any] = {}
         state = interaction._state
+        if not state:
+          return
         members = resolved.get('members', {})
         guild_id = interaction.guild_id
         guild = state._get_or_create_unavailable_guild(guild_id) if guild_id is not None else None

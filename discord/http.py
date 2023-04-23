@@ -781,7 +781,7 @@ class HTTPClient:
 
     # login management
 
-    async def static_login(self, token: str) -> user.User:
+    async def static_login(self, token: str, get = True) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
             self.connector = aiohttp.TCPConnector(limit=0)
@@ -797,15 +797,16 @@ class HTTPClient:
         old_token = self.token
         self.token = token
 
-        try:
-            data = await self.request(Route('GET', '/users/@me'))
-        except HTTPException as exc:
-            self.token = old_token
-            if exc.status == 401:
-                raise LoginFailure('Improper token has been passed.') from exc
-            raise
+        if get:
+          try:
+              data = await self.request(Route('GET', '/users/@me'))
+          except HTTPException as exc:
+              self.token = old_token
+              if exc.status == 401:
+                  raise LoginFailure('Improper token has been passed.') from exc
+              raise
 
-        return data
+          return data
 
     def logout(self) -> Response[None]:
         return self.request(Route('POST', '/auth/logout'))

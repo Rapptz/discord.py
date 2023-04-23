@@ -63,6 +63,7 @@ from ..errors import ClientException, HTTPException
 from ..enums import AppCommandType, InteractionType
 from ..utils import MISSING, _get_as_snowflake, _is_submodule, _shorten
 from .._types import ClientT
+from types import SimpleNamespace
 
 
 if TYPE_CHECKING:
@@ -123,15 +124,19 @@ class CommandTree(Generic[ClientT]):
         than usual. Defaults to ``True``.
     """
 
-    def __init__(self, client: ClientT, *, fallback_to_global: bool = True):
+    def __init__(self, client: ClientT = None, *, fallback_to_global: bool = True, app = None):
         self.client: ClientT = client
-        self._http = client.http
-        self._state = client._connection
+        self.app = app
+        if client:
+          self._http = client.http
+          self._state = client._connection
 
-        if self._state._command_tree is not None:
-            raise ClientException('This client already has an associated command tree.')
+          if self._state._command_tree is not None:
+              raise ClientException('This client already has an associated command tree.')
 
-        self._state._command_tree = self
+          self._state._command_tree = self
+        else:
+          self._state = SimpleNamespace(_translator = None)
         self.fallback_to_global: bool = fallback_to_global
         self._guild_commands: Dict[int, Dict[str, Union[Command, Group]]] = {}
         self._global_commands: Dict[str, Union[Command, Group]] = {}
@@ -1051,7 +1056,8 @@ class CommandTree(Generic[ClientT]):
             The application's commands that got synced.
         """
 
-        if self.client.application_id is None:
+        application_id = getattr(self, 'client', self.app).application_id
+        if application_id is None:
             raise MissingApplicationID
 
         commands = self._get_all_commands(guild=guild)
@@ -1064,9 +1070,9 @@ class CommandTree(Generic[ClientT]):
 
         try:
             if guild is None:
-                data = await self._http.bulk_upsert_global_commands(self.client.application_id, payload=payload)
+                data = await self._http.bulk_upsert_global_commands(application_id, payload=payload)
             else:
-                data = await self._http.bulk_upsert_guild_commands(self.client.application_id, guild.id, payload=payload)
+                data = await self._http.bulk_upsert_guild_commands(application_id, guild.id, payload=payload)
         except HTTPException as e:
             if e.status == 400 and e.code == 50035:
                 raise CommandSyncFailure(e, commands) from None
@@ -1251,5 +1257,5 @@ class CommandTree(Generic[ClientT]):
             await command._invoke_error_handlers(interaction, e)
             await self.on_error(interaction, e)
         else:
-            if not interaction.command_failed:
+            if not interaction.command_failed and self.client:
                 self.client.dispatch('app_command_completion', interaction, command)

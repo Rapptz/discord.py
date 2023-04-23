@@ -183,7 +183,7 @@ class AppCommand(Hashable):
         '_state',
     )
 
-    def __init__(self, *, data: ApplicationCommandPayload, state: ConnectionState) -> None:
+    def __init__(self, *, data: ApplicationCommandPayload, state: ConnectionState = None) -> None:
         self._state: ConnectionState = state
         self._from_data(data)
 

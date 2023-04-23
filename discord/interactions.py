@@ -151,12 +151,17 @@ class Interaction(Generic[ClientT]):
         '_cs_channel',
         '_cs_namespace',
         '_cs_command',
+        'app'
     )
 
-    def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT]):
+    def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT] = None, app = None):
         self._state: ConnectionState[ClientT] = state
-        self._client: ClientT = state._get_client()
-        self._session: ClientSession = state.http._HTTPClient__session  # type: ignore # Mangled attribute for __session
+        if state:
+          self._client: ClientT = state._get_client()
+          self._session: ClientSession = state.http._HTTPClient__session  # type: ignore # Mangled attribute for __session
+        else:
+          self.app = app
+          self._session = app.http._HTTPClient__session
         self._original_response: Optional[InteractionMessage] = None
         # This baton is used for extra data that might be useful for the lifecycle of
         # an interaction. This is mainly for internal purposes and it gives it a free-for-all slot.
@@ -193,7 +198,7 @@ class Interaction(Generic[ClientT]):
         self._permissions: int = 0
         self._app_permissions: int = int(data.get('app_permissions', 0))
 
-        if self.guild_id:
+        if self.guild_id and self._state:
             guild = self._state._get_or_create_unavailable_guild(self.guild_id)
 
             # Upgrade Message.guild in case it's missing with partial guild data
@@ -376,7 +381,7 @@ class Interaction(Generic[ClientT]):
         if channel is None:
             raise ClientException('Channel for message could not be resolved')
 
-        adapter = async_context.get()
+        adapter = async_context.get()        
         http = self._state.http
         data = await adapter.get_original_interaction_response(
             application_id=self.application_id,
@@ -502,7 +507,7 @@ class Interaction(Generic[ClientT]):
             Deleted a message that is not yours.
         """
         adapter = async_context.get()
-        http = self._state.http
+        http = self._state.http if self._state else self.app.http        
         await adapter.delete_original_interaction_response(
             self.application_id,
             self.token,
@@ -671,7 +676,7 @@ class InteractionResponse(Generic[ClientT]):
         if parent.type is InteractionType.ping:
             adapter = async_context.get()
             params = interaction_response_params(InteractionResponseType.pong.value)
-            http = parent._state.http
+            http = parent._state.http if parent._state else parent.app.http
             await adapter.create_interaction_response(
                 parent.id,
                 parent.token,
@@ -773,13 +778,13 @@ class InteractionResponse(Generic[ClientT]):
             embed=embed,
             file=file,
             files=files,
-            previous_allowed_mentions=parent._state.allowed_mentions,
+            previous_allowed_mentions=parent._state.allowed_mentions if parent._state else None,
             allowed_mentions=allowed_mentions,
             flags=flags,
             view=view,
         )
 
-        http = parent._state.http
+        http = parent._state.http if parent._state else parent.app.http
         await adapter.create_interaction_response(
             parent.id,
             parent.token,
@@ -796,7 +801,7 @@ class InteractionResponse(Generic[ClientT]):
             # If the interaction type isn't an application command then there's no way
             # to obtain this interaction_id again, so just default to None
             entity_id = parent.id if parent.type is InteractionType.application_command else None
-            self._parent._state.store_view(view, entity_id)
+            (self._parent.state if self._parent._state else self._parent.app).store_view(view, entity_id)
 
         self._response_type = InteractionResponseType.channel_message
 
