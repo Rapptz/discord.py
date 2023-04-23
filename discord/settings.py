@@ -1925,8 +1925,6 @@ class LegacyUserSettings:
 class MuteConfig:
     """An object representing an object's mute status.
 
-    .. versionadded:: 2.0
-
     .. container:: operations
 
         .. describe:: x == y
@@ -1944,6 +1942,8 @@ class MuteConfig:
         .. describe:: int(x)
 
             Returns the mute status as an int.
+
+    .. versionadded:: 2.0
 
     Attributes
     ----------

@@ -92,6 +92,7 @@ if TYPE_CHECKING:
     from .user import BaseUser, ClientUser, User
     from .guild import Guild, GuildChannel as GuildChannelType
     from .settings import ChannelSettings
+    from .read_state import ReadState
     from .types.channel import (
         TextChannel as TextChannelPayload,
         NewsChannel as NewsChannelPayload,
@@ -274,6 +275,14 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return self._type == ChannelType.news.value
 
     @property
+    def read_state(self) -> ReadState:
+        """:class:`ReadState`: Returns the read state for this channel.
+
+        .. versionadded:: 2.1
+        """
+        return self._state.get_read_state(self.id)
+
+    @property
     def last_message(self) -> Optional[Message]:
         """Retrieves the last message from this channel in cache.
 
@@ -293,6 +302,61 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             The last message in this channel or ``None`` if not found.
         """
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
+
+    @property
+    def acked_message_id(self) -> int:
+        """:class:`int`: The last message ID that the user has acknowledged.
+        It may *not* point to an existing or valid message.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.last_acked_id
+
+    @property
+    def acked_message(self) -> Optional[Message]:
+        """Retrieves the last message that the user has acknowledged in cache.
+
+        The message might not be valid or point to an existing message.
+
+        .. versionadded:: 2.1
+
+        .. admonition:: Reliable Fetching
+            :class: helpful
+
+            For a slightly more reliable method of fetching the
+            last acknowledged message, consider using either :meth:`history`
+            or :meth:`fetch_message` with the :attr:`acked_message_id`
+            attribute.
+
+        Returns
+        ---------
+        Optional[:class:`Message`]
+            The last acknowledged message in this channel or ``None`` if not found.
+        """
+        acked_message_id = self.acked_message_id
+        if acked_message_id is None:
+            return
+
+        # We need to check if the message is in the same channel
+        message = self._state._get_message(acked_message_id)
+        if message and message.channel.id == self.id:
+            return message
+
+    @property
+    def acked_pin_timestamp(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: When the channel's pins were last acknowledged.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.last_pin_timestamp
+
+    @property
+    def mention_count(self) -> int:
+        """:class:`int`: Returns how many unread mentions the user has in this channel.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.badge_count
 
     @overload
     async def edit(self) -> Optional[TextChannel]:
@@ -989,6 +1053,14 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         return base
 
     @property
+    def read_state(self) -> ReadState:
+        """:class:`ReadState`: Returns the read state for this channel.
+
+        .. versionadded:: 2.1
+        """
+        return self._state.get_read_state(self.id)
+
+    @property
     def last_message(self) -> Optional[Message]:
         """Retrieves the last message from this channel in cache.
 
@@ -1010,6 +1082,61 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
             The last message in this channel or ``None`` if not found.
         """
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
+
+    @property
+    def acked_message_id(self) -> int:
+        """:class:`int`: The last message ID that the user has acknowledged.
+        It may *not* point to an existing or valid message.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.last_acked_id
+
+    @property
+    def acked_message(self) -> Optional[Message]:
+        """Retrieves the last message that the user has acknowledged in cache.
+
+        The message might not be valid or point to an existing message.
+
+        .. versionadded:: 2.1
+
+        .. admonition:: Reliable Fetching
+            :class: helpful
+
+            For a slightly more reliable method of fetching the
+            last acknowledged message, consider using either :meth:`history`
+            or :meth:`fetch_message` with the :attr:`acked_message_id`
+            attribute.
+
+        Returns
+        ---------
+        Optional[:class:`Message`]
+            The last acknowledged message in this channel or ``None`` if not found.
+        """
+        acked_message_id = self.acked_message_id
+        if acked_message_id is None:
+            return
+
+        # We need to check if the message is in the same channel
+        message = self._state._get_message(acked_message_id)
+        if message and message.channel.id == self.id:
+            return message
+
+    @property
+    def acked_pin_timestamp(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: When the channel's pins were last acknowledged.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.last_pin_timestamp
+
+    @property
+    def mention_count(self) -> int:
+        """:class:`int`: Returns how many unread mentions the user has in this channel.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.badge_count
 
     def get_partial_message(self, message_id: int, /) -> PartialMessage:
         """Creates a :class:`PartialMessage` from the message ID.
@@ -2912,6 +3039,14 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         return f'https://discord.com/channels/@me/{self.id}'
 
     @property
+    def read_state(self) -> ReadState:
+        """:class:`ReadState`: Returns the read state for this channel.
+
+        .. versionadded:: 2.1
+        """
+        return self._state.get_read_state(self.id)
+
+    @property
     def last_message(self) -> Optional[Message]:
         """Retrieves the last message from this channel in cache.
 
@@ -2931,6 +3066,61 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
             The last message in this channel or ``None`` if not found.
         """
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
+
+    @property
+    def acked_message_id(self) -> int:
+        """:class:`int`: The last message ID that the user has acknowledged.
+        It may *not* point to an existing or valid message.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.last_acked_id
+
+    @property
+    def acked_message(self) -> Optional[Message]:
+        """Retrieves the last message that the user has acknowledged in cache.
+
+        The message might not be valid or point to an existing message.
+
+        .. versionadded:: 2.1
+
+        .. admonition:: Reliable Fetching
+            :class: helpful
+
+            For a slightly more reliable method of fetching the
+            last acknowledged message, consider using either :meth:`history`
+            or :meth:`fetch_message` with the :attr:`acked_message_id`
+            attribute.
+
+        Returns
+        ---------
+        Optional[:class:`Message`]
+            The last acknowledged message in this channel or ``None`` if not found.
+        """
+        acked_message_id = self.acked_message_id
+        if acked_message_id is None:
+            return
+
+        # We need to check if the message is in the same channel
+        message = self._state._get_message(acked_message_id)
+        if message and message.channel.id == self.id:
+            return message
+
+    @property
+    def acked_pin_timestamp(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: When the channel's pins were last acknowledged.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.last_pin_timestamp
+
+    @property
+    def mention_count(self) -> int:
+        """:class:`int`: Returns how many unread mentions the user has in this channel.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.badge_count
 
     @property
     def requested_at(self) -> Optional[datetime.datetime]:
@@ -3311,6 +3501,14 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         return f'https://discord.com/channels/@me/{self.id}'
 
     @property
+    def read_state(self) -> ReadState:
+        """:class:`ReadState`: Returns the read state for this channel.
+
+        .. versionadded:: 2.1
+        """
+        return self._state.get_read_state(self.id)
+
+    @property
     def last_message(self) -> Optional[Message]:
         """Retrieves the last message from this channel in cache.
 
@@ -3330,6 +3528,61 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
             The last message in this channel or ``None`` if not found.
         """
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
+
+    @property
+    def acked_message_id(self) -> int:
+        """:class:`int`: The last message ID that the user has acknowledged.
+        It may *not* point to an existing or valid message.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.last_acked_id
+
+    @property
+    def acked_message(self) -> Optional[Message]:
+        """Retrieves the last message that the user has acknowledged in cache.
+
+        The message might not be valid or point to an existing message.
+
+        .. versionadded:: 2.1
+
+        .. admonition:: Reliable Fetching
+            :class: helpful
+
+            For a slightly more reliable method of fetching the
+            last acknowledged message, consider using either :meth:`history`
+            or :meth:`fetch_message` with the :attr:`acked_message_id`
+            attribute.
+
+        Returns
+        ---------
+        Optional[:class:`Message`]
+            The last acknowledged message in this channel or ``None`` if not found.
+        """
+        acked_message_id = self.acked_message_id
+        if acked_message_id is None:
+            return
+
+        # We need to check if the message is in the same channel
+        message = self._state._get_message(acked_message_id)
+        if message and message.channel.id == self.id:
+            return message
+
+    @property
+    def acked_pin_timestamp(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: When the channel's pins were last acknowledged.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.last_pin_timestamp
+
+    @property
+    def mention_count(self) -> int:
+        """:class:`int`: Returns how many unread mentions the user has in this channel.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.badge_count
 
     def permissions_for(self, obj: Snowflake, /) -> Permissions:
         """Handles permission resolution for a :class:`User`.

@@ -105,6 +105,7 @@ if TYPE_CHECKING:
     from .enums import PaymentGateway, RequiredActionType
     from .metadata import MetadataObject
     from .permissions import Permissions
+    from .read_state import ReadState
     from .types.snowflake import Snowflake as _Snowflake
 
     PrivateChannel = Union[DMChannel, GroupChannel]
@@ -494,6 +495,14 @@ class Client:
         .. versionadded:: 2.0
         """
         return utils.SequenceProxy(self._connection.pending_payments.values())
+
+    @property
+    def read_states(self) -> List[ReadState]:
+        """List[:class:`.ReadState`]: The read states that the connected client has.
+
+        .. versionadded:: 2.1
+        """
+        return [read_state for group in self._connection._read_states.values() for read_state in group.values()]
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""

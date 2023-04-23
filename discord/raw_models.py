@@ -24,27 +24,31 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Set, List, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
 
-from .enums import ChannelType, try_enum
+from .enums import ChannelType, ReadStateType, try_enum
 
 if TYPE_CHECKING:
+    from .guild import Guild
+    from .member import Member
+    from .message import Message
+    from .partial_emoji import PartialEmoji
+    from .state import ConnectionState
+    from .threads import Thread
     from .types.gateway import (
-        MessageDeleteEvent,
+        IntegrationDeleteEvent,
+        MessageAckEvent,
         MessageDeleteBulkEvent as BulkMessageDeleteEvent,
+        MessageDeleteEvent,
         MessageReactionAddEvent,
-        MessageReactionRemoveEvent,
         MessageReactionRemoveAllEvent as ReactionClearEvent,
         MessageReactionRemoveEmojiEvent as ReactionClearEmojiEvent,
+        MessageReactionRemoveEvent,
         MessageUpdateEvent,
-        IntegrationDeleteEvent,
+        NonChannelAckEvent,
         ThreadDeleteEvent,
         ThreadMembersUpdate,
     )
-    from .message import Message
-    from .partial_emoji import PartialEmoji
-    from .member import Member
-    from .threads import Thread
 
     ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]
 
@@ -59,6 +63,9 @@ __all__ = (
     'RawIntegrationDeleteEvent',
     'RawThreadDeleteEvent',
     'RawThreadMembersUpdate',
+    'RawMessageAckEvent',
+    'RawUserFeatureAckEvent',
+    'RawGuildFeatureAckEvent',
 )
 
 
@@ -342,3 +349,80 @@ class RawThreadMembersUpdate(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
         self.member_count: int = int(data['member_count'])
         self.data: ThreadMembersUpdate = data
+
+
+class RawMessageAckEvent(_RawReprMixin):
+    """Represents the event payload for a :func:`on_raw_message_ack` event.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    ----------
+    channel_id: :class:`int`
+        The channel ID of the read state.
+    message_id: :class:`int`
+        The message ID that was acknowledged.
+    cached_message: Optional[:class:`Message`]
+        The cached message, if found in the internal message cache.
+    manual: :class:`bool`
+        Whether the read state was manually set to this message.
+    mention_count: :class:`int`
+        The new mention count for the read state.
+    """
+
+    __slots__ = ('message_id', 'channel_id', 'cached_message', 'manual', 'mention_count')
+
+    def __init__(self, data: MessageAckEvent) -> None:
+        self.message_id: int = int(data['message_id'])
+        self.channel_id: int = int(data['channel_id'])
+        self.cached_message: Optional[Message] = None
+        self.manual: bool = data.get('manual', False)
+        self.mention_count: int = data.get('mention_count', 0)
+
+
+class RawUserFeatureAckEvent(_RawReprMixin):
+    """Represents the event payload for a :func:`on_user_feature_ack` event.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    ----------
+    type: :class:`ReadStateType`
+        The type of the feature that was acknowledged.
+    entity_id: :class:`int`
+        The ID of the entity that was acknowledged.
+    """
+
+    __slots__ = ('type', 'entity_id')
+
+    def __init__(self, data: NonChannelAckEvent) -> None:
+        self.type: ReadStateType = try_enum(ReadStateType, data['ack_type'])
+        self.entity_id: int = int(data['entity_id'])
+
+
+class RawGuildFeatureAckEvent(RawUserFeatureAckEvent):
+    """Represents the event payload for a :func:`on_guild_feature_ack` event.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    ----------
+    guild_id: :class:`int`
+        The guild ID of the feature that was acknowledged.
+    type: :class:`ReadStateType`
+        The type of the feature that was acknowledged.
+    entity_id: :class:`int`
+        The ID of the entity that was acknowledged.
+    """
+
+    __slots__ = ('guild_id', '_state')
+
+    def __init__(self, data: NonChannelAckEvent, state: ConnectionState) -> None:
+        self._state: ConnectionState = state
+        self.guild_id: int = int(data['resource_id'])
+        super().__init__(data)
+
+    @property
+    def guild(self) -> Guild:
+        """:class:`Guild`: The guild that the feature was acknowledged in."""
+        return self._state._get_or_create_unavailable_guild(self.guild_id)

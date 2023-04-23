@@ -113,6 +113,7 @@ __all__ = (
     'AutoModRuleActionType',
     'ForumLayoutType',
     'ForumOrderType',
+    'ReadStateType',
 )
 
 if TYPE_CHECKING:
@@ -1494,6 +1495,14 @@ class ForumLayoutType(Enum):
 class ForumOrderType(Enum):
     latest_activity = 0
     creation_date = 1
+
+
+class ReadStateType(Enum):
+    channel = 0
+    scheduled_events = 1
+    notification_center = 2
+    guild_home = 3
+    onboarding = 4
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

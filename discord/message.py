@@ -1116,17 +1116,49 @@ class PartialMessage(Hashable):
         )
         return Thread(guild=self.guild, state=self._state, data=data)
 
-    async def ack(self) -> None:
+    async def ack(self, *, manual: bool = False, mention_count: Optional[int] = None) -> None:
         """|coro|
 
         Marks this message as read.
+
+        Parameters
+        -----------
+        manual: :class:`bool`
+            Whether to manually set the channel read state to this message.
+
+            .. versionadded:: 2.1
+        mention_count: Optional[:class:`int`]
+            The mention count to set the channel read state to. Only applicable for
+            manual acknowledgements.
+
+            .. versionadded:: 2.1
 
         Raises
         -------
         HTTPException
             Acking failed.
         """
-        await self._state.http.ack_message(self.channel.id, self.id)
+        await self._state.http.ack_message(self.channel.id, self.id, manual=manual, mention_count=mention_count)
+
+    async def unack(self, *, mention_count: Optional[int] = None) -> None:
+        """|coro|
+
+        Marks this message as unread.
+        This manually sets the read state to the current message's ID - 1.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        mention_count: Optional[:class:`int`]
+            The mention count to set the channel read state to.
+
+        Raises
+        -------
+        HTTPException
+            Unacking failed.
+        """
+        await self._state.http.ack_message(self.channel.id, self.id - 1, manual=True, mention_count=mention_count)
 
     @overload
     async def reply(
@@ -1795,6 +1827,22 @@ class Message(PartialMessage, Hashable):
         self.guild = new_guild
         self.channel = new_channel  # type: ignore # Not all "GuildChannel" are messageable at the moment
 
+    def _is_self_mentioned(self) -> bool:
+        state = self._state
+        guild = self.guild
+        channel = self.channel
+        settings = guild.notification_settings if guild else state.client.notification_settings
+
+        if channel.type in (ChannelType.private, ChannelType.group) and not settings.muted and not channel.notification_settings.muted:  # type: ignore
+            return True
+        if state.user in self.mentions:
+            return True
+        if self.mention_everyone and not settings.suppress_everyone:
+            return True
+        if guild and guild.me and not settings.suppress_roles and guild.me.mentioned_in(self):
+            return True
+        return False
+
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self) -> List[int]:
         """List[:class:`int`]: A property that returns an array of user IDs matched with
@@ -1911,6 +1959,14 @@ class Message(PartialMessage, Hashable):
             MessageType.context_menu_command,
             MessageType.thread_starter_message,
         )
+
+    def is_acked(self) -> bool:
+        """:class:`bool`: Whether the message has been marked as read.
+
+        .. versionadded:: 2.1
+        """
+        read_state = self._state.get_read_state(self.channel.id)
+        return read_state.last_acked_id >= self.id if read_state.last_acked_id else False
 
     @utils.cached_slot_property('_cs_system_content')
     def system_content(self) -> str:

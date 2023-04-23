@@ -100,6 +100,7 @@ if TYPE_CHECKING:
         payments,
         profile,
         promotions,
+        read_state,
         template,
         role,
         user,
@@ -1104,20 +1105,33 @@ class HTTPClient:
     def send_typing(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
-    async def ack_message(self, channel_id: Snowflake, message_id: Snowflake):  # TODO: response type (simple)
+    async def ack_message(
+        self, channel_id: Snowflake, message_id: Snowflake, *, manual: bool = False, mention_count: Optional[int] = None
+    ) -> None:
         r = Route('POST', '/channels/{channel_id}/messages/{message_id}/ack', channel_id=channel_id, message_id=message_id)
-        payload = {'token': self.ack_token}
+        payload = {}
+        if manual:
+            payload['manual'] = True
+        else:
+            payload['token'] = self.ack_token
+        if mention_count is not None:
+            payload['mention_count'] = mention_count
 
-        data = await self.request(r, json=payload)
-        self.ack_token = data['token']
+        data: read_state.AcknowledgementToken = await self.request(r, json=payload)
+        self.ack_token = data.get('token') if data else None
 
-    def unack_message(self, channel_id: Snowflake, message_id: Snowflake, *, mention_count: int = 0) -> Response[None]:
-        r = Route('POST', '/channels/{channel_id}/messages/{message_id}/ack', channel_id=channel_id, message_id=message_id)
-        payload = {'manual': True, 'mention_count': mention_count}
+    def ack_guild_feature(
+        self, guild_id: Snowflake, type: int, entity_id: Snowflake
+    ) -> Response[read_state.AcknowledgementToken]:
+        return self.request(
+            Route('POST', '/guilds/{guild_id}/ack/{type}/{entity_id}', guild_id=guild_id, type=type, entity_id=entity_id),
+            json={},
+        )
 
-        return self.request(r, json=payload)
+    def ack_user_feature(self, type: int, entity_id: Snowflake) -> Response[read_state.AcknowledgementToken]:
+        return self.request(Route('POST', '/users/@me/{type}/{entity_id}/ack', type=type, entity_id=entity_id), json={})
 
-    def ack_messages(self, read_states) -> Response[None]:  # TODO: type and implement
+    def ack_bulk(self, read_states: List[read_state.BulkReadState]) -> Response[None]:
         payload = {'read_states': read_states}
 
         return self.request(Route('POST', '/read-states/ack-bulk'), json=payload)
@@ -1125,8 +1139,10 @@ class HTTPClient:
     def ack_guild(self, guild_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/guilds/{guild_id}/ack', guild_id=guild_id))
 
-    def unack_something(self, channel_id: Snowflake) -> Response[None]:  # TODO: research
-        return self.request(Route('DELETE', '/channels/{channel_id}/messages/ack', channel_id=channel_id))
+    def delete_read_state(self, channel_id: Snowflake, type: int) -> Response[None]:
+        payload = {'version': 2, 'read_state_type': type}  # Read state protocol version 2
+
+        return self.request(Route('DELETE', '/channels/{channel_id}/messages/ack', channel_id=channel_id), json=payload)
 
     def delete_message(
         self, channel_id: Snowflake, message_id: Snowflake, *, reason: Optional[str] = None

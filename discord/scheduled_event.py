@@ -28,7 +28,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, AsyncIterator, Dict, Optional, Union, overload, Literal
 
 from .asset import Asset
-from .enums import EventStatus, EntityType, PrivacyLevel, try_enum
+from .enums import EventStatus, EntityType, PrivacyLevel, ReadStateType, try_enum
 from .mixins import Hashable
 from .object import Object, OLDEST_OBJECT
 from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
@@ -183,6 +183,14 @@ class ScheduledEvent(Hashable):
     def url(self) -> str:
         """:class:`str`: The url for the scheduled event."""
         return f'https://discord.com/events/{self.guild_id}/{self.id}'
+
+    def is_acked(self) -> bool:
+        """:class:`bool`: Whether the scheduled event has been marked as read.
+
+        .. versionadded:: 2.1
+        """
+        read_state = self._state.get_read_state(self.guild_id, ReadStateType.scheduled_events)
+        return read_state.last_acked_id >= self.id if read_state.last_acked_id else False
 
     async def __modify_status(self, status: EventStatus, reason: Optional[str], /) -> ScheduledEvent:
         payload = {'status': status.value}
@@ -699,6 +707,25 @@ class ScheduledEvent(Hashable):
             Unsubscribing failed.
         """
         await self._state.http.delete_scheduled_event_user(self.guild_id, self.id)
+
+    async def ack(self) -> None:
+        """|coro|
+
+        Marks this scheduled event as read.
+
+        .. note::
+
+            This sets the last acknowledged scheduled event to this event,
+            which will mark acknowledged events created after this one as unread.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        HTTPException
+            Acking failed.
+        """
+        await self._state.http.ack_guild_feature(self.guild_id, ReadStateType.scheduled_events.value, self.id)
 
     def _add_user(self, user: User) -> None:
         self._users[user.id] = user

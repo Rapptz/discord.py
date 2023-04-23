@@ -67,7 +67,9 @@ from .relationship import Relationship, FriendSuggestion
 from .role import Role
 from .enums import (
     ChannelType,
+    MessageType,
     PaymentSourceType,
+    ReadStateType,
     RelationshipType,
     RequiredActionType,
     Status,
@@ -94,6 +96,7 @@ from .guild_premium import PremiumGuildSubscriptionSlot
 from .library import LibraryApplication
 from .automod import AutoModRule, AutoModAction
 from .audit_logs import AuditLogEntry
+from .read_state import ReadState
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -612,6 +615,9 @@ class ConnectionState:
         self._stickers: Dict[int, GuildSticker] = {}
         self._guilds: Dict[int, Guild] = {}
 
+        self._read_states: Dict[int, Dict[int, ReadState]] = {}
+        self.read_state_version: int = 0
+
         self._calls: Dict[int, Call] = {}
         self._call_message_cache: Dict[int, Message] = {}  # Hopefully this won't be a memory leak
         self._voice_clients: Dict[int, VoiceProtocol] = {}
@@ -948,6 +954,8 @@ class ConnectionState:
         # Before parsing, we wait for READY_SUPPLEMENTAL
         # This has voice state objects, as well as an initial member cache
         self._ready_data = data
+        # Clear the ACK token
+        self.http.ack_token = None
 
     def parse_ready_supplemental(self, extra_data: gw.ReadySupplementalEvent) -> None:
         if self._ready_task is not None:
@@ -972,10 +980,10 @@ class ConnectionState:
             extra_data['merged_presences'].get('guilds', []),
         ):
             for presence in merged_presences:
-                presence['user'] = {'id': presence['user_id']}  # type: ignore # :(
+                presence['user'] = {'id': presence['user_id']}  # type: ignore
 
             if 'properties' in guild_data:
-                guild_data.update(guild_data.pop('properties'))  # type: ignore # :(
+                guild_data.update(guild_data.pop('properties'))  # type: ignore
 
             voice_states = guild_data.setdefault('voice_states', [])
             voice_states.extend(guild_extra.get('voice_states', []))
@@ -1025,6 +1033,13 @@ class ConnectionState:
             if 'recipients' not in pm:
                 pm['recipients'] = [temp_users[int(u_id)] for u_id in pm.pop('recipient_ids')]
             self._add_private_channel(factory(me=user, data=pm, state=self))  # type: ignore
+
+        # Read state parsing
+        read_states = data.get('read_state', {})
+        for read_state in read_states['entries']:
+            item = ReadState(state=self, data=read_state)
+            self.store_read_state(item)
+        self.read_state_version = read_states.get('version', 0)
 
         # Extras
         self.analytics_token = data.get('analytics_token')
@@ -1094,9 +1109,20 @@ class ConnectionState:
             self._messages.append(message)
         if message.call is not None:
             self._call_message_cache[message.id] = message
-
         if channel:
             channel.last_message_id = message.id  # type: ignore
+
+        read_state = self.get_read_state(channel.id)
+        if message.author.id == self.self_id:
+            # Implicitly mark our own messages as read
+            read_state.last_acked_id = message.id
+        if (
+            not message.author.is_blocked()
+            and not (channel.type == ChannelType.group and message.type == MessageType.recipient_remove)
+            and message._is_self_mentioned()
+        ):
+            # Increment mention count if applicable
+            read_state.badge_count += 1
 
     def parse_message_delete(self, data: gw.MessageDeleteEvent) -> None:
         raw = RawMessageDeleteEvent(data)
@@ -1135,6 +1161,28 @@ class ConnectionState:
             self.dispatch('message_edit', older_message, message)
         else:
             self.dispatch('raw_message_edit', raw)
+
+    def parse_message_ack(self, data: gw.MessageAckEvent) -> None:
+        self.read_state_version = data.get('version', self.read_state_version)
+        channel_id = int(data['channel_id'])
+        channel = self.get_channel(channel_id)
+        if channel is None:
+            _log.debug('MESSAGE_ACK referencing an unknown channel ID: %s. Discarding.', channel_id)
+            return
+
+        raw = RawMessageAckEvent(data)
+        message_id = int(data['message_id'])
+        message = self._get_message(message_id)
+        raw.cached_message = message
+
+        read_state = self.get_read_state(channel_id)
+        read_state.last_acked_id = message_id
+        if 'mention_count' in data:
+            read_state.badge_count = data['mention_count']
+
+        self.dispatch('raw_message_ack', raw)
+        if message is not None:
+            self.dispatch('message_ack', message, raw.manual)
 
     def parse_message_reaction_add(self, data: gw.MessageReactionAddEvent) -> None:
         emoji = data['emoji']
@@ -1264,6 +1312,8 @@ class ConnectionState:
             self.dispatch('user_update', user_update[0], user_update[1])
 
     def parse_user_update(self, data: gw.UserUpdateEvent) -> None:
+        # Clear the ACK toke
+        self.http.ack_token = None
         if self.user:
             self.user._full_update(data)
 
@@ -1320,6 +1370,14 @@ class ConnectionState:
         required_action = try_enum(RequiredActionType, data['required_action']) if data['required_action'] else None
         self.required_action = required_action
         self.dispatch('required_action_update', required_action)
+
+    def parse_user_non_channel_ack(self, data: gw.NonChannelAckEvent) -> None:
+        self.read_state_version = data.get('version', self.read_state_version)
+
+        raw = RawUserFeatureAckEvent(data)
+        read_state = self.get_read_state(self.self_id, raw.type)  # type: ignore
+        read_state.last_acked_id = int(data['entity_id'])
+        self.dispatch('user_feature_ack', raw)
 
     def parse_user_connections_update(self, data: Union[gw.ConnectionEvent, gw.PartialConnectionEvent]) -> None:
         self.dispatch('connections_update')
@@ -1501,6 +1559,11 @@ class ConnectionState:
                 self._remove_private_channel(channel)
                 self.dispatch('private_channel_delete', channel)
 
+        # Nuke read state
+        read_state = self.get_read_state(channel_id)
+        if read_state is not None:
+            self.remove_read_state(read_state)
+
     def parse_channel_update(self, data: gw.ChannelUpdateEvent) -> None:
         channel_type = try_enum(ChannelType, data.get('type'))
         channel_id = int(data['id'])
@@ -1574,6 +1637,23 @@ class ConnectionState:
         else:
             self.dispatch('guild_channel_pins_update', channel, last_pin)
 
+    def parse_channel_pins_ack(self, data: gw.ChannelPinsAckEvent) -> None:
+        self.read_state_version = data.get('version', self.read_state_version)
+        channel_id = int(data['channel_id'])
+        channel = self.get_channel(channel_id)
+        if channel is None:
+            _log.debug('CHANNEL_PINS_ACK referencing an unknown channel ID: %s. Discarding.', channel_id)
+            return
+
+        read_state = self.get_read_state(channel_id)
+        last_pin = utils.parse_time(data.get('last_pin'))
+        read_state.acked_pin_timestamp = last_pin
+
+        if channel.guild is None:
+            self.dispatch('private_channel_pins_ack', channel, last_pin)
+        else:
+            self.dispatch('guild_channel_pins_ack', channel, last_pin)
+
     def parse_channel_recipient_add(self, data) -> None:
         channel = self._get_private_channel(int(data['channel_id']))
         user = self.store_user(data['user'])
@@ -1642,6 +1722,11 @@ class ConnectionState:
         if thread is not None:
             guild._remove_thread(thread)
             self.dispatch('thread_delete', thread)
+
+        # Nuke read state
+        read_state = self.get_read_state(raw.thread_id)
+        if read_state is not None:
+            self.remove_read_state(read_state)
 
     def parse_thread_list_sync(self, data: gw.ThreadListSyncEvent) -> None:
         guild_id = int(data['guild_id'])
@@ -2274,8 +2359,32 @@ class ConnectionState:
                 (msg for msg in self._messages if msg.guild != guild), maxlen=self.max_messages
             )
 
+        # Nuke all read states
+        for state_type in (ReadStateType.scheduled_events, ReadStateType.guild_home, ReadStateType.onboarding):
+            read_state = self.get_read_state(guild.id, state_type, if_exists=True)
+            if read_state is not None:
+                self.remove_read_state(read_state)
+
         self._remove_guild(guild)
         self.dispatch('guild_remove', guild)
+
+    def parse_guild_feature_ack(self, data: gw.NonChannelAckEvent) -> None:
+        self.read_state_version = data.get('version', self.read_state_version)
+        guild = self._get_guild(int(data['resource_id']))
+        if guild is None:
+            _log.debug('GUILD_FEATURE_ACK referencing an unknown guild ID: %s. Discarding.', data['resource_id'])
+            return
+
+        raw = RawGuildFeatureAckEvent(data, self)
+        read_state = self.get_read_state(guild.id, raw.type)
+        read_state.last_acked_id = int(data['entity_id'])
+        self.dispatch('guild_feature_ack', raw)
+
+        # Rich events here
+        if read_state.type == ReadStateType.scheduled_events:
+            event = guild.get_scheduled_event(read_state.last_acked_id)
+            if event is not None:
+                self.dispatch('scheduled_event_ack', event)
 
     def parse_guild_ban_add(self, data: gw.GuildBanAddEvent) -> None:
         guild = self._get_guild(int(data['guild_id']))
@@ -2444,6 +2553,14 @@ class ConnectionState:
             scheduled_event = ScheduledEvent(state=self, data=data)
             guild._scheduled_events[scheduled_event.id] = scheduled_event
             self.dispatch('scheduled_event_create', scheduled_event)
+
+            read_state = self.get_read_state(guild.id, ReadStateType.scheduled_events)
+            if scheduled_event.creator_id == self.self_id:
+                # Implicitly ack created events
+                read_state.last_acked_id = scheduled_event.id
+            if not guild.notification_settings.mute_scheduled_events:
+                # Increment badge count if we're not muted
+                read_state.badge_count += 1
         else:
             _log.debug('SCHEDULED_EVENT_CREATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
@@ -2722,6 +2839,12 @@ class ConnectionState:
             if channel is not None:
                 return channel
 
+    def _get_or_create_partial_messageable(self, id: Optional[int]) -> Optional[Union[Channel, Thread]]:
+        if id is None:
+            return None
+
+        return self.get_channel(id) or PartialMessageable(state=self, id=id)
+
     def create_message(
         self,
         *,
@@ -2820,6 +2943,40 @@ class ConnectionState:
         else:
             self._presences[user_id] = presence
         return presence
+
+    @overload
+    def get_read_state(self, id: int, type: ReadStateType = ..., *, if_exists: Literal[False] = ...) -> ReadState:
+        ...
+
+    @overload
+    def get_read_state(self, id: int, type: ReadStateType = ..., *, if_exists: Literal[True]) -> Optional[ReadState]:
+        ...
+
+    def get_read_state(
+        self, id: int, type: ReadStateType = ReadStateType.channel, *, if_exists: bool = False
+    ) -> Optional[ReadState]:
+        try:
+            return self._read_states[type.value][id]
+        except KeyError:
+            if not if_exists:
+                # Create and store a default read state
+                state = ReadState.default(id, type, state=self)
+                self.store_read_state(state)
+                return state
+
+    def remove_read_state(self, read_state: ReadState) -> None:
+        try:
+            group = self._read_states[read_state.type.value]
+        except KeyError:
+            return
+        group.pop(read_state.id, None)
+
+    def store_read_state(self, read_state: ReadState):
+        try:
+            group = self._read_states[read_state.type.value]
+        except KeyError:
+            group = self._read_states[read_state.type.value] = {}
+        group[read_state.id] = read_state
 
     @utils.cached_property
     def premium_subscriptions_application(self) -> PartialApplication:

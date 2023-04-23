@@ -40,6 +40,7 @@ Key Features
 - Implements vast amounts of the user account-specific API. For a non-exhaustive list:
 
   * Sessions
+  * Read states
   * Connections
   * Relationships
   * Protobuf user settings

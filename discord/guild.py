@@ -74,6 +74,7 @@ from .enums import (
     AutoModRuleEventType,
     ForumOrderType,
     ForumLayoutType,
+    ReadStateType,
 )
 from .mixins import Hashable
 from .user import User
@@ -134,6 +135,7 @@ if TYPE_CHECKING:
     from .types.widget import EditWidgetSettings
     from .types.oauth2 import OAuth2Guild as OAuth2GuildPayload
     from .message import EmojiInputType, Message
+    from .read_state import ReadState
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
@@ -1141,6 +1143,22 @@ class Guild(Hashable):
         .. versionadded:: 2.0
         """
         return utils.SequenceProxy(self._scheduled_events.values())
+
+    @property
+    def scheduled_events_read_state(self) -> ReadState:
+        """:class:`ReadState`: Returns the read state representing the guild's scheduled events.
+
+        .. versionadded:: 2.1
+        """
+        return self._state.get_read_state(self.id, ReadStateType.scheduled_events)
+
+    @property
+    def acked_scheduled_event(self) -> Optional[ScheduledEvent]:
+        """Optional[:class:`ScheduledEvent`]: Returns the last scheduled event that the user has acknowledged.
+
+        .. versionadded:: 2.1
+        """
+        return self._scheduled_events.get(self.scheduled_events_read_state.last_acked_id)
 
     def get_scheduled_event(self, scheduled_event_id: int, /) -> Optional[ScheduledEvent]:
         """Returns a scheduled event with the given ID.

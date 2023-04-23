@@ -80,6 +80,7 @@ class PartialApplication(BaseApplication):
     embedded_activity_config: NotRequired[EmbeddedActivityConfig]
     guild: NotRequired[PartialGuild]
     install_params: NotRequired[ApplicationInstallParams]
+    deeplink_uri: NotRequired[str]
 
 
 class ApplicationDiscoverability(TypedDict):

@@ -22,6 +22,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired, Required
 
@@ -49,6 +51,7 @@ from .payments import Payment
 from .entitlements import Entitlement, GatewayGift
 from .library import LibraryApplication
 from .audit_log import AuditLogEntry
+from .read_state import ReadState, ReadStateType
 
 
 class UserPresenceUpdateEvent(TypedDict):
@@ -103,6 +106,7 @@ class ReadyEvent(ResumedEvent):
     merged_members: List[List[MemberWithUser]]
     pending_payments: NotRequired[List[Payment]]
     private_channels: List[Union[DMChannel, GroupDMChannel]]
+    read_state: VersionedReadState
     relationships: List[Relationship]
     resume_gateway_url: str
     required_action: NotRequired[str]
@@ -112,8 +116,7 @@ class ReadyEvent(ResumedEvent):
     shard: NotRequired[ShardInfo]
     user: User
     user_guild_settings: dict
-    user_settings: NotRequired[dict]
-    user_settings_proto: str
+    user_settings_proto: NotRequired[str]
     users: List[PartialUser]
     v: int
 
@@ -127,6 +130,12 @@ class ReadySupplementalEvent(TypedDict):
     guilds: List[SupplementalGuild]
     merged_members: List[List[MemberWithUser]]
     merged_presences: MergedPresences
+
+
+class VersionedReadState(TypedDict):
+    entries: List[ReadState]
+    version: int
+    partial: bool
 
 
 NoEvent = Literal[None]
@@ -222,6 +231,28 @@ class ChannelPinsUpdateEvent(TypedDict):
     channel_id: Snowflake
     guild_id: NotRequired[Snowflake]
     last_pin_timestamp: NotRequired[Optional[str]]
+
+
+class ChannelPinsAckEvent(TypedDict):
+    channel_id: Snowflake
+    timestamp: str
+    version: int
+
+
+class MessageAckEvent(TypedDict):
+    channel_id: Snowflake
+    message_id: Snowflake
+    manual: NotRequired[bool]
+    mention_count: NotRequired[int]
+    ack_type: NotRequired[ReadStateType]
+    version: int
+
+
+class NonChannelAckEvent(TypedDict):
+    entity_id: Snowflake
+    resource_id: Snowflake
+    ack_type: int
+    version: int
 
 
 class ThreadCreateEvent(Thread, total=False):
