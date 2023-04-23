@@ -1121,6 +1121,11 @@ class PartialMessage(Hashable):
 
         Marks this message as read.
 
+        .. note::
+
+            This sets the last acknowledged message to this message,
+            which will mark acknowledged messages created after this one as unread.
+
         Parameters
         -----------
         manual: :class:`bool`
