@@ -58,11 +58,20 @@ class ProfileApplication(TypedDict):
     install_params: NotRequired[ApplicationInstallParams]
 
 
+class ProfileBadge(TypedDict):
+    id: str
+    description: str
+    icon: str
+    link: NotRequired[str]
+
+
 class Profile(TypedDict):
     user: ProfileUser
     user_profile: Optional[ProfileMetadata]
+    badges: List[ProfileBadge]
     guild_member: NotRequired[ProfileMember]
     guild_member_profile: NotRequired[Optional[ProfileMetadata]]
+    guild_badges: List[ProfileBadge]
     mutual_guilds: NotRequired[List[MutualGuild]]
     mutual_friends_count: NotRequired[int]
     connected_accounts: List[PartialConnection]

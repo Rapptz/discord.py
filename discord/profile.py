@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, List, Optional
 
 from . import utils
 from .application import ApplicationInstallParams
-from .asset import Asset
+from .asset import Asset, AssetMixin
 from .connections import PartialConnection
 from .enums import PremiumType, try_enum
 from .flags import ApplicationFlags
@@ -44,6 +44,7 @@ if TYPE_CHECKING:
     from .types.profile import (
         Profile as ProfilePayload,
         ProfileApplication as ProfileApplicationPayload,
+        ProfileBadge as ProfileBadgePayload,
         MutualGuild as MutualGuildPayload,
     )
     from .types.user import PartialUser as PartialUserPayload
@@ -95,6 +96,9 @@ class Profile:
         self.premium_guild_since: Optional[datetime] = utils.parse_time(data['premium_guild_since'])
         self.connections: List[PartialConnection] = [PartialConnection(d) for d in data['connected_accounts']]
 
+        self.badges: List[ProfileBadge] = [
+            ProfileBadge(state=state, data=d) for d in data.get('badges', []) + data.get('guild_badges', [])
+        ]
         self.mutual_guilds: Optional[List[MutualGuild]] = (
             [MutualGuild(state=state, data=d) for d in data['mutual_guilds']] if 'mutual_guilds' in data else None
         )
@@ -253,6 +257,68 @@ class MutualGuild(Hashable):
         return self._state._get_or_create_unavailable_guild(self.id)
 
 
+class ProfileBadge(AssetMixin, Hashable):
+    """Represents a Discord profile badge.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two badges are equal.
+
+        .. describe:: x != y
+
+            Checks if two badges are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the badge's hash.
+
+        .. describe:: str(x)
+
+            Returns the badge's description.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    ------------
+    id: :class:`str`
+        The badge's ID.
+    description: :class:`str`
+        The badge's description.
+    link: Optional[:class:`str`]
+        The link associated with the badge, if any.
+    """
+
+    __slots__ = ('id', 'description', 'link', '_icon', '_state')
+
+    def __init__(self, *, state: ConnectionState, data: ProfileBadgePayload) -> None:
+        self._state = state
+        self.id: str = data['id']
+        self.description: str = data.get('description', '')
+        self.link: Optional[str] = data.get('link')
+        self._icon: str = data['icon']
+
+    def __repr__(self) -> str:
+        return f'<ProfileBadge id={self.id!r} description={self.description!r}>'
+
+    def __hash__(self) -> int:
+        return hash(self.id)
+
+    def __str__(self) -> str:
+        return self.description
+
+    @property
+    def animated(self) -> bool:
+        """:class:`bool`: Indicates if the badge is animated. Here for compatibility purposes."""
+        return False
+
+    @property
+    def url(self) -> str:
+        """:class:`str`: Returns the URL of the badge icon."""
+        return f'{Asset.BASE}/badge-icons/{self._icon}.png'
+
+
 class UserProfile(Profile, User):
     """Represents a Discord user's profile.
 
@@ -293,6 +359,10 @@ class UserProfile(Profile, User):
         An aware datetime object that specifies when a user first Nitro boosted a guild.
     connections: Optional[List[:class:`PartialConnection`]]
         The connected accounts that show up on the profile.
+    badges: List[:class:`ProfileBadge`]
+        A list of badge icons that the user has.
+
+        .. versionadded:: 2.1
     mutual_guilds: Optional[List[:class:`MutualGuild`]]
         A list of guilds that you share with the user.
         ``None`` if you didn't fetch mutual guilds.
@@ -307,6 +377,7 @@ class UserProfile(Profile, User):
         'premium_since',
         'premium_guild_since',
         'connections',
+        'badges',
         'mutual_guilds',
         'mutual_friends',
         '_mutual_friends_count',
@@ -380,6 +451,10 @@ class MemberProfile(Profile, Member):
         An aware datetime object that specifies when a user first Nitro boosted a guild.
     connections: Optional[List[:class:`PartialConnection`]]
         The connected accounts that show up on the profile.
+    badges: List[:class:`ProfileBadge`]
+        A list of badge icons that the user has.
+
+        .. versionadded:: 2.1
     mutual_guilds: Optional[List[:class:`MutualGuild`]]
         A list of guilds that you share with the user.
         ``None`` if you didn't fetch mutuals.
@@ -395,6 +470,7 @@ class MemberProfile(Profile, Member):
         'premium_since',
         'premium_guild_since',
         'connections',
+        'badges',
         'mutual_guilds',
         'mutual_friends',
         '_mutual_friends_count',

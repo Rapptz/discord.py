@@ -6518,6 +6518,11 @@ User
     :members:
     :inherited-members:
 
+.. attributetable:: ProfileBadge
+
+.. autoclass:: ProfileBadge()
+    :members:
+
 .. attributetable:: Note
 
 .. autoclass:: Note()
