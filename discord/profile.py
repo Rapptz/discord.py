@@ -52,6 +52,7 @@ if TYPE_CHECKING:
 __all__ = (
     'ApplicationProfile',
     'MutualGuild',
+    'ProfileBadge',
     'UserProfile',
     'MemberProfile',
 )
