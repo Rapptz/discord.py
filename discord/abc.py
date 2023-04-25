@@ -1579,6 +1579,8 @@ class Messageable:
         This method is useful if you have local files that you want to upload and
         reuse multiple times.
 
+        .. versionadded:: 2.1
+
         Parameters
         ------------
         \*files: :class:`~discord.File`
