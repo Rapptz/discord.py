@@ -1088,6 +1088,7 @@ class ConnectionType(Enum):
     epic_games = 'epicgames'
     facebook = 'facebook'
     github = 'github'
+    instagram = 'instagram'
     league_of_legends = 'leagueoflegends'
     paypal = 'paypal'
     playstation = 'playstation'

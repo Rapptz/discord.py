@@ -143,6 +143,10 @@ class PartialConnection:
             return f'https://github.com/{self.name}'
         elif self.type == ConnectionType.tiktok:
             return f'https://tiktok.com/@{self.name}'
+        elif self.type == ConnectionType.ebay:
+            return f'https://www.ebay.com/usr/{self.name}'
+        elif self.type == ConnectionType.instagram:
+            return f'https://www.instagram.com/{self.name}'
 
 
 class Connection(PartialConnection):

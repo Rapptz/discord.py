@@ -48,6 +48,7 @@ ConnectionType = Literal[
     'epicgames',
     'facebook',
     'github',
+    'instagram',
     'leagueoflegends',
     'paypal',
     'playstation',

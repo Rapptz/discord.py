@@ -5273,6 +5273,12 @@ of :class:`enum.Enum`.
 
         The user has a GitHub connection.
 
+    .. attribute:: instagram
+
+        The user has Instagram connection.
+
+        .. versionadded:: 2.1
+
     .. attribute:: league_of_legends
 
         The user has a League of Legends connection.
