@@ -611,6 +611,7 @@ class ConnectionState:
         self.session_type: Optional[str] = None
         self.auth_session_id: Optional[str] = None
         self.required_action: Optional[RequiredActionType] = None
+        self.friend_suggestion_count: int = 0
         self._emojis: Dict[int, Emoji] = {}
         self._stickers: Dict[int, GuildSticker] = {}
         self._guilds: Dict[int, Guild] = {}
@@ -1057,6 +1058,7 @@ class ConnectionState:
         self.connections = {c['id']: Connection(state=self, data=c) for c in data.get('connected_accounts', [])}
         self.pending_payments = {int(p['id']): Payment(state=self, data=p) for p in data.get('pending_payments', [])}
         self.required_action = try_enum(RequiredActionType, data['required_action']) if 'required_action' in data else None
+        self.friend_suggestion_count = data.get('friend_suggestion_count', 0)
 
         if 'sessions' in data:
             self.parse_sessions_replace(data['sessions'], from_ready=True)
@@ -2747,9 +2749,11 @@ class ConnectionState:
             self.dispatch('relationship_update', old, new)
 
     def parse_friend_suggestion_create(self, data: gw.FriendSuggestionCreateEvent):
+        self.friend_suggestion_count += 1
         self.dispatch('friend_suggestion_add', FriendSuggestion(state=self, data=data))
 
     def parse_friend_suggestion_delete(self, data: gw.FriendSuggestionDeleteEvent):
+        self.friend_suggestion_count -= 1
         user_id = int(data['suggested_user_id'])
         user = self.get_user(user_id)
         if user:

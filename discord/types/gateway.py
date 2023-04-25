@@ -130,6 +130,7 @@ class ReadySupplementalEvent(TypedDict):
     guilds: List[SupplementalGuild]
     merged_members: List[List[MemberWithUser]]
     merged_presences: MergedPresences
+    lazy_private_channels: List[Union[DMChannel, GroupDMChannel]]
 
 
 class VersionedReadState(TypedDict):
@@ -139,6 +140,7 @@ class VersionedReadState(TypedDict):
 
 
 NoEvent = Literal[None]
+
 
 MessageCreateEvent = Message
 

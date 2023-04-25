@@ -504,6 +504,14 @@ class Client:
         """
         return [read_state for group in self._connection._read_states.values() for read_state in group.values()]
 
+    @property
+    def friend_suggestion_count(self) -> int:
+        """:class:`int`: The number of friend suggestions that the connected client has.
+
+        .. versionadded:: 2.1
+        """
+        return self._connection.friend_suggestion_count
+
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready is not MISSING and self._ready.is_set()
