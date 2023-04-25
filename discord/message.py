@@ -99,6 +99,7 @@ if TYPE_CHECKING:
     from .abc import Snowflake
     from .abc import GuildChannel, MessageableChannel
     from .components import ActionRow, ActionRowChildComponentType
+    from .file import _FileBase
     from .state import ConnectionState
     from .mentions import AllowedMentions
     from .sticker import GuildSticker
@@ -745,7 +746,7 @@ class PartialMessage(Hashable):
         self,
         *,
         content: Optional[str] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
+        attachments: Sequence[Union[Attachment, _FileBase]] = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
     ) -> Message:
@@ -756,7 +757,7 @@ class PartialMessage(Hashable):
         self,
         *,
         content: Optional[str] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
+        attachments: Sequence[Union[Attachment, _FileBase]] = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
     ) -> Message:
@@ -765,7 +766,7 @@ class PartialMessage(Hashable):
     async def edit(
         self,
         content: Optional[str] = MISSING,
-        attachments: Sequence[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, _FileBase]] = MISSING,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
     ) -> Message:
@@ -787,7 +788,7 @@ class PartialMessage(Hashable):
         content: Optional[:class:`str`]
             The new content to replace the message with.
             Could be ``None`` to remove the content.
-        attachments: List[Union[:class:`Attachment`, :class:`File`]]
+        attachments: List[Union[:class:`Attachment`, :class:`File`, :class:`CloudFile`]]
             A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
             then all attachments are removed.
 
@@ -1171,7 +1172,7 @@ class PartialMessage(Hashable):
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        file: File = ...,
+        file: _FileBase = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1188,7 +1189,7 @@ class PartialMessage(Hashable):
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        files: Sequence[File] = ...,
+        files: Sequence[_FileBase] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1205,7 +1206,7 @@ class PartialMessage(Hashable):
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        file: File = ...,
+        file: _FileBase = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1222,7 +1223,7 @@ class PartialMessage(Hashable):
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        files: Sequence[File] = ...,
+        files: Sequence[_FileBase] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -2122,7 +2123,7 @@ class Message(PartialMessage, Hashable):
         self,
         *,
         content: Optional[str] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
+        attachments: Sequence[Union[Attachment, _FileBase]] = ...,
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
@@ -2134,7 +2135,7 @@ class Message(PartialMessage, Hashable):
         self,
         *,
         content: Optional[str] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
+        attachments: Sequence[Union[Attachment, _FileBase]] = ...,
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
@@ -2144,7 +2145,7 @@ class Message(PartialMessage, Hashable):
     async def edit(
         self,
         content: Optional[str] = MISSING,
-        attachments: Sequence[Union[Attachment, File]] = MISSING,
+        attachments: Sequence[Union[Attachment, _FileBase]] = MISSING,
         suppress: bool = False,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
@@ -2170,7 +2171,7 @@ class Message(PartialMessage, Hashable):
         content: Optional[:class:`str`]
             The new content to replace the message with.
             Could be ``None`` to remove the content.
-        attachments: List[Union[:class:`Attachment`, :class:`File`]]
+        attachments: List[Union[:class:`Attachment`, :class:`File`, :class:`CloudFile`]]
             A list of attachments to keep in the message as well as new files to upload. If ``[]`` is passed
             then all attachments are removed.
 
@@ -2238,7 +2239,7 @@ class Message(PartialMessage, Hashable):
 
         return message
 
-    async def add_files(self, *files: File) -> Message:
+    async def add_files(self, *files: _FileBase) -> Message:
         r"""|coro|
 
         Adds new files to the end of the message attachments.
@@ -2247,7 +2248,7 @@ class Message(PartialMessage, Hashable):
 
         Parameters
         -----------
-        \*files: :class:`File`
+        \*files: Union[:class:`File`, :class:`CloudFile`]
             New files to add to the message.
 
         Raises

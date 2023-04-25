@@ -54,7 +54,7 @@ from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
 from .invite import Invite
-from .file import File
+from .file import File, CloudFile
 from .http import handle_message_parameters
 from .voice_client import VoiceClient, VoiceProtocol
 from .sticker import GuildSticker, StickerItem
@@ -79,6 +79,7 @@ if TYPE_CHECKING:
     from .client import Client
     from .user import ClientUser, User
     from .asset import Asset
+    from .file import _FileBase
     from .state import ConnectionState
     from .guild import Guild
     from .member import Member
@@ -1570,13 +1571,52 @@ class Messageable:
     async def _get_channel(self) -> MessageableChannel:
         raise NotImplementedError
 
+    async def upload_files(self, *files: File) -> List[CloudFile]:
+        r"""|coro|
+
+        Pre-uploads files to Discord's GCP bucket for use with :meth:`send`.
+
+        This method is useful if you have local files that you want to upload and
+        reuse multiple times.
+
+        Parameters
+        ------------
+        \*files: :class:`~discord.File`
+            A list of files to upload. Must be a maximum of 10.
+
+        Raises
+        -------
+        ~discord.HTTPException
+            Uploading the files failed.
+        ~discord.Forbidden
+            You do not have the proper permissions to upload files.
+
+        Returns
+        --------
+        List[:class:`~discord.CloudFile`]
+            The files that were uploaded. These can be used in lieu
+            of normal :class:`~discord.File`\s in :meth:`send`.
+        """
+        if not files:
+            return []
+
+        state = self._state
+        channel = await self._get_channel()
+
+        mapped_files = {i: f for i, f in enumerate(files)}
+        data = await self._state.http.get_attachment_urls(channel.id, [f.to_upload_dict(i) for i, f in mapped_files.items()])
+        return [
+            await CloudFile.from_file(state=state, data=uploaded, file=mapped_files[int(uploaded.get('id', 11))])
+            for uploaded in data['attachments']
+        ]
+
     @overload
     async def send(
         self,
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        file: File = ...,
+        file: _FileBase = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1594,7 +1634,7 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        files: Sequence[File] = ...,
+        files: Sequence[_FileBase] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1612,7 +1652,7 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        file: File = ...,
+        file: _FileBase = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1630,7 +1670,7 @@ class Messageable:
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
-        files: Sequence[File] = ...,
+        files: Sequence[_FileBase] = ...,
         stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
@@ -1647,8 +1687,8 @@ class Messageable:
         content: Optional[str] = None,
         *,
         tts: bool = False,
-        file: Optional[File] = None,
-        files: Optional[Sequence[File]] = None,
+        file: Optional[_FileBase] = None,
+        files: Optional[Sequence[_FileBase]] = None,
         stickers: Optional[Sequence[Union[GuildSticker, StickerItem]]] = None,
         delete_after: Optional[float] = None,
         nonce: Optional[Union[str, int]] = MISSING,
@@ -1680,9 +1720,9 @@ class Messageable:
             The content of the message to send.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
-        file: :class:`~discord.File`
+        file: Union[:class:`~discord.File`, :class:`~discord.CloudFile`]
             The file to upload.
-        files: List[:class:`~discord.File`]
+        files: List[Union[:class:`~discord.File`, :class:`~discord.CloudFile`]]
             A list of files to upload. Must be a maximum of 10.
         nonce: :class:`int`
             The nonce to use for sending this message. If the message was successfully sent,

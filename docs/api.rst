@@ -7637,6 +7637,13 @@ File
 
 .. autoclass:: File()
     :members:
+    :inherited-members:
+
+.. attributetable:: CloudFile
+
+.. autoclass:: CloudFile()
+    :members:
+    :inherited-members:
 
 Colour
 ~~~~~~

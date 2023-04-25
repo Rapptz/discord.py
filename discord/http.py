@@ -63,7 +63,7 @@ from .errors import (
     GatewayNotFound,
     CaptchaRequired,
 )
-from .file import File
+from .file import _FileBase, File
 from .tracking import ContextProperties
 from . import utils
 from .mentions import AllowedMentions
@@ -75,7 +75,6 @@ if TYPE_CHECKING:
     from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VoiceChannel, ForumChannel
     from .handlers import CaptchaHandler
     from .threads import Thread
-    from .file import File
     from .mentions import AllowedMentions
     from .message import Attachment, Message
     from .flags import MessageFlags
@@ -166,11 +165,11 @@ def handle_message_parameters(
     tts: bool = False,
     nonce: Optional[Union[int, str]] = MISSING,
     flags: MessageFlags = MISSING,
-    file: File = MISSING,
-    files: Sequence[File] = MISSING,
+    file: _FileBase = MISSING,
+    files: Sequence[_FileBase] = MISSING,
     embed: Optional[Embed] = MISSING,
     embeds: Sequence[Embed] = MISSING,
-    attachments: Sequence[Union[Attachment, File]] = MISSING,
+    attachments: Sequence[Union[Attachment, _FileBase]] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     message_reference: Optional[message.MessageReference] = MISSING,
     stickers: Optional[SnowflakeList] = MISSING,
@@ -249,13 +248,13 @@ def handle_message_parameters(
     if attachments is MISSING:
         attachments = files
     else:
-        files = [a for a in attachments if isinstance(a, File)]
+        files = [a for a in attachments if isinstance(a, _FileBase)]
 
     if attachments is not MISSING:
         file_index = 0
         attachments_payload = []
         for attachment in attachments:
-            if isinstance(attachment, File):
+            if isinstance(attachment, _FileBase):
                 attachments_payload.append(attachment.to_dict(file_index))
                 file_index += 1
             else:
@@ -269,11 +268,13 @@ def handle_message_parameters(
         }
         payload.update(channel_payload)
 
+    # Legacy uploading
     multipart = []
-    if files:
+    to_upload = [file for file in files if isinstance(file, File)]
+    if to_upload:
         multipart.append({'name': 'payload_json', 'value': utils._to_json(payload)})
         payload = None
-        for index, file in enumerate(files):
+        for index, file in enumerate(to_upload):
             multipart.append(
                 {
                     'name': f'files[{index}]',
@@ -283,7 +284,7 @@ def handle_message_parameters(
                 }
             )
 
-    return MultipartParameters(payload=payload, multipart=multipart, files=files)
+    return MultipartParameters(payload=payload, multipart=multipart, files=to_upload)
 
 
 def _gen_accept_encoding_header():
@@ -1325,6 +1326,16 @@ class HTTPClient:
 
     def ack_pins(self, channel_id: Snowflake) -> Response[None]:
         return self.request(Route('POST', '/channels/{channel_id}/pins/ack', channel_id=channel_id))
+
+    def get_attachment_urls(
+        self, channel_id: Snowflake, attachments: List[message.UploadedAttachment]
+    ) -> Response[message.CloudAttachments]:
+        payload = {'files': attachments}
+
+        return self.request(Route('POST', '/channels/{channel_id}/attachments', channel_id=channel_id), json=payload)
+
+    def delete_attachment(self, uploaded_filename: str) -> Response[None]:
+        return self.request(Route('DELETE', '/attachments/{uploaded_filename}', uploaded_filename=uploaded_filename))
 
     # Member management
 

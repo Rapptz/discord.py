@@ -185,3 +185,19 @@ MessageSearchHasType = Literal[
 ]
 MessageSearchSortType = Literal['timestamp', 'relevance']
 MessageSearchSortOrder = Literal['desc', 'asc']
+
+
+class UploadedAttachment(TypedDict):
+    id: NotRequired[Snowflake]
+    filename: str
+    file_size: int
+
+
+class CloudAttachment(TypedDict):
+    id: NotRequired[Snowflake]
+    upload_url: str
+    upload_filename: str
+
+
+class CloudAttachments(TypedDict):
+    attachments: List[CloudAttachment]

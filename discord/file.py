@@ -28,15 +28,21 @@ from base64 import b64encode
 from hashlib import md5
 import io
 import os
-from typing import Any, Dict, Optional, Tuple, Union
+import yarl
+from typing import Any, Dict, Optional, Tuple, Union, TYPE_CHECKING
 
 from .utils import MISSING, cached_slot_property
 
-# fmt: off
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
+    from .state import ConnectionState
+    from .types.message import CloudAttachment as CloudAttachmentPayload, UploadedAttachment as UploadedAttachmentPayload
+
 __all__ = (
     'File',
+    'CloudFile',
 )
-# fmt: on
 
 
 def _strip_spoiler(filename: str) -> Tuple[str, bool]:
@@ -47,7 +53,48 @@ def _strip_spoiler(filename: str) -> Tuple[str, bool]:
     return stripped, spoiler
 
 
-class File:
+class _FileBase:
+    __slots__ = ('_filename', 'spoiler', 'description')
+
+    def __init__(self, filename: str, *, spoiler: bool = False, description: Optional[str] = None):
+        self._filename, filename_spoiler = _strip_spoiler(filename)
+        if spoiler is MISSING:
+            spoiler = filename_spoiler
+
+        self.spoiler: bool = spoiler
+        self.description: Optional[str] = description
+
+    @property
+    def filename(self) -> str:
+        """:class:`str`: The filename to display when uploading to Discord.
+        If this is not given then it defaults to ``fp.name`` or if ``fp`` is
+        a string then the ``filename`` will default to the string given.
+        """
+        return 'SPOILER_' + self._filename if self.spoiler else self._filename
+
+    @filename.setter
+    def filename(self, value: str) -> None:
+        self._filename, self.spoiler = _strip_spoiler(value)
+
+    def to_dict(self, index: int) -> Dict[str, Any]:
+        payload = {
+            'id': str(index),
+            'filename': self.filename,
+        }
+
+        if self.description is not None:
+            payload['description'] = self.description
+
+        return payload
+
+    def reset(self, *, seek: Union[int, bool] = True) -> None:
+        return
+
+    def close(self) -> None:
+        return
+
+
+class File(_FileBase):
     r"""A parameter object used for :meth:`abc.Messageable.send`
     for sending file objects.
 
@@ -79,7 +126,7 @@ class File:
         .. versionadded:: 2.0
     """
 
-    __slots__ = ('fp', '_filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer', '_cs_md5')
+    __slots__ = ('fp', '_original_pos', '_owner', '_closer', '_cs_md5', '_cs_size')
 
     def __init__(
         self,
@@ -112,24 +159,7 @@ class File:
             else:
                 filename = getattr(fp, 'name', 'untitled')
 
-        self._filename, filename_spoiler = _strip_spoiler(filename)
-        if spoiler is MISSING:
-            spoiler = filename_spoiler
-
-        self.spoiler: bool = spoiler
-        self.description: Optional[str] = description
-
-    @property
-    def filename(self) -> str:
-        """:class:`str`: The filename to display when uploading to Discord.
-        If this is not given then it defaults to ``fp.name`` or if ``fp`` is
-        a string then the ``filename`` will default to the string given.
-        """
-        return 'SPOILER_' + self._filename if self.spoiler else self._filename
-
-    @filename.setter
-    def filename(self, value: str) -> None:
-        self._filename, self.spoiler = _strip_spoiler(value)
+        super().__init__(filename, spoiler=spoiler, description=description)
 
     @cached_slot_property('_cs_md5')
     def md5(self) -> str:
@@ -137,6 +167,17 @@ class File:
             return b64encode(md5(self.fp.read()).digest()).decode('utf-8')
         finally:
             self.reset()
+
+    @cached_slot_property('_cs_size')
+    def size(self) -> int:
+        return os.fstat(self.fp.fileno()).st_size
+
+    def to_upload_dict(self, index: int) -> UploadedAttachmentPayload:
+        return {
+            'id': str(index),
+            'filename': self.filename,
+            'file_size': self.size,
+        }
 
     def reset(self, *, seek: Union[int, bool] = True) -> None:
         # The `seek` parameter is needed because
@@ -155,13 +196,79 @@ class File:
         if self._owner:
             self._closer()
 
+
+class CloudFile(_FileBase):
+    """A parameter object used for :meth:`abc.Messageable.send`
+    for sending file objects that have been pre-uploaded to Discord's GCP bucket.
+
+    .. note::
+
+        Unlike :class:`File`, this class is not directly user-constructable, however
+        it can be reused multiple times in :meth:`abc.Messageable.send`.
+
+        To construct it, see :meth:`abc.Messageable.upload_files`.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    -----------
+    url: :class:`str`
+        The upload URL of the file.
+
+        .. note::
+
+            This URL cannot be used to download the file,
+            it is merely used to send the file to Discord.
+    upload_filename: :class:`str`
+        The filename that Discord has assigned to the file.
+    spoiler: :class:`bool`
+        Whether the attachment is a spoiler. If left unspecified, the :attr:`~CloudFile.filename` is used
+        to determine if the file is a spoiler.
+    description: Optional[:class:`str`]
+        The file description to display, currently only supported for images.
+    """
+
+    __slots__ = ('url', 'upload_filename', '_state')
+
+    def __init__(
+        self,
+        url: str,
+        filename: str,
+        upload_filename: str,
+        *,
+        spoiler: bool = MISSING,
+        description: Optional[str] = None,
+        state: ConnectionState,
+    ):
+        super().__init__(filename, spoiler=spoiler, description=description)
+        self.url = url
+        self.upload_filename = upload_filename
+        self._state = state
+
+    @classmethod
+    async def from_file(cls, *, file: File, state: ConnectionState, data: CloudAttachmentPayload) -> Self:
+        await state.http.upload_to_cloud(data['upload_url'], file)
+        return cls(data['upload_url'], file._filename, data['upload_filename'], description=file.description, state=state)
+
+    @property
+    def upload_id(self) -> str:
+        """:class:`str`: The upload ID of the file."""
+        url = yarl.URL(self.url)
+        return url.query['upload_id']
+
     def to_dict(self, index: int) -> Dict[str, Any]:
-        payload = {
-            'id': index,
-            'filename': self.filename,
-        }
-
-        if self.description is not None:
-            payload['description'] = self.description
-
+        payload = super().to_dict(index)
+        payload['uploaded_filename'] = self.upload_filename
         return payload
+
+    async def delete(self) -> None:
+        """|coro|
+
+        Deletes the uploaded file from Discord's GCP bucket.
+
+        Raises
+        -------
+        HTTPException
+            Deleting the file failed.
+        """
+        await self._state.http.delete_attachment(self.upload_filename)
