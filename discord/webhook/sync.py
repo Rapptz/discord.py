@@ -835,8 +835,7 @@ class SyncWebhook(BaseWebhook):
 
             payload['channel_id'] = channel.id
             data = adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
-
-        if prefer_auth and self.auth_token:
+        elif prefer_auth and self.auth_token:
             data = adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
         elif self.token:
             data = adapter.edit_webhook_with_token(self.id, self.token, payload=payload, session=self.session, reason=reason)
