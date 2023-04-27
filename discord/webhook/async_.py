@@ -1511,8 +1511,7 @@ class Webhook(BaseWebhook):
                 proxy_auth=self.proxy_auth,
                 reason=reason,
             )
-
-        if prefer_auth and self.auth_token:
+        elif prefer_auth and self.auth_token:
             data = await adapter.edit_webhook(
                 self.id,
                 self.auth_token,
