@@ -223,12 +223,7 @@ class Asset(AssetMixin):
             key=str(index),
             animated=False,
         )
-        
-    @classmethod
-    def _from_avatar_decoration(cls,state:_State,hash:str) -> Self:
-        return cls(state,url=f'{cls.BASE}/avatar-decoration-presets/{hash}',animated=True,key=hash)
-    
-
+  
     @classmethod
     def _from_avatar(cls, state: _State, user_id: int, avatar: str) -> Self:
         animated = avatar.startswith('a_')
