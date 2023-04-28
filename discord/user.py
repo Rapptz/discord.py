@@ -82,7 +82,6 @@ class BaseUser(_UserTag):
         system: bool
         _state: ConnectionState
         _avatar: Optional[str]
-        _avatar_decoration: Optional[str]
         _banner: Optional[str]
         _accent_colour: Optional[int]
         _public_flags: int
@@ -114,7 +113,6 @@ class BaseUser(_UserTag):
         self.id = int(data['id'])
         self.discriminator = data['discriminator']
         self._avatar = data['avatar']
-        self._avatar_decoration = data.get("avatar_decoration",None)
         self._banner = data.get('banner', None)
         self._accent_colour = data.get('accent_color', None)
         self._public_flags = data.get('public_flags', 0)
@@ -160,13 +158,6 @@ class BaseUser(_UserTag):
         """
         if self._avatar is not None:
             return Asset._from_avatar(self._state, self.id, self._avatar)
-        return None
-        
-     
-    @property
-    def avatar_decoration(self) -> Optional[Asset]:
-        if self._avatar_decoration is not None:
-            return Asset._from_avatar_decoration(self._state, self.id, self._avatar_decoration)
         return None
 
     @property
