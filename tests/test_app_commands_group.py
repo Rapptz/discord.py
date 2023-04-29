@@ -24,8 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from discord import app_commands
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 

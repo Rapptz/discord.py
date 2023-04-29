@@ -24,9 +24,9 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import asyncio
 import copy
 import time
-import asyncio
 from datetime import datetime
 from typing import (
     Any,
@@ -46,19 +46,19 @@ from typing import (
     runtime_checkable,
 )
 
-from .object import OLDEST_OBJECT, Object
+from . import utils
 from .context_managers import Typing
 from .enums import ChannelType
 from .errors import ClientException
-from .mentions import AllowedMentions
-from .permissions import PermissionOverwrite, Permissions
-from .role import Role
-from .invite import Invite
 from .file import File
 from .http import handle_message_parameters
-from .voice_client import VoiceClient, VoiceProtocol
+from .invite import Invite
+from .mentions import AllowedMentions
+from .object import OLDEST_OBJECT, Object
+from .permissions import PermissionOverwrite, Permissions
+from .role import Role
 from .sticker import GuildSticker, StickerItem
-from . import utils
+from .voice_client import VoiceClient, VoiceProtocol
 
 __all__ = (
     'Snowflake',
@@ -126,16 +126,16 @@ async def _single_delete_strategy(messages: Iterable[Message], *, reason: Option
 
 
 async def _purge_helper(
-    channel: Union[Thread, TextChannel, VocalGuildChannel],
-    *,
-    limit: Optional[int] = 100,
-    check: Callable[[Message], bool] = MISSING,
-    before: Optional[SnowflakeTime] = None,
-    after: Optional[SnowflakeTime] = None,
-    around: Optional[SnowflakeTime] = None,
-    oldest_first: Optional[bool] = None,
-    bulk: bool = True,
-    reason: Optional[str] = None,
+        channel: Union[Thread, TextChannel, VocalGuildChannel],
+        *,
+        limit: Optional[int] = 100,
+        check: Callable[[Message], bool] = MISSING,
+        before: Optional[SnowflakeTime] = None,
+        after: Optional[SnowflakeTime] = None,
+        around: Optional[SnowflakeTime] = None,
+        oldest_first: Optional[bool] = None,
+        bulk: bool = True,
+        reason: Optional[str] = None,
 ) -> List[Message]:
     if check is MISSING:
         check = lambda m: True
@@ -362,7 +362,6 @@ class GuildChannel:
     _overwrites: List[_Overwrites]
 
     if TYPE_CHECKING:
-
         def __init__(self, *, state: ConnectionState, guild: Guild, data: GuildChannelPayload):
             ...
 
@@ -377,12 +376,12 @@ class GuildChannel:
         raise NotImplementedError
 
     async def _move(
-        self,
-        position: int,
-        parent_id: Optional[Any] = None,
-        lock_permissions: bool = False,
-        *,
-        reason: Optional[str],
+            self,
+            position: int,
+            parent_id: Optional[Any] = None,
+            lock_permissions: bool = False,
+            *,
+            reason: Optional[str],
     ) -> None:
         if position < 0:
             raise ValueError('Channel position cannot be less than 0.')
@@ -821,31 +820,31 @@ class GuildChannel:
 
     @overload
     async def set_permissions(
-        self,
-        target: Union[Member, Role],
-        *,
-        overwrite: Optional[Union[PermissionOverwrite, _Undefined]] = ...,
-        reason: Optional[str] = ...,
+            self,
+            target: Union[Member, Role],
+            *,
+            overwrite: Optional[Union[PermissionOverwrite, _Undefined]] = ...,
+            reason: Optional[str] = ...,
     ) -> None:
         ...
 
     @overload
     async def set_permissions(
-        self,
-        target: Union[Member, Role],
-        *,
-        reason: Optional[str] = ...,
-        **permissions: Optional[bool],
+            self,
+            target: Union[Member, Role],
+            *,
+            reason: Optional[str] = ...,
+            **permissions: Optional[bool],
     ) -> None:
         ...
 
     async def set_permissions(
-        self,
-        target: Union[Member, Role],
-        *,
-        overwrite: Any = _undefined,
-        reason: Optional[str] = None,
-        **permissions: Optional[bool],
+            self,
+            target: Union[Member, Role],
+            *,
+            overwrite: Any = _undefined,
+            reason: Optional[str] = None,
+            **permissions: Optional[bool],
     ) -> None:
         r"""|coro|
 
@@ -956,11 +955,11 @@ class GuildChannel:
             raise TypeError('Invalid overwrite type provided.')
 
     async def _clone_impl(
-        self,
-        base_attrs: Dict[str, Any],
-        *,
-        name: Optional[str] = None,
-        reason: Optional[str] = None,
+            self,
+            base_attrs: Dict[str, Any],
+            *,
+            name: Optional[str] = None,
+            reason: Optional[str] = None,
     ) -> Self:
         base_attrs['permission_overwrites'] = [x._asdict() for x in self._overwrites]
         base_attrs['parent_id'] = self.category_id
@@ -1008,49 +1007,49 @@ class GuildChannel:
 
     @overload
     async def move(
-        self,
-        *,
-        beginning: bool,
-        offset: int = MISSING,
-        category: Optional[Snowflake] = MISSING,
-        sync_permissions: bool = MISSING,
-        reason: Optional[str] = MISSING,
+            self,
+            *,
+            beginning: bool,
+            offset: int = MISSING,
+            category: Optional[Snowflake] = MISSING,
+            sync_permissions: bool = MISSING,
+            reason: Optional[str] = MISSING,
     ) -> None:
         ...
 
     @overload
     async def move(
-        self,
-        *,
-        end: bool,
-        offset: int = MISSING,
-        category: Optional[Snowflake] = MISSING,
-        sync_permissions: bool = MISSING,
-        reason: str = MISSING,
+            self,
+            *,
+            end: bool,
+            offset: int = MISSING,
+            category: Optional[Snowflake] = MISSING,
+            sync_permissions: bool = MISSING,
+            reason: str = MISSING,
     ) -> None:
         ...
 
     @overload
     async def move(
-        self,
-        *,
-        before: Snowflake,
-        offset: int = MISSING,
-        category: Optional[Snowflake] = MISSING,
-        sync_permissions: bool = MISSING,
-        reason: str = MISSING,
+            self,
+            *,
+            before: Snowflake,
+            offset: int = MISSING,
+            category: Optional[Snowflake] = MISSING,
+            sync_permissions: bool = MISSING,
+            reason: str = MISSING,
     ) -> None:
         ...
 
     @overload
     async def move(
-        self,
-        *,
-        after: Snowflake,
-        offset: int = MISSING,
-        category: Optional[Snowflake] = MISSING,
-        sync_permissions: bool = MISSING,
-        reason: str = MISSING,
+            self,
+            *,
+            after: Snowflake,
+            offset: int = MISSING,
+            category: Optional[Snowflake] = MISSING,
+            sync_permissions: bool = MISSING,
+            reason: str = MISSING,
     ) -> None:
         ...
 
@@ -1137,14 +1136,14 @@ class GuildChannel:
                 ch
                 for ch in self.guild.channels
                 if ch._sorting_bucket == bucket
-                and ch.category_id == parent_id
+                   and ch.category_id == parent_id
             ]
         else:
             channels = [
                 ch
                 for ch in self.guild.channels
                 if ch._sorting_bucket == bucket
-                and ch.category_id == self.category_id
+                   and ch.category_id == self.category_id
             ]
         # fmt: on
 
@@ -1183,16 +1182,16 @@ class GuildChannel:
         await self._state.http.bulk_channel_update(self.guild.id, payload, reason=reason)
 
     async def create_invite(
-        self,
-        *,
-        reason: Optional[str] = None,
-        max_age: int = 0,
-        max_uses: int = 0,
-        temporary: bool = False,
-        unique: bool = True,
-        target_type: Optional[InviteTarget] = None,
-        target_user: Optional[User] = None,
-        target_application_id: Optional[int] = None,
+            self,
+            *,
+            reason: Optional[str] = None,
+            max_age: int = 0,
+            max_uses: int = 0,
+            temporary: bool = False,
+            unique: bool = True,
+            target_type: Optional[InviteTarget] = None,
+            target_user: Optional[User] = None,
+            target_application_id: Optional[int] = None,
     ) -> Invite:
         """|coro|
 
@@ -1310,102 +1309,102 @@ class Messageable:
 
     @overload
     async def send(
-        self,
-        content: Optional[str] = ...,
-        *,
-        tts: bool = ...,
-        embed: Embed = ...,
-        file: File = ...,
-        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-        delete_after: float = ...,
-        nonce: Union[str, int] = ...,
-        allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-        mention_author: bool = ...,
-        view: View = ...,
-        suppress_embeds: bool = ...,
-        silent: bool = ...,
+            self,
+            content: Optional[str] = ...,
+            *,
+            tts: bool = ...,
+            embed: Embed = ...,
+            file: File = ...,
+            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+            delete_after: float = ...,
+            nonce: Union[str, int] = ...,
+            allowed_mentions: AllowedMentions = ...,
+            reference: Union[Message, MessageReference, PartialMessage] = ...,
+            mention_author: bool = ...,
+            view: View = ...,
+            suppress_embeds: bool = ...,
+            silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def send(
-        self,
-        content: Optional[str] = ...,
-        *,
-        tts: bool = ...,
-        embed: Embed = ...,
-        files: Sequence[File] = ...,
-        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-        delete_after: float = ...,
-        nonce: Union[str, int] = ...,
-        allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-        mention_author: bool = ...,
-        view: View = ...,
-        suppress_embeds: bool = ...,
-        silent: bool = ...,
+            self,
+            content: Optional[str] = ...,
+            *,
+            tts: bool = ...,
+            embed: Embed = ...,
+            files: Sequence[File] = ...,
+            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+            delete_after: float = ...,
+            nonce: Union[str, int] = ...,
+            allowed_mentions: AllowedMentions = ...,
+            reference: Union[Message, MessageReference, PartialMessage] = ...,
+            mention_author: bool = ...,
+            view: View = ...,
+            suppress_embeds: bool = ...,
+            silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def send(
-        self,
-        content: Optional[str] = ...,
-        *,
-        tts: bool = ...,
-        embeds: Sequence[Embed] = ...,
-        file: File = ...,
-        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-        delete_after: float = ...,
-        nonce: Union[str, int] = ...,
-        allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-        mention_author: bool = ...,
-        view: View = ...,
-        suppress_embeds: bool = ...,
-        silent: bool = ...,
+            self,
+            content: Optional[str] = ...,
+            *,
+            tts: bool = ...,
+            embeds: Sequence[Embed] = ...,
+            file: File = ...,
+            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+            delete_after: float = ...,
+            nonce: Union[str, int] = ...,
+            allowed_mentions: AllowedMentions = ...,
+            reference: Union[Message, MessageReference, PartialMessage] = ...,
+            mention_author: bool = ...,
+            view: View = ...,
+            suppress_embeds: bool = ...,
+            silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def send(
-        self,
-        content: Optional[str] = ...,
-        *,
-        tts: bool = ...,
-        embeds: Sequence[Embed] = ...,
-        files: Sequence[File] = ...,
-        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-        delete_after: float = ...,
-        nonce: Union[str, int] = ...,
-        allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-        mention_author: bool = ...,
-        view: View = ...,
-        suppress_embeds: bool = ...,
-        silent: bool = ...,
+            self,
+            content: Optional[str] = ...,
+            *,
+            tts: bool = ...,
+            embeds: Sequence[Embed] = ...,
+            files: Sequence[File] = ...,
+            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+            delete_after: float = ...,
+            nonce: Union[str, int] = ...,
+            allowed_mentions: AllowedMentions = ...,
+            reference: Union[Message, MessageReference, PartialMessage] = ...,
+            mention_author: bool = ...,
+            view: View = ...,
+            suppress_embeds: bool = ...,
+            silent: bool = ...,
     ) -> Message:
         ...
 
     async def send(
-        self,
-        content: Optional[str] = None,
-        *,
-        tts: bool = False,
-        embed: Optional[Embed] = None,
-        embeds: Optional[Sequence[Embed]] = None,
-        file: Optional[File] = None,
-        files: Optional[Sequence[File]] = None,
-        stickers: Optional[Sequence[Union[GuildSticker, StickerItem]]] = None,
-        delete_after: Optional[float] = None,
-        nonce: Optional[Union[str, int]] = None,
-        allowed_mentions: Optional[AllowedMentions] = None,
-        reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
-        mention_author: Optional[bool] = None,
-        view: Optional[View] = None,
-        suppress_embeds: bool = False,
-        silent: bool = False,
+            self,
+            content: Optional[str] = None,
+            *,
+            tts: bool = False,
+            embed: Optional[Embed] = None,
+            embeds: Optional[Sequence[Embed]] = None,
+            file: Optional[File] = None,
+            files: Optional[Sequence[File]] = None,
+            stickers: Optional[Sequence[Union[GuildSticker, StickerItem]]] = None,
+            delete_after: Optional[float] = None,
+            nonce: Optional[Union[str, int]] = None,
+            allowed_mentions: Optional[AllowedMentions] = None,
+            reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
+            mention_author: Optional[bool] = None,
+            view: Optional[View] = None,
+            suppress_embeds: bool = False,
+            silent: bool = False,
     ) -> Message:
         """|coro|
 
@@ -1543,20 +1542,20 @@ class Messageable:
             flags = MISSING
 
         with handle_message_parameters(
-            content=content,
-            tts=tts,
-            file=file if file is not None else MISSING,
-            files=files if files is not None else MISSING,
-            embed=embed if embed is not None else MISSING,
-            embeds=embeds if embeds is not None else MISSING,
-            nonce=nonce,
-            allowed_mentions=allowed_mentions,
-            message_reference=reference_dict,
-            previous_allowed_mentions=previous_allowed_mention,
-            mention_author=mention_author,
-            stickers=sticker_ids,
-            view=view,
-            flags=flags,
+                content=content,
+                tts=tts,
+                file=file if file is not None else MISSING,
+                files=files if files is not None else MISSING,
+                embed=embed if embed is not None else MISSING,
+                embeds=embeds if embeds is not None else MISSING,
+                nonce=nonce,
+                allowed_mentions=allowed_mentions,
+                message_reference=reference_dict,
+                previous_allowed_mentions=previous_allowed_mention,
+                mention_author=mention_author,
+                stickers=sticker_ids,
+                view=view,
+                flags=flags,
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 
@@ -1654,13 +1653,13 @@ class Messageable:
         return [state.create_message(channel=channel, data=m) for m in data]
 
     async def history(
-        self,
-        *,
-        limit: Optional[int] = 100,
-        before: Optional[SnowflakeTime] = None,
-        after: Optional[SnowflakeTime] = None,
-        around: Optional[SnowflakeTime] = None,
-        oldest_first: Optional[bool] = None,
+            self,
+            *,
+            limit: Optional[int] = 100,
+            before: Optional[SnowflakeTime] = None,
+            after: Optional[SnowflakeTime] = None,
+            around: Optional[SnowflakeTime] = None,
+            oldest_first: Optional[bool] = None,
     ) -> AsyncIterator[Message]:
         """Returns an :term:`asynchronous iterator` that enables receiving the destination's message history.
 
@@ -1838,13 +1837,13 @@ class Connectable(Protocol):
         raise NotImplementedError
 
     async def connect(
-        self,
-        *,
-        timeout: float = 60.0,
-        reconnect: bool = True,
-        cls: Callable[[Client, Connectable], T] = VoiceClient,
-        self_deaf: bool = False,
-        self_mute: bool = False,
+            self,
+            *,
+            timeout: float = 60.0,
+            reconnect: bool = True,
+            cls: Callable[[Client, Connectable], T] = VoiceClient,
+            self_deaf: bool = False,
+            self_mute: bool = False,
     ) -> T:
         """|coro|
 

@@ -6,9 +6,9 @@ Tests for discord.utils
 
 """
 
+import collections
 import datetime
 import random
-import collections
 import secrets
 import sys
 import time
@@ -192,7 +192,8 @@ async def test_as_chunks(source, chunk_size, chunked):
     [
         (datetime.datetime, datetime.datetime),
         ('datetime.datetime', datetime.datetime),
-        ('typing.Union[typing.Literal["a"], typing.Literal["b"]]', typing.Union[typing.Literal["a"], typing.Literal["b"]]),
+        ('typing.Union[typing.Literal["a"], typing.Literal["b"]]',
+         typing.Union[typing.Literal["a"], typing.Literal["b"]]),
         ('typing.Union[typing.Union[int, str], typing.Union[bool, dict]]', typing.Union[int, str, bool, dict]),
     ],
 )
@@ -206,9 +207,9 @@ def test_resolve_annotation(annotation, resolved):
         (datetime.datetime, datetime.datetime, False),
         ('datetime.datetime', datetime.datetime, True),
         (
-            'typing.Union[typing.Literal["a"], typing.Literal["b"]]',
-            typing.Union[typing.Literal["a"], typing.Literal["b"]],
-            True,
+                'typing.Union[typing.Literal["a"], typing.Literal["b"]]',
+                typing.Union[typing.Literal["a"], typing.Literal["b"]],
+                True,
         ),
         ('typing.Union[typing.Union[int, str], typing.Union[bool, dict]]', typing.Union[int, str, bool, dict], True),
     ],

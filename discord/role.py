@@ -23,12 +23,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+
 from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 from .asset import Asset
-from .permissions import Permissions
 from .colour import Colour
 from .mixins import Hashable
+from .permissions import Permissions
 from .utils import snowflake_time, _bytes_to_base64_data, _get_as_snowflake, MISSING
 
 __all__ = (
@@ -403,17 +404,17 @@ class Role(Hashable):
         await http.move_role_position(self.guild.id, payload, reason=reason)
 
     async def edit(
-        self,
-        *,
-        name: str = MISSING,
-        permissions: Permissions = MISSING,
-        colour: Union[Colour, int] = MISSING,
-        color: Union[Colour, int] = MISSING,
-        hoist: bool = MISSING,
-        display_icon: Optional[Union[bytes, str]] = MISSING,
-        mentionable: bool = MISSING,
-        position: int = MISSING,
-        reason: Optional[str] = MISSING,
+            self,
+            *,
+            name: str = MISSING,
+            permissions: Permissions = MISSING,
+            colour: Union[Colour, int] = MISSING,
+            color: Union[Colour, int] = MISSING,
+            hoist: bool = MISSING,
+            display_icon: Optional[Union[bytes, str]] = MISSING,
+            mentionable: bool = MISSING,
+            position: int = MISSING,
+            reason: Optional[str] = MISSING,
     ) -> Optional[Role]:
         """|coro|
 

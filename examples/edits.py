@@ -1,7 +1,8 @@
 # This example requires the 'message_content' privileged intent to function.
 
-import discord
 import asyncio
+
+import discord
 
 
 class MyClient(discord.Client):

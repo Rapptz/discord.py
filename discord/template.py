@@ -25,8 +25,9 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Any, Optional, TYPE_CHECKING, List
-from .utils import parse_time, _bytes_to_base64_data, MISSING
+
 from .guild import Guild
+from .utils import parse_time, _bytes_to_base64_data, MISSING
 
 # fmt: off
 __all__ = (
@@ -240,10 +241,10 @@ class Template:
         return Template(state=self._state, data=data)
 
     async def edit(
-        self,
-        *,
-        name: str = MISSING,
-        description: Optional[str] = MISSING,
+            self,
+            *,
+            name: str = MISSING,
+            description: Optional[str] = MISSING,
     ) -> Template:
         """|coro|
 

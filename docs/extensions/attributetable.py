@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 import importlib
 import inspect
 import re
@@ -202,7 +203,7 @@ def process_attributetable(app: Sphinx, doctree: nodes.Node, fromdocname: str) -
 
 
 def get_class_results(
-    lookup: Dict[str, List[str]], modulename: str, name: str, fullname: str
+        lookup: Dict[str, List[str]], modulename: str, name: str, fullname: str
 ) -> Dict[str, List[TableElement]]:
     module = importlib.import_module(modulename)
     cls = getattr(module, name)

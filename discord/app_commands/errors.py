@@ -160,11 +160,11 @@ class TranslationError(AppCommandError):
     """
 
     def __init__(
-        self,
-        *msg: str,
-        string: Optional[Union[str, locale_str]] = None,
-        locale: Optional[Locale] = None,
-        context: TranslationContextTypes,
+            self,
+            *msg: str,
+            string: Optional[Union[str, locale_str]] = None,
+            locale: Optional[Locale] = None,
+            context: TranslationContextTypes,
     ) -> None:
         self.string: Optional[Union[str, locale_str]] = string
         self.locale: Optional[Locale] = locale
@@ -449,11 +449,11 @@ class MissingApplicationID(AppCommandError):
 
 
 def _get_command_error(
-    index: str,
-    inner: Any,
-    objects: Sequence[Union[Parameter, CommandTypes]],
-    messages: List[str],
-    indent: int = 0,
+        index: str,
+        inner: Any,
+        objects: Sequence[Union[Parameter, CommandTypes]],
+        messages: List[str],
+        indent: int = 0,
 ) -> None:
     # Import these here to avoid circular imports
     from .commands import Command, Group, ContextMenu
@@ -481,7 +481,8 @@ def _get_command_error(
 
     children: Sequence[Union[Parameter, CommandTypes]] = []
     if isinstance(obj, Command):
-        messages.append(f'{indentation}In command {obj.qualified_name!r} defined in function {obj.callback.__qualname__!r}')
+        messages.append(
+            f'{indentation}In command {obj.qualified_name!r} defined in function {obj.callback.__qualname__!r}')
         children = obj.parameters
     elif isinstance(obj, Group):
         messages.append(f'{indentation}In group {obj.qualified_name!r} defined in module {obj.module!r}')

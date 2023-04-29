@@ -1,26 +1,33 @@
-from docutils.parsers.rst import Directive
-from docutils.parsers.rst import states, directives
-from docutils.parsers.rst.roles import set_classes
 from docutils import nodes
+from docutils.parsers.rst import Directive
+from docutils.parsers.rst import directives
+from docutils.parsers.rst.roles import set_classes
+
 
 class details(nodes.General, nodes.Element):
     pass
 
+
 class summary(nodes.General, nodes.Element):
     pass
 
+
 def visit_details_node(self, node):
     self.body.append(self.starttag(node, 'details', CLASS=node.attributes.get('class', '')))
+
 
 def visit_summary_node(self, node):
     self.body.append(self.starttag(node, 'summary', CLASS=node.attributes.get('summary-class', '')))
     self.body.append(node.rawsource)
 
+
 def depart_details_node(self, node):
     self.body.append('</details>\n')
 
+
 def depart_summary_node(self, node):
     self.body.append('</summary>')
+
 
 class DetailsDirective(Directive):
     final_argument_whitespace = True
@@ -47,6 +54,7 @@ class DetailsDirective(Directive):
 
         self.state.nested_parse(self.content, self.content_offset, node)
         return [node]
+
 
 def setup(app):
     app.add_node(details, html=(visit_details_node, depart_details_node))

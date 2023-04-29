@@ -5,7 +5,7 @@ from sphinx.util import logging as sphinx_logging
 
 
 class NitpickFileIgnorer(logging.Filter):
-    
+
     def __init__(self, app: Sphinx) -> None:
         self.app = app
         super().__init__()

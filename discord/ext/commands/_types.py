@@ -22,19 +22,12 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-
-from typing import Any, Awaitable, Callable, Coroutine, TYPE_CHECKING, Protocol, TypeVar, Union, Tuple, Optional
-
+from typing import Any, Awaitable, Callable, Coroutine, TYPE_CHECKING, Protocol, TypeVar, Union, Tuple
 
 T = TypeVar('T')
 
 if TYPE_CHECKING:
     from typing_extensions import ParamSpec
-
-    from .bot import Bot, AutoShardedBot
-    from .context import Context
-    from .cog import Cog
-    from .errors import CommandError
 
     P = ParamSpec('P')
     MaybeAwaitableFunc = Callable[P, 'MaybeAwaitable[T]']
@@ -51,7 +44,8 @@ MaybeAwaitable = Union[T, Awaitable[T]]
 CogT = TypeVar('CogT', bound='Optional[Cog]')
 UserCheck = Callable[["ContextT"], MaybeCoro[bool]]
 Hook = Union[Callable[["CogT", "ContextT"], Coro[Any]], Callable[["ContextT"], Coro[Any]]]
-Error = Union[Callable[["CogT", "ContextT", "CommandError"], Coro[Any]], Callable[["ContextT", "CommandError"], Coro[Any]]]
+Error = Union[
+    Callable[["CogT", "ContextT", "CommandError"], Coro[Any]], Callable[["ContextT", "CommandError"], Coro[Any]]]
 
 ContextT = TypeVar('ContextT', bound='Context[Any]')
 BotT = TypeVar('BotT', bound=_Bot, covariant=True)

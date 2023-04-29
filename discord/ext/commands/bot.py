@@ -24,14 +24,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-
 import asyncio
 import collections
 import collections.abc
-import inspect
 import importlib.util
-import sys
+import inspect
 import logging
+import sys
 import types
 from typing import (
     Any,
@@ -54,14 +53,13 @@ import discord
 from discord import app_commands
 from discord.app_commands.tree import _retrieve_guild_ids
 from discord.utils import MISSING, _is_submodule
-
-from .core import GroupMixin
-from .view import StringView
-from .context import Context
 from . import errors
-from .help import HelpCommand, DefaultHelpCommand
 from .cog import Cog
+from .context import Context
+from .core import GroupMixin
+from .help import HelpCommand, DefaultHelpCommand
 from .hybrid import hybrid_command, hybrid_group, HybridCommand, HybridGroup
+from .view import StringView
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -160,14 +158,14 @@ _default: Any = _DefaultRepr()
 
 class BotBase(GroupMixin[None]):
     def __init__(
-        self,
-        command_prefix: PrefixType[BotT],
-        *,
-        help_command: Optional[HelpCommand] = _default,
-        tree_cls: Type[app_commands.CommandTree[Any]] = app_commands.CommandTree,
-        description: Optional[str] = None,
-        intents: discord.Intents,
-        **options: Any,
+            self,
+            command_prefix: PrefixType[BotT],
+            *,
+            help_command: Optional[HelpCommand] = _default,
+            tree_cls: Type[app_commands.CommandTree[Any]] = app_commands.CommandTree,
+            description: Optional[str] = None,
+            intents: discord.Intents,
+            **options: Any,
     ) -> None:
         super().__init__(intents=intents, **options)
         self.command_prefix: PrefixType[BotT] = command_prefix
@@ -209,9 +207,9 @@ class BotBase(GroupMixin[None]):
         # The best place to do this is in an async init scenario
         if not self.intents.message_content:  # type: ignore
             trigger_warning = (
-                (callable(prefix) and prefix is not when_mentioned)
-                or isinstance(prefix, str)
-                or (isinstance(prefix, collections.abc.Iterable) and len(list(prefix)) >= 1)
+                    (callable(prefix) and prefix is not when_mentioned)
+                    or isinstance(prefix, str)
+                    or (isinstance(prefix, collections.abc.Iterable) and len(list(prefix)) >= 1)
             )
             if trigger_warning:
                 _log.warning('Privileged message content intent is missing, commands may not work as expected.')
@@ -270,11 +268,11 @@ class BotBase(GroupMixin[None]):
         return cmd
 
     def hybrid_command(
-        self,
-        name: Union[str, app_commands.locale_str] = MISSING,
-        with_app_command: bool = True,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            name: Union[str, app_commands.locale_str] = MISSING,
+            with_app_command: bool = True,
+            *args: Any,
+            **kwargs: Any,
     ) -> Callable[[CommandCallback[Any, ContextT, P, T]], HybridCommand[Any, P, T]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_command` and adds it to
         the internal command list via :meth:`add_command`.
@@ -294,11 +292,11 @@ class BotBase(GroupMixin[None]):
         return decorator
 
     def hybrid_group(
-        self,
-        name: Union[str, app_commands.locale_str] = MISSING,
-        with_app_command: bool = True,
-        *args: Any,
-        **kwargs: Any,
+            self,
+            name: Union[str, app_commands.locale_str] = MISSING,
+            with_app_command: bool = True,
+            *args: Any,
+            **kwargs: Any,
     ) -> Callable[[CommandCallback[Any, ContextT, P, T]], HybridGroup[Any, P, T]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to
         the internal command list via :meth:`add_command`.
@@ -698,13 +696,13 @@ class BotBase(GroupMixin[None]):
     # cogs
 
     async def add_cog(
-        self,
-        cog: Cog,
-        /,
-        *,
-        override: bool = False,
-        guild: Optional[Snowflake] = MISSING,
-        guilds: Sequence[Snowflake] = MISSING,
+            self,
+            cog: Cog,
+            /,
+            *,
+            override: bool = False,
+            guild: Optional[Snowflake] = MISSING,
+            guilds: Sequence[Snowflake] = MISSING,
     ) -> None:
         """|coro|
 
@@ -807,12 +805,12 @@ class BotBase(GroupMixin[None]):
         return self.__cogs.get(name)
 
     async def remove_cog(
-        self,
-        name: str,
-        /,
-        *,
-        guild: Optional[Snowflake] = MISSING,
-        guilds: Sequence[Snowflake] = MISSING,
+            self,
+            name: str,
+            /,
+            *,
+            guild: Optional[Snowflake] = MISSING,
+            guilds: Sequence[Snowflake] = MISSING,
     ) -> Optional[Cog]:
         """|coro|
 
@@ -1213,28 +1211,28 @@ class BotBase(GroupMixin[None]):
 
     @overload
     async def get_context(
-        self,
-        origin: Union[Message, Interaction],
-        /,
+            self,
+            origin: Union[Message, Interaction],
+            /,
     ) -> Context[Self]:  # type: ignore
         ...
 
     @overload
     async def get_context(
-        self,
-        origin: Union[Message, Interaction],
-        /,
-        *,
-        cls: Type[ContextT],
+            self,
+            origin: Union[Message, Interaction],
+            /,
+            *,
+            cls: Type[ContextT],
     ) -> ContextT:
         ...
 
     async def get_context(
-        self,
-        origin: Union[Message, Interaction],
-        /,
-        *,
-        cls: Type[ContextT] = MISSING,
+            self,
+            origin: Union[Message, Interaction],
+            /,
+            *,
+            cls: Type[ContextT] = MISSING,
     ) -> Any:
         r"""|coro|
 

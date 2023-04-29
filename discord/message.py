@@ -26,8 +26,8 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import re
 import io
+import re
 from os import PathLike
 from typing import (
     Dict,
@@ -46,23 +46,23 @@ from typing import (
 
 from . import utils
 from .asset import Asset
-from .reaction import Reaction
-from .emoji import Emoji
-from .partial_emoji import PartialEmoji
-from .enums import InteractionType, MessageType, ChannelType, try_enum
-from .errors import HTTPException
+from .channel import PartialMessageable
 from .components import _component_factory
 from .embeds import Embed
-from .member import Member
-from .flags import MessageFlags
+from .emoji import Emoji
+from .enums import InteractionType, MessageType, ChannelType, try_enum
+from .errors import HTTPException
 from .file import File
-from .utils import escape_mentions, MISSING
-from .http import handle_message_parameters
+from .flags import MessageFlags
 from .guild import Guild
+from .http import handle_message_parameters
+from .member import Member
 from .mixins import Hashable
+from .partial_emoji import PartialEmoji
+from .reaction import Reaction
 from .sticker import StickerItem, GuildSticker
 from .threads import Thread
-from .channel import PartialMessageable
+from .utils import escape_mentions, MISSING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -98,7 +98,6 @@ if TYPE_CHECKING:
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
     MessageComponentType = Union[ActionRow, ActionRowChildComponentType]
-
 
 __all__ = (
     'Attachment',
@@ -241,11 +240,11 @@ class Attachment(Hashable):
         return self.url or ''
 
     async def save(
-        self,
-        fp: Union[io.BufferedIOBase, PathLike[Any]],
-        *,
-        seek_begin: bool = True,
-        use_cached: bool = False,
+            self,
+            fp: Union[io.BufferedIOBase, PathLike[Any]],
+            *,
+            seek_begin: bool = True,
+            use_cached: bool = False,
     ) -> int:
         """|coro|
 
@@ -326,12 +325,12 @@ class Attachment(Hashable):
         return data
 
     async def to_file(
-        self,
-        *,
-        filename: Optional[str] = MISSING,
-        description: Optional[str] = MISSING,
-        use_cached: bool = False,
-        spoiler: bool = False,
+            self,
+            *,
+            filename: Optional[str] = MISSING,
+            description: Optional[str] = MISSING,
+            use_cached: bool = False,
+            spoiler: bool = False,
     ) -> File:
         """|coro|
 
@@ -477,7 +476,8 @@ class MessageReference:
 
     __slots__ = ('message_id', 'channel_id', 'guild_id', 'fail_if_not_exists', 'resolved', '_state')
 
-    def __init__(self, *, message_id: int, channel_id: int, guild_id: Optional[int] = None, fail_if_not_exists: bool = True):
+    def __init__(self, *, message_id: int, channel_id: int, guild_id: Optional[int] = None,
+                 fail_if_not_exists: bool = True):
         self._state: Optional[ConnectionState] = None
         self.resolved: Optional[Union[Message, DeletedReferencedMessage]] = None
         self.message_id: Optional[int] = message_id
@@ -754,14 +754,14 @@ class PartialMessage(Hashable):
 
     def __init__(self, *, channel: MessageableChannel, id: int) -> None:
         if not isinstance(channel, PartialMessageable) and channel.type not in (
-            ChannelType.text,
-            ChannelType.voice,
-            ChannelType.stage_voice,
-            ChannelType.news,
-            ChannelType.private,
-            ChannelType.news_thread,
-            ChannelType.public_thread,
-            ChannelType.private_thread,
+                ChannelType.text,
+                ChannelType.voice,
+                ChannelType.stage_voice,
+                ChannelType.news,
+                ChannelType.private,
+                ChannelType.news_thread,
+                ChannelType.public_thread,
+                ChannelType.private_thread,
         ):
             raise TypeError(
                 f'expected PartialMessageable, TextChannel, StageChannel, VoiceChannel, DMChannel or Thread not {type(channel)!r}'
@@ -860,40 +860,40 @@ class PartialMessage(Hashable):
 
     @overload
     async def edit(
-        self,
-        *,
-        content: Optional[str] = ...,
-        embed: Optional[Embed] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
-        delete_after: Optional[float] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
+            self,
+            *,
+            content: Optional[str] = ...,
+            embed: Optional[Embed] = ...,
+            attachments: Sequence[Union[Attachment, File]] = ...,
+            delete_after: Optional[float] = ...,
+            allowed_mentions: Optional[AllowedMentions] = ...,
+            view: Optional[View] = ...,
     ) -> Message:
         ...
 
     @overload
     async def edit(
-        self,
-        *,
-        content: Optional[str] = ...,
-        embeds: Sequence[Embed] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
-        delete_after: Optional[float] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
+            self,
+            *,
+            content: Optional[str] = ...,
+            embeds: Sequence[Embed] = ...,
+            attachments: Sequence[Union[Attachment, File]] = ...,
+            delete_after: Optional[float] = ...,
+            allowed_mentions: Optional[AllowedMentions] = ...,
+            view: Optional[View] = ...,
     ) -> Message:
         ...
 
     async def edit(
-        self,
-        *,
-        content: Optional[str] = MISSING,
-        embed: Optional[Embed] = MISSING,
-        embeds: Sequence[Embed] = MISSING,
-        attachments: Sequence[Union[Attachment, File]] = MISSING,
-        delete_after: Optional[float] = None,
-        allowed_mentions: Optional[AllowedMentions] = MISSING,
-        view: Optional[View] = MISSING,
+            self,
+            *,
+            content: Optional[str] = MISSING,
+            embed: Optional[Embed] = MISSING,
+            embeds: Sequence[Embed] = MISSING,
+            attachments: Sequence[Union[Attachment, File]] = MISSING,
+            delete_after: Optional[float] = None,
+            allowed_mentions: Optional[AllowedMentions] = MISSING,
+            view: Optional[View] = MISSING,
     ) -> Message:
         """|coro|
 
@@ -972,13 +972,13 @@ class PartialMessage(Hashable):
             self._state.prevent_view_updates_for(self.id)
 
         with handle_message_parameters(
-            content=content,
-            embed=embed,
-            embeds=embeds,
-            attachments=attachments,
-            view=view,
-            allowed_mentions=allowed_mentions,
-            previous_allowed_mentions=previous_allowed_mentions,
+                content=content,
+                embed=embed,
+                embeds=embeds,
+                attachments=attachments,
+                view=view,
+                allowed_mentions=allowed_mentions,
+                previous_allowed_mentions=previous_allowed_mentions,
         ) as params:
             data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
             message = Message(state=self._state, channel=self.channel, data=data)
@@ -1210,12 +1210,12 @@ class PartialMessage(Hashable):
         await self._state.http.clear_reactions(self.channel.id, self.id)
 
     async def create_thread(
-        self,
-        *,
-        name: str,
-        auto_archive_duration: ThreadArchiveDuration = MISSING,
-        slowmode_delay: Optional[int] = None,
-        reason: Optional[str] = None,
+            self,
+            *,
+            name: str,
+            auto_archive_duration: ThreadArchiveDuration = MISSING,
+            slowmode_delay: Optional[int] = None,
+            reason: Optional[str] = None,
     ) -> Thread:
         """|coro|
 
@@ -1261,7 +1261,8 @@ class PartialMessage(Hashable):
         if self.guild is None:
             raise ValueError('This message does not have guild info attached.')
 
-        default_auto_archive_duration: ThreadArchiveDuration = getattr(self.channel, 'default_auto_archive_duration', 1440)
+        default_auto_archive_duration: ThreadArchiveDuration = getattr(self.channel, 'default_auto_archive_duration',
+                                                                       1440)
         data = await self._state.http.start_thread_with_message(
             self.channel.id,
             self.id,
@@ -1274,81 +1275,81 @@ class PartialMessage(Hashable):
 
     @overload
     async def reply(
-        self,
-        content: Optional[str] = ...,
-        *,
-        tts: bool = ...,
-        embed: Embed = ...,
-        file: File = ...,
-        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-        delete_after: float = ...,
-        nonce: Union[str, int] = ...,
-        allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-        mention_author: bool = ...,
-        view: View = ...,
-        suppress_embeds: bool = ...,
-        silent: bool = ...,
+            self,
+            content: Optional[str] = ...,
+            *,
+            tts: bool = ...,
+            embed: Embed = ...,
+            file: File = ...,
+            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+            delete_after: float = ...,
+            nonce: Union[str, int] = ...,
+            allowed_mentions: AllowedMentions = ...,
+            reference: Union[Message, MessageReference, PartialMessage] = ...,
+            mention_author: bool = ...,
+            view: View = ...,
+            suppress_embeds: bool = ...,
+            silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def reply(
-        self,
-        content: Optional[str] = ...,
-        *,
-        tts: bool = ...,
-        embed: Embed = ...,
-        files: Sequence[File] = ...,
-        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-        delete_after: float = ...,
-        nonce: Union[str, int] = ...,
-        allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-        mention_author: bool = ...,
-        view: View = ...,
-        suppress_embeds: bool = ...,
-        silent: bool = ...,
+            self,
+            content: Optional[str] = ...,
+            *,
+            tts: bool = ...,
+            embed: Embed = ...,
+            files: Sequence[File] = ...,
+            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+            delete_after: float = ...,
+            nonce: Union[str, int] = ...,
+            allowed_mentions: AllowedMentions = ...,
+            reference: Union[Message, MessageReference, PartialMessage] = ...,
+            mention_author: bool = ...,
+            view: View = ...,
+            suppress_embeds: bool = ...,
+            silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def reply(
-        self,
-        content: Optional[str] = ...,
-        *,
-        tts: bool = ...,
-        embeds: Sequence[Embed] = ...,
-        file: File = ...,
-        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-        delete_after: float = ...,
-        nonce: Union[str, int] = ...,
-        allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-        mention_author: bool = ...,
-        view: View = ...,
-        suppress_embeds: bool = ...,
-        silent: bool = ...,
+            self,
+            content: Optional[str] = ...,
+            *,
+            tts: bool = ...,
+            embeds: Sequence[Embed] = ...,
+            file: File = ...,
+            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+            delete_after: float = ...,
+            nonce: Union[str, int] = ...,
+            allowed_mentions: AllowedMentions = ...,
+            reference: Union[Message, MessageReference, PartialMessage] = ...,
+            mention_author: bool = ...,
+            view: View = ...,
+            suppress_embeds: bool = ...,
+            silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def reply(
-        self,
-        content: Optional[str] = ...,
-        *,
-        tts: bool = ...,
-        embeds: Sequence[Embed] = ...,
-        files: Sequence[File] = ...,
-        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-        delete_after: float = ...,
-        nonce: Union[str, int] = ...,
-        allowed_mentions: AllowedMentions = ...,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-        mention_author: bool = ...,
-        view: View = ...,
-        suppress_embeds: bool = ...,
-        silent: bool = ...,
+            self,
+            content: Optional[str] = ...,
+            *,
+            tts: bool = ...,
+            embeds: Sequence[Embed] = ...,
+            files: Sequence[File] = ...,
+            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+            delete_after: float = ...,
+            nonce: Union[str, int] = ...,
+            allowed_mentions: AllowedMentions = ...,
+            reference: Union[Message, MessageReference, PartialMessage] = ...,
+            mention_author: bool = ...,
+            view: View = ...,
+            suppress_embeds: bool = ...,
+            silent: bool = ...,
     ) -> Message:
         ...
 
@@ -1600,11 +1601,11 @@ class Message(PartialMessage, Hashable):
         components: List[MessageComponentType]
 
     def __init__(
-        self,
-        *,
-        state: ConnectionState,
-        channel: MessageableChannel,
-        data: MessagePayload,
+            self,
+            *,
+            state: ConnectionState,
+            channel: MessageableChannel,
+            data: MessagePayload,
     ) -> None:
         self.channel: MessageableChannel = channel
         self.id: int = int(data['id'])
@@ -1867,9 +1868,9 @@ class Message(PartialMessage, Hashable):
         self.interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
 
     def _rebind_cached_references(
-        self,
-        new_guild: Guild,
-        new_channel: Union[GuildChannel, Thread, PartialMessageable],
+            self,
+            new_guild: Guild,
+            new_channel: Union[GuildChannel, Thread, PartialMessageable],
     ) -> None:
         self.guild = new_guild
         self.channel = new_channel  # type: ignore # Not all "GuildChannel" are messageable at the moment
@@ -2135,43 +2136,43 @@ class Message(PartialMessage, Hashable):
 
     @overload
     async def edit(
-        self,
-        *,
-        content: Optional[str] = ...,
-        embed: Optional[Embed] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
-        suppress: bool = ...,
-        delete_after: Optional[float] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
+            self,
+            *,
+            content: Optional[str] = ...,
+            embed: Optional[Embed] = ...,
+            attachments: Sequence[Union[Attachment, File]] = ...,
+            suppress: bool = ...,
+            delete_after: Optional[float] = ...,
+            allowed_mentions: Optional[AllowedMentions] = ...,
+            view: Optional[View] = ...,
     ) -> Message:
         ...
 
     @overload
     async def edit(
-        self,
-        *,
-        content: Optional[str] = ...,
-        embeds: Sequence[Embed] = ...,
-        attachments: Sequence[Union[Attachment, File]] = ...,
-        suppress: bool = ...,
-        delete_after: Optional[float] = ...,
-        allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
+            self,
+            *,
+            content: Optional[str] = ...,
+            embeds: Sequence[Embed] = ...,
+            attachments: Sequence[Union[Attachment, File]] = ...,
+            suppress: bool = ...,
+            delete_after: Optional[float] = ...,
+            allowed_mentions: Optional[AllowedMentions] = ...,
+            view: Optional[View] = ...,
     ) -> Message:
         ...
 
     async def edit(
-        self,
-        *,
-        content: Optional[str] = MISSING,
-        embed: Optional[Embed] = MISSING,
-        embeds: Sequence[Embed] = MISSING,
-        attachments: Sequence[Union[Attachment, File]] = MISSING,
-        suppress: bool = False,
-        delete_after: Optional[float] = None,
-        allowed_mentions: Optional[AllowedMentions] = MISSING,
-        view: Optional[View] = MISSING,
+            self,
+            *,
+            content: Optional[str] = MISSING,
+            embed: Optional[Embed] = MISSING,
+            embeds: Sequence[Embed] = MISSING,
+            attachments: Sequence[Union[Attachment, File]] = MISSING,
+            suppress: bool = False,
+            delete_after: Optional[float] = None,
+            allowed_mentions: Optional[AllowedMentions] = MISSING,
+            view: Optional[View] = MISSING,
     ) -> Message:
         """|coro|
 
@@ -2264,14 +2265,14 @@ class Message(PartialMessage, Hashable):
             self._state.prevent_view_updates_for(self.id)
 
         with handle_message_parameters(
-            content=content,
-            flags=flags,
-            embed=embed,
-            embeds=embeds,
-            attachments=attachments,
-            view=view,
-            allowed_mentions=allowed_mentions,
-            previous_allowed_mentions=previous_allowed_mentions,
+                content=content,
+                flags=flags,
+                embed=embed,
+                embeds=embeds,
+                attachments=attachments,
+                view=view,
+                allowed_mentions=allowed_mentions,
+                previous_allowed_mentions=previous_allowed_mentions,
         ) as params:
             data = await self._state.http.edit_message(self.channel.id, self.id, params=params)
             message = Message(state=self._state, channel=self.channel, data=data)

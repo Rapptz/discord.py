@@ -24,17 +24,16 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-
-from typing import Any, Callable, Deque, Dict, Optional, Union, Generic, TypeVar, TYPE_CHECKING
-from discord.enums import Enum
-import time
 import asyncio
+import time
 from collections import deque
+from typing import Any, Callable, Deque, Dict, Optional, Union, Generic, TypeVar, TYPE_CHECKING
 
-from ...abc import PrivateChannel
-from .errors import MaxConcurrencyReached
-from .context import Context
 from discord.app_commands import Cooldown as Cooldown
+from discord.enums import Enum
+from .context import Context
+from .errors import MaxConcurrencyReached
+from ...abc import PrivateChannel
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -85,9 +84,9 @@ class BucketType(Enum):
 
 class CooldownMapping(Generic[T_contra]):
     def __init__(
-        self,
-        original: Optional[Cooldown],
-        type: Callable[[T_contra], Any],
+            self,
+            original: Optional[Cooldown],
+            type: Callable[[T_contra], Any],
     ) -> None:
         if not callable(type):
             raise TypeError('Cooldown type must be a BucketType or callable')
@@ -152,9 +151,9 @@ class CooldownMapping(Generic[T_contra]):
 
 class DynamicCooldownMapping(CooldownMapping[T_contra]):
     def __init__(
-        self,
-        factory: Callable[[T_contra], Optional[Cooldown]],
-        type: Callable[[T_contra], Any],
+            self,
+            factory: Callable[[T_contra], Optional[Cooldown]],
+            type: Callable[[T_contra], Any],
     ) -> None:
         super().__init__(None, type)
         self._factory: Callable[[T_contra], Optional[Cooldown]] = factory

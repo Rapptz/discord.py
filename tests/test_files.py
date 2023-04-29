@@ -28,7 +28,6 @@ from io import BytesIO
 
 import discord
 
-
 FILE = BytesIO()
 
 

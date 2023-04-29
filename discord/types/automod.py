@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import Literal, TypedDict, List, Union, Optional
+
 from typing_extensions import NotRequired
 
 from .snowflake import Snowflake
@@ -64,7 +65,8 @@ class _AutoModerationActionTimeout(TypedDict):
     metadata: _AutoModerationActionMetadataTimeout
 
 
-AutoModerationAction = Union[_AutoModerationActionBlockMessage, _AutoModerationActionAlert, _AutoModerationActionTimeout]
+AutoModerationAction = Union[
+    _AutoModerationActionBlockMessage, _AutoModerationActionAlert, _AutoModerationActionTimeout]
 
 
 class _AutoModerationTriggerMetadataKeyword(TypedDict):

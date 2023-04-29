@@ -23,10 +23,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, Optional, Tuple, Union
 
-import os
 import io
+import os
+from typing import Any, Dict, Optional, Tuple, Union
 
 from .utils import MISSING
 
@@ -34,6 +34,8 @@ from .utils import MISSING
 __all__ = (
     'File',
 )
+
+
 # fmt: on
 
 
@@ -80,12 +82,12 @@ class File:
     __slots__ = ('fp', '_filename', 'spoiler', 'description', '_original_pos', '_owner', '_closer')
 
     def __init__(
-        self,
-        fp: Union[str, bytes, os.PathLike[Any], io.BufferedIOBase],
-        filename: Optional[str] = None,
-        *,
-        spoiler: bool = MISSING,
-        description: Optional[str] = None,
+            self,
+            fp: Union[str, bytes, os.PathLike[Any], io.BufferedIOBase],
+            filename: Optional[str] = None,
+            *,
+            spoiler: bool = MISSING,
+            description: Optional[str] = None,
     ):
         if isinstance(fp, io.IOBase):
             if not (fp.seekable() and fp.readable()):

@@ -1,8 +1,7 @@
 # This example requires the 'message_content' privileged intent to function.
 
-from discord.ext import commands
-
 import discord
+from discord.ext import commands
 
 
 class EphemeralCounterBot(commands.Bot):

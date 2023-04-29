@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import List, Literal, TypedDict
+
 from typing_extensions import NotRequired, Required
 
 

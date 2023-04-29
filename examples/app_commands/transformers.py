@@ -1,12 +1,11 @@
 # This example builds on the concepts of the app_commands/basic.py example
 # It's suggested to look at that one to understand certain concepts first.
 
-from typing import Literal, Union, NamedTuple
 from enum import Enum
+from typing import Literal, Union, NamedTuple
 
 import discord
 from discord import app_commands
-
 
 MY_GUILD = discord.Object(id=0)  # replace with your guild id
 
@@ -43,11 +42,11 @@ async def on_ready():
 @client.tree.command()
 @app_commands.describe(first='The first number to add', second='The second number to add')
 async def add(
-    interaction: discord.Interaction,
-    # This makes it so the first parameter can only be between 0 to 100.
-    first: app_commands.Range[int, 0, 100],
-    # This makes it so the second parameter must be over 0, with no maximum limit.
-    second: app_commands.Range[int, 0, None],
+        interaction: discord.Interaction,
+        # This makes it so the first parameter can only be between 0 to 100.
+        first: app_commands.Range[int, 0, 100],
+        # This makes it so the second parameter must be over 0, with no maximum limit.
+        second: app_commands.Range[int, 0, None],
 ):
     """Adds two numbers together"""
     await interaction.response.send_message(f'{first} + {second} = {first + second}', ephemeral=True)
@@ -131,10 +130,10 @@ class PointTransformer(app_commands.Transformer):
 
 @client.tree.command()
 async def graph(
-    interaction: discord.Interaction,
-    # In order to use the transformer, you should use Transform to tell the
-    # library to use it.
-    point: app_commands.Transform[Point, PointTransformer],
+        interaction: discord.Interaction,
+        # In order to use the transformer, you should use Transform to tell the
+        # library to use it.
+        point: app_commands.Transform[Point, PointTransformer],
 ):
     await interaction.response.send_message(str(point))
 

@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Dict, List, Literal, Optional, TypedDict, Union
+
 from typing_extensions import NotRequired, Required
 
 from .channel import ChannelType
@@ -195,12 +196,10 @@ GuildApplicationCommand = Union[
     _GuildMessageApplicationCommand,
 ]
 
-
 ApplicationCommand = Union[
     GlobalApplicationCommand,
     GuildApplicationCommand,
 ]
-
 
 ApplicationCommandPermissionType = Literal[1, 2, 3]
 

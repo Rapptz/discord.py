@@ -25,19 +25,19 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
+
 from typing_extensions import NotRequired
 
 from .channel import ChannelTypeWithoutThread, ThreadMetadata
-from .threads import ThreadType
 from .member import Member
 from .message import Attachment
 from .role import Role
 from .snowflake import Snowflake
+from .threads import ThreadType
 from .user import User
 
 if TYPE_CHECKING:
     from .message import Message
-
 
 InteractionType = Literal[1, 2, 3, 4, 5]
 
@@ -113,7 +113,6 @@ _ValueApplicationCommandInteractionDataOption = Union[
     _NumberValueApplicationCommandInteractionDataOption,
 ]
 
-
 ApplicationCommandInteractionDataOption = Union[
     _CommandGroupApplicationCommandInteractionDataOption,
     _ValueApplicationCommandInteractionDataOption,
@@ -182,7 +181,8 @@ class ModalSubmitActionRowInteractionData(TypedDict):
     components: List[ModalSubmitComponentItemInteractionData]
 
 
-ModalSubmitComponentInteractionData = Union[ModalSubmitActionRowInteractionData, ModalSubmitComponentItemInteractionData]
+ModalSubmitComponentInteractionData = Union[
+    ModalSubmitActionRowInteractionData, ModalSubmitComponentItemInteractionData]
 
 
 class ModalSubmitInteractionData(TypedDict):

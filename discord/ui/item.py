@@ -26,8 +26,8 @@ from __future__ import annotations
 
 from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
 
-from ..interactions import Interaction
 from .._types import ClientT
+from ..interactions import Interaction
 
 # fmt: off
 __all__ = (
@@ -37,7 +37,6 @@ __all__ = (
 
 if TYPE_CHECKING:
     from ..enums import ComponentType
-    from .view import View
     from ..components import Component
 
 I = TypeVar('I', bound='Item[Any]')

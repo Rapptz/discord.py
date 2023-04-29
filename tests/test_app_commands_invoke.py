@@ -23,15 +23,14 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-
 from functools import wraps
-import pytest
 from typing import Awaitable, TYPE_CHECKING, Callable, Coroutine, Optional, TypeVar, Any, Type, List, Union
+
+import pytest
 
 import discord
 
 if TYPE_CHECKING:
-
     from typing_extensions import ParamSpec
     from discord.types.interactions import (
         ApplicationCommandInteraction as ApplicationCommandInteractionPayload,
@@ -40,7 +39,6 @@ if TYPE_CHECKING:
     )
 
     P = ParamSpec('P')
-
 
 T = TypeVar('T')
 
@@ -59,12 +57,13 @@ class MockCommandInteraction(discord.Interaction):
 
     @classmethod
     def _get_command_data(
-        cls,
-        command: Union[discord.app_commands.Command[Any, ..., Any], discord.app_commands.Group],
-        options: List[ApplicationCommandInteractionDataOptionPayload],
+            cls,
+            command: Union[discord.app_commands.Command[Any, ..., Any], discord.app_commands.Group],
+            options: List[ApplicationCommandInteractionDataOptionPayload],
     ) -> ChatInputApplicationCommandInteractionDataPayload:
 
-        data: Union[ChatInputApplicationCommandInteractionDataPayload, ApplicationCommandInteractionDataOptionPayload] = {
+        data: Union[
+            ChatInputApplicationCommandInteractionDataPayload, ApplicationCommandInteractionDataOptionPayload] = {
             'type': discord.AppCommandType.chat_input.value,
             'name': command.name,
             'options': options,
@@ -77,10 +76,10 @@ class MockCommandInteraction(discord.Interaction):
             return cls._get_command_data(command.parent, [data])
 
     def __init__(
-        self,
-        client: discord.Client,
-        command: discord.app_commands.Command[Any, ..., Any],
-        **options: str,
+            self,
+            client: discord.Client,
+            command: discord.app_commands.Command[Any, ..., Any],
+            **options: str,
     ) -> None:
 
         data: ApplicationCommandInteractionPayload = {
@@ -164,7 +163,7 @@ tree.add_command(group)
 )
 @pytest.mark.asyncio
 async def test_valid_command_invoke(
-    command: discord.app_commands.Command[Any, ..., Any], raises: Optional[Type[BaseException]]
+        command: discord.app_commands.Command[Any, ..., Any], raises: Optional[Type[BaseException]]
 ):
     interaction = MockCommandInteraction(client, command, foo='foo')
     await tree._call(interaction)

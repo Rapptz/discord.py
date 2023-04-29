@@ -26,7 +26,9 @@ from __future__ import annotations
 
 import asyncio
 import datetime
+import inspect
 import logging
+from collections.abc import Sequence
 from typing import (
     Any,
     Callable,
@@ -40,10 +42,8 @@ from typing import (
 )
 
 import aiohttp
-import discord
-import inspect
 
-from collections.abc import Sequence
+import discord
 from discord.backoff import ExponentialBackoff
 from discord.utils import MISSING
 
@@ -136,14 +136,14 @@ class Loop(Generic[LF]):
     """
 
     def __init__(
-        self,
-        coro: LF,
-        seconds: float,
-        hours: float,
-        minutes: float,
-        time: Union[datetime.time, Sequence[datetime.time]],
-        count: Optional[int],
-        reconnect: bool,
+            self,
+            coro: LF,
+            seconds: float,
+            hours: float,
+            minutes: float,
+            time: Union[datetime.time, Sequence[datetime.time]],
+            count: Optional[int],
+            reconnect: bool,
     ) -> None:
         self.coro: LF = coro
         self.reconnect: bool = reconnect
@@ -668,11 +668,11 @@ class Loop(Generic[LF]):
             return None
 
     def _get_time_parameter(
-        self,
-        time: Union[datetime.time, Sequence[datetime.time]],
-        *,
-        dt: Type[datetime.time] = datetime.time,
-        utc: datetime.timezone = datetime.timezone.utc,
+            self,
+            time: Union[datetime.time, Sequence[datetime.time]],
+            *,
+            dt: Type[datetime.time] = datetime.time,
+            utc: datetime.timezone = datetime.timezone.utc,
     ) -> List[datetime.time]:
         if isinstance(time, dt):
             inner = time if time.tzinfo is not None else time.replace(tzinfo=utc)
@@ -696,12 +696,12 @@ class Loop(Generic[LF]):
         return ret
 
     def change_interval(
-        self,
-        *,
-        seconds: float = 0,
-        minutes: float = 0,
-        hours: float = 0,
-        time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
+            self,
+            *,
+            seconds: float = 0,
+            minutes: float = 0,
+            hours: float = 0,
+            time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
     ) -> None:
         """Changes the interval for the sleep time.
 
@@ -763,13 +763,13 @@ class Loop(Generic[LF]):
 
 
 def loop(
-    *,
-    seconds: float = MISSING,
-    minutes: float = MISSING,
-    hours: float = MISSING,
-    time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
-    count: Optional[int] = None,
-    reconnect: bool = True,
+        *,
+        seconds: float = MISSING,
+        minutes: float = MISSING,
+        hours: float = MISSING,
+        time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
+        count: Optional[int] = None,
+        reconnect: bool = True,
 ) -> Callable[[LF], Loop[LF]]:
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.

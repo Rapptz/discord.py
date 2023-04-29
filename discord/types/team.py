@@ -26,8 +26,8 @@ from __future__ import annotations
 
 from typing import TypedDict, List, Optional
 
-from .user import PartialUser
 from .snowflake import Snowflake
+from .user import PartialUser
 
 
 class TeamMember(TypedDict):

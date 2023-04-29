@@ -25,11 +25,12 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TypedDict, List, Optional
+
 from typing_extensions import NotRequired
 
-from .user import User
-from .team import Team
 from .snowflake import Snowflake
+from .team import Team
+from .user import User
 
 
 class InstallParams(TypedDict):

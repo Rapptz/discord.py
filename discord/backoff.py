@@ -24,9 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-
-import time
 import random
+import time
 from typing import Callable, Generic, Literal, TypeVar, overload, Union
 
 T = TypeVar('T', bool, Literal[True], Literal[False])
@@ -35,6 +34,8 @@ T = TypeVar('T', bool, Literal[True], Literal[False])
 __all__ = (
     'ExponentialBackoff',
 )
+
+
 # fmt: on
 
 
@@ -65,7 +66,7 @@ class ExponentialBackoff(Generic[T]):
 
         self._exp: int = 0
         self._max: int = 10
-        self._reset_time: int = base * 2**11
+        self._reset_time: int = base * 2 ** 11
         self._last_invocation: float = time.monotonic()
 
         # Use our own random instance to avoid messing with global one
@@ -105,4 +106,4 @@ class ExponentialBackoff(Generic[T]):
             self._exp = 0
 
         self._exp = min(self._exp + 1, self._max)
-        return self._randfunc(0, self._base * 2**self._exp)
+        return self._randfunc(0, self._base * 2 ** self._exp)

@@ -25,9 +25,10 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
+
 from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType
-from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
+from .utils import get_slots, MISSING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -44,7 +45,6 @@ if TYPE_CHECKING:
     from .emoji import Emoji
 
     ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
-
 
 __all__ = (
     'Component',
@@ -344,13 +344,13 @@ class SelectOption:
     )
 
     def __init__(
-        self,
-        *,
-        label: str,
-        value: str = MISSING,
-        description: Optional[str] = None,
-        emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
-        default: bool = False,
+            self,
+            *,
+            label: str,
+            value: str = MISSING,
+            description: Optional[str] = None,
+            emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
+            default: bool = False,
     ) -> None:
         self.label: str = label
         self.value: str = label if value is MISSING else value

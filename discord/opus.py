@@ -24,8 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Tuple, TypedDict, Any, TYPE_CHECKING, Callable, TypeVar, Literal, Optional, overload
-
 import array
 import ctypes
 import ctypes.util
@@ -34,6 +32,7 @@ import math
 import os.path
 import struct
 import sys
+from typing import List, Tuple, TypedDict, Any, TYPE_CHECKING, Callable, TypeVar, Literal, Optional, overload
 
 from .errors import DiscordException
 
@@ -86,22 +85,22 @@ DecoderStructPtr = ctypes.POINTER(DecoderStruct)
 ## Some constants from opus_defines.h
 # Error codes
 # fmt: off
-OK      = 0
+OK = 0
 BAD_ARG = -1
 
 # Encoder CTLs
-APPLICATION_AUDIO    = 2049
-APPLICATION_VOIP     = 2048
+APPLICATION_AUDIO = 2049
+APPLICATION_VOIP = 2048
 APPLICATION_LOWDELAY = 2051
 
-CTL_SET_BITRATE      = 4002
-CTL_SET_BANDWIDTH    = 4008
-CTL_SET_FEC          = 4012
-CTL_SET_PLP          = 4014
-CTL_SET_SIGNAL       = 4024
+CTL_SET_BITRATE = 4002
+CTL_SET_BANDWIDTH = 4008
+CTL_SET_FEC = 4012
+CTL_SET_PLP = 4014
+CTL_SET_SIGNAL = 4024
 
 # Decoder CTLs
-CTL_SET_GAIN             = 4034
+CTL_SET_GAIN = 4034
 CTL_LAST_PACKET_DURATION = 4039
 # fmt: on
 
@@ -147,7 +146,8 @@ exported_functions: List[Tuple[Any, ...]] = [
     # Encoder functions
     ('opus_encoder_get_size', [ctypes.c_int], ctypes.c_int, None),
     ('opus_encoder_create', [ctypes.c_int, ctypes.c_int, ctypes.c_int, c_int_ptr], EncoderStructPtr, _err_ne),
-    ('opus_encode', [EncoderStructPtr, c_int16_ptr, ctypes.c_int, ctypes.c_char_p, ctypes.c_int32], ctypes.c_int32, _err_lt),
+    ('opus_encode', [EncoderStructPtr, c_int16_ptr, ctypes.c_int, ctypes.c_char_p, ctypes.c_int32], ctypes.c_int32,
+     _err_lt),
     (
         'opus_encode_float',
         [EncoderStructPtr, c_float_ptr, ctypes.c_int, ctypes.c_char_p, ctypes.c_int32],

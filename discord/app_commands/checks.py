@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import time
 from typing import (
     Any,
     Coroutine,
@@ -36,8 +37,6 @@ from typing import (
     TYPE_CHECKING,
 )
 
-import time
-
 from .commands import check
 from .errors import (
     NoPrivateMessage,
@@ -47,9 +46,8 @@ from .errors import (
     BotMissingPermissions,
     CommandOnCooldown,
 )
-
-from ..user import User
 from ..permissions import Permissions
+from ..user import User
 from ..utils import get as utils_get, MISSING, maybe_coroutine
 
 T = TypeVar('T')
@@ -275,10 +273,10 @@ def has_any_role(*items: Union[int, str]) -> Callable[[T], T]:
             raise NoPrivateMessage()
 
         if any(
-            interaction.user.get_role(item) is not None
-            if isinstance(item, int)
-            else utils_get(interaction.user.roles, name=item) is not None
-            for item in items
+                interaction.user.get_role(item) is not None
+                if isinstance(item, int)
+                else utils_get(interaction.user.roles, name=item) is not None
+                for item in items
         ):
             return True
         raise MissingAnyRole(list(items))
@@ -368,17 +366,16 @@ def bot_has_permissions(**perms: bool) -> Callable[[T], T]:
 
 
 def _create_cooldown_decorator(
-    key: CooldownFunction[Hashable], factory: CooldownFunction[Optional[Cooldown]]
+        key: CooldownFunction[Hashable], factory: CooldownFunction[Optional[Cooldown]]
 ) -> Callable[[T], T]:
-
     mapping: Dict[Any, Cooldown] = {}
 
     async def get_bucket(
-        interaction: Interaction,
-        *,
-        mapping: Dict[Any, Cooldown] = mapping,
-        key: CooldownFunction[Hashable] = key,
-        factory: CooldownFunction[Optional[Cooldown]] = factory,
+            interaction: Interaction,
+            *,
+            mapping: Dict[Any, Cooldown] = mapping,
+            key: CooldownFunction[Hashable] = key,
+            factory: CooldownFunction[Optional[Cooldown]] = factory,
     ) -> Optional[Cooldown]:
         current = interaction.created_at.timestamp()
         dead_keys = [k for k, v in mapping.items() if current > v._last + v.per]
@@ -410,10 +407,10 @@ def _create_cooldown_decorator(
 
 
 def cooldown(
-    rate: float,
-    per: float,
-    *,
-    key: Optional[CooldownFunction[Hashable]] = MISSING,
+        rate: float,
+        per: float,
+        *,
+        key: Optional[CooldownFunction[Hashable]] = MISSING,
 ) -> Callable[[T], T]:
     """A decorator that adds a cooldown to a command.
 
@@ -471,9 +468,9 @@ def cooldown(
 
 
 def dynamic_cooldown(
-    factory: CooldownFunction[Optional[Cooldown]],
-    *,
-    key: Optional[CooldownFunction[Hashable]] = MISSING,
+        factory: CooldownFunction[Optional[Cooldown]],
+        *,
+        key: Optional[CooldownFunction[Hashable]] = MISSING,
 ) -> Callable[[T], T]:
     """A decorator that adds a dynamic cooldown to a command.
 

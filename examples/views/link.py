@@ -1,9 +1,9 @@
 # This example requires the 'message_content' privileged intent to function.
 
-from discord.ext import commands
+from urllib.parse import quote_plus
 
 import discord
-from urllib.parse import quote_plus
+from discord.ext import commands
 
 
 class GoogleBot(commands.Bot):

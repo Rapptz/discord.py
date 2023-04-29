@@ -26,13 +26,13 @@ from __future__ import annotations
 
 from functools import reduce
 from operator import or_
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, \
+    overload
 
 from .enums import UserFlags
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
 
 __all__ = (
     'SystemChannelFlags',
@@ -90,7 +90,7 @@ def fill_with_flags(*, inverted: bool = False) -> Callable[[Type[BF]], Type[BF]]
 
         if inverted:
             max_bits = max(cls.VALID_FLAGS.values()).bit_length()
-            cls.DEFAULT_VALUE = -1 + (2**max_bits)
+            cls.DEFAULT_VALUE = -1 + (2 ** max_bits)
         else:
             cls.DEFAULT_VALUE = 0
 
@@ -144,7 +144,7 @@ class BaseFlags:
 
     def __invert__(self) -> Self:
         max_bits = max(self.VALID_FLAGS.values()).bit_length()
-        max_value = -1 + (2**max_bits)
+        max_value = -1 + (2 ** max_bits)
         return self._from_value(self.value ^ max_value)
 
     def __bool__(self) -> bool:
