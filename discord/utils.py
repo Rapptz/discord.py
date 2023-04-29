@@ -25,6 +25,19 @@ from __future__ import annotations
 
 import array
 import asyncio
+import datetime
+import functools
+import json
+import logging
+import os
+import re
+import sys
+import types
+import warnings
+from base64 import b64encode, b64decode
+from bisect import bisect_left
+from inspect import isawaitable as _isawaitable, signature as _signature
+from operator import attrgetter
 from textwrap import TextWrapper
 from typing import (
     Any,
@@ -55,22 +68,9 @@ from typing import (
     overload,
     TYPE_CHECKING,
 )
-import unicodedata
-from base64 import b64encode, b64decode
-from bisect import bisect_left
-import datetime
-import functools
-from inspect import isawaitable as _isawaitable, signature as _signature
-from operator import attrgetter
 from urllib.parse import urlencode
-import json
-import re
-import os
-import sys
-import types
-import warnings
-import logging
 
+import unicodedata
 import yarl
 
 try:
@@ -79,7 +79,6 @@ except ModuleNotFoundError:
     HAS_ORJSON = False
 else:
     HAS_ORJSON = True
-
 
 __all__ = (
     'oauth_url',
@@ -146,8 +145,10 @@ if TYPE_CHECKING:
     from .invite import Invite
     from .template import Template
 
+
     class _RequestLike(Protocol):
         headers: Mapping[str, Any]
+
 
     P = ParamSpec('P')
 
@@ -158,7 +159,6 @@ if TYPE_CHECKING:
 else:
     cached_property = _cached_property
     _SnowflakeListBase = array.array
-
 
 T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
@@ -310,14 +310,14 @@ def deprecated(instead: Optional[str] = None) -> Callable[[Callable[P, T]], Call
 
 
 def oauth_url(
-    client_id: Union[int, str],
-    *,
-    permissions: Permissions = MISSING,
-    guild: Snowflake = MISSING,
-    redirect_uri: str = MISSING,
-    scopes: Iterable[str] = MISSING,
-    disable_guild_select: bool = False,
-    state: str = MISSING,
+        client_id: Union[int, str],
+        *,
+        permissions: Permissions = MISSING,
+        guild: Snowflake = MISSING,
+        redirect_uri: str = MISSING,
+        scopes: Iterable[str] = MISSING,
+        disable_guild_select: bool = False,
+        state: str = MISSING,
 ) -> str:
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
@@ -418,7 +418,7 @@ def time_snowflake(dt: datetime.datetime, /, *, high: bool = False) -> int:
         The snowflake representing the time given.
     """
     discord_millis = int(dt.timestamp() * 1000 - DISCORD_EPOCH)
-    return (discord_millis << 22) + (2**22 - 1 if high else 0)
+    return (discord_millis << 22) + (2 ** 22 - 1 if high else 0)
 
 
 def _find(predicate: Callable[[T], Any], iterable: Iterable[T], /) -> Optional[T]:
@@ -641,12 +641,14 @@ if HAS_ORJSON:
     def _to_json(obj: Any) -> str:
         return orjson.dumps(obj).decode('utf-8')
 
+
     _from_json = orjson.loads  # type: ignore
 
 else:
 
     def _to_json(obj: Any) -> str:
         return json.dumps(obj, separators=(',', ':'), ensure_ascii=True)
+
 
     _from_json = json.loads
 
@@ -695,9 +697,9 @@ async def maybe_coroutine(f: MaybeAwaitableFunc[P, T], *args: P.args, **kwargs: 
 
 
 async def async_all(
-    gen: Iterable[Union[T, Awaitable[T]]],
-    *,
-    check: Callable[[Union[T, Awaitable[T]]], TypeGuard[Awaitable[T]]] = _isawaitable,
+        gen: Iterable[Union[T, Awaitable[T]]],
+        *,
+        check: Callable[[Union[T, Awaitable[T]]], TypeGuard[Awaitable[T]]] = _isawaitable,
 ) -> bool:
     for elem in gen:
         if check(elem):
@@ -799,7 +801,6 @@ class SnowflakeList(_SnowflakeListBase):
     __slots__ = ()
 
     if TYPE_CHECKING:
-
         def __init__(self, data: Iterable[int], *, is_sorted: bool = False):
             ...
 
@@ -900,7 +901,8 @@ _MARKDOWN_ESCAPE_SUBREGEX = '|'.join(r'\{0}(?=([\s\S]*((?<!\{0})\{0})))'.format(
 
 _MARKDOWN_ESCAPE_COMMON = r'^>(?:>>)?\s|\[.+\]\(.+\)'
 
-_MARKDOWN_ESCAPE_REGEX = re.compile(fr'(?P<markdown>{_MARKDOWN_ESCAPE_SUBREGEX}|{_MARKDOWN_ESCAPE_COMMON})', re.MULTILINE)
+_MARKDOWN_ESCAPE_REGEX = re.compile(fr'(?P<markdown>{_MARKDOWN_ESCAPE_SUBREGEX}|{_MARKDOWN_ESCAPE_COMMON})',
+                                    re.MULTILINE)
 
 _URL_REGEX = r'(?P<url><[^: >]+:\/[^ >]+>|(?:https?|steam):\/\/[^\s<]+[^<.,:;\"\'\]\s])'
 
@@ -1098,12 +1100,12 @@ def normalise_optional_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
 
 
 def evaluate_annotation(
-    tp: Any,
-    globals: Dict[str, Any],
-    locals: Dict[str, Any],
-    cache: Dict[str, Any],
-    *,
-    implicit_str: bool = True,
+        tp: Any,
+        globals: Dict[str, Any],
+        locals: Dict[str, Any],
+        cache: Dict[str, Any],
+        *,
+        implicit_str: bool = True,
 ) -> Any:
     if isinstance(tp, ForwardRef):
         tp = tp.__forward_arg__
@@ -1144,7 +1146,8 @@ def evaluate_annotation(
             implicit_str = False
             is_literal = True
 
-        evaluated_args = tuple(evaluate_annotation(arg, globals, locals, cache, implicit_str=implicit_str) for arg in args)
+        evaluated_args = tuple(
+            evaluate_annotation(arg, globals, locals, cache, implicit_str=implicit_str) for arg in args)
 
         if is_literal and not all(isinstance(x, (str, int, bool, type(None))) for x in evaluated_args):
             raise TypeError('Literal arguments must be of type str, int, bool, or NoneType.')
@@ -1158,10 +1161,10 @@ def evaluate_annotation(
 
 
 def resolve_annotation(
-    annotation: Any,
-    globalns: Dict[str, Any],
-    localns: Optional[Dict[str, Any]],
-    cache: Optional[Dict[str, Any]],
+        annotation: Any,
+        globalns: Dict[str, Any],
+        localns: Optional[Dict[str, Any]],
+        cache: Optional[Dict[str, Any]],
 ) -> Any:
     if annotation is None:
         return type(None)
@@ -1259,7 +1262,6 @@ def stream_supports_colour(stream: Any) -> bool:
 
 
 class _ColourFormatter(logging.Formatter):
-
     # ANSI codes are a bit weird to decipher if you're unfamiliar with them, so here's a refresher
     # It starts off with a format like \x1b[XXXm where XXX is a semicolon separated list of commands
     # The important ones here relate to colour.
@@ -1303,11 +1305,11 @@ class _ColourFormatter(logging.Formatter):
 
 
 def setup_logging(
-    *,
-    handler: logging.Handler = MISSING,
-    formatter: logging.Formatter = MISSING,
-    level: int = MISSING,
-    root: bool = True,
+        *,
+        handler: logging.Handler = MISSING,
+        formatter: logging.Formatter = MISSING,
+        level: int = MISSING,
+        root: bool = True,
 ) -> None:
     """A helper function to setup logging.
 
@@ -1362,9 +1364,9 @@ def setup_logging(
 
 
 def _shorten(
-    input: str,
-    *,
-    _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='…'),
+        input: str,
+        *,
+        _wrapper: TextWrapper = TextWrapper(width=100, max_lines=1, replace_whitespace=True, placeholder='…'),
 ) -> str:
     try:
         # split on the first double newline since arguments may appear after that

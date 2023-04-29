@@ -27,9 +27,9 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, Optional, Set, List, Tuple, Union
 
+from .app_commands import AppCommandPermissions
 from .enums import ChannelType, try_enum
 from .utils import _get_as_snowflake
-from .app_commands import AppCommandPermissions
 
 if TYPE_CHECKING:
     from .types.gateway import (
@@ -57,7 +57,6 @@ if TYPE_CHECKING:
     from .guild import Guild
 
     ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]
-
 
 __all__ = (
     'RawMessageDeleteEvent',

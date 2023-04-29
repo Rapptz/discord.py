@@ -24,15 +24,15 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Dict, Iterable, List, Literal, Optional, Sequence, Union, TYPE_CHECKING
-from datetime import datetime
 import array
+from datetime import datetime
+from typing import Callable, Dict, Iterable, List, Literal, Optional, Sequence, Union, TYPE_CHECKING
 
-from .mixins import Hashable
 from .abc import Messageable, GuildChannel, _purge_helper
 from .enums import ChannelType, try_enum
 from .errors import ClientException
 from .flags import ChannelFlags
+from .mixins import Hashable
 from .permissions import Permissions
 from .utils import MISSING, parse_time, _get_as_snowflake, _unique
 
@@ -489,16 +489,16 @@ class Thread(Messageable, Hashable):
         await self._state.http.delete_messages(self.id, message_ids, reason=reason)
 
     async def purge(
-        self,
-        *,
-        limit: Optional[int] = 100,
-        check: Callable[[Message], bool] = MISSING,
-        before: Optional[SnowflakeTime] = None,
-        after: Optional[SnowflakeTime] = None,
-        around: Optional[SnowflakeTime] = None,
-        oldest_first: Optional[bool] = None,
-        bulk: bool = True,
-        reason: Optional[str] = None,
+            self,
+            *,
+            limit: Optional[int] = 100,
+            check: Callable[[Message], bool] = MISSING,
+            before: Optional[SnowflakeTime] = None,
+            after: Optional[SnowflakeTime] = None,
+            around: Optional[SnowflakeTime] = None,
+            oldest_first: Optional[bool] = None,
+            bulk: bool = True,
+            reason: Optional[str] = None,
     ) -> List[Message]:
         """|coro|
 
@@ -571,17 +571,17 @@ class Thread(Messageable, Hashable):
         )
 
     async def edit(
-        self,
-        *,
-        name: str = MISSING,
-        archived: bool = MISSING,
-        locked: bool = MISSING,
-        invitable: bool = MISSING,
-        pinned: bool = MISSING,
-        slowmode_delay: int = MISSING,
-        auto_archive_duration: ThreadArchiveDuration = MISSING,
-        applied_tags: Sequence[ForumTag] = MISSING,
-        reason: Optional[str] = None,
+            self,
+            *,
+            name: str = MISSING,
+            archived: bool = MISSING,
+            locked: bool = MISSING,
+            invitable: bool = MISSING,
+            pinned: bool = MISSING,
+            slowmode_delay: int = MISSING,
+            auto_archive_duration: ThreadArchiveDuration = MISSING,
+            applied_tags: Sequence[ForumTag] = MISSING,
+            reason: Optional[str] = None,
     ) -> Thread:
         """|coro|
 

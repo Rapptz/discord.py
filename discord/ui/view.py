@@ -23,15 +23,16 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Callable, ClassVar, Coroutine, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple
-from functools import partial
-from itertools import groupby
 
 import asyncio
 import logging
+import os
 import sys
 import time
-import os
+from functools import partial
+from itertools import groupby
+from typing import Any, Callable, ClassVar, Coroutine, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple
+
 from .item import Item, ItemCallbackType
 from ..components import (
     Component,
@@ -57,7 +58,6 @@ if TYPE_CHECKING:
     from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
     from ..state import ConnectionState
     from .modal import Modal
-
 
 _log = logging.getLogger(__name__)
 
@@ -87,6 +87,7 @@ class _ViewWeights:
     __slots__ = (
         'weights',
     )
+
     # fmt: on
 
     def __init__(self, children: List[Item]):
@@ -625,10 +626,10 @@ class ViewStore:
         item.view._dispatch_item(item, interaction)  # type: ignore
 
     def dispatch_modal(
-        self,
-        custom_id: str,
-        interaction: Interaction,
-        components: List[ModalSubmitComponentInteractionDataPayload],
+            self,
+            custom_id: str,
+            interaction: Interaction,
+            components: List[ModalSubmitComponentInteractionDataPayload],
     ) -> None:
         modal = self._modals.get(custom_id)
         if modal is None:

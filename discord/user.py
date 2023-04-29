@@ -48,7 +48,6 @@ if TYPE_CHECKING:
         User as UserPayload,
     )
 
-
 __all__ = (
     'User',
     'ClientUser',

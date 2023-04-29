@@ -52,6 +52,8 @@ if TYPE_CHECKING:
 __all__ = (
     "ScheduledEvent",
 )
+
+
 # fmt: on
 
 
@@ -300,99 +302,99 @@ class ScheduledEvent(Hashable):
 
     @overload
     async def edit(
-        self,
-        *,
-        name: str = ...,
-        description: str = ...,
-        start_time: datetime = ...,
-        end_time: Optional[datetime] = ...,
-        privacy_level: PrivacyLevel = ...,
-        status: EventStatus = ...,
-        image: bytes = ...,
-        reason: Optional[str] = ...,
+            self,
+            *,
+            name: str = ...,
+            description: str = ...,
+            start_time: datetime = ...,
+            end_time: Optional[datetime] = ...,
+            privacy_level: PrivacyLevel = ...,
+            status: EventStatus = ...,
+            image: bytes = ...,
+            reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
 
     @overload
     async def edit(
-        self,
-        *,
-        name: str = ...,
-        description: str = ...,
-        channel: Snowflake,
-        start_time: datetime = ...,
-        end_time: Optional[datetime] = ...,
-        privacy_level: PrivacyLevel = ...,
-        entity_type: Literal[EntityType.voice, EntityType.stage_instance],
-        status: EventStatus = ...,
-        image: bytes = ...,
-        reason: Optional[str] = ...,
+            self,
+            *,
+            name: str = ...,
+            description: str = ...,
+            channel: Snowflake,
+            start_time: datetime = ...,
+            end_time: Optional[datetime] = ...,
+            privacy_level: PrivacyLevel = ...,
+            entity_type: Literal[EntityType.voice, EntityType.stage_instance],
+            status: EventStatus = ...,
+            image: bytes = ...,
+            reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
 
     @overload
     async def edit(
-        self,
-        *,
-        name: str = ...,
-        description: str = ...,
-        start_time: datetime = ...,
-        end_time: datetime = ...,
-        privacy_level: PrivacyLevel = ...,
-        entity_type: Literal[EntityType.external],
-        status: EventStatus = ...,
-        image: bytes = ...,
-        location: str,
-        reason: Optional[str] = ...,
+            self,
+            *,
+            name: str = ...,
+            description: str = ...,
+            start_time: datetime = ...,
+            end_time: datetime = ...,
+            privacy_level: PrivacyLevel = ...,
+            entity_type: Literal[EntityType.external],
+            status: EventStatus = ...,
+            image: bytes = ...,
+            location: str,
+            reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
 
     @overload
     async def edit(
-        self,
-        *,
-        name: str = ...,
-        description: str = ...,
-        channel: Union[VoiceChannel, StageChannel],
-        start_time: datetime = ...,
-        end_time: Optional[datetime] = ...,
-        privacy_level: PrivacyLevel = ...,
-        status: EventStatus = ...,
-        image: bytes = ...,
-        reason: Optional[str] = ...,
+            self,
+            *,
+            name: str = ...,
+            description: str = ...,
+            channel: Union[VoiceChannel, StageChannel],
+            start_time: datetime = ...,
+            end_time: Optional[datetime] = ...,
+            privacy_level: PrivacyLevel = ...,
+            status: EventStatus = ...,
+            image: bytes = ...,
+            reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
 
     @overload
     async def edit(
-        self,
-        *,
-        name: str = ...,
-        description: str = ...,
-        start_time: datetime = ...,
-        end_time: datetime = ...,
-        privacy_level: PrivacyLevel = ...,
-        status: EventStatus = ...,
-        image: bytes = ...,
-        location: str,
-        reason: Optional[str] = ...,
+            self,
+            *,
+            name: str = ...,
+            description: str = ...,
+            start_time: datetime = ...,
+            end_time: datetime = ...,
+            privacy_level: PrivacyLevel = ...,
+            status: EventStatus = ...,
+            image: bytes = ...,
+            location: str,
+            reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
 
     async def edit(
-        self,
-        *,
-        name: str = MISSING,
-        description: str = MISSING,
-        channel: Optional[Snowflake] = MISSING,
-        start_time: datetime = MISSING,
-        end_time: Optional[datetime] = MISSING,
-        privacy_level: PrivacyLevel = MISSING,
-        entity_type: EntityType = MISSING,
-        status: EventStatus = MISSING,
-        image: bytes = MISSING,
-        location: str = MISSING,
-        reason: Optional[str] = None,
+            self,
+            *,
+            name: str = MISSING,
+            description: str = MISSING,
+            channel: Optional[Snowflake] = MISSING,
+            start_time: datetime = MISSING,
+            end_time: Optional[datetime] = MISSING,
+            privacy_level: PrivacyLevel = MISSING,
+            entity_type: EntityType = MISSING,
+            status: EventStatus = MISSING,
+            image: bytes = MISSING,
+            location: str = MISSING,
+            reason: Optional[str] = None,
     ) -> ScheduledEvent:
         r"""|coro|
 
@@ -581,12 +583,12 @@ class ScheduledEvent(Hashable):
         await self._state.http.delete_scheduled_event(self.guild_id, self.id, reason=reason)
 
     async def users(
-        self,
-        *,
-        limit: Optional[int] = None,
-        before: Optional[Snowflake] = None,
-        after: Optional[Snowflake] = None,
-        oldest_first: bool = MISSING,
+            self,
+            *,
+            limit: Optional[int] = None,
+            before: Optional[Snowflake] = None,
+            after: Optional[Snowflake] = None,
+            oldest_first: bool = MISSING,
     ) -> AsyncIterator[User]:
         """|coro|
 

@@ -23,9 +23,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-import logging
-import inspect
 
+import inspect
+import logging
+from collections import Counter
 from typing import (
     Any,
     TYPE_CHECKING,
@@ -43,11 +44,7 @@ from typing import (
     Union,
     overload,
 )
-from collections import Counter
 
-
-from .namespace import Namespace, ResolveKey
-from .models import AppCommand
 from .commands import Command, ContextMenu, Group
 from .errors import (
     AppCommandError,
@@ -58,12 +55,13 @@ from .errors import (
     CommandSyncFailure,
     MissingApplicationID,
 )
+from .models import AppCommand
+from .namespace import Namespace, ResolveKey
 from .translator import Translator, locale_str
-from ..errors import ClientException, HTTPException
-from ..enums import AppCommandType, InteractionType
-from ..utils import MISSING, _get_as_snowflake, _is_submodule, _shorten
 from .._types import ClientT
-
+from ..enums import AppCommandType, InteractionType
+from ..errors import ClientException, HTTPException
+from ..utils import MISSING, _get_as_snowflake, _is_submodule, _shorten
 
 if TYPE_CHECKING:
     from ..types.interactions import ApplicationCommandInteractionData, ApplicationCommandInteractionDataOption
@@ -82,7 +80,7 @@ _log = logging.getLogger(__name__)
 
 
 def _retrieve_guild_ids(
-    command: Any, guild: Optional[Snowflake] = MISSING, guilds: Sequence[Snowflake] = MISSING
+        command: Any, guild: Optional[Snowflake] = MISSING, guilds: Sequence[Snowflake] = MISSING
 ) -> Optional[Set[int]]:
     if guild is not MISSING and guilds is not MISSING:
         raise TypeError('cannot mix guild and guilds keyword arguments')
@@ -265,13 +263,13 @@ class CommandTree(Generic[ClientT]):
         self._guild_commands[guild.id] = mapping
 
     def add_command(
-        self,
-        command: Union[Command[Any, ..., Any], ContextMenu, Group],
-        /,
-        *,
-        guild: Optional[Snowflake] = MISSING,
-        guilds: Sequence[Snowflake] = MISSING,
-        override: bool = False,
+            self,
+            command: Union[Command[Any, ..., Any], ContextMenu, Group],
+            /,
+            *,
+            guild: Optional[Snowflake] = MISSING,
+            guilds: Sequence[Snowflake] = MISSING,
+            override: bool = False,
     ) -> None:
         """Adds an application command to the tree.
 
@@ -313,10 +311,10 @@ class CommandTree(Generic[ClientT]):
             name = command.name
 
             def _context_menu_add_helper(
-                guild_id: Optional[int],
-                data: Dict[Tuple[str, Optional[int], int], ContextMenu],
-                name: str = name,
-                type: int = type,
+                    guild_id: Optional[int],
+                    data: Dict[Tuple[str, Optional[int], int], ContextMenu],
+                    name: str = name,
+                    type: int = type,
             ) -> None:
                 key = (name, guild_id, type)
                 found = key in self._context_menus
@@ -379,44 +377,44 @@ class CommandTree(Generic[ClientT]):
 
     @overload
     def remove_command(
-        self,
-        command: str,
-        /,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.message, AppCommandType.user],
+            self,
+            command: str,
+            /,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: Literal[AppCommandType.message, AppCommandType.user],
     ) -> Optional[ContextMenu]:
         ...
 
     @overload
     def remove_command(
-        self,
-        command: str,
-        /,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.chat_input] = ...,
+            self,
+            command: str,
+            /,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: Literal[AppCommandType.chat_input] = ...,
     ) -> Optional[Union[Command[Any, ..., Any], Group]]:
         ...
 
     @overload
     def remove_command(
-        self,
-        command: str,
-        /,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: AppCommandType,
+            self,
+            command: str,
+            /,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: AppCommandType,
     ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
         ...
 
     def remove_command(
-        self,
-        command: str,
-        /,
-        *,
-        guild: Optional[Snowflake] = None,
-        type: AppCommandType = AppCommandType.chat_input,
+            self,
+            command: str,
+            /,
+            *,
+            guild: Optional[Snowflake] = None,
+            type: AppCommandType = AppCommandType.chat_input,
     ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
         """Removes an application command from the tree.
 
@@ -499,44 +497,44 @@ class CommandTree(Generic[ClientT]):
 
     @overload
     def get_command(
-        self,
-        command: str,
-        /,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.message, AppCommandType.user],
+            self,
+            command: str,
+            /,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: Literal[AppCommandType.message, AppCommandType.user],
     ) -> Optional[ContextMenu]:
         ...
 
     @overload
     def get_command(
-        self,
-        command: str,
-        /,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.chat_input] = ...,
+            self,
+            command: str,
+            /,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: Literal[AppCommandType.chat_input] = ...,
     ) -> Optional[Union[Command[Any, ..., Any], Group]]:
         ...
 
     @overload
     def get_command(
-        self,
-        command: str,
-        /,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: AppCommandType,
+            self,
+            command: str,
+            /,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: AppCommandType,
     ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
         ...
 
     def get_command(
-        self,
-        command: str,
-        /,
-        *,
-        guild: Optional[Snowflake] = None,
-        type: AppCommandType = AppCommandType.chat_input,
+            self,
+            command: str,
+            /,
+            *,
+            guild: Optional[Snowflake] = None,
+            type: AppCommandType = AppCommandType.chat_input,
     ) -> Optional[Union[Command[Any, ..., Any], ContextMenu, Group]]:
         """Gets an application command from the tree.
 
@@ -575,45 +573,45 @@ class CommandTree(Generic[ClientT]):
 
     @overload
     def get_commands(
-        self,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.message, AppCommandType.user],
+            self,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: Literal[AppCommandType.message, AppCommandType.user],
     ) -> List[ContextMenu]:
         ...
 
     @overload
     def get_commands(
-        self,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.chat_input],
+            self,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: Literal[AppCommandType.chat_input],
     ) -> List[Union[Command[Any, ..., Any], Group]]:
         ...
 
     @overload
     def get_commands(
-        self,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: AppCommandType,
+            self,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: AppCommandType,
     ) -> Union[List[Union[Command[Any, ..., Any], Group]], List[ContextMenu]]:
         ...
 
     @overload
     def get_commands(
-        self,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: Optional[AppCommandType] = ...,
+            self,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: Optional[AppCommandType] = ...,
     ) -> List[Union[Command[Any, ..., Any], Group, ContextMenu]]:
         ...
 
     def get_commands(
-        self,
-        *,
-        guild: Optional[Snowflake] = None,
-        type: Optional[AppCommandType] = None,
+            self,
+            *,
+            guild: Optional[Snowflake] = None,
+            type: Optional[AppCommandType] = None,
     ) -> Union[
         List[ContextMenu],
         List[Union[Command[Any, ..., Any], Group]],
@@ -655,36 +653,36 @@ class CommandTree(Generic[ClientT]):
 
     @overload
     def walk_commands(
-        self,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.message, AppCommandType.user],
+            self,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: Literal[AppCommandType.message, AppCommandType.user],
     ) -> Generator[ContextMenu, None, None]:
         ...
 
     @overload
     def walk_commands(
-        self,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: Literal[AppCommandType.chat_input] = ...,
+            self,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: Literal[AppCommandType.chat_input] = ...,
     ) -> Generator[Union[Command[Any, ..., Any], Group], None, None]:
         ...
 
     @overload
     def walk_commands(
-        self,
-        *,
-        guild: Optional[Snowflake] = ...,
-        type: AppCommandType,
+            self,
+            *,
+            guild: Optional[Snowflake] = ...,
+            type: AppCommandType,
     ) -> Union[Generator[Union[Command[Any, ..., Any], Group], None, None], Generator[ContextMenu, None, None]]:
         ...
 
     def walk_commands(
-        self,
-        *,
-        guild: Optional[Snowflake] = None,
-        type: AppCommandType = AppCommandType.chat_input,
+            self,
+            *,
+            guild: Optional[Snowflake] = None,
+            type: AppCommandType = AppCommandType.chat_input,
     ) -> Union[Generator[Union[Command[Any, ..., Any], Group], None, None], Generator[ContextMenu, None, None]]:
         """An iterator that recursively walks through all application commands and child commands from the tree.
 
@@ -727,7 +725,7 @@ class CommandTree(Generic[ClientT]):
                     yield command
 
     def _get_all_commands(
-        self, *, guild: Optional[Snowflake] = None
+            self, *, guild: Optional[Snowflake] = None
     ) -> List[Union[Command[Any, ..., Any], Group, ContextMenu]]:
         if guild is None:
             base: List[Union[Command[Any, ..., Any], Group, ContextMenu]] = list(self._global_commands.values())
@@ -829,15 +827,15 @@ class CommandTree(Generic[ClientT]):
         return coro
 
     def command(
-        self,
-        *,
-        name: Union[str, locale_str] = MISSING,
-        description: Union[str, locale_str] = MISSING,
-        nsfw: bool = False,
-        guild: Optional[Snowflake] = MISSING,
-        guilds: Sequence[Snowflake] = MISSING,
-        auto_locale_strings: bool = True,
-        extras: Dict[Any, Any] = MISSING,
+            self,
+            *,
+            name: Union[str, locale_str] = MISSING,
+            description: Union[str, locale_str] = MISSING,
+            nsfw: bool = False,
+            guild: Optional[Snowflake] = MISSING,
+            guilds: Sequence[Snowflake] = MISSING,
+            auto_locale_strings: bool = True,
+            extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[CommandCallback[Group, P, T]], Command[Group, P, T]]:
         """A decorator that creates an application command from a regular function directly under this tree.
 
@@ -899,14 +897,14 @@ class CommandTree(Generic[ClientT]):
         return decorator
 
     def context_menu(
-        self,
-        *,
-        name: Union[str, locale_str] = MISSING,
-        nsfw: bool = False,
-        guild: Optional[Snowflake] = MISSING,
-        guilds: Sequence[Snowflake] = MISSING,
-        auto_locale_strings: bool = True,
-        extras: Dict[Any, Any] = MISSING,
+            self,
+            *,
+            name: Union[str, locale_str] = MISSING,
+            nsfw: bool = False,
+            guild: Optional[Snowflake] = MISSING,
+            guilds: Sequence[Snowflake] = MISSING,
+            auto_locale_strings: bool = True,
+            extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[ContextMenuCallback], ContextMenu]:
         """A decorator that creates an application command context menu from a regular function directly under this tree.
 
@@ -1066,7 +1064,8 @@ class CommandTree(Generic[ClientT]):
             if guild is None:
                 data = await self._http.bulk_upsert_global_commands(self.client.application_id, payload=payload)
             else:
-                data = await self._http.bulk_upsert_guild_commands(self.client.application_id, guild.id, payload=payload)
+                data = await self._http.bulk_upsert_guild_commands(self.client.application_id, guild.id,
+                                                                   payload=payload)
         except HTTPException as e:
             if e.status == 400 and e.code == 50035:
                 raise CommandSyncFailure(e, commands) from None
@@ -1102,7 +1101,7 @@ class CommandTree(Generic[ClientT]):
         return cmd
 
     def _get_app_command_options(
-        self, data: ApplicationCommandInteractionData
+            self, data: ApplicationCommandInteractionData
     ) -> Tuple[Command[Any, ..., Any], List[ApplicationCommandInteractionDataOption]]:
         parents: List[str] = []
         name = data['name']
@@ -1155,7 +1154,7 @@ class CommandTree(Generic[ClientT]):
         return (command, options)
 
     async def _call_context_menu(
-        self, interaction: Interaction[ClientT], data: ApplicationCommandInteractionData, type: int
+            self, interaction: Interaction[ClientT], data: ApplicationCommandInteractionData, type: int
     ) -> None:
         name = data['name']
         guild_id = _get_as_snowflake(data, 'guild_id')

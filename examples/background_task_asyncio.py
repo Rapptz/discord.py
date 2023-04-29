@@ -1,5 +1,6 @@
-import discord
 import asyncio
+
+import discord
 
 
 class MyClient(discord.Client):

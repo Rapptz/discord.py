@@ -25,9 +25,12 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from collections import deque, OrderedDict
 import copy
+import inspect
 import logging
+import os
+import weakref
+from collections import deque, OrderedDict
 from typing import (
     Dict,
     Optional,
@@ -45,37 +48,33 @@ from typing import (
     Literal,
     overload,
 )
-import weakref
-import inspect
 
-import os
-
-from .guild import Guild
+from . import utils
+from ._types import ClientT
 from .activity import BaseActivity
-from .user import User, ClientUser
-from .emoji import Emoji
-from .mentions import AllowedMentions
-from .partial_emoji import PartialEmoji
-from .message import Message
+from .audit_logs import AuditLogEntry
+from .automod import AutoModRule, AutoModAction
 from .channel import *
 from .channel import _channel_factory
-from .raw_models import *
-from .member import Member
-from .role import Role
+from .emoji import Emoji
 from .enums import ChannelType, try_enum, Status
-from . import utils
 from .flags import ApplicationFlags, Intents, MemberCacheFlags
-from .invite import Invite
+from .guild import Guild
 from .integrations import _integration_factory
 from .interactions import Interaction
-from .ui.view import ViewStore, View
+from .invite import Invite
+from .member import Member
+from .mentions import AllowedMentions
+from .message import Message
+from .partial_emoji import PartialEmoji
+from .raw_models import *
+from .role import Role
 from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
-from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
-from .automod import AutoModRule, AutoModAction
-from .audit_logs import AuditLogEntry
-from ._types import ClientT
+from .threads import Thread, ThreadMember
+from .ui.view import ViewStore, View
+from .user import User, ClientUser
 
 if TYPE_CHECKING:
     from .abc import PrivateChannel
@@ -104,12 +103,12 @@ if TYPE_CHECKING:
 
 class ChunkRequest:
     def __init__(
-        self,
-        guild_id: int,
-        loop: asyncio.AbstractEventLoop,
-        resolver: Callable[[int], Any],
-        *,
-        cache: bool = True,
+            self,
+            guild_id: int,
+            loop: asyncio.AbstractEventLoop,
+            resolver: Callable[[int], Any],
+            *,
+            cache: bool = True,
     ) -> None:
         self.guild_id: int = guild_id
         self.resolver: Callable[[int], Any] = resolver
@@ -167,13 +166,13 @@ class ConnectionState(Generic[ClientT]):
         _parsers: Dict[str, Callable[[Dict[str, Any]], None]]
 
     def __init__(
-        self,
-        *,
-        dispatch: Callable[..., Any],
-        handlers: Dict[str, Callable[..., Any]],
-        hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]],
-        http: HTTPClient,
-        **options: Any,
+            self,
+            *,
+            dispatch: Callable[..., Any],
+            handlers: Dict[str, Callable[..., Any]],
+            hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]],
+            http: HTTPClient,
+            **options: Any,
     ) -> None:
         # Set later, after Client.login
         self.loop: asyncio.AbstractEventLoop = utils.MISSING
@@ -292,7 +291,8 @@ class ConnectionState(Generic[ClientT]):
         else:
             self._messages: Optional[Deque[Message]] = None
 
-    def process_chunk_requests(self, guild_id: int, nonce: Optional[str], members: List[Member], complete: bool) -> None:
+    def process_chunk_requests(self, guild_id: int, nonce: Optional[str], members: List[Member],
+                               complete: bool) -> None:
         removed = []
         for key, request in self._chunk_requests.items():
             if request.guild_id == guild_id and request.nonce == nonce:
@@ -490,7 +490,7 @@ class ConnectionState(Generic[ClientT]):
         return self._chunk_guilds and not guild.chunked and not (self._intents.presences and not guild.large)
 
     def _get_guild_channel(
-        self, data: PartialMessagePayload, guild_id: Optional[int] = None
+            self, data: PartialMessagePayload, guild_id: Optional[int] = None
     ) -> Tuple[Union[Channel, Thread], Optional[Guild]]:
         channel_id = int(data['channel_id'])
         try:
@@ -505,13 +505,15 @@ class ConnectionState(Generic[ClientT]):
         return channel or PartialMessageable(state=self, guild_id=guild_id, id=channel_id), guild
 
     async def chunker(
-        self, guild_id: int, query: str = '', limit: int = 0, presences: bool = False, *, nonce: Optional[str] = None
+            self, guild_id: int, query: str = '', limit: int = 0, presences: bool = False, *,
+            nonce: Optional[str] = None
     ) -> None:
         ws = self._get_websocket(guild_id)  # This is ignored upstream
         await ws.request_chunks(guild_id, query=query, limit=limit, presences=presences, nonce=nonce)
 
     async def query_members(
-        self, guild: Guild, query: Optional[str], limit: int, user_ids: Optional[List[int]], cache: bool, presences: bool
+            self, guild: Guild, query: Optional[str], limit: int, user_ids: Optional[List[int]], cache: bool,
+            presences: bool
     ) -> List[Member]:
         guild_id = guild.id
         ws = self._get_websocket(guild_id)
@@ -528,7 +530,8 @@ class ConnectionState(Generic[ClientT]):
             )
             return await asyncio.wait_for(request.wait(), timeout=30.0)
         except asyncio.TimeoutError:
-            _log.warning('Timed out waiting for chunks with query %r and limit %d for guild_id %d', query, limit, guild_id)
+            _log.warning('Timed out waiting for chunks with query %r and limit %d for guild_id %d', query, limit,
+                         guild_id)
             raise
 
     async def _delay_ready(self) -> None:
@@ -1061,7 +1064,8 @@ class ConnectionState(Generic[ClientT]):
             self.dispatch('member_update', old_member, member)
         else:
             if self.member_cache_flags.joined:
-                member = Member(data=data, guild=guild, state=self)  # type: ignore # the data is not complete, contains a delta of values
+                member = Member(data=data, guild=guild,
+                                state=self)  # type: ignore # the data is not complete, contains a delta of values
 
                 # Force an update on the inner user if necessary
                 user_update = member._update_inner_user(user)
@@ -1100,7 +1104,8 @@ class ConnectionState(Generic[ClientT]):
     def parse_guild_audit_log_entry_create(self, data: gw.GuildAuditLogEntryCreate) -> None:
         guild = self._get_guild(int(data['guild_id']))
         if guild is None:
-            _log.debug('GUILD_AUDIT_LOG_ENTRY_CREATE referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            _log.debug('GUILD_AUDIT_LOG_ENTRY_CREATE referencing an unknown guild ID: %s. Discarding.',
+                       data['guild_id'])
             return
 
         entry = AuditLogEntry(
@@ -1148,7 +1153,8 @@ class ConnectionState(Generic[ClientT]):
     def parse_auto_moderation_action_execution(self, data: AutoModerationActionExecution) -> None:
         guild = self._get_guild(int(data['guild_id']))
         if guild is None:
-            _log.debug('AUTO_MODERATION_ACTION_EXECUTION referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            _log.debug('AUTO_MODERATION_ACTION_EXECUTION referencing an unknown guild ID: %s. Discarding.',
+                       data['guild_id'])
             return
 
         execution = AutoModAction(data=data, state=self)
@@ -1172,17 +1178,18 @@ class ConnectionState(Generic[ClientT]):
         return guild.id not in self._guilds
 
     @overload
-    async def chunk_guild(self, guild: Guild, *, wait: Literal[True] = ..., cache: Optional[bool] = ...) -> List[Member]:
+    async def chunk_guild(self, guild: Guild, *, wait: Literal[True] = ..., cache: Optional[bool] = ...) -> List[
+        Member]:
         ...
 
     @overload
     async def chunk_guild(
-        self, guild: Guild, *, wait: Literal[False] = ..., cache: Optional[bool] = ...
+            self, guild: Guild, *, wait: Literal[False] = ..., cache: Optional[bool] = ...
     ) -> asyncio.Future[List[Member]]:
         ...
 
     async def chunk_guild(
-        self, guild: Guild, *, wait: bool = True, cache: Optional[bool] = None
+            self, guild: Guild, *, wait: bool = True, cache: Optional[bool] = None
     ) -> Union[List[Member], asyncio.Future[List[Member]]]:
         cache = cache or self.member_cache_flags.joined
         request = self._chunk_requests.get(guild.id)
@@ -1500,7 +1507,8 @@ class ConnectionState(Generic[ClientT]):
                     scheduled_event._pop_user(user.id)
                     self.dispatch('scheduled_event_user_remove', scheduled_event, user)
                 else:
-                    _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown user ID: %s. Discarding.', data['user_id'])
+                    _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown user ID: %s. Discarding.',
+                               data['user_id'])
             else:
                 _log.debug(
                     'SCHEDULED_EVENT_USER_REMOVE referencing unknown scheduled event ID: %s. Discarding.',
@@ -1637,14 +1645,14 @@ class AutoShardedConnectionState(ConnectionState[ClientT]):
                 msg._rebind_cached_references(new_guild, channel)
 
     async def chunker(
-        self,
-        guild_id: int,
-        query: str = '',
-        limit: int = 0,
-        presences: bool = False,
-        *,
-        shard_id: Optional[int] = None,
-        nonce: Optional[str] = None,
+            self,
+            guild_id: int,
+            query: str = '',
+            limit: int = 0,
+            presences: bool = False,
+            *,
+            shard_id: Optional[int] = None,
+            nonce: Optional[str] = None,
     ) -> None:
         ws = self._get_websocket(guild_id, shard_id=shard_id)
         await ws.request_chunks(guild_id, query=query, limit=limit, presences=presences, nonce=nonce)
@@ -1741,7 +1749,8 @@ class AutoShardedConnectionState(ConnectionState[ClientT]):
                 self.application_flags: ApplicationFlags = ApplicationFlags._from_value(application['flags'])
 
         for guild_data in data['guilds']:
-            self._add_guild_from_data(guild_data)  # type: ignore # _add_guild_from_data requires a complete Guild payload
+            self._add_guild_from_data(
+                guild_data)  # type: ignore # _add_guild_from_data requires a complete Guild payload
 
         if self._messages:
             self._update_message_references()

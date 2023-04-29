@@ -28,8 +28,8 @@ import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union, overload
 
 from .asset import Asset
-from .enums import ActivityType, try_enum
 from .colour import Colour
+from .enums import ActivityType, try_enum
 from .partial_emoji import PartialEmoji
 from .utils import _get_as_snowflake
 
@@ -612,10 +612,10 @@ class Spotify:
 
     def __eq__(self, other: object) -> bool:
         return (
-            isinstance(other, Spotify)
-            and other._session_id == self._session_id
-            and other._sync_id == self._sync_id
-            and other.start == self.start
+                isinstance(other, Spotify)
+                and other._session_id == self._session_id
+                and other._sync_id == self._sync_id
+                and other.start == self.start
         )
 
     def __ne__(self, other: object) -> bool:
@@ -680,7 +680,8 @@ class Spotify:
     def start(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the user started playing this song in UTC."""
         # the start key will be present here
-        return datetime.datetime.fromtimestamp(self._timestamps['start'] / 1000, tz=datetime.timezone.utc)  # type: ignore
+        return datetime.datetime.fromtimestamp(self._timestamps['start'] / 1000,
+                                               tz=datetime.timezone.utc)  # type: ignore
 
     @property
     def end(self) -> datetime.datetime:

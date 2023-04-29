@@ -24,15 +24,14 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 import inspect
 import os
-
+from typing import Callable, Literal, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
 from .item import Item, ItemCallbackType
+from ..components import Button as ButtonComponent
 from ..enums import ButtonStyle, ComponentType
 from ..partial_emoji import PartialEmoji, _EmojiTag
-from ..components import Button as ButtonComponent
 
 __all__ = (
     'Button',
@@ -42,7 +41,6 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .view import View
     from ..emoji import Emoji
     from ..types.components import ButtonComponent as ButtonComponentPayload
 
@@ -87,15 +85,15 @@ class Button(Item[V]):
     )
 
     def __init__(
-        self,
-        *,
-        style: ButtonStyle = ButtonStyle.secondary,
-        label: Optional[str] = None,
-        disabled: bool = False,
-        custom_id: Optional[str] = None,
-        url: Optional[str] = None,
-        emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
-        row: Optional[int] = None,
+            self,
+            *,
+            style: ButtonStyle = ButtonStyle.secondary,
+            label: Optional[str] = None,
+            disabled: bool = False,
+            custom_id: Optional[str] = None,
+            url: Optional[str] = None,
+            emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
+            row: Optional[int] = None,
     ):
         super().__init__()
         if custom_id is not None and url is not None:
@@ -232,13 +230,13 @@ class Button(Item[V]):
 
 
 def button(
-    *,
-    label: Optional[str] = None,
-    custom_id: Optional[str] = None,
-    disabled: bool = False,
-    style: ButtonStyle = ButtonStyle.secondary,
-    emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
-    row: Optional[int] = None,
+        *,
+        label: Optional[str] = None,
+        custom_id: Optional[str] = None,
+        disabled: bool = False,
+        style: ButtonStyle = ButtonStyle.secondary,
+        emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
+        row: Optional[int] = None,
 ) -> Callable[[ItemCallbackType[V, Button[V]]], Button[V]]:
     """A decorator that attaches a button to a component.
 

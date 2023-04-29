@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import inspect
 import re
+import types
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -43,10 +44,8 @@ from typing import (
     Union,
     runtime_checkable,
 )
-import types
 
 import discord
-
 from .errors import *
 
 if TYPE_CHECKING:
@@ -362,7 +361,7 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
 
     @staticmethod
     def _resolve_channel(
-        ctx: Context[BotT], guild_id: Optional[int], channel_id: Optional[int]
+            ctx: Context[BotT], guild_id: Optional[int], channel_id: Optional[int]
     ) -> Optional[Union[Channel, Thread]]:
         if channel_id is None:
             # we were passed just a message id so we can assume the channel is the current context channel
@@ -412,7 +411,8 @@ class MessageConverter(IDConverter[discord.Message]):
         except discord.NotFound:
             raise MessageNotFound(argument)
         except discord.Forbidden:
-            raise ChannelNotReadable(channel)  # type: ignore # type-checker thinks channel could be a DMChannel at this point
+            raise ChannelNotReadable(
+                channel)  # type: ignore # type-checker thinks channel could be a DMChannel at this point
 
 
 class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
@@ -910,12 +910,12 @@ class clean_content(Converter[str]):
     """
 
     def __init__(
-        self,
-        *,
-        fix_channel_mentions: bool = False,
-        use_nicknames: bool = True,
-        escape_markdown: bool = False,
-        remove_markdown: bool = False,
+            self,
+            *,
+            fix_channel_mentions: bool = False,
+            use_nicknames: bool = True,
+            escape_markdown: bool = False,
+            remove_markdown: bool = False,
     ) -> None:
         self.fix_channel_mentions = fix_channel_mentions
         self.use_nicknames = use_nicknames
@@ -1043,9 +1043,9 @@ class Greedy(List[T]):
     def constructed_converter(self) -> Any:
         # Only construct a converter once in order to maintain state between convert calls
         if (
-            inspect.isclass(self.converter)
-            and issubclass(self.converter, Converter)
-            and not inspect.ismethod(self.converter.convert)
+                inspect.isclass(self.converter)
+                and issubclass(self.converter, Converter)
+                and not inspect.ismethod(self.converter.convert)
         ):
             return self.converter()
         return self.converter
@@ -1089,11 +1089,11 @@ else:
         """
 
         def __init__(
-            self,
-            *,
-            annotation: Any,
-            min: Optional[Union[int, float]] = None,
-            max: Optional[Union[int, float]] = None,
+                self,
+                *,
+                annotation: Any,
+                min: Optional[Union[int, float]] = None,
+                max: Optional[Union[int, float]] = None,
         ) -> None:
             self.annotation: Any = annotation
             self.min: Optional[Union[int, float]] = min
@@ -1244,7 +1244,7 @@ async def _actual_conversion(ctx: Context[BotT], converter: Any, argument: str, 
 
 @overload
 async def run_converters(
-    ctx: Context[BotT], converter: Union[Type[Converter[T]], Converter[T]], argument: str, param: Parameter
+        ctx: Context[BotT], converter: Union[Type[Converter[T]], Converter[T]], argument: str, param: Parameter
 ) -> T:
     ...
 

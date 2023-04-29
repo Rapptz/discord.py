@@ -24,11 +24,11 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, TYPE_CHECKING, Union
 import re
+from typing import Any, Dict, Optional, TYPE_CHECKING, Union
 
-from .asset import Asset, AssetMixin
 from . import utils
+from .asset import Asset, AssetMixin
 
 # fmt: off
 __all__ = (
@@ -169,12 +169,12 @@ class PartialEmoji(_EmojiTag, AssetMixin):
 
     @classmethod
     def with_state(
-        cls,
-        state: ConnectionState,
-        *,
-        name: str,
-        animated: bool = False,
-        id: Optional[int] = None,
+            cls,
+            state: ConnectionState,
+            *,
+            name: str,
+            animated: bool = False,
+            id: Optional[int] = None,
     ) -> Self:
         self = cls(name=name, animated=animated, id=id)
         self._state = state

@@ -30,9 +30,9 @@ from discord.ext import commands
 def test_ext_commands_descriptions_explicit():
     @commands.command(help='This is the short description that will appear.')
     async def describe(
-        ctx: commands.Context,
-        arg: str = commands.param(description='Description of arg.'),
-        arg2: int = commands.param(description='Description of arg2.'),
+            ctx: commands.Context,
+            arg: str = commands.param(description='Description of arg.'),
+            arg2: int = commands.param(description='Description of arg2.'),
     ) -> None:
         ...
 
@@ -66,12 +66,12 @@ def test_ext_commands_descriptions_numpy():
         """
 
     assert (
-        numpy.help
-        == 'This is the short description that will appear.\nThis extended description will also appear in the command description.'
+            numpy.help
+            == 'This is the short description that will appear.\nThis extended description will also appear in the command description.'
     )
     assert (
-        numpy.clean_params['arg'].description
-        == 'Docstring description of arg. This is the second line of the arg docstring.'
+            numpy.clean_params['arg'].description
+            == 'Docstring description of arg. This is the second line of the arg docstring.'
     )
     assert numpy.clean_params['arg2'].description == 'Docstring description of arg2.'
 
@@ -100,12 +100,12 @@ def test_ext_commands_descriptions_numpy_extras():
         """
 
     assert (
-        numpy.help
-        == 'This is the short description that will appear.\nThis extended description will also appear in the command description.'
+            numpy.help
+            == 'This is the short description that will appear.\nThis extended description will also appear in the command description.'
     )
     assert (
-        numpy.clean_params['arg'].description
-        == 'Docstring description of arg. This is the second line of the arg docstring.'
+            numpy.clean_params['arg'].description
+            == 'Docstring description of arg. This is the second line of the arg docstring.'
     )
     assert numpy.clean_params['arg2'].description == 'Docstring description of arg2.'
 
@@ -127,5 +127,6 @@ def test_ext_commands_descriptions_cog_commands():
 
     cog = MyCog()
     assert cog.test.help == 'Test command'
-    assert cog.test.clean_params['arg'].description == 'Description of arg. This is the second line of the arg description.'
+    assert cog.test.clean_params[
+               'arg'].description == 'Description of arg. This is the second line of the arg description.'
     assert cog.test.clean_params['arg2'].description == 'Description of arg2.'

@@ -23,13 +23,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-import datetime
 
+import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional, List, Set, Union, Sequence, overload
 
+from . import utils
 from .enums import AutoModRuleTriggerType, AutoModRuleActionType, AutoModRuleEventType, try_enum
 from .flags import AutoModPresets
-from . import utils
 from .utils import MISSING, cached_slot_property
 
 if TYPE_CHECKING:
@@ -97,11 +97,11 @@ class AutoModRuleAction:
         ...
 
     def __init__(
-        self,
-        *,
-        channel_id: Optional[int] = None,
-        duration: Optional[datetime.timedelta] = None,
-        custom_message: Optional[str] = None,
+            self,
+            *,
+            channel_id: Optional[int] = None,
+            duration: Optional[datetime.timedelta] = None,
+            custom_message: Optional[str] = None,
     ) -> None:
         self.channel_id: Optional[int] = channel_id
         self.duration: Optional[datetime.timedelta] = duration
@@ -134,7 +134,8 @@ class AutoModRuleAction:
         if self.type is AutoModRuleActionType.block_message and self.custom_message is not None:
             ret['metadata'] = {'custom_message': self.custom_message}
         elif self.type is AutoModRuleActionType.timeout:
-            ret['metadata'] = {'duration_seconds': int(self.duration.total_seconds())}  # type: ignore # duration cannot be None here
+            ret['metadata'] = {
+                'duration_seconds': int(self.duration.total_seconds())}  # type: ignore # duration cannot be None here
         elif self.type is AutoModRuleActionType.send_alert_message:
             ret['metadata'] = {'channel_id': str(self.channel_id)}
         return ret
@@ -197,16 +198,17 @@ class AutoModTrigger:
     )
 
     def __init__(
-        self,
-        *,
-        type: Optional[AutoModRuleTriggerType] = None,
-        keyword_filter: Optional[List[str]] = None,
-        presets: Optional[AutoModPresets] = None,
-        allow_list: Optional[List[str]] = None,
-        mention_limit: Optional[int] = None,
-        regex_patterns: Optional[List[str]] = None,
+            self,
+            *,
+            type: Optional[AutoModRuleTriggerType] = None,
+            keyword_filter: Optional[List[str]] = None,
+            presets: Optional[AutoModPresets] = None,
+            allow_list: Optional[List[str]] = None,
+            mention_limit: Optional[int] = None,
+            regex_patterns: Optional[List[str]] = None,
     ) -> None:
-        if type is None and sum(arg is not None for arg in (keyword_filter or regex_patterns, presets, mention_limit)) > 1:
+        if type is None and sum(
+                arg is not None for arg in (keyword_filter or regex_patterns, presets, mention_limit)) > 1:
             raise ValueError('Please pass only one of keyword_filter, regex_patterns, presets, or mention_limit.')
 
         if type is not None:
@@ -250,7 +252,8 @@ class AutoModTrigger:
             )
         elif type_ is AutoModRuleTriggerType.keyword_preset:
             return cls(
-                type=type_, presets=AutoModPresets._from_value(data.get('presets', [])), allow_list=data.get('allow_list')
+                type=type_, presets=AutoModPresets._from_value(data.get('presets', [])),
+                allow_list=data.get('allow_list')
             )
         elif type_ is AutoModRuleTriggerType.mention_spam:
             return cls(type=type_, mention_limit=data.get('mention_total_limit'))
@@ -389,16 +392,16 @@ class AutoModRule:
         return obj.id in self.exempt_channel_ids or obj.id in self.exempt_role_ids
 
     async def edit(
-        self,
-        *,
-        name: str = MISSING,
-        event_type: AutoModRuleEventType = MISSING,
-        actions: List[AutoModRuleAction] = MISSING,
-        trigger: AutoModTrigger = MISSING,
-        enabled: bool = MISSING,
-        exempt_roles: Sequence[Snowflake] = MISSING,
-        exempt_channels: Sequence[Snowflake] = MISSING,
-        reason: str = MISSING,
+            self,
+            *,
+            name: str = MISSING,
+            event_type: AutoModRuleEventType = MISSING,
+            actions: List[AutoModRuleAction] = MISSING,
+            trigger: AutoModTrigger = MISSING,
+            enabled: bool = MISSING,
+            exempt_roles: Sequence[Snowflake] = MISSING,
+            exempt_channels: Sequence[Snowflake] = MISSING,
+            reason: str = MISSING,
     ) -> Self:
         """|coro|
 

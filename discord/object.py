@@ -24,15 +24,15 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from .mixins import Hashable
-from .utils import snowflake_time, MISSING
-
 from typing import (
     SupportsInt,
     TYPE_CHECKING,
     Type,
     Union,
 )
+
+from .mixins import Hashable
+from .utils import snowflake_time, MISSING
 
 if TYPE_CHECKING:
     import datetime
@@ -44,6 +44,8 @@ if TYPE_CHECKING:
 __all__ = (
     'Object',
 )
+
+
 # fmt: on
 
 

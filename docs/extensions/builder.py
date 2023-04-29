@@ -1,13 +1,14 @@
-from sphinx.builders.html import StandaloneHTMLBuilder
-from sphinx.builders.gettext import MessageCatalogBuilder, I18nBuilder, timestamp, ltz, should_write, GettextRenderer
-from sphinx.locale import __
-from sphinx.util import status_iterator
-from sphinx.util.osutil import ensuredir
-from sphinx.environment.adapters.indexentries import IndexEntries
-from sphinx.writers.html5 import HTML5Translator
 import datetime
 import os
 import re
+
+from sphinx.builders.gettext import MessageCatalogBuilder, I18nBuilder, timestamp, ltz, should_write, GettextRenderer
+from sphinx.builders.html import StandaloneHTMLBuilder
+from sphinx.environment.adapters.indexentries import IndexEntries
+from sphinx.locale import __
+from sphinx.util import status_iterator
+from sphinx.util.osutil import ensuredir
+from sphinx.writers.html5 import HTML5Translator
 
 
 class DPYHTML5Translator(HTML5Translator):
@@ -76,12 +77,12 @@ class DPYMessageCatalogBuilder(MessageCatalogBuilder):
 
         REGEX = self._ADMONITION_REGEX
         for textdomain, catalog in status_iterator(
-            self.catalogs.items(),
-            __("writing message catalogs... "),
-            "darkgreen",
-            len(self.catalogs),
-            self.app.verbosity,
-            lambda textdomain__: textdomain__[0],
+                self.catalogs.items(),
+                __("writing message catalogs... "),
+                "darkgreen",
+                len(self.catalogs),
+                self.app.verbosity,
+                lambda textdomain__: textdomain__[0],
         ):
             # noop if config.gettext_compact is set
             ensuredir(os.path.join(self.outdir, os.path.dirname(textdomain)))

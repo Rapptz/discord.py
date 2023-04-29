@@ -24,16 +24,15 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-from collections import deque
 import concurrent.futures
 import logging
 import struct
 import sys
-import time
 import threading
+import time
 import traceback
 import zlib
-
+from collections import deque
 from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar
 
 import aiohttp
@@ -125,12 +124,12 @@ class GatewayRatelimiter:
 
 class KeepAliveHandler(threading.Thread):
     def __init__(
-        self,
-        *args: Any,
-        ws: DiscordWebSocket,
-        interval: Optional[float] = None,
-        shard_id: Optional[int] = None,
-        **kwargs: Any,
+            self,
+            *args: Any,
+            ws: DiscordWebSocket,
+            interval: Optional[float] = None,
+            shard_id: Optional[int] = None,
+            **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.ws: DiscordWebSocket = ws
@@ -151,7 +150,8 @@ class KeepAliveHandler(threading.Thread):
     def run(self) -> None:
         while not self._stop_ev.wait(self.interval):
             if self._last_recv + self.heartbeat_timeout < time.perf_counter():
-                _log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting.", self.shard_id)
+                _log.warning("Shard ID %s has stopped responding to the gateway. Closing and restarting.",
+                             self.shard_id)
                 coro = self.ws.close(4000)
                 f = asyncio.run_coroutine_threadsafe(coro, loop=self.ws.loop)
 
@@ -292,20 +292,21 @@ class DiscordWebSocket:
         _max_heartbeat_timeout: float
 
     # fmt: off
-    DEFAULT_GATEWAY    = yarl.URL('wss://gateway.discord.gg/')
-    DISPATCH           = 0
-    HEARTBEAT          = 1
-    IDENTIFY           = 2
-    PRESENCE           = 3
-    VOICE_STATE        = 4
-    VOICE_PING         = 5
-    RESUME             = 6
-    RECONNECT          = 7
-    REQUEST_MEMBERS    = 8
+    DEFAULT_GATEWAY = yarl.URL('wss://gateway.discord.gg/')
+    DISPATCH = 0
+    HEARTBEAT = 1
+    IDENTIFY = 2
+    PRESENCE = 3
+    VOICE_STATE = 4
+    VOICE_PING = 5
+    RESUME = 6
+    RECONNECT = 7
+    REQUEST_MEMBERS = 8
     INVALIDATE_SESSION = 9
-    HELLO              = 10
-    HEARTBEAT_ACK      = 11
-    GUILD_SYNC         = 12
+    HELLO = 10
+    HEARTBEAT_ACK = 11
+    GUILD_SYNC = 12
+
     # fmt: on
 
     def __init__(self, socket: aiohttp.ClientWebSocketResponse, *, loop: asyncio.AbstractEventLoop) -> None:
@@ -343,17 +344,17 @@ class DiscordWebSocket:
 
     @classmethod
     async def from_client(
-        cls,
-        client: Client,
-        *,
-        initial: bool = False,
-        gateway: Optional[yarl.URL] = None,
-        shard_id: Optional[int] = None,
-        session: Optional[str] = None,
-        sequence: Optional[int] = None,
-        resume: bool = False,
-        encoding: str = 'json',
-        zlib: bool = True,
+            cls,
+            client: Client,
+            *,
+            initial: bool = False,
+            gateway: Optional[yarl.URL] = None,
+            shard_id: Optional[int] = None,
+            session: Optional[str] = None,
+            sequence: Optional[int] = None,
+            resume: bool = False,
+            encoding: str = 'json',
+            zlib: bool = True,
     ) -> Self:
         """Creates a main websocket for Discord from a :class:`Client`.
 
@@ -406,10 +407,10 @@ class DiscordWebSocket:
         return ws
 
     def wait_for(
-        self,
-        event: str,
-        predicate: Callable[[Dict[str, Any]], bool],
-        result: Optional[Callable[[Dict[str, Any]], Any]] = None,
+            self,
+            event: str,
+            predicate: Callable[[Dict[str, Any]], bool],
+            result: Optional[Callable[[Dict[str, Any]], Any]] = None,
     ) -> asyncio.Future[Any]:
         """Waits for a DISPATCH'd event that meets the predicate.
 
@@ -670,11 +671,11 @@ class DiscordWebSocket:
                 raise ConnectionClosed(self.socket, shard_id=self.shard_id) from exc
 
     async def change_presence(
-        self,
-        *,
-        activity: Optional[BaseActivity] = None,
-        status: Optional[str] = None,
-        since: float = 0.0,
+            self,
+            *,
+            activity: Optional[BaseActivity] = None,
+            status: Optional[str] = None,
+            since: float = 0.0,
     ) -> None:
         if activity is not None:
             if not isinstance(activity, BaseActivity):
@@ -701,14 +702,14 @@ class DiscordWebSocket:
         await self.send(sent)
 
     async def request_chunks(
-        self,
-        guild_id: int,
-        query: Optional[str] = None,
-        *,
-        limit: int,
-        user_ids: Optional[List[int]] = None,
-        presences: bool = False,
-        nonce: Optional[str] = None,
+            self,
+            guild_id: int,
+            query: Optional[str] = None,
+            *,
+            limit: int,
+            user_ids: Optional[List[int]] = None,
+            presences: bool = False,
+            nonce: Optional[str] = None,
     ) -> None:
         payload = {
             'op': self.REQUEST_MEMBERS,
@@ -731,11 +732,11 @@ class DiscordWebSocket:
         await self.send_as_json(payload)
 
     async def voice_state(
-        self,
-        guild_id: int,
-        channel_id: Optional[int],
-        self_mute: bool = False,
-        self_deaf: bool = False,
+            self,
+            guild_id: int,
+            channel_id: Optional[int],
+            self_mute: bool = False,
+            self_deaf: bool = False,
     ) -> None:
         payload = {
             'op': self.VOICE_STATE,
@@ -800,26 +801,27 @@ class DiscordVoiceWebSocket:
         _max_heartbeat_timeout: float
 
     # fmt: off
-    IDENTIFY            = 0
-    SELECT_PROTOCOL     = 1
-    READY               = 2
-    HEARTBEAT           = 3
+    IDENTIFY = 0
+    SELECT_PROTOCOL = 1
+    READY = 2
+    HEARTBEAT = 3
     SESSION_DESCRIPTION = 4
-    SPEAKING            = 5
-    HEARTBEAT_ACK       = 6
-    RESUME              = 7
-    HELLO               = 8
-    RESUMED             = 9
-    CLIENT_CONNECT      = 12
-    CLIENT_DISCONNECT   = 13
+    SPEAKING = 5
+    HEARTBEAT_ACK = 6
+    RESUME = 7
+    HELLO = 8
+    RESUMED = 9
+    CLIENT_CONNECT = 12
+    CLIENT_DISCONNECT = 13
+
     # fmt: on
 
     def __init__(
-        self,
-        socket: aiohttp.ClientWebSocketResponse,
-        loop: asyncio.AbstractEventLoop,
-        *,
-        hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
+            self,
+            socket: aiohttp.ClientWebSocketResponse,
+            loop: asyncio.AbstractEventLoop,
+            *,
+            hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
     ) -> None:
         self.ws: aiohttp.ClientWebSocketResponse = socket
         self.loop: asyncio.AbstractEventLoop = loop
@@ -865,7 +867,8 @@ class DiscordVoiceWebSocket:
 
     @classmethod
     async def from_client(
-        cls, client: VoiceClient, *, resume: bool = False, hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
+            cls, client: VoiceClient, *, resume: bool = False,
+            hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
     ) -> Self:
         """Creates a voice websocket for the :class:`VoiceClient`."""
         gateway = 'wss://' + client.endpoint + '/?v=4'

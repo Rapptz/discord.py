@@ -8,9 +8,9 @@ Tests for discord.ext.tasks
 
 import asyncio
 import datetime
+import sys
 
 import pytest
-import sys
 
 from discord import utils
 from discord.ext import tasks
@@ -98,7 +98,8 @@ def test_task_regression_issue7659():
     assert loop._get_next_sleep_time(after_midnight) == expected_after_midnight
 
     today = datetime.date.today()
-    minute_before = [datetime.datetime.combine(today, time, tzinfo=jst) - datetime.timedelta(minutes=1) for time in times]
+    minute_before = [datetime.datetime.combine(today, time, tzinfo=jst) - datetime.timedelta(minutes=1) for time in
+                     times]
 
     for before, expected_time in zip(minute_before, times):
         expected = datetime.datetime.combine(today, expected_time, tzinfo=jst)
@@ -120,7 +121,8 @@ def test_task_regression_issue7676():
     now = utils.utcnow()
     today = now.date()
     times_before_in_utc = [
-        datetime.datetime.combine(today, time, tzinfo=jst).astimezone(datetime.timezone.utc) - datetime.timedelta(minutes=1)
+        datetime.datetime.combine(today, time, tzinfo=jst).astimezone(datetime.timezone.utc) - datetime.timedelta(
+            minutes=1)
         for time in times
     ]
 

@@ -24,16 +24,16 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Optional, Tuple, Dict
-
 import argparse
+import importlib.metadata
+import platform
 import sys
 from pathlib import Path
+from typing import Optional, Tuple, Dict
+
+import aiohttp
 
 import discord
-import importlib.metadata
-import aiohttp
-import platform
 
 
 def show_version() -> None:
@@ -171,7 +171,6 @@ _cog_extras = '''
         pass
 
 '''
-
 
 # certain file names and directory names are forbidden
 # see: https://msdn.microsoft.com/en-us/library/windows/desktop/aa365247%28v=vs.85%29.aspx
@@ -324,7 +323,8 @@ def add_newcog_args(subparser: argparse._SubParsersAction[argparse.ArgumentParse
     parser.set_defaults(func=newcog)
 
     parser.add_argument('name', help='the cog name')
-    parser.add_argument('directory', help='the directory to place it in (default: cogs)', nargs='?', default=Path('cogs'))
+    parser.add_argument('directory', help='the directory to place it in (default: cogs)', nargs='?',
+                        default=Path('cogs'))
     parser.add_argument('--class-name', help='the class name of the cog (default: <name>)', dest='class_name')
     parser.add_argument('--display-name', help='the cog name (default: <name>)')
     parser.add_argument('--hide-commands', help='whether to hide all commands in the cog', action='store_true')
