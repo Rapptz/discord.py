@@ -23,11 +23,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-
 from typing import TYPE_CHECKING, AsyncIterator, Union, Optional
 
-from .object import Object
 from .user import User
+from .object import Object
 
 # fmt: off
 __all__ = (
@@ -84,8 +83,7 @@ class Reaction:
 
     __slots__ = ('message', 'count', 'emoji', 'me')
 
-    def __init__(self, *, message: Message, data: ReactionPayload,
-                 emoji: Optional[Union[PartialEmoji, Emoji, str]] = None):
+    def __init__(self, *, message: Message, data: ReactionPayload, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None):
         self.message: Message = message
         self.emoji: Union[PartialEmoji, Emoji, str] = emoji or message._state.get_reaction_emoji(data['emoji'])
         self.count: int = data.get('count', 1)
@@ -168,7 +166,7 @@ class Reaction:
         await self.message.clear_reaction(self.emoji)
 
     async def users(
-            self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
+        self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
     ) -> AsyncIterator[Union[Member, User]]:
         """Returns an :term:`asynchronous iterator` representing the users that have reacted to the message.
 

@@ -23,28 +23,27 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import List, Literal, Optional, TypedDict
-
 from typing_extensions import NotRequired, Required
 
-from .activity import PartialPresenceUpdate
-from .appinfo import GatewayAppInfo, PartialAppInfo
-from .audit_log import AuditLogEntry
 from .automod import AutoModerationAction, AutoModerationRuleTriggerType
-from .channel import ChannelType, StageInstance
-from .emoji import Emoji, PartialEmoji
-from .guild import Guild, UnavailableGuild
+from .activity import PartialPresenceUpdate
+from .voice import GuildVoiceState
 from .integration import BaseIntegration, IntegrationApplication
+from .role import Role
+from .channel import ChannelType, StageInstance
 from .interactions import Interaction
 from .invite import InviteTargetType
+from .emoji import Emoji, PartialEmoji
 from .member import MemberWithUser
-from .message import Message
-from .role import Role
-from .scheduled_event import GuildScheduledEvent
 from .snowflake import Snowflake
+from .message import Message
 from .sticker import GuildSticker
-from .threads import Thread, ThreadMember
+from .appinfo import GatewayAppInfo, PartialAppInfo
+from .guild import Guild, UnavailableGuild
 from .user import User
-from .voice import GuildVoiceState
+from .threads import Thread, ThreadMember
+from .scheduled_event import GuildScheduledEvent
+from .audit_log import AuditLogEntry
 
 
 class SessionStartLimit(TypedDict):
@@ -126,7 +125,9 @@ class MessageReactionRemoveEmojiEvent(TypedDict):
 
 InteractionCreateEvent = Interaction
 
+
 PresenceUpdateEvent = PartialPresenceUpdate
+
 
 UserUpdateEvent = User
 

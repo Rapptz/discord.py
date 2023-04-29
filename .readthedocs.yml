@@ -1,5 +1,5 @@
 version: 2
-formats: [ ]
+formats: []
 
 build:
   image: latest

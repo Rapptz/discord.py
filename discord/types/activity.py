@@ -25,11 +25,10 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict
-
 from typing_extensions import NotRequired
-
-from .snowflake import Snowflake
 from .user import User
+from .snowflake import Snowflake
+
 
 StatusType = Literal['idle', 'dnd', 'online', 'offline']
 

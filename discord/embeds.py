@@ -34,8 +34,6 @@ from .colour import Colour
 __all__ = (
     'Embed',
 )
-
-
 # fmt: on
 
 
@@ -64,17 +62,14 @@ if TYPE_CHECKING:
 
     T = TypeVar('T')
 
-
     class _EmbedFooterProxy(Protocol):
         text: Optional[str]
         icon_url: Optional[str]
-
 
     class _EmbedFieldProxy(Protocol):
         name: Optional[str]
         value: Optional[str]
         inline: bool
-
 
     class _EmbedMediaProxy(Protocol):
         url: Optional[str]
@@ -82,17 +77,14 @@ if TYPE_CHECKING:
         height: Optional[int]
         width: Optional[int]
 
-
     class _EmbedVideoProxy(Protocol):
         url: Optional[str]
         height: Optional[int]
         width: Optional[int]
 
-
     class _EmbedProviderProxy(Protocol):
         name: Optional[str]
         url: Optional[str]
-
 
     class _EmbedAuthorProxy(Protocol):
         name: Optional[str]
@@ -173,15 +165,15 @@ class Embed:
     )
 
     def __init__(
-            self,
-            *,
-            colour: Optional[Union[int, Colour]] = None,
-            color: Optional[Union[int, Colour]] = None,
-            title: Optional[Any] = None,
-            type: EmbedType = 'rich',
-            url: Optional[Any] = None,
-            description: Optional[Any] = None,
-            timestamp: Optional[datetime.datetime] = None,
+        self,
+        *,
+        colour: Optional[Union[int, Colour]] = None,
+        color: Optional[Union[int, Colour]] = None,
+        title: Optional[Any] = None,
+        type: EmbedType = 'rich',
+        url: Optional[Any] = None,
+        description: Optional[Any] = None,
+        timestamp: Optional[datetime.datetime] = None,
     ):
 
         self.colour = colour if colour is not None else color
@@ -300,19 +292,19 @@ class Embed:
 
     def __eq__(self, other: Embed) -> bool:
         return isinstance(other, Embed) and (
-                self.type == other.type
-                and self.title == other.title
-                and self.url == other.url
-                and self.description == other.description
-                and self.colour == other.colour
-                and self.fields == other.fields
-                and self.timestamp == other.timestamp
-                and self.author == other.author
-                and self.thumbnail == other.thumbnail
-                and self.footer == other.footer
-                and self.image == other.image
-                and self.provider == other.provider
-                and self.video == other.video
+            self.type == other.type
+            and self.title == other.title
+            and self.url == other.url
+            and self.description == other.description
+            and self.colour == other.colour
+            and self.fields == other.fields
+            and self.timestamp == other.timestamp
+            and self.author == other.author
+            and self.thumbnail == other.thumbnail
+            and self.footer == other.footer
+            and self.image == other.image
+            and self.provider == other.provider
+            and self.video == other.video
         )
 
     @property

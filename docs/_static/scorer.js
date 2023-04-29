@@ -4,7 +4,6 @@ let queryBeingDone = null;
 let pattern = null;
 
 const escapedRegex = /[-\/\\^$*+?.()|[\]{}]/g;
-
 function escapeRegex(e) {
     return e.replace(escapedRegex, '\\$&');
 }

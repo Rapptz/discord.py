@@ -25,25 +25,25 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-
+from typing import Any, Dict, Optional, Generic, TYPE_CHECKING, Sequence, Tuple, Union
 import asyncio
 import datetime
-from typing import Any, Dict, Optional, Generic, TYPE_CHECKING, Sequence, Tuple, Union
 
 from . import utils
-from ._types import ClientT
-from .app_commands.namespace import Namespace
-from .app_commands.translator import locale_str, TranslationContext, TranslationContextLocation
-from .channel import PartialMessageable, ChannelType
 from .enums import try_enum, Locale, InteractionType, InteractionResponseType
 from .errors import InteractionResponded, HTTPException, ClientException, DiscordException
 from .flags import MessageFlags
-from .http import handle_message_parameters
+from .channel import PartialMessageable, ChannelType
+from ._types import ClientT
+
+from .user import User
 from .member import Member
 from .message import Message, Attachment
 from .permissions import Permissions
-from .user import User
+from .http import handle_message_parameters
 from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
+from .app_commands.namespace import Namespace
+from .app_commands.translator import locale_str, TranslationContext, TranslationContextLocation
 
 __all__ = (
     'Interaction',
@@ -392,14 +392,14 @@ class Interaction(Generic[ClientT]):
         return message
 
     async def edit_original_response(
-            self,
-            *,
-            content: Optional[str] = MISSING,
-            embeds: Sequence[Embed] = MISSING,
-            embed: Optional[Embed] = MISSING,
-            attachments: Sequence[Union[Attachment, File]] = MISSING,
-            view: Optional[View] = MISSING,
-            allowed_mentions: Optional[AllowedMentions] = None,
+        self,
+        *,
+        content: Optional[str] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        embed: Optional[Embed] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
+        view: Optional[View] = MISSING,
+        allowed_mentions: Optional[AllowedMentions] = None,
     ) -> InteractionMessage:
         """|coro|
 
@@ -456,13 +456,13 @@ class Interaction(Generic[ClientT]):
 
         previous_mentions: Optional[AllowedMentions] = self._state.allowed_mentions
         with handle_message_parameters(
-                content=content,
-                attachments=attachments,
-                embed=embed,
-                embeds=embeds,
-                view=view,
-                allowed_mentions=allowed_mentions,
-                previous_allowed_mentions=previous_mentions,
+            content=content,
+            attachments=attachments,
+            embed=embed,
+            embeds=embeds,
+            view=view,
+            allowed_mentions=allowed_mentions,
+            previous_allowed_mentions=previous_mentions,
         ) as params:
             adapter = async_context.get()
             http = self._state.http
@@ -512,7 +512,7 @@ class Interaction(Generic[ClientT]):
         )
 
     async def translate(
-            self, string: Union[str, locale_str], *, locale: Locale = MISSING, data: Any = MISSING
+        self, string: Union[str, locale_str], *, locale: Locale = MISSING, data: Any = MISSING
     ) -> Optional[str]:
         """|coro|
 
@@ -683,20 +683,20 @@ class InteractionResponse(Generic[ClientT]):
             self._response_type = InteractionResponseType.pong
 
     async def send_message(
-            self,
-            content: Optional[Any] = None,
-            *,
-            embed: Embed = MISSING,
-            embeds: Sequence[Embed] = MISSING,
-            file: File = MISSING,
-            files: Sequence[File] = MISSING,
-            view: View = MISSING,
-            tts: bool = False,
-            ephemeral: bool = False,
-            allowed_mentions: AllowedMentions = MISSING,
-            suppress_embeds: bool = False,
-            silent: bool = False,
-            delete_after: Optional[float] = None,
+        self,
+        content: Optional[Any] = None,
+        *,
+        embed: Embed = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        file: File = MISSING,
+        files: Sequence[File] = MISSING,
+        view: View = MISSING,
+        tts: bool = False,
+        ephemeral: bool = False,
+        allowed_mentions: AllowedMentions = MISSING,
+        suppress_embeds: bool = False,
+        silent: bool = False,
+        delete_after: Optional[float] = None,
     ) -> None:
         """|coro|
 
@@ -812,15 +812,15 @@ class InteractionResponse(Generic[ClientT]):
             asyncio.create_task(inner_call())
 
     async def edit_message(
-            self,
-            *,
-            content: Optional[Any] = MISSING,
-            embed: Optional[Embed] = MISSING,
-            embeds: Sequence[Embed] = MISSING,
-            attachments: Sequence[Union[Attachment, File]] = MISSING,
-            view: Optional[View] = MISSING,
-            allowed_mentions: Optional[AllowedMentions] = MISSING,
-            delete_after: Optional[float] = None,
+        self,
+        *,
+        content: Optional[Any] = MISSING,
+        embed: Optional[Embed] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
+        view: Optional[View] = MISSING,
+        allowed_mentions: Optional[AllowedMentions] = MISSING,
+        delete_after: Optional[float] = None,
     ) -> None:
         """|coro|
 
@@ -989,8 +989,7 @@ class InteractionResponse(Generic[ClientT]):
         if translator is not None:
             user_locale = self._parent.locale
             payload: Dict[str, Any] = {
-                'choices': [await option.get_translated_payload_for_locale(translator, user_locale) for option in
-                            choices],
+                'choices': [await option.get_translated_payload_for_locale(translator, user_locale) for option in choices],
             }
         else:
             payload: Dict[str, Any] = {
@@ -1056,15 +1055,15 @@ class InteractionMessage(Message):
     _state: _InteractionMessageState
 
     async def edit(
-            self,
-            *,
-            content: Optional[str] = MISSING,
-            embeds: Sequence[Embed] = MISSING,
-            embed: Optional[Embed] = MISSING,
-            attachments: Sequence[Union[Attachment, File]] = MISSING,
-            view: Optional[View] = MISSING,
-            allowed_mentions: Optional[AllowedMentions] = None,
-            delete_after: Optional[float] = None,
+        self,
+        *,
+        content: Optional[str] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        embed: Optional[Embed] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
+        view: Optional[View] = MISSING,
+        allowed_mentions: Optional[AllowedMentions] = None,
+        delete_after: Optional[float] = None,
     ) -> InteractionMessage:
         """|coro|
 

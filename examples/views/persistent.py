@@ -1,7 +1,7 @@
 # This example requires the 'message_content' privileged intent to function.
 
-import discord
 from discord.ext import commands
+import discord
 
 
 # Define a simple View that persists between bot restarts

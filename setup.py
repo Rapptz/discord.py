@@ -1,6 +1,5 @@
-import re
-
 from setuptools import setup
+import re
 
 requirements = []
 with open('requirements.txt') as f:

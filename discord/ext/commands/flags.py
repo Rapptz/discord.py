@@ -31,6 +31,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Dict, Iterator, List, Literal, Optional, Pattern, Set, Tuple, Type, Union
 
 from discord.utils import MISSING, maybe_coroutine, resolve_annotation
+
 from .converter import run_converters
 from .errors import BadFlagArgument, MissingFlagArgument, MissingRequiredFlag, TooManyFlags, TooManyArguments
 from .view import StringView
@@ -40,6 +41,7 @@ __all__ = (
     'flag',
     'FlagConverter',
 )
+
 
 if TYPE_CHECKING:
     from typing_extensions import Self, TypeGuard
@@ -99,14 +101,14 @@ class Flag:
 
 
 def flag(
-        *,
-        name: str = MISSING,
-        aliases: List[str] = MISSING,
-        default: Any = MISSING,
-        max_args: int = MISSING,
-        override: bool = MISSING,
-        converter: Any = MISSING,
-        description: str = MISSING,
+    *,
+    name: str = MISSING,
+    aliases: List[str] = MISSING,
+    default: Any = MISSING,
+    max_args: int = MISSING,
+    override: bool = MISSING,
+    converter: Any = MISSING,
+    description: str = MISSING,
 ) -> Any:
     """Override default functionality and parameters of the underlying :class:`FlagConverter`
     class attributes.
@@ -183,8 +185,7 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
 
         annotation = flag.annotation = resolve_annotation(flag.annotation, globals, locals, cache)
 
-        if flag.default is MISSING and hasattr(annotation,
-                                               '__commands_is_flag__') and annotation._can_be_constructible():
+        if flag.default is MISSING and hasattr(annotation, '__commands_is_flag__') and annotation._can_be_constructible():
             flag.default = annotation._construct_default
 
         if flag.aliases is MISSING:
@@ -271,14 +272,14 @@ class FlagsMeta(type):
         __commands_flag_prefix__: str
 
     def __new__(
-            cls,
-            name: str,
-            bases: Tuple[type, ...],
-            attrs: Dict[str, Any],
-            *,
-            case_insensitive: bool = MISSING,
-            delimiter: str = MISSING,
-            prefix: str = MISSING,
+        cls,
+        name: str,
+        bases: Tuple[type, ...],
+        attrs: Dict[str, Any],
+        *,
+        case_insensitive: bool = MISSING,
+        delimiter: str = MISSING,
+        prefix: str = MISSING,
     ) -> Self:
         attrs['__commands_is_flag__'] = True
 
@@ -514,7 +515,7 @@ class FlagConverter(metaclass=FlagsMeta):
 
             flag = flags.get(key)
             if last_position and last_flag is not None:
-                value = argument[last_position: begin - 1].lstrip()
+                value = argument[last_position : begin - 1].lstrip()
                 if not value:
                     raise MissingFlagArgument(last_flag)
 
@@ -580,9 +581,9 @@ class FlagConverter(metaclass=FlagsMeta):
         # Only respect ignore_extra if the parameter is a keyword-only parameter
         ignore_extra = True
         if (
-                ctx.command is not None
-                and ctx.current_parameter is not None
-                and ctx.current_parameter.kind == ctx.current_parameter.KEYWORD_ONLY
+            ctx.command is not None
+            and ctx.current_parameter is not None
+            and ctx.current_parameter.kind == ctx.current_parameter.KEYWORD_ONLY
         ):
             ignore_extra = ctx.command.ignore_extra
 
@@ -607,7 +608,7 @@ class FlagConverter(metaclass=FlagsMeta):
 
             if flag.max_args > 0 and len(values) > flag.max_args:
                 if flag.override:
-                    values = values[-flag.max_args:]
+                    values = values[-flag.max_args :]
                 else:
                     raise TooManyFlags(flag, values)
 

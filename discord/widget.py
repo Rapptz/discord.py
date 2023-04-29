@@ -26,11 +26,11 @@ from __future__ import annotations
 
 from typing import List, Optional, TYPE_CHECKING, Union
 
-from .activity import BaseActivity, Spotify, create_activity
-from .enums import Status, try_enum
-from .invite import Invite
-from .user import BaseUser
 from .utils import snowflake_time, _get_as_snowflake, resolve_invite
+from .user import BaseUser
+from .activity import BaseActivity, Spotify, create_activity
+from .invite import Invite
+from .enums import Status, try_enum
 
 if TYPE_CHECKING:
     import datetime
@@ -166,11 +166,11 @@ class WidgetMember(BaseUser):
         activity: Optional[Union[BaseActivity, Spotify]]
 
     def __init__(
-            self,
-            *,
-            state: ConnectionState,
-            data: WidgetMemberPayload,
-            connected_channel: Optional[WidgetChannel] = None,
+        self,
+        *,
+        state: ConnectionState,
+        data: WidgetMemberPayload,
+        connected_channel: Optional[WidgetChannel] = None,
     ) -> None:
         super().__init__(state=state, data=data)
         self.nick: Optional[str] = data.get('nick')

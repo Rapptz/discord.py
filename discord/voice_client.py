@@ -40,16 +40,16 @@ Some documentation to refer to:
 from __future__ import annotations
 
 import asyncio
-import logging
 import socket
+import logging
 import struct
 import threading
 from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
-from .errors import ClientException, ConnectionClosed
 from .gateway import *
+from .errors import ClientException, ConnectionClosed
 from .player import AudioPlayer, AudioSource
 from .utils import MISSING
 
@@ -70,6 +70,7 @@ if TYPE_CHECKING:
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
 
+
 has_nacl: bool
 
 try:
@@ -84,6 +85,7 @@ __all__ = (
     'VoiceProtocol',
     'VoiceClient',
 )
+
 
 _log = logging.getLogger(__name__)
 
@@ -139,8 +141,7 @@ class VoiceProtocol:
         """
         raise NotImplementedError
 
-    async def connect(self, *, timeout: float, reconnect: bool, self_deaf: bool = False,
-                      self_mute: bool = False) -> None:
+    async def connect(self, *, timeout: float, reconnect: bool, self_deaf: bool = False, self_mute: bool = False) -> None:
         """|coro|
 
         An abstract method called when the client initiates the connection request.
@@ -342,8 +343,7 @@ class VoiceClient(VoiceProtocol):
         await self.channel.guild.change_voice_state(channel=self.channel, self_deaf=self_deaf, self_mute=self_mute)
 
     async def voice_disconnect(self) -> None:
-        _log.info('The voice handshake is being terminated for Channel ID %s (Guild ID %s)', self.channel.id,
-                  self.guild.id)
+        _log.info('The voice handshake is being terminated for Channel ID %s (Guild ID %s)', self.channel.id, self.guild.id)
         await self.channel.guild.change_voice_state(channel=None)
 
     def prepare_handshake(self) -> None:
@@ -367,8 +367,7 @@ class VoiceClient(VoiceProtocol):
         self._connected.set()
         return ws
 
-    async def connect(self, *, reconnect: bool, timeout: float, self_deaf: bool = False,
-                      self_mute: bool = False) -> None:
+    async def connect(self, *, reconnect: bool, timeout: float, self_deaf: bool = False, self_mute: bool = False) -> None:
         _log.info('Connecting to voice...')
         self.timeout = timeout
 

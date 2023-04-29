@@ -24,16 +24,15 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, Any, Dict, Generator, Generic, List, Optional, TypeVar, Union, Sequence, Type, \
-    overload
+from typing import TYPE_CHECKING, Any, Dict, Generator, Generic, List, Optional, TypeVar, Union, Sequence, Type, overload
 
 import discord.abc
 import discord.utils
-from discord import Interaction, Message, Attachment, MessageType, User, PartialMessageable, Permissions, ChannelType, \
-    Thread
+from discord import Interaction, Message, Attachment, MessageType, User, PartialMessageable, Permissions, ChannelType, Thread
 from discord.context_managers import Typing
-from ._types import BotT
 from .view import StringView
+
+from ._types import BotT
 
 if TYPE_CHECKING:
     from typing_extensions import Self, ParamSpec, TypeGuard
@@ -68,6 +67,7 @@ __all__ = (
 
 MISSING: Any = discord.utils.MISSING
 
+
 T = TypeVar('T')
 CogT = TypeVar('CogT', bound="Cog")
 
@@ -93,10 +93,10 @@ class DeferTyping:
         await self.ctx.defer(ephemeral=self.ephemeral)
 
     async def __aexit__(
-            self,
-            exc_type: Optional[Type[BE]],
-            exc: Optional[BE],
-            traceback: Optional[TracebackType],
+        self,
+        exc_type: Optional[Type[BE]],
+        exc: Optional[BE],
+        traceback: Optional[TracebackType],
     ) -> None:
         pass
 
@@ -174,23 +174,23 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     """
 
     def __init__(
-            self,
-            *,
-            message: Message,
-            bot: BotT,
-            view: StringView,
-            args: List[Any] = MISSING,
-            kwargs: Dict[str, Any] = MISSING,
-            prefix: Optional[str] = None,
-            command: Optional[Command[Any, ..., Any]] = None,
-            invoked_with: Optional[str] = None,
-            invoked_parents: List[str] = MISSING,
-            invoked_subcommand: Optional[Command[Any, ..., Any]] = None,
-            subcommand_passed: Optional[str] = None,
-            command_failed: bool = False,
-            current_parameter: Optional[Parameter] = None,
-            current_argument: Optional[str] = None,
-            interaction: Optional[Interaction[BotT]] = None,
+        self,
+        *,
+        message: Message,
+        bot: BotT,
+        view: StringView,
+        args: List[Any] = MISSING,
+        kwargs: Dict[str, Any] = MISSING,
+        prefix: Optional[str] = None,
+        command: Optional[Command[Any, ..., Any]] = None,
+        invoked_with: Optional[str] = None,
+        invoked_parents: List[str] = MISSING,
+        invoked_subcommand: Optional[Command[Any, ..., Any]] = None,
+        subcommand_passed: Optional[str] = None,
+        command_failed: bool = False,
+        current_parameter: Optional[Parameter] = None,
+        current_argument: Optional[str] = None,
+        interaction: Optional[Interaction[BotT]] = None,
     ):
         self.message: Message = message
         self.bot: BotT = bot
@@ -262,8 +262,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
                 'tts': False,
                 'pinned': False,
                 'edited_timestamp': None,
-                'type': MessageType.chat_input_command if data.get('type',
-                                                                   1) == 1 else MessageType.context_menu_command,
+                'type': MessageType.chat_input_command if data.get('type', 1) == 1 else MessageType.context_menu_command,
                 'flags': 64,
                 'content': '',
                 'mentions': [],
@@ -618,85 +617,85 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
     @overload
     async def reply(
-            self,
-            content: Optional[str] = ...,
-            *,
-            tts: bool = ...,
-            embed: Embed = ...,
-            file: File = ...,
-            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-            delete_after: float = ...,
-            nonce: Union[str, int] = ...,
-            allowed_mentions: AllowedMentions = ...,
-            reference: Union[Message, MessageReference, PartialMessage] = ...,
-            mention_author: bool = ...,
-            view: View = ...,
-            suppress_embeds: bool = ...,
-            ephemeral: bool = ...,
-            silent: bool = ...,
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embed: Embed = ...,
+        file: File = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: View = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def reply(
-            self,
-            content: Optional[str] = ...,
-            *,
-            tts: bool = ...,
-            embed: Embed = ...,
-            files: Sequence[File] = ...,
-            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-            delete_after: float = ...,
-            nonce: Union[str, int] = ...,
-            allowed_mentions: AllowedMentions = ...,
-            reference: Union[Message, MessageReference, PartialMessage] = ...,
-            mention_author: bool = ...,
-            view: View = ...,
-            suppress_embeds: bool = ...,
-            ephemeral: bool = ...,
-            silent: bool = ...,
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embed: Embed = ...,
+        files: Sequence[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: View = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def reply(
-            self,
-            content: Optional[str] = ...,
-            *,
-            tts: bool = ...,
-            embeds: Sequence[Embed] = ...,
-            file: File = ...,
-            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-            delete_after: float = ...,
-            nonce: Union[str, int] = ...,
-            allowed_mentions: AllowedMentions = ...,
-            reference: Union[Message, MessageReference, PartialMessage] = ...,
-            mention_author: bool = ...,
-            view: View = ...,
-            suppress_embeds: bool = ...,
-            ephemeral: bool = ...,
-            silent: bool = ...,
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embeds: Sequence[Embed] = ...,
+        file: File = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: View = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def reply(
-            self,
-            content: Optional[str] = ...,
-            *,
-            tts: bool = ...,
-            embeds: Sequence[Embed] = ...,
-            files: Sequence[File] = ...,
-            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-            delete_after: float = ...,
-            nonce: Union[str, int] = ...,
-            allowed_mentions: AllowedMentions = ...,
-            reference: Union[Message, MessageReference, PartialMessage] = ...,
-            mention_author: bool = ...,
-            view: View = ...,
-            suppress_embeds: bool = ...,
-            ephemeral: bool = ...,
-            silent: bool = ...,
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embeds: Sequence[Embed] = ...,
+        files: Sequence[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: View = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
@@ -803,107 +802,107 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
     @overload
     async def send(
-            self,
-            content: Optional[str] = ...,
-            *,
-            tts: bool = ...,
-            embed: Embed = ...,
-            file: File = ...,
-            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-            delete_after: float = ...,
-            nonce: Union[str, int] = ...,
-            allowed_mentions: AllowedMentions = ...,
-            reference: Union[Message, MessageReference, PartialMessage] = ...,
-            mention_author: bool = ...,
-            view: View = ...,
-            suppress_embeds: bool = ...,
-            ephemeral: bool = ...,
-            silent: bool = ...,
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embed: Embed = ...,
+        file: File = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: View = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def send(
-            self,
-            content: Optional[str] = ...,
-            *,
-            tts: bool = ...,
-            embed: Embed = ...,
-            files: Sequence[File] = ...,
-            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-            delete_after: float = ...,
-            nonce: Union[str, int] = ...,
-            allowed_mentions: AllowedMentions = ...,
-            reference: Union[Message, MessageReference, PartialMessage] = ...,
-            mention_author: bool = ...,
-            view: View = ...,
-            suppress_embeds: bool = ...,
-            ephemeral: bool = ...,
-            silent: bool = ...,
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embed: Embed = ...,
+        files: Sequence[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: View = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def send(
-            self,
-            content: Optional[str] = ...,
-            *,
-            tts: bool = ...,
-            embeds: Sequence[Embed] = ...,
-            file: File = ...,
-            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-            delete_after: float = ...,
-            nonce: Union[str, int] = ...,
-            allowed_mentions: AllowedMentions = ...,
-            reference: Union[Message, MessageReference, PartialMessage] = ...,
-            mention_author: bool = ...,
-            view: View = ...,
-            suppress_embeds: bool = ...,
-            ephemeral: bool = ...,
-            silent: bool = ...,
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embeds: Sequence[Embed] = ...,
+        file: File = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: View = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
     @overload
     async def send(
-            self,
-            content: Optional[str] = ...,
-            *,
-            tts: bool = ...,
-            embeds: Sequence[Embed] = ...,
-            files: Sequence[File] = ...,
-            stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
-            delete_after: float = ...,
-            nonce: Union[str, int] = ...,
-            allowed_mentions: AllowedMentions = ...,
-            reference: Union[Message, MessageReference, PartialMessage] = ...,
-            mention_author: bool = ...,
-            view: View = ...,
-            suppress_embeds: bool = ...,
-            ephemeral: bool = ...,
-            silent: bool = ...,
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        embeds: Sequence[Embed] = ...,
+        files: Sequence[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: View = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
     async def send(
-            self,
-            content: Optional[str] = None,
-            *,
-            tts: bool = False,
-            embed: Optional[Embed] = None,
-            embeds: Optional[Sequence[Embed]] = None,
-            file: Optional[File] = None,
-            files: Optional[Sequence[File]] = None,
-            stickers: Optional[Sequence[Union[GuildSticker, StickerItem]]] = None,
-            delete_after: Optional[float] = None,
-            nonce: Optional[Union[str, int]] = None,
-            allowed_mentions: Optional[AllowedMentions] = None,
-            reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
-            mention_author: Optional[bool] = None,
-            view: Optional[View] = None,
-            suppress_embeds: bool = False,
-            ephemeral: bool = False,
-            silent: bool = False,
+        self,
+        content: Optional[str] = None,
+        *,
+        tts: bool = False,
+        embed: Optional[Embed] = None,
+        embeds: Optional[Sequence[Embed]] = None,
+        file: Optional[File] = None,
+        files: Optional[Sequence[File]] = None,
+        stickers: Optional[Sequence[Union[GuildSticker, StickerItem]]] = None,
+        delete_after: Optional[float] = None,
+        nonce: Optional[Union[str, int]] = None,
+        allowed_mentions: Optional[AllowedMentions] = None,
+        reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
+        mention_author: Optional[bool] = None,
+        view: Optional[View] = None,
+        suppress_embeds: bool = False,
+        ephemeral: bool = False,
+        silent: bool = False,
     ) -> Message:
         """|coro|
 

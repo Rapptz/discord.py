@@ -24,10 +24,11 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import itertools
 import copy
 import functools
-import itertools
 import re
+
 from typing import (
     TYPE_CHECKING,
     Optional,
@@ -44,6 +45,7 @@ from typing import (
 )
 
 import discord.utils
+
 from .core import Group, Command, get_signature_parameters
 from .errors import CommandError
 
@@ -73,7 +75,6 @@ __all__ = (
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
 MISSING: Any = discord.utils.MISSING
-
 
 # help -> shows info of bot on top/bottom and lists subcommands
 # help command -> shows detailed info of command
@@ -120,8 +121,7 @@ class Paginator:
     """
 
     def __init__(
-            self, prefix: Optional[str] = '```', suffix: Optional[str] = '```', max_size: int = 2000,
-            linesep: str = '\n'
+        self, prefix: Optional[str] = '```', suffix: Optional[str] = '```', max_size: int = 2000, linesep: str = '\n'
     ) -> None:
         self.prefix: Optional[str] = prefix
         self.suffix: Optional[str] = suffix
@@ -228,8 +228,7 @@ class _HelpCommandImpl(Command):
         super().__init__(inject.command_callback, *args, **kwargs)
         self._original: HelpCommand = inject
         self._injected: HelpCommand = inject
-        self.params: Dict[str, Parameter] = get_signature_parameters(inject.command_callback, globals(),
-                                                                     skip_parameters=1)
+        self.params: Dict[str, Parameter] = get_signature_parameters(inject.command_callback, globals(), skip_parameters=1)
 
     async def prepare(self, ctx: Context[Any]) -> None:
         self._injected = injected = self._original.copy()
@@ -266,7 +265,7 @@ class _HelpCommandImpl(Command):
         # as well if we inject it without modifying __cog_commands__
         # since that's used for the injection and ejection of cogs.
         def wrapped_get_commands(
-                *, _original: Callable[[], List[Command[Any, ..., Any]]] = cog.get_commands
+            *, _original: Callable[[], List[Command[Any, ..., Any]]] = cog.get_commands
         ) -> List[Command[Any, ..., Any]]:
             ret = _original()
             ret.append(self)
@@ -274,7 +273,7 @@ class _HelpCommandImpl(Command):
 
         # Ditto here
         def wrapped_walk_commands(
-                *, _original: Callable[[], Generator[Command[Any, ..., Any], None, None]] = cog.walk_commands
+            *, _original: Callable[[], Generator[Command[Any, ..., Any], None, None]] = cog.walk_commands
         ):
             yield from _original()
             yield self
@@ -427,8 +426,7 @@ class HelpCommand:
     def get_bot_mapping(self) -> Dict[Optional[Cog], List[Command[Any, ..., Any]]]:
         """Retrieves the bot mapping passed to :meth:`send_bot_help`."""
         bot = self.context.bot
-        mapping: Dict[Optional[Cog], List[Command[Any, ..., Any]]] = {cog: cog.get_commands() for cog in
-                                                                      bot.cogs.values()}
+        mapping: Dict[Optional[Cog], List[Command[Any, ..., Any]]] = {cog: cog.get_commands() for cog in bot.cogs.values()}
         mapping[None] = [c for c in bot.commands if c.cog is None]
         return mapping
 
@@ -597,12 +595,12 @@ class HelpCommand:
         return f'Command "{command.qualified_name}" has no subcommands.'
 
     async def filter_commands(
-            self,
-            commands: Iterable[Command[Any, ..., Any]],
-            /,
-            *,
-            sort: bool = False,
-            key: Optional[Callable[[Command[Any, ..., Any]], Any]] = None,
+        self,
+        commands: Iterable[Command[Any, ..., Any]],
+        /,
+        *,
+        sort: bool = False,
+        key: Optional[Callable[[Command[Any, ..., Any]], Any]] = None,
     ) -> List[Command[Any, ..., Any]]:
         """|coro|
 
@@ -1102,7 +1100,7 @@ class DefaultHelpCommand(HelpCommand):
         return f'{self.context.clean_prefix}{name}'
 
     def add_indented_commands(
-            self, commands: Sequence[Command[Any, ..., Any]], /, *, heading: str, max_size: Optional[int] = None
+        self, commands: Sequence[Command[Any, ..., Any]], /, *, heading: str, max_size: Optional[int] = None
     ) -> None:
         """Indents a list of commands after the specified heading.
 

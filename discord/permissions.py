@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Optional
-
 from .flags import BaseFlags, flag_value, fill_with_flags, alias_flag_value
 
 __all__ = (
@@ -35,7 +34,6 @@ __all__ = (
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
 
 # A permission alias works like a regular flag but is marked
 # So the PermissionOverwrite knows to work with it

@@ -23,13 +23,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-
 from typing import Any, Collection, Iterator, List, Optional, TYPE_CHECKING, Tuple
 
 from .asset import Asset, AssetMixin
+from .utils import SnowflakeList, snowflake_time, MISSING
 from .partial_emoji import _EmojiTag, PartialEmoji
 from .user import User
-from .utils import SnowflakeList, snowflake_time, MISSING
 
 # fmt: off
 __all__ = (
@@ -215,7 +214,7 @@ class Emoji(_EmojiTag, AssetMixin):
         await self._state.http.delete_custom_emoji(self.guild_id, self.id, reason=reason)
 
     async def edit(
-            self, *, name: str = MISSING, roles: Collection[Snowflake] = MISSING, reason: Optional[str] = None
+        self, *, name: str = MISSING, roles: Collection[Snowflake] = MISSING, reason: Optional[str] = None
     ) -> Emoji:
         r"""|coro|
 
@@ -255,5 +254,4 @@ class Emoji(_EmojiTag, AssetMixin):
             payload['roles'] = [role.id for role in roles]
 
         data = await self._state.http.edit_custom_emoji(self.guild_id, self.id, payload=payload, reason=reason)
-        return Emoji(guild=self.guild, data=data,
-                     state=self._state)  # type: ignore # if guild is None, the http request would have failed
+        return Emoji(guild=self.guild, data=data, state=self._state)  # type: ignore # if guild is None, the http request would have failed

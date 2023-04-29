@@ -26,6 +26,7 @@ from __future__ import annotations
 import colorsys
 import random
 import re
+
 from typing import TYPE_CHECKING, Optional, Tuple, Union
 
 if TYPE_CHECKING:

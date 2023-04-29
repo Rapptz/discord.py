@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import struct
+
 from typing import TYPE_CHECKING, ClassVar, IO, Generator, Tuple, Optional
 
 from .errors import DiscordException
@@ -78,7 +79,7 @@ class OggPage:
                 partial = True
             else:
                 packetlen += seg
-                yield self.data[offset: offset + packetlen], True
+                yield self.data[offset : offset + packetlen], True
                 offset += packetlen
                 packetlen = 0
                 partial = False

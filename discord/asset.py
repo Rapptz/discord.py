@@ -27,12 +27,11 @@ from __future__ import annotations
 import io
 import os
 from typing import Any, Literal, Optional, TYPE_CHECKING, Tuple, Union
+from .errors import DiscordException
+from . import utils
+from .file import File
 
 import yarl
-
-from . import utils
-from .errors import DiscordException
-from .file import File
 
 # fmt: off
 __all__ = (
@@ -53,6 +52,7 @@ if TYPE_CHECKING:
 
 VALID_STATIC_FORMATS = frozenset({"jpeg", "jpg", "webp", "png"})
 VALID_ASSET_FORMATS = VALID_STATIC_FORMATS | {"gif"}
+
 
 MISSING = utils.MISSING
 
@@ -127,11 +127,11 @@ class AssetMixin:
                 return f.write(data)
 
     async def to_file(
-            self,
-            *,
-            filename: Optional[str] = MISSING,
-            description: Optional[str] = None,
-            spoiler: bool = False,
+        self,
+        *,
+        filename: Optional[str] = MISSING,
+        description: Optional[str] = None,
+        spoiler: bool = False,
     ) -> File:
         """|coro|
 
@@ -257,7 +257,7 @@ class Asset(AssetMixin):
 
     @classmethod
     def _from_app_icon(
-            cls, state: _State, object_id: int, icon_hash: str, asset_type: Literal['icon', 'cover_image']
+        cls, state: _State, object_id: int, icon_hash: str, asset_type: Literal['icon', 'cover_image']
     ) -> Self:
         return cls(
             state,
@@ -357,11 +357,11 @@ class Asset(AssetMixin):
         return self._animated
 
     def replace(
-            self,
-            *,
-            size: int = MISSING,
-            format: ValidAssetFormatTypes = MISSING,
-            static_format: ValidStaticFormatTypes = MISSING,
+        self,
+        *,
+        size: int = MISSING,
+        format: ValidAssetFormatTypes = MISSING,
+        static_format: ValidStaticFormatTypes = MISSING,
     ) -> Self:
         """Returns a new asset with the passed components replaced.
 

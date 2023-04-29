@@ -26,9 +26,9 @@ from __future__ import annotations
 
 from typing import Optional, TYPE_CHECKING
 
-from .enums import PrivacyLevel, try_enum
-from .mixins import Hashable
 from .utils import MISSING, cached_slot_property, _get_as_snowflake
+from .mixins import Hashable
+from .enums import PrivacyLevel, try_enum
 
 # fmt: off
 __all__ = (
@@ -125,11 +125,11 @@ class StageInstance(Hashable):
         return self.guild.get_scheduled_event(self.scheduled_event_id)  # type: ignore
 
     async def edit(
-            self,
-            *,
-            topic: str = MISSING,
-            privacy_level: PrivacyLevel = MISSING,
-            reason: Optional[str] = None,
+        self,
+        *,
+        topic: str = MISSING,
+        privacy_level: PrivacyLevel = MISSING,
+        reason: Optional[str] = None,
     ) -> None:
         """|coro|
 

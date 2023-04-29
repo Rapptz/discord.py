@@ -26,14 +26,14 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict
 
 import aiohttp
 import yarl
 
-from .backoff import ExponentialBackoff
+from .state import AutoShardedConnectionState
 from .client import Client
-from .enums import Status
+from .backoff import ExponentialBackoff
+from .gateway import *
 from .errors import (
     ClientException,
     HTTPException,
@@ -41,8 +41,10 @@ from .errors import (
     ConnectionClosed,
     PrivilegedIntentsRequired,
 )
-from .gateway import *
-from .state import AutoShardedConnectionState
+
+from .enums import Status
+
+from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict
 
 if TYPE_CHECKING:
     from .gateway import DiscordWebSocket
@@ -482,11 +484,11 @@ class AutoShardedClient(Client):
         self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
 
     async def change_presence(
-            self,
-            *,
-            activity: Optional[BaseActivity] = None,
-            status: Optional[Status] = None,
-            shard_id: Optional[int] = None,
+        self,
+        *,
+        activity: Optional[BaseActivity] = None,
+        status: Optional[Status] = None,
+        shard_id: Optional[int] = None,
     ) -> None:
         """|coro|
 

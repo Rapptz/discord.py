@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import datetime
 from typing import (
     Any,
     AsyncIterator,
@@ -43,21 +42,22 @@ from typing import (
     Union,
     overload,
 )
+import datetime
 
 import discord.abc
-from . import utils
-from .asset import Asset
-from .enums import ChannelType, ForumLayoutType, ForumOrderType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
-from .errors import ClientException
-from .flags import ChannelFlags
-from .http import handle_message_parameters
-from .mixins import Hashable
-from .partial_emoji import _EmojiTag, PartialEmoji
-from .permissions import PermissionOverwrite, Permissions
 from .scheduled_event import ScheduledEvent
+from .permissions import PermissionOverwrite, Permissions
+from .enums import ChannelType, ForumLayoutType, ForumOrderType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
+from .mixins import Hashable
+from . import utils
+from .utils import MISSING
+from .asset import Asset
+from .errors import ClientException
 from .stage_instance import StageInstance
 from .threads import Thread
-from .utils import MISSING
+from .partial_emoji import _EmojiTag, PartialEmoji
+from .flags import ChannelFlags
+from .http import handle_message_parameters
 
 __all__ = (
     'TextChannel',
@@ -296,20 +296,20 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
 
     @overload
     async def edit(
-            self,
-            *,
-            reason: Optional[str] = ...,
-            name: str = ...,
-            topic: str = ...,
-            position: int = ...,
-            nsfw: bool = ...,
-            sync_permissions: bool = ...,
-            category: Optional[CategoryChannel] = ...,
-            slowmode_delay: int = ...,
-            default_auto_archive_duration: ThreadArchiveDuration = ...,
-            default_thread_slowmode_delay: int = ...,
-            type: ChannelType = ...,
-            overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
+        self,
+        *,
+        reason: Optional[str] = ...,
+        name: str = ...,
+        topic: str = ...,
+        position: int = ...,
+        nsfw: bool = ...,
+        sync_permissions: bool = ...,
+        category: Optional[CategoryChannel] = ...,
+        slowmode_delay: int = ...,
+        default_auto_archive_duration: ThreadArchiveDuration = ...,
+        default_thread_slowmode_delay: int = ...,
+        type: ChannelType = ...,
+        overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
     ) -> TextChannel:
         ...
 
@@ -396,8 +396,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> TextChannel:
         return await self._clone_impl(
-            {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay}, name=name,
-            reason=reason
+            {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay}, name=name, reason=reason
         )
 
     async def delete_messages(self, messages: Iterable[Snowflake], *, reason: Optional[str] = None) -> None:
@@ -457,16 +456,16 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         await self._state.http.delete_messages(self.id, message_ids, reason=reason)
 
     async def purge(
-            self,
-            *,
-            limit: Optional[int] = 100,
-            check: Callable[[Message], bool] = MISSING,
-            before: Optional[SnowflakeTime] = None,
-            after: Optional[SnowflakeTime] = None,
-            around: Optional[SnowflakeTime] = None,
-            oldest_first: Optional[bool] = None,
-            bulk: bool = True,
-            reason: Optional[str] = None,
+        self,
+        *,
+        limit: Optional[int] = 100,
+        check: Callable[[Message], bool] = MISSING,
+        before: Optional[SnowflakeTime] = None,
+        after: Optional[SnowflakeTime] = None,
+        around: Optional[SnowflakeTime] = None,
+        oldest_first: Optional[bool] = None,
+        bulk: bool = True,
+        reason: Optional[str] = None,
     ) -> List[Message]:
         """|coro|
 
@@ -564,8 +563,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         data = await self._state.http.channel_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def create_webhook(self, *, name: str, avatar: Optional[bytes] = None,
-                             reason: Optional[str] = None) -> Webhook:
+    async def create_webhook(self, *, name: str, avatar: Optional[bytes] = None, reason: Optional[str] = None) -> Webhook:
         """|coro|
 
         Creates a webhook for this channel.
@@ -711,15 +709,15 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return self.guild.get_thread(thread_id)
 
     async def create_thread(
-            self,
-            *,
-            name: str,
-            message: Optional[Snowflake] = None,
-            auto_archive_duration: ThreadArchiveDuration = MISSING,
-            type: Optional[ChannelType] = None,
-            reason: Optional[str] = None,
-            invitable: bool = True,
-            slowmode_delay: Optional[int] = None,
+        self,
+        *,
+        name: str,
+        message: Optional[Snowflake] = None,
+        auto_archive_duration: ThreadArchiveDuration = MISSING,
+        type: Optional[ChannelType] = None,
+        reason: Optional[str] = None,
+        invitable: bool = True,
+        slowmode_delay: Optional[int] = None,
     ) -> Thread:
         """|coro|
 
@@ -796,12 +794,12 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return Thread(guild=self.guild, state=self._state, data=data)
 
     async def archived_threads(
-            self,
-            *,
-            private: bool = False,
-            joined: bool = False,
-            limit: Optional[int] = 100,
-            before: Optional[Union[Snowflake, datetime.datetime]] = None,
+        self,
+        *,
+        private: bool = False,
+        joined: bool = False,
+        limit: Optional[int] = 100,
+        before: Optional[Union[Snowflake, datetime.datetime]] = None,
     ) -> AsyncIterator[Thread]:
         """Returns an :term:`asynchronous iterator` that iterates over all archived threads in this text channel,
         in order of decreasing ID for joined threads, and decreasing :attr:`Thread.archive_timestamp` otherwise.
@@ -1102,16 +1100,16 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         await self._state.http.delete_messages(self.id, message_ids, reason=reason)
 
     async def purge(
-            self,
-            *,
-            limit: Optional[int] = 100,
-            check: Callable[[Message], bool] = MISSING,
-            before: Optional[SnowflakeTime] = None,
-            after: Optional[SnowflakeTime] = None,
-            around: Optional[SnowflakeTime] = None,
-            oldest_first: Optional[bool] = None,
-            bulk: bool = True,
-            reason: Optional[str] = None,
+        self,
+        *,
+        limit: Optional[int] = 100,
+        check: Callable[[Message], bool] = MISSING,
+        before: Optional[SnowflakeTime] = None,
+        after: Optional[SnowflakeTime] = None,
+        around: Optional[SnowflakeTime] = None,
+        oldest_first: Optional[bool] = None,
+        bulk: bool = True,
+        reason: Optional[str] = None,
     ) -> List[Message]:
         """|coro|
 
@@ -1210,8 +1208,7 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         data = await self._state.http.channel_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def create_webhook(self, *, name: str, avatar: Optional[bytes] = None,
-                             reason: Optional[str] = None) -> Webhook:
+    async def create_webhook(self, *, name: str, avatar: Optional[bytes] = None, reason: Optional[str] = None) -> Webhook:
         """|coro|
 
         Creates a webhook for this channel.
@@ -1347,8 +1344,7 @@ class VoiceChannel(VocalGuildChannel):
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> VoiceChannel:
-        return await self._clone_impl({'bitrate': self.bitrate, 'user_limit': self.user_limit}, name=name,
-                                      reason=reason)
+        return await self._clone_impl({'bitrate': self.bitrate, 'user_limit': self.user_limit}, name=name, reason=reason)
 
     @overload
     async def edit(self) -> None:
@@ -1360,20 +1356,20 @@ class VoiceChannel(VocalGuildChannel):
 
     @overload
     async def edit(
-            self,
-            *,
-            name: str = ...,
-            nsfw: bool = ...,
-            bitrate: int = ...,
-            user_limit: int = ...,
-            position: int = ...,
-            sync_permissions: int = ...,
-            category: Optional[CategoryChannel] = ...,
-            overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
-            rtc_region: Optional[str] = ...,
-            video_quality_mode: VideoQualityMode = ...,
-            slowmode_delay: int = ...,
-            reason: Optional[str] = ...,
+        self,
+        *,
+        name: str = ...,
+        nsfw: bool = ...,
+        bitrate: int = ...,
+        user_limit: int = ...,
+        position: int = ...,
+        sync_permissions: int = ...,
+        category: Optional[CategoryChannel] = ...,
+        overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
+        rtc_region: Optional[str] = ...,
+        video_quality_mode: VideoQualityMode = ...,
+        slowmode_delay: int = ...,
+        reason: Optional[str] = ...,
     ) -> VoiceChannel:
         ...
 
@@ -1598,12 +1594,12 @@ class StageChannel(VocalGuildChannel):
         return utils.get(self.guild.stage_instances, channel_id=self.id)
 
     async def create_instance(
-            self,
-            *,
-            topic: str,
-            privacy_level: PrivacyLevel = MISSING,
-            send_start_notification: bool = False,
-            reason: Optional[str] = None,
+        self,
+        *,
+        topic: str,
+        privacy_level: PrivacyLevel = MISSING,
+        send_start_notification: bool = False,
+        reason: Optional[str] = None,
     ) -> StageInstance:
         """|coro|
 
@@ -1687,18 +1683,18 @@ class StageChannel(VocalGuildChannel):
 
     @overload
     async def edit(
-            self,
-            *,
-            name: str = ...,
-            nsfw: bool = ...,
-            position: int = ...,
-            sync_permissions: int = ...,
-            category: Optional[CategoryChannel] = ...,
-            overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
-            rtc_region: Optional[str] = ...,
-            video_quality_mode: VideoQualityMode = ...,
-            slowmode_delay: int = ...,
-            reason: Optional[str] = ...,
+        self,
+        *,
+        name: str = ...,
+        nsfw: bool = ...,
+        position: int = ...,
+        sync_permissions: int = ...,
+        category: Optional[CategoryChannel] = ...,
+        overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
+        rtc_region: Optional[str] = ...,
+        video_quality_mode: VideoQualityMode = ...,
+        slowmode_delay: int = ...,
+        reason: Optional[str] = ...,
     ) -> StageChannel:
         ...
 
@@ -1865,13 +1861,13 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
     @overload
     async def edit(
-            self,
-            *,
-            name: str = ...,
-            position: int = ...,
-            nsfw: bool = ...,
-            overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
-            reason: Optional[str] = ...,
+        self,
+        *,
+        name: str = ...,
+        position: int = ...,
+        nsfw: bool = ...,
+        overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
+        reason: Optional[str] = ...,
     ) -> CategoryChannel:
         ...
 
@@ -2350,8 +2346,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> ForumChannel:
         return await self._clone_impl(
-            {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay}, name=name,
-            reason=reason
+            {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay}, name=name, reason=reason
         )
 
     @overload
@@ -2364,25 +2359,25 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
     @overload
     async def edit(
-            self,
-            *,
-            reason: Optional[str] = ...,
-            name: str = ...,
-            topic: str = ...,
-            position: int = ...,
-            nsfw: bool = ...,
-            sync_permissions: bool = ...,
-            category: Optional[CategoryChannel] = ...,
-            slowmode_delay: int = ...,
-            default_auto_archive_duration: ThreadArchiveDuration = ...,
-            type: ChannelType = ...,
-            overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
-            available_tags: Sequence[ForumTag] = ...,
-            default_thread_slowmode_delay: int = ...,
-            default_reaction_emoji: Optional[EmojiInputType] = ...,
-            default_layout: ForumLayoutType = ...,
-            default_sort_order: ForumOrderType = ...,
-            require_tag: bool = ...,
+        self,
+        *,
+        reason: Optional[str] = ...,
+        name: str = ...,
+        topic: str = ...,
+        position: int = ...,
+        nsfw: bool = ...,
+        sync_permissions: bool = ...,
+        category: Optional[CategoryChannel] = ...,
+        slowmode_delay: int = ...,
+        default_auto_archive_duration: ThreadArchiveDuration = ...,
+        type: ChannelType = ...,
+        overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
+        available_tags: Sequence[ForumTag] = ...,
+        default_thread_slowmode_delay: int = ...,
+        default_reaction_emoji: Optional[EmojiInputType] = ...,
+        default_layout: ForumLayoutType = ...,
+        default_sort_order: ForumOrderType = ...,
+        require_tag: bool = ...,
     ) -> ForumChannel:
         ...
 
@@ -2485,8 +2480,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             elif isinstance(default_reaction_emoji, _EmojiTag):
                 options['default_reaction_emoji'] = default_reaction_emoji._to_partial()._to_forum_tag_payload()
             elif isinstance(default_reaction_emoji, str):
-                options['default_reaction_emoji'] = PartialEmoji.from_str(
-                    default_reaction_emoji)._to_forum_tag_payload()
+                options['default_reaction_emoji'] = PartialEmoji.from_str(default_reaction_emoji)._to_forum_tag_payload()
 
         try:
             require_tag = options.pop('require_tag')
@@ -2528,12 +2522,12 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
 
     async def create_tag(
-            self,
-            *,
-            name: str,
-            emoji: Optional[PartialEmoji] = None,
-            moderated: bool = False,
-            reason: Optional[str] = None,
+        self,
+        *,
+        name: str,
+        emoji: Optional[PartialEmoji] = None,
+        moderated: bool = False,
+        reason: Optional[str] = None,
     ) -> ForumTag:
         """|coro|
 
@@ -2579,24 +2573,24 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         return result
 
     async def create_thread(
-            self,
-            *,
-            name: str,
-            auto_archive_duration: ThreadArchiveDuration = MISSING,
-            slowmode_delay: Optional[int] = None,
-            content: Optional[str] = None,
-            tts: bool = False,
-            embed: Embed = MISSING,
-            embeds: Sequence[Embed] = MISSING,
-            file: File = MISSING,
-            files: Sequence[File] = MISSING,
-            stickers: Sequence[Union[GuildSticker, StickerItem]] = MISSING,
-            allowed_mentions: AllowedMentions = MISSING,
-            mention_author: bool = MISSING,
-            applied_tags: Sequence[ForumTag] = MISSING,
-            view: View = MISSING,
-            suppress_embeds: bool = False,
-            reason: Optional[str] = None,
+        self,
+        *,
+        name: str,
+        auto_archive_duration: ThreadArchiveDuration = MISSING,
+        slowmode_delay: Optional[int] = None,
+        content: Optional[str] = None,
+        tts: bool = False,
+        embed: Embed = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        file: File = MISSING,
+        files: Sequence[File] = MISSING,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = MISSING,
+        allowed_mentions: AllowedMentions = MISSING,
+        mention_author: bool = MISSING,
+        applied_tags: Sequence[ForumTag] = MISSING,
+        view: View = MISSING,
+        suppress_embeds: bool = False,
+        reason: Optional[str] = None,
     ) -> ThreadWithMessage:
         """|coro|
 
@@ -2702,19 +2696,19 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             channel_payload['applied_tags'] = [str(tag.id) for tag in applied_tags]
 
         with handle_message_parameters(
-                content=content,
-                tts=tts,
-                file=file,
-                files=files,
-                embed=embed,
-                embeds=embeds,
-                allowed_mentions=allowed_mentions,
-                previous_allowed_mentions=previous_allowed_mention,
-                mention_author=None if mention_author is MISSING else mention_author,
-                stickers=sticker_ids,
-                view=view,
-                flags=flags,
-                channel_payload=channel_payload,
+            content=content,
+            tts=tts,
+            file=file,
+            files=files,
+            embed=embed,
+            embeds=embeds,
+            allowed_mentions=allowed_mentions,
+            previous_allowed_mentions=previous_allowed_mention,
+            mention_author=None if mention_author is MISSING else mention_author,
+            stickers=sticker_ids,
+            view=view,
+            flags=flags,
+            channel_payload=channel_payload,
         ) as params:
             # Circular import
             from .message import Message
@@ -2750,8 +2744,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         data = await self._state.http.channel_webhooks(self.id)
         return [Webhook.from_state(d, state=self._state) for d in data]
 
-    async def create_webhook(self, *, name: str, avatar: Optional[bytes] = None,
-                             reason: Optional[str] = None) -> Webhook:
+    async def create_webhook(self, *, name: str, avatar: Optional[bytes] = None, reason: Optional[str] = None) -> Webhook:
         """|coro|
 
         Creates a webhook for this channel.
@@ -2790,10 +2783,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         return Webhook.from_state(data, state=self._state)
 
     async def archived_threads(
-            self,
-            *,
-            limit: Optional[int] = 100,
-            before: Optional[Union[Snowflake, datetime.datetime]] = None,
+        self,
+        *,
+        limit: Optional[int] = 100,
+        before: Optional[Union[Snowflake, datetime.datetime]] = None,
     ) -> AsyncIterator[Thread]:
         """Returns an :term:`asynchronous iterator` that iterates over all archived threads in this forum
         in order of decreasing :attr:`Thread.archive_timestamp`.
@@ -2839,8 +2832,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
                     return
                 retrieve = max(2, min(retrieve, limit))
 
-            data = await self.guild._state.http.get_public_archived_threads(self.id, before=before_timestamp,
-                                                                            limit=retrieve)
+            data = await self.guild._state.http.get_public_archived_threads(self.id, before=before_timestamp, limit=retrieve)
 
             threads = data.get('threads', [])
             for raw_thread in threads:
@@ -3217,8 +3209,7 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
         The channel type associated with this partial messageable, if given.
     """
 
-    def __init__(self, state: ConnectionState, id: int, guild_id: Optional[int] = None,
-                 type: Optional[ChannelType] = None):
+    def __init__(self, state: ConnectionState, id: int, guild_id: Optional[int] = None, type: Optional[ChannelType] = None):
         self._state: ConnectionState = state
         self.id: int = id
         self.guild_id: Optional[int] = guild_id

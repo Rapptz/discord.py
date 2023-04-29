@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import inspect
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -40,14 +39,15 @@ from typing import (
 )
 
 import discord
+import inspect
 from discord import app_commands
 from discord.utils import MISSING, maybe_coroutine, async_all
-from .cog import Cog
-from .converter import Converter, Range, Greedy, run_converters, CONVERTER_MAPPING
 from .core import Command, Group
 from .errors import BadArgument, CommandRegistrationError, CommandError, HybridCommandError, ConversionError
-from .flags import is_flag, FlagConverter
+from .converter import Converter, Range, Greedy, run_converters, CONVERTER_MAPPING
 from .parameters import Parameter
+from .flags import is_flag, FlagConverter
+from .cog import Cog
 from .view import StringView
 
 if TYPE_CHECKING:
@@ -60,6 +60,7 @@ if TYPE_CHECKING:
         AutocompleteCallback,
         ChoiceT,
     )
+
 
 __all__ = (
     'HybridCommand',
@@ -189,11 +190,11 @@ class GreedyTransformer(app_commands.Transformer):
 
 
 def replace_parameter(
-        param: inspect.Parameter,
-        converter: Any,
-        callback: Callable[..., Any],
-        original: Parameter,
-        mapping: Dict[str, inspect.Parameter],
+    param: inspect.Parameter,
+    converter: Any,
+    callback: Callable[..., Any],
+    original: Parameter,
+    mapping: Dict[str, inspect.Parameter],
 ) -> inspect.Parameter:
     try:
         # If it's a supported annotation (i.e. a transformer) just let it pass as-is.
@@ -266,7 +267,7 @@ def replace_parameter(
 
 
 def replace_parameters(
-        parameters: Dict[str, Parameter], callback: Callable[..., Any], signature: inspect.Signature
+    parameters: Dict[str, Parameter], callback: Callable[..., Any], signature: inspect.Signature
 ) -> List[inspect.Parameter]:
     # Need to convert commands.Parameter back to inspect.Parameter so this will be a bit ugly
     params = signature.parameters.copy()
@@ -332,7 +333,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         return self._copy_with(parent=self.parent, binding=self.binding, bindings=bindings)
 
     async def _transform_arguments(
-            self, interaction: discord.Interaction, namespace: app_commands.Namespace
+        self, interaction: discord.Interaction, namespace: app_commands.Namespace
     ) -> Dict[str, Any]:
         values = namespace.__dict__
         transformed_values = {}
@@ -482,20 +483,19 @@ class HybridCommand(Command[CogT, P, T]):
     __commands_is_hybrid__: ClassVar[bool] = True
 
     def __init__(
-            self,
-            func: CommandCallback[CogT, Context[Any], P, T],
-            /,
-            *,
-            name: Union[str, app_commands.locale_str] = MISSING,
-            description: Union[str, app_commands.locale_str] = MISSING,
-            **kwargs: Any,
+        self,
+        func: CommandCallback[CogT, Context[Any], P, T],
+        /,
+        *,
+        name: Union[str, app_commands.locale_str] = MISSING,
+        description: Union[str, app_commands.locale_str] = MISSING,
+        **kwargs: Any,
     ) -> None:
         name, name_locale = (name.message, name) if isinstance(name, app_commands.locale_str) else (name, None)
         if name is not MISSING:
             kwargs['name'] = name
         description, description_locale = (
-            (description.message, description) if isinstance(description, app_commands.locale_str) else (
-                description, None)
+            (description.message, description) if isinstance(description, app_commands.locale_str) else (description, None)
         )
         if description is not MISSING:
             kwargs['description'] = description
@@ -542,7 +542,7 @@ class HybridCommand(Command[CogT, P, T]):
         return copy
 
     def autocomplete(
-            self, name: str
+        self, name: str
     ) -> Callable[[AutocompleteCallback[CogT, ChoiceT]], AutocompleteCallback[CogT, ChoiceT]]:
         """A decorator that registers a coroutine as an autocomplete prompt for a parameter.
 
@@ -599,19 +599,18 @@ class HybridGroup(Group[CogT, P, T]):
     __commands_is_hybrid__: ClassVar[bool] = True
 
     def __init__(
-            self,
-            *args: Any,
-            name: Union[str, app_commands.locale_str] = MISSING,
-            description: Union[str, app_commands.locale_str] = MISSING,
-            fallback: Optional[str] = None,
-            **attrs: Any,
+        self,
+        *args: Any,
+        name: Union[str, app_commands.locale_str] = MISSING,
+        description: Union[str, app_commands.locale_str] = MISSING,
+        fallback: Optional[str] = None,
+        **attrs: Any,
     ) -> None:
         name, name_locale = (name.message, name) if isinstance(name, app_commands.locale_str) else (name, None)
         if name is not MISSING:
             attrs['name'] = name
         description, description_locale = (
-            (description.message, description) if isinstance(description, app_commands.locale_str) else (
-                description, None)
+            (description.message, description) if isinstance(description, app_commands.locale_str) else (description, None)
         )
         if description is not MISSING:
             attrs['description'] = description
@@ -715,7 +714,7 @@ class HybridGroup(Group[CogT, P, T]):
         return copy
 
     def autocomplete(
-            self, name: str
+        self, name: str
     ) -> Callable[[AutocompleteCallback[CogT, ChoiceT]], AutocompleteCallback[CogT, ChoiceT]]:
         """A decorator that registers a coroutine as an autocomplete prompt for a parameter.
 
@@ -797,11 +796,11 @@ class HybridGroup(Group[CogT, P, T]):
         return cmd
 
     def command(
-            self,
-            name: Union[str, app_commands.locale_str] = MISSING,
-            *args: Any,
-            with_app_command: bool = True,
-            **kwargs: Any,
+        self,
+        name: Union[str, app_commands.locale_str] = MISSING,
+        *args: Any,
+        with_app_command: bool = True,
+        **kwargs: Any,
     ) -> Callable[[CommandCallback[CogT, ContextT, P2, U]], HybridCommand[CogT, P2, U]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_command` and adds it to
         the internal command list via :meth:`add_command`.
@@ -821,11 +820,11 @@ class HybridGroup(Group[CogT, P, T]):
         return decorator
 
     def group(
-            self,
-            name: Union[str, app_commands.locale_str] = MISSING,
-            *args: Any,
-            with_app_command: bool = True,
-            **kwargs: Any,
+        self,
+        name: Union[str, app_commands.locale_str] = MISSING,
+        *args: Any,
+        with_app_command: bool = True,
+        **kwargs: Any,
     ) -> Callable[[CommandCallback[CogT, ContextT, P2, U]], HybridGroup[CogT, P2, U]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
@@ -846,10 +845,10 @@ class HybridGroup(Group[CogT, P, T]):
 
 
 def hybrid_command(
-        name: Union[str, app_commands.locale_str] = MISSING,
-        *,
-        with_app_command: bool = True,
-        **attrs: Any,
+    name: Union[str, app_commands.locale_str] = MISSING,
+    *,
+    with_app_command: bool = True,
+    **attrs: Any,
 ) -> Callable[[CommandCallback[CogT, ContextT, P, T]], HybridCommand[CogT, P, T]]:
     r"""A decorator that transforms a function into a :class:`.HybridCommand`.
 
@@ -897,10 +896,10 @@ def hybrid_command(
 
 
 def hybrid_group(
-        name: Union[str, app_commands.locale_str] = MISSING,
-        *,
-        with_app_command: bool = True,
-        **attrs: Any,
+    name: Union[str, app_commands.locale_str] = MISSING,
+    *,
+    with_app_command: bool = True,
+    **attrs: Any,
 ) -> Callable[[CommandCallback[CogT, ContextT, P, T]], HybridGroup[CogT, P, T]]:
     """A decorator that transforms a function into a :class:`.HybridGroup`.
 

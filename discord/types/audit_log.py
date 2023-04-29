@@ -25,19 +25,18 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict, Union
-
 from typing_extensions import NotRequired
 
-from .channel import ChannelType, DefaultReaction, PrivacyLevel, VideoQualityMode, PermissionOverwrite, ForumTag
-from .command import ApplicationCommand, ApplicationCommandPermissions
+from .webhook import Webhook
 from .guild import MFALevel, VerificationLevel, ExplicitContentFilterLevel, DefaultMessageNotificationLevel
 from .integration import IntegrationExpireBehavior, PartialIntegration
-from .role import Role
+from .user import User
 from .scheduled_event import EntityType, EventStatus, GuildScheduledEvent
 from .snowflake import Snowflake
+from .role import Role
+from .channel import ChannelType, DefaultReaction, PrivacyLevel, VideoQualityMode, PermissionOverwrite, ForumTag
 from .threads import Thread
-from .user import User
-from .webhook import Webhook
+from .command import ApplicationCommand, ApplicationCommandPermissions
 
 AuditLogEvent = Literal[
     1,

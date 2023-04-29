@@ -24,33 +24,33 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Mapping, Generator, List, Optional, Tuple, Type, TypeVar, \
-    Union
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Mapping, Generator, List, Optional, Tuple, Type, TypeVar, Union
 
 from . import enums, flags, utils
 from .asset import Asset
-from .automod import AutoModTrigger, AutoModRuleAction, AutoModPresets, AutoModRule
-from .channel import ForumChannel, StageChannel, ForumTag
 from .colour import Colour
-from .emoji import Emoji
-from .integrations import PartialIntegration
 from .invite import Invite
-from .member import Member
 from .mixins import Hashable
 from .object import Object
-from .partial_emoji import PartialEmoji
 from .permissions import PermissionOverwrite, Permissions
+from .automod import AutoModTrigger, AutoModRuleAction, AutoModPresets, AutoModRule
 from .role import Role
+from .emoji import Emoji
+from .partial_emoji import PartialEmoji
+from .member import Member
 from .scheduled_event import ScheduledEvent
 from .stage_instance import StageInstance
 from .sticker import GuildSticker
 from .threads import Thread
+from .integrations import PartialIntegration
+from .channel import ForumChannel, StageChannel, ForumTag
 
 __all__ = (
     'AuditLogDiff',
     'AuditLogChanges',
     'AuditLogEntry',
 )
+
 
 if TYPE_CHECKING:
     import datetime
@@ -116,7 +116,7 @@ def _transform_channel(entry: AuditLogEntry, data: Optional[Snowflake]) -> Optio
 
 
 def _transform_channels_or_threads(
-        entry: AuditLogEntry, data: List[Snowflake]
+    entry: AuditLogEntry, data: List[Snowflake]
 ) -> List[Union[abc.GuildChannel, Thread, Object]]:
     return [entry.guild.get_channel_or_thread(int(data)) or Object(id=data) for data in data]
 
@@ -176,7 +176,7 @@ def _transform_default_reaction(entry: AuditLogEntry, data: DefaultReactionPaylo
 
 
 def _transform_overwrites(
-        entry: AuditLogEntry, data: List[PermissionOverwritePayload]
+    entry: AuditLogEntry, data: List[PermissionOverwritePayload]
 ) -> List[Tuple[Object, PermissionOverwrite]]:
     overwrites = []
     for elem in data:
@@ -206,22 +206,19 @@ def _transform_icon(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset
     if entry.action is enums.AuditLogAction.guild_update:
         return Asset._from_guild_icon(entry._state, entry.guild.id, data)
     else:
-        return Asset._from_icon(entry._state, entry._target_id, data,
-                                path='role')  # type: ignore # target_id won't be None in this case
+        return Asset._from_icon(entry._state, entry._target_id, data, path='role')  # type: ignore # target_id won't be None in this case
 
 
 def _transform_avatar(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
     if data is None:
         return None
-    return Asset._from_avatar(entry._state, entry._target_id,
-                              data)  # type: ignore # target_id won't be None in this case
+    return Asset._from_avatar(entry._state, entry._target_id, data)  # type: ignore # target_id won't be None in this case
 
 
 def _transform_cover_image(entry: AuditLogEntry, data: Optional[str]) -> Optional[Asset]:
     if data is None:
         return None
-    return Asset._from_scheduled_event_cover_image(entry._state, entry._target_id,
-                                                   data)  # type: ignore # target_id won't be None in this case
+    return Asset._from_scheduled_event_cover_image(entry._state, entry._target_id, data)  # type: ignore # target_id won't be None in this case
 
 
 def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]], Optional[Asset]]:
@@ -234,8 +231,9 @@ def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]
 
 
 def _transform_automod_trigger_metadata(
-        entry: AuditLogEntry, data: AutoModerationTriggerMetadata
+    entry: AuditLogEntry, data: AutoModerationTriggerMetadata
 ) -> Optional[AutoModTrigger]:
+
     if isinstance(entry.target, AutoModRule):
         # Trigger type cannot be changed, so type should be the same before and after updates.
         # Avoids checking which keys are in data to guess trigger type
@@ -260,8 +258,7 @@ def _transform_automod_trigger_metadata(
             regex_patterns=data.get('regex_patterns'),
         )
     elif 'mention_total_limit' in data:
-        return AutoModTrigger(type=enums.AutoModRuleTriggerType.mention_spam,
-                              mention_limit=data['mention_total_limit'])  # type: ignore
+        return AutoModTrigger(type=enums.AutoModRuleTriggerType.mention_spam, mention_limit=data['mention_total_limit'])  # type: ignore
     else:
         return AutoModTrigger(type=enums.AutoModRuleTriggerType.spam)
 
@@ -291,7 +288,7 @@ def _flag_transformer(cls: Type[F]) -> Callable[[AuditLogEntry, Union[int, str]]
 
 
 def _transform_type(
-        entry: AuditLogEntry, data: Union[int, str]
+    entry: AuditLogEntry, data: Union[int, str]
 ) -> Union[enums.ChannelType, enums.StickerType, enums.WebhookType, str]:
     if entry.action.name.startswith('sticker_'):
         return enums.try_enum(enums.StickerType, data)
@@ -315,6 +312,7 @@ class AuditLogDiff:
         return f'<AuditLogDiff {values}>'
 
     if TYPE_CHECKING:
+
         def __getattr__(self, item: str) -> Any:
             ...
 
@@ -328,56 +326,55 @@ Transformer = Callable[["AuditLogEntry", Any], Any]
 class AuditLogChanges:
     # fmt: off
     TRANSFORMERS: ClassVar[Mapping[str, Tuple[Optional[str], Optional[Transformer]]]] = {
-        'verification_level': (None, _enum_transformer(enums.VerificationLevel)),
-        'explicit_content_filter': (None, _enum_transformer(enums.ContentFilter)),
-        'allow': (None, _flag_transformer(Permissions)),
-        'deny': (None, _flag_transformer(Permissions)),
-        'permissions': (None, _flag_transformer(Permissions)),
-        'id': (None, _transform_snowflake),
-        'color': ('colour', _transform_color),
-        'owner_id': ('owner', _transform_member_id),
-        'inviter_id': ('inviter', _transform_member_id),
-        'channel_id': ('channel', _transform_channel),
-        'afk_channel_id': ('afk_channel', _transform_channel),
-        'system_channel_id': ('system_channel', _transform_channel),
-        'system_channel_flags': (None, _flag_transformer(flags.SystemChannelFlags)),
-        'widget_channel_id': ('widget_channel', _transform_channel),
-        'rules_channel_id': ('rules_channel', _transform_channel),
-        'public_updates_channel_id': ('public_updates_channel', _transform_channel),
-        'permission_overwrites': ('overwrites', _transform_overwrites),
-        'splash_hash': ('splash', _guild_hash_transformer('splashes')),
-        'banner_hash': ('banner', _guild_hash_transformer('banners')),
-        'discovery_splash_hash': ('discovery_splash', _guild_hash_transformer('discovery-splashes')),
-        'icon_hash': ('icon', _transform_icon),
-        'avatar_hash': ('avatar', _transform_avatar),
-        'rate_limit_per_user': ('slowmode_delay', None),
-        'default_thread_rate_limit_per_user': ('default_thread_slowmode_delay', None),
-        'guild_id': ('guild', _transform_guild_id),
-        'tags': ('emoji', None),
-        'default_message_notifications': ('default_notifications', _enum_transformer(enums.NotificationLevel)),
-        'video_quality_mode': (None, _enum_transformer(enums.VideoQualityMode)),
-        'privacy_level': (None, _enum_transformer(enums.PrivacyLevel)),
-        'format_type': (None, _enum_transformer(enums.StickerFormatType)),
-        'type': (None, _transform_type),
-        'communication_disabled_until': ('timed_out_until', _transform_timestamp),
-        'expire_behavior': (None, _enum_transformer(enums.ExpireBehaviour)),
-        'mfa_level': (None, _enum_transformer(enums.MFALevel)),
-        'status': (None, _enum_transformer(enums.EventStatus)),
-        'entity_type': (None, _enum_transformer(enums.EntityType)),
-        'preferred_locale': (None, _enum_transformer(enums.Locale)),
-        'image_hash': ('cover_image', _transform_cover_image),
-        'trigger_type': (None, _enum_transformer(enums.AutoModRuleTriggerType)),
-        'event_type': (None, _enum_transformer(enums.AutoModRuleEventType)),
-        'trigger_metadata': ('trigger', _transform_automod_trigger_metadata),
-        'actions': (None, _transform_automod_actions),
-        'exempt_channels': (None, _transform_channels_or_threads),
-        'exempt_roles': (None, _transform_roles),
-        'applied_tags': (None, _transform_applied_forum_tags),
-        'available_tags': (None, _transform_forum_tags),
-        'flags': (None, _transform_overloaded_flags),
-        'default_reaction_emoji': (None, _transform_default_reaction),
+        'verification_level':                    (None, _enum_transformer(enums.VerificationLevel)),
+        'explicit_content_filter':               (None, _enum_transformer(enums.ContentFilter)),
+        'allow':                                 (None, _flag_transformer(Permissions)),
+        'deny':                                  (None, _flag_transformer(Permissions)),
+        'permissions':                           (None, _flag_transformer(Permissions)),
+        'id':                                    (None, _transform_snowflake),
+        'color':                                 ('colour', _transform_color),
+        'owner_id':                              ('owner', _transform_member_id),
+        'inviter_id':                            ('inviter', _transform_member_id),
+        'channel_id':                            ('channel', _transform_channel),
+        'afk_channel_id':                        ('afk_channel', _transform_channel),
+        'system_channel_id':                     ('system_channel', _transform_channel),
+        'system_channel_flags':                  (None, _flag_transformer(flags.SystemChannelFlags)),
+        'widget_channel_id':                     ('widget_channel', _transform_channel),
+        'rules_channel_id':                      ('rules_channel', _transform_channel),
+        'public_updates_channel_id':             ('public_updates_channel', _transform_channel),
+        'permission_overwrites':                 ('overwrites', _transform_overwrites),
+        'splash_hash':                           ('splash', _guild_hash_transformer('splashes')),
+        'banner_hash':                           ('banner', _guild_hash_transformer('banners')),
+        'discovery_splash_hash':                 ('discovery_splash', _guild_hash_transformer('discovery-splashes')),
+        'icon_hash':                             ('icon', _transform_icon),
+        'avatar_hash':                           ('avatar', _transform_avatar),
+        'rate_limit_per_user':                   ('slowmode_delay', None),
+        'default_thread_rate_limit_per_user':    ('default_thread_slowmode_delay', None),
+        'guild_id':                              ('guild', _transform_guild_id),
+        'tags':                                  ('emoji', None),
+        'default_message_notifications':         ('default_notifications', _enum_transformer(enums.NotificationLevel)),
+        'video_quality_mode':                    (None, _enum_transformer(enums.VideoQualityMode)),
+        'privacy_level':                         (None, _enum_transformer(enums.PrivacyLevel)),
+        'format_type':                           (None, _enum_transformer(enums.StickerFormatType)),
+        'type':                                  (None, _transform_type),
+        'communication_disabled_until':          ('timed_out_until', _transform_timestamp),
+        'expire_behavior':                       (None, _enum_transformer(enums.ExpireBehaviour)),
+        'mfa_level':                             (None, _enum_transformer(enums.MFALevel)),
+        'status':                                (None, _enum_transformer(enums.EventStatus)),
+        'entity_type':                           (None, _enum_transformer(enums.EntityType)),
+        'preferred_locale':                      (None, _enum_transformer(enums.Locale)),
+        'image_hash':                            ('cover_image', _transform_cover_image),
+        'trigger_type':                          (None, _enum_transformer(enums.AutoModRuleTriggerType)),
+        'event_type':                            (None, _enum_transformer(enums.AutoModRuleEventType)),
+        'trigger_metadata':                      ('trigger', _transform_automod_trigger_metadata),
+        'actions':                               (None, _transform_automod_actions),
+        'exempt_channels':                       (None, _transform_channels_or_threads),
+        'exempt_roles':                          (None, _transform_roles),
+        'applied_tags':                          (None, _transform_applied_forum_tags),
+        'available_tags':                        (None, _transform_forum_tags),
+        'flags':                                 (None, _transform_overloaded_flags),
+        'default_reaction_emoji':                (None, _transform_default_reaction),
     }
-
     # fmt: on
 
     def __init__(self, entry: AuditLogEntry, data: List[AuditLogChangePayload]):
@@ -409,12 +406,10 @@ class AuditLogChanges:
 
             # special cases for role add/remove
             if attr == '$add':
-                self._handle_role(self.before, self.after, entry,
-                                  elem['new_value'])  # type: ignore # new_value is a list of roles in this case
+                self._handle_role(self.before, self.after, entry, elem['new_value'])  # type: ignore # new_value is a list of roles in this case
                 continue
             elif attr == '$remove':
-                self._handle_role(self.after, self.before, entry,
-                                  elem['new_value'])  # type: ignore # new_value is a list of roles in this case
+                self._handle_role(self.after, self.before, entry, elem['new_value'])  # type: ignore # new_value is a list of roles in this case
                 continue
 
             try:
@@ -458,8 +453,7 @@ class AuditLogChanges:
     def __repr__(self) -> str:
         return f'<AuditLogChanges before={self.before!r} after={self.after!r}>'
 
-    def _handle_role(self, first: AuditLogDiff, second: AuditLogDiff, entry: AuditLogEntry,
-                     elem: List[RolePayload]) -> None:
+    def _handle_role(self, first: AuditLogDiff, second: AuditLogDiff, entry: AuditLogEntry, elem: List[RolePayload]) -> None:
         if not hasattr(first, 'roles'):
             setattr(first, 'roles', [])
 
@@ -479,10 +473,10 @@ class AuditLogChanges:
         setattr(second, 'roles', data)
 
     def _handle_app_command_permissions(
-            self,
-            diff: AuditLogDiff,
-            entry: AuditLogEntry,
-            data: Optional[ApplicationCommandPermissions],
+        self,
+        diff: AuditLogDiff,
+        entry: AuditLogEntry,
+        data: Optional[ApplicationCommandPermissions],
     ):
         if data is None:
             return
@@ -584,15 +578,15 @@ class AuditLogEntry(Hashable):
     """
 
     def __init__(
-            self,
-            *,
-            users: Mapping[int, User],
-            integrations: Mapping[int, PartialIntegration],
-            app_commands: Mapping[int, AppCommand],
-            automod_rules: Mapping[int, AutoModRule],
-            webhooks: Mapping[int, Webhook],
-            data: AuditLogEntryPayload,
-            guild: Guild,
+        self,
+        *,
+        users: Mapping[int, User],
+        integrations: Mapping[int, PartialIntegration],
+        app_commands: Mapping[int, AppCommand],
+        automod_rules: Mapping[int, AutoModRule],
+        webhooks: Mapping[int, Webhook],
+        data: AuditLogEntryPayload,
+        guild: Guild,
     ):
         self._state: ConnectionState = guild._state
         self.guild: Guild = guild
@@ -652,9 +646,9 @@ class AuditLogEntry(Hashable):
                     message_id=int(extra['message_id']),
                 )
             elif (
-                    self.action is enums.AuditLogAction.automod_block_message
-                    or self.action is enums.AuditLogAction.automod_flag_message
-                    or self.action is enums.AuditLogAction.automod_timeout_member
+                self.action is enums.AuditLogAction.automod_block_message
+                or self.action is enums.AuditLogAction.automod_flag_message
+                or self.action is enums.AuditLogAction.automod_timeout_member
             ):
                 channel_id = utils._get_as_snowflake(extra, 'channel_id')
                 channel = None
@@ -839,8 +833,7 @@ class AuditLogEntry(Hashable):
 
         return target
 
-    def _convert_target_integration_or_app_command(self, target_id: int) -> Union[
-        PartialIntegration, AppCommand, Object]:
+    def _convert_target_integration_or_app_command(self, target_id: int) -> Union[PartialIntegration, AppCommand, Object]:
         target = self._get_integration_by_app_id(target_id) or self._get_app_command(target_id)
         if not target:
             try:
@@ -851,8 +844,7 @@ class AuditLogEntry(Hashable):
                 # if it matches target id, type should be integration
                 target_app = self.extra
                 # extra should be an Object or PartialIntegration
-                app_id = target_app.application_id if isinstance(target_app,
-                                                                 PartialIntegration) else target_app.id  # type: ignore
+                app_id = target_app.application_id if isinstance(target_app, PartialIntegration) else target_app.id  # type: ignore
                 type = PartialIntegration if target_id == app_id else AppCommand
             except AttributeError:
                 return Object(target_id)

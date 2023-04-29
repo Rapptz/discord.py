@@ -28,6 +28,11 @@ import inspect
 from operator import attrgetter
 from typing import TYPE_CHECKING, Any, Literal, Optional, OrderedDict, Union, Protocol
 
+from discord.utils import MISSING, maybe_coroutine
+
+from .errors import NoPrivateMessage
+from .converter import GuildConverter
+
 from discord import (
     Member,
     User,
@@ -36,9 +41,6 @@ from discord import (
     DMChannel,
     Thread,
 )
-from discord.utils import MISSING, maybe_coroutine
-from .converter import GuildConverter
-from .errors import NoPrivateMessage
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -55,6 +57,7 @@ __all__ = (
     'CurrentChannel',
     'CurrentGuild',
 )
+
 
 ParamKinds = Union[
     Literal[inspect.Parameter.POSITIONAL_ONLY],
@@ -87,13 +90,13 @@ class Parameter(inspect.Parameter):
     __slots__ = ('_displayed_default', '_description', '_fallback')
 
     def __init__(
-            self,
-            name: str,
-            kind: ParamKinds,
-            default: Any = empty,
-            annotation: Any = empty,
-            description: str = empty,
-            displayed_default: str = empty,
+        self,
+        name: str,
+        kind: ParamKinds,
+        default: Any = empty,
+        annotation: Any = empty,
+        description: str = empty,
+        displayed_default: str = empty,
     ) -> None:
         super().__init__(name=name, kind=kind, default=default, annotation=annotation)
         self._name = name
@@ -105,14 +108,14 @@ class Parameter(inspect.Parameter):
         self._fallback = False
 
     def replace(
-            self,
-            *,
-            name: str = MISSING,  # MISSING here cause empty is valid
-            kind: ParamKinds = MISSING,
-            default: Any = MISSING,
-            annotation: Any = MISSING,
-            description: str = MISSING,
-            displayed_default: Any = MISSING,
+        self,
+        *,
+        name: str = MISSING,  # MISSING here cause empty is valid
+        kind: ParamKinds = MISSING,
+        default: Any = MISSING,
+        annotation: Any = MISSING,
+        description: str = MISSING,
+        displayed_default: Any = MISSING,
     ) -> Self:
         if name is MISSING:
             name = self._name
@@ -185,11 +188,11 @@ class Parameter(inspect.Parameter):
 
 
 def parameter(
-        *,
-        converter: Any = empty,
-        default: Any = empty,
-        description: str = empty,
-        displayed_default: str = empty,
+    *,
+    converter: Any = empty,
+    default: Any = empty,
+    description: str = empty,
+    displayed_default: str = empty,
 ) -> Any:
     r"""parameter(\*, converter=..., default=..., description=..., displayed_default=...)
 
@@ -231,12 +234,12 @@ def parameter(
 
 class ParameterAlias(Protocol):
     def __call__(
-            self,
-            *,
-            converter: Any = empty,
-            default: Any = empty,
-            description: str = empty,
-            displayed_default: str = empty,
+        self,
+        *,
+        converter: Any = empty,
+        default: Any = empty,
+        description: str = empty,
+        displayed_default: str = empty,
     ) -> Any:
         ...
 

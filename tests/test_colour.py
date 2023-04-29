@@ -24,9 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import pytest
-
 import discord
+import pytest
 
 
 @pytest.mark.parametrize(

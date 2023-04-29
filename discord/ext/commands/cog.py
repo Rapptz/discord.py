@@ -24,6 +24,10 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import inspect
+import discord
+from discord import app_commands
+from discord.utils import maybe_coroutine, _to_kebab_case
+
 from typing import (
     Any,
     Callable,
@@ -41,9 +45,6 @@ from typing import (
     Union,
 )
 
-import discord
-from discord import app_commands
-from discord.utils import maybe_coroutine, _to_kebab_case
 from ._types import _BaseCommand, BotT
 
 if TYPE_CHECKING:
@@ -435,8 +436,7 @@ class Cog(metaclass=CogMeta):
                 if isinstance(command, GroupMixin):
                     yield from command.walk_commands()
 
-    def walk_app_commands(self) -> Generator[
-        Union[app_commands.Command[Self, ..., Any], app_commands.Group], None, None]:
+    def walk_app_commands(self) -> Generator[Union[app_commands.Command[Self, ..., Any], app_commands.Group], None, None]:
         """An iterator that recursively walks through this cog's app commands and subcommands.
 
         Yields
@@ -620,8 +620,7 @@ class Cog(metaclass=CogMeta):
         pass
 
     @_cog_special_method
-    async def cog_app_command_error(self, interaction: discord.Interaction,
-                                    error: app_commands.AppCommandError) -> None:
+    async def cog_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError) -> None:
         """|coro|
 
         A special method that is called whenever an error within
@@ -675,8 +674,7 @@ class Cog(metaclass=CogMeta):
         """
         pass
 
-    async def _inject(self, bot: BotBase, override: bool, guild: Optional[Snowflake],
-                      guilds: Sequence[Snowflake]) -> Self:
+    async def _inject(self, bot: BotBase, override: bool, guild: Optional[Snowflake], guilds: Sequence[Snowflake]) -> Self:
         cls = self.__class__
 
         # we'll call this first so that errors can propagate without

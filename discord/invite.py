@@ -25,14 +25,13 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Optional, Union, TYPE_CHECKING
-
-from .appinfo import PartialAppInfo
 from .asset import Asset
-from .enums import ChannelType, NSFWLevel, VerificationLevel, InviteTarget, try_enum
-from .mixins import Hashable
-from .object import Object
-from .scheduled_event import ScheduledEvent
 from .utils import parse_time, snowflake_time, _get_as_snowflake
+from .object import Object
+from .mixins import Hashable
+from .enums import ChannelType, NSFWLevel, VerificationLevel, InviteTarget, try_enum
+from .appinfo import PartialAppInfo
+from .scheduled_event import ScheduledEvent
 
 __all__ = (
     'PartialInviteChannel',
@@ -379,12 +378,12 @@ class Invite(Hashable):
     BASE = 'https://discord.gg'
 
     def __init__(
-            self,
-            *,
-            state: ConnectionState,
-            data: InvitePayload,
-            guild: Optional[Union[PartialInviteGuild, Guild]] = None,
-            channel: Optional[Union[PartialInviteChannel, GuildChannel]] = None,
+        self,
+        *,
+        state: ConnectionState,
+        data: InvitePayload,
+        guild: Optional[Union[PartialInviteGuild, Guild]] = None,
+        channel: Optional[Union[PartialInviteChannel, GuildChannel]] = None,
     ):
         self._state: ConnectionState = state
         self.max_age: Optional[int] = data.get('max_age')
@@ -407,8 +406,7 @@ class Invite(Hashable):
         self.channel: Optional[InviteChannelType] = self._resolve_channel(data.get('channel'), channel)
 
         target_user_data = data.get('target_user')
-        self.target_user: Optional[User] = None if target_user_data is None else self._state.create_user(
-            target_user_data)
+        self.target_user: Optional[User] = None if target_user_data is None else self._state.create_user(target_user_data)
 
         self.target_type: InviteTarget = try_enum(InviteTarget, data.get("target_type", 0))
 
@@ -466,9 +464,9 @@ class Invite(Hashable):
         return cls(state=state, data=data, guild=guild, channel=channel)  # type: ignore
 
     def _resolve_guild(
-            self,
-            data: Optional[InviteGuildPayload],
-            guild: Optional[Union[Guild, PartialInviteGuild]] = None,
+        self,
+        data: Optional[InviteGuildPayload],
+        guild: Optional[Union[Guild, PartialInviteGuild]] = None,
     ) -> Optional[InviteGuildType]:
         if guild is not None:
             return guild
@@ -480,9 +478,9 @@ class Invite(Hashable):
         return PartialInviteGuild(self._state, data, guild_id)
 
     def _resolve_channel(
-            self,
-            data: Optional[InviteChannelPayload],
-            channel: Optional[Union[PartialInviteChannel, GuildChannel]] = None,
+        self,
+        data: Optional[InviteChannelPayload],
+        channel: Optional[Union[PartialInviteChannel, GuildChannel]] = None,
     ) -> Optional[InviteChannelType]:
         if channel is not None:
             return channel

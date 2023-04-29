@@ -1,12 +1,12 @@
 from __future__ import annotations
-
 from typing import Dict, Any
 
-import sphinx
-from docutils import nodes
-from docutils.parsers.rst import directives
-from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
+from docutils.parsers.rst import directives
+from docutils import nodes
+
+import sphinx
+from sphinx.application import Sphinx
 
 
 class colour_input(nodes.General, nodes.Element):

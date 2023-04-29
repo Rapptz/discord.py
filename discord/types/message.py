@@ -25,18 +25,17 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict, Union
-
 from typing_extensions import NotRequired, Required
 
+from .snowflake import Snowflake, SnowflakeList
+from .member import Member, UserWithMember
+from .user import User
+from .emoji import PartialEmoji
+from .embed import Embed
 from .channel import ChannelType
 from .components import Component
-from .embed import Embed
-from .emoji import PartialEmoji
 from .interactions import MessageInteraction
-from .member import Member, UserWithMember
-from .snowflake import Snowflake, SnowflakeList
 from .sticker import StickerItem
-from .user import User
 
 
 class PartialMessage(TypedDict):

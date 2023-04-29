@@ -23,15 +23,15 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-
 from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union, overload
-
 from .errors import TranslationError
 from ..enums import Enum, Locale
+
 
 if TYPE_CHECKING:
     from .commands import Command, ContextMenu, Group, Parameter
     from .models import Choice
+
 
 __all__ = (
     'TranslationContextLocation',
@@ -75,31 +75,29 @@ class TranslationContext(Generic[_L, _D]):
 
     @overload
     def __init__(
-            self, location: Literal[TranslationContextLocation.command_name],
-            data: Union[Command[Any, ..., Any], ContextMenu]
+        self, location: Literal[TranslationContextLocation.command_name], data: Union[Command[Any, ..., Any], ContextMenu]
     ) -> None:
         ...
 
     @overload
     def __init__(
-            self, location: Literal[TranslationContextLocation.command_description], data: Command[Any, ..., Any]
+        self, location: Literal[TranslationContextLocation.command_description], data: Command[Any, ..., Any]
     ) -> None:
         ...
 
     @overload
     def __init__(
-            self,
-            location: Literal[TranslationContextLocation.group_name, TranslationContextLocation.group_description],
-            data: Group,
+        self,
+        location: Literal[TranslationContextLocation.group_name, TranslationContextLocation.group_description],
+        data: Group,
     ) -> None:
         ...
 
     @overload
     def __init__(
-            self,
-            location: Literal[
-                TranslationContextLocation.parameter_name, TranslationContextLocation.parameter_description],
-            data: Parameter,
+        self,
+        location: Literal[TranslationContextLocation.parameter_name, TranslationContextLocation.parameter_description],
+        data: Parameter,
     ) -> None:
         ...
 
@@ -192,7 +190,7 @@ class Translator:
         pass
 
     async def _checked_translate(
-            self, string: locale_str, locale: Locale, context: TranslationContextTypes
+        self, string: locale_str, locale: Locale, context: TranslationContextTypes
     ) -> Optional[str]:
         try:
             return await self.translate(string, locale, context)

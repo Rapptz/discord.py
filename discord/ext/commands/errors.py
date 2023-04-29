@@ -41,6 +41,7 @@ if TYPE_CHECKING:
     from .flags import Flag
     from .parameters import Parameter
 
+
 __all__ = (
     'CommandError',
     'MissingRequiredArgument',
@@ -598,10 +599,10 @@ class RangeError(BadArgument):
     """
 
     def __init__(
-            self,
-            value: Union[int, float, str],
-            minimum: Optional[Union[int, float]],
-            maximum: Optional[Union[int, float]],
+        self,
+        value: Union[int, float, str],
+        minimum: Optional[Union[int, float]],
+        maximum: Optional[Union[int, float]],
     ) -> None:
         self.value: Union[int, float, str] = value
         self.minimum: Optional[Union[int, float]] = minimum
@@ -925,8 +926,7 @@ class BadLiteralArgument(UserInputError):
         .. versionadded:: 2.3
     """
 
-    def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError],
-                 argument: str = "") -> None:
+    def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError], argument: str = "") -> None:
         self.param: Parameter = param
         self.literals: Tuple[Any, ...] = literals
         self.errors: List[CommandError] = errors

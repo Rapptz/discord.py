@@ -23,29 +23,31 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-import asyncio
-import audioop
-import io
-import json
-import logging
-import re
-import shlex
-import subprocess
-import sys
 import threading
+import subprocess
+import audioop
+import asyncio
+import logging
+import shlex
 import time
+import json
+import sys
+import re
+import io
+
 from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
 from .enums import SpeakingState
 from .errors import ClientException
-from .oggparse import OggStream
 from .opus import Encoder as OpusEncoder
+from .oggparse import OggStream
 from .utils import MISSING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .voice_client import VoiceClient
+
 
 AT = TypeVar('AT', bound='AudioSource')
 
@@ -144,12 +146,12 @@ class FFmpegAudio(AudioSource):
     """
 
     def __init__(
-            self,
-            source: Union[str, io.BufferedIOBase],
-            *,
-            executable: str = 'ffmpeg',
-            args: Any,
-            **subprocess_kwargs: Any,
+        self,
+        source: Union[str, io.BufferedIOBase],
+        *,
+        executable: str = 'ffmpeg',
+        args: Any,
+        **subprocess_kwargs: Any,
     ):
         piping = subprocess_kwargs.get('stdin') == subprocess.PIPE
         if piping and isinstance(source, str):
@@ -260,14 +262,14 @@ class FFmpegPCMAudio(FFmpegAudio):
     """
 
     def __init__(
-            self,
-            source: Union[str, io.BufferedIOBase],
-            *,
-            executable: str = 'ffmpeg',
-            pipe: bool = False,
-            stderr: Optional[IO[str]] = None,
-            before_options: Optional[str] = None,
-            options: Optional[str] = None,
+        self,
+        source: Union[str, io.BufferedIOBase],
+        *,
+        executable: str = 'ffmpeg',
+        pipe: bool = False,
+        stderr: Optional[IO[str]] = None,
+        before_options: Optional[str] = None,
+        options: Optional[str] = None,
     ) -> None:
         args = []
         subprocess_kwargs = {'stdin': subprocess.PIPE if pipe else subprocess.DEVNULL, 'stderr': stderr}
@@ -358,16 +360,16 @@ class FFmpegOpusAudio(FFmpegAudio):
     """
 
     def __init__(
-            self,
-            source: Union[str, io.BufferedIOBase],
-            *,
-            bitrate: Optional[int] = None,
-            codec: Optional[str] = None,
-            executable: str = 'ffmpeg',
-            pipe: bool = False,
-            stderr: Optional[IO[bytes]] = None,
-            before_options: Optional[str] = None,
-            options: Optional[str] = None,
+        self,
+        source: Union[str, io.BufferedIOBase],
+        *,
+        bitrate: Optional[int] = None,
+        codec: Optional[str] = None,
+        executable: str = 'ffmpeg',
+        pipe: bool = False,
+        stderr: Optional[IO[bytes]] = None,
+        before_options: Optional[str] = None,
+        options: Optional[str] = None,
     ) -> None:
         args = []
         subprocess_kwargs = {'stdin': subprocess.PIPE if pipe else subprocess.DEVNULL, 'stderr': stderr}
@@ -401,11 +403,11 @@ class FFmpegOpusAudio(FFmpegAudio):
 
     @classmethod
     async def from_probe(
-            cls,
-            source: str,
-            *,
-            method: Optional[Union[str, Callable[[str, str], Tuple[Optional[str], Optional[int]]]]] = None,
-            **kwargs: Any,
+        cls,
+        source: str,
+        *,
+        method: Optional[Union[str, Callable[[str, str], Tuple[Optional[str], Optional[int]]]]] = None,
+        **kwargs: Any,
     ) -> Self:
         """|coro|
 
@@ -468,11 +470,11 @@ class FFmpegOpusAudio(FFmpegAudio):
 
     @classmethod
     async def probe(
-            cls,
-            source: str,
-            *,
-            method: Optional[Union[str, Callable[[str, str], Tuple[Optional[str], Optional[int]]]]] = None,
-            executable: Optional[str] = None,
+        cls,
+        source: str,
+        *,
+        method: Optional[Union[str, Callable[[str, str], Tuple[Optional[str], Optional[int]]]]] = None,
+        executable: Optional[str] = None,
     ) -> Tuple[Optional[str], Optional[int]]:
         """|coro|
 
@@ -634,11 +636,11 @@ class AudioPlayer(threading.Thread):
     DELAY: float = OpusEncoder.FRAME_LENGTH / 1000.0
 
     def __init__(
-            self,
-            source: AudioSource,
-            client: VoiceClient,
-            *,
-            after: Optional[Callable[[Optional[Exception]], Any]] = None,
+        self,
+        source: AudioSource,
+        client: VoiceClient,
+        *,
+        after: Optional[Callable[[Optional[Exception]], Any]] = None,
     ) -> None:
         threading.Thread.__init__(self)
         self.daemon: bool = True

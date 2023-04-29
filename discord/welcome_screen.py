@@ -27,9 +27,8 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Optional, TYPE_CHECKING, Union
-
-from .partial_emoji import _EmojiTag
 from .utils import _get_as_snowflake, get, MISSING
+from .partial_emoji import _EmojiTag
 
 __all__ = (
     'WelcomeChannel',
@@ -64,7 +63,7 @@ class WelcomeChannel:
     """
 
     def __init__(
-            self, *, channel: Snowflake, description: str, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None
+        self, *, channel: Snowflake, description: str, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None
     ) -> None:
         self.channel = channel
         self.description = description
@@ -148,12 +147,12 @@ class WelcomeScreen:
         return 'WELCOME_SCREEN_ENABLED' in self._guild.features
 
     async def edit(
-            self,
-            *,
-            description: str = MISSING,
-            welcome_channels: List[WelcomeChannel] = MISSING,
-            enabled: bool = MISSING,
-            reason: Optional[str] = None,
+        self,
+        *,
+        description: str = MISSING,
+        welcome_channels: List[WelcomeChannel] = MISSING,
+        enabled: bool = MISSING,
+        reason: Optional[str] = None,
     ) -> Self:
         """|coro|
 

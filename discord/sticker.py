@@ -23,16 +23,14 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-
 from typing import Literal, TYPE_CHECKING, List, Optional, Tuple, Type, Union
-
 import unicodedata
 
-from .asset import Asset, AssetMixin
-from .enums import StickerType, StickerFormatType, try_enum
-from .errors import InvalidData
 from .mixins import Hashable
+from .asset import Asset, AssetMixin
 from .utils import cached_slot_property, find, snowflake_time, get, MISSING, _get_as_snowflake
+from .errors import InvalidData
+from .enums import StickerType, StickerFormatType, try_enum
 
 __all__ = (
     'StickerPack',
@@ -113,8 +111,7 @@ class StickerPack(Hashable):
     def _from_data(self, data: StickerPackPayload) -> None:
         self.id: int = int(data['id'])
         stickers = data['stickers']
-        self.stickers: List[StandardSticker] = [StandardSticker(state=self._state, data=sticker) for sticker in
-                                                stickers]
+        self.stickers: List[StandardSticker] = [StandardSticker(state=self._state, data=sticker) for sticker in stickers]
         self.name: str = data['name']
         self.sku_id: int = int(data['sku_id'])
         self.cover_sticker_id: Optional[int] = _get_as_snowflake(data, 'cover_sticker_id')
@@ -437,12 +434,12 @@ class GuildSticker(Sticker):
         return self._state._get_guild(self.guild_id)
 
     async def edit(
-            self,
-            *,
-            name: str = MISSING,
-            description: str = MISSING,
-            emoji: str = MISSING,
-            reason: Optional[str] = None,
+        self,
+        *,
+        name: str = MISSING,
+        description: str = MISSING,
+        emoji: str = MISSING,
+        reason: Optional[str] = None,
     ) -> GuildSticker:
         """|coro|
 
@@ -514,8 +511,7 @@ class GuildSticker(Sticker):
         await self._state.http.delete_guild_sticker(self.guild_id, self.id, reason)
 
 
-def _sticker_factory(sticker_type: Literal[1, 2]) -> Tuple[
-    Type[Union[StandardSticker, GuildSticker, Sticker]], StickerType]:
+def _sticker_factory(sticker_type: Literal[1, 2]) -> Tuple[Type[Union[StandardSticker, GuildSticker, Sticker]], StickerType]:
     value = try_enum(StickerType, sticker_type)
     if value == StickerType.standard:
         return StandardSticker, value

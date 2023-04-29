@@ -23,12 +23,10 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-
 from typing import List
 
-import pytest
-
 import discord
+import pytest
 from discord import app_commands
 from discord.utils import MISSING
 
@@ -72,6 +70,7 @@ def test_free_function_autocomplete():
 
 def test_invalid_free_function_autocomplete():
     with pytest.raises(TypeError):
+
         @app_commands.command()
         @app_commands.autocomplete(name=invalid_free_function)
         async def cmd(interaction: discord.Interaction, name: str):
@@ -96,9 +95,9 @@ second_instance = X()
 def test_multiple_transformer_autocomplete():
     @app_commands.command()
     async def cmd(
-            interaction: discord.Interaction,
-            param: app_commands.Transform[str, first_instance],
-            second: app_commands.Transform[str, second_instance],
+        interaction: discord.Interaction,
+        param: app_commands.Transform[str, first_instance],
+        second: app_commands.Transform[str, second_instance],
     ):
         ...
 
@@ -127,6 +126,7 @@ def test_bound_function_autocomplete():
 
 def test_invalid_bound_function_autocomplete():
     with pytest.raises(TypeError):
+
         @app_commands.command()
         @app_commands.autocomplete(name=invalid_bound_autocomplete)  # type: ignore
         async def cmd(interaction: discord.Interaction, name: str):

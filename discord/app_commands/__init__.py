@@ -9,12 +9,12 @@ Application commands support for the Discord API
 
 """
 
-from . import checks as checks
-from .checks import Cooldown as Cooldown
 from .commands import *
 from .errors import *
 from .models import *
+from .tree import *
 from .namespace import *
 from .transformers import *
 from .translator import *
-from .tree import *
+from . import checks as checks
+from .checks import Cooldown as Cooldown

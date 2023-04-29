@@ -23,7 +23,6 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-
 from typing import Union, Sequence, TYPE_CHECKING, Any
 
 # fmt: off
@@ -86,12 +85,12 @@ class AllowedMentions:
     __slots__ = ('everyone', 'users', 'roles', 'replied_user')
 
     def __init__(
-            self,
-            *,
-            everyone: bool = default,
-            users: Union[bool, Sequence[Snowflake]] = default,
-            roles: Union[bool, Sequence[Snowflake]] = default,
-            replied_user: bool = default,
+        self,
+        *,
+        everyone: bool = default,
+        users: Union[bool, Sequence[Snowflake]] = default,
+        roles: Union[bool, Sequence[Snowflake]] = default,
+        replied_user: bool = default,
     ):
         self.everyone: bool = everyone
         self.users: Union[bool, Sequence[Snowflake]] = users

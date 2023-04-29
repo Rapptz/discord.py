@@ -19,7 +19,7 @@ body:
     attributes:
       label: Reproduction Steps
       description: >
-        What you did to make it happen.
+         What you did to make it happen.
     validations:
       required: true
   - type: textarea

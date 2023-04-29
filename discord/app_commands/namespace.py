@@ -25,14 +25,13 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, Iterable, Iterator, List, NamedTuple, Tuple
-
-from .models import AppCommandChannel, AppCommandThread
-from ..channel import PartialMessageable
-from ..enums import AppCommandOptionType
 from ..member import Member
-from ..message import Message, Attachment
 from ..object import Object
 from ..role import Role
+from ..message import Message, Attachment
+from ..channel import PartialMessageable
+from ..enums import AppCommandOptionType
+from .models import AppCommandChannel, AppCommandThread
 
 if TYPE_CHECKING:
     from ..interactions import Interaction
@@ -134,10 +133,10 @@ class Namespace:
     """
 
     def __init__(
-            self,
-            interaction: Interaction,
-            resolved: ResolvedData,
-            options: List[ApplicationCommandInteractionDataOption],
+        self,
+        interaction: Interaction,
+        resolved: ResolvedData,
+        options: List[ApplicationCommandInteractionDataOption],
     ):
         completed = self._get_resolved_items(interaction, resolved)
         for option in options:

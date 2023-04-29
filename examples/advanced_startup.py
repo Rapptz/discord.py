@@ -4,24 +4,24 @@ import asyncio
 import logging
 import logging.handlers
 import os
+
 from typing import List, Optional
 
 import asyncpg  # asyncpg is not a dependency of the discord.py, and is only included here for illustrative purposes.
-from aiohttp import ClientSession
-
 import discord
 from discord.ext import commands
+from aiohttp import ClientSession
 
 
 class CustomBot(commands.Bot):
     def __init__(
-            self,
-            *args,
-            initial_extensions: List[str],
-            db_pool: asyncpg.Pool,
-            web_client: ClientSession,
-            testing_guild_id: Optional[int] = None,
-            **kwargs,
+        self,
+        *args,
+        initial_extensions: List[str],
+        db_pool: asyncpg.Pool,
+        web_client: ClientSession,
+        testing_guild_id: Optional[int] = None,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.db_pool = db_pool
@@ -52,6 +52,7 @@ class CustomBot(commands.Bot):
 
 
 async def main():
+
     # When taking over how the bot process is run, you become responsible for a few additional things.
 
     # 1. logging
@@ -87,8 +88,8 @@ async def main():
         # 2. We become responsible for starting the bot.
 
         exts = ['general', 'mod', 'dice']
-        async with CustomBot(commands.when_mentioned, db_pool=pool, web_client=our_client,
-                             initial_extensions=exts) as bot:
+        async with CustomBot(commands.when_mentioned, db_pool=pool, web_client=our_client, initial_extensions=exts) as bot:
+
             await bot.start(os.getenv('TOKEN', ''))
 
 

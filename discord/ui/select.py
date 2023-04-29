@@ -22,22 +22,21 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
-
+from typing import Any, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict, overload
+from contextvars import ContextVar
 import inspect
 import os
-from contextvars import ContextVar
-from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict, overload
 
 from .item import Item, ItemCallbackType
-from ..app_commands.namespace import Namespace
+from ..enums import ChannelType, ComponentType
+from ..partial_emoji import PartialEmoji
+from ..emoji import Emoji
+from ..utils import MISSING
 from ..components import (
     SelectOption,
     SelectMenu,
 )
-from ..emoji import Emoji
-from ..enums import ChannelType, ComponentType
-from ..partial_emoji import PartialEmoji
-from ..utils import MISSING
+from ..app_commands.namespace import Namespace
 
 __all__ = (
     'Select',
@@ -51,6 +50,7 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias, Self
 
+    from .view import View
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import SelectMessageComponentInteractionData
     from ..app_commands import AppCommandChannel, AppCommandThread
@@ -117,17 +117,17 @@ class BaseSelect(Item[V]):
     )
 
     def __init__(
-            self,
-            type: ValidSelectType,
-            *,
-            custom_id: str = MISSING,
-            row: Optional[int] = None,
-            placeholder: Optional[str] = None,
-            min_values: Optional[int] = None,
-            max_values: Optional[int] = None,
-            disabled: bool = False,
-            options: List[SelectOption] = MISSING,
-            channel_types: List[ChannelType] = MISSING,
+        self,
+        type: ValidSelectType,
+        *,
+        custom_id: str = MISSING,
+        row: Optional[int] = None,
+        placeholder: Optional[str] = None,
+        min_values: Optional[int] = None,
+        max_values: Optional[int] = None,
+        disabled: bool = False,
+        options: List[SelectOption] = MISSING,
+        channel_types: List[ChannelType] = MISSING,
     ) -> None:
         super().__init__()
         self._provided_custom_id = custom_id is not MISSING
@@ -273,15 +273,15 @@ class Select(BaseSelect[V]):
     __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('options',)
 
     def __init__(
-            self,
-            *,
-            custom_id: str = MISSING,
-            placeholder: Optional[str] = None,
-            min_values: int = 1,
-            max_values: int = 1,
-            options: List[SelectOption] = MISSING,
-            disabled: bool = False,
-            row: Optional[int] = None,
+        self,
+        *,
+        custom_id: str = MISSING,
+        placeholder: Optional[str] = None,
+        min_values: int = 1,
+        max_values: int = 1,
+        options: List[SelectOption] = MISSING,
+        disabled: bool = False,
+        row: Optional[int] = None,
     ) -> None:
         super().__init__(
             self.type,
@@ -319,13 +319,13 @@ class Select(BaseSelect[V]):
         self._underlying.options = value
 
     def add_option(
-            self,
-            *,
-            label: str,
-            value: str = MISSING,
-            description: Optional[str] = None,
-            emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
-            default: bool = False,
+        self,
+        *,
+        label: str,
+        value: str = MISSING,
+        description: Optional[str] = None,
+        emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
+        default: bool = False,
     ) -> None:
         """Adds an option to the select menu.
 
@@ -418,14 +418,14 @@ class UserSelect(BaseSelect[V]):
     """
 
     def __init__(
-            self,
-            *,
-            custom_id: str = MISSING,
-            placeholder: Optional[str] = None,
-            min_values: int = 1,
-            max_values: int = 1,
-            disabled: bool = False,
-            row: Optional[int] = None,
+        self,
+        *,
+        custom_id: str = MISSING,
+        placeholder: Optional[str] = None,
+        min_values: int = 1,
+        max_values: int = 1,
+        disabled: bool = False,
+        row: Optional[int] = None,
     ) -> None:
         super().__init__(
             self.type,
@@ -487,14 +487,14 @@ class RoleSelect(BaseSelect[V]):
     """
 
     def __init__(
-            self,
-            *,
-            custom_id: str = MISSING,
-            placeholder: Optional[str] = None,
-            min_values: int = 1,
-            max_values: int = 1,
-            disabled: bool = False,
-            row: Optional[int] = None,
+        self,
+        *,
+        custom_id: str = MISSING,
+        placeholder: Optional[str] = None,
+        min_values: int = 1,
+        max_values: int = 1,
+        disabled: bool = False,
+        row: Optional[int] = None,
     ) -> None:
         super().__init__(
             self.type,
@@ -551,14 +551,14 @@ class MentionableSelect(BaseSelect[V]):
     """
 
     def __init__(
-            self,
-            *,
-            custom_id: str = MISSING,
-            placeholder: Optional[str] = None,
-            min_values: int = 1,
-            max_values: int = 1,
-            disabled: bool = False,
-            row: Optional[int] = None,
+        self,
+        *,
+        custom_id: str = MISSING,
+        placeholder: Optional[str] = None,
+        min_values: int = 1,
+        max_values: int = 1,
+        disabled: bool = False,
+        row: Optional[int] = None,
     ) -> None:
         super().__init__(
             self.type,
@@ -624,15 +624,15 @@ class ChannelSelect(BaseSelect[V]):
     __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('channel_types',)
 
     def __init__(
-            self,
-            *,
-            custom_id: str = MISSING,
-            channel_types: List[ChannelType] = MISSING,
-            placeholder: Optional[str] = None,
-            min_values: int = 1,
-            max_values: int = 1,
-            disabled: bool = False,
-            row: Optional[int] = None,
+        self,
+        *,
+        custom_id: str = MISSING,
+        channel_types: List[ChannelType] = MISSING,
+        placeholder: Optional[str] = None,
+        min_values: int = 1,
+        max_values: int = 1,
+        disabled: bool = False,
+        row: Optional[int] = None,
     ) -> None:
         super().__init__(
             self.type,
@@ -672,95 +672,95 @@ class ChannelSelect(BaseSelect[V]):
 
 @overload
 def select(
-        *,
-        cls: Type[SelectT] = Select[V],
-        options: List[SelectOption] = MISSING,
-        channel_types: List[ChannelType] = ...,
-        placeholder: Optional[str] = ...,
-        custom_id: str = ...,
-        min_values: int = ...,
-        max_values: int = ...,
-        disabled: bool = ...,
-        row: Optional[int] = ...,
+    *,
+    cls: Type[SelectT] = Select[V],
+    options: List[SelectOption] = MISSING,
+    channel_types: List[ChannelType] = ...,
+    placeholder: Optional[str] = ...,
+    custom_id: str = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, SelectT]:
     ...
 
 
 @overload
 def select(
-        *,
-        cls: Type[UserSelectT] = UserSelect[V],
-        options: List[SelectOption] = MISSING,
-        channel_types: List[ChannelType] = ...,
-        placeholder: Optional[str] = ...,
-        custom_id: str = ...,
-        min_values: int = ...,
-        max_values: int = ...,
-        disabled: bool = ...,
-        row: Optional[int] = ...,
+    *,
+    cls: Type[UserSelectT] = UserSelect[V],
+    options: List[SelectOption] = MISSING,
+    channel_types: List[ChannelType] = ...,
+    placeholder: Optional[str] = ...,
+    custom_id: str = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, UserSelectT]:
     ...
 
 
 @overload
 def select(
-        *,
-        cls: Type[RoleSelectT] = RoleSelect[V],
-        options: List[SelectOption] = MISSING,
-        channel_types: List[ChannelType] = ...,
-        placeholder: Optional[str] = ...,
-        custom_id: str = ...,
-        min_values: int = ...,
-        max_values: int = ...,
-        disabled: bool = ...,
-        row: Optional[int] = ...,
+    *,
+    cls: Type[RoleSelectT] = RoleSelect[V],
+    options: List[SelectOption] = MISSING,
+    channel_types: List[ChannelType] = ...,
+    placeholder: Optional[str] = ...,
+    custom_id: str = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, RoleSelectT]:
     ...
 
 
 @overload
 def select(
-        *,
-        cls: Type[ChannelSelectT] = ChannelSelect[V],
-        options: List[SelectOption] = MISSING,
-        channel_types: List[ChannelType] = ...,
-        placeholder: Optional[str] = ...,
-        custom_id: str = ...,
-        min_values: int = ...,
-        max_values: int = ...,
-        disabled: bool = ...,
-        row: Optional[int] = ...,
+    *,
+    cls: Type[ChannelSelectT] = ChannelSelect[V],
+    options: List[SelectOption] = MISSING,
+    channel_types: List[ChannelType] = ...,
+    placeholder: Optional[str] = ...,
+    custom_id: str = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, ChannelSelectT]:
     ...
 
 
 @overload
 def select(
-        *,
-        cls: Type[MentionableSelectT] = MentionableSelect[V],
-        options: List[SelectOption] = MISSING,
-        channel_types: List[ChannelType] = MISSING,
-        placeholder: Optional[str] = ...,
-        custom_id: str = ...,
-        min_values: int = ...,
-        max_values: int = ...,
-        disabled: bool = ...,
-        row: Optional[int] = ...,
+    *,
+    cls: Type[MentionableSelectT] = MentionableSelect[V],
+    options: List[SelectOption] = MISSING,
+    channel_types: List[ChannelType] = MISSING,
+    placeholder: Optional[str] = ...,
+    custom_id: str = ...,
+    min_values: int = ...,
+    max_values: int = ...,
+    disabled: bool = ...,
+    row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, MentionableSelectT]:
     ...
 
 
 def select(
-        *,
-        cls: Type[BaseSelectT] = Select[V],
-        options: List[SelectOption] = MISSING,
-        channel_types: List[ChannelType] = MISSING,
-        placeholder: Optional[str] = None,
-        custom_id: str = MISSING,
-        min_values: int = 1,
-        max_values: int = 1,
-        disabled: bool = False,
-        row: Optional[int] = None,
+    *,
+    cls: Type[BaseSelectT] = Select[V],
+    options: List[SelectOption] = MISSING,
+    channel_types: List[ChannelType] = MISSING,
+    placeholder: Optional[str] = None,
+    custom_id: str = MISSING,
+    min_values: int = 1,
+    max_values: int = 1,
+    disabled: bool = False,
+    row: Optional[int] = None,
 ) -> SelectCallbackDecorator[V, BaseSelectT]:
     """A decorator that attaches a select menu to a component.
 

@@ -30,21 +30,23 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import json
-import logging
-import re
 import threading
+import logging
+import json
 import time
-import weakref
-from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Sequence, Tuple, Union, TypeVar, Type, overload
+import re
+
 from urllib.parse import quote as urlquote
+from typing import Any, Dict, List, Literal, Optional, TYPE_CHECKING, Sequence, Tuple, Union, TypeVar, Type, overload
+import weakref
+
+from .. import utils
+from ..errors import HTTPException, Forbidden, NotFound, DiscordServerError
+from ..message import Message, MessageFlags
+from ..http import Route, handle_message_parameters
+from ..channel import PartialMessageable
 
 from .async_ import BaseWebhook, _WebhookState
-from .. import utils
-from ..channel import PartialMessageable
-from ..errors import HTTPException, Forbidden, NotFound, DiscordServerError
-from ..http import Route, handle_message_parameters
-from ..message import Message, MessageFlags
 
 __all__ = (
     'SyncWebhook',
@@ -93,10 +95,10 @@ class DeferredLock:
         self.delta = delta
 
     def __exit__(
-            self,
-            exc_type: Optional[Type[BE]],
-            exc: Optional[BE],
-            traceback: Optional[TracebackType],
+        self,
+        exc_type: Optional[Type[BE]],
+        exc: Optional[BE],
+        traceback: Optional[TracebackType],
     ) -> None:
         if self.delta:
             time.sleep(self.delta)
@@ -108,16 +110,16 @@ class WebhookAdapter:
         self._locks: weakref.WeakValueDictionary[Any, threading.Lock] = weakref.WeakValueDictionary()
 
     def request(
-            self,
-            route: Route,
-            session: Session,
-            *,
-            payload: Optional[Dict[str, Any]] = None,
-            multipart: Optional[List[Dict[str, Any]]] = None,
-            files: Optional[Sequence[File]] = None,
-            reason: Optional[str] = None,
-            auth_token: Optional[str] = None,
-            params: Optional[Dict[str, Any]] = None,
+        self,
+        route: Route,
+        session: Session,
+        *,
+        payload: Optional[Dict[str, Any]] = None,
+        multipart: Optional[List[Dict[str, Any]]] = None,
+        files: Optional[Sequence[File]] = None,
+        reason: Optional[str] = None,
+        auth_token: Optional[str] = None,
+        params: Optional[Dict[str, Any]] = None,
     ) -> Any:
         headers: Dict[str, str] = {}
         files = files or []
@@ -162,7 +164,7 @@ class WebhookAdapter:
 
                 try:
                     with session.request(
-                            method, url, data=to_send, files=file_data, headers=headers, params=params
+                        method, url, data=to_send, files=file_data, headers=headers, params=params
                     ) as response:
                         _log.debug(
                             'Webhook ID %s with %s %s has returned status code %s',
@@ -230,62 +232,62 @@ class WebhookAdapter:
             raise RuntimeError('Unreachable code in HTTP handling.')
 
     def delete_webhook(
-            self,
-            webhook_id: int,
-            *,
-            token: Optional[str] = None,
-            session: Session,
-            reason: Optional[str] = None,
+        self,
+        webhook_id: int,
+        *,
+        token: Optional[str] = None,
+        session: Session,
+        reason: Optional[str] = None,
     ) -> None:
         route = Route('DELETE', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session, reason=reason, auth_token=token)
 
     def delete_webhook_with_token(
-            self,
-            webhook_id: int,
-            token: str,
-            *,
-            session: Session,
-            reason: Optional[str] = None,
+        self,
+        webhook_id: int,
+        token: str,
+        *,
+        session: Session,
+        reason: Optional[str] = None,
     ) -> None:
         route = Route('DELETE', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session, reason=reason)
 
     def edit_webhook(
-            self,
-            webhook_id: int,
-            token: str,
-            payload: Dict[str, Any],
-            *,
-            session: Session,
-            reason: Optional[str] = None,
+        self,
+        webhook_id: int,
+        token: str,
+        payload: Dict[str, Any],
+        *,
+        session: Session,
+        reason: Optional[str] = None,
     ) -> WebhookPayload:
         route = Route('PATCH', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session, reason=reason, payload=payload, auth_token=token)
 
     def edit_webhook_with_token(
-            self,
-            webhook_id: int,
-            token: str,
-            payload: Dict[str, Any],
-            *,
-            session: Session,
-            reason: Optional[str] = None,
+        self,
+        webhook_id: int,
+        token: str,
+        payload: Dict[str, Any],
+        *,
+        session: Session,
+        reason: Optional[str] = None,
     ) -> WebhookPayload:
         route = Route('PATCH', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session, reason=reason, payload=payload)
 
     def execute_webhook(
-            self,
-            webhook_id: int,
-            token: str,
-            *,
-            session: Session,
-            payload: Optional[Dict[str, Any]] = None,
-            multipart: Optional[List[Dict[str, Any]]] = None,
-            files: Optional[Sequence[File]] = None,
-            thread_id: Optional[int] = None,
-            wait: bool = False,
+        self,
+        webhook_id: int,
+        token: str,
+        *,
+        session: Session,
+        payload: Optional[Dict[str, Any]] = None,
+        multipart: Optional[List[Dict[str, Any]]] = None,
+        files: Optional[Sequence[File]] = None,
+        thread_id: Optional[int] = None,
+        wait: bool = False,
     ) -> MessagePayload:
         params = {'wait': int(wait)}
         if thread_id:
@@ -294,13 +296,13 @@ class WebhookAdapter:
         return self.request(route, session, payload=payload, multipart=multipart, files=files, params=params)
 
     def get_webhook_message(
-            self,
-            webhook_id: int,
-            token: str,
-            message_id: int,
-            *,
-            session: Session,
-            thread_id: Optional[int] = None,
+        self,
+        webhook_id: int,
+        token: str,
+        message_id: int,
+        *,
+        session: Session,
+        thread_id: Optional[int] = None,
     ) -> MessagePayload:
         route = Route(
             'GET',
@@ -313,16 +315,16 @@ class WebhookAdapter:
         return self.request(route, session, params=params)
 
     def edit_webhook_message(
-            self,
-            webhook_id: int,
-            token: str,
-            message_id: int,
-            *,
-            session: Session,
-            payload: Optional[Dict[str, Any]] = None,
-            multipart: Optional[List[Dict[str, Any]]] = None,
-            files: Optional[Sequence[File]] = None,
-            thread_id: Optional[int] = None,
+        self,
+        webhook_id: int,
+        token: str,
+        message_id: int,
+        *,
+        session: Session,
+        payload: Optional[Dict[str, Any]] = None,
+        multipart: Optional[List[Dict[str, Any]]] = None,
+        files: Optional[Sequence[File]] = None,
+        thread_id: Optional[int] = None,
     ) -> MessagePayload:
         route = Route(
             'PATCH',
@@ -335,13 +337,13 @@ class WebhookAdapter:
         return self.request(route, session, payload=payload, multipart=multipart, files=files, params=params)
 
     def delete_webhook_message(
-            self,
-            webhook_id: int,
-            token: str,
-            message_id: int,
-            *,
-            session: Session,
-            thread_id: Optional[int] = None,
+        self,
+        webhook_id: int,
+        token: str,
+        message_id: int,
+        *,
+        session: Session,
+        thread_id: Optional[int] = None,
     ) -> None:
         route = Route(
             'DELETE',
@@ -354,21 +356,21 @@ class WebhookAdapter:
         return self.request(route, session, params=params)
 
     def fetch_webhook(
-            self,
-            webhook_id: int,
-            token: str,
-            *,
-            session: Session,
+        self,
+        webhook_id: int,
+        token: str,
+        *,
+        session: Session,
     ) -> WebhookPayload:
         route = Route('GET', '/webhooks/{webhook_id}', webhook_id=webhook_id)
         return self.request(route, session=session, auth_token=token)
 
     def fetch_webhook_with_token(
-            self,
-            webhook_id: int,
-            token: str,
-            *,
-            session: Session,
+        self,
+        webhook_id: int,
+        token: str,
+        *,
+        session: Session,
     ) -> WebhookPayload:
         route = Route('GET', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
         return self.request(route, session=session)
@@ -402,13 +404,13 @@ class SyncWebhookMessage(Message):
     _state: _WebhookState
 
     def edit(
-            self,
-            *,
-            content: Optional[str] = MISSING,
-            embeds: Sequence[Embed] = MISSING,
-            embed: Optional[Embed] = MISSING,
-            attachments: Sequence[Union[Attachment, File]] = MISSING,
-            allowed_mentions: Optional[AllowedMentions] = None,
+        self,
+        *,
+        content: Optional[str] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        embed: Optional[Embed] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
+        allowed_mentions: Optional[AllowedMentions] = None,
     ) -> SyncWebhookMessage:
         """Edits the message.
 
@@ -596,11 +598,11 @@ class SyncWebhook(BaseWebhook):
     __slots__: Tuple[str, ...] = ('session',)
 
     def __init__(
-            self,
-            data: WebhookPayload,
-            session: Session,
-            token: Optional[str] = None,
-            state: Optional[Union[ConnectionState, _WebhookState]] = None,
+        self,
+        data: WebhookPayload,
+        session: Session,
+        token: Optional[str] = None,
+        state: Optional[Union[ConnectionState, _WebhookState]] = None,
     ) -> None:
         super().__init__(data, token, state)
         self.session: Session = session
@@ -614,8 +616,7 @@ class SyncWebhook(BaseWebhook):
         return f'https://discord.com/api/webhooks/{self.id}/{self.token}'
 
     @classmethod
-    def partial(cls, id: int, token: str, *, session: Session = MISSING,
-                bot_token: Optional[str] = None) -> SyncWebhook:
+    def partial(cls, id: int, token: str, *, session: Session = MISSING, bot_token: Optional[str] = None) -> SyncWebhook:
         """Creates a partial :class:`Webhook`.
 
         Parameters
@@ -681,8 +682,7 @@ class SyncWebhook(BaseWebhook):
             A partial :class:`SyncWebhook`.
             A partial :class:`SyncWebhook` is just a :class:`SyncWebhook` object with an ID and a token.
         """
-        m = re.search(r'discord(?:app)?\.com/api/webhooks/(?P<id>[0-9]{17,20})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})',
-                      url)
+        m = re.search(r'discord(?:app)?\.com/api/webhooks/(?P<id>[0-9]{17,20})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
         if m is None:
             raise ValueError('Invalid webhook URL given.')
 
@@ -774,13 +774,13 @@ class SyncWebhook(BaseWebhook):
             adapter.delete_webhook_with_token(self.id, self.token, session=self.session, reason=reason)
 
     def edit(
-            self,
-            *,
-            reason: Optional[str] = None,
-            name: Optional[str] = MISSING,
-            avatar: Optional[bytes] = MISSING,
-            channel: Optional[Snowflake] = None,
-            prefer_auth: bool = True,
+        self,
+        *,
+        reason: Optional[str] = None,
+        name: Optional[str] = MISSING,
+        avatar: Optional[bytes] = MISSING,
+        channel: Optional[Snowflake] = None,
+        prefer_auth: bool = True,
     ) -> SyncWebhook:
         """Edits this Webhook.
 
@@ -838,8 +838,7 @@ class SyncWebhook(BaseWebhook):
         elif prefer_auth and self.auth_token:
             data = adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
         elif self.token:
-            data = adapter.edit_webhook_with_token(self.id, self.token, payload=payload, session=self.session,
-                                                   reason=reason)
+            data = adapter.edit_webhook_with_token(self.id, self.token, payload=payload, session=self.session, reason=reason)
 
         if data is None:
             raise RuntimeError('Unreachable code hit: data was not assigned')
@@ -849,70 +848,69 @@ class SyncWebhook(BaseWebhook):
     def _create_message(self, data: MessagePayload, *, thread: Snowflake = MISSING) -> SyncWebhookMessage:
         state = _WebhookState(self, parent=self._state, thread=thread)
         # state may be artificial (unlikely at this point...)
-        channel = self.channel or PartialMessageable(state=self._state, guild_id=self.guild_id,
-                                                     id=int(data['channel_id']))  # type: ignore
+        channel = self.channel or PartialMessageable(state=self._state, guild_id=self.guild_id, id=int(data['channel_id']))  # type: ignore
         # state is artificial
         return SyncWebhookMessage(data=data, state=state, channel=channel)  # type: ignore
 
     @overload
     def send(
-            self,
-            content: str = MISSING,
-            *,
-            username: str = MISSING,
-            avatar_url: Any = MISSING,
-            tts: bool = MISSING,
-            file: File = MISSING,
-            files: Sequence[File] = MISSING,
-            embed: Embed = MISSING,
-            embeds: Sequence[Embed] = MISSING,
-            allowed_mentions: AllowedMentions = MISSING,
-            thread: Snowflake = MISSING,
-            thread_name: str = MISSING,
-            wait: Literal[True],
-            suppress_embeds: bool = MISSING,
-            silent: bool = MISSING,
+        self,
+        content: str = MISSING,
+        *,
+        username: str = MISSING,
+        avatar_url: Any = MISSING,
+        tts: bool = MISSING,
+        file: File = MISSING,
+        files: Sequence[File] = MISSING,
+        embed: Embed = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        allowed_mentions: AllowedMentions = MISSING,
+        thread: Snowflake = MISSING,
+        thread_name: str = MISSING,
+        wait: Literal[True],
+        suppress_embeds: bool = MISSING,
+        silent: bool = MISSING,
     ) -> SyncWebhookMessage:
         ...
 
     @overload
     def send(
-            self,
-            content: str = MISSING,
-            *,
-            username: str = MISSING,
-            avatar_url: Any = MISSING,
-            tts: bool = MISSING,
-            file: File = MISSING,
-            files: Sequence[File] = MISSING,
-            embed: Embed = MISSING,
-            embeds: Sequence[Embed] = MISSING,
-            allowed_mentions: AllowedMentions = MISSING,
-            thread: Snowflake = MISSING,
-            thread_name: str = MISSING,
-            wait: Literal[False] = ...,
-            suppress_embeds: bool = MISSING,
-            silent: bool = MISSING,
+        self,
+        content: str = MISSING,
+        *,
+        username: str = MISSING,
+        avatar_url: Any = MISSING,
+        tts: bool = MISSING,
+        file: File = MISSING,
+        files: Sequence[File] = MISSING,
+        embed: Embed = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        allowed_mentions: AllowedMentions = MISSING,
+        thread: Snowflake = MISSING,
+        thread_name: str = MISSING,
+        wait: Literal[False] = ...,
+        suppress_embeds: bool = MISSING,
+        silent: bool = MISSING,
     ) -> None:
         ...
 
     def send(
-            self,
-            content: str = MISSING,
-            *,
-            username: str = MISSING,
-            avatar_url: Any = MISSING,
-            tts: bool = False,
-            file: File = MISSING,
-            files: Sequence[File] = MISSING,
-            embed: Embed = MISSING,
-            embeds: Sequence[Embed] = MISSING,
-            allowed_mentions: AllowedMentions = MISSING,
-            thread: Snowflake = MISSING,
-            thread_name: str = MISSING,
-            wait: bool = False,
-            suppress_embeds: bool = False,
-            silent: bool = False,
+        self,
+        content: str = MISSING,
+        *,
+        username: str = MISSING,
+        avatar_url: Any = MISSING,
+        tts: bool = False,
+        file: File = MISSING,
+        files: Sequence[File] = MISSING,
+        embed: Embed = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        allowed_mentions: AllowedMentions = MISSING,
+        thread: Snowflake = MISSING,
+        thread_name: str = MISSING,
+        wait: bool = False,
+        suppress_embeds: bool = False,
+        silent: bool = False,
     ) -> Optional[SyncWebhookMessage]:
         """Sends a message using the webhook.
 
@@ -1017,18 +1015,18 @@ class SyncWebhook(BaseWebhook):
             raise TypeError('Cannot mix thread_name and thread keyword arguments.')
 
         with handle_message_parameters(
-                content=content,
-                username=username,
-                avatar_url=avatar_url,
-                tts=tts,
-                file=file,
-                files=files,
-                embed=embed,
-                embeds=embeds,
-                thread_name=thread_name,
-                allowed_mentions=allowed_mentions,
-                previous_allowed_mentions=previous_mentions,
-                flags=flags,
+            content=content,
+            username=username,
+            avatar_url=avatar_url,
+            tts=tts,
+            file=file,
+            files=files,
+            embed=embed,
+            embeds=embeds,
+            thread_name=thread_name,
+            allowed_mentions=allowed_mentions,
+            previous_allowed_mentions=previous_mentions,
+            flags=flags,
         ) as params:
             adapter: WebhookAdapter = _get_webhook_adapter()
             thread_id: Optional[int] = None
@@ -1096,15 +1094,15 @@ class SyncWebhook(BaseWebhook):
         return self._create_message(data, thread=thread)
 
     def edit_message(
-            self,
-            message_id: int,
-            *,
-            content: Optional[str] = MISSING,
-            embeds: Sequence[Embed] = MISSING,
-            embed: Optional[Embed] = MISSING,
-            attachments: Sequence[Union[Attachment, File]] = MISSING,
-            allowed_mentions: Optional[AllowedMentions] = None,
-            thread: Snowflake = MISSING,
+        self,
+        message_id: int,
+        *,
+        content: Optional[str] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        embed: Optional[Embed] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
+        allowed_mentions: Optional[AllowedMentions] = None,
+        thread: Snowflake = MISSING,
     ) -> SyncWebhookMessage:
         """Edits a message owned by this webhook.
 
@@ -1155,12 +1153,12 @@ class SyncWebhook(BaseWebhook):
 
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         with handle_message_parameters(
-                content=content,
-                attachments=attachments,
-                embed=embed,
-                embeds=embeds,
-                allowed_mentions=allowed_mentions,
-                previous_allowed_mentions=previous_mentions,
+            content=content,
+            attachments=attachments,
+            embed=embed,
+            embeds=embeds,
+            allowed_mentions=allowed_mentions,
+            previous_allowed_mentions=previous_mentions,
         ) as params:
             thread_id: Optional[int] = None
             if thread is not MISSING:

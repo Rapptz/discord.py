@@ -30,16 +30,17 @@ import os
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, ClassVar, List
 
+from ..utils import MISSING, find
+from .._types import ClientT
 from .item import Item
 from .view import View
-from .._types import ClientT
-from ..utils import MISSING, find
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..interactions import Interaction
     from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
+
 
 # fmt: off
 __all__ = (
@@ -120,11 +121,11 @@ class Modal(View):
         return children
 
     def __init__(
-            self,
-            *,
-            title: str = MISSING,
-            timeout: Optional[float] = None,
-            custom_id: str = MISSING,
+        self,
+        *,
+        title: str = MISSING,
+        timeout: Optional[float] = None,
+        custom_id: str = MISSING,
     ) -> None:
         if title is MISSING and getattr(self, 'title', MISSING) is MISSING:
             raise ValueError('Modal must have a title')
@@ -163,21 +164,18 @@ class Modal(View):
         """
         _log.error('Ignoring exception in modal %r:', self, exc_info=error)
 
-    def _refresh(self, interaction: Interaction,
-                 components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
+    def _refresh(self, interaction: Interaction, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
         for component in components:
             if component['type'] == 1:
                 self._refresh(interaction, component['components'])
             else:
                 item = find(lambda i: i.custom_id == component['custom_id'], self._children)  # type: ignore
                 if item is None:
-                    _log.debug("Modal interaction referencing unknown item custom_id %s. Discarding",
-                               component['custom_id'])
+                    _log.debug("Modal interaction referencing unknown item custom_id %s. Discarding", component['custom_id'])
                     continue
                 item._refresh_state(interaction, component)  # type: ignore
 
-    async def _scheduled_task(self, interaction: Interaction,
-                              components: List[ModalSubmitComponentInteractionDataPayload]):
+    async def _scheduled_task(self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]):
         try:
             self._refresh_timeout()
             self._refresh(interaction, components)
@@ -195,7 +193,7 @@ class Modal(View):
             self.stop()
 
     def _dispatch_submit(
-            self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]
+        self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]
     ) -> None:
         asyncio.create_task(self._scheduled_task(interaction, components), name=f'discord-ui-modal-dispatch-{self.id}')
 

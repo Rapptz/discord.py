@@ -27,17 +27,19 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Literal, Optional, Tuple, TypeVar
 
-from .item import Item
 from ..components import TextInput as TextInputComponent
 from ..enums import ComponentType, TextStyle
 from ..utils import MISSING
+from .item import Item
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from ..types.components import TextInput as TextInputPayload
     from ..types.interactions import ModalSubmitTextInputInteractionData as ModalSubmitTextInputInteractionDataPayload
+    from .view import View
     from ..interactions import Interaction
+
 
 # fmt: off
 __all__ = (
@@ -93,17 +95,17 @@ class TextInput(Item[V]):
     )
 
     def __init__(
-            self,
-            *,
-            label: str,
-            style: TextStyle = TextStyle.short,
-            custom_id: str = MISSING,
-            placeholder: Optional[str] = None,
-            default: Optional[str] = None,
-            required: bool = True,
-            min_length: Optional[int] = None,
-            max_length: Optional[int] = None,
-            row: Optional[int] = None,
+        self,
+        *,
+        label: str,
+        style: TextStyle = TextStyle.short,
+        custom_id: str = MISSING,
+        placeholder: Optional[str] = None,
+        default: Optional[str] = None,
+        required: bool = True,
+        min_length: Optional[int] = None,
+        max_length: Optional[int] = None,
+        row: Optional[int] = None,
     ) -> None:
         super().__init__()
         self._value: Optional[str] = default

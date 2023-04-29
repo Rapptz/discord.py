@@ -26,10 +26,9 @@ from __future__ import annotations
 
 import datetime
 from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Tuple
-
-from .enums import try_enum, ExpireBehaviour
-from .user import User
 from .utils import _get_as_snowflake, parse_time, MISSING
+from .user import User
+from .enums import try_enum, ExpireBehaviour
 
 __all__ = (
     'IntegrationAccount',
@@ -221,11 +220,11 @@ class StreamIntegration(Integration):
         return self.guild.get_role(self._role_id)  # type: ignore
 
     async def edit(
-            self,
-            *,
-            expire_behaviour: ExpireBehaviour = MISSING,
-            expire_grace_period: int = MISSING,
-            enable_emoticons: bool = MISSING,
+        self,
+        *,
+        expire_behaviour: ExpireBehaviour = MISSING,
+        expire_grace_period: int = MISSING,
+        enable_emoticons: bool = MISSING,
     ) -> None:
         """|coro|
 

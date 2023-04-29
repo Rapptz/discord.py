@@ -23,11 +23,11 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import Optional, TypedDict, List, Literal
-
 from typing_extensions import NotRequired
 
-from .member import MemberWithUser
 from .snowflake import Snowflake
+from .member import MemberWithUser
+
 
 SupportedModes = Literal['xsalsa20_poly1305_lite', 'xsalsa20_poly1305_suffix', 'xsalsa20_poly1305']
 

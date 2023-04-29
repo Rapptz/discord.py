@@ -31,17 +31,18 @@ from operator import attrgetter
 from typing import Any, Awaitable, Callable, Collection, Dict, List, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
 import discord.abc
+
 from . import utils
-from .activity import create_activity, ActivityTypes
 from .asset import Asset
-from .colour import Colour
+from .utils import MISSING
+from .user import BaseUser, User, _UserTag
+from .activity import create_activity, ActivityTypes
+from .permissions import Permissions
 from .enums import Status, try_enum
 from .errors import ClientException
-from .flags import MemberFlags
+from .colour import Colour
 from .object import Object
-from .permissions import Permissions
-from .user import BaseUser, User, _UserTag
-from .utils import MISSING
+from .flags import MemberFlags
 
 __all__ = (
     'VoiceState',
@@ -137,7 +138,7 @@ class VoiceState:
     )
 
     def __init__(
-            self, *, data: Union[VoiceStatePayload, GuildVoiceStatePayload], channel: Optional[VocalGuildChannel] = None
+        self, *, data: Union[VoiceStatePayload, GuildVoiceStatePayload], channel: Optional[VocalGuildChannel] = None
     ):
         self.session_id: Optional[str] = data.get('session_id')
         self._update(data, channel)
@@ -151,8 +152,7 @@ class VoiceState:
         self.mute: bool = data.get('mute', False)
         self.deaf: bool = data.get('deaf', False)
         self.suppress: bool = data.get('suppress', False)
-        self.requested_to_speak_at: Optional[datetime.datetime] = utils.parse_time(
-            data.get('request_to_speak_timestamp'))
+        self.requested_to_speak_at: Optional[datetime.datetime] = utils.parse_time(data.get('request_to_speak_timestamp'))
         self.channel: Optional[VocalGuildChannel] = channel
 
     def __repr__(self) -> str:
@@ -723,11 +723,11 @@ class Member(discord.abc.Messageable, _UserTag):
         return MemberFlags._from_value(self._flags)
 
     async def ban(
-            self,
-            *,
-            delete_message_days: int = MISSING,
-            delete_message_seconds: int = MISSING,
-            reason: Optional[str] = None,
+        self,
+        *,
+        delete_message_days: int = MISSING,
+        delete_message_seconds: int = MISSING,
+        reason: Optional[str] = None,
     ) -> None:
         """|coro|
 
@@ -755,17 +755,17 @@ class Member(discord.abc.Messageable, _UserTag):
         await self.guild.kick(self, reason=reason)
 
     async def edit(
-            self,
-            *,
-            nick: Optional[str] = MISSING,
-            mute: bool = MISSING,
-            deafen: bool = MISSING,
-            suppress: bool = MISSING,
-            roles: Collection[discord.abc.Snowflake] = MISSING,
-            voice_channel: Optional[VocalGuildChannel] = MISSING,
-            timed_out_until: Optional[datetime.datetime] = MISSING,
-            bypass_verification: bool = MISSING,
-            reason: Optional[str] = None,
+        self,
+        *,
+        nick: Optional[str] = MISSING,
+        mute: bool = MISSING,
+        deafen: bool = MISSING,
+        suppress: bool = MISSING,
+        roles: Collection[discord.abc.Snowflake] = MISSING,
+        voice_channel: Optional[VocalGuildChannel] = MISSING,
+        timed_out_until: Optional[datetime.datetime] = MISSING,
+        bypass_verification: bool = MISSING,
+        reason: Optional[str] = None,
     ) -> Optional[Member]:
         """|coro|
 
@@ -966,7 +966,7 @@ class Member(discord.abc.Messageable, _UserTag):
         await self.edit(voice_channel=channel, reason=reason)
 
     async def timeout(
-            self, until: Optional[Union[datetime.timedelta, datetime.datetime]], /, *, reason: Optional[str] = None
+        self, until: Optional[Union[datetime.timedelta, datetime.datetime]], /, *, reason: Optional[str] = None
     ) -> None:
         """|coro|
 

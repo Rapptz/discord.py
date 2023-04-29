@@ -26,9 +26,7 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import inspect
 import logging
-from collections.abc import Sequence
 from typing import (
     Any,
     Callable,
@@ -42,8 +40,10 @@ from typing import (
 )
 
 import aiohttp
-
 import discord
+import inspect
+
+from collections.abc import Sequence
 from discord.backoff import ExponentialBackoff
 from discord.utils import MISSING
 
@@ -132,18 +132,18 @@ class SleepHandle:
 class Loop(Generic[LF]):
     """A background task helper that abstracts the loop and reconnection logic for you.
 
-    The main interface to create this is through: func:`loop`.
+    The main interface to create this is through :func:`loop`.
     """
 
     def __init__(
-            self,
-            coro: LF,
-            seconds: float,
-            hours: float,
-            minutes: float,
-            time: Union[datetime.time, Sequence[datetime.time]],
-            count: Optional[int],
-            reconnect: bool,
+        self,
+        coro: LF,
+        seconds: float,
+        hours: float,
+        minutes: float,
+        time: Union[datetime.time, Sequence[datetime.time]],
+        count: Optional[int],
+        reconnect: bool,
     ) -> None:
         self.coro: LF = coro
         self.reconnect: bool = reconnect
@@ -458,7 +458,7 @@ class Loop(Generic[LF]):
     def add_exception_type(self, *exceptions: Type[BaseException]) -> None:
         r"""Adds exception types to be handled during the reconnect logic.
 
-        By default, the exception types handled are those handled by
+        By default the exception types handled are those handled by
         :meth:`discord.Client.connect`\, which includes a lot of internet disconnection
         errors.
 
@@ -597,7 +597,7 @@ class Loop(Generic[LF]):
 
         The coroutine must take only one argument the exception raised (except ``self`` in a class context).
 
-        By default, this logs to the library logger however it could be
+        By default this logs to the library logger however it could be
         overridden to have a different implementation.
 
         .. versionadded:: 1.4
@@ -652,7 +652,7 @@ class Loop(Generic[LF]):
         # to it in order to make the comparisons make sense.
         # For example, if given a list of times [0, 3, 18]
         # If it's 04:00 today then we know we have to wait until 18:00 today
-        # If it's 19:00 today then we know we have to wait until 00:00 tomorrow
+        # If it's 19:00 today then we know we we have to wait until 00:00 tomorrow
         # Note that timezones need to be taken into consideration for this to work.
         # If the timezone is set to UTC+9 and the now timezone is UTC
         # A conversion needs to be done.
@@ -668,11 +668,11 @@ class Loop(Generic[LF]):
             return None
 
     def _get_time_parameter(
-            self,
-            time: Union[datetime.time, Sequence[datetime.time]],
-            *,
-            dt: Type[datetime.time] = datetime.time,
-            utc: datetime.timezone = datetime.timezone.utc,
+        self,
+        time: Union[datetime.time, Sequence[datetime.time]],
+        *,
+        dt: Type[datetime.time] = datetime.time,
+        utc: datetime.timezone = datetime.timezone.utc,
     ) -> List[datetime.time]:
         if isinstance(time, dt):
             inner = time if time.tzinfo is not None else time.replace(tzinfo=utc)
@@ -696,12 +696,12 @@ class Loop(Generic[LF]):
         return ret
 
     def change_interval(
-            self,
-            *,
-            seconds: float = 0,
-            minutes: float = 0,
-            hours: float = 0,
-            time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
+        self,
+        *,
+        seconds: float = 0,
+        minutes: float = 0,
+        hours: float = 0,
+        time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
     ) -> None:
         """Changes the interval for the sleep time.
 
@@ -754,7 +754,7 @@ class Loop(Generic[LF]):
             self._time = self._get_time_parameter(time)
             self._sleep = self._seconds = self._minutes = self._hours = MISSING
 
-        # Only update the interval if we've run the body at least once
+        # Only update the interval if we've ran the body at least once
         if self.is_running() and self._last_iteration is not MISSING:
             self._next_iteration = self._get_next_sleep_time()
             if self._handle and not self._handle.done():
@@ -763,13 +763,13 @@ class Loop(Generic[LF]):
 
 
 def loop(
-        *,
-        seconds: float = MISSING,
-        minutes: float = MISSING,
-        hours: float = MISSING,
-        time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
-        count: Optional[int] = None,
-        reconnect: bool = True,
+    *,
+    seconds: float = MISSING,
+    minutes: float = MISSING,
+    hours: float = MISSING,
+    time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
+    count: Optional[int] = None,
+    reconnect: bool = True,
 ) -> Callable[[LF], Loop[LF]]:
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.

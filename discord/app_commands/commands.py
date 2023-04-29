@@ -23,9 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-
 import inspect
-import re
+
 from typing import (
     Any,
     Callable,
@@ -46,16 +45,17 @@ from typing import (
     overload,
 )
 
-from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, \
-    CommandAlreadyRegistered
+import re
+
+from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
+from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
 from .translator import TranslationContextLocation, TranslationContext, Translator, locale_str
-from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale
-from ..member import Member
 from ..message import Message
-from ..permissions import Permissions
 from ..user import User
+from ..member import Member
+from ..permissions import Permissions
 from ..utils import resolve_annotation, MISSING, is_inside_class, maybe_coroutine, async_all, _shorten, _to_kebab_case
 
 if TYPE_CHECKING:
@@ -68,6 +68,7 @@ if TYPE_CHECKING:
     # Generally, these two libraries are supposed to be separate from each other.
     # However, for type hinting purposes it's unfortunately necessary for one to
     # reference the other to prevent type checking errors in callbacks
+    from discord.ext import commands
 
     ErrorFunc = Callable[[Interaction, AppCommandError], Coroutine[Any, Any, None]]
 
@@ -105,6 +106,7 @@ Error = Union[
 Check = Callable[['Interaction[Any]'], Union[bool, Coro[bool]]]
 Binding = Union['Group', 'commands.Cog']
 
+
 if TYPE_CHECKING:
     CommandCallback = Union[
         Callable[Concatenate[GroupT, 'Interaction[Any]', P], Coro[T]],
@@ -132,8 +134,8 @@ else:
     ContextMenuCallback = Callable[..., Coro[T]]
     AutocompleteCallback = Callable[..., Coro[T]]
 
-CheckInputParameter = Union[
-    'Command[Any, ..., Any]', 'ContextMenu', 'CommandCallback[Any, ..., Any]', ContextMenuCallback]
+
+CheckInputParameter = Union['Command[Any, ..., Any]', 'ContextMenu', 'CommandCallback[Any, ..., Any]', ContextMenuCallback]
 
 # The re module doesn't support \p{} so we have to list characters from Thai and Devanagari manually.
 THAI_COMBINING = r'\u0e31-\u0e3a\u0e47-\u0e4e'
@@ -179,8 +181,7 @@ def _parse_args_from_docstring(func: Callable[..., Any], params: Dict[str, Comma
     )
 
     return {
-        m.group('name'): m.group('description') for matches in docstring_styles for m in matches if
-        m.group('name') in params
+        m.group('name'): m.group('description') for matches in docstring_styles for m in matches if m.group('name') in params
     }
 
 
@@ -207,7 +208,7 @@ def validate_context_menu_name(name: str) -> str:
 
 
 def validate_auto_complete_callback(
-        callback: AutocompleteCallback[GroupT, ChoiceT]
+    callback: AutocompleteCallback[GroupT, ChoiceT]
 ) -> AutocompleteCallback[GroupT, ChoiceT]:
     # This function needs to ensure the following is true:
     # If self.foo is passed then don't pass command.binding to the callback
@@ -225,8 +226,7 @@ def validate_auto_complete_callback(
     required_parameters = 2 + pass_command_binding
     params = inspect.signature(callback).parameters
     if len(params) != required_parameters:
-        raise TypeError(
-            f'autocomplete callback {callback.__qualname__!r} requires either 2 or 3 parameters to be passed')
+        raise TypeError(f'autocomplete callback {callback.__qualname__!r} requires either 2 or 3 parameters to be passed')
 
     return callback
 
@@ -353,8 +353,7 @@ def _populate_autocomplete(params: Dict[str, CommandParameter], autocomplete: Di
         raise TypeError(f'unknown parameter given: {first}')
 
 
-def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[str, Any]) -> Dict[
-    str, CommandParameter]:
+def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[str, Any]) -> Dict[str, CommandParameter]:
     params = inspect.signature(func).parameters
     cache = {}
     required_params = is_inside_class(func) + 1
@@ -368,8 +367,7 @@ def _extract_parameters_from_callback(func: Callable[..., Any], globalns: Dict[s
     parameters: List[CommandParameter] = []
     for parameter in iterator:
         if parameter.annotation is parameter.empty:
-            raise TypeError(
-                f'parameter {parameter.name!r} is missing a type annotation in callback {func.__qualname__!r}')
+            raise TypeError(f'parameter {parameter.name!r} is missing a type annotation in callback {func.__qualname__!r}')
 
         resolved = resolve_annotation(parameter.annotation, globalns, globalns, cache)
         param = annotation_to_parameter(resolved, parameter)
@@ -631,16 +629,16 @@ class Command(Generic[GroupT, P, T]):
     """
 
     def __init__(
-            self,
-            *,
-            name: Union[str, locale_str],
-            description: Union[str, locale_str],
-            callback: CommandCallback[GroupT, P, T],
-            nsfw: bool = False,
-            parent: Optional[Group] = None,
-            guild_ids: Optional[List[int]] = None,
-            auto_locale_strings: bool = True,
-            extras: Dict[Any, Any] = MISSING,
+        self,
+        *,
+        name: Union[str, locale_str],
+        description: Union[str, locale_str],
+        callback: CommandCallback[GroupT, P, T],
+        nsfw: bool = False,
+        parent: Optional[Group] = None,
+        guild_ids: Optional[List[int]] = None,
+        auto_locale_strings: bool = True,
+        extras: Dict[Any, Any] = MISSING,
     ):
         name, locale = (name.message, name) if isinstance(name, locale_str) else (name, None)
         self.name: str = validate_name(name)
@@ -677,8 +675,7 @@ class Command(Generic[GroupT, P, T]):
         self.extras: Dict[Any, Any] = extras or {}
 
         if self._guild_ids is not None and self.parent is not None:
-            raise ValueError(
-                'child commands cannot have default guilds set, consider setting them in the parent instead')
+            raise ValueError('child commands cannot have default guilds set, consider setting them in the parent instead')
 
         if auto_locale_strings:
             self._convert_to_locale_strings()
@@ -701,12 +698,12 @@ class Command(Generic[GroupT, P, T]):
         return self._callback
 
     def _copy_with(
-            self,
-            *,
-            parent: Optional[Group],
-            binding: GroupT,
-            bindings: MutableMapping[GroupT, GroupT] = MISSING,
-            set_on_binding: bool = True,
+        self,
+        *,
+        parent: Optional[Group],
+        binding: GroupT,
+        bindings: MutableMapping[GroupT, GroupT] = MISSING,
+        set_on_binding: bool = True,
     ) -> Command:
         bindings = {} if bindings is MISSING else bindings
 
@@ -776,8 +773,7 @@ class Command(Generic[GroupT, P, T]):
         if self.parent is None:
             base['nsfw'] = self.nsfw
             base['dm_permission'] = not self.guild_only
-            base[
-                'default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
+            base['default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
 
         return base
 
@@ -1031,7 +1027,7 @@ class Command(Generic[GroupT, P, T]):
         return coro
 
     def autocomplete(
-            self, name: str
+        self, name: str
     ) -> Callable[[AutocompleteCallback[GroupT, ChoiceT]], AutocompleteCallback[GroupT, ChoiceT]]:
         """A decorator that registers a coroutine as an autocomplete prompt for a parameter.
 
@@ -1093,8 +1089,7 @@ class Command(Generic[GroupT, P, T]):
             except KeyError:
                 raise TypeError(f'unknown parameter: {name!r}') from None
 
-            if param.type not in (
-                    AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
+            if param.type not in (AppCommandOptionType.string, AppCommandOptionType.number, AppCommandOptionType.integer):
                 raise TypeError('autocomplete is only supported for integer, string, or number option types')
 
             if param.is_choice_annotation():
@@ -1201,15 +1196,15 @@ class ContextMenu:
     """
 
     def __init__(
-            self,
-            *,
-            name: Union[str, locale_str],
-            callback: ContextMenuCallback,
-            type: AppCommandType = MISSING,
-            nsfw: bool = False,
-            guild_ids: Optional[List[int]] = None,
-            auto_locale_strings: bool = True,
-            extras: Dict[Any, Any] = MISSING,
+        self,
+        *,
+        name: Union[str, locale_str],
+        callback: ContextMenuCallback,
+        type: AppCommandType = MISSING,
+        nsfw: bool = False,
+        guild_ids: Optional[List[int]] = None,
+        auto_locale_strings: bool = True,
+        extras: Dict[Any, Any] = MISSING,
     ):
         name, locale = (name.message, name) if isinstance(name, locale_str) else (name, None)
         self.name: str = validate_context_menu_name(name)
@@ -1450,18 +1445,17 @@ class Group:
     ] = None
 
     def __init_subclass__(
-            cls,
-            *,
-            name: Union[str, locale_str] = MISSING,
-            description: Union[str, locale_str] = MISSING,
-            guild_only: bool = MISSING,
-            nsfw: bool = False,
-            default_permissions: Optional[Permissions] = MISSING,
+        cls,
+        *,
+        name: Union[str, locale_str] = MISSING,
+        description: Union[str, locale_str] = MISSING,
+        guild_only: bool = MISSING,
+        nsfw: bool = False,
+        default_permissions: Optional[Permissions] = MISSING,
     ) -> None:
         if not cls.__discord_app_commands_group_children__:
             children: List[Union[Command[Any, ..., Any], Group]] = [
-                member for member in cls.__dict__.values() if
-                isinstance(member, (Group, Command)) and member.parent is None
+                member for member in cls.__dict__.values() if isinstance(member, (Group, Command)) and member.parent is None
             ]
 
             cls.__discord_app_commands_group_children__ = children
@@ -1505,17 +1499,17 @@ class Group:
         cls.__discord_app_commands_group_nsfw__ = nsfw
 
     def __init__(
-            self,
-            *,
-            name: Union[str, locale_str] = MISSING,
-            description: Union[str, locale_str] = MISSING,
-            parent: Optional[Group] = None,
-            guild_ids: Optional[List[int]] = None,
-            guild_only: bool = MISSING,
-            nsfw: bool = MISSING,
-            auto_locale_strings: bool = True,
-            default_permissions: Optional[Permissions] = MISSING,
-            extras: Dict[Any, Any] = MISSING,
+        self,
+        *,
+        name: Union[str, locale_str] = MISSING,
+        description: Union[str, locale_str] = MISSING,
+        parent: Optional[Group] = None,
+        guild_ids: Optional[List[int]] = None,
+        guild_only: bool = MISSING,
+        nsfw: bool = MISSING,
+        auto_locale_strings: bool = True,
+        default_permissions: Optional[Permissions] = MISSING,
+        extras: Dict[Any, Any] = MISSING,
     ):
         cls = self.__class__
 
@@ -1542,8 +1536,7 @@ class Group:
 
         self._attr: Optional[str] = None
         self._owner_cls: Optional[Type[Any]] = None
-        self._guild_ids: Optional[List[int]] = guild_ids or getattr(cls, '__discord_app_commands_default_guilds__',
-                                                                    None)
+        self._guild_ids: Optional[List[int]] = guild_ids or getattr(cls, '__discord_app_commands_default_guilds__', None)
 
         if default_permissions is MISSING:
             if cls.__discord_app_commands_default_permissions__ is MISSING:
@@ -1620,12 +1613,12 @@ class Group:
         self._owner_cls = owner
 
     def _copy_with(
-            self,
-            *,
-            parent: Optional[Group],
-            binding: Binding,
-            bindings: MutableMapping[Group, Group] = MISSING,
-            set_on_binding: bool = True,
+        self,
+        *,
+        parent: Optional[Group],
+        binding: Binding,
+        bindings: MutableMapping[Group, Group] = MISSING,
+        set_on_binding: bool = True,
     ) -> Group:
         bindings = {} if bindings is MISSING else bindings
 
@@ -1702,8 +1695,7 @@ class Group:
         if self.parent is None:
             base['nsfw'] = self.nsfw
             base['dm_permission'] = not self.guild_only
-            base[
-                'default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
+            base['default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
 
         return base
 
@@ -1902,13 +1894,13 @@ class Group:
         return self._children.get(name)
 
     def command(
-            self,
-            *,
-            name: Union[str, locale_str] = MISSING,
-            description: Union[str, locale_str] = MISSING,
-            nsfw: bool = False,
-            auto_locale_strings: bool = True,
-            extras: Dict[Any, Any] = MISSING,
+        self,
+        *,
+        name: Union[str, locale_str] = MISSING,
+        description: Union[str, locale_str] = MISSING,
+        nsfw: bool = False,
+        auto_locale_strings: bool = True,
+        extras: Dict[Any, Any] = MISSING,
     ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
         """A decorator that creates an application command from a regular function under this group.
 
@@ -1962,12 +1954,12 @@ class Group:
 
 
 def command(
-        *,
-        name: Union[str, locale_str] = MISSING,
-        description: Union[str, locale_str] = MISSING,
-        nsfw: bool = False,
-        auto_locale_strings: bool = True,
-        extras: Dict[Any, Any] = MISSING,
+    *,
+    name: Union[str, locale_str] = MISSING,
+    description: Union[str, locale_str] = MISSING,
+    nsfw: bool = False,
+    auto_locale_strings: bool = True,
+    extras: Dict[Any, Any] = MISSING,
 ) -> Callable[[CommandCallback[GroupT, P, T]], Command[GroupT, P, T]]:
     """Creates an application command from a regular function.
 
@@ -2021,11 +2013,11 @@ def command(
 
 
 def context_menu(
-        *,
-        name: Union[str, locale_str] = MISSING,
-        nsfw: bool = False,
-        auto_locale_strings: bool = True,
-        extras: Dict[Any, Any] = MISSING,
+    *,
+    name: Union[str, locale_str] = MISSING,
+    nsfw: bool = False,
+    auto_locale_strings: bool = True,
+    extras: Dict[Any, Any] = MISSING,
 ) -> Callable[[ContextMenuCallback], ContextMenu]:
     """Creates an application command context menu from a regular function.
 
@@ -2129,8 +2121,7 @@ def describe(**parameters: Union[str, locale_str]) -> Callable[[T], T]:
             _populate_descriptions(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_description__.update(
-                    parameters)  # type: ignore # Runtime attribute access
+                inner.__discord_app_commands_param_description__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
                 inner.__discord_app_commands_param_description__ = parameters  # type: ignore # Runtime attribute assignment
 
@@ -2173,8 +2164,7 @@ def rename(**parameters: Union[str, locale_str]) -> Callable[[T], T]:
             _populate_renames(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_rename__.update(
-                    parameters)  # type: ignore # Runtime attribute access
+                inner.__discord_app_commands_param_rename__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
                 inner.__discord_app_commands_param_rename__ = parameters  # type: ignore # Runtime attribute assignment
 
@@ -2243,8 +2233,7 @@ def choices(**parameters: List[Choice[ChoiceT]]) -> Callable[[T], T]:
             _populate_choices(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_choices__.update(
-                    parameters)  # type: ignore # Runtime attribute access
+                inner.__discord_app_commands_param_choices__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
                 inner.__discord_app_commands_param_choices__ = parameters  # type: ignore # Runtime attribute assignment
 
@@ -2303,8 +2292,7 @@ def autocomplete(**parameters: AutocompleteCallback[GroupT, ChoiceT]) -> Callabl
             _populate_autocomplete(inner._params, parameters)
         else:
             try:
-                inner.__discord_app_commands_param_autocomplete__.update(
-                    parameters)  # type: ignore # Runtime attribute access
+                inner.__discord_app_commands_param_autocomplete__.update(parameters)  # type: ignore # Runtime attribute access
             except AttributeError:
                 inner.__discord_app_commands_param_autocomplete__ = parameters  # type: ignore # Runtime attribute assignment
 

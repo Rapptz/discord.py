@@ -25,12 +25,11 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Literal, Optional, TypedDict
-
 from typing_extensions import NotRequired
 
-from .channel import PartialChannel
 from .snowflake import Snowflake
 from .user import User
+from .channel import PartialChannel
 
 
 class SourceGuild(TypedDict):

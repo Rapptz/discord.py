@@ -38,8 +38,6 @@ if TYPE_CHECKING:
 __all__ = (
     'Typing',
 )
-
-
 # fmt: on
 
 
@@ -86,9 +84,9 @@ class Typing:
         self.task.add_done_callback(_typing_done_callback)
 
     async def __aexit__(
-            self,
-            exc_type: Optional[Type[BE]],
-            exc: Optional[BE],
-            traceback: Optional[TracebackType],
+        self,
+        exc_type: Optional[Type[BE]],
+        exc: Optional[BE],
+        traceback: Optional[TracebackType],
     ) -> None:
         self.task.cancel()
