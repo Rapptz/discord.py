@@ -60,7 +60,7 @@ class Feedback(discord.ui.Modal, title='Feedback'):
         await interaction.response.send_message('Oops! Something went wrong.', ephemeral=True)
 
         # Make sure we know what the error actually is
-        logging.error('', exc_info=(type(error), error, error.__traceback__))
+        logging.error('', exc_info=error)
 
 
 client = MyClient()

@@ -28,7 +28,7 @@ client = MyClient()
 @client.event
 async def on_ready():
     logging.info(f'Logged in as {client.user} (ID: {client.user.id})')
-    logging.infot('------')
+    logging.info('------')
 
 
 # A transformer is a class that specifies how a parameter in your code
