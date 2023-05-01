@@ -11,6 +11,20 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p2p3:
+
+v2.2.3
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix crash from Discord sending null ``channel_id`` for automod audit logs.
+- Fix ``channel`` edits when using :meth:`Webhook.edit` sending two requests.
+- Fix :attr:`AuditLogEntry.target` being ``None`` for invites (:issue:`9336`).
+- Fix :exc:`KeyError` when accessing data for :class:`GuildSticker` (:issue:`9324`).
+
+
 .. _vp2p2p2:
 
 v2.2.2
