@@ -652,6 +652,8 @@ class AuditLogEntry(Hashable):
             ):
                 channel_id = utils._get_as_snowflake(extra, 'channel_id')
                 channel = None
+
+                # May be an empty string instead of None due to a Discord issue
                 if channel_id:
                     channel = self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id)
 
