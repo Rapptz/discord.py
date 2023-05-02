@@ -652,7 +652,7 @@ class AuditLogEntry(Hashable):
             ):
                 channel_id = utils._get_as_snowflake(extra, 'channel_id')
                 channel = None
-                if channel_id is not None:
+                if channel_id:
                     channel = self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id)
 
                 self.extra = _AuditLogProxyAutoModAction(
