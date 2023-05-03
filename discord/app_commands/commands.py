@@ -46,6 +46,7 @@ from typing import (
 )
 
 import re
+from copy import copy as shallow_copy
 
 from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale
 from .models import Choice
@@ -707,25 +708,10 @@ class Command(Generic[GroupT, P, T]):
     ) -> Command:
         bindings = {} if bindings is MISSING else bindings
 
-        cls = self.__class__
-        copy = cls.__new__(cls)
-        copy.name = self.name
-        copy._locale_name = self._locale_name
-        copy._guild_ids = self._guild_ids
-        copy.checks = self.checks
-        copy.description = self.description
-        copy._locale_description = self._locale_description
-        copy.default_permissions = self.default_permissions
-        copy.guild_only = self.guild_only
-        copy.nsfw = self.nsfw
-        copy._attr = self._attr
-        copy._callback = self._callback
-        copy.on_error = self.on_error
+        copy = shallow_copy(self)
         copy._params = self._params.copy()
-        copy.module = self.module
         copy.parent = parent
         copy.binding = bindings.get(self.binding) if self.binding is not None else binding
-        copy.extras = self.extras
 
         if copy._attr and set_on_binding:
             setattr(copy.binding, copy._attr, copy)
@@ -1622,22 +1608,9 @@ class Group:
     ) -> Group:
         bindings = {} if bindings is MISSING else bindings
 
-        cls = self.__class__
-        copy = cls.__new__(cls)
-        copy.name = self.name
-        copy._locale_name = self._locale_name
-        copy._guild_ids = self._guild_ids
-        copy.description = self.description
-        copy._locale_description = self._locale_description
+        copy = shallow_copy(self)
         copy.parent = parent
-        copy.module = self.module
-        copy.default_permissions = self.default_permissions
-        copy.guild_only = self.guild_only
-        copy.nsfw = self.nsfw
-        copy._attr = self._attr
-        copy._owner_cls = self._owner_cls
         copy._children = {}
-        copy.extras = self.extras
 
         bindings[self] = copy
 
