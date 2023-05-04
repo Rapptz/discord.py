@@ -68,9 +68,6 @@ class AutoModRuleAction:
     type: :class:`AutoModRuleActionType`
         The type of action to take.
         Defaults to :attr:`~AutoModRuleActionType.block_message`.
-
-        .. versionchanged:: 2.3
-            This is an optional parameter.
     channel_id: Optional[:class:`int`]
         The ID of the channel or thread to send the alert message to, if any.
         Passing this sets :attr:`type` to :attr:`~AutoModRuleActionType.send_alert_message`.
