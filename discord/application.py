@@ -2542,10 +2542,13 @@ class Application(PartialApplication):
             # Passing a user object:
             await app.whitelist(user)
 
-            # Passing a stringified user:
+            # Passing a username
+            await app.whitelist('jake')
+
+            # Passing a legacy user:
             await app.whitelist('Jake#0001')
 
-            # Passing a username and discriminator:
+            # Passing a legacy username and discriminator:
             await app.whitelist('Jake', '0001')
 
         Parameters
@@ -2575,14 +2578,14 @@ class Application(PartialApplication):
             user = args[0]
             if isinstance(user, _UserTag):
                 user = str(user)
-            username, discrim = user.split('#')
+            username, _, discrim = user.partition('#')
         elif len(args) == 2:
             username, discrim = args  # type: ignore
         else:
-            raise TypeError(f'invite_member() takes 1 or 2 arguments but {len(args)} were given')
+            raise TypeError(f'whitelist() takes 1 or 2 arguments but {len(args)} were given')
 
         state = self._state
-        data = await state.http.invite_team_member(self.id, username, discrim)
+        data = await state.http.add_app_whitelist(self.id, username, discrim or 0)
         return ApplicationTester(self, state, data)
 
     async def create_asset(

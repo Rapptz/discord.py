@@ -243,7 +243,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
 
         .. describe:: str(x)
 
-            Returns the member's name with the discriminator.
+            Returns the member's name with a ``@``.
 
     Attributes
     ----------
@@ -253,7 +253,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
     guild: :class:`Guild`
         The guild that the member belongs to.
     nick: Optional[:class:`str`]
-        The guild specific nickname of the user.
+        The guild specific nickname of the user. Takes precedence over the global name.
     pending: :class:`bool`
         Whether the member is pending member verification.
 
@@ -287,6 +287,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         name: str
         id: int
         discriminator: str
+        global_name: Optional[str]
         bot: bool
         system: bool
         created_at: datetime.datetime
@@ -328,7 +329,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
 
     def __repr__(self) -> str:
         return (
-            f'<Member id={self._user.id} name={self._user.name!r} discriminator={self._user.discriminator!r}'
+            f'<Member id={self._user.id} name={self._user.name!r} global_name={self._user.global_name!r}'
             f' bot={self._user.bot} nick={self.nick!r} guild={self.guild!r}>'
         )
 
@@ -537,11 +538,11 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
     def display_name(self) -> str:
         """:class:`str`: Returns the user's display name.
 
-        For regular users this is just their username, but
-        if they have a guild specific nickname then that
+        For regular users this is just their global name or their username,
+        but if they have a guild specific nickname then that
         is returned instead.
         """
-        return self.nick or self.name
+        return self.nick or self.global_name or self.name
 
     @property
     def display_avatar(self) -> Asset:

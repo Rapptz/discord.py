@@ -38,6 +38,7 @@ class PartialUser(TypedDict):
     public_flags: NotRequired[int]
     bot: NotRequired[bool]
     system: NotRequired[bool]
+    global_name: Optional[str]
 
 
 ConnectionType = Literal[

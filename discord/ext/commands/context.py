@@ -311,7 +311,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     def filesize_limit(self) -> int:
         """:class:`int`: Returns the maximum number of bytes files can have when uploaded to this guild or DM channel associated with this context.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.1
         """
         return self.guild.filesize_limit if self.guild is not None else 26214400
 

@@ -58,6 +58,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .types.channel import DMChannel as DMChannelPayload
     from .types.user import (
+        APIUser as APIUserPayload,
         PartialUser as PartialUserPayload,
         User as UserPayload,
     )
@@ -239,6 +240,7 @@ class BaseUser(_UserTag):
         'name',
         'id',
         'discriminator',
+        'global_name',
         '_avatar',
         '_avatar_decoration',
         '_banner',
@@ -254,6 +256,7 @@ class BaseUser(_UserTag):
         name: str
         id: int
         discriminator: str
+        global_name: Optional[str]
         bot: bool
         system: bool
         _state: ConnectionState
@@ -269,12 +272,12 @@ class BaseUser(_UserTag):
 
     def __repr__(self) -> str:
         return (
-            f"<BaseUser id={self.id} name={self.name!r} discriminator={self.discriminator!r}"
+            f"<BaseUser id={self.id} name={self.name!r} global_name={self.global_name!r}"
             f" bot={self.bot} system={self.system}>"
         )
 
     def __str__(self) -> str:
-        return f'{self.name}#{self.discriminator}'
+        return f'@{self.name}'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, _UserTag) and other.id == self.id
@@ -289,6 +292,7 @@ class BaseUser(_UserTag):
         self.name = data['username']
         self.id = int(data['id'])
         self.discriminator = data['discriminator']
+        self.global_name = data.get('global_name')
         self._avatar = data['avatar']
         self._avatar_decoration = data.get('avatar_decoration')
         self._banner = data.get('banner', None)
@@ -304,6 +308,7 @@ class BaseUser(_UserTag):
         self.name = user.name
         self.id = user.id
         self.discriminator = user.discriminator
+        self.global_name = user.global_name
         self._avatar = user._avatar
         self._avatar_decoration = user._avatar_decoration
         self._banner = user._banner
@@ -315,16 +320,19 @@ class BaseUser(_UserTag):
 
         return self
 
-    def _to_minimal_user_json(self) -> PartialUserPayload:
-        user: PartialUserPayload = {
+    def _to_minimal_user_json(self) -> APIUserPayload:
+        user: APIUserPayload = {
             'username': self.name,
             'id': self.id,
             'avatar': self._avatar,
             'avatar_decoration': self._avatar_decoration,
             'discriminator': self.discriminator,
+            'global_name': self.global_name,
             'bot': self.bot,
             'system': self.system,
             'public_flags': self._public_flags,
+            'banner': self._banner,
+            'accent_color': self._accent_colour,
         }
         return user
 
@@ -351,8 +359,13 @@ class BaseUser(_UserTag):
 
     @property
     def default_avatar(self) -> Asset:
-        """:class:`Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
-        return Asset._from_default_avatar(self._state, int(self.discriminator) % 5)
+        """:class:`Asset`: Returns the default avatar for a given user."""
+        if self.discriminator == '0':
+            avatar_id = self.id % 5
+        else:
+            avatar_id = int(self.discriminator) % 5
+
+        return Asset._from_default_avatar(self._state, avatar_id)
 
     @property
     def display_avatar(self) -> Asset:
@@ -470,10 +483,12 @@ class BaseUser(_UserTag):
     def display_name(self) -> str:
         """:class:`str`: Returns the user's display name.
 
-        For regular users this is just their username, but
-        if they have a guild specific nickname then that
+        For regular users this is just their global name or their username,
+        but if they have a guild specific nickname then that
         is returned instead.
         """
+        if self.global_name:
+            return self.global_name
         return self.name
 
     @cached_slot_property('_cs_note')
@@ -594,7 +609,7 @@ class ClientUser(BaseUser):
 
         .. describe:: str(x)
 
-            Returns the user's name with discriminator.
+            Returns the user's name with a ``@``.
 
     .. versionchanged:: 2.0
         :attr:`Locale` is now a :class:`Locale` instead of a Optional[:class:`str`].
@@ -606,9 +621,13 @@ class ClientUser(BaseUser):
     id: :class:`int`
         The user's unique ID.
     discriminator: :class:`str`
-        The user's discriminator.
+        The user's discriminator. This is a legacy concept that is no longer used.
     bio: Optional[:class:`str`]
         The user's "about me" field. Could be ``None``.
+    global_name: Optional[:class:`str`]
+        The user's global nickname, taking precedence over the username in display.
+
+        .. versionadded:: 2.1
     bot: :class:`bool`
         Specifies if the user is a bot account.
     system: :class:`bool`
@@ -686,8 +705,8 @@ class ClientUser(BaseUser):
 
     def __repr__(self) -> str:
         return (
-            f'<ClientUser id={self.id} name={self.name!r} discriminator={self.discriminator!r}'
-            f' bot={self.bot} verified={self.verified} mfa_enabled={self.mfa_enabled} premium={self.premium}>'
+            f'<ClientUser id={self.id} name={self.name!r} global_name={self.global_name!r}'
+            f' verified={self.verified} mfa_enabled={self.mfa_enabled} premium={self.premium}>'
         )
 
     def _full_update(self, data: UserPayload) -> None:
@@ -928,7 +947,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
 
         .. describe:: str(x)
 
-            Returns the user's name with discriminator.
+            Returns the user's name with a ``@``.
 
     Attributes
     -----------
@@ -937,7 +956,11 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
     id: :class:`int`
         The user's unique ID.
     discriminator: :class:`str`
-        The user's discriminator.
+        The user's discriminator. This is a legacy concept that is no longer used.
+    global_name: Optional[:class:`str`]
+        The user's global nickname, taking precedence over the username in display.
+
+        .. versionadded:: 2.1
     bot: :class:`bool`
         Specifies if the user is a bot account.
     system: :class:`bool`
@@ -947,7 +970,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
     __slots__ = ('__weakref__',)
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot} system={self.system}>'
+        return f'<User id={self.id} name={self.name!r} global_name={self.global_name!r} bot={self.bot}>'
 
     def _get_voice_client_key(self) -> Tuple[int, str]:
         return self._state.self_id, 'self_id'  # type: ignore # self_id is always set at this point
@@ -967,10 +990,11 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
             user['discriminator'],
             user.get('public_flags', 0),
             user.get('avatar_decoration'),
+            user.get('global_name')
         )
         if original != modified:
             to_return = User._copy(self)
-            self.name, self._avatar, self.discriminator, self._public_flags, self._avatar_decoration = modified
+            self.name, self._avatar, self.discriminator, self._public_flags, self._avatar_decoration, self.global_name = modified
             # Signal to dispatch user_update
             return to_return, self
 

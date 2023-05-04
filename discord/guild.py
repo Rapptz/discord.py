@@ -1298,26 +1298,20 @@ class Guild(Hashable):
     def get_member_named(self, name: str, /) -> Optional[Member]:
         """Returns the first member found that matches the name provided.
 
-        The name can have an optional discriminator argument, e.g. "Jake#0001"
-        or "Jake" will both do the lookup. However the former will give a more
-        precise result. Note that the discriminator must have all 4 digits
-        for this to work.
-
-        If a nickname is passed, then it is looked up via the nickname. Note
-        however, that a nickname + discriminator combo will not lookup the nickname
-        but rather the username + discriminator combo due to nickname + discriminator
-        not being unique.
-
         If no member is found, ``None`` is returned.
 
         .. versionchanged:: 2.0
 
             ``name`` parameter is now positional-only.
 
+        .. versionchanged:: 2.1
+
+            ``discriminator`` is no longer used in lookup, due to being removed on Discord.
+
         Parameters
         -----------
         name: :class:`str`
-            The name of the member to lookup with an optional discriminator.
+            The name of the member to lookup.
 
         Returns
         --------
@@ -1328,14 +1322,8 @@ class Guild(Hashable):
 
         members = self.members
 
-        if len(name) > 5 and name[-5] == '#':
-            potential_discriminator = name[-4:]
-            result = utils.get(members, name=name[:-5], discriminator=potential_discriminator)
-            if result is not None:
-                return result
-
         def pred(m: Member) -> bool:
-            return m.nick == name or m.name == name
+            return m.nick == name or m.global_name == name or m.name == name
 
         return utils.find(pred, members)
 

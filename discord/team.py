@@ -288,10 +288,13 @@ class Team(Hashable):
             # Passing a user object:
             await team.invite_member(user)
 
-            # Passing a stringified user:
+            # Passing a username
+            await team.invite_member('jake')
+
+            # Passing a legacy user:
             await team.invite_member('Jake#0001')
 
-            # Passing a username and discriminator:
+            # Passing a legacy username and discriminator:
             await team.invite_member('Jake', '0001')
 
         Parameters
@@ -323,14 +326,14 @@ class Team(Hashable):
             user = args[0]
             if isinstance(user, _UserTag):
                 user = str(user)
-            username, discrim = user.split('#')
+            username, _, discrim = user.partition('#')
         elif len(args) == 2:
             username, discrim = args  # type: ignore
         else:
             raise TypeError(f'invite_member() takes 1 or 2 arguments but {len(args)} were given')
 
         state = self._state
-        data = await state.http.invite_team_member(self.id, username, discrim)
+        data = await state.http.invite_team_member(self.id, username, discrim or 0)
         member = TeamMember(self, state, data)
         self.members.append(member)
         return member
@@ -494,7 +497,7 @@ class TeamMember(User):
 
         .. describe:: str(x)
 
-            Returns the team member's name with discriminator.
+            Returns the team member's name with a ``@``.
 
     .. versionadded:: 1.3
 
@@ -519,7 +522,7 @@ class TeamMember(User):
     def __repr__(self) -> str:
         return (
             f'<{self.__class__.__name__} id={self.id} name={self.name!r} '
-            f'discriminator={self.discriminator!r} membership_state={self.membership_state!r}>'
+            f'global_name={self.global_name!r} membership_state={self.membership_state!r}>'
         )
 
     async def remove(self) -> None:

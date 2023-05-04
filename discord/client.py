@@ -2966,10 +2966,13 @@ class Client:
             # Passing a user object:
             await client.send_friend_request(user)
 
-            # Passing a stringified user:
+            # Passing a username
+            await client.send_friend_request('jake')
+
+            # Passing a legacy user:
             await client.send_friend_request('Jake#0001')
 
-            # Passing a username and discriminator:
+            # Passing a legacy username and discriminator:
             await client.send_friend_request('Jake', '0001')
 
         Parameters
@@ -2996,14 +2999,14 @@ class Client:
             user = args[0]
             if isinstance(user, _UserTag):
                 user = str(user)
-            username, discrim = user.split('#')
+            username, _, discrim = user.partition('#')
         elif len(args) == 2:
             username, discrim = args  # type: ignore
         else:
             raise TypeError(f'send_friend_request() takes 1 or 2 arguments but {len(args)} were given')
 
         state = self._connection
-        await state.http.send_friend_request(username, discrim)
+        await state.http.send_friend_request(username, discrim or 0)
 
     async def applications(self, *, with_team_applications: bool = True) -> List[Application]:
         """|coro|

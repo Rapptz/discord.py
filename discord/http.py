@@ -2894,7 +2894,7 @@ class HTTPClient:
     def send_friend_request(self, username: str, discriminator: Snowflake) -> Response[None]:
         r = Route('POST', '/users/@me/relationships')
         props = choice((ContextProperties.from_add_friend, ContextProperties.from_group_dm))()  # Friends, Group DM
-        payload = {'username': username, 'discriminator': int(discriminator)}
+        payload = {'username': username, 'discriminator': int(discriminator) or None}
 
         return self.request(r, json=payload, context_properties=props)
 
@@ -3180,9 +3180,9 @@ class HTTPClient:
         )
 
     def add_app_whitelist(
-        self, app_id: Snowflake, username: str, discriminator: str
+        self, app_id: Snowflake, username: str, discriminator: Snowflake
     ) -> Response[application.WhitelistedUser]:
-        payload = {'username': username, 'discriminator': discriminator}
+        payload = {'username': username, 'discriminator': str(discriminator) or None}
 
         return self.request(
             Route('POST', '/oauth2/applications/{app_id}/allowlist', app_id=app_id),
@@ -3279,7 +3279,7 @@ class HTTPClient:
         return self.request(Route('GET', '/teams/{team_id}/members', team_id=team_id), super_properties_to_track=True)
 
     def invite_team_member(self, team_id: Snowflake, username: str, discriminator: Snowflake):
-        payload = {'username': username, 'discriminator': str(discriminator)}
+        payload = {'username': username, 'discriminator': str(discriminator) or None}
 
         return self.request(
             Route('POST', '/teams/{team_id}/members', team_id=team_id), json=payload, super_properties_to_track=True
