@@ -186,9 +186,9 @@ class MemberConverter(IDConverter[discord.Member]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name#discrim
-    4. Lookup by name
-    5. Lookup by nickname
+    3. Lookup by guild nickname
+    4. Lookup by global name
+    5. Lookup by user name
 
     .. versionchanged:: 1.5
          Raise :exc:`.MemberNotFound` instead of generic :exc:`.BadArgument`
@@ -196,17 +196,15 @@ class MemberConverter(IDConverter[discord.Member]):
     .. versionchanged:: 1.5.1
         This converter now lazily fetches members from the gateway and HTTP APIs,
         optionally caching the result if :attr:`.MemberCacheFlags.joined` is enabled.
+
+    .. versionchanged:: 2.3
+        This converter lookup strategy has changed due to the removal of discriminators.
     """
 
     async def query_member_named(self, guild: discord.Guild, argument: str) -> Optional[discord.Member]:
         cache = guild._state.member_cache_flags.joined
-        if len(argument) > 5 and argument[-5] == '#':
-            username, _, discriminator = argument.rpartition('#')
-            members = await guild.query_members(username, limit=100, cache=cache)
-            return discord.utils.get(members, name=username, discriminator=discriminator)
-        else:
-            members = await guild.query_members(argument, limit=100, cache=cache)
-            return discord.utils.find(lambda m: m.name == argument or m.nick == argument, members)
+        members = await guild.query_members(argument, limit=100, cache=cache)
+        return discord.utils.find(lambda m: m.nick == argument or m.global_name == argument or m.name == argument, members)
 
     async def query_member_by_id(self, bot: _Bot, guild: discord.Guild, user_id: int) -> Optional[discord.Member]:
         ws = bot._get_websocket(shard_id=guild.shard_id)
@@ -273,8 +271,8 @@ class UserConverter(IDConverter[discord.User]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name#discrim
-    4. Lookup by name
+    3. Lookup by global name
+    4. Lookup by user name
 
     .. versionchanged:: 1.5
          Raise :exc:`.UserNotFound` instead of generic :exc:`.BadArgument`
@@ -282,6 +280,9 @@ class UserConverter(IDConverter[discord.User]):
     .. versionchanged:: 1.6
         This converter now lazily fetches users from the HTTP APIs if an ID is passed
         and it's not available in cache.
+
+    .. versionchanged:: 2.3
+        This converter lookup strategy has changed due to the removal of discriminators.
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.User:
@@ -307,16 +308,7 @@ class UserConverter(IDConverter[discord.User]):
             # Remove first character
             arg = arg[1:]
 
-        # check for discriminator if it exists,
-        if len(arg) > 5 and arg[-5] == '#':
-            discrim = arg[-4:]
-            name = arg[:-5]
-            predicate = lambda u: u.name == name and u.discriminator == discrim
-            result = discord.utils.find(predicate, state._users.values())
-            if result is not None:
-                return result
-
-        predicate = lambda u: u.name == arg
+        predicate = lambda u: u.global_name == arg or u.name == arg
         result = discord.utils.find(predicate, state._users.values())
 
         if result is None:

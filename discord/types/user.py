@@ -31,6 +31,7 @@ class PartialUser(TypedDict):
     username: str
     discriminator: str
     avatar: Optional[str]
+    global_name: Optional[str]
 
 
 PremiumType = Literal[0, 1, 2]
@@ -40,7 +41,7 @@ class User(PartialUser, total=False):
     bot: bool
     system: bool
     mfa_enabled: bool
-    local: str
+    locale: str
     verified: bool
     email: Optional[str]
     flags: int

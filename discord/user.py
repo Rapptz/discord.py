@@ -65,6 +65,7 @@ class BaseUser(_UserTag):
         'name',
         'id',
         'discriminator',
+        'global_name',
         '_avatar',
         '_banner',
         '_accent_colour',
@@ -78,6 +79,7 @@ class BaseUser(_UserTag):
         name: str
         id: int
         discriminator: str
+        global_name: Optional[str]
         bot: bool
         system: bool
         _state: ConnectionState
@@ -92,12 +94,12 @@ class BaseUser(_UserTag):
 
     def __repr__(self) -> str:
         return (
-            f"<BaseUser id={self.id} name={self.name!r} discriminator={self.discriminator!r}"
+            f"<BaseUser id={self.id} name={self.name!r} global_name={self.global_name!r}"
             f" bot={self.bot} system={self.system}>"
         )
 
     def __str__(self) -> str:
-        return f'{self.name}#{self.discriminator}'
+        return f'@{self.name}'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, _UserTag) and other.id == self.id
@@ -112,6 +114,7 @@ class BaseUser(_UserTag):
         self.name = data['username']
         self.id = int(data['id'])
         self.discriminator = data['discriminator']
+        self.global_name = data.get('global_name')
         self._avatar = data['avatar']
         self._banner = data.get('banner', None)
         self._accent_colour = data.get('accent_color', None)
@@ -126,6 +129,7 @@ class BaseUser(_UserTag):
         self.name = user.name
         self.id = user.id
         self.discriminator = user.discriminator
+        self.global_name = user.global_name
         self._avatar = user._avatar
         self._banner = user._banner
         self._accent_colour = user._accent_colour
@@ -141,6 +145,7 @@ class BaseUser(_UserTag):
             'id': self.id,
             'avatar': self._avatar,
             'discriminator': self.discriminator,
+            'global_name': self.global_name,
             'bot': self.bot,
         }
 
@@ -162,8 +167,13 @@ class BaseUser(_UserTag):
 
     @property
     def default_avatar(self) -> Asset:
-        """:class:`Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
-        return Asset._from_default_avatar(self._state, int(self.discriminator) % len(DefaultAvatar))
+        """:class:`Asset`: Returns the default avatar for a given user."""
+        if self.discriminator == '0':
+            avatar_id = self.id % len(DefaultAvatar)
+        else:
+            avatar_id = int(self.discriminator) % len(DefaultAvatar)
+
+        return Asset._from_default_avatar(self._state, avatar_id)
 
     @property
     def display_avatar(self) -> Asset:
@@ -260,10 +270,12 @@ class BaseUser(_UserTag):
     def display_name(self) -> str:
         """:class:`str`: Returns the user's display name.
 
-        For regular users this is just their username, but
-        if they have a guild specific nickname then that
+        For regular users this is just their global name or their username,
+        but if they have a guild specific nickname then that
         is returned instead.
         """
+        if self.global_name:
+            return self.global_name
         return self.name
 
     def mentioned_in(self, message: Message) -> bool:
@@ -305,7 +317,7 @@ class ClientUser(BaseUser):
 
         .. describe:: str(x)
 
-            Returns the user's name with discriminator.
+            Returns the user's name with a ``@``.
 
     Attributes
     -----------
@@ -314,7 +326,11 @@ class ClientUser(BaseUser):
     id: :class:`int`
         The user's unique ID.
     discriminator: :class:`str`
-        The user's discriminator. This is given when the username has conflicts.
+        The user's discriminator. This is a legacy concept that is no longer used.
+    global_name: Optional[:class:`str`]
+        The user's global nickname, taking precedence over the username in display.
+
+        .. versionadded:: 2.3
     bot: :class:`bool`
         Specifies if the user is a bot account.
     system: :class:`bool`
@@ -343,7 +359,7 @@ class ClientUser(BaseUser):
 
     def __repr__(self) -> str:
         return (
-            f'<ClientUser id={self.id} name={self.name!r} discriminator={self.discriminator!r}'
+            f'<ClientUser id={self.id} name={self.name!r} global_name={self.global_name!r}'
             f' bot={self.bot} verified={self.verified} mfa_enabled={self.mfa_enabled}>'
         )
 
@@ -441,7 +457,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. describe:: str(x)
 
-            Returns the user's name with discriminator.
+            Returns the user's name with a ``@``.
 
     Attributes
     -----------
@@ -450,7 +466,11 @@ class User(BaseUser, discord.abc.Messageable):
     id: :class:`int`
         The user's unique ID.
     discriminator: :class:`str`
-        The user's discriminator. This is given when the username has conflicts.
+        The user's discriminator. This is a legacy concept that is no longer used.
+    global_name: Optional[:class:`str`]
+        The user's global nickname, taking precedence over the username in display.
+
+        .. versionadded:: 2.3
     bot: :class:`bool`
         Specifies if the user is a bot account.
     system: :class:`bool`
@@ -460,7 +480,7 @@ class User(BaseUser, discord.abc.Messageable):
     __slots__ = ('__weakref__',)
 
     def __repr__(self) -> str:
-        return f'<User id={self.id} name={self.name!r} discriminator={self.discriminator!r} bot={self.bot}>'
+        return f'<User id={self.id} name={self.name!r} global_name={self.global_name!r} bot={self.bot}>'
 
     async def _get_channel(self) -> DMChannel:
         ch = await self.create_dm()

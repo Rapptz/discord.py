@@ -108,7 +108,7 @@ class TeamMember(BaseUser):
 
         .. describe:: str(x)
 
-            Returns the team member's name with discriminator.
+            Returns the team member's name with a ``@``.
 
     .. versionadded:: 1.3
 
@@ -119,7 +119,11 @@ class TeamMember(BaseUser):
     id: :class:`int`
         The team member's unique ID.
     discriminator: :class:`str`
-        The team member's discriminator. This is given when the username has conflicts.
+        The team member's discriminator. This is a legacy concept that is no longer used.
+    global_name: Optional[:class:`str`]
+        The user's global nickname, taking precedence over the username in display.
+
+        .. versionadded:: 2.3
     bot: :class:`bool`
         Specifies if the user is a bot account.
     team: :class:`Team`
@@ -139,5 +143,5 @@ class TeamMember(BaseUser):
     def __repr__(self) -> str:
         return (
             f'<{self.__class__.__name__} id={self.id} name={self.name!r} '
-            f'discriminator={self.discriminator!r} membership_state={self.membership_state!r}>'
+            f'global_name={self.global_name!r} membership_state={self.membership_state!r}>'
         )
