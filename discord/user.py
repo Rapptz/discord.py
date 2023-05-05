@@ -361,7 +361,7 @@ class BaseUser(_UserTag):
     def default_avatar(self) -> Asset:
         """:class:`Asset`: Returns the default avatar for a given user."""
         if self.discriminator == '0':
-            avatar_id = self.id % 5
+            avatar_id = (self.id >> 22) % 6
         else:
             avatar_id = int(self.discriminator) % 5
 
