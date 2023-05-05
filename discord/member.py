@@ -243,7 +243,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
 
         .. describe:: str(x)
 
-            Returns the member's name with a ``@``.
+            Returns the member's handle (e.g. ``@user`` or ``user#discriminator``).
 
     Attributes
     ----------
