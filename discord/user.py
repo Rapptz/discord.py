@@ -409,6 +409,18 @@ class ClientUser(BaseUser):
         data: UserPayload = await self._state.http.edit_profile(payload)
         return ClientUser(state=self._state, data=data)
 
+    @property
+    def mutual_guilds(self) -> List[Guild]:
+        """List[:class:`Guild`]: The guilds that the user shares with the client.
+
+        .. note::
+
+            This will only return mutual guilds within the client's internal cache.
+
+        .. versionadded:: 1.7
+        """
+        return list(self._state.guilds)
+
 
 class User(BaseUser, discord.abc.Messageable):
     """Represents a Discord user.
