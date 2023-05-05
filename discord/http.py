@@ -3207,7 +3207,7 @@ class HTTPClient:
             super_properties_to_track=True,
         )
 
-    def botify_app(self, app_id: Snowflake) -> Response[None]:
+    def botify_app(self, app_id: Snowflake) -> Response[application.Token]:
         return self.request(
             Route('POST', '/applications/{app_id}/bot', app_id=app_id), json={}, super_properties_to_track=True
         )

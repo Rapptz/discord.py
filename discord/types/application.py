@@ -30,7 +30,12 @@ from typing_extensions import NotRequired
 from .guild import PartialGuild
 from .snowflake import Snowflake
 from .team import Team
-from .user import PartialUser
+from .user import APIUser, PartialUser
+
+
+class Token(TypedDict):
+    # Missing if a bot already exists 😭
+    token: Optional[str]
 
 
 class BaseApplication(TypedDict):
@@ -44,16 +49,17 @@ class BaseApplication(TypedDict):
     summary: NotRequired[Literal['']]
 
 
-class MetadataApplication(BaseApplication):
+class RoleConnectionApplication(BaseApplication):
     bot: NotRequired[PartialUser]
 
 
-class IntegrationApplication(MetadataApplication):
+class IntegrationApplication(BaseApplication):
+    bot: NotRequired[APIUser]
     role_connections_verification_url: NotRequired[Optional[str]]
 
 
 class PartialApplication(BaseApplication):
-    owner: NotRequired[PartialUser]  # Not actually ever present in partial app
+    owner: NotRequired[APIUser]  # Not actually ever present in partial app
     team: NotRequired[Team]
     verify_key: str
     description: str
@@ -96,6 +102,8 @@ class Application(PartialApplication, IntegrationApplication, ApplicationDiscove
     rpc_application_state: int
     creator_monetization_state: int
     role_connections_verification_url: NotRequired[Optional[str]]
+    # GET /applications/{application.id} only
+    approximate_guild_count: NotRequired[int]
 
 
 class WhitelistedUser(TypedDict):
@@ -218,17 +226,22 @@ class GlobalActivityStatistics(TypedDict):
 
 
 EmbeddedActivityPlatform = Literal['web', 'android', 'ios']
+EmbeddedActivityPlatformLabelType = Literal[0, 1, 2]
+EmbedddedActivityPlatformReleasePhase = Literal[
+    'in_development', 'activities_team', 'employee_release', 'soft_launch', 'global_launch'
+]
 
 
-class ClientPlatformConfig(TypedDict):
-    label_type: int
+class EmbeddedActivityPlatformConfig(TypedDict):
+    label_type: EmbeddedActivityPlatformLabelType
     label_until: Optional[str]
-    release_phase: str
+    release_phase: EmbedddedActivityPlatformReleasePhase
 
 
 class EmbeddedActivityConfig(TypedDict):
+    application_id: NotRequired[Snowflake]
     activity_preview_video_asset_id: NotRequired[Optional[Snowflake]]
-    client_platform_config: Dict[EmbeddedActivityPlatform, ClientPlatformConfig]
+    client_platform_config: Dict[EmbeddedActivityPlatform, EmbeddedActivityPlatformConfig]
     default_orientation_lock_state: Literal[1, 2, 3]
     tablet_default_orientation_lock_state: Literal[1, 2, 3]
     free_period_ends_at: NotRequired[Optional[str]]
@@ -269,5 +282,5 @@ class PartialRoleConnection(TypedDict):
 
 
 class RoleConnection(PartialRoleConnection):
-    application: MetadataApplication
+    application: RoleConnectionApplication
     application_metadata: List[RoleConnectionMetadata]

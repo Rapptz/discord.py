@@ -587,15 +587,9 @@ class ApplicationBot(User):
     -----------
     application: :class:`Application`
         The application that the bot is attached to.
-    public: :class:`bool`
-        Whether the bot can be invited by anyone or if it is locked
-        to the application owner.
-    require_code_grant: :class:`bool`
-        Whether the bot requires the completion of the full OAuth2 code
-        grant flow to join.
     """
 
-    __slots__ = ('application', 'public', 'require_code_grant')
+    __slots__ = ('application',)
 
     def __init__(self, *, data: PartialUserPayload, state: ConnectionState, application: Application):
         super().__init__(state=state, data=data)
@@ -603,11 +597,19 @@ class ApplicationBot(User):
 
     def _update(self, data: PartialUserPayload) -> None:
         super()._update(data)
-        self.public: bool = data.get('public', True)
-        self.require_code_grant: bool = data.get('require_code_grant', False)
 
     def __repr__(self) -> str:
         return f'<ApplicationBot id={self.id} name={self.name!r} discriminator={self.discriminator!r} public={self.public} require_code_grant={self.require_code_grant}>'
+
+    @property
+    def public(self) -> bool:
+        """:class:`bool`: Whether the bot can be invited by anyone or if it is locked to the application owner."""
+        return self.application.public
+
+    @property
+    def require_code_grant(self) -> bool:
+        """:class:`bool`: Whether the bot requires the completion of the full OAuth2 code grant flow to join."""
+        return self.application.require_code_grant
 
     @property
     def bio(self) -> Optional[str]:
@@ -645,12 +647,12 @@ class ApplicationBot(User):
         Parameters
         -----------
         username: :class:`str`
-            The new username you wish to change your bot to.
+            The new username you wish to change the bot to.
         avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.
         bio: Optional[:class:`str`]
-            Your bot's 'about me' section. This is just the application description.
+            The bot's 'about me' section. This is just the application description.
             Could be ``None`` to represent no 'about me'.
         public: :class:`bool`
             Whether the bot is public or not.
@@ -675,8 +677,6 @@ class ApplicationBot(User):
 
         if payload:
             data = await self._state.http.edit_bot(self.application.id, payload)
-            data['public'] = self.public  # type: ignore
-            data['require_code_grant'] = self.require_code_grant  # type: ignore
             self._update(data)
             payload = {}
 
@@ -691,7 +691,7 @@ class ApplicationBot(User):
             data = await self._state.http.edit_application(self.application.id, payload)
             self.application._update(data)
 
-    async def token(self) -> None:
+    async def token(self) -> str:
         """|coro|
 
         Gets the bot's token.
@@ -1657,6 +1657,10 @@ class PartialApplication(Hashable):
         The application's terms of service URL, if set.
     privacy_policy_url: Optional[:class:`str`]
         The application's privacy policy URL, if set.
+    deeplink_uri: Optional[:class:`str`]
+        The application's deeplink URI, if set.
+
+        .. versionadded:: 2.1
     public: :class:`bool`
         Whether the integration can be invited by anyone or if it is locked
         to the application owner.
@@ -1723,6 +1727,7 @@ class PartialApplication(Hashable):
         'verify_key',
         'terms_of_service_url',
         'privacy_policy_url',
+        'deeplink_uri',
         '_icon',
         '_flags',
         '_cover_image',
@@ -1771,7 +1776,7 @@ class PartialApplication(Hashable):
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self.description: str = data['description']
-        self.rpc_origins: Optional[List[str]] = data.get('rpc_origins') or []
+        self.rpc_origins: List[str] = data.get('rpc_origins') or []
         self.verify_key: str = data['verify_key']
 
         self.aliases: List[str] = data.get('aliases', [])
@@ -1789,6 +1794,7 @@ class PartialApplication(Hashable):
 
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
+        self.deeplink_uri: Optional[str] = data.get('deeplink_uri')
         self._flags: int = data.get('flags', 0)
         self.type: Optional[ApplicationType] = try_enum(ApplicationType, data['type']) if data.get('type') else None
         self.hook: bool = data.get('hook', False)
@@ -2143,6 +2149,10 @@ class Application(PartialApplication):
         The approval state of the RPC usage application.
     discoverability_state: :class:`ApplicationDiscoverabilityState`
         The discoverability (app directory) state of the application.
+    approximate_guild_count: Optional[:class:`int`]
+        The approximate number of guilds this application is in, if available.
+
+        .. versionadded:: 2.1
     """
 
     __slots__ = (
@@ -2156,6 +2166,7 @@ class Application(PartialApplication):
         'rpc_application_state',
         'discoverability_state',
         '_discovery_eligibility_flags',
+        'approximate_guild_count',
     )
 
     if TYPE_CHECKING:
@@ -2177,15 +2188,13 @@ class Application(PartialApplication):
         self.rpc_application_state = try_enum(RPCApplicationState, data.get('rpc_application_state', 0))
         self.discoverability_state = try_enum(ApplicationDiscoverabilityState, data.get('discoverability_state', 1))
         self._discovery_eligibility_flags = data.get('discovery_eligibility_flags', 0)
+        self.approximate_guild_count: Optional[int] = data.get('approximate_guild_count')
 
         state = self._state
 
         # Hacky, but I want these to be persisted
         existing = getattr(self, 'bot', None)
         bot = data.get('bot')
-        if bot:
-            bot['public'] = data.get('bot_public', self.public)  # type: ignore
-            bot['require_code_grant'] = data.get('bot_require_code_grant', self.require_code_grant)  # type: ignore
         if existing is not None:
             existing._update(bot)
         else:
@@ -2215,11 +2224,14 @@ class Application(PartialApplication):
         tags: Sequence[str] = MISSING,
         terms_of_service_url: Optional[str] = MISSING,
         privacy_policy_url: Optional[str] = MISSING,
+        deeplink_uri: Optional[str] = MISSING,
         interactions_endpoint_url: Optional[str] = MISSING,
+        role_connections_verification_url: Optional[str] = MISSING,
         redirect_uris: Sequence[str] = MISSING,
         rpc_origins: Sequence[str] = MISSING,
         public: bool = MISSING,
         require_code_grant: bool = MISSING,
+        max_participants: Optional[int] = MISSING,
         flags: ApplicationFlags = MISSING,
         custom_install_url: Optional[str] = MISSING,
         install_params: Optional[ApplicationInstallParams] = MISSING,
@@ -2250,8 +2262,16 @@ class Application(PartialApplication):
             The URL to the terms of service of the application.
         privacy_policy_url: Optional[:class:`str`]
             The URL to the privacy policy of the application.
+        deeplink_uri: Optional[:class:`str`]
+            The deeplink URI of the application.
+
+            .. versionadded:: 2.1
         interactions_endpoint_url: Optional[:class:`str`]
             The URL interactions will be sent to, if set.
+        role_connections_verification_url: Optional[:class:`str`]
+            The connection verification URL for the application.
+
+            .. versionadded:: 2.1
         redirect_uris: List[:class:`str`]
             A list of redirect URIs authorized for this application.
         rpc_origins: List[:class:`str`]
@@ -2260,6 +2280,11 @@ class Application(PartialApplication):
             Whether the application is public or not.
         require_code_grant: :class:`bool`
             Whether the application requires a code grant or not.
+        max_participants: Optional[:class:`int`]
+            The max number of people that can participate in the activity.
+            Only available for embedded activities.
+
+            .. versionadded:: 2.1
         flags: :class:`ApplicationFlags`
             The flags of the application.
         developers: List[:class:`Company`]
@@ -2299,8 +2324,12 @@ class Application(PartialApplication):
             payload['terms_of_service_url'] = terms_of_service_url or ''
         if privacy_policy_url is not MISSING:
             payload['privacy_policy_url'] = privacy_policy_url or ''
+        if deeplink_uri is not MISSING:
+            payload['deeplink_uri'] = deeplink_uri or ''
         if interactions_endpoint_url is not MISSING:
             payload['interactions_endpoint_url'] = interactions_endpoint_url or ''
+        if role_connections_verification_url is not MISSING:
+            payload['role_connections_verification_url'] = role_connections_verification_url or ''
         if redirect_uris is not MISSING:
             payload['redirect_uris'] = redirect_uris
         if rpc_origins is not MISSING:
@@ -2315,6 +2344,8 @@ class Application(PartialApplication):
                 payload['bot_require_code_grant'] = require_code_grant
             else:
                 payload['integration_require_code_grant'] = require_code_grant
+        if max_participants is not MISSING:
+            payload['max_participants'] = max_participants
         if flags is not MISSING:
             payload['flags'] = flags.value
         if custom_install_url is not MISSING:
@@ -2354,9 +2385,6 @@ class Application(PartialApplication):
             The bot attached to this application.
         """
         data = await self._state.http.edit_bot(self.id, {})
-        data['public'] = self.public  # type: ignore
-        data['require_code_grant'] = self.require_code_grant  # type: ignore
-
         if not self.bot:
             self.bot = ApplicationBot(data=data, state=self._state, application=self)
         else:
@@ -2364,10 +2392,16 @@ class Application(PartialApplication):
 
         return self.bot
 
-    async def create_bot(self) -> ApplicationBot:
+    async def create_bot(self) -> Optional[str]:
         """|coro|
 
         Creates a bot attached to this application.
+
+        .. versionchanged:: 2.1
+
+            This now returns the bot token (if applicable)
+            instead of implicitly refetching the application
+            to return the :class:`ApplicationBot`.
 
         Raises
         ------
@@ -2378,17 +2412,87 @@ class Application(PartialApplication):
 
         Returns
         -------
-        :class:`ApplicationBot`
-            The bot that was created.
+        Optional[:class:`str`]
+            The bot's token.
+            This is only returned if a bot does not already exist.
         """
         state = self._state
-        await state.http.botify_app(self.id)
+        data = await state.http.botify_app(self.id)
+        return data.get('token')
 
-        # The endpoint no longer returns the bot so we fetch ourselves
-        # This is fine, the dev portal does the same
-        data = await state.http.get_my_application(self.id)
-        self._update(data)
-        return self.bot  # type: ignore
+    async def edit_bot(
+        self,
+        *,
+        username: str = MISSING,
+        avatar: Optional[bytes] = MISSING,
+        bio: Optional[str] = MISSING,
+        public: bool = MISSING,
+        require_code_grant: bool = MISSING,
+    ) -> ApplicationBot:
+        """|coro|
+
+        Edits the application's bot.
+
+        All parameters are optional.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        username: :class:`str`
+            The new username you wish to change the bot to.
+        avatar: Optional[:class:`bytes`]
+            A :term:`py:bytes-like object` representing the image to upload.
+            Could be ``None`` to denote no avatar.
+        bio: Optional[:class:`str`]
+            The bot's 'about me' section. This is just the application description.
+            Could be ``None`` to represent no 'about me'.
+        public: :class:`bool`
+            Whether the bot is public or not.
+        require_code_grant: :class:`bool`
+            Whether the bot requires a code grant or not.
+
+        Raises
+        ------
+        Forbidden
+            You are not allowed to edit this bot.
+        HTTPException
+            Editing the bot failed.
+
+        Returns
+        --------
+        :class:`ApplicationBot`
+            The newly edited bot.
+        """
+        payload = {}
+        if username is not MISSING:
+            payload['username'] = username
+        if avatar is not MISSING:
+            if avatar is not None:
+                payload['avatar'] = _bytes_to_base64_data(avatar)
+            else:
+                payload['avatar'] = None
+
+        if payload or not self.bot:  # Ensure we get a bot object
+            data = await self._state.http.edit_bot(self.id, payload)
+            if not self.bot:
+                self.bot = ApplicationBot(data=data, state=self._state, application=self)
+            else:
+                self.bot._update(data)
+            payload = {}
+
+        if public is not MISSING:
+            payload['bot_public'] = public
+        if require_code_grant is not MISSING:
+            payload['bot_require_code_grant'] = require_code_grant
+        if bio is not MISSING:
+            payload['description'] = bio
+
+        if payload:
+            data = await self._state.http.edit_application(self.id, payload)
+            self._update(data)
+
+        return self.bot
 
     async def whitelisted(self) -> List[ApplicationTester]:
         """|coro|
