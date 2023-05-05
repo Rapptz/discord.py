@@ -559,6 +559,9 @@ class HTTPClient:
         form: Optional[Iterable[Dict[str, Any]]] = None,
         **kwargs: Any,
     ) -> Any:
+        if self.token is None:
+            raise ValueError('token is missing.')
+
         method = route.method
         url = route.url
         route_key = route.key
