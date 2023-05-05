@@ -99,7 +99,9 @@ class BaseUser(_UserTag):
         )
 
     def __str__(self) -> str:
-        return f'@{self.name}'
+        if self.discriminator == '0':
+            return f'@{self.name}'
+        return f'{self.name}#{self.discriminator}'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, _UserTag) and other.id == self.id
@@ -317,7 +319,7 @@ class ClientUser(BaseUser):
 
         .. describe:: str(x)
 
-            Returns the user's name with a ``@``.
+            Returns the user's handle (e.g. ``@user`` or ``user#discriminator``).
 
     Attributes
     -----------
@@ -457,7 +459,7 @@ class User(BaseUser, discord.abc.Messageable):
 
         .. describe:: str(x)
 
-            Returns the user's name with a ``@``.
+            Returns the user's handle (e.g. ``@user`` or ``user#discriminator``).
 
     Attributes
     -----------

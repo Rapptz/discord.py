@@ -108,7 +108,7 @@ class TeamMember(BaseUser):
 
         .. describe:: str(x)
 
-            Returns the team member's name with a ``@``.
+            Returns the team member's handle (e.g. ``@user`` or ``user#discriminator``).
 
     .. versionadded:: 1.3
 
@@ -121,7 +121,7 @@ class TeamMember(BaseUser):
     discriminator: :class:`str`
         The team member's discriminator. This is a legacy concept that is no longer used.
     global_name: Optional[:class:`str`]
-        The user's global nickname, taking precedence over the username in display.
+        The team member's global nickname, taking precedence over the username in display.
 
         .. versionadded:: 2.3
     bot: :class:`bool`
