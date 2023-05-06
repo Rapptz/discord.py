@@ -1799,7 +1799,7 @@ class Messageable:
         while True:
             retrieve = 100 if limit is None else min(limit, 100)
             if retrieve < 1:
-                break
+                return
 
             data, state, limit = await strategy(retrieve, state, limit)
 
