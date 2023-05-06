@@ -634,12 +634,7 @@ class HTTPClient:
 
         self._started = True
 
-    async def ws_connect(
-        self, url: str, *, compress: int = 0, host: Optional[str] = None
-    ) -> aiohttp.ClientWebSocketResponse:
-        if not host:
-            host = url[6:].split('?')[0].rstrip('/')  # Removes 'wss://' and the query params
-
+    async def ws_connect(self, url: str, *, compress: int = 0) -> aiohttp.ClientWebSocketResponse:
         kwargs: Dict[str, Any] = {
             'proxy_auth': self.proxy_auth,
             'proxy': self.proxy,
@@ -650,7 +645,6 @@ class HTTPClient:
                 'Accept-Language': 'en-US',
                 'Cache-Control': 'no-cache',
                 'Connection': 'Upgrade',
-                'Host': host,
                 'Origin': 'https://discord.com',
                 'Pragma': 'no-cache',
                 'Sec-WebSocket-Extensions': 'permessage-deflate; client_max_window_bits',
