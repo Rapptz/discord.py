@@ -179,8 +179,6 @@ async def _gen_session(session: Optional[aiohttp.ClientSession]) -> aiohttp.Clie
     ctx.minimum_version = ssl.TLSVersion.TLSv1_2
     ctx.maximum_version = ssl.TLSVersion.TLSv1_3
     ctx.set_ciphers(':'.join(CIPHERS))
-    ctx.options |= ssl.OP_NO_TLSv1
-    ctx.options |= ssl.OP_NO_TLSv1_1
     ctx.options |= ssl.OP_NO_SSLv2
     ctx.options |= ssl.OP_NO_SSLv3
     ctx.options |= ssl.OP_NO_COMPRESSION
