@@ -27,6 +27,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from random import choice, choices
+import ssl
 import string
 from typing import (
     Any,
@@ -123,6 +124,25 @@ if TYPE_CHECKING:
     MessageableChannel = Union[TextChannel, Thread, DMChannel, GroupChannel, PartialMessageable, VoiceChannel, ForumChannel]
 
 INTERNAL_API_VERSION = 9
+CIPHERS = (
+    'TLS_GREASE_5A',
+    'TLS_AES_128_GCM_SHA256',
+    'TLS_AES_256_GCM_SHA384',
+    'TLS_CHACHA20_POLY1305_SHA256',
+    'ECDHE-ECDSA-AES128-GCM-SHA256',
+    'ECDHE-RSA-AES128-GCM-SHA256',
+    'ECDHE-ECDSA-AES256-GCM-SHA384',
+    'ECDHE-RSA-AES256-GCM-SHA384',
+    'ECDHE-ECDSA-CHACHA20-POLY1305',
+    'ECDHE-RSA-CHACHA20-POLY1305',
+    'ECDHE-RSA-AES128-SHA',
+    'ECDHE-RSA-AES256-SHA',
+    'AES128-GCM-SHA256',
+    'AES256-GCM-SHA384',
+    'AES128-SHA',
+    'AES256-SHA',
+)
+
 _log = logging.getLogger(__name__)
 
 
@@ -136,6 +156,46 @@ async def json_or_text(response: aiohttp.ClientResponse) -> Union[Dict[str, Any]
         pass
 
     return text
+
+
+async def _gen_session(session: Optional[aiohttp.ClientSession]) -> aiohttp.ClientSession:
+    connector = None
+    if session:
+        connector = session.connector
+
+    original = getattr(connector, '_ssl', None)
+    if isinstance(original, ssl.SSLContext):
+        ctx = original
+    else:
+        ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
+
+    if session is not None and original is not None:
+        if isinstance(original, bool) and not original:
+            ctx.check_hostname = False
+            ctx.verify_mode = ssl.CERT_NONE
+        elif isinstance(original, aiohttp.Fingerprint):
+            return session  # Cannot continue
+
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    ctx.maximum_version = ssl.TLSVersion.TLSv1_3
+    ctx.set_ciphers(':'.join(CIPHERS))
+    ctx.options |= ssl.OP_NO_TLSv1
+    ctx.options |= ssl.OP_NO_TLSv1_1
+    ctx.options |= ssl.OP_NO_SSLv2
+    ctx.options |= ssl.OP_NO_SSLv3
+    ctx.options |= ssl.OP_NO_COMPRESSION
+    ctx.set_ecdh_curve('prime256v1')
+
+    if connector is not None:
+        connector._ssl = ctx  # type: ignore # Private attribute assignment
+    else:
+        connector = aiohttp.TCPConnector(limit=0, ssl=ctx)
+
+    if session is not None:
+        session._connector = connector
+    else:
+        session = aiohttp.ClientSession(connector=connector)
+    return session
 
 
 class MultipartParameters(NamedTuple):
@@ -491,7 +551,7 @@ try:
     # Support brotli if installed
     aiohttp.client_reqrep.ClientRequest.DEFAULT_HEADERS[aiohttp.hdrs.ACCEPT_ENCODING] = _gen_accept_encoding_header()  # type: ignore
 except Exception:
-    # aiohttp does it for us anyway
+    # aiohttp does it for us on newer versions anyway
     pass
 
 
@@ -558,9 +618,10 @@ class HTTPClient:
         if self._started:
             return
 
-        self.__session = session = aiohttp.ClientSession(
-            connector=self.connector,
-            trace_configs=None if self.http_trace is None else [self.http_trace],
+        self.__session = session = await _gen_session(
+            aiohttp.ClientSession(
+                connector=self.connector, trace_configs=None if self.http_trace is None else [self.http_trace]
+            )
         )
         self.super_properties, self.encoded_super_properties = sp, _ = await utils._get_info(session)
         _log.info('Found user agent %s, build number %s.', sp.get('browser_user_agent'), sp.get('client_build_number'))
