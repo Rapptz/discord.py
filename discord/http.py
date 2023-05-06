@@ -616,6 +616,11 @@ class HTTPClient:
         if self._started:
             return
 
+        self._global_over = asyncio.Event()
+        self._global_over.set()
+
+        if self.connector is MISSING or self.connector.closed:
+            self.connector = aiohttp.TCPConnector(limit=0)
         self.__session = session = await _gen_session(
             aiohttp.ClientSession(
                 connector=self.connector, trace_configs=None if self.http_trace is None else [self.http_trace]
@@ -692,6 +697,9 @@ class HTTPClient:
         url = route.url
         captcha_handler = self.captcha_handler
         route_key = route.key
+
+        if not self._started:
+            await self.startup()
 
         bucket_hash = None
         try:
@@ -1051,14 +1059,6 @@ class HTTPClient:
 
     async def static_login(self, token: str) -> user.User:
         old_token, self.token = self.token, token
-
-        if self.connector is MISSING:
-            self.connector = aiohttp.TCPConnector(limit=0)
-
-        self._global_over = asyncio.Event()
-        self._global_over.set()
-
-        await self.startup()
 
         try:
             data = await self.get_me()
