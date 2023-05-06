@@ -331,7 +331,7 @@ class Attachment(Hashable):
         filename: Optional[str] = MISSING,
         description: Optional[str] = MISSING,
         use_cached: bool = False,
-        spoiler: bool = False,
+        spoiler: Optional[bool] = MISSING,
     ) -> File:
         """|coro|
 
@@ -361,7 +361,7 @@ class Attachment(Hashable):
             on some types of attachments.
 
             .. versionadded:: 1.4
-        spoiler: :class:`bool`
+        spoiler: Optional[:class:`bool`]
             Whether the file is a spoiler.
 
             .. versionadded:: 1.4
@@ -384,7 +384,8 @@ class Attachment(Hashable):
         data = await self.read(use_cached=use_cached)
         file_filename = filename if filename is not MISSING else self.filename
         file_description = description if description is not MISSING else self.description
-        return File(io.BytesIO(data), filename=file_filename, description=file_description, spoiler=spoiler)
+        file_spoiler = spoiler if spoiler is not MISSING else self.is_spoiler()
+        return File(io.BytesIO(data), filename=file_filename, description=file_description, spoiler=file_spoiler)
 
     def to_dict(self) -> AttachmentPayload:
         result: AttachmentPayload = {
