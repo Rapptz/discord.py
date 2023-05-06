@@ -1190,23 +1190,31 @@ class ApplicationFlags(BaseFlags):
 
     @flag_value
     def managed_emoji(self):
-        """:class:`bool`: Returns ``True`` if the application has the ability to create Twitch-style emotes."""
+        """:class:`bool`: Returns ``True`` if the application has the ability to create managed emoji."""
         return 1 << 2
 
     @flag_value
     def embedded_iap(self):
-        """:class:`bool`: Returns ``True`` if the application has the ability to use embedded in-app purchases."""
+        """:class:`bool`: Returns ``True`` if the embedded application has the ability to use in-app purchases."""
         return 1 << 3
 
     @flag_value
     def group_dm_create(self):
-        """:class:`bool`: Returns ``True`` if the application has the ability to create group DMs."""
+        """:class:`bool`: Returns ``True`` if the application has the ability to create group DMs without limit."""
         return 1 << 4
 
     @flag_value
     def rpc_private_beta(self):
         """:class:`bool`: Returns ``True`` if the application has the ability to access the client RPC server."""
         return 1 << 5
+
+    @flag_value
+    def automod_badge(self):
+        """:class:`bool`: Returns ``True`` if the application has created at least 100 automod rules across all guilds.
+
+        .. versionadded:: 2.1
+        """
+        return 1 << 6
 
     @flag_value
     def allow_assets(self):
@@ -1258,20 +1266,20 @@ class ApplicationFlags(BaseFlags):
 
     @flag_value
     def verification_pending_guild_limit(self):
-        """:class:`bool`: Returns ``True`` if the application is currently pending verification
-        and has hit the guild limit.
+        """:class:`bool`: Returns ``True`` if the application has had unusual growth,
+        temporarily preventing verification.
         """
         return 1 << 16
 
     @flag_value
     def embedded(self):
-        """:class:`bool`: Returns ``True`` if the application is embedded within the Discord client."""
+        """:class:`bool`: Returns ``True`` if the application can be embedded within the Discord client."""
         return 1 << 17
 
     @flag_value
     def gateway_message_content(self):
         """:class:`bool`: Returns ``True`` if the application is verified and is allowed to
-        receive message content."""
+        receive message content in guilds."""
         return 1 << 18
 
     @flag_value
