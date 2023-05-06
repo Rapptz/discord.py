@@ -460,6 +460,10 @@ class Subscription(Hashable):
         The status of the subscription. This is ``None`` for fake subscriptions.
     payment_gateway: Optional[:class:`PaymentGateway`]
         The payment gateway used to bill the subscription.
+    country_code: Optional[:class:`str`]
+        The country code the subscription is billed in, if applicable.
+
+        .. versionadded:: 2.1
     currency: :class:`str`
         The currency the subscription is billed in.
     items: List[:class:`SubscriptionItem`]
@@ -474,6 +478,11 @@ class Subscription(Hashable):
         The payment gateway's plan ID for the subscription, if applicable.
     payment_gateway_subscription_id: Optional[:class:`str`]
         The payment gateway's subscription ID for the subscription, if applicable.
+    price: Optional[:class:`int`]
+        The price of the subscription.
+        This is only available for certain third-party subscriptions.
+
+        .. versionadded:: 2.1
     created_at: :class:`datetime.datetime`
         When the subscription was created.
     canceled_at: Optional[:class:`datetime.datetime`]
@@ -487,6 +496,10 @@ class Subscription(Hashable):
         When the trial ends, if applicable.
     streak_started_at: Optional[:class:`datetime.datetime`]
         When the current subscription streak started.
+    use_storekit_resubscribe: :class:`bool`
+        Whether the subscription should be managed through StoreKit.
+
+        .. versionadded:: 2.1
     ended_at: Optional[:class:`datetime.datetime`]
         When the subscription finally ended.
     metadata: :class:`Metadata`
@@ -501,6 +514,7 @@ class Subscription(Hashable):
         'type',
         'status',
         'payment_gateway',
+        'country_code',
         'currency',
         'items',
         'renewal_mutations',
@@ -508,6 +522,7 @@ class Subscription(Hashable):
         'payment_source_id',
         'payment_gateway_plan_id',
         'payment_gateway_subscription_id',
+        'price',
         'created_at',
         'canceled_at',
         'current_period_start',
@@ -515,6 +530,7 @@ class Subscription(Hashable):
         'trial_ends_at',
         'streak_started_at',
         'ended_at',
+        'use_storekit_resubscribe',
         'metadata',
         'latest_invoice',
     )
@@ -532,7 +548,7 @@ class Subscription(Hashable):
     def __bool__(self) -> bool:
         return self.is_active()
 
-    def _update(self, data: PartialSubscriptionPayload) -> None:
+    def _update(self, data: Union[PartialSubscriptionPayload, SubscriptionPayload]) -> None:
         self.id: int = int(data['id'])
         self.type: SubscriptionType = try_enum(SubscriptionType, data['type'])
         self.status: Optional[SubscriptionStatus] = (
@@ -541,6 +557,7 @@ class Subscription(Hashable):
         self.payment_gateway: Optional[PaymentGateway] = (
             try_enum(PaymentGateway, data['payment_gateway']) if 'payment_gateway' in data else None
         )
+        self.country_code: Optional[str] = data.get('country_code')
         self.currency: str = data.get('currency', 'usd')
         self.items: List[SubscriptionItem] = [SubscriptionItem.from_dict(item) for item in data.get('items', [])]
         self.renewal_mutations: SubscriptionRenewalMutations = SubscriptionRenewalMutations(
@@ -551,6 +568,7 @@ class Subscription(Hashable):
         self.payment_source_id: Optional[int] = _get_as_snowflake(data, 'payment_source_id')
         self.payment_gateway_plan_id: Optional[str] = data.get('payment_gateway_plan_id')
         self.payment_gateway_subscription_id: Optional[str] = data.get('payment_gateway_subscription_id')
+        self.price: Optional[int] = data.get('price')
 
         self.created_at: datetime = parse_time(data.get('created_at')) or snowflake_time(self.id)
         self.canceled_at: Optional[datetime] = parse_time(data.get('canceled_at'))
@@ -559,6 +577,7 @@ class Subscription(Hashable):
         self.current_period_end: datetime = parse_time(data['current_period_end'])
         self.trial_ends_at: Optional[datetime] = parse_time(data.get('trial_ends_at'))
         self.streak_started_at: Optional[datetime] = parse_time(data.get('streak_started_at'))
+        self.use_storekit_resubscribe: bool = data.get('use_storekit_resubscribe', False)
 
         metadata = data.get('metadata') or {}
         self.ended_at: Optional[datetime] = parse_time(metadata.get('ended_at', None))
@@ -579,19 +598,23 @@ class Subscription(Hashable):
 
     @property
     def guild(self) -> Optional[Guild]:
-        """:class:`Guild`: The guild the subscription's entitlements apply to, if applicable."""
+        """Optional[:class:`Guild`]: The guild the subscription's entitlements apply to, if applicable."""
         return self._state._get_guild(self.metadata.guild_id)
 
     @property
-    def grace_period(self) -> int:
-        """:class:`int`: How many days past the renewal date the user has available to pay outstanding invoices.
+    def grace_period(self) -> timedelta:
+        """:class:`datetime.timedelta`: How many days past the renewal date the user has available to pay outstanding invoices.
 
         .. note::
 
             This is a static value and does not change based on the subscription's status.
             For that, see :attr:`remaining`.
+
+        .. versionchanged:: 2.1
+
+            This is now a :class:`datetime.timedelta` instead of an :class:`int`.
         """
-        return 7 if self.payment_source_id else 3
+        return timedelta(days=7 if self.payment_source_id else 3)
 
     @property
     def remaining(self) -> timedelta:
@@ -601,7 +624,7 @@ class Subscription(Hashable):
         elif self.status == SubscriptionStatus.past_due:
             if self.payment_gateway == PaymentGateway.google and self.metadata.google_grace_period_expires_date:
                 return self.metadata.google_grace_period_expires_date - utcnow()
-            return (self.current_period_start + timedelta(days=self.grace_period)) - utcnow()
+            return (self.current_period_start + self.grace_period) - utcnow()
         elif self.status == SubscriptionStatus.account_hold:
             # Max hold time is 30 days
             return (self.current_period_start + timedelta(days=30)) - utcnow()

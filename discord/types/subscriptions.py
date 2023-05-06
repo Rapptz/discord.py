@@ -113,9 +113,12 @@ class Subscription(PartialSubscription):
     payment_source_id: Optional[Snowflake]
     created_at: str
     canceled_at: NotRequired[str]
+    country_code: Optional[str]
     trial_ends_at: NotRequired[str]
     metadata: NotRequired[Dict[str, Any]]
     latest_invoice: NotRequired[SubscriptionInvoice]
+    use_storekit_resubscribe: bool
+    price: Optional[int]
 
 
 class SubscriptionTrial(TypedDict):
