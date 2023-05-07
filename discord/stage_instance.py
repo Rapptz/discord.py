@@ -114,7 +114,7 @@ class StageInstance(Hashable):
 
     @property
     def discoverable(self) -> bool:
-        """Whether the stage instance is discoverable."""
+        """:class:`bool`: Whether the stage instance is discoverable."""
         return not self.discoverable_disabled
 
     @cached_slot_property('_cs_channel')
