@@ -1701,6 +1701,55 @@ class HTTPClient:
             params['limit'] = limit
         return self.request(route, params=params)
 
+    def create_forum_tag(
+        self,
+        channel_id: Snowflake,
+        *,
+        name: str,
+        emoji_id: Optional[Snowflake] = None,
+        emoji_name: Optional[str] = None,
+        moderated: bool = False,
+        reason: Optional[str] = None,
+    ) -> Response[channel.ForumChannel]:
+        payload: Dict[str, Any] = {
+            'name': name,
+        }
+        if emoji_id:
+            payload['emoji_id'] = emoji_id
+        if emoji_name:
+            payload['emoji_name'] = emoji_name
+        if moderated:
+            payload['moderated'] = True
+
+        return self.request(Route('POST', '/channels/{channel_id}/tags', channel_id=channel_id), json=payload, reason=reason)
+
+    def edit_forum_tag(
+        self,
+        channel_id: Snowflake,
+        tag_id: Snowflake,
+        *,
+        name: str,
+        emoji_id: Optional[Snowflake] = None,
+        emoji_name: Optional[str] = None,
+        moderated: bool = False,
+        reason: Optional[str] = None,
+    ) -> Response[channel.ForumChannel]:
+        payload: Dict[str, Any] = {
+            'name': name,
+            'emoji_id': emoji_id,
+            'emoji_name': emoji_name,
+            'moderated': moderated,
+        }
+
+        return self.request(
+            Route('PUT', '/channels/{channel_id}/tags/{tag_id}', channel_id=channel_id, tag_id=tag_id),
+            json=payload,
+            reason=reason,
+        )
+
+    def delete_forum_tag(self, channel_id: Snowflake, tag_id: Snowflake) -> Response[channel.ForumChannel]:
+        return self.request(Route('DELETE', '/channels/{channel_id}/tags/{tag_id}', channel_id=channel_id, tag_id=tag_id))
+
     # Webhook management
 
     def create_webhook(

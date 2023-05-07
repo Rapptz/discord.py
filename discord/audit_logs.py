@@ -159,7 +159,7 @@ def _transform_overloaded_flags(entry: AuditLogEntry, data: int) -> Union[int, f
 
 
 def _transform_forum_tags(entry: AuditLogEntry, data: List[ForumTagPayload]) -> List[ForumTag]:
-    return [ForumTag.from_data(state=entry._state, data=d) for d in data]
+    return [ForumTag.from_data(state=entry._state, data=d, channel_id=entry.id) for d in data]
 
 
 def _transform_default_reaction(entry: AuditLogEntry, data: DefaultReactionPayload) -> Optional[PartialEmoji]:
