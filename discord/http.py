@@ -4556,6 +4556,8 @@ class HTTPClient:
             )
         )
 
+    # Recent Mentions
+
     def get_recent_mentions(
         self,
         limit: int = 25,
@@ -4578,6 +4580,14 @@ class HTTPClient:
 
     def delete_recent_mention(self, message_id: Snowflake) -> Response[None]:
         return self.request(Route('DELETE', '/users/@me/mentions/{message_id}', message_id=message_id))
+
+    # Tutorial
+
+    def confirm_tutorial_indicator(self, indicator: str) -> Response[None]:
+        return self.request(Route('PUT', '/tutorial/indicators/{indicator}', indicator=indicator))
+
+    def suppress_tutorial(self) -> Response[None]:
+        return self.request(Route('POST', '/tutorial/indicators/suppress'))
 
     async def get_preferred_voice_regions(self) -> List[dict]:
         async with self.__session.get('https://latency.discord.media/rtc') as resp:

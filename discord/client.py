@@ -106,6 +106,7 @@ if TYPE_CHECKING:
     from .metadata import MetadataObject
     from .permissions import Permissions
     from .read_state import ReadState
+    from .tutorial import Tutorial
     from .types.snowflake import Snowflake as _Snowflake
 
     PrivateChannel = Union[DMChannel, GroupChannel]
@@ -511,6 +512,14 @@ class Client:
         .. versionadded:: 2.1
         """
         return self._connection.friend_suggestion_count
+
+    @property
+    def tutorial(self) -> Tutorial:
+        """:class:`.Tutorial`: The tutorial state of the connected client.
+
+        .. versionadded:: 2.1
+        """
+        return self._connection.tutorial
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""

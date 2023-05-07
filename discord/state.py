@@ -97,6 +97,7 @@ from .library import LibraryApplication
 from .automod import AutoModRule, AutoModAction
 from .audit_logs import AuditLogEntry
 from .read_state import ReadState
+from .tutorial import Tutorial
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -615,6 +616,7 @@ class ConnectionState:
         self._emojis: Dict[int, Emoji] = {}
         self._stickers: Dict[int, GuildSticker] = {}
         self._guilds: Dict[int, Guild] = {}
+        self.tutorial: Tutorial = Tutorial.default(self)
 
         self._read_states: Dict[int, Dict[int, ReadState]] = {}
         self.read_state_version: int = 0
@@ -1065,6 +1067,9 @@ class ConnectionState:
 
         if 'auth_token' in data:
             self.http._token(data['auth_token'])
+
+        if 'tutorial' in data and data['tutorial']:
+            self.tutorial = Tutorial(state=self, data=data['tutorial'])
 
         # We're done
         del self._ready_data

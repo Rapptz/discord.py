@@ -74,20 +74,6 @@ class ShardInfo(TypedDict):
     shard_count: int
 
 
-class ClientInfo(TypedDict):
-    version: int
-    os: str
-    client: str
-
-
-class Session(TypedDict):
-    session_id: str
-    active: NotRequired[bool]
-    client_info: ClientInfo
-    status: StatusType
-    activities: List[Activity]
-
-
 class ResumedEvent(TypedDict):
     _trace: List[str]
 
@@ -114,11 +100,26 @@ class ReadyEvent(ResumedEvent):
     session_id: str
     session_type: str
     shard: NotRequired[ShardInfo]
+    tutorial: Optional[Tutorial]
     user: User
     user_guild_settings: dict
     user_settings_proto: NotRequired[str]
     users: List[PartialUser]
     v: int
+
+
+class ClientInfo(TypedDict):
+    version: int
+    os: str
+    client: str
+
+
+class Session(TypedDict):
+    session_id: str
+    active: NotRequired[bool]
+    client_info: ClientInfo
+    status: StatusType
+    activities: List[Activity]
 
 
 class MergedPresences(TypedDict):
@@ -137,6 +138,11 @@ class VersionedReadState(TypedDict):
     entries: List[ReadState]
     version: int
     partial: bool
+
+
+class Tutorial(TypedDict):
+    indicators_suppressed: bool
+    indicators_confirmed: List[str]
 
 
 NoEvent = Literal[None]

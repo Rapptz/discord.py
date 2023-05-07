@@ -75,6 +75,7 @@ from .subscriptions import *
 from .team import *
 from .template import *
 from .threads import *
+from .tutorial import *
 from .user import *
 from .voice_client import *
 from .webhook import *

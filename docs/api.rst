@@ -7533,6 +7533,14 @@ WelcomeScreen
 .. autoclass:: WelcomeChannel()
     :members:
 
+Tutorial
+~~~~~~~~
+
+.. attributetable:: Tutorial
+
+.. autoclass:: Tutorial()
+    :members:
+
 RawEvent
 ~~~~~~~~~
 
