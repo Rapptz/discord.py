@@ -1075,15 +1075,23 @@ class Guild(Hashable):
     def get_member_named(self, name: str, /) -> Optional[Member]:
         """Returns the first member found that matches the name provided.
 
+        The name is looked up in the following order:
+
+        - Username#Discriminator (deprecated)
+        - Username#0 (deprecated, only gets users that migrated from their discriminator)
+        - Nickname
+        - Global name
+        - Username
+
         If no member is found, ``None`` is returned.
 
         .. versionchanged:: 2.0
 
             ``name`` parameter is now positional-only.
 
-        .. versionchanged:: 2.3
+        .. deprecated:: 2.3
 
-            ``discriminator`` is no longer used in lookup, due to being removed on Discord.
+            Looking up users via discriminator due to Discord API change.
 
         Parameters
         -----------
@@ -1098,6 +1106,10 @@ class Guild(Hashable):
         """
 
         members = self.members
+
+        username, _, discriminator = name.rpartition('#')
+        if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
+            return utils.find(lambda m: m.name == username and m.discriminator == discriminator, members)
 
         def pred(m: Member) -> bool:
             return m.nick == name or m.global_name == name or m.name == name

@@ -186,9 +186,11 @@ class MemberConverter(IDConverter[discord.Member]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by guild nickname
-    4. Lookup by global name
-    5. Lookup by user name
+    3. Lookup by username#discriminator (deprecated).
+    4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
+    5. Lookup by guild nickname.
+    6. Lookup by global name.
+    7. Lookup by user name.
 
     .. versionchanged:: 1.5
          Raise :exc:`.MemberNotFound` instead of generic :exc:`.BadArgument`
@@ -197,14 +199,23 @@ class MemberConverter(IDConverter[discord.Member]):
         This converter now lazily fetches members from the gateway and HTTP APIs,
         optionally caching the result if :attr:`.MemberCacheFlags.joined` is enabled.
 
-    .. versionchanged:: 2.3
-        This converter lookup strategy has changed due to the removal of discriminators.
+    .. deprecated:: 2.3
+        Looking up users by discriminator will be removed in a future version due to
+        the removal of discriminators in an API change.
     """
 
     async def query_member_named(self, guild: discord.Guild, argument: str) -> Optional[discord.Member]:
         cache = guild._state.member_cache_flags.joined
-        members = await guild.query_members(argument, limit=100, cache=cache)
-        return discord.utils.find(lambda m: m.nick == argument or m.global_name == argument or m.name == argument, members)
+        username, _, discriminator = argument.rpartition('#')
+        if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
+            lookup = username
+            predicate = lambda m: m.name == username and m.discriminator == discriminator
+        else:
+            lookup = argument
+            predicate = lambda m: m.nick == argument or m.global_name == argument or m.name == argument
+
+        members = await guild.query_members(lookup, limit=100, cache=cache)
+        return discord.utils.find(predicate, members)
 
     async def query_member_by_id(self, bot: _Bot, guild: discord.Guild, user_id: int) -> Optional[discord.Member]:
         ws = bot._get_websocket(shard_id=guild.shard_id)
@@ -271,8 +282,10 @@ class UserConverter(IDConverter[discord.User]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by global name
-    4. Lookup by user name
+    3. Lookup by username#discriminator (deprecated).
+    4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
+    5. Lookup by global name.
+    6. Lookup by user name.
 
     .. versionchanged:: 1.5
          Raise :exc:`.UserNotFound` instead of generic :exc:`.BadArgument`
@@ -281,8 +294,9 @@ class UserConverter(IDConverter[discord.User]):
         This converter now lazily fetches users from the HTTP APIs if an ID is passed
         and it's not available in cache.
 
-    .. versionchanged:: 2.3
-        This converter lookup strategy has changed due to the removal of discriminators.
+    .. deprecated:: 2.3
+        Looking up users by discriminator will be removed in a future version due to
+        the removal of discriminators in an API change.
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.User:
@@ -301,16 +315,13 @@ class UserConverter(IDConverter[discord.User]):
 
             return result  # type: ignore
 
-        arg = argument
+        username, _, discriminator = argument.rpartition('#')
+        if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
+            predicate = lambda u: u.name == username and u.discriminator == discriminator
+        else:
+            predicate = lambda u: u.global_name == argument or u.name == argument
 
-        # Remove the '@' character if this is the first character from the argument
-        if arg[0] == '@':
-            # Remove first character
-            arg = arg[1:]
-
-        predicate = lambda u: u.global_name == arg or u.name == arg
         result = discord.utils.find(predicate, state._users.values())
-
         if result is None:
             raise UserNotFound(argument)
 
