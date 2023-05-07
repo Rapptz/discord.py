@@ -38,11 +38,7 @@ if TYPE_CHECKING:
     from .enums import ChannelType
     from .types.snowflake import Snowflake
 
-# fmt: off
-__all__ = (
-    'ContextProperties',
-)
-# fmt: on
+__all__ = ()
 
 
 class ContextPropertiesMeta(type):
