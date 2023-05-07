@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .types.components import (
+        ActionRow as ActionRowPayload,
         Component as ComponentPayload,
         ButtonComponent as ButtonComponentPayload,
         SelectMenu as SelectMenuPayload,
@@ -137,6 +138,13 @@ class ActionRow(Component):
     def type(self) -> Literal[ComponentType.action_row]:
         """:class:`ComponentType`: The type of component."""
         return ComponentType.action_row
+
+    def to_dict(self) -> ActionRowPayload:
+        # NOTE: This will have to be changed for the inevitable selects in modals
+        return {
+            'type': self.type.value,
+            'components': [c.to_dict() for c in self.children],  # type: ignore
+        }
 
 
 class Button(Component):
@@ -288,11 +296,11 @@ class SelectMenu(Component):
         """:class:`ComponentType`: The type of component."""
         return ComponentType.select
 
-    def to_dict(self, options: Tuple[SelectOption]) -> dict:
+    def to_dict(self, options: Optional[Tuple[SelectOption]] = None) -> dict:
         return {
             'component_type': self.type.value,
             'custom_id': self.custom_id,
-            'values': [option.value for option in options],
+            'values': [option.value for option in options] if options else [],
         }
 
     async def choose(self, *options: SelectOption) -> Interaction:
