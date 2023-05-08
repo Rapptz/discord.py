@@ -124,15 +124,13 @@ class PartialConnection:
         if self.type == ConnectionType.twitch:
             return f'https://www.twitch.tv/{self.name}'
         elif self.type == ConnectionType.youtube:
-            return f'https://www.youtube.com/{self.id}'
+            return f'https://www.youtube.com/channel/{self.id}'
         elif self.type == ConnectionType.skype:
             return f'skype:{self.id}?userinfo'
         elif self.type == ConnectionType.steam:
             return f'https://steamcommunity.com/profiles/{self.id}'
         elif self.type == ConnectionType.reddit:
             return f'https://www.reddit.com/u/{self.name}'
-        elif self.type == ConnectionType.facebook:
-            return f'https://www.facebook.com/{self.name}'
         elif self.type == ConnectionType.twitter:
             return f'https://twitter.com/{self.name}'
         elif self.type == ConnectionType.spotify:
