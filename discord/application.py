@@ -27,6 +27,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import (
     TYPE_CHECKING,
+    Any,
     AsyncIterator,
     Collection,
     List,
@@ -94,6 +95,7 @@ if TYPE_CHECKING:
         Manifest as ManifestPayload,
         ManifestLabel as ManifestLabelPayload,
         PartialApplication as PartialApplicationPayload,
+        UnverifiedApplication as UnverifiedApplicationPayload,
         WhitelistedUser as WhitelistedUserPayload,
     )
     from .types.user import PartialUser as PartialUserPayload
@@ -117,6 +119,7 @@ __all__ = (
     'PartialApplication',
     'Application',
     'IntegrationApplication',
+    'UnverifiedApplication',
 )
 
 MISSING = utils.MISSING
@@ -1282,7 +1285,7 @@ class ApplicationBuild(Hashable):
         for url in urls:
             file = id_files.get(url['id'])
             if file:
-                await self._state.http.upload_to_cloud(url['url'], file, file.md5 if hash else None)
+                await self._state.http.upload_to_cloud(url['url'], file, file.b64_md5 if hash else None)
 
     async def publish(self) -> None:
         """|coro|
@@ -3681,3 +3684,68 @@ class IntegrationApplication(Hashable):
         app_id = self.id
         data = await state.http.get_app_activity_statistics(app_id)
         return [ApplicationActivityStatistics(data=activity, state=state, application_id=app_id) for activity in data]
+
+
+class UnverifiedApplication:
+    """Represents an unverified application (a game not detected by the Discord client) that has been reported to Discord.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two applications are equal.
+
+        .. describe:: x != y
+
+            Checks if two applications are not equal.
+
+        .. describe:: hash(x)
+
+            Return the application's hash.
+
+        .. describe:: str(x)
+
+            Returns the application's name.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    -----------
+    name: :class:`str`
+        The name of the application.
+    hash: :class:`str`
+        The hash of the application.
+    missing_data: List[:class:`str`]
+        Data missing from the unverified application report.
+
+        .. note::
+
+            :meth:`Client.report_unverified_application` will automatically
+            upload the unverified application's icon, if missing.
+    """
+
+    __slots__ = ('name', 'hash', 'missing_data')
+
+    def __init__(self, *, data: UnverifiedApplicationPayload):
+        self.name: str = data['name']
+        self.hash: str = data['hash']
+        self.missing_data: List[str] = data.get('missing_data', [])
+
+    def __repr__(self) -> str:
+        return f'<UnverifiedApplication name={self.name!r} hash={self.hash!r}>'
+
+    def __hash__(self) -> int:
+        return hash(self.hash)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, UnverifiedApplication):
+            return self.hash == other.hash
+        return NotImplemented
+
+    def __ne__(self, other: Any) -> bool:
+        if isinstance(other, UnverifiedApplication):
+            return self.hash != other.hash
+        return NotImplemented

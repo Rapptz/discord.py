@@ -1330,27 +1330,43 @@ class SKUGenre(Enum):
 
 # There are tons of different operating system/client enums in the API,
 # so we try to unify them here
-# They're normalized as the numbered enum, and converted from the stringified enums
+# They're normalized as the numbered enum, and converted from the stringified enum(s)
 class OperatingSystem(Enum):
     windows = 1
     macos = 2
     linux = 3
 
     android = -1
-    ios = -1
-    unknown = -1
+    ios = -2
+    unknown = -3
 
     @classmethod
     def from_string(cls, value: str) -> Self:
         lookup = {
             'windows': cls.windows,
+            'win32': cls.windows,
             'macos': cls.macos,
+            'darwin': cls.macos,
             'linux': cls.linux,
             'android': cls.android,
             'ios': cls.ios,
             'unknown': cls.unknown,
         }
         return lookup.get(value, create_unknown_value(cls, value))
+
+    def to_string(self):
+        lookup = {
+            OperatingSystem.windows: 'win32',
+            OperatingSystem.macos: 'darwin',
+            OperatingSystem.linux: 'linux',
+            OperatingSystem.android: 'android',
+            OperatingSystem.ios: 'ios',
+            OperatingSystem.unknown: 'unknown',
+        }
+        return lookup[self]
+
+    def __str__(self):
+        return self.to_string()
 
 
 class ContentRatingAgency(Enum):
@@ -1453,6 +1469,9 @@ class Distributor(Enum):
     gog = 'gog'
     epic_games = 'epic'
     google_play = 'google_play'
+
+    def __str__(self):
+        return self.value
 
 
 class EntitlementType(Enum):

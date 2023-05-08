@@ -284,3 +284,9 @@ class PartialRoleConnection(TypedDict):
 class RoleConnection(PartialRoleConnection):
     application: RoleConnectionApplication
     application_metadata: List[RoleConnectionMetadata]
+
+
+class UnverifiedApplication(TypedDict):
+    name: str
+    hash: str
+    missing_data: List[str]

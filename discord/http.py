@@ -3483,7 +3483,7 @@ class HTTPClient:
             file.filename = id
             data = {'id': file.filename}
             if hash:
-                data['md5_hash'] = file.md5
+                data['md5_hash'] = file.b64_md5
 
             payload['files'].append(data)
 
@@ -4558,6 +4558,46 @@ class HTTPClient:
                 branch_id=branch_id,
             )
         )
+
+    # Unverified Applications
+
+    def report_unverified_application(
+        self,
+        name: str,
+        icon_hash: str,
+        os: str,
+        *,
+        executable: Optional[str] = None,
+        publisher: Optional[str] = None,
+        distributor: Optional[str] = None,
+        sku: Optional[str] = None,
+    ) -> Response[application.UnverifiedApplication]:
+        payload = {
+            'report_version': 3,
+            'name': name,
+            'icon': icon_hash,
+            'os': os,
+        }
+        if executable is not None:
+            payload['executable'] = executable
+        if publisher:
+            payload['publisher'] = publisher
+        if distributor:
+            payload['distributor_application'] = {
+                'distributor': distributor,
+                'sku': sku or '',
+            }
+
+        return self.request(Route('POST', '/unverified-applications'), json=payload)
+
+    def upload_unverified_application_icon(self, name: str, hash: str, icon: str) -> Response[None]:
+        payload = {
+            'application_name': name,
+            'application_hash': hash,
+            'icon': icon,
+        }
+
+        return self.request(Route('POST', '/unverified-applications/icons'), json=payload)
 
     # Recent Mentions
 

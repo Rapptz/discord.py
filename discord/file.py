@@ -162,11 +162,15 @@ class File(_FileBase):
         super().__init__(filename, spoiler=spoiler, description=description)
 
     @cached_slot_property('_cs_md5')
-    def md5(self) -> str:
+    def md5(self):
         try:
-            return b64encode(md5(self.fp.read()).digest()).decode('utf-8')
+            return md5(self.fp.read())
         finally:
             self.reset()
+
+    @property
+    def b64_md5(self) -> str:
+        return b64encode(self.md5.digest()).decode('ascii')
 
     @cached_slot_property('_cs_size')
     def size(self) -> int:

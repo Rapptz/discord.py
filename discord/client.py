@@ -70,7 +70,7 @@ from .utils import MISSING
 from .object import Object, OLDEST_OBJECT
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
-from .application import Application, ApplicationActivityStatistics, Company, EULA, PartialApplication
+from .application import Application, ApplicationActivityStatistics, Company, EULA, PartialApplication, UnverifiedApplication
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
@@ -102,11 +102,12 @@ if TYPE_CHECKING:
     from .voice_client import VoiceProtocol
     from .settings import GuildSettings
     from .billing import BillingAddress
-    from .enums import PaymentGateway, RequiredActionType
+    from .enums import Distributor, OperatingSystem, PaymentGateway, RequiredActionType
     from .metadata import MetadataObject
     from .permissions import Permissions
     from .read_state import ReadState
     from .tutorial import Tutorial
+    from .file import File
     from .types.snowflake import Snowflake as _Snowflake
 
     PrivateChannel = Union[DMChannel, GroupChannel]
@@ -780,7 +781,6 @@ class Client:
                 aiohttp.ClientError,
                 asyncio.TimeoutError,
             ) as exc:
-
                 self.dispatch('disconnect')
                 if not reconnect:
                     await self.close()
@@ -4883,3 +4883,66 @@ class Client:
             Leaving the active developer program failed.
         """
         await self._connection.http.unenroll_active_developer()
+
+    async def report_unverified_application(
+        self,
+        name: str,
+        *,
+        icon: File,
+        os: OperatingSystem,
+        executable: str = MISSING,
+        publisher: str = MISSING,
+        distributor: Distributor = MISSING,
+        sku: str = MISSING,
+    ) -> UnverifiedApplication:
+        """|coro|
+
+        Reports an unverified application (a game not detected by the Discord client) to Discord.
+
+        If missing, this also uploads the application icon to Discord.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The name of the application.
+        icon: :class:`.File`
+            The icon of the application.
+        os: :class:`.OperatingSystem`
+            The operating system the application is found on.
+        executable: :class:`str`
+            The executable of the application.
+        publisher: :class:`str`
+            The publisher of the application.
+        distributor: :class:`.Distributor`
+            The distributor of the application SKU.
+        sku: :class:`str`
+            The SKU of the application.
+
+        Raises
+        -------
+        HTTPException
+            Reporting the unverified application failed.
+
+        Returns
+        -------
+        :class:`.UnverifiedApplication`
+            The reported unverified application.
+        """
+        state = self._connection
+        data = await state.http.report_unverified_application(
+            name=name,
+            icon_hash=icon.md5.hexdigest(),
+            os=str(os),
+            executable=executable,
+            publisher=publisher,
+            distributor=str(distributor) if distributor else None,
+            sku=sku,
+        )
+
+        app = UnverifiedApplication(data=data)
+        if 'icon' in app.missing_data:
+            icon_data = utils._bytes_to_base64_data(icon.fp.read())
+            await state.http.upload_unverified_application_icon(app.name, app.hash, icon_data)
+        return app

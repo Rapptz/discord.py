@@ -6705,6 +6705,11 @@ Application
 .. autoclass:: EmbeddedActivityConfig()
     :members:
 
+.. attributetable:: UnverifiedApplication
+
+.. autoclass:: UnverifiedApplication()
+    :members:
+
 ApplicationBranch
 ~~~~~~~~~~~~~~~~~
 
