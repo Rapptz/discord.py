@@ -678,5 +678,29 @@ class Role(Hashable):
         HTTPException
             Deleting the role failed.
         """
-
         await self._state.http.delete_role(self.guild.id, self.id, reason=reason)
+
+    async def member_count(self) -> int:
+        """|coro|
+
+        Retrieves the number of members that have this role.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to get the member count.
+        HTTPException
+            Retrieving the member count failed.
+
+        Returns
+        --------
+        :class:`int`
+            The number of members with this role.
+        """
+        if self.is_default():
+            return self.guild.member_count or self.guild.approximate_member_count or 0
+
+        data = await self._state.http.get_role_member_counts(self.guild.id)
+        return data.get(str(self.id), 0)
