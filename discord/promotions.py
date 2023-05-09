@@ -224,8 +224,8 @@ class TrialOffer(Hashable):
     ----------
     id: :class:`int`
         The ID of the trial offer.
-    expires_at: :class:`datetime.datetime`
-        When the trial offer expires.
+    expires_at: Optional[:class:`datetime.datetime`]
+        When the trial offer expires, if it has been acknowledged.
     trial_id: :class:`int`
         The ID of the trial.
     trial: :class:`SubscriptionTrial`
@@ -242,14 +242,23 @@ class TrialOffer(Hashable):
 
     def __init__(self, *, data: TrialOfferPayload, state: ConnectionState) -> None:
         self._state = state
+        self._update(data)
 
+    def _update(self, data: TrialOfferPayload) -> None:
         self.id: int = int(data['id'])
-        self.expires_at: datetime = parse_time(data['expires_at'])
+        self.expires_at: Optional[datetime] = parse_time(data.get('expires_at'))
         self.trial_id: int = int(data['trial_id'])
         self.trial: SubscriptionTrial = SubscriptionTrial(data['subscription_trial'])
 
     def __repr__(self) -> str:
         return f'<TrialOffer id={self.id} trial={self.trial!r}>'
+
+    def is_acked(self) -> bool:
+        """:class:`bool`: Checks if the trial offer has been acknowledged.
+
+        .. versionadded:: 2.1
+        """
+        return self.expires_at is not None
 
     async def ack(self) -> None:
         """|coro|
@@ -261,7 +270,8 @@ class TrialOffer(Hashable):
         HTTPException
             Acknowledging the trial offer failed.
         """
-        await self._state.http.ack_trial_offer(self.id)
+        data = await self._state.http.ack_trial_offer(self.id)
+        self._update(data)
 
 
 class PricingPromotion:

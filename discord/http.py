@@ -4249,7 +4249,7 @@ class HTTPClient:
     def get_trial_offer(self) -> Response[promotions.TrialOffer]:
         return self.request(Route('GET', '/users/@me/billing/user-trial-offer'))
 
-    def ack_trial_offer(self, trial_id: Snowflake) -> Response[None]:
+    def ack_trial_offer(self, trial_id: Snowflake) -> Response[promotions.TrialOffer]:
         return self.request(Route('POST', '/users/@me/billing/user-trial-offer/{trial_id}/ack', trial_id=trial_id))
 
     def get_pricing_promotion(self) -> Response[promotions.WrappedPricingPromotion]:
