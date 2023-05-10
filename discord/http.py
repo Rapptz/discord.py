@@ -2144,14 +2144,22 @@ class HTTPClient:
         return self.request(Route('PUT', '/guilds/{guild_id}/requests/@me', guild_id=guild_id), json=payload)
 
     def get_all_integrations(
-        self, guild_id: Snowflake, include_applications: bool = True
+        self,
+        guild_id: Snowflake,
+        *,
+        include_applications: bool = True,
+        include_role_connections_metadata: bool = False,
+        has_commands: bool = False,
     ) -> Response[List[integration.Integration]]:
-        r = Route('GET', '/guilds/{guild_id}/integrations', guild_id=guild_id)
         params = {
             'include_applications': str(include_applications).lower(),
         }
+        if include_role_connections_metadata:
+            params['include_role_connections_metadata'] = 'true'
+        if has_commands:
+            params['has_commands'] = 'true'
 
-        return self.request(r, params=params)
+        return self.request(Route('GET', '/guilds/{guild_id}/integrations', guild_id=guild_id), params=params)
 
     def create_integration(
         self, guild_id: Snowflake, type: integration.IntegrationType, id: int, *, reason: Optional[str] = None

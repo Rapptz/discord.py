@@ -3058,7 +3058,7 @@ class Guild(Hashable):
         """
         await self._state.http.create_integration(self.id, type, id, reason=reason)
 
-    async def integrations(self, *, with_applications=True) -> List[Integration]:
+    async def integrations(self, *, has_commands: bool = False) -> List[Integration]:
         """|coro|
 
         Returns a list of all integrations attached to the guild.
@@ -3069,8 +3069,10 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        with_applications: :class:`bool`
-            Whether to include applications.
+        has_commands: :class:`bool`
+            Whether to only return integrations that have commands registered.
+
+            .. versionadded:: 2.1
 
         Raises
         -------
@@ -3084,12 +3086,10 @@ class Guild(Hashable):
         List[:class:`Integration`]
             The list of integrations that are attached to the guild.
         """
-        data = await self._state.http.get_all_integrations(self.id, with_applications)
+        data = await self._state.http.get_all_integrations(self.id, has_commands=has_commands)
 
         def convert(d):
             factory, _ = _integration_factory(d['type'])
-            if factory is None:
-                raise InvalidData('Unknown integration type {type!r} for integration ID {id}'.format_map(d))
             return factory(guild=self, data=d)
 
         return [convert(d) for d in data]
