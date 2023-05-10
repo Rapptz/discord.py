@@ -328,7 +328,7 @@ def handle_message_parameters(
 
     # Legacy uploading
     multipart = []
-    to_upload = [file for file in files if isinstance(file, File)]
+    to_upload = [file for file in files if isinstance(file, File)] if files else None
     if to_upload:
         multipart.append({'name': 'payload_json', 'value': utils._to_json(payload)})
         payload = None
