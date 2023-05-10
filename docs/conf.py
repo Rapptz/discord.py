@@ -51,7 +51,7 @@ autodoc_typehints = 'none'
 # napoleon_attr_annotations = False
 
 extlinks = {
-    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),
+    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-%s'),
     'ddocs': ('https://discord.com/developers/docs/%s', None),
 }
 
