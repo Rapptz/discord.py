@@ -260,6 +260,7 @@ class Client:
             http_trace=http_trace,
             captcha_handler=captcha_handler,
             max_ratelimit_timeout=max_ratelimit_timeout,
+            locale=lambda: self._connection.locale,
         )
 
         self._handlers: Dict[str, Callable[..., None]] = {
