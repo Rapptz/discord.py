@@ -174,7 +174,11 @@ class File(_FileBase):
 
     @cached_slot_property('_cs_size')
     def size(self) -> int:
-        return os.fstat(self.fp.fileno()).st_size
+        self.fp.seek(0, os.SEEK_END)
+        try:
+            return self.fp.tell()
+        finally:
+            self.reset()
 
     def to_upload_dict(self, index: int) -> UploadedAttachmentPayload:
         return {
