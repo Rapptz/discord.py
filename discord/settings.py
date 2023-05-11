@@ -1137,6 +1137,12 @@ class GuildFolder:
 
     All properties have setters to faciliate editing the class for use with :meth:`UserSettings.edit`.
 
+    .. note::
+
+        Guilds not in folders *are* actually in folders API wise, with them being the only member.
+
+        These folders do not have an ID or name.
+
     .. container:: operations
 
         .. describe:: str(x)
@@ -1153,16 +1159,10 @@ class GuildFolder:
 
         Removed various operations and made ``id`` and ``name`` optional.
 
-    .. note::
-
-        Guilds not in folders *are* actually in folders API wise, with them being the only member.
-
-        These folders do not have an ID or name.
-
     Attributes
     ----------
     id: Optional[:class:`int`]
-        The ID of the folder.
+        The ID of the folder. This is ``None`` for fake folders, as outlined in the note above.
     name: Optional[:class:`str`]
         The name of the folder.
     """
@@ -1175,12 +1175,13 @@ class GuildFolder:
         id: Optional[int] = None,
         name: Optional[str] = None,
         colour: Optional[Colour] = None,
+        color: Optional[Colour] = None,
         guilds: Sequence[Snowflake] = MISSING,
     ):
         self._state: Optional[ConnectionState] = None
-        self.id: Optional[int] = id
-        self.name: Optional[str] = name
-        self._colour: Optional[int] = colour.value if colour else None
+        self.id: Optional[int] = id or None
+        self.name: Optional[str] = name or None
+        self._colour: Optional[int] = colour.value if colour else color.value if color else None
         self._guild_ids: List[int] = [guild.id for guild in guilds] if guilds else []
 
     def __str__(self) -> str:
@@ -1196,8 +1197,8 @@ class GuildFolder:
     def _from_legacy_settings(cls, *, data: Dict[str, Any], state: ConnectionState) -> Self:
         self = cls.__new__(cls)
         self._state = state
-        self.id = _get_as_snowflake(data, 'id')
-        self.name = data.get('name')
+        self.id = _get_as_snowflake(data, 'id') or None
+        self.name = data.get('name') or None
         self._colour = data.get('color')
         self._guild_ids = [int(guild_id) for guild_id in data['guild_ids']]
         return self
@@ -1214,7 +1215,7 @@ class GuildFolder:
         """
         self = cls.__new__(cls)
         self._state = state
-        self.id = data.id.value
+        self.id = data.id.value or None
         self.name = data.name.value
         self._colour = data.color.value if data.HasField('color') else None
         self._guild_ids = data.guild_ids
