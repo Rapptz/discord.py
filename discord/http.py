@@ -4490,7 +4490,7 @@ class HTTPClient:
         *,
         nonce: Optional[str] = MISSING,
         application_id: Snowflake = MISSING,
-        files: Optional[List[File]] = None,
+        files: Optional[List[_FileBase]] = None,
     ) -> Response[None]:
         state = getattr(message, '_state', channel._state)
         payload = {
@@ -4512,9 +4512,12 @@ class HTTPClient:
                 payload['guild_id'] = str(guild.id)
 
         form = []
+        to_upload = [file for file in files if isinstance(file, File)] if files else []
         if files is not None:
             form.append({'name': 'payload_json', 'value': utils._to_json(payload)})
-            for index, file in enumerate(files or []):
+
+            # Legacy uploading
+            for index, file in enumerate(to_upload or []):
                 form.append(
                     {
                         'name': f'files[{index}]',
@@ -4525,7 +4528,7 @@ class HTTPClient:
                 )
             payload = None
 
-        return self.request(Route('POST', '/interactions'), json=payload, form=form, files=files)
+        return self.request(Route('POST', '/interactions'), json=payload, form=form, files=to_upload)
 
     def get_user_affinities(self) -> Response[user.UserAffinities]:
         return self.request(Route('GET', '/users/@me/affinities/users'))

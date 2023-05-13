@@ -35,7 +35,7 @@ from .utils import _generate_nonce, _get_as_snowflake
 if TYPE_CHECKING:
     from .abc import Messageable, Snowflake
     from .application import IntegrationApplication
-    from .file import File
+    from .file import _FileBase
     from .guild import Guild
     from .interactions import Interaction
     from .message import Attachment, Message
@@ -66,6 +66,10 @@ class ApplicationCommand(Protocol):
 
     .. versionadded:: 2.0
 
+    .. versionchanged:: 2.1
+
+        Removed ``default_permission`` attribute.
+
     Attributes
     -----------
     name: :class:`str`
@@ -74,8 +78,6 @@ class ApplicationCommand(Protocol):
         The command's description, if any.
     type: :class:`~discord.AppCommandType`
         The type of application command.
-    default_permission: :class:`bool`
-        Whether the command is enabled in guilds by default.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
@@ -100,7 +102,6 @@ class ApplicationCommand(Protocol):
         description: str
         version: int
         type: AppCommandType
-        default_permission: bool
         dm_permission: bool
         nsfw: bool
         application_id: int
@@ -112,7 +113,7 @@ class ApplicationCommand(Protocol):
         return self.name
 
     async def __call__(
-        self, data: dict, files: Optional[List[File]] = None, channel: Optional[Messageable] = None
+        self, data: dict, files: Optional[List[_FileBase]] = None, channel: Optional[Messageable] = None
     ) -> Interaction:
         channel = channel or self.target_channel
         if channel is None:
@@ -180,7 +181,6 @@ class BaseCommand(ApplicationCommand, Hashable):
         'id',
         'version',
         'type',
-        'default_permission',
         'application',
         'application_id',
         'dm_permission',
@@ -209,7 +209,6 @@ class BaseCommand(ApplicationCommand, Hashable):
         self.application = state.create_integration_application(application) if application else None
 
         self._default_member_permissions = _get_as_snowflake(data, 'default_member_permissions')
-        self.default_permission: bool = data.get('default_permission', True)
         dm_permission = data.get('dm_permission')  # Null means true?
         self.dm_permission = dm_permission if dm_permission is not None else True
         self.nsfw: bool = data.get('nsfw', False)
@@ -233,7 +232,7 @@ class SlashMixin(ApplicationCommand, Protocol):
     async def __call__(
         self,
         options: List[dict],
-        files: Optional[List[File]],
+        files: Optional[List[_FileBase]],
         attachments: List[Attachment],
         channel: Optional[Messageable] = None,
     ) -> Interaction:
@@ -253,7 +252,7 @@ class SlashMixin(ApplicationCommand, Protocol):
             data['guild_id'] = str(self.guild_id)
         return await super().__call__(data, files, channel)
 
-    def _parse_kwargs(self, kwargs: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], List[File], List[Attachment]]:
+    def _parse_kwargs(self, kwargs: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], List[_FileBase], List[Attachment]]:
         possible_options = {o.name: o for o in self.options}
         kwargs = {k: v for k, v in kwargs.items() if k in possible_options}
         options = []
@@ -313,8 +312,6 @@ class SlashMixin(ApplicationCommand, Protocol):
 class UserCommand(BaseCommand):
     """Represents a user command.
 
-    .. versionadded:: 2.0
-
     .. container:: operations
 
         .. describe:: x == y
@@ -333,6 +330,12 @@ class UserCommand(BaseCommand):
 
             Returns the command's name.
 
+    .. versionadded:: 2.0
+
+    .. versionchanged:: 2.1
+
+        Removed ``default_permission`` attribute.
+
     Attributes
     ----------
     id: :class:`int`
@@ -345,8 +348,6 @@ class UserCommand(BaseCommand):
         The command's description, if any.
     type: :class:`AppCommandType`
         The type of application command. This will always be :attr:`AppCommandType.user`.
-    default_permission: :class:`bool`
-        Whether the command is enabled in guilds by default.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
@@ -423,8 +424,6 @@ class UserCommand(BaseCommand):
 class MessageCommand(BaseCommand):
     """Represents a message command.
 
-    .. versionadded:: 2.0
-
     .. container:: operations
 
         .. describe:: x == y
@@ -443,6 +442,12 @@ class MessageCommand(BaseCommand):
 
             Returns the command's name.
 
+    .. versionadded:: 2.0
+
+    .. versionchanged:: 2.1
+
+        Removed ``default_permission`` attribute.
+
     Attributes
     ----------
     id: :class:`int`
@@ -455,8 +460,6 @@ class MessageCommand(BaseCommand):
         The command's description, if any.
     type: :class:`AppCommandType`
         The type of application command. This will always be :attr:`AppCommandType.message`.
-    default_permission: :class:`bool`
-        Whether the command is enabled in guilds by default.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
@@ -534,8 +537,6 @@ class MessageCommand(BaseCommand):
 class SlashCommand(BaseCommand, SlashMixin):
     """Represents a slash command.
 
-    .. versionadded:: 2.0
-
     .. container:: operations
 
         .. describe:: x == y
@@ -554,6 +555,12 @@ class SlashCommand(BaseCommand, SlashMixin):
 
             Returns the command's name.
 
+    .. versionadded:: 2.0
+
+    .. versionchanged:: 2.1
+
+        Removed ``default_permission`` attribute.
+
     Attributes
     ----------
     id: :class:`int`
@@ -566,8 +573,6 @@ class SlashCommand(BaseCommand, SlashMixin):
         The command's description, if any.
     type: :class:`AppCommandType`
         The type of application command.
-    default_permission: :class:`bool`
-        Whether the command is enabled in guilds by default.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
@@ -644,8 +649,6 @@ class SlashCommand(BaseCommand, SlashMixin):
 class SubCommand(SlashMixin):
     """Represents a slash command child.
 
-    .. versionadded:: 2.0
-
     This could be a subcommand, or a subgroup.
 
     .. container:: operations
@@ -653,6 +656,12 @@ class SubCommand(SlashMixin):
         .. describe:: str(x)
 
             Returns the command's name.
+
+    .. versionadded:: 2.0
+
+    .. versionchanged:: 2.1
+
+        Removed ``default_permission`` property.
 
     Attributes
     ----------
@@ -788,11 +797,6 @@ class SubCommand(SlashMixin):
         return self._parent.version
 
     @property
-    def default_permission(self) -> bool:
-        """:class:`bool`: Whether the command is enabled in guilds by default."""
-        return self._parent.default_permission
-
-    @property
     def dm_permission(self) -> bool:
         """:class:`bool`: Whether the command is enabled in DMs."""
         return self._parent.dm_permission
@@ -848,13 +852,13 @@ class SubCommand(SlashMixin):
 class Option:
     """Represents a command option.
 
-    .. versionadded:: 2.0
-
     .. container:: operations
 
         .. describe:: str(x)
 
             Returns the option's name.
+
+    .. versionadded:: 2.0
 
     Attributes
     ----------
