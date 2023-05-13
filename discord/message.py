@@ -1836,6 +1836,15 @@ class Message(PartialMessage, Hashable):
                 if role is not None:
                     self.role_mentions.append(role)
 
+    def invites(self):
+        DISCORD_INVITE = r'(?:https?://)?(?:www.:?)?discord(?:(?:app)?.com/invite|.gg)/?[a-zA-Z0-9]+/?'
+        DSG = r'(https|http)://(dsc.gg|discord.gg|discord.io|dsc.lol)/?[\S]+/?'
+        regex1 = re.compile(DISCORD_INVITE)
+        regex2 = re.compile(DSG)
+        invites = regex1.findall(self.content)
+        invites2 = regex2.findall(self.content)
+        return invites + invites2                    
+                    
     def _handle_components(self, data: List[ComponentPayload]) -> None:
         self.components = []
 
