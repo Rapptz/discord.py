@@ -119,6 +119,12 @@ class Permissions(BaseFlags):
                to be, for example, constructed as a dict or a list of pairs.
                Note that aliases are not shown.
 
+        .. describe:: bool(b)
+
+            Returns whether the permissions object has any permissions set to ``True``.
+
+            .. versionadded:: 2.0
+
     Attributes
     -----------
     value: :class:`int`
