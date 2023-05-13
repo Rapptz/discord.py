@@ -30,7 +30,7 @@ from typing_extensions import NotRequired
 from .application import IntegrationApplication, RoleConnectionMetadata
 from .guild import Guild
 from .snowflake import Snowflake
-from .user import User
+from .user import APIUser
 
 
 class IntegrationAccount(TypedDict):
@@ -54,7 +54,7 @@ IntegrationType = Literal['twitch', 'youtube', 'discord', 'guild_subscription']
 
 class BaseIntegration(PartialIntegration):
     enabled: bool
-    user: NotRequired[User]
+    user: NotRequired[APIUser]
 
 
 class StreamIntegration(BaseIntegration):

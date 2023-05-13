@@ -64,7 +64,9 @@ __all__ = (
     'Locale',
     'EntityType',
     'EventStatus',
+    'ApplicationCommandType',
     'AppCommandType',
+    'ApplicationCommandOptionType',
     'AppCommandOptionType',
     'RelationshipType',
     'HypeSquadHouse',
@@ -1055,7 +1057,7 @@ class EventStatus(Enum):
     cancelled = 4
 
 
-class AppCommandOptionType(Enum):
+class ApplicationCommandOptionType(Enum):
     subcommand = 1
     sub_command = 1
     subcommand_group = 2
@@ -1071,13 +1073,19 @@ class AppCommandOptionType(Enum):
     attachment = 11
 
 
-class AppCommandType(Enum):
+AppCommandOptionType = ApplicationCommandOptionType
+
+
+class ApplicationCommandType(Enum):
     chat_input = 1
     user = 2
     message = 3
 
     def __int__(self) -> int:
         return self.value
+
+
+AppCommandType = ApplicationCommandType
 
 
 class ConnectionType(Enum):

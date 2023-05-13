@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Tuple, Type, Union, runtime_checkable
 
-from .enums import AppCommandOptionType, AppCommandType, ChannelType, InteractionType, try_enum
+from .enums import ApplicationCommandOptionType, ApplicationCommandType, ChannelType, InteractionType, try_enum
 from .interactions import _wrapped_interaction
 from .mixins import Hashable
 from .permissions import Permissions
@@ -76,7 +76,7 @@ class ApplicationCommand(Protocol):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    type: :class:`~discord.AppCommandType`
+    type: :class:`~discord.ApplicationCommandType`
         The type of application command.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
@@ -101,7 +101,7 @@ class ApplicationCommand(Protocol):
         name: str
         description: str
         version: int
-        type: AppCommandType
+        type: ApplicationCommandType
         dm_permission: bool
         nsfw: bool
         application_id: int
@@ -203,7 +203,7 @@ class BaseCommand(ApplicationCommand, Hashable):
         self.application_id: int = int(data['application_id'])
         self.id: int = int(data['id'])
         self.version = int(data['version'])
-        self.type = try_enum(AppCommandType, data['type'])
+        self.type = try_enum(ApplicationCommandType, data['type'])
 
         application = data.get('application')
         self.application = state.create_integration_application(application) if application else None
@@ -263,25 +263,25 @@ class SlashMixin(ApplicationCommand, Protocol):
             type = option.type
 
             if type in {
-                AppCommandOptionType.user,
-                AppCommandOptionType.channel,
-                AppCommandOptionType.role,
-                AppCommandOptionType.mentionable,
+                ApplicationCommandOptionType.user,
+                ApplicationCommandOptionType.channel,
+                ApplicationCommandOptionType.role,
+                ApplicationCommandOptionType.mentionable,
             }:
                 v = str(v.id)
-            elif type is AppCommandOptionType.boolean:
+            elif type is ApplicationCommandOptionType.boolean:
                 v = bool(v)
-            elif type is AppCommandOptionType.attachment:
+            elif type is ApplicationCommandOptionType.attachment:
                 files.append(v)
                 v = len(files) - 1
             else:
                 v = option._convert(v)
 
-            if type is AppCommandOptionType.string:
+            if type is ApplicationCommandOptionType.string:
                 v = str(v)
-            elif type is AppCommandOptionType.integer:
+            elif type is ApplicationCommandOptionType.integer:
                 v = int(v)
-            elif type is AppCommandOptionType.number:
+            elif type is ApplicationCommandOptionType.number:
                 v = float(v)
 
             options.append({'name': k, 'value': v, 'type': type.value})
@@ -296,10 +296,10 @@ class SlashMixin(ApplicationCommand, Protocol):
         options = []
         children = []
         for option in data:
-            type = try_enum(AppCommandOptionType, option['type'])
+            type = try_enum(ApplicationCommandOptionType, option['type'])
             if type in {
-                AppCommandOptionType.sub_command,
-                AppCommandOptionType.sub_command_group,
+                ApplicationCommandOptionType.sub_command,
+                ApplicationCommandOptionType.sub_command_group,
             }:
                 children.append(SubCommand(parent=self, data=option))
             else:
@@ -346,8 +346,8 @@ class UserCommand(BaseCommand):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    type: :class:`AppCommandType`
-        The type of application command. This will always be :attr:`AppCommandType.user`.
+    type: :class:`ApplicationCommandType`
+        The type of application command. This will always be :attr:`ApplicationCommandType.user`.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
@@ -458,8 +458,8 @@ class MessageCommand(BaseCommand):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    type: :class:`AppCommandType`
-        The type of application command. This will always be :attr:`AppCommandType.message`.
+    type: :class:`ApplicationCommandType`
+        The type of application command. This will always be :attr:`ApplicationCommandType.message`.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
@@ -571,7 +571,7 @@ class SlashCommand(BaseCommand, SlashMixin):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    type: :class:`AppCommandType`
+    type: :class:`ApplicationCommandType`
         The type of application command.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
@@ -669,8 +669,8 @@ class SubCommand(SlashMixin):
         The subcommand's name.
     description: :class:`str`
         The subcommand's description, if any.
-    type: :class:`AppCommandType`
-        The type of application command. Always :attr:`AppCommandType.chat_input`.
+    type: :class:`ApplicationCommandType`
+        The type of application command. Always :attr:`ApplicationCommandType.chat_input`.
     parent: Union[:class:`SlashCommand`, :class:`SubCommand`]
         The parent command.
     options: List[:class:`Option`]
@@ -695,8 +695,8 @@ class SubCommand(SlashMixin):
         self._state = parent._state
         self.parent: Union[SlashCommand, SubCommand] = parent
         self._parent: SlashCommand = getattr(parent, 'parent', parent)  # type: ignore
-        self.type = AppCommandType.chat_input  # Avoid confusion I guess
-        self._type: AppCommandOptionType = try_enum(AppCommandOptionType, data['type'])
+        self.type = ApplicationCommandType.chat_input  # Avoid confusion I guess
+        self._type: ApplicationCommandOptionType = try_enum(ApplicationCommandOptionType, data['type'])
         self._unwrap_options(data.get('options', []))
 
     def __str__(self) -> str:
@@ -827,7 +827,7 @@ class SubCommand(SlashMixin):
         :class:`bool`
             Whether this command is a group.
         """
-        return self._type is AppCommandOptionType.sub_command_group
+        return self._type is ApplicationCommandOptionType.sub_command_group
 
     @property
     def application(self):
@@ -866,26 +866,26 @@ class Option:
         The option's name.
     description: :class:`str`
         The option's description, if any.
-    type: :class:`AppCommandOptionType`
+    type: :class:`ApplicationCommandOptionType`
         The type of option.
     required: :class:`bool`
         Whether the option is required.
     min_value: Optional[Union[:class:`int`, :class:`float`]]
-        Minimum value of the option. Only applicable to :attr:`AppCommandOptionType.integer` and :attr:`AppCommandOptionType.number`.
+        Minimum value of the option. Only applicable to :attr:`ApplicationCommandOptionType.integer` and :attr:`ApplicationCommandOptionType.number`.
     max_value: Optional[Union[:class:`int`, :class:`float`]]
-        Maximum value of the option. Only applicable to :attr:`AppCommandOptionType.integer` and :attr:`AppCommandOptionType.number`.
+        Maximum value of the option. Only applicable to :attr:`ApplicationCommandOptionType.integer` and :attr:`ApplicationCommandOptionType.number`.
     choices: List[:class:`OptionChoice`]
         A list of possible choices to choose from. If these are present, you must choose one from them.
 
-        Only applicable to :attr:`AppCommandOptionType.string`, :attr:`AppCommandOptionType.integer`, and :attr:`AppCommandOptionType.number`.
+        Only applicable to :attr:`ApplicationCommandOptionType.string`, :attr:`ApplicationCommandOptionType.integer`, and :attr:`ApplicationCommandOptionType.number`.
     channel_types: List[:class:`ChannelType`]
         A list of channel types that you can choose from. If these are present, you must choose a channel that is one of these types.
 
-        Only applicable to :attr:`AppCommandOptionType.channel`.
+        Only applicable to :attr:`ApplicationCommandOptionType.channel`.
     autocomplete: :class:`bool`
         Whether the option autocompletes.
 
-        Only applicable to :attr:`AppCommandOptionType.string`, :attr:`AppCommandOptionType.integer`, and :attr:`AppCommandOptionType.number`.
+        Only applicable to :attr:`ApplicationCommandOptionType.string`, :attr:`ApplicationCommandOptionType.integer`, and :attr:`ApplicationCommandOptionType.number`.
         Always ``False`` if :attr:`choices` are present.
     """
 
@@ -904,7 +904,7 @@ class Option:
     def __init__(self, data):
         self.name: str = data['name']
         self.description: str = data['description']
-        self.type: AppCommandOptionType = try_enum(AppCommandOptionType, data['type'])
+        self.type: ApplicationCommandOptionType = try_enum(ApplicationCommandOptionType, data['type'])
         self.required: bool = data.get('required', False)
         self.min_value: Optional[Union[int, float]] = data.get('min_value')
         self.max_value: Optional[int] = data.get('max_value')
@@ -946,14 +946,14 @@ class OptionChoice:
 
     __slots__ = ('name', 'value')
 
-    def __init__(self, data: Dict[str, str], type: AppCommandOptionType):
+    def __init__(self, data: Dict[str, str], type: ApplicationCommandOptionType):
         self.name: str = data['name']
         self.value: Union[str, int, float]
-        if type is AppCommandOptionType.string:
+        if type is ApplicationCommandOptionType.string:
             self.value = data['value']
-        elif type is AppCommandOptionType.integer:
+        elif type is ApplicationCommandOptionType.integer:
             self.value = int(data['value'])
-        elif type is AppCommandOptionType.number:
+        elif type is ApplicationCommandOptionType.number:
             self.value = float(data['value'])
 
     def __str__(self) -> str:
@@ -968,13 +968,13 @@ class OptionChoice:
         return value
 
 
-def _command_factory(command_type: int) -> Tuple[AppCommandType, Type[BaseCommand]]:
-    value = try_enum(AppCommandType, command_type)
-    if value is AppCommandType.chat_input:
+def _command_factory(command_type: int) -> Tuple[ApplicationCommandType, Type[BaseCommand]]:
+    value = try_enum(ApplicationCommandType, command_type)
+    if value is ApplicationCommandType.chat_input:
         return value, SlashCommand
-    elif value is AppCommandType.user:
+    elif value is ApplicationCommandType.user:
         return value, UserCommand
-    elif value is AppCommandType.message:
+    elif value is ApplicationCommandType.message:
         return value, MessageCommand
     else:
         return value, BaseCommand  # IDK about this

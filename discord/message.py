@@ -51,7 +51,7 @@ from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .calls import CallMessage
-from .enums import MessageType, ChannelType, AppCommandType, try_enum
+from .enums import MessageType, ChannelType, ApplicationCommandType, try_enum
 from .errors import HTTPException
 from .components import _component_factory
 from .embeds import Embed
@@ -2359,7 +2359,7 @@ class Message(PartialMessage, Hashable):
         """
         return _handle_commands(
             self,
-            AppCommandType.message,
+            ApplicationCommandType.message,
             query=query,
             limit=limit,
             command_ids=command_ids,

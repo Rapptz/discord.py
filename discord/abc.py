@@ -48,7 +48,7 @@ from typing import (
 
 from .object import OLDEST_OBJECT, Object
 from .context_managers import Typing
-from .enums import AppCommandType, ChannelType
+from .enums import ApplicationCommandType, ChannelType
 from .errors import ClientException
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
@@ -163,7 +163,7 @@ async def _purge_helper(
 @overload
 def _handle_commands(
     messageable: Messageable,
-    type: Literal[AppCommandType.chat_input],
+    type: Literal[ApplicationCommandType.chat_input],
     *,
     query: Optional[str] = ...,
     limit: Optional[int] = ...,
@@ -178,7 +178,7 @@ def _handle_commands(
 @overload
 def _handle_commands(
     messageable: Messageable,
-    type: Literal[AppCommandType.user],
+    type: Literal[ApplicationCommandType.user],
     *,
     query: Optional[str] = ...,
     limit: Optional[int] = ...,
@@ -193,7 +193,7 @@ def _handle_commands(
 @overload
 def _handle_commands(
     messageable: Message,
-    type: Literal[AppCommandType.message],
+    type: Literal[ApplicationCommandType.message],
     *,
     query: Optional[str] = ...,
     limit: Optional[int] = ...,
@@ -207,7 +207,7 @@ def _handle_commands(
 
 async def _handle_commands(
     messageable: Union[Messageable, Message],
-    type: AppCommandType,
+    type: ApplicationCommandType,
     *,
     query: Optional[str] = None,
     limit: Optional[int] = None,
@@ -2424,7 +2424,7 @@ class Messageable:
         """
         return _handle_commands(
             self,
-            AppCommandType.chat_input,
+            ApplicationCommandType.chat_input,
             query=query,
             limit=limit,
             command_ids=command_ids,
@@ -2500,7 +2500,7 @@ class Messageable:
         """
         return _handle_commands(
             self,
-            AppCommandType.user,
+            ApplicationCommandType.user,
             query=query,
             limit=limit,
             command_ids=command_ids,

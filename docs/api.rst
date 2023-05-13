@@ -5483,7 +5483,7 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`paragraph`.
 
-.. class:: AppCommandType
+.. class:: ApplicationCommandType
 
     The type of application command.
 
@@ -5501,7 +5501,7 @@ of :class:`enum.Enum`.
 
         A message context menu command.
 
-.. class:: AppCommandOptionType
+.. class:: ApplicationCommandOptionType
 
     The application command's option type. This is usually the type of parameter an application command takes.
 
