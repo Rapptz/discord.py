@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import asyncio
-import logging
+import logging,socket
 import sys
 from typing import (
     Any,
@@ -494,8 +494,8 @@ class HTTPClient:
         max_ratelimit_timeout: Optional[float] = None,
     ) -> None:
         self.loop: asyncio.AbstractEventLoop = loop
-        self.connector: aiohttp.BaseConnector = connector or MISSING
-        self.__session: aiohttp.ClientSession = MISSING  # filled in static_login
+        self.connector: aiohttp.TCPConnector(family=socket.AF_INET) = connector or MISSING
+        self.__session: aiohttp.ClientSession(connector=self.connector,resolver=aiohttp.AsyncResolver) = MISSING  # filled in static_login
         # Route key -> Bucket hash
         self._bucket_hashes: Dict[str, str] = {}
         # Bucket Hash + Major Parameters -> Rate limit
@@ -555,6 +555,7 @@ class HTTPClient:
         self,
         route: Route,
         *,
+        proxy: Optional[str] = None,
         files: Optional[Sequence[File]] = None,
         form: Optional[Iterable[Dict[str, Any]]] = None,
         **kwargs: Any,
@@ -596,6 +597,8 @@ class HTTPClient:
         kwargs['headers'] = headers
 
         # Proxy support
+        if proxy is not None:
+            kwargs['proxy'] = proxy
         if self.proxy is not None:
             kwargs['proxy'] = self.proxy
         if self.proxy_auth is not None:
@@ -784,7 +787,7 @@ class HTTPClient:
     async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
-            self.connector = aiohttp.TCPConnector(limit=0)
+            self.connector = aiohttp.TCPConnector(family=socket.AF_INET,limit=0,resolver=aiohttp.resolver.AsyncResolver())
 
         self.__session = aiohttp.ClientSession(
             connector=self.connector,
@@ -834,13 +837,18 @@ class HTTPClient:
     def send_message(
         self,
         channel_id: Snowflake,
+        proxy: str = None,
         *,
         params: MultipartParameters,
     ) -> Response[message.Message]:
         r = Route('POST', '/channels/{channel_id}/messages', channel_id=channel_id)
         if params.files:
+            if proxy:
+                return self.request(r, proxy=proxy,files=params.files, form=params.multipart)
             return self.request(r, files=params.files, form=params.multipart)
         else:
+            if proxy:
+                return self.request(r, proxy=proxy,json=params.payload)
             return self.request(r, json=params.payload)
 
     def send_typing(self, channel_id: Snowflake) -> Response[None]:
