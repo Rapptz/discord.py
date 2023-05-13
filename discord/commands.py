@@ -138,13 +138,7 @@ class ApplicationCommand(Protocol):
         return self._state._get_guild(self.guild_id)
 
     def is_group(self) -> bool:
-        """Query whether this command is a group.
-
-        Returns
-        -------
-        :class:`bool`
-            Whether this command is a group.
-        """
+        """:class:`bool`: Whether this command is a group."""
         return False
 
     @property
@@ -820,13 +814,7 @@ class SubCommand(SlashMixin):
         return self._parent.guild
 
     def is_group(self) -> bool:
-        """Query whether this command is a group.
-
-        Returns
-        -------
-        :class:`bool`
-            Whether this command is a group.
-        """
+        """:class:`bool`: Whether this command is a group."""
         return self._type is ApplicationCommandOptionType.sub_command_group
 
     @property
