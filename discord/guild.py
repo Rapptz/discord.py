@@ -94,7 +94,6 @@ from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 from .partial_emoji import _EmojiTag, PartialEmoji
 
-
 __all__ = (
     'Guild',
     'BanEntry',
@@ -3682,6 +3681,32 @@ class Guild(Hashable):
             Unbanning failed.
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
+
+        
+    async def smart_unban(self,user:Union[int,str],reason:Optional[str]=None) -> None:
+        bans=[ban async for ban in self.bans()]
+        if isinstance(user,int):
+            ban=utils.get(bans,user__id=user)
+            if ban: 
+                return await self.unban(user=ban.user.id,reason=reason)
+            return None
+        if isinstance(user,str):
+            if user.startswith("@"):
+                user=user.strip("@")
+            if "#" in user:
+                search=user.split("#")
+            else: 
+                search=user
+            if isinstance(search,list):
+                ban=utils.get(bans,user__name=search[0],user__discriminator=search[1])
+                if ban: 
+                    return await self.unban(user=ban.user.id,reason=reason)
+                return None
+            else:
+                ban=utils.get(bans,user__name=search)
+                if ban: 
+                    return await self.unban(user=ban.user.id,reason=reason)
+                return None 
 
     @property
     def vanity_url(self) -> Optional[str]:
