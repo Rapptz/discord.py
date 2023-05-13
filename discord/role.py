@@ -311,6 +311,18 @@ class Role(Hashable):
         .. versionadded:: 1.6
         """
         return self.tags is not None and self.tags.is_integration()
+    
+    def is_dangerous(self) -> bool:
+
+        permissions = Permissions(self._permissions)
+        return any([
+            permissions.kick_members, permissions.ban_members,
+            permissions.administrator, permissions.manage_channels,
+            permissions.manage_guild, permissions.manage_messages,
+            permissions.manage_roles, permissions.manage_webhooks,
+            permissions.manage_emojis_and_stickers, permissions.manage_threads,
+            permissions.mention_everyone, permissions.moderate_members
+        ])
 
     def is_assignable(self) -> bool:
         """:class:`bool`: Whether the role is able to be assigned or removed by the bot.
