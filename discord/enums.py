@@ -63,6 +63,7 @@ __all__ = (
     'AppCommandType',
     'AppCommandOptionType',
     'AppCommandPermissionType',
+    'AppCommandContext',
     'AutoModRuleTriggerType',
     'AutoModRuleEventType',
     'AutoModRuleActionType',
@@ -726,6 +727,12 @@ class AppCommandPermissionType(Enum):
     role = 1
     user = 2
     channel = 3
+
+
+class AppCommandContext(Enum):
+    GUILD = 0
+    BOT_DM = 1  # this is DMs only
+    PRIVATE_CHANNEL = 2  # this is DMs + GDMs
 
 
 class AutoModRuleTriggerType(Enum):
