@@ -90,7 +90,7 @@ __all__ = (
     'guilds',
     'guild_only',
     'dm_only',
-    'private_only',
+    'private_channel_only',
     'default_permissions',
 )
 
@@ -2472,7 +2472,7 @@ def guild_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         return inner(func)
 
 
-def private_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
+def private_channel_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """A decorator that indicates this command can only be used in the context of DMs and group DMs.
 
     This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
@@ -2488,8 +2488,8 @@ def private_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     .. code-block:: python3
 
         @app_commands.command()
-        @app_commands.private_only()
-        async def my_private_only_command(interaction: discord.Interaction) -> None:
+        @app_commands.private_channel_only()
+        async def my_private_channel_only_command(interaction: discord.Interaction) -> None:
             await interaction.response.send_message('I am only available in DMs and GDMs!')
     """
 
