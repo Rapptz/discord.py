@@ -26,10 +26,10 @@ from __future__ import annotations
 from datetime import datetime
 
 from .errors import MissingApplicationID
+from ..flags import AppCommandContext
 from .translator import TranslationContextLocation, TranslationContext, locale_str, Translator
 from ..permissions import Permissions
 from ..enums import (
-    AppCommandContext,
     AppCommandOptionType,
     AppCommandType,
     AppCommandPermissionType,
@@ -168,7 +168,7 @@ class AppCommand(Hashable):
         The default member permissions that can run this command.
     dm_permission: :class:`bool`
         A boolean that indicates whether this command can be run in direct messages.
-    allowed_contexts: Optional[List[:class:`AppCommandContext`]]
+    allowed_contexts: Optional[:class:`AppCommandContext`]
         A list of contexts that this command can be run in. Overrides the ``dm_permission`` attribute.
     guild_id: Optional[:class:`int`]
         The ID of the guild this command is registered in. A value of ``None``
@@ -224,9 +224,9 @@ class AppCommand(Hashable):
 
         allowed_contexts = data.get('contexts')
         if allowed_contexts is None:
-            self.allowed_contexts: Optional[List[AppCommandContext]] = None
+            self.allowed_contexts: Optional[AppCommandContext] = None
         else:
-            self.allowed_contexts = [try_enum(AppCommandContext, ctx) for ctx in allowed_contexts]
+            self.allowed_contexts = AppCommandContext._from_value(allowed_contexts)
 
         self.nsfw: bool = data.get('nsfw', False)
         self.name_localizations: Dict[Locale, str] = _to_locale_dict(data.get('name_localizations') or {})
@@ -241,7 +241,7 @@ class AppCommand(Hashable):
             'description': self.description,
             'name_localizations': {str(k): v for k, v in self.name_localizations.items()},
             'description_localizations': {str(k): v for k, v in self.description_localizations.items()},
-            'contexts': [ctx.value for ctx in self.allowed_contexts] if self.allowed_contexts else None,
+            'contexts': self.allowed_contexts.to_array() if self.allowed_contexts is not None else None,
             'options': [opt.to_dict() for opt in self.options],
         }  # type: ignore # Type checker does not understand this literal.
 
