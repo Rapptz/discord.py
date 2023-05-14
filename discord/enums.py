@@ -730,9 +730,9 @@ class AppCommandPermissionType(Enum):
 
 
 class AppCommandContext(Enum):
-    GUILD = 0
-    BOT_DM = 1  # this is DMs only
-    PRIVATE_CHANNEL = 2  # this is DMs + GDMs
+    guild = 0
+    bot_dm = 1  # this is DMs only
+    private_channel = 2  # this is DMs + GDMs
 
 
 class AutoModRuleTriggerType(Enum):

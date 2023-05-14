@@ -410,6 +410,22 @@ Enumerations
 
         The permission is for a user.
 
+.. class:: AppCommandContext
+
+    The application command's contexts type.
+
+    .. versionadded:: 2.3
+
+    .. attribute:: guild
+
+        The context is for guild.
+    .. attribute:: bot_dm
+
+        The context is for bot DMs.
+    .. attribute:: private_channel
+
+        The context is for bot DMs and group DMs.
+
 .. _discord_ui_kit:
 
 Bot UI Kit

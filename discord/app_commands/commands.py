@@ -622,7 +622,7 @@ class Command(Generic[GroupT, P, T]):
         Due to a Discord limitation, this does not work on subcommands.
     allowed_contexts: Optional[List[:class:`~discord.AppCommandContext`]]
         A list of contexts that the command is allowed to be used in.
-        Overrides guild_only if tihs is set.
+        Overrides ``guild_only`` if this is set.
     nsfw: :class:`bool`
         Whether the command is NSFW and should only work in NSFW channels.
 
@@ -1179,7 +1179,7 @@ class ContextMenu:
         Defaults to ``False``.
     allowed_contexts: Optional[List[:class:`.AppCommandContext`]]
         The contexts that this context menu is allowed to be used in.
-        Overrides `guild_only` if set.
+        Overrides ``guild_only`` if set.
     nsfw: :class:`bool`
         Whether the command is NSFW and should only work in NSFW channels.
         Defaults to ``False``.
@@ -2458,8 +2458,8 @@ def guild_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
             allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or []
             f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
 
-        if AppCommandContext.GUILD not in allowed_contexts:
-            allowed_contexts.append(AppCommandContext.GUILD)
+        if AppCommandContext.guild not in allowed_contexts:
+            allowed_contexts.append(AppCommandContext.guild)
 
         return f
 
@@ -2501,8 +2501,8 @@ def private_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
             allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or []
             f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
 
-        if AppCommandContext.PRIVATE_CHANNEL not in allowed_contexts:
-            allowed_contexts.append(AppCommandContext.PRIVATE_CHANNEL)
+        if AppCommandContext.private_channel not in allowed_contexts:
+            allowed_contexts.append(AppCommandContext.private_channel)
 
         return f
 
@@ -2544,8 +2544,9 @@ def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
             allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or []
             f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
 
-        if AppCommandContext.BOT_DM not in allowed_contexts:
-            allowed_contexts.append(AppCommandContext.BOT_DM)
+        if AppCommandContext.bot_dm not in allowed_contexts:
+            allowed_contexts.append(AppCommandContext.bot_dm)
+            
         return f
 
     # Check if called with parentheses or not

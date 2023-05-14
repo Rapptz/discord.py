@@ -169,7 +169,7 @@ class AppCommand(Hashable):
     dm_permission: :class:`bool`
         A boolean that indicates whether this command can be run in direct messages.
     allowed_contexts: Optional[List[:class:`AppCommandContext`]]
-        A list of contexts that this command can be run in. Overrides the `dm_permission` attribute.
+        A list of contexts that this command can be run in. Overrides the ``dm_permission`` attribute.
     guild_id: Optional[:class:`int`]
         The ID of the guild this command is registered in. A value of ``None``
         denotes that it is a global command.
