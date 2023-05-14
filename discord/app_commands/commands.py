@@ -622,7 +622,7 @@ class Command(Generic[GroupT, P, T]):
         Whether the command should only be usable in guild contexts.
 
         Due to a Discord limitation, this does not work on subcommands.
-    allowed_contexts: Optional[List[:class:`~discord.AppCommandContext`]]
+    restrict_contexts: Optional[List[:class:`~discord.AppCommandContext`]]
         A list of contexts that the command is allowed to be used in.
         Overrides ``guild_only`` if this is set.
     nsfw: :class:`bool`
@@ -645,7 +645,7 @@ class Command(Generic[GroupT, P, T]):
         nsfw: bool = False,
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
-        allowed_contexts: Optional[AppCommandContext] = None,
+        restrict_contexts: Optional[AppCommandContext] = None,
         auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ):
@@ -680,7 +680,7 @@ class Command(Generic[GroupT, P, T]):
             callback, '__discord_app_commands_default_permissions__', None
         )
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
-        self.allowed_contexts: Optional[AppCommandContext] = allowed_contexts or getattr(
+        self.restrict_contexts: Optional[AppCommandContext] = restrict_contexts or getattr(
             callback, '__discord_app_commands_contexts__', None
         )
         self.nsfw: bool = nsfw
@@ -771,7 +771,7 @@ class Command(Generic[GroupT, P, T]):
             base['nsfw'] = self.nsfw
             base['dm_permission'] = not self.guild_only
             base['default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
-            base['contexts'] = self.allowed_contexts.to_array() if self.allowed_contexts is not None else None
+            base['contexts'] = self.restrict_contexts.to_array() if self.restrict_contexts is not None else None
 
         return base
 
@@ -1179,7 +1179,7 @@ class ContextMenu:
     guild_only: :class:`bool`
         Whether the command should only be usable in guild contexts.
         Defaults to ``False``.
-    allowed_contexts: Optional[:class:`.AppCommandContext`]
+    restrict_contexts: Optional[:class:`.AppCommandContext`]
         The contexts that this context menu is allowed to be used in.
         Overrides ``guild_only`` if set.
     nsfw: :class:`bool`
@@ -1204,7 +1204,7 @@ class ContextMenu:
         type: AppCommandType = MISSING,
         nsfw: bool = False,
         guild_ids: Optional[List[int]] = None,
-        allowed_contexts: Optional[AppCommandContext] = MISSING,
+        restrict_contexts: Optional[AppCommandContext] = MISSING,
         auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ):
@@ -1230,7 +1230,7 @@ class ContextMenu:
         )
         self.nsfw: bool = nsfw
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
-        self.allowed_contexts: Optional[AppCommandContext] = allowed_contexts or getattr(
+        self.restrict_contexts: Optional[AppCommandContext] = restrict_contexts or getattr(
             callback, '__discord_app_commands_contexts__', None
         )
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
@@ -1268,7 +1268,7 @@ class ContextMenu:
             'name': self.name,
             'type': self.type.value,
             'dm_permission': not self.guild_only,
-            'contexts': self.allowed_contexts.to_array() if self.allowed_contexts is not None else None,
+            'contexts': self.restrict_contexts.to_array() if self.restrict_contexts is not None else None,
             'default_member_permissions': None if self.default_permissions is None else self.default_permissions.value,
             'nsfw': self.nsfw,
         }
@@ -1425,7 +1425,7 @@ class Group:
         Whether the group should only be usable in guild contexts.
 
         Due to a Discord limitation, this does not work on subcommands.
-    allowed_contexts: Optional[:class:`.AppCommandContext`]
+    restrict_contexts: Optional[:class:`.AppCommandContext`]
         The contexts that this group is allowed to be used in. Overrides
         guild_only if set.
     nsfw: :class:`bool`
@@ -1516,7 +1516,7 @@ class Group:
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
         guild_only: bool = MISSING,
-        allowed_contexts: Optional[AppCommandContext] = MISSING,
+        restrict_contexts: Optional[AppCommandContext] = MISSING,
         nsfw: bool = MISSING,
         auto_locale_strings: bool = True,
         default_permissions: Optional[Permissions] = MISSING,
@@ -1565,13 +1565,13 @@ class Group:
 
         self.guild_only: bool = guild_only
 
-        if allowed_contexts is MISSING:
+        if restrict_contexts is MISSING:
             if cls.__discord_app_commands_contexts__ is MISSING:
-                allowed_contexts = None
+                restrict_contexts = None
             else:
-                allowed_contexts = cls.__discord_app_commands_contexts__
+                restrict_contexts = cls.__discord_app_commands_contexts__
 
-        self.allowed_contexts: Optional[AppCommandContext] = allowed_contexts
+        self.restrict_contexts: Optional[AppCommandContext] = restrict_contexts
 
         if nsfw is MISSING:
             nsfw = cls.__discord_app_commands_group_nsfw__
@@ -1702,7 +1702,7 @@ class Group:
             base['nsfw'] = self.nsfw
             base['dm_permission'] = not self.guild_only
             base['default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
-            base['contexts'] = self.allowed_contexts.to_array() if self.allowed_contexts is not None else None
+            base['contexts'] = self.restrict_contexts.to_array() if self.restrict_contexts is not None else None
 
         return base
 
@@ -2452,15 +2452,15 @@ def guild_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     def inner(f: T) -> T:
         if isinstance(f, (Command, Group, ContextMenu)):
             f.guild_only = True
-            allowed_contexts = f.allowed_contexts or AppCommandContext.none()
-            f.allowed_contexts = allowed_contexts
+            restrict_contexts = f.restrict_contexts or AppCommandContext.none()
+            f.restrict_contexts = restrict_contexts
         else:
             f.__discord_app_commands_guild_only__ = True  # type: ignore # Runtime attribute assignment
 
-            allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext.none()
-            f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
+            restrict_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext.none()
+            f.__discord_app_commands_contexts__ = restrict_contexts  # type: ignore # Runtime attribute assignment
 
-        allowed_contexts.guild = True
+        restrict_contexts.guild = True
 
         return f
 
@@ -2496,13 +2496,13 @@ def private_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     def inner(f: T) -> T:
         if isinstance(f, (Command, Group, ContextMenu)):
             f.guild_only = False
-            allowed_contexts = f.allowed_contexts or AppCommandContext.none()
-            f.allowed_contexts = allowed_contexts
+            restrict_contexts = f.restrict_contexts or AppCommandContext.none()
+            f.restrict_contexts = restrict_contexts
         else:
-            allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext.none()
-            f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
+            restrict_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext.none()
+            f.__discord_app_commands_contexts__ = restrict_contexts  # type: ignore # Runtime attribute assignment
 
-        allowed_contexts.private_channel = True
+        restrict_contexts.private_channel = True
 
         return f
 
@@ -2538,13 +2538,13 @@ def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     def inner(f: T) -> T:
         if isinstance(f, (Command, Group, ContextMenu)):
             f.guild_only = False
-            allowed_contexts = f.allowed_contexts or AppCommandContext.none()
-            f.allowed_contexts = allowed_contexts
+            restrict_contexts = f.restrict_contexts or AppCommandContext.none()
+            f.restrict_contexts = restrict_contexts
         else:
-            allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext.none()
-            f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
+            restrict_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext.none()
+            f.__discord_app_commands_contexts__ = restrict_contexts  # type: ignore # Runtime attribute assignment
 
-        allowed_contexts.dm_channel = True
+        restrict_contexts.dm_channel = True
 
         return f
 
