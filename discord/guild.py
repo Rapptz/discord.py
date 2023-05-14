@@ -271,6 +271,42 @@ class UserGuild(Hashable):
         """
         return True
 
+    async def leave(self) -> None:
+        """|coro|
+
+        Leaves the guild.
+
+        .. note::
+
+            You cannot leave a guild that you own, you must delete it instead
+            via :meth:`delete`.
+
+        .. versionadded:: 2.1
+
+        Raises
+        --------
+        HTTPException
+            Leaving the guild failed.
+        """
+        await self._state.http.leave_guild(self.id, lurking=False)
+
+    async def delete(self) -> None:
+        """|coro|
+
+        Deletes the guild. You must be the guild owner to delete the
+        guild.
+
+        .. versionadded:: 2.1
+
+        Raises
+        --------
+        HTTPException
+            Deleting the guild failed.
+        Forbidden
+            You do not have permissions to delete the guild.
+        """
+        await self._state.http.delete_guild(self.id)
+
 
 class Guild(Hashable):
     """Represents a Discord guild.
