@@ -1801,9 +1801,6 @@ class AppCommandContext(ArrayFlags):
         rather than using this raw value.
     """
 
-    def to_array(self) -> List[int]:
-        return super().to_array()
-
     @flag_value
     def guild(self):
         """:class:`bool`: Whether the context allows usage in a guild."""
