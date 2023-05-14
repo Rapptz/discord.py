@@ -1633,8 +1633,8 @@ class ArrayFlags(BaseFlags):
         self.value = reduce(or_, map((1).__lshift__, value), 0) >> 1
         return self
 
-    def to_array(self) -> List[int]:
-        return [i + 1 for i in range(self.value.bit_length()) if self.value & (1 << i)]
+    def to_array(self, *, offset: int = 0) -> List[int]:
+        return [i + offset for i in range(self.value.bit_length()) if self.value & (1 << i)]
 
     @classmethod
     def all(cls: Type[Self]) -> Self:
@@ -1717,6 +1717,9 @@ class AutoModPresets(ArrayFlags):
         rather than using this raw value.
     """
 
+    def to_array(self) -> List[int]:
+        return super().to_array(offset=1)
+
     @flag_value
     def profanity(self):
         """:class:`bool`: Whether to use the preset profanity filter."""
@@ -1797,6 +1800,9 @@ class AppCommandContext(ArrayFlags):
         The raw value. You should query flags via the properties
         rather than using this raw value.
     """
+
+    def to_array(self) -> List[int]:
+        return super().to_array()
 
     @flag_value
     def guild(self):
