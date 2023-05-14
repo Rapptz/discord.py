@@ -454,7 +454,9 @@ class Decoder(_OpusStruct):
             channel_count = self.CHANNELS
         else:
             frames = self.packet_get_nb_frames(data)
-            channel_count = self.packet_get_nb_channels(data)
+            # Discord silent frames erroneously present themselves as 1 channel instead of 2
+            # Therefore we need to hardcode the number instead of using packet_get_nb_channels
+            channel_count = self.CHANNELS
             samples_per_frame = self.packet_get_samples_per_frame(data)
             frame_size = frames * samples_per_frame
 

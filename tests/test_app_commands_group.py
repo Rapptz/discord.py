@@ -354,3 +354,46 @@ def test_cog_group_with_subclassed_subclass_group():
     assert cog.sub_group.my_command.parent is cog.sub_group
     assert cog.my_cog_command.parent is cog.sub_group
     assert cog.my_cog_command.binding is cog
+
+
+def test_cog_group_with_custom_state_issue9383():
+    class InnerGroup(app_commands.Group):
+        def __init__(self):
+            super().__init__()
+            self.state: int = 20
+
+        @app_commands.command()
+        async def my_command(self, interaction: discord.Interaction) -> None:
+            ...
+
+    class MyCog(commands.GroupCog):
+        inner = InnerGroup()
+
+        @app_commands.command()
+        async def my_regular_command(self, interaction: discord.Interaction) -> None:
+            ...
+
+        @inner.command()
+        async def my_inner_command(self, interaction: discord.Interaction) -> None:
+            ...
+
+    cog = MyCog()
+    assert cog.inner.state == 20
+    assert cog.my_regular_command is not MyCog.my_regular_command
+
+    # Basically the same tests as above... (superset?)
+    assert MyCog.__cog_app_commands__[0].parent is not cog
+    assert MyCog.__cog_app_commands__[0].parent is not cog.__cog_app_commands_group__
+    assert InnerGroup.__discord_app_commands_group_children__[0].parent is not cog.inner
+    assert InnerGroup.__discord_app_commands_group_children__[0].parent is not cog.inner
+    assert cog.inner is not MyCog.inner
+    assert cog.inner.my_command is not InnerGroup.my_command
+    assert cog.inner.my_command is not InnerGroup.my_command
+    assert cog.my_inner_command is not MyCog.my_inner_command
+    assert not hasattr(cog.inner, 'my_inner_command')
+    assert cog.__cog_app_commands_group__ is not None
+    assert cog.__cog_app_commands_group__.parent is None
+    assert cog.inner.parent is cog.__cog_app_commands_group__
+    assert cog.inner.my_command.parent is cog.inner
+    assert cog.my_inner_command.parent is cog.inner
+    assert cog.my_inner_command.binding is cog
