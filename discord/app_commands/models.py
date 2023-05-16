@@ -168,7 +168,7 @@ class AppCommand(Hashable):
         The default member permissions that can run this command.
     dm_permission: :class:`bool`
         A boolean that indicates whether this command can be run in direct messages.
-    allowed_contexts: Optional[:class:`AppCommandContext`]
+    allowed_contexts: Optional[:class:`~discord.flags.AppCommandContext`]
         A list of contexts that this command can be run in. Overrides the ``dm_permission`` attribute.
     guild_id: Optional[:class:`int`]
         The ID of the guild this command is registered in. A value of ``None``

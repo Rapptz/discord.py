@@ -622,7 +622,7 @@ class Command(Generic[GroupT, P, T]):
         Whether the command should only be usable in guild contexts.
 
         Due to a Discord limitation, this does not work on subcommands.
-    allowed_contexts: Optional[:class:`~discord.AppCommandContext`]
+    allowed_contexts: Optional[:class:`~discord.flags.AppCommandContext`]
         A list of contexts that the command is allowed to be used in.
         Overrides ``guild_only`` if this is set.
     nsfw: :class:`bool`
@@ -1179,7 +1179,7 @@ class ContextMenu:
     guild_only: :class:`bool`
         Whether the command should only be usable in guild contexts.
         Defaults to ``False``.
-    allowed_contexts: Optional[:class:`.AppCommandContext`]
+    allowed_contexts: Optional[:class:`~discord.flags.AppCommandContext`]
         The contexts that this context menu is allowed to be used in.
         Overrides ``guild_only`` if set.
     nsfw: :class:`bool`
@@ -1425,7 +1425,7 @@ class Group:
         Whether the group should only be usable in guild contexts.
 
         Due to a Discord limitation, this does not work on subcommands.
-    allowed_contexts: Optional[:class:`.AppCommandContext`]
+    allowed_contexts: Optional[:class:`~discord.flags.AppCommandContext`]
         The contexts that this group is allowed to be used in. Overrides
         guild_only if set.
     nsfw: :class:`bool`
