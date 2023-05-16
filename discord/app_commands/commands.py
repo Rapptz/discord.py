@@ -48,9 +48,9 @@ from typing import (
 import re
 from copy import copy as shallow_copy
 
-from discord.flags import AppCommandContext
 
 from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale
+from ..flags import AppCommandContext
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
@@ -622,7 +622,7 @@ class Command(Generic[GroupT, P, T]):
         Whether the command should only be usable in guild contexts.
 
         Due to a Discord limitation, this does not work on subcommands.
-    restrict_contexts: Optional[List[:class:`~discord.AppCommandContext`]]
+    restrict_contexts: Optional[:class:`~discord.AppCommandContext`]
         A list of contexts that the command is allowed to be used in.
         Overrides ``guild_only`` if this is set.
     nsfw: :class:`bool`
