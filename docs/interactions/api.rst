@@ -129,6 +129,14 @@ AppCommandPermissions
 .. autoclass:: discord.app_commands.AppCommandPermissions()
     :members:
 
+AppCommandContext
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: AppCommandContext
+
+.. autoclass:: AppCommandContext
+    :members:
+
 GuildAppCommandPermissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -410,22 +418,6 @@ Enumerations
 
         The permission is for a user.
 
-.. class:: AppCommandContext
-
-    The application command's contexts type.
-
-    .. versionadded:: 2.3
-
-    .. attribute:: guild
-
-        The context is for guild.
-    .. attribute:: bot_dm
-
-        The context is for bot DMs.
-    .. attribute:: private_channel
-
-        The context is for bot DMs and group DMs.
-
 .. _discord_ui_kit:
 
 Bot UI Kit
@@ -639,6 +631,12 @@ Decorators
     :decorator:
 
 .. autofunction:: discord.app_commands.guild_only
+    :decorator:
+
+.. autofunction:: discord.app_commands.dm_only
+    :decorator:
+
+.. autofunction:: discord.app_commands.private_channel_only
     :decorator:
 
 .. autofunction:: discord.app_commands.default_permissions
