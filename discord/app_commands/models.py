@@ -168,7 +168,7 @@ class AppCommand(Hashable):
         The default member permissions that can run this command.
     dm_permission: :class:`bool`
         A boolean that indicates whether this command can be run in direct messages.
-    restrict_contexts: Optional[:class:`AppCommandContext`]
+    allowed_contexts: Optional[:class:`AppCommandContext`]
         A list of contexts that this command can be run in. Overrides the ``dm_permission`` attribute.
     guild_id: Optional[:class:`int`]
         The ID of the guild this command is registered in. A value of ``None``
@@ -189,7 +189,7 @@ class AppCommand(Hashable):
         'options',
         'default_member_permissions',
         'dm_permission',
-        'restrict_contexts',
+        'allowed_contexts',
         'nsfw',
         '_state',
     )
@@ -222,11 +222,11 @@ class AppCommand(Hashable):
 
         self.dm_permission: bool = dm_permission
 
-        restrict_contexts = data.get('contexts')
-        if restrict_contexts is None:
-            self.restrict_contexts: Optional[AppCommandContext] = None
+        allowed_contexts = data.get('contexts')
+        if allowed_contexts is None:
+            self.allowed_contexts: Optional[AppCommandContext] = None
         else:
-            self.restrict_contexts = AppCommandContext._from_value(restrict_contexts)
+            self.allowed_contexts = AppCommandContext._from_value(allowed_contexts)
 
         self.nsfw: bool = data.get('nsfw', False)
         self.name_localizations: Dict[Locale, str] = _to_locale_dict(data.get('name_localizations') or {})
@@ -241,7 +241,7 @@ class AppCommand(Hashable):
             'description': self.description,
             'name_localizations': {str(k): v for k, v in self.name_localizations.items()},
             'description_localizations': {str(k): v for k, v in self.description_localizations.items()},
-            'contexts': self.restrict_contexts.to_array() if self.restrict_contexts is not None else None,
+            'contexts': self.allowed_contexts.to_array() if self.allowed_contexts is not None else None,
             'options': [opt.to_dict() for opt in self.options],
         }  # type: ignore # Type checker does not understand this literal.
 
