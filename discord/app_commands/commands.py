@@ -623,7 +623,7 @@ class Command(Generic[GroupT, P, T]):
 
         Due to a Discord limitation, this does not work on subcommands.
     allowed_contexts: Optional[:class:`~discord.flags.AppCommandContext`]
-        A list of contexts that the command is allowed to be used in.
+        The contexts that the command is allowed to be used in.
         Overrides ``guild_only`` if this is set.
     nsfw: :class:`bool`
         Whether the command is NSFW and should only work in NSFW channels.
