@@ -436,7 +436,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
         .. versionadded:: 2.3
         """
-        return self.guild.filesize_limit if self.guild is not None else 26214400
+        return self.guild.filesize_limit if self.guild is not None else discord.utils.DEFAULT_FILE_SIZE_LIMIT_BYTES
 
     @discord.utils.cached_property
     def guild(self) -> Optional[Guild]:
