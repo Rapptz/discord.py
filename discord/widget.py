@@ -121,7 +121,7 @@ class WidgetMember(BaseUser):
 
         .. describe:: str(x)
 
-            Returns the widget member's handle (e.g. ``@user`` or ``user#discriminator``).
+            Returns the widget member's handle (e.g. ``name`` or ``name#discriminator``).
 
     Attributes
     -----------
