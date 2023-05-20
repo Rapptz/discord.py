@@ -107,6 +107,7 @@ __all__ = (
 )
 
 DISCORD_EPOCH = 1420070400000
+DEFAULT_FILE_SIZE_LIMIT_BYTES = 26214400
 
 _log = logging.getLogger(__name__)
 
