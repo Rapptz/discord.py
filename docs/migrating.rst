@@ -924,7 +924,6 @@ using `bool` on them will now only return ``True`` if at least one flag is enabl
 
 This means that evaluating instances of the following classes in a bool context (such as ``if obj:``) may no longer return ``True``:
 
-- :class:`Intents`
 - :class:`MemberCacheFlags`
 - :class:`MessageFlags`
 - :class:`Permissions`
