@@ -2023,7 +2023,7 @@ class Message(PartialMessage, Hashable):
                 return f'{self.author.name} changed the channel name: **{self.content}**'
 
         if self.type is MessageType.channel_icon_change:
-            return f'{self.author.name} changed the channel icon.'
+            return f'{self.author.name} changed the group icon.'
 
         if self.type is MessageType.pins_add:
             return f'{self.author.name} pinned a message to this channel.'
