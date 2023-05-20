@@ -1376,7 +1376,7 @@ class HTTPClient:
         with_counts: bool = True,
     ) -> Response[List[guild.Guild]]:
         params: Dict[str, Any] = {
-            'limit': limit, 
+            'limit': limit,
             'with_counts': int(with_counts),
         }
 
