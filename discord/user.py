@@ -278,7 +278,7 @@ class BaseUser(_UserTag):
 
     def __str__(self) -> str:
         if self.discriminator == '0':
-            return f'@{self.name}'
+            return self.name
         return f'{self.name}#{self.discriminator}'
 
     def __eq__(self, other: object) -> bool:
@@ -611,7 +611,7 @@ class ClientUser(BaseUser):
 
         .. describe:: str(x)
 
-            Returns the user's handle (e.g. ``@user`` or ``user#discriminator``).
+            Returns the user's handle (e.g. ``name`` or ``name#discriminator``).
 
     .. versionchanged:: 2.0
         :attr:`Locale` is now a :class:`Locale` instead of a Optional[:class:`str`].
@@ -949,7 +949,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
 
         .. describe:: str(x)
 
-            Returns the user's handle (e.g. ``@user`` or ``user#discriminator``).
+            Returns the user's handle (e.g. ``name`` or ``name#discriminator``).
 
     Attributes
     -----------

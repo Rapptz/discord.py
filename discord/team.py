@@ -497,7 +497,7 @@ class TeamMember(User):
 
         .. describe:: str(x)
 
-            Returns the team member's handle (e.g. ``@user`` or ``user#discriminator``).
+            Returns the team member's handle (e.g. ``name`` or ``name#discriminator``).
 
     .. versionadded:: 1.3
 
