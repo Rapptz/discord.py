@@ -219,6 +219,7 @@ class Permissions(BaseFlags):
         - :attr:`kick_members`
         - :attr:`ban_members`
         - :attr:`administrator`
+        - :attr:`create_expressions`
 
         .. versionchanged:: 1.7
            Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_application_commands` permissions.
@@ -227,8 +228,11 @@ class Permissions(BaseFlags):
            Added :attr:`create_public_threads`, :attr:`create_private_threads`, :attr:`manage_threads`,
            :attr:`use_external_stickers`, :attr:`send_messages_in_threads`,
            :attr:`request_to_speak`, and :attr:`use_soundboard` permissions.
+
+        .. versionchanged:: 2.1
+           Added :attr:`create_expressions` permission.
         """
-        return cls(0b1000111110110110011111101111111111101010001)
+        return cls(0b01000111110110110011111101111111111101010001)
 
     @classmethod
     def general(cls) -> Self:
@@ -240,8 +244,11 @@ class Permissions(BaseFlags):
            permissions :attr:`administrator`, :attr:`create_instant_invite`, :attr:`kick_members`,
            :attr:`ban_members`, :attr:`change_nickname` and :attr:`manage_nicknames` are
            no longer part of the general permissions.
+
+        .. versionchanged:: 2.1
+            Added :attr:`create_expressions` permission.
         """
-        return cls(0b01110000000010000000010010110000)
+        return cls(0b10000000000001110000000010000000010010110000)
 
     @classmethod
     def membership(cls) -> Self:
@@ -557,7 +564,7 @@ class Permissions(BaseFlags):
 
     @flag_value
     def manage_guild_expressions(self) -> int:
-        """:class:`bool`: Returns ``True`` if a user can create, edit, or delete emojis, stickers, and soundboard sounds.
+        """:class:`bool`: Returns ``True`` if a user can edit or delete emojis, stickers, and soundboard sounds.
 
         .. versionadded:: 2.0
         """
@@ -671,6 +678,14 @@ class Permissions(BaseFlags):
         .. versionadded:: 2.0
         """
         return 1 << 42
+
+    @flag_value
+    def create_expressions(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can create emojis, stickers, and soundboard sounds.
+
+        .. versionadded:: 2.1
+        """
+        return 1 << 43
 
     @flag_value
     def use_external_sounds(self) -> int:
@@ -806,6 +821,7 @@ class PermissionOverwrite:
         use_soundboard: Optional[bool]
         use_external_sounds: Optional[bool]
         send_voice_messages: Optional[bool]
+        create_expressions: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}
