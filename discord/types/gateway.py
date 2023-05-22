@@ -250,6 +250,8 @@ class ChannelPinsAckEvent(TypedDict):
 class MessageAckEvent(TypedDict):
     channel_id: Snowflake
     message_id: Snowflake
+    flags: Optional[int]
+    last_viewed: Optional[int]
     manual: NotRequired[bool]
     mention_count: NotRequired[int]
     ack_type: NotRequired[ReadStateType]

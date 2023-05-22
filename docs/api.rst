@@ -7830,6 +7830,11 @@ Flags
 .. autoclass:: PromotionFlags()
     :members:
 
+.. attributetable:: ReadStateFlags
+
+.. autoclass:: ReadStateFlags()
+    :members:
+
 .. attributetable:: SKUFlags
 
 .. autoclass:: SKUFlags()

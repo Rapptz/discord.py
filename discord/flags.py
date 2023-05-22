@@ -57,6 +57,7 @@ __all__ = (
     'OnboardingProgressFlags',
     'AutoModPresets',
     'MemberFlags',
+    'ReadStateFlags',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -2289,6 +2290,8 @@ class AutoModPresets(ArrayFlags):
         rather than using this raw value.
     """
 
+    __slots__ = ()
+
     @classmethod
     def all(cls: Type[Self]) -> Self:
         """A factory method that creates a :class:`AutoModPresets` with everything enabled."""
@@ -2324,8 +2327,6 @@ class AutoModPresets(ArrayFlags):
 @fill_with_flags()
 class MemberFlags(BaseFlags):
     r"""Wraps up the Discord Guild Member flags
-
-    .. versionadded:: 2.0
 
     .. container:: operations
 
@@ -2366,6 +2367,7 @@ class MemberFlags(BaseFlags):
             to be, for example, constructed as a dict or a list of pairs.
             Note that aliases are not shown.
 
+    .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -2373,6 +2375,8 @@ class MemberFlags(BaseFlags):
         The raw value. You should query flags via the properties
         rather than using this raw value.
     """
+
+    __slots__ = ()
 
     @flag_value
     def did_rejoin(self):
@@ -2393,3 +2397,68 @@ class MemberFlags(BaseFlags):
     def started_onboarding(self):
         """:class:`bool`: Returns ``True`` if the member has started onboarding."""
         return 1 << 3
+
+
+@fill_with_flags()
+class ReadStateFlags(BaseFlags):
+    r"""Wraps up the Discord read state flags.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two ReadStateFlags are equal.
+
+        .. describe:: x != y
+
+            Checks if two ReadStateFlags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a ReadStateFlags instance with all enabled flags from
+            both x and y.
+
+        .. describe:: x & y, x &= y
+
+            Returns a ReadStateFlags instance with only flags enabled on
+            both x and y.
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a ReadStateFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+        .. describe:: ~x
+
+            Returns a ReadStateFlags instance with all flags inverted from x.
+
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    @flag_value
+    def guild_channel(self):
+        """:class:`bool`: Returns ``True`` if the read state is for a guild channel."""
+        return 1 << 0
+
+    @flag_value
+    def thread(self):
+        """:class:`bool`: Returns ``True`` if the read state is for a thread."""
+        return 1 << 1

@@ -1144,7 +1144,7 @@ class PartialMessage(Hashable):
         HTTPException
             Acking failed.
         """
-        await self._state.http.ack_message(self.channel.id, self.id, manual=manual, mention_count=mention_count)
+        await self.channel.read_state.ack(self.id, manual=manual, mention_count=mention_count)
 
     async def unack(self, *, mention_count: Optional[int] = None) -> None:
         """|coro|
@@ -1164,7 +1164,7 @@ class PartialMessage(Hashable):
         HTTPException
             Unacking failed.
         """
-        await self._state.http.ack_message(self.channel.id, self.id - 1, manual=True, mention_count=mention_count)
+        await self.channel.read_state.ack(self.id - 1, manual=True, mention_count=mention_count)
 
     @overload
     async def reply(

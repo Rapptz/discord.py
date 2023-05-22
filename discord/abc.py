@@ -1986,7 +1986,7 @@ class Messageable:
             Acking the channel failed.
         """
         channel = await self._get_channel()
-        await self._state.http.ack_message(channel.id, channel.last_message_id or utils.time_snowflake(utils.utcnow()))
+        await channel.read_state.ack(channel.last_message_id or utils.time_snowflake(utils.utcnow()))
 
     async def unack(self, *, mention_count: Optional[int] = None) -> None:
         """|coro|
@@ -2007,7 +2007,7 @@ class Messageable:
             Unacking the channel failed.
         """
         channel = await self._get_channel()
-        await self._state.http.ack_message(channel.id, 0, manual=True, mention_count=mention_count)
+        await channel.read_state.ack(0, manual=True, mention_count=mention_count)
 
     async def ack_pins(self) -> None:
         """|coro|

@@ -41,7 +41,7 @@ class ReadState(TypedDict):
     mention_count: NotRequired[int]
     badge_count: NotRequired[int]
     flags: NotRequired[int]
-    # last_viewed: NotRequired[Optional[str]]
+    last_viewed: NotRequired[Optional[int]]
 
 
 class BulkReadState(TypedDict):

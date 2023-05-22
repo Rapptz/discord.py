@@ -24,10 +24,14 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import TYPE_CHECKING, Optional, Union
 
+from .channel import PartialMessageable
 from .enums import ReadStateType, try_enum
-from .utils import parse_time
+from .flags import ReadStateFlags
+from .threads import Thread
+from .utils import DISCORD_EPOCH, MISSING, parse_time
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -37,8 +41,8 @@ if TYPE_CHECKING:
     from .abc import MessageableChannel
     from .guild import Guild
     from .state import ConnectionState
-    from .user import ClientUser
     from .types.read_state import ReadState as ReadStatePayload
+    from .user import ClientUser
 
 # fmt: off
 __all__ = (
@@ -81,6 +85,8 @@ class ReadState:
         When the channel's pins were last acknowledged.
     badge_count: :class:`int`
         The number of badges in the read state (e.g. mentions).
+    last_viewed: Optional[:class:`datetime.date`]
+        When the resource was last viewed. Only tracked for read states of type :attr:`ReadStateType.channel`.
     """
 
     __slots__ = (
@@ -101,14 +107,18 @@ class ReadState:
         self.id: int = int(data['id'])
         self.type: ReadStateType = try_enum(ReadStateType, data.get('read_state_type', 0))
         self._last_entity_id: Optional[int] = None
+        self._flags: int = 0
+        self.last_viewed: Optional[date] = self.unpack_last_viewed(0) if self.type == ReadStateType.channel else None
         self._update(data)
 
     def _update(self, data: ReadStatePayload):
         self.last_acked_id: int = int(data.get('last_acked_id', data.get('last_message_id', 0)))
         self.acked_pin_timestamp: Optional[datetime] = parse_time(data.get('last_pin_timestamp'))
         self.badge_count: int = int(data.get('badge_count', data.get('mention_count', 0)))
-        self.last_viewed: Optional[datetime] = parse_time(data.get('last_viewed'))
-        self._flags: int = data.get('flags') or 0
+        if 'flags' in data and data['flags'] is not None:
+            self._flags = data['flags']
+        if 'last_viewed' in data and data['last_viewed']:
+            self.last_viewed = self.unpack_last_viewed(data['last_viewed'])
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, ReadState):
@@ -130,10 +140,27 @@ class ReadState:
         self.id = id
         self.type = type
         self._last_entity_id = None
+        self._flags = 0
+        self.last_viewed = cls.unpack_last_viewed(0) if type == ReadStateType.channel else None
         self.last_acked_id = 0
         self.acked_pin_timestamp = None
         self.badge_count = 0
         return self
+
+    @staticmethod
+    def unpack_last_viewed(last_viewed: int) -> date:
+        # last_viewed is days since the Discord epoch
+        return date.fromtimestamp(DISCORD_EPOCH / 1000 + last_viewed * 86400)
+
+    @staticmethod
+    def pack_last_viewed(last_viewed: date) -> int:
+        # We always round up
+        return int((last_viewed - date.fromtimestamp(DISCORD_EPOCH / 1000)).total_seconds() / 86400 + 0.5)
+
+    @property
+    def flags(self) -> ReadStateFlags:
+        """:class:`ReadStateFlags`: The read state's flags."""
+        return ReadStateFlags._from_value(self._flags)
 
     @property
     def resource(self) -> Optional[Union[ClientUser, Guild, MessageableChannel]]:
@@ -169,6 +196,76 @@ class ReadState:
         """Optional[:class:`datetime.datetime`]: When the last pinned message was pinned in the channel."""
         if self.resource and hasattr(self.resource, 'last_pin_timestamp'):
             return self.resource.last_pin_timestamp  # type: ignore
+
+    async def ack(
+        self,
+        entity_id: int,
+        *,
+        manual: bool = False,
+        mention_count: Optional[int] = None,
+        last_viewed: Optional[date] = MISSING,
+    ) -> None:
+        """|coro|
+
+        Updates the read state. This is a purposefully low-level function.
+
+        Parameters
+        -----------
+        entity_id: :class:`int`
+            The ID of the entity to set the read state to.
+        manual: :class:`bool`
+            Whether the read state was manually set by the user.
+            Only for read states of type :attr:`ReadStateType.channel`.
+        mention_count: Optional[:class:`int`]
+            The number of mentions to set the read state to. Only applicable for
+            manual acknowledgements. Only for read states of type :attr:`ReadStateType.channel`.
+        last_viewed: Optional[:class:`datetime.date`]
+            The last day the user viewed the channel. Defaults to today for non-manual acknowledgements.
+            Only for read states of type :attr:`ReadStateType.channel`.
+
+        Raises
+        -------
+        ValueError
+            Invalid parameters were passed.
+        HTTPException
+            Updating the read state failed.
+        """
+        state = self._state
+
+        if self.type == ReadStateType.channel:
+            flags = None
+            channel: MessageableChannel = self.resource  # type: ignore
+            if not isinstance(channel, PartialMessageable):
+                # Read state flags are kept accurate by the client 😭
+                flags = ReadStateFlags()
+                if isinstance(channel, Thread):
+                    flags.thread = True
+                elif channel.guild:
+                    flags.guild_channel = True
+
+                if flags == self.flags:
+                    flags = None
+
+            if not manual and last_viewed is MISSING:
+                last_viewed = date.today()
+
+            await state.http.ack_message(
+                self.id,
+                entity_id,
+                manual=manual,
+                mention_count=mention_count,
+                flags=flags.value if flags else None,
+                last_viewed=self.pack_last_viewed(last_viewed) if last_viewed else None,
+            )
+            return
+
+        if manual or mention_count is not None or last_viewed:
+            raise ValueError('Extended read state parameters are only valid for channel read states')
+
+        if self.type in (ReadStateType.scheduled_events, ReadStateType.guild_home, ReadStateType.onboarding):
+            await state.http.ack_guild_feature(self.id, self.type.value, entity_id)
+        elif self.type == ReadStateType.notification_center:
+            await state.http.ack_user_feature(self.type.value, entity_id)
 
     async def delete(self):
         """|coro|

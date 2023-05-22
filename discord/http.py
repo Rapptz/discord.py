@@ -1163,7 +1163,14 @@ class HTTPClient:
         return self.request(Route('POST', '/channels/{channel_id}/typing', channel_id=channel_id))
 
     async def ack_message(
-        self, channel_id: Snowflake, message_id: Snowflake, *, manual: bool = False, mention_count: Optional[int] = None
+        self,
+        channel_id: Snowflake,
+        message_id: Snowflake,
+        *,
+        manual: bool = False,
+        mention_count: Optional[int] = None,
+        flags: Optional[int] = None,
+        last_viewed: Optional[int] = None,
     ) -> None:
         r = Route('POST', '/channels/{channel_id}/messages/{message_id}/ack', channel_id=channel_id, message_id=message_id)
         payload = {}
@@ -1173,6 +1180,10 @@ class HTTPClient:
             payload['token'] = self.ack_token
         if mention_count is not None:
             payload['mention_count'] = mention_count
+        if flags is not None:
+            payload['flags'] = flags
+        if last_viewed is not None:
+            payload['last_viewed'] = last_viewed
 
         data: read_state.AcknowledgementToken = await self.request(r, json=payload)
         self.ack_token = data.get('token') if data else None

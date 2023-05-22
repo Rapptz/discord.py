@@ -865,7 +865,7 @@ class ConnectionState:
             else utils.find(lambda m: m.id == msg_id, reversed(self._call_message_cache.values()))
         )
 
-    def _add_guild_from_data(self, data: GuildPayload) -> Optional[Guild]:
+    def _add_guild_from_data(self, data: GuildPayload) -> Guild:
         guild = Guild(data=data, state=self)
         self._add_guild(guild)
         return guild
@@ -1186,6 +1186,10 @@ class ConnectionState:
         read_state.last_acked_id = message_id
         if 'mention_count' in data:
             read_state.badge_count = data['mention_count']
+        if 'flags' in data and data['flags'] is not None:
+            read_state._flags = data['flags']
+        if 'last_viewed' in data and data['last_viewed']:
+            read_state.last_viewed = read_state.unpack_last_viewed(data['last_viewed'])
 
         self.dispatch('raw_message_ack', raw)
         if message is not None:

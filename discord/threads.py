@@ -25,7 +25,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Callable, Dict, Iterable, List, Literal, Optional, Sequence, Union, TYPE_CHECKING
-from datetime import datetime
 import asyncio
 import array
 import copy
@@ -44,7 +43,7 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from datetime import datetime
+    from datetime import date, datetime
     from typing_extensions import Self
 
     from .types.threads import (
@@ -390,6 +389,14 @@ class Thread(Messageable, Hashable):
         .. versionadded:: 2.1
         """
         return self.read_state.badge_count
+
+    @property
+    def last_viewed_timestamp(self) -> date:
+        """:class:`datetime.date`: When the channel was last viewed.
+
+        .. versionadded:: 2.1
+        """
+        return self.read_state.last_viewed  # type: ignore
 
     @property
     def category(self) -> Optional[CategoryChannel]:
