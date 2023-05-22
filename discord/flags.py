@@ -1821,25 +1821,25 @@ class ApplicationDiscoveryFlags(BaseFlags):
 
         .. describe:: x == y
 
-            Checks if two LibraryApplicationFlags are equal.
+            Checks if two ApplicationDiscoveryFlags are equal.
         .. describe:: x != y
 
-            Checks if two LibraryApplicationFlags are not equal.
+            Checks if two ApplicationDiscoveryFlags are not equal.
         .. describe:: x | y, x |= y
 
-            Returns a LibraryApplicationFlags instance with all enabled flags from
+            Returns a ApplicationDiscoveryFlags instance with all enabled flags from
             both x and y.
         .. describe:: x & y, x &= y
 
-            Returns a LibraryApplicationFlags instance with only flags enabled on
+            Returns a ApplicationDiscoveryFlags instance with only flags enabled on
             both x and y.
         .. describe:: x ^ y, x ^= y
 
-            Returns a LibraryApplicationFlags instance with only flags enabled on
+            Returns a ApplicationDiscoveryFlags instance with only flags enabled on
             only one of x or y, not on both.
         .. describe:: ~x
 
-            Returns a LibraryApplicationFlags instance with all flags inverted from x.
+            Returns a ApplicationDiscoveryFlags instance with all flags inverted from x.
         .. describe:: hash(x)
 
             Return the flag's hash.
