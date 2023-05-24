@@ -730,7 +730,18 @@ class HTTPClient:
             'X-Super-Properties': self.encoded_super_properties,
         }
 
-        # Header modification
+        # This header isn't really necessary
+        # Timezones are annoying, so if it errors, we don't care
+        try:
+            from tzlocal import get_localzone_name
+
+            timezone = get_localzone_name()
+        except Exception:
+            pass
+        else:
+            if timezone:
+                headers['X-Discord-Timezone'] = timezone
+
         if self.token is not None and kwargs.get('auth', True):
             headers['Authorization'] = self.token
 
@@ -779,7 +790,7 @@ class HTTPClient:
                     kwargs['data'] = form_data
 
                 if failed:
-                    kwargs['headers']['X-Failed-Requests'] = str(failed)
+                    headers['X-Failed-Requests'] = str(failed)
 
                 try:
                     async with self.__session.request(method, url, **kwargs) as response:
@@ -925,44 +936,14 @@ class HTTPClient:
                 except CaptchaRequired as e:
                     # The way captcha handling works is completely transparent
                     # The user is expected to provide a handler that will be called to return a solution
-                    # Then, we just insert the solution + rqtoken (if applicable) into the payload and retry the request
+                    # Then, we just insert the solution + rqtoken (if applicable) into the headers and retry the request
                     if captcha_handler is None or tries == 4:
                         raise
                     else:
-                        # We use the payload_json form field if we're not sending a JSON payload
-                        payload_json = None
-                        previous = payload
-                        if form:
-                            payload_json = utils.find(lambda f: f['name'] == 'payload_json', form)
-                            if payload_json:
-                                previous = utils._from_json(payload_json['value'])
-                        if previous is None:
-                            previous = {}
-
-                        previous['captcha_key'] = await captcha_handler.fetch_token(e.json, self.proxy, self.proxy_auth)
+                        headers['X-Captcha-Key'] = await captcha_handler.fetch_token(e.json, self.proxy, self.proxy_auth)
                         rqtoken = e.json.get('captcha_rqtoken')
                         if rqtoken:
-                            previous['captcha_rqtoken'] = rqtoken
-                        if 'nonce' in previous:
-                            # I don't want to step on users' toes
-                            # But the nonce is regenerated on requests retried after a captcha
-                            # So I'm going to do the same here, as there's no good way to differentiate
-                            # a library-generated nonce and a manually user-provided nonce
-                            previous['nonce'] = utils._generate_nonce()
-
-                        # Reinsert the updated payload to the form, or update the JSON payload
-                        data = utils._to_json(previous)
-                        if payload:
-                            kwargs['data'] = data
-                        elif form:
-                            if payload_json:
-                                payload_json['value'] = data
-                            else:
-                                form.append({'name': 'payload_json', 'value': data})
-                        else:
-                            # We were not sending a payload in the first place
-                            kwargs['headers']['Content-Type'] = 'application/json'
-                            kwargs['data'] = data
+                            headers['X-Captcha-Rqtoken'] = rqtoken
 
             if response is not None:
                 # We've run out of retries, raise

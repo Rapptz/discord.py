@@ -1,2 +1,3 @@
 aiohttp>=3.7.4,<4
+tzlocal>=4.0.0,<6
 discord_protos<1.0.0
