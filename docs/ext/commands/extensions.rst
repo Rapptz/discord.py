@@ -56,7 +56,7 @@ Although rare, sometimes an extension needs to clean-up or know when it's being 
 
 .. warning::
 
-    Exceptions raised in the ``tearDown`` function are ignored, and the extension is still unloaded.
+    Exceptions raised in the ``teardown`` function are ignored, and the extension is still unloaded.
 
 .. code-block:: python3
     :caption: basic_ext.py
