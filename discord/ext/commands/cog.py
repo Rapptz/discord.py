@@ -550,6 +550,8 @@ class Cog(metaclass=CogMeta):
 
         Subclasses must replace this if they want special unloading behaviour.
 
+        Exceptions raised in this method are ignored during extension unloading.
+
         .. versionchanged:: 2.0
 
             This method can now be a :term:`coroutine`.
