@@ -553,6 +553,10 @@ class Cog(metaclass=CogMeta):
         .. versionchanged:: 2.0
 
             This method can now be a :term:`coroutine`.
+
+        .. warning::
+
+            Exceptions raised in this method are ignored during extension unloading.
         """
         pass
 
