@@ -790,6 +790,8 @@ class BotBase(GroupMixin[None]):
             the guild the app commands will be added to.
             If not given, all app commands will be global.
 
+            .. versionchanged:: 2.3
+                This kwarg is now also used by hybrid app commands.
             .. versionadded:: 2.0
         guilds: List[:class:`~discord.abc.Snowflake`]
             If the cog has application commands, then these
@@ -797,6 +799,8 @@ class BotBase(GroupMixin[None]):
             If not given, all app commands will be global. Cannot be mixed with
             ``guild``.
 
+            .. versionchanged:: 2.3
+                This kwarg is now also used by hybrid app commands.
             .. versionadded:: 2.0
 
         Raises
