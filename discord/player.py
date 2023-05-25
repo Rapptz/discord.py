@@ -206,15 +206,18 @@ class FFmpegAudio(AudioSource):
             _log.info('ffmpeg process %s successfully terminated with return code of %s.', proc.pid, proc.returncode)
 
     def _pipe_writer(self, source: io.BufferedIOBase) -> None:
-        assert self._stdin is not None
         while self._process:
             # arbitrarily large read size
             data = source.read(8192)
             if not data:
-                self._stdin.close()
+                if self._stdin is not None:
+                    self._stdin.close()
+                self._process.wait()
+                self._process.terminate()
                 return
             try:
-                self._stdin.write(data)
+                if self._stdin is not None:
+                    self._stdin.write(data)
             except Exception:
                 _log.debug('Write error for %s, this is probably not a problem', self, exc_info=True)
                 # at this point the source data is either exhausted or the process is fubar
