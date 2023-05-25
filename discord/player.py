@@ -212,8 +212,10 @@ class FFmpegAudio(AudioSource):
             if not data:
                 if self._stdin is not None:
                     self._stdin.close()
-                self._process.wait()
-                self._process.terminate()
+                try:
+                    self._process.wait(timeout=60.0)
+                except subprocess.TimeoutExpired:
+                    self._process.terminate()
                 return
             try:
                 if self._stdin is not None:
