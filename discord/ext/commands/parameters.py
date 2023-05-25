@@ -237,7 +237,7 @@ def parameter(
     displayed_default: :class:`str`
         The displayed default in :attr:`Command.signature`.
     displayed_name: :class:`str`
-        The displayed name in :attr:`Command.signature`.
+        The name that is displayed to the user.
 
         .. versionadded:: 2.3
     """
