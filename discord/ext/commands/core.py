@@ -151,6 +151,7 @@ def get_signature_parameters(
             parameter._default = default.default
             parameter._description = default._description
             parameter._displayed_default = default._displayed_default
+            parameter._displayed_name = default._displayed_name
 
         annotation = parameter.annotation
 
@@ -194,8 +195,13 @@ def extract_descriptions_from_docstring(function: Callable[..., Any], params: Di
     description, param_docstring = divide
     for match in NUMPY_DOCSTRING_ARG_REGEX.finditer(param_docstring):
         name = match.group('name')
+
         if name not in params:
-            continue
+            is_display_name = discord.utils.get(params.values(), displayed_name=name)
+            if is_display_name:
+                name = is_display_name.name
+            else:
+                continue
 
         param = params[name]
         if param.description is None:
@@ -1169,7 +1175,9 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             return ''
 
         result = []
-        for name, param in params.items():
+        for param in params.values():
+            name = param.displayed_name or param.name
+
             greedy = isinstance(param.converter, Greedy)
             optional = False  # postpone evaluation of if it's an optional argument
 

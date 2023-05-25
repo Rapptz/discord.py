@@ -1166,7 +1166,7 @@ class DefaultHelpCommand(HelpCommand):
 
         get_width = discord.utils._string_width
         for argument in arguments:
-            name = argument.name
+            name = argument.displayed_name or argument.name
             width = max_size - (get_width(name) - len(name))
             entry = f'{self.indent * " "}{name:<{width}} {argument.description or self.default_argument_description}'
             # we do not want to shorten the default value, if any.
