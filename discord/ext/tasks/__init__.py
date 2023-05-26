@@ -162,6 +162,7 @@ class Loop(Generic[LF]):
 
         self._before_loop = None
         self._after_loop = None
+        self._on_valid_exception = None
         self._is_being_cancelled = False
         self._has_failed = False
         self._stop_next_iteration = False
@@ -238,10 +239,11 @@ class Loop(Generic[LF]):
                 try:
                     await self.coro(*args, **kwargs)
                     self._last_iteration_failed = False
-                except self._valid_exception:
+                except self._valid_exception as e:
                     self._last_iteration_failed = True
                     if not self.reconnect:
                         raise
+                    await self._call_loop_function('on_valid_exception', e)
                     await asyncio.sleep(backoff.delay())
                 else:
                     if self._stop_next_iteration:
@@ -286,6 +288,7 @@ class Loop(Generic[LF]):
         copy._injected = obj
         copy._before_loop = self._before_loop
         copy._after_loop = self._after_loop
+        copy._on_valid_exception = self._on_valid_exception
         copy._error = self._error
         setattr(obj, self.coro.__name__, copy)
         return copy
@@ -590,6 +593,31 @@ class Loop(Generic[LF]):
             raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__}.')
 
         self._after_loop = coro
+        return coro
+
+    def on_valid_exception(self, coro: FT) -> FT:
+        """A decorator that registers a coroutine to be called when an exception handled during the reconnect logic.
+
+        The coroutine must take only one argument the exception raised (except ``self`` in a class context).
+
+        By default this method does nothing however it could be
+        overridden to have a different implementation.
+
+        Parameters
+        ------------
+        coro: :ref:`coroutine <coroutine>`
+            The coroutine to register in the event of a handled exception during reconnect logic.
+
+        Raises
+        -------
+        TypeError
+            The function was not a coroutine.
+        """
+
+        if not inspect.iscoroutinefunction(coro):
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__}.')
+
+        self._on_valid_exception = coro
         return coro
 
     def error(self, coro: ET) -> ET:
