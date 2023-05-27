@@ -24,13 +24,15 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, Union
+
 from .asset import Asset
-from .utils import parse_time, snowflake_time, _get_as_snowflake, MISSING
-from .object import Object
+from .enums import ChannelType, InviteTarget, InviteType, NSFWLevel, VerificationLevel, try_enum
+from .flags import InviteFlags
 from .mixins import Hashable
+from .object import Object
 from .scheduled_event import ScheduledEvent
-from .enums import ChannelType, VerificationLevel, InviteTarget, InviteType, NSFWLevel, try_enum
+from .utils import MISSING, _generate_session_id, _get_as_snowflake, parse_time, snowflake_time
 from .welcome_screen import WelcomeScreen
 
 __all__ = (
@@ -40,28 +42,26 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
+    import datetime
+
     from typing_extensions import Self
 
+    from .abc import GuildChannel, Snowflake
+    from .application import PartialApplication
+    from .channel import DMChannel, GroupChannel
+    from .guild import Guild
+    from .message import Message
+    from .state import ConnectionState
+    from .types.channel import PartialChannel as InviteChannelPayload
     from .types.invite import (
+        GatewayInvite as GatewayInvitePayload,
         Invite as InvitePayload,
         InviteGuild as InviteGuildPayload,
-        GatewayInvite as GatewayInvitePayload,
     )
-    from .types.channel import (
-        PartialChannel as InviteChannelPayload,
-    )
-    from .state import ConnectionState
-    from .guild import Guild
-    from .abc import GuildChannel, Snowflake
-    from .channel import DMChannel, GroupChannel
     from .user import User
-    from .application import PartialApplication
-    from .message import Message
 
     InviteGuildType = Union[Guild, 'PartialInviteGuild', Object]
     InviteChannelType = Union[GuildChannel, 'PartialInviteChannel', Object, DMChannel, GroupChannel]
-
-    import datetime
 
 
 class PartialInviteChannel:
@@ -97,7 +97,8 @@ class PartialInviteChannel:
     type: :class:`ChannelType`
         The partial channel's type.
     recipients: Optional[List[:class:`str`]]
-        The partial channel's recipient names. This is only applicable to group DMs.
+        The partial channel's recipient names.
+        This is applicable to channels of type :attr:`ChannelType.group`.
 
         .. versionadded:: 2.0
     """
@@ -401,7 +402,7 @@ class Invite(Hashable):
             This is only possibly ``True`` in accepted invite objects
             (i.e. the objects received from :meth:`accept` and :meth:`use`).
     show_verification_form: :class:`bool`
-        Whether the user should be shown the guild's member verification form.
+        Whether the user should be shown the guild's membership screening form.
 
         .. versionadded:: 2.0
 
@@ -435,6 +436,7 @@ class Invite(Hashable):
         'type',
         'new_member',
         'show_verification_form',
+        '_flags',
     )
 
     BASE = 'https://discord.gg'
@@ -447,6 +449,7 @@ class Invite(Hashable):
         guild: Optional[Union[PartialInviteGuild, Guild]] = None,
         channel: Optional[Union[PartialInviteChannel, GuildChannel, GroupChannel]] = None,
         welcome_screen: Optional[WelcomeScreen] = None,
+        message: Optional[Message] = None,
     ):
         self._state: ConnectionState = state
         self.type: InviteType = try_enum(InviteType, data.get('type', 0))
@@ -460,7 +463,8 @@ class Invite(Hashable):
         self.max_uses: Optional[int] = data.get('max_uses')
         self.approximate_presence_count: Optional[int] = data.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = data.get('approximate_member_count')
-        self._message: Optional[Message] = data.get('message')
+        self._flags: int = data.get('flags', 0)
+        self._message: Optional[Message] = message
 
         # We inject some missing data here since we can assume it
         if self.type in (InviteType.group_dm, InviteType.friend):
@@ -530,10 +534,7 @@ class Invite(Hashable):
         channel = PartialInviteChannel(channel_data, state)
         channel = state.get_channel(getattr(channel, 'id', None)) or channel
 
-        if message is not None:
-            data['message'] = message  # type: ignore # Not a real field
-
-        return cls(state=state, data=data, guild=guild, channel=channel, welcome_screen=welcome_screen)  # type: ignore
+        return cls(state=state, data=data, guild=guild, channel=channel, welcome_screen=welcome_screen, message=message)  # type: ignore
 
     @classmethod
     def from_gateway(cls, *, state: ConnectionState, data: GatewayInvitePayload) -> Self:
@@ -601,6 +602,14 @@ class Invite(Hashable):
             url += '?event=' + str(self.scheduled_event_id)
         return url
 
+    @property
+    def flags(self) -> InviteFlags:
+        """:class:`InviteFlags`: Returns the invite's flags.
+
+        .. versionadded:: 2.1
+        """
+        return InviteFlags._from_value(self._flags)
+
     def set_scheduled_event(self, scheduled_event: Snowflake, /) -> Self:
         """Sets the scheduled event for this invite.
 
@@ -654,7 +663,7 @@ class Invite(Hashable):
                 'channel_id': getattr(self.channel, 'id', MISSING),
                 'channel_type': getattr(self.channel, 'type', MISSING),
             }
-        data = await state.http.accept_invite(self.code, type, **kwargs)
+        data = await state.http.accept_invite(self.code, type, state.session_id or _generate_session_id(), **kwargs)
         return Invite.from_incomplete(state=state, data=data, message=message)
 
     async def accept(self) -> Invite:

@@ -58,6 +58,7 @@ __all__ = (
     'AutoModPresets',
     'MemberFlags',
     'ReadStateFlags',
+    'InviteFlags',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
@@ -2398,6 +2399,15 @@ class MemberFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the member has started onboarding."""
         return 1 << 3
 
+    @flag_value
+    def guest(self):
+        """:class:`bool`: Returns ``True`` if the member is a guest.
+        Guest members are members that joined through a guest invite, and are not full members of the guild.
+
+        .. versionadded:: 2.1
+        """
+        return 1 << 4
+
 
 @fill_with_flags()
 class ReadStateFlags(BaseFlags):
@@ -2462,3 +2472,63 @@ class ReadStateFlags(BaseFlags):
     def thread(self):
         """:class:`bool`: Returns ``True`` if the read state is for a thread."""
         return 1 << 1
+
+
+@fill_with_flags()
+class InviteFlags(BaseFlags):
+    r"""Wraps up the Discord invite flags.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two InviteFlags are equal.
+
+        .. describe:: x != y
+
+            Checks if two InviteFlags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns a InviteFlags instance with all enabled flags from
+            both x and y.
+
+        .. describe:: x & y, x &= y
+
+            Returns a InviteFlags instance with only flags enabled on
+            both x and y.
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a InviteFlags instance with only flags enabled on
+            only one of x or y, not on both.
+
+        .. describe:: ~x
+
+            Returns a InviteFlags instance with all flags inverted from x.
+
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    __slots__ = ()
+
+    @flag_value
+    def guest(self):
+        """:class:`bool`: Returns ``True`` if the invite is a guest invite. Guest invites grant temporary membership for the purposes of joining a voice channel."""
+        return 1 << 0

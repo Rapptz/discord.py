@@ -7779,6 +7779,11 @@ Flags
 .. autoclass:: HubProgressFlags()
     :members:
 
+.. attributetable:: InviteFlags
+
+.. autoclass:: InviteFlags()
+    :members:
+
 .. attributetable:: MemberFlags
 
 .. autoclass:: MemberFlags()

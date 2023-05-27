@@ -2238,6 +2238,7 @@ class HTTPClient:
         self,
         invite_id: str,
         type: InviteType,
+        session_id: Optional[str] = None,
         *,
         guild_id: Snowflake = MISSING,
         channel_id: Snowflake = MISSING,
@@ -2262,7 +2263,13 @@ class HTTPClient:
             props = ContextProperties.from_accept_invite_page(
                 guild_id=guild_id, channel_id=channel_id, channel_type=channel_type
             )
-        return self.request(Route('POST', '/invites/{invite_id}', invite_id=invite_id), context_properties=props, json={})
+        payload = {}
+        if session_id is not None:
+            payload['session_id'] = session_id
+
+        return self.request(
+            Route('POST', '/invites/{invite_id}', invite_id=invite_id), context_properties=props, json=payload
+        )
 
     def create_invite(
         self,

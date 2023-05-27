@@ -2052,7 +2052,7 @@ class Client:
                 'channel_id': getattr(invite.channel, 'id', MISSING),
                 'channel_type': getattr(invite.channel, 'type', MISSING),
             }
-        data = await state.http.accept_invite(invite.code, type, **kwargs)
+        data = await state.http.accept_invite(invite.code, type, state.session_id or utils._generate_session_id(), **kwargs)
         return Invite.from_incomplete(state=state, data=data, message=invite._message)
 
     async def delete_invite(self, invite: Union[Invite, str], /) -> Invite:

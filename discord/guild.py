@@ -768,7 +768,7 @@ class Guild(Hashable):
         return self.get_member(self_id)  # type: ignore
 
     def is_joined(self) -> bool:
-        """Returns whether you are a member of this guild.
+        """Returns whether you are a full member of this guild.
 
         May not be accurate for :class:`Guild` s fetched over HTTP.
 
