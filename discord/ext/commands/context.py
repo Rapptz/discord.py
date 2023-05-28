@@ -745,7 +745,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     async def maybe_reply(self, content: Optional[str] = None, **kwargs: Any):
         """|coro|
         
-        A shortcut method to both :meth:`reply` and :meht:`send` to either reply to a
+        A shortcut method to both :meth:`reply` and :meth:`send` to either reply to a
         message or send a message in the context's channel.
 
         For interaction based contexts, this is the same as :meth:`send`.
