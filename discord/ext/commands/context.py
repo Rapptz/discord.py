@@ -741,6 +741,42 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             return await self.send(content, reference=self.message, **kwargs)
         else:
             return await self.send(content, **kwargs)
+        
+    async def maybe_reply(self, content: Optional[str] = None, **kwargs: Any):
+        """|coro|
+        
+        A shortcut method to both :meth:`reply` and :meht:`send` to either reply to a
+        message or send a message in the context's channel.
+
+        For interaction based contexts, this is the same as :meth:`send`.
+
+        .. versionadded:: 2.2.3
+
+        Raises
+        --------
+        ~discord.HTTPException
+            Sending the message failed
+        ~discord.Forbidden
+            You do not have the proper permissions to send the message.
+        ValueError
+            The ``files`` list is not of the appropriate size.
+        TypeError
+            You specified both ``file`` and ``files``.
+            You specified both ``embed`` and ``embeds``.
+        """
+
+        if self.interaction is None:
+            try:
+                m = await self.send(content, reference = self.message, **kwargs)
+
+                return m
+            except:
+
+                m = await self.send(content, **kwargs)
+                return m
+            
+        else:
+            return await self.send(content, **kwargs)
 
     def typing(self, *, ephemeral: bool = False) -> Union[Typing, DeferTyping]:
         """Returns an asynchronous context manager that allows you to send a typing indicator to
