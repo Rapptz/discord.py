@@ -45,7 +45,7 @@ from typing import (
     Union,
     overload,
 )
-
+from expiringdictionary import ExpiringDictionary as Cache
 import aiohttp
 from itertools import chain
 from .user import User, ClientUser
@@ -289,7 +289,8 @@ class Client:
         self._application: Optional[AppInfo] = None
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
-
+        self.cache = Cache()
+        self.unknown_user = None
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
             _log.warning("PyNaCl is not installed, voice will NOT be supported")
@@ -2497,8 +2498,18 @@ class Client:
         :class:`~discord.User`
             The user you requested.
         """
-        data = await self.http.get_user(user_id)
-        return User(state=self._connection, data=data)
+        check = await self.cache.get(user_id)
+        if check == 1:
+            raise self.unknown_user
+        try:
+            data = await self.http.get_user(user_id)
+            return User(state=self._connection, data=data)
+        except Exception as e:
+            await self.cache.set(user_id,1,60*60*24)
+            if self.unknown_user == None:
+                self.unknown_user = e
+            raise e
+
 
     async def fetch_channel(self, channel_id: int, /) -> Union[GuildChannel, PrivateChannel, Thread]:
         """|coro|
