@@ -44,7 +44,7 @@ from typing import (
     runtime_checkable,
 )
 import types
-from types.user import User
+from discord.types.user import User
 
 import discord
 
