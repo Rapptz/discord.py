@@ -745,7 +745,7 @@ class HTTPClient:
                         # the usual error cases
                         self.invalids+=1
                         if self.anti_cloudflare_ban == True:
-                            d=await self.invalid_ratelimiter.ratelimit("invalids",10000,600)
+                            d=await self.invalid_ratelimiter.ratelimit("invalids",9950,600)
                             if d == True:
                                 v=self.invalid_ratelimiter
                                 time_remaining=(v.delete['invalids']['last']+v.delete['invalids']['bucket'])-int(datetime.datetime.now().timestamp())
