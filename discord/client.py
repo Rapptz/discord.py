@@ -2499,7 +2499,10 @@ class Client:
             The user you requested.
         """
         if len(str(user_id)) not in (16, 17, 18, 19, 20, 21, 22, 23):
-            raise self.unknown_user
+            if self.unknown_user != None:
+                raise self.unknown_user
+            else:
+                raise TypeError
         check = await self.invalid_cache.get(user_id)
         if check == 1:
             raise self.unknown_user
