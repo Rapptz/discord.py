@@ -97,7 +97,10 @@ class BaseUser(_UserTag):
         )
 
     def __str__(self) -> str:
-        return f'{self.name}#{self.discriminator}'
+        if self.discriminator != "0":
+            return f'{self.name}#{self.discriminator}'
+        else:
+            return f'{self.name}'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, _UserTag) and other.id == self.id
