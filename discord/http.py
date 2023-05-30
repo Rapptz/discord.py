@@ -48,10 +48,10 @@ from typing import (
 from urllib.parse import quote as _uriquote
 from collections import deque
 import datetime
-
+from expiringdictionary import ExpiringDictionary as Cache
 import aiohttp
 
-from .errors import HTTPException, RateLimited, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound
+from .errors import HTTPException, RateLimited, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound, InvalidRatelimit
 from .gateway import DiscordClientWebSocketResponse
 from .file import File
 from .mentions import AllowedMentions
@@ -488,6 +488,7 @@ class HTTPClient:
         connector: Optional[aiohttp.BaseConnector] = None,
         *,
         proxy: Optional[str] = None,
+        anti_cloudflare_ban: bool = False,
         proxy_auth: Optional[aiohttp.BasicAuth] = None,
         unsync_clock: bool = True,
         http_trace: Optional[aiohttp.TraceConfig] = None,
@@ -508,6 +509,9 @@ class HTTPClient:
         self._global_over: asyncio.Event = MISSING
         self.token: Optional[str] = None
         self.proxy: Optional[str] = proxy
+        self.invalid_ratelimiter = Cache()
+        self.anti_cloudflare_ban = anti_cloudflare_ban
+        self.invalid_ratelimit=0
         self.proxy_auth: Optional[aiohttp.BasicAuth] = proxy_auth
         self.http_trace: Optional[aiohttp.TraceConfig] = http_trace
         self.use_clock: bool = not unsync_clock
@@ -573,7 +577,9 @@ class HTTPClient:
             key = f'{bucket_hash}:{route.major_parameters}'
 
         ratelimit = self.get_ratelimit(key)
-
+        if self.anti_cloudflare_ban == True:
+            if self.invalid_ratelimiter.is_ratelimited("invalids") == True:
+                raise InvalidRatelimit(self.invalid_ratelimiter.time_remaining("invalids"))
         # header creation
         headers: Dict[str, str] = {
             'User-Agent': self.user_agent,
@@ -738,6 +744,12 @@ class HTTPClient:
 
                         # the usual error cases
                         self.invalids+=1
+                        if self.anti_cloudflare_ban == True:
+                            d=await self.invalid_ratelimiter.ratelimit("invalids",10000,600)
+                            if d == True:
+                                v=self.invalid_ratelimiter
+                                time_remaining=(v.delete['invalids']['last']+v.delete['invalids']['bucket'])-int(datetime.datetime.now().timestamp())
+                                raise InvalidRatelimit(time_remaining)
                         if response.status == 403:
                             raise Forbidden(response, data)
                         elif response.status == 404:

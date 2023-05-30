@@ -258,7 +258,7 @@ class Client:
         self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
         self.shard_id: Optional[int] = options.get('shard_id')
         self.shard_count: Optional[int] = options.get('shard_count')
-
+        self.anti_cloudflare_ban: bool = options.pop('anti_cloudflare_ban',False)
         proxy: Optional[str] = options.pop('proxy', None)
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
@@ -268,6 +268,7 @@ class Client:
             self.loop,
             proxy=proxy,
             proxy_auth=proxy_auth,
+            anti_cloudflare_ban=self.anti_cloudflare_ban,
             unsync_clock=unsync_clock,
             http_trace=http_trace,
             max_ratelimit_timeout=max_ratelimit_timeout,

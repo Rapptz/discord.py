@@ -49,7 +49,6 @@ __all__ = (
     'InteractionResponded',
 )
 
-
 class DiscordException(Exception):
     """Base exception class for discord.py
 
@@ -138,6 +137,11 @@ class HTTPException(DiscordException):
 
         super().__init__(fmt.format(self.response, self.code, self.text))
 
+
+class InvalidRatelimit(DiscordException):
+    def __init__(self, retry_after: int):
+        self.retry_after = retry_after
+        super.__init__(f'Too many invalid requests in 10 minutes, Retry in {retry_after} seconds')
 
 class RateLimited(DiscordException):
     """Exception that's raised for when status code 429 occurs
