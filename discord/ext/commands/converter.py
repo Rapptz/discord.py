@@ -324,8 +324,8 @@ class UserConverter(IDConverter[discord.User]):
                 for s in ctx.bot.sources:
                     pull=await ctx.bot.ipc.request("ipc_get_user_from_cache",source=s,user=argument)
                     if pull != None:
-                        ctx.bot._connection.store_user(pull)
-                        return User(state=ctx.bot._connection,data=pull)
+                        return ctx.bot._connection.store_user(pull)
+                        
             raise UserNotFound(argument)
 
         return result
