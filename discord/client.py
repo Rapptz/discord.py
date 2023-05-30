@@ -2498,6 +2498,8 @@ class Client:
         :class:`~discord.User`
             The user you requested.
         """
+        if len(str(user_id)) not in (16, 17, 18, 19, 20, 21, 22, 23):
+            raise self.unknown_user
         check = await self.invalid_cache.get(user_id)
         if check == 1:
             raise self.unknown_user
