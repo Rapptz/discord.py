@@ -44,6 +44,7 @@ from typing import (
     runtime_checkable,
 )
 import types
+from types.user import User
 
 import discord
 
@@ -318,8 +319,13 @@ class UserConverter(IDConverter[discord.User]):
 
         predicate = lambda u: u.name == arg
         result = discord.utils.find(predicate, state._users.values())
-
         if result is None:
+            if hasattr(ctx.bot,"ipc"):
+                for s in ctx.bot.sources:
+                    pull=await ctx.bot.ipc.request("ipc_get_user_from_cache",source=s,user=argument)
+                    if pull != None:
+                        ctx.bot._connection.store_user(pull)
+                        return User(state=ctx.bot._connection,data=pull)
             raise UserNotFound(argument)
 
         return result
