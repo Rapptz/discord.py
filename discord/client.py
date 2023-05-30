@@ -289,7 +289,7 @@ class Client:
         self._application: Optional[AppInfo] = None
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
-        self.cache = Cache()
+        self.invalid_cache = Cache()
         self.unknown_user = None
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
@@ -2498,14 +2498,14 @@ class Client:
         :class:`~discord.User`
             The user you requested.
         """
-        check = await self.cache.get(user_id)
+        check = await self.invalid_cache.get(user_id)
         if check == 1:
             raise self.unknown_user
         try:
             data = await self.http.get_user(user_id)
             return User(state=self._connection, data=data)
         except Exception as e:
-            await self.cache.set(user_id,1,60*60*24)
+            await self.invalid_cache.set(user_id,1,60*60*24)
             if self.unknown_user == None:
                 self.unknown_user = e
             raise e
