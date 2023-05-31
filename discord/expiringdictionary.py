@@ -6,18 +6,31 @@ class ExpiringDictionary:
         self.dict={}
         self.rl={}
         self.delete={}
+        self.futures={}
 
     async def do_expiration(self,key:str,expiration:int):
         await asyncio.sleep(expiration)
         if key in self.dict: self.dict.pop(key)
 
+    async def do_cancel(self,key:str):
+        if key in self.futures:
+            try: self.futures[key].cancel()
+            except: pass
+            return True
+        else: return False
+
     async def set(self,key:str,value:Any,expiration:int=60):
+        if key in self.futures:
+            await self.do_cancel(key)
         self.dict[key]=value
-        asyncio.ensure_future(self.do_expiration(key,expiration))
+        future=asyncio.ensure_future(self.do_expiration(key,expiration))
+        self.futures[key]=future
         return 1
 
     async def delete(self,key:str,value:Any):
         if key in self.dict:
+            try: await self.do_cancel(key)
+            except: pass
             self.dict.pop(key)
             return 1
         else:
