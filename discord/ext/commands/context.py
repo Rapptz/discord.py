@@ -430,6 +430,14 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             return None
         return self.command.cog
 
+    @property
+    def filesize_limit(self) -> int:
+        """:class:`int`: Returns the maximum number of bytes files can have when uploaded to this guild or DM channel associated with this context.
+
+        .. versionadded:: 2.3
+        """
+        return self.guild.filesize_limit if self.guild is not None else discord.utils.DEFAULT_FILE_SIZE_LIMIT_BYTES
+
     @discord.utils.cached_property
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`.Guild`]: Returns the guild associated with this context's command. None if not available."""

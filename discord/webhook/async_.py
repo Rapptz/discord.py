@@ -1275,7 +1275,7 @@ class Webhook(BaseWebhook):
             A partial :class:`Webhook`.
             A partial webhook is just a webhook object with an ID and a token.
         """
-        m = re.search(r'discord(?:app)?\.com/api/webhooks/(?P<id>[0-9]{17,20})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
+        m = re.search(r'discord(?:app)?\.com/api/webhooks/(?P<id>[0-9]{17,20})/(?P<token>[A-Za-z0-9\.\-\_]{60,})', url)
         if m is None:
             raise ValueError('Invalid webhook URL given.')
 
@@ -1301,7 +1301,13 @@ class Webhook(BaseWebhook):
             'name': name,
             'channel_id': channel.id,
             'guild_id': channel.guild.id,
-            'user': {'username': user.name, 'discriminator': user.discriminator, 'id': user.id, 'avatar': user._avatar},
+            'user': {
+                'username': user.name,
+                'discriminator': user.discriminator,
+                'global_name': user.global_name,
+                'id': user.id,
+                'avatar': user._avatar,
+            },
         }
 
         state = channel._state

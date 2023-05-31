@@ -817,6 +817,7 @@ class Intents(BaseFlags):
         - :attr:`User.name`
         - :attr:`User.avatar`
         - :attr:`User.discriminator`
+        - :attr:`User.global_name`
 
         For more information go to the :ref:`member intent documentation <need_members_intent>`.
 

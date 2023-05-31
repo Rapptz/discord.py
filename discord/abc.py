@@ -219,7 +219,9 @@ class User(Snowflake, Protocol):
     name: :class:`str`
         The user's username.
     discriminator: :class:`str`
-        The user's discriminator.
+        The user's discriminator. This is a legacy concept that is no longer used.
+    global_name: Optional[:class:`str`]
+        The user's global nickname.
     bot: :class:`bool`
         If the user is a bot account.
     system: :class:`bool`
@@ -228,6 +230,7 @@ class User(Snowflake, Protocol):
 
     name: str
     discriminator: str
+    global_name: Optional[str]
     bot: bool
     system: bool
 
@@ -248,7 +251,7 @@ class User(Snowflake, Protocol):
 
     @property
     def default_avatar(self) -> Asset:
-        """:class:`~discord.Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
+        """:class:`~discord.Asset`: Returns the default avatar for a given user."""
         raise NotImplementedError
 
     @property

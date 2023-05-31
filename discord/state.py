@@ -356,6 +356,7 @@ class ConnectionState(Generic[ClientT]):
             return self._users[user_id]
         except KeyError:
             user = User(state=self, data=data)
+            # TODO: with the removal of discrims this becomes a bit annoying
             if user.discriminator != '0000':
                 self._users[user_id] = user
             return user
@@ -614,7 +615,7 @@ class ConnectionState(Generic[ClientT]):
         if self._messages is not None:
             self._messages.append(message)
         # we ensure that the channel is either a TextChannel, VoiceChannel, or Thread
-        if channel and channel.__class__ in (TextChannel, VoiceChannel, Thread):
+        if channel and channel.__class__ in (TextChannel, VoiceChannel, Thread, StageChannel):
             channel.last_message_id = message.id  # type: ignore
 
     def parse_message_delete(self, data: gw.MessageDeleteEvent) -> None:

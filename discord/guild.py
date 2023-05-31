@@ -250,13 +250,13 @@ class Guild(Hashable):
 
     approximate_member_count: Optional[:class:`int`]
         The approximate number of members in the guild. This is ``None`` unless the guild is obtained
-        using :meth:`Client.fetch_guild` with ``with_counts=True``.
+        using :meth:`Client.fetch_guild` or :meth:`Client.fetch_guilds` with ``with_counts=True``.
 
         .. versionadded:: 2.0
     approximate_presence_count: Optional[:class:`int`]
         The approximate number of members currently active in the guild.
         Offline members are excluded. This is ``None`` unless the guild is obtained using
-        :meth:`Client.fetch_guild` with ``with_counts=True``.
+        :meth:`Client.fetch_guild` or :meth:`Client.fetch_guilds` with ``with_counts=True``.
 
         .. versionchanged:: 2.0
     premium_progress_bar_enabled: :class:`bool`
@@ -324,9 +324,9 @@ class Guild(Hashable):
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
-        None: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=26214400),
-        0: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=26214400),
-        1: _GuildLimit(emoji=100, stickers=15, bitrate=128e3, filesize=26214400),
+        None: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=utils.DEFAULT_FILE_SIZE_LIMIT_BYTES),
+        0: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=utils.DEFAULT_FILE_SIZE_LIMIT_BYTES),
+        1: _GuildLimit(emoji=100, stickers=15, bitrate=128e3, filesize=utils.DEFAULT_FILE_SIZE_LIMIT_BYTES),
         2: _GuildLimit(emoji=150, stickers=30, bitrate=256e3, filesize=52428800),
         3: _GuildLimit(emoji=250, stickers=60, bitrate=384e3, filesize=104857600),
     }
@@ -1075,15 +1075,13 @@ class Guild(Hashable):
     def get_member_named(self, name: str, /) -> Optional[Member]:
         """Returns the first member found that matches the name provided.
 
-        The name can have an optional discriminator argument, e.g. "Jake#0001"
-        or "Jake" will both do the lookup. However the former will give a more
-        precise result. Note that the discriminator must have all 4 digits
-        for this to work.
+        The name is looked up in the following order:
 
-        If a nickname is passed, then it is looked up via the nickname. Note
-        however, that a nickname + discriminator combo will not lookup the nickname
-        but rather the username + discriminator combo due to nickname + discriminator
-        not being unique.
+        - Username#Discriminator (deprecated)
+        - Username#0 (deprecated, only gets users that migrated from their discriminator)
+        - Nickname
+        - Global name
+        - Username
 
         If no member is found, ``None`` is returned.
 
@@ -1091,10 +1089,14 @@ class Guild(Hashable):
 
             ``name`` parameter is now positional-only.
 
+        .. deprecated:: 2.3
+
+            Looking up users via discriminator due to Discord API change.
+
         Parameters
         -----------
         name: :class:`str`
-            The name of the member to lookup with an optional discriminator.
+            The name of the member to lookup.
 
         Returns
         --------
@@ -1103,22 +1105,14 @@ class Guild(Hashable):
             then ``None`` is returned.
         """
 
-        result = None
         members = self.members
-        if len(name) > 5 and name[-5] == '#':
-            # The 5 length is checking to see if #0000 is in the string,
-            # as a#0000 has a length of 6, the minimum for a potential
-            # discriminator lookup.
-            potential_discriminator = name[-4:]
 
-            # do the actual lookup and return if found
-            # if it isn't found then we'll do a full name lookup below.
-            result = utils.get(members, name=name[:-5], discriminator=potential_discriminator)
-            if result is not None:
-                return result
+        username, _, discriminator = name.rpartition('#')
+        if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
+            return utils.find(lambda m: m.name == username and m.discriminator == discriminator, members)
 
         def pred(m: Member) -> bool:
-            return m.nick == name or m.name == name
+            return m.nick == name or m.global_name == name or m.name == name
 
         return utils.find(pred, members)
 
