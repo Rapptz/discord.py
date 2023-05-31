@@ -91,6 +91,7 @@ __all__ = (
     'guild_only',
     'dm_only',
     'private_channel_only',
+    'allow_contexts',
     'default_permissions',
 )
 
@@ -2554,6 +2555,51 @@ def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         return inner
     else:
         return inner(func)
+
+
+# wrapper over previous 3 commands
+def allow_contexts(
+    guilds: bool = MISSING, dms: bool = MISSING, private_channels: bool = MISSING
+) -> Union[T, Callable[[T], T]]:
+    """A decorator that indicates this command can only be used in certain contexts.
+    Valid contexts are guilds, DMs and private channels.
+
+    This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
+
+    Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    Examples
+    ---------
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.allow_contexts(guilds=False, dms=False, private_channels=True)
+        async def my_command(interaction: discord.Interaction) -> None:
+            await interaction.response.send_message('I am only available in guilds and private channels!')
+    """
+
+    def inner(f: T) -> T:
+        if isinstance(f, (Command, Group, ContextMenu)):
+            f.guild_only = False
+            allowed_contexts = f.allowed_contexts or AppCommandContext.none()
+            f.allowed_contexts = allowed_contexts
+        else:
+            allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext.none()
+            f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
+
+        if guilds is not MISSING:
+            allowed_contexts.guild = guilds
+
+        if dms is not MISSING:
+            allowed_contexts.dm_channel = dms
+
+        if private_channels is not MISSING:
+            allowed_contexts.private_channel = private_channels
+
+        return f
+
+    return inner
 
 
 def default_permissions(**perms: bool) -> Callable[[T], T]:
