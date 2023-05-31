@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-
+from collections import deque
 import asyncio
 import datetime
 import logging
@@ -55,7 +55,7 @@ from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
 from .channel import _threaded_channel_factory, PartialMessageable
-from .enums import ChannelType
+from .enums import ChannelType,AuditLogAction
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status
@@ -273,7 +273,7 @@ class Client:
             http_trace=http_trace,
             max_ratelimit_timeout=max_ratelimit_timeout,
         )
-
+        self._audit_log_cache_limit: int = options.pop("audit_log_cache_limit",10)
         self._handlers: Dict[str, Callable[..., None]] = {
             'ready': self._handle_ready,
         }
@@ -281,6 +281,7 @@ class Client:
         self._hooks: Dict[str, Callable[..., Coroutine[Any, Any, Any]]] = {
             'before_identify': self._call_before_identify_hook,
         }
+        self.audit_log_cache = {}
 
         self._enable_debug_events: bool = options.pop('enable_debug_events', False)
         self._connection: ConnectionState[Self] = self._get_state(intents=intents, **options)
@@ -310,6 +311,23 @@ class Client:
             await self.close()
 
     # internals
+
+    async def add_audit_log_entry(self,guild_id: int, entry: AuditLogEntry):
+        if guild_id not in self.audit_log_cache:
+            self.audit_log_cache[guild_id]=deque(maxlen=self._audit_log_cache_limit)
+        self.audit_log_cache[guild_id].appendleft(entry)
+        return True
+
+    async def get_cached_audit_log(self, guild_id: int, action: typing.Optional[AuditLogAction], limit: typing.Optional[int]):
+        if guild_id not in self.audit_log_cache: return None
+        if action:
+            entries = [i for i in self.audit_log_cache[guild_id] if i.action is action]
+            if limit: return entries[:limit]
+            else: return entries
+        else:
+            entries = [i for i in self.audit_log_cache[guild_id]]
+            if limit: return entries[:limit]
+            else: return entries
 
     def _get_websocket(self, guild_id: Optional[int] = None, *, shard_id: Optional[int] = None) -> DiscordWebSocket:
         return self.ws
