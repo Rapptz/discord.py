@@ -48,7 +48,7 @@ from typing import (
 from urllib.parse import quote as _uriquote
 from collections import deque
 import datetime
-from expiringdictionary import ExpiringDictionary as Cache
+from .expiringdictionary import ExpiringDictionary as Cache
 import aiohttp
 
 from .errors import HTTPException, RateLimited, Forbidden, NotFound, LoginFailure, DiscordServerError, GatewayNotFound, InvalidRatelimit

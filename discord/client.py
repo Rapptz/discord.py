@@ -45,7 +45,7 @@ from typing import (
     Union,
     overload,
 )
-from expiringdictionary import ExpiringDictionary as Cache
+from .expiringdictionary import ExpiringDictionary as Cache
 import aiohttp
 from itertools import chain
 from .user import User, ClientUser
