@@ -141,7 +141,7 @@ class TextInput(Item[V]):
 
         self._underlying.custom_id = value
         self._provided_custom_id = True
-        
+
     @property
     def width(self) -> int:
         return 5
