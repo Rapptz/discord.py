@@ -38,6 +38,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    Set,
     Sequence,
     Tuple,
     Type,
@@ -289,6 +290,7 @@ class Client:
         self._application: Optional[AppInfo] = None
         self._connection._get_websocket = self._get_websocket
         self._connection._get_client = lambda: self
+        self.__task_store: Set[asyncio.Task] = set()
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
@@ -456,7 +458,12 @@ class Client:
     ) -> asyncio.Task:
         wrapped = self._run_event(coro, event_name, *args, **kwargs)
         # Schedules the task
-        return self.loop.create_task(wrapped, name=f'discord.py: {event_name}')
+        # asyncio only keeps a weak reference to this task
+        task = self.loop.create_task(wrapped, name=f'discord.py: {event_name}')
+        # if it were to be garbage collected prior to finishing, the task would be lost.
+        self.__task_store.add(task)
+        task.add_done_callback(self.__task_store.discard)
+        return task
 
     def dispatch(self, event: str, /, *args: Any, **kwargs: Any) -> None:
         _log.debug('Dispatching event %s', event)
