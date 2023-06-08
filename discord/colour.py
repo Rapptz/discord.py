@@ -509,5 +509,15 @@ class Colour:
         """
         return cls(0xEEEFF1)
 
+    @classmethod
+    def pink(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0xEB459F``.
+
+        .. colour:: #EB459F
+
+        .. versionadded:: 2.3
+        """
+        return cls(0xEB459F)
+
 
 Color = Colour
