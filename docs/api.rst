@@ -3595,12 +3595,12 @@ of :class:`enum.Enum`.
 
     .. attribute:: blurple
 
-        Represents the default avatar with the color blurple.
+        Represents the default avatar with the colour blurple.
         See also :attr:`Colour.blurple`
 
     .. attribute:: grey
 
-        Represents the default avatar with the color grey.
+        Represents the default avatar with the colour grey.
         See also :attr:`Colour.greyple`
 
     .. attribute:: gray
@@ -3609,21 +3609,21 @@ of :class:`enum.Enum`.
 
     .. attribute:: green
 
-        Represents the default avatar with the color green.
+        Represents the default avatar with the colour green.
         See also :attr:`Colour.green`
 
     .. attribute:: orange
 
-        Represents the default avatar with the color orange.
+        Represents the default avatar with the colour orange.
         See also :attr:`Colour.orange`
 
     .. attribute:: red
 
-        Represents the default avatar with the color red.
+        Represents the default avatar with the colour red.
         See also :attr:`Colour.red`
     .. attribute:: pink
 
-        Represents the default avatar with the color pink.
+        Represents the default avatar with the colour pink.
         See also :attr:`Colour.pink`
 
         .. versionadded:: 2.3
