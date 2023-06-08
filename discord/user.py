@@ -173,7 +173,7 @@ class BaseUser(_UserTag):
         if self.discriminator == '0':
             avatar_id = (self.id >> 22) % len(DefaultAvatar)
         else:
-            avatar_id = int(self.discriminator) % len(DefaultAvatar)
+            avatar_id = int(self.discriminator) % 5
 
         return Asset._from_default_avatar(self._state, avatar_id)
 
