@@ -219,7 +219,7 @@ class User(Snowflake, Protocol):
     name: :class:`str`
         The user's username.
     discriminator: :class:`str`
-        The user's discriminator. This is a legacy concept that is no longer used.
+        The user's discriminator. This is only used by bot users and users who have not migrated to the new username system.
     global_name: Optional[:class:`str`]
         The user's global nickname.
     bot: :class:`bool`
