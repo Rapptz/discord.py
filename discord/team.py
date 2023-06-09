@@ -119,7 +119,7 @@ class TeamMember(BaseUser):
     id: :class:`int`
         The team member's unique ID.
     discriminator: :class:`str`
-        The team member's discriminator. This is no longer used for normal users.
+        The team member's discriminator. This is only used by bot users and users who have not migrated to the new username system.
     global_name: Optional[:class:`str`]
         The team member's global nickname, taking precedence over the username in display.
 
