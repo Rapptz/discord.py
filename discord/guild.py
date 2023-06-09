@@ -1077,8 +1077,8 @@ class Guild(Hashable):
 
         The name is looked up in the following order:
 
-        - Username#Discriminator (deprecated)
-        - Username#0 (deprecated, only gets users that migrated from their discriminator)
+        - Username#Discriminator
+        - Username#0 (only gets users who migrated from their discriminators)
         - Nickname
         - Global name
         - Username
@@ -1089,14 +1089,10 @@ class Guild(Hashable):
 
             ``name`` parameter is now positional-only.
 
-        .. deprecated:: 2.3
-
-            Looking up users via discriminator due to Discord API change.
-
         Parameters
         -----------
         name: :class:`str`
-            The name of the member to lookup.
+            The name of the member to lookup with an optional discriminator.
 
         Returns
         --------
