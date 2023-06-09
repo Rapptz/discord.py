@@ -130,7 +130,7 @@ class WidgetMember(BaseUser):
     name: :class:`str`
         The member's username.
     discriminator: :class:`str`
-        The member's discriminator. This is a legacy concept that is no longer used.
+        The member's discriminator. This is only used by bot users and users who have not migrated to the new username system.
     global_name: Optional[:class:`str`]
         The member's global nickname, taking precedence over the username in display.
 
