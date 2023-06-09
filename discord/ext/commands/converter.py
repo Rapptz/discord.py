@@ -186,8 +186,8 @@ class MemberConverter(IDConverter[discord.Member]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by username#discriminator (deprecated).
-    4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
+    3. Lookup by username#discriminator.
+    4. Lookup by username#0 (only gets users who migrated from their discriminators).
     5. Lookup by guild nickname.
     6. Lookup by global name.
     7. Lookup by user name.
@@ -198,10 +198,6 @@ class MemberConverter(IDConverter[discord.Member]):
     .. versionchanged:: 1.5.1
         This converter now lazily fetches members from the gateway and HTTP APIs,
         optionally caching the result if :attr:`.MemberCacheFlags.joined` is enabled.
-
-    .. deprecated:: 2.3
-        Looking up users by discriminator will be removed in a future version due to
-        the removal of discriminators in an API change.
     """
 
     async def query_member_named(self, guild: discord.Guild, argument: str) -> Optional[discord.Member]:
@@ -282,8 +278,8 @@ class UserConverter(IDConverter[discord.User]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by username#discriminator (deprecated).
-    4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
+    3. Lookup by username#discriminator.
+    4. Lookup by username#0 (only gets users who migrated from their discriminators).
     5. Lookup by global name.
     6. Lookup by user name.
 
@@ -293,10 +289,6 @@ class UserConverter(IDConverter[discord.User]):
     .. versionchanged:: 1.6
         This converter now lazily fetches users from the HTTP APIs if an ID is passed
         and it's not available in cache.
-
-    .. deprecated:: 2.3
-        Looking up users by discriminator will be removed in a future version due to
-        the removal of discriminators in an API change.
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.User:
