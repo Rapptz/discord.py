@@ -186,8 +186,6 @@ class Guild(Hashable):
         .. versionadded:: 2.0
     afk_timeout: :class:`int`
         The number of seconds until someone is moved to the AFK channel.
-    afk_channel: Optional[:class:`VoiceChannel`]
-        The channel that denotes the AFK channel. ``None`` if it doesn't exist.
     id: :class:`int`
         The guild's ID.
     owner_id: :class:`int`
@@ -1882,6 +1880,8 @@ class Guild(Hashable):
             and ``public_updates_channel`` parameters are required.
 
             .. versionadded:: 2.0
+        afk_channel: Optional[:class:`VoiceChannel`]
+            The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
         afk_timeout: :class:`int`
             The number of seconds until someone is moved to the AFK channel.
         owner: :class:`Member`
