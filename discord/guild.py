@@ -275,7 +275,6 @@ class Guild(Hashable):
 
     __slots__ = (
         'afk_timeout',
-        'afk_channel',
         'name',
         'id',
         'unavailable',
@@ -298,6 +297,7 @@ class Guild(Hashable):
         'vanity_url_code',
         'widget_enabled',
         '_widget_channel_id',
+        '_afk_channel_id',
         '_members',
         '_channels',
         '_icon',
@@ -503,6 +503,7 @@ class Guild(Hashable):
         self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
+        self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
 
         if 'channels' in guild:
             channels = guild['channels']
@@ -510,8 +511,6 @@ class Guild(Hashable):
                 factory, ch_type = _guild_channel_factory(c['type'])
                 if factory:
                     self._add_channel(factory(guild=self, data=c, state=self._state))  # type: ignore
-
-        self.afk_channel: Optional[VocalGuildChannel] = self.get_channel(utils._get_as_snowflake(guild, 'afk_channel_id'))  # type: ignore
 
         for obj in guild.get('voice_states', []):
             self._update_voice_state(obj, int(obj['channel_id']))
@@ -760,6 +759,14 @@ class Guild(Hashable):
         if emoji and emoji.guild == self:
             return emoji
         return None
+
+    @property
+    def afk_channel(self) -> Optional[VocalGuildChannel]:
+        """Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`]]: The channel that denotes the AFK channel.
+
+        If no channel is set, then this returns ``None``.
+        """
+        return self.get_channel(self._afk_channel_id)  # type: ignore
 
     @property
     def system_channel(self) -> Optional[TextChannel]:
@@ -1875,8 +1882,6 @@ class Guild(Hashable):
             and ``public_updates_channel`` parameters are required.
 
             .. versionadded:: 2.0
-        afk_channel: Optional[:class:`VoiceChannel`]
-            The new channel that is the AFK channel. Could be ``None`` for no AFK channel.
         afk_timeout: :class:`int`
             The number of seconds until someone is moved to the AFK channel.
         owner: :class:`Member`
