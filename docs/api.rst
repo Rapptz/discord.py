@@ -3787,6 +3787,16 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
+.. class:: FriendSuggestionReasonType
+
+    Specifies the type of :class:`FriendSuggestionReason`.
+
+    .. versionadded:: 2.1
+
+    .. attribute:: external_friend
+
+        You are friends with this user on another platform.
+
 .. class:: UserContentFilter
 
     Represents the options found in ``Settings > Privacy & Safety > Safe Direct Messaging``

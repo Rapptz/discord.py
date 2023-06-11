@@ -69,6 +69,7 @@ __all__ = (
     'ApplicationCommandOptionType',
     'AppCommandOptionType',
     'RelationshipType',
+    'FriendSuggestionReasonType',
     'HypeSquadHouse',
     'PremiumType',
     'UserContentFilter',
@@ -443,6 +444,10 @@ class RelationshipType(Enum):
     outgoing_request = 4
     implicit = 5
     suggestion = 6  # Unused
+
+
+class FriendSuggestionReasonType(Enum):
+    external_friend = 1
 
 
 class NotificationLevel(Enum, comparable=True):

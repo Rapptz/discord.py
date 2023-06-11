@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Tuple, Union
 
-from .enums import ConnectionType, RelationshipAction, RelationshipType, Status, try_enum
+from .enums import ConnectionType, FriendSuggestionReasonType, RelationshipAction, RelationshipType, Status, try_enum
 from .mixins import Hashable
 from .object import Object
 from .utils import MISSING, parse_time
@@ -336,20 +336,22 @@ class FriendSuggestionReason:
 
     Attributes
     -----------
+    type: :class:`FriendSuggestionReasonType`
+        The type of friend suggestion reason.
     platform: :class:`ConnectionType`
         The platform the user was suggested from.
-    name: Optional[:class:`str`]
+    name: :class:`str`
         The user's name on the platform.
     """
 
     __slots__ = ('type', 'platform', 'name')
 
     def __init__(self, data: FriendSuggestionReasonPayload):
-        # This entire model is mostly unused by any client, so I have no idea what the type is
+        # This entire model is mostly unused by any client, so I can't be sure on types
         # Also because of this, I'm treating everything as optional just in case
-        self.type: int = data.get('type', 0)
+        self.type: FriendSuggestionReasonType = try_enum(FriendSuggestionReasonType, data.get('type', 0))
         self.platform: ConnectionType = try_enum(ConnectionType, data.get('platform'))
-        self.name: Optional[str] = data.get('name')
+        self.name: str = data.get('name') or ''
 
     def __repr__(self) -> str:
         return f'<FriendSuggestionReason platform={self.platform!r} name={self.name!r}>'

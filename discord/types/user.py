@@ -160,9 +160,9 @@ class Note(TypedDict):
 
 
 class FriendSuggestionReason(TypedDict):
-    name: Optional[str]
+    name: str
     platform_type: ConnectionType
-    type: int
+    type: Literal[1]
 
 
 class FriendSuggestion(TypedDict):
