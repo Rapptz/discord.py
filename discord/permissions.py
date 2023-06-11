@@ -210,7 +210,7 @@ class Permissions(BaseFlags):
         ``True`` and the guild-specific ones set to ``False``. The guild-specific
         permissions are currently:
 
-        - :attr:`manage_guild_expressions`
+        - :attr:`manage_expressions`
         - :attr:`view_audit_log`
         - :attr:`view_guild_insights`
         - :attr:`manage_guild`
@@ -324,7 +324,7 @@ class Permissions(BaseFlags):
         - :attr:`manage_messages`
         - :attr:`manage_roles`
         - :attr:`manage_webhooks`
-        - :attr:`manage_guild_expressions`
+        - :attr:`manage_expressions`
         - :attr:`manage_threads`
         - :attr:`moderate_members`
 
@@ -563,21 +563,21 @@ class Permissions(BaseFlags):
         return 1 << 29
 
     @flag_value
-    def manage_guild_expressions(self) -> int:
+    def manage_expressions(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can edit or delete emojis, stickers, and soundboard sounds.
 
         .. versionadded:: 2.0
         """
         return 1 << 30
 
-    @make_permission_alias('manage_guild_expressions')
+    @make_permission_alias('manage_expressions')
     def manage_emojis(self) -> int:
-        """:class:`bool`: An alias for :attr:`manage_guild_expressions`."""
+        """:class:`bool`: An alias for :attr:`manage_expressions`."""
         return 1 << 30
 
-    @make_permission_alias('manage_guild_expressions')
+    @make_permission_alias('manage_expressions')
     def manage_emojis_and_stickers(self) -> int:
-        """:class:`bool`: An alias for :attr:`manage_guild_expressions`.
+        """:class:`bool`: An alias for :attr:`manage_expressions`.
 
         .. versionadded:: 2.0
         """
@@ -804,7 +804,7 @@ class PermissionOverwrite:
         manage_roles: Optional[bool]
         manage_permissions: Optional[bool]
         manage_webhooks: Optional[bool]
-        manage_guild_expressions: Optional[bool]
+        manage_expressions: Optional[bool]
         manage_emojis: Optional[bool]
         manage_emojis_and_stickers: Optional[bool]
         use_application_commands: Optional[bool]
