@@ -349,19 +349,18 @@ class ConnectionState(Generic[ClientT]):
         for vc in self.voice_clients:
             vc.main_ws = ws  # type: ignore # Silencing the unknown attribute (ok at runtime).
 
-    def store_user(self, data: Union[UserPayload, PartialUserPayload]) -> User:
+    def store_user(self, data: Union[UserPayload, PartialUserPayload], *, cache: bool = True) -> User:
         # this way is 300% faster than `dict.setdefault`.
         user_id = int(data['id'])
         try:
             return self._users[user_id]
         except KeyError:
             user = User(state=self, data=data)
-            # TODO: with the removal of discrims this becomes a bit annoying
-            if user.discriminator != '0000':
+            if cache:
                 self._users[user_id] = user
             return user
 
-    def store_user_no_intents(self, data: Union[UserPayload, PartialUserPayload]) -> User:
+    def store_user_no_intents(self, data: Union[UserPayload, PartialUserPayload], *, cache: bool = True) -> User:
         return User(state=self, data=data)
 
     def create_user(self, data: Union[UserPayload, PartialUserPayload]) -> User:

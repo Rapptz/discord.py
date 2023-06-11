@@ -1041,8 +1041,8 @@ class _InteractionMessageState:
     def _get_guild(self, guild_id):
         return self._parent._get_guild(guild_id)
 
-    def store_user(self, data):
-        return self._parent.store_user(data)
+    def store_user(self, data, *, cache: bool = True):
+        return self._parent.store_user(data, cache=cache)
 
     def create_user(self, data):
         return self._parent.create_user(data)
