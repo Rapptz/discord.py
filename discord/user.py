@@ -619,10 +619,14 @@ class ClientUser(BaseUser):
         Specifies if the user's email is verified.
     email: Optional[:class:`str`]
         The email of the user.
-    phone: Optional[:class:`int`]
+    phone: Optional[:class:`str`]
         The phone number of the user.
 
         .. versionadded:: 1.9
+
+        .. versionchanged:: 2.1
+
+            This now returns a :class:`str` instead of an :class:`int` to match the API.
     mfa_enabled: :class:`bool`
         Specifies if the user has MFA turned on and working.
     premium_type: Optional[:class:`PremiumType`]
@@ -667,7 +671,7 @@ class ClientUser(BaseUser):
     if TYPE_CHECKING:
         verified: bool
         email: Optional[str]
-        phone: Optional[int]
+        phone: Optional[str]
         _locale: str
         _flags: int
         mfa_enabled: bool
@@ -690,7 +694,7 @@ class ClientUser(BaseUser):
         self._update(data)
         self.verified = data.get('verified', False)
         self.email = data.get('email')
-        self.phone = _get_as_snowflake(data, 'phone')
+        self.phone = data.get('phone')
         self._locale = data.get('locale', 'en-US')
         self._flags = data.get('flags', 0)
         self._purchased_flags = data.get('purchased_flags', 0)
