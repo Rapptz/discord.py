@@ -207,6 +207,11 @@ class MemberConverter(IDConverter[discord.Member]):
     async def query_member_named(self, guild: discord.Guild, argument: str) -> Optional[discord.Member]:
         cache = guild._state.member_cache_flags.joined
         username, _, discriminator = argument.rpartition('#')
+
+        # If # isn't found then "discriminator" actually has the username
+        if not username:
+            discriminator, username = username, discriminator
+
         if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
             lookup = username
             predicate = lambda m: m.name == username and m.discriminator == discriminator
@@ -316,6 +321,11 @@ class UserConverter(IDConverter[discord.User]):
             return result  # type: ignore
 
         username, _, discriminator = argument.rpartition('#')
+
+        # If # isn't found then "discriminator" actually has the username
+        if not username:
+            discriminator, username = username, discriminator
+
         if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
             predicate = lambda u: u.name == username and u.discriminator == discriminator
         else:
