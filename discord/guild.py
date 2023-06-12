@@ -1331,6 +1331,11 @@ class Guild(Hashable):
         members = self.members
 
         username, _, discriminator = name.rpartition('#')
+
+        # If # isn't found then "discriminator" actually has the username
+        if not username:
+            discriminator, username = username, discriminator
+
         if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
             return utils.find(lambda m: m.name == username and m.discriminator == discriminator, members)
 
