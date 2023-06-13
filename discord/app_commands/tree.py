@@ -202,6 +202,8 @@ class CommandTree(Generic[ClientT]):
         with_localizations: :class:`bool`
             Whether to fetch the localizations for the commands. Defaults to ``False``.
 
+            .. versionadded:: 2.4
+
         Raises
         -------
         HTTPException
