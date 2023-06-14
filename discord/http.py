@@ -2131,7 +2131,7 @@ class HTTPClient:
     def get_global_commands(
         self, application_id: Snowflake, with_localizations: bool = False
     ) -> Response[List[command.ApplicationCommand]]:
-        params = {'with_localizations': with_localizations}
+        params = {'with_localizations': int(with_localizations)}
         return self.request(
             Route('GET', '/applications/{application_id}/commands', application_id=application_id), params=params
         )
@@ -2194,7 +2194,7 @@ class HTTPClient:
         guild_id: Snowflake,
         with_localizations: bool = False,
     ) -> Response[List[command.ApplicationCommand]]:
-        params = {'with_localizations': with_localizations}
+        params = {'with_localizations': int(with_localizations)}
         r = Route(
             'GET',
             '/applications/{application_id}/guilds/{guild_id}/commands',
