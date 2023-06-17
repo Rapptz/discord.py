@@ -2384,7 +2384,7 @@ class HTTPClient:
     def get_entitlements(
         self,
         application_id: Snowflake,
-        sku_ids: Optional[List[Snowflake]] = None,
+        sku_ids: Optional[SnowflakeList] = None,
         before: Optional[Snowflake] = None,
         after: Optional[Snowflake] = None,
         limit: Optional[int] = None,
