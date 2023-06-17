@@ -1,9 +1,9 @@
-from datetime import datetime
+from __future__ import annotations
+
 from typing import Optional, TYPE_CHECKING, List
 
 from . import utils
 from .enums import try_enum, SKUType, SKUAccessType, SKUFeature, EntitlementType
-from .guild import Guild
 
 __all__ = (
     'SKU',
@@ -13,6 +13,9 @@ __all__ = (
 from .flags import SKUFlags
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
+    from .guild import Guild
     from .state import ConnectionState
     from .types.sku import (
         SKU as SKUPayload,
@@ -70,7 +73,7 @@ class SKU:
         'show_age_gate',
     )
 
-    def __init__(self, state: ConnectionState, data: SKUPayload):
+    def __init__(self, *, state: ConnectionState, data: SKUPayload):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
         self.type = try_enum(SKUType, data['type'])
@@ -161,7 +164,7 @@ class Entitlement:
         self.starts_at: Optional[datetime] = utils.parse_time(data['starts_at'])
         self.ends_at: Optional[datetime] = utils.parse_time(data['ends_at'])
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
-        self.subscription_id: int = int(data['subscription_id'])
+        self.subscription_id: Optional[int] = utils._get_as_snowflake(data, 'subscription_id')
 
     def __repr__(self) -> str:
         return f'<Entitlement id={self.id} type={self.type!r} user_id={self.user_id}>'
