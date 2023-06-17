@@ -83,7 +83,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .abc import Messageable, PrivateChannel, Snowflake, SnowflakeTime
-    from .app_commands import Command, ContextMenu
+    from .app_commands import Command, ContextMenu, MissingApplicationID
     from .automod import AutoModAction, AutoModRule
     from .channel import DMChannel, GroupChannel
     from .ext.commands import AutoShardedBot, Bot, Context, CommandError
@@ -2645,7 +2645,18 @@ class Client:
         --------
         List[:class:`.SKU`]
             The bot's available SKUs.
+
+        Raises
+        -------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Retrieving the SKUs failed.
         """
+
+        if self.application_id is None:
+            raise MissingApplicationID
+
         data = await self.http.get_skus(self.application_id)
         return [SKU(state=self._connection, data=sku) for sku in data]
 
@@ -2663,9 +2674,15 @@ class Client:
         -------
         NotFound
             An entitlement with this ID does not exist.
+        MissingApplicationID
+            The application ID could not be found.
         HTTPException
             Fetching the entitlement failed.
         """
+
+        if self.application_id is None:
+            raise MissingApplicationID
+
         data = await self.http.get_entitlement(self.application_id, entitlement_id)
         return Entitlement(state=self._connection, data=data)
 
@@ -2700,9 +2717,15 @@ class Client:
 
         Raises
         -------
+        MissingApplicationID
+            The application ID could not be found.
         HTTPException
             Fetching the entitlements failed.
         """
+
+        if self.application_id is None:
+            raise MissingApplicationID
+
         data = await self.http.get_entitlements(self.application_id, sku_ids, before, after, limit, guild_id, exclude_ended)
         return [Entitlement(state=self._connection, data=entitlement) for entitlement in data]
 
