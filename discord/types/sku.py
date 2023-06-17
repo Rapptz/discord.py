@@ -1,4 +1,5 @@
 from typing import TypedDict, Optional, List
+from typing_extensions import NotRequired
 
 
 class SKU(TypedDict):
@@ -27,7 +28,7 @@ class Entitlement(TypedDict):
     deleted: bool
     gift_code_flags: int
     consumed: bool
-    starts_at: str
-    ends_at: str
+    starts_at: NotRequired[str]
+    ends_at: NotRequired[str]
     guild_id: Optional[str]
-    subscription_id: Optional[str]
+    subscription_id: NotRequired[str]

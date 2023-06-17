@@ -161,8 +161,8 @@ class Entitlement:
         self.deleted: bool = data['deleted']
         self.gift_code_flags: int = data['gift_code_flags']
         self.consumed: bool = data['consumed']
-        self.starts_at: Optional[datetime] = utils.parse_time(data['starts_at'])
-        self.ends_at: Optional[datetime] = utils.parse_time(data['ends_at'])
+        self.starts_at: Optional[datetime] = utils.parse_time(data.get('starts_at', None))
+        self.ends_at: Optional[datetime] = utils.parse_time(data.get('ends_at', None))
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.subscription_id: Optional[int] = utils._get_as_snowflake(data, 'subscription_id')
 
