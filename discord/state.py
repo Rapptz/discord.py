@@ -52,6 +52,7 @@ import os
 
 from .guild import Guild
 from .activity import BaseActivity
+from .sku import Entitlement
 from .user import User, ClientUser
 from .emoji import Emoji
 from .mentions import AllowedMentions
@@ -1567,6 +1568,18 @@ class ConnectionState(Generic[ClientT]):
                 self.dispatch('typing', channel, raw.user, raw.timestamp)
 
         self.dispatch('raw_typing', raw)
+
+    def parse_entitlement_create(self, data: gw.EntitlementCreateEvent) -> None:
+        entitlement = Entitlement(data=data, state=self)
+        self.dispatch('entitlement_create', entitlement)
+
+    def parse_entitlement_update(self, data: gw.EntitlementCreateEvent) -> None:
+        entitlement = Entitlement(data=data, state=self)
+        self.dispatch('entitlement_update', entitlement)
+
+    def parse_entitlement_delete(self, data: gw.EntitlementCreateEvent) -> None:
+        entitlement = Entitlement(data=data, state=self)
+        self.dispatch('entitlement_update', entitlement)
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, (TextChannel, Thread, VoiceChannel)):

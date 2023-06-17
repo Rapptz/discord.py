@@ -576,6 +576,7 @@ class InteractionResponseType(Enum):
     message_update = 7  # for components
     autocomplete_result = 8
     modal = 9  # for modals
+    premium_required = 10
 
 
 class VideoQualityMode(Enum):
@@ -756,6 +757,22 @@ class ForumLayoutType(Enum):
 class ForumOrderType(Enum):
     latest_activity = 0
     creation_date = 1
+
+
+class SKUType(Enum):
+    pass
+
+
+class SKUAccessType(Enum):
+    pass
+
+
+class SKUFeature(Enum):
+    pass
+
+
+class EntitlementType(Enum):
+    pass
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

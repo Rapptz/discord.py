@@ -48,6 +48,7 @@ from typing import (
 
 import aiohttp
 
+from .sku import SKU, Entitlement
 from .user import User, ClientUser
 from .invite import Invite
 from .template import Template
@@ -2629,6 +2630,83 @@ class Client:
         cls, _ = _sticker_factory(data['type'])
         # The type checker is not smart enough to figure out the constructor is correct
         return cls(state=self._connection, data=data)  # type: ignore
+
+    async def skus(self) -> List[SKU]:
+        """|coro|
+
+        Retrieves the bot's available SKUs.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the SKUs failed.
+
+        Returns
+        --------
+        List[:class:`.SKU`]
+            The bot's available SKUs.
+        """
+        data = await self.http.get_skus(self.application_id)
+        return [SKU(state=self._connection, data=sku) for sku in data]
+
+    async def fetch_entitlement(self, entitlement_id: int, /) -> Entitlement:
+        """|coro|
+
+        Retrieves a :class:`.Entitlement` with the specified ID.
+
+        Parameters
+        -----------
+        entitlement_id: :class:`int`
+            The entitlement's ID to fetch from.
+
+        Raises
+        -------
+        NotFound
+            An entitlement with this ID does not exist.
+        HTTPException
+            Fetching the entitlement failed.
+        """
+        data = await self.http.get_entitlement(self.application_id, entitlement_id)
+        return Entitlement(state=self._connection, data=data)
+
+    async def entitlements(
+        self,
+        *,
+        sku_ids: Optional[List[int]] = None,
+        before: Optional[int] = None,
+        after: Optional[int] = None,
+        limit: Optional[int] = None,
+        guild_id: Optional[int] = None,
+        exclude_ended: bool = False
+    ) -> List[Entitlement]:
+        """|coro|
+
+        Retrieves a list of :class:`.Entitlement` with the specified IDs.
+
+        Parameters
+        -----------
+        sku_ids: Optional[List[:class:`int`]]
+            A list of SKU IDs to filter by.
+        before: Optional[:class:`int`]
+            An entitlement ID to retrieve entitlements before.
+        after: Optional[:class:`int`]
+            An entitlement ID to retrieve entitlements after.
+        limit: Optional[:class:`int`]
+            The maximum number of entitlements to retrieve.
+        guild_id: Optional[:class:`int`]
+            A guild ID to filter entitlements by.
+        exclude_ended: :class:`bool`
+            Whether to exclude ended entitlements.
+
+        Raises
+        -------
+        HTTPException
+            Fetching the entitlements failed.
+        """
+        data = await self.http.get_entitlements(
+            self.application_id, sku_ids, before, after, limit, guild_id, exclude_ended
+        )
+        return [Entitlement(state=self._connection, data=entitlement) for entitlement in data]
 
     async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
         """|coro|

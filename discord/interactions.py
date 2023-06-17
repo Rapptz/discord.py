@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional, Generic, TYPE_CHECKING, Sequence, Tuple, Union
+from typing import Any, Dict, Optional, Generic, TYPE_CHECKING, Sequence, Tuple, Union, List
 import asyncio
 import datetime
 
@@ -37,6 +37,7 @@ from .errors import InteractionResponded, HTTPException, ClientException, Discor
 from .flags import MessageFlags
 from .channel import ChannelType
 from ._types import ClientT
+from .sku import Entitlement
 
 from .user import User
 from .member import Member
@@ -110,6 +111,10 @@ class Interaction(Generic[ClientT]):
         The channel the interaction was sent from.
 
         Note that due to a Discord limitation, if sent from a DM channel :attr:`~DMChannel.recipient` is ``None``.
+    entitlement_sku_ids: List[:class:`int`]
+        The entitlement SKU IDs that the user has.
+    entitlements: List[:class:`Entitlement`]
+        The entitlements that the guild or user has.
     application_id: :class:`int`
         The application ID that the interaction was for.
     user: Union[:class:`User`, :class:`Member`]
@@ -150,6 +155,8 @@ class Interaction(Generic[ClientT]):
         'guild_locale',
         'extras',
         'command_failed',
+        'entitlement_sku_ids',
+        'entitlements',
         '_permissions',
         '_app_permissions',
         '_state',
@@ -184,6 +191,8 @@ class Interaction(Generic[ClientT]):
         self.version: int = data['version']
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.channel: Optional[InteractionChannel] = None
+        self.entitlement_sku_ids: List[int] = [int(x) for x in data.get('entitlement_skus', []) or []]
+        self.entitlements: List[Entitlement] = [Entitlement(self._state, x) for x in data.get('entitlements', []) or []]
 
         raw_channel = data.get('channel', {})
         raw_ch_type = raw_channel.get('type')
@@ -978,6 +987,41 @@ class InteractionResponse(Generic[ClientT]):
         if not modal.is_finished():
             self._parent._state.store_view(modal)
         self._response_type = InteractionResponseType.modal
+
+    async def send_premium_required(self) -> None:
+        """|coro|
+
+        Sends an ephemeral message to the user that they need premium to use this command. It also includes a Button
+        to purchase premium.
+
+        .. warning::
+
+            This type of response is only available for applications that got a premium SKU setup.
+
+        Raises
+        -------
+        HTTPException
+            Sending the response failed.
+        InteractionResponded
+            This interaction has already been responded to before.
+        """
+        if self._response_type:
+            raise InteractionResponded(self._parent)
+        parent = self._parent
+
+        adapter = async_context.get()
+        http = parent._state.http
+
+        params = interaction_response_params(InteractionResponseType.premium_required.value)
+        await adapter.create_interaction_response(
+            parent.id,
+            parent.token,
+            session=parent._session,
+            proxy=http.proxy,
+            proxy_auth=http.proxy_auth,
+            params=params,
+        )
+        self._response_type = InteractionResponseType.premium_required
 
     async def autocomplete(self, choices: Sequence[Choice[ChoiceT]]) -> None:
         """|coro|
