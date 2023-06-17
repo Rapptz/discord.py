@@ -2677,7 +2677,7 @@ class Client:
         after: Optional[int] = None,
         limit: Optional[int] = None,
         guild_id: Optional[int] = None,
-        exclude_ended: bool = False
+        exclude_ended: bool = False,
     ) -> List[Entitlement]:
         """|coro|
 
@@ -2703,9 +2703,7 @@ class Client:
         HTTPException
             Fetching the entitlements failed.
         """
-        data = await self.http.get_entitlements(
-            self.application_id, sku_ids, before, after, limit, guild_id, exclude_ended
-        )
+        data = await self.http.get_entitlements(self.application_id, sku_ids, before, after, limit, guild_id, exclude_ended)
         return [Entitlement(state=self._connection, data=entitlement) for entitlement in data]
 
     async def fetch_premium_sticker_packs(self) -> List[StickerPack]:

@@ -5,10 +5,7 @@ from typing import Optional, TYPE_CHECKING, List
 from . import utils
 from .enums import try_enum, SKUType, SKUAccessType, SKUFeature, EntitlementType
 
-__all__ = (
-    'SKU',
-    'Entitlement'
-)
+__all__ = ('SKU', 'Entitlement')
 
 from .flags import SKUFlags
 

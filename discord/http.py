@@ -2413,7 +2413,8 @@ class HTTPClient:
     def get_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[sku.Entitlement]:
         return self.request(
             Route(
-                'GET', '/applications/{application_id}/entitlements/{entitlement_id}',
+                'GET',
+                '/applications/{application_id}/entitlements/{entitlement_id}',
                 application_id=application_id,
                 entitlement_id=entitlement_id,
             ),
