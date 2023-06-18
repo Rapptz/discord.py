@@ -2404,7 +2404,7 @@ class HTTPClient:
         if guild_id is not None:
             params['guild_id'] = guild_id
         if exclude_ended is not None:
-            params['exclude_ended'] = exclude_ended
+            params['exclude_ended'] = int(exclude_ended)
 
         return self.request(
             Route('GET', '/applications/{application_id}/entitlements', application_id=application_id), params=params
