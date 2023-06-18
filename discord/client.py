@@ -2689,31 +2689,53 @@ class Client:
     async def entitlements(
         self,
         *,
+        limit: Optional[int] = 100,
+        before: Optional[SnowflakeTime] = MISSING,
+        after: Optional[SnowflakeTime] = MISSING,
         sku_ids: Optional[List[int]] = None,
-        before: Optional[int] = None,
-        after: Optional[int] = None,
-        limit: Optional[int] = None,
         guild_id: Optional[int] = None,
         exclude_ended: bool = False,
-    ) -> List[Entitlement]:
-        """|coro|
+    ) -> AsyncIterator[Entitlement]:
+        """Retrieves an :term:`asynchronous iterator` of the :class:`Entitlement` that applications has.
 
-        Retrieves a list of :class:`.Entitlement` with the specified IDs.
+        .. versionadded:: 2.4
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for entitlement in client.entitlements(limit=100):
+                print(entitlement.user_id, entitlement.ends_at)
+
+        Flattening into a list ::
+
+            entitlements = [entitlement async for entitlement in client.entitlements(limit=100)]
+            # entitlements is now a list of Entitlement...
+
+        All parameters are optional.
 
         Parameters
         -----------
+        limit: Optional[:class:`int`]
+            The number of entitlements to retrieve.
+            If ``None``, it retrieves every entitlement for this application.
+            Note, however, that this would make it a slow operation.
+            Defaults to ``100``.
+        before: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
+            Retrieve entitlements before this date or entitlement.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+        after: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
+            Retrieve bans after this user.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
         sku_ids: Optional[List[:class:`int`]]
             A list of SKU IDs to filter by.
-        before: Optional[:class:`int`]
-            An entitlement ID to retrieve entitlements before.
-        after: Optional[:class:`int`]
-            An entitlement ID to retrieve entitlements after.
-        limit: Optional[:class:`int`]
-            The maximum number of entitlements to retrieve.
         guild_id: Optional[:class:`int`]
-            A guild ID to filter entitlements by.
+            The guild ID to filter by.
         exclude_ended: :class:`bool`
-            Whether to exclude ended entitlements.
+            Whether to exclude ended entitlements. Defaults to ``False``.
 
         Raises
         -------
@@ -2721,13 +2743,86 @@ class Client:
             The application ID could not be found.
         HTTPException
             Fetching the entitlements failed.
+        TypeError
+            Both ``after`` and ``before`` were provided, as Discord does not
+            support this type of pagination.
+
+        Yields
+        --------
+        :class:`Entitlement`
+            The entitlement with the application.
         """
 
         if self.application_id is None:
             raise MissingApplicationID
 
-        data = await self.http.get_entitlements(self.application_id, sku_ids, before, after, limit, guild_id, exclude_ended)
-        return [Entitlement(state=self._connection, data=entitlement) for entitlement in data]
+        if before is not MISSING and after is not MISSING:
+            raise TypeError('entitle pagination does not support both before and after')
+
+        # This endpoint paginates in ascending order.
+        endpoint = self.http.get_entitlements
+
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
+            before_id = before.id if before else None
+            data = await endpoint(
+                self.application_id,
+                limit=retrieve,
+                before=before_id,
+                sku_ids=sku_ids,
+                guild_id=guild_id,
+                exclude_ended=exclude_ended,
+            )
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                before = Object(id=int(data[0]['id']))
+
+            return data, before, limit
+
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
+            after_id = after.id if after else None
+            data = await endpoint(
+                self.application_id,
+                limit=retrieve,
+                after=after_id,
+                sku_ids=sku_ids,
+                guild_id=guild_id,
+                exclude_ended=exclude_ended,
+            )
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                after = Object(id=int(data[-1]['id']))
+
+            return data, after, limit
+
+        if isinstance(before, datetime):
+            before = Object(id=utils.time_snowflake(before, high=False))
+        if isinstance(after, datetime):
+            after = Object(id=utils.time_snowflake(after, high=True))
+
+        if before:
+            strategy, state = _before_strategy, before
+        else:
+            strategy, state = _after_strategy, after
+
+        while True:
+            retrieve = 100 if limit is None else min(limit, 100)
+            if retrieve < 1:
+                return
+
+            data, state, limit = await strategy(retrieve, state, limit)
+
+            # Terminate loop on next iteration; there's no data left after this
+            if len(data) < 1000:
+                limit = 0
+
+            for e in data:
+                yield Entitlement(self._connection, e)
 
     async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
         """|coro|
