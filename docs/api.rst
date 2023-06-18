@@ -1205,7 +1205,7 @@ Scheduled Events
 
 
 Entitlements
-~~~~~~~
+~~~~~~~~~~~~
 
 .. function:: on_entitlement_create(entitlement)
 
@@ -1226,7 +1226,7 @@ Entitlements
     :param entitlement: The entitlement that was updated.
     :type entitlement: :class:`Entitlement`
 
-.. function:: on_entitlement_update(entitlement)
+.. function:: on_entitlement_delete(entitlement)
 
     Called when a users subscription to a SKU is cancelled. This is the case when
     - Discord issues a refund for the subscription.
