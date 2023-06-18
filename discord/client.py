@@ -2800,9 +2800,9 @@ class Client:
 
             return data, after, limit
 
-        if isinstance(before, datetime):
+        if isinstance(before, datetime.datetime):
             before = Object(id=utils.time_snowflake(before, high=False))
-        if isinstance(after, datetime):
+        if isinstance(after, datetime.datetime):
             after = Object(id=utils.time_snowflake(after, high=True))
 
         if before:
