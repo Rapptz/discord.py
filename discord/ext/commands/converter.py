@@ -190,7 +190,7 @@ class MemberConverter(IDConverter[discord.Member]):
     4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
     5. Lookup by guild nickname.
     6. Lookup by global name.
-    7. Lookup by user name.
+    7. Lookup by user name (case insensitive).
 
     .. versionchanged:: 1.5
          Raise :exc:`.MemberNotFound` instead of generic :exc:`.BadArgument`
@@ -290,7 +290,7 @@ class UserConverter(IDConverter[discord.User]):
     3. Lookup by username#discriminator (deprecated).
     4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
     5. Lookup by global name.
-    6. Lookup by user name.
+    6. Lookup by user name (case insensitive).
 
     .. versionchanged:: 1.5
          Raise :exc:`.UserNotFound` instead of generic :exc:`.BadArgument`
