@@ -978,6 +978,10 @@ class SyncWebhook(BaseWebhook):
             in the UI, but will not actually send a notification.
 
             .. versionadded:: 2.2
+        voice_message: :class:`bool`
+            Whether to send this message as a voice message. This will only work with audio files.
+
+            .. versionadded:: 2.3
 
         Raises
         --------
