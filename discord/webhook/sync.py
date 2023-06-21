@@ -870,6 +870,7 @@ class SyncWebhook(BaseWebhook):
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        voice_message: bool = MISSING,
     ) -> SyncWebhookMessage:
         ...
 
@@ -891,6 +892,7 @@ class SyncWebhook(BaseWebhook):
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        voice_message: bool = MISSING,
     ) -> None:
         ...
 
@@ -911,6 +913,7 @@ class SyncWebhook(BaseWebhook):
         wait: bool = False,
         suppress_embeds: bool = False,
         silent: bool = False,
+        voice_message: bool = False,
     ) -> Optional[SyncWebhookMessage]:
         """Sends a message using the webhook.
 
@@ -1004,10 +1007,11 @@ class SyncWebhook(BaseWebhook):
         if content is None:
             content = MISSING
 
-        if suppress_embeds or silent:
+        if suppress_embeds or silent or voice_message:
             flags = MessageFlags._from_value(0)
             flags.suppress_embeds = suppress_embeds
             flags.suppress_notifications = silent
+            flags.voice = voice_message
         else:
             flags = MISSING
 
