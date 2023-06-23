@@ -193,37 +193,9 @@ class Interaction(Generic[ClientT]):
         except KeyError:
             self.guild_locale = None
 
-        self.message: Optional[Message]
-        try:
-            # The channel and message payloads are mismatched yet handled properly at runtime
-            self.message = Message(state=self._state, channel=self.channel, data=data['message'])  # type: ignore
-        except KeyError:
-            self.message = None
-
-        self.user: Union[User, Member] = MISSING
-        self._permissions: int = 0
-        self._app_permissions: int = int(data.get('app_permissions', 0))
-
         guild = None
         if self.guild_id:
             guild = self._state._get_or_create_unavailable_guild(self.guild_id)
-
-            # Upgrade Message.guild in case it's missing with partial guild data
-            if self.message is not None and self.message.guild is None:
-                self.message.guild = guild
-
-            try:
-                member = data['member']  # type: ignore # The key is optional and handled
-            except KeyError:
-                pass
-            else:
-                self.user = Member(state=self._state, guild=guild, data=member)
-                self._permissions = self.user._permissions or 0
-        else:
-            try:
-                self.user = User(state=self._state, data=data['user'])  # type: ignore # The key is optional and handled
-            except KeyError:
-                pass
 
         raw_channel = data.get('channel', {})
         channel_id = utils._get_as_snowflake(raw_channel, 'id')
@@ -240,6 +212,35 @@ class Interaction(Generic[ClientT]):
                     self.channel = factory(me=self._client.user, data=raw_channel, state=self._state)  # type: ignore
                 elif guild is not None:
                     self.channel = factory(guild=guild, state=self._state, data=raw_channel)  # type: ignore
+
+        self.message: Optional[Message]
+        try:
+            # The channel and message payloads are mismatched yet handled properly at runtime
+            self.message = Message(state=self._state, channel=self.channel, data=data['message'])  # type: ignore
+        except KeyError:
+            self.message = None
+
+        self.user: Union[User, Member] = MISSING
+        self._permissions: int = 0
+        self._app_permissions: int = int(data.get('app_permissions', 0))
+
+        if guild is not None:
+            # Upgrade Message.guild in case it's missing with partial guild data
+            if self.message is not None and self.message.guild is None:
+                self.message.guild = guild
+
+            try:
+                member = data['member']  # type: ignore # The key is optional and handled
+            except KeyError:
+                pass
+            else:
+                self.user = Member(state=self._state, guild=guild, data=member)
+                self._permissions = self.user._permissions or 0
+        else:
+            try:
+                self.user = User(state=self._state, data=data['user'])  # type: ignore # The key is optional and handled
+            except KeyError:
+                pass
 
     @property
     def client(self) -> ClientT:
