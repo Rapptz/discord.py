@@ -23,6 +23,7 @@ class CustomBot(commands.Bot):
         testing_guild_id: Optional[int] = None,
         **kwargs,
     ):
+    """ This is a custom bot class that extends the default bot class. """
         super().__init__(*args, **kwargs)
         self.db_pool = db_pool
         self.web_client = web_client

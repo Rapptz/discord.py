@@ -18,7 +18,7 @@ Key Features
 
 - Modern Pythonic API using ``async`` and ``await``.
 - Proper rate limit handling.
-- Optimised in both speed and memory.
+- Optimized in both speed and memory.
 
 Installing
 ----------
@@ -60,7 +60,7 @@ Optional Packages
 
 * `PyNaCl <https://pypi.org/project/PyNaCl/>`__ (for voice support)
 
-Please note that when installing voice support on Linux, you must install the following packages via your favourite package manager (e.g. ``apt``, ``dnf``, etc) before running the above commands:
+Please note that when installing voice support on Linux, you must install the following packages via your favorite package manager (e.g. ``apt``, ``dnf``, etc) before running the above commands:
 
 * libffi-dev (or ``libffi-devel`` on some systems)
 * python-dev (e.g. ``python3.8-dev`` for Python 3.8)
