@@ -786,6 +786,7 @@ class Client:
         log_formatter: logging.Formatter = MISSING,
         log_level: int = MISSING,
         root_logger: bool = False,
+        asyncio_debug: Optional[bool] = None,
     ) -> None:
         """A blocking call that abstracts away the event loop
         initialisation from you.
@@ -842,6 +843,14 @@ class Client:
             Defaults to ``False``.
 
             .. versionadded:: 2.0
+        asyncio_debug: Optional[:class:`bool`]
+            Whether to enable debug mode for asyncio.
+            This paramter is passed directly to the ``debug`` parameter of ``asyncio.run``.
+            See the documentation on asyncio's debug mode.
+
+            Defaults ``None`` as in ``asyncio.run``.
+
+            .. versionadded:: 2.4
         """
 
         async def runner():
@@ -857,7 +866,7 @@ class Client:
             )
 
         try:
-            asyncio.run(runner())
+            asyncio.run(runner(), debug=asyncio_debug)
         except KeyboardInterrupt:
             # nothing to do here
             # `asyncio.run` handles the loop cleanup
