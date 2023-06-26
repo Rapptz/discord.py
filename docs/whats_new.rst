@@ -11,6 +11,22 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p3p1:
+
+v2.3.1
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix username lookup in :meth:`Guild.get_member_named` (:issue:`9451`).
+- Use cache data first for :attr:`Interaction.channel` instead of API data.
+    - This bug usually manifested in incomplete channel objects (e.g. no ``overwrites``) because Discord does not provide this data.
+
+- Fix false positives in :meth:`PartialEmoji.from_str` inappropriately setting ``animated`` to ``True`` (:issue:`9456`, :issue:`9457`).
+- Fix certain select types not appearing in :attr:`Message.components` (:issue:`9462`).
+- |commands| Change lookup order for :class:`~ext.commands.MemberConverter` and :class:`~ext.commands.UserConverter` to prioritise usernames instead of nicknames.
+
 .. _vp2p3p0:
 
 v2.3.0
