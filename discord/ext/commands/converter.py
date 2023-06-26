@@ -188,9 +188,9 @@ class MemberConverter(IDConverter[discord.Member]):
     2. Lookup by mention.
     3. Lookup by username#discriminator (deprecated).
     4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
-    5. Lookup by guild nickname.
+    5. Lookup by user name.
     6. Lookup by global name.
-    7. Lookup by user name.
+    7. Lookup by guild nickname.
 
     .. versionchanged:: 1.5
          Raise :exc:`.MemberNotFound` instead of generic :exc:`.BadArgument`
@@ -217,7 +217,7 @@ class MemberConverter(IDConverter[discord.Member]):
             predicate = lambda m: m.name == username and m.discriminator == discriminator
         else:
             lookup = argument
-            predicate = lambda m: m.nick == argument or m.global_name == argument or m.name == argument
+            predicate = lambda m: m.name == argument or m.global_name == argument or m.nick == argument
 
         members = await guild.query_members(lookup, limit=100, cache=cache)
         return discord.utils.find(predicate, members)
@@ -289,8 +289,8 @@ class UserConverter(IDConverter[discord.User]):
     2. Lookup by mention.
     3. Lookup by username#discriminator (deprecated).
     4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
-    5. Lookup by global name.
-    6. Lookup by user name.
+    5. Lookup by user name.
+    6. Lookup by global name.
 
     .. versionchanged:: 1.5
          Raise :exc:`.UserNotFound` instead of generic :exc:`.BadArgument`
@@ -329,7 +329,7 @@ class UserConverter(IDConverter[discord.User]):
         if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
             predicate = lambda u: u.name == username and u.discriminator == discriminator
         else:
-            predicate = lambda u: u.global_name == argument or u.name == argument
+            predicate = lambda u: u.name == argument or u.global_name == argument
 
         result = discord.utils.find(predicate, state._users.values())
         if result is None:
