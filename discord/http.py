@@ -2888,7 +2888,7 @@ class HTTPClient:
         else:
             props = ContextProperties.empty()
 
-        return self.request(r, context_properties=props, json=payload if payload else None)
+        return self.request(r, context_properties=props, json=payload)
 
     def send_friend_request(self, username: str, discriminator: Snowflake) -> Response[None]:
         r = Route('POST', '/users/@me/relationships')
