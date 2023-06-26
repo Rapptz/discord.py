@@ -960,8 +960,8 @@ class ConnectionState:
     def parse_ready(self, data: gw.ReadyEvent) -> None:
         if self._ready_task is not None:
             self._ready_task.cancel()
-
         self.clear()
+        self._ready_data = data
 
         # Clear the ACK token
         self.http.ack_token = None
@@ -1010,7 +1010,6 @@ class ConnectionState:
 
         # Before parsing the rest, we wait for READY_SUPPLEMENTAL
         # This has voice state objects, as well as an initial member cache
-        self._ready_data = data
 
     def parse_ready_supplemental(self, extra_data: gw.ReadySupplementalEvent) -> None:
         data = self._ready_data
