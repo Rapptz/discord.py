@@ -958,21 +958,65 @@ class ConnectionState:
             self._ready_task = None
 
     def parse_ready(self, data: gw.ReadyEvent) -> None:
-        # Before parsing, we wait for READY_SUPPLEMENTAL
-        # This has voice state objects, as well as an initial member cache
-        self._ready_data = data
-        # Clear the ACK token
-        self.http.ack_token = None
-
-    def parse_ready_supplemental(self, extra_data: gw.ReadySupplementalEvent) -> None:
         if self._ready_task is not None:
             self._ready_task.cancel()
 
         self.clear()
 
+        # Clear the ACK token
+        self.http.ack_token = None
+
+        # Self parsing
+        self.user = user = ClientUser(state=self, data=data['user'])
+        self._users[user.id] = user  # type: ignore
+
+        # Read state parsing
+        read_states = data.get('read_state', {})
+        for read_state in read_states['entries']:
+            item = ReadState(state=self, data=read_state)
+            self.store_read_state(item)
+        self.read_state_version = read_states.get('version', 0)
+
+        # Experiments
+        self.experiments = {exp[0]: UserExperiment(state=self, data=exp) for exp in data.get('experiments', [])}
+        self.guild_experiments = {exp[0]: GuildExperiment(state=self, data=exp) for exp in data.get('guild_experiments', [])}
+
+        # Extras
+        self.analytics_token = data.get('analytics_token')
+        self.preferred_rtc_regions = data.get('geo_ordered_rtc_regions', ['us-central'])
+        self.settings = UserSettings(self, data.get('user_settings_proto', ''))
+        self.guild_settings = {
+            utils._get_as_snowflake(entry, 'guild_id'): GuildSettings(data=entry, state=self)
+            for entry in data.get('user_guild_settings', {}).get('entries', [])
+        }
+        self.consents = TrackingSettings(data=data.get('consents', {}), state=self)
+        self.country_code = data.get('country_code', 'US')
+        self.api_code_version = data.get('api_code_version', 1)
+        self.session_type = data.get('session_type', 'normal')
+        self.auth_session_id = data.get('auth_session_id_hash')
+        self.connections = {c['id']: Connection(state=self, data=c) for c in data.get('connected_accounts', [])}
+        self.pending_payments = {int(p['id']): Payment(state=self, data=p) for p in data.get('pending_payments', [])}
+        self.required_action = try_enum(RequiredActionType, data['required_action']) if 'required_action' in data else None
+        self.friend_suggestion_count = data.get('friend_suggestion_count', 0)
+
+        if 'sessions' in data:
+            self.parse_sessions_replace(data['sessions'], from_ready=True)
+
+        if 'auth_token' in data:
+            self.http._token(data['auth_token'])
+
+        if 'tutorial' in data and data['tutorial']:
+            self.tutorial = Tutorial(state=self, data=data['tutorial'])
+
+        # Before parsing the rest, we wait for READY_SUPPLEMENTAL
+        # This has voice state objects, as well as an initial member cache
+        self._ready_data = data
+
+    def parse_ready_supplemental(self, extra_data: gw.ReadySupplementalEvent) -> None:
         data = self._ready_data
 
         # Temp user parsing
+        user = self.user
         temp_users: Dict[int, PartialUserPayload] = {int(data['user']['id']): data['user']}
         for u in data.get('users', []):
             u_id = int(u['id'])
@@ -1010,10 +1054,6 @@ class ConnectionState:
                     if member:
                         voice_state['member'] = member
 
-        # Self parsing
-        self.user = user = ClientUser(state=self, data=data['user'])
-        self._users[user.id] = user  # type: ignore
-
         # Guild parsing
         for guild_data in data.get('guilds', []):
             self._add_guild_from_data(guild_data)
@@ -1040,44 +1080,6 @@ class ConnectionState:
             if 'recipients' not in pm:
                 pm['recipients'] = [temp_users[int(u_id)] for u_id in pm.pop('recipient_ids')]
             self._add_private_channel(factory(me=user, data=pm, state=self))  # type: ignore
-
-        # Read state parsing
-        read_states = data.get('read_state', {})
-        for read_state in read_states['entries']:
-            item = ReadState(state=self, data=read_state)
-            self.store_read_state(item)
-        self.read_state_version = read_states.get('version', 0)
-
-        # Extras
-        self.analytics_token = data.get('analytics_token')
-        self.preferred_rtc_regions = data.get('geo_ordered_rtc_regions', ['us-central'])
-        self.settings = UserSettings(self, data.get('user_settings_proto', ''))
-        self.guild_settings = {
-            utils._get_as_snowflake(entry, 'guild_id'): GuildSettings(data=entry, state=self)
-            for entry in data.get('user_guild_settings', {}).get('entries', [])
-        }
-        self.consents = TrackingSettings(data=data.get('consents', {}), state=self)
-        self.country_code = data.get('country_code', 'US')
-        self.api_code_version = data.get('api_code_version', 1)
-        self.session_type = data.get('session_type', 'normal')
-        self.auth_session_id = data.get('auth_session_id_hash')
-        self.connections = {c['id']: Connection(state=self, data=c) for c in data.get('connected_accounts', [])}
-        self.pending_payments = {int(p['id']): Payment(state=self, data=p) for p in data.get('pending_payments', [])}
-        self.required_action = try_enum(RequiredActionType, data['required_action']) if 'required_action' in data else None
-        self.friend_suggestion_count = data.get('friend_suggestion_count', 0)
-
-        # Experiments
-        self.experiments = {exp[0]: UserExperiment(state=self, data=exp) for exp in data.get('experiments', [])}
-        self.guild_experiments = {exp[0]: GuildExperiment(state=self, data=exp) for exp in data.get('guild_experiments', [])}
-
-        if 'sessions' in data:
-            self.parse_sessions_replace(data['sessions'], from_ready=True)
-
-        if 'auth_token' in data:
-            self.http._token(data['auth_token'])
-
-        if 'tutorial' in data and data['tutorial']:
-            self.tutorial = Tutorial(state=self, data=data['tutorial'])
 
         # We're done
         del self._ready_data
