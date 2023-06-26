@@ -606,7 +606,7 @@ class ConnectionState:
         self.connections: Dict[str, Connection] = {}
         self.pending_payments: Dict[int, Payment] = {}
         self.analytics_token: Optional[str] = None
-        self.preferred_regions: List[str] = []
+        self.preferred_rtc_regions: List[str] = []
         self.country_code: Optional[str] = None
         self.api_code_version: int = 0
         self.session_type: Optional[str] = None
@@ -691,8 +691,8 @@ class ConnectionState:
         return str(getattr(self.user, 'locale', 'en-US'))
 
     @property
-    def preferred_region(self) -> str:
-        return self.preferred_regions[0] if self.preferred_regions else 'us-central'
+    def preferred_rtc_region(self) -> str:
+        return self.preferred_rtc_regions[0] if self.preferred_rtc_regions else 'us-central'
 
     @property
     def voice_clients(self) -> List[VoiceProtocol]:
@@ -1046,7 +1046,7 @@ class ConnectionState:
 
         # Extras
         self.analytics_token = data.get('analytics_token')
-        self.preferred_regions = data.get('geo_ordered_rtc_regions', ['us-central'])
+        self.preferred_rtc_regions = data.get('geo_ordered_rtc_regions', ['us-central'])
         self.settings = UserSettings(self, data.get('user_settings_proto', ''))
         self.guild_settings = {
             utils._get_as_snowflake(entry, 'guild_id'): GuildSettings(data=entry, state=self)

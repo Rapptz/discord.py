@@ -484,12 +484,16 @@ class Client:
         return self._connection.country_code
 
     @property
-    def preferred_voice_regions(self) -> List[str]:
+    def preferred_rtc_regions(self) -> List[str]:
         """List[:class:`str`]: Geo-ordered list of voice regions the connected client can use.
 
         .. versionadded:: 2.0
+
+        .. versionchanged:: 2.1
+
+            Rename from ``preferred_voice_regions`` to ``preferred_rtc_regions``.
         """
-        return self._connection.preferred_regions
+        return self._connection.preferred_rtc_regions
 
     @property
     def pending_payments(self) -> Sequence[Payment]:
@@ -1632,7 +1636,7 @@ class Client:
         if preferred_region is None or channel_id is None:
             region = None
         else:
-            region = str(preferred_region) if preferred_region else state.preferred_region
+            region = str(preferred_region) if preferred_region else state.preferred_rtc_region
 
         await ws.voice_state(None, channel_id, self_mute, self_deaf, self_video, preferred_region=region)
 

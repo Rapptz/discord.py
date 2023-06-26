@@ -4861,7 +4861,7 @@ class Guild(Hashable):
         if preferred_region is None or channel_id is None:
             region = None
         else:
-            region = str(preferred_region) if preferred_region else state.preferred_region
+            region = str(preferred_region) if preferred_region else state.preferred_rtc_region
 
         await ws.voice_state(self.id, channel_id, self_mute, self_deaf, self_video, preferred_region=region)
 
