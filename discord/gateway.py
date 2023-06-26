@@ -571,6 +571,7 @@ class DiscordWebSocket:
                 self.sequence = None
                 self.session_id = None
                 self.gateway = self.DEFAULT_GATEWAY
+
                 _log.info('Gateway session has been invalidated.')
                 await self.close(code=1000)
                 raise ReconnectWebSocket(resume=False)
@@ -583,6 +584,7 @@ class DiscordWebSocket:
             self.sequence = msg['s']
             self.session_id = data['session_id']
             self.gateway = yarl.URL(data['resume_gateway_url'])
+
             _log.info('Connected to Gateway (Session ID: %s).', self.session_id)
             await self.voice_state()  # Initial OP 4
 

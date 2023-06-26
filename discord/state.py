@@ -98,6 +98,7 @@ from .automod import AutoModRule, AutoModAction
 from .audit_logs import AuditLogEntry
 from .read_state import ReadState
 from .tutorial import Tutorial
+from .experiment import UserExperiment, GuildExperiment
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -641,6 +642,9 @@ class ConnectionState:
         else:
             self._messages: Optional[Deque[Message]] = None
 
+        self.experiments: Dict[int, UserExperiment] = {}
+        self.guild_experiments: Dict[int, GuildExperiment] = {}
+
     def process_chunk_requests(self, guild_id: int, nonce: Optional[str], members: List[Member], complete: bool) -> None:
         removed = []
         for key, request in self._chunk_requests.items():
@@ -1061,6 +1065,10 @@ class ConnectionState:
         self.pending_payments = {int(p['id']): Payment(state=self, data=p) for p in data.get('pending_payments', [])}
         self.required_action = try_enum(RequiredActionType, data['required_action']) if 'required_action' in data else None
         self.friend_suggestion_count = data.get('friend_suggestion_count', 0)
+
+        # Experiments
+        self.experiments = {exp[0]: UserExperiment(state=self, data=exp) for exp in data.get('experiments', [])}
+        self.guild_experiments = {exp[0]: GuildExperiment(state=self, data=exp) for exp in data.get('guild_experiments', [])}
 
         if 'sessions' in data:
             self.parse_sessions_replace(data['sessions'], from_ready=True)

@@ -5674,6 +5674,40 @@ of :class:`enum.Enum`.
 
         Represents a guild-bound read state for guild onboarding. Only one exists per guild.
 
+.. class:: ExperimentFilterType
+
+    Represents the type of an experiment population filter.
+
+    .. versionadded:: 2.1
+
+    .. attribute:: feature
+
+        The guild must have one of the given features.
+
+    .. attribute:: id_range
+
+        The guild's ID must be within the given range.
+
+    .. attribute:: member_count_range
+
+        The guild's member count must be within the given range.
+
+    .. attribute:: ids
+
+        The guild must be in the given list of IDs.
+
+    .. attribute:: hub_type
+
+        The guild must be one of the given hub types.
+
+    .. attribute:: vanity_url
+
+        The guild must or must not have a vanity URL.
+
+    .. attribute:: hash_range
+
+        The guild's calculated hash must be less than the given value.
+
 
 .. _discord-api-audit-logs:
 
@@ -7739,6 +7773,44 @@ ForumTag
 .. attributetable:: ForumTag
 
 .. autoclass:: ForumTag
+    :members:
+
+Experiment
+~~~~~~~~~~
+
+.. attributetable:: UserExperiment
+
+.. autoclass:: UserExperiment()
+    :members:
+
+.. attributetable:: GuildExperiment
+
+.. autoclass:: GuildExperiment()
+    :members:
+
+.. attributetable:: HoldoutExperiment
+
+.. autoclass:: HoldoutExperiment()
+    :members:
+
+.. attributetable:: ExperimentOverride
+
+.. autoclass:: ExperimentOverride()
+    :members:
+
+.. attributetable:: ExperimentPopulation
+
+.. autoclass:: ExperimentPopulation()
+    :members:
+
+.. attributetable:: ExperimentFilter
+
+.. autoclass:: ExperimentFilter()
+    :members:
+
+.. attributetable:: ExperimentRollout
+
+.. autoclass:: ExperimentRollout()
     :members:
 
 Flags

@@ -25,33 +25,34 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict, Union
+
 from typing_extensions import NotRequired, Required
 
 from .activity import Activity, ClientStatus, PartialPresenceUpdate, StatusType
+from .application import BaseAchievement, PartialApplication
+from .audit_log import AuditLogEntry
 from .automod import AutoModerationAction, AutoModerationRuleTriggerType
-from .voice import GuildVoiceState
+from .channel import ChannelType, DMChannel, GroupDMChannel, StageInstance
+from .emoji import Emoji, PartialEmoji
+from .entitlements import Entitlement, GatewayGift
+from .experiment import GuildExperiment, UserExperiment
+from .guild import ApplicationCommandCounts, Guild, SupplementalGuild, UnavailableGuild
 from .integration import BaseIntegration, IntegrationApplication
-from .role import Role
-from .channel import ChannelType, StageInstance
 from .interactions import Interaction
 from .invite import InviteTargetType
-from .emoji import Emoji, PartialEmoji
-from .member import MemberWithUser
-from .snowflake import Snowflake
-from .message import Message
-from .sticker import GuildSticker
-from .application import BaseAchievement, PartialApplication
-from .guild import ApplicationCommandCounts, Guild, UnavailableGuild, SupplementalGuild
-from .user import Connection, FriendSuggestion, User, PartialUser, ProtoSettingsType, Relationship, RelationshipType
-from .threads import Thread, ThreadMember
-from .scheduled_event import GuildScheduledEvent
-from .channel import DMChannel, GroupDMChannel
-from .subscriptions import PremiumGuildSubscriptionSlot
-from .payments import Payment
-from .entitlements import Entitlement, GatewayGift
 from .library import LibraryApplication
-from .audit_log import AuditLogEntry
+from .member import MemberWithUser
+from .message import Message
+from .payments import Payment
 from .read_state import ReadState, ReadStateType
+from .role import Role
+from .scheduled_event import GuildScheduledEvent
+from .snowflake import Snowflake
+from .sticker import GuildSticker
+from .subscriptions import PremiumGuildSubscriptionSlot
+from .threads import Thread, ThreadMember
+from .user import Connection, FriendSuggestion, PartialUser, ProtoSettingsType, Relationship, RelationshipType, User
+from .voice import GuildVoiceState
 
 
 class UserPresenceUpdateEvent(TypedDict):
@@ -86,8 +87,10 @@ class ReadyEvent(ResumedEvent):
     auth_token: NotRequired[str]
     connected_accounts: List[Connection]
     country_code: str
+    experiments: List[UserExperiment]
     friend_suggestion_count: int
     geo_ordered_rtc_regions: List[str]
+    guild_experiments: List[GuildExperiment]
     guilds: List[Guild]
     merged_members: List[List[MemberWithUser]]
     pending_payments: NotRequired[List[Payment]]

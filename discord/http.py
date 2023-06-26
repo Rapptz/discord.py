@@ -91,6 +91,7 @@ if TYPE_CHECKING:
         channel,
         emoji,
         entitlements,
+        experiment,
         guild,
         integration,
         invite,
@@ -4655,3 +4656,27 @@ class HTTPClient:
                 raise Forbidden(resp, 'cannot retrieve rtc regions')
             else:
                 raise HTTPException(resp, 'failed to get rtc regions')
+
+    # Experiments
+
+    @overload
+    def get_experiments(
+        self, with_guild_experiments: Literal[True] = ...
+    ) -> Response[experiment.ExperimentResponseWithGuild]:
+        ...
+
+    @overload
+    def get_experiments(self, with_guild_experiments: Literal[False] = ...) -> Response[experiment.ExperimentResponse]:
+        ...
+
+    @overload
+    def get_experiments(
+        self, with_guild_experiments: bool = True
+    ) -> Response[Union[experiment.ExperimentResponse, experiment.ExperimentResponseWithGuild]]:
+        ...
+
+    def get_experiments(
+        self, with_guild_experiments: bool = True
+    ) -> Response[Union[experiment.ExperimentResponse, experiment.ExperimentResponseWithGuild]]:
+        params = {'with_guild_experiments': str(with_guild_experiments).lower()}
+        return self.request(Route('GET', '/experiments'), params=params, context_properties=ContextProperties.empty())

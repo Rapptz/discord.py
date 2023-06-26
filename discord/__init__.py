@@ -39,6 +39,7 @@ from .emoji import *
 from .entitlements import *
 from .enums import *
 from .errors import *
+from .experiment import *
 from .file import *
 from .flags import *
 from .guild import *

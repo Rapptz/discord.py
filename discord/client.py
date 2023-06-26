@@ -36,6 +36,7 @@ from typing import (
     Dict,
     Generator,
     List,
+    Literal,
     Optional,
     overload,
     Sequence,
@@ -90,6 +91,7 @@ from .relationship import FriendSuggestion, Relationship
 from .settings import UserSettings, LegacyUserSettings, TrackingSettings, EmailSettings
 from .affinity import *
 from .oauth2 import OAuth2Authorization, OAuth2Token
+from .experiment import UserExperiment, GuildExperiment
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -526,6 +528,48 @@ class Client:
         .. versionadded:: 2.1
         """
         return self._connection.tutorial
+
+    @property
+    def experiments(self) -> Sequence[UserExperiment]:
+        """Sequence[:class:`.UserExperiment`]: The experiments assignments for the connected client.
+
+        .. versionadded:: 2.1
+        """
+        return utils.SequenceProxy(self._connection.experiments.values())
+
+    @property
+    def guild_experiments(self) -> Sequence[GuildExperiment]:
+        """Sequence[:class:`.GuildExperiment`]: The guild experiments assignments for the connected client.
+
+        .. versionadded:: 2.1
+        """
+        return utils.SequenceProxy(self._connection.guild_experiments.values())
+
+    def get_experiment(self, experiment: Union[str, int], /) -> Optional[Union[UserExperiment, GuildExperiment]]:
+        """Returns a user or guild experiment from the given experiment identifier.
+
+        Parameters
+        -----------
+        experiment: Union[:class:`str`, :class:`int`]
+            The experiment name or hash to search for.
+
+        Returns
+        --------
+        Optional[Union[:class:`.UserExperiment`, :class:`.GuildExperiment`]]
+            The experiment, if found.
+        """
+        name = None
+        if not isinstance(experiment, int) and not experiment.isdigit():
+            name = experiment
+            experiment_hash = utils.murmurhash32(experiment, signed=False)
+        else:
+            experiment_hash = int(experiment)
+
+        exp = self._connection.experiments.get(experiment_hash, self._connection.guild_experiments.get(experiment_hash))
+        if exp and not exp.name and name:
+            # Backfill the name
+            exp.name = name
+        return exp
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
@@ -4951,3 +4995,59 @@ class Client:
             icon_data = utils._bytes_to_base64_data(icon.fp.read())
             await state.http.upload_unverified_application_icon(app.name, app.hash, icon_data)
         return app
+
+    @overload
+    async def fetch_experiments(
+        self, with_guild_experiments: Literal[True] = ...
+    ) -> List[Union[UserExperiment, GuildExperiment]]:
+        ...
+
+    @overload
+    async def fetch_experiments(self, with_guild_experiments: Literal[False] = ...) -> List[UserExperiment]:
+        ...
+
+    @overload
+    async def fetch_experiments(
+        self, with_guild_experiments: bool = True
+    ) -> Union[List[UserExperiment], List[Union[UserExperiment, GuildExperiment]]]:
+        ...
+
+    async def fetch_experiments(
+        self, with_guild_experiments: bool = True
+    ) -> Union[List[UserExperiment], List[Union[UserExperiment, GuildExperiment]]]:
+        """|coro|
+
+        Retrieves the experiment rollouts available in relation to the user.
+
+        .. versionadded:: 2.1
+
+        .. note::
+
+            Certain guild experiments are only available via the gateway.
+            See :attr:`guild_experiments` for these.
+
+        Parameters
+        -----------
+        with_guild_experiments: :class:`bool`
+            Whether to include guild experiment rollouts in the response.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the experiment assignments failed.
+
+        Returns
+        -------
+        List[Union[:class:`.UserExperiment`, :class:`.GuildExperiment`]]
+            The experiment rollouts.
+        """
+        state = self._connection
+        data = await state.http.get_experiments(with_guild_experiments=with_guild_experiments)
+
+        experiments: List[Union[UserExperiment, GuildExperiment]] = [
+            UserExperiment(state=state, data=exp) for exp in data['assignments']
+        ]
+        for exp in data.get('guild_experiments', []):
+            experiments.append(GuildExperiment(state=state, data=exp))
+
+        return experiments
