@@ -40,7 +40,7 @@ from .enums import (
 from .errors import ClientException, NotFound
 from .flags import PublicUserFlags, PrivateUserFlags, PremiumUsageFlags, PurchasedFlags
 from .relationship import Relationship
-from .utils import _bytes_to_base64_data, _get_as_snowflake, cached_slot_property, copy_doc, snowflake_time, MISSING
+from .utils import _bytes_to_base64_data, cached_slot_property, copy_doc, snowflake_time, MISSING
 from .voice_client import VoiceClient
 
 if TYPE_CHECKING:
