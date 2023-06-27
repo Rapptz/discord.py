@@ -850,7 +850,7 @@ class Intents(BaseFlags):
         """
         return 1 << 2
 
-    @flag_value
+    @alias_flag_value
     def emojis(self):
         """:class:`bool`: Alias of :attr:`.emojis_and_stickers`.
 
@@ -859,7 +859,7 @@ class Intents(BaseFlags):
         """
         return 1 << 3
 
-    @alias_flag_value
+    @flag_value
     def emojis_and_stickers(self):
         """:class:`bool`: Whether guild emoji and sticker related events are enabled.
 
