@@ -446,13 +446,13 @@ class View:
             self.__cancel_callback = None
 
         self.__stopped.set_result(True)
-        asyncio.create_task(self.on_timeout(), name=f'discord-ui-view-timeout-{self.id}')
+        task = asyncio.create_task(self.on_timeout(), name=f'discord-ui-view-timeout-{self.id}')
 
     def _dispatch_item(self, item: Item, interaction: Interaction):
         if self.__stopped.done():
             return
 
-        asyncio.create_task(self._scheduled_task(item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
+        task = asyncio.create_task(self._scheduled_task(item, interaction), name=f'discord-ui-view-dispatch-{self.id}')
 
     def _refresh(self, components: List[Component]) -> None:
         # fmt: off

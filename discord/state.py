@@ -1232,7 +1232,7 @@ class ConnectionState(Generic[ClientT]):
 
         # check if it requires chunking
         if self._guild_needs_chunking(guild):
-            asyncio.create_task(self._chunk_and_dispatch(guild, unavailable))
+            task = asyncio.create_task(self._chunk_and_dispatch(guild, unavailable))
             return
 
         # Dispatch available if newly available
@@ -1524,7 +1524,7 @@ class ConnectionState(Generic[ClientT]):
                 voice = self._get_voice_client(guild.id)
                 if voice is not None:
                     coro = voice.on_voice_state_update(data)
-                    asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice state update handler'))
+                    task = asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice state update handler'))
 
             member, before, after = guild._update_voice_state(data, channel_id)  # type: ignore
             if member is not None:
@@ -1545,7 +1545,7 @@ class ConnectionState(Generic[ClientT]):
         vc = self._get_voice_client(key_id)
         if vc is not None:
             coro = vc.on_voice_server_update(data)
-            asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice server update handler'))
+            task = asyncio.create_task(logging_coroutine(coro, info='Voice Protocol voice server update handler'))
 
     def parse_typing_start(self, data: gw.TypingStartEvent) -> None:
         raw = RawTypingEvent(data)

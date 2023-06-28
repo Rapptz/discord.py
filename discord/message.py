@@ -854,7 +854,7 @@ class PartialMessage(Hashable):
                 except HTTPException:
                     pass
 
-            asyncio.create_task(delete(delay))
+            task = asyncio.create_task(delete(delay))
         else:
             await self._state.http.delete_message(self.channel.id, self.id)
 
