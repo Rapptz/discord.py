@@ -43,6 +43,7 @@ Key Features
   * Read states
   * Connections
   * Relationships
+  * Experiments
   * Protobuf user settings
   * Application/team management
   * Store/SKUs/entitlements
