@@ -24,16 +24,24 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Set, List, Union
+import os
+from typing import TYPE_CHECKING, Iterable, Optional, Set, List, Union
+
+from discord.types.onboarding import Prompt as PromptPayload
+from discord.utils import MISSING
 
 from . import utils
-from .enums import OnboardingPromptType, try_enum
-from .utils import cached_slot_property
+from .mixins import Hashable
+from .enums import OnboardingMode, OnboardingPromptType, try_enum
+from .state import ConnectionState
+from .utils import cached_slot_property, MISSING
 
 __all__ = (
     'Onboarding',
+    'PartialOnboardingPrompt',
     'OnboardingPrompt',
     'OnboardingPromptOption',
+    'PartialOnboardingPromptOption',
 )
 
 
@@ -43,7 +51,6 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .partial_emoji import PartialEmoji
     from .role import Role
-    from .state import ConnectionState
     from .threads import Thread
     from .types.onboarding import (
         Prompt as PromptPayload,
@@ -52,7 +59,60 @@ if TYPE_CHECKING:
     )
 
 
-class OnboardingPromptOption:
+class PartialOnboardingPromptOption:
+    """Represents a partial onboarding prompt option, these are used in the creation
+    of an :class:`OnboardingPrompt` via :meth:`Guild.edit_onboarding`.
+
+    .. versionadded:: 2.4
+
+    Attributes
+    -----------
+    title: :class:`str`
+        The title of this prompt option.
+    description: Optional[:class:`str`]
+        The description of this prompt option.
+    emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
+        The emoji tied to this option. May be a custom emoji, or a unicode emoji.
+    channel_ids: Set[:class:`int`]
+        The IDs of the channels that will be made visible if this option is selected.
+    role_ids: Set[:class:`int`]
+        The IDs of the roles given to the user if this option is selected.
+    """
+
+    __slots__ = (
+        'title',
+        'emoji',
+        'description',
+        'channel_ids',
+        'role_ids',
+    )
+
+    def __init__(
+        self,
+        title: str,
+        emoji: Union[Emoji, PartialEmoji, str],
+        description: Optional[str] = None,
+        channel_ids: Iterable[int] = MISSING,
+        role_ids: Iterable[int] = MISSING,
+    ) -> None:
+        self.title: str = title
+        self.description: Optional[str] = description
+        self.emoji: Union[PartialEmoji, Emoji, str] = emoji
+        self.channel_ids: Set[int] = set(channel_ids or [])
+        self.role_ids: Set[int] = set(role_ids or [])
+
+    def to_dict(self, *, id: int = MISSING) -> PromptOptionPayload:
+        return {
+            'id': id or os.urandom(16).hex(),
+            'title': self.title,
+            'description': self.description,
+            'emoji': ConnectionState.emoji_to_partial_payload(self.emoji),
+            'channel_ids': list(self.channel_ids),
+            'role_ids': list(self.role_ids),
+        }
+
+
+class OnboardingPromptOption(PartialOnboardingPromptOption, Hashable):
     """Represents an onboarding prompt option.
 
     .. versionadded:: 2.4
@@ -81,22 +141,19 @@ class OnboardingPromptOption:
         '_cs_roles',
         'guild',
         'id',
-        'title',
-        'description',
-        'emoji',
-        'channel_ids',
-        'role_ids',
     )
 
     def __init__(self, *, data: PromptOptionPayload, state: ConnectionState, guild: Guild) -> None:
         self._state: ConnectionState = state
         self.guild: Guild = guild
         self.id: int = int(data['id'])
-        self.title: str = data['title']
-        self.description: Optional[str] = data['description']
-        self.emoji: Optional[Union[PartialEmoji, Emoji, str]] = self._state.get_emoji_from_partial_payload(data['emoji'])
-        self.channel_ids: Set[int] = {int(channel_id) for channel_id in data['channel_ids']}
-        self.role_ids: Set[int] = {int(role_id) for role_id in data['role_ids']}
+        super().__init__(
+            title=data['title'],
+            description=data['description'],
+            emoji=self._state.get_emoji_from_partial_payload(data['emoji']),
+            channel_ids=[int(id) for id in data['channel_ids']],
+            role_ids=[int(id) for id in data['role_ids']],
+        )
 
     def __repr__(self) -> str:
         return f'<OnboardingPromptOption id={self.id} title={self.title}>'
@@ -113,8 +170,71 @@ class OnboardingPromptOption:
         it = filter(None, map(self.guild.get_role, self.role_ids))
         return utils._unique(it)
 
+    def to_dict(self) -> PromptOptionPayload:
+        return super().to_dict(id=self.id)
 
-class OnboardingPrompt:
+
+class PartialOnboardingPrompt:
+    """Represents a partial onboarding prompt, these are used in the creation
+    of an :class:`Onboarding` via :meth:`Guild.edit_onboarding`.
+
+    .. versionadded:: 2.4
+
+    Attributes
+    -----------
+    type: :class:`OnboardingPromptType`
+        The type of this prompt.
+    title: :class:`str`
+        The title of this prompt.
+    options: List[:class:`PartialOnboardingPromptOption`]
+        The options of this prompt.
+    single_select: :class:`bool`
+        Whether this prompt is single select.
+    required: :class:`bool`
+        Whether this prompt is required.
+    in_onboarding: :class:`bool`
+        Whether this prompt is in the onboarding flow.
+    """
+
+    __slots__ = (
+        'type',
+        'title',
+        'options',
+        'single_select',
+        'required',
+        'in_onboarding',
+    )
+
+    def __init__(
+        self,
+        *,
+        type: OnboardingPromptType,
+        title: str,
+        options: List[PartialOnboardingPromptOption],
+        single_select: bool = True,
+        required: bool = True,
+        in_onboarding: bool = True,
+    ) -> None:
+        self.type: OnboardingPromptType = try_enum(OnboardingPromptType, type)
+        self.title: str = title
+        self.options: List[PartialOnboardingPromptOption] = options
+        self.single_select: bool = single_select
+        self.required: bool = required
+        self.in_onboarding: bool = in_onboarding
+
+    def to_dict(self, *, id: int = MISSING) -> PromptPayload:
+        return {
+            'id': id or os.urandom(16).hex(),
+            'type': self.type.value,
+            'title': self.title,
+            'options': [option.to_dict() for option in self.options],
+            'single_select': self.single_select,
+            'required': self.required,
+            'in_onboarding': self.in_onboarding,
+        }
+
+
+class OnboardingPrompt(PartialOnboardingPrompt, Hashable):
     """Represents an onboarding prompt.
 
     .. versionadded:: 2.4
@@ -139,6 +259,8 @@ class OnboardingPrompt:
         Whether this prompt is part of the onboarding flow.
     """
 
+    options: List[OnboardingPromptOption]
+
     __slots__ = (
         '_state',
         'guild',
@@ -155,17 +277,20 @@ class OnboardingPrompt:
         self._state: ConnectionState = state
         self.guild: Guild = guild
         self.id: int = int(data['id'])
-        self.title: str = data['title']
-        self.options: List[OnboardingPromptOption] = [
-            OnboardingPromptOption(data=option_data, state=state, guild=guild) for option_data in data['options']
-        ]
-        self.single_select: bool = data['single_select']
-        self.required: bool = data['required']
-        self.in_onboarding: bool = data['in_onboarding']
-        self.type: OnboardingPromptType = try_enum(OnboardingPromptType, data['type'])
+        super().__init__(
+            type=try_enum(OnboardingPromptType, data['type']),
+            title=data['title'],
+            options=[OnboardingPromptOption(data=option_data, state=state, guild=guild) for option_data in data['options']],
+            single_select=data['single_select'],
+            required=data['required'],
+            in_onboarding=data['in_onboarding'],
+        )
 
     def __repr__(self) -> str:
         return f'<OnboardingPrompt id={self.id} title={self.title}, type={self.type}>'
+
+    def to_dict(self) -> PromptPayload:
+        return super().to_dict(id=self.id)
 
 
 class Onboarding:
@@ -183,6 +308,8 @@ class Onboarding:
         The IDs of the channels exposed to a new user by default.
     enabled: :class:`bool`:
         Whether onboarding is enabled in this guild.
+    mode: :class:`OnboardingMode`
+        The mode of onboarding for this guild.
     """
 
     __slots__ = (
@@ -192,6 +319,7 @@ class Onboarding:
         'prompts',
         'default_channel_ids',
         'enabled',
+        'mode',
     )
 
     def __init__(self, *, data: OnboardingPayload, guild: Guild, state: ConnectionState) -> None:
@@ -202,6 +330,7 @@ class Onboarding:
             OnboardingPrompt(data=prompt_data, state=state, guild=guild) for prompt_data in data['prompts']
         ]
         self.enabled: bool = data['enabled']
+        self.mode: OnboardingMode = try_enum(OnboardingMode, data.get('mode', 0))
 
     def __repr__(self) -> str:
         return f'<Onboarding guild={self.guild!r} enabled={self.enabled}>'

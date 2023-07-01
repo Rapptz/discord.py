@@ -69,6 +69,7 @@ __all__ = (
     'ForumLayoutType',
     'ForumOrderType',
     'OnboardingPromptType',
+    'OnboardingMode',
 )
 
 if TYPE_CHECKING:
@@ -774,6 +775,11 @@ class ForumOrderType(Enum):
 class OnboardingPromptType(Enum):
     multiple_choice = 0
     dropdown = 1
+
+
+class OnboardingMode(Enum):
+    default = 0
+    advanced = 1
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

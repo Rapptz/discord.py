@@ -3388,6 +3388,20 @@ of :class:`enum.Enum`.
 
         Prompt options are displayed as a drop-down.
 
+.. class:: OnboardingMode
+
+    Represents the onboarding constriant mode.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: default
+
+        Only default channels count towards onboarding constraints.
+
+    .. attribute:: advanced
+
+        Default channels and questions count towards onboarding constraints.
+
 
 .. _discord-api-audit-logs:
 
@@ -4730,12 +4744,28 @@ Onboarding
 .. autoclass:: Onboarding()
     :members:
 
+PartialOnboardingPrompt
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialOnboardingPrompt
+
+.. autoclass:: PartialOnboardingPrompt
+    :members:
+
 OnboardingPrompt
 ~~~~~~~~~~~~~~~~~
 
 .. attributetable:: OnboardingPrompt
 
 .. autoclass:: OnboardingPrompt()
+    :members:
+
+PartialOnboardingPromptOption
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialOnboardingPromptOption
+
+.. autoclass:: PartialOnboardingPromptOption
     :members:
 
 OnboardingPromptOption

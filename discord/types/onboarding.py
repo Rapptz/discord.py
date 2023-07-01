@@ -31,6 +31,7 @@ from .snowflake import Snowflake
 
 
 PromptType = Literal[0, 1]
+OnboardingMode = Literal[0, 1]
 
 
 class PromptOption(TypedDict):
@@ -57,3 +58,4 @@ class Onboarding(TypedDict):
     prompts: list[Prompt]
     default_channel_ids: list[Snowflake]
     enabled: bool
+    mode: OnboardingMode
