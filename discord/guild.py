@@ -133,6 +133,7 @@ if TYPE_CHECKING:
     from .types.message import MessageSearchAuthorType, MessageSearchHasType
     from .types.snowflake import SnowflakeList, Snowflake as _Snowflake
     from .types.widget import EditWidgetSettings
+    from .types.audit_log import AuditLogEvent
     from .types.oauth2 import OAuth2Guild as OAuth2GuildPayload
     from .message import EmojiInputType, Message
     from .read_state import ReadState
@@ -4231,7 +4232,7 @@ class Guild(Hashable):
         async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             data = await self._state.http.get_audit_logs(
-                self.id, limit=retrieve, user_id=user_id, action_type=action, before=before_id
+                self.id, limit=retrieve, user_id=user_id, action_type=action_type, before=before_id
             )
 
             entries = data.get('audit_log_entries', [])
@@ -4247,7 +4248,7 @@ class Guild(Hashable):
         async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
             data = await self._state.http.get_audit_logs(
-                self.id, limit=retrieve, user_id=user_id, action_type=action, after=after_id
+                self.id, limit=retrieve, user_id=user_id, action_type=action_type, after=after_id
             )
 
             entries = data.get('audit_log_entries', [])
@@ -4265,8 +4266,10 @@ class Guild(Hashable):
         else:
             user_id = None
 
-        if action:
-            action = action.value
+        if action is not MISSING:
+            action_type: Optional[AuditLogEvent] = action.value
+        else:
+            action_type = None
 
         if isinstance(before, datetime):
             before = Object(id=utils.time_snowflake(before, high=False))

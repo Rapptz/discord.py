@@ -80,7 +80,7 @@ if TYPE_CHECKING:
     from .mentions import AllowedMentions
     from .message import Attachment, Message
     from .flags import MessageFlags
-    from .enums import AuditLogAction, ChannelType, InteractionType
+    from .enums import ChannelType, InteractionType
     from .embeds import Embed
 
     from .types import (
@@ -2200,7 +2200,7 @@ class HTTPClient:
         before: Optional[Snowflake] = None,
         after: Optional[Snowflake] = None,
         user_id: Optional[Snowflake] = None,
-        action_type: Optional[AuditLogAction] = None,
+        action_type: Optional[audit_log.AuditLogEvent] = None,
     ) -> Response[audit_log.AuditLog]:
         r = Route('GET', '/guilds/{guild_id}/audit-logs', guild_id=guild_id)
         params: Dict[str, Any] = {'limit': limit}

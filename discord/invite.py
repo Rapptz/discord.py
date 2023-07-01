@@ -58,6 +58,12 @@ if TYPE_CHECKING:
         Invite as InvitePayload,
         InviteGuild as InviteGuildPayload,
     )
+    from .types.channel import (
+        PartialChannel as InviteChannelPayload,
+    )
+    from .state import ConnectionState
+    from .guild import Guild
+    from .abc import GuildChannel
     from .user import User
 
     InviteGuildType = Union[Guild, 'PartialInviteGuild', Object]

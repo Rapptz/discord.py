@@ -1511,6 +1511,8 @@ class GuildChannel:
         :class:`~discord.Invite`
             The invite that was created.
         """
+        if target_type is InviteTarget.unknown:
+            target_type = None
 
         data = await self._state.http.create_invite(
             self.id,
