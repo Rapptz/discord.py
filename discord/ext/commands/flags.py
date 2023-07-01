@@ -485,7 +485,7 @@ class FlagConverter(metaclass=FlagsMeta):
         for flag in flags.values():
             if callable(flag.default):
                 # Type checker does not understand that flag.default is a Callable
-                default = await maybe_coroutine(flag.default, ctx)  # type: ignore
+                default = await maybe_coroutine(flag.default, ctx)
                 setattr(self, flag.attribute, default)
             else:
                 setattr(self, flag.attribute, flag.default)
@@ -600,7 +600,7 @@ class FlagConverter(metaclass=FlagsMeta):
                 else:
                     if callable(flag.default):
                         # Type checker does not understand flag.default is a Callable
-                        default = await maybe_coroutine(flag.default, ctx)  # type: ignore
+                        default = await maybe_coroutine(flag.default, ctx)
                         setattr(self, flag.attribute, default)
                     else:
                         setattr(self, flag.attribute, flag.default)

@@ -398,7 +398,7 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
         if self.binding is not None:
             try:
                 # Type checker does not like runtime attribute retrieval
-                check: AppCommandCheck = self.binding.interaction_check  # type: ignore
+                check: AppCommandCheck = self.binding.interaction_check
             except AttributeError:
                 pass
             else:
@@ -920,9 +920,9 @@ def hybrid_group(
         If the function is not a coroutine or is already a command.
     """
 
-    def decorator(func: CommandCallback[CogT, ContextT, P, T]):
+    def decorator(func: CommandCallback[CogT, ContextT, P, T]) -> HybridGroup[CogT, P, T]:
         if isinstance(func, Command):
             raise TypeError('Callback is already a command.')
         return HybridGroup(func, name=name, with_app_command=with_app_command, **attrs)
 
-    return decorator  # type: ignore
+    return decorator

@@ -976,7 +976,7 @@ class Command(Generic[GroupT, P, T]):
         if self.binding is not None:
             check: Optional[Check] = getattr(self.binding, 'interaction_check', None)
             if check:
-                ret = await maybe_coroutine(check, interaction)  # type: ignore # Probable pyright bug
+                ret = await maybe_coroutine(check, interaction)
                 if not ret:
                     return False
 

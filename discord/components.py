@@ -279,7 +279,7 @@ class SelectMenu(Component):
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
-            'type': self.type.value,
+            'type': self.type.value,  # type: ignore # we know this is a select menu.
             'custom_id': self.custom_id,
             'min_values': self.min_values,
             'max_values': self.max_values,

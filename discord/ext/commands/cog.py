@@ -377,7 +377,7 @@ class Cog(metaclass=CogMeta):
             if len(mapping) > 25:
                 raise TypeError('maximum number of application command children exceeded')
 
-            self.__cog_app_commands_group__._children = mapping  # type: ignore  # Variance issue
+            self.__cog_app_commands_group__._children = mapping
 
         return self
 
