@@ -27,7 +27,6 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Iterable, Optional, Set, List, Union
 
-from discord.types.onboarding import Prompt as PromptPayload
 from discord.utils import MISSING
 
 from . import utils
