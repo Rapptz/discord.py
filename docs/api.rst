@@ -4761,7 +4761,7 @@ OnboardingPrompt
     :members:
 
 PartialOnboardingPromptOption
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: PartialOnboardingPromptOption
 
