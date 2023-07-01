@@ -32,7 +32,6 @@ from discord.utils import MISSING
 from . import utils
 from .mixins import Hashable
 from .enums import OnboardingMode, OnboardingPromptType, try_enum
-from .state import ConnectionState
 from .utils import cached_slot_property, MISSING
 
 __all__ = (
@@ -56,6 +55,7 @@ if TYPE_CHECKING:
         PromptOption as PromptOptionPayload,
         Onboarding as OnboardingPayload,
     )
+    from .state import ConnectionState
 
 
 class PartialOnboardingPromptOption:
@@ -101,6 +101,7 @@ class PartialOnboardingPromptOption:
         self.role_ids: Set[int] = set(role_ids or [])
 
     def to_dict(self, *, id: int = MISSING) -> PromptOptionPayload:
+        from .state import ConnectionState # circular import
         return {
             'id': id or os.urandom(16).hex(),
             'title': self.title,
