@@ -102,6 +102,7 @@ class PartialOnboardingPromptOption:
 
     def to_dict(self, *, id: int = MISSING) -> PromptOptionPayload:
         from .state import ConnectionState  # circular import
+
         return {
             'id': id or os.urandom(16).hex(),
             'title': self.title,
