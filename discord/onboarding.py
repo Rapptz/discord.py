@@ -108,8 +108,8 @@ class OnboardingPromptOption:
         return utils._unique(it)
 
     @cached_slot_property('_cs_roles')
-    def default_channels(self) -> List[Role]:
-        """List[Union[:class:`abc.GuildChannel`, :class:`Thread`]]: The list of roles given to the user if this option is selected."""
+    def roles(self) -> List[Role]:
+        """List[:class:`Role`]: The list of roles given to the user if this option is selected."""
         it = filter(None, map(self.guild.get_role, self.role_ids))
         return utils._unique(it)
 
