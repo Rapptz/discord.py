@@ -101,7 +101,7 @@ class PartialOnboardingPromptOption:
         self.role_ids: Set[int] = set(role_ids or [])
 
     def to_dict(self, *, id: int = MISSING) -> PromptOptionPayload:
-        from .state import ConnectionState # circular import
+        from .state import ConnectionState  # circular import
         return {
             'id': id or os.urandom(16).hex(),
             'title': self.title,
