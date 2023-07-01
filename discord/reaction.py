@@ -89,7 +89,6 @@ class Reaction:
         self.count: int = data.get('count', 1)
         self.me: bool = data['me']
 
-    # TODO: typeguard
     def is_custom_emoji(self) -> bool:
         """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)

@@ -239,6 +239,12 @@ class SystemChannelFlags(BaseFlags):
                Returns an iterator of ``(name, value)`` pairs. This allows it
                to be, for example, constructed as a dict or a list of pairs.
 
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+            .. versionadded:: 2.0
+
     Attributes
     -----------
     value: :class:`int`
@@ -361,6 +367,12 @@ class MessageFlags(BaseFlags):
                Returns an iterator of ``(name, value)`` pairs. This allows it
                to be, for example, constructed as a dict or a list of pairs.
 
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+            .. versionadded:: 2.0
+
     .. versionadded:: 1.3
 
     Attributes
@@ -451,6 +463,14 @@ class MessageFlags(BaseFlags):
         """
         return 4096
 
+    @flag_value
+    def voice(self):
+        """:class:`bool`: Returns ``True`` if the message is a voice message.
+
+        .. versionadded:: 2.3
+        """
+        return 8192
+
 
 @fill_with_flags()
 class PublicUserFlags(BaseFlags):
@@ -500,6 +520,12 @@ class PublicUserFlags(BaseFlags):
             Returns an iterator of ``(name, value)`` pairs. This allows it
             to be, for example, constructed as a dict or a list of pairs.
             Note that aliases are not shown.
+
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+            .. versionadded:: 2.0
 
     .. versionadded:: 1.4
 
@@ -685,6 +711,12 @@ class Intents(BaseFlags):
                Returns an iterator of ``(name, value)`` pairs. This allows it
                to be, for example, constructed as a dict or a list of pairs.
 
+        .. describe:: bool(b)
+
+            Returns whether any intent is enabled.
+
+            .. versionadded:: 2.0
+
     Attributes
     -----------
     value: :class:`int`
@@ -784,6 +816,7 @@ class Intents(BaseFlags):
         - :attr:`User.name`
         - :attr:`User.avatar`
         - :attr:`User.discriminator`
+        - :attr:`User.global_name`
 
         For more information go to the :ref:`member intent documentation <need_members_intent>`.
 
@@ -817,7 +850,7 @@ class Intents(BaseFlags):
         """
         return 1 << 2
 
-    @flag_value
+    @alias_flag_value
     def emojis(self):
         """:class:`bool`: Alias of :attr:`.emojis_and_stickers`.
 
@@ -826,7 +859,7 @@ class Intents(BaseFlags):
         """
         return 1 << 3
 
-    @alias_flag_value
+    @flag_value
     def emojis_and_stickers(self):
         """:class:`bool`: Whether guild emoji and sticker related events are enabled.
 
@@ -1270,6 +1303,12 @@ class MemberCacheFlags(BaseFlags):
                Returns an iterator of ``(name, value)`` pairs. This allows it
                to be, for example, constructed as a dict or a list of pairs.
 
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+            .. versionadded:: 2.0
+
     Attributes
     -----------
     value: :class:`int`
@@ -1413,6 +1452,10 @@ class ApplicationFlags(BaseFlags):
             to be, for example, constructed as a dict or a list of pairs.
             Note that aliases are not shown.
 
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
     .. versionadded:: 2.0
 
     Attributes
@@ -1421,6 +1464,15 @@ class ApplicationFlags(BaseFlags):
         The raw value. You should query flags via the properties
         rather than using this raw value.
     """
+
+    @flag_value
+    def auto_mod_badge(self):
+        """:class:`bool`: Returns ``True`` if the application uses at least 100 automod rules across all guilds.
+        This shows up as a badge in the official client.
+
+        .. versionadded:: 2.3
+        """
+        return 1 << 6
 
     @flag_value
     def gateway_presence(self):
@@ -1539,6 +1591,10 @@ class ChannelFlags(BaseFlags):
             to be, for example, constructed as a dict or a list of pairs.
             Note that aliases are not shown.
 
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
     .. versionadded:: 2.0
 
     Attributes
@@ -1635,6 +1691,10 @@ class AutoModPresets(ArrayFlags):
             to be, for example, constructed as a dict or a list of pairs.
             Note that aliases are not shown.
 
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
     Attributes
     -----------
     value: :class:`int`
@@ -1718,6 +1778,10 @@ class MemberFlags(BaseFlags):
             Returns an iterator of ``(name, value)`` pairs. This allows it
             to be, for example, constructed as a dict or a list of pairs.
             Note that aliases are not shown.
+
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
 
 
     Attributes

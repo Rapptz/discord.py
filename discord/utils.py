@@ -56,7 +56,7 @@ from typing import (
     TYPE_CHECKING,
 )
 import unicodedata
-from base64 import b64encode
+from base64 import b64encode, b64decode
 from bisect import bisect_left
 import datetime
 import functools
@@ -100,6 +100,7 @@ __all__ = (
 )
 
 DISCORD_EPOCH = 1420070400000
+DEFAULT_FILE_SIZE_LIMIT_BYTES = 26214400
 
 
 class _MissingSentinel:
@@ -626,6 +627,10 @@ def _bytes_to_base64_data(data: bytes) -> str:
     mime = _get_mime_type_for_image(data)
     b64 = b64encode(data).decode('ascii')
     return fmt.format(mime=mime, data=b64)
+
+
+def _base64_to_bytes(data: str) -> bytes:
+    return b64decode(data.encode('ascii'))
 
 
 def _is_submodule(parent: str, child: str) -> bool:
@@ -1239,11 +1244,12 @@ def is_docker() -> bool:
 
 
 def stream_supports_colour(stream: Any) -> bool:
+    is_a_tty = hasattr(stream, 'isatty') and stream.isatty()
+
     # Pycharm and Vscode support colour in their inbuilt editors
     if 'PYCHARM_HOSTED' in os.environ or os.environ.get('TERM_PROGRAM') == 'vscode':
-        return True
+        return is_a_tty
 
-    is_a_tty = hasattr(stream, 'isatty') and stream.isatty()
     if sys.platform != 'win32':
         # Docker does not consistently have a tty attached to it
         return is_a_tty or is_docker()

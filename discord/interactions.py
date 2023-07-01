@@ -25,6 +25,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+
+import logging
 from typing import Any, Dict, Optional, Generic, TYPE_CHECKING, Sequence, Tuple, Union
 import asyncio
 import datetime
@@ -33,7 +35,7 @@ from . import utils
 from .enums import try_enum, Locale, InteractionType, InteractionResponseType
 from .errors import InteractionResponded, HTTPException, ClientException, DiscordException
 from .flags import MessageFlags
-from .channel import PartialMessageable, ChannelType
+from .channel import ChannelType
 from ._types import ClientT
 
 from .user import User
@@ -44,6 +46,7 @@ from .http import handle_message_parameters
 from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
 from .app_commands.namespace import Namespace
 from .app_commands.translator import locale_str, TranslationContext, TranslationContextLocation
+from .channel import _threaded_channel_factory
 
 __all__ = (
     'Interaction',
@@ -69,12 +72,19 @@ if TYPE_CHECKING:
     from .ui.view import View
     from .app_commands.models import Choice, ChoiceT
     from .ui.modal import Modal
-    from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel
+    from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel, DMChannel, GroupChannel
     from .threads import Thread
     from .app_commands.commands import Command, ContextMenu
 
     InteractionChannel = Union[
-        VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel, Thread, PartialMessageable
+        VoiceChannel,
+        StageChannel,
+        TextChannel,
+        ForumChannel,
+        CategoryChannel,
+        Thread,
+        DMChannel,
+        GroupChannel,
     ]
 
 MISSING: Any = utils.MISSING
@@ -96,8 +106,10 @@ class Interaction(Generic[ClientT]):
         The interaction type.
     guild_id: Optional[:class:`int`]
         The guild ID the interaction was sent from.
-    channel_id: Optional[:class:`int`]
-        The channel ID the interaction was sent from.
+    channel: Optional[Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]]
+        The channel the interaction was sent from.
+
+        Note that due to a Discord limitation, if sent from a DM channel :attr:`~DMChannel.recipient` is ``None``.
     application_id: :class:`int`
         The application ID that the interaction was for.
     user: Union[:class:`User`, :class:`Member`]
@@ -128,7 +140,6 @@ class Interaction(Generic[ClientT]):
         'id',
         'type',
         'guild_id',
-        'channel_id',
         'data',
         'application_id',
         'message',
@@ -148,7 +159,7 @@ class Interaction(Generic[ClientT]):
         '_original_response',
         '_cs_response',
         '_cs_followup',
-        '_cs_channel',
+        'channel',
         '_cs_namespace',
         '_cs_command',
     )
@@ -171,8 +182,8 @@ class Interaction(Generic[ClientT]):
         self.data: Optional[InteractionData] = data.get('data')
         self.token: str = data['token']
         self.version: int = data['version']
-        self.channel_id: Optional[int] = utils._get_as_snowflake(data, 'channel_id')
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
+        self.channel: Optional[InteractionChannel] = None
         self.application_id: int = int(data['application_id'])
 
         self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
@@ -181,6 +192,26 @@ class Interaction(Generic[ClientT]):
             self.guild_locale = try_enum(Locale, data['guild_locale'])
         except KeyError:
             self.guild_locale = None
+
+        guild = None
+        if self.guild_id:
+            guild = self._state._get_or_create_unavailable_guild(self.guild_id)
+
+        raw_channel = data.get('channel', {})
+        channel_id = utils._get_as_snowflake(raw_channel, 'id')
+        if channel_id is not None and guild is not None:
+            self.channel = guild and guild._resolve_channel(channel_id)
+
+        raw_ch_type = raw_channel.get('type')
+        if self.channel is None and raw_ch_type is not None:
+            factory, ch_type = _threaded_channel_factory(raw_ch_type)  # type is never None
+            if factory is None:
+                logging.info('Unknown channel type {type} for channel ID {id}.'.format_map(raw_channel))
+            else:
+                if ch_type in (ChannelType.group, ChannelType.private):
+                    self.channel = factory(me=self._client.user, data=raw_channel, state=self._state)  # type: ignore
+                elif guild is not None:
+                    self.channel = factory(guild=guild, state=self._state, data=raw_channel)  # type: ignore
 
         self.message: Optional[Message]
         try:
@@ -193,9 +224,7 @@ class Interaction(Generic[ClientT]):
         self._permissions: int = 0
         self._app_permissions: int = int(data.get('app_permissions', 0))
 
-        if self.guild_id:
-            guild = self._state._get_or_create_unavailable_guild(self.guild_id)
-
+        if guild is not None:
             # Upgrade Message.guild in case it's missing with partial guild data
             if self.message is not None and self.message.guild is None:
                 self.message.guild = guild
@@ -227,21 +256,10 @@ class Interaction(Generic[ClientT]):
         """Optional[:class:`Guild`]: The guild the interaction was sent from."""
         return self._state and self._state._get_guild(self.guild_id)
 
-    @utils.cached_slot_property('_cs_channel')
-    def channel(self) -> Optional[InteractionChannel]:
-        """Optional[Union[:class:`abc.GuildChannel`, :class:`PartialMessageable`, :class:`Thread`]]: The channel the interaction was sent from.
-
-        Note that due to a Discord limitation, DM channels are not resolved since there is
-        no data to complete them. These are :class:`PartialMessageable` instead.
-        """
-        guild = self.guild
-        channel = guild and guild._resolve_channel(self.channel_id)
-        if channel is None:
-            if self.channel_id is not None:
-                type = ChannelType.text if self.guild_id is not None else ChannelType.private
-                return PartialMessageable(state=self._state, guild_id=self.guild_id, id=self.channel_id, type=type)
-            return None
-        return channel
+    @property
+    def channel_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of the channel the interaction was sent from."""
+        return self.channel.id if self.channel is not None else None
 
     @property
     def permissions(self) -> Permissions:
@@ -1025,8 +1043,8 @@ class _InteractionMessageState:
     def _get_guild(self, guild_id):
         return self._parent._get_guild(guild_id)
 
-    def store_user(self, data):
-        return self._parent.store_user(data)
+    def store_user(self, data, *, cache: bool = True):
+        return self._parent.store_user(data, cache=cache)
 
     def create_user(self, data):
         return self._parent.create_user(data)

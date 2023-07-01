@@ -183,6 +183,14 @@ class Attachment(Hashable):
         Whether the attachment is ephemeral.
 
         .. versionadded:: 2.0
+    duration: Optional[:class:`float`]
+        The duration of the audio file in seconds. Returns ``None`` if it's not a voice message.
+
+        .. versionadded:: 2.3
+    waveform: Optional[:class:`bytes`]
+        The waveform (amplitudes) of the audio in bytes. Returns ``None`` if it's not a voice message.
+
+        .. versionadded:: 2.3
     """
 
     __slots__ = (
@@ -197,6 +205,8 @@ class Attachment(Hashable):
         'content_type',
         'description',
         'ephemeral',
+        'duration',
+        'waveform',
     )
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
@@ -211,10 +221,18 @@ class Attachment(Hashable):
         self.content_type: Optional[str] = data.get('content_type')
         self.description: Optional[str] = data.get('description')
         self.ephemeral: bool = data.get('ephemeral', False)
+        self.duration: Optional[float] = data.get('duration_secs')
+
+        waveform = data.get('waveform')
+        self.waveform: Optional[bytes] = utils._base64_to_bytes(waveform) if waveform is not None else None
 
     def is_spoiler(self) -> bool:
         """:class:`bool`: Whether this attachment contains a spoiler."""
         return self.filename.startswith('SPOILER_')
+
+    def is_voice_message(self) -> bool:
+        """:class:`bool`: Whether this attachment is a voice message."""
+        return self.duration is not None and 'voice-message' in self.url
 
     def __repr__(self) -> str:
         return f'<Attachment id={self.id} filename={self.filename!r} url={self.url!r}>'
@@ -1790,7 +1808,7 @@ class Message(PartialMessage, Hashable):
         self.nonce = value
 
     def _handle_author(self, author: UserPayload) -> None:
-        self.author = self._state.store_user(author)
+        self.author = self._state.store_user(author, cache=self.webhook_id is None)
         if isinstance(self.guild, Guild):
             found = self.guild.get_member(self.author.id)
             if found is not None:
@@ -1809,7 +1827,6 @@ class Message(PartialMessage, Hashable):
             author._update_from_message(member)  # type: ignore
         except AttributeError:
             # It's a user here
-            # TODO: consider adding to cache here
             self.author = Member._from_message(message=self, data=member)
 
     def _handle_mentions(self, mentions: List[UserWithMemberPayload]) -> None:
@@ -2005,7 +2022,7 @@ class Message(PartialMessage, Hashable):
                 return f'{self.author.name} changed the channel name: **{self.content}**'
 
         if self.type is MessageType.channel_icon_change:
-            return f'{self.author.name} changed the channel icon.'
+            return f'{self.author.name} changed the group icon.'
 
         if self.type is MessageType.pins_add:
             return f'{self.author.name} pinned a message to this channel.'

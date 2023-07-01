@@ -219,7 +219,9 @@ class User(Snowflake, Protocol):
     name: :class:`str`
         The user's username.
     discriminator: :class:`str`
-        The user's discriminator.
+        The user's discriminator. This is a legacy concept that is no longer used.
+    global_name: Optional[:class:`str`]
+        The user's global nickname.
     bot: :class:`bool`
         If the user is a bot account.
     system: :class:`bool`
@@ -228,6 +230,7 @@ class User(Snowflake, Protocol):
 
     name: str
     discriminator: str
+    global_name: Optional[str]
     bot: bool
     system: bool
 
@@ -248,7 +251,7 @@ class User(Snowflake, Protocol):
 
     @property
     def default_avatar(self) -> Asset:
-        """:class:`~discord.Asset`: Returns the default avatar for a given user. This is calculated by the user's discriminator."""
+        """:class:`~discord.Asset`: Returns the default avatar for a given user."""
         raise NotImplementedError
 
     @property
@@ -942,8 +945,6 @@ class GuildChannel:
         else:
             if len(permissions) > 0:
                 raise TypeError('Cannot mix overwrite and keyword arguments.')
-
-        # TODO: wait for event
 
         if overwrite is None:
             await http.delete_channel_permissions(self.id, target.id, reason=reason)
@@ -1722,12 +1723,12 @@ class Messageable:
 
         async def _around_strategy(retrieve: int, around: Optional[Snowflake], limit: Optional[int]):
             if not around:
-                return []
+                return [], None, 0
 
             around_id = around.id if around else None
             data = await self._state.http.logs_from(channel.id, retrieve, around=around_id)
 
-            return data, None, limit
+            return data, None, 0
 
         async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None

@@ -144,6 +144,7 @@ class Loop(Generic[LF]):
         time: Union[datetime.time, Sequence[datetime.time]],
         count: Optional[int],
         reconnect: bool,
+        name: Optional[str],
     ) -> None:
         self.coro: LF = coro
         self.reconnect: bool = reconnect
@@ -165,6 +166,7 @@ class Loop(Generic[LF]):
         self._is_being_cancelled = False
         self._has_failed = False
         self._stop_next_iteration = False
+        self._name: str = f'discord-ext-tasks: {coro.__qualname__}' if name is None else name
 
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
@@ -282,6 +284,7 @@ class Loop(Generic[LF]):
             time=self._time,
             count=self.count,
             reconnect=self.reconnect,
+            name=self._name,
         )
         copy._injected = obj
         copy._before_loop = self._before_loop
@@ -395,7 +398,7 @@ class Loop(Generic[LF]):
             args = (self._injected, *args)
 
         self._has_failed = False
-        self._task = asyncio.create_task(self._loop(*args, **kwargs))
+        self._task = asyncio.create_task(self._loop(*args, **kwargs), name=self._name)
         return self._task
 
     def stop(self) -> None:
@@ -770,6 +773,7 @@ def loop(
     time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
     count: Optional[int] = None,
     reconnect: bool = True,
+    name: Optional[str] = None,
 ) -> Callable[[LF], Loop[LF]]:
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
@@ -802,6 +806,12 @@ def loop(
         Whether to handle errors and restart the task
         using an exponential back-off algorithm similar to the
         one used in :meth:`discord.Client.connect`.
+    name: Optional[:class:`str`]
+        The name to assign to the internal task. By default
+        it is assigned a name based off of the callable name
+        such as ``discord-ext-tasks: function_name``.
+
+        .. versionadded:: 2.4
 
     Raises
     --------
@@ -821,6 +831,7 @@ def loop(
             count=count,
             time=time,
             reconnect=reconnect,
+            name=name,
         )
 
     return decorator

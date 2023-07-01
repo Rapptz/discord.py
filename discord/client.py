@@ -2059,13 +2059,15 @@ class Client:
         limit: Optional[int] = 200,
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
+        with_counts: bool = True,
     ) -> AsyncIterator[Guild]:
         """Retrieves an :term:`asynchronous iterator` that enables receiving your guilds.
 
         .. note::
 
             Using this, you will only receive :attr:`.Guild.owner`, :attr:`.Guild.icon`,
-            :attr:`.Guild.id`, and :attr:`.Guild.name` per :class:`.Guild`.
+            :attr:`.Guild.id`, :attr:`.Guild.name`, :attr:`.Guild.approximate_member_count`,
+            and :attr:`.Guild.approximate_presence_count` per :class:`.Guild`.
 
         .. note::
 
@@ -2106,6 +2108,12 @@ class Client:
             Retrieve guilds after this date or object.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
             If the datetime is naive, it is assumed to be local time.
+        with_counts: :class:`bool`
+            Whether to include count information in the guilds. This fills the
+            :attr:`.Guild.approximate_member_count` and :attr:`.Guild.approximate_presence_count`
+            attributes without needing any privileged intents. Defaults to ``True``.
+
+            .. versionadded:: 2.3
 
         Raises
         ------
@@ -2120,7 +2128,7 @@ class Client:
 
         async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
-            data = await self.http.get_guilds(retrieve, before=before_id)
+            data = await self.http.get_guilds(retrieve, before=before_id, with_counts=with_counts)
 
             if data:
                 if limit is not None:
@@ -2132,7 +2140,7 @@ class Client:
 
         async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
-            data = await self.http.get_guilds(retrieve, after=after_id)
+            data = await self.http.get_guilds(retrieve, after=after_id, with_counts=with_counts)
 
             if data:
                 if limit is not None:

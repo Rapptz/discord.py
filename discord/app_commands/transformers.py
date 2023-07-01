@@ -750,7 +750,7 @@ def get_supported_annotation(
 
     try:
         return (_mapping[annotation], MISSING, True)
-    except KeyError:
+    except (KeyError, TypeError):
         pass
 
     if isinstance(annotation, Transformer):

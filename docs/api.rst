@@ -493,6 +493,7 @@ Debug
     :param payload: The message that is about to be passed on to the
                     WebSocket library. It can be :class:`bytes` to denote a binary
                     message or :class:`str` to denote a regular text message.
+    :type payload: Union[:class:`bytes`, :class:`str`]
 
 
 Gateway
@@ -1363,7 +1364,7 @@ Threads
     .. versionadded:: 2.0
 
     :param payload: The raw event payload data.
-    :type member: :class:`RawThreadMembersUpdate`
+    :type payload: :class:`RawThreadMembersUpdate`
 
 Voice
 ~~~~~~
@@ -2914,27 +2915,33 @@ of :class:`enum.Enum`.
 
     .. attribute:: blurple
 
-        Represents the default avatar with the color blurple.
+        Represents the default avatar with the colour blurple.
         See also :attr:`Colour.blurple`
     .. attribute:: grey
 
-        Represents the default avatar with the color grey.
+        Represents the default avatar with the colour grey.
         See also :attr:`Colour.greyple`
     .. attribute:: gray
 
         An alias for :attr:`grey`.
     .. attribute:: green
 
-        Represents the default avatar with the color green.
+        Represents the default avatar with the colour green.
         See also :attr:`Colour.green`
     .. attribute:: orange
 
-        Represents the default avatar with the color orange.
+        Represents the default avatar with the colour orange.
         See also :attr:`Colour.orange`
     .. attribute:: red
 
-        Represents the default avatar with the color red.
+        Represents the default avatar with the colour red.
         See also :attr:`Colour.red`
+    .. attribute:: pink
+
+        Represents the default avatar with the colour pink.
+        See also :attr:`Colour.pink`
+
+        .. versionadded:: 2.3
 
 .. class:: StickerType
 

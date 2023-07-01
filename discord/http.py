@@ -48,6 +48,7 @@ from typing import (
 from urllib.parse import quote as _uriquote
 from collections import deque
 import datetime
+import socket
 
 import aiohttp
 
@@ -785,7 +786,8 @@ class HTTPClient:
     async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
-            self.connector = aiohttp.TCPConnector(limit=0)
+            # discord does not support ipv6
+            self.connector = aiohttp.TCPConnector(limit=0, family=socket.AF_INET)
 
         self.__session = aiohttp.ClientSession(
             connector=self.connector,
@@ -1374,9 +1376,11 @@ class HTTPClient:
         limit: int,
         before: Optional[Snowflake] = None,
         after: Optional[Snowflake] = None,
+        with_counts: bool = True,
     ) -> Response[List[guild.Guild]]:
         params: Dict[str, Any] = {
             'limit': limit,
+            'with_counts': int(with_counts),
         }
 
         if before:
@@ -1427,6 +1431,7 @@ class HTTPClient:
             'public_updates_channel_id',
             'preferred_locale',
             'premium_progress_bar_enabled',
+            'safety_alerts_channel_id',
         )
 
         payload = {k: v for k, v in fields.items() if k in valid_keys}

@@ -527,7 +527,7 @@ def _component_factory(data: ComponentPayload) -> Optional[Union[ActionRow, Acti
         return ActionRow(data)
     elif data['type'] == 2:
         return Button(data)
-    elif data['type'] == 3:
-        return SelectMenu(data)
     elif data['type'] == 4:
         return TextInput(data)
+    elif data['type'] in (3, 5, 6, 7, 8):
+        return SelectMenu(data)
