@@ -4284,7 +4284,7 @@ class Guild(Hashable):
 
         Fetches the onboarding configuration for this guild.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
 
         Returns
         --------

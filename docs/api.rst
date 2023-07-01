@@ -2812,7 +2812,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.required`
         - :attr:`~AuditLogDiff.in_onboarding`
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
 
     .. attribute:: onboarding_question_update
 
@@ -2827,7 +2827,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.required`
         - :attr:`~AuditLogDiff.in_onboarding`
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
 
     .. attribute:: onboarding_update
 
@@ -2838,6 +2838,8 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.enabled`
         - :attr:`~AuditLogDiff.default_channels`
         - :attr:`~AuditLogDiff.prompts`
+
+        .. versionadded:: 2.4
 
 .. class:: AuditLogActionCategory
 
@@ -3376,7 +3378,7 @@ of :class:`enum.Enum`.
 
     Represents the type of onboarding prompt.
 
-    .. versionadded:: 2.3
+    .. versionadded:: 2.4
 
     .. attribute:: multiple_choice
 
@@ -4148,7 +4150,7 @@ AuditLogDiff
 
         Whether this prompt is currently part of the onboarding flow.
 
-        See also :attr:`OnboardingUser.in_onboarding`
+        See also :attr:`OnboardingPrompt.in_onboarding`
 
         :type: :class:`bool`
 
