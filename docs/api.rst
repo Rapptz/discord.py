@@ -5674,40 +5674,6 @@ of :class:`enum.Enum`.
 
         Represents a guild-bound read state for guild onboarding. Only one exists per guild.
 
-.. class:: ExperimentFilterType
-
-    Represents the type of an experiment population filter.
-
-    .. versionadded:: 2.1
-
-    .. attribute:: feature
-
-        The guild must have one of the given features.
-
-    .. attribute:: id_range
-
-        The guild's ID must be within the given range.
-
-    .. attribute:: member_count_range
-
-        The guild's member count must be within the given range.
-
-    .. attribute:: ids
-
-        The guild must be in the given list of IDs.
-
-    .. attribute:: hub_type
-
-        The guild must be one of the given hub types.
-
-    .. attribute:: vanity_url
-
-        The guild must or must not have a vanity URL.
-
-    .. attribute:: hash_range
-
-        The guild's calculated hash must be less than the given value.
-
 
 .. _discord-api-audit-logs:
 
@@ -7803,9 +7769,9 @@ Experiment
 .. autoclass:: ExperimentPopulation()
     :members:
 
-.. attributetable:: ExperimentFilter
+.. attributetable:: ExperimentFilters
 
-.. autoclass:: ExperimentFilter()
+.. autoclass:: ExperimentFilters()
     :members:
 
 .. attributetable:: ExperimentRollout

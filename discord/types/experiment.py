@@ -46,24 +46,26 @@ class RolloutData(TypedDict):
 Rollout = Tuple[int, List[RolloutData]]
 
 
-Filters = Union[
-    Tuple[Literal[1604612045], Tuple[Tuple[Literal[1183251248], List[str]]]],  # FEATURE
-    Tuple[
-        Literal[2404720969], Tuple[Tuple[Literal[3399957344], Optional[int]], Tuple[Literal[1238858341], int]]
-    ],  # ID_RANGE
-    Tuple[
-        Literal[2918402255], Tuple[Tuple[Literal[3399957344], Optional[int]], Tuple[Literal[1238858341], int]]
-    ],  # MEMBER_COUNT_RANGE
-    Tuple[Literal[3013771838], Tuple[Tuple[Literal[3013771838], List[int]]]],  # IDs
-    Tuple[Literal[4148745523], Tuple[Tuple[Literal[4148745523], List[int]]]],  # HUB_TYPE
-    Tuple[Literal[188952590], Tuple[Tuple[Literal[188952590], bool]]],  # VANITY_URL
-    Tuple[Literal[2294888943], Tuple[Tuple[Literal[2690752156], int], Tuple[Literal[1982804121], int]]],  # RANGE_BY_HASH
+Filters = List[
+    Union[
+        Tuple[Literal[1604612045], Tuple[Tuple[Literal[1183251248], List[str]]]],  # FEATURE
+        Tuple[
+            Literal[2404720969], Tuple[Tuple[Literal[3399957344], Optional[int]], Tuple[Literal[1238858341], int]]
+        ],  # ID_RANGE
+        Tuple[
+            Literal[2918402255], Tuple[Tuple[Literal[3399957344], Optional[int]], Tuple[Literal[1238858341], int]]
+        ],  # MEMBER_COUNT_RANGE
+        Tuple[Literal[3013771838], Tuple[Tuple[Literal[3013771838], List[int]]]],  # IDs
+        Tuple[Literal[4148745523], Tuple[Tuple[Literal[4148745523], List[int]]]],  # HUB_TYPE
+        Tuple[Literal[188952590], Tuple[Tuple[Literal[188952590], bool]]],  # VANITY_URL
+        Tuple[Literal[2294888943], Tuple[Tuple[Literal[2690752156], int], Tuple[Literal[1982804121], int]]],  # RANGE_BY_HASH
+    ]
 ]
 
 
 Population = Tuple[
     List[Rollout],  # rollouts
-    List[Filters],  # filters
+    Filters,  # filters
 ]
 
 

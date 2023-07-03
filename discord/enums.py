@@ -1538,16 +1538,6 @@ class ReadStateType(Enum):
     onboarding = 4
 
 
-class ExperimentFilterType(Enum):
-    feature = 1604612045
-    id_range = 2404720969
-    member_count_range = 2918402255
-    ids = 3013771838
-    hub_type = 4148745523
-    vanity_url = 188952590
-    hash_range = 2294888943
-
-
 def create_unknown_value(cls: Type[E], val: Any) -> E:
     value_cls = cls._enum_value_cls_  # type: ignore # This is narrowed below
     name = f'unknown_{val}'

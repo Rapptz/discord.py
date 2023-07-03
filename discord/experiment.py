@@ -24,9 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Iterator, List, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Dict, Final, Iterator, List, Optional, Sequence, Tuple, Union
 
-from .enums import ExperimentFilterType, try_enum
 from .metadata import Metadata
 from .utils import SequenceProxy, SnowflakeList, murmurhash32
 
@@ -45,7 +44,7 @@ if TYPE_CHECKING:
 
 __all__ = (
     'ExperimentRollout',
-    'ExperimentFilter',
+    'ExperimentFilters',
     'ExperimentPopulation',
     'ExperimentOverride',
     'HoldoutExperiment',
@@ -94,8 +93,9 @@ class ExperimentRollout:
         return False
 
 
-class ExperimentFilter:
-    """Represents a filter for an experiment population.
+class ExperimentFilters:
+    """Represents a number of filters for an experiment population.
+    A guild must fulfill all filters to be eligible for the population.
 
     This is a purposefuly very low-level object.
 
@@ -111,17 +111,18 @@ class ExperimentFilter:
     -----------
     population: :class:`ExperimentPopulation`
         The population this filter belongs to.
-    type: :class:`ExperimentFilterType`
-        The type of filter.
     options: :class:`Metadata`
-        The parameters for the filter.
-        If known, murmur3-hashed keys are unhashed to their original names.
+        The parameters for the filter. If known, murmur3-hashed keys are unhashed to their original names.
+
+        .. note::
+
+            You should query parameters via the properties rather than using this directly.
     """
 
-    __slots__ = ('population', 'type', 'options')
+    __slots__ = ('population', 'options')
 
     # Most of these are taken from the client
-    FILTER_KEYS = {
+    FILTER_KEYS: Final[Dict[int, str]] = {
         1604612045: 'guild_has_feature',
         2404720969: 'guild_id_range',
         2918402255: 'guild_member_count_range',
@@ -137,27 +138,33 @@ class ExperimentFilter:
     }
 
     def __init__(self, population: ExperimentPopulation, data: FiltersPayload):
-        type, options = data
-
         self.population = population
-        self.type: ExperimentFilterType = try_enum(ExperimentFilterType, type)
+        self.options: Metadata = self.array_object(data)
 
-        self.options = metadata = Metadata()
-        for key, value in options:
+    def __repr__(self) -> str:
+        keys = ('features', 'id_range', 'member_count_range', 'ids', 'range_by_hash', 'has_vanity_url')
+        attrs = [f'{attr}={getattr(self, attr)!r}' for attr in keys if getattr(self, attr) is not None]
+        if attrs:
+            return f'<ExperimentFilters {" ".join(attrs)}>'
+        return '<ExperimentFilters>'
+
+    def __contains__(self, guild: Guild, /) -> bool:
+        return self.is_eligible(guild)
+
+    @classmethod
+    def array_object(cls, array: list) -> Metadata:
+        metadata = Metadata()
+        for key, value in array:
             try:
-                key = self.FILTER_KEYS[int(key)]
+                key = cls.FILTER_KEYS[int(key)]
             except (KeyError, ValueError):
                 pass
             if isinstance(value, str) and value.isdigit():
                 value = int(value)
-
+            elif value and isinstance(value, list) and isinstance(value[0], list):
+                value = cls.array_object(value)
             metadata[str(key)] = value
-
-    def __repr__(self) -> str:
-        return f'<ExperimentFilter type={self.type!r} options={self.options!r}>'
-
-    def __contains__(self, guild: Guild, /) -> bool:
-        return self.is_eligible(guild)
+        return metadata
 
     @staticmethod
     def in_range(num: int, start: Optional[int], end: Optional[int], /) -> bool:
@@ -166,6 +173,56 @@ class ExperimentFilter:
         if end is not None and num > end:
             return False
         return True
+
+    @property
+    def features(self) -> Optional[List[str]]:
+        """Optional[List[:class:`str`]]: The guild features that are eligible for the population."""
+        features_filter = self.options.guild_has_feature
+        if features_filter is not None:
+            return features_filter.guild_features
+
+    @property
+    def id_range(self) -> Optional[Tuple[Optional[int], Optional[int]]]:
+        """Optional[Tuple[Optional[:class:`int`], Optional[:class:`int`]]]: The range of guild IDs that are eligible for the population."""
+        id_range_filter = self.options.guild_id_range
+        if id_range_filter is not None:
+            return id_range_filter.min_id, id_range_filter.max_id
+
+    @property
+    def member_count_range(self) -> Optional[Tuple[Optional[int], Optional[int]]]:
+        """Optional[Tuple[Optional[:class:`int`], Optional[:class:`int`]]]: The range of guild member counts that are eligible for the population."""
+        member_count_range_filter = self.options.guild_member_count_range
+        if member_count_range_filter is not None:
+            return member_count_range_filter.min_id, member_count_range_filter.max_id
+
+    @property
+    def ids(self) -> Optional[List[int]]:
+        """Optional[List[:class:`int`]]: The guild IDs that are eligible for the population."""
+        ids_filter = self.options.guild_ids
+        if ids_filter is not None:
+            return ids_filter.guild_ids
+
+    # TODO: Pending hub implementation
+    # @property
+    # def hub_types(self) -> Optional[List[HubType]]:
+    #     """Optional[List[:class:`HubType`]]: The hub types that are eligible for the population."""
+    #     hub_types_filter = self.options.guild_hub_types
+    #     if hub_types_filter is not None:
+    #         return [try_enum(HubType, hub_type) for hub_type in hub_types_filter.guild_hub_types]
+
+    @property
+    def range_by_hash(self) -> Optional[Tuple[int, int]]:
+        """Optional[Tuple[:class:`int`, :class:`int`]]: The special rollout position limits on the population."""
+        range_by_hash_filter = self.options.guild_in_range_by_hash
+        if range_by_hash_filter is not None:
+            return range_by_hash_filter.hash_key, range_by_hash_filter.target
+
+    @property
+    def has_vanity_url(self) -> Optional[bool]:
+        """Optional[:class:`bool`]: Whether a vanity is or is not required to be eligible for the population."""
+        has_vanity_url_filter = self.options.guild_has_vanity_url
+        if has_vanity_url_filter is not None:
+            return has_vanity_url_filter.target
 
     def is_eligible(self, guild: Guild, /) -> bool:
         """Checks whether the guild fulfills the filter requirements.
@@ -184,40 +241,56 @@ class ExperimentFilter:
         :class:`bool`
             Whether the guild fulfills the filter requirements.
         """
-        type = self.type
-        options = self.options
+        features = self.features
+        if features is not None:
+            # At least one feature must be present
+            if not any(feature in guild.features for feature in features):
+                return False
 
-        if type == ExperimentFilterType.feature:
-            # One feature must be present
-            return options.guild_features and any(feature in guild.features for feature in options.guild_features)
-        elif type == ExperimentFilterType.id_range:
+        id_range = self.id_range
+        if id_range is not None:
             # Guild must be within the range of snowflakes
-            return self.in_range(guild.id, options.min_id, options.max_id)
-        elif type == ExperimentFilterType.member_count_range:
+            if not self.in_range(guild.id, *id_range):
+                return False
+
+        member_count_range = self.member_count_range
+        if member_count_range is not None and guild.member_count is not None:
             # Guild must be within the range of member counts
-            return guild.member_count is not None and self.in_range(guild.member_count, options.min_id, options.max_id)
-        elif type == ExperimentFilterType.ids:
+            if not self.in_range(guild.member_count, *member_count_range):
+                return False
+
+        ids = self.ids
+        if ids is not None:
             # Guild must be in the list of snowflakes, similar to ExperimentOverride
-            return options.guild_ids is not None and guild.id in options.guild_ids
-        elif type == ExperimentFilterType.hub_type:
-            # TODO: Pending hub implementation
-            # return guild.hub_type and options.guild_hub_types and guild.hub_type.value in options.guild_hub_types
-            return False
-        elif type == ExperimentFilterType.hash_range:
-            # Guild must... no idea tbh
-            # Probably for cleanly splitting populations
-            result = murmurhash32(f'{options.hash_key}:{guild.id}', signed=False)
+            if guild.id not in ids:
+                return False
+
+        # TODO: Pending hub implementation
+        # hub_types = self.hub_types
+        # if hub_types is not None:
+        #     # Guild must be in the list of hub types
+        #     if not guild.hub_type or guild.hub_type not in hub_types:
+        #         return False
+
+        range_by_hash = self.range_by_hash
+        if range_by_hash is not None:
+            # Guild must fulfill the additional population requirements
+            hash_key, target = range_by_hash
+            result = murmurhash32(f'{hash_key}:{guild.id}', signed=False)
             if result > 0:
                 result += result
             else:
                 result = (result % 0x100000000) >> 0
-            return options.target and result % 10000 < options.target
-        elif type == ExperimentFilterType.vanity_url:
+            if target and (result % 10000) >= target:
+                return False
+
+        has_vanity_url = self.has_vanity_url
+        if has_vanity_url is not None:
             # Guild must or must not have a vanity URL
-            return bool(guild.vanity_url_code) == options.guild_has_vanity_url
-        else:
-            # TODO: Maybe just return False?
-            raise NotImplementedError(f'Unknown filter type: {type}')
+            if not bool(guild.vanity_url_code) == has_vanity_url:
+                return False
+
+        return True
 
 
 class ExperimentPopulation:
@@ -235,7 +308,7 @@ class ExperimentPopulation:
     -----------
     experiment: :class:`GuildExperiment`
         The experiment this population belongs to.
-    filters: List[:class:`ExperimentFilter`]
+    filters: :class:`ExperimentFilters`
         The filters that apply to the population.
     rollouts: List[Tuple[:class:`int`, :class:`int`]]
         The position-based rollouts of the population.
@@ -247,7 +320,7 @@ class ExperimentPopulation:
         rollouts, filters = data
 
         self.experiment = experiment
-        self.filters: List[ExperimentFilter] = [ExperimentFilter(self, x) for x in filters]
+        self.filters: ExperimentFilters = ExperimentFilters(self, filters)
         self.rollouts: List[ExperimentRollout] = [ExperimentRollout(self, x) for x in rollouts]
 
     def __repr__(self) -> str:
@@ -282,9 +355,8 @@ class ExperimentPopulation:
         if _result is None:
             _result = self.experiment.result_for(guild)
 
-        for filter in self.filters:
-            if not filter.is_eligible(guild):
-                return -1
+        if not self.filters.is_eligible(guild):
+            return -1
 
         for rollout in self.rollouts:
             for start, end in rollout.ranges:
