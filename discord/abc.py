@@ -1246,6 +1246,8 @@ class GuildChannel:
         :class:`~discord.Invite`
             The invite that was created.
         """
+        if target_type is InviteTarget.unknown:
+            raise ValueError('Cannot create invite with an unknown target type')
 
         data = await self._state.http.create_invite(
             self.id,

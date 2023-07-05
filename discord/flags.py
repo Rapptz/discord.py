@@ -26,7 +26,21 @@ from __future__ import annotations
 
 from functools import reduce
 from operator import or_
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, Iterator, List, Optional, Tuple, Type, TypeVar, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    TypeVar,
+    overload,
+)
 
 from .enums import UserFlags
 
@@ -850,7 +864,7 @@ class Intents(BaseFlags):
         """
         return 1 << 2
 
-    @flag_value
+    @alias_flag_value
     def emojis(self):
         """:class:`bool`: Alias of :attr:`.emojis_and_stickers`.
 
@@ -859,7 +873,7 @@ class Intents(BaseFlags):
         """
         return 1 << 3
 
-    @alias_flag_value
+    @flag_value
     def emojis_and_stickers(self):
         """:class:`bool`: Whether guild emoji and sticker related events are enabled.
 
@@ -1621,7 +1635,7 @@ class ChannelFlags(BaseFlags):
 
 class ArrayFlags(BaseFlags):
     @classmethod
-    def _from_value(cls: Type[Self], value: List[int]) -> Self:
+    def _from_value(cls: Type[Self], value: Sequence[int]) -> Self:
         self = cls.__new__(cls)
         # This is a micro-optimization given the frequency this object can be created.
         # (1).__lshift__ is used in place of lambda x: 1 << x

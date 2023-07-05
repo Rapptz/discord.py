@@ -251,7 +251,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         if command is None:
             raise ValueError('interaction does not have command data')
 
-        bot: BotT = interaction.client  # type: ignore
+        bot: BotT = interaction.client
         data: ApplicationCommandInteractionData = interaction.data  # type: ignore
         if interaction.message is None:
             synthetic_payload = {

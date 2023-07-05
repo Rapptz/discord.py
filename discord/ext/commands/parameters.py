@@ -197,7 +197,7 @@ class Parameter(inspect.Parameter):
         """
         # pre-condition: required is False
         if callable(self.default):
-            return await maybe_coroutine(self.default, ctx)  # type: ignore
+            return await maybe_coroutine(self.default, ctx)
         return self.default
 
 

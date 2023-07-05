@@ -177,8 +177,7 @@ class CommandParameter:
                 return choice
 
             try:
-                # ParamSpec doesn't understand that transform is a callable since it's unbound
-                return await maybe_coroutine(self._annotation.transform, interaction, value)  # type: ignore
+                return await maybe_coroutine(self._annotation.transform, interaction, value)
             except AppCommandError:
                 raise
             except Exception as e:
