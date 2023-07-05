@@ -298,8 +298,8 @@ class Role(Hashable):
         """
         return self.tags is not None and self.tags.is_bot_managed()
 
-    def is_premium_subscriber(self) -> bool:
-        """:class:`bool`: Whether the role is the premium subscriber, AKA "boost", role for the guild.
+    def is_booster(self) -> bool:
+        """:class:`bool`: Whether the role is the "booster" role for the guild.
 
         .. versionadded:: 1.6
         """

@@ -298,7 +298,7 @@ class Member(discord.abc.Messageable, _UserTag):
         Whether the member is pending member verification.
 
         .. versionadded:: 1.6
-    premium_since: Optional[:class:`datetime.datetime`]
+    nitro_subsriber_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies the date and time in UTC when the member used their
         "Nitro boost" on the guild, if available. This could be ``None``.
     timed_out_until: Optional[:class:`datetime.datetime`]
@@ -311,7 +311,7 @@ class Member(discord.abc.Messageable, _UserTag):
     __slots__ = (
         '_roles',
         'joined_at',
-        'premium_since',
+        'nitro_subscriber_since',
         'activities',
         'guild',
         'pending',
@@ -348,7 +348,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._user: User = state.store_user(data['user'])
         self.guild: Guild = guild
         self.joined_at: Optional[datetime.datetime] = utils.parse_time(data.get('joined_at'))
-        self.premium_since: Optional[datetime.datetime] = utils.parse_time(data.get('premium_since'))
+        self.nitro_subscriber_since: Optional[datetime.datetime] = utils.parse_time(data.get('premium_since'))
         self._roles: utils.SnowflakeList = utils.SnowflakeList(map(int, data['roles']))
         self._client_status: _ClientStatus = _ClientStatus()
         self.activities: Tuple[ActivityTypes, ...] = ()
@@ -390,7 +390,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
     def _update_from_message(self, data: MemberPayload) -> None:
         self.joined_at = utils.parse_time(data.get('joined_at'))
-        self.premium_since = utils.parse_time(data.get('premium_since'))
+        self.nitro_subscriber_since = utils.parse_time(data.get('premium_since'))
         self._roles = utils.SnowflakeList(map(int, data['roles']))
         self.nick = data.get('nick', None)
         self.pending = data.get('pending', False)
@@ -414,7 +414,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
-        self.premium_since = member.premium_since
+        self.nitro_subscriber_since = member.premium_since
         self._client_status = _ClientStatus._copy(member._client_status)
         self.guild = member.guild
         self.nick = member.nick
@@ -448,7 +448,7 @@ class Member(discord.abc.Messageable, _UserTag):
         except KeyError:
             pass
 
-        self.premium_since = utils.parse_time(data.get('premium_since'))
+        self.nitro_subscriber_since = utils.parse_time(data.get('premium_since'))
         self.timed_out_until = utils.parse_time(data.get('communication_disabled_until'))
         self._roles = utils.SnowflakeList(map(int, data['roles']))
         self._avatar = data.get('avatar')

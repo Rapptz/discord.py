@@ -226,10 +226,10 @@ class Guild(Hashable):
         subject to arbitrary change by Discord. A list of guild features can be found
         in :ddocs:`the Discord documentation <resources/guild#guild-object-guild-features>`.
 
-    premium_tier: :class:`int`
-        The premium tier for this guild. Corresponds to "Nitro Server" in the official UI.
+    boost_tier: :class:`int`
+        The boost tier for this guild. Corresponds to "Nitro Server" in the official UI.
         The number goes from 0 to 3 inclusive.
-    premium_subscription_count: :class:`int`
+    nitro_boost_count: :class:`int`
         The number of "boosts" this guild currently has.
     preferred_locale: :class:`Locale`
         The preferred locale for the guild. Used when filtering Server Discovery
@@ -258,8 +258,8 @@ class Guild(Hashable):
         :meth:`Client.fetch_guild` or :meth:`Client.fetch_guilds` with ``with_counts=True``.
 
         .. versionchanged:: 2.0
-    premium_progress_bar_enabled: :class:`bool`
-        Indicates if the guild has premium AKA server boost level progress bar enabled.
+    boost_progress_bar_enagle: :class:`bool`
+        Indicates if the guild has server boost level progress bar enabled.
 
         .. versionadded:: 2.0
     widget_enabled: :class:`bool`
@@ -288,8 +288,8 @@ class Guild(Hashable):
         'max_presences',
         'max_members',
         'max_video_channel_users',
-        'premium_tier',
-        'premium_subscription_count',
+        'boost_tier',
+        'nitro_boost_count',
         'preferred_locale',
         'nsfw_level',
         'mfa_level',
@@ -317,12 +317,12 @@ class Guild(Hashable):
         '_threads',
         'approximate_member_count',
         'approximate_presence_count',
-        'premium_progress_bar_enabled',
+        'boost_progress_bar_enagle',
         '_safety_alerts_channel_id',
         'max_stage_video_users',
     )
 
-    _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
+    _BOOSTED_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
         None: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=utils.DEFAULT_FILE_SIZE_LIMIT_BYTES),
         0: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=utils.DEFAULT_FILE_SIZE_LIMIT_BYTES),
         1: _GuildLimit(emoji=100, stickers=15, bitrate=128e3, filesize=utils.DEFAULT_FILE_SIZE_LIMIT_BYTES),
@@ -484,8 +484,8 @@ class Guild(Hashable):
         self.max_members: Optional[int] = guild.get('max_members')
         self.max_video_channel_users: Optional[int] = guild.get('max_video_channel_users')
         self.max_stage_video_users: Optional[int] = guild.get('max_stage_video_channel_users')
-        self.premium_tier: int = guild.get('premium_tier', 0)
-        self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
+        self.boost_tier: int = guild.get('premium_tier', 0)
+        self.nitro_boost_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
         self.widget_enabled: bool = guild.get('widget_enabled', False)
         self._widget_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'widget_channel_id')
@@ -499,7 +499,7 @@ class Guild(Hashable):
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
         self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = guild.get('approximate_member_count')
-        self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
+        self.boost_progress_bar_enagle: bool = guild.get('premium_progress_bar_enabled', False)
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
         self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
@@ -833,7 +833,7 @@ class Guild(Hashable):
     def emoji_limit(self) -> int:
         """:class:`int`: The maximum number of emoji slots this guild has."""
         more_emoji = 200 if 'MORE_EMOJI' in self.features else 50
-        return max(more_emoji, self._PREMIUM_GUILD_LIMITS[self.premium_tier].emoji)
+        return max(more_emoji, self._BOOSTED_GUILD_LIMITS[self.boost_tier].emoji)
 
     @property
     def sticker_limit(self) -> int:
@@ -842,18 +842,18 @@ class Guild(Hashable):
         .. versionadded:: 2.0
         """
         more_stickers = 60 if 'MORE_STICKERS' in self.features else 0
-        return max(more_stickers, self._PREMIUM_GUILD_LIMITS[self.premium_tier].stickers)
+        return max(more_stickers, self._BOOSTED_GUILD_LIMITS[self.boost_tier].stickers)
 
     @property
     def bitrate_limit(self) -> float:
         """:class:`float`: The maximum bitrate for voice channels this guild can have."""
-        vip_guild = self._PREMIUM_GUILD_LIMITS[1].bitrate if 'VIP_REGIONS' in self.features else 96e3
-        return max(vip_guild, self._PREMIUM_GUILD_LIMITS[self.premium_tier].bitrate)
+        vip_guild = self._BOOSTED_GUILD_LIMITS[1].bitrate if 'VIP_REGIONS' in self.features else 96e3
+        return max(vip_guild, self._BOOSTED_GUILD_LIMITS[self.boost_tier].bitrate)
 
     @property
     def filesize_limit(self) -> int:
         """:class:`int`: The maximum number of bytes files can have when uploaded to this guild."""
-        return self._PREMIUM_GUILD_LIMITS[self.premium_tier].filesize
+        return self._BOOSTED_GUILD_LIMITS[self.boost_tier].filesize
 
     @property
     def members(self) -> Sequence[Member]:
@@ -880,9 +880,9 @@ class Guild(Hashable):
         return self._members.get(user_id)
 
     @property
-    def premium_subscribers(self) -> List[Member]:
+    def boosters(self) -> List[Member]:
         """List[:class:`Member`]: A list of members who have "boosted" this guild."""
-        return [member for member in self.members if member.premium_since is not None]
+        return [member for member in self.members if member.nitro_subsciber_since is not None]
 
     @property
     def roles(self) -> Sequence[Role]:
@@ -919,13 +919,13 @@ class Guild(Hashable):
         return self.get_role(self.id)  # type: ignore
 
     @property
-    def premium_subscriber_role(self) -> Optional[Role]:
+    def booster_role(self) -> Optional[Role]:
         """Optional[:class:`Role`]: Gets the premium subscriber role, AKA "boost" role, in this guild.
 
         .. versionadded:: 1.6
         """
         for role in self._roles.values():
-            if role.is_premium_subscriber():
+            if role.is_booster():
                 return role
         return None
 
@@ -1829,7 +1829,7 @@ class Guild(Hashable):
         preferred_locale: Locale = MISSING,
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
-        premium_progress_bar_enabled: bool = MISSING,
+        boost_progress_bar_enagle: bool = MISSING,
         discoverable: bool = MISSING,
         invites_disabled: bool = MISSING,
         widget_enabled: bool = MISSING,
@@ -1923,7 +1923,7 @@ class Guild(Hashable):
             public updates channel.
 
             .. versionadded:: 1.4
-        premium_progress_bar_enabled: :class:`bool`
+        boost_progress_bar_enagle: :class:`bool`
             Whether the premium AKA server boost level progress bar should be enabled for the guild.
 
             .. versionadded:: 2.0
@@ -2133,8 +2133,8 @@ class Guild(Hashable):
 
             fields['features'] = list(features)
 
-        if premium_progress_bar_enabled is not MISSING:
-            fields['premium_progress_bar_enabled'] = premium_progress_bar_enabled
+        if boost_progress_bar_enagle is not MISSING:
+            fields['boost_progress_bar_enagle'] = boost_progress_bar_enagle
 
         widget_payload: EditWidgetSettings = {}
         if widget_channel is not MISSING:
