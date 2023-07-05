@@ -4,9 +4,6 @@ from typing import Optional, TYPE_CHECKING, List
 
 from . import utils
 from .enums import try_enum, SKUType, SKUAccessType, SKUFeature, EntitlementType
-
-__all__ = ('SKU', 'Entitlement')
-
 from .flags import SKUFlags
 
 if TYPE_CHECKING:
@@ -18,6 +15,8 @@ if TYPE_CHECKING:
         SKU as SKUPayload,
         Entitlement as EntitlementPayload,
     )
+
+__all__ = ('SKU', 'Entitlement')
 
 
 class SKU:
