@@ -229,7 +229,7 @@ class Guild(Hashable):
     boost_tier: :class:`int`
         The boost tier for this guild. Corresponds to "Nitro Server" in the official UI.
         The number goes from 0 to 3 inclusive.
-    nitro_boost_count: :class:`int`
+    boost_count: :class:`int`
         The number of "boosts" this guild currently has.
     preferred_locale: :class:`Locale`
         The preferred locale for the guild. Used when filtering Server Discovery
@@ -258,7 +258,7 @@ class Guild(Hashable):
         :meth:`Client.fetch_guild` or :meth:`Client.fetch_guilds` with ``with_counts=True``.
 
         .. versionchanged:: 2.0
-    boost_progress_bar_enagle: :class:`bool`
+    boost_progress_bar_enabled: :class:`bool`
         Indicates if the guild has server boost level progress bar enabled.
 
         .. versionadded:: 2.0
@@ -289,7 +289,7 @@ class Guild(Hashable):
         'max_members',
         'max_video_channel_users',
         'boost_tier',
-        'nitro_boost_count',
+        'boost_count',
         'preferred_locale',
         'nsfw_level',
         'mfa_level',
@@ -317,7 +317,7 @@ class Guild(Hashable):
         '_threads',
         'approximate_member_count',
         'approximate_presence_count',
-        'boost_progress_bar_enagle',
+        'boost_progress_bar_enabled',
         '_safety_alerts_channel_id',
         'max_stage_video_users',
     )
@@ -485,7 +485,7 @@ class Guild(Hashable):
         self.max_video_channel_users: Optional[int] = guild.get('max_video_channel_users')
         self.max_stage_video_users: Optional[int] = guild.get('max_stage_video_channel_users')
         self.boost_tier: int = guild.get('premium_tier', 0)
-        self.nitro_boost_count: int = guild.get('premium_subscription_count') or 0
+        self.boost_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
         self.widget_enabled: bool = guild.get('widget_enabled', False)
         self._widget_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'widget_channel_id')
@@ -499,7 +499,7 @@ class Guild(Hashable):
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
         self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = guild.get('approximate_member_count')
-        self.boost_progress_bar_enagle: bool = guild.get('premium_progress_bar_enabled', False)
+        self.boost_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
         self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
@@ -1829,7 +1829,7 @@ class Guild(Hashable):
         preferred_locale: Locale = MISSING,
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
-        boost_progress_bar_enagle: bool = MISSING,
+        boost_progress_bar_enabled: bool = MISSING,
         discoverable: bool = MISSING,
         invites_disabled: bool = MISSING,
         widget_enabled: bool = MISSING,
@@ -1923,7 +1923,7 @@ class Guild(Hashable):
             public updates channel.
 
             .. versionadded:: 1.4
-        boost_progress_bar_enagle: :class:`bool`
+        boost_progress_bar_enabled: :class:`bool`
             Whether the premium AKA server boost level progress bar should be enabled for the guild.
 
             .. versionadded:: 2.0
@@ -2133,8 +2133,8 @@ class Guild(Hashable):
 
             fields['features'] = list(features)
 
-        if boost_progress_bar_enagle is not MISSING:
-            fields['boost_progress_bar_enagle'] = boost_progress_bar_enagle
+        if boost_progress_bar_enabled is not MISSING:
+            fields['boost_progress_bar_enabled'] = boost_progress_bar_enabled
 
         widget_payload: EditWidgetSettings = {}
         if widget_channel is not MISSING:
