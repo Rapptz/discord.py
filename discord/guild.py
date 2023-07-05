@@ -882,7 +882,7 @@ class Guild(Hashable):
     @property
     def boosters(self) -> List[Member]:
         """List[:class:`Member`]: A list of members who have "boosted" this guild."""
-        return [member for member in self.members if member.nitro_subsciber_since is not None]
+        return [member for member in self.members if member.nitro_subscriber_since is not None]
 
     @property
     def roles(self) -> Sequence[Role]:
@@ -2134,7 +2134,7 @@ class Guild(Hashable):
             fields['features'] = list(features)
 
         if boost_progress_bar_enabled is not MISSING:
-            fields['boost_progress_bar_enabled'] = boost_progress_bar_enabled
+            fields['premium_progress_bar_enabled'] = boost_progress_bar_enabled
 
         widget_payload: EditWidgetSettings = {}
         if widget_channel is not MISSING:
