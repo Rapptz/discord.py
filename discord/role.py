@@ -74,7 +74,7 @@ class RoleTags:
     __slots__ = (
         'bot_id',
         'integration_id',
-        '_premium_subscriber',
+        '_nitro_subscriber',
         '_available_for_purchase',
         'subscription_listing_id',
         '_guild_connections',
@@ -89,7 +89,7 @@ class RoleTags:
         # This is different from other fields where "null" means "not there".
         # So in this case, a value of None is the same as True.
         # Which means we would need a different sentinel.
-        self._premium_subscriber: bool = data.get('premium_subscriber', MISSING) is None
+        self._nitro_subscriber: bool = data.get('premium_subscriber', MISSING) is None
         self._available_for_purchase: bool = data.get('available_for_purchase', MISSING) is None
         self._guild_connections: bool = data.get('guild_connections', MISSING) is None
 
@@ -98,8 +98,8 @@ class RoleTags:
         return self.bot_id is not None
 
     def is_booster(self) -> bool:
-        """:class:`bool`: Whether the role is the premium subscriber, AKA "boost", role for the guild."""
-        return self._premium_subscriber
+        """:class:`bool`: Whether the role is the "boost", role for the guild."""
+        return self._nitro_subscriber
 
     def is_integration(self) -> bool:
         """:class:`bool`: Whether the role is managed by an integration."""
@@ -122,7 +122,7 @@ class RoleTags:
     def __repr__(self) -> str:
         return (
             f'<RoleTags bot_id={self.bot_id} integration_id={self.integration_id} '
-            f'premium_subscriber={self.is_booster()}>'
+            f'nitro_subscriber={self.is_booster()}>'
         )
 
 
