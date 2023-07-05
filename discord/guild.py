@@ -229,8 +229,16 @@ class Guild(Hashable):
     boost_tier: :class:`int`
         The boost tier for this guild. Corresponds to "Nitro Server" in the official UI.
         The number goes from 0 to 3 inclusive.
+
+    premium_tier: :class:`int`
+        An alias for ``boost_tier``.
+
     boost_count: :class:`int`
         The number of "boosts" this guild currently has.
+
+    premium_subscription_count: :class:`int`
+        An alias for ``boost_count``.
+
     preferred_locale: :class:`Locale`
         The preferred locale for the guild. Used when filtering Server Discovery
         results to a specific language.
@@ -262,6 +270,10 @@ class Guild(Hashable):
         Indicates if the guild has server boost level progress bar enabled.
 
         .. versionadded:: 2.0
+
+    premium_progress_bar_enabled: :class:`bool`
+        An alias for ``boost_progress_bar_enabled``.
+
     widget_enabled: :class:`bool`
         Indicates if the guild has widget enabled.
 
@@ -320,6 +332,12 @@ class Guild(Hashable):
         'boost_progress_bar_enabled',
         '_safety_alerts_channel_id',
         'max_stage_video_users',
+
+        # ALIASES
+
+        'premium_progress_bar_enabled',
+        'premium_tier',
+        'premium_subscription_count'
     )
 
     _BOOSTED_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -543,6 +561,11 @@ class Guild(Hashable):
             for s in guild['guild_scheduled_events']:
                 scheduled_event = ScheduledEvent(data=s, state=self._state)
                 self._scheduled_events[scheduled_event.id] = scheduled_event
+
+        # ALIASES:
+        self.premium_tier = self.boost_tier
+        self.premium_progress_bar_enabled = self.boost_progress_bar_enabled
+        self.premium_subscription_count = self.boost_count
 
     @property
     def channels(self) -> Sequence[GuildChannel]:

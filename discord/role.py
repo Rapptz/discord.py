@@ -65,9 +65,10 @@ class RoleTags:
         The bot's user ID that manages this role.
     integration_id: Optional[:class:`int`]
         The integration ID that manages the role.
-    subscription_listing_id: Optional[:class:`int`]
+    boost_listing_id: Optional[:class:`int`]
         The ID of this role's subscription SKU and listing.
-
+    subscription_listing_id: Optional[:class:`int`]
+        An alias for `boost_listing_id`
         .. versionadded:: 2.2
     """
 
@@ -76,6 +77,7 @@ class RoleTags:
         'integration_id',
         '_nitro_subscriber',
         '_available_for_purchase',
+        'boost_listing_id',
         'subscription_listing_id',
         '_guild_connections',
     )
@@ -83,7 +85,8 @@ class RoleTags:
     def __init__(self, data: RoleTagPayload):
         self.bot_id: Optional[int] = _get_as_snowflake(data, 'bot_id')
         self.integration_id: Optional[int] = _get_as_snowflake(data, 'integration_id')
-        self.subscription_listing_id: Optional[int] = _get_as_snowflake(data, 'subscription_listing_id')
+        self.boost_listing_id: Optional[int] = _get_as_snowflake(data, 'subscription_listing_id')
+        self.subscription_listing_id: Optional[int] = self.boost_listing_id
 
         # NOTE: The API returns "null" for this if it's valid, which corresponds to None.
         # This is different from other fields where "null" means "not there".
@@ -100,6 +103,10 @@ class RoleTags:
     def is_booster(self) -> bool:
         """:class:`bool`: Whether the role is the "boost", role for the guild."""
         return self._nitro_subscriber
+    
+    def is_premium_subscriber(self) -> bool:
+        """:class:`bool`: An alias for `is_booster`"""
+        return self.is_booster()
 
     def is_integration(self) -> bool:
         """:class:`bool`: Whether the role is managed by an integration."""
@@ -304,6 +311,10 @@ class Role(Hashable):
         .. versionadded:: 1.6
         """
         return self.tags is not None and self.tags.is_booster()
+    
+    def is_premium_subscriber(self) -> bool:
+        """:class:`bool`: An alias for `is_booster`"""
+        return self.is_booster()
 
     def is_integration(self) -> bool:
         """:class:`bool`: Whether the role is managed by an integration.

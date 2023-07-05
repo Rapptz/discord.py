@@ -301,6 +301,8 @@ class Member(discord.abc.Messageable, _UserTag):
     nitro_subsriber_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies the date and time in UTC when the member used their
         "Nitro boost" on the guild, if available. This could be ``None``.
+    premium_since: Optional[:class:`datetime.datetime`]
+        An alias for `nitro_subscriber_since`.
     timed_out_until: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies the date and time in UTC that the member's time out will expire.
         This will be set to ``None`` if the user is not timed out.
@@ -312,6 +314,7 @@ class Member(discord.abc.Messageable, _UserTag):
         '_roles',
         'joined_at',
         'nitro_subscriber_since',
+        'premium_since',
         'activities',
         'guild',
         'pending',
@@ -363,6 +366,9 @@ class Member(discord.abc.Messageable, _UserTag):
             self._permissions = None
 
         self.timed_out_until: Optional[datetime.datetime] = utils.parse_time(data.get('communication_disabled_until'))
+
+        # ALIASES:
+        self.premium_since = self.nitro_subscriber_since
 
     def __str__(self) -> str:
         return str(self._user)
