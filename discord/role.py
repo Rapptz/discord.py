@@ -97,7 +97,7 @@ class RoleTags:
         """:class:`bool`: Whether the role is associated with a bot."""
         return self.bot_id is not None
 
-    def is_premium_subscriber(self) -> bool:
+    def is_booster(self) -> bool:
         """:class:`bool`: Whether the role is the premium subscriber, AKA "boost", role for the guild."""
         return self._premium_subscriber
 
@@ -122,7 +122,7 @@ class RoleTags:
     def __repr__(self) -> str:
         return (
             f'<RoleTags bot_id={self.bot_id} integration_id={self.integration_id} '
-            f'premium_subscriber={self.is_premium_subscriber()}>'
+            f'premium_subscriber={self.is_booster()}>'
         )
 
 
@@ -303,7 +303,7 @@ class Role(Hashable):
 
         .. versionadded:: 1.6
         """
-        return self.tags is not None and self.tags.is_premium_subscriber()
+        return self.tags is not None and self.tags.is_booster()
 
     def is_integration(self) -> bool:
         """:class:`bool`: Whether the role is managed by an integration.
