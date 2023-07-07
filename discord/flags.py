@@ -1830,7 +1830,7 @@ class MemberFlags(BaseFlags):
 class RoleFlags(BaseFlags):
     r"""Wraps up the Discord Role flags
 
-    .. versionadded:: 2.2
+    .. versionadded:: 2.4
 
     .. container:: operations
 
