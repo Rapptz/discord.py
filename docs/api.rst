@@ -4970,6 +4970,14 @@ MemberFlags
 .. autoclass:: MemberFlags
     :members:
 
+RoleFlags
+~~~~~~~~~~
+
+.. attributetable:: RoleFlags
+
+.. autoclass:: RoleFlags
+    :members:
+
 ForumTag
 ~~~~~~~~~
 
