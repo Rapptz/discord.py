@@ -1826,6 +1826,7 @@ class MemberFlags(BaseFlags):
         return 1 << 3
 
 
+@fill_with_flags()
 class RoleFlags(BaseFlags):
     r"""Wraps up the Discord Role flags
 
