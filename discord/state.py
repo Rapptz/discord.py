@@ -259,6 +259,13 @@ class ConnectionState(Generic[ClientT]):
 
         self.clear()
 
+    # For some reason Discord still sends emoji/sticker data in payloads
+    # This makes it hard to actually swap out the appropriate store methods
+    # So this is checked instead, it's a small penalty to pay
+    @property
+    def cache_guild_expressions(self) -> bool:
+        return self._intents.emojis_and_stickers
+
     async def close(self) -> None:
         for voice in self.voice_clients:
             try:
