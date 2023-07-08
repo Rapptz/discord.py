@@ -2631,7 +2631,7 @@ class Client:
         # The type checker is not smart enough to figure out the constructor is correct
         return cls(state=self._connection, data=data)  # type: ignore
 
-    async def skus(self) -> List[SKU]:
+    async def fetch_skus(self) -> List[SKU]:
         """|coro|
 
         Retrieves the bot's available SKUs.
