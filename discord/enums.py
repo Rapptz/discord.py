@@ -68,6 +68,10 @@ __all__ = (
     'AutoModRuleActionType',
     'ForumLayoutType',
     'ForumOrderType',
+    'SKUType',
+    'SKUAccessType',
+    'SKUFeature',
+    'EntitlementType',
 )
 
 if TYPE_CHECKING:
