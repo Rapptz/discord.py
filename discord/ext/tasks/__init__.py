@@ -811,7 +811,7 @@ def loop(
         it is assigned a name based off of the callable name
         such as ``discord-ext-tasks: function_name``.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
     Raises
     --------

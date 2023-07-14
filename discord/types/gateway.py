@@ -180,6 +180,7 @@ class MessageReactionAddEvent(TypedDict):
     emoji: PartialEmoji
     member: NotRequired[MemberWithUser]
     guild_id: NotRequired[Snowflake]
+    message_author_id: NotRequired[Snowflake]
 
 
 class MessageReactionRemoveEvent(TypedDict):
