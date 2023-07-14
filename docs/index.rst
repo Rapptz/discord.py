@@ -40,6 +40,16 @@ If you're having trouble with something, these resources might help.
 - Report bugs in the :resource:`issue tracker <issues>`.
 - Ask in our :resource:`GitHub discussions page <discussions>`.
 
+Interactions
+--------------
+
+These pages explain how to handle user actions via various interaction types.
+
+.. toctree::
+  :maxdepth: 1
+
+  app_commands/index.rst
+
 Extensions
 ------------
 
