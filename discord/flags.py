@@ -1885,16 +1885,16 @@ class AttachmentFlags(BaseFlags):
     """
 
     @flag_value
-    def is_clip(self):
+    def clip(self):
         """:class:`bool`: Returns ``True`` if the attachment is a clip."""
         return 1 << 0
 
     @flag_value
-    def is_thumbnail(self):
+    def thumbnail(self):
         """:class:`bool`: Returns ``True`` if the attachment is a thumbnail."""
         return 1 << 1
 
     @flag_value
-    def is_remix(self):
+    def remix(self):
         """:class:`bool`: Returns ``True`` if the attachment has been edited using the remix feature."""
         return 1 << 2
