@@ -7849,19 +7849,14 @@ Flags
 .. autoclass:: ApplicationDiscoveryFlags()
     :members:
 
-.. attributetable:: LibraryApplicationFlags
+.. attributetable:: AttachmentFlags
 
-.. autoclass:: LibraryApplicationFlags()
+.. autoclass:: AttachmentFlags()
     :members:
 
 .. attributetable:: ChannelFlags
 
 .. autoclass:: ChannelFlags()
-    :members:
-
-.. attributetable:: SystemChannelFlags
-
-.. autoclass:: SystemChannelFlags()
     :members:
 
 .. attributetable:: FriendSourceFlags
@@ -7889,9 +7884,19 @@ Flags
 .. autoclass:: InviteFlags()
     :members:
 
+.. attributetable:: LibraryApplicationFlags
+
+.. autoclass:: LibraryApplicationFlags()
+    :members:
+
 .. attributetable:: MemberFlags
 
 .. autoclass:: MemberFlags()
+    :members:
+
+.. attributetable:: MemberCacheFlags
+
+.. autoclass:: MemberCacheFlags()
     :members:
 
 .. attributetable:: MessageFlags
@@ -7950,9 +7955,9 @@ Flags
 .. autoclass:: SKUFlags()
     :members:
 
-.. attributetable:: MemberCacheFlags
+.. attributetable:: SystemChannelFlags
 
-.. autoclass:: MemberCacheFlags()
+.. autoclass:: SystemChannelFlags()
     :members:
 
 
