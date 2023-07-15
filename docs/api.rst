@@ -4982,6 +4982,14 @@ MemberFlags
 .. autoclass:: MemberFlags
     :members:
 
+AttachmentFlags
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: AttachmentFlags
+
+.. autoclass:: AttachmentFlags
+    :members:
+
 ForumTag
 ~~~~~~~~~
 
