@@ -4983,7 +4983,7 @@ MemberFlags
     :members:
 
 AttachmentFlags
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 .. attributetable:: AttachmentFlags
 

@@ -58,6 +58,7 @@ __all__ = (
     'ChannelFlags',
     'AutoModPresets',
     'MemberFlags',
+    'AttachmentFlags',
     'RoleFlags',
 )
 
