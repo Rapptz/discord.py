@@ -781,7 +781,7 @@ class HTTPClient:
 
     # login management
 
-    async def static_login(self, token: str) -> user.User:
+    async def static_login(self, token: str) -> appinfo.AppInfo:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
             # discord does not support ipv6
@@ -799,7 +799,7 @@ class HTTPClient:
         self.token = token
 
         try:
-            data = await self.request(Route('GET', '/users/@me'))
+            data = await self.application_info()
         except HTTPException as exc:
             self.token = old_token
             if exc.status == 401:

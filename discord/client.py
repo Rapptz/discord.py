@@ -610,8 +610,8 @@ class Client:
         token = token.strip()
 
         data = await self.http.static_login(token)
-        self._connection.user = ClientUser(state=self._connection, data=data)
-        self._application = await self.application_info()
+        self._connection.user = ClientUser(state=self._connection, data=data['bot'])  # type: ignore
+        self._application = AppInfo(self._connection, data)
         if self._connection.application_id is None:
             self._connection.application_id = self._application.id
 

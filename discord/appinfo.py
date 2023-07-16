@@ -39,6 +39,7 @@ if TYPE_CHECKING:
         Team as TeamPayload,
         InstallParams as InstallParamsPayload,
     )
+    from .types.user import User as UserPayload
     from .user import User
     from .state import ConnectionState
 
@@ -131,6 +132,10 @@ class AppInfo:
         a verification method in the guild's role verification configuration.
 
         .. versionadded:: 2.2
+    bot: Optional[:class:`User`]
+        The bot user, if this application belongs to a bot.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -141,6 +146,7 @@ class AppInfo:
         'rpc_origins',
         'bot_public',
         'bot_require_code_grant',
+        'bot',
         'owner',
         '_icon',
         'verify_key',
@@ -173,6 +179,9 @@ class AppInfo:
 
         team: Optional[TeamPayload] = data.get('team')
         self.team: Optional[Team] = Team(state, team) if team else None
+
+        bot: Optional[UserPayload] = data.get('bot')
+        self.bot: Optional[User] = state.create_user(bot) if bot else None
 
         self.verify_key: str = data['verify_key']
 
