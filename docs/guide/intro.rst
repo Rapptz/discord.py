@@ -12,18 +12,22 @@ Welcome to discord.py, a library for Python to aid in creating applications for 
 Prerequisites
 --------------
 
-discord.py requires Python 3.8.0 or higher. Support for earlier versions is not provided as they have been deprecated.
+To install discord.py you'll need Python version 3.8.0 or later.
 
 .. _guide_intro_installation:
 
 Installation
 -------------
 
-discord.py is available on PyPI: ::
+On Unix systems you can run the following command to install discord.py from PyPI.
+
+.. code-block:: shell
 
     python3 -m pip install -U discord.py
 
-If you are on Windows, you should use the following command instead: ::
+On Windows systems, you can use the following command instead.
+
+.. code-block:: shell
 
     py -3 -m pip install -U discord.py
 
@@ -34,29 +38,29 @@ Voice support (e.g. joining voice channels and playing music) is not supported b
 
     pip install -U discord.py[voice]
 
-Linux environments may need to install additional dependencies to get full voice support.
+.. note::
 
-For **Debian/Ubuntu** systems:
+    Linux systems may need to install additional dependencies via your package manager to get full voice support.
 
-.. code-block:: shell
+    On Debian and Ubuntu systems:
 
-    $ sudo apt install libffi-dev libsodium-dev python3-dev
+    .. code-block:: shell
 
-For **Fedora/CentOS** systems:
+        $ sudo apt install libffi-dev libsodium-dev python3-dev
 
-.. code-block:: shell
+    For Fedora and CentOS systems:
 
-    $ sudo dnf install libffi-devel libsodium-devel python3-devel
+    .. code-block:: shell
 
-For **Arch Linux** systems:
+        $ sudo dnf install libffi-devel libsodium-devel python3-devel
 
-.. code-block:: shell
+    For Arch Linux systems:
 
-    $ pacman -Syu libsodium
+    .. code-block:: shell
 
-For other distributions, please use your package manager to find libraries for ``libffi``, ``libsodium``, and the Python 3 development headers.
+        $ pacman -Syu libsodium
 
-Windows will not need additional dependencies as they are bundled with discord.py.
+    For other distributions, please use your package manager to find libraries for ``libffi``, ``libsodium``, and the Python 3 development headers.
 
 Virtual Environments
 ~~~~~~~~~~~~~~~~~~~~~
