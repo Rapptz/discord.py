@@ -821,7 +821,7 @@ class ClientUser(BaseUser):
             The hypesquad house you wish to change to.
             Could be ``None`` to leave the current house.
         username: :class:`str`
-            The new username you wish to change to. 
+            The new username you wish to change to.
         discriminator: :class:`int`
             The new discriminator you wish to change to.
             This is a legacy concept that is no longer used. Can only be used if you have Nitro.
@@ -1024,11 +1024,18 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
             user['discriminator'],
             user.get('public_flags', 0),
             user.get('avatar_decoration'),
-            user.get('global_name')
+            user.get('global_name'),
         )
         if original != modified:
             to_return = User._copy(self)
-            self.name, self._avatar, self.discriminator, self._public_flags, self._avatar_decoration, self.global_name = modified
+            (
+                self.name,
+                self._avatar,
+                self.discriminator,
+                self._public_flags,
+                self._avatar_decoration,
+                self.global_name,
+            ) = modified
             # Signal to dispatch user_update
             return to_return, self
 

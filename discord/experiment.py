@@ -702,12 +702,12 @@ class UserExperiment:
 
             Returns the experiment's hash.
 
-    .. versionadded:: 2.1
-
     .. note::
 
         In contrast to the wide range of data provided for guild experiments,
         user experiments do not reveal detailed rollout information, providing only the assigned bucket.
+
+    .. versionadded:: 2.1
 
     Attributes
     ----------

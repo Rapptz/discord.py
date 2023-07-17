@@ -294,23 +294,24 @@ class DiscordWebSocket:
         _zlib_enabled: bool
 
     # fmt: off
-    DEFAULT_GATEWAY    = yarl.URL('wss://gateway.discord.gg/')
-    DISPATCH           = 0
-    HEARTBEAT          = 1
-    IDENTIFY           = 2
-    PRESENCE           = 3
-    VOICE_STATE        = 4
-    VOICE_PING         = 5
-    RESUME             = 6
-    RECONNECT          = 7
-    REQUEST_MEMBERS    = 8
-    INVALIDATE_SESSION = 9
-    HELLO              = 10
-    HEARTBEAT_ACK      = 11
-    GUILD_SYNC         = 12  # :(
-    CALL_CONNECT       = 13
-    GUILD_SUBSCRIBE    = 14
-    REQUEST_COMMANDS   = 24
+    DEFAULT_GATEWAY       = yarl.URL('wss://gateway.discord.gg/')
+    DISPATCH              = 0
+    HEARTBEAT             = 1
+    IDENTIFY              = 2
+    PRESENCE              = 3
+    VOICE_STATE           = 4
+    VOICE_PING            = 5
+    RESUME                = 6
+    RECONNECT             = 7
+    REQUEST_MEMBERS       = 8
+    INVALIDATE_SESSION    = 9
+    HELLO                 = 10
+    HEARTBEAT_ACK         = 11
+    GUILD_SYNC            = 12  # :(
+    CALL_CONNECT          = 13
+    GUILD_SUBSCRIBE       = 14
+    REQUEST_COMMANDS      = 24
+    SEARCH_RECENT_MEMBERS = 35
     # fmt: on
 
     def __init__(self, socket: aiohttp.ClientWebSocketResponse, *, loop: asyncio.AbstractEventLoop) -> None:
@@ -325,7 +326,7 @@ class DiscordWebSocket:
         self._keep_alive: Optional[KeepAliveHandler] = None
         self.thread_id: int = threading.get_ident()
 
-        # ws related stuff
+        # WS related stuff
         self.session_id: Optional[str] = None
         self.sequence: Optional[int] = None
         self._zlib: zlib._Decompress = zlib.decompressobj()
@@ -852,6 +853,22 @@ class DiscordWebSocket:
             payload['d']['command_ids'] = command_ids
         if application_id is not None:
             payload['d']['application_id'] = str(application_id)
+
+        await self.send_as_json(payload)
+
+    async def search_recent_members(
+        self, guild_id: Snowflake, query: str = '', *, after: Optional[Snowflake] = None, nonce: Optional[str] = None
+    ) -> None:
+        payload = {
+            'op': self.SEARCH_RECENT_MEMBERS,
+            'd': {
+                'guild_id': str(guild_id),
+                'query': query,
+                'continuation_token': str(after) if after else None,
+            },
+        }
+        if nonce is not None:
+            payload['d']['nonce'] = nonce
 
         await self.send_as_json(payload)
 

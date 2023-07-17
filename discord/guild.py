@@ -4799,6 +4799,7 @@ class Guild(Hashable):
         cache: :class:`bool`
             Whether to cache the members internally. This makes operations
             such as :meth:`get_member` work for those that matched.
+            The cache will not be kept updated unless ``subscribe`` is set to ``True``.
         user_ids: Optional[List[:class:`int`]]
             List of user IDs to search for. If the user ID is not in the guild then it won't be returned.
 
@@ -4835,6 +4836,61 @@ class Guild(Hashable):
         if subscribe:
             ids: List[_Snowflake] = [str(m.id) for m in members]
             await self._state.ws.request_lazy_guild(self.id, members=ids)
+        return members
+
+    async def query_recent_members(
+        self,
+        query: Optional[str] = None,
+        *,
+        limit: int = 1000,
+        cache: bool = True,
+        subscribe: bool = False,
+    ) -> List[Member]:
+        """|coro|
+
+        Request the most recent 10,000 joined members of this guild.
+        This is a websocket operation.
+
+        .. note::
+
+            This operation does not return presences.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        query: Optional[:class:`str`]
+            The string that the username or nickname should start with, if any.
+        limit: :class:`int`
+            The maximum number of members to send back. This must be
+            a number between 1 and 10,000.
+        cache: :class:`bool`
+            Whether to cache the members internally. This makes operations
+            such as :meth:`get_member` work for those that matched.
+            The cache will not be kept updated unless ``subscribe`` is set to ``True``.
+        subscribe: :class:`bool`
+            Whether to subscribe to the resulting members. This will keep their info and presence updated.
+            This requires another request, and defaults to ``False``.
+
+        Raises
+        -------
+        asyncio.TimeoutError
+            The query timed out waiting for the members.
+        TypeError
+            Invalid parameters were passed to the function.
+
+        Returns
+        --------
+        List[:class:`Member`]
+            The list of members that have matched the query.
+        """
+        limit = min(10000, limit or 1)
+        members = await self._state.search_recent_members(self, query or '', limit, cache)
+        if subscribe:
+            ids: List[_Snowflake] = [str(m.id) for m in members]
+            for i in range(0, len(ids), 750):
+                subs = ids[i : i + 750]
+                await self._state.ws.request_lazy_guild(self.id, members=subs)
         return members
 
     async def change_voice_state(
