@@ -571,6 +571,14 @@ class Client:
             exp.name = name
         return exp
 
+    @property
+    def disclose(self) -> Sequence[str]:
+        """Sequence[:class:`str`]: Upcoming changes to the user's account.
+
+        .. versionadded:: 2.1
+        """
+        return utils.SequenceProxy(self._connection.disclose)
+
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""
         return self._ready is not MISSING and self._ready.is_set()
@@ -5054,3 +5062,58 @@ class Client:
             experiments.append(GuildExperiment(state=state, data=exp))
 
         return experiments
+
+    async def pomelo_suggestion(self) -> str:
+        """|coro|
+
+        Gets the suggested pomelo username for your account.
+        This username can be used with :meth:`edit` to migrate your account
+        to Discord's `new unique username system <https://discord.com/blog/usernames>`_
+
+        .. note::
+
+            This method requires you to be in the pomelo rollout.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        HTTPException
+            You are not in the pomelo rollout.
+
+        Returns
+        --------
+        :class:`str`
+            The suggested username.
+        """
+        data = await self.http.pomelo_suggestion()
+        return data['username']
+
+    async def check_pomelo_username(self, username: str) -> bool:
+        """|coro|
+
+        Checks if a pomelo username is taken.
+
+        .. note::
+
+            This method requires you to be in the pomelo rollout.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        username: :class:`str`
+            The username to check.
+
+        Raises
+        -------
+        HTTPException
+            You are not in the pomelo rollout.
+
+        Returns
+        --------
+        :class:`bool`
+            Whether the username is taken.
+        """
+        data = await self.http.pomelo_attempt(username)
+        return data['taken']

@@ -135,6 +135,7 @@ class ReadySupplementalEvent(TypedDict):
     merged_members: List[List[MemberWithUser]]
     merged_presences: MergedPresences
     lazy_private_channels: List[Union[DMChannel, GroupDMChannel]]
+    disclose: List[str]
 
 
 class VersionedReadState(TypedDict):

@@ -90,6 +90,14 @@ class User(APIUser, total=False):
     nsfw_allowed: Optional[bool]
 
 
+class PomeloAttempt(TypedDict):
+    taken: bool
+
+
+class PomeloSuggestion(TypedDict):
+    username: str
+
+
 class PartialConnection(TypedDict):
     id: str
     type: ConnectionType

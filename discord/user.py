@@ -523,6 +523,13 @@ class BaseUser(_UserTag):
 
         return any(user.id == self.id for user in message.mentions)
 
+    def is_pomelo(self) -> bool:
+        """:class:`bool`: Checks if the user has migrated to Discord's `new unique username system <https://discord.com/blog/usernames>`_
+
+        .. versionadded:: 2.1
+        """
+        return self.discriminator == '0'
+
     @property
     def relationship(self) -> Optional[Relationship]:
         """Optional[:class:`Relationship`]: Returns the :class:`Relationship` with this user if applicable, ``None`` otherwise."""
@@ -781,6 +788,7 @@ class ClientUser(BaseUser):
         accent_color: Colour = MISSING,
         bio: Optional[str] = MISSING,
         date_of_birth: datetime = MISSING,
+        pomelo: bool = MISSING,
     ) -> ClientUser:
         """|coro|
 
@@ -813,10 +821,10 @@ class ClientUser(BaseUser):
             The hypesquad house you wish to change to.
             Could be ``None`` to leave the current house.
         username: :class:`str`
-            The new username you wish to change to.
+            The new username you wish to change to. 
         discriminator: :class:`int`
             The new discriminator you wish to change to.
-            Can only be used if you have Nitro.
+            This is a legacy concept that is no longer used. Can only be used if you have Nitro.
         avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.
@@ -841,12 +849,23 @@ class ClientUser(BaseUser):
             Your date of birth. Can only ever be set once.
 
             .. versionadded:: 2.0
+        pomelo: :class:`bool`
+            Whether to migrate your account to Discord's `new unique username system <https://discord.com/blog/usernames>`_.
+
+            .. note::
+
+                This change cannot be undone and requires you to be in the pomelo rollout.
+
+            .. versionadded:: 2.1
 
         Raises
         ------
         HTTPException
             Editing your profile failed.
+            You are not in the pomelo rollout.
         ValueError
+            Username was not passed when migrating to pomelo.
+            Discriminator was passed when migrated to pomelo.
             Password was not passed when it was required.
             `house` field was not a :class:`HypeSquadHouse`.
             `date_of_birth` field was not a :class:`datetime.datetime`.
@@ -857,7 +876,17 @@ class ClientUser(BaseUser):
         :class:`ClientUser`
             The newly edited client user.
         """
+        state = self._state
         args: Dict[str, Any] = {}
+        data = None
+
+        if pomelo:
+            if not username:
+                raise ValueError('Username is required for pomelo migration')
+            if discriminator:
+                raise ValueError('Discriminator cannot be changed when migrated to pomelo')
+            data = await state.http.pomelo(username)
+            username = MISSING
 
         if any(x is not MISSING for x in (new_password, email, username, discriminator)):
             if password is MISSING:
@@ -898,6 +927,8 @@ class ClientUser(BaseUser):
             args['username'] = username
 
         if discriminator is not MISSING:
+            if self.is_pomelo():
+                raise ValueError('Discriminator cannot be changed when migrated to pomelo')
             args['discriminator'] = discriminator
 
         if new_password is not MISSING:
@@ -921,11 +952,12 @@ class ClientUser(BaseUser):
             else:
                 await http.change_hypesquad_house(house.value)
 
-        data = await http.edit_profile(args)
-        try:
-            http._token(data['token'])
-        except KeyError:
-            pass
+        if args or data is None:
+            data = await http.edit_profile(args)
+            try:
+                http._token(data['token'])
+            except KeyError:
+                pass
 
         return ClientUser(state=self._state, data=data)
 

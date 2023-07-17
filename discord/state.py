@@ -614,6 +614,7 @@ class ConnectionState:
         self.auth_session_id: Optional[str] = None
         self.required_action: Optional[RequiredActionType] = None
         self.friend_suggestion_count: int = 0
+        self.disclose: List[str] = []
         self._emojis: Dict[int, Emoji] = {}
         self._stickers: Dict[int, GuildSticker] = {}
         self._guilds: Dict[int, Guild] = {}
@@ -1079,6 +1080,9 @@ class ConnectionState:
             if 'recipients' not in pm:
                 pm['recipients'] = [temp_users[int(u_id)] for u_id in pm.pop('recipient_ids')]
             self._add_private_channel(factory(me=user, data=pm, state=self))  # type: ignore
+
+        # Disloses
+        self.dislose = data.get('dislose', [])
 
         # We're done
         del self._ready_data
