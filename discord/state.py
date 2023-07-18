@@ -812,7 +812,7 @@ class ConnectionState:
                 self._users[user_id] = user
             return user
 
-    def create_user(self, data: Union[UserPayload, PartialUserPayload]) -> User:
+    def create_user(self, data: Union[UserPayload, PartialUserPayload], cache: bool = False) -> User:
         user_id = int(data['id'])
         if user_id == self.self_id:
             return self.user  # type: ignore
@@ -1176,7 +1176,7 @@ class ConnectionState:
         for pm in data.get('private_channels', []) + extra_data.get('lazy_private_channels', []):
             factory, _ = _private_channel_factory(pm['type'])
             if 'recipients' not in pm:
-                pm['recipients'] = [temp_users[int(u_id)] for u_id in pm.pop('recipient_ids')]
+                pm['recipients'] = [temp_users[int(u_id)] for u_id in pm.pop('recipient_ids')]  # type: ignore
             self._add_private_channel(factory(me=user, data=pm, state=self))  # type: ignore
 
         # Disloses
@@ -1897,7 +1897,7 @@ class ConnectionState:
             channel, _ = self._get_guild_channel(message)
 
             # channel will be the correct type here
-            message = Message(channel=channel, data=message, state=self)
+            message = Message(channel=channel, data=message, state=self)  # type: ignore
             if self._messages is not None:
                 self._messages.append(message)
 
@@ -2056,7 +2056,7 @@ class ConnectionState:
                     mdata = item['member']
                     member = Member(data=mdata, guild=guild, state=self)
                     if mdata.get('presence') is not None:
-                        member._presence_update(mdata['presence'], empty_tuple)  # type: ignore
+                        member._presence_update(mdata['presence'], empty_tuple)
 
                     members.append(member)
                     guild._member_list.append(member) if should_parse else None
@@ -2102,7 +2102,7 @@ class ConnectionState:
                 else:
                     member = Member(data=mdata, guild=guild, state=self)
                     if mdata.get('presence') is not None:
-                        member._presence_update(mdata['presence'], empty_tuple)  # type: ignore
+                        member._presence_update(mdata['presence'], empty_tuple)
 
                     to_add.append(member)
 

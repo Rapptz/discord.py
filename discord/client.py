@@ -1159,7 +1159,7 @@ class Client:
         if activities is None and not self.is_closed():
             activity = getattr(state.settings, 'custom_activity', None)
             activities = (activity,) if activity else activities
-        return activities or ()
+        return activities or tuple()
 
     @property
     def activity(self) -> Optional[ActivityTypes]:
@@ -1193,7 +1193,7 @@ class Client:
         if activities is None and not self.is_closed():
             activity = getattr(state.settings, 'custom_activity', None)
             activities = (activity,) if activity else activities
-        return activities or ()
+        return activities or tuple()
 
     @property
     def allowed_mentions(self) -> Optional[AllowedMentions]:
@@ -2100,15 +2100,16 @@ class Client:
 
         state = self._connection
         type = invite.type
-        if message := invite._message:
-            kwargs = {'message': message}
-        else:
+        kwargs = {}
+        if not invite._message:
             kwargs = {
                 'guild_id': getattr(invite.guild, 'id', MISSING),
                 'channel_id': getattr(invite.channel, 'id', MISSING),
                 'channel_type': getattr(invite.channel, 'type', MISSING),
             }
-        data = await state.http.accept_invite(invite.code, type, state.session_id or utils._generate_session_id(), **kwargs)
+        data = await state.http.accept_invite(
+            invite.code, type, state.session_id or utils._generate_session_id(), message=invite._message, **kwargs
+        )
         return Invite.from_incomplete(state=state, data=data, message=invite._message)
 
     async def delete_invite(self, invite: Union[Invite, str], /) -> Invite:
@@ -5067,7 +5068,7 @@ class Client:
         """|coro|
 
         Gets the suggested pomelo username for your account.
-        This username can be used with :meth:`edit` to migrate your account
+        This username can be used with :meth:`~discord.ClientUser.edit` to migrate your account
         to Discord's `new unique username system <https://discord.com/blog/usernames>`_
 
         .. note::

@@ -387,7 +387,7 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
                 return None
             return guild._resolve_channel(channel_id)
 
-        return ctx.bot.get_channel(channel_id)  # type: ignore
+        return ctx.bot.get_channel(channel_id)
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.PartialMessage:
         guild_id, message_id, channel_id = self._get_id_matches(ctx, argument)

@@ -2257,9 +2257,9 @@ class HTTPClient:
         guild_id: Snowflake = MISSING,
         channel_id: Snowflake = MISSING,
         channel_type: ChannelType = MISSING,
-        message: Message = MISSING,
+        message: Optional[Message] = None,
     ):  # TODO: response type
-        if message is not MISSING:  # Invite Button Embed
+        if message:  # Invite Button Embed
             props = ContextProperties.from_invite_button_embed(
                 guild_id=getattr(message.guild, 'id', None),
                 channel_id=message.channel.id,

@@ -138,7 +138,7 @@ class Promotion(Hashable):
         return f'<Promotion id={self.id} title={self.outbound_title!r}>'
 
     def _update(self, data: Union[PromotionPayload, ClaimedPromotionPayload]) -> None:
-        promotion: PromotionPayload = data.get('promotion', data)  # type: ignore
+        promotion: PromotionPayload = data.get('promotion', data)
 
         self.id: int = int(promotion['id'])
         self.trial_id: Optional[int] = _get_as_snowflake(promotion, 'trial_id')

@@ -3638,13 +3638,6 @@ of :class:`enum.Enum`.
         Represents the default avatar with the colour pink.
         See also :attr:`Colour.pink`
 
-        .. versionadded:: 2.3
-
-    .. attribute:: pink
-
-        Represents the default avatar with the color pink.
-        This is not currently used in the client.
-
 .. class:: StickerType
 
     Represents the type of sticker.

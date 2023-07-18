@@ -661,16 +661,17 @@ class Invite(Hashable):
         """
         state = self._state
         type = self.type
-        if message := self._message:
-            kwargs = {'message': message}
-        else:
+        kwargs = {}
+        if not self._message:
             kwargs = {
                 'guild_id': getattr(self.guild, 'id', MISSING),
                 'channel_id': getattr(self.channel, 'id', MISSING),
                 'channel_type': getattr(self.channel, 'type', MISSING),
             }
-        data = await state.http.accept_invite(self.code, type, state.session_id or _generate_session_id(), **kwargs)
-        return Invite.from_incomplete(state=state, data=data, message=message)
+        data = await state.http.accept_invite(
+            self.code, type, state.session_id or _generate_session_id(), message=self._message, **kwargs
+        )
+        return Invite.from_incomplete(state=state, data=data, message=self._message)
 
     async def accept(self) -> Invite:
         """|coro|

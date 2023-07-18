@@ -1846,6 +1846,7 @@ class PartialApplication(Hashable):
             payload: PartialUserPayload = {
                 'id': team.id,
                 'username': f'team{team.id}',
+                'global_name': None,
                 'public_flags': UserFlags.team_user.value,
                 'discriminator': '0000',
                 'avatar': None,

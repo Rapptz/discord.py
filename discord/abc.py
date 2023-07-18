@@ -1505,13 +1505,17 @@ class GuildChannel:
             Invite creation failed.
         ~discord.NotFound
             The channel that was passed is a category or an invalid channel.
+        ValueError
+            ``target_type`` is not a creatable invite target type.
 
         Returns
         --------
         :class:`~discord.Invite`
             The invite that was created.
         """
-        if target_type is InviteTarget.unknown:
+        if target_type not in (None, InviteTarget.unknown, InviteTarget.stream, InviteTarget.embedded_application):
+            raise ValueError('target_type parameter must be InviteTarget.stream, or InviteTarget.embedded_application')
+        if target_type == InviteTarget.unknown:
             target_type = None
 
         data = await self._state.http.create_invite(
