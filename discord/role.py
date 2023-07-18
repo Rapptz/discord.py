@@ -23,13 +23,15 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .asset import Asset
-from .permissions import Permissions
 from .colour import Colour
+from .flags import RoleFlags
 from .mixins import Hashable
-from .utils import snowflake_time, _get_as_snowflake, MISSING, _bytes_to_base64_data
+from .permissions import Permissions
+from .utils import MISSING, _bytes_to_base64_data, _get_as_snowflake, snowflake_time
 
 __all__ = (
     'RoleTags',
@@ -38,15 +40,13 @@ __all__ = (
 
 if TYPE_CHECKING:
     import datetime
-    from .types.role import (
-        Role as RolePayload,
-        RoleTags as RoleTagPayload,
-    )
-    from .types.guild import RolePositionUpdate
+
+    from .abc import Snowflake
     from .guild import Guild
     from .member import Member
     from .state import ConnectionState
-    from .abc import Snowflake
+    from .types.guild import RolePositionUpdate
+    from .types.role import Role as RolePayload, RoleTags as RoleTagPayload
 
 
 class RoleTags:
@@ -220,6 +220,7 @@ class Role(Hashable):
         'hoist',
         'guild',
         'tags',
+        '_flags',
         '_state',
     )
 
@@ -282,6 +283,7 @@ class Role(Hashable):
         self.managed: bool = data.get('managed', False)
         self.mentionable: bool = data.get('mentionable', False)
         self.tags: Optional[RoleTags]
+        self._flags: int = data.get('flags', 0)
 
         try:
             self.tags = RoleTags(data['tags'])
@@ -381,6 +383,14 @@ class Role(Hashable):
 
         role_id = self.id
         return [member for member in all_members if member._roles.has(role_id)]
+
+    @property
+    def flags(self) -> RoleFlags:
+        """:class:`RoleFlags`: Returns the role's flags.
+
+        .. versionadded:: 2.4
+        """
+        return RoleFlags._from_value(self._flags)
 
     async def _move(self, position: int, reason: Optional[str]) -> None:
         if position <= 0:
