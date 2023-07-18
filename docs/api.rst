@@ -4990,6 +4990,14 @@ AttachmentFlags
 .. autoclass:: AttachmentFlags
     :members:
 
+RoleFlags
+~~~~~~~~~~
+
+.. attributetable:: RoleFlags
+
+.. autoclass:: RoleFlags
+    :members:
+
 ForumTag
 ~~~~~~~~~
 
