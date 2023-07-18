@@ -2087,7 +2087,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
     def forums(self) -> List[ForumChannel]:
         """List[:class:`ForumChannel`]: Returns the forum channels that are under this category.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         r = [c for c in self.guild.channels if c.category_id == self.id and isinstance(c, ForumChannel)]
         r.sort(key=lambda c: (c.position, c.id))

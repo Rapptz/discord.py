@@ -3100,13 +3100,13 @@ of :class:`enum.Enum`.
 
         A request to monetize the server was created.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
     .. attribute:: creator_monetization_terms_accepted
 
         The terms and conditions for creator monetization were accepted.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
 .. class:: AuditLogActionCategory
 
