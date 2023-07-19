@@ -3547,7 +3547,7 @@ of :class:`enum.Enum`.
 
     .. attribute:: pending_funds
 
-        The payout is pending fund transfer.
+        The payout is pending sufficient funds.
 
 .. class:: PayoutReportType
 
