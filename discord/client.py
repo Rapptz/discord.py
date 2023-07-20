@@ -2693,6 +2693,7 @@ class Client:
         before: Optional[SnowflakeTime] = MISSING,
         after: Optional[SnowflakeTime] = MISSING,
         sku_ids: Optional[List[int]] = None,
+        user_id: Optional[int] = None,
         guild_id: Optional[int] = None,
         exclude_ended: bool = False,
     ) -> AsyncIterator[Entitlement]:
@@ -2732,6 +2733,8 @@ class Client:
             If the datetime is naive, it is assumed to be local time.
         sku_ids: Optional[List[:class:`int`]]
             A list of SKU IDs to filter by.
+        user_id: Optional[:class:`int`]
+            The user ID to filter by.
         guild_id: Optional[:class:`int`]
             The guild ID to filter by.
         exclude_ended: :class:`bool`
@@ -2769,6 +2772,7 @@ class Client:
                 limit=retrieve,
                 before=before_id,
                 sku_ids=sku_ids,
+                user_id=user_id,
                 guild_id=guild_id,
                 exclude_ended=exclude_ended,
             )
@@ -2788,6 +2792,7 @@ class Client:
                 limit=retrieve,
                 after=after_id,
                 sku_ids=sku_ids,
+                user_id=user_id,
                 guild_id=guild_id,
                 exclude_ended=exclude_ended,
             )
