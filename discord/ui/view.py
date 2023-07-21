@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Callable, ClassVar, Coroutine, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple
+from typing import Any, Callable, ClassVar, Coroutine, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple, Type
 from functools import partial
 from itertools import groupby
 
@@ -33,6 +33,7 @@ import sys
 import time
 import os
 from .item import Item, ItemCallbackType
+from .dynamic import DynamicItem
 from ..components import (
     Component,
     ActionRow as ActionRowComponent,
@@ -50,6 +51,7 @@ __all__ = (
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+    import re
 
     from ..interactions import Interaction
     from ..message import Message
@@ -417,7 +419,7 @@ class View:
         try:
             item._refresh_state(interaction, interaction.data)  # type: ignore
 
-            allow = await self.interaction_check(interaction)
+            allow = await item.interaction_check(interaction) and await self.interaction_check(interaction)
             if not allow:
                 return
 
@@ -534,6 +536,8 @@ class ViewStore:
         self._synced_message_views: Dict[int, View] = {}
         # custom_id: Modal
         self._modals: Dict[str, Modal] = {}
+        # component_type is the key
+        self._dynamic_items: Dict[re.Pattern[str], Type[DynamicItem[Item[Any]]]] = {}
         self._state: ConnectionState = state
 
     @property
@@ -548,6 +552,11 @@ class ViewStore:
         # fmt: on
         return list(views.values())
 
+    def add_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
+        for item in items:
+            pattern = item.__discord_ui_compiled_template__
+            self._dynamic_items[pattern] = item
+
     def add_view(self, view: View, message_id: Optional[int] = None) -> None:
         view._start_listening_from_store(self)
         if view.__discord_ui_modal__:
@@ -556,7 +565,10 @@ class ViewStore:
 
         dispatch_info = self._views.setdefault(message_id, {})
         for item in view._children:
-            if item.is_dispatchable():
+            if isinstance(item, DynamicItem):
+                pattern = item.__discord_ui_compiled_template__
+                self._dynamic_items[pattern] = item.__class__
+            elif item.is_dispatchable():
                 dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
 
         view._cache_key = message_id
@@ -571,7 +583,10 @@ class ViewStore:
         dispatch_info = self._views.get(view._cache_key)
         if dispatch_info:
             for item in view._children:
-                if item.is_dispatchable():
+                if isinstance(item, DynamicItem):
+                    pattern = item.__discord_ui_compiled_template__
+                    self._dynamic_items.pop(pattern, None)
+                elif item.is_dispatchable():
                     dispatch_info.pop((item.type.value, item.custom_id), None)  # type: ignore
 
             if len(dispatch_info) == 0:
@@ -579,7 +594,57 @@ class ViewStore:
 
         self._synced_message_views.pop(view._cache_key, None)  # type: ignore
 
+    async def schedule_dynamic_item_call(
+        self,
+        component_type: int,
+        factory: Type[DynamicItem[Item[Any]]],
+        interaction: Interaction,
+        match: re.Match[str],
+    ) -> None:
+        try:
+            item = await factory.from_custom_id(interaction, match)
+        except Exception:
+            _log.exception('Ignoring exception in dynamic item creation for %r', factory)
+            return
+
+        # Unfortunately cannot set Item.view here...
+        item._refresh_state(interaction, interaction.data)  # type: ignore
+
+        try:
+            allow = await item.interaction_check(interaction)
+        except Exception:
+            allow = False
+
+        if not allow:
+            return
+
+        if interaction.message is None:
+            item._view = None
+        else:
+            item._view = view = View.from_message(interaction.message)
+
+            # Find the original item and replace it with the dynamic item
+            for index, child in enumerate(view._children):
+                if child.type.value == component_type and getattr(child, 'custom_id', None) == item.custom_id:
+                    view._children[index] = item
+                    break
+
+        try:
+            await item.callback(interaction)
+        except Exception:
+            _log.exception('Ignoring exception in dynamic item callback for %r', item)
+
+    def dispatch_dynamic_items(self, component_type: int, custom_id: str, interaction: Interaction) -> None:
+        for pattern, item in self._dynamic_items.items():
+            match = pattern.fullmatch(custom_id)
+            if match is not None:
+                asyncio.create_task(
+                    self.schedule_dynamic_item_call(component_type, item, interaction, match),
+                    name=f'discord-ui-dynamic-item-{item.__name__}-{custom_id}',
+                )
+
     def dispatch_view(self, component_type: int, custom_id: str, interaction: Interaction) -> None:
+        self.dispatch_dynamic_items(component_type, custom_id, interaction)
         interaction_id: Optional[int] = None
         message_id: Optional[int] = None
         # Realistically, in a component based interaction the Interaction.message will never be None

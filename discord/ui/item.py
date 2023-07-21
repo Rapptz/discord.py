@@ -133,3 +133,36 @@ class Item(Generic[V]):
             The interaction that triggered this UI item.
         """
         pass
+
+    async def interaction_check(self, interaction: Interaction[ClientT], /) -> bool:
+        """|coro|
+
+        A callback that is called when an interaction happens within this item
+        that checks whether the callback should be processed.
+
+        This is useful to override if, for example, you want to ensure that the
+        interaction author is a given user.
+
+        The default implementation of this returns ``True``.
+
+        .. note::
+
+            If an exception occurs within the body then the check
+            is considered a failure and :meth:`discord.ui.View.on_error` is called.
+
+            For :class:`~discord.ui.DynamicItem` this does not call the ``on_error``
+            handler.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        interaction: :class:`~discord.Interaction`
+            The interaction that occurred.
+
+        Returns
+        ---------
+        :class:`bool`
+            Whether the callback should be called.
+        """
+        return True
