@@ -169,7 +169,9 @@ class DynamicItem(Generic[BaseT], Item['View']):
         return self.item.width
 
     @classmethod
-    async def from_custom_id(cls: Type[Self], interaction: Interaction[ClientT], match: re.Match[str], /) -> Self:
+    async def from_custom_id(
+        cls: Type[Self], interaction: Interaction[ClientT], item: Item[Any], match: re.Match[str], /
+    ) -> Self:
         """|coro|
 
         A classmethod that is called when the ``custom_id`` of a component matches the
@@ -192,6 +194,8 @@ class DynamicItem(Generic[BaseT], Item['View']):
         ------------
         interaction: :class:`~discord.Interaction`
             The interaction that the component belongs to.
+        item: :class:`~discord.ui.Item`
+            The base item that is being dispatched.
         match: ``re.Match``
             The match object that was created from the ``template``
             matching the ``custom_id``.

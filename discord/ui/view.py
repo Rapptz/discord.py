@@ -604,15 +604,33 @@ class ViewStore:
         component_type: int,
         factory: Type[DynamicItem[Item[Any]]],
         interaction: Interaction,
+        custom_id: str,
         match: re.Match[str],
     ) -> None:
+        if interaction.message is None:
+            return
+
+        view = View.from_message(interaction.message)
+
+        base_item_index: Optional[int] = None
+        for index, child in enumerate(view._children):
+            if child.type.value == component_type and getattr(child, 'custom_id', None) == custom_id:
+                base_item_index = index
+                break
+
+        if base_item_index is None:
+            return
+
+        base_item = view._children[base_item_index]
         try:
-            item = await factory.from_custom_id(interaction, match)
+            item = await factory.from_custom_id(interaction, base_item, match)
         except Exception:
             _log.exception('Ignoring exception in dynamic item creation for %r', factory)
             return
 
-        # Unfortunately cannot set Item.view here...
+        # Swap the item in the view with our new dynamic item
+        view._children[base_item_index] = item
+        item._view = view
         item._refresh_state(interaction, interaction.data)  # type: ignore
 
         try:
@@ -622,17 +640,6 @@ class ViewStore:
 
         if not allow:
             return
-
-        if interaction.message is None:
-            item._view = None
-        else:
-            item._view = view = View.from_message(interaction.message)
-
-            # Find the original item and replace it with the dynamic item
-            for index, child in enumerate(view._children):
-                if child.type.value == component_type and getattr(child, 'custom_id', None) == item.custom_id:
-                    view._children[index] = item
-                    break
 
         try:
             await item.callback(interaction)
@@ -644,7 +651,7 @@ class ViewStore:
             match = pattern.fullmatch(custom_id)
             if match is not None:
                 asyncio.create_task(
-                    self.schedule_dynamic_item_call(component_type, item, interaction, match),
+                    self.schedule_dynamic_item_call(component_type, item, interaction, custom_id, match),
                     name=f'discord-ui-dynamic-item-{item.__name__}-{custom_id}',
                 )
 

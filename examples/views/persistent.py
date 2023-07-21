@@ -51,7 +51,7 @@ class DynamicButton(discord.ui.DynamicItem[discord.ui.Button], template=r'button
 
     # This is called when the button is clicked and the custom_id matches the template.
     @classmethod
-    async def from_custom_id(cls, interaction: discord.Interaction, match: re.Match[str], /):
+    async def from_custom_id(cls, interaction: discord.Interaction, item: discord.ui.Button, match: re.Match[str], /):
         user_id = int(match['id'])
         return cls(user_id)
 
