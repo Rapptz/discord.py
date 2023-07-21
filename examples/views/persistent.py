@@ -1,4 +1,5 @@
 # This example requires the 'message_content' privileged intent to function.
+from __future__ import annotations
 
 from discord.ext import commands
 import discord
