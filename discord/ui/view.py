@@ -557,6 +557,11 @@ class ViewStore:
             pattern = item.__discord_ui_compiled_template__
             self._dynamic_items[pattern] = item
 
+    def remove_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
+        for item in items:
+            pattern = item.__discord_ui_compiled_template__
+            self._dynamic_items.pop(pattern, None)
+
     def add_view(self, view: View, message_id: Optional[int] = None) -> None:
         view._start_listening_from_store(self)
         if view.__discord_ui_modal__:

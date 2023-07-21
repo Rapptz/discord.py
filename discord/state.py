@@ -401,6 +401,9 @@ class ConnectionState(Generic[ClientT]):
     def store_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
         self._view_store.add_dynamic_items(*items)
 
+    def remove_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
+        self._view_store.remove_dynamic_items(*items)
+
     @property
     def persistent_views(self) -> Sequence[View]:
         return self._view_store.persistent_views
