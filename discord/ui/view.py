@@ -569,15 +569,17 @@ class ViewStore:
             return
 
         dispatch_info = self._views.setdefault(message_id, {})
+        is_fully_dynamic = True
         for item in view._children:
             if isinstance(item, DynamicItem):
                 pattern = item.__discord_ui_compiled_template__
                 self._dynamic_items[pattern] = item.__class__
             elif item.is_dispatchable():
                 dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
+                is_fully_dynamic = False
 
         view._cache_key = message_id
-        if message_id is not None:
+        if message_id is not None and not is_fully_dynamic:
             self._synced_message_views[message_id] = view
 
     def remove_view(self, view: View) -> None:
