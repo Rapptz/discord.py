@@ -75,6 +75,10 @@ class Button(Item[V]):
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+     callback: Optional[Coroutine[:class:`Interaction`, Any]]
+        The coroutine that is called when the button is pressed. 
+        It must take two parameters, the :class:`Interaction` you receive 
+        and a control flow parameter created by ``discord.ui.View.wait()``.
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
@@ -96,6 +100,7 @@ class Button(Item[V]):
         url: Optional[str] = None,
         emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
         row: Optional[int] = None,
+        callback: Optional[Callable[[Interaction, View], Coroutine]]
     ):
         super().__init__()
         if custom_id is not None and url is not None:
@@ -119,6 +124,9 @@ class Button(Item[V]):
             else:
                 raise TypeError(f'expected emoji to be str, Emoji, or PartialEmoji not {emoji.__class__.__name__}')
 
+        if callback is not None:
+            self.callback = callback
+        
         self._underlying = ButtonComponent._raw_construct(
             custom_id=custom_id,
             url=url,
