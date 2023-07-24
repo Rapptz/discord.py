@@ -1051,7 +1051,7 @@ code.xref, a code {
 
 span.pre {
   padding: 0 2px;
-  white-space: pre-wrap!important;
+  white-space: pre-wrap !important;
 }
 
 dl.class {
