@@ -17,7 +17,7 @@ Historically however, thanks to:
 }
 
 section {
-  word-break: break-all;
+  word-break: break-word;
 }
 
 /* CSS variables would go here */
