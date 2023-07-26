@@ -223,9 +223,9 @@ class PartialOnboardingPrompt:
         self.required: bool = required
         self.in_onboarding: bool = in_onboarding
 
-    def to_dict(self, *, id: int = MISSING) -> PromptPayload:
+    def to_dict(self, *, id: int) -> PromptPayload:
         return {
-            'id': id or os.urandom(16).hex(),
+            'id': id,
             'type': self.type.value,
             'title': self.title,
             'options': [option.to_dict() for option in self.options],
@@ -289,9 +289,6 @@ class OnboardingPrompt(PartialOnboardingPrompt, Hashable):
 
     def __repr__(self) -> str:
         return f'<OnboardingPrompt id={self.id} title={self.title}, type={self.type}>'
-
-    def to_dict(self) -> PromptPayload:
-        return super().to_dict(id=self.id)
 
 
 class Onboarding:

@@ -4337,7 +4337,7 @@ class Guild(Hashable):
         """
         data = await self._state.http.modify_guild_onboarding(
             self.id,
-            prompts=[p.to_dict() for p in prompts] if prompts is not MISSING else None,
+            prompts=[p.to_dict(id=i) for i, p in enumerate(prompts)] if prompts is not MISSING else None,
             default_channel_ids=[c.id for c in default_channels] if default_channels is not MISSING else None,
             enabled=enabled if enabled is not MISSING else None,
             mode=mode.value if mode is not MISSING else None,
