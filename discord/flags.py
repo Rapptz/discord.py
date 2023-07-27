@@ -1884,8 +1884,8 @@ class SKUFlags(BaseFlags):
     """
 
     @flag_value
-    def server_subscription(self):
-        """:class:`bool`: Returns ``True`` if the SKU is a server subscription."""
+    def guild_subscription(self):
+        """:class:`bool`: Returns ``True`` if the SKU is a guild subscription."""
         return 1 << 7
 
     @flag_value
