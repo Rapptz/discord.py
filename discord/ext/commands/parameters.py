@@ -306,6 +306,7 @@ CurrentGuild = parameter(
     displayed_default='<this server>',
     converter=GuildConverter,
 )
+CurrentGuild._fallback = True
 
 
 class Signature(inspect.Signature):
