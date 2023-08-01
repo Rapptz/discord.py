@@ -1513,6 +1513,12 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
+    .. attribute:: media
+
+        A media channel.
+
+        .. versionadded:: 2.4
+
 .. class:: MessageType
 
     Specifies the type of :class:`Message`. This is used to denote if a message

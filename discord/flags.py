@@ -1634,6 +1634,15 @@ class ChannelFlags(BaseFlags):
         """
         return 1 << 4
 
+    @flag_value
+    def hide_media_download_options(self):
+        """:class:`bool`: Returns ``True`` if the client hides embedded media download options in a :class:`ForumChannel`.
+        Only available in media channels.
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 15
+
 
 class ArrayFlags(BaseFlags):
     @classmethod
