@@ -593,11 +593,13 @@ class HybridGroup(Group[CogT, P, T]):
 
     Attributes
     -----------
-    fallback: Optional[Union[:class:`str`, :class:`~discord.app_commands.locale_str`]]
+    fallback: Optional[:class:`str`]
         The command name to use as a fallback for the application command. Since
         application command groups cannot be invoked, this creates a subcommand within
         the group that can be invoked with the given group callback. If ``None``
         then no fallback command is given. Defaults to ``None``.
+    fallback_locale: Optional[:class:`~discord.app_commands.locale_str`]
+        The fallback command name's locale string, if available.
     """
 
     __commands_is_hybrid__: ClassVar[bool] = True
@@ -635,7 +637,14 @@ class HybridGroup(Group[CogT, P, T]):
         # However, Python does not have conditional typing so it's very hard to
         # make this type depend on the with_app_command bool without a lot of needless repetition
         self.app_command: app_commands.Group = MISSING
-        self.fallback: Optional[Union[str, app_commands.locale_str]] = fallback
+
+        fallback, fallback_locale = (
+            (fallback.message, fallback)
+            if isinstance(fallback, app_commands.locale_str)
+            else (fallback, None)
+        )
+        self.fallback: Optional[str] = fallback
+        self.fallback_locale: Optional[app_commands.locale_str] = fallback_locale
 
         if self.with_app_command:
             guild_ids = attrs.pop('guild_ids', None) or getattr(
