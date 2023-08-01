@@ -639,9 +639,7 @@ class HybridGroup(Group[CogT, P, T]):
         self.app_command: app_commands.Group = MISSING
 
         fallback, fallback_locale = (
-            (fallback.message, fallback)
-            if isinstance(fallback, app_commands.locale_str)
-            else (fallback, None)
+            (fallback.message, fallback) if isinstance(fallback, app_commands.locale_str) else (fallback, None)
         )
         self.fallback: Optional[str] = fallback
         self.fallback_locale: Optional[app_commands.locale_str] = fallback_locale
