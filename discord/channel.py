@@ -116,6 +116,7 @@ if TYPE_CHECKING:
         CategoryChannel as CategoryChannelPayload,
         GroupDMChannel as GroupChannelPayload,
         ForumChannel as ForumChannelPayload,
+        MediaChannel as MediaChannelPayload,
         ForumTag as ForumTagPayload,
     )
     from .types.oauth2 import WebhookChannel as WebhookChannelPayload
@@ -2432,6 +2433,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         'topic',
         '_state',
         '_flags',
+        '_type',
         'nsfw',
         'category_id',
         'position',
@@ -2447,9 +2449,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         '_flags',
     )
 
-    def __init__(self, *, state: ConnectionState, guild: Guild, data: ForumChannelPayload):
+    def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[ForumChannelPayload, MediaChannelPayload]):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
+        self._type: Literal[15, 16] = data['type']
         self._update(guild, data)
 
     def __repr__(self) -> str:
@@ -2463,7 +2466,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
-    def _update(self, guild: Guild, data: ForumChannelPayload) -> None:
+    def _update(self, guild: Guild, data: Union[ForumChannelPayload, MediaChannelPayload]) -> None:
         self.guild: Guild = guild
         self.name: str = data['name']
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
@@ -2499,8 +2502,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         self._fill_overwrites(data)
 
     @property
-    def type(self) -> ChannelType:
+    def type(self) -> Literal[ChannelType.forum, ChannelType.media]:
         """:class:`ChannelType`: The channel's Discord type."""
+        if self._type == 16:
+            return ChannelType.media
         return ChannelType.forum
 
     @property
@@ -2573,6 +2578,13 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     def is_nsfw(self) -> bool:
         """:class:`bool`: Checks if the forum is NSFW."""
         return self.nsfw
+
+    def is_media(self) -> bool:
+        """:class:`bool`: Checks if the channel is a media channel.
+
+        .. versionadded:: 2.4
+        """
+        return self._type == ChannelType.media.value
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> ForumChannel:
@@ -4520,6 +4532,8 @@ def _guild_channel_factory(channel_type: int):
     elif value is ChannelType.directory:
         return DirectoryChannel, value
     elif value is ChannelType.forum:
+        return ForumChannel, value
+    elif value is ChannelType.media:
         return ForumChannel, value
     else:
         return None, value

@@ -1445,6 +1445,15 @@ class ChannelFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if a tag is required to be specified when creating a thread in a :class:`ForumChannel`."""
         return 1 << 4
 
+    @flag_value
+    def hide_media_download_options(self):
+        """:class:`bool`: Returns ``True`` if the client hides embedded media download options in a :class:`ForumChannel`.
+        Only available in media channels.
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 15
+
 
 @fill_with_flags()
 class PaymentSourceFlags(BaseFlags):
