@@ -665,7 +665,7 @@ class HybridGroup(Group[CogT, P, T]):
             self.app_command.module = self.module
 
             if fallback is not None:
-                command = HybridAppCommand(self, name=fallback)
+                command = HybridAppCommand(self, name=fallback_locale or fallback)
                 self.app_command.add_command(command)
 
     @property
