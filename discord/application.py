@@ -1825,10 +1825,10 @@ class PartialApplication(Hashable):
 
         self.public: bool = data.get(
             'integration_public', data.get('bot_public', True)
-        )  # The two seem to be used interchangeably?
+        )
         self.require_code_grant: bool = data.get(
             'integration_require_code_grant', data.get('bot_require_code_grant', False)
-        )  # Same here
+        )
 
         # Hacky, but I want these to be persisted
 
@@ -2152,7 +2152,7 @@ class Application(PartialApplication):
     rpc_application_state: :class:`RPCApplicationState`
         The approval state of the RPC usage application.
     discoverability_state: :class:`ApplicationDiscoverabilityState`
-        The discoverability (app directory) state of the application.
+        The state of the application in the application directory.
     approximate_guild_count: Optional[:class:`int`]
         The approximate number of guilds this application is in, if available.
 
@@ -2215,7 +2215,7 @@ class Application(PartialApplication):
 
     @property
     def discovery_eligibility_flags(self) -> ApplicationDiscoveryFlags:
-        """:class:`ApplicationDiscoveryFlags`: The discovery (app directory) eligibility flags for this application."""
+        """:class:`ApplicationDiscoveryFlags`: The directory eligibility flags for this application."""
         return ApplicationDiscoveryFlags._from_value(self._discovery_eligibility_flags)
 
     async def edit(
@@ -2235,6 +2235,7 @@ class Application(PartialApplication):
         rpc_origins: Sequence[str] = MISSING,
         public: bool = MISSING,
         require_code_grant: bool = MISSING,
+        discoverable: bool = MISSING,
         max_participants: Optional[int] = MISSING,
         flags: ApplicationFlags = MISSING,
         custom_install_url: Optional[str] = MISSING,
@@ -2284,6 +2285,10 @@ class Application(PartialApplication):
             Whether the application is public or not.
         require_code_grant: :class:`bool`
             Whether the application requires a code grant or not.
+        discoverable: :class:`bool`
+            Whether the application is listed in the app directory or not.
+
+            .. versionadded:: 2.1
         max_participants: Optional[:class:`int`]
             The max number of people that can participate in the activity.
             Only available for embedded activities.
@@ -2348,6 +2353,8 @@ class Application(PartialApplication):
                 payload['bot_require_code_grant'] = require_code_grant
             else:
                 payload['integration_require_code_grant'] = require_code_grant
+        if discoverable is not MISSING:
+            payload['discoverability_state'] = ApplicationDiscoverabilityState.discoverable.value if discoverable else ApplicationDiscoverabilityState.not_discoverable.value
         if max_participants is not MISSING:
             payload['max_participants'] = max_participants
         if flags is not MISSING:
