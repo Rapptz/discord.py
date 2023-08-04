@@ -477,7 +477,6 @@ class VoiceClient(VoiceProtocol):
                             await self.disconnect()
                             break
                         else:
-                            _log.info("Reconnect was successful")
                             continue
 
                 if not reconnect:

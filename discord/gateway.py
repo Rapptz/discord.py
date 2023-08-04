@@ -622,10 +622,10 @@ class DiscordWebSocket:
             elif msg.type is aiohttp.WSMsgType.BINARY:
                 await self.received_message(msg.data)
             elif msg.type is aiohttp.WSMsgType.ERROR:
-                _log.debug('Received ws message %s', msg)
+                _log.debug('Received %s', msg)
                 raise msg.data
             elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSING, aiohttp.WSMsgType.CLOSE):
-                _log.debug('Received ws message %s', msg)
+                _log.debug('Received %s', msg)
                 raise WebSocketClosure
         except (asyncio.TimeoutError, WebSocketClosure) as e:
             # Ensure the keep alive handler is closed
@@ -1004,10 +1004,10 @@ class DiscordVoiceWebSocket:
         if msg.type is aiohttp.WSMsgType.TEXT:
             await self.received_message(utils._from_json(msg.data))
         elif msg.type is aiohttp.WSMsgType.ERROR:
-            _log.debug('Received vws message %s', msg)
+            _log.debug('Received %s', msg)
             raise ConnectionClosed(self.ws, shard_id=None) from msg.data
         elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.CLOSING):
-            _log.debug('Received vws message %s', msg)
+            _log.debug('Received %s', msg)
             raise ConnectionClosed(self.ws, shard_id=None, code=self._close_code)
 
     async def close(self, code: int = 1000) -> None:
