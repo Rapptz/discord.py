@@ -421,6 +421,11 @@ class VoiceClient(VoiceProtocol):
 
         self.finish_handshake()
         self._potentially_reconnecting = False
+
+        if self.ws:
+            _log.debug("Closing existing voice websocket")
+            await self.ws.close()
+
         try:
             self.ws = await self.connect_websocket()
         except (ConnectionClosed, asyncio.TimeoutError):
