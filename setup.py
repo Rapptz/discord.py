@@ -53,6 +53,7 @@ extras_require = {
         'pytest-cov',
         'pytest-mock',
         'typing-extensions>=4.3,<5',
+        'tzdata; sys_platform == "win32"',
     ],
 }
 
