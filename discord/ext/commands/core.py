@@ -1512,7 +1512,6 @@ class GroupMixin(Generic[CogT]):
         """
 
         def decorator(func):
-
             kwargs.setdefault('parent', self)
             result = command(name=name, cls=cls, *args, **kwargs)(func)
             self.add_command(result)

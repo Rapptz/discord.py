@@ -228,7 +228,6 @@ def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]
 def _transform_automod_trigger_metadata(
     entry: AuditLogEntry, data: AutoModerationTriggerMetadata
 ) -> Optional[AutoModTrigger]:
-
     if isinstance(entry.target, AutoModRule):
         # Trigger type cannot be changed, so type should be the same before and after updates.
         # Avoids checking which keys are in data to guess trigger type

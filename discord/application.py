@@ -1760,6 +1760,7 @@ class PartialApplication(Hashable):
         'owner',
         'team',
         '_guild',
+        '_has_bot',
     )
 
     if TYPE_CHECKING:
@@ -1823,12 +1824,9 @@ class PartialApplication(Hashable):
             else None
         )
 
-        self.public: bool = data.get(
-            'integration_public', data.get('bot_public', True)
-        )
-        self.require_code_grant: bool = data.get(
-            'integration_require_code_grant', data.get('bot_require_code_grant', False)
-        )
+        self.public: bool = data.get('integration_public', data.get('bot_public', True))
+        self.require_code_grant: bool = data.get('integration_require_code_grant', data.get('bot_require_code_grant', False))
+        self._has_bot: bool = 'bot_public' in data
 
         # Hacky, but I want these to be persisted
 
@@ -1902,6 +1900,13 @@ class PartialApplication(Hashable):
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: The guild linked to the application, if any and available."""
         return self._state._get_guild(self.guild_id) or self._guild
+
+    def has_bot(self) -> bool:
+        """:class:`bool`: Whether the application has an attached bot.
+
+        .. versionadded:: 2.1
+        """
+        return self._has_bot
 
     async def assets(self) -> List[ApplicationAsset]:
         """|coro|
@@ -2218,6 +2223,13 @@ class Application(PartialApplication):
         """:class:`ApplicationDiscoveryFlags`: The directory eligibility flags for this application."""
         return ApplicationDiscoveryFlags._from_value(self._discovery_eligibility_flags)
 
+    def has_bot(self) -> bool:
+        """:class:`bool`: Whether the application has an attached bot.
+
+        .. versionadded:: 2.1
+        """
+        return self.bot is not None
+
     async def edit(
         self,
         *,
@@ -2354,7 +2366,11 @@ class Application(PartialApplication):
             else:
                 payload['integration_require_code_grant'] = require_code_grant
         if discoverable is not MISSING:
-            payload['discoverability_state'] = ApplicationDiscoverabilityState.discoverable.value if discoverable else ApplicationDiscoverabilityState.not_discoverable.value
+            payload['discoverability_state'] = (
+                ApplicationDiscoverabilityState.discoverable.value
+                if discoverable
+                else ApplicationDiscoverabilityState.not_discoverable.value
+            )
         if max_participants is not MISSING:
             payload['max_participants'] = max_participants
         if flags is not MISSING:

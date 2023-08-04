@@ -62,7 +62,6 @@ ContextT_co = TypeVar('ContextT_co', bound='Context[Any]', covariant=True)
 
 
 class Check(Protocol[ContextT_co]):  # type: ignore # TypeVar is expected to be invariant
-
     predicate: Callable[[ContextT_co], Coroutine[Any, Any, bool]]
 
     def __call__(self, coro_or_commands: T) -> T:
