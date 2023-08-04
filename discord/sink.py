@@ -7,7 +7,9 @@ import struct
 import subprocess
 import threading
 import wave
+from concurrent.futures import Future
 from dataclasses import dataclass
+from time import monotonic
 from typing import TYPE_CHECKING, Any, Awaitable, BinaryIO, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 from .enums import RTCPMessageType
@@ -16,21 +18,27 @@ from .object import Object
 from .opus import Decoder as OpusDecoder
 from .player import CREATE_NO_WINDOW
 
+SILENT_FRAME = b"\xf8\xff\xfe"
+has_nacl: bool
+
 try:
     import nacl.secret  # type: ignore
     import nacl.utils  # type: ignore
+
+    has_nacl = True
 except ImportError:
-    # Warning is given in VoiceClient
-    pass
+    has_nacl = False
 
 if TYPE_CHECKING:
     from .member import Member
+    from .state import ConnectionState
     from .voice_client import VoiceClient
 
 
 __all__ = (
     "AudioFrame",
     "AudioSink",
+    "AudioHandlingSink",
     "AudioFileSink",
     "AudioFile",
     "WaveAudioFile",
@@ -184,11 +192,12 @@ class RTCPPacket:
         "l",
     )
 
-    v: int
-    p: bool
-    rc: int
-    pt: RTCPMessageType
-    l: int
+    if TYPE_CHECKING:
+        v: int
+        p: bool
+        rc: int
+        pt: RTCPMessageType
+        l: int
 
     def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int):
         self.v = version_flag >> 6
@@ -196,20 +205,6 @@ class RTCPPacket:
         self.rc = version_flag & 0b11111
         self.pt = rtcp_type
         self.l = length
-
-    # This function parses the report blocks and extension attributes, but it's
-    # not being used because discord was sending invalid RTCP packets while testing
-    # and it caused invalid values to be parsed.
-    # def _parse_report_and_extension(self, data):
-    #     fmt = "!IB3s4I"
-    #     buf_size = struct.calcsize(fmt)
-    #     report_blocks = [struct.unpack_from(fmt, buffer=data, offset=buf_size * i)
-    #                      for i in range(self.rc)]
-    #     self.report_blocks = list(map(lambda args: RTCPReceiverReportBlock(
-    #         *args[:2], int.from_bytes(args[2], 'big'), *args[3:]
-    #     ), report_blocks))
-    #
-    #     self.extension = data[len(self.report_blocks) * buf_size:]
 
 
 class RTCPSenderReportPacket(RTCPPacket):
@@ -259,13 +254,14 @@ class RTCPSenderReportPacket(RTCPPacket):
         "extension",
     )
 
-    ssrc: int
-    nts: int
-    rts: int
-    spc: int
-    soc: int
-    report_blocks: List
-    extension: bytes
+    if TYPE_CHECKING:
+        ssrc: int
+        nts: int
+        rts: int
+        spc: int
+        soc: int
+        report_blocks: List
+        extension: bytes
 
     def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
@@ -300,9 +296,10 @@ class RTCPReceiverReportPacket(RTCPPacket):
         "extension",
     )
 
-    ssrc: int
-    report_blocks: List
-    extension: bytes
+    if TYPE_CHECKING:
+        ssrc: int
+        report_blocks: List
+        extension: bytes
 
     def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
@@ -327,7 +324,8 @@ class RTCPSourceDescriptionPacket(RTCPPacket):
 
     __slots__ = ("chunks",)
 
-    chunks: List[RTCPSourceDescriptionChunk]
+    if TYPE_CHECKING:
+        chunks: List[RTCPSourceDescriptionChunk]
 
     def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
@@ -350,10 +348,8 @@ class RTCPSourceDescriptionPacket(RTCPPacket):
 
             length = struct.unpack_from("!B", buffer=data, offset=i)[0]
             i += 1
-            description = b""
-            if length > 0:
-                description = struct.unpack_from(f"!{length}s", buffer=data, offset=i)[0]
-                i += length
+            description = struct.unpack_from(f"!{length}s", buffer=data, offset=i)[0]
+            i += length
 
             items.append(RTCPSourceDescriptionItem(cname, description))
 
@@ -384,18 +380,15 @@ class RTCPGoodbyePacket(RTCPPacket):
         "reason",
     )
 
-    ssrc_byes: Union[Tuple[int], Tuple]
-    reason: bytes
+    if TYPE_CHECKING:
+        ssrc_byes: Union[Tuple[int], Tuple]
+        reason: bytes
 
     def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
 
-        if self.rc == 0:
-            buf_size = 0
-            self.ssrc_byes = ()
-        else:
-            buf_size = self.rc * 4
-            self.ssrc_byes = struct.unpack_from(f"!{self.rc}I", buffer=data)
+        buf_size = self.rc * 4
+        self.ssrc_byes = struct.unpack_from(f"!{self.rc}I", buffer=data)
         reason_length = struct.unpack_from("!B", buffer=data, offset=buf_size)[0]
         self.reason = (
             b"" if reason_length == 0 else struct.unpack_from(f"!{reason_length}s", buffer=data, offset=buf_size + 1)[0]
@@ -428,15 +421,16 @@ class RTCPApplicationDefinedPacket(RTCPPacket):
         "app_data",
     )
 
-    ssrc: int
-    name: str
-    app_data: bytes
+    if TYPE_CHECKING:
+        ssrc: int
+        name: str
+        app_data: bytes
 
     def __init__(self, version_flag: int, rtcp_type: RTCPMessageType, length: int, data: bytes):
         super().__init__(version_flag, rtcp_type, length)
 
-        self.ssrc, self.name = struct.unpack_from("!I4s", buffer=data)
-        self.name = self.name.decode("ascii")
+        self.ssrc, name = struct.unpack_from("!I4s", buffer=data)
+        self.name = name.decode("ascii")
         self.app_data = data[8:]
 
 
@@ -464,13 +458,6 @@ class RawAudioData:
         contained in this packet.
     """
 
-    # extension_id: :class:`int`
-    #     Profile-specific identifier
-    # extension_header: :class:`int`
-    #     The header of the extension
-    # extension_data: Sequence[:class:`int`]
-    #     Extension header data
-
     __slots__ = (
         "version",
         "extended",
@@ -480,21 +467,19 @@ class RawAudioData:
         "timestamp",
         "ssrc",
         "csrc_list",
-        # "extension_id",
-        # "extension_header",
-        # "extension_data",
         "audio",
     )
 
-    sequence: int
-    timestamp: int
-    ssrc: int
-    version: int
-    extended: bool
-    marker: bool
-    payload_type: int
-    csrc_list: Tuple
-    audio: bytes
+    if TYPE_CHECKING:
+        sequence: int
+        timestamp: int
+        ssrc: int
+        version: int
+        extended: bool
+        marker: bool
+        payload_type: int
+        csrc_list: Tuple
+        audio: bytes
 
     def __init__(self, data: bytes, decrypt_method: Callable[[bytes, bytes], bytes]):
         version_flag, payload_flag, self.sequence, self.timestamp, self.ssrc = struct.unpack_from(">BBHII", buffer=data)
@@ -505,52 +490,41 @@ class RawAudioData:
         self.marker = bool(payload_flag >> 7)
         self.payload_type = payload_flag & 0b1111111
         csrc_count = version_flag & 0b1111
-        self.csrc_list = ()
-        if csrc_count > 0:
-            self.csrc_list = struct.unpack_from(f">{csrc_count}I", buffer=data, offset=i)
-            i += csrc_count * 4
-        # While testing, I received a packet marked as extended that did not
-        # contain an extension, so I've commented this out.
-        # if self.extended:
-        #     fmt = ">HHI"
-        #     self.extension_id, num, self.extension_header = \
-        #         struct.unpack_from(fmt, buffer=data, offset=i)
-        #     i += struct.calcsize(fmt)
-        #     fmt = f">{num}I"
-        #     self.extension_data = struct.unpack_from(fmt, buffer=data, offset=i)
-        #     i += struct.calcsize(fmt)
-        if padding:
+        self.csrc_list = struct.unpack_from(f">{csrc_count}I", buffer=data, offset=i)
+        i += csrc_count * 4
+
+        # Extension parsing would go here, but discord's packets seem to have some problems
+        # related to that, so no attempt will be made to parse extensions.
+
+        if padding and data[-1] != 0:
             data = data[: -data[-1]]
 
         self.audio = decrypt_method(data[:i], data[i:])
 
 
-class AudioPacket:
-    RTCP_MAP = {
-        RTCPMessageType.sender_report: RTCPSenderReportPacket,
-        RTCPMessageType.receiver_report: RTCPReceiverReportPacket,
-        RTCPMessageType.source_description: RTCPSourceDescriptionPacket,
-        RTCPMessageType.goodbye: RTCPGoodbyePacket,
-        RTCPMessageType.application_defined: RTCPApplicationDefinedPacket,
-    }
+_PACKET_TYPE = Union[
+    RTCPSenderReportPacket,
+    RTCPReceiverReportPacket,
+    RTCPSourceDescriptionPacket,
+    RTCPGoodbyePacket,
+    RTCPApplicationDefinedPacket,
+    RawAudioData,
+]
+_RTCP_MAP = {
+    RTCPMessageType.sender_report: RTCPSenderReportPacket,
+    RTCPMessageType.receiver_report: RTCPReceiverReportPacket,
+    RTCPMessageType.source_description: RTCPSourceDescriptionPacket,
+    RTCPMessageType.goodbye: RTCPGoodbyePacket,
+    RTCPMessageType.application_defined: RTCPApplicationDefinedPacket,
+}
 
-    def __new__(
-        cls, data: bytes, decrypt_method: Callable[[bytes, bytes], bytes]
-    ) -> Union[
-        RTCPSenderReportPacket,
-        RTCPReceiverReportPacket,
-        RTCPSourceDescriptionPacket,
-        RTCPGoodbyePacket,
-        RTCPApplicationDefinedPacket,
-        RawAudioData,
-    ]:
-        fmt = ">BBH"
-        buf_size = struct.calcsize(fmt)
-        version_flag, payload_type, length = struct.unpack_from(fmt, buffer=data)
-        if 200 <= payload_type <= 204:
-            rtcp_type = RTCPMessageType(payload_type)
-            return cls.RTCP_MAP[rtcp_type](version_flag, rtcp_type, length, data[buf_size:])
-        return RawAudioData(data, decrypt_method)
+
+def get_audio_packet(data: bytes, decrypt_method: Callable[[bytes, bytes], bytes]) -> _PACKET_TYPE:
+    version_flag, payload_type, length = struct.unpack_from(">BBH", buffer=data)
+    if 200 <= payload_type <= 204:
+        rtcp_type = RTCPMessageType(payload_type)
+        return _RTCP_MAP[rtcp_type](version_flag, rtcp_type, length, data[4:])
+    return RawAudioData(data, decrypt_method)
 
 
 class AudioFrame:
@@ -599,7 +573,7 @@ class AudioSink:
 
         Abstract method
 
-        IMPORTANT: This method must be thread-safe.
+        IMPORTANT: This method must not run stalling code for a substantial amount of time.
 
         Parameters
         ----------
@@ -613,15 +587,13 @@ class AudioSink:
 
         Abstract method
 
-        IMPORTANT: This method must be thread-safe.
+        IMPORTANT: This method must not run stalling code for a substantial amount of time.
 
         Parameters
         ----------
-        packet: :class:`RTCPPacket`
-            A RTCP Packet received from discord. Can be any of the following:
-            :class:`RTCPSenderReportPacket`, :class:`RTCPReceiverReportPacket`,
-            :class:`RTCPSourceDescriptionPacket`, :class:`RTCPGoodbyePacket`,
-            :class:`RTCPApplicationDefinedPacket`
+        packet: Union[:class:`RTCPSenderReportPacket`, :class:`RTCPReceiverReportPacket`,
+        :class:`RTCPSourceDescriptionPacket`, :class:`RTCPGoodbyePacket`, :class:`RTCPApplicationDefinedPacket`]
+            A RTCP Packet received from discord.
         """
         raise NotImplementedError()
 
@@ -634,8 +606,116 @@ class AudioSink:
         raise NotImplementedError()
 
 
-class AudioFileSink(AudioSink):
-    """This implements :class:`AudioSink` with functionality for saving
+class AudioHandlingSink(AudioSink):
+    """An object extending :class:`AudioSink` which implements methods for
+    dealing with out-of-order packets and delays.
+    """
+
+    __slots__ = ("_last_sequence", "_buffer", "_buffer_wait", "_frame_queue", "_is_validating", "_buffer_till", "_lock")
+    # how long to wait for missing a packet
+    PACKET_WAIT_TIME = 2
+    # how long to wait for a new packet before closing the _validation_loop thread
+    VALIDATION_LOOP_TIMEOUT = 3
+    # how long to wait for _validation_loop thread to start in _start_validation_loop
+    VALIDATION_LOOP_START_TIMEOUT = 1
+
+    def __init__(self):
+        self._last_sequence: int = -1
+        # _buffer is not shared across threads
+        self._buffer: List[AudioFrame] = []
+        self._frame_queue = queue.Queue()
+        self._is_validating: threading.Event = threading.Event()
+        self._buffer_till: Optional[float] = None
+        self._lock: threading.Lock = threading.Lock()
+
+    def on_audio(self, frame: AudioFrame) -> None:
+        """Puts frame in a queue and lets a processing loop thread deal with it."""
+        # lock is also used by _empty_buffer
+        self._lock.acquire()
+        self._frame_queue.put_nowait(frame)
+        self._start_validation_loop()
+        self._lock.release()
+
+    def _start_validation_loop(self) -> None:
+        if not self._is_validating.is_set():
+            threading.Thread(target=self._validation_loop).start()
+            # prevent multiple threads spawning
+            if not self._is_validating.wait(timeout=self.VALIDATION_LOOP_START_TIMEOUT):
+                _log.warning("Timeout reached waiting for _validation_loop thread to start")
+
+    def _validation_loop(self) -> None:
+        self._is_validating.set()
+        while True:
+            try:
+                frame = self._frame_queue.get(timeout=self.VALIDATION_LOOP_TIMEOUT)
+            except queue.Empty:
+                break
+
+            self._validate_audio_frame(frame)
+        self._is_validating.clear()
+
+    def _validate_audio_frame(self, frame: AudioFrame) -> None:
+        # 1. If audio is a silent frame, empty buffer and reset last sequence
+        # 2. If packet sequence is less than last_sequence, drop it
+        # 3a. If packet has a valid sequence, send to on_valid_audio
+        # If buffer is not empty, empty it into the queue to be validated
+        # 3b. Else, put in a buffer
+        # Buffer should be forcefully emptied (same as in 3a) when a missing frame is not received
+        # after a specific amount of time
+
+        if frame.audio == SILENT_FRAME:
+            self._empty_buffer()
+            return
+
+        if frame.sequence <= self._last_sequence:
+            return
+
+        if self._last_sequence == -1 or frame.sequence == self._last_sequence + 1:
+            self._last_sequence = frame.sequence
+            self.on_valid_audio(frame)
+            self._empty_buffer()
+        else:
+            self._append_to_buffer(frame)
+
+    def _append_to_buffer(self, frame):
+        self._buffer.append(frame)
+        if self._buffer_till is None:
+            self._buffer_till = monotonic() + self.PACKET_WAIT_TIME
+        elif monotonic() >= self._buffer_till:
+            self._buffer_till = None
+            self._empty_buffer()
+
+    def _empty_buffer(self) -> None:
+        if len(self._buffer) == 0:
+            return
+
+        sorted_buffer = sorted(self._buffer, key=lambda f: f.sequence)
+        self._last_sequence = sorted_buffer[0].sequence - 1
+        # prevent on_audio from putting frames in queue before these frames
+        self._lock.acquire()
+        for frame in sorted_buffer:
+            self._frame_queue.put(frame)
+        self._lock.release()
+        self._buffer = []
+
+    def on_valid_audio(self, frame: AudioFrame) -> Any:
+        """When an audio packet is declared valid, it'll be passed to this function.
+
+        Abstract method
+
+        IMPORTANT: Stalling code will stall
+
+        Parameters
+        ----------
+        frame: :class:`AudioFrame`
+            A frame of audio received from discord that has been validated by
+            :class:`AudioHandlingSink.on_audio`.
+        """
+        raise NotImplementedError()
+
+
+class AudioFileSink(AudioHandlingSink):
+    """This implements :class:`AudioHandlingSink` with functionality for saving
     the audio to file.
 
     Parameters
@@ -660,14 +740,10 @@ class AudioFileSink(AudioSink):
         Indicates whether cleanup has been called.
     """
 
-    __slots__ = (
-        "file_type",
-        "output_dir",
-        "output_files",
-        "_lock",
-    )
+    __slots__ = ("file_type", "output_dir", "output_files", "done")
 
     def __init__(self, file_type: Callable[[str, int], 'AudioFile'], output_dir: str = "."):
+        super().__init__()
         if not os.path.isdir(output_dir):
             raise ValueError("Invalid output directory")
         self.file_type: Callable[[str, int], 'AudioFile'] = file_type
@@ -675,13 +751,7 @@ class AudioFileSink(AudioSink):
         self.output_files: Dict[int, AudioFile] = {}
         self.done: bool = False
 
-        self._lock = threading.Lock()
-
-    def __del__(self):
-        if hasattr(self, "done") and not self.done:
-            self.cleanup()
-
-    def on_audio(self, frame: AudioFrame) -> None:
+    def on_valid_audio(self, frame: AudioFrame) -> None:
         """Takes an audio frame and passes it to a :class:`AudioFile` object. If
         the AudioFile object does not already exist then it is created.
 
@@ -693,12 +763,10 @@ class AudioFileSink(AudioSink):
         if self.done:
             return
 
-        self._lock.acquire()
         if frame.ssrc not in self.output_files:
             self.output_files[frame.ssrc] = self.file_type(
                 os.path.join(self.output_dir, f"audio-{frame.ssrc}.pcm"), frame.ssrc
             )
-        self._lock.release()
 
         self.output_files[frame.ssrc].on_audio(frame)
 
@@ -731,7 +799,7 @@ class AudioFileSink(AudioSink):
         for file in self.output_files.values():
             file.convert(self._create_name(file))
 
-    def _create_name(self, file: 'AudioFile'):
+    def _create_name(self, file: 'AudioFile') -> str:
         if file.user is None:
             return f"audio-{file.ssrc}"
         elif isinstance(file.user, Object):
@@ -774,9 +842,7 @@ class AudioFile:
         "converted",
         "path",
         "_last_timestamp",
-        "_frame_buffer",
         "user",
-        "_lock",
     )
 
     FRAME_BUFFER_LIMIT = 10
@@ -790,9 +856,6 @@ class AudioFile:
         self.path: str = self.file.name
 
         self._last_timestamp: Optional[int] = None
-        # This gives leeway for frames sent out of order
-        self._frame_buffer: List[AudioFrame] = []
-        self._lock = threading.Lock()
 
     def on_audio(self, frame: AudioFrame) -> None:
         """Takes an audio frame and adds it to a buffer. Once the buffer
@@ -805,18 +868,9 @@ class AudioFile:
         frame: :class:`AudioFrame`
             The frame which will be added to the buffer.
         """
-        self._lock.acquire()
-        self._frame_buffer.append(frame)
-        if len(self._frame_buffer) >= self.FRAME_BUFFER_LIMIT:
-            self._write_buffer()
-        self._lock.release()
-
-    def _write_buffer(self, empty: bool = False) -> None:
-        self._frame_buffer = sorted(self._frame_buffer, key=lambda frame: frame.sequence)
-        index = self.FRAME_BUFFER_LIMIT // 2 if not empty else self.FRAME_BUFFER_LIMIT
-        for frame in self._frame_buffer[:index]:
-            self._write_frame(frame)
-        self._frame_buffer = self._frame_buffer[index:]
+        if self.done:
+            return
+        self._write_frame(frame)
 
     def _write_frame(self, frame: AudioFrame) -> None:
         if self._last_timestamp is not None:
@@ -833,7 +887,7 @@ class AudioFile:
             return
         if self.user is None:
             self.user = user
-        elif self.user is None or isinstance(self.user, Object):
+        elif type(self.user) == int and isinstance(user, Object):
             self.user = user
 
     def _get_new_path(self, path: str, ext: str, new_name: Optional[str] = None) -> str:
@@ -846,8 +900,6 @@ class AudioFile:
         """Writes remaining frames in buffer to file and then closes it."""
         if self.done:
             return
-        if len(self._frame_buffer) > 0:
-            self._write_buffer(empty=True)
         self.file.close()
         self.done = True
 
@@ -870,6 +922,7 @@ class AudioFile:
         os.remove(self.path)
         self.path = new_path
         # this can be ignored because this function is meant to be used by subclasses.
+        # where file is an optional type
         self.file = None  # type: ignore
         self.converted = True
 
@@ -885,8 +938,8 @@ class WaveAudioFile(AudioFile):
     """
 
     CHUNK_WRITE_SIZE = 64
-
-    file: Optional[BinaryIO]
+    if TYPE_CHECKING:
+        file: Optional[BinaryIO]
 
     def convert(self, new_name: Optional[str] = None) -> None:
         """Write the raw audio data to a wave file.
@@ -923,7 +976,8 @@ class MP3AudioFile(AudioFile):
         Same as in :class:`AudioFile`, but this attribute becomes None after convert is called.
     """
 
-    file: Optional[BinaryIO]
+    if TYPE_CHECKING:
+        file: Optional[BinaryIO]
 
     def convert(self, new_name: Optional[str] = None) -> None:
         """Write the raw audio data to an mp3 file.
@@ -999,11 +1053,18 @@ class AudioReceiver(threading.Thread):
         after: Optional[Callable[..., Awaitable[Any]]] = None,
         after_kwargs: Optional[dict] = None,
     ) -> None:
+        if not has_nacl:
+            raise RuntimeError("PyNaCl library is required to use audio receiving")
+
         super().__init__()
         self.sink: AudioSink = sink
         self.client: VoiceClient = client
+        self._state: ConnectionState = self.client._state
         self.loop = self.client.client.loop
 
+        self.decode: bool = decode
+        self.mode = self.client.mode
+        self.secret_key = self.client.secret_key
         self.after: Optional[Callable[..., Awaitable[Any]]] = after
         self.after_kwargs: Optional[dict] = after_kwargs
 
@@ -1013,11 +1074,7 @@ class AudioReceiver(threading.Thread):
         self._clean: AsyncEventWrapper = AsyncEventWrapper()
         self._connected: threading.Event = client._connected
 
-        self.pipe, child_pipe = _mp_ctx.Pipe(duplex=True)
-        self.unpacker: AudioUnpacker = AudioUnpacker(child_pipe, client.mode, client.secret_key, decode=decode)
-
-    def _do_run(self):
-        self.unpacker.start()
+    def _do_run(self) -> None:
         while not self._end.is_set():
             if not self._connected.is_set():
                 self._connected.wait()
@@ -1026,19 +1083,22 @@ class AudioReceiver(threading.Thread):
             if data is None:
                 continue
 
-            self.pipe.send(data)
-            packet = self.pipe.recv()
-            if packet is None:
-                continue
+            future = self._state.process_audio(data, self.decode, self.mode, self.secret_key, self.client.guild.id)
+            future.add_done_callback(self._audio_processing_callback)
 
-            if isinstance(packet, AudioFrame):
-                callback = self.sink.on_audio
-                packet.user = self.client.ws.get_member_from_ssrc(packet.ssrc)
-            else:
-                callback = self.sink.on_rtcp
-                packet.pt = RTCPMessageType(packet.pt)
-            threading.Thread(target=callback, args=(packet,)).start()
-        self.unpacker.terminate()
+    def _audio_processing_callback(self, future: Future) -> None:
+        try:
+            packet = future.result()
+        except BaseException as exc:
+            _log.exception("Exception occurred in audio process", exc_info=exc)
+            return
+        if isinstance(packet, AudioFrame):
+            sink_callback = self.sink.on_audio
+            packet.user = self.client.ws.get_member_from_ssrc(packet.ssrc)
+        else:
+            sink_callback = self.sink.on_rtcp
+            packet.pt = RTCPMessageType(packet.pt)
+        sink_callback(packet)
 
     def run(self) -> None:
         try:
@@ -1091,26 +1151,89 @@ class AudioReceiver(threading.Thread):
         await self._clean.async_wait(self.loop if loop is None else loop)
 
 
+class AudioProcessPool:
+    def __init__(self, max_processes: int, *, wait_timeout: Optional[float] = 3):
+        if max_processes < 1:
+            raise ValueError("max_processes must be greater than 0")
+        if wait_timeout < 1:
+            raise ValueError("wait_timeout must be greater than 0")
+        self.max_processes: int = max_processes
+        self.wait_timeout: Optional[int] = wait_timeout
+        self._processes: Dict[int, Tuple] = {}
+        self._wait_queue: queue.Queue = queue.Queue()
+        self._wait_loop_running: threading.Event = threading.Event()
+        self._lock: threading.Lock = threading.Lock()
+
+    def submit(self, data: bytes, n_p: int, decode: bool, mode: str, secret_key: List[int]) -> Future:
+        self._lock.acquire()
+
+        if n_p >= self.max_processes:
+            raise ValueError(f"n_p must be less than the maximum processes ({self.max_processes})")
+
+        if n_p not in self._processes:
+            self._spawn_process(n_p)
+
+        future = Future()
+        self._processes[n_p][0].send((data, decode, mode, secret_key))
+        self._wait_queue.put((n_p, future))
+        self._start_recv_loop()
+
+        self._lock.release()
+        return future
+
+    def _spawn_process(self, n_p) -> None:
+        conn1, conn2 = _mp_ctx.Pipe(duplex=True)
+        process = AudioUnpacker(args=(conn2,))
+        process.start()
+        self._processes[n_p] = (conn1, process)
+
+    def _start_recv_loop(self) -> None:
+        if not self._wait_loop_running.is_set():
+            threading.Thread(target=self._recv_loop).start()
+
+    def _recv_loop(self) -> None:
+        self._wait_loop_running.set()
+        while True:
+            try:
+                n_p, future = self._wait_queue.get(timeout=self.wait_timeout)
+            except queue.Empty:
+                break
+            try:
+                ret = self._processes[n_p][0].recv()
+            except EOFError:
+                self._lock.acquire()
+                self._processes.pop(n_p)
+                self._lock.release()
+                continue
+            (future.set_exception if isinstance(ret, BaseException) else future.set_result)(ret)
+
+        self._wait_loop_running.clear()
+
+
 class AudioUnpacker(_mp_ctx.Process):
-    SILENT_FRAME = b"\xf8\xff\xfe"
+    def __init__(self, **kwargs):
+        super().__init__(daemon=True, **kwargs)
 
-    def __init__(self, pipe, mode: str, secret_key: List[int], *, decode: bool = True):
-        super().__init__(daemon=True)
-
-        self.pipe = pipe
-        self.mode: str = mode
-        self.secret_key: List[int] = secret_key
-        self.decode: bool = decode
+        self.secret_key: Optional[List[int]] = None
         self.decoders: Dict[int, OpusDecoder] = {}
 
     def run(self) -> None:
+        pipe = self._args[0]
         while True:
-            data = self.pipe.recv()
-            packet = self.unpack_audio_packet(data)
-            if isinstance(packet, RTCPPacket):
-                # enum not picklable
-                packet.pt = packet.pt.value
-            self.pipe.send(packet)
+            try:
+                data, decode, mode, secret_key = pipe.recv()
+                if secret_key is not None:
+                    self.secret_key = secret_key
+
+                packet = self.unpack_audio_packet(data, mode, decode)
+                if isinstance(packet, RTCPPacket):
+                    # enum not picklable
+                    packet.pt = packet.pt.value
+
+                pipe.send(packet)
+            except BaseException as exc:
+                pipe.send(exc)
+                return
 
     def _decrypt_xsalsa20_poly1305(self, header, data) -> bytes:
         box = nacl.secret.SecretBox(bytes(self.secret_key))
@@ -1145,18 +1268,15 @@ class AudioUnpacker(_mp_ctx.Process):
             data = data[offset:]
         return data
 
-    def unpack_audio_packet(self, data: bytes) -> Optional[Union[RTCPPacket, AudioFrame]]:
-        packet = AudioPacket(data, getattr(self, '_decrypt_' + self.mode))
+    def unpack_audio_packet(self, data: bytes, mode: str, decode: bool) -> Union[RTCPPacket, AudioFrame]:
+        packet = get_audio_packet(data, getattr(self, '_decrypt_' + mode))
 
-        if not isinstance(packet, RawAudioData):
+        if not isinstance(packet, RawAudioData):  # is RTCP packet
             return packet
-        if packet.audio == self.SILENT_FRAME:
-            return
 
-        audio = packet.audio
-        if self.decode:
+        if decode and packet.audio != SILENT_FRAME:
             if packet.ssrc not in self.decoders:
                 self.decoders[packet.ssrc] = OpusDecoder()
-            audio = self.decoders[packet.ssrc].decode(packet.audio)  # type: ignore
+            return AudioFrame(self.decoders[packet.ssrc].decode(packet.audio), packet, None)  # type: ignore
 
-        return AudioFrame(audio, packet, None)
+        return AudioFrame(packet.audio, packet, None)

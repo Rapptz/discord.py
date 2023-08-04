@@ -76,8 +76,11 @@ from .sticker import GuildSticker
 from .automod import AutoModRule, AutoModAction
 from .audit_logs import AuditLogEntry
 from ._types import ClientT
+from .sink import AudioProcessPool
 
 if TYPE_CHECKING:
+    from concurrent.futures import Future
+
     from .abc import PrivateChannel
     from .message import MessageableChannel
     from .guild import GuildChannel
@@ -256,6 +259,8 @@ class ConnectionState(Generic[ClientT]):
         for attr, func in inspect.getmembers(self):
             if attr.startswith('parse_'):
                 parsers[attr[6:].upper()] = func
+
+        self._audio_process_pool: AudioProcessPool = utils.MISSING
 
         self.clear()
 
@@ -1610,6 +1615,19 @@ class ConnectionState(Generic[ClientT]):
 
     def create_message(self, *, channel: MessageableChannel, data: MessagePayload) -> Message:
         return Message(state=self, channel=channel, data=data)
+
+    def is_audio_process_pool_initialized(self) -> bool:
+        return isinstance(self._audio_process_pool, AudioProcessPool)
+
+    def init_audio_processing_pool(self, max_processes: int, *, wait_timeout: Optional[float] = 3) -> None:
+        if self.is_audio_process_pool_initialized():
+            raise RuntimeError("Audio processing pool is already initialized")
+        self._audio_process_pool = AudioProcessPool(max_processes, wait_timeout=wait_timeout)
+
+    def process_audio(self, data: bytes, decode: bool, mode: str, secret_key: List[int], guild_id: int) -> Future:
+        return self._audio_process_pool.submit(
+            data, guild_id % self._audio_process_pool.max_processes, decode, mode, secret_key
+        )
 
 
 class AutoShardedConnectionState(ConnectionState[ClientT]):

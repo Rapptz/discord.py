@@ -683,7 +683,7 @@ class VoiceClient(VoiceProtocol):
         Raises
         -------
         ClientException
-            Already listening or not connected.
+            Already listening, not connected, or must initialize audio processing pool before listening.
         TypeError
             sink is not an :class:`AudioSink` or after is not a callable.
         OpusNotLoaded
@@ -695,6 +695,12 @@ class VoiceClient(VoiceProtocol):
         if self.is_listen_receiving():
             raise ClientException('Already listening.')
 
+        if not isinstance(sink, AudioSink):
+            raise TypeError(f"sink must be an AudioSink not {sink.__class__.__name__}")
+
+        if not self.is_audio_process_pool_initialized():
+            raise ClientException("Must initialize audio processing pool before listening.")
+
         if not supress_warning and self.is_listen_cleaning():
             _log.warning(
                 "Cleanup is still in process for the last call to listen and so errors may occur. "
@@ -702,15 +708,39 @@ class VoiceClient(VoiceProtocol):
                 "know what you're doing."
             )
 
-        if not isinstance(sink, AudioSink):
-            raise TypeError(f"sink must be an AudioSink not {sink.__class__.__name__}")
-
         if decode:
             # Check that opus is loaded and throw error else
             opus.Decoder.get_opus_version()
 
         self._receiver = AudioReceiver(sink, self, decode=decode, after=after, after_kwargs=kwargs)
         self._receiver.start()
+
+    def init_audio_processing_pool(self, max_processes: int, *, wait_timeout: Optional[float] = 3) -> None:
+        """Initialize audio processing pool. This function should only be called once from any one
+        voice client object.
+
+        Parameters
+        ----------
+        max_processes: :class:`int`
+            The audio processing pool will distribute audio processing across
+            this number of processes.
+        wait_timeout: Optional[:class:`int`]
+            A process will automatically finish when it has not received any audio
+            after this amount of time. Default is 3. None means it will never finish
+            via timeout.
+
+        Raises
+        ------
+        RuntimeError
+            Audio processing pool is already initialized
+        ValueError
+            max_processes or wait_timeout must be greater than 0
+        """
+        self._state.init_audio_processing_pool(max_processes, wait_timeout=wait_timeout)
+
+    def is_audio_process_pool_initialized(self) -> bool:
+        """Whether the audio process pool is active"""
+        return self._state.is_audio_process_pool_initialized()
 
     def is_listening(self) -> bool:
         """Indicate if we're currently listening."""
