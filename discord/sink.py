@@ -7,6 +7,7 @@ import struct
 import subprocess
 import threading
 import wave
+from collections import defaultdict
 from concurrent.futures import Future
 from dataclasses import dataclass
 from time import monotonic
@@ -620,12 +621,12 @@ class AudioHandlingSink(AudioSink):
     VALIDATION_LOOP_START_TIMEOUT = 1
 
     def __init__(self):
-        self._last_sequence: int = -1
+        self._last_sequence: Dict[int, int] = defaultdict(lambda: -1)
         # _buffer is not shared across threads
-        self._buffer: List[AudioFrame] = []
+        self._buffers: Dict[int, List[AudioFrame]] = defaultdict(list)
         self._frame_queue = queue.Queue()
         self._is_validating: threading.Event = threading.Event()
-        self._buffer_till: Optional[float] = None
+        self._buffer_till: Dict[int, Optional[float]] = defaultdict(lambda: None)
         self._lock: threading.Lock = threading.Lock()
 
     def on_audio(self, frame: AudioFrame) -> None:
@@ -664,39 +665,42 @@ class AudioHandlingSink(AudioSink):
         # after a specific amount of time
 
         if frame.audio == SILENT_FRAME:
-            self._empty_buffer()
+            self._empty_buffer(frame.ssrc)
             return
 
-        if frame.sequence <= self._last_sequence:
+        last_sequence = self._last_sequence[frame.ssrc]
+        if frame.sequence <= last_sequence:
             return
 
-        if self._last_sequence == -1 or frame.sequence == self._last_sequence + 1:
-            self._last_sequence = frame.sequence
+        if last_sequence == -1 or frame.sequence == last_sequence + 1:
+            self._last_sequence[frame.ssrc] = frame.sequence
             self.on_valid_audio(frame)
-            self._empty_buffer()
+            self._empty_buffer(frame.ssrc)
         else:
             self._append_to_buffer(frame)
 
     def _append_to_buffer(self, frame):
-        self._buffer.append(frame)
-        if self._buffer_till is None:
-            self._buffer_till = monotonic() + self.PACKET_WAIT_TIME
-        elif monotonic() >= self._buffer_till:
-            self._buffer_till = None
-            self._empty_buffer()
+        self._buffers[frame.ssrc].append(frame)
+        buffer_till = self._buffer_till[frame.ssrc]
+        if buffer_till is None:
+            self._buffer_till[frame.ssrc] = monotonic() + self.PACKET_WAIT_TIME
+        elif monotonic() >= buffer_till:
+            self._buffer_till[frame.ssrc] = None
+            self._empty_buffer(frame.ssrc)
 
-    def _empty_buffer(self) -> None:
-        if len(self._buffer) == 0:
+    def _empty_buffer(self, ssrc) -> None:
+        buffer = self._buffers[ssrc]
+        if len(buffer) == 0:
             return
 
-        sorted_buffer = sorted(self._buffer, key=lambda f: f.sequence)
-        self._last_sequence = sorted_buffer[0].sequence - 1
+        sorted_buffer = sorted(buffer, key=lambda f: f.sequence)
+        self._last_sequence[ssrc] = sorted_buffer[0].sequence - 1
         # prevent on_audio from putting frames in queue before these frames
         self._lock.acquire()
         for frame in sorted_buffer:
             self._frame_queue.put(frame)
         self._lock.release()
-        self._buffer = []
+        self._buffers[ssrc] = []
 
     def on_valid_audio(self, frame: AudioFrame) -> Any:
         """When an audio packet is declared valid, it'll be passed to this function.
