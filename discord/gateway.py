@@ -60,6 +60,7 @@ if TYPE_CHECKING:
     from .client import Client
     from .state import ConnectionState
     from .voice_client import VoiceClient
+    from .voice_state import VoiceConnectionState
 
 
 class ReconnectWebSocket(Exception):
@@ -797,7 +798,8 @@ class DiscordVoiceWebSocket:
 
     if TYPE_CHECKING:
         thread_id: int
-        _connection: VoiceClient
+        # _connection: VoiceClient
+        _connection: VoiceConnectionState
         gateway: str
         _max_heartbeat_timeout: float
 
@@ -875,7 +877,29 @@ class DiscordVoiceWebSocket:
         socket = await http.ws_connect(gateway, compress=15)
         ws = cls(socket, loop=client.loop, hook=hook)
         ws.gateway = gateway
-        ws._connection = client
+        ws._connection = client # type: ignore
+        ws._max_heartbeat_timeout = 60.0
+        ws.thread_id = threading.get_ident()
+
+        if resume:
+            await ws.resume()
+        else:
+            await ws.identify()
+
+        return ws
+
+    @classmethod
+    async def from_connection_state(
+        cls, state: VoiceConnectionState, *, resume: bool = False, hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None
+    ) -> Self:
+        """Creates a voice websocket for the :class:`VoiceClient`."""
+        gateway = 'wss://' + state.endpoint + '/?v=4'
+        client = state.voice_client
+        http = client._state.http
+        socket = await http.ws_connect(gateway, compress=15)
+        ws = cls(socket, loop=client.loop, hook=hook)
+        ws.gateway = gateway
+        ws._connection = state
         ws._max_heartbeat_timeout = 60.0
         ws.thread_id = threading.get_ident()
 
