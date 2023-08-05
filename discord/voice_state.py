@@ -260,8 +260,7 @@ class VoiceConnectionState:
                     raise
 
         if self._runner is MISSING:
-            self._runner = self.voice_client.loop.create_task(self._poll_voice_ws(reconnect))
-
+            self._runner = self.voice_client.loop.create_task(self._poll_voice_ws(reconnect), name="Voice websocket poller")
 
     async def disconnect(self, *, force: bool=False) -> None:
         if not force and not self.is_connected():
@@ -293,8 +292,11 @@ class VoiceConnectionState:
     def is_connected(self) -> bool:
         return bool(self.stage.value & ConnectionStage.connected.value)
 
-    def send_packet(self, data: bytes) -> None:
-        ...
+    def send_packet(self, packet: bytes) -> int:
+        if not self.stage.value & ConnectionStage.connected:
+            raise RuntimeError('Not connected')
+
+        return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
 
     async def _wait_for_stage(self, stage: ConnectionStage, *, timeout: Optional[float]=None, exact: bool=True):
         while True:
@@ -336,4 +338,51 @@ class VoiceConnectionState:
             try:
                 await self.ws.poll_event()
             except (ConnectionClosed, asyncio.TimeoutError) as exc:
-                ...
+                if isinstance(exc, ConnectionClosed):
+                    # The following close codes are undocumented so I will document them here.
+                    # 1000 - normal closure (obviously)
+                    # 4014 - voice channel has been deleted.
+                    # 4015 - voice server has crashed
+                    if exc.code in (1000, 4015):
+                        _log.info('Disconnecting from voice normally, close code %d.', exc.code)
+                        await self.disconnect()
+                        break
+
+                    if exc.code == 4014:
+                        _log.info('Disconnected from voice by force... potentially reconnecting.')
+                        successful = await self._potential_reconnect()
+                        if not successful:
+                            _log.info('Reconnect was unsuccessful, disconnecting from voice normally...')
+                            await self.disconnect()
+                            break
+                        else:
+                            continue
+
+                if not reconnect:
+                    await self.disconnect(force=True)
+                    raise
+
+                retry = backoff.delay()
+                _log.exception('Disconnected from voice... Reconnecting in %.2fs.', retry)
+                await asyncio.sleep(retry)
+                await self._voice_disconnect()
+                # self.stage = ConnectionStage.reconnecting
+                try:
+                    await self.connect(reconnect=reconnect, timeout=self.timeout, self_deaf=False, self_mute=False, resume=False)
+                except asyncio.TimeoutError:
+                    # at this point we've retried 5 times... let's continue the loop.
+                    _log.warning('Could not connect to voice... Retrying...')
+                    continue
+
+    async def _potential_reconnect(self) -> bool:
+        try:
+            await self._wait_for_stage(ConnectionStage.got_voice_server_update, timeout=self.timeout)
+        except asyncio.TimeoutError:
+            await self.disconnect(force=True)
+            return False
+        try:
+            self.ws = await self._connect_websocket(False)
+        except (ConnectionClosed, asyncio.TimeoutError):
+            return False
+        else:
+            return True
