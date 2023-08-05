@@ -612,7 +612,16 @@ class AudioHandlingSink(AudioSink):
     dealing with out-of-order packets and delays.
     """
 
-    __slots__ = ("_last_sequence", "_buffer", "_buffer_wait", "_frame_queue", "_is_validating", "_buffer_till", "_lock")
+    __slots__ = (
+        "_last_sequence",
+        "_buffer",
+        "_buffer_wait",
+        "_frame_queue",
+        "_is_validating",
+        "_buffer_till",
+        "_lock",
+        "_done_validating",
+    )
     # how long to wait for missing a packet
     PACKET_WAIT_TIME = 2
     # how long to wait for a new packet before closing the _validation_loop thread
@@ -628,6 +637,7 @@ class AudioHandlingSink(AudioSink):
         self._is_validating: threading.Event = threading.Event()
         self._buffer_till: Dict[int, Optional[float]] = defaultdict(lambda: None)
         self._lock: threading.Lock = threading.Lock()
+        self._done_validating: threading.Event = threading.Event()
 
     def on_audio(self, frame: AudioFrame) -> None:
         """Puts frame in a queue and lets a processing loop thread deal with it."""
@@ -640,12 +650,13 @@ class AudioHandlingSink(AudioSink):
     def _start_validation_loop(self) -> None:
         if not self._is_validating.is_set():
             threading.Thread(target=self._validation_loop).start()
-            # prevent multiple threads spawning
+            # prevent multiple threads spawning and make sure it spawns, otherwise giving a warning
             if not self._is_validating.wait(timeout=self.VALIDATION_LOOP_START_TIMEOUT):
                 _log.warning("Timeout reached waiting for _validation_loop thread to start")
 
     def _validation_loop(self) -> None:
         self._is_validating.set()
+        self._done_validating.clear()
         while True:
             try:
                 frame = self._frame_queue.get(timeout=self.VALIDATION_LOOP_TIMEOUT)
@@ -654,6 +665,8 @@ class AudioHandlingSink(AudioSink):
 
             self._validate_audio_frame(frame)
         self._is_validating.clear()
+        if not self._empty_entire_buffer():
+            self._done_validating.set()
 
     def _validate_audio_frame(self, frame: AudioFrame) -> None:
         # 1. If audio is a silent frame, empty buffer and reset last sequence
@@ -663,10 +676,6 @@ class AudioHandlingSink(AudioSink):
         # 3b. Else, put in a buffer
         # Buffer should be forcefully emptied (same as in 3a) when a missing frame is not received
         # after a specific amount of time
-
-        if frame.audio == SILENT_FRAME:
-            self._empty_buffer(frame.ssrc)
-            return
 
         last_sequence = self._last_sequence[frame.ssrc]
         if frame.sequence <= last_sequence:
@@ -679,7 +688,7 @@ class AudioHandlingSink(AudioSink):
         else:
             self._append_to_buffer(frame)
 
-    def _append_to_buffer(self, frame):
+    def _append_to_buffer(self, frame) -> None:
         self._buffers[frame.ssrc].append(frame)
         buffer_till = self._buffer_till[frame.ssrc]
         if buffer_till is None:
@@ -688,19 +697,28 @@ class AudioHandlingSink(AudioSink):
             self._buffer_till[frame.ssrc] = None
             self._empty_buffer(frame.ssrc)
 
-    def _empty_buffer(self, ssrc) -> None:
+    def _empty_entire_buffer(self) -> bool:
+        result = False
+        for ssrc in self._buffers.keys():
+            result = result or self._empty_buffer(ssrc)
+        return result
+
+    def _empty_buffer(self, ssrc) -> bool:
         buffer = self._buffers[ssrc]
         if len(buffer) == 0:
-            return
+            return False
 
         sorted_buffer = sorted(buffer, key=lambda f: f.sequence)
         self._last_sequence[ssrc] = sorted_buffer[0].sequence - 1
         # prevent on_audio from putting frames in queue before these frames
+        # and no conflicts on starting validation loop
         self._lock.acquire()
         for frame in sorted_buffer:
-            self._frame_queue.put(frame)
+            self._frame_queue.put_nowait(frame)
+        self._start_validation_loop()
         self._lock.release()
         self._buffers[ssrc] = []
+        return True
 
     def on_valid_audio(self, frame: AudioFrame) -> Any:
         """When an audio packet is declared valid, it'll be passed to this function.
@@ -744,7 +762,7 @@ class AudioFileSink(AudioHandlingSink):
         Indicates whether cleanup has been called.
     """
 
-    __slots__ = ("file_type", "output_dir", "output_files", "done")
+    __slots__ = ("file_type", "output_dir", "output_files", "done", "_clean_lock")
 
     def __init__(self, file_type: Callable[[str, int], 'AudioFile'], output_dir: str = "."):
         super().__init__()
@@ -754,6 +772,7 @@ class AudioFileSink(AudioHandlingSink):
         self.output_dir: str = output_dir
         self.output_files: Dict[int, AudioFile] = {}
         self.done: bool = False
+        self._clean_lock: threading.Lock = threading.Lock()
 
     def on_valid_audio(self, frame: AudioFrame) -> None:
         """Takes an audio frame and passes it to a :class:`AudioFile` object. If
@@ -764,6 +783,7 @@ class AudioFileSink(AudioHandlingSink):
         frame: :class:`AudioFrame`
             The frame which will be added to the buffer.
         """
+        self._clean_lock.acquire()
         if self.done:
             return
 
@@ -773,6 +793,7 @@ class AudioFileSink(AudioHandlingSink):
             )
 
         self.output_files[frame.ssrc].on_audio(frame)
+        self._clean_lock.release()
 
     def on_rtcp(self, packet: RTCPPacket) -> None:
         """This function receives RTCP Packets, but does nothing with them since
@@ -790,11 +811,14 @@ class AudioFileSink(AudioHandlingSink):
 
     def cleanup(self) -> None:
         """Calls cleanup on all :class:`AudioFile` objects."""
+        self._clean_lock.acquire()
         if self.done:
             return
+        self._done_validating.wait()
+        self.done = True
         for file in self.output_files.values():
             file.cleanup()
-        self.done = True
+        self._clean_lock.release()
 
     def convert_files(self) -> None:
         """Calls cleanup if it hasn't already been called and then calls convert on all :class:`AudioFile` objects."""
@@ -846,7 +870,10 @@ class AudioFile:
         "converted",
         "path",
         "_last_timestamp",
+        "_last_sequence",
+        "_packet_count",
         "user",
+        "_clean_lock",
     )
 
     FRAME_BUFFER_LIMIT = 10
@@ -858,8 +885,11 @@ class AudioFile:
         self.converted: bool = False
         self.user: Optional[Union[Member, Object]] = None
         self.path: str = self.file.name
+        self._clean_lock: threading.Lock = threading.Lock()
 
         self._last_timestamp: Optional[int] = None
+        self._last_sequence: Optional[int] = None
+        self._packet_count = 0
 
     def on_audio(self, frame: AudioFrame) -> None:
         """Takes an audio frame and adds it to a buffer. Once the buffer
@@ -872,18 +902,27 @@ class AudioFile:
         frame: :class:`AudioFrame`
             The frame which will be added to the buffer.
         """
+        self._clean_lock.acquire()
         if self.done:
             return
+        if self._packet_count < 7:
+            self._packet_count += 1
         self._write_frame(frame)
+        self._clean_lock.release()
 
     def _write_frame(self, frame: AudioFrame) -> None:
-        if self._last_timestamp is not None:
-            # write silence
+        # When the bot joins a vc and starts listening and a user speaks for the first time,
+        # the timestamp encompasses all that silence, including silence before the bot even
+        # joined the vc. It goes in a pattern that the 6th packet has a 11 sequence skip, so
+        # this last part of the if statement gets rid of that silence.
+        if self._last_timestamp is not None and not (self._packet_count == 6 and frame.sequence - self._last_sequence == 11):
             silence = frame.timestamp - self._last_timestamp - OpusDecoder.SAMPLES_PER_FRAME
             if silence > 0:
                 self.file.write(b"\x00" * silence * OpusDecoder.SAMPLE_SIZE)
-        self.file.write(frame.audio)
+        if frame.audio != SILENT_FRAME:
+            self.file.write(frame.audio)
         self._last_timestamp = frame.timestamp
+        self._last_sequence = frame.sequence
         self._cache_user(frame.user)
 
     def _cache_user(self, user: Optional[Union['Member', 'Object']]) -> None:
@@ -902,10 +941,12 @@ class AudioFile:
 
     def cleanup(self) -> None:
         """Writes remaining frames in buffer to file and then closes it."""
+        self._clean_lock.acquire()
         if self.done:
             return
         self.file.close()
         self.done = True
+        self._clean_lock.release()
 
     def convert(self, new_name: Optional[str] = None) -> None:
         """Converts the file to its formatted file type.
@@ -1050,32 +1091,27 @@ class AsyncEventWrapper:
 class AudioReceiver(threading.Thread):
     def __init__(
         self,
-        sink: AudioSink,
         client: 'VoiceClient',
-        *,
-        decode: bool = True,
-        after: Optional[Callable[..., Awaitable[Any]]] = None,
-        after_kwargs: Optional[dict] = None,
     ) -> None:
         if not has_nacl:
             raise RuntimeError("PyNaCl library is required to use audio receiving")
 
         super().__init__()
-        self.sink: AudioSink = sink
+        self.sink: Optional[AudioSink] = None
         self.client: VoiceClient = client
         self._state: ConnectionState = self.client._state
         self.loop = self.client.client.loop
 
-        self.decode: bool = decode
-        self.mode = self.client.mode
-        self.secret_key = self.client.secret_key
-        self.after: Optional[Callable[..., Awaitable[Any]]] = after
-        self.after_kwargs: Optional[dict] = after_kwargs
+        self.decode: bool = True
+        self.after: Optional[Callable[..., Awaitable[Any]]] = None
+        self.after_kwargs: Optional[dict] = None
 
         self._end: AsyncEventWrapper = AsyncEventWrapper()
+        self._on_standby: AsyncEventWrapper = AsyncEventWrapper()
+        self._on_standby.set()
         self._resumed: AsyncEventWrapper = AsyncEventWrapper()
-        self._resumed.set()
         self._clean: AsyncEventWrapper = AsyncEventWrapper()
+        self._clean.set()
         self._connected: threading.Event = client._connected
 
     def _do_run(self) -> None:
@@ -1087,7 +1123,9 @@ class AudioReceiver(threading.Thread):
             if data is None:
                 continue
 
-            future = self._state.process_audio(data, self.decode, self.mode, self.secret_key, self.client.guild.id)
+            future = self._state.process_audio(
+                data, self.decode, self.client.mode, self.client.secret_key, self.client.guild.id
+            )
             future.add_done_callback(self._audio_processing_callback)
 
     def _audio_processing_callback(self, future: Future) -> None:
@@ -1110,10 +1148,6 @@ class AudioReceiver(threading.Thread):
         except Exception as exc:
             self.stop()
             _log.exception("Exception occurred in voice receiver", exc_info=exc)
-        finally:
-            self.sink.cleanup()
-            self._call_after()
-            self._clean.set()
 
     def _call_after(self) -> None:
         if self.after is not None:
@@ -1123,9 +1157,35 @@ class AudioReceiver(threading.Thread):
             except Exception as exc:
                 _log.exception('Calling the after function failed.', exc_info=exc)
 
+    def _cleanup_listen(self) -> None:
+        self.sink.cleanup()
+        self._call_after()
+        self.sink = None
+        self._clean.set()
+
+    def start_listening(
+        self,
+        sink: AudioSink,
+        *,
+        decode: bool = True,
+        after: Optional[Callable[..., Awaitable[Any]]] = None,
+        after_kwargs: Optional[dict] = None,
+    ) -> None:
+        self.sink = sink
+        self.decode = decode
+        self.after = after
+        self.after_kwargs = after_kwargs
+        self._on_standby.clear()
+        self._clean.clear()
+        self._resumed.set()
+
     def stop(self) -> None:
         self._end.set()
-        self._resumed.set()
+
+    def stop_listening(self) -> None:
+        self._resumed.clear()
+        self._on_standby.set()
+        self._cleanup_listen()
 
     def pause(self) -> None:
         self._resumed.clear()
@@ -1137,19 +1197,22 @@ class AudioReceiver(threading.Thread):
         return self._end.is_set()
 
     def is_listening(self) -> bool:
-        return self._resumed.is_set() and not self._end.is_set()
+        return self._resumed.is_set() and not self._on_standby.is_set()
 
     def is_paused(self) -> bool:
-        return not self._end.is_set() and not self._resumed.is_set()
+        return not self._resumed.is_set() and not self._on_standby.is_set()
+
+    def is_on_standby(self) -> bool:
+        return self._on_standby.is_set()
 
     def is_cleaning(self) -> bool:
-        return self._end.is_set() and not self._clean.is_set()
+        return self._on_standby.is_set() and not self._clean.is_set()
 
     async def wait_for_resumed(self, *, loop=None) -> None:
         await self._resumed.async_wait(self.loop if loop is None else loop)
 
-    async def wait_for_done(self, *, loop=None) -> None:
-        await self._end.async_wait(self.loop if loop is None else loop)
+    async def wait_for_standby(self, *, loop=None) -> None:
+        await self._on_standby.async_wait(self.loop if loop is None else loop)
 
     async def wait_for_clean(self, *, loop=None) -> None:
         await self._clean.async_wait(self.loop if loop is None else loop)

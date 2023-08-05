@@ -334,6 +334,8 @@ class VoiceClient(VoiceProtocol):
 
         self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setblocking(False)
+        self._receiver = AudioReceiver(self)
+        self._receiver.start()
 
         if not self._handshaking:
             # If we're not handshaking then we need to terminate our previous connection in the websocket
@@ -502,7 +504,7 @@ class VoiceClient(VoiceProtocol):
             return
 
         self.stop()
-        self.stop_listening()
+        self._receiver.stop()
         self._connected.clear()
 
         try:
@@ -651,7 +653,7 @@ class VoiceClient(VoiceProtocol):
         """Receives audio into an :class:`AudioSink`
 
         IMPORTANT: If you call this function, the running section of your code should be
-        contained within an 'if __name__ == "__main__"' statement to avoid conflicts with
+        contained within an `if __name__ == "__main__"` statement to avoid conflicts with
         multiprocessing that result in the asyncio event loop dying.
 
         The finalizer, ``after`` is called after listening has stopped or
@@ -693,7 +695,7 @@ class VoiceClient(VoiceProtocol):
             raise ClientException('Not connected to voice.')
 
         if self.is_listen_receiving():
-            raise ClientException('Already listening.')
+            raise ClientException('Listening is already active.')
 
         if not isinstance(sink, AudioSink):
             raise TypeError(f"sink must be an AudioSink not {sink.__class__.__name__}")
@@ -703,7 +705,7 @@ class VoiceClient(VoiceProtocol):
 
         if not supress_warning and self.is_listen_cleaning():
             _log.warning(
-                "Cleanup is still in process for the last call to listen and so errors may occur. "
+                "Cleanup is still in progress for the last call to listen and so errors may occur. "
                 "It is recommended to use wait_for_listen_ready before calling listen unless you "
                 "know what you're doing."
             )
@@ -712,8 +714,7 @@ class VoiceClient(VoiceProtocol):
             # Check that opus is loaded and throw error else
             opus.Decoder.get_opus_version()
 
-        self._receiver = AudioReceiver(sink, self, decode=decode, after=after, after_kwargs=kwargs)
-        self._receiver.start()
+        self._receiver.start_listening(sink, decode=decode, after=after, after_kwargs=kwargs)
 
     def init_audio_processing_pool(self, max_processes: int, *, wait_timeout: Optional[float] = 3) -> None:
         """Initialize audio processing pool. This function should only be called once from any one
@@ -739,20 +740,20 @@ class VoiceClient(VoiceProtocol):
         self._state.init_audio_processing_pool(max_processes, wait_timeout=wait_timeout)
 
     def is_audio_process_pool_initialized(self) -> bool:
-        """Whether the audio process pool is active"""
+        """Indicates if the audio process pool is active"""
         return self._state.is_audio_process_pool_initialized()
 
     def is_listening(self) -> bool:
-        """Indicate if we're currently listening."""
+        """Indicates if the client is currently listening and processing audio."""
         return self._receiver is not None and self._receiver.is_listening()
 
     def is_listening_paused(self) -> bool:
-        """Indicate if we're currently listening, but paused."""
+        """Indicate if the client is currently listening, but paused (not processing audio)."""
         return self._receiver is not None and self._receiver.is_paused()
 
     def is_listen_receiving(self) -> bool:
-        """Indicates whether the audio receiver is running, regardless of if it's paused."""
-        return self._receiver is not None and not self._receiver.is_done()
+        """Indicates whether listening is active, regardless of the pause state."""
+        return self._receiver is not None and not self._receiver.is_on_standby()
 
     def is_listen_cleaning(self) -> bool:
         """Check if the receiver is cleaning up."""
@@ -761,7 +762,7 @@ class VoiceClient(VoiceProtocol):
     def stop_listening(self) -> None:
         """Stops listening"""
         if self._receiver:
-            self._receiver.stop()
+            self._receiver.stop_listening()
 
     def pause_listening(self) -> None:
         """Pauses listening"""
@@ -779,7 +780,7 @@ class VoiceClient(VoiceProtocol):
         """
         if self._receiver is None:
             return
-        await self._receiver.wait_for_done()
+        await self._receiver.wait_for_standby()
         await self._receiver.wait_for_clean()
 
     @property
