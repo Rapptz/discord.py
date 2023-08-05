@@ -116,6 +116,10 @@ async def start(interaction: discord.Interaction, file_format: Literal["mp3", "w
     # Good practice to check this before calling listen, especially if it were being called within a loop.
     if vc.is_listen_cleaning():
         return await interaction.response.send_message("Currently busy cleaning... try again in a second.")
+    # Initialize the process pool which will be used for processing audio.
+    # The number passed signifies the maximum number of processes to spawn.
+    if not vc.is_audio_process_pool_initialized():
+        vc.init_audio_processing_pool(1)
     # Start listening for audio and pass it to one of the AudioFileSink objects which will
     # record the audio to file for us. We're also passing the on_listen_finish function
     # which will be called when listening has finished.
