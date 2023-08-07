@@ -737,6 +737,7 @@ class AudioPlayer(threading.Thread):
                 # wait until we are connected
                 self.client.wait_until_connected()
                 _log.info("Reconnected, resuming playback")
+                self._speak(SpeakingState.voice)
                 # reset our internal data
                 self.loops = 0
                 self._start = time.perf_counter()
