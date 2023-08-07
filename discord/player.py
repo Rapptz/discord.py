@@ -703,7 +703,7 @@ class AudioPlayer(threading.Thread):
         self._resumed: threading.Event = threading.Event()
         self._resumed.set()  # we are not paused
         self._current_error: Optional[Exception] = None
-        self._connected: threading.Event = client._connected
+        # self._connected: threading.Event = client._connected
         self._lock: threading.Lock = threading.Lock()
 
         if after is not None and not callable(after):
@@ -725,22 +725,24 @@ class AudioPlayer(threading.Thread):
                 self._resumed.wait()
                 continue
 
-            # are we disconnected from voice?
-            if not self._connected.is_set():
-                # wait until we are connected
-                self._connected.wait()
-                # reset our internal data
-                self.loops = 0
-                self._start = time.perf_counter()
-
-            self.loops += 1
             data = self.source.read()
 
             if not data:
                 self.stop()
                 break
 
+            # are we disconnected from voice?
+            if not self.client.is_connected():
+                _log.warning("Not connected, waiting...")
+                # wait until we are connected
+                self.client.wait_until_connected()
+                _log.info("Reconnected, resuming playback")
+                # reset our internal data
+                self.loops = 0
+                self._start = time.perf_counter()
+
             play_audio(data, encode=not self.source.is_opus())
+            self.loops += 1
             next_time = self._start + self.DELAY * self.loops
             delay = max(0, self.DELAY + (next_time - time.perf_counter()))
             time.sleep(delay)
@@ -800,7 +802,8 @@ class AudioPlayer(threading.Thread):
 
     def _speak(self, speaking: SpeakingState) -> None:
         try:
-            asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.client.loop)
+            # TODO: expose this ------------------------------------------vvvvvvvv
+            asyncio.run_coroutine_threadsafe(self.client.connection_state.ws.speak(speaking), self.client.client.loop)
         except Exception:
             _log.exception("Speaking call in player failed")
 
