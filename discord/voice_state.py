@@ -276,6 +276,9 @@ class VoiceConnectionState:
             await self._voice_disconnect()
         finally:
             self.stage = ConnectionStage.disconnected
+            # Flip the connected event just to unlock any waiters
+            self._connected.set()
+            self._connected.clear()
             if self.socket:
                 self.socket.close()
 
