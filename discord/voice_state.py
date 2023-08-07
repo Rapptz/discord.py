@@ -81,9 +81,9 @@ class ConnectionStage(Enum, comparable=True):
 
     disconnected            = 0b0
     set_guild_voice_state   = 0b00_00000001
-    got_voice_state_update  = 0b00_00000010
-    got_voice_server_update = 0b00_00000100
-    got_both_voice_updates  = 0b00_00000110
+    got_voice_state_update  = 0b00_00000011
+    got_voice_server_update = 0b00_00000101
+    got_both_voice_updates  = 0b00_00000111
     websocket_connected     = 0b00_00001000
     got_websocket_ready     = 0b00_00010000
     # we send udp discovery packet and read from the socket
@@ -134,7 +134,7 @@ class VoiceConnectionState:
     @stage.setter
     def stage(self, stage: ConnectionStage) -> None:
         self._stage = stage
-        _log.debug('Current stage is now: %s', stage)
+        _log.debug('Current stage is now: %s', stage.name, stack_info=False)
         self._stage_event.set()
         self._stage_event.clear()
 
@@ -214,7 +214,9 @@ class VoiceConnectionState:
             self.stage = ConnectionStage(self.stage.value | ConnectionStage.got_voice_server_update.value)
         elif self.stage.value & ConnectionStage.connected.value:
             _log.debug('Closing old websocket')
-            await self.ws.close(4000)
+            await self.ws.close(4014)
+            # self.stage = ConnectionStage.reconnecting # is this shit even worth using?
+            self.stage = ConnectionStage.got_both_voice_updates
         else:
             _log.warning('Got unexpected voice_server_update')
             # TODO: wat do?
@@ -245,6 +247,7 @@ class VoiceConnectionState:
 
             try:
                 self.ws = await self._connect_websocket(resume)
+                break
             except (ConnectionClosed, asyncio.TimeoutError):
                 if reconnect:
                     wait = 1 + i * 2.0
@@ -293,8 +296,9 @@ class VoiceConnectionState:
         return bool(self.stage.value & ConnectionStage.connected.value)
 
     def send_packet(self, packet: bytes) -> int:
-        if not self.stage.value & ConnectionStage.connected:
-            raise RuntimeError('Not connected')
+        if not self.stage.value & ConnectionStage.connected.value:
+            _log.warning("Not connected but sending packet anyway...")
+            # raise RuntimeError('Not connected')
 
         return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
 
@@ -376,7 +380,7 @@ class VoiceConnectionState:
 
     async def _potential_reconnect(self) -> bool:
         try:
-            await self._wait_for_stage(ConnectionStage.got_voice_server_update, timeout=self.timeout)
+            await self._wait_for_stage(ConnectionStage.got_voice_server_update, timeout=self.timeout, exact=False)
         except asyncio.TimeoutError:
             await self.disconnect(force=True)
             return False
