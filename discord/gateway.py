@@ -980,7 +980,14 @@ class DiscordVoiceWebSocket:
         struct.pack_into('>H', packet, 2, 70)  # 70 = Length
         struct.pack_into('>I', packet, 4, state.ssrc)
         state.socket.sendto(packet, (state.endpoint_ip, state.voice_port))
-        recv = await self.loop.sock_recv(state.socket, 74)
+
+        while True:
+            recv = await self.loop.sock_recv(state.socket, 2048)
+            if recv[1] == 0x02:
+                break
+            # else:
+                # _log.debug("Ignoring rtp packet")
+        # recv = await self.loop.sock_recv(state.socket, 74)
         _log.debug('received packet in initial_connection: %s', recv)
 
         # the ip is ascii starting at the 8th byte and ending at the first null
