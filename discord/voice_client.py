@@ -246,7 +246,7 @@ class VoiceClient(VoiceProtocol):
         self.encoder: Encoder = MISSING
         self._lite_nonce: int = 0
 
-        self.connection_state: VoiceConnectionState = VoiceConnectionState(self)
+        self._voice_state: VoiceConnectionState = VoiceConnectionState(self)
 
     warn_nacl: bool = not has_nacl
     supported_modes: Tuple[SupportedModes, ...] = (
@@ -267,15 +267,19 @@ class VoiceClient(VoiceProtocol):
 
     @property
     def ssrc(self) -> int:
-        return self.connection_state.ssrc
+        return self._voice_state.ssrc
 
     @property
     def mode(self) -> str:
-        return self.connection_state.mode
+        return self._voice_state.mode
 
     @property
     def secret_key(self) -> List[int]:
-        return self.connection_state.secret_key
+        return self._voice_state.secret_key
+
+    @property
+    def ws(self):
+        return self._voice_state.ws
 
     def checked_add(self, attr: str, value: int, limit: int) -> None:
         val = getattr(self, attr)
@@ -287,13 +291,13 @@ class VoiceClient(VoiceProtocol):
     # connection related
 
     async def on_voice_state_update(self, data: GuildVoiceStatePayload) -> None:
-        await self.connection_state.voice_state_update(data)
+        await self._voice_state.voice_state_update(data)
 
     async def on_voice_server_update(self, data: VoiceServerUpdatePayload) -> None:
-        await self.connection_state.voice_server_update(data)
+        await self._voice_state.voice_server_update(data)
 
     async def connect(self, *, reconnect: bool, timeout: float, self_deaf: bool = False, self_mute: bool = False) -> None:
-        await self.connection_state.connect(
+        await self._voice_state.connect(
             reconnect=reconnect,
             timeout=timeout,
             self_deaf=self_deaf,
@@ -310,7 +314,7 @@ class VoiceClient(VoiceProtocol):
 
         .. versionadded:: 1.4
         """
-        ws = self.connection_state.ws
+        ws = self._voice_state.ws
         return float("inf") if not ws else ws.latency
 
     @property
@@ -319,7 +323,7 @@ class VoiceClient(VoiceProtocol):
 
         .. versionadded:: 1.4
         """
-        ws = self.connection_state.ws
+        ws = self._voice_state.ws
         return float("inf") if not ws else ws.average_latency
 
     async def disconnect(self, *, force: bool = False) -> None:
@@ -328,7 +332,7 @@ class VoiceClient(VoiceProtocol):
         Disconnects this voice client from voice.
         """
         self.stop()
-        await self.connection_state.disconnect(force=force)
+        await self._voice_state.disconnect(force=force)
 
     async def move_to(self, channel: Optional[abc.Snowflake]) -> None:
         """|coro|
@@ -340,14 +344,14 @@ class VoiceClient(VoiceProtocol):
         channel: Optional[:class:`abc.Snowflake`]
             The channel to move to. Must be a voice channel.
         """
-        await self.connection_state.move_to(channel)
+        await self._voice_state.move_to(channel)
 
     def is_connected(self) -> bool:
         """Indicates if the voice client is connected to voice."""
-        return self.connection_state.is_connected()
+        return self._voice_state.is_connected()
 
     def wait_until_connected(self) -> None:
-        self.connection_state.wait()
+        self._voice_state.wait()
 
     # audio related
 
@@ -549,7 +553,7 @@ class VoiceClient(VoiceProtocol):
             encoded_data = data
         packet = self._get_voice_packet(encoded_data)
         try:
-            self.connection_state.send_packet(packet)
+            self._voice_state.send_packet(packet)
         except BlockingIOError:
             _log.warning('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
 
