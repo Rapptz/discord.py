@@ -172,7 +172,7 @@ class VoiceConnectionState:
             return
 
         if session_id != self.session_id:
-            _log.debug('New session id, old: %r, new: %r', self.session_id, session_id)
+            # _log.debug('New session id, old: %r, new: %r', self.session_id, session_id)
             self.session_id = session_id
 
         if self.stage.value & ConnectionStage.reconnecting.value or self.stage.value & ConnectionStage.connected.value:
@@ -241,7 +241,7 @@ class VoiceConnectionState:
             try:
                 await self._wait_for_stage(ConnectionStage.got_both_voice_updates, timeout=timeout)
             except asyncio.TimeoutError:
-                _log.debug('Timed out waiting for voice update events')
+                _log.info('Timed out waiting for voice update events')
                 await self.disconnect(force=True)
                 raise
 
@@ -297,7 +297,7 @@ class VoiceConnectionState:
 
     def send_packet(self, packet: bytes) -> int:
         if not self.stage.value & ConnectionStage.connected.value:
-            _log.warning("Not connected but sending packet anyway...")
+            _log.info("Not connected but sending packet anyway...")
             # raise RuntimeError('Not connected')
 
         return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
