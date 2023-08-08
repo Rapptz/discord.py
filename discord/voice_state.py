@@ -30,7 +30,7 @@ import asyncio
 import logging
 import threading
 
-from typing import TYPE_CHECKING, Optional, Dict, List, Callable, Coroutine, Any, Union
+from typing import TYPE_CHECKING, Optional, Dict, List, Callable, Coroutine, Any
 
 from .enums import Enum
 from .utils import MISSING, sane_wait_for
@@ -91,12 +91,11 @@ class ConnectionStage(Enum, comparable=True):
     # we send SELECT_PROTOCOL then SPEAKING
     connected               = 0b00_01000000
     resumed                 = 0b00_11000000
-    reconnecting            = 0b01_00000000
 
-    if TYPE_CHECKING:
-        @classmethod
-        def try_value(cls, value: Union[ConnectionStage, int]) -> Union[ConnectionStage, int]:
-            ...
+    # if TYPE_CHECKING:
+    #     @classmethod
+    #     def try_value(cls, value: Union[ConnectionStage, int]) -> Union[ConnectionStage, int]:
+    #         ...
 
 
 class VoiceConnectionState:
@@ -168,6 +167,7 @@ class VoiceConnectionState:
             ConnectionStage.got_voice_server_update
         ):
             self.session_id = session_id
+            # sets our stage to either voice_state_update or both, if we already had the other one
             self.stage = ConnectionStage(self.stage.value | ConnectionStage.got_voice_state_update.value)
             return
 
@@ -175,7 +175,7 @@ class VoiceConnectionState:
             # _log.debug('New session id, old: %r, new: %r', self.session_id, session_id)
             self.session_id = session_id
 
-        if self.stage.value & ConnectionStage.reconnecting.value or self.stage.value & ConnectionStage.connected.value:
+        if self.stage.value & ConnectionStage.connected.value:
             self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id)) # type: ignore
 
         elif self.stage < ConnectionStage.connected:
@@ -211,11 +211,11 @@ class VoiceConnectionState:
             self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.socket.setblocking(False)
 
+            # sets our stage to either voice_server_update or both, if we already had the other one
             self.stage = ConnectionStage(self.stage.value | ConnectionStage.got_voice_server_update.value)
         elif self.stage.value & ConnectionStage.connected.value:
             _log.debug('Closing old websocket')
             await self.ws.close(4014)
-            # self.stage = ConnectionStage.reconnecting # is this shit even worth using?
             self.stage = ConnectionStage.got_both_voice_updates
         else:
             _log.warning('Got unexpected voice_server_update')
@@ -373,7 +373,6 @@ class VoiceConnectionState:
                 _log.exception('Disconnected from voice... Reconnecting in %.2fs.', retry)
                 await asyncio.sleep(retry)
                 await self._voice_disconnect()
-                # self.stage = ConnectionStage.reconnecting
                 try:
                     await self.connect(reconnect=reconnect, timeout=self.timeout, self_deaf=False, self_mute=False, resume=False)
                 except asyncio.TimeoutError:
