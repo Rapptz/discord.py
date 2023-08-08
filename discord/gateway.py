@@ -59,7 +59,6 @@ if TYPE_CHECKING:
 
     from .client import Client
     from .state import ConnectionState
-    # from .voice_client import VoiceClient
     from .voice_state import VoiceConnectionState
 
 
@@ -798,7 +797,6 @@ class DiscordVoiceWebSocket:
 
     if TYPE_CHECKING:
         thread_id: int
-        # _connection: VoiceClient
         _connection: VoiceConnectionState
         gateway: str
         _max_heartbeat_timeout: float
@@ -961,12 +959,13 @@ class DiscordVoiceWebSocket:
         state.socket.sendto(packet, (state.endpoint_ip, state.voice_port))
 
         while True:
+            # Read packets until we find the ip discovery packet.
+            # On a fresh connection this will always be the first packet, but
+            # otherwise the socket will be full of RTP and RTCP packets.
+            # TODO: add a hook for these packets
             recv = await self.loop.sock_recv(state.socket, 2048)
             if recv[1] == 0x02:
                 break
-            # else:
-                # _log.debug("Ignoring rtp packet")
-        # recv = await self.loop.sock_recv(state.socket, 74)
         _log.debug('received packet in initial_connection: %s', recv)
 
         # the ip is ascii starting at the 8th byte and ending at the first null
