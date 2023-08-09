@@ -295,11 +295,7 @@ class VoiceClient(VoiceProtocol):
 
     async def connect(self, *, reconnect: bool, timeout: float, self_deaf: bool = False, self_mute: bool = False) -> None:
         await self._voice_state.connect(
-            reconnect=reconnect,
-            timeout=timeout,
-            self_deaf=self_deaf,
-            self_mute=self_mute,
-            resume=False
+            reconnect=reconnect, timeout=timeout, self_deaf=self_deaf, self_mute=self_mute, resume=False
         )
 
     @property
@@ -347,7 +343,7 @@ class VoiceClient(VoiceProtocol):
         """Indicates if the voice client is connected to voice."""
         return self._voice_state.is_connected()
 
-    def wait_until_connected(self, *, timeout: Optional[float]=None) -> None:
+    def wait_until_connected(self, *, timeout: Optional[float] = None) -> None:
         """TODO: Do i actually need this function on VoiceClient?"""
         self._voice_state.wait(timeout)
 

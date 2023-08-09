@@ -52,11 +52,9 @@ if TYPE_CHECKING:
 
     WebsocketHook = Optional[Callable[['VoiceConnectionState', Dict[str, Any]], Coroutine[Any, Any, Any]]]
 
-    from enum import IntEnum as Enum # heck
+    from enum import IntEnum as Enum  # heck
 
-__all__ = (
-    'VoiceConnectionState',
-)
+__all__ = ('VoiceConnectionState',)
 
 _log = logging.getLogger(__name__)
 
@@ -76,9 +74,11 @@ Some documentation to refer to:
 - Finally we can transmit data to endpoint:port.
 """
 
+
 class ConnectionStage(Enum, comparable=True):
     """Enum representing voice connection flow state as 'what just happened'."""
 
+    # fmt: off
     disconnected            = 0b0
     set_guild_voice_state   = 0b00_00000001
     got_voice_state_update  = 0b00_00000011
@@ -90,12 +90,13 @@ class ConnectionStage(Enum, comparable=True):
     got_udp_discovery       = 0b00_00100000
     # we send SELECT_PROTOCOL then SPEAKING
     connected               = 0b00_01000000
+    # fmt: on
 
 
 class VoiceConnectionState:
     """Represents the internal state of a voice connection."""
 
-    def __init__(self, voice_client: VoiceClient, *, hook: Optional[WebsocketHook]=None) -> None:
+    def __init__(self, voice_client: VoiceClient, *, hook: Optional[WebsocketHook] = None) -> None:
         self.voice_client = voice_client
         self.hook = hook
 
@@ -156,10 +157,7 @@ class VoiceConnectionState:
             await self.disconnect()
 
         # if we get the event while connecting
-        if self.stage in (
-            ConnectionStage.set_guild_voice_state,
-            ConnectionStage.got_voice_server_update
-        ):
+        if self.stage in (ConnectionStage.set_guild_voice_state, ConnectionStage.got_voice_server_update):
             self.session_id = session_id
             # sets our stage to either voice_state_update or both, if we already had the other one
             self.stage = ConnectionStage(self.stage.value | ConnectionStage.got_voice_state_update.value)
@@ -170,7 +168,7 @@ class VoiceConnectionState:
             self.session_id = session_id
 
         if self.stage.value & ConnectionStage.connected.value:
-            self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id)) # type: ignore
+            self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
 
         elif self.stage < ConnectionStage.connected:
             _log.warning('Got unexpected voice_state_update before complete connection')
@@ -195,10 +193,7 @@ class VoiceConnectionState:
             self.endpoint: str = self.endpoint[6:]
 
         # if we get the event while connecting
-        if self.stage in (
-            ConnectionStage.set_guild_voice_state,
-            ConnectionStage.got_voice_state_update
-        ):
+        if self.stage in (ConnectionStage.set_guild_voice_state, ConnectionStage.got_voice_state_update):
             # This gets set after READY
             self.endpoint_ip = MISSING
 
@@ -215,16 +210,7 @@ class VoiceConnectionState:
             _log.warning('Got unexpected voice_server_update')
             # TODO: wat do?
 
-    async def connect(
-        self,
-        *,
-        reconnect: bool,
-        timeout: float,
-        self_deaf: bool,
-        self_mute: bool,
-        resume: bool
-    ) -> None:
-
+    async def connect(self, *, reconnect: bool, timeout: float, self_deaf: bool, self_mute: bool, resume: bool) -> None:
         _log.info('Connecting to voice...')
         self.timeout = timeout
 
@@ -260,7 +246,7 @@ class VoiceConnectionState:
         if self._runner is MISSING:
             self._runner = self.voice_client.loop.create_task(self._poll_voice_ws(reconnect), name="Voice websocket poller")
 
-    async def disconnect(self, *, force: bool=False) -> None:
+    async def disconnect(self, *, force: bool = False) -> None:
         if not force and not self.is_connected():
             return
 
@@ -284,10 +270,10 @@ class VoiceConnectionState:
 
         await self.voice_client.channel.guild.change_voice_state(channel=channel)
 
-    def wait(self, timeout: Optional[float]=None) -> bool:
+    def wait(self, timeout: Optional[float] = None) -> bool:
         return self._connected.wait(timeout)
 
-    async def wait_async(self, *, timeout: Optional[float]=None) -> bool:
+    async def wait_async(self, *, timeout: Optional[float] = None) -> bool:
         return await self._wait_for_stage(ConnectionStage.connected, timeout=timeout, exact=False)
 
     def is_connected(self) -> bool:
@@ -301,7 +287,7 @@ class VoiceConnectionState:
 
         return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
 
-    async def _wait_for_stage(self, stage: ConnectionStage, *, timeout: Optional[float]=None, exact: bool=True):
+    async def _wait_for_stage(self, stage: ConnectionStage, *, timeout: Optional[float] = None, exact: bool = True):
         # TODO: switch to asyncio.Condition
         while True:
             if exact:
@@ -317,8 +303,10 @@ class VoiceConnectionState:
         await channel.guild.change_voice_state(channel=channel, self_deaf=self_deaf, self_mute=self_mute)
 
     async def _voice_disconnect(self) -> None:
-        _log.info('The voice handshake is being terminated for Channel ID %s (Guild ID %s)',
-            self.voice_client.channel.id, self.voice_client.guild.id
+        _log.info(
+            'The voice handshake is being terminated for Channel ID %s (Guild ID %s)',
+            self.voice_client.channel.id,
+            self.voice_client.guild.id,
         )
         self.stage = ConnectionStage.disconnected
         await self.voice_client.channel.guild.change_voice_state(channel=None)
@@ -369,7 +357,9 @@ class VoiceConnectionState:
                 await asyncio.sleep(retry)
                 await self._voice_disconnect()
                 try:
-                    await self.connect(reconnect=reconnect, timeout=self.timeout, self_deaf=False, self_mute=False, resume=False)
+                    await self.connect(
+                        reconnect=reconnect, timeout=self.timeout, self_deaf=False, self_mute=False, resume=False
+                    )
                 except asyncio.TimeoutError:
                     # at this point we've retried 5 times... let's continue the loop.
                     _log.warning('Could not connect to voice... Retrying...')
