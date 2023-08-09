@@ -90,12 +90,6 @@ class ConnectionStage(Enum, comparable=True):
     got_udp_discovery       = 0b00_00100000
     # we send SELECT_PROTOCOL then SPEAKING
     connected               = 0b00_01000000
-    resumed                 = 0b00_11000000
-
-    # if TYPE_CHECKING:
-    #     @classmethod
-    #     def try_value(cls, value: Union[ConnectionStage, int]) -> Union[ConnectionStage, int]:
-    #         ...
 
 
 class VoiceConnectionState:
@@ -334,8 +328,6 @@ class VoiceConnectionState:
         self.stage = ConnectionStage.got_udp_discovery
         while ws.secret_key is None:
             await ws.poll_event()
-        if resume:
-            self.stage = ConnectionStage.resumed
         self.stage = ConnectionStage.connected
         return ws
 
