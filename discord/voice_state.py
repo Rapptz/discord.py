@@ -236,6 +236,7 @@ class VoiceConnectionState:
                 await self._wait_for_stage(ConnectionStage.got_both_voice_updates, timeout=timeout)
             except asyncio.TimeoutError:
                 _log.info('Timed out waiting for voice update events')
+                # I probably dont actually need this disconnect here
                 await self.disconnect(force=True)
                 raise
 
@@ -294,12 +295,14 @@ class VoiceConnectionState:
 
     def send_packet(self, packet: bytes) -> int:
         if not self.stage.value & ConnectionStage.connected.value:
+            # temporary, handling this needs a bit thought
             _log.info("Not connected but sending packet anyway...")
             # raise RuntimeError('Not connected')
 
         return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
 
     async def _wait_for_stage(self, stage: ConnectionStage, *, timeout: Optional[float]=None, exact: bool=True):
+        # TODO: switch to asyncio.Condition
         while True:
             if exact:
                 if self.stage == stage:

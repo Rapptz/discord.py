@@ -40,16 +40,13 @@ Some documentation to refer to:
 from __future__ import annotations
 
 import asyncio
-# import socket
 import logging
 import struct
-# import threading
 from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union
 
-from . import opus#, utils
-# from .backoff import ExponentialBackoff
+from . import opus
 from .gateway import *
-from .errors import ClientException#, ConnectionClosed
+from .errors import ClientException
 from .player import AudioPlayer, AudioSource
 from .utils import MISSING
 from .voice_state import VoiceConnectionState
@@ -350,8 +347,9 @@ class VoiceClient(VoiceProtocol):
         """Indicates if the voice client is connected to voice."""
         return self._voice_state.is_connected()
 
-    def wait_until_connected(self) -> None:
-        self._voice_state.wait()
+    def wait_until_connected(self, *, timeout: Optional[float]=None) -> None:
+        """TODO: Do i actually need this function on VoiceClient?"""
+        self._voice_state.wait(timeout)
 
     # audio related
 
