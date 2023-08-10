@@ -43,6 +43,12 @@ Likewise, configuring the log level to ``logging.DEBUG`` is also possible:
 
 This is recommended, especially at verbose levels such as ``DEBUG``, as there are a lot of events logged and it would clog the stderr of your program.
 
+If you want the logging configuration the library provides to affect all loggers rather than just the ``discord`` logger, you can pass ``root_logger=True`` inside :meth:`Client.run`:
+
+.. code-block:: python3
+
+    client.run(token, log_handler=handler, root_logger=True)
+
 If you want to setup logging using the library provided configuration without using :meth:`Client.run`, you can use :func:`discord.utils.setup_logging`:
 
 .. code-block:: python3

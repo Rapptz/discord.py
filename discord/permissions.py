@@ -330,6 +330,15 @@ class Permissions(BaseFlags):
         return cls(0b10000010001110000000000000010000000111110)
 
     @classmethod
+    def events(cls) -> Self:
+        """A factory method that creates a :class:`Permissions` with all
+        "Events" permissions from the official Discord UI set to ``True``.
+
+        .. versionadded:: 2.4
+        """
+        return cls(0b100000000001000000000000000000000000000000000)
+
+    @classmethod
     def advanced(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Advanced" permissions from the official Discord UI set to ``True``.
@@ -685,6 +694,14 @@ class Permissions(BaseFlags):
         return 1 << 43
 
     @flag_value
+    def create_events(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can create guild events.
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 44
+
+    @flag_value
     def use_external_sounds(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can use sounds from other guilds.
 
@@ -819,6 +836,7 @@ class PermissionOverwrite:
         use_external_sounds: Optional[bool]
         send_voice_messages: Optional[bool]
         create_expressions: Optional[bool]
+        create_events: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}

@@ -1552,6 +1552,12 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
+    .. attribute:: media
+
+        A media channel.
+
+        .. versionadded:: 2.4
+
 .. class:: MessageType
 
     Specifies the type of :class:`Message`. This is used to denote if a message
@@ -2837,6 +2843,18 @@ of :class:`enum.Enum`.
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
 
         .. versionadded:: 2.1
+
+    .. attribute:: creator_monetization_request_created
+
+        A request to monetize the server was created.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: creator_monetization_terms_accepted
+
+        The terms and conditions for creator monetization were accepted.
+
+        .. versionadded:: 2.4
 
 .. class:: AuditLogActionCategory
 
@@ -5007,6 +5025,22 @@ MemberFlags
 .. attributetable:: MemberFlags
 
 .. autoclass:: MemberFlags
+    :members:
+
+AttachmentFlags
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: AttachmentFlags
+
+.. autoclass:: AttachmentFlags
+    :members:
+
+RoleFlags
+~~~~~~~~~~
+
+.. attributetable:: RoleFlags
+
+.. autoclass:: RoleFlags
     :members:
 
 ForumTag
