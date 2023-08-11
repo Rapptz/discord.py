@@ -1211,7 +1211,7 @@ class Intents(BaseFlags):
         """
         return 1 << 16
 
-    @flag_value
+    @alias_flag_value
     def auto_moderation(self):
         """:class:`bool`: Whether auto moderation related events are enabled.
 
