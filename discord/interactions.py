@@ -254,7 +254,10 @@ class Interaction(Generic[ClientT]):
     @property
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: The guild the interaction was sent from."""
-        return self._state and self._state._get_guild(self.guild_id)
+        # The user.guild attribute is set in __init__ to the fallback guild if available
+        # Therefore, we can use that instead of recreating it every time this property is
+        # accessed
+        return (self._state and self._state._get_guild(self.guild_id)) or getattr(self.user, 'guild', None)
 
     @property
     def channel_id(self) -> Optional[int]:
