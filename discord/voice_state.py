@@ -289,10 +289,12 @@ class VoiceConnectionState:
 
         return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
 
-    async def _wait_for_state(self, state: ConnectionFlowState, *, timeout: Optional[float] = None):
-        # TODO: switch to asyncio.Condition
+    async def _wait_for_state(
+        self, state: ConnectionFlowState, *other_states: ConnectionFlowState, timeout: Optional[float] = None
+    ):
+        states = (state, *other_states)
         while True:
-            if self.state == state:
+            if self.state in states:
                 return True
             await sane_wait_for([self._state_event.wait()], timeout=timeout)
 
@@ -365,7 +367,9 @@ class VoiceConnectionState:
 
     async def _potential_reconnect(self) -> bool:
         try:
-            await self._wait_for_state(ConnectionFlowState.got_voice_server_update, timeout=self.timeout)
+            await self._wait_for_state(
+                ConnectionFlowState.got_voice_server_update, ConnectionFlowState.got_both_voice_updates, timeout=self.timeout
+            )
         except asyncio.TimeoutError:
             await self.disconnect(force=True)
             return False
