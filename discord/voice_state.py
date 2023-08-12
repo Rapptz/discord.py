@@ -261,6 +261,7 @@ class VoiceConnectionState:
             self.state = ConnectionFlowState.disconnected
             self.ip = MISSING
             self.port = MISSING
+            self.voice_client.cleanup()
             # Flip the connected event just to unlock any waiters
             self._connected.set()
             self._connected.clear()

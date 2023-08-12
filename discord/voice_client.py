@@ -326,6 +326,7 @@ class VoiceClient(VoiceProtocol):
         """
         self.stop()
         await self._connection.disconnect(force=force)
+        self.cleanup()
 
     async def move_to(self, channel: Optional[abc.Snowflake]) -> None:
         """|coro|
