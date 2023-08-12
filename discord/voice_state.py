@@ -52,8 +52,6 @@ if TYPE_CHECKING:
 
     WebsocketHook = Optional[Callable[['VoiceConnectionState', Dict[str, Any]], Coroutine[Any, Any, Any]]]
 
-    from enum import IntEnum as Enum  # heck
-
 __all__ = ('VoiceConnectionState',)
 
 _log = logging.getLogger(__name__)
@@ -79,17 +77,17 @@ class ConnectionFlowState(Enum, comparable=True):
     """Enum representing voice connection flow state as 'what just happened'."""
 
     # fmt: off
-    disconnected            = 0b0
-    set_guild_voice_state   = 0b00_00000001
-    got_voice_state_update  = 0b00_00000011
-    got_voice_server_update = 0b00_00000101
-    got_both_voice_updates  = 0b00_00000111
-    websocket_connected     = 0b00_00001000
-    got_websocket_ready     = 0b00_00010000
+    disconnected            = 0
+    set_guild_voice_state   = 1
+    got_voice_state_update  = 2
+    got_voice_server_update = 3
+    got_both_voice_updates  = 4
+    websocket_connected     = 5
+    got_websocket_ready     = 6
     # we send udp discovery packet and read from the socket
-    got_udp_discovery       = 0b00_00100000
+    got_udp_discovery       = 7
     # we send SELECT_PROTOCOL then SPEAKING
-    connected               = 0b00_01000000
+    connected               = 8
     # fmt: on
 
 
@@ -159,17 +157,19 @@ class VoiceConnectionState:
         # if we get the event while connecting
         if self.state in (ConnectionFlowState.set_guild_voice_state, ConnectionFlowState.got_voice_server_update):
             self.session_id = session_id
-            # sets our connection state to either voice_state_update or both, if we already had the other one
-            self.state = ConnectionFlowState(self.state.value | ConnectionFlowState.got_voice_state_update.value)
+            if self.state == ConnectionFlowState.set_guild_voice_state:
+                self.state = ConnectionFlowState.got_voice_state_update
+            else:
+                self.state = ConnectionFlowState.got_both_voice_updates
             return
 
         if session_id != self.session_id:
             self.session_id = session_id
 
-        if self.state.value & ConnectionFlowState.connected.value:
+        if self.state == ConnectionFlowState.connected:
             self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
 
-        elif self.state < ConnectionFlowState.connected:
+        elif self.state != ConnectionFlowState.connected:
             _log.warning('Got unexpected voice_state_update before complete connection')
             # TODO: kill it and start over?
 
@@ -193,16 +193,19 @@ class VoiceConnectionState:
 
         # if we get the event while connecting
         if self.state in (ConnectionFlowState.set_guild_voice_state, ConnectionFlowState.got_voice_state_update):
-            # This gets set after READY
+            # This gets set after READY is received
             self.endpoint_ip = MISSING
 
             self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.socket.setblocking(False)
 
             # sets our connection state to either voice_server_update or both, if we already had the other one
-            self.state = ConnectionFlowState(self.state.value | ConnectionFlowState.got_voice_server_update.value)
-        elif self.state.value & ConnectionFlowState.connected.value:
-            _log.debug('Closing old websocket')
+            if self.state == ConnectionFlowState.set_guild_voice_state:
+                self.state = ConnectionFlowState.got_voice_server_update
+            else:
+                self.state = ConnectionFlowState.got_both_voice_updates
+        elif self.state == ConnectionFlowState.connected:
+            _log.debug('Closing old voice websocket')
             await self.ws.close(4014)
             self.state = ConnectionFlowState.got_both_voice_updates
         else:
@@ -273,28 +276,24 @@ class VoiceConnectionState:
         return self._connected.wait(timeout)
 
     async def wait_async(self, *, timeout: Optional[float] = None) -> bool:
-        return await self._wait_for_state(ConnectionFlowState.connected, timeout=timeout, exact=False)
+        return await self._wait_for_state(ConnectionFlowState.connected, timeout=timeout)
 
     def is_connected(self) -> bool:
-        return bool(self.state.value & ConnectionFlowState.connected.value)
+        return self.state == ConnectionFlowState.connected
 
     def send_packet(self, packet: bytes) -> int:
-        if not self.state.value & ConnectionFlowState.connected.value:
+        if not self.state == ConnectionFlowState.connected:
             # temporary, handling this needs a bit thought
             _log.info("Not connected but sending packet anyway...")
             # raise RuntimeError('Not connected')
 
         return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
 
-    async def _wait_for_state(self, state: ConnectionFlowState, *, timeout: Optional[float] = None, exact: bool = True):
+    async def _wait_for_state(self, state: ConnectionFlowState, *, timeout: Optional[float] = None):
         # TODO: switch to asyncio.Condition
         while True:
-            if exact:
-                if self.state == state:
-                    return True
-            else:
-                if self.state.value & state.value == state.value:
-                    return True
+            if self.state == state:
+                return True
             await sane_wait_for([self._state_event.wait()], timeout=timeout)
 
     async def _voice_connect(self, *, self_deaf: bool = False, self_mute: bool = False) -> None:
@@ -366,7 +365,7 @@ class VoiceConnectionState:
 
     async def _potential_reconnect(self) -> bool:
         try:
-            await self._wait_for_state(ConnectionFlowState.got_voice_server_update, timeout=self.timeout, exact=False)
+            await self._wait_for_state(ConnectionFlowState.got_voice_server_update, timeout=self.timeout)
         except asyncio.TimeoutError:
             await self.disconnect(force=True)
             return False
