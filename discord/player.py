@@ -391,7 +391,9 @@ class FFmpegOpusAudio(FFmpegAudio):
                      '-ar', '48000',
                      '-ac', '2',
                      '-b:a', f'{bitrate}k',
-                     '-loglevel', 'warning'))
+                     '-loglevel', 'warning',
+                     '-fec true',
+                     '-packet_loss 15'))
         # fmt: on
 
         if isinstance(options, str):
