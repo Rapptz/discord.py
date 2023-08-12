@@ -246,7 +246,7 @@ class VoiceConnectionState:
                     raise
 
         if self._runner is MISSING:
-            self._runner = self.voice_client.loop.create_task(self._poll_voice_ws(reconnect), name="Voice websocket poller")
+            self._runner = self.voice_client.loop.create_task(self._poll_voice_ws(reconnect), name='Voice websocket poller')
 
     async def disconnect(self, *, force: bool = False) -> None:
         if not force and not self.is_connected():
@@ -284,7 +284,7 @@ class VoiceConnectionState:
     def send_packet(self, packet: bytes) -> int:
         if not self.state == ConnectionFlowState.connected:
             # temporary, handling this needs a bit thought
-            _log.info("Not connected but sending packet anyway...")
+            _log.info('Not connected but sending packet anyway...')
             # raise RuntimeError('Not connected')
 
         return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
