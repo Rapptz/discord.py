@@ -34,7 +34,7 @@ import threading
 import traceback
 import zlib
 
-from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar
+from typing import Any, Callable, Coroutine, Deque, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar, Tuple
 
 import aiohttp
 import yarl
@@ -956,6 +956,21 @@ class DiscordVoiceWebSocket:
         state.voice_port = data['port']
         state.endpoint_ip = data['ip']
 
+        if not (state.ip and state.port):
+            state.ip, state.port = await self.discover_ip()
+        else:
+            _log.debug("Reusing previously found ip and port: %s:%s", state.ip, state.port)
+
+        # there *should* always be at least one supported mode (xsalsa20_poly1305)
+        modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
+        _log.debug('received supported encryption modes: %s', ", ".join(modes))
+
+        mode = modes[0]
+        await self.select_protocol(state.ip, state.port, mode)
+        _log.debug('selected the voice protocol for use (%s)', mode)
+
+    async def discover_ip(self) -> Tuple[str, int]:
+        state = self._connection
         packet = bytearray(74)
         struct.pack_into('>H', packet, 0, 1)  # 1 = Send
         struct.pack_into('>H', packet, 2, 70)  # 70 = Length
@@ -967,26 +982,22 @@ class DiscordVoiceWebSocket:
             # On a fresh connection this will always be the first packet, but
             # otherwise the socket will be full of RTP and RTCP packets.
             # TODO: add a hook for these packets
-            recv = await self.loop.sock_recv(state.socket, 2048)
+            recv = await state.read_packet_async()
             if recv[1] == 0x02:
                 break
+            else:
+                _log.warning("Found rtp packet in socket")
         _log.debug('received packet in initial_connection: %s', recv)
 
         # the ip is ascii starting at the 8th byte and ending at the first null
         ip_start = 8
         ip_end = recv.index(0, ip_start)
-        state.ip = recv[ip_start:ip_end].decode('ascii')
+        ip = recv[ip_start:ip_end].decode('ascii')
 
-        state.port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
-        _log.debug('detected ip: %s port: %s', state.ip, state.port)
+        port = struct.unpack_from('>H', recv, len(recv) - 2)[0]
+        _log.debug('detected ip: %s port: %s', ip, port)
 
-        # there *should* always be at least one supported mode (xsalsa20_poly1305)
-        modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
-        _log.debug('received supported encryption modes: %s', ", ".join(modes))
-
-        mode = modes[0]
-        await self.select_protocol(state.ip, state.port, mode)
-        _log.debug('selected the voice protocol for use (%s)', mode)
+        return ip, port
 
     @property
     def latency(self) -> float:

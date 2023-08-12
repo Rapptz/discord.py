@@ -259,6 +259,8 @@ class VoiceConnectionState:
             await self._voice_disconnect()
         finally:
             self.state = ConnectionFlowState.disconnected
+            self.ip = MISSING
+            self.port = MISSING
             # Flip the connected event just to unlock any waiters
             self._connected.set()
             self._connected.clear()
@@ -288,6 +290,15 @@ class VoiceConnectionState:
             # raise RuntimeError('Not connected')
 
         return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
+
+    def read_packet(self, length: int = 2048) -> bytes:
+        return self._handle_packet(self.socket.recv(length))
+
+    async def read_packet_async(self, length: int = 2048) -> bytes:
+        return self._handle_packet(await self.voice_client.loop.sock_recv(self.socket, length))
+
+    def _handle_packet(self, data: bytes) -> bytes:
+        return data
 
     async def _wait_for_state(
         self, state: ConnectionFlowState, *other_states: ConnectionFlowState, timeout: Optional[float] = None
