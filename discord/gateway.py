@@ -956,6 +956,11 @@ class DiscordVoiceWebSocket:
         state.voice_port = data['port']
         state.endpoint_ip = data['ip']
 
+        # Only do ip discovery if the ip/port aren't cached from a previous call.
+        # I'm not entirely sure this is sound since I can imagine that there is probably a
+        # scenario where doing this breaks on some network issue out of the lib's control
+        # where it didn't break previously since it would do this step every time.
+        # That said, the ip/port are cleared on disconnect() calls so its probably be fine?
         if not (state.ip and state.port):
             state.ip, state.port = await self.discover_ip()
         else:
@@ -977,6 +982,7 @@ class DiscordVoiceWebSocket:
         struct.pack_into('>I', packet, 4, state.ssrc)
         state.socket.sendto(packet, (state.endpoint_ip, state.voice_port))
 
+        # TODO: add an escape condition?
         while True:
             # Read packets until we find the ip discovery packet.
             # On a fresh connection this will always be the first packet, but
@@ -984,10 +990,9 @@ class DiscordVoiceWebSocket:
             # TODO: add a hook for these packets
             recv = await state.read_packet_async()
             if recv[1] == 0x02:
+                # TODO: add length check too? -- and len(packet) == 74
                 break
-            else:
-                _log.warning("Found rtp packet in socket")
-        _log.debug('received packet in initial_connection: %s', recv)
+        _log.debug('received ip discovery packet: %s', recv)
 
         # the ip is ascii starting at the 8th byte and ending at the first null
         ip_start = 8

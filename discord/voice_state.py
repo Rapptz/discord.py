@@ -85,7 +85,7 @@ class ConnectionFlowState(Enum, comparable=True):
     websocket_connected     = 5
     got_websocket_ready     = 6
     # we send udp discovery packet and read from the socket
-    got_udp_discovery       = 7
+    got_ip_discovery        = 7
     # we send SELECT_PROTOCOL then SPEAKING
     connected               = 8
     # fmt: on
@@ -290,10 +290,10 @@ class VoiceConnectionState:
 
         return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
 
-    def read_packet(self, length: int = 2048) -> bytes:
+    def read_packet(self, *, length: int = 2048) -> bytes:
         return self._handle_packet(self.socket.recv(length))
 
-    async def read_packet_async(self, length: int = 2048) -> bytes:
+    async def read_packet_async(self, *, length: int = 2048) -> bytes:
         return self._handle_packet(await self.voice_client.loop.sock_recv(self.socket, length))
 
     def _handle_packet(self, data: bytes) -> bytes:
@@ -326,7 +326,7 @@ class VoiceConnectionState:
         self.state = ConnectionFlowState.websocket_connected
         while not self.ip:
             await ws.poll_event()
-        self.state = ConnectionFlowState.got_udp_discovery
+        self.state = ConnectionFlowState.got_ip_discovery
         while ws.secret_key is None:
             await ws.poll_event()
         self.state = ConnectionFlowState.connected
