@@ -208,7 +208,7 @@ class VoiceConnectionState:
             _log.debug('Closing old voice websocket')
             await self.ws.close(4014)
             self.state = ConnectionFlowState.got_both_voice_updates
-        else:
+        elif self.state != ConnectionFlowState.disconnected:
             _log.warning('Got unexpected voice_server_update')
             # TODO: wat do?
 
