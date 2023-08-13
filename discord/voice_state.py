@@ -152,7 +152,7 @@ class VoiceConnectionState:
         channel_id = data['channel_id']
 
         if channel_id is None:
-            await self.disconnect()
+            await self.disconnect(force=True)
 
         # if we get the event while connecting
         if self.state in (ConnectionFlowState.set_guild_voice_state, ConnectionFlowState.got_voice_server_update):
@@ -239,10 +239,7 @@ class VoiceConnectionState:
                     await self._voice_disconnect()
                     continue
                 else:
-                    try:
-                        await self._voice_disconnect()
-                    except Exception:
-                        _log.exception('Error setting voice state after connection failure')
+                    await self.disconnect(force=True)
                     raise
 
         if self._runner is MISSING:
@@ -258,7 +255,8 @@ class VoiceConnectionState:
 
             await self._voice_disconnect()
         finally:
-            self.state = ConnectionFlowState.disconnected
+            if self.state != ConnectionFlowState.disconnected:
+                self.state = ConnectionFlowState.disconnected
             self.ip = MISSING
             self.port = MISSING
             self.voice_client.cleanup()
@@ -270,7 +268,7 @@ class VoiceConnectionState:
 
     async def move_to(self, channel: Optional[abc.Snowflake]) -> None:
         if channel is None:
-            await self.disconnect()
+            await self.disconnect(force=True)
             return
 
         await self.voice_client.channel.guild.change_voice_state(channel=channel)
@@ -355,7 +353,7 @@ class VoiceConnectionState:
                         successful = await self._potential_reconnect()
                         if not successful:
                             _log.info('Reconnect was unsuccessful, disconnecting from voice normally...')
-                            await self.disconnect()
+                            await self.disconnect(force=True)
                             break
                         else:
                             continue
@@ -383,7 +381,6 @@ class VoiceConnectionState:
                 ConnectionFlowState.got_voice_server_update, ConnectionFlowState.got_both_voice_updates, timeout=self.timeout
             )
         except asyncio.TimeoutError:
-            await self.disconnect(force=True)
             return False
         try:
             self.ws = await self._connect_websocket(False)
