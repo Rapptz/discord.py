@@ -1149,4 +1149,4 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         HTTPException
             Sending the friend request failed.
         """
-        await self._state.http.send_friend_request(self.name, self.discriminator)
+        await self._state.http.add_relationship(self.id, action=RelationshipAction.send_friend_request)

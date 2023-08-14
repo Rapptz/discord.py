@@ -37,7 +37,7 @@ from .asset import Asset
 from .utils import MISSING
 from .user import BaseUser, User, _UserTag
 from .permissions import Permissions
-from .enums import RelationshipAction, Status, try_enum
+from .enums import Status, try_enum
 from .errors import ClientException
 from .colour import Colour
 from .object import Object
@@ -1107,20 +1107,6 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         if self.timed_out_until is not None:
             return utils.utcnow() < self.timed_out_until
         return False
-
-    async def send_friend_request(self) -> None:
-        """|coro|
-
-        Sends the member a friend request.
-
-        Raises
-        -------
-        Forbidden
-            Not allowed to send a friend request to the member.
-        HTTPException
-            Sending the friend request failed.
-        """
-        await self._state.http.add_relationship(self._user.id, action=RelationshipAction.send_friend_request)
 
     async def profile(
         self,
