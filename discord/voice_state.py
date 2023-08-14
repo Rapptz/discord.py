@@ -30,7 +30,7 @@ import asyncio
 import logging
 import threading
 
-from typing import TYPE_CHECKING, Optional, Dict, List, Callable, Coroutine, Any
+from typing import TYPE_CHECKING, Optional, Dict, List, Callable, Coroutine, Any, Tuple
 
 from .enums import Enum
 from .utils import MISSING, sane_wait_for
@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from .types.voice import (
         GuildVoiceState as GuildVoiceStatePayload,
         VoiceServerUpdate as VoiceServerUpdatePayload,
-        # SupportedModes,
+        SupportedModes,
     )
 
     WebsocketHook = Optional[Callable[['VoiceConnectionState', Dict[str, Any]], Coroutine[Any, Any, Any]]]
@@ -108,9 +108,9 @@ class VoiceConnectionState:
         self.voice_port: int = MISSING
         self.secret_key: List[int] = MISSING
         self.ssrc: int = MISSING
-        self.mode: str = MISSING
+        self.mode: SupportedModes = MISSING
 
-        self.socket = MISSING
+        self.socket: socket.socket = MISSING
         self.ws: DiscordVoiceWebSocket = MISSING
 
         self._state: ConnectionFlowState = ConnectionFlowState.disconnected
@@ -144,7 +144,7 @@ class VoiceConnectionState:
         return self.voice_client.user
 
     @property
-    def supported_modes(self):
+    def supported_modes(self) -> Tuple[SupportedModes, ...]:
         return self.voice_client.supported_modes
 
     async def voice_state_update(self, data: GuildVoiceStatePayload) -> None:
@@ -168,10 +168,9 @@ class VoiceConnectionState:
 
         if self.state == ConnectionFlowState.connected:
             self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
-
         elif self.state != ConnectionFlowState.connected:
             _log.warning('Got unexpected voice_state_update before complete connection')
-            # TODO: kill it and start over?
+            # TODO: kill it and start over? (self.ws.close(4014)?)
 
     # this whole function gives me the heebie jeebies
     async def voice_server_update(self, data: VoiceServerUpdatePayload) -> None:
@@ -205,12 +204,12 @@ class VoiceConnectionState:
             else:
                 self.state = ConnectionFlowState.got_both_voice_updates
         elif self.state == ConnectionFlowState.connected:
-            _log.debug('Closing old voice websocket')
+            _log.debug('Voice server update, closing old voice websocket')
             await self.ws.close(4014)
             self.state = ConnectionFlowState.got_both_voice_updates
         elif self.state != ConnectionFlowState.disconnected:
-            _log.warning('Got unexpected voice_server_update')
-            # TODO: wat do?
+            _log.warning('Ignoring unexpected voice_server_update event')
+            # Something might need to be done here but I don't know what
 
     async def connect(self, *, reconnect: bool, timeout: float, self_deaf: bool, self_mute: bool, resume: bool) -> None:
         _log.info('Connecting to voice...')
@@ -224,7 +223,6 @@ class VoiceConnectionState:
                 await self._wait_for_state(ConnectionFlowState.got_both_voice_updates, timeout=timeout)
             except asyncio.TimeoutError:
                 _log.info('Timed out waiting for voice update events')
-                # I probably dont actually need this disconnect here
                 await self.disconnect(force=True)
                 raise
 
@@ -252,7 +250,6 @@ class VoiceConnectionState:
         try:
             if self.ws:
                 await self.ws.close()
-
             await self._voice_disconnect()
         finally:
             if self.state != ConnectionFlowState.disconnected:
@@ -260,7 +257,7 @@ class VoiceConnectionState:
             self.ip = MISSING
             self.port = MISSING
             self.voice_client.cleanup()
-            # Flip the connected event just to unlock any waiters
+            # Flip the connected event to unlock any waiters
             self._connected.set()
             self._connected.clear()
             if self.socket:
@@ -284,9 +281,8 @@ class VoiceConnectionState:
 
     def send_packet(self, packet: bytes) -> int:
         if not self.state == ConnectionFlowState.connected:
-            # temporary, handling this needs a bit thought
-            _log.info('Not connected but sending packet anyway...')
-            # raise RuntimeError('Not connected')
+            # TODO: temporary solution, handling this properly needs a bit thought
+            _log.debug('Not connected but sending packet anyway...')
 
         return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
 

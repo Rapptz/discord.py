@@ -52,6 +52,7 @@ from .utils import MISSING
 from .voice_state import VoiceConnectionState
 
 if TYPE_CHECKING:
+    from .gateway import DiscordVoiceWebSocket
     from .client import Client
     from .guild import Guild
     from .state import ConnectionState
@@ -267,7 +268,7 @@ class VoiceClient(VoiceProtocol):
         return self._connection.ssrc
 
     @property
-    def mode(self) -> str:
+    def mode(self) -> SupportedModes:
         return self._connection.mode
 
     @property
@@ -275,7 +276,7 @@ class VoiceClient(VoiceProtocol):
         return self._connection.secret_key
 
     @property
-    def ws(self):
+    def ws(self) -> DiscordVoiceWebSocket:
         return self._connection.ws
 
     def checked_add(self, attr: str, value: int, limit: int) -> None:
@@ -344,14 +345,19 @@ class VoiceClient(VoiceProtocol):
         """Indicates if the voice client is connected to voice."""
         return self._connection.is_connected()
 
-    def wait_until_connected(self, *, timeout: Optional[float] = None) -> None:
+    def wait_until_connected(self, *, timeout: Optional[float] = None) -> bool:
         """Waits until the voice client is connected.
 
         Parameters
         -----------
         timeout: Optional[:class:`float`]
+
+        Returns
+        ---------
+        :class:`bool`
+            The same as what :meth:`threading.Event.wait()` returns (The state of the internal :class:`threading.Event` flag).
         """
-        self._connection.wait(timeout)
+        return self._connection.wait(timeout)
 
     # audio related
 

@@ -964,11 +964,11 @@ class DiscordVoiceWebSocket:
         if not (state.ip and state.port):
             state.ip, state.port = await self.discover_ip()
         else:
-            _log.debug("Reusing previously found ip and port: %s:%s", state.ip, state.port)
+            _log.debug('Reusing previously found ip and port: %s:%s', state.ip, state.port)
 
         # there *should* always be at least one supported mode (xsalsa20_poly1305)
         modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
-        _log.debug('received supported encryption modes: %s', ", ".join(modes))
+        _log.debug('received supported encryption modes: %s', ', '.join(modes))
 
         mode = modes[0]
         await self.select_protocol(state.ip, state.port, mode)

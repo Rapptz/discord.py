@@ -713,7 +713,8 @@ class AudioPlayer(threading.Thread):
         self._start = time.perf_counter()
 
         # getattr lookup speed ups
-        play_audio = self.client.send_audio_packet
+        client = self.client
+        play_audio = client.send_audio_packet
         self._speak(SpeakingState.voice)
 
         while not self._end.is_set():
@@ -731,10 +732,10 @@ class AudioPlayer(threading.Thread):
                 break
 
             # are we disconnected from voice?
-            if not self.client.is_connected():
+            if not client.is_connected():
                 _log.info('Not connected, waiting...')
                 # wait until we are connected
-                self.client.wait_until_connected()
+                client.wait_until_connected()
                 if self._end.is_set():
                     return
                 _log.info('Reconnected, resuming playback')
