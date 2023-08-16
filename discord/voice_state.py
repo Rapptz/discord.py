@@ -160,7 +160,7 @@ class VoiceConnectionState:
                 self._expecting_disconnect = False
             else:
                 _log.debug("We were probably disconnected from voice by someone else.")
-                await self.disconnect(force=True)
+                await self.disconnect()
 
             if self.state != ConnectionFlowState.connected:
                 _log.warning("Ignoring voice_state_update event while in state %s", self.state)
@@ -244,7 +244,7 @@ class VoiceConnectionState:
                 await self._wait_for_state(ConnectionFlowState.got_both_voice_updates, timeout=timeout)
             except asyncio.TimeoutError:
                 _log.info('Timed out waiting for voice update events')
-                await self.disconnect(force=True)
+                await self.disconnect()
                 raise
 
             try:
@@ -256,26 +256,21 @@ class VoiceConnectionState:
                 if reconnect:
                     wait = 1 + i * 2.0
                     _log.exception('Failed to connect to voice... Retrying in %ss...', wait)
-                    await self._voice_disconnect()
-                    if self.ws:
-                        try:
-                            await self.ws.close()
-                        except Exception:
-                            pass
+                    await self.disconnect(cleanup=False)
                     await asyncio.sleep(wait)
                     continue
                 else:
-                    await self.disconnect(force=True)
+                    await self.disconnect()
                     raise
             except Exception:
                 _log.exception('Unhandled error connecting to voice')
-                await self.disconnect(force=True)
+                await self.disconnect()
                 raise
 
         if self._runner is MISSING:
             self._runner = self.voice_client.loop.create_task(self._poll_voice_ws(reconnect), name='Voice websocket poller')
 
-    async def disconnect(self, *, force: bool = False) -> None:
+    async def disconnect(self, *, force: bool = True, cleanup: bool = True) -> None:
         if not force and not self.is_connected():
             return
 
@@ -284,20 +279,23 @@ class VoiceConnectionState:
                 await self.ws.close()
             await self._voice_disconnect()
         finally:
-            if self.state != ConnectionFlowState.disconnected:
-                self.state = ConnectionFlowState.disconnected
             self.ip = MISSING
             self.port = MISSING
-            self.voice_client.cleanup()
+            self.state = ConnectionFlowState.disconnected
+
             # Flip the connected event to unlock any waiters
             self._connected.set()
             self._connected.clear()
+
+            if cleanup:
+                self.voice_client.cleanup()
+
             if self.socket:
                 self.socket.close()
 
     async def move_to(self, channel: Optional[abc.Snowflake]) -> None:
         if channel is None:
-            await self.disconnect(force=True)
+            await self.disconnect()
             return
 
         await self.voice_client.channel.guild.change_voice_state(channel=channel)
@@ -312,7 +310,7 @@ class VoiceConnectionState:
         return self.state == ConnectionFlowState.connected
 
     def send_packet(self, packet: bytes) -> int:
-        if not self.state == ConnectionFlowState.connected:
+        if self.state != ConnectionFlowState.connected:
             # TODO: temporary solution, handling this properly needs a bit thought
             _log.debug('Not connected but sending packet anyway...')
 
@@ -384,19 +382,19 @@ class VoiceConnectionState:
                         successful = await self._potential_reconnect()
                         if not successful:
                             _log.info('Reconnect was unsuccessful, disconnecting from voice normally...')
-                            await self.disconnect(force=True)
+                            await self.disconnect()
                             break
                         else:
                             continue
 
                 if not reconnect:
-                    await self.disconnect(force=True)
+                    await self.disconnect()
                     raise
 
                 retry = backoff.delay() - 0.5
                 _log.exception('Disconnected from voice... Reconnecting in %.2fs.', retry)
                 await asyncio.sleep(retry)
-                await self.disconnect(force=True)
+                await self.disconnect(cleanup=False)
                 await asyncio.sleep(0.5)
                 try:
                     # TODO: replace bools with last known state?
