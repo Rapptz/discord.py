@@ -117,6 +117,7 @@ class VoiceConnectionState:
 
         self._state: ConnectionFlowState = ConnectionFlowState.disconnected
 
+        self._expecting_disconnect: bool = False
         self._connected = threading.Event()
         self._state_event = asyncio.Event()
         self._runner: asyncio.Task = MISSING
@@ -150,23 +151,31 @@ class VoiceConnectionState:
         return self.voice_client.supported_modes
 
     async def voice_state_update(self, data: GuildVoiceStatePayload) -> None:
-        session_id = data['session_id']
         channel_id = data['channel_id']
 
         if channel_id is None:
-            await self.disconnect(force=True)
+            # If we know we're going to get a voice_state_update where we have no channel due to
+            # being in the reconnect flow, we ignore it.  Otherwise, it probably wasn't from us.
+            if self._expecting_disconnect:
+                self._expecting_disconnect = False
+            else:
+                _log.debug("We were probably disconnected from voice by someone else.")
+                await self.disconnect(force=True)
+
+            if self.state != ConnectionFlowState.connected:
+                _log.warning("Ignoring voice_state_update event while in state %s", self.state)
+
+            return
+
+        self.session_id = data['session_id']
 
         # if we get the event while connecting
         if self.state in (ConnectionFlowState.set_guild_voice_state, ConnectionFlowState.got_voice_server_update):
-            self.session_id = session_id
             if self.state == ConnectionFlowState.set_guild_voice_state:
                 self.state = ConnectionFlowState.got_voice_state_update
             else:
                 self.state = ConnectionFlowState.got_both_voice_updates
             return
-
-        if session_id != self.session_id:
-            self.session_id = session_id
 
         if self.state == ConnectionFlowState.connected:
             self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
@@ -339,6 +348,7 @@ class VoiceConnectionState:
         )
         self.state = ConnectionFlowState.disconnected
         await self.voice_client.channel.guild.change_voice_state(channel=None)
+        self._expecting_disconnect = True
 
     async def _connect_websocket(self, resume: bool) -> DiscordVoiceWebSocket:
         ws = await DiscordVoiceWebSocket.from_connection_state(self, resume=resume, hook=self.hook)
@@ -383,11 +393,13 @@ class VoiceConnectionState:
                     await self.disconnect(force=True)
                     raise
 
-                retry = backoff.delay()
+                retry = backoff.delay() - 0.5
                 _log.exception('Disconnected from voice... Reconnecting in %.2fs.', retry)
                 await asyncio.sleep(retry)
-                await self._voice_disconnect()
+                await self.disconnect(force=True)
+                await asyncio.sleep(0.5)
                 try:
+                    # TODO: replace bools with last known state?
                     await self.connect(
                         reconnect=reconnect, timeout=self.timeout, self_deaf=False, self_mute=False, resume=False
                     )
