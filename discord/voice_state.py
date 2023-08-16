@@ -128,8 +128,9 @@ class VoiceConnectionState:
 
     @state.setter
     def state(self, state: ConnectionFlowState) -> None:
+        if state != self._state:
+            _log.debug('Connection state changed to %s', state.name)
         self._state = state
-        _log.debug('Current connection state is now: %s', state.name)
         self._state_event.set()
         self._state_event.clear()
 
@@ -305,8 +306,8 @@ class VoiceConnectionState:
     def wait(self, timeout: Optional[float] = None) -> bool:
         return self._connected.wait(timeout)
 
-    async def wait_async(self, *, timeout: Optional[float] = None) -> bool:
-        return await self._wait_for_state(ConnectionFlowState.connected, timeout=timeout)
+    async def wait_async(self, *, timeout: Optional[float] = None) -> None:
+        await self._wait_for_state(ConnectionFlowState.connected, timeout=timeout)
 
     def is_connected(self) -> bool:
         return self.state == ConnectionFlowState.connected
@@ -329,11 +330,11 @@ class VoiceConnectionState:
 
     async def _wait_for_state(
         self, state: ConnectionFlowState, *other_states: ConnectionFlowState, timeout: Optional[float] = None
-    ):
+    ) -> None:
         states = (state, *other_states)
         while True:
             if self.state in states:
-                return True
+                return
             await sane_wait_for([self._state_event.wait()], timeout=timeout)
 
     async def _voice_connect(self, *, self_deaf: bool = False, self_mute: bool = False) -> None:
