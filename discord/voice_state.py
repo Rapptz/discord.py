@@ -30,6 +30,8 @@ import asyncio
 import logging
 import threading
 
+import async_timeout
+
 from typing import TYPE_CHECKING, Optional, Dict, List, Callable, Coroutine, Any, Tuple
 
 from .enums import Enum
@@ -168,9 +170,19 @@ class VoiceConnectionState:
 
         if self.state == ConnectionFlowState.connected:
             self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
-        elif self.state != ConnectionFlowState.connected:
-            _log.warning('Got unexpected voice_state_update before complete connection')
-            # TODO: kill it and start over? (self.ws.close(4014)?)
+        elif self.state != ConnectionFlowState.disconnected:
+            if channel_id != self.voice_client.channel.id:
+                # For some unfortunate reason we were moved during the connection flow
+                # We *could* try to wrangle whatever state we're in back in order...
+                # ...or we just reconnect fully and spare ourselves the effort of figuring that mess out
+                _log.info("Handling channel move during connection flow...")
+                _log.debug("Current state is %s", self.state)
+
+                self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
+                await self.ws.close(4014)
+            else:
+                _log.warning('Ignoring unexpected voice_state_update event')
+                # TODO: kill it and start over? (self.ws.close(4014)?)
 
     # this whole function gives me the heebie jeebies
     async def voice_server_update(self, data: VoiceServerUpdatePayload) -> None:
@@ -227,18 +239,29 @@ class VoiceConnectionState:
                 raise
 
             try:
-                self.ws = await self._connect_websocket(resume)
+                async with async_timeout.timeout(self.timeout):
+                    self.ws = await self._connect_websocket(resume)
+                    await self._handshake_websocket()
                 break
             except (ConnectionClosed, asyncio.TimeoutError):
                 if reconnect:
                     wait = 1 + i * 2.0
                     _log.exception('Failed to connect to voice... Retrying in %ss...', wait)
-                    await asyncio.sleep(wait)
                     await self._voice_disconnect()
+                    if self.ws:
+                        try:
+                            await self.ws.close()
+                        except Exception:
+                            pass
+                    await asyncio.sleep(wait)
                     continue
                 else:
                     await self.disconnect(force=True)
                     raise
+            except Exception:
+                _log.exception('Unhandled error connecting to voice')
+                await self.disconnect(force=True)
+                raise
 
         if self._runner is MISSING:
             self._runner = self.voice_client.loop.create_task(self._poll_voice_ws(reconnect), name='Voice websocket poller')
@@ -320,13 +343,15 @@ class VoiceConnectionState:
     async def _connect_websocket(self, resume: bool) -> DiscordVoiceWebSocket:
         ws = await DiscordVoiceWebSocket.from_connection_state(self, resume=resume, hook=self.hook)
         self.state = ConnectionFlowState.websocket_connected
-        while not self.ip:
-            await ws.poll_event()
-        self.state = ConnectionFlowState.got_ip_discovery
-        while ws.secret_key is None:
-            await ws.poll_event()
-        self.state = ConnectionFlowState.connected
         return ws
+
+    async def _handshake_websocket(self) -> None:
+        while not self.ip:
+            await self.ws.poll_event()
+        self.state = ConnectionFlowState.got_ip_discovery
+        while self.ws.secret_key is None:
+            await self.ws.poll_event()
+        self.state = ConnectionFlowState.connected
 
     async def _poll_voice_ws(self, reconnect: bool) -> None:
         backoff = ExponentialBackoff()
@@ -380,6 +405,7 @@ class VoiceConnectionState:
             return False
         try:
             self.ws = await self._connect_websocket(False)
+            await self._handshake_websocket()
         except (ConnectionClosed, asyncio.TimeoutError):
             return False
         else:

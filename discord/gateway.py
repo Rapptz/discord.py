@@ -956,6 +956,9 @@ class DiscordVoiceWebSocket:
         state.voice_port = data['port']
         state.endpoint_ip = data['ip']
 
+        _log.debug('Connecting to voice socket')
+        await self.loop.sock_connect(state.socket, (state.endpoint_ip, state.voice_port))
+
         # Only do ip discovery if the ip/port aren't cached from a previous call.
         # I'm not entirely sure this is sound since I can imagine that there is probably a
         # scenario where doing this breaks on some network issue out of the lib's control
@@ -980,7 +983,9 @@ class DiscordVoiceWebSocket:
         struct.pack_into('>H', packet, 0, 1)  # 1 = Send
         struct.pack_into('>H', packet, 2, 70)  # 70 = Length
         struct.pack_into('>I', packet, 4, state.ssrc)
-        state.socket.sendto(packet, (state.endpoint_ip, state.voice_port))
+
+        _log.debug('Sending ip discovery packet')
+        await self.loop.sock_sendall(state.socket, packet)
 
         # TODO: add an escape condition?
         while True:
@@ -992,7 +997,8 @@ class DiscordVoiceWebSocket:
             if recv[1] == 0x02:
                 # TODO: add length check too? -- and len(packet) == 74
                 break
-        _log.debug('received ip discovery packet: %s', recv)
+
+        _log.debug('Received ip discovery packet: %s', recv)
 
         # the ip is ascii starting at the 8th byte and ending at the first null
         ip_start = 8
