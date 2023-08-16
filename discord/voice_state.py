@@ -159,11 +159,11 @@ class VoiceConnectionState:
             if self._expecting_disconnect:
                 self._expecting_disconnect = False
             else:
-                _log.debug("We were probably disconnected from voice by someone else.")
+                _log.debug('We were probably disconnected from voice by someone else.')
                 await self.disconnect()
 
             if self.state != ConnectionFlowState.connected:
-                _log.warning("Ignoring voice_state_update event while in state %s", self.state)
+                _log.warning('Ignoring voice_state_update event while in state %s', self.state)
 
             return
 
@@ -184,8 +184,8 @@ class VoiceConnectionState:
                 # For some unfortunate reason we were moved during the connection flow
                 # We *could* try to wrangle whatever state we're in back in order...
                 # ...or we just reconnect fully and spare ourselves the effort of figuring that mess out
-                _log.info("Handling channel move during connection flow...")
-                _log.debug("Current state is %s", self.state)
+                _log.info('Handling channel move during connection flow...')
+                _log.debug('Current state is %s', self.state)
 
                 self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
                 await self.ws.close(4014)
@@ -278,6 +278,8 @@ class VoiceConnectionState:
             if self.ws:
                 await self.ws.close()
             await self._voice_disconnect()
+        except Exception:
+            _log.debug('Ignoring exception disconnecting from voice', exc_info=True)
         finally:
             self.ip = MISSING
             self.port = MISSING
