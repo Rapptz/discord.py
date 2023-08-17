@@ -382,7 +382,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         args.append('-i')
         args.append('-' if pipe else source)
 
-        codec = 'copy' if codec in ('opus', 'libopus') else 'libopus'
+        codec = 'copy' if codec in ('opus', 'libopus', 'copy') else 'libopus'
         bitrate = bitrate if bitrate is not None else 128
 
         # fmt: off
