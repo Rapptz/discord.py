@@ -987,16 +987,18 @@ class DiscordVoiceWebSocket:
         _log.debug('Sending ip discovery packet')
         await self.loop.sock_sendall(state.socket, packet)
 
-        # TODO: add an escape condition?
-        while True:
-            # Read packets until we find the ip discovery packet.
-            # On a fresh connection this will always be the first packet, but
-            # otherwise the socket will be full of RTP and RTCP packets.
-            # TODO: add a hook for these packets
-            recv = await state.read_packet_async()
-            if recv[1] == 0x02:
-                # TODO: add length check too? -- and len(packet) == 74
-                break
+        fut: asyncio.Future[bytes] = asyncio.Future()
+
+        def get_ip_packet(data: bytes):
+            if data[1] == 0x02 and len(data) == 74:
+                self.loop.call_soon_threadsafe(fut.set_result, data)
+
+        state.add_socket_listener(get_ip_packet)
+        try:
+            await fut
+            recv = fut.result()
+        finally:
+            state.remove_socket_listener(get_ip_packet)
 
         _log.debug('Received ip discovery packet: %s', recv)
 

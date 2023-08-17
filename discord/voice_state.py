@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import select
 import socket
 import asyncio
 import logging
@@ -53,6 +54,7 @@ if TYPE_CHECKING:
     )
 
     WebsocketHook = Optional[Callable[['VoiceConnectionState', Dict[str, Any]], Coroutine[Any, Any, Any]]]
+    SocketReaderCallback = Callable[[bytes], Any]
 
 __all__ = ('VoiceConnectionState',)
 
@@ -73,6 +75,86 @@ Some documentation to refer to:
 - When that's all done, we receive opcode 4 from the vWS.
 - Finally we can transmit data to endpoint:port.
 """
+
+
+class SocketReader(threading.Thread):
+    def __init__(self, state: VoiceConnectionState) -> None:
+        super().__init__(daemon=True, name=f'voice-socket-reader:{id(self):#x}')
+        self.state: VoiceConnectionState = state
+        self._callbacks: List[SocketReaderCallback] = []
+        self._running = threading.Event()
+        self._end = threading.Event()
+        self._self_paused: bool = True
+
+    def register(self, callback: SocketReaderCallback) -> None:
+        self._callbacks.append(callback)
+        if self._self_paused:
+            self._self_paused = False
+            self._running.set()
+
+    def unregister(self, callback: SocketReaderCallback) -> None:
+        try:
+            self._callbacks.remove(callback)
+        except ValueError:
+            pass
+        else:
+            if not self._callbacks and self._running.is_set():
+                self._self_paused = True
+                self._running.clear()
+
+    def pause(self) -> None:
+        self._self_paused = False
+        self._running.clear()
+
+    def resume(self, *, force: bool = False) -> None:
+        # Don't resume if there are no callbacks registered
+        if not force and not self._callbacks:
+            # We tried to resume but there was nothing to do, so resume when ready
+            self._self_paused = True
+            return
+        self._self_paused = False
+        self._running.set()
+
+    def stop(self) -> None:
+        self._end.set()
+        self._running.set()
+
+    def run(self) -> None:
+        self._running.set()
+        try:
+            self._do_run()
+        except Exception:
+            _log.exception('Error in %s', self)
+        finally:
+            self._running.clear()
+            self._callbacks.clear()
+            self.state = None  # type: ignore
+
+    def _do_run(self) -> None:
+        while not self._end.is_set():
+            if not self._running.is_set():
+                self._running.wait(1)
+                continue
+
+            try:
+                readable, _, _ = select.select([self.state.socket], [], [], 1)
+            except (ValueError, TypeError):
+                # The socket is either closed or doesn't exist at the moment
+                continue
+
+            if not readable:
+                continue
+
+            try:
+                data = self.state.socket.recv(2048)
+            except OSError:
+                _log.debug('Error reading from socket in %s, this should be safe to ignore:', self, exc_info=True)
+            else:
+                for cb in self._callbacks:
+                    try:
+                        cb(data)
+                    except Exception:
+                        _log.exception('Error calling %s in %s:', self, cb)
 
 
 class ConnectionFlowState(Enum, comparable=True):
@@ -121,6 +203,8 @@ class VoiceConnectionState:
         self._connected = threading.Event()
         self._state_event = asyncio.Event()
         self._runner: asyncio.Task = MISSING
+        self._socket_reader = SocketReader(self)
+        self._socket_reader.start()
 
     @property
     def state(self) -> ConnectionFlowState:
@@ -219,6 +303,7 @@ class VoiceConnectionState:
 
             self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.socket.setblocking(False)
+            self._socket_reader.resume()
 
             # sets our connection state to either voice_server_update or both, if we already had the other one
             if self.state == ConnectionFlowState.set_guild_voice_state:
@@ -285,12 +370,14 @@ class VoiceConnectionState:
             self.ip = MISSING
             self.port = MISSING
             self.state = ConnectionFlowState.disconnected
+            self._socket_reader.pause()
 
             # Flip the connected event to unlock any waiters
             self._connected.set()
             self._connected.clear()
 
             if cleanup:
+                self._socket_reader.stop()
                 self.voice_client.cleanup()
 
             if self.socket:
@@ -312,21 +399,22 @@ class VoiceConnectionState:
     def is_connected(self) -> bool:
         return self.state == ConnectionFlowState.connected
 
-    def send_packet(self, packet: bytes) -> int:
+    def send_packet(self, packet: bytes) -> None:
         if self.state != ConnectionFlowState.connected:
-            # TODO: temporary solution, handling this properly needs a bit thought
+            # TODO: do I drop the packet or let it go through and maybe raise?
             _log.debug('Not connected but sending packet anyway...')
+            # _log.debug('Not connected to voice, dropping packet')
+            # return
 
-        return self.socket.sendto(packet, (self.endpoint_ip, self.voice_port))
+        self.socket.sendall(packet)
 
-    def read_packet(self, *, length: int = 2048) -> bytes:
-        return self._handle_packet(self.socket.recv(length))
+    def add_socket_listener(self, callback: SocketReaderCallback) -> None:
+        _log.debug('Registering socket listener callback %s', callback)
+        self._socket_reader.register(callback)
 
-    async def read_packet_async(self, *, length: int = 2048) -> bytes:
-        return self._handle_packet(await self.voice_client.loop.sock_recv(self.socket, length))
-
-    def _handle_packet(self, data: bytes) -> bytes:
-        return data
+    def remove_socket_listener(self, callback: SocketReaderCallback) -> None:
+        _log.debug('Unregistering socket listener callback %s', callback)
+        self._socket_reader.unregister(callback)
 
     async def _wait_for_state(
         self, state: ConnectionFlowState, *other_states: ConnectionFlowState, timeout: Optional[float] = None
