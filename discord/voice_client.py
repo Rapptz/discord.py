@@ -569,7 +569,9 @@ class VoiceClient(VoiceProtocol):
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
-    def play(self, source: AudioSource, *, after: Optional[Callable[[Optional[Exception]], Any]] = None) -> None:
+    def play(
+        self, source: AudioSource, *, after: Optional[Callable[[Optional[Exception]], Any]] = None, **encoder_kwargs
+    ) -> None:
         """Plays an :class:`AudioSource`.
 
         The finalizer, ``after`` is called after the source has been exhausted
@@ -579,8 +581,15 @@ class VoiceClient(VoiceProtocol):
         caught and the audio player is then stopped.  If no after callback is
         passed, any caught exception will be logged using the library logger.
 
+        Extra parameters may be passed to the :class:`Encoder` if a PCM based sink
+        is used.  Otherwise, they are ignored.
+
         .. versionchanged:: 2.0
             Instead of writing to ``sys.stderr``, the library's logger is used.
+
+        .. versionchanged:: 2.4
+            Added :class:`Encoder` parameters as keyword arguments in ``encoder_kwargs``.
+            Constants can be accessed in the ``discord.opus`` module.
 
         Parameters
         -----------
@@ -590,6 +599,27 @@ class VoiceClient(VoiceProtocol):
             The finalizer that is called after the stream is exhausted.
             This function must have a single parameter, ``error``, that
             denotes an optional exception that was raised during playing.
+        application: :class:`str`
+            Configures the encoder's intended application.  Can be one of:
+            ``'audio'``, ``'voip'``, ``'lowdelay'``.
+            Defaults to ``'audio'``.
+        bitrate: :class:`int`
+            Configures the bitrate in the encoder.  Can be between ``16`` and ``512``.
+            Defaults to ``128``.
+        fec: :class:`bool`
+            Configures the encoder's use of inband forward error correction.
+            Defaults to ``True``.
+        packet_loss_pct: :class:`float`
+            Configures the encoder's expected packet loss percentage.  Requires FEC.
+            Defaults to ``0.15``.
+        bandwidth: :class:`str`
+            Configures the encoder's bandpass.  Can be one of:
+            ``'narrow'``, ``'medium'``, ``'wide'``, ``'superwide'``, ``'full'``.
+            Defaults to ``'full'``.
+        signal_type: :class:`str`
+            Configures the type of signal being encoded.  Can be one of:
+            ``'auto'``, ``'voice'``, ``'music'``.
+            Defaults to ``'auto'``.
 
         Raises
         -------
@@ -599,6 +629,10 @@ class VoiceClient(VoiceProtocol):
             Source is not a :class:`AudioSource` or after is not a callable.
         OpusNotLoaded
             Source is not opus encoded and opus is not loaded.
+        ValueError
+            An improper value was passed as an :class:`Encoder` parameter.
+        KeyError
+            An improper value was passed as an :class:`Encoder` parameter.
         """
 
         if not self.is_connected():
@@ -611,7 +645,7 @@ class VoiceClient(VoiceProtocol):
             raise TypeError(f'source must be an AudioSource not {source.__class__.__name__}')
 
         if not self.encoder and not source.is_opus():
-            self.encoder = opus.Encoder()
+            self.encoder = opus.Encoder(**encoder_kwargs)
 
         self._player = AudioPlayer(source, self, after=after)
         self._player.start()
