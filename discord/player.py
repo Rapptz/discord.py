@@ -175,6 +175,7 @@ class FFmpegAudio(AudioSource):
             self._pipe_thread.start()
 
     def _spawn_process(self, args: Any, **subprocess_kwargs: Any) -> subprocess.Popen:
+        _log.debug('Spawning ffmpeg process with command: %s', args)
         process = None
         try:
             process = subprocess.Popen(args, creationflags=CREATE_NO_WINDOW, **subprocess_kwargs)
