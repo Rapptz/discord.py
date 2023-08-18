@@ -212,13 +212,13 @@ class VoiceConnectionState:
 
     @state.setter
     def state(self, state: ConnectionFlowState) -> None:
-        if state != self._state:
+        if state is not self._state:
             _log.debug('Connection state changed to %s', state.name)
         self._state = state
         self._state_event.set()
         self._state_event.clear()
 
-        if state == ConnectionFlowState.connected:
+        if state is ConnectionFlowState.connected:
             self._connected.set()
         else:
             self._connected.clear()
@@ -247,7 +247,7 @@ class VoiceConnectionState:
                 _log.debug('We were probably disconnected from voice by someone else.')
                 await self.disconnect()
 
-            if self.state != ConnectionFlowState.connected:
+            if self.state is not ConnectionFlowState.connected:
                 _log.warning('Ignoring voice_state_update event while in state %s', self.state)
 
             return
@@ -256,15 +256,15 @@ class VoiceConnectionState:
 
         # if we get the event while connecting
         if self.state in (ConnectionFlowState.set_guild_voice_state, ConnectionFlowState.got_voice_server_update):
-            if self.state == ConnectionFlowState.set_guild_voice_state:
+            if self.state is ConnectionFlowState.set_guild_voice_state:
                 self.state = ConnectionFlowState.got_voice_state_update
             else:
                 self.state = ConnectionFlowState.got_both_voice_updates
             return
 
-        if self.state == ConnectionFlowState.connected:
+        if self.state is ConnectionFlowState.connected:
             self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
-        elif self.state != ConnectionFlowState.disconnected:
+        elif self.state is not ConnectionFlowState.disconnected:
             if channel_id != self.voice_client.channel.id:
                 # For some unfortunate reason we were moved during the connection flow
                 # We *could* try to wrangle whatever state we're in back in order...
@@ -306,15 +306,15 @@ class VoiceConnectionState:
             self._socket_reader.resume()
 
             # sets our connection state to either voice_server_update or both, if we already had the other one
-            if self.state == ConnectionFlowState.set_guild_voice_state:
+            if self.state is ConnectionFlowState.set_guild_voice_state:
                 self.state = ConnectionFlowState.got_voice_server_update
             else:
                 self.state = ConnectionFlowState.got_both_voice_updates
-        elif self.state == ConnectionFlowState.connected:
+        elif self.state is ConnectionFlowState.connected:
             _log.debug('Voice server update, closing old voice websocket')
             await self.ws.close(4014)
             self.state = ConnectionFlowState.got_both_voice_updates
-        elif self.state != ConnectionFlowState.disconnected:
+        elif self.state is not ConnectionFlowState.disconnected:
             _log.warning('Ignoring unexpected voice_server_update event')
             # Something might need to be done here but I don't know what
 
@@ -397,10 +397,10 @@ class VoiceConnectionState:
         await self._wait_for_state(ConnectionFlowState.connected, timeout=timeout)
 
     def is_connected(self) -> bool:
-        return self.state == ConnectionFlowState.connected
+        return self.state is ConnectionFlowState.connected
 
     def send_packet(self, packet: bytes) -> None:
-        if self.state != ConnectionFlowState.connected:
+        if self.state is not ConnectionFlowState.connected:
             # TODO: do I drop the packet or let it go through and maybe raise?
             _log.debug('Not connected but sending packet anyway...')
             # _log.debug('Not connected to voice, dropping packet')
