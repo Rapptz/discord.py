@@ -34,8 +34,16 @@ from .user import APIUser, PartialUser
 
 
 class Token(TypedDict):
+    token: str
+
+
+class OptionalToken(TypedDict):
     # Missing if a bot already exists 😭
     token: Optional[str]
+
+
+class Secret(TypedDict):
+    secret: str
 
 
 class BaseApplication(TypedDict):
@@ -62,12 +70,11 @@ class PartialApplication(BaseApplication):
     owner: NotRequired[APIUser]  # Not actually ever present in partial app
     team: NotRequired[Team]
     verify_key: str
-    description: str
-    cover_image: NotRequired[Optional[str]]
     flags: NotRequired[int]
     rpc_origins: NotRequired[List[str]]
     hook: NotRequired[bool]
     overlay: NotRequired[bool]
+    overlay_warn: NotRequired[bool]
     overlay_compatibility_hook: NotRequired[bool]
     terms_of_service_url: NotRequired[str]
     privacy_policy_url: NotRequired[str]
@@ -87,6 +94,9 @@ class PartialApplication(BaseApplication):
     guild: NotRequired[PartialGuild]
     install_params: NotRequired[ApplicationInstallParams]
     deeplink_uri: NotRequired[str]
+    store_listing_sku_id: NotRequired[Snowflake]
+    executables: NotRequired[List[ApplicationExecutable]]
+    third_party_skus: NotRequired[List[ThirdPartySKU]]
 
 
 class ApplicationDiscoverability(TypedDict):
@@ -97,12 +107,13 @@ class ApplicationDiscoverability(TypedDict):
 class Application(PartialApplication, IntegrationApplication, ApplicationDiscoverability):
     redirect_uris: List[str]
     interactions_endpoint_url: Optional[str]
+    interactions_version: Literal[1, 2]
+    interactions_event_types: List[str]
     verification_state: int
     store_application_state: int
     rpc_application_state: int
     creator_monetization_state: int
     role_connections_verification_url: NotRequired[Optional[str]]
-    # GET /applications/{application.id} only
     approximate_guild_count: NotRequired[int]
 
 
@@ -134,6 +145,18 @@ class EULA(TypedDict):
     id: Snowflake
     name: str
     content: str
+
+
+class ApplicationExecutable(TypedDict):
+    name: str
+    os: Literal['win32', 'linux', 'darwin']
+    is_launcher: bool
+
+
+class ThirdPartySKU(TypedDict):
+    distributor: Literal['discord', 'steam', 'twitch', 'uplay', 'battlenet', 'origin', 'gog', 'epic', 'google_play']
+    id: Optional[str]
+    sku_id: Optional[str]
 
 
 class BaseAchievement(TypedDict):

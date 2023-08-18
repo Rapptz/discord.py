@@ -3336,7 +3336,7 @@ class HTTPClient:
             super_properties_to_track=True,
         )
 
-    def botify_app(self, app_id: Snowflake) -> Response[application.Token]:
+    def botify_app(self, app_id: Snowflake) -> Response[application.OptionalToken]:
         return self.request(
             Route('POST', '/applications/{app_id}/bot', app_id=app_id), json={}, super_properties_to_track=True
         )
@@ -3346,10 +3346,10 @@ class HTTPClient:
             Route('PATCH', '/applications/{app_id}/bot', app_id=app_id), json=payload, super_properties_to_track=True
         )
 
-    def reset_secret(self, app_id: Snowflake) -> Response[dict]:
+    def reset_secret(self, app_id: Snowflake) -> Response[application.Secret]:
         return self.request(Route('POST', '/applications/{app_id}/reset', app_id=app_id), super_properties_to_track=True)
 
-    def reset_bot_token(self, app_id: Snowflake) -> Response[dict]:
+    def reset_bot_token(self, app_id: Snowflake) -> Response[application.Token]:
         return self.request(Route('POST', '/applications/{app_id}/bot/reset', app_id=app_id), super_properties_to_track=True)
 
     def get_detectable_applications(self) -> Response[List[application.PartialApplication]]:

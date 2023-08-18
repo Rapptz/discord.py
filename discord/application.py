@@ -31,7 +31,6 @@ from typing import (
     AsyncIterator,
     Collection,
     List,
-    Literal,
     Mapping,
     Optional,
     Sequence,
@@ -55,6 +54,7 @@ from .enums import (
     EmbeddedActivityOrientation,
     EmbeddedActivityPlatform,
     Locale,
+    OperatingSystem,
     RPCApplicationState,
     StoreApplicationState,
     UserFlags,
@@ -84,6 +84,7 @@ if TYPE_CHECKING:
         Achievement as AchievementPayload,
         ActivityStatistics as ActivityStatisticsPayload,
         Application as ApplicationPayload,
+        ApplicationExecutable as ApplicationExecutablePayload,
         ApplicationInstallParams as ApplicationInstallParamsPayload,
         Asset as AssetPayload,
         BaseApplication as BaseApplicationPayload,
@@ -95,6 +96,7 @@ if TYPE_CHECKING:
         Manifest as ManifestPayload,
         ManifestLabel as ManifestLabelPayload,
         PartialApplication as PartialApplicationPayload,
+        ThirdPartySKU as ThirdPartySKUPayload,
         UnverifiedApplication as UnverifiedApplicationPayload,
         WhitelistedUser as WhitelistedUserPayload,
     )
@@ -424,7 +426,7 @@ class ThirdPartySKU:
 
     __slots__ = ('application', 'distributor', 'id', 'sku_id')
 
-    def __init__(self, *, data: dict, application: PartialApplication):
+    def __init__(self, *, data: ThirdPartySKUPayload, application: PartialApplication):
         self.application = application
         self.distributor: Distributor = try_enum(Distributor, data['distributor'])
         self.id: Optional[str] = data.get('id')
@@ -732,8 +734,12 @@ class ApplicationExecutable:
     -----------
     name: :class:`str`
         The name of the executable.
-    os: :class:`str`
+    os: :class:`OperatingSystem`
         The operating system the executable is for.
+
+        .. versionchanged:: 2.1
+
+            The type of this attribute has changed to :class:`OperatingSystem`.
     launcher: :class:`bool`
         Whether the executable is a launcher or not.
     application: :class:`PartialApplication`
@@ -747,9 +753,9 @@ class ApplicationExecutable:
         'application',
     )
 
-    def __init__(self, *, data: dict, application: PartialApplication):
+    def __init__(self, *, data: ApplicationExecutablePayload, application: PartialApplication):
         self.name: str = data['name']
-        self.os: Literal['win32', 'linux', 'darwin'] = data['os']
+        self.os: OperatingSystem = OperatingSystem.from_string(data['os'])
         self.launcher: bool = data['is_launcher']
         self.application = application
 
