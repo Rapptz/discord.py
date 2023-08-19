@@ -160,16 +160,18 @@ class FFmpegAudio(AudioSource):
         if piping_stdin and isinstance(source, str):
             raise TypeError("parameter conflict: 'source' parameter cannot be a string when piping to stdin")
 
-        stderr: Optional[IO[bytes]] = subprocess_kwargs.get('stderr')
+        stderr: Optional[IO[bytes]] = subprocess_kwargs.pop('stderr', None)
+
+        if stderr == subprocess.PIPE:
+            warnings.warn("Passing subprocess.PIPE does nothing", DeprecationWarning, stacklevel=3)
+            stderr = None
+
         piping_stderr = False
-        if stderr:
+        if stderr is not None:
             try:
                 stderr.fileno()
             except Exception:
                 piping_stderr = True
-
-        if stderr == subprocess.PIPE:
-            warnings.warn("Passing subprocess.PIPE does nothing", DeprecationWarning, stacklevel=2)
 
         args = [executable, *args]
         kwargs = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE if piping_stderr else stderr}
@@ -243,12 +245,12 @@ class FFmpegAudio(AudioSource):
                 self._process.terminate()
                 return
 
-    def _pipe_reader(self, dest: io.BufferedIOBase) -> None:
+    def _pipe_reader(self, dest: IO[bytes]) -> None:
         while self._process:
             if self._stderr is None:
                 return
             try:
-                data = self._stderr.read(self.BLOCKSIZE)
+                data: bytes = self._stderr.read(self.BLOCKSIZE)
             except Exception:
                 _log.debug('Read error for %s, this is probably not a problem', self, exc_info=True)
                 return
@@ -301,7 +303,7 @@ class FFmpegPCMAudio(FFmpegAudio):
         *,
         executable: str = 'ffmpeg',
         pipe: bool = False,
-        stderr: Optional[IO[str]] = None,
+        stderr: Optional[IO[bytes]] = None,
         before_options: Optional[str] = None,
         options: Optional[str] = None,
     ) -> None:
@@ -407,7 +409,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         codec: Optional[str] = None,
         executable: str = 'ffmpeg',
         pipe: bool = False,
-        stderr: Optional[IO[str]] = None,
+        stderr: Optional[IO[bytes]] = None,
         before_options: Optional[str] = None,
         options: Optional[str] = None,
     ) -> None:
