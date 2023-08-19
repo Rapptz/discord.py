@@ -586,14 +586,14 @@ class VoiceClient(VoiceProtocol):
         caught and the audio player is then stopped.  If no after callback is
         passed, any caught exception will be logged using the library logger.
 
-        Extra parameters may be passed to the :class:`Encoder` if a PCM based sink
-        is used.  Otherwise, they are ignored.
+        Extra parameters may be passed to the internal opus encoder if a PCM based
+        source is used.  Otherwise, they are ignored.
 
         .. versionchanged:: 2.0
             Instead of writing to ``sys.stderr``, the library's logger is used.
 
         .. versionchanged:: 2.4
-            Added :class:`Encoder` parameters as keyword arguments in ``encoder_kwargs``.
+            Added encoder parameters as keyword arguments in ``encoder_kwargs``.
 
         Parameters
         -----------
@@ -634,9 +634,9 @@ class VoiceClient(VoiceProtocol):
         OpusNotLoaded
             Source is not opus encoded and opus is not loaded.
         ValueError
-            An improper value was passed as an :class:`Encoder` parameter.
+            An improper value was passed as an encoder parameter.
         KeyError
-            An improper value was passed as an :class:`Encoder` parameter.
+            An improper value was passed as an encoder parameter.
         """
 
         if not self.is_connected():
