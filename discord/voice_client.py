@@ -45,6 +45,7 @@ import logging
 import struct
 import threading
 from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union
+from typing_extensions import Unpack
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
@@ -58,7 +59,7 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .state import ConnectionState
     from .user import ClientUser
-    from .opus import Encoder
+    from .opus import Encoder, EncoderKwargs
     from .channel import StageChannel, VoiceChannel
     from . import abc
 
@@ -570,7 +571,11 @@ class VoiceClient(VoiceProtocol):
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
     def play(
-        self, source: AudioSource, *, after: Optional[Callable[[Optional[Exception]], Any]] = None, **encoder_kwargs
+        self,
+        source: AudioSource,
+        *,
+        after: Optional[Callable[[Optional[Exception]], Any]] = None,
+        **encoder_kwargs: Unpack[EncoderKwargs],
     ) -> None:
         """Plays an :class:`AudioSource`.
 
