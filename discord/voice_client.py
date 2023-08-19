@@ -594,7 +594,6 @@ class VoiceClient(VoiceProtocol):
 
         .. versionchanged:: 2.4
             Added :class:`Encoder` parameters as keyword arguments in ``encoder_kwargs``.
-            Constants can be accessed in the ``discord.opus`` module.
 
         Parameters
         -----------
