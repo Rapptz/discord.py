@@ -25,19 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    AsyncIterator,
-    Collection,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Union,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, AsyncIterator, Collection, List, Mapping, Optional, Sequence, Tuple, Union, overload
 from urllib.parse import quote
 
 from . import utils
@@ -51,8 +39,10 @@ from .enums import (
     ApplicationType,
     ApplicationVerificationState,
     Distributor,
+    EmbeddedActivityLabelType,
     EmbeddedActivityOrientation,
     EmbeddedActivityPlatform,
+    EmbeddedActivityReleasePhase,
     Locale,
     OperatingSystem,
     RPCApplicationState,
@@ -71,6 +61,8 @@ from .utils import _bytes_to_base64_data, _parse_localizations
 
 if TYPE_CHECKING:
     from datetime import date
+
+    from typing_extensions import Self
 
     from .abc import Snowflake, SnowflakeTime
     from .enums import SKUAccessLevel, SKUFeature, SKUGenre, SKUType
@@ -92,6 +84,8 @@ if TYPE_CHECKING:
         Build as BuildPayload,
         Company as CompanyPayload,
         EmbeddedActivityConfig as EmbeddedActivityConfigPayload,
+        EmbeddedActivityPlatform as EmbeddedActivityPlatformValues,
+        EmbeddedActivityPlatformConfig as EmbeddedActivityPlatformConfigPayload,
         GlobalActivityStatistics as GlobalActivityStatisticsPayload,
         Manifest as ManifestPayload,
         ManifestLabel as ManifestLabelPayload,
@@ -107,6 +101,7 @@ __all__ = (
     'EULA',
     'Achievement',
     'ThirdPartySKU',
+    'EmbeddedActivityPlatformConfig',
     'EmbeddedActivityConfig',
     'ApplicationBot',
     'ApplicationExecutable',
@@ -436,6 +431,61 @@ class ThirdPartySKU:
         return f'<ThirdPartySKU distributor={self.distributor!r} id={self.id!r} sku_id={self.sku_id!r}>'
 
 
+class EmbeddedActivityPlatformConfig:
+    """Represents an application's embedded activity configuration for a specific platform.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    -----------
+    platform: :class:`EmbeddedActivityPlatform`
+        The platform that the configuration is for.
+    label_type: :class:`EmbeddedActivityLabelType`
+        The current label shown on the activity.
+    label_until: Optional[:class:`datetime.datetime`]
+        When the current label expires.
+    release_phase: :class:`EmbeddedActivityReleasePhase`
+        The current release phase of the activity.
+    """
+
+    __slots__ = ('platform', 'label_type', 'label_until', 'release_phase')
+
+    def __init__(
+        self,
+        platform: EmbeddedActivityPlatform,
+        *,
+        label_type: EmbeddedActivityLabelType = EmbeddedActivityLabelType.none,
+        label_until: Optional[datetime] = None,
+        release_phase: EmbeddedActivityReleasePhase = EmbeddedActivityReleasePhase.global_launch,
+    ):
+        self.platform = platform
+        self.label_type = label_type
+        self.label_until = label_until
+        self.release_phase = release_phase
+
+    @classmethod
+    def from_data(cls, *, data: EmbeddedActivityPlatformConfigPayload, platform: EmbeddedActivityPlatformValues) -> Self:
+        return cls(
+            try_enum(EmbeddedActivityPlatform, platform),
+            label_type=try_enum(EmbeddedActivityLabelType, data.get('label_type', 0)),
+            label_until=utils.parse_time(data.get('label_until')),
+            release_phase=try_enum(EmbeddedActivityReleasePhase, data.get('release_phase', 'global_launch')),
+        )
+
+    def __repr__(self) -> str:
+        return (
+            f'<EmbeddedActivityPlatformConfig platform={self.platform!r} label_type={self.label_type!r} '
+            f'label_until={self.label_until!r} release_phase={self.release_phase!r}>'
+        )
+
+    def to_dict(self) -> EmbeddedActivityPlatformConfigPayload:
+        return {
+            'label_type': self.label_type.value,
+            'label_until': self.label_until.isoformat() if self.label_until else None,
+            'release_phase': self.release_phase.value,
+        }
+
+
 class EmbeddedActivityConfig:
     """Represents an application's embedded activity configuration.
 
@@ -447,6 +497,10 @@ class EmbeddedActivityConfig:
         The application that the configuration is for.
     supported_platforms: List[:class:`EmbeddedActivityPlatform`]
         A list of platforms that the activity supports.
+    platform_configs: List[:class:`EmbeddedActivityPlatformConfig`]
+        A list of configurations for each supported activity platform.
+
+        .. versionadded:: 2.1
     orientation_lock_state: :class:`EmbeddedActivityOrientation`
         The mobile orientation lock state of the activity.
     tablet_orientation_lock_state: :class:`EmbeddedActivityOrientation`
@@ -466,6 +520,7 @@ class EmbeddedActivityConfig:
     __slots__ = (
         'application',
         'supported_platforms',
+        'platform_configs',
         'orientation_lock_state',
         'tablet_orientation_lock_state',
         'premium_tier_requirement',
@@ -486,6 +541,10 @@ class EmbeddedActivityConfig:
     def _update(self, data: EmbeddedActivityConfigPayload) -> None:
         self.supported_platforms: List[EmbeddedActivityPlatform] = [
             try_enum(EmbeddedActivityPlatform, platform) for platform in data.get('supported_platforms', [])
+        ]
+        self.platform_configs: List[EmbeddedActivityPlatformConfig] = [
+            EmbeddedActivityPlatformConfig.from_data(platform=platform, data=config)
+            for platform, config in data.get('client_platform_config', {}).items()
         ]
         self.orientation_lock_state: EmbeddedActivityOrientation = try_enum(
             EmbeddedActivityOrientation, data.get('default_orientation_lock_state', 0)
@@ -511,6 +570,7 @@ class EmbeddedActivityConfig:
         self,
         *,
         supported_platforms: Collection[EmbeddedActivityPlatform] = MISSING,
+        platform_configs: Collection[EmbeddedActivityPlatformConfig] = MISSING,
         orientation_lock_state: EmbeddedActivityOrientation = MISSING,
         tablet_orientation_lock_state: EmbeddedActivityOrientation = MISSING,
         requires_age_gate: bool = MISSING,
@@ -527,6 +587,10 @@ class EmbeddedActivityConfig:
         -----------
         supported_platforms: List[:class:`EmbeddedActivityPlatform`]
             A list of platforms that the activity supports.
+        platform_configs: List[:class:`EmbeddedActivityPlatformConfig`]
+            A list of configurations for each supported activity platform.
+
+            .. versionadded:: 2.1
         orientation_lock_state: :class:`EmbeddedActivityOrientation`
             The mobile orientation lock state of the activity.
         tablet_orientation_lock_state: :class:`EmbeddedActivityOrientation`
@@ -551,16 +615,21 @@ class EmbeddedActivityConfig:
         """
         data = await self.application._state.http.edit_embedded_activity_config(
             self.application.id,
-            supported_platforms=[str(x) for x in (supported_platforms or [])],
-            orientation_lock_state=int(orientation_lock_state),
-            tablet_orientation_lock_state=int(tablet_orientation_lock_state),
-            requires_age_gate=requires_age_gate,
-            shelf_rank=shelf_rank,
+            supported_platforms=[str(x) for x in (supported_platforms)] if supported_platforms is not MISSING else None,
+            platform_config={c.platform.value: c.to_dict() for c in (platform_configs)}
+            if platform_configs is not MISSING
+            else None,
+            orientation_lock_state=int(orientation_lock_state) if orientation_lock_state is not MISSING else None,
+            tablet_orientation_lock_state=int(tablet_orientation_lock_state)
+            if tablet_orientation_lock_state is not MISSING
+            else None,
+            requires_age_gate=requires_age_gate if requires_age_gate is not MISSING else None,
+            shelf_rank=shelf_rank if shelf_rank is not MISSING else None,
             free_period_starts_at=free_period_starts_at.isoformat() if free_period_starts_at else None,
             free_period_ends_at=free_period_ends_at.isoformat() if free_period_ends_at else None,
             preview_video_asset_id=(preview_video_asset.id if preview_video_asset else None)
             if preview_video_asset is not MISSING
-            else None,
+            else MISSING,
         )
         self._update(data)
 
@@ -3387,6 +3456,7 @@ class Application(PartialApplication):
         self,
         *,
         supported_platforms: Collection[EmbeddedActivityPlatform] = MISSING,
+        platform_configs: Collection[EmbeddedActivityPlatformConfig] = MISSING,
         orientation_lock_state: EmbeddedActivityOrientation = MISSING,
         tablet_orientation_lock_state: EmbeddedActivityOrientation = MISSING,
         requires_age_gate: bool = MISSING,
@@ -3403,6 +3473,10 @@ class Application(PartialApplication):
         -----------
         supported_platforms: List[:class:`EmbeddedActivityPlatform`]
             A list of platforms that the activity supports.
+        platform_configs: List[:class:`EmbeddedActivityPlatformConfig`]
+            A list of configurations for each supported activity platform.
+
+            .. versionadded:: 2.1
         orientation_lock_state: :class:`EmbeddedActivityOrientation`
             The mobile orientation lock state of the activity.
         tablet_orientation_lock_state: :class:`EmbeddedActivityOrientation`
@@ -3432,16 +3506,21 @@ class Application(PartialApplication):
         """
         data = await self._state.http.edit_embedded_activity_config(
             self.id,
-            supported_platforms=[str(x) for x in (supported_platforms or [])],
-            orientation_lock_state=int(orientation_lock_state),
-            tablet_orientation_lock_state=int(tablet_orientation_lock_state),
-            requires_age_gate=requires_age_gate,
-            shelf_rank=shelf_rank,
+            supported_platforms=[str(x) for x in (supported_platforms)] if supported_platforms is not MISSING else None,
+            platform_config={c.platform.value: c.to_dict() for c in (platform_configs)}
+            if platform_configs is not MISSING
+            else None,
+            orientation_lock_state=int(orientation_lock_state) if orientation_lock_state is not MISSING else None,
+            tablet_orientation_lock_state=int(tablet_orientation_lock_state)
+            if tablet_orientation_lock_state is not MISSING
+            else None,
+            requires_age_gate=requires_age_gate if requires_age_gate is not MISSING else None,
+            shelf_rank=shelf_rank if shelf_rank is not MISSING else None,
             free_period_starts_at=free_period_starts_at.isoformat() if free_period_starts_at else None,
             free_period_ends_at=free_period_ends_at.isoformat() if free_period_ends_at else None,
             preview_video_asset_id=(preview_video_asset.id if preview_video_asset else None)
             if preview_video_asset is not MISSING
-            else None,
+            else MISSING,
         )
         if self.embedded_activity_config is not None:
             self.embedded_activity_config._update(data)

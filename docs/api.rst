@@ -3457,6 +3457,50 @@ of :class:`enum.Enum`.
 
         The activity is locked to landscape.
 
+.. class:: EmbeddedActivityLabelType
+
+    Represents the label shown by an embedded activity.
+
+    .. versionadded:: 2.1
+
+    .. attribute:: none
+
+        No special label.
+
+    .. attribute:: new
+
+        The activity is new.
+
+    .. attribute:: updated
+
+        The activity has been recently updated.
+
+.. class:: EmbeddedActivityReleasePhase
+
+    Represents the release phase of an embedded activity for a specific :class:`EmbeddedActivityPlatform`.
+
+    .. versionadded:: 2.1
+
+    .. attribute:: in_development
+
+        The activity is still in development.
+
+    .. attribute:: activities_team
+
+        The activity is available to guilds with the `ACTIVITIES_INTERNAL_DEV` guild feature.
+
+    .. attribute:: employee_release
+
+        The activity is available to guilds with the `ACTIVITIES_EMPLOYEE` guild feature.
+
+    .. attribute:: soft_launch
+
+        The activity is available to guilds with the `ACTIVITIES_ALPHA` guild feature.
+
+    .. attribute:: global_launch
+
+        The activity is available to all guilds.
+
 .. class:: PayoutAccountStatus
 
     Represents the status of a team payout account.
@@ -6763,6 +6807,11 @@ Application
 .. attributetable:: EmbeddedActivityConfig
 
 .. autoclass:: EmbeddedActivityConfig()
+    :members:
+
+.. attributetable:: EmbeddedActivityPlatformConfig
+
+.. autoclass:: EmbeddedActivityPlatformConfig()
     :members:
 
 .. attributetable:: UnverifiedApplication

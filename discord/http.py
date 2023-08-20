@@ -3155,6 +3155,9 @@ class HTTPClient:
         app_id: Snowflake,
         *,
         supported_platforms: Optional[List[str]] = None,
+        platform_config: Optional[
+            Dict[application.EmbeddedActivityPlatform, application.EmbeddedActivityPlatformConfig]
+        ] = None,
         orientation_lock_state: Optional[int] = None,
         tablet_orientation_lock_state: Optional[int] = None,
         requires_age_gate: Optional[bool] = None,
@@ -3166,6 +3169,8 @@ class HTTPClient:
         payload = {}
         if supported_platforms is not None:
             payload['supported_platforms'] = supported_platforms
+        if platform_config is not None:
+            payload['client_platform_config'] = platform_config
         if orientation_lock_state is not None:
             payload['default_orientation_lock_state'] = orientation_lock_state
         if tablet_orientation_lock_state is not None:

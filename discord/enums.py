@@ -1009,6 +1009,26 @@ class EmbeddedActivityOrientation(Enum):
         return self.value
 
 
+class EmbeddedActivityLabelType(Enum):
+    none = 0
+    new = 1
+    updated = 2
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class EmbeddedActivityReleasePhase(Enum):
+    in_development = 'in_development'
+    activities_team = 'activities_team'
+    employee_release = 'employee_release'
+    soft_launch = 'soft_launch'
+    global_launch = 'global_launch'
+
+    def __str__(self) -> str:
+        return self.value
+
+
 T = TypeVar('T')
 
 

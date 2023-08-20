@@ -249,16 +249,15 @@ class GlobalActivityStatistics(TypedDict):
 
 
 EmbeddedActivityPlatform = Literal['web', 'android', 'ios']
-EmbeddedActivityPlatformLabelType = Literal[0, 1, 2]
-EmbedddedActivityPlatformReleasePhase = Literal[
+EmbeddedActivityPlatformReleasePhase = Literal[
     'in_development', 'activities_team', 'employee_release', 'soft_launch', 'global_launch'
 ]
 
 
 class EmbeddedActivityPlatformConfig(TypedDict):
-    label_type: EmbeddedActivityPlatformLabelType
+    label_type: Literal[0, 1, 2]
     label_until: Optional[str]
-    release_phase: EmbedddedActivityPlatformReleasePhase
+    release_phase: EmbeddedActivityPlatformReleasePhase
 
 
 class EmbeddedActivityConfig(TypedDict):
