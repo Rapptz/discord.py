@@ -25,10 +25,10 @@ from __future__ import annotations
 
 import threading
 import subprocess
-import audioop
 import asyncio
 import logging
 import shlex
+import array
 import time
 import json
 import sys
@@ -36,6 +36,7 @@ import re
 import io
 
 from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
+from math import floor
 
 from .enums import SpeakingState
 from .errors import ClientException
@@ -590,6 +591,11 @@ class PCMVolumeTransformer(AudioSource, Generic[AT]):
     This does not work on audio sources that have :meth:`AudioSource.is_opus`
     set to ``True``.
 
+    .. versionchanged:: 2.5
+
+        Replaced audioop implementation of :py:meth:`discord.PCMVolumeTransformer.read`
+        method with a pure Python equivalent.
+
     Parameters
     ------------
     original: :class:`AudioSource`
@@ -629,8 +635,14 @@ class PCMVolumeTransformer(AudioSource, Generic[AT]):
         self.original.cleanup()
 
     def read(self) -> bytes:
+        volume = min(self._volume, 2.0)
         ret = self.original.read()
-        return audioop.mul(ret, 2, min(self._volume, 2.0))
+        samples = array.array("h")
+        samples.frombytes(ret)
+        for i in range(len(samples)):
+            samples[i] = int(floor(min(0x7FFF, max(samples[i] * volume, -0x8000))))
+
+        return samples.tobytes()
 
 
 class AudioPlayer(threading.Thread):
