@@ -1867,6 +1867,14 @@ class PartialApplication(Hashable):
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>'
 
     @property
+    def created_at(self) -> datetime:
+        """:class:`datetime.datetime`: Returns the application's creation time in UTC.
+
+        .. versionadded:: 2.1
+        """
+        return utils.snowflake_time(self.id)
+
+    @property
     def icon(self) -> Optional[Asset]:
         """Optional[:class:`Asset`]: Retrieves the application's icon asset, if any."""
         if self._icon is None:
@@ -3541,6 +3549,14 @@ class IntegrationApplication(Hashable):
 
     def __repr__(self) -> str:
         return f'<IntegrationApplication id={self.id} name={self.name!r}>'
+
+    @property
+    def created_at(self) -> datetime:
+        """:class:`datetime.datetime`: Returns the application's creation time in UTC.
+
+        .. versionadded:: 2.1
+        """
+        return utils.snowflake_time(self.id)
 
     @property
     def icon(self) -> Optional[Asset]:

@@ -199,6 +199,14 @@ class ApplicationProfile(Hashable):
         return f'<ApplicationProfile id={self.id} verified={self.verified}>'
 
     @property
+    def created_at(self) -> datetime:
+        """:class:`datetime.datetime`: Returns the application's creation time in UTC.
+
+        .. versionadded:: 2.1
+        """
+        return utils.snowflake_time(self.id)
+
+    @property
     def flags(self) -> ApplicationFlags:
         """:class:`ApplicationFlags`: The flags of this application."""
         return ApplicationFlags._from_value(self._flags)
