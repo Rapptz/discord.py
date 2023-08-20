@@ -91,6 +91,8 @@ __all__ = (
     'ApplicationType',
     'EmbeddedActivityPlatform',
     'EmbeddedActivityOrientation',
+    'EmbeddedActivityLabelType',
+    'EmbeddedActivityReleasePhase',
     'ConnectionType',
     'ClientType',
     'PaymentSourceType',
