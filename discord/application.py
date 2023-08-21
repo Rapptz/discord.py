@@ -409,7 +409,7 @@ class ThirdPartySKU:
 
     Attributes
     -----------
-    application: :class:`PartialApplication`
+    application: Union[:class:`PartialApplication`, :class:`IntegrationApplication`]
         The application that the SKU belongs to.
     distributor: :class:`Distributor`
         The distributor of the SKU.
@@ -421,7 +421,7 @@ class ThirdPartySKU:
 
     __slots__ = ('application', 'distributor', 'id', 'sku_id')
 
-    def __init__(self, *, data: ThirdPartySKUPayload, application: PartialApplication):
+    def __init__(self, *, data: ThirdPartySKUPayload, application: Union[PartialApplication, IntegrationApplication]):
         self.application = application
         self.distributor: Distributor = try_enum(Distributor, data['distributor'])
         self.id: Optional[str] = data.get('id')
@@ -1870,6 +1870,7 @@ class PartialApplication(Hashable):
 
         self._icon: Optional[str] = data.get('icon')
         self._cover_image: Optional[str] = data.get('cover_image')
+        self._splash: Optional[str] = data.get('splash')
 
         self.terms_of_service_url: Optional[str] = data.get('terms_of_service_url')
         self.privacy_policy_url: Optional[str] = data.get('privacy_policy_url')
@@ -1956,6 +1957,16 @@ class PartialApplication(Hashable):
         if self._cover_image is None:
             return None
         return Asset._from_icon(self._state, self.id, self._cover_image, path='app')
+
+    @property
+    def splash(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Retrieves the application's splash, if any.
+
+        .. versionadded:: 2.1
+        """
+        if self._splash is None:
+            return None
+        return Asset._from_icon(self._state, self.id, self._splash, path='app')
 
     @property
     def flags(self) -> ApplicationFlags:
@@ -3582,8 +3593,12 @@ class IntegrationApplication(Hashable):
         The application name.
     bot: Optional[:class:`User`]
         The bot attached to the application, if any.
-    description: Optional[:class:`str`]
+    description: :class:`str`
         The application description.
+    deeplink_uri: Optional[:class:`str`]
+        The application's deeplink URI, if set.
+
+        .. versionadded:: 2.1
     type: Optional[:class:`ApplicationType`]
         The type of application.
     primary_sku_id: Optional[:class:`int`]
@@ -3592,6 +3607,10 @@ class IntegrationApplication(Hashable):
     role_connections_verification_url: Optional[:class:`str`]
         The application's connection verification URL which will render the application as
         a verification method in the guild's role verification configuration.
+    third_party_skus: List[:class:`ThirdPartySKU`]
+        A list of third party platforms the SKU is available at.
+
+        .. versionadded:: 2.1
     """
 
     __slots__ = (
@@ -3600,11 +3619,14 @@ class IntegrationApplication(Hashable):
         'name',
         'bot',
         'description',
+        'deeplink_uri',
         'type',
         'primary_sku_id',
         'role_connections_verification_url',
+        'third_party_skus',
         '_icon',
         '_cover_image',
+        '_splash',
     )
 
     def __init__(self, *, state: ConnectionState, data: BaseApplicationPayload):
@@ -3618,13 +3640,18 @@ class IntegrationApplication(Hashable):
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self.description: str = data.get('description') or ''
+        self.deeplink_uri: Optional[str] = data.get('deeplink_uri')
         self.type: Optional[ApplicationType] = try_enum(ApplicationType, data['type']) if 'type' in data else None
 
         self._icon: Optional[str] = data.get('icon')
         self._cover_image: Optional[str] = data.get('cover_image')
-        self.bot: Optional[User] = self._state.create_user(data['bot']) if 'bot' in data else None  # type: ignore
+        self._splash: Optional[str] = data.get('splash')
+        self.bot: Optional[User] = self._state.create_user(data['bot']) if 'bot' in data else None
         self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
         self.role_connections_verification_url: Optional[str] = data.get('role_connections_verification_url')
+        self.third_party_skus: List[ThirdPartySKU] = [
+            ThirdPartySKU(data=t, application=self) for t in data.get('third_party_skus', [])
+        ]
 
     def __repr__(self) -> str:
         return f'<IntegrationApplication id={self.id} name={self.name!r}>'
@@ -3650,6 +3677,16 @@ class IntegrationApplication(Hashable):
         if self._cover_image is None:
             return None
         return Asset._from_icon(self._state, self.id, self._cover_image, path='app')
+
+    @property
+    def splash(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Retrieves the application's splash, if any.
+
+        .. versionadded:: 2.1
+        """
+        if self._splash is None:
+            return None
+        return Asset._from_icon(self._state, self.id, self._splash, path='app')
 
     @property
     def primary_sku_url(self) -> Optional[str]:
