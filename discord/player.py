@@ -182,6 +182,7 @@ class FFmpegAudio(AudioSource):
         self._process = self._spawn_process(args, **kwargs)
         self._stdout: IO[bytes] = self._process.stdout  # type: ignore # process stdout is explicitly set
         self._stdin: Optional[IO[bytes]] = None
+        self._stderr: Optional[IO[bytes]] = None
         self._pipe_writer_thread: Optional[threading.Thread] = None
         self._pipe_reader_thread: Optional[threading.Thread] = None
 
@@ -256,6 +257,9 @@ class FFmpegAudio(AudioSource):
                 return
             if data is None:
                 return
+            # TODO: Do I need to check if this explodes?  catch OSError or something?
+            #       What happens if dest can no longer be written to?  Keep reading without writing or exit?
+            #       Does it pose an issue if the stderr pipe doesn't get read from?
             dest.write(data)
 
     def cleanup(self) -> None:
