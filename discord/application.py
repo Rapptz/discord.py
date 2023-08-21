@@ -1726,8 +1726,12 @@ class PartialApplication(Hashable):
         The application name.
     description: :class:`str`
         The application description.
-    rpc_origins: List[:class:`str`]
+    rpc_origins: Optional[List[:class:`str`]]
         A list of RPC origin URLs, if RPC is enabled.
+
+        .. versionchanged:: 2.1
+
+            The type of this attribute has changed to Optional[List[:class:`str`]].
     verify_key: :class:`str`
         The hex encoded key for verification in interactions and the
         GameSDK's :ddocs:`GetTicket <game-sdk/applications#getticket`.
@@ -1855,7 +1859,7 @@ class PartialApplication(Hashable):
         self.id: int = int(data['id'])
         self.name: str = data['name']
         self.description: str = data['description']
-        self.rpc_origins: List[str] = data.get('rpc_origins') or []
+        self.rpc_origins: Optional[List[str]] = data.get('rpc_origins')
         self.verify_key: str = data['verify_key']
 
         self.aliases: List[str] = data.get('aliases', [])
@@ -2001,6 +2005,13 @@ class PartialApplication(Hashable):
         .. versionadded:: 2.1
         """
         return self._has_bot
+
+    def is_rpc_enabled(self) -> bool:
+        """:class:`bool`: Whether the application has the ability to access the client RPC server.
+
+        .. versionadded:: 2.1
+        """
+        return self.rpc_origins is not None
 
     async def assets(self) -> List[ApplicationAsset]:
         """|coro|
