@@ -776,6 +776,7 @@ class ClientUser(BaseUser):
         self,
         *,
         username: str = MISSING,
+        global_name: Optional[str] = MISSING,
         avatar: Optional[bytes] = MISSING,
         avatar_decoration: Optional[bytes] = MISSING,
         password: str = MISSING,
@@ -812,7 +813,7 @@ class ClientUser(BaseUser):
         -----------
         password: :class:`str`
             The current password for the client's account.
-            Required for everything except avatar, banner, accent_colour, date_of_birth, and bio.
+            Required for everything except avatar, banner, accent_colour, date_of_birth, global_name, and bio.
         new_password: :class:`str`
             The new password you wish to change to.
         email: :class:`str`
@@ -855,6 +856,10 @@ class ClientUser(BaseUser):
             .. note::
 
                 This change cannot be undone and requires you to be in the pomelo rollout.
+
+            .. versionadded:: 2.1
+        global_name: Optional[:class:`str`]
+            The new global display name you wish to change to.
 
             .. versionadded:: 2.1
 
@@ -925,6 +930,9 @@ class ClientUser(BaseUser):
 
         if username is not MISSING:
             args['username'] = username
+
+        if global_name is not MISSING:
+            args['global_name'] = global_name
 
         if discriminator is not MISSING:
             if self.is_pomelo():
