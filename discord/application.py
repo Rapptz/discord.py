@@ -424,11 +424,33 @@ class ThirdPartySKU:
     def __init__(self, *, data: ThirdPartySKUPayload, application: Union[PartialApplication, IntegrationApplication]):
         self.application = application
         self.distributor: Distributor = try_enum(Distributor, data['distributor'])
-        self.id: Optional[str] = data.get('id')
-        self.sku_id: Optional[str] = data.get('sku_id')
+        self.id: Optional[str] = data.get('id') or None
+        self.sku_id: Optional[str] = data.get('sku_id') or None
 
     def __repr__(self) -> str:
         return f'<ThirdPartySKU distributor={self.distributor!r} id={self.id!r} sku_id={self.sku_id!r}>'
+
+    @property
+    def _id(self) -> str:
+        return self.id or self.sku_id or ''
+
+    @property
+    def url(self) -> Optional[str]:
+        """:class:`str`: Returns the URL of the SKU, if available.
+
+        .. versionadded:: 2.1
+        """
+        if not self._id:
+            return
+
+        if self.distributor == Distributor.discord:
+            return f'https://discord.com/store/skus/{self._id}'
+        elif self.distributor == Distributor.steam:
+            return f'https://store.steampowered.com/app/{self._id}'
+        elif self.distributor == Distributor.epic_games:
+            return f'https://store.epicgames.com/en-US/p/{self.application.name.replace(" ", "-")}'
+        elif self.distributor == Distributor.google_play:
+            return f'https://play.google.com/store/apps/details?id={self._id}'
 
 
 class EmbeddedActivityPlatformConfig:
