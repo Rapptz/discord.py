@@ -1180,7 +1180,7 @@ class ConnectionState:
             self._add_private_channel(factory(me=user, data=pm, state=self))  # type: ignore
 
         # Disloses
-        self.dislose = data.get('dislose', [])
+        self.disclose = data.get('disclose', [])
 
         # We're done
         del self._ready_data
