@@ -708,6 +708,14 @@ class ApplicationBot(User):
         return self.application.require_code_grant
 
     @property
+    def disabled(self) -> bool:
+        """:class:`bool`: Whether the bot is disabled by Discord.
+
+        .. versionadded:: 2.1
+        """
+        return self.application.disabled
+
+    @property
     def bio(self) -> Optional[str]:
         """Optional[:class:`str`]: Returns the bot's 'about me' section."""
         return self.application.description or None
@@ -2270,6 +2278,10 @@ class Application(PartialApplication):
         The application owner. This may be a team user account.
     bot: Optional[:class:`ApplicationBot`]
         The bot attached to the application, if any.
+    disabled: :class:`bool`
+        Whether the bot attached to this application is disabled by Discord.
+
+        .. versionadded:: 2.1
     interactions_endpoint_url: Optional[:class:`str`]
         The URL interactions will be sent to, if set.
     role_connections_verification_url: Optional[:class:`str`]
@@ -2297,6 +2309,7 @@ class Application(PartialApplication):
         'interactions_endpoint_url',
         'role_connections_verification_url',
         'bot',
+        'disabled',
         'verification_state',
         'store_application_state',
         'rpc_application_state',
@@ -2315,6 +2328,7 @@ class Application(PartialApplication):
     def _update(self, data: ApplicationPayload) -> None:
         super()._update(data)
 
+        self.disabled = data.get('bot_disabled', False)
         self.redirect_uris: List[str] = data.get('redirect_uris', [])
         self.interactions_endpoint_url: Optional[str] = data.get('interactions_endpoint_url')
         self.role_connections_verification_url: Optional[str] = data.get('role_connections_verification_url')

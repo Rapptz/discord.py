@@ -84,6 +84,7 @@ class PartialApplication(_BaseApplication):
     max_participants: NotRequired[Optional[int]]
     bot_public: NotRequired[bool]
     bot_require_code_grant: NotRequired[bool]
+    bot_disabled: NotRequired[bool]
     integration_public: NotRequired[bool]
     integration_require_code_grant: NotRequired[bool]
     guild_id: NotRequired[Snowflake]
