@@ -45,7 +45,6 @@ import logging
 import struct
 import threading
 from typing import Any, Callable, List, Optional, TYPE_CHECKING, Tuple, Union
-from typing_extensions import Unpack
 
 from . import opus, utils
 from .backoff import ExponentialBackoff
@@ -55,6 +54,8 @@ from .player import AudioPlayer, AudioSource
 from .utils import MISSING
 
 if TYPE_CHECKING:
+    from typing_extensions import Unpack
+
     from .client import Client
     from .guild import Guild
     from .state import ConnectionState
@@ -613,7 +614,7 @@ class VoiceClient(VoiceProtocol):
         fec: :class:`bool`
             Configures the encoder's use of inband forward error correction.
             Defaults to ``True``.
-        packet_loss_pct: :class:`float`
+        expected_packet_loss: :class:`float`
             Configures the encoder's expected packet loss percentage.  Requires FEC.
             Defaults to ``0.15``.
         bandwidth: :class:`str`
@@ -634,8 +635,6 @@ class VoiceClient(VoiceProtocol):
         OpusNotLoaded
             Source is not opus encoded and opus is not loaded.
         ValueError
-            An improper value was passed as an encoder parameter.
-        KeyError
             An improper value was passed as an encoder parameter.
         """
 

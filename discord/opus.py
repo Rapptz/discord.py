@@ -68,7 +68,7 @@ class EncoderKwargs(TypedDict, total=False):
     application: APPLICATION_CTL
     bitrate: int
     fec: bool
-    packet_loss_pct: float
+    expected_packet_loss: float
     bandwidth: BAND_CTL
     signal_type: SIGNAL_CTL
 
@@ -348,18 +348,20 @@ class Encoder(_OpusStruct):
         application: APPLICATION_CTL = 'audio',
         bitrate: int = 128,
         fec: bool = True,
-        packet_loss_pct: float = 0.15,
+        expected_packet_loss: float = 0.15,
         bandwidth: BAND_CTL = 'full',
         signal_type: SIGNAL_CTL = 'auto',
     ):
         if application not in application_ctl:
-            raise KeyError(f'{application} is not a valid application setting. Try one of: {"".join(application_ctl)}')
+            raise ValueError(f'{application} is not a valid application setting. Try one of: {"".join(application_ctl)}')
 
         if not 16 <= bitrate <= 512:
             raise ValueError(f'bitrate must be between 16 and 512, not {bitrate}')
 
-        if not 0 < packet_loss_pct <= 1.0:
-            raise ValueError(f'packet_loss_pct must be a positive number less than or equal to 1, not {packet_loss_pct}')
+        if not 0 < expected_packet_loss <= 1.0:
+            raise ValueError(
+                f'expected_packet_loss must be a positive number less than or equal to 1, not {expected_packet_loss}'
+            )
 
         _OpusStruct.get_opus_version()  # lazy loads the opus library
 
@@ -369,7 +371,7 @@ class Encoder(_OpusStruct):
         self.set_bitrate(bitrate)
         self.set_fec(fec)
         if fec:
-            self.set_expected_packet_loss_percent(packet_loss_pct)
+            self.set_expected_packet_loss_percent(expected_packet_loss)
         self.set_bandwidth(bandwidth)
         self.set_signal_type(signal_type)
 
