@@ -1236,6 +1236,10 @@ class ApplicationFlags(BaseFlags):
 
     .. versionadded:: 2.0
 
+    .. versionchanged:: 2.1
+
+        Removed now-defunct flag values.
+
     Attributes
     -----------
     value: :class:`int`
@@ -1243,12 +1247,14 @@ class ApplicationFlags(BaseFlags):
         rather than using this raw value.
     """
 
+    # Commented-out flags are no longer used; they are kept here for historical purposes
+
     __slots__ = ()
 
-    @flag_value
-    def embedded_released(self):
-        """:class:`bool`: Returns ``True`` if the embedded application is released to the public."""
-        return 1 << 1
+    # @flag_value
+    # def embedded_released(self):
+    #     """:class:`bool`: Returns ``True`` if the embedded application is released to the public."""
+    #     return 1 << 1
 
     @flag_value
     def managed_emoji(self):
@@ -1265,10 +1271,10 @@ class ApplicationFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the application has the ability to create group DMs without limit."""
         return 1 << 4
 
-    @flag_value
-    def rpc_private_beta(self):
-        """:class:`bool`: Returns ``True`` if the application has the ability to access the client RPC server."""
-        return 1 << 5
+    # @flag_value
+    # def rpc_private_beta(self):
+    #     """:class:`bool`: Returns ``True`` if the application has the ability to access the client RPC server."""
+    #     return 1 << 5
 
     @flag_value
     def automod_badge(self):
@@ -1278,25 +1284,25 @@ class ApplicationFlags(BaseFlags):
         """
         return 1 << 6
 
-    @flag_value
-    def allow_assets(self):
-        """:class:`bool`: Returns ``True`` if the application has the ability to use activity assets."""
-        return 1 << 8
+    # @flag_value
+    # def allow_assets(self):
+    #     """:class:`bool`: Returns ``True`` if the application has the ability to use activity assets."""
+    #     return 1 << 8
 
-    @flag_value
-    def allow_activity_action_spectate(self):
-        """:class:`bool`: Returns ``True`` if the application has the ability to enable spectating activities."""
-        return 1 << 9
+    # @flag_value
+    # def allow_activity_action_spectate(self):
+    #     """:class:`bool`: Returns ``True`` if the application has the ability to enable spectating activities."""
+    #     return 1 << 9
 
-    @flag_value
-    def allow_activity_action_join_request(self):
-        """:class:`bool`: Returns ``True`` if the application has the ability to enable activity join requests."""
-        return 1 << 10
+    # @flag_value
+    # def allow_activity_action_join_request(self):
+    #     """:class:`bool`: Returns ``True`` if the application has the ability to enable activity join requests."""
+    #     return 1 << 10
 
-    @flag_value
-    def rpc_has_connected(self):
-        """:class:`bool`: Returns ``True`` if the application has accessed the client RPC server before."""
-        return 1 << 11
+    # @flag_value
+    # def rpc_has_connected(self):
+    #     """:class:`bool`: Returns ``True`` if the application has accessed the client RPC server before."""
+    #     return 1 << 11
 
     @flag_value
     def gateway_presence(self):
