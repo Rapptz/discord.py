@@ -257,10 +257,12 @@ class FFmpegAudio(AudioSource):
                 return
             if data is None:
                 return
-            # TODO: Do I need to check if this explodes?  catch OSError or something?
-            #       What happens if dest can no longer be written to?  Keep reading without writing or exit?
-            #       Does it pose an issue if the stderr pipe doesn't get read from?
-            dest.write(data)
+            try:
+                dest.write(data)
+            except Exception:
+                _log.exception('Write error for %s', self)
+                self._stderr.close()
+                return
 
     def cleanup(self) -> None:
         self._kill_process()
