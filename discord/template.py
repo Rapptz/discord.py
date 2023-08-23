@@ -69,6 +69,10 @@ class _PartialTemplateState:
     def member_cache_flags(self):
         return self.__state.member_cache_flags
 
+    @property
+    def cache_guild_expressions(self):
+        return False
+    
     def store_emoji(self, guild, packet) -> None:
         return None
 
