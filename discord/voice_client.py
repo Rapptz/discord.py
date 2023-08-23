@@ -54,13 +54,11 @@ from .player import AudioPlayer, AudioSource
 from .utils import MISSING
 
 if TYPE_CHECKING:
-    from typing_extensions import Unpack
-
     from .client import Client
     from .guild import Guild
     from .state import ConnectionState
     from .user import ClientUser
-    from .opus import Encoder, EncoderKwargs
+    from .opus import Encoder, APPLICATION_CTL, BAND_CTL, SIGNAL_CTL
     from .channel import StageChannel, VoiceChannel
     from . import abc
 
@@ -576,7 +574,12 @@ class VoiceClient(VoiceProtocol):
         source: AudioSource,
         *,
         after: Optional[Callable[[Optional[Exception]], Any]] = None,
-        **encoder_kwargs: Unpack[EncoderKwargs],
+        application: APPLICATION_CTL = 'audio',
+        bitrate: int = 128,
+        fec: bool = True,
+        expected_packet_loss: float = 0.15,
+        bandwidth: BAND_CTL = 'full',
+        signal_type: SIGNAL_CTL = 'auto',
     ) -> None:
         """Plays an :class:`AudioSource`.
 
@@ -594,7 +597,7 @@ class VoiceClient(VoiceProtocol):
             Instead of writing to ``sys.stderr``, the library's logger is used.
 
         .. versionchanged:: 2.4
-            Added encoder parameters as keyword arguments in ``encoder_kwargs``.
+            Added encoder parameters as keyword arguments.
 
         Parameters
         -----------
@@ -647,8 +650,15 @@ class VoiceClient(VoiceProtocol):
         if not isinstance(source, AudioSource):
             raise TypeError(f'source must be an AudioSource not {source.__class__.__name__}')
 
-        if (not self.encoder or encoder_kwargs) and not source.is_opus():
-            self.encoder = opus.Encoder(**encoder_kwargs)
+        if not source.is_opus():
+            self.encoder = opus.Encoder(
+                application=application,
+                bitrate=bitrate,
+                fec=fec,
+                expected_packet_loss=expected_packet_loss,
+                bandwidth=bandwidth,
+                signal_type=signal_type,
+            )
 
         self._player = AudioPlayer(source, self, after=after)
         self._player.start()

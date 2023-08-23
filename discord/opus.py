@@ -64,15 +64,6 @@ class SignalCtl(TypedDict):
     music: int
 
 
-class EncoderKwargs(TypedDict, total=False):
-    application: APPLICATION_CTL
-    bitrate: int
-    fec: bool
-    expected_packet_loss: float
-    bandwidth: BAND_CTL
-    signal_type: SIGNAL_CTL
-
-
 __all__ = (
     'Encoder',
     'OpusError',
