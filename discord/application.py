@@ -716,6 +716,16 @@ class ApplicationBot(User):
         return self.application.disabled
 
     @property
+    def quarantined(self) -> bool:
+        """:class:`bool`: Whether the bot is quarantined by Discord.
+
+        Quarantined bots cannot join more guilds or start new direct messages.
+
+        .. versionadded:: 2.1
+        """
+        return self.application.quarantined
+
+    @property
     def bio(self) -> Optional[str]:
         """Optional[:class:`str`]: Returns the bot's 'about me' section."""
         return self.application.description or None
@@ -2282,6 +2292,12 @@ class Application(PartialApplication):
         Whether the bot attached to this application is disabled by Discord.
 
         .. versionadded:: 2.1
+    quarantined: :class:`bool`
+        Whether the bot attached to this application is quarantined by Discord.
+
+        Quarantined bots cannot join more guilds or start new direct messages.
+
+        .. versionadded:: 2.1
     interactions_endpoint_url: Optional[:class:`str`]
         The URL interactions will be sent to, if set.
     role_connections_verification_url: Optional[:class:`str`]
@@ -2310,6 +2326,7 @@ class Application(PartialApplication):
         'role_connections_verification_url',
         'bot',
         'disabled',
+        'quarantined',
         'verification_state',
         'store_application_state',
         'rpc_application_state',
@@ -2328,7 +2345,8 @@ class Application(PartialApplication):
     def _update(self, data: ApplicationPayload) -> None:
         super()._update(data)
 
-        self.disabled = data.get('bot_disabled', False)
+        self.disabled: bool = data.get('bot_disabled', False)
+        self.quarantined: bool = data.get('bot_quarantined', False)
         self.redirect_uris: List[str] = data.get('redirect_uris', [])
         self.interactions_endpoint_url: Optional[str] = data.get('interactions_endpoint_url')
         self.role_connections_verification_url: Optional[str] = data.get('role_connections_verification_url')
