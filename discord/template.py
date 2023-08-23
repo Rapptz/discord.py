@@ -72,7 +72,7 @@ class _PartialTemplateState:
     @property
     def cache_guild_expressions(self):
         return False
-    
+
     def store_emoji(self, guild, packet) -> None:
         return None
 
