@@ -439,8 +439,8 @@ class FFmpegOpusAudio(FFmpegAudio):
                      '-ac', '2',
                      '-b:a', f'{bitrate}k',
                      '-loglevel', 'warning',
-                     '-fec true',
-                     '-packet_loss 15',
+                     '-fec', 'true',
+                     '-packet_loss', '15',
                      '-blocksize', str(self.BLOCKSIZE)))
         # fmt: on
 
