@@ -840,9 +840,16 @@ class HTTPClient:
                                     )
 
                         # 202s must be retried
-                        if response.status == 202 and isinstance(data, dict) and 'retry_after' in data:
+                        if response.status == 202 and isinstance(data, dict) and data['code'] == 110000:
+                            # We update the `attempts` query parameter
+                            params = kwargs.get('params')
+                            if not params:
+                                kwargs['params'] = {'attempts': 1}
+                            else:
+                                params['attempts'] = (params.get('attempts') or 0) + 1
+
                             # Sometimes retry_after is 0, but that's undesirable
-                            retry_after: float = data['retry_after'] or 0.25
+                            retry_after: float = data['retry_after'] or 5
                             _log.debug('%s %s received a 202. Retrying in %s seconds...', method, url, retry_after)
                             await asyncio.sleep(retry_after)
                             continue

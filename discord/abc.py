@@ -103,7 +103,7 @@ if TYPE_CHECKING:
         OverwriteType,
     )
     from .types.embed import EmbedType
-    from .types.message import MessageSearchAuthorType, MessageSearchHasType
+    from .types.message import MessageSearchAuthorType, MessageSearchHasType, PartialMessage as PartialMessagePayload
     from .types.snowflake import (
         SnowflakeList,
     )
@@ -312,14 +312,41 @@ async def _handle_message_search(
     oldest_first: bool = False,
     most_relevant: bool = False,
 ) -> AsyncIterator[Message]:
+    from .channel import PartialMessageable  # circular import
+
     if limit is not None and limit < 0:
         raise ValueError('limit must be greater than or equal to 0')
     if offset < 0:
         raise ValueError('offset must be greater than or equal to 0')
 
+    # Guild channels must go through the guild search endpoint
     _state = destination._state
-    endpoint = _state.http.search_channel if isinstance(destination, Messageable) else _state.http.search_guild
-    entity_id = (await destination._get_channel()).id if isinstance(destination, Messageable) else destination.id
+    endpoint = _state.http.search_guild
+    entity_id = None
+    channel = None
+    if isinstance(destination, Messageable):
+        channel = await destination._get_channel()
+        if isinstance(channel, PrivateChannel):
+            endpoint = _state.http.search_channel
+            entity_id = channel.id
+        else:
+            channels = [channel]
+            entity_id = getattr(channel.guild, 'id', getattr(channel, 'guild_id', None))
+    else:
+        entity_id = destination.id
+    if not entity_id:
+        raise ValueError('Could not resolve channel guild ID')
+
+    _channels = {c.id: c for c in channels} if channels else {}
+    if channel:
+        _channels[channel.id] = channel
+
+    def _resolve_channel(message: PartialMessagePayload, /):
+        _channel, _ = _state._get_guild_channel(message)
+        if isinstance(_channel, PartialMessageable) and _channel.id in _channels:
+            return _channels[_channel.id]
+        return _channel
+
     payload = {}
 
     if isinstance(before, datetime):
@@ -409,7 +436,7 @@ async def _handle_message_search(
             if channel_id in threads:
                 raw_message['thread'] = threads[channel_id]
 
-            channel, _ = _state._get_guild_channel(raw_message)
+            channel = _resolve_channel(raw_message)
             yield _state.create_message(channel=channel, data=raw_message, search_result=data)  # type: ignore
 
 
@@ -2336,6 +2363,8 @@ class Messageable:
             You do not have permissions to search the channel's messages.
         ~discord.HTTPException
             The request to search messages failed.
+        ValueError
+            Could not resolve the channel's guild ID.
 
         Yields
         -------
