@@ -319,13 +319,14 @@ async def _handle_message_search(
     if offset < 0:
         raise ValueError('offset must be greater than or equal to 0')
 
+    _channels = {c.id: c for c in channels} if channels else {}
+
     # Guild channels must go through the guild search endpoint
     _state = destination._state
     endpoint = _state.http.search_guild
-    entity_id = None
-    channel = None
     if isinstance(destination, Messageable):
         channel = await destination._get_channel()
+        _channels[channel.id] = channel
         if isinstance(channel, PrivateChannel):
             endpoint = _state.http.search_channel
             entity_id = channel.id
@@ -334,12 +335,9 @@ async def _handle_message_search(
             entity_id = getattr(channel.guild, 'id', getattr(channel, 'guild_id', None))
     else:
         entity_id = destination.id
+
     if not entity_id:
         raise ValueError('Could not resolve channel guild ID')
-
-    _channels = {c.id: c for c in channels} if channels else {}
-    if channel:
-        _channels[channel.id] = channel
 
     def _resolve_channel(message: PartialMessagePayload, /):
         _channel, _ = _state._get_guild_channel(message)

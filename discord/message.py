@@ -691,7 +691,7 @@ class PartialMessage(Hashable):
         self.guild: Optional[Guild] = getattr(channel, 'guild', None)
         self.guild_id: Optional[int] = self.guild.id if self.guild else None
         if hasattr(channel, 'guild_id'):
-            if self.guild_id:
+            if self.guild_id is not None:
                 channel.guild_id = self.guild_id  # type: ignore
             else:
                 self.guild_id = channel.guild_id  # type: ignore
