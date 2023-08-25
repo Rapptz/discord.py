@@ -2849,6 +2849,31 @@ of :class:`enum.Enum`.
 
         Represents a member currently in the team.
 
+.. class:: TeamMemberRole
+
+    Represents the type of role of a team member retrieved through :func:`Client.application_info`.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: owner
+
+        The team member owns the team. This allows them to do everything with the team, including destructive actions.
+
+    .. attribute:: admin
+
+        The team member is an admin. This allows them to invite members to the team, access credentials, edit the application,
+        and do most things the owner can do. However they cannot do destructive actions.
+
+    .. attribute:: developer
+
+        The team member is a developer. This allows them to access information, like the client secret or public key.
+        They can also configure interaction endpoints or reset the bot token. Developers cannot invite anyone to the team
+        nor can they do destructive actions.
+
+    .. attribute:: read_only
+
+        The team member is a read-only member. This allows them to access information, but not edit anything.
+
 .. class:: WebhookType
 
     Represents the type of webhook that can be received.
