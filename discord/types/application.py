@@ -106,12 +106,15 @@ class ApplicationDiscoverability(TypedDict):
     bad_commands: List[ApplicationCommand]
 
 
+InteractionsVersion = Literal[1, 2]
+
+
 class Application(PartialApplication, IntegrationApplication):
     bot_disabled: NotRequired[bool]
     bot_quarantined: NotRequired[bool]
     redirect_uris: List[str]
     interactions_endpoint_url: Optional[str]
-    interactions_version: Literal[1, 2]
+    interactions_version: InteractionsVersion
     interactions_event_types: List[str]
     verification_state: int
     store_application_state: int

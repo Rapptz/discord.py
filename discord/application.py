@@ -87,6 +87,7 @@ if TYPE_CHECKING:
         EmbeddedActivityPlatform as EmbeddedActivityPlatformValues,
         EmbeddedActivityPlatformConfig as EmbeddedActivityPlatformConfigPayload,
         GlobalActivityStatistics as GlobalActivityStatisticsPayload,
+        InteractionsVersion,
         Manifest as ManifestPayload,
         ManifestLabel as ManifestLabelPayload,
         PartialApplication as PartialApplicationPayload,
@@ -1956,7 +1957,10 @@ class PartialApplication(Hashable):
 
         existing = getattr(self, 'team', None)
         team = data.get('team')
-        self.team = Team(state=state, data=team) if team else existing
+        if existing and team:
+            existing._update(team)
+        else:
+            self.team = Team(state=state, data=team) if team else existing
 
         if self.team and not self.owner:
             # We can create a team user from the team data
@@ -2300,6 +2304,15 @@ class Application(PartialApplication):
         .. versionadded:: 2.1
     interactions_endpoint_url: Optional[:class:`str`]
         The URL interactions will be sent to, if set.
+    interactions_version: :class:`int`
+        The interactions version to use. Different versions have different payloads and supported features.
+
+        .. versionadded:: 2.1
+    interactions_event_types: List[:class:`str`]
+        The interaction event types to subscribe to.
+        Requires a valid :attr:`interactions_endpoint_url` and :attr:`interactions_version` 2 or higher.
+
+        .. versionadded:: 2.1
     role_connections_verification_url: Optional[:class:`str`]
         The application's connection verification URL which will render the application as
         a verification method in the guild's role verification configuration.
@@ -2313,8 +2326,8 @@ class Application(PartialApplication):
         The approval state of the RPC usage application.
     discoverability_state: :class:`ApplicationDiscoverabilityState`
         The state of the application in the application directory.
-    approximate_guild_count: Optional[:class:`int`]
-        The approximate number of guilds this application is in, if available.
+    approximate_guild_count: :class:`int`
+        The approximate number of guilds this application is in.
 
         .. versionadded:: 2.1
     """
@@ -2323,6 +2336,8 @@ class Application(PartialApplication):
         'owner',
         'redirect_uris',
         'interactions_endpoint_url',
+        'interactions_version',
+        'interactions_event_types',
         'role_connections_verification_url',
         'bot',
         'disabled',
@@ -2349,6 +2364,8 @@ class Application(PartialApplication):
         self.quarantined: bool = data.get('bot_quarantined', False)
         self.redirect_uris: List[str] = data.get('redirect_uris', [])
         self.interactions_endpoint_url: Optional[str] = data.get('interactions_endpoint_url')
+        self.interactions_version: InteractionsVersion = data.get('interactions_version', 1)
+        self.interactions_event_types: List[str] = data.get('interactions_event_types', [])
         self.role_connections_verification_url: Optional[str] = data.get('role_connections_verification_url')
 
         self.verification_state = try_enum(ApplicationVerificationState, data['verification_state'])
@@ -2356,7 +2373,7 @@ class Application(PartialApplication):
         self.rpc_application_state = try_enum(RPCApplicationState, data.get('rpc_application_state', 0))
         self.discoverability_state = try_enum(ApplicationDiscoverabilityState, data.get('discoverability_state', 1))
         self._discovery_eligibility_flags = data.get('discovery_eligibility_flags', 0)
-        self.approximate_guild_count: Optional[int] = data.get('approximate_guild_count')
+        self.approximate_guild_count: int = data.get('approximate_guild_count', 0)
 
         state = self._state
 
@@ -2401,6 +2418,8 @@ class Application(PartialApplication):
         privacy_policy_url: Optional[str] = MISSING,
         deeplink_uri: Optional[str] = MISSING,
         interactions_endpoint_url: Optional[str] = MISSING,
+        interactions_version: InteractionsVersion = MISSING,
+        interactions_event_types: Sequence[str] = MISSING,
         role_connections_verification_url: Optional[str] = MISSING,
         redirect_uris: Sequence[str] = MISSING,
         rpc_origins: Sequence[str] = MISSING,
@@ -2444,6 +2463,15 @@ class Application(PartialApplication):
             .. versionadded:: 2.1
         interactions_endpoint_url: Optional[:class:`str`]
             The URL interactions will be sent to, if set.
+        interactions_version: :class:`int`
+            The interactions version to use. Different versions have different payloads and supported features.
+
+            .. versionadded:: 2.1
+        interactions_event_types: List[:class:`str`]
+            The interaction event types to subscribe to.
+            Requires a valid :attr:`interactions_endpoint_url` and :attr:`interactions_version` 2 or higher.
+
+            .. versionadded:: 2.1
         role_connections_verification_url: Optional[:class:`str`]
             The connection verification URL for the application.
 
@@ -2508,12 +2536,16 @@ class Application(PartialApplication):
             payload['deeplink_uri'] = deeplink_uri or ''
         if interactions_endpoint_url is not MISSING:
             payload['interactions_endpoint_url'] = interactions_endpoint_url or ''
+        if interactions_version is not MISSING:
+            payload['interactions_version'] = interactions_version
+        if interactions_event_types is not MISSING:
+            payload['interactions_event_types'] = interactions_event_types or []
         if role_connections_verification_url is not MISSING:
             payload['role_connections_verification_url'] = role_connections_verification_url or ''
         if redirect_uris is not MISSING:
-            payload['redirect_uris'] = redirect_uris
+            payload['redirect_uris'] = redirect_uris or []
         if rpc_origins is not MISSING:
-            payload['rpc_origins'] = rpc_origins
+            payload['rpc_origins'] = rpc_origins or []
         if public is not MISSING:
             if self.bot:
                 payload['bot_public'] = public
@@ -2549,7 +2581,6 @@ class Application(PartialApplication):
             await self._state.http.transfer_application(self.id, team.id)
 
         data = await self._state.http.edit_application(self.id, payload)
-
         self._update(data)
 
     async def fetch_bot(self) -> ApplicationBot:
