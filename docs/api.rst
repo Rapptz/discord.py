@@ -2106,6 +2106,11 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`User` or :class:`Object` who got kicked.
 
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``integration_type``: An optional string that denotes the type of integration that did the action.
+
         When this is the action, :attr:`~AuditLogEntry.changes` is empty.
 
     .. attribute:: member_prune
@@ -2165,6 +2170,11 @@ of :class:`enum.Enum`.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Member`, :class:`User`, or :class:`Object` who got the role.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``integration_type``: An optional string that denotes the type of integration that did the action.
 
         Possible attributes for :class:`AuditLogDiff`:
 
