@@ -335,11 +335,11 @@ class Cog(metaclass=CogMeta):
                 # Hybrid commands already deal with updating the reference
                 # Due to the copy below, so we need to handle them specially
                 if hasattr(parent, '__commands_is_hybrid__') and hasattr(command, '__commands_is_hybrid__'):
-                    app_command: Optional[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = getattr(
+                    current: Optional[Union[app_commands.Group, app_commands.Command[Self, ..., Any]]] = getattr(
                         command, 'app_command', None
                     )
                     updated = app_command_refs.get(command.qualified_name)
-                    if app_command and updated:
+                    if current and updated:
                         command.app_command = updated  # type: ignore  # Safe attribute access
 
                 # Update our parent's reference to our self
