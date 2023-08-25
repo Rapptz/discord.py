@@ -2865,10 +2865,6 @@ of :class:`enum.Enum`.
 
     .. versionadded:: 2.4
 
-    .. attribute:: owner
-
-        The team member owns the team. This allows them to do everything with the team, including destructive actions.
-
     .. attribute:: admin
 
         The team member is an admin. This allows them to invite members to the team, access credentials, edit the application,

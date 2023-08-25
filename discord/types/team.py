@@ -35,7 +35,7 @@ class TeamMember(TypedDict):
     membership_state: int
     permissions: List[str]
     team_id: Snowflake
-    role: Literal['owner', 'admin', 'developer', 'read_only']
+    role: Literal['admin', 'developer', 'read_only']
 
 
 class Team(TypedDict):
