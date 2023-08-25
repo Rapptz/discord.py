@@ -659,11 +659,15 @@ class PartialMessage(Hashable):
         The channel associated with this partial message.
     id: :class:`int`
         The message ID.
+    guild_id: Optional[:class:`int`]
+        The ID of the guild that the partial message belongs to, if applicable.
+
+        .. versionadded:: 2.1
     guild: Optional[:class:`Guild`]
         The guild that the partial message belongs to, if applicable.
     """
 
-    __slots__ = ('channel', 'id', '_cs_guild', '_state', 'guild')
+    __slots__ = ('channel', 'id', '_state', 'guild_id', 'guild')
 
     def __init__(self, *, channel: MessageableChannel, id: int) -> None:
         if not isinstance(channel, PartialMessageable) and channel.type not in (
@@ -685,6 +689,12 @@ class PartialMessage(Hashable):
         self.id: int = id
 
         self.guild: Optional[Guild] = getattr(channel, 'guild', None)
+        self.guild_id: Optional[int] = self.guild.id if self.guild else None
+        if hasattr(channel, 'guild_id'):
+            if self.guild_id:
+                channel.guild_id = self.guild_id  # type: ignore
+            else:
+                self.guild_id = channel.guild_id  # type: ignore
 
     def _update(self, data: MessageUpdateEvent) -> None:
         # This is used for duck typing purposes.
@@ -1488,6 +1498,10 @@ class Message(PartialMessage, Hashable):
         the approximate position of the message in a thread.
 
         .. versionadded:: 2.0
+    guild_id: Optional[:class:`int`]
+        The ID of the guild that the partial message belongs to, if applicable.
+
+        .. versionadded:: 2.1
     guild: Optional[:class:`Guild`]
         The guild that the message belongs to, if applicable.
     interaction: Optional[:class:`Interaction`]
@@ -1594,7 +1608,14 @@ class Message(PartialMessage, Hashable):
             # If the channel doesn't have a guild attribute, we handle that
             self.guild = channel.guild
         except AttributeError:
-            self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
+            guild_id = utils._get_as_snowflake(data, 'guild_id')
+            if guild_id is not None:
+                channel.guild_id = guild_id  # type: ignore
+            else:
+                guild_id = channel.guild_id  # type: ignore
+
+            self.guild_id: Optional[int] = guild_id
+            self.guild = state._get_guild(guild_id)
 
         self.application: Optional[IntegrationApplication] = None
         try:
@@ -1819,12 +1840,12 @@ class Message(PartialMessage, Hashable):
                 r.append(Member._try_upgrade(data=mention, guild=guild, state=state))
 
     def _handle_mention_roles(self, role_mentions: List[int]) -> None:
-        self.role_mentions = []
+        self.role_mentions = r = []
         if isinstance(self.guild, Guild):
             for role_id in map(int, role_mentions):
                 role = self.guild.get_role(role_id)
                 if role is not None:
-                    self.role_mentions.append(role)
+                    r.append(role)
 
     def _handle_call(self, call: Optional[CallPayload]) -> None:
         if call is None or self.type is not MessageType.call:
