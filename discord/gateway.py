@@ -987,18 +987,15 @@ class DiscordVoiceWebSocket:
         _log.debug('Sending ip discovery packet')
         await self.loop.sock_sendall(state.socket, packet)
 
-        fut: asyncio.Future[bytes] = asyncio.Future()
+        fut: asyncio.Future[bytes] = self.loop.create_future()
 
         def get_ip_packet(data: bytes):
             if data[1] == 0x02 and len(data) == 74:
                 self.loop.call_soon_threadsafe(fut.set_result, data)
 
+        fut.add_done_callback(lambda f: state.remove_socket_listener(get_ip_packet))
         state.add_socket_listener(get_ip_packet)
-        try:
-            await fut
-            recv = fut.result()
-        finally:
-            state.remove_socket_listener(get_ip_packet)
+        recv = await fut
 
         _log.debug('Received ip discovery packet: %s', recv)
 

@@ -84,12 +84,13 @@ class SocketReader(threading.Thread):
         self._callbacks: List[SocketReaderCallback] = []
         self._running = threading.Event()
         self._end = threading.Event()
-        self._self_paused: bool = True
+        # If we have paused reading due to having no callbacks
+        self._idle_paused: bool = True
 
     def register(self, callback: SocketReaderCallback) -> None:
         self._callbacks.append(callback)
-        if self._self_paused:
-            self._self_paused = False
+        if self._idle_paused:
+            self._idle_paused = False
             self._running.set()
 
     def unregister(self, callback: SocketReaderCallback) -> None:
@@ -99,20 +100,20 @@ class SocketReader(threading.Thread):
             pass
         else:
             if not self._callbacks and self._running.is_set():
-                self._self_paused = True
+                self._idle_paused = True
                 self._running.clear()
 
     def pause(self) -> None:
-        self._self_paused = False
+        self._idle_paused = False
         self._running.clear()
 
     def resume(self, *, force: bool = False) -> None:
         # Don't resume if there are no callbacks registered
         if not force and not self._callbacks:
             # We tried to resume but there was nothing to do, so resume when ready
-            self._self_paused = True
+            self._idle_paused = True
             return
-        self._self_paused = False
+        self._idle_paused = False
         self._running.set()
 
     def stop(self) -> None:
@@ -154,7 +155,7 @@ class SocketReader(threading.Thread):
                     try:
                         cb(data)
                     except Exception:
-                        _log.exception('Error calling %s in %s:', self, cb)
+                        _log.exception('Error calling %s in %s:', cb, self)
 
 
 class ConnectionFlowState(Enum, comparable=True):
@@ -198,7 +199,6 @@ class VoiceConnectionState:
         self.ws: DiscordVoiceWebSocket = MISSING
 
         self._state: ConnectionFlowState = ConnectionFlowState.disconnected
-
         self._expecting_disconnect: bool = False
         self._connected = threading.Event()
         self._state_event = asyncio.Event()
