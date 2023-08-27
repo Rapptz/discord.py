@@ -196,6 +196,9 @@ class Colour:
             The string could not be converted into a colour.
         """
 
+        if value == '':
+            raise ValueError('cannot convert empty string to colour')
+
         if value[0] == '#':
             return parse_hex_number(value[1:])
 
