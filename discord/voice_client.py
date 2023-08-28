@@ -340,6 +340,8 @@ class VoiceClient(VoiceProtocol):
             The channel to move to. Must be a voice channel.
         """
         await self._connection.move_to(channel)
+        # TODO: temporary static timeout
+        await self._connection.wait_async(30)
 
     def is_connected(self) -> bool:
         """Indicates if the voice client is connected to voice."""
@@ -355,9 +357,10 @@ class VoiceClient(VoiceProtocol):
         Returns
         ---------
         :class:`bool`
-            The same as what :meth:`threading.Event.wait()` returns (The state of the internal :class:`threading.Event` flag).
+            If the client is connected (from ``is_connected()``).
         """
-        return self._connection.wait(timeout)
+        self._connection.wait(timeout)
+        return self._connection.is_connected()
 
     # audio related
 

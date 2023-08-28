@@ -733,12 +733,13 @@ class AudioPlayer(threading.Thread):
 
             # are we disconnected from voice?
             if not client.is_connected():
-                _log.info('Not connected, waiting...')
+                _log.debug('Not connected, waiting...')
                 # wait until we are connected
-                client.wait_until_connected()
-                if self._end.is_set():
+                connected = client.wait_until_connected()
+                if self._end.is_set() or not connected:
+                    _log.debug('Aborting playback')
                     return
-                _log.info('Reconnected, resuming playback')
+                _log.debug('Reconnected, resuming playback')
                 self._speak(SpeakingState.voice)
                 # reset our internal data
                 self.loops = 0

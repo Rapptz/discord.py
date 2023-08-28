@@ -100,6 +100,8 @@ class SocketReader(threading.Thread):
             pass
         else:
             if not self._callbacks and self._running.is_set():
+                # If running is not set, we are either explicitly paused and
+                # should be explicitly resumed, or we are already idle paused
                 self._idle_paused = True
                 self._running.clear()
 
@@ -108,6 +110,8 @@ class SocketReader(threading.Thread):
         self._running.clear()
 
     def resume(self, *, force: bool = False) -> None:
+        if self._running.is_set():
+            return
         # Don't resume if there are no callbacks registered
         if not force and not self._callbacks:
             # We tried to resume but there was nothing to do, so resume when ready
@@ -121,24 +125,25 @@ class SocketReader(threading.Thread):
         self._running.set()
 
     def run(self) -> None:
+        self._end.clear()
         self._running.set()
         try:
             self._do_run()
         except Exception:
             _log.exception('Error in %s', self)
         finally:
+            self.stop()
             self._running.clear()
             self._callbacks.clear()
-            self.state = None  # type: ignore
 
     def _do_run(self) -> None:
         while not self._end.is_set():
             if not self._running.is_set():
-                self._running.wait(1)
+                self._running.wait()
                 continue
 
             try:
-                readable, _, _ = select.select([self.state.socket], [], [], 1)
+                readable, _, _ = select.select([self.state.socket], [], [], 30)
             except (ValueError, TypeError):
                 # The socket is either closed or doesn't exist at the moment
                 continue
@@ -389,11 +394,12 @@ class VoiceConnectionState:
             return
 
         await self.voice_client.channel.guild.change_voice_state(channel=channel)
+        self.state = ConnectionFlowState.set_guild_voice_state
 
     def wait(self, timeout: Optional[float] = None) -> bool:
         return self._connected.wait(timeout)
 
-    async def wait_async(self, *, timeout: Optional[float] = None) -> None:
+    async def wait_async(self, timeout: Optional[float] = None) -> None:
         await self._wait_for_state(ConnectionFlowState.connected, timeout=timeout)
 
     def is_connected(self) -> bool:
