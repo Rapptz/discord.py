@@ -351,8 +351,14 @@ class Guild(Hashable):
         The guild's ID.
     owner_id: :class:`int`
         The guild owner's ID.
-    owner_application_id: Optional[:class:`int`]
+    application_id: Optional[:class:`int`]
         The application ID of the guild owner (if applicable).
+
+        .. versionadded:: 2.0
+
+        .. versionchanged:: 2.1
+
+            Renamed from ``owner_application_id`` to ``application_id``.
     unavailable: :class:`bool`
         Indicates if the guild is unavailable. If this is ``True`` then the
         reliability of other attributes outside of :attr:`Guild.id` is slim and they might
@@ -450,7 +456,7 @@ class Guild(Hashable):
         'nsfw_level',
         'mfa_level',
         'vanity_url_code',
-        'owner_application_id',
+        'application_id',
         'widget_enabled',
         '_widget_channel_id',
         '_members',
@@ -687,7 +693,7 @@ class Guild(Hashable):
         self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = guild.get('approximate_member_count')
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
-        self.owner_application_id: Optional[int] = utils._get_as_snowflake(guild, 'application_id')
+        self.application_id: Optional[int] = utils._get_as_snowflake(guild, 'application_id')
         self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
         self._joined_at = guild.get('joined_at')
 

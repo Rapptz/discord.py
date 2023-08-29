@@ -5931,6 +5931,12 @@ AuditLogDiff
 
         :type: Union[:class:`Member`, :class:`User`]
 
+    .. attribute:: application_id
+
+        The application ID of the guild owner (if applicable). See also :attr:`Guild.application_id`.
+
+        :type: :class:`int`
+
     .. attribute:: afk_channel
 
         The guild's AFK channel.
@@ -6501,7 +6507,7 @@ AuditLogDiff
 
         :type: :class:`default_reaction_emoji`
 
-.. this is currently missing the following keys: reason and application_id
+.. this is currently missing the following keys: reason
    I'm not sure how to port these
 
 Webhook Support
