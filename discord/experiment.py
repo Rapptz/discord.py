@@ -26,6 +26,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, Final, Iterator, List, Optional, Sequence, Tuple, Union
 
+from .enums import HubType, try_enum
 from .metadata import Metadata
 from .utils import SequenceProxy, SnowflakeList, murmurhash32
 
@@ -202,13 +203,12 @@ class ExperimentFilters:
         if ids_filter is not None:
             return ids_filter.guild_ids
 
-    # TODO: Pending hub implementation
-    # @property
-    # def hub_types(self) -> Optional[List[HubType]]:
-    #     """Optional[List[:class:`HubType`]]: The hub types that are eligible for the population."""
-    #     hub_types_filter = self.options.guild_hub_types
-    #     if hub_types_filter is not None:
-    #         return [try_enum(HubType, hub_type) for hub_type in hub_types_filter.guild_hub_types]
+    @property
+    def hub_types(self) -> Optional[List[HubType]]:
+        """Optional[List[:class:`HubType`]]: The Student Hub types that are eligible for the population."""
+        hub_types_filter = self.options.guild_hub_types
+        if hub_types_filter is not None:
+            return [try_enum(HubType, hub_type) for hub_type in hub_types_filter.guild_hub_types]
 
     @property
     def range_by_hash(self) -> Optional[Tuple[int, int]]:
@@ -265,12 +265,11 @@ class ExperimentFilters:
             if guild.id not in ids:
                 return False
 
-        # TODO: Pending hub implementation
-        # hub_types = self.hub_types
-        # if hub_types is not None:
-        #     # Guild must be in the list of hub types
-        #     if not guild.hub_type or guild.hub_type not in hub_types:
-        #         return False
+        hub_types = self.hub_types
+        if hub_types is not None:
+            # Guild must be a hub in the list of hub types
+            if not guild.hub_type or guild.hub_type not in hub_types:
+                return False
 
         range_by_hash = self.range_by_hash
         if range_by_hash is not None:

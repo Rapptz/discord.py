@@ -63,6 +63,7 @@ from .enums import (
     VideoQualityMode,
     ChannelType,
     EntityType,
+    HubType,
     PrivacyLevel,
     try_enum,
     VerificationLevel,
@@ -127,6 +128,7 @@ if TYPE_CHECKING:
         CategoryChannel as CategoryChannelPayload,
         StageChannel as StageChannelPayload,
         ForumChannel as ForumChannelPayload,
+        DirectoryChannel as DirectoryChannelPayload,
     )
     from .types.embed import EmbedType
     from .types.integration import IntegrationType
@@ -139,8 +141,9 @@ if TYPE_CHECKING:
     from .read_state import ReadState
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
-    GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
-    ByCategoryItem = Tuple[Optional[CategoryChannel], List[GuildChannel]]
+    NonCategoryChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, DirectoryChannel]
+    GuildChannel = Union[NonCategoryChannel, CategoryChannel]
+    ByCategoryItem = Tuple[Optional[CategoryChannel], List[NonCategoryChannel]]
 
 MISSING = utils.MISSING
 
@@ -419,6 +422,10 @@ class Guild(Hashable):
         Indicates if the guild has widget enabled.
 
         .. versionadded:: 2.0
+    hub_type: Optional[:class:`HubType`]
+        The type of Student Hub the guild is, if applicable.
+
+        .. versionadded:: 2.1
     """
 
     __slots__ = (
@@ -475,6 +482,7 @@ class Guild(Hashable):
         'keywords',
         'primary_category_id',
         'application_command_counts',
+        'hub_type',
         '_joined_at',
         '_cs_joined',
     )
@@ -551,7 +559,7 @@ class Guild(Hashable):
             ('id', self.id),
             ('name', self.name),
             ('chunked', self.chunked),
-            ('member_count', self._member_count),
+            ('member_count', self.member_count),
         )
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f'<Guild {inner}>'
@@ -621,6 +629,9 @@ class Guild(Hashable):
         )
         self.explicit_content_filter: ContentFilter = try_enum(ContentFilter, guild.get('explicit_content_filter', 0))
         self.afk_timeout: int = guild.get('afk_timeout', 0)
+        self.hub_type: Optional[HubType] = (
+            try_enum(HubType, guild.get('hub_type')) if guild.get('hub_type') is not None else None
+        )
         self.unavailable: bool = guild.get('unavailable', False)
         if self.unavailable:
             self._member_count = 0
@@ -733,6 +744,13 @@ class Guild(Hashable):
     def _offline_members_hidden(self) -> bool:
         return (self._member_count or 0) > 1000
 
+    def is_hub(self) -> bool:
+        """:class:`bool`: Whether the guild is a Student Hub.
+
+        .. versionadded:: 2.1
+        """
+        return 'HUB' in self.features
+
     @property
     def voice_channels(self) -> List[VoiceChannel]:
         """List[:class:`VoiceChannel`]: A list of voice channels that belongs to this guild.
@@ -842,6 +860,28 @@ class Guild(Hashable):
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
+    @property
+    def directory_channels(self) -> List[DirectoryChannel]:
+        """List[:class:`DirectoryChannel`]: A list of directory channels that belongs to this guild.
+
+        This is sorted by the position and are in UI order from top to bottom.
+
+        .. versionadded:: 2.1
+        """
+        r = [ch for ch in self._channels.values() if isinstance(ch, DirectoryChannel)]
+        r.sort(key=lambda c: (c.position, c.id))
+        return r
+
+    @property
+    def directories(self) -> List[DirectoryChannel]:
+        """List[:class:`DirectoryChannel`]: A list of directory channels that belongs to this guild.
+
+        An alias for :attr:`Guild.directory_channels`.
+
+        .. versionadded:: 2.1
+        """
+        return self.directory_channels
+
     def by_category(self) -> List[ByCategoryItem]:
         """Returns every :class:`CategoryChannel` and their associated channels.
 
@@ -855,7 +895,7 @@ class Guild(Hashable):
         List[Tuple[Optional[:class:`CategoryChannel`], List[:class:`abc.GuildChannel`]]]:
             The categories and their associated channels.
         """
-        grouped: Dict[Optional[int], List[GuildChannel]] = {}
+        grouped: Dict[Optional[int], List[NonCategoryChannel]] = {}
         for channel in self._channels.values():
             if isinstance(channel, CategoryChannel):
                 grouped.setdefault(channel.id, [])
@@ -866,7 +906,7 @@ class Guild(Hashable):
             except KeyError:
                 grouped[channel.category_id] = [channel]
 
-        def key(t: ByCategoryItem) -> Tuple[Tuple[int, int], List[GuildChannel]]:
+        def key(t: ByCategoryItem) -> Tuple[Tuple[int, int], List[NonCategoryChannel]]:
             k, v = t
             return ((k.position, k.id) if k else (-1, -1), v)
 
@@ -1426,6 +1466,17 @@ class Guild(Hashable):
     def _create_channel(
         self,
         name: str,
+        channel_type: Literal[ChannelType.directory],
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
+        category: Optional[Snowflake] = ...,
+        **options: Any,
+    ) -> Coroutine[Any, Any, DirectoryChannelPayload]:
+        ...
+
+    @overload
+    def _create_channel(
+        self,
+        name: str,
         channel_type: ChannelType,
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
@@ -1851,6 +1902,83 @@ class Guild(Hashable):
 
     create_category_channel = create_category
 
+    async def create_directory(
+        self,
+        name: str,
+        *,
+        reason: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        position: int = MISSING,
+        topic: str = MISSING,
+        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
+    ) -> DirectoryChannel:
+        """|coro|
+
+        This is similar to :meth:`create_text_channel` except makes a :class:`DirectoryChannel` instead.
+
+        The ``overwrites`` parameter can be used to create a 'secret'
+        channel upon creation. This parameter expects a :class:`dict` of
+        overwrites with the target (either a :class:`Member` or a :class:`Role`)
+        as the key and a :class:`PermissionOverwrite` as the value.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        name: :class:`str`
+            The channel's name.
+        overwrites: Dict[Union[:class:`Role`, :class:`Member`], :class:`PermissionOverwrite`]
+            A :class:`dict` of target (either a role or a member) to
+            :class:`PermissionOverwrite` to apply upon creation of a channel.
+            Useful for creating secret channels.
+        category: Optional[:class:`CategoryChannel`]
+            The category to place the newly created channel under.
+            The permissions will be automatically synced to category if no
+            overwrites are provided.
+        position: :class:`int`
+            The position in the channel list. This is a number that starts
+            at 0. e.g. the top channel is position 0.
+        topic: :class:`str`
+            The new channel's topic.
+        reason: Optional[:class:`str`]
+            The reason for creating this channel. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to create this channel.
+        HTTPException
+            Creating the channel failed.
+        TypeError
+            The permission overwrite information is not in proper form.
+
+        Returns
+        -------
+        :class:`TextChannel`
+            The channel that was just created.
+        """
+        options = {}
+        if position is not MISSING:
+            options['position'] = position
+        if topic is not MISSING:
+            options['topic'] = topic
+
+        data = await self._create_channel(
+            name,
+            overwrites=overwrites,
+            channel_type=ChannelType.directory,
+            category=category,
+            reason=reason,
+            **options,
+        )
+        channel = DirectoryChannel(state=self._state, guild=self, data=data)
+
+        # temporarily add to the cache
+        self._channels[channel.id] = channel
+        return channel
+
+    create_directory_channel = create_directory
+
     async def create_forum(
         self,
         name: str,
@@ -1989,6 +2117,8 @@ class Guild(Hashable):
         # temporarily add to the cache
         self._channels[channel.id] = channel
         return channel
+
+    create_forum_channel = create_forum
 
     async def leave(self) -> None:
         """|coro|
@@ -3367,6 +3497,7 @@ class Guild(Hashable):
         end_time: datetime = ...,
         description: str = ...,
         image: bytes = ...,
+        directory_broadcast: bool = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -3383,6 +3514,7 @@ class Guild(Hashable):
         end_time: datetime = ...,
         description: str = ...,
         image: bytes = ...,
+        directory_broadcast: bool = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -3398,6 +3530,7 @@ class Guild(Hashable):
         end_time: datetime = ...,
         description: str = ...,
         image: bytes = ...,
+        directory_broadcast: bool = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -3413,6 +3546,7 @@ class Guild(Hashable):
         end_time: datetime = ...,
         description: str = ...,
         image: bytes = ...,
+        directory_broadcast: bool = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -3423,12 +3557,13 @@ class Guild(Hashable):
         name: str,
         start_time: datetime,
         entity_type: EntityType = MISSING,
-        privacy_level: PrivacyLevel = MISSING,
+        privacy_level: PrivacyLevel = PrivacyLevel.guild_only,
         channel: Optional[Snowflake] = MISSING,
         location: str = MISSING,
         end_time: datetime = MISSING,
         description: str = MISSING,
         image: bytes = MISSING,
+        directory_broadcast: bool = False,
         reason: Optional[str] = None,
     ) -> ScheduledEvent:
         r"""|coro|
@@ -3474,6 +3609,11 @@ class Guild(Hashable):
             The location of the scheduled event.
 
             Required if the ``entity_type`` is :attr:`EntityType.external`.
+        directory_broadcast: :class:`bool`
+            Whether to broadcast the scheduled event to the directories the guild is in.
+            You should first check eligibility with :meth:`directory_broadcast_eligibility`.
+
+            .. versionadded:: 2.1
         reason: Optional[:class:`str`]
             The reason for creating this scheduled event. Shows up on the audit log.
 
@@ -3497,17 +3637,23 @@ class Guild(Hashable):
         :class:`ScheduledEvent`
             The created scheduled event.
         """
-        payload = {}
+        payload: Dict[str, Any] = {
+            'name': name,
+            'privacy_level': int(privacy_level or PrivacyLevel.guild_only.value),
+            'broadcast_to_directory_channels': directory_broadcast,
+        }
         metadata = {}
 
-        payload['name'] = name
+        if start_time.tzinfo is None:
+            raise ValueError(
+                'start_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+            )
+        payload['scheduled_start_time'] = start_time.isoformat()
 
-        if start_time is not MISSING:
-            if start_time.tzinfo is None:
-                raise ValueError(
-                    'start_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
-                )
-            payload['scheduled_start_time'] = start_time.isoformat()
+        if privacy_level:
+            if not isinstance(privacy_level, PrivacyLevel):
+                raise TypeError('privacy_level must be of type PrivacyLevel')
+        payload['privacy_level'] = (privacy_level or PrivacyLevel.guild_only).value
 
         entity_type = entity_type or getattr(channel, '_scheduled_event_entity_type', MISSING)
         if entity_type is MISSING:
@@ -3516,7 +3662,6 @@ class Guild(Hashable):
                     entity_type = EntityType.voice
                 elif channel.type is StageChannel:
                     entity_type = EntityType.stage_instance
-
             elif location not in (MISSING, None):
                 entity_type = EntityType.external
         else:
@@ -3527,14 +3672,8 @@ class Guild(Hashable):
 
         if entity_type is None:
             raise TypeError(
-                'invalid GuildChannel type passed, must be VoiceChannel or StageChannel ' f'not {channel.__class__.__name__}'
+                f'invalid GuildChannel type passed; must be VoiceChannel or StageChannel not {channel.__class__.__name__}'
             )
-
-        if privacy_level is not MISSING:
-            if not isinstance(privacy_level, PrivacyLevel):
-                raise TypeError('privacy_level must be of type PrivacyLevel.')
-
-            payload['privacy_level'] = privacy_level.value
 
         if description is not MISSING:
             payload['description'] = description
@@ -3560,10 +3699,10 @@ class Guild(Hashable):
 
             metadata['location'] = location
 
-            if end_time in (MISSING, None):
+            if not end_time:
                 raise TypeError('end_time must be set when entity_type is external')
 
-        if end_time not in (MISSING, None):
+        if end_time:
             if end_time.tzinfo is None:
                 raise ValueError(
                     'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
@@ -5135,3 +5274,23 @@ class Guild(Hashable):
         """
         data = await self._state.http.migrate_command_scope(self.id)
         return list(map(int, data['integration_ids_with_app_commands']))
+
+    async def directory_broadcast_eligibility(self) -> bool:
+        """|coro|
+
+        Checks if scheduled events can be broadcasted to the directories the guild is in.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        HTTPException
+            Checking eligibility failed.
+
+        Returns
+        --------
+        :class:`bool`
+            Whether the guild is eligible to broadcast scheduled events to directories.
+        """
+        data = await self._state.http.get_directory_broadcast_info(self.id, 1)
+        return data['can_broadcast']

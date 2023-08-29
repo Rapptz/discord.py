@@ -47,6 +47,7 @@ class _BaseGuildScheduledEvent(TypedDict):
     creator: NotRequired[User]
     user_count: NotRequired[int]
     image: NotRequired[Optional[str]]
+    sku_ids: List[Snowflake]
 
 
 class _VoiceChannelScheduledEvent(_BaseGuildScheduledEvent):

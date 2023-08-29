@@ -40,21 +40,21 @@ class PermissionOverwrite(TypedDict):
     deny: str
 
 
-ChannelTypeWithoutThread = Literal[0, 1, 2, 3, 4, 5, 6, 13, 15]
+ChannelTypeWithoutThread = Literal[0, 1, 2, 3, 4, 5, 6, 13, 14, 15]
 ChannelType = Union[ChannelTypeWithoutThread, ThreadType]
 
 
 class _BaseChannel(TypedDict):
     id: Snowflake
-    name: str
 
 
 class _BaseGuildChannel(_BaseChannel):
     guild_id: Snowflake
     position: int
     permission_overwrites: List[PermissionOverwrite]
-    nsfw: bool
     parent_id: Optional[Snowflake]
+    name: str
+    flags: int
 
 
 class PartialRecipient(TypedDict):
@@ -62,6 +62,7 @@ class PartialRecipient(TypedDict):
 
 
 class PartialChannel(_BaseChannel):
+    name: Optional[str]
     type: ChannelType
     icon: NotRequired[Optional[str]]
     recipients: NotRequired[List[PartialRecipient]]
@@ -74,6 +75,7 @@ class _BaseTextChannel(_BaseGuildChannel, total=False):
     rate_limit_per_user: int
     default_thread_rate_limit_per_user: int
     default_auto_archive_duration: ThreadArchiveDuration
+    nsfw: bool
 
 
 class TextChannel(_BaseTextChannel):
@@ -105,6 +107,13 @@ class StageChannel(_BaseGuildChannel):
     user_limit: int
     rtc_region: NotRequired[Optional[str]]
     topic: NotRequired[str]
+    nsfw: bool
+
+
+class DirectoryChannel(_BaseGuildChannel):
+    type: Literal[14]
+    last_message_id: Optional[Snowflake]
+    topic: Optional[str]
 
 
 class ThreadChannel(_BaseChannel):
@@ -123,8 +132,8 @@ class ThreadChannel(_BaseChannel):
     rate_limit_per_user: NotRequired[int]
     last_message_id: NotRequired[Optional[Snowflake]]
     last_pin_timestamp: NotRequired[str]
-    flags: NotRequired[int]
     applied_tags: NotRequired[List[Snowflake]]
+    flags: int
 
 
 class DefaultReaction(TypedDict):
@@ -150,10 +159,11 @@ class ForumChannel(_BaseTextChannel):
     default_reaction_emoji: Optional[DefaultReaction]
     default_sort_order: Optional[ForumOrderType]
     default_forum_layout: NotRequired[ForumLayoutType]
-    flags: NotRequired[int]
 
 
-GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel, ForumChannel]
+GuildChannel = Union[
+    TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, DirectoryChannel, ThreadChannel, ForumChannel
+]
 
 
 class DMChannel(_BaseChannel):
@@ -167,6 +177,7 @@ class DMChannel(_BaseChannel):
 
 class GroupDMChannel(_BaseChannel):
     type: Literal[3]
+    name: Optional[str]
     icon: Optional[str]
     owner_id: Snowflake
     recipients: List[PartialUser]
@@ -174,7 +185,7 @@ class GroupDMChannel(_BaseChannel):
 
 Channel = Union[GuildChannel, DMChannel, GroupDMChannel]
 
-PrivacyLevel = Literal[2]
+PrivacyLevel = Literal[1, 2]
 
 
 class StageInstance(TypedDict):

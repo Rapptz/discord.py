@@ -321,6 +321,7 @@ class ScheduledEvent(Hashable):
         privacy_level: PrivacyLevel = ...,
         status: EventStatus = ...,
         image: bytes = ...,
+        directory_broadcast: bool = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -338,6 +339,7 @@ class ScheduledEvent(Hashable):
         entity_type: Literal[EntityType.voice, EntityType.stage_instance],
         status: EventStatus = ...,
         image: bytes = ...,
+        directory_broadcast: bool = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -355,6 +357,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         location: str,
+        directory_broadcast: bool = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -371,6 +374,7 @@ class ScheduledEvent(Hashable):
         privacy_level: PrivacyLevel = ...,
         status: EventStatus = ...,
         image: bytes = ...,
+        directory_broadcast: bool = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -387,6 +391,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         location: str,
+        directory_broadcast: bool = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -404,6 +409,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = MISSING,
         image: bytes = MISSING,
         location: str = MISSING,
+        directory_broadcast: bool = MISSING,
         reason: Optional[str] = None,
     ) -> ScheduledEvent:
         r"""|coro|
@@ -451,6 +457,11 @@ class ScheduledEvent(Hashable):
             The new location of the scheduled event.
 
             Required if the entity type is :attr:`EntityType.external`.
+        directory_broadcast: :class:`bool`
+            Whether to broadcast the scheduled event to the directories the guild is in.
+            You should first check eligibility with :meth:`Guild.directory_broadcast_eligibility`.
+
+            .. versionadded:: 2.1
         reason: Optional[:class:`str`]
             The reason for editing the scheduled event. Shows up on the audit log.
 
@@ -492,7 +503,7 @@ class ScheduledEvent(Hashable):
 
         if privacy_level is not MISSING:
             if not isinstance(privacy_level, PrivacyLevel):
-                raise TypeError('privacy_level must be of type PrivacyLevel.')
+                raise TypeError('privacy_level must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value
 
@@ -523,7 +534,7 @@ class ScheduledEvent(Hashable):
 
         if entity_type is None:
             raise TypeError(
-                f'invalid GuildChannel type passed, must be VoiceChannel or StageChannel not {channel.__class__.__name__}'
+                f'invalid GuildChannel type passed; must be VoiceChannel or StageChannel not {channel.__class__.__name__}'
             )
 
         _entity_type = entity_type or self.entity_type
@@ -562,6 +573,9 @@ class ScheduledEvent(Hashable):
                 payload['scheduled_end_time'] = end_time.isoformat()
             else:
                 payload['scheduled_end_time'] = end_time
+
+        if directory_broadcast is not MISSING:
+            payload['broadcast_to_directory_channels'] = directory_broadcast
 
         if metadata:
             payload['entity_metadata'] = metadata
@@ -680,37 +694,39 @@ class ScheduledEvent(Hashable):
             count = 0
 
             for count, user in enumerate(users, 1):
+                if user.id not in self._users:
+                    self._add_user(user)
                 yield user
 
             if count < 100:
                 # There's no data left after this
                 break
 
-    async def subscribe(self) -> None:
+    async def rsvp(self) -> None:
         """|coro|
 
-        Subscribes the current user to this event.
+        Marks the current user as interested in this event.
 
         .. versionadded:: 2.1
 
         Raises
         -------
         HTTPException
-            Subscribing failed.
+            RSVPing failed.
         """
         await self._state.http.create_scheduled_event_user(self.guild_id, self.id)
 
-    async def unsubscribe(self) -> None:
+    async def unrsvp(self) -> None:
         """|coro|
 
-        Unsubscribes the current user from this event.
+        Unmarks the current user as interested in this event.
 
         .. versionadded:: 2.1
 
         Raises
         -------
         HTTPException
-            Unsubscribing failed.
+            Un-RSVPing failed.
         """
         await self._state.http.delete_scheduled_event_user(self.guild_id, self.id)
 

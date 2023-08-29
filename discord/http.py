@@ -89,10 +89,12 @@ if TYPE_CHECKING:
         automod,
         billing,
         channel,
+        directory,
         emoji,
         entitlements,
         experiment,
         guild,
+        hub,
         integration,
         invite,
         library,
@@ -1591,6 +1593,100 @@ class HTTPClient:
             params['silent'] = str(silent).lower()
 
         return self.request(Route('DELETE', '/channels/{channel_id}', channel_id=channel_id), params=params, reason=reason)
+
+    def get_directory_entries(
+        self,
+        channel_id: Snowflake,
+        *,
+        type: Optional[directory.DirectoryEntryType] = None,
+        category_id: Optional[directory.DirectoryCategory] = None,
+    ) -> Response[List[directory.DirectoryEntry]]:
+        params = {}
+        if type is not None:
+            params['type'] = type
+        if category_id is not None:
+            params['category_id'] = category_id
+
+        return self.request(Route('GET', '/channels/{channel_id}/directory-entries', channel_id=channel_id), params=params)
+
+    def get_some_directory_entries(
+        self,
+        channel_id: Snowflake,
+        entity_ids: Sequence[Snowflake],
+    ) -> Response[List[directory.PartialDirectoryEntry]]:
+        params = {'entity_ids': entity_ids}
+        return self.request(
+            Route('GET', '/channels/{channel_id}/directory-entries/list', channel_id=channel_id), params=params
+        )
+
+    def get_directory_counts(self, channel_id: Snowflake) -> Response[directory.DirectoryCounts]:
+        return self.request(Route('GET', '/channels/{channel_id}/directory-entries/counts', channel_id=channel_id))
+
+    def search_directory_entries(
+        self,
+        channel_id: Snowflake,
+        query: str,
+        *,
+        type: Optional[directory.DirectoryEntryType] = None,
+        category_id: Optional[directory.DirectoryCategory] = None,
+    ) -> Response[List[directory.DirectoryEntry]]:
+        params: Dict[str, Any] = {'query': query}
+        if type is not None:
+            params['type'] = type
+        if category_id is not None:
+            params['category_id'] = category_id
+
+        return self.request(
+            Route('GET', '/channels/{channel_id}/directory-entries/search', channel_id=channel_id), params=params
+        )
+
+    def create_directory_entry(
+        self,
+        channel_id: Snowflake,
+        entity_id: Snowflake,
+        type: directory.DirectoryEntryType = MISSING,
+        primary_category_id: directory.DirectoryCategory = MISSING,
+        description: Optional[str] = MISSING,
+    ) -> Response[directory.DirectoryEntry]:
+        payload = {}
+        if type is not MISSING:
+            payload['type'] = type
+        if primary_category_id is not MISSING:
+            payload['primary_category_id'] = primary_category_id
+        if description is not MISSING:
+            payload['description'] = description
+
+        return self.request(
+            Route('POST', '/channels/{channel_id}/directory-entry/{entity_id}', channel_id=channel_id, entity_id=entity_id),
+            json=payload,
+        )
+
+    def edit_directory_entry(
+        self,
+        channel_id: Snowflake,
+        entity_id: Snowflake,
+        description: Optional[str] = MISSING,
+        primary_category_id: directory.DirectoryCategory = MISSING,
+    ) -> Response[directory.DirectoryEntry]:
+        payload = {}
+        if description is not MISSING:
+            payload['description'] = description or ''
+        if primary_category_id is not MISSING:
+            payload['primary_category_id'] = primary_category_id
+
+        return self.request(
+            Route('PATCH', '/channels/{channel_id}/directory-entry/{entity_id}', channel_id=channel_id, entity_id=entity_id),
+            json=payload,
+        )
+
+    def delete_directory_entry(self, channel_id: Snowflake, entity_id: int) -> Response[None]:
+        return self.request(
+            Route('DELETE', '/channels/{channel_id}/directory-entry/{entity_id}', channel_id=channel_id, entity_id=entity_id)
+        )
+
+    def get_directory_broadcast_info(self, guild_id: Snowflake, type: int) -> Response[directory.DirectoryBroadcast]:
+        params = {'type': type}
+        return self.request(Route('GET', '/guilds/{guild_id}/directory-entries/broadcast', guild_id=guild_id), params=params)
 
     # Thread management
 
@@ -4705,3 +4801,35 @@ class HTTPClient:
     ) -> Response[Union[experiment.ExperimentResponse, experiment.ExperimentResponseWithGuild]]:
         params = {'with_guild_experiments': str(with_guild_experiments).lower()}
         return self.request(Route('GET', '/experiments'), params=params, context_properties=ContextProperties.empty())
+
+    # Hubs
+
+    def hub_waitlist_signup(self, email: str, school: str) -> Response[hub.HubWaitlist]:
+        payload = {'email': email, 'school': school}
+        return self.request(Route('POST', '/hub-waitlist/signup'), json=payload)
+
+    def hub_lookup(
+        self,
+        email: str,
+        guild_id: Optional[Snowflake] = None,
+        *,
+        use_verification_code: bool = True,
+        allow_multiple_guilds: bool = True,
+    ) -> Response[hub.EmailDomainLookup]:
+        payload = {
+            'email': email,
+            'use_verification_code': use_verification_code,
+            'allow_multiple_guilds': allow_multiple_guilds,
+        }
+        if guild_id is not None:
+            payload['guild_id'] = guild_id
+
+        return self.request(Route('POST', '/guilds/automations/email-domain-lookup'), json=payload)
+
+    def join_hub(self, email: str, guild_id: Snowflake, code: str) -> Response[hub.EmailDomainVerification]:
+        payload = {'email': email, 'guild_id': guild_id, 'code': code}
+        return self.request(Route('POST', '/guilds/automations/email-domain-lookup/verify-code'), json=payload)
+
+    def join_hub_token(self, token: str) -> Response[hub.EmailDomainVerification]:
+        payload = {'token': token}
+        return self.request(Route('POST', '/guilds/automations/email-domain-lookup/verify'), json=payload)

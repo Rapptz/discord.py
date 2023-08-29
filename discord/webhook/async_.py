@@ -75,6 +75,7 @@ if TYPE_CHECKING:
     from ..types.webhook import (
         Webhook as WebhookPayload,
         SourceGuild as SourceGuildPayload,
+        SourceChannel as SourceChannelPayload,
     )
     from ..types.message import (
         Message as MessagePayload,
@@ -82,9 +83,6 @@ if TYPE_CHECKING:
     from ..types.user import (
         User as UserPayload,
         PartialUser as PartialUserPayload,
-    )
-    from ..types.channel import (
-        PartialChannel as PartialChannelPayload,
     )
     from ..types.emoji import PartialEmoji as PartialEmojiPayload
 
@@ -443,7 +441,7 @@ class PartialWebhookChannel(Hashable):
 
     __slots__ = ('id', 'name')
 
-    def __init__(self, *, data: PartialChannelPayload) -> None:
+    def __init__(self, *, data: SourceChannelPayload) -> None:
         self.id: int = int(data['id'])
         self.name: str = data['name']
 

@@ -34,6 +34,7 @@ from .colour import *
 from .commands import *
 from .components import *
 from .connections import *
+from .directory import *
 from .embeds import *
 from .emoji import *
 from .entitlements import *

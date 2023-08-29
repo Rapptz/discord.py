@@ -47,7 +47,17 @@ import datetime
 import discord.abc
 from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, EntityType, ForumLayoutType, ForumOrderType, PrivacyLevel, try_enum, VideoQualityMode
+from .enums import (
+    ChannelType,
+    EntityType,
+    ForumLayoutType,
+    ForumOrderType,
+    PrivacyLevel,
+    try_enum,
+    VideoQualityMode,
+    DirectoryCategory,
+    DirectoryEntryType,
+)
 from .calls import PrivateCall, GroupCall
 from .mixins import Hashable
 from . import utils
@@ -61,15 +71,17 @@ from .flags import ChannelFlags
 from .http import handle_message_parameters
 from .invite import Invite
 from .voice_client import VoiceClient
+from .directory import DirectoryEntry
 
 __all__ = (
     'TextChannel',
     'VoiceChannel',
     'StageChannel',
-    'DMChannel',
     'CategoryChannel',
     'ForumTag',
     'ForumChannel',
+    'DirectoryChannel',
+    'DMChannel',
     'GroupChannel',
     'PartialMessageable',
 )
@@ -98,6 +110,7 @@ if TYPE_CHECKING:
         NewsChannel as NewsChannelPayload,
         VoiceChannel as VoiceChannelPayload,
         StageChannel as StageChannelPayload,
+        DirectoryChannel as DirectoryChannelPayload,
         DMChannel as DMChannelPayload,
         CategoryChannel as CategoryChannelPayload,
         GroupDMChannel as GroupChannelPayload,
@@ -2093,6 +2106,26 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         r.sort(key=lambda c: (c.position, c.id))
         return r
 
+    @property
+    def directory_channels(self) -> List[DirectoryChannel]:
+        """List[:class:`DirectoryChannel`]: Returns the directory channels that are under this category.
+
+        .. versionadded:: 2.1
+        """
+        r = [c for c in self.guild.channels if c.category_id == self.id and isinstance(c, DirectoryChannel)]
+        r.sort(key=lambda c: (c.position, c.id))
+        return r
+
+    @property
+    def directories(self) -> List[DirectoryChannel]:
+        """List[:class:`DirectoryChannel`]: Returns the directory channels that are under this category.
+
+        An alias for :attr:`directory_channels`.
+
+        .. versionadded:: 2.1
+        """
+        return self.directory_channels
+
     async def create_text_channel(self, name: str, **options: Any) -> TextChannel:
         """|coro|
 
@@ -2131,6 +2164,22 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         """
         return await self.guild.create_stage_channel(name, category=self, **options)
 
+    async def create_directory(self, name: str, **options: Any) -> DirectoryChannel:
+        """|coro|
+
+        A shortcut method to :meth:`Guild.create_directory` to create a :class:`DirectoryChannel` in the category.
+
+        .. versionadded:: 2.1
+
+        Returns
+        --------
+        :class:`DirectoryChannel`
+            The channel that was just created.
+        """
+        return await self.guild.create_directory(name, category=self, **options)
+
+    create_directory_channel = create_directory
+
     async def create_forum(self, name: str, **options: Any) -> ForumChannel:
         """|coro|
 
@@ -2144,6 +2193,8 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             The channel that was just created.
         """
         return await self.guild.create_forum(name, category=self, **options)
+
+    create_forum_channel = create_forum
 
 
 class ForumTag(Hashable):
@@ -2997,6 +3048,372 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
                 return
 
             before_timestamp = update_before(threads[-1])
+
+
+class DirectoryChannel(discord.abc.GuildChannel, Hashable):
+    """Represents a directory channel.
+
+    These channels hold entries for guilds attached to a directory (such as a Student Hub).
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two channels are equal.
+
+        .. describe:: x != y
+
+            Checks if two channels are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the channel's hash.
+
+        .. describe:: str(x)
+
+            Returns the channel's name.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The channel name.
+    guild: :class:`Guild`
+        The guild the channel belongs to.
+    id: :class:`int`
+        The channel ID.
+    category_id: Optional[:class:`int`]
+        The category channel ID this channel belongs to, if applicable.
+    topic: Optional[:class:`str`]
+        The channel's topic. ``None`` if it doesn't exist.
+    position: :class:`int`
+        The position in the channel list. This is a number that starts at 0. e.g. the
+        top channel is position 0.
+    last_message_id: Optional[:class:`int`]
+        The last directory entry ID that was created on this channel. It may
+        *not* point to an existing or valid directory entry.
+    """
+
+    __slots__ = (
+        'name',
+        'id',
+        'guild',
+        'topic',
+        '_state',
+        'category_id',
+        'position',
+        '_overwrites',
+        'last_message_id',
+    )
+
+    def __init__(self, *, state: ConnectionState, guild: Guild, data: DirectoryChannelPayload):
+        self._state: ConnectionState = state
+        self.id: int = int(data['id'])
+        self._update(guild, data)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('id', self.id),
+            ('name', self.name),
+            ('position', self.position),
+            ('category_id', self.category_id),
+        ]
+        joined = ' '.join('%s=%r' % t for t in attrs)
+        return f'<{self.__class__.__name__} {joined}>'
+
+    def _update(self, guild: Guild, data: DirectoryChannelPayload) -> None:
+        self.guild: Guild = guild
+        self.name: str = data['name']
+        self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
+        self.topic: Optional[str] = data.get('topic')
+        self.position: int = data['position']
+        self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
+        self._fill_overwrites(data)
+
+    async def _get_channel(self) -> Self:
+        return self
+
+    @property
+    def type(self) -> ChannelType:
+        """:class:`ChannelType`: The channel's Discord type."""
+        return ChannelType.directory
+
+    @property
+    def _sorting_bucket(self) -> int:
+        return ChannelType.directory.value
+
+    @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return None
+
+    @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
+    def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
+        base = super().permissions_for(obj)
+        self._apply_implicit_permissions(base)
+
+        # text channels do not have voice related permissions
+        denied = Permissions.voice()
+        base.value &= ~denied.value
+        return base
+
+    @property
+    def members(self) -> List[Member]:
+        """List[:class:`Member`]: Returns all members that can see this channel."""
+        return [m for m in self.guild.members if self.permissions_for(m).read_messages]
+
+    @property
+    def read_state(self) -> ReadState:
+        """:class:`ReadState`: Returns the read state for this channel."""
+        return self._state.get_read_state(self.id)
+
+    @property
+    def acked_message_id(self) -> int:
+        """:class:`int`: The last directory entry ID that the user has acknowledged.
+        It may *not* point to an existing or valid directory entry.
+        """
+        return self.read_state.last_acked_id
+
+    @property
+    def mention_count(self) -> int:
+        """:class:`int`: Returns how many unread directory entries the user has in this channel."""
+        return self.read_state.badge_count
+
+    @property
+    def last_viewed_timestamp(self) -> datetime.date:
+        """:class:`datetime.date`: When the channel was last viewed."""
+        return self.read_state.last_viewed  # type: ignore
+
+    @overload
+    async def edit(self) -> Optional[DirectoryChannel]:
+        ...
+
+    @overload
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
+        reason: Optional[str] = ...,
+        name: str = ...,
+        topic: str = ...,
+        position: int = ...,
+        sync_permissions: bool = ...,
+        category: Optional[CategoryChannel] = ...,
+        overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
+    ) -> DirectoryChannel:
+        ...
+
+    async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[DirectoryChannel]:
+        """|coro|
+
+        Edits the channel.
+
+        You must have :attr:`~Permissions.manage_channels` to do this.
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The new channel name.
+        topic: :class:`str`
+            The new channel's topic.
+        position: :class:`int`
+            The new channel's position.
+        sync_permissions: :class:`bool`
+            Whether to sync permissions with the channel's new or pre-existing
+            category. Defaults to ``False``.
+        category: Optional[:class:`CategoryChannel`]
+            The new category for this channel. Can be ``None`` to remove the
+            category.
+        reason: Optional[:class:`str`]
+            The reason for editing this channel. Shows up on the audit log.
+        overwrites: :class:`Mapping`
+            A :class:`Mapping` of target (either a role or a member) to
+            :class:`PermissionOverwrite` to apply to the channel.
+
+        Raises
+        ------
+        ValueError
+            The new ``position`` is less than 0 or greater than the number of channels.
+        TypeError
+            The permission overwrite information is not in proper form.
+        Forbidden
+            You do not have permissions to edit the channel.
+        HTTPException
+            Editing the channel failed.
+
+        Returns
+        --------
+        Optional[:class:`.DirectoryChannel`]
+            The newly edited directory channel. If the edit was only positional
+            then ``None`` is returned instead.
+        """
+        payload = await self._edit(options, reason=reason)
+        if payload is not None:
+            # the payload will always be the proper channel payload
+            return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
+
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
+    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> DirectoryChannel:
+        return await self._clone_impl({'topic': self.topic}, name=name, reason=reason)
+
+    async def counts(self) -> Dict[DirectoryCategory, int]:
+        """|coro|
+
+        Gets the number of entries in each category.
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to get the counts.
+        HTTPException
+            Getting the counts failed.
+
+        Returns
+        --------
+        Dict[:class:`DirectoryCategory`, :class:`int`]
+            The counts for each category.
+        """
+        data = await self._state.http.get_directory_counts(self.id)
+        return {try_enum(DirectoryCategory, int(k)): v for k, v in data.items()}
+
+    async def entries(
+        self,
+        *,
+        type: Optional[DirectoryEntryType] = None,
+        category: Optional[DirectoryCategory] = None,
+    ) -> List[DirectoryEntry]:
+        """|coro|
+
+        Gets the directory entries in this channel.
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to get the entries.
+        HTTPException
+            Getting the entries failed.
+
+        Returns
+        --------
+        List[:class:`DirectoryEntry`]
+            The entries in this channel.
+        """
+        state = self._state
+        data = await state.http.get_directory_entries(
+            self.id, type=type.value if type else None, category_id=category.value if category else None
+        )
+        return [DirectoryEntry(state=state, data=e, channel=self) for e in data]
+
+    async def fetch_entries(self, *entity_ids: int) -> List[DirectoryEntry]:
+        r"""|coro|
+
+        Gets a list of partial directory entries by their IDs.
+
+        .. note::
+
+            These :class:`DirectoryEntry` objects do not have :attr:`DirectoryEntry.guild`.
+
+        Parameters
+        -----------
+        \*entity_ids: :class:`int`
+            The IDs of the entries to fetch.
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to get the entries.
+        HTTPException
+            Getting the entries failed.
+
+        Returns
+        --------
+        List[:class:`DirectoryEntry`]
+            The entries in this channel.
+        """
+        if not entity_ids:
+            return []
+
+        state = self._state
+        data = await state.http.get_some_directory_entries(self.id, entity_ids)
+        return [DirectoryEntry(state=state, data=e, channel=self) for e in data]
+
+    async def search_entries(
+        self,
+        query: str,
+        /,
+        *,
+        category: Optional[DirectoryCategory] = None,
+    ) -> List[DirectoryEntry]:
+        """|coro|
+
+        Searches for directory entries in this channel.
+
+        Parameters
+        -----------
+        query: :class:`str`
+            The query to search for.
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to search the entries.
+        HTTPException
+            Searching the entries failed.
+
+        Returns
+        --------
+        List[:class:`DirectoryEntry`]
+            The entries in this channel.
+        """
+        state = self._state
+        data = await state.http.search_directory_entries(self.id, query, category_id=category.value if category else None)
+        return [DirectoryEntry(state=state, data=e, channel=self) for e in data]
+
+    async def create_entry(
+        self,
+        guild: Snowflake,
+        *,
+        category: DirectoryCategory = DirectoryCategory.uncategorized,
+        description: Optional[str] = None,
+    ) -> DirectoryEntry:
+        """|coro|
+
+        Creates a directory entry in this channel.
+
+        Parameters
+        -----------
+        guild: :class:`Guild`
+            The guild to create the entry for.
+        category: :class:`DirectoryCategory`
+            The category to create the entry in.
+        description: Optional[:class:`str`]
+            The description of the entry.
+
+        Raises
+        -------
+        Forbidden
+            You don't have permissions to create the entry.
+        HTTPException
+            Creating the entry failed.
+
+        Returns
+        --------
+        :class:`DirectoryEntry`
+            The created entry.
+        """
+        # While the API supports `type`, only guilds seem to be supported at the moment
+        # So we hide all that from the user and just accept a `guild`
+        state = self._state
+        data = await state.http.create_directory_entry(
+            self.id,
+            guild.id,
+            primary_category_id=(category or DirectoryCategory.uncategorized).value,
+            description=description or '',
+        )
+        return DirectoryEntry(state=state, data=data, channel=self)
 
 
 class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.PrivateChannel, Hashable):
@@ -4118,6 +4535,8 @@ def _guild_channel_factory(channel_type: int):
         return TextChannel, value
     elif value is ChannelType.stage_voice:
         return StageChannel, value
+    elif value is ChannelType.directory:
+        return DirectoryChannel, value
     elif value is ChannelType.forum:
         return ForumChannel, value
     else:

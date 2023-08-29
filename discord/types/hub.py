@@ -1,7 +1,7 @@
 """
 The MIT License (MIT)
 
-Copyright (c) 2015-present Rapptz
+Copyright (c) 2021-present Dolfies
 
 Permission is hereby granted, free of charge, to any person obtaining a
 copy of this software and associated documentation files (the "Software"),
@@ -22,51 +22,31 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from __future__ import annotations
-
-from typing import Literal, Optional, TypedDict
+from typing import List, Optional, TypedDict
 from typing_extensions import NotRequired
 
+from .guild import Guild
 from .snowflake import Snowflake
-from .user import User
-from .channel import PartialChannel
 
 
-class SourceGuild(TypedDict):
-    id: int
-    name: str
-    icon: str
+class HubWaitlist(TypedDict):
+    email: str
+    email_domain: str
+    school: str
+    user_id: Snowflake
 
 
-class SourceChannel(TypedDict):
-    id: int
-    name: str
-
-
-WebhookType = Literal[1, 2, 3]
-
-
-class FollowerWebhook(TypedDict):
-    channel_id: Snowflake
-    webhook_id: Snowflake
-    source_channel: NotRequired[PartialChannel]
-    source_guild: NotRequired[SourceGuild]
-
-
-class PartialWebhook(TypedDict):
+class HubGuild(TypedDict):
     id: Snowflake
-    type: WebhookType
-    guild_id: NotRequired[Snowflake]
-    user: NotRequired[User]
-    token: NotRequired[str]
+    name: str
+    icon: Optional[str]
 
 
-class _FullWebhook(TypedDict, total=False):
-    name: Optional[str]
-    avatar: Optional[str]
-    channel_id: Snowflake
-    application_id: Optional[Snowflake]
+class EmailDomainLookup(TypedDict):
+    guilds_info: NotRequired[List[HubGuild]]
+    has_matching_guild: bool
 
 
-class Webhook(PartialWebhook, _FullWebhook):
-    ...
+class EmailDomainVerification(TypedDict):
+    guild: Guild
+    joined: bool

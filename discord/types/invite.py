@@ -29,7 +29,7 @@ from typing_extensions import NotRequired
 
 from .scheduled_event import GuildScheduledEvent
 from .snowflake import Snowflake
-from .guild import InviteGuild, _GuildPreviewUnique
+from .guild import InviteGuild, _GuildCounts
 from .channel import PartialChannel
 from .user import PartialUser
 from .application import PartialApplication
@@ -65,7 +65,7 @@ class Invite(IncompleteInvite, total=False):
     guild_scheduled_event: GuildScheduledEvent
 
 
-class InviteWithCounts(Invite, _GuildPreviewUnique):
+class InviteWithCounts(Invite, _GuildCounts):
     ...
 
 

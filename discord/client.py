@@ -5064,6 +5064,102 @@ class Client:
 
         return experiments
 
+    async def join_hub_waitlist(self, email: str, school: str) -> None:
+        """|coro|
+
+        Signs up for the Discord Student Hub waitlist.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        email: :class:`str`
+            The email to sign up with.
+        school: :class:`str`
+            The school name to sign up with.
+
+        Raises
+        -------
+        HTTPException
+            Signing up for the waitlist failed.
+        """
+        await self._connection.http.hub_waitlist_signup(email, school)
+
+    async def lookup_hubs(self, email: str, /) -> List[Guild]:
+        """|coro|
+
+        Looks up the Discord Student Hubs for the given email.
+
+        .. note::
+
+            Using this, you will only receive
+            :attr:`.Guild.id`, :attr:`.Guild.name`, and :attr:`.Guild.icon` per guild.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        email: :class:`str`
+            The email to look up.
+
+        Raises
+        -------
+        HTTPException
+            Looking up the hubs failed.
+
+        Returns
+        --------
+        List[:class:`.Guild`]
+            The hubs found.
+        """
+        state = self._connection
+        data = await state.http.hub_lookup(email)
+        return [Guild(state=state, data=d) for d in data.get('guilds_info', [])]  # type: ignore
+
+    @overload
+    async def join_hub(self, guild: Snowflake, email: str, *, code: None = ...) -> None:
+        ...
+
+    @overload
+    async def join_hub(self, guild: Snowflake, email: str, *, code: str = ...) -> Guild:
+        ...
+
+    async def join_hub(self, guild: Snowflake, email: str, *, code: Optional[str] = None) -> Optional[Guild]:
+        """|coro|
+
+        Joins the user to or requests a verification code for a Student Hub.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        ----------
+        guild: :class:`.Guild`
+            The hub to join.
+        email: :class:`str`
+            The email to join with.
+        code: Optional[:class:`str`]
+            The email verification code.
+
+            .. note::
+
+                If not provided, this method requests a verification code instead.
+
+        Raises
+        ------
+        HTTPException
+            Joining the hub or requesting the verification code failed.
+        """
+        state = self._connection
+
+        if not code:
+            data = await state.http.hub_lookup(email, guild.id)
+            if not data.get('has_matching_guild'):
+                raise ValueError('Guild does not match email')
+            return
+
+        data = await state.http.join_hub(email, guild.id, code)
+        return Guild(state=state, data=data['guild'])
+
     async def pomelo_suggestion(self) -> str:
         """|coro|
 
