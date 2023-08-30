@@ -45,14 +45,6 @@ Client
     .. automethod:: Client.event()
         :decorator:
 
-CaptchaHandler
-~~~~~~~~~~~~~~
-
-.. attributetable:: CaptchaHandler
-
-.. autoclass:: CaptchaHandler
-    :members:
-
 Voice Related
 ---------------
 
@@ -8108,8 +8100,12 @@ The following exceptions are thrown by the library.
     :members:
 
 .. autoexception:: Forbidden
+    :members:
+    :inherited-members:
 
 .. autoexception:: NotFound
+    :members:
+    :inherited-members:
 
 .. autoexception:: CaptchaRequired
     :members:
@@ -8122,6 +8118,7 @@ The following exceptions are thrown by the library.
 .. autoexception:: GatewayNotFound
 
 .. autoexception:: ConnectionClosed
+    :members:
 
 .. autoexception:: discord.opus.OpusError
 

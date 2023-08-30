@@ -23,13 +23,23 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Dict, List, Optional, TYPE_CHECKING, Any, Tuple, Union
+
+from typing import TYPE_CHECKING, Any, Dict, Final, List, Optional, Tuple, Union
 
 from .utils import _get_as_snowflake
 
 if TYPE_CHECKING:
     from aiohttp import ClientResponse, ClientWebSocketResponse
     from requests import Response
+    from typing_extensions import TypeGuard
+
+    from .types.error import (
+        CaptchaRequired as CaptchaPayload,
+        CaptchaService,
+        Error as ErrorPayload,
+        FormErrors as FormErrorsPayload,
+        FormErrorWrapper as FormErrorWrapperPayload,
+    )
 
     _ResponseType = Union[ClientResponse, Response]
 
@@ -56,7 +66,7 @@ class DiscordException(Exception):
     Ideally speaking, this could be caught to handle any exceptions raised from this library.
     """
 
-    pass
+    __slots__ = ()
 
 
 class ClientException(DiscordException):
@@ -65,7 +75,7 @@ class ClientException(DiscordException):
     These are usually for exceptions that happened due to user input.
     """
 
-    pass
+    __slots__ = ()
 
 
 class GatewayNotFound(DiscordException):
@@ -76,25 +86,27 @@ class GatewayNotFound(DiscordException):
         super().__init__(message)
 
 
-def _flatten_error_dict(d: Dict[str, Any], key: str = '') -> Dict[str, str]:
+def _flatten_error_dict(d: FormErrorsPayload, key: str = '', /) -> Dict[str, str]:
+    def is_wrapper(x: FormErrorsPayload) -> TypeGuard[FormErrorWrapperPayload]:
+        return '_errors' in x
+
     items: List[Tuple[str, str]] = []
 
-    if '_errors' in d:
-        items.append(('miscallenous', ' '.join(x.get('message', '') for x in d['_errors'])))
-        d.pop('_errors')
+    if is_wrapper(d) and not key:
+        items.append(('miscellaneous', ' '.join(x.get('message', '') for x in d['_errors'])))
+        d.pop('_errors')  # type: ignore
 
     for k, v in d.items():
         new_key = key + '.' + k if key else k
 
         if isinstance(v, dict):
-            try:
-                _errors: List[Dict[str, Any]] = v['_errors']
-            except KeyError:
-                items.extend(_flatten_error_dict(v, new_key).items())
-            else:
+            if is_wrapper(v):
+                _errors = v['_errors']
                 items.append((new_key, ' '.join(x.get('message', '') for x in _errors)))
+            else:
+                items.extend(_flatten_error_dict(v, new_key).items())
         else:
-            items.append((new_key, v))
+            items.append((new_key, v))  # type: ignore
 
     return dict(items)
 
@@ -127,12 +139,12 @@ class HTTPException(DiscordException):
     def __init__(self, response: _ResponseType, message: Optional[Union[str, Dict[str, Any]]]):
         self.response: _ResponseType = response
         self.status: int = response.status  # type: ignore # This attribute is filled by the library even if using requests
-        self.code: int
+        self.code: int = 0
         self.text: str
-        self.json: Dict[str, Any]
-        self.payment_id: Optional[int]
+        self.json: ErrorPayload
+        self.payment_id: Optional[int] = None
         if isinstance(message, dict):
-            self.json = message
+            self.json = message  # type: ignore
             self.code = message.get('code', 0)
             base = message.get('message', '')
             errors = message.get('errors')
@@ -145,9 +157,7 @@ class HTTPException(DiscordException):
             self.payment_id = _get_as_snowflake(message, 'payment_id')
         else:
             self.text = message or ''
-            self.code = 0
-            self.json = {}
-            self.payment_id = None
+            self.json = {'code': 0, 'message': message or ''}
 
         fmt = '{0.status} {0.reason} (error code: {1})'
         if len(self.text):
@@ -175,6 +185,8 @@ class RateLimited(DiscordException):
         the request.
     """
 
+    __slots__ = ('retry_after',)
+
     def __init__(self, retry_after: float):
         self.retry_after = retry_after
         super().__init__(f'Too many requests. Retry in {retry_after:.2f} seconds.')
@@ -186,7 +198,7 @@ class Forbidden(HTTPException):
     Subclass of :exc:`HTTPException`
     """
 
-    pass
+    __slots__ = ()
 
 
 class NotFound(HTTPException):
@@ -195,7 +207,7 @@ class NotFound(HTTPException):
     Subclass of :exc:`HTTPException`
     """
 
-    pass
+    __slots__ = ()
 
 
 class DiscordServerError(HTTPException):
@@ -206,20 +218,52 @@ class DiscordServerError(HTTPException):
     .. versionadded:: 1.5
     """
 
-    pass
+    __slots__ = ()
 
 
 class CaptchaRequired(HTTPException):
-    """Exception that's raised when a captcha is required and isn't handled.
+    """Exception that's raised when a CAPTCHA is required and isn't handled.
 
     Subclass of :exc:`HTTPException`.
 
     .. versionadded:: 2.0
+
+    Attributes
+    ------------
+    errors: List[:class:`str`]
+        The CAPTCHA service errors.
+
+        .. versionadded:: 2.1
+    service: :class:`str`
+        The CAPTCHA service to use. Usually ``hcaptcha``.
+
+        .. versionadded:: 2.1
+    sitekey: :class:`str`
+        The CAPTCHA sitekey to use.
+
+        .. versionadded:: 2.1
+    rqdata: Optional[:class:`str`]
+        The enterprise hCaptcha request data.
+
+        .. versionadded:: 2.1
+    rqtoken: Optional[:class:`str`]
+        The enterprise hCaptcha request token.
+
+        .. versionadded:: 2.1
     """
 
-    def __init__(self, response: _ResponseType, message: Dict[str, Any]):
+    RECAPTCHA_SITEKEY: Final[str] = '6Lef5iQTAAAAAKeIvIY-DeexoO3gj7ryl9rLMEnn'
+
+    __slots__ = ('errors', 'service', 'sitekey')
+
+    def __init__(self, response: _ResponseType, message: CaptchaPayload):
         super().__init__(response, {'code': -1, 'message': 'Captcha required'})
-        self.json = message
+        self.json: CaptchaPayload = message
+        self.errors: List[str] = message['captcha_key']
+        self.service: CaptchaService = message.get('captcha_service', 'hcaptcha')
+        self.sitekey: str = message.get('captcha_sitekey') or self.RECAPTCHA_SITEKEY
+        self.rqdata: Optional[str] = message.get('captcha_rqdata')
+        self.rqtoken: Optional[str] = message.get('captcha_rqtoken')
 
 
 class InvalidData(ClientException):
@@ -227,7 +271,7 @@ class InvalidData(ClientException):
     or invalid data from Discord.
     """
 
-    pass
+    __slots__ = ()
 
 
 class LoginFailure(ClientException):
@@ -236,7 +280,7 @@ class LoginFailure(ClientException):
     failure.
     """
 
-    pass
+    __slots__ = ()
 
 
 AuthFailure = LoginFailure
@@ -253,6 +297,8 @@ class ConnectionClosed(ClientException):
     reason: :class:`str`
         The reason provided for the closure.
     """
+
+    __slots__ = ('code', 'reason')
 
     def __init__(self, socket: ClientWebSocketResponse, *, code: Optional[int] = None):
         # This exception is just the same exception except

@@ -30,6 +30,7 @@ import logging
 from typing import (
     Any,
     AsyncIterator,
+    Awaitable,
     Callable,
     Collection,
     Coroutine,
@@ -78,7 +79,6 @@ from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factor
 from .profile import UserProfile
 from .connections import Connection
 from .team import Team
-from .handlers import CaptchaHandler
 from .billing import PaymentSource, PremiumUsage
 from .subscriptions import Subscription, SubscriptionItem, SubscriptionInvoice
 from .payments import Payment
@@ -222,10 +222,14 @@ class Client:
         `aiohttp documentation <https://docs.aiohttp.org/en/stable/client_advanced.html#client-tracing>`_.
 
         .. versionadded:: 2.0
-    captcha_handler: Optional[:class:`CaptchaHandler`]
-        A class that solves captcha challenges.
+    captcha_handler: Optional[Callable[[:class:`.CaptchaRequired`, :class:`.Client`], Awaitable[:class:`str`]]
+        A function that solves captcha challenges.
 
         .. versionadded:: 2.0
+
+        .. versionchanged:: 2.1
+
+            Now accepts a coroutine instead of a ``CaptchaHandler``.
     max_ratelimit_timeout: Optional[:class:`float`]
         The maximum number of seconds to wait when a non-global rate limit is encountered.
         If a request requires sleeping for more than the seconds passed in, then
@@ -251,17 +255,16 @@ class Client:
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
         http_trace: Optional[aiohttp.TraceConfig] = options.pop('http_trace', None)
-        captcha_handler: Optional[CaptchaHandler] = options.pop('captcha_handler', None)
-        if captcha_handler is not None and not isinstance(captcha_handler, CaptchaHandler):
-            raise TypeError(f'captcha_handler must derive from CaptchaHandler')
         max_ratelimit_timeout: Optional[float] = options.pop('max_ratelimit_timeout', None)
+        self.captcha_handler: Optional[Callable[[CaptchaRequired, Client], Awaitable[str]]] = options.pop(
+            'captcha_handler', None
+        )
         self.http: HTTPClient = HTTPClient(
-            self.loop,
             proxy=proxy,
             proxy_auth=proxy_auth,
             unsync_clock=unsync_clock,
             http_trace=http_trace,
-            captcha_handler=captcha_handler,
+            captcha=self.handle_captcha,
             max_ratelimit_timeout=max_ratelimit_timeout,
             locale=lambda: self._connection.locale,
         )
@@ -549,6 +552,8 @@ class Client:
     def get_experiment(self, experiment: Union[str, int], /) -> Optional[Union[UserExperiment, GuildExperiment]]:
         """Returns a user or guild experiment from the given experiment identifier.
 
+        .. versionadded:: 2.1
+
         Parameters
         -----------
         experiment: Union[:class:`str`, :class:`int`]
@@ -668,7 +673,7 @@ class Client:
         """
         _log.exception('Ignoring exception in %s', event_method)
 
-    async def on_internal_settings_update(self, old_settings: UserSettings, new_settings: UserSettings):
+    async def on_internal_settings_update(self, old_settings: UserSettings, new_settings: UserSettings, /):
         if not self._sync_presences:
             return
 
@@ -712,11 +717,40 @@ class Client:
         """
         pass
 
+    async def handle_captcha(self, exception: CaptchaRequired, /) -> str:
+        """|coro|
+
+        Handles a CAPTCHA challenge and returns a solution.
+
+        The default implementation tries to use the CAPTCHA handler
+        passed in the constructor.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        ------------
+        exception: :class:`.CaptchaRequired`
+            The exception that was raised.
+
+        Raises
+        --------
+        CaptchaRequired
+            The CAPTCHA challenge could not be solved.
+
+        Returns
+        --------
+        :class:`str`
+            The solution to the CAPTCHA challenge.
+        """
+        handler = self.captcha_handler
+        if handler is None:
+            raise exception
+        return await handler(exception, self)
+
     async def _async_setup_hook(self) -> None:
         # Called whenever the client needs to initialise asyncio objects with a running loop
         loop = asyncio.get_running_loop()
         self.loop = loop
-        self.http.loop = loop
         self._connection.loop = loop
         await self._connection.async_setup()
 

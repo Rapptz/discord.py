@@ -75,7 +75,6 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .channel import TextChannel, DMChannel, GroupChannel, PartialMessageable, VoiceChannel, ForumChannel
-    from .handlers import CaptchaHandler
     from .threads import Thread
     from .mentions import AllowedMentions
     from .message import Attachment, Message
@@ -568,18 +567,16 @@ class HTTPClient:
 
     def __init__(
         self,
-        loop: asyncio.AbstractEventLoop,
         connector: Optional[aiohttp.BaseConnector] = None,
         *,
         proxy: Optional[str] = None,
         proxy_auth: Optional[aiohttp.BasicAuth] = None,
         unsync_clock: bool = True,
         http_trace: Optional[aiohttp.TraceConfig] = None,
-        captcha_handler: Optional[CaptchaHandler] = None,
+        captcha: Optional[Callable[[CaptchaRequired], Coroutine[Any, Any, str]]] = None,
         max_ratelimit_timeout: Optional[float] = None,
         locale: Callable[[], str] = lambda: 'en-US',
     ) -> None:
-        self.loop: asyncio.AbstractEventLoop = loop
         self.connector: aiohttp.BaseConnector = connector or MISSING
         self.__session: aiohttp.ClientSession = MISSING
         # Route key -> Bucket hash
@@ -598,7 +595,7 @@ class HTTPClient:
         self.proxy_auth: Optional[aiohttp.BasicAuth] = proxy_auth
         self.http_trace: Optional[aiohttp.TraceConfig] = http_trace
         self.use_clock: bool = not unsync_clock
-        self.captcha_handler: Optional[CaptchaHandler] = captcha_handler
+        self.captcha_handler: Optional[Callable[[CaptchaRequired], Coroutine[Any, Any, str]]] = captcha
         self.max_ratelimit_timeout: Optional[float] = max(30.0, max_ratelimit_timeout) if max_ratelimit_timeout else None
         self.get_locale: Callable[[], str] = locale
 
@@ -634,9 +631,6 @@ class HTTPClient:
         )
         self.super_properties, self.encoded_super_properties = sp, _ = await utils._get_info(session)
         _log.info('Found user agent %s, build number %s.', sp.get('browser_user_agent'), sp.get('client_build_number'))
-
-        if self.captcha_handler is not None:
-            await self.captcha_handler.startup()
 
         self._started = True
 
@@ -930,7 +924,7 @@ class HTTPClient:
                             raise DiscordServerError(response, data)
                         else:
                             if isinstance(data, dict) and 'captcha_key' in data:
-                                raise CaptchaRequired(response, data)
+                                raise CaptchaRequired(response, data)  # type: ignore
                             raise HTTPException(response, data)
 
                 # This is handling exceptions from the request
@@ -950,10 +944,9 @@ class HTTPClient:
                     if captcha_handler is None or tries == 4:
                         raise
                     else:
-                        headers['X-Captcha-Key'] = await captcha_handler.fetch_token(e.json, self.proxy, self.proxy_auth)
-                        rqtoken = e.json.get('captcha_rqtoken')
-                        if rqtoken:
-                            headers['X-Captcha-Rqtoken'] = rqtoken
+                        headers['X-Captcha-Key'] = await captcha_handler(e)
+                        if e.rqtoken:
+                            headers['X-Captcha-Rqtoken'] = e.rqtoken
 
             if response is not None:
                 # We've run out of retries, raise

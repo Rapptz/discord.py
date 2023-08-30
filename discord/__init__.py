@@ -45,7 +45,6 @@ from .file import *
 from .flags import *
 from .guild import *
 from .guild_premium import *
-from .handlers import *
 from .integrations import *
 from .interactions import *
 from .invite import *
