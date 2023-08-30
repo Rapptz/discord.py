@@ -103,8 +103,8 @@ from .partial_emoji import _EmojiTag, PartialEmoji
 if TYPE_CHECKING:
     from .abc import Snowflake, SnowflakeTime
     from .types.guild import (
+        BaseGuild as BaseGuildPayload,
         Guild as GuildPayload,
-        PartialGuild as PartialGuildPayload,
         RolePositionUpdate as RolePositionUpdatePayload,
         UserGuild as UserGuildPayload,
     )
@@ -501,7 +501,7 @@ class Guild(Hashable):
         3: _GuildLimit(emoji=250, stickers=60, bitrate=384e3, filesize=104857600),
     }
 
-    def __init__(self, *, data: Union[GuildPayload, PartialGuildPayload], state: ConnectionState) -> None:
+    def __init__(self, *, data: Union[BaseGuildPayload, GuildPayload], state: ConnectionState) -> None:
         self._chunked = False
         self._cs_joined: Optional[bool] = None
         self._roles: Dict[int, Role] = {}
@@ -621,7 +621,7 @@ class Guild(Hashable):
     def _create_unavailable(cls, *, state: ConnectionState, guild_id: int) -> Guild:
         return cls(state=state, data={'id': guild_id, 'unavailable': True})  # type: ignore
 
-    def _from_data(self, guild: Union[GuildPayload, PartialGuildPayload]) -> None:
+    def _from_data(self, guild: Union[BaseGuildPayload, GuildPayload]) -> None:
         try:
             self._member_count: Optional[int] = guild['member_count']  # type: ignore # Handled below
         except KeyError:

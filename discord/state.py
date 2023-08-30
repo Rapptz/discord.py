@@ -121,7 +121,7 @@ if TYPE_CHECKING:
     from .types.user import User as UserPayload, PartialUser as PartialUserPayload
     from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload
     from .types.sticker import GuildSticker as GuildStickerPayload
-    from .types.guild import Guild as GuildPayload
+    from .types.guild import BaseGuild as BaseGuildPayload, Guild as GuildPayload
     from .types.message import (
         Message as MessagePayload,
         MessageSearchResult as MessageSearchResultPayload,
@@ -840,17 +840,17 @@ class ConnectionState:
     def guilds(self) -> Sequence[Guild]:
         return utils.SequenceProxy(self._guilds.values())
 
-    def _get_guild(self, guild_id: Optional[int]) -> Optional[Guild]:
+    def _get_guild(self, guild_id: Optional[int], /) -> Optional[Guild]:
         # The keys of self._guilds are ints
         return self._guilds.get(guild_id)  # type: ignore
 
-    def _get_or_create_unavailable_guild(self, guild_id: int) -> Guild:
+    def _get_or_create_unavailable_guild(self, guild_id: int, /) -> Guild:
         return self._guilds.get(guild_id) or Guild._create_unavailable(state=self, guild_id=guild_id)
 
-    def _add_guild(self, guild: Guild) -> None:
+    def _add_guild(self, guild: Guild, /) -> None:
         self._guilds[guild.id] = guild
 
-    def _remove_guild(self, guild: Guild) -> None:
+    def _remove_guild(self, guild: Guild, /) -> None:
         self._guilds.pop(guild.id, None)
 
         for emoji in guild.emojis:
@@ -860,6 +860,9 @@ class ConnectionState:
             self._stickers.pop(sticker.id, None)
 
         del guild
+
+    def create_guild(self, guild: BaseGuildPayload, /) -> Guild:
+        return Guild(data=guild, state=self)
 
     @property
     def emojis(self) -> Sequence[Emoji]:
@@ -923,7 +926,7 @@ class ConnectionState:
         )
 
     def _add_guild_from_data(self, data: GuildPayload) -> Guild:
-        guild = Guild(data=data, state=self)
+        guild = self.create_guild(data)
         self._add_guild(guild)
         return guild
 

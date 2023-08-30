@@ -228,8 +228,6 @@ class Connection(PartialConnection):
         ]
 
     def _resolve_guild(self, data: IntegrationPayload) -> Guild:
-        from .guild import Guild
-
         state = self._state
         guild_data = data.get('guild')
         if not guild_data:
@@ -238,7 +236,7 @@ class Connection(PartialConnection):
         guild_id = int(guild_data['id'])
         guild = state._get_guild(guild_id)
         if guild is None:
-            guild = Guild(data=guild_data, state=state)
+            guild = state.create_guild(guild_data)
         return guild
 
     async def edit(

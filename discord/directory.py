@@ -33,6 +33,7 @@ if TYPE_CHECKING:
     from datetime import datetime
 
     from .channel import DirectoryChannel
+    from .guild import Guild
     from .member import Member
     from .state import ConnectionState
     from .types.directory import (
@@ -118,8 +119,6 @@ class DirectoryEntry:
         return NotImplemented
 
     def _update(self, data: Union[DirectoryEntryPayload, PartialDirectoryEntryPayload]):
-        from .guild import Guild
-
         state = self._state
         self.type: DirectoryEntryType = try_enum(DirectoryEntryType, data['type'])
         self.category: DirectoryCategory = try_enum(DirectoryCategory, data.get('primary_category_id', 0))
@@ -129,7 +128,7 @@ class DirectoryEntry:
         self.entity_id: int = int(data['entity_id'])
 
         guild_data = data.get('guild', data.get('guild_scheduled_event', {}).get('guild'))
-        self.guild: Optional[Guild] = Guild(data=guild_data, state=state) if guild_data is not None else None
+        self.guild: Optional[Guild] = state.create_guild(guild_data) if guild_data is not None else None
         self.featurable: bool = guild_data.get('featurable_in_directory', False) if guild_data is not None else False
 
         event_data = data.get('guild_scheduled_event')

@@ -1948,6 +1948,7 @@ class PartialApplication(Hashable):
         self.public: bool = data.get('integration_public', data.get('bot_public', True))
         self.require_code_grant: bool = data.get('integration_require_code_grant', data.get('bot_require_code_grant', False))
         self._has_bot: bool = 'bot_public' in data
+        self._guild: Optional[Guild] = state.create_guild(data['guild']) if 'guild' in data else None
 
         # Hacky, but I want these to be persisted
 
@@ -1974,12 +1975,6 @@ class PartialApplication(Hashable):
                 'avatar': None,
             }
             self.owner = state.create_user(payload)
-
-        self._guild: Optional[Guild] = None
-        if 'guild' in data:
-            from .guild import Guild
-
-            self._guild = Guild(state=state, data=data['guild'])
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r}>'

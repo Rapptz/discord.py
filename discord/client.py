@@ -53,7 +53,7 @@ from .user import _UserTag, User, ClientUser, Note
 from .invite import Invite
 from .template import Template
 from .widget import Widget
-from .guild import Guild, UserGuild
+from .guild import UserGuild
 from .emoji import Emoji
 from .channel import _private_channel_factory, _threaded_channel_factory, GroupChannel, PartialMessageable
 from .enums import ActivityType, ChannelType, ClientType, ConnectionType, EntitlementType, Status
@@ -110,6 +110,7 @@ if TYPE_CHECKING:
     from .read_state import ReadState
     from .tutorial import Tutorial
     from .file import File
+    from .guild import Guild
     from .types.snowflake import Snowflake as _Snowflake
 
     PrivateChannel = Union[DMChannel, GroupChannel]
@@ -1791,8 +1792,9 @@ class Client:
         :class:`.Guild`
             The guild from the ID.
         """
-        data = await self.http.get_guild(guild_id, with_counts)
-        guild = Guild(data=data, state=self._connection)
+        state = self._connection
+        data = await state.http.get_guild(guild_id, with_counts)
+        guild = state.create_guild(data)
         guild._cs_joined = True
         return guild
 
@@ -1815,8 +1817,9 @@ class Client:
         :class:`.Guild`
             The guild from the ID.
         """
-        data = await self.http.get_guild_preview(guild_id)
-        return Guild(data=data, state=self._connection)
+        state = self._connection
+        data = await state.http.get_guild_preview(guild_id)
+        return state.create_guild(data)
 
     async def create_guild(
         self,
@@ -1860,17 +1863,18 @@ class Client:
             The guild created. This is not the same guild that is
             added to cache.
         """
+        state = self._connection
         if icon is not MISSING:
             icon_base64 = utils._bytes_to_base64_data(icon)
         else:
             icon_base64 = None
 
         if code:
-            data = await self.http.create_from_template(code, name, icon_base64)
+            data = await state.http.create_from_template(code, name, icon_base64)
         else:
-            data = await self.http.create_guild(name, icon_base64)
+            data = await state.http.create_guild(name, icon_base64)
 
-        guild = Guild(data=data, state=self._connection)
+        guild = state.create_guild(data)
         guild._cs_joined = True
         return guild
 
@@ -1900,7 +1904,7 @@ class Client:
         """
         state = self._connection
         data = await state.http.join_guild(guild_id, lurking, state.session_id)
-        guild = Guild(data=data, state=state)
+        guild = state.create_guild(data)
         guild._cs_joined = not lurking
         return guild
 
@@ -5114,7 +5118,7 @@ class Client:
         """
         state = self._connection
         data = await state.http.hub_lookup(email)
-        return [Guild(state=state, data=d) for d in data.get('guilds_info', [])]  # type: ignore
+        return [state.create_guild(d) for d in data.get('guilds_info', [])]  # type: ignore
 
     @overload
     async def join_hub(self, guild: Snowflake, email: str, *, code: None = ...) -> None:
@@ -5158,7 +5162,7 @@ class Client:
             return
 
         data = await state.http.join_hub(email, guild.id, code)
-        return Guild(state=state, data=data['guild'])
+        return state.create_guild(data['guild'])
 
     async def pomelo_suggestion(self) -> str:
         """|coro|

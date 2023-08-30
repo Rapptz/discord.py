@@ -679,8 +679,6 @@ class StoreListing(Hashable):
         return f'<StoreListing id={self.id} summary={self.summary!r} sku={self.sku!r}>'
 
     def _update(self, data: StoreListingPayload, application: Optional[PartialApplication] = None) -> None:
-        from .guild import Guild
-
         state = self._state
 
         self.summary, self.summary_localizations = _parse_localizations(data, 'summary')
@@ -693,7 +691,7 @@ class StoreListing(Hashable):
         self.child_skus: List[SKU] = [SKU(data=sku, state=state) for sku in data.get('child_skus', [])]
         self.alternative_skus: List[SKU] = [SKU(data=sku, state=state) for sku in data.get('alternative_skus', [])]
         self.entitlement_branch_id: Optional[int] = _get_as_snowflake(data, 'entitlement_branch_id')
-        self.guild: Optional[Guild] = Guild(data=data['guild'], state=state) if 'guild' in data else None
+        self.guild: Optional[Guild] = state.create_guild(data['guild']) if 'guild' in data else None
         self.published: bool = data.get('published', True)
         self.staff_note: Optional[StoreNote] = (
             StoreNote(data=data['staff_notes'], state=state) if 'staff_notes' in data else None

@@ -24,11 +24,11 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, TYPE_CHECKING, Union
 import re
+from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
-from .asset import Asset, AssetMixin
 from . import utils
+from .asset import Asset, AssetMixin
 
 # fmt: off
 __all__ = (
@@ -37,12 +37,14 @@ __all__ = (
 # fmt: on
 
 if TYPE_CHECKING:
+    from datetime import datetime
+
     from typing_extensions import Self
 
+    from .guild import Guild
     from .state import ConnectionState
-    from datetime import datetime
-    from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload
     from .types.activity import ActivityEmoji
+    from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload
 
 
 class _EmojiTag:
@@ -268,10 +270,12 @@ class PartialEmoji(_EmojiTag, AssetMixin):
 
         return await super().read()
 
-    async def fetch_guild(self):
+    async def fetch_guild(self) -> Guild:
         """|coro|
 
         Retrieves the guild this emoji belongs to.
+
+        .. versionadded:: 1.9
 
         Raises
         ------
@@ -289,8 +293,6 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         :class:`Guild`
             The guild this emoji belongs to.
         """
-        from .guild import Guild  # Circular import
-
         if self.id is None:
             raise ValueError('PartialEmoji is not a custom emoji')
         if self._state is None:
@@ -298,4 +300,4 @@ class PartialEmoji(_EmojiTag, AssetMixin):
 
         state = self._state
         data = await state.http.get_emoji_guild(self.id)
-        return Guild(state=state, data=data)
+        return state.create_guild(data)

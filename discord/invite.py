@@ -62,7 +62,6 @@ if TYPE_CHECKING:
         PartialChannel as InviteChannelPayload,
     )
     from .state import ConnectionState
-    from .guild import Guild
     from .abc import GuildChannel
     from .user import User
 
