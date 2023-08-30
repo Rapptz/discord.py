@@ -88,6 +88,7 @@ UserExperiment = Tuple[
     int,  # population
     int,  # hash_result
     Literal[0, 1],  # aa_mode
+    Literal[0, 1],  # trigger_debugging
 ]
 
 
@@ -101,4 +102,5 @@ GuildExperiment = Tuple[
     Optional[str],  # holdout_name
     Optional[int],  # holdout_bucket
     Literal[0, 1],  # aa_mode
+    Literal[0, 1],  # trigger_debugging
 ]

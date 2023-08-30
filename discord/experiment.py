@@ -521,6 +521,8 @@ class GuildExperiment:
         The experiment this experiment depends on, if any.
     aa_mode: :class:`bool`
         Whether the experiment is in A/A mode.
+    trigger_debugging:
+        Whether experiment analytics trigger debugging is enabled.
     """
 
     __slots__ = (
@@ -533,6 +535,7 @@ class GuildExperiment:
         'overrides_formatted',
         'holdout',
         'aa_mode',
+        'trigger_debugging',
     )
 
     def __init__(self, *, state: ConnectionState, data: GuildExperimentPayload):
@@ -546,6 +549,8 @@ class GuildExperiment:
             holdout_name,
             holdout_bucket,
             aa_mode,
+            trigger_debugging,
+            *_,
         ) = data
 
         self._state = state
@@ -563,6 +568,7 @@ class GuildExperiment:
             else None
         )
         self.aa_mode: bool = aa_mode == 1
+        self.trigger_debugging: bool = trigger_debugging == 1
 
     def __repr__(self) -> str:
         return f'<GuildExperiment hash={self.hash}{f" name={self._name!r}" if self._name else ""}>'
@@ -722,6 +728,8 @@ class UserExperiment:
         The internal population group for the user.
     aa_mode: :class:`bool`
         Whether the experiment is in A/A mode.
+    trigger_debugging:
+        Whether experiment analytics trigger debugging is enabled.
     """
 
     __slots__ = (
@@ -734,10 +742,11 @@ class UserExperiment:
         'population',
         '_result',
         'aa_mode',
+        'trigger_debugging',
     )
 
     def __init__(self, *, state: ConnectionState, data: AssignmentPayload):
-        (hash, revision, bucket, override, population, hash_result, aa_mode) = data
+        (hash, revision, bucket, override, population, hash_result, aa_mode, trigger_debugging, *_) = data
 
         self._state = state
         self._name: Optional[str] = None
@@ -747,7 +756,8 @@ class UserExperiment:
         self.override: int = override
         self.population: int = population
         self._result: int = hash_result
-        self.aa_mode: bool = True if aa_mode == 1 else False
+        self.aa_mode: bool = aa_mode == 1
+        self.trigger_debugging: bool = trigger_debugging == 1
 
     def __repr__(self) -> str:
         return f'<UserExperiment hash={self.hash}{f" name={self._name!r}" if self._name else ""} bucket={self.bucket}>'
