@@ -24,12 +24,18 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Iterator, Optional, Tuple, Union
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, Iterator, Tuple
 
 from .utils import parse_time
 
+if TYPE_CHECKING:
+    MetadataObject = Mapping[str, Any]
 
-class Metadata:
+__all__ = ('Metadata',)
+
+
+class Metadata(Mapping[str, Any]):
     """Represents a raw model from Discord.
 
     Because of how unstable and wildly varying some metadata in Discord can be, this is a simple class
@@ -65,10 +71,8 @@ class Metadata:
             to be used as an iterable in list/dict/etc constructions.
     """
 
-    def __init__(self, data: Optional[MetadataObject] = None) -> None:
-        if not data:
-            return
-
+    def __init__(self, *args, **kwargs) -> None:
+        data = dict(*args, **kwargs)
         for key, value in data.items():
             key, value = self.__parse(key, value)
             self.__dict__[key] = value
@@ -143,7 +147,3 @@ class Metadata:
     def items(self):
         """A set-like object providing a view on the metadata's items."""
         return self.__dict__.items()
-
-
-if TYPE_CHECKING:
-    MetadataObject = Union[Metadata, Dict[str, Any]]

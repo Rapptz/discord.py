@@ -324,11 +324,11 @@ class Achievement(Hashable):
         -----------
         name: :class:`str`
             The achievement's name.
-        name_localizations: Dict[:class:`Locale`, :class:`str`]
+        name_localizations: Mapping[:class:`Locale`, :class:`str`]
             The achievement's name localized to other languages.
         description: :class:`str`
             The achievement's description.
-        description_localizations: Dict[:class:`Locale`, :class:`str`]
+        description_localizations: Mapping[:class:`Locale`, :class:`str`]
             The achievement's description localized to other languages.
         icon: :class:`bytes`
             A :term:`py:bytes-like object` representing the new icon.
@@ -1193,7 +1193,7 @@ class Manifest(Hashable):
 
         Parameters
         -----------
-        manifest: :class:`Metadata`
+        manifest: Mapping[:class:`str`, Any]
             A dict-like object representing the manifest to upload.
 
         Raises
@@ -1617,7 +1617,7 @@ class ApplicationBranch(Hashable):
 
         Parameters
         -----------
-        manifests: List[:class:`Metadata`]
+        manifests: List[Mapping[:class:`str`, Any]]
             A list of dict-like objects representing the manifests.
         source_build: Optional[:class:`ApplicationBuild`]
             The source build of the build, if any.

@@ -3633,7 +3633,7 @@ class Client:
             Whether the previewed subscription should be a renewal.
         code: Optional[:class:`str`]
             Unknown.
-        metadata: Optional[:class:`.Metadata`]
+        metadata: Optional[Mapping[:class:`str`, Any]]
             Extra metadata about the subscription.
         guild: Optional[:class:`.Guild`]
             The guild the previewed subscription's entitlements should be applied to.
@@ -3706,7 +3706,7 @@ class Client:
             The current checkout context.
         code: Optional[:class:`str`]
             Unknown.
-        metadata: Optional[:class:`.Metadata`]
+        metadata: Optional[Mapping[:class:`str`, Any]]
             Extra metadata about the subscription.
         guild: Optional[:class:`.Guild`]
             The guild the subscription's entitlements should be applied to.
