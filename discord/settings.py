@@ -1222,7 +1222,7 @@ class GuildFolder:
         return self
 
     def _get_guild(self, id, /) -> Union[Guild, Object]:
-        from .guild import Guild  # circular import
+        from .guild import Guild  # Circular import
 
         id = int(id)
         return self._state._get_or_create_unavailable_guild(id) if self._state else Object(id=id, type=Guild)

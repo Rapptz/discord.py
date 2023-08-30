@@ -758,7 +758,6 @@ class AuditLogEntry(Hashable):
         return self._automod_rules.get(target_id) or Object(target_id, type=AutoModRule)
 
     def _convert_target_webhook(self, target_id: int) -> Union[Webhook, Object]:
-        # circular import
-        from .webhook import Webhook
+        from .webhook import Webhook  # Circular import
 
         return self._webhooks.get(target_id) or Object(target_id, type=Webhook)

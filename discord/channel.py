@@ -67,7 +67,7 @@ from .errors import ClientException, DiscordException
 from .stage_instance import StageInstance
 from .threads import Thread
 from .partial_emoji import _EmojiTag, PartialEmoji
-from .flags import ChannelFlags
+from .flags import ChannelFlags, MessageFlags
 from .http import handle_message_parameters
 from .invite import Invite
 from .voice_client import VoiceClient
@@ -2884,8 +2884,6 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             sticker_ids: SnowflakeList = [s.id for s in stickers]
 
         if suppress_embeds:
-            from .message import MessageFlags  # circular import
-
             flags = MessageFlags._from_value(4)
         else:
             flags = MISSING
@@ -2914,12 +2912,9 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             flags=flags,
             channel_payload=channel_payload,
         ) as params:
-            # Circular import
-            from .message import Message
-
             data = await state.http.start_thread_in_forum(self.id, params=params, reason=reason)
             thread = Thread(guild=self.guild, state=self._state, data=data)
-            message = Message(state=self._state, channel=thread, data=data['message'])
+            message = state.create_message(channel=thread, data=data['message'])
 
             return ThreadWithMessage(thread=thread, message=message)
 

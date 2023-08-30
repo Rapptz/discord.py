@@ -941,7 +941,7 @@ def resolve_invite(invite: Union[Invite, str]) -> ResolvedInvite:
     :class:`.ResolvedInvite`
         A data class containing the invite code and the event ID.
     """
-    from .invite import Invite  # circular import
+    from .invite import Invite  # Circular import
 
     if isinstance(invite, Invite):
         return ResolvedInvite(invite.code, invite.scheduled_event_id)
@@ -974,7 +974,7 @@ def resolve_template(code: Union[Template, str]) -> str:
     :class:`str`
         The template code.
     """
-    from .template import Template  # circular import
+    from .template import Template  # Circular import
 
     if isinstance(code, Template):
         return code.code
@@ -1002,7 +1002,7 @@ def resolve_gift(code: Union[Gift, str]) -> str:
     :class:`str`
         The gift code.
     """
-    from .entitlements import Gift  # circular import
+    from .entitlements import Gift  # Circular import
 
     if isinstance(code, Gift):
         return code.code
