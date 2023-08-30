@@ -4506,7 +4506,7 @@ class HTTPClient:
 
         return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id), params=params)
 
-    def get_mutual_friends(self, user_id: Snowflake):  # TODO: return type
+    def get_mutual_friends(self, user_id: Snowflake) -> Response[List[user.PartialUser]]:
         return self.request(Route('GET', '/users/{user_id}/relationships', user_id=user_id))
 
     def get_notes(self) -> Response[Dict[Snowflake, str]]:

@@ -304,7 +304,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         block: Callable[[], Awaitable[None]]
         unblock: Callable[[], Awaitable[None]]
         remove_friend: Callable[[], Awaitable[None]]
-        mutual_guilds: List[Guild]
+        fetch_mutual_friends: Callable[[], Awaitable[List[User]]]
         public_flags: PublicUserFlags
         banner: Optional[Asset]
         accent_color: Optional[Colour]

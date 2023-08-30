@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
 
 import discord.abc
 from .asset import Asset
@@ -597,6 +597,27 @@ class BaseUser(_UserTag):
             with_mutual_friends_count=with_mutual_friends_count,
             with_mutual_friends=with_mutual_friends,
         )
+
+    async def fetch_mutual_friends(self) -> List[User]:
+        """|coro|
+
+        Fetches mutual friends with the user.
+
+        .. versionadded:: 2.1
+
+        Raises
+        -------
+        HTTPException
+            Fetching the mutual friends failed.
+
+        Returns
+        --------
+        List[:class:`User`]
+            The mutual friends with the user.
+        """
+        state = self._state
+        data = await state.http.get_mutual_friends(self.id)
+        return [state.store_user(u) for u in data]
 
 
 class ClientUser(BaseUser):
