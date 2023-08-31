@@ -7135,7 +7135,6 @@ Metadata
 
 .. autoclass:: Metadata()
     :members:
-    :inherited-members:
 
 ReadState
 ~~~~~~~~~
