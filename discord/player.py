@@ -187,13 +187,13 @@ class FFmpegAudio(AudioSource):
         self._pipe_reader_thread: Optional[threading.Thread] = None
 
         if piping_stdin:
-            n = f'popen-stdin-writer:{id(self):#x}'
+            n = f'popen-stdin-writer:pid-{self._process.pid}'
             self._stdin = self._process.stdin
             self._pipe_writer_thread = threading.Thread(target=self._pipe_writer, args=(source,), daemon=True, name=n)
             self._pipe_writer_thread.start()
 
         if piping_stderr:
-            n = f'popen-stderr-reader:{id(self):#x}'
+            n = f'popen-stderr-reader:pid-{self._process.pid}'
             self._stderr = self._process.stderr
             self._pipe_reader_thread = threading.Thread(target=self._pipe_reader, args=(stderr,), daemon=True, name=n)
             self._pipe_reader_thread.start()
@@ -693,8 +693,7 @@ class AudioPlayer(threading.Thread):
         *,
         after: Optional[Callable[[Optional[Exception]], Any]] = None,
     ) -> None:
-        threading.Thread.__init__(self)
-        self.daemon: bool = True
+        super().__init__(daemon=True, name=f'audio-player:{id(self):#x}')
         self.source: AudioSource = source
         self.client: VoiceClient = client
         self.after: Optional[Callable[[Optional[Exception]], Any]] = after
