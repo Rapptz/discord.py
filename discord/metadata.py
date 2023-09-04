@@ -31,11 +31,13 @@ from .utils import parse_time
 
 if TYPE_CHECKING:
     MetadataObject = Mapping[str, Any]
+else:
+    MetadataObject = Mapping
 
 __all__ = ('Metadata',)
 
 
-class Metadata(Mapping[str, Any]):
+class Metadata(MetadataObject):
     """Represents a raw model from Discord.
 
     Because of how unstable and wildly varying some metadata in Discord can be, this is a simple class
