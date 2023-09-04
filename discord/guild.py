@@ -3175,7 +3175,7 @@ class Guild(Hashable):
         data = await self._state.http.invites_from(self.id)
         result = []
         for invite in data:
-            channel = self.get_channel(int(invite['channel']['id']))
+            channel = self.get_channel(int(invite['channel']['id']))  # type: ignore
             result.append(Invite(state=self._state, data=invite, guild=self, channel=channel))
 
         return result
@@ -4301,12 +4301,8 @@ class Guild(Hashable):
         # Get the vanity channel & uses
         data = await self._state.http.get_invite(payload['code'])
 
-        channel = self.get_channel(int(data['channel']['id']))
-        payload['revoked'] = False
-        payload['temporary'] = False
-        payload['max_uses'] = 0
-        payload['max_age'] = 0
-        payload['uses'] = payload.get('uses', 0)
+        channel = self.get_channel(int(data['channel']['id']))  # type: ignore
+        data.update({'temporary': False, 'max_uses': 0, 'max_age': 0, 'uses': payload.get('uses', 0)})  # type: ignore
         return Invite(state=self._state, data=payload, guild=self, channel=channel)  # type: ignore # We're faking a payload here
 
     async def audit_logs(

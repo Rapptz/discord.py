@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import List, Optional, TYPE_CHECKING
 
-from .utils import MISSING, cached_slot_property, _get_as_snowflake
+from .utils import MISSING, _get_as_snowflake
 from .mixins import Hashable
 from .enums import PrivacyLevel, try_enum
 

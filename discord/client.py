@@ -2125,7 +2125,6 @@ class Client:
         data = await state.http.get_invite(
             resolved.code,
             with_counts=True,
-            with_expiration=True,
             input_value=resolved.code if isinstance(url, Invite) else url,
         )
         if isinstance(url, Invite):

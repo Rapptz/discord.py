@@ -29,7 +29,7 @@ from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired, Required
 
 from .activity import Activity, ClientStatus, PartialPresenceUpdate, StatusType
-from .application import BaseAchievement, PartialApplication
+from .application import BaseAchievement
 from .audit_log import AuditLogEntry
 from .automod import AutoModerationAction, AutoModerationRuleTriggerType
 from .channel import ChannelType, DMChannel, GroupDMChannel, StageInstance
@@ -39,7 +39,7 @@ from .experiment import GuildExperiment, UserExperiment
 from .guild import ApplicationCommandCounts, Guild, SupplementalGuild, UnavailableGuild
 from .integration import BaseIntegration, IntegrationApplication
 from .interactions import Interaction
-from .invite import InviteTargetType
+from .invite import _InviteTargetType
 from .library import LibraryApplication
 from .member import MemberWithUser
 from .message import Message
@@ -211,25 +211,25 @@ InteractionCreateEvent = Interaction
 UserUpdateEvent = User
 
 
-class InviteCreateEvent(TypedDict):
-    channel_id: Snowflake
+class InviteCreateEvent(_InviteTargetType):
     code: str
+    type: Literal[0]
+    channel_id: Snowflake
+    guild_id: Snowflake
+    inviter: NotRequired[PartialUser]
+    expires_at: Optional[str]
     created_at: str
+    uses: int
     max_age: int
     max_uses: int
     temporary: bool
-    uses: Literal[0]
-    guild_id: NotRequired[Snowflake]
-    inviter: NotRequired[PartialUser]
-    target_type: NotRequired[InviteTargetType]
-    target_user: NotRequired[PartialUser]
-    target_application: NotRequired[PartialApplication]
+    flags: NotRequired[int]
 
 
 class InviteDeleteEvent(TypedDict):
-    channel_id: Snowflake
     code: str
-    guild_id: NotRequired[Snowflake]
+    channel_id: Snowflake
+    guild_id: Snowflake
 
 
 class _ChannelEvent(TypedDict):

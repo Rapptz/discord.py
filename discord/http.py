@@ -2394,7 +2394,7 @@ class HTTPClient:
         target_user_id: Optional[Snowflake] = None,
         target_application_id: Optional[Snowflake] = None,
         flags: int = 0,
-    ) -> Response[invite.Invite]:
+    ) -> Response[invite.InviteWithMetadata]:
         payload = {
             'max_age': max_age,
             'max_uses': max_uses,
@@ -2423,7 +2423,7 @@ class HTTPClient:
             context_properties=props,
         )
 
-    def create_group_invite(self, channel_id: Snowflake, *, max_age: int = 86400) -> Response[invite.Invite]:
+    def create_group_invite(self, channel_id: Snowflake, *, max_age: int = 86400) -> Response[invite.InviteWithMetadata]:
         payload = {
             'max_age': max_age,
         }
@@ -2433,7 +2433,7 @@ class HTTPClient:
             Route('POST', '/channels/{channel_id}/invites', channel_id=channel_id), json=payload, context_properties=props
         )
 
-    def create_friend_invite(self) -> Response[invite.Invite]:
+    def create_friend_invite(self) -> Response[invite.InviteWithMetadata]:
         return self.request(Route('POST', '/users/@me/invites'), json={}, context_properties=ContextProperties.empty())
 
     def get_invite(
@@ -2443,7 +2443,7 @@ class HTTPClient:
         with_counts: bool = True,
         guild_scheduled_event_id: Optional[Snowflake] = None,
         input_value: Optional[str] = None,
-    ) -> Response[invite.Invite]:
+    ) -> Response[Union[invite.PartialInvite, invite.InviteWithCounts]]:
         params: Dict[str, Any] = {
             'with_counts': str(with_counts).lower(),
             'with_expiration': 'true',  # No longer exists
@@ -2455,19 +2455,19 @@ class HTTPClient:
 
         return self.request(Route('GET', '/invites/{invite_id}', invite_id=invite_id), params=params)
 
-    def invites_from(self, guild_id: Snowflake) -> Response[List[invite.Invite]]:
+    def invites_from(self, guild_id: Snowflake) -> Response[List[invite.InviteWithMetadata]]:
         return self.request(Route('GET', '/guilds/{guild_id}/invites', guild_id=guild_id))
 
-    def invites_from_channel(self, channel_id: Snowflake) -> Response[List[invite.Invite]]:
+    def invites_from_channel(self, channel_id: Snowflake) -> Response[List[invite.InviteWithMetadata]]:
         return self.request(Route('GET', '/channels/{channel_id}/invites', channel_id=channel_id))
 
-    def get_friend_invites(self) -> Response[List[invite.Invite]]:
+    def get_friend_invites(self) -> Response[List[invite.InviteWithMetadata]]:
         return self.request(Route('GET', '/users/@me/invites'), context_properties=ContextProperties.empty())
 
-    def delete_invite(self, invite_id: str, *, reason: Optional[str] = None) -> Response[invite.Invite]:
+    def delete_invite(self, invite_id: str, *, reason: Optional[str] = None) -> Response[invite.InviteWithMetadata]:
         return self.request(Route('DELETE', '/invites/{invite_id}', invite_id=invite_id), reason=reason)
 
-    def delete_friend_invites(self) -> Response[List[invite.Invite]]:
+    def delete_friend_invites(self) -> Response[List[invite.InviteWithMetadata]]:
         return self.request(Route('DELETE', '/users/@me/invites'), context_properties=ContextProperties.empty())
 
     # Role management

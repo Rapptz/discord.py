@@ -29,6 +29,7 @@ from typing_extensions import NotRequired
 
 from .application import PartialApplication
 from .channel import InviteStageInstance, PartialChannel
+from .gateway import InviteCreateEvent, InviteDeleteEvent
 from .guild import InviteGuild, _GuildCounts
 from .scheduled_event import GuildScheduledEvent
 from .snowflake import Snowflake
@@ -51,7 +52,7 @@ class _InviteTargetType(TypedDict, total=False):
     target_application: PartialApplication
 
 
-class VanityInvite:
+class VanityInvite(TypedDict):
     code: Optional[str]
     uses: int
 
@@ -80,25 +81,5 @@ class InviteWithMetadata(PartialInvite, _InviteMetadata):
 Invite = Union[PartialInvite, InviteWithCounts, InviteWithMetadata]
 
 
-class GatewayInviteCreate(_InviteTargetType):
-    code: str
-    type: Literal[0]
-    channel_id: Snowflake
-    guild_id: Snowflake
-    inviter: NotRequired[PartialUser]
-    expires_at: Optional[str]
-    created_at: str
-    uses: int
-    max_age: int
-    max_uses: int
-    temporary: bool
-    flags: NotRequired[int]
 
-
-class GatewayInviteDelete(TypedDict):
-    code: str
-    channel_id: Snowflake
-    guild_id: Snowflake
-
-
-GatewayInvite = Union[GatewayInviteCreate, GatewayInviteDelete]
+GatewayInvite = Union[InviteCreateEvent, InviteDeleteEvent]
