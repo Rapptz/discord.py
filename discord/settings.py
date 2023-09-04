@@ -2370,6 +2370,10 @@ class EmailSettings:
         Whether you want to receive emails for advice and tricks.
     updates_and_announcements: :class:`bool`
         Whether you want to receive emails for updates and new features.
+    family_center_digest: :class:`bool`
+        Whether you want to receive weekly emails for recent family activity.
+
+        .. versionadded:: 2.1
     """
 
     __slots__ = (
@@ -2380,6 +2384,7 @@ class EmailSettings:
         'recommendations_and_events',
         'tips',
         'updates_and_announcements',
+        'family_center_digest',
     )
 
     def __init__(self, *, data: dict, state: ConnectionState):
@@ -2397,6 +2402,7 @@ class EmailSettings:
         self.recommendations_and_events = categories.get('recommendations_and_events', False)
         self.tips = categories.get('tips', False)
         self.updates_and_announcements = categories.get('updates_and_announcements', False)
+        self.family_center_digest = categories.get('family_center_digest', False)
 
     @overload
     async def edit(self) -> None:
