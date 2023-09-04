@@ -136,8 +136,20 @@ class UserGuild(BaseGuild):
     approximate_presence_count: NotRequired[int]
 
 
-class InviteGuild(Guild, total=False):
-    welcome_screen: WelcomeScreen
+class InviteGuild(TypedDict):
+    id: Snowflake
+    name: str
+    icon: Optional[str]
+    description: Optional[str]
+    banner: Optional[str]
+    splash: Optional[str]
+    verification_level: VerificationLevel
+    features: List[str]
+    vanity_url_code: Optional[str]
+    premium_subscription_count: NotRequired[int]
+    nsfw: bool
+    nsfw_level: NSFWLevel
+    welcome_screen: NotRequired[WelcomeScreen]
 
 
 class GuildWithCounts(Guild, _GuildCounts):

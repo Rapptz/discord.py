@@ -27,6 +27,7 @@ from typing_extensions import NotRequired
 
 from .user import PartialUser
 from .snowflake import Snowflake
+from .guild import MemberWithUser
 from .threads import ThreadMetadata, ThreadMember, ThreadArchiveDuration, ThreadType
 
 
@@ -195,4 +196,12 @@ class StageInstance(TypedDict):
     topic: str
     privacy_level: PrivacyLevel
     discoverable_disabled: bool
+    invite_code: Optional[str]
     guild_scheduled_event_id: Optional[int]
+
+
+class InviteStageInstance(TypedDict):
+    members: List[MemberWithUser]
+    participant_count: int
+    speaker_count: int
+    topic: str

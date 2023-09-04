@@ -32,6 +32,7 @@ from .flags import InviteFlags
 from .mixins import Hashable
 from .object import Object
 from .scheduled_event import ScheduledEvent
+from .stage_instance import StageInstance
 from .utils import MISSING, _generate_session_id, _get_as_snowflake, parse_time, snowflake_time
 from .welcome_screen import WelcomeScreen
 
@@ -288,6 +289,9 @@ class PartialInviteGuild:
             return None
         return Asset._from_guild_image(self._state, self.id, self._splash, path='splashes')
 
+    def _resolve_channel(self, channel_id: Optional[int], /):
+        return
+
 
 class Invite(Hashable):
     r"""Represents a Discord :class:`Guild` or :class:`abc.GuildChannel` invite.
@@ -335,6 +339,10 @@ class Invite(Hashable):
 
     If it's not in the table above then it is available by all methods.
 
+    .. versionchanged:: 2.1
+
+    The ``revoked`` attribute has been removed.
+
     Attributes
     -----------
     max_age: Optional[:class:`int`]
@@ -348,8 +356,6 @@ class Invite(Hashable):
         .. versionadded:: 2.0
     guild: Optional[Union[:class:`Guild`, :class:`Object`, :class:`PartialInviteGuild`]]
         The guild the invite is for. Can be ``None`` if not a guild invite.
-    revoked: Optional[:class:`bool`]
-        Indicates if the invite has been revoked.
     created_at: Optional[:class:`datetime.datetime`]
         An aware UTC datetime object denoting the time the invite was created.
     temporary: Optional[:class:`bool`]
@@ -404,6 +410,7 @@ class Invite(Hashable):
         .. versionadded:: 2.0
 
         .. note::
+
             This is only possibly ``True`` in accepted invite objects
             (i.e. the objects received from :meth:`accept` and :meth:`use`).
     show_verification_form: :class:`bool`
@@ -412,6 +419,7 @@ class Invite(Hashable):
         .. versionadded:: 2.0
 
         .. note::
+
             This is only possibly ``True`` in accepted invite objects
             (i.e. the objects received from :meth:`accept` and :meth:`use`).
     """
@@ -420,7 +428,6 @@ class Invite(Hashable):
         'max_age',
         'code',
         'guild',
-        'revoked',
         'created_at',
         'uses',
         'temporary',
@@ -436,6 +443,7 @@ class Invite(Hashable):
         'expires_at',
         'scheduled_event',
         'scheduled_event_id',
+        'stage_instance',
         '_message',
         'welcome_screen',
         'type',
@@ -461,7 +469,6 @@ class Invite(Hashable):
         self.max_age: Optional[int] = data.get('max_age')
         self.code: str = data['code']
         self.guild: Optional[InviteGuildType] = self._resolve_guild(data.get('guild'), guild)
-        self.revoked: Optional[bool] = data.get('revoked')
         self.created_at: Optional[datetime.datetime] = parse_time(data.get('created_at'))
         self.temporary: Optional[bool] = data.get('temporary')
         self.uses: Optional[int] = data.get('uses')
@@ -510,6 +517,11 @@ class Invite(Hashable):
         )
         self.scheduled_event_id: Optional[int] = self.scheduled_event.id if self.scheduled_event else None
 
+        stage_instance = data.get('stage_instance')
+        self.stage_instance: Optional[StageInstance] = (
+            StageInstance.from_invite(self, stage_instance) if stage_instance else None
+        )
+
         # Only present on accepted invites
         self.new_member: bool = data.get('new_member', False)
         self.show_verification_form: bool = data.get('show_verification_form', False)
@@ -537,7 +549,7 @@ class Invite(Hashable):
         if channel_data and channel_data.get('type') == ChannelType.private.value:
             channel_data['recipients'] = [data['inviter']] if 'inviter' in data else []
         channel = PartialInviteChannel(channel_data, state)
-        channel = state.get_channel(getattr(channel, 'id', None)) or channel
+        channel = (state.get_channel(channel.id) or channel) if channel else None
 
         return cls(state=state, data=data, guild=guild, channel=channel, welcome_screen=welcome_screen, message=message)  # type: ignore
 

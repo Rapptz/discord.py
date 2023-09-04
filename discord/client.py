@@ -2029,7 +2029,6 @@ class Client:
         /,
         *,
         with_counts: bool = True,
-        with_expiration: bool = True,
         scheduled_event_id: Optional[int] = None,
     ) -> Invite:
         """|coro|
@@ -2046,6 +2045,10 @@ class Client:
 
             ``url`` parameter is now positional-only.
 
+        .. versionchanged:: 2.1
+
+            The ``with_expiration`` parameter has been removed.
+
         Parameters
         -----------
         url: Union[:class:`.Invite`, :class:`str`]
@@ -2054,11 +2057,6 @@ class Client:
             Whether to include count information in the invite. This fills the
             :attr:`.Invite.approximate_member_count` and :attr:`.Invite.approximate_presence_count`
             fields.
-        with_expiration: :class:`bool`
-            Whether to include the expiration date of the invite. This fills the
-            :attr:`.Invite.expires_at` field.
-
-            .. versionadded:: 2.0
         scheduled_event_id: Optional[:class:`int`]
             The ID of the scheduled event this invite is for.
 
@@ -2094,7 +2092,6 @@ class Client:
         data = await self.http.get_invite(
             resolved.code,
             with_counts=with_counts,
-            with_expiration=with_expiration,
             guild_scheduled_event_id=scheduled_event_id,
         )
         return Invite.from_incomplete(state=self._connection, data=data)

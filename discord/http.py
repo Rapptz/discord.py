@@ -2390,18 +2390,19 @@ class HTTPClient:
         max_uses: int = 0,
         temporary: bool = False,
         unique: bool = True,
-        validate: Optional[str] = None,
         target_type: Optional[invite.InviteTargetType] = None,
         target_user_id: Optional[Snowflake] = None,
         target_application_id: Optional[Snowflake] = None,
+        flags: int = 0,
     ) -> Response[invite.Invite]:
         payload = {
             'max_age': max_age,
             'max_uses': max_uses,
             'target_type': target_type,
             'temporary': temporary,
-            'validate': validate,
+            'flags': flags,
         }
+
         if unique:
             payload['unique'] = unique
         if target_user_id:
@@ -2440,13 +2441,12 @@ class HTTPClient:
         invite_id: str,
         *,
         with_counts: bool = True,
-        with_expiration: bool = True,
         guild_scheduled_event_id: Optional[Snowflake] = None,
         input_value: Optional[str] = None,
     ) -> Response[invite.Invite]:
         params: Dict[str, Any] = {
             'with_counts': str(with_counts).lower(),
-            'with_expiration': str(with_expiration).lower(),
+            'with_expiration': 'true',  # No longer exists
         }
         if input_value:
             params['inputValue'] = input_value

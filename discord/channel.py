@@ -1762,16 +1762,12 @@ class StageChannel(VocalGuildChannel):
         :class:`StageInstance`
             The newly created stage instance.
         """
-
-        payload: Dict[str, Any] = {'channel_id': self.id, 'topic': topic}
-
+        payload = {'channel_id': self.id, 'topic': topic, 'send_start_notification': send_start_notification}
         if privacy_level is not MISSING:
             if not isinstance(privacy_level, PrivacyLevel):
                 raise TypeError('privacy_level field must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value
-
-        payload['send_start_notification'] = send_start_notification
 
         data = await self._state.http.create_stage_instance(**payload, reason=reason)
         return StageInstance(guild=self.guild, state=self._state, data=data)
