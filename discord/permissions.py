@@ -141,9 +141,12 @@ class Permissions(BaseFlags):
 
         self.value = permissions
         for key, value in kwargs.items():
-            if key not in self.VALID_FLAGS:
-                raise TypeError(f'{key!r} is not a valid permission name.')
-            setattr(self, key, value)
+            try:
+                flag = self.VALID_FLAGS[key]
+            except KeyError:
+                raise TypeError(f'{key!r} is not a valid permission name.') from None
+            else:
+                self._set_flag(flag, value)
 
     def is_subset(self, other: Permissions) -> bool:
         """Returns ``True`` if self has the same or fewer permissions as other."""
@@ -360,8 +363,9 @@ class Permissions(BaseFlags):
             A list of key/value pairs to bulk update permissions with.
         """
         for key, value in kwargs.items():
-            if key in self.VALID_FLAGS:
-                setattr(self, key, value)
+            flag = self.VALID_FLAGS.get(key)
+            if flag is not None:
+                self._set_flag(flag, value)
 
     def handle_overwrite(self, allow: int, deny: int) -> None:
         # Basically this is what's happening here.
