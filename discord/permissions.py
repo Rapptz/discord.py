@@ -187,7 +187,8 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
         """
-        return cls(0b11111111111111111111111111111111111111111111111)
+        # Some of these are 0 because we don't want to set unnecessary bits
+        return cls(0b0000_0000_0000_0000_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
 
     @classmethod
     def _timeout_mask(cls) -> int:
@@ -236,7 +237,7 @@ class Permissions(BaseFlags):
         .. versionchanged:: 2.1
            Added :attr:`create_expressions` permission.
         """
-        return cls(0b01000111110110110011111101111111111101010001)
+        return cls(0b0000_0000_0000_0000_0000_0100_0111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
 
     @classmethod
     def general(cls) -> Self:
@@ -252,7 +253,7 @@ class Permissions(BaseFlags):
         .. versionchanged:: 2.1
             Added :attr:`create_expressions` permission.
         """
-        return cls(0b10000000000001110000000010000000010010110000)
+        return cls(0b0000_0000_0000_0000_0000_1000_0000_0000_0111_0000_0000_1000_0000_0100_1011_0000)
 
     @classmethod
     def membership(cls) -> Self:
@@ -264,7 +265,7 @@ class Permissions(BaseFlags):
         .. versionchanged:: 2.0
            Added :attr:`moderate_members` permission.
         """
-        return cls(0b10000000000001100000000000000000000000111)
+        return cls(0b0000_0000_0000_0000_0000_0001_0000_0000_0000_1100_0000_0000_0000_0000_0000_0111)
 
     @classmethod
     def text(cls) -> Self:
@@ -282,13 +283,13 @@ class Permissions(BaseFlags):
         .. versionchanged:: 2.1
             Added :attr:`send_voice_messages` permission.
         """
-        return cls(0b10000000111110010000000000001111111100001000000)
+        return cls(0b0000_0000_0000_0000_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
 
     @classmethod
     def voice(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to ``True``."""
-        return cls(0b1001001000000000000011111100000000001100000000)
+        return cls(0b0000_0000_0000_0000_0010_0100_1000_0000_0000_0011_1111_0000_0000_0011_0000_0000)
 
     @classmethod
     def stage(cls) -> Self:
@@ -313,7 +314,7 @@ class Permissions(BaseFlags):
         .. versionchanged:: 2.0
             Added :attr:`manage_channels` permission and removed :attr:`request_to_speak` permission.
         """
-        return cls(0b1010000000000000000010000)
+        return cls(0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0001_0100_0000_0000_0000_0001_0000)
 
     @classmethod
     def elevated(cls) -> Self:
@@ -334,7 +335,7 @@ class Permissions(BaseFlags):
 
         .. versionadded:: 2.0
         """
-        return cls(0b10000010001110000000000000010000000111110)
+        return cls(0b0000_0000_0000_0000_0000_0001_0000_0100_0111_0000_0000_0000_0010_0000_0011_1110)
 
     @classmethod
     def events(cls) -> Self:
@@ -343,7 +344,7 @@ class Permissions(BaseFlags):
 
         .. versionadded:: 2.4
         """
-        return cls(0b100000000001000000000000000000000000000000000)
+        return cls(0b0000_0000_0000_0000_0001_0000_0000_0010_0000_0000_0000_0000_0000_0000_0000_0000)
 
     @classmethod
     def advanced(cls) -> Self:
