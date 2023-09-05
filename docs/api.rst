@@ -4088,7 +4088,7 @@ AuditLogDiff
 
         See also :attr:`ForumChannel.default_reaction_emoji`
 
-        :type: :class:`default_reaction_emoji`
+        :type: Optional[:class:`PartialEmoji`]
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
