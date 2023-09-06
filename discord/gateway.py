@@ -1040,10 +1040,10 @@ class DiscordVoiceWebSocket:
         if msg.type is aiohttp.WSMsgType.TEXT:
             await self.received_message(utils._from_json(msg.data))
         elif msg.type is aiohttp.WSMsgType.ERROR:
-            _log.debug('Received %s', msg)
+            _log.debug('Received voice %s', msg)
             raise ConnectionClosed(self.ws, shard_id=None) from msg.data
         elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.CLOSING):
-            _log.debug('Received %s', msg)
+            _log.debug('Received voice %s', msg)
             raise ConnectionClosed(self.ws, shard_id=None, code=self._close_code)
 
     async def close(self, code: int = 1000) -> None:
