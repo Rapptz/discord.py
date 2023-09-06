@@ -208,6 +208,7 @@ class VoiceConnectionState:
         self._connected = threading.Event()
         self._state_event = asyncio.Event()
         self._runner: asyncio.Task = MISSING
+        self._connector: asyncio.Task = MISSING
         self._socket_reader = SocketReader(self)
         self._socket_reader.start()
 
@@ -269,19 +270,23 @@ class VoiceConnectionState:
 
         if self.state is ConnectionFlowState.connected:
             self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
+
         elif self.state is not ConnectionFlowState.disconnected:
             if channel_id != self.voice_client.channel.id:
                 # For some unfortunate reason we were moved during the connection flow
-                # We *could* try to wrangle whatever state we're in back in order...
-                # ...or we just reconnect fully and spare ourselves the effort of figuring that mess out
                 _log.info('Handling channel move during connection flow...')
                 _log.debug('Current state is %s', self.state)
 
                 self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
-                await self.ws.close(4014)
+
+                await self.soft_disconnect(with_state=ConnectionFlowState.got_voice_state_update)
+                # TODO: get params from somewhere
+                await self.connect(
+                    reconnect=True, timeout=self.timeout, self_deaf=False, self_mute=False, resume=False, wait=False
+                )
             else:
-                _log.warning('Ignoring unexpected voice_state_update event')
-                # TODO: kill it and start over? (self.ws.close(4014)?)
+                _log.debug('Ignoring unexpected voice_state_update event')
+                # TODO: kill it and start over?... do anything at all?
 
     # this whole function gives me the heebie jeebies
     async def voice_server_update(self, data: VoiceServerUpdatePayload) -> None:
@@ -306,30 +311,65 @@ class VoiceConnectionState:
             # This gets set after READY is received
             self.endpoint_ip = MISSING
 
-            self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            self.socket.setblocking(False)
-            self._socket_reader.resume()
+            self._create_socket()
 
             # sets our connection state to either voice_server_update or both, if we already had the other one
             if self.state is ConnectionFlowState.set_guild_voice_state:
                 self.state = ConnectionFlowState.got_voice_server_update
             else:
                 self.state = ConnectionFlowState.got_both_voice_updates
+
         elif self.state is ConnectionFlowState.connected:
             _log.debug('Voice server update, closing old voice websocket')
             await self.ws.close(4014)
-            self.state = ConnectionFlowState.got_both_voice_updates
-        elif self.state is not ConnectionFlowState.disconnected:
-            _log.warning('Ignoring unexpected voice_server_update event')
-            # Something might need to be done here but I don't know what
+            self.state = ConnectionFlowState.got_voice_server_update
 
-    async def connect(self, *, reconnect: bool, timeout: float, self_deaf: bool, self_mute: bool, resume: bool) -> None:
+        elif self.state is not ConnectionFlowState.disconnected:
+            _log.debug('Unexpected voice_server_update event, attempting to handle')
+
+            await self.soft_disconnect(with_state=ConnectionFlowState.got_voice_server_update)
+            # TODO: get params from somewhere
+            await self.connect(
+                reconnect=True, timeout=self.timeout, self_deaf=False, self_mute=False, resume=False, wait=False
+            )
+            self._create_socket()
+
+    async def connect(
+        self, *, reconnect: bool, timeout: float, self_deaf: bool, self_mute: bool, resume: bool, wait: bool = True
+    ) -> None:
+        if self._connector and not self._connector.done():
+            self._connector.cancel()
+            self._connector = MISSING
+
+        if self._runner:
+            self._runner.cancel()
+            self._runner = MISSING
+
+        self._connector = self.voice_client.loop.create_task(
+            self._wrap_connect(reconnect, timeout, self_deaf, self_mute, resume), name="Voice connector"
+        )
+        if wait:
+            await self._connector
+
+    async def _wrap_connect(self, *args: Any) -> None:
+        try:
+            await self._connect(*args)
+        except asyncio.CancelledError:
+            _log.debug('Cancelling voice connection')
+            await self.soft_disconnect()
+        except Exception:
+            _log.debug('Cancelling voice connection and disconnecting')
+            await self.disconnect()
+
+    async def _connect(self, reconnect: bool, timeout: float, self_deaf: bool, self_mute: bool, resume: bool) -> None:
         _log.info('Connecting to voice...')
         self.timeout = timeout
 
         for i in range(5):
             await self._voice_connect(self_deaf=self_deaf, self_mute=self_mute)
-            self.state = ConnectionFlowState.set_guild_voice_state
+            # Setting this unnecessarily will break reconnecting
+            if self.state is ConnectionFlowState.disconnected:
+                self.state = ConnectionFlowState.set_guild_voice_state
 
             try:
                 await self._wait_for_state(ConnectionFlowState.got_both_voice_updates, timeout=timeout)
@@ -384,6 +424,27 @@ class VoiceConnectionState:
             if cleanup:
                 self._socket_reader.stop()
                 self.voice_client.cleanup()
+
+            if self.socket:
+                self.socket.close()
+
+    async def soft_disconnect(
+        self, *, with_state: ConnectionFlowState = ConnectionFlowState.got_both_voice_updates, clear_ip: bool = False
+    ) -> None:
+        _log.debug('Soft disconnecting from voice')
+        # Stop the websocket reader because closing the websocket will trigger a reconnect
+        self._runner.cancel()
+        try:
+            if self.ws:
+                await self.ws.close()
+        except Exception:
+            _log.debug('Ignoring exception soft disconnecting from voice', exc_info=True)
+        finally:
+            if clear_ip:
+                self.ip = MISSING
+                self.port = MISSING
+            self.state = with_state
+            self._socket_reader.pause()
 
             if self.socket:
                 self.socket.close()
@@ -458,16 +519,23 @@ class VoiceConnectionState:
             await self.ws.poll_event()
         self.state = ConnectionFlowState.connected
 
+    def _create_socket(self) -> None:
+        self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.setblocking(False)
+        self._socket_reader.resume()
+
     async def _poll_voice_ws(self, reconnect: bool) -> None:
         backoff = ExponentialBackoff()
         while True:
             try:
                 await self.ws.poll_event()
+            except asyncio.CancelledError:
+                return
             except (ConnectionClosed, asyncio.TimeoutError) as exc:
                 if isinstance(exc, ConnectionClosed):
                     # The following close codes are undocumented so I will document them here.
                     # 1000 - normal closure (obviously)
-                    # 4014 - voice channel has been deleted.
+                    # 4014 - we were externally disconnected (voice channel deleted, we were moved, ...)
                     # 4015 - voice server has crashed
                     if exc.code in (1000, 4015):
                         _log.info('Disconnecting from voice normally, close code %d.', exc.code)
@@ -484,6 +552,8 @@ class VoiceConnectionState:
                         else:
                             continue
 
+                    _log.debug('Not handling close code %s (%s)', exc.code, exc.reason)
+
                 if not reconnect:
                     await self.disconnect()
                     raise
@@ -494,7 +564,7 @@ class VoiceConnectionState:
                 await self.disconnect(cleanup=False)
                 await asyncio.sleep(0.5)
                 try:
-                    # TODO: replace bools with last known state?
+                    # TODO: get params from somewhere
                     await self.connect(
                         reconnect=reconnect, timeout=self.timeout, self_deaf=False, self_mute=False, resume=False
                     )

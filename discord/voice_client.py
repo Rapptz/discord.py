@@ -340,7 +340,7 @@ class VoiceClient(VoiceProtocol):
             The channel to move to. Must be a voice channel.
         """
         await self._connection.move_to(channel)
-        # TODO: temporary static timeout
+        # TODO: static timeout or a timeout parameter?
         await self._connection.wait_async(30)
 
     def is_connected(self) -> bool:
