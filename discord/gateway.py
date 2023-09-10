@@ -960,10 +960,11 @@ class DiscordVoiceWebSocket:
         await self.loop.sock_connect(state.socket, (state.endpoint_ip, state.voice_port))
 
         # Only do ip discovery if the ip/port aren't cached from a previous call.
-        # I'm not entirely sure this is sound since I can imagine that there is probably a
-        # scenario where doing this breaks on some network issue out of the lib's control
-        # where it didn't break previously since it would do this step every time.
-        # That said, the ip/port are cleared on disconnect() calls so its probably be fine?
+        # TODO: Finalize comment:
+        #   I'm not entirely sure this is sound since I can imagine that there is probably a
+        #   scenario where doing this breaks on some network issue out of the lib's control
+        #   where it didn't break previously since it would do this step every time.
+        #   That said, the ip/port are cleared on disconnect() calls so it's probably fine?
         if not (state.ip and state.port):
             state.ip, state.port = await self.discover_ip()
         else:
@@ -1029,9 +1030,8 @@ class DiscordVoiceWebSocket:
         self.secret_key = self._connection.secret_key = data['secret_key']
 
         # Send a speak command with the "not speaking" state.
-        # This also tells Discord our SSRC value, which Discord requires
-        # before sending any voice data (and is the real reason why we
-        # call this here).
+        # This also tells Discord our SSRC value, which Discord requires before
+        # sending any voice data (and is the real reason why we call this here).
         await self.speak(SpeakingState.none)
 
     async def poll_event(self) -> None:

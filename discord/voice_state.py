@@ -21,6 +21,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 
+
+Some documentation to refer to:
+
+- Our main web socket (mWS) sends opcode 4 with a guild ID and channel ID.
+- The mWS receives VOICE_STATE_UPDATE and VOICE_SERVER_UPDATE.
+- We pull the session_id from VOICE_STATE_UPDATE.
+- We pull the token, endpoint and server_id from VOICE_SERVER_UPDATE.
+- Then we initiate the voice web socket (vWS) pointing to the endpoint.
+- We send opcode 0 with the user_id, server_id, session_id and token using the vWS.
+- The vWS sends back opcode 2 with an ssrc, port, modes(array) and heartbeat_interval.
+- We send a UDP discovery packet to endpoint:port and receive our IP and our port in LE.
+- Then we send our IP and port via vWS with opcode 1.
+- When that's all done, we receive opcode 4 from the vWS.
+- Finally we can transmit data to endpoint:port.
 """
 
 from __future__ import annotations
@@ -56,25 +70,10 @@ if TYPE_CHECKING:
     WebsocketHook = Optional[Callable[['VoiceConnectionState', Dict[str, Any]], Coroutine[Any, Any, Any]]]
     SocketReaderCallback = Callable[[bytes], Any]
 
+
 __all__ = ('VoiceConnectionState',)
 
 _log = logging.getLogger(__name__)
-
-"""
-Some documentation to refer to:
-
-- Our main web socket (mWS) sends opcode 4 with a guild ID and channel ID.
-- The mWS receives VOICE_STATE_UPDATE and VOICE_SERVER_UPDATE.
-- We pull the session_id from VOICE_STATE_UPDATE.
-- We pull the token, endpoint and server_id from VOICE_SERVER_UPDATE.
-- Then we initiate the voice web socket (vWS) pointing to the endpoint.
-- We send opcode 0 with the user_id, server_id, session_id and token using the vWS.
-- The vWS sends back opcode 2 with an ssrc, port, modes(array) and heartbeat_interval.
-- We send a UDP discovery packet to endpoint:port and receive our IP and our port in LE.
-- Then we send our IP and port via vWS with opcode 1.
-- When that's all done, we receive opcode 4 from the vWS.
-- Finally we can transmit data to endpoint:port.
-"""
 
 
 class SocketReader(threading.Thread):
@@ -142,6 +141,7 @@ class SocketReader(threading.Thread):
                 self._running.wait()
                 continue
 
+            # Since this socket is a non blocking socket, select has to be used to wait on it for reading.
             try:
                 readable, _, _ = select.select([self.state.socket], [], [], 30)
             except (ValueError, TypeError):
@@ -154,17 +154,17 @@ class SocketReader(threading.Thread):
             try:
                 data = self.state.socket.recv(2048)
             except OSError:
-                _log.debug('Error reading from socket in %s, this should be safe to ignore:', self, exc_info=True)
+                _log.debug('Error reading from socket in %s, this should be safe to ignore', self, exc_info=True)
             else:
                 for cb in self._callbacks:
                     try:
                         cb(data)
                     except Exception:
-                        _log.exception('Error calling %s in %s:', cb, self)
+                        _log.exception('Error calling %s in %s', cb, self)
 
 
-class ConnectionFlowState(Enum, comparable=True):
-    """Enum representing voice connection flow state as 'what just happened'."""
+class ConnectionFlowState(Enum):
+    """Enum representing voice connection flow state."""
 
     # fmt: off
     disconnected            = 0
@@ -174,9 +174,7 @@ class ConnectionFlowState(Enum, comparable=True):
     got_both_voice_updates  = 4
     websocket_connected     = 5
     got_websocket_ready     = 6
-    # we send udp discovery packet and read from the socket
     got_ip_discovery        = 7
-    # we send SELECT_PROTOCOL then SPEAKING
     connected               = 8
     # fmt: on
 
@@ -250,17 +248,18 @@ class VoiceConnectionState:
             if self._expecting_disconnect:
                 self._expecting_disconnect = False
             else:
-                _log.debug('We were probably disconnected from voice by someone else.')
+                _log.debug('We were externally disconnected from voice.')
                 await self.disconnect()
 
             if self.state is not ConnectionFlowState.connected:
-                _log.warning('Ignoring voice_state_update event while in state %s', self.state)
+                # TODO: remove or do something about this?
+                _log.debug('Ignoring voice_state_update event while in state %s', self.state)
 
             return
 
         self.session_id = data['session_id']
 
-        # if we get the event while connecting
+        # we got the event while connecting
         if self.state in (ConnectionFlowState.set_guild_voice_state, ConnectionFlowState.got_voice_server_update):
             if self.state is ConnectionFlowState.set_guild_voice_state:
                 self.state = ConnectionFlowState.got_voice_state_update
@@ -274,8 +273,7 @@ class VoiceConnectionState:
         elif self.state is not ConnectionFlowState.disconnected:
             if channel_id != self.voice_client.channel.id:
                 # For some unfortunate reason we were moved during the connection flow
-                _log.info('Handling channel move during connection flow...')
-                _log.debug('Current state is %s', self.state)
+                _log.info('Handling channel move while connecting...')
 
                 self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
 
@@ -285,10 +283,9 @@ class VoiceConnectionState:
                     reconnect=True, timeout=self.timeout, self_deaf=False, self_mute=False, resume=False, wait=False
                 )
             else:
-                _log.debug('Ignoring unexpected voice_state_update event')
                 # TODO: kill it and start over?... do anything at all?
+                _log.debug('Ignoring unexpected voice_state_update event')
 
-    # this whole function gives me the heebie jeebies
     async def voice_server_update(self, data: VoiceServerUpdatePayload) -> None:
         self.token = data['token']
         self.server_id = int(data['guild_id'])
@@ -306,14 +303,12 @@ class VoiceConnectionState:
             # Just in case, strip it off since we're going to add it later
             self.endpoint: str = self.endpoint[6:]
 
-        # if we get the event while connecting
+        # we got the event while connecting
         if self.state in (ConnectionFlowState.set_guild_voice_state, ConnectionFlowState.got_voice_state_update):
             # This gets set after READY is received
             self.endpoint_ip = MISSING
-
             self._create_socket()
 
-            # sets our connection state to either voice_server_update or both, if we already had the other one
             if self.state is ConnectionFlowState.set_guild_voice_state:
                 self.state = ConnectionFlowState.got_voice_server_update
             else:
@@ -325,7 +320,7 @@ class VoiceConnectionState:
             self.state = ConnectionFlowState.got_voice_server_update
 
         elif self.state is not ConnectionFlowState.disconnected:
-            _log.debug('Unexpected voice_server_update event, attempting to handle')
+            _log.debug('Unexpected server update event, attempting to handle')
 
             await self.soft_disconnect(with_state=ConnectionFlowState.got_voice_server_update)
             # TODO: get params from somewhere
@@ -358,14 +353,18 @@ class VoiceConnectionState:
             _log.debug('Cancelling voice connection')
             await self.soft_disconnect()
         except Exception:
-            _log.debug('Cancelling voice connection and disconnecting')
+            _log.debug('Stopping voice connection and disconnecting')
             await self.disconnect()
 
     async def _connect(self, reconnect: bool, timeout: float, self_deaf: bool, self_mute: bool, resume: bool) -> None:
         _log.info('Connecting to voice...')
         self.timeout = timeout
+        # TODO: timeout is used at various parts during the connection flow, that said:
+        #       Does the value imply a total time window to connect within, or a window for each step, as currently implemented?
 
         for i in range(5):
+            _log.info('Starting voice handshake... (connection attempt %d)', i + 1)
+
             await self._voice_connect(self_deaf=self_deaf, self_mute=self_mute)
             # Setting this unnecessarily will break reconnecting
             if self.state is ConnectionFlowState.disconnected:
@@ -374,9 +373,11 @@ class VoiceConnectionState:
             try:
                 await self._wait_for_state(ConnectionFlowState.got_both_voice_updates, timeout=timeout)
             except asyncio.TimeoutError:
-                _log.info('Timed out waiting for voice update events')
+                _log.info('Timed out waiting for voice handshake.')
                 await self.disconnect()
                 raise
+
+            _log.info('Voice handshake complete. Endpoint found: %s', self.endpoint)
 
             try:
                 async with async_timeout.timeout(self.timeout):
@@ -393,11 +394,13 @@ class VoiceConnectionState:
                 else:
                     await self.disconnect()
                     raise
-            except Exception:
-                _log.exception('Unhandled error connecting to voice')
-                await self.disconnect()
-                raise
+            # except Exception:
+            #     _log.exception('Error connecting to voice')
+            #     await self.disconnect()
+            #     raise
+            # TODO: sort out exception handling here and above function
 
+        # TODO: hmm do i need to do a check here now? (for an already running task?)
         if self._runner is MISSING:
             self._runner = self.voice_client.loop.create_task(self._poll_voice_ws(reconnect), name='Voice websocket poller')
 
@@ -428,11 +431,9 @@ class VoiceConnectionState:
             if self.socket:
                 self.socket.close()
 
-    async def soft_disconnect(
-        self, *, with_state: ConnectionFlowState = ConnectionFlowState.got_both_voice_updates, clear_ip: bool = False
-    ) -> None:
+    async def soft_disconnect(self, *, with_state: ConnectionFlowState = ConnectionFlowState.got_both_voice_updates) -> None:
         _log.debug('Soft disconnecting from voice')
-        # Stop the websocket reader because closing the websocket will trigger a reconnect
+        # Stop the websocket reader because closing the websocket will trigger an unwanted reconnect
         self._runner.cancel()
         try:
             if self.ws:
@@ -440,9 +441,8 @@ class VoiceConnectionState:
         except Exception:
             _log.debug('Ignoring exception soft disconnecting from voice', exc_info=True)
         finally:
-            if clear_ip:
-                self.ip = MISSING
-                self.port = MISSING
+            self.ip = MISSING
+            self.port = MISSING
             self.state = with_state
             self._socket_reader.pause()
 
@@ -468,7 +468,8 @@ class VoiceConnectionState:
 
     def send_packet(self, packet: bytes) -> None:
         if self.state is not ConnectionFlowState.connected:
-            # TODO: do I drop the packet or let it go through and maybe raise?
+            # TODO: What should the semantics of calling this function while not connected be?
+            #       Drop the packet or just let it raise?  Maybe I should just handle in send_audio_packet()
             _log.debug('Not connected but sending packet anyway...')
             # _log.debug('Not connected to voice, dropping packet')
             # return
@@ -535,7 +536,7 @@ class VoiceConnectionState:
                 if isinstance(exc, ConnectionClosed):
                     # The following close codes are undocumented so I will document them here.
                     # 1000 - normal closure (obviously)
-                    # 4014 - we were externally disconnected (voice channel deleted, we were moved, ...)
+                    # 4014 - we were externally disconnected (voice channel deleted, we were moved, etc)
                     # 4015 - voice server has crashed
                     if exc.code in (1000, 4015):
                         _log.info('Disconnecting from voice normally, close code %d.', exc.code)
@@ -558,10 +559,11 @@ class VoiceConnectionState:
                     await self.disconnect()
                     raise
 
-                retry = backoff.delay() - 0.5
+                retry = backoff.delay()
                 _log.exception('Disconnected from voice... Reconnecting in %.2fs.', retry)
                 await asyncio.sleep(retry)
                 await self.disconnect(cleanup=False)
+                # This ends up being a little racy so we have to add a small sleep.
                 await asyncio.sleep(0.5)
                 try:
                     # TODO: get params from somewhere
