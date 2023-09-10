@@ -33,8 +33,10 @@ from typing import (
     Generic,
     List,
     Optional,
+    Sequence,
     TypeVar,
     Union,
+    overload,
 )
 
 import discord.abc
@@ -49,9 +51,13 @@ if TYPE_CHECKING:
 
     from discord.abc import MessageableChannel
     from discord.commands import MessageCommand
+    from discord.file import _FileBase
     from discord.guild import Guild
     from discord.member import Member
+    from discord.mentions import AllowedMentions
+    from discord.message import MessageReference, PartialMessage
     from discord.state import ConnectionState
+    from discord.sticker import GuildSticker, StickerItem
     from discord.user import ClientUser, User
     from discord.voice_client import VoiceProtocol
 
@@ -429,6 +435,86 @@ class Context(discord.abc.Messageable, Generic[BotT]):
                 return None
         except CommandError as e:
             await cmd.on_help_command_error(self, e)
+
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        file: _FileBase = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        files: Sequence[_FileBase] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        file: _FileBase = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
+        content: Optional[str] = ...,
+        *,
+        tts: bool = ...,
+        files: Sequence[_FileBase] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @discord.utils.copy_doc(Message.reply)
+    async def reply(self, content: Optional[str] = None, **kwargs: Any) -> Message:
+        return await self.message.reply(content, **kwargs)
 
     @discord.utils.copy_doc(Message.message_commands)
     def message_commands(
