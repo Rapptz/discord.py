@@ -78,8 +78,10 @@ class InviteWithMetadata(PartialInvite, _InviteMetadata):
     ...
 
 
-Invite = Union[PartialInvite, InviteWithCounts, InviteWithMetadata]
+class AcceptedInvite(InviteWithCounts):
+    new_member: bool
+    show_verification_form: bool
 
 
-
+Invite = Union[PartialInvite, InviteWithCounts, InviteWithMetadata, AcceptedInvite]
 GatewayInvite = Union[InviteCreateEvent, InviteDeleteEvent]

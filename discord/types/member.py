@@ -23,6 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import Optional, TypedDict
+
+from .activity import BasePresenceUpdate
 from .snowflake import SnowflakeList
 from .user import PartialUser
 
@@ -58,6 +60,10 @@ class _OptionalMemberWithUser(PartialMember, total=False):
 
 class MemberWithUser(_OptionalMemberWithUser):
     user: PartialUser
+
+
+class MemberWithPresence(MemberWithUser):
+    presence: BasePresenceUpdate
 
 
 class PrivateMember(MemberWithUser):

@@ -205,3 +205,7 @@ class InviteStageInstance(TypedDict):
     participant_count: int
     speaker_count: int
     topic: str
+
+
+class CallEligibility(TypedDict):
+    ringable: bool

@@ -34,9 +34,17 @@ ButtonStyle = Literal[1, 2, 3, 4, 5]
 TextStyle = Literal[1, 2]
 
 
-class ActionRow(TypedDict):
+class MessageActionRow(TypedDict):
     type: Literal[1]
-    components: List[ActionRowChildComponent]
+    components: List[MessageChildComponent]
+
+
+class ModalActionRow(TypedDict):
+    type: Literal[1]
+    components: List[ModalChildComponent]
+
+
+ActionRow = Union[MessageActionRow, ModalActionRow]
 
 
 class ButtonComponent(TypedDict):
@@ -79,5 +87,7 @@ class TextInput(TypedDict):
     max_length: NotRequired[int]
 
 
-ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]
+MessageChildComponent = Union[ButtonComponent, SelectMenu]
+ModalChildComponent = TextInput
+ActionRowChildComponent = Union[MessageChildComponent, ModalChildComponent]
 Component = Union[ActionRow, ActionRowChildComponent]

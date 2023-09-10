@@ -24,11 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Literal, Optional, TypedDict, Union
-
+from typing import Generic, List, Literal, Optional, TypedDict, TypeVar, Union
 from typing_extensions import NotRequired, Required
 
-from .activity import Activity, ClientStatus, PartialPresenceUpdate, StatusType
+from .activity import Activity, BasePresenceUpdate, PartialPresenceUpdate, StatusType
 from .application import BaseAchievement
 from .audit_log import AuditLogEntry
 from .automod import AutoModerationAction, AutoModerationRuleTriggerType
@@ -38,10 +37,10 @@ from .entitlements import Entitlement, GatewayGift
 from .experiment import GuildExperiment, UserExperiment
 from .guild import ApplicationCommandCounts, Guild, SupplementalGuild, UnavailableGuild
 from .integration import BaseIntegration, IntegrationApplication
-from .interactions import Interaction
+from .interactions import Modal
 from .invite import _InviteTargetType
 from .library import LibraryApplication
-from .member import MemberWithUser
+from .member import MemberWithPresence, MemberWithUser
 from .message import Message
 from .payments import Payment
 from .read_state import ReadState, ReadStateType
@@ -51,15 +50,23 @@ from .snowflake import Snowflake
 from .sticker import GuildSticker
 from .subscriptions import PremiumGuildSubscriptionSlot
 from .threads import Thread, ThreadMember
-from .user import Connection, FriendSuggestion, PartialUser, ProtoSettingsType, Relationship, RelationshipType, User
-from .voice import GuildVoiceState
+from .user import (
+    Connection,
+    FriendSuggestion,
+    PartialConsentSettings,
+    PartialUser,
+    ProtoSettingsType,
+    Relationship,
+    RelationshipType,
+    User,
+    UserGuildSettings,
+)
+from .voice import GuildVoiceState, VoiceState
+
+T = TypeVar('T')
 
 
-class UserPresenceUpdateEvent(TypedDict):
-    user: PartialUser
-    status: StatusType
-    activities: List[Activity]
-    client_status: ClientStatus
+class UserPresenceUpdateEvent(BasePresenceUpdate):
     last_modified: int
 
 
@@ -86,6 +93,7 @@ class ReadyEvent(ResumedEvent):
     auth_session_id_hash: str
     auth_token: NotRequired[str]
     connected_accounts: List[Connection]
+    consents: PartialConsentSettings
     country_code: str
     experiments: List[UserExperiment]
     friend_suggestion_count: int
@@ -95,17 +103,17 @@ class ReadyEvent(ResumedEvent):
     merged_members: List[List[MemberWithUser]]
     pending_payments: NotRequired[List[Payment]]
     private_channels: List[Union[DMChannel, GroupDMChannel]]
-    read_state: VersionedReadState
+    read_state: Versioned[ReadState]
     relationships: List[Relationship]
     resume_gateway_url: str
     required_action: NotRequired[str]
     sessions: List[Session]
     session_id: str
-    session_type: str
+    session_type: Literal['normal']
     shard: NotRequired[ShardInfo]
     tutorial: Optional[Tutorial]
     user: User
-    user_guild_settings: dict
+    user_guild_settings: Versioned[UserGuildSettings]
     user_settings_proto: NotRequired[str]
     users: List[PartialUser]
     v: int
@@ -138,8 +146,8 @@ class ReadySupplementalEvent(TypedDict):
     disclose: List[str]
 
 
-class VersionedReadState(TypedDict):
-    entries: List[ReadState]
+class Versioned(TypedDict, Generic[T]):
+    entries: List[T]
     version: int
     partial: bool
 
@@ -205,9 +213,6 @@ class MessageReactionRemoveEmojiEvent(TypedDict):
     guild_id: NotRequired[Snowflake]
 
 
-InteractionCreateEvent = Interaction
-
-
 UserUpdateEvent = User
 
 
@@ -238,6 +243,11 @@ class _ChannelEvent(TypedDict):
 
 
 ChannelCreateEvent = ChannelUpdateEvent = ChannelDeleteEvent = _ChannelEvent
+
+
+class ChannelRecipientEvent(TypedDict):
+    channel_id: Snowflake
+    user: PartialUser
 
 
 class ChannelPinsUpdateEvent(TypedDict):
@@ -561,3 +571,102 @@ class GuildApplicationCommandIndexUpdateEvent(TypedDict):
 class UserNoteUpdateEvent(TypedDict):
     id: Snowflake
     note: str
+
+
+UserGuildSettingsEvent = UserGuildSettings
+
+
+class InteractionEvent(TypedDict):
+    id: Snowflake
+    nonce: NotRequired[Snowflake]
+
+
+InteractionModalCreateEvent = Modal
+
+
+class CallCreateEvent(TypedDict):
+    channel_id: Snowflake
+    message_id: Snowflake
+    embedded_activities: List[dict]
+    region: str
+    ringing: List[Snowflake]
+    voice_states: List[VoiceState]
+    unavailable: NotRequired[bool]
+
+
+class CallUpdateEvent(TypedDict):
+    channel_id: Snowflake
+    guild_id: Optional[Snowflake]  # ???
+    message_id: Snowflake
+    region: str
+    ringing: List[Snowflake]
+
+
+class CallDeleteEvent(TypedDict):
+    channel_id: Snowflake
+    unavailable: NotRequired[bool]
+
+
+class _GuildMemberListGroup(TypedDict):
+    id: Union[Snowflake, Literal['online', 'offline']]
+
+
+class GuildMemberListGroup(_GuildMemberListGroup):
+    count: int
+
+
+class _GuildMemberListGroupItem(TypedDict):
+    group: _GuildMemberListGroup
+
+
+class _GuildMemberListMemberItem(TypedDict):
+    member: MemberWithPresence
+
+
+GuildMemberListItem = Union[_GuildMemberListGroupItem, _GuildMemberListMemberItem]
+
+
+class GuildMemberListSyncOP(TypedDict):
+    op: Literal['SYNC']
+    range: tuple[int, int]
+    items: List[GuildMemberListItem]
+
+
+class GuildMemberListUpdateOP(TypedDict):
+    op: Literal['UPDATE']
+    index: int
+    item: _GuildMemberListMemberItem
+
+
+class GuildMemberListInsertOP(TypedDict):
+    op: Literal['INSERT']
+    index: int
+    item: _GuildMemberListMemberItem
+
+
+class GuildMemberListDeleteOP(TypedDict):
+    op: Literal['DELETE']
+    index: int
+
+
+class GuildMemberListInvalidateOP(TypedDict):
+    op: Literal['INVALIDATE']
+    range: tuple[int, int]
+
+
+GuildMemberListOP = Union[
+    GuildMemberListSyncOP,
+    GuildMemberListUpdateOP,
+    GuildMemberListInsertOP,
+    GuildMemberListDeleteOP,
+    GuildMemberListInvalidateOP,
+]
+
+
+class GuildMemberListUpdateEvent(TypedDict):
+    id: Union[Snowflake, Literal['everyone']]
+    guild_id: Snowflake
+    member_count: int
+    online_count: int
+    groups: List[GuildMemberListGroup]
+    ops: List[GuildMemberListOP]

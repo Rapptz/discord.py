@@ -60,7 +60,7 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .profile import MemberProfile
     from .types.activity import (
-        PartialPresenceUpdate,
+        BasePresenceUpdate,
     )
     from .types.member import (
         MemberWithUser as MemberWithUserPayload,
@@ -389,7 +389,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         self._user = member._user
         return self
 
-    def _update(self, data: GuildMemberUpdateEvent) -> Optional[Member]:
+    def _update(self, data: Union[GuildMemberUpdateEvent, MemberWithUserPayload]) -> Optional[Member]:
         old = Member._copy(self)
 
         # Some changes are optional
@@ -416,7 +416,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             return old
 
     def _presence_update(
-        self, data: PartialPresenceUpdate, user: Union[PartialUserPayload, Tuple[()]]
+        self, data: BasePresenceUpdate, user: Union[PartialUserPayload, Tuple[()]]
     ) -> Optional[Tuple[User, User]]:
         self._presence = self._state.create_presence(data)
         return self._user._update_self(user)

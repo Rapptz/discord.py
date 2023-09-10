@@ -24,12 +24,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from base64 import b64encode
-from hashlib import md5
 import io
 import os
+from base64 import b64encode
+from hashlib import md5
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
+
 import yarl
-from typing import Any, Dict, Optional, Tuple, Union, TYPE_CHECKING
 
 from .utils import MISSING, cached_slot_property
 
@@ -37,7 +38,11 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .state import ConnectionState
-    from .types.message import CloudAttachment as CloudAttachmentPayload, UploadedAttachment as UploadedAttachmentPayload
+    from .types.message import (
+        CloudAttachment as CloudAttachmentPayload,
+        PartialAttachment as PartialAttachmentPayload,
+        UploadedAttachment as UploadedAttachmentPayload,
+    )
 
 __all__ = (
     'File',
@@ -76,8 +81,8 @@ class _FileBase:
     def filename(self, value: str) -> None:
         self._filename, self.spoiler = _strip_spoiler(value)
 
-    def to_dict(self, index: int) -> Dict[str, Any]:
-        payload = {
+    def to_dict(self, index: int) -> PartialAttachmentPayload:
+        payload: PartialAttachmentPayload = {
             'id': str(index),
             'filename': self.filename,
         }
@@ -264,7 +269,7 @@ class CloudFile(_FileBase):
         url = yarl.URL(self.url)
         return url.query['upload_id']
 
-    def to_dict(self, index: int) -> Dict[str, Any]:
+    def to_dict(self, index: int) -> PartialAttachmentPayload:
         payload = super().to_dict(index)
         payload['uploaded_filename'] = self.upload_filename
         return payload

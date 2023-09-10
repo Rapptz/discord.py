@@ -136,11 +136,70 @@ class Relationship(TypedDict):
     since: NotRequired[str]
 
 
+ProtoSettingsType = Literal[1, 2, 3]
+
+
 class ProtoSettings(TypedDict):
     settings: str
 
 
-ProtoSettingsType = Literal[1, 2, 3]
+class _ConsentSettings(TypedDict):
+    consented: bool
+
+
+class PartialConsentSettings(TypedDict):
+    personalization: _ConsentSettings
+
+
+class ConsentSettings(PartialConsentSettings):
+    usage_statistics: _ConsentSettings
+
+
+class _EmailSettingsCategories(TypedDict):
+    communication: bool
+    social: bool
+    recommendations_and_events: bool
+    tips: bool
+    updates_and_announcements: bool
+    family_center_digest: bool
+
+
+class EmailSettings(TypedDict):
+    initialized: bool
+    categories: _EmailSettingsCategories
+
+
+MessageNotificationLevel = Literal[0, 1, 2, 3]
+HighlightLevel = Literal[0, 1, 2]
+
+
+class MuteConfig(TypedDict):
+    end_time: Optional[str]
+    selected_time_window: Optional[int]
+
+
+class ChannelOverride(TypedDict):
+    channel_id: Snowflake
+    collapsed: bool
+    message_notifications: MessageNotificationLevel
+    muted: bool
+    mute_config: Optional[MuteConfig]
+
+
+class UserGuildSettings(TypedDict):
+    guild_id: Optional[Snowflake]
+    channel_overrides: List[ChannelOverride]
+    flags: int
+    message_notifications: MessageNotificationLevel
+    notify_highlights: HighlightLevel
+    hide_muted_channels: bool
+    mobile_push: bool
+    muted: bool
+    mute_config: Optional[MuteConfig]
+    mute_scheduled_events: bool
+    suppress_everyone: bool
+    suppress_roles: bool
+    version: int
 
 
 class UserAffinity(TypedDict):
@@ -177,3 +236,7 @@ class FriendSuggestionReason(TypedDict):
 class FriendSuggestion(TypedDict):
     suggested_user: PartialUser
     reasons: List[FriendSuggestionReason]
+
+
+class Report(TypedDict):
+    report_id: Snowflake

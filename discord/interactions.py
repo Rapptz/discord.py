@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     from .modal import Modal
     from .state import ConnectionState
     from .threads import Thread
+    from .types.interactions import InteractionData
     from .types.snowflake import Snowflake
     from .types.user import User as UserPayload
     from .user import BaseUser, ClientUser
@@ -193,7 +194,7 @@ async def _wrapped_interaction(
     type: InteractionType,
     name: Optional[str],
     channel: MessageableChannel,
-    data: dict,
+    data: InteractionData,
     **kwargs,
 ) -> Interaction:
     state._interaction_cache[nonce] = (type.value, name, channel)

@@ -33,7 +33,7 @@ from .user import User
 from .emoji import PartialEmoji
 from .embed import Embed
 from .channel import ChannelType
-from .components import Component
+from .components import MessageActionRow
 from .interactions import MessageInteraction
 from .application import BaseApplication
 from .sticker import StickerItem
@@ -134,7 +134,7 @@ class Message(PartialMessage):
     sticker_items: NotRequired[List[StickerItem]]
     referenced_message: NotRequired[Optional[Message]]
     interaction: NotRequired[MessageInteraction]
-    components: NotRequired[List[Component]]
+    components: NotRequired[List[MessageActionRow]]
     position: NotRequired[int]
     call: NotRequired[Call]
     role_subscription_data: NotRequired[RoleSubscriptionData]
@@ -188,6 +188,13 @@ MessageSearchHasType = Literal[
 ]
 MessageSearchSortType = Literal['timestamp', 'relevance']
 MessageSearchSortOrder = Literal['desc', 'asc']
+
+
+class PartialAttachment(TypedDict):
+    id: NotRequired[Snowflake]
+    filename: str
+    description: NotRequired[str]
+    uploaded_filename: NotRequired[str]
 
 
 class UploadedAttachment(TypedDict):

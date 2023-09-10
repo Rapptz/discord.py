@@ -24,30 +24,40 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
+from typing import TYPE_CHECKING, ClassVar, List, Literal, Optional, Tuple, Union, overload
 
-from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, InteractionType
+from .enums import ButtonStyle, ComponentType, InteractionType, TextStyle, try_enum
 from .interactions import _wrapped_interaction
-from .utils import _generate_nonce, get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
+from .utils import MISSING, _generate_nonce, get_slots
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .types.components import (
-        ActionRow as ActionRowPayload,
-        Component as ComponentPayload,
-        ButtonComponent as ButtonComponentPayload,
-        SelectMenu as SelectMenuPayload,
-        SelectOption as SelectOptionPayload,
-        TextInput as TextInputPayload,
-        ActionRowChildComponent as ActionRowChildComponentPayload,
-    )
     from .emoji import Emoji
     from .interactions import Interaction
     from .message import Message
+    from .types.components import (
+        ActionRow as ActionRowPayload,
+        ActionRowChildComponent,
+        ButtonComponent as ButtonComponentPayload,
+        Component as ComponentPayload,
+        MessageChildComponent,
+        ModalChildComponent,
+        SelectMenu as SelectMenuPayload,
+        SelectOption as SelectOptionPayload,
+        TextInput as TextInputPayload,
+    )
+    from .types.interactions import (
+        ActionRowInteractionData,
+        ButtonInteractionData,
+        ComponentInteractionData,
+        SelectInteractionData,
+        TextInputInteractionData,
+    )
 
-    ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
+    MessageChildComponentType = Union['Button', 'SelectMenu']
+    ActionRowChildComponentType = Union[MessageChildComponentType, 'TextInput']
 
 
 __all__ = (
@@ -99,7 +109,7 @@ class Component:
                 setattr(self, slot, value)
         return self
 
-    def to_dict(self) -> ComponentPayload:
+    def to_dict(self) -> Union[ActionRowInteractionData, ComponentInteractionData]:
         raise NotImplementedError
 
 
@@ -124,13 +134,12 @@ class ActionRow(Component):
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: ComponentPayload, message: Message):
+    def __init__(self, data: ActionRowPayload, message: Message):
         self.message = message
         self.children: List[ActionRowChildComponentType] = []
 
         for component_data in data.get('components', []):
             component = _component_factory(component_data, message)
-
             if component is not None:
                 self.children.append(component)
 
@@ -139,12 +148,11 @@ class ActionRow(Component):
         """:class:`ComponentType`: The type of component."""
         return ComponentType.action_row
 
-    def to_dict(self) -> ActionRowPayload:
-        # NOTE: This will have to be changed for the inevitable selects in modals
+    def to_dict(self) -> ActionRowInteractionData:
         return {
-            'type': self.type.value,
-            'components': [c.to_dict() for c in self.children],  # type: ignore
-        }
+            'type': ComponentType.action_row.value,
+            'components': [c.to_dict() for c in self.children],
+        }  # type: ignore
 
 
 class Button(Component):
@@ -202,10 +210,10 @@ class Button(Component):
         """:class:`ComponentType`: The type of component."""
         return ComponentType.button
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> ButtonInteractionData:
         return {
             'component_type': self.type.value,
-            'custom_id': self.custom_id,
+            'custom_id': self.custom_id or '',
         }
 
     async def click(self) -> Union[str, Interaction]:
@@ -237,7 +245,7 @@ class Button(Component):
             _generate_nonce(),
             InteractionType.component,
             None,
-            message.channel,  # type: ignore # acc_channel is always correct here
+            message.channel,  # type: ignore # channel is always correct here
             self.to_dict(),
             message=message,
         )
@@ -296,7 +304,7 @@ class SelectMenu(Component):
         """:class:`ComponentType`: The type of component."""
         return ComponentType.select
 
-    def to_dict(self, options: Optional[Tuple[SelectOption]] = None) -> dict:
+    def to_dict(self, options: Optional[Tuple[SelectOption]] = None) -> SelectInteractionData:
         return {
             'component_type': self.type.value,
             'custom_id': self.custom_id,
@@ -524,31 +532,40 @@ class TextInput(Component):
         """
         self.value = value
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> TextInputInteractionData:
         return {
             'type': self.type.value,
             'custom_id': self.custom_id,
-            'value': self.value,
+            'value': self.value or '',
         }
 
 
 @overload
-def _component_factory(
-    data: ActionRowChildComponentPayload, message: Message = ...
-) -> Optional[ActionRowChildComponentType]:
+def _component_factory(data: ActionRowPayload, message: Message = ...) -> ActionRow:
     ...
 
 
 @overload
-def _component_factory(
-    data: ComponentPayload, message: Message = ...
-) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
+def _component_factory(data: MessageChildComponent, message: Message = ...) -> Optional[MessageChildComponentType]:
     ...
 
 
-def _component_factory(
-    data: ComponentPayload, message: Message = MISSING
-) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
+@overload
+def _component_factory(data: ModalChildComponent, message: Message = ...) -> Optional[TextInput]:
+    ...
+
+
+@overload
+def _component_factory(data: ActionRowChildComponent, message: Message = ...) -> Optional[ActionRowChildComponentType]:
+    ...
+
+
+@overload
+def _component_factory(data: ComponentPayload, message: Message = ...) -> Optional[Component]:
+    ...
+
+
+def _component_factory(data: ComponentPayload, message: Message = MISSING) -> Optional[Component]:
     if data['type'] == 1:
         return ActionRow(data, message)
     elif data['type'] == 2:

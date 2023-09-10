@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union
 
 from . import utils
 from .errors import ClientException
@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     from .member import VoiceState
     from .message import Message
     from .state import ConnectionState
+    from .types.gateway import CallCreateEvent, CallUpdateEvent
     from .user import BaseUser, User
 
     _PrivateChannel = Union[abc.DMChannel, abc.GroupChannel]
@@ -144,7 +145,7 @@ class PrivateCall:
     def __init__(
         self,
         *,
-        data: dict,
+        data: Union[CallCreateEvent, CallUpdateEvent],
         state: ConnectionState,
         message: Optional[Message],
         channel: abc.PrivateChannel,
@@ -153,7 +154,6 @@ class PrivateCall:
         self._cs_message = message
         self.channel = channel  # type: ignore # Will always be a DMChannel here
         self._ended: bool = False
-
         self._update(data)
 
     def _delete(self) -> None:
@@ -168,7 +168,7 @@ class PrivateCall:
         state = self.voice_state_for(user)
         return bool(state and state.channel and state.channel.id == self.channel.id)
 
-    def _update(self, data) -> None:
+    def _update(self, data: Union[CallCreateEvent, CallUpdateEvent]) -> None:
         self._message_id = int(data['message_id'])
         self.unavailable = data.get('unavailable', False)
         try:
@@ -179,7 +179,7 @@ class PrivateCall:
         channel = self.channel
         recipients = self._get_recipients()
         lookup = {u.id: u for u in recipients}
-        self._ringing = tuple(filter(None, map(lookup.get, data.get('ringing', []))))
+        self._ringing = tuple(filter(None, map(lookup.get, [int(x) for x in data.get('ringing', [])])))
 
         for vs in data.get('voice_states', []):
             self._state._update_voice_state(vs, channel.id)

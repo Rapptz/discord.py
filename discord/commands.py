@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Protocol, Tuple, Type, Union, runtime_checkable
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Protocol, Tuple, Type, Union, runtime_checkable
 
 from .enums import ApplicationCommandOptionType, ApplicationCommandType, ChannelType, InteractionType, try_enum
 from .interactions import _wrapped_interaction
@@ -38,8 +38,23 @@ if TYPE_CHECKING:
     from .file import _FileBase
     from .guild import Guild
     from .interactions import Interaction
-    from .message import Attachment, Message
+    from .message import Message
     from .state import ConnectionState
+    from .types.command import (
+        ApplicationCommand as ApplicationCommandPayload,
+        ApplicationCommandOption,
+        ApplicationCommandOptionChoice as OptionChoicePayload,
+        SubCommand as SubCommandPayload,
+        _ValueApplicationCommandOption as OptionPayload,
+    )
+    from .types.interactions import (
+        ApplicationCommandInteractionData,
+        ChatInputCommandInteractionData,
+        MessageCommandInteractionData,
+        UserCommandInteractionData,
+        ApplicationCommandInteractionDataOption as InteractionDataOption,
+    )
+    from .types.message import PartialAttachment as PartialAttachmentPayload
 
 
 __all__ = (
@@ -113,7 +128,10 @@ class ApplicationCommand(Protocol):
         return self.name
 
     async def __call__(
-        self, data: dict, files: Optional[List[_FileBase]] = None, channel: Optional[Messageable] = None
+        self,
+        data: ApplicationCommandInteractionData,
+        files: Optional[List[_FileBase]] = None,
+        channel: Optional[Messageable] = None,
     ) -> Interaction:
         channel = channel or self.target_channel
         if channel is None:
@@ -174,7 +192,6 @@ class BaseCommand(ApplicationCommand, Hashable):
         'description',
         'id',
         'version',
-        'type',
         'application',
         'application_id',
         'dm_permission',
@@ -186,21 +203,27 @@ class BaseCommand(ApplicationCommand, Hashable):
         '_default_member_permissions',
     )
 
+    if TYPE_CHECKING:
+        type: ApplicationCommandType
+
     def __init__(
-        self, *, state: ConnectionState, data: Dict[str, Any], channel: Optional[Messageable] = None, **kwargs
+        self,
+        *,
+        state: ConnectionState,
+        data: ApplicationCommandPayload,
+        channel: Optional[Messageable] = None,
+        application: Optional[IntegrationApplication] = None,
+        **kwargs,
     ) -> None:
         self._state = state
         self._data = data
+        self.application = application
         self.name = data['name']
         self.description = data['description']
         self._channel = channel
         self.application_id: int = int(data['application_id'])
         self.id: int = int(data['id'])
         self.version = int(data['version'])
-        self.type = try_enum(ApplicationCommandType, data['type'])
-
-        application = data.get('application')
-        self.application = state.create_integration_application(application) if application else None
 
         self._default_member_permissions = _get_as_snowflake(data, 'default_member_permissions')
         dm_permission = data.get('dm_permission')  # Null means true?
@@ -225,28 +248,29 @@ class SlashMixin(ApplicationCommand, Protocol):
 
     async def __call__(
         self,
-        options: List[dict],
+        options: List[InteractionDataOption],
         files: Optional[List[_FileBase]],
-        attachments: List[Attachment],
+        attachments: List[PartialAttachmentPayload],
         channel: Optional[Messageable] = None,
     ) -> Interaction:
         obj = self._parent
         command = obj._data
-        command['name_localized'] = command['name']
-        data = {
+        data: ChatInputCommandInteractionData = {
             'application_command': command,
             'attachments': attachments,
             'id': str(obj.id),
             'name': obj.name,
             'options': options,
-            'type': obj.type.value,
+            'type': ApplicationCommandType.chat_input.value,
             'version': str(obj.version),
         }
         if self.guild_id:
             data['guild_id'] = str(self.guild_id)
         return await super().__call__(data, files, channel)
 
-    def _parse_kwargs(self, kwargs: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], List[_FileBase], List[Attachment]]:
+    def _parse_kwargs(
+        self, kwargs: Dict[str, Any]
+    ) -> Tuple[List[InteractionDataOption], List[_FileBase], List[PartialAttachmentPayload]]:
         possible_options = {o.name: o for o in self.options}
         kwargs = {k: v for k, v in kwargs.items() if k in possible_options}
         options = []
@@ -286,18 +310,18 @@ class SlashMixin(ApplicationCommand, Protocol):
 
         return options, files, attachments
 
-    def _unwrap_options(self, data: List[Dict[str, Any]]) -> None:
+    def _unwrap_options(self, data: List[ApplicationCommandOption]) -> None:
         options = []
         children = []
         for option in data:
             type = try_enum(ApplicationCommandOptionType, option['type'])
-            if type in {
+            if type in (
                 ApplicationCommandOptionType.sub_command,
                 ApplicationCommandOptionType.sub_command_group,
-            }:
-                children.append(SubCommand(parent=self, data=option))
+            ):
+                children.append(SubCommand(parent=self, data=option))  # type: ignore
             else:
-                options.append(Option(option))
+                options.append(Option(option))  # type: ignore
 
         self.options = options
         self.children = children
@@ -340,8 +364,6 @@ class UserCommand(BaseCommand):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    type: :class:`ApplicationCommandType`
-        The type of application command. This will always be :attr:`ApplicationCommandType.user`.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
@@ -386,17 +408,22 @@ class UserCommand(BaseCommand):
             raise TypeError('__call__() missing 1 required positional argument: \'user\'')
 
         command = self._data
-        data = {
+        data: UserCommandInteractionData = {
             'application_command': command,
             'attachments': [],
             'id': str(self.id),
             'name': self.name,
             'options': [],
             'target_id': str(user.id),
-            'type': self.type.value,
+            'type': ApplicationCommandType.user.value,
             'version': str(self.version),
         }
         return await super().__call__(data, None, channel)
+
+    @property
+    def type(self) -> Literal[ApplicationCommandType.user]:
+        """:class:`ApplicationCommandType`: The type of application command. This is always :attr:`ApplicationCommandType.user`."""
+        return ApplicationCommandType.user
 
     @property
     def target_user(self) -> Optional[Snowflake]:
@@ -452,8 +479,6 @@ class MessageCommand(BaseCommand):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    type: :class:`ApplicationCommandType`
-        The type of application command. This will always be :attr:`ApplicationCommandType.message`.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
@@ -498,8 +523,7 @@ class MessageCommand(BaseCommand):
             raise TypeError('__call__() missing 1 required positional argument: \'message\'')
 
         command = self._data
-        command['name_localized'] = command['name']
-        data = {
+        data: MessageCommandInteractionData = {
             'application_command': command,
             'attachments': [],
             'id': str(self.id),
@@ -510,6 +534,11 @@ class MessageCommand(BaseCommand):
             'version': str(self.version),
         }
         return await super().__call__(data, None, channel)
+
+    @property
+    def type(self) -> Literal[ApplicationCommandType.message]:
+        """:class:`ApplicationCommandType`: The type of application command. This is always :attr:`ApplicationCommandType.message`."""
+        return ApplicationCommandType.message
 
     @property
     def target_message(self) -> Optional[Message]:
@@ -565,8 +594,6 @@ class SlashCommand(BaseCommand, SlashMixin):
         The command's name.
     description: :class:`str`
         The command's description, if any.
-    type: :class:`ApplicationCommandType`
-        The type of application command.
     dm_permission: :class:`bool`
         Whether the command is enabled in DMs.
     nsfw: :class:`bool`
@@ -587,7 +614,7 @@ class SlashCommand(BaseCommand, SlashMixin):
 
     __slots__ = ('_parent', 'options', 'children')
 
-    def __init__(self, *, data: Dict[str, Any], **kwargs) -> None:
+    def __init__(self, *, data: ApplicationCommandPayload, **kwargs) -> None:
         super().__init__(data=data, **kwargs)
         self._parent = self
         self._unwrap_options(data.get('options', []))
@@ -629,6 +656,11 @@ class SlashCommand(BaseCommand, SlashMixin):
             BASE += f' children={len(self.children)}'
         return BASE + '>'
 
+    @property
+    def type(self) -> Literal[ApplicationCommandType.chat_input]:
+        """:class:`ApplicationCommandType`: The type of application command. This is always :attr:`ApplicationCommandType.chat_input`."""
+        return ApplicationCommandType.chat_input
+
     def is_group(self) -> bool:
         """Query whether this command is a group.
 
@@ -663,8 +695,6 @@ class SubCommand(SlashMixin):
         The subcommand's name.
     description: :class:`str`
         The subcommand's description, if any.
-    type: :class:`ApplicationCommandType`
-        The type of application command. Always :attr:`ApplicationCommandType.chat_input`.
     parent: Union[:class:`SlashCommand`, :class:`SubCommand`]
         The parent command.
     options: List[:class:`Option`]
@@ -680,18 +710,20 @@ class SubCommand(SlashMixin):
         'parent',
         'options',
         'children',
-        'type',
     )
 
-    def __init__(self, *, parent, data):
+    def __init__(self, *, parent: Union[SlashCommand, SubCommand], data: SubCommandPayload):
         self.name = data['name']
         self.description = data.get('description')
         self._state = parent._state
-        self.parent: Union[SlashCommand, SubCommand] = parent
+        self.parent = parent
         self._parent: SlashCommand = getattr(parent, 'parent', parent)  # type: ignore
-        self.type = ApplicationCommandType.chat_input  # Avoid confusion I guess
-        self._type: ApplicationCommandOptionType = try_enum(ApplicationCommandOptionType, data['type'])
-        self._unwrap_options(data.get('options', []))
+        self._type: Literal[
+            ApplicationCommandOptionType.sub_command, ApplicationCommandOptionType.sub_command_group
+        ] = try_enum(
+            ApplicationCommandOptionType, data['type']
+        )  # type: ignore
+        self._unwrap_options(data.get('options', []))  # type: ignore # ???
 
     def __str__(self) -> str:
         return self.name
@@ -733,8 +765,7 @@ class SubCommand(SlashMixin):
             raise TypeError('Cannot use a group')
 
         options, files, attachments = self._parse_kwargs(kwargs)
-
-        options = [
+        options: List[InteractionDataOption] = [
             {
                 'type': self._type.value,
                 'name': self.name,
@@ -742,7 +773,7 @@ class SubCommand(SlashMixin):
             }
         ]
         for parent in self._walk_parents():
-            options = [
+            options: List[InteractionDataOption] = [
                 {
                     'type': parent._type.value,
                     'name': parent.name,
@@ -759,6 +790,12 @@ class SubCommand(SlashMixin):
         if self.children:
             BASE += f' children={len(self.children)}'
         return BASE + '>'
+
+    @property
+    def type(self) -> Literal[ApplicationCommandType.chat_input]:
+        """:class:`ApplicationCommandType`: The type of application command. Always :attr:`ApplicationCommandType.chat_input`."""
+        # Avoid confusion I guess
+        return ApplicationCommandType.chat_input
 
     @property
     def qualified_name(self) -> str:
@@ -889,13 +926,13 @@ class Option:
         'autocomplete',
     )
 
-    def __init__(self, data):
+    def __init__(self, data: OptionPayload):
         self.name: str = data['name']
         self.description: str = data['description']
         self.type: ApplicationCommandOptionType = try_enum(ApplicationCommandOptionType, data['type'])
         self.required: bool = data.get('required', False)
         self.min_value: Optional[Union[int, float]] = data.get('min_value')
-        self.max_value: Optional[int] = data.get('max_value')
+        self.max_value: Optional[Union[int, float]] = data.get('max_value')
         self.choices = [OptionChoice(choice, self.type) for choice in data.get('choices', [])]
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, c) for c in data.get('channel_types', [])]
         self.autocomplete: bool = data.get('autocomplete', False)
@@ -934,7 +971,7 @@ class OptionChoice:
 
     __slots__ = ('name', 'value')
 
-    def __init__(self, data: Dict[str, str], type: ApplicationCommandOptionType):
+    def __init__(self, data: OptionChoicePayload, type: ApplicationCommandOptionType):
         self.name: str = data['name']
         self.value: Union[str, int, float]
         if type is ApplicationCommandOptionType.string:

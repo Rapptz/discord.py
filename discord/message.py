@@ -87,7 +87,7 @@ if TYPE_CHECKING:
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
 
-    from .types.components import Component as ComponentPayload
+    from .types.components import MessageActionRow as ComponentPayload
     from .types.threads import ThreadArchiveDuration
     from .types.member import (
         Member as MemberPayload,
@@ -98,7 +98,7 @@ if TYPE_CHECKING:
     from .types.gateway import MessageReactionRemoveEvent, MessageUpdateEvent
     from .abc import Snowflake
     from .abc import GuildChannel, MessageableChannel
-    from .components import ActionRow, ActionRowChildComponentType
+    from .components import ActionRow
     from .file import _FileBase
     from .state import ConnectionState
     from .mentions import AllowedMentions
@@ -107,7 +107,6 @@ if TYPE_CHECKING:
     from .role import Role
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
-    MessageComponentType = Union[ActionRow, ActionRowChildComponentType]
 
 
 __all__ = (
@@ -1573,7 +1572,7 @@ class Message(PartialMessage, Hashable):
         mentions: List[Union[User, Member]]
         author: Union[User, Member]
         role_mentions: List[Role]
-        components: List[MessageComponentType]
+        components: List[ActionRow]
 
     def __init__(
         self,
@@ -1865,10 +1864,8 @@ class Message(PartialMessage, Hashable):
 
     def _handle_components(self, data: List[ComponentPayload]) -> None:
         self.components = []
-
         for component_data in data:
             component = _component_factory(component_data, self)
-
             if component is not None:
                 self.components.append(component)
 

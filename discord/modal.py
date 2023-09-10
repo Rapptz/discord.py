@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     from .application import IntegrationApplication
     from .components import ActionRow
     from .interactions import Interaction
+    from .types.interactions import Modal as ModalPayload, ModalSubmitInteractionData
 
 # fmt: off
 __all__ = (
@@ -69,7 +70,7 @@ class Modal(Hashable):
     Attributes
     -----------
     id: :class:`int`
-        The modal's ID. This is the same as the interaction ID.
+        The interaction ID.
     nonce: Optional[Union[:class:`int`, :class:`str`]]
         The modal's nonce. May not be present.
     title: :class:`str`
@@ -84,24 +85,24 @@ class Modal(Hashable):
 
     __slots__ = ('_state', 'interaction', 'id', 'nonce', 'title', 'custom_id', 'components', 'application')
 
-    def __init__(self, *, data: dict, interaction: Interaction):
+    def __init__(self, *, data: ModalPayload, interaction: Interaction):
         self._state = interaction._state
         self.interaction = interaction
         self.id = int(data['id'])
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
         self.title: str = data.get('title', '')
         self.custom_id: str = data.get('custom_id', '')
-        self.components: List[ActionRow] = [_component_factory(d) for d in data.get('components', [])]  # type: ignore # Will always be rows here
+        self.components: List[ActionRow] = [_component_factory(d) for d in data.get('components', [])]
         self.application: IntegrationApplication = interaction._state.create_integration_application(data['application'])
 
     def __str__(self) -> str:
         return self.title
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> ModalSubmitInteractionData:
         return {
             'id': str(self.id),
             'custom_id': self.custom_id,
-            'components': [c.to_dict() for c in self.components],
+            'components': [c.to_dict() for c in self.components],  # type: ignore
         }
 
     async def submit(self):
