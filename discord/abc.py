@@ -262,7 +262,7 @@ async def _handle_commands(
         prev_cursor = cursor
         cursor = data['cursor'].get('next')
         cmds = data['application_commands']
-        apps = {int(app['id']): app for app in data.get('applications') or []}
+        apps = {int(app['id']): state.create_integration_application(app) for app in data.get('applications') or []}
 
         for cmd in cmds:
             # Handle faked parameters
@@ -280,9 +280,7 @@ async def _handle_commands(
             except ValueError:
                 pass
 
-            application_data = apps.get(int(cmd['application_id']))
-            application = state.create_integration_application(application_data) if application_data else None
-
+            application = apps.get(int(cmd['application_id']))
             yield cls(state=state, data=cmd, channel=channel, target=target, application=application)
 
         cmd_ids = None
