@@ -1,5 +1,5 @@
 from sphinx.builders.html import StandaloneHTMLBuilder
-from sphinx.builders.gettext import MessageCatalogBuilder, I18nBuilder, timestamp, ltz, should_write, GettextRenderer
+from sphinx.builders.gettext import MessageCatalogBuilder, I18nBuilder, ctime,should_write, GettextRenderer
 from sphinx.locale import __
 from sphinx.util import status_iterator
 from sphinx.util.osutil import ensuredir
@@ -69,7 +69,7 @@ class DPYMessageCatalogBuilder(MessageCatalogBuilder):
             'project': self.config.project,
             'last_translator': self.config.gettext_last_translator,
             'language_team': self.config.gettext_language_team,
-            'ctime': datetime.datetime.fromtimestamp(timestamp, ltz).strftime('%Y-%m-%d %H:%M%z'),
+            'ctime': ctime,
             'display_location': self.config.gettext_location,
             'display_uuid': self.config.gettext_uuid,
         }
