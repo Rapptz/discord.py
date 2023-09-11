@@ -44,4 +44,4 @@ Checks
 
 One of the most common current uses of context menus is to implement a variety of extended moderation features. Some ideas might include a ``Toggle Mute``, ``Warn``, ``Report``, or ``Info`` commands. For implementing moderation commands like these, it will be useful to add checks in order to ensure that only those who are allowed to can use said commands.
 
-For examples of checks, view the :ref:`Interaction Checks Guide <guide_interactions_checks>`.
+For examples of checks, view the :ref:`Interaction Checks Guide <guide_interaction_checks>`.

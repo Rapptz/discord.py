@@ -2,7 +2,7 @@
 
 .. currentmodule:: discord
 
-.. _guide_interactions_checks:
+.. _guide_interaction_checks:
 
 Interaction Checks Guide
 =========================
@@ -16,6 +16,8 @@ Before getting started, the examples shown below are made using both :class:`.ap
 .. note::
 
     For information on slash commands, see the :ref:`Slash Commands Guide <discord_slash_commands>`. For more information on context menus, see the :ref:`Context Menus Guide <guide_interactions_context-menus>`.
+
+.. _guide_interaction_checks_role-check:
 
 Role Checks
 ------------
@@ -49,6 +51,8 @@ A very similar process happens for checking multiple roles:
 - Then, a :func:`@has_role <.app_commands.checks.has_any_role>` is added for multiple roles. Again, these roles are either :class:`str` or :class:`int` values.
 - Then, the callback for the context menu is created.
 
+.. _guide_interaction_checks_permission-check:
+
 Permission Checks
 ------------------
 
@@ -65,13 +69,15 @@ These checks handle validating whether the user activating a command has certain
 
     # Bot permissions check.
     @app_commands.command()
-    @app_commands.bot_has_permissions(delete_messages=True, manage_guild=True)
+    @app_commands.bot_has_permissions(manage_messages=True, manage_guild=True)
     async def bot_permission_check(interaction: discord.Interaction):
         await interaction.response.send_message('I can do that!', ephemeral=True)
 
 These two checks are identical in usage. The only difference is that one checks the permissions of the user who calls the command, and one checks the permissions of the bot user the command is issued to.
 
-The permissions given to the checks can be any number of permissions, which can be found in :class:`.Permissions`, and must have a boolean value.
+The permissions given to the check can be any number of permissions, which can be found in :class:`.Permissions`, and must have a boolean value.
+
+.. _guide_interaction_checks_cooldown-check:
 
 Cooldown Checks
 ----------------
@@ -136,6 +142,8 @@ The :func:`@dynamic_cooldown <.app_commands.checks.dynamic_cooldown>` is passed 
 
 In this specific use case, the function is used to apply a ``10.0`` second per usage cooldown to each individual user. However, if the user is the owner of the guild the command is used in, the command cooldown is bypassed. Similarly, if the user is a specific user mentioned by id, a lesser cooldown is applied, of just ``5.0`` seconds per usage.
 
+.. _guide_interaction_checks_custom-check:
+
 Custom Check
 -------------
 
@@ -166,6 +174,8 @@ Custom check commands can also be implemented if further functionality is needed
 
 In this example, the first check is implemented to only allow the command usage if the user who runs the command is the owner of the guild the command is used in. This is simply a function which takes a :class:`.Interaction` as an argument, which is passed to a :func:`@check <.app_commands.check>` decorator. The second check implemented creates a custom decorator which checks if the user who activates a command has a specific id. This limits a command to only one user.
 
+.. _guide_interaction_checks_combining-checks:
+
 Combining Checks
 -----------------
 
@@ -183,8 +193,10 @@ As an example, here is a command which only runs if a user has a certain role, `
     async def check_example(interaction: discord.Interaction):
         await interaction.send_message('Checks passed!', ephemeral=True)
 
+.. _guide_interaction_checks_global-checks:
+
 Global Interaction Checks
--------------------------
+--------------------------
 
 In addition to adding individual or combined checks onto specific app commands or context menus, it is also possible to create global interaction checks. For these, any interaction
 passed through the bot for either app commands or context menus will first run this check.
@@ -229,3 +241,128 @@ Alright, let's deconstruct this now:
     When checks do not pass, they will throw an error. By implementing custom error handling for these errors,
     you can create a system that will do something different when a check is failed.
     See the :ref:`Error Handling Guide <guide_error_handling>` for further information on this.
+
+.. _guide_integration_permissions:
+
+Integration Permissions
+------------------------
+
+In addition to the standard check functionality, there are a few additional functionalities that behave similarly.
+
+These options include:
+
+- The :func:`@app_commands.default_permissions() <.app_commands.default_permissions>` decorator.
+- The :func:`@app_commands.guild_only() <.app_commands.guild_only>` decorator.
+- The ``nsfw`` parameter for :func:`commands <.app_commands.command>` and :func:`context menus <.app_commands.context_menu>`.
+
+The main difference is that these features are handled by Discord itself, client-side, before the interaction is ever handed off
+to the bot to work with. However, the drawback to this is that it is not possible to perform any sort of custom error
+handling when these situations arise.
+
+.. note::
+
+    If you wish to perform error handling of these kinds of features yourself,
+    you can implement a :ref:`custom check <guide_interaction_checks_custom-check>` to do this and not utilize these
+    features.
+
+.. warning::
+
+    Due to a limitation of Discord, these features cannot be applied directly to a subcommand.
+    It must be used on the parent command of a command group.
+
+.. _guide_integration_permissions_default-perms:
+
+Default Permissions
+~~~~~~~~~~~~~~~~~~~~
+
+The :func:`default_permissions <.app_commands.default_permissions>` decorator will set the default permissions necessary
+for a user to execute a slash command or interact with a context menu.
+
+Using this means that a slash command or context menu will by default require the provided permissions.
+However, an administrator in the server will be able to override these permissions directly in the Discord client,
+without the bot ever being any the wiser.
+
+.. code-block:: python3
+
+    @app_commands.command()
+    @app_commands.default_permissions(administrator=True)
+    async def default_permissions_slash_command(interaction: discord.Interaction) -> None:
+        await interaction.response.send_message('Greetings administrator & whoever else was given permission!')
+
+    @app_commands.context_menu(name='User Context')
+    @app_commands.default_permissions(manage_messages=True, manage_guild=True)
+    async def default_permissions_slash_command(interaction: discord.Interaction, user: discord.User) -> None:
+        await interaction.response.send_message('You may or may not have those permissions!'
+
+
+In the first example above, we limit the permissions to use the slash command to administrators only by default.
+
+.. note::
+
+    Not passing any parameters to the :func:`default_permissions <.app_commands.default_permissions>` will result
+    in the default permissions being set to administrator only.
+
+In the second example, the context menu will be limited to only users with the ``delete_messages`` and ``manage_guild``
+permissions. The provided values can be any number of permissions, which can be found in :class:`.Permissions`,
+and must have a boolean value.
+
+Here is what the context menu above looks like in the Discord client, found inside of the ``Integrations`` section of
+the ``Server Settings``.
+
+.. image:: /images/guide/interactions/default_permissions_1.png
+
+When you click on the ``View`` button:
+
+.. image:: /images/guide/interactions/default_permissions_2.png
+
+As you can see from the first image, there is the option to add specific members, roles, and channels as overrides
+to the default permission list.
+
+.. _guide_integration_permissions_guild-only:
+
+Guild Only
+~~~~~~~~~~~
+
+The :func:`guild_only <.app_commands.guild_only>` decorator will mark a slash command or context menu as only being executable within a guild.
+
+
+.. code-block:: python3
+
+    # Slash Command
+    @app_commands.command()
+    @app_commands.guild_only()
+    async def guild_only_command(interaction: discord.Interaction) -> None:
+        await interaction.response.send_message('Hello fellow guildmate!')
+
+    # Context Menu
+    @app_commands.context_menu(name='Greet')
+    @app_commands.guild_only()
+    async def guild_only_context(interaction: discord.Interaction, user: discord.Member) -> None:
+        await interaction.response.send_message(f'{interaction.user.mention} greets {user.mention}!')
+
+
+In this example, both the slash command and the context menu will be unavailable outside of a guild.
+
+
+.. _guide_integration_permissions_nsfw:
+
+NSFW Only
+~~~~~~~~~~
+
+The ``nsfw`` parameter is passed directly to the decorator for a slash command or a context menu, and it indicates
+whether to limit the availability of the interaction to only NSFW channels. By default this value is ``False``,
+allowing the command to be used in all locations.
+
+.. code-block:: python3
+
+    # Slash Command
+    @app_commands.command(nsfw=True)
+    async def guild_only_command(interaction: discord.Interaction) -> None:
+        await interaction.response.send_message('This is an NSFW channel!')
+
+    # Context Menu
+    @app_commands.context_menu(nsfw=True)
+    async def guild_only_context(interaction: discord.Interaction, user: discord.Member) -> None:
+        await interaction.response.send_message(f'{user.mention} is in the NSFW channel!')
+
+Both the slash command and the context menu shown above will only be available in NSFW channels.
