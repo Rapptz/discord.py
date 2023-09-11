@@ -13,13 +13,9 @@ These checks will be used as decorators in conjunction with any :func:`@app_comm
 
 Before getting started, the examples shown below are made using both :class:`.app_commands.Command` and :class:`.app_commands.ContextMenu` methods. All of the checks present here can apply to either one. Let's take a look at each of the possible checks.
 
-..
-    TODO: Maybe add a link to the guide for creating commands as well,
-    but at the time of writing I do not see one to link to.
-
 .. note::
 
-    For more information on context menus, see the :ref:`Context Menus Guide <guide_interactions_context-menus>`.
+    For information on slash commands, see the :ref:`Slash Commands Guide <discord_slash_commands>`. For more information on context menus, see the :ref:`Context Menus Guide <guide_interactions_context-menus>`.
 
 Role Checks
 ------------
@@ -228,10 +224,8 @@ Alright, let's deconstruct this now:
     - For a :class:`.ext.commands.Bot` implementation, we can pass in our customer command tree class directly when we instantiate the bot.
 - After this, any interactions across the entire bot will first have this check run before continuing.
 
-
-..
-    TODO: Add a link to the error handling guide once it has been created.
-
 .. note::
 
-    When checks do not pass, they will throw an error. By implementing custom error handling for these errors, you can create a system that will do something different when a check is failed. See the Error Handling Guide for further information on this.
+    When checks do not pass, they will throw an error. By implementing custom error handling for these errors,
+    you can create a system that will do something different when a check is failed.
+    See the :ref:`Error Handling Guide <guide_error_handling>` for further information on this.
