@@ -314,7 +314,7 @@ class VoiceClient(VoiceProtocol):
         await self._connection.disconnect(force=force)
         self.cleanup()
 
-    async def move_to(self, channel: Optional[abc.Snowflake]) -> None:
+    async def move_to(self, channel: Optional[abc.Snowflake], *, timeout: Optional[float] = None) -> None:
         """|coro|
 
         Moves you to a different voice channel.
@@ -323,10 +323,11 @@ class VoiceClient(VoiceProtocol):
         -----------
         channel: Optional[:class:`abc.Snowflake`]
             The channel to move to. Must be a voice channel.
+        timeout: Optional[:class:`float`]
+            How long to wait for the move to complete.
         """
         await self._connection.move_to(channel)
-        # TODO: static timeout or a timeout parameter?
-        await self._connection.wait_async(30)
+        await self._connection.wait_async(timeout)
 
     def is_connected(self) -> bool:
         """Indicates if the voice client is connected to voice."""
@@ -338,6 +339,7 @@ class VoiceClient(VoiceProtocol):
         Parameters
         -----------
         timeout: Optional[:class:`float`]
+            How long to wait to be connected.
 
         Returns
         ---------
@@ -548,11 +550,7 @@ class VoiceClient(VoiceProtocol):
         packet = self._get_voice_packet(encoded_data)
         try:
             self._connection.send_packet(packet)
-        except BlockingIOError:
-            _log.warning('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
         except OSError:
-            # TODO: Should the above BlockingIOError just be replaced with OSError instead?
-            # A packet being dropped here is less important than what caused a BlockingIOError on a non-blocking socket.
-            _log.debug('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
+            _log.info('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)

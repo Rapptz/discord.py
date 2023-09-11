@@ -959,17 +959,7 @@ class DiscordVoiceWebSocket:
         _log.debug('Connecting to voice socket')
         await self.loop.sock_connect(state.socket, (state.endpoint_ip, state.voice_port))
 
-        # Only do ip discovery if the ip/port aren't cached from a previous call.
-        # TODO: Finalize comment:
-        #   I'm not entirely sure this is sound since I can imagine that there is probably a
-        #   scenario where doing this breaks on some network issue out of the lib's control
-        #   where it didn't break previously since it would do this step every time.
-        #   That said, the ip/port are cleared on disconnect() calls so it's probably fine?
-        if not (state.ip and state.port):
-            state.ip, state.port = await self.discover_ip()
-        else:
-            _log.debug('Reusing previously found ip and port: %s:%s', state.ip, state.port)
-
+        state.ip, state.port = await self.discover_ip()
         # there *should* always be at least one supported mode (xsalsa20_poly1305)
         modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
         _log.debug('received supported encryption modes: %s', ', '.join(modes))
