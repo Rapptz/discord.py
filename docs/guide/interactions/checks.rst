@@ -187,9 +187,51 @@ As an example, here is a command which only runs if a user has a certain role, `
     async def check_example(interaction: discord.Interaction):
         await interaction.send_message('Checks passed!', ephemeral=True)
 
+Global Interaction Checks
+-------------------------
+
+In addition to adding individual or combined checks onto specific app commands or context menus, it is also possible to create global interaction checks. For these, any interaction
+passed through the bot for either app commands or context menus will first run this check.
+
+In order to implement a global check, we will need to create our own subclass of the :class:`.app_commands.CommandTree` class, and implement the :meth:`.app_commands.CommandTree.interaction_check` method.
+
+.. code-block:: python3
+
+    import discord
+    from discord.ext import commands
+
+    class MyCommandTree(discord.app_commands.CommandTree):
+        async def interaction_check(self, interaction: discord.Interaction) -> bool:
+            if interaction.user.id == 1234567890:
+                return False
+
+            if interaction.guild is None:
+                return False
+
+            return True
+
+    # Using with a discord.Client implementation
+    client = discord.Client(...)
+    tree = MyCommandTree(client)
+
+    # Using with a discord.ext.commands.Bot implementation
+    bot = commands.Bot(..., tree_cls=MyCommandTree)
+
+
+Alright, let's deconstruct this now:
+
+- First of all, we create a subclass of :class:`.app_commands.CommandTree` which implements a :meth:`.app_commands.CommandTree.interaction_check` method, which takes our interaction as its sole parameter.
+- Next, we can perform any number of logical checks based on the interaction. In this example, the check verifies that the user of the interaction is *not* a specific user ID, and that the interaction is being used in a guild.
+- The return value of the interaction determines whether the check is passed. A ``False`` value will fail the check, while a ``True`` value will pass.
+- Lastly, we need to tell our bot to use this command tree.
+    - For a :class:`.Client` implementation that does not use the commands extension, we create the client instance and then instantiate the custom command tree by passing that client in.
+    - For a :class:`.ext.commands.Bot` implementation, we can pass in our customer command tree class directly when we instantiate the bot.
+- After this, any interactions across the entire bot will first have this check run before continuing.
+
+
 ..
     TODO: Add a link to the error handling guide once it has been created.
 
 .. note::
 
-    When checks do not pass, they will throw an error. By implementing custom error handling for these errors, you can create a system that will do something different when a check is failed. See the :ref:`Error Handling Guide <guide_interactions_error-handling>` for further information on this.
+    When checks do not pass, they will throw an error. By implementing custom error handling for these errors, you can create a system that will do something different when a check is failed. See the Error Handling Guide for further information on this.
