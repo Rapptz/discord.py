@@ -630,7 +630,7 @@ class AudioHandlingSink(AudioSink):
     VALIDATION_LOOP_START_TIMEOUT = 1
 
     def __init__(self):
-        self._last_sequence: Dict[int, int] = defaultdict(lambda: -1)
+        self._last_sequence: Dict[int, int] = defaultdict(lambda: -65535)
         # _buffer is not shared across threads
         self._buffers: Dict[int, List[AudioFrame]] = defaultdict(list)
         self._frame_queue = queue.Queue()
@@ -665,6 +665,8 @@ class AudioHandlingSink(AudioSink):
 
             self._validate_audio_frame(frame)
         self._is_validating.clear()
+        # Only set _done_validating if no audio was put back in the queue
+        # Otherwise the validation loop will be restarted by _empty_buffer
         if not self._empty_entire_buffer():
             self._done_validating.set()
 
@@ -678,10 +680,13 @@ class AudioHandlingSink(AudioSink):
         # after a specific amount of time
 
         last_sequence = self._last_sequence[frame.ssrc]
-        if frame.sequence <= last_sequence:
+        if last_sequence >= 65000 and frame.sequence <= 1000:
+            self._last_sequence[frame.ssrc] = last_sequence = last_sequence - 65536
+
+        elif frame.sequence <= last_sequence:
             return
 
-        if last_sequence == -1 or frame.sequence == last_sequence + 1:
+        if last_sequence == -65535 or frame.sequence == last_sequence + 1:
             self._last_sequence[frame.ssrc] = frame.sequence
             self.on_valid_audio(frame)
             self._empty_buffer(frame.ssrc)
@@ -698,12 +703,16 @@ class AudioHandlingSink(AudioSink):
             self._empty_buffer(frame.ssrc)
 
     def _empty_entire_buffer(self) -> bool:
+        # Returns true if any calls to _empty_buffer return true
+
         result = False
         for ssrc in self._buffers.keys():
             result = result or self._empty_buffer(ssrc)
         return result
 
     def _empty_buffer(self, ssrc) -> bool:
+        # Returns true when frames have been put back in the queue
+
         buffer = self._buffers[ssrc]
         if len(buffer) == 0:
             return False
@@ -762,7 +771,9 @@ class AudioFileSink(AudioHandlingSink):
         Indicates whether cleanup has been called.
     """
 
-    __slots__ = ("file_type", "output_dir", "output_files", "done", "_clean_lock")
+    VALIDATION_WAIT_TIMEOUT = 1
+
+    __slots__ = ("file_type", "output_dir", "output_files", "done", "_clean_lock", "_convert_lock", "_is_converted")
 
     def __init__(self, file_type: Callable[[str, int], 'AudioFile'], output_dir: str = "."):
         super().__init__()
@@ -773,6 +784,8 @@ class AudioFileSink(AudioHandlingSink):
         self.output_files: Dict[int, AudioFile] = {}
         self.done: bool = False
         self._clean_lock: threading.Lock = threading.Lock()
+        self._convert_lock: threading.Lock = threading.Lock()
+        self._is_converted: asyncio.Event = asyncio.Event()
 
     def on_valid_audio(self, frame: AudioFrame) -> None:
         """Takes an audio frame and passes it to a :class:`AudioFile` object. If
@@ -810,22 +823,45 @@ class AudioFileSink(AudioHandlingSink):
         return
 
     def cleanup(self) -> None:
-        """Calls cleanup on all :class:`AudioFile` objects."""
+        """Waits a maximum of `VALIDATION_WAIT_TIMEOUT` for packet validation to finish and
+        then calls `cleanup` on all :class:`AudioFile` objects.
+
+        Sets `done` to True after calling all the cleanup functions.
+        """
+        self._done_validating.wait(self.VALIDATION_WAIT_TIMEOUT)
         self._clean_lock.acquire()
         if self.done:
             return
-        self._done_validating.wait()
-        self.done = True
         for file in self.output_files.values():
             file.cleanup()
+        self.done = True
         self._clean_lock.release()
 
+    # TODO: implement different options of doing the conversion (in terms of threads n stuff)
+    # TODO: make vc.stop_listening asynchronous and also check other stuff in the library for possible bottlenecks
     def convert_files(self) -> None:
-        """Calls cleanup if it hasn't already been called and then calls convert on all :class:`AudioFile` objects."""
+        """Calls cleanup if it hasn't already been called and
+        then creates a thread to call convert on all :class:`AudioFile` objects.
+
+        If the function will immediately return and :func:`AudioFileSink.wait_for_convert`
+        can be used to wait for the conversion to finish. It can also be checked with
+        :func:`AudioFileSink.is_convert_finished`
+
+        If the function is called while conversion is still in process, it will
+        simply return without doing anything.
+        """
+        if not self._convert_lock.acquire(blocking=False):
+            return
         if not self.done:
             self.cleanup()
-        for file in self.output_files.values():
-            file.convert(self._create_name(file))
+
+        def do_convert():
+            for file in self.output_files.values():
+                file.convert(self._create_name(file))
+            self._convert_lock.release()
+            self._is_converted.set()
+
+        threading.Thread(target=do_convert).start()
 
     def _create_name(self, file: 'AudioFile') -> str:
         if file.user is None:
@@ -834,6 +870,14 @@ class AudioFileSink(AudioHandlingSink):
             return f"audio-{file.user.id}-{file.ssrc}"
         else:
             return f"audio-{file.user.name}#{file.user.discriminator}-{file.ssrc}"
+
+    def is_convert_finished(self):
+        """Whether convert_files has been called and all the converts have finished"""
+        return self._is_converted.is_set()
+
+    async def wait_for_convert(self):
+        """Waits till convert_files is called and all the converts finished"""
+        await self._is_converted.wait()
 
 
 class AudioFile:
@@ -1158,7 +1202,7 @@ class AudioReceiver(threading.Thread):
                 _log.exception('Calling the after function failed.', exc_info=exc)
 
     def _cleanup_listen(self) -> None:
-        self.sink.cleanup()
+        threading.Thread(target=self.sink.cleanup).start()
         self._call_after()
         self.sink = None
         self._clean.set()
