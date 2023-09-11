@@ -869,7 +869,9 @@ The ``ext.commands`` extension makes this easy:
 
     # requires the `message_content` intent to work!
 
-    bot = commands.Bot(command_prefix="?", intents=discord.Intents.default())
+    intents = discord.Intents.default()
+    intents.message_content = True
+    bot = commands.Bot(command_prefix="?", intents=intents)
 
     @bot.command()
     @commands.is_owner()
@@ -926,7 +928,7 @@ A more complex command that offers higher granularity using arguments:
 
         await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.")
 
-If your bot isn't able to use the message content intent, due to verificaiton requirements or otherwise,
+If your bot isn't able to use the message content intent, due to verification requirements or otherwise,
 bots can still read message content for direct-messages and for messages that mention the bot.
 
 :func:`.commands.when_mentioned` can be used to apply a mention prefix to your bot:
