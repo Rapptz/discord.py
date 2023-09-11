@@ -4,14 +4,22 @@
 
 .. _guide_interactions_checks:
 
-Checks
-=======
+Interaction Checks Guide
+=========================
 
 Checks are a feature that allows you to set requirements in order for a command to be executed. This can include things like requiring administrator permissions, requiring a user to have a role, making sure that the bot has necessary permissions to execute a task, adding a cooldown to a command, creating a custom check function, or any combination of these.
 
 These checks will be used as decorators in conjunction with any :func:`@app_commands.command <.app_commands.command>` or :func:`@app_commands.context_menu <.app_commands.context_menu>` decorators.
 
 Before getting started, the examples shown below are made using both :class:`.app_commands.Command` and :class:`.app_commands.ContextMenu` methods. All of the checks present here can apply to either one. Let's take a look at each of the possible checks.
+
+..
+    TODO: Maybe add a link to the guide for creating commands as well,
+    but at the time of writing I do not see one to link to.
+
+.. note::
+
+    For more information on context menus, see the :ref:`Context Menus Guide <guide_interactions_context-menus>`.
 
 Role Checks
 ------------
@@ -179,6 +187,9 @@ As an example, here is a command which only runs if a user has a certain role, `
     async def check_example(interaction: discord.Interaction):
         await interaction.send_message('Checks passed!', ephemeral=True)
 
+..
+    TODO: Add a link to the error handling guide once it has been created.
+
 .. note::
 
-    When checks do not pass, they will throw an error. By implementing custom error handling for these errors, you can create a system that will do something different when a check is failed. See the :ref:`error handling guide <guide_interactions_error-handling>` for further information on this.
+    When checks do not pass, they will throw an error. By implementing custom error handling for these errors, you can create a system that will do something different when a check is failed. See the :ref:`Error Handling Guide <guide_interactions_error-handling>` for further information on this.
