@@ -72,10 +72,7 @@ For example, the following code responds with "meow" on invocation:
         await interaction.response.send_message("meow")
 
 Functions of this pattern are called callbacks, since their execution is
-relinquished to the library to be called later.
-
-Callbacks always have one parameter, ``interaction``,
-representing the :class:`discord.Interaction` that is received when the command is invoked.
+left to the library to be called later.
 
 There are two main decorators to use when creating a command:
 
@@ -112,18 +109,18 @@ Some information is logically inferred from the function to populate the slash c
 
 To change them to something else, ``tree.command()`` accepts ``name`` and ``description`` as keyword arguments.
 
-If a description isn't provided, an ellipsis "..." is used instead.
-
 .. code-block:: python3
 
     @client.tree.command(name="woof", description="Woof woof woof")
     async def meow(interaction: discord.Interaction):
         pass
 
+If a description isn't provided, an ellipsis "..." is used instead.
+
 Interaction
 ++++++++++++
 
-App commands always reserve the first parameter for an :class:`~discord.Interaction`,
+As shown above, app commands always keep the first parameter for an :class:`~discord.Interaction`,
 a Discord model used for both app commands and UI message components.
 
 When an interaction is created on command invoke, some information about the surrounding context is given, such as:
@@ -159,9 +156,9 @@ For example, to send a deferred ephemeral message:
 
         weathers = ["clear", "cloudy", "rainy", "stormy"]
         await asyncio.sleep(5) # an expensive operation... (no more than 15 minutes!)
-        result = random.choice(weathers)
+        forecast = random.choice(weathers)
 
-        await interaction.followup.send(f"the weather today is {result}!")
+        await interaction.followup.send(f"the weather today is {forecast}!")
 
 Syncing
 ++++++++
@@ -870,7 +867,9 @@ The ``ext.commands`` extension makes this easy:
 
     from discord.ext import commands
 
-    bot = commands.Bot("?", intents=discord.Intents.default())
+    # requires the `message_content` intent to work!
+
+    bot = commands.Bot(command_prefix="?", intents=discord.Intents.default())
 
     @bot.command()
     @commands.is_owner()
@@ -926,3 +925,15 @@ A more complex command that offers higher granularity using arguments:
                 ret += 1
 
         await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.")
+
+If your bot isn't able to use the message content intent, due to verificaiton requirements or otherwise,
+bots can still read message content for direct-messages and for messages that mention the bot.
+
+:func:`.commands.when_mentioned` can be used to apply a mention prefix to your bot:
+
+.. code-block:: python3
+
+    bot = commands.Bot(
+        command_prefix=commands.when_mentioned,
+        intents=discord.Intents.default()
+    )
