@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Type, TypeVar, Optional
+from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Optional
 from .flags import BaseFlags, flag_value, fill_with_flags, alias_flag_value
 
 __all__ = (
@@ -82,6 +82,34 @@ class Permissions(BaseFlags):
         .. describe:: x > y
 
              Checks if a permission is a strict superset of another permission.
+
+        .. describe:: x | y, x |= y
+
+            Returns a Permissions instance with all enabled flags from
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x & y, x &= y
+
+            Returns a Permissions instance with only flags enabled on
+            both x and y.
+
+            .. versionadded:: 2.0
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns a Permissions instance with only flags enabled on
+            only one of x or y, not on both.
+
+            .. versionadded:: 2.0
+
+        .. describe:: ~x
+
+            Returns a Permissions instance with all flags inverted from x.
+
+            .. versionadded:: 2.0
+
         .. describe:: hash(x)
 
                Return the permission's hash.
@@ -90,6 +118,12 @@ class Permissions(BaseFlags):
                Returns an iterator of ``(perm, value)`` pairs. This allows it
                to be, for example, constructed as a dict or a list of pairs.
                Note that aliases are not shown.
+
+        .. describe:: bool(b)
+
+            Returns whether the permissions object has any permissions set to ``True``.
+
+            .. versionadded:: 2.0
 
     Attributes
     -----------
@@ -107,9 +141,12 @@ class Permissions(BaseFlags):
 
         self.value = permissions
         for key, value in kwargs.items():
-            if key not in self.VALID_FLAGS:
-                raise TypeError(f'{key!r} is not a valid permission name.')
-            setattr(self, key, value)
+            try:
+                flag = self.VALID_FLAGS[key]
+            except KeyError:
+                raise TypeError(f'{key!r} is not a valid permission name.') from None
+            else:
+                self._set_flag(flag, value)
 
     def is_subset(self, other: Permissions) -> bool:
         """Returns ``True`` if self has the same or fewer permissions as other."""
@@ -149,7 +186,27 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         permissions set to ``True``.
         """
-        return cls(0b11111111111111111111111111111111111111111)
+        # Some of these are 0 because we don't want to set unnecessary bits
+        return cls(0b0000_0000_0000_0000_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
+
+    @classmethod
+    def _timeout_mask(cls) -> int:
+        p = cls.all()
+        p.view_channel = False
+        p.read_message_history = False
+        return ~p.value
+
+    @classmethod
+    def _dm_permissions(cls) -> Self:
+        base = cls.text()
+        base.read_messages = True
+        base.send_tts_messages = False
+        base.manage_messages = False
+        base.create_private_threads = False
+        base.create_public_threads = False
+        base.manage_threads = False
+        base.send_messages_in_threads = False
+        return base
 
     @classmethod
     def all_channel(cls) -> Self:
@@ -157,7 +214,7 @@ class Permissions(BaseFlags):
         ``True`` and the guild-specific ones set to ``False``. The guild-specific
         permissions are currently:
 
-        - :attr:`manage_emojis`
+        - :attr:`manage_expressions`
         - :attr:`view_audit_log`
         - :attr:`view_guild_insights`
         - :attr:`manage_guild`
@@ -166,16 +223,20 @@ class Permissions(BaseFlags):
         - :attr:`kick_members`
         - :attr:`ban_members`
         - :attr:`administrator`
+        - :attr:`create_expressions`
 
         .. versionchanged:: 1.7
-           Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_slash_commands` permissions.
+           Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_application_commands` permissions.
 
         .. versionchanged:: 2.0
            Added :attr:`create_public_threads`, :attr:`create_private_threads`, :attr:`manage_threads`,
            :attr:`use_external_stickers`, :attr:`send_messages_in_threads` and
            :attr:`request_to_speak` permissions.
+
+        .. versionchanged:: 2.3
+           Added :attr:`use_soundboard`, :attr:`create_expressions` permissions.
         """
-        return cls(0b111110110110011111101111111111101010001)
+        return cls(0b0000_0000_0000_0000_0000_0100_0111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
 
     @classmethod
     def general(cls) -> Self:
@@ -187,8 +248,11 @@ class Permissions(BaseFlags):
            permissions :attr:`administrator`, :attr:`create_instant_invite`, :attr:`kick_members`,
            :attr:`ban_members`, :attr:`change_nickname` and :attr:`manage_nicknames` are
            no longer part of the general permissions.
+
+        .. versionchanged:: 2.3
+            Added :attr:`create_expressions` permission.
         """
-        return cls(0b01110000000010000000010010110000)
+        return cls(0b0000_0000_0000_0000_0000_1000_0000_0000_0111_0000_0000_1000_0000_0100_1011_0000)
 
     @classmethod
     def membership(cls) -> Self:
@@ -197,7 +261,7 @@ class Permissions(BaseFlags):
 
         .. versionadded:: 1.7
         """
-        return cls(0b10000000000001100000000000000000000000111)
+        return cls(0b0000_0000_0000_0000_0000_0001_0000_0000_0000_1100_0000_0000_0000_0000_0000_0111)
 
     @classmethod
     def text(cls) -> Self:
@@ -206,19 +270,22 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 1.7
            Permission :attr:`read_messages` is no longer part of the text permissions.
-           Added :attr:`use_slash_commands` permission.
+           Added :attr:`use_application_commands` permission.
 
         .. versionchanged:: 2.0
            Added :attr:`create_public_threads`, :attr:`create_private_threads`, :attr:`manage_threads`,
            :attr:`send_messages_in_threads` and :attr:`use_external_stickers` permissions.
+
+        .. versionchanged:: 2.3
+            Added :attr:`send_voice_messages` permission.
         """
-        return cls(0b111110010000000000001111111100001000000)
+        return cls(0b0000_0000_0000_0000_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
 
     @classmethod
     def voice(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Voice" permissions from the official Discord UI set to ``True``."""
-        return cls(0b1000000000000011111100000000001100000000)
+        return cls(0b0000_0000_0000_0000_0010_0100_1000_0000_0000_0011_1111_0000_0000_0011_0000_0000)
 
     @classmethod
     def stage(cls) -> Self:
@@ -231,12 +298,49 @@ class Permissions(BaseFlags):
 
     @classmethod
     def stage_moderator(cls) -> Self:
-        """A factory method that creates a :class:`Permissions` with all
-        "Stage Moderator" permissions from the official Discord UI set to ``True``.
+        """A factory method that creates a :class:`Permissions` with all permissions
+        for stage moderators set to ``True``. These permissions are currently:
+
+        - :attr:`manage_channels`
+        - :attr:`mute_members`
+        - :attr:`move_members`
 
         .. versionadded:: 1.7
+
+        .. versionchanged:: 2.0
+            Added :attr:`manage_channels` permission and removed :attr:`request_to_speak` permission.
         """
-        return cls(0b100000001010000000000000000000000)
+        return cls(0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0001_0100_0000_0000_0000_0001_0000)
+
+    @classmethod
+    def elevated(cls) -> Self:
+        """A factory method that creates a :class:`Permissions` with all permissions
+        that require 2FA set to ``True``. These permissions are currently:
+
+        - :attr:`kick_members`
+        - :attr:`ban_members`
+        - :attr:`administrator`
+        - :attr:`manage_channels`
+        - :attr:`manage_guild`
+        - :attr:`manage_messages`
+        - :attr:`manage_roles`
+        - :attr:`manage_webhooks`
+        - :attr:`manage_expressions`
+        - :attr:`manage_threads`
+        - :attr:`moderate_members`
+
+        .. versionadded:: 2.0
+        """
+        return cls(0b0000_0000_0000_0000_0000_0001_0000_0100_0111_0000_0000_0000_0010_0000_0011_1110)
+
+    @classmethod
+    def events(cls) -> Self:
+        """A factory method that creates a :class:`Permissions` with all
+        "Events" permissions from the official Discord UI set to ``True``.
+
+        .. versionadded:: 2.4
+        """
+        return cls(0b0000_0000_0000_0000_0001_0000_0000_0010_0000_0000_0000_0000_0000_0000_0000_0000)
 
     @classmethod
     def advanced(cls) -> Self:
@@ -260,8 +364,9 @@ class Permissions(BaseFlags):
             A list of key/value pairs to bulk update permissions with.
         """
         for key, value in kwargs.items():
-            if key in self.VALID_FLAGS:
-                setattr(self, key, value)
+            flag = self.VALID_FLAGS.get(key)
+            if flag is not None:
+                self._set_flag(flag, value)
 
     def handle_overwrite(self, allow: int, deny: int) -> None:
         # Basically this is what's happening here.
@@ -276,7 +381,7 @@ class Permissions(BaseFlags):
         # So 0000 OP2 0101 -> 0101
         # The OP is base  & ~denied.
         # The OP2 is base | allowed.
-        self.value = (self.value & ~deny) | allow
+        self.value: int = (self.value & ~deny) | allow
 
     @flag_value
     def create_instant_invite(self) -> int:
@@ -469,20 +574,28 @@ class Permissions(BaseFlags):
         return 1 << 29
 
     @flag_value
-    def manage_emojis(self) -> int:
-        """:class:`bool`: Returns ``True`` if a user can create, edit, or delete emojis."""
+    def manage_expressions(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can edit or delete emojis, stickers, and soundboard sounds.
+
+        .. versionadded:: 2.3
+        """
         return 1 << 30
 
-    @make_permission_alias('manage_emojis')
+    @make_permission_alias('manage_expressions')
+    def manage_emojis(self) -> int:
+        """:class:`bool`: An alias for :attr:`manage_expressions`."""
+        return 1 << 30
+
+    @make_permission_alias('manage_expressions')
     def manage_emojis_and_stickers(self) -> int:
-        """:class:`bool`: An alias for :attr:`manage_emojis`.
+        """:class:`bool`: An alias for :attr:`manage_expressions`.
 
         .. versionadded:: 2.0
         """
         return 1 << 30
 
     @flag_value
-    def use_slash_commands(self) -> int:
+    def use_application_commands(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can use slash commands.
 
         .. versionadded:: 1.7
@@ -568,6 +681,46 @@ class Permissions(BaseFlags):
         .. versionadded:: 2.0
         """
         return 1 << 40
+
+    @flag_value
+    def use_soundboard(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can use the soundboard.
+
+        .. versionadded:: 2.3
+        """
+        return 1 << 42
+
+    @flag_value
+    def create_expressions(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can create emojis, stickers, and soundboard sounds.
+
+        .. versionadded:: 2.3
+        """
+        return 1 << 43
+
+    @flag_value
+    def create_events(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can create guild events.
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 44
+
+    @flag_value
+    def use_external_sounds(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can use sounds from other guilds.
+
+        .. versionadded:: 2.3
+        """
+        return 1 << 45
+
+    @flag_value
+    def send_voice_messages(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can send voice messages.
+
+        .. versionadded:: 2.3
+        """
+        return 1 << 46
 
 
 def _augment_from_permissions(cls):
@@ -670,9 +823,10 @@ class PermissionOverwrite:
         manage_roles: Optional[bool]
         manage_permissions: Optional[bool]
         manage_webhooks: Optional[bool]
+        manage_expressions: Optional[bool]
         manage_emojis: Optional[bool]
         manage_emojis_and_stickers: Optional[bool]
-        use_slash_commands: Optional[bool]
+        use_application_commands: Optional[bool]
         request_to_speak: Optional[bool]
         manage_events: Optional[bool]
         manage_threads: Optional[bool]
@@ -681,6 +835,13 @@ class PermissionOverwrite:
         send_messages_in_threads: Optional[bool]
         external_stickers: Optional[bool]
         use_external_stickers: Optional[bool]
+        use_embedded_activities: Optional[bool]
+        moderate_members: Optional[bool]
+        use_soundboard: Optional[bool]
+        use_external_sounds: Optional[bool]
+        send_voice_messages: Optional[bool]
+        create_expressions: Optional[bool]
+        create_events: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}
@@ -691,7 +852,7 @@ class PermissionOverwrite:
 
             setattr(self, key, value)
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, PermissionOverwrite) and self._values == other._values
 
     def _set(self, key: str, value: Optional[bool]) -> None:
@@ -744,7 +905,7 @@ class PermissionOverwrite:
         """
         return len(self._values) == 0
 
-    def update(self, **kwargs: bool) -> None:
+    def update(self, **kwargs: Optional[bool]) -> None:
         r"""Bulk updates this permission overwrite object.
 
         Allows you to set multiple attributes by using keyword

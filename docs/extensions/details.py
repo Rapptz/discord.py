@@ -52,4 +52,4 @@ def setup(app):
     app.add_node(details, html=(visit_details_node, depart_details_node))
     app.add_node(summary, html=(visit_summary_node, depart_summary_node))
     app.add_directive('details', DetailsDirective)
-
+    return {'parallel_read_safe': True}

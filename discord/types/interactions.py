@@ -25,9 +25,9 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
+from typing_extensions import NotRequired
 
-
-from .channel import ChannelType, ChannelTypeWithoutThread, ThreadMetadata
+from .channel import ChannelTypeWithoutThread, ThreadMetadata, GuildChannel, InteractionDMChannel, GroupDMChannel
 from .threads import ThreadType
 from .member import Member
 from .message import Attachment
@@ -120,13 +120,11 @@ ApplicationCommandInteractionDataOption = Union[
 ]
 
 
-class _BaseApplicationCommandInteractionDataOptional(TypedDict, total=False):
-    resolved: ResolvedData
-
-
-class _BaseApplicationCommandInteractionData(_BaseApplicationCommandInteractionDataOptional):
+class _BaseApplicationCommandInteractionData(TypedDict):
     id: Snowflake
     name: str
+    resolved: NotRequired[ResolvedData]
+    guild_id: NotRequired[Snowflake]
 
 
 class ChatInputApplicationCommandInteractionData(_BaseApplicationCommandInteractionData, total=False):
@@ -158,12 +156,13 @@ class _BaseMessageComponentInteractionData(TypedDict):
 
 
 class ButtonMessageComponentInteractionData(_BaseMessageComponentInteractionData):
-    type: Literal[2]
+    component_type: Literal[2]
 
 
 class SelectMessageComponentInteractionData(_BaseMessageComponentInteractionData):
-    component_type: Literal[3]
+    component_type: Literal[3, 5, 6, 7, 8]
     values: List[str]
+    resolved: NotRequired[ResolvedData]
 
 
 MessageComponentInteractionData = Union[ButtonMessageComponentInteractionData, SelectMessageComponentInteractionData]
@@ -188,7 +187,7 @@ ModalSubmitComponentInteractionData = Union[ModalSubmitActionRowInteractionData,
 
 class ModalSubmitInteractionData(TypedDict):
     custom_id: str
-    components: List[ModalSubmitActionRowInteractionData]
+    components: List[ModalSubmitComponentInteractionData]
 
 
 InteractionData = Union[
@@ -198,16 +197,17 @@ InteractionData = Union[
 ]
 
 
-class _BaseInteractionOptional(TypedDict, total=False):
-    guild_id: Snowflake
-    channel_id: Snowflake
-
-
-class _BaseInteraction(_BaseInteractionOptional):
+class _BaseInteraction(TypedDict):
     id: Snowflake
     application_id: Snowflake
     token: str
     version: Literal[1]
+    guild_id: NotRequired[Snowflake]
+    channel_id: NotRequired[Snowflake]
+    channel: Union[GuildChannel, InteractionDMChannel, GroupDMChannel]
+    app_permissions: NotRequired[str]
+    locale: NotRequired[str]
+    guild_locale: NotRequired[str]
 
 
 class PingInteraction(_BaseInteraction):
@@ -237,3 +237,4 @@ class MessageInteraction(TypedDict):
     type: InteractionType
     name: str
     user: User
+    member: NotRequired[Member]

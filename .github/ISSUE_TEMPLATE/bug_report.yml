@@ -64,7 +64,7 @@ body:
     attributes:
       label: Checklist
       description: >
-        Let's make sure you've properly done due dilligence when reporting this issue!
+        Let's make sure you've properly done due diligence when reporting this issue!
       options:
         - label: I have searched the open issues for duplicates.
           required: true

@@ -9,7 +9,7 @@ const copy = async (obj) => {
       icon.textContent = COPIED;
       setTimeout(() => (icon.textContent = COPY), 2500);
     },
-    (r) => alert('Could not copy codeblock:\n' + r.toString())
+    (r) => alert(DPY_TRANSLATIONS.copy_code_error + '\n' + r.toString())
   );
 };
 
@@ -21,8 +21,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let copyEl = document.createElement("span");
     copyEl.addEventListener('click', () => copy(codeblock));
     copyEl.className = "copy";
-    copyEl.setAttribute("aria-label", "Copy Code");
-    copyEl.setAttribute("title", "Copy Code");
+    copyEl.setAttribute("aria-label", DPY_TRANSLATIONS.copy_code);
+    copyEl.setAttribute("title", DPY_TRANSLATIONS.copy_code);
 
     let copyIcon = document.createElement("span");
     copyIcon.className = "material-icons";

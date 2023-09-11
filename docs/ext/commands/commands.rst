@@ -11,6 +11,13 @@ how you can arbitrarily nest groups and commands to have a rich sub-command syst
 Commands are defined by attaching it to a regular Python function. The command is then invoked by the user using a similar
 signature to the Python function.
 
+.. warning::
+
+    You must have access to the :attr:`~discord.Intents.message_content` intent for the commands extension
+    to function. This must be set both in the developer portal and within your code.
+
+    Failure to do this will result in your bot not responding to any of your commands.
+
 For example, in the given command definition:
 
 .. code-block:: python3
@@ -33,9 +40,13 @@ as seen in the example above. The second is using the :func:`~ext.commands.comma
 
 Essentially, these two are equivalent: ::
 
+    import discord
     from discord.ext import commands
 
-    bot = commands.Bot(command_prefix='$')
+    intents = discord.Intents.default()
+    intents.message_content = True
+
+    bot = commands.Bot(command_prefix='$', intents=intents)
 
     @bot.command()
     async def test(ctx):
@@ -171,9 +182,9 @@ As seen earlier, every command must take at least a single parameter, called the
 This parameter gives you access to something called the "invocation context". Essentially all the information you need to
 know how the command was executed. It contains a lot of useful information:
 
-- :attr:`.Context.guild` to fetch the :class:`Guild` of the command, if any.
-- :attr:`.Context.message` to fetch the :class:`Message` of the command.
-- :attr:`.Context.author` to fetch the :class:`Member` or :class:`User` that called the command.
+- :attr:`.Context.guild` returns the :class:`Guild` of the command, if any.
+- :attr:`.Context.message` returns the :class:`Message` of the command.
+- :attr:`.Context.author` returns the :class:`Member` or :class:`User` that called the command.
 - :meth:`.Context.send` to send a message to the channel the command was used in.
 
 The context implements the :class:`abc.Messageable` interface, so anything you can do on a :class:`abc.Messageable` you
@@ -383,8 +394,8 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`TextChannel`
 - :class:`VoiceChannel`
 - :class:`StageChannel` (since v1.7)
-- :class:`StoreChannel` (since v1.7)
 - :class:`CategoryChannel`
+- :class:`ForumChannel` (since v2.0)
 - :class:`Invite`
 - :class:`Guild` (since v1.7)
 - :class:`Role`
@@ -393,6 +404,8 @@ A lot of discord models work out of the gate as a parameter:
 - :class:`Emoji`
 - :class:`PartialEmoji`
 - :class:`Thread` (since v2.0)
+- :class:`GuildSticker` (since v2.0)
+- :class:`ScheduledEvent` (since v2.0)
 
 Having any of these set as the converter will intelligently convert the argument to the appropriate target type you
 specify.
@@ -421,9 +434,9 @@ converter is given below:
 +--------------------------+-------------------------------------------------+
 | :class:`StageChannel`    | :class:`~ext.commands.StageChannelConverter`    |
 +--------------------------+-------------------------------------------------+
-| :class:`StoreChannel`    | :class:`~ext.commands.StoreChannelConverter`    |
-+--------------------------+-------------------------------------------------+
 | :class:`CategoryChannel` | :class:`~ext.commands.CategoryChannelConverter` |
++--------------------------+-------------------------------------------------+
+| :class:`ForumChannel`    | :class:`~ext.commands.ForumChannelConverter`    |
 +--------------------------+-------------------------------------------------+
 | :class:`Invite`          | :class:`~ext.commands.InviteConverter`          |
 +--------------------------+-------------------------------------------------+
@@ -440,6 +453,10 @@ converter is given below:
 | :class:`PartialEmoji`    | :class:`~ext.commands.PartialEmojiConverter`    |
 +--------------------------+-------------------------------------------------+
 | :class:`Thread`          | :class:`~ext.commands.ThreadConverter`          |
++--------------------------+-------------------------------------------------+
+| :class:`GuildSticker`    | :class:`~ext.commands.GuildStickerConverter`    |
++--------------------------+-------------------------------------------------+
+| :class:`ScheduledEvent`  | :class:`~ext.commands.ScheduledEventConverter`  |
 +--------------------------+-------------------------------------------------+
 
 By providing the converter it allows us to use them as building blocks for another converter:
@@ -517,6 +534,8 @@ resumes handling, which in this case would be to pass it into the ``liquid`` par
 typing.Literal
 ^^^^^^^^^^^^^^^^
 
+.. versionadded:: 2.0
+
 A :data:`typing.Literal` is a special type hint that requires the passed parameter to be equal to one of the listed values
 after being converted to the same type. For example, given the following:
 
@@ -534,6 +553,30 @@ The ``buy_sell`` parameter must be either the literal string ``"buy"`` or ``"sel
 :exc:`~.ext.commands.BadLiteralArgument`. Any literal values can be mixed and matched within the same :data:`typing.Literal` converter.
 
 Note that ``typing.Literal[True]`` and ``typing.Literal[False]`` still follow the :class:`bool` converter rules.
+
+typing.Annotated
+^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 2.0
+
+A :data:`typing.Annotated` is a special type introduced in Python 3.9 that allows the type checker to see one type, but allows the library to see another type. This is useful for appeasing the type checker for complicated converters. The second parameter of ``Annotated`` must be the converter that the library should use.
+
+For example, given the following:
+
+.. code-block:: python3
+
+    from typing import Annotated
+
+    @bot.command()
+    async def fun(ctx, arg: Annotated[str, lambda s: s.upper()]):
+        await ctx.send(arg)
+
+The type checker will see ``arg`` as a regular :class:`str` but the library will know you wanted to change the input into all upper-case.
+
+.. note::
+
+    For Python versions below 3.9, it is recommended to install the ``typing_extensions`` library and import ``Annotated`` from there.
+
 
 Greedy
 ^^^^^^^^
@@ -574,8 +617,9 @@ When mixed with the :data:`typing.Optional` converter you can provide simple and
                        delete_days: typing.Optional[int] = 0, *,
                        reason: str):
         """Mass bans members with an optional delete_days parameter"""
+        delete_seconds = delete_days * 86400 # one day
         for member in members:
-            await member.ban(delete_message_days=delete_days, reason=reason)
+            await member.ban(delete_message_seconds=delete_seconds, reason=reason)
 
 
 This command can be invoked any of the following ways:
@@ -599,6 +643,85 @@ This command can be invoked any of the following ways:
 
     To help aid with some parsing ambiguities, :class:`str`, ``None``, :data:`typing.Optional` and
     :class:`~ext.commands.Greedy` are forbidden as parameters for the :class:`~ext.commands.Greedy` converter.
+
+
+discord.Attachment
+^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 2.0
+
+The :class:`discord.Attachment` converter is a special converter that retrieves an attachment from the uploaded attachments on a message. This converter *does not* look at the message content at all and just the uploaded attachments.
+
+Consider the following example:
+
+.. code-block:: python3
+
+    import discord
+
+    @bot.command()
+    async def upload(ctx, attachment: discord.Attachment):
+        await ctx.send(f'You have uploaded <{attachment.url}>')
+
+
+When this command is invoked, the user must directly upload a file for the command body to be executed. When combined with the :data:`typing.Optional` converter, the user does not have to provide an attachment.
+
+.. code-block:: python3
+
+    import typing
+    import discord
+
+    @bot.command()
+    async def upload(ctx, attachment: typing.Optional[discord.Attachment]):
+        if attachment is None:
+            await ctx.send('You did not upload anything!')
+        else:
+            await ctx.send(f'You have uploaded <{attachment.url}>')
+
+
+This also works with multiple attachments:
+
+.. code-block:: python3
+
+    import typing
+    import discord
+
+    @bot.command()
+    async def upload_many(
+        ctx,
+        first: discord.Attachment,
+        second: typing.Optional[discord.Attachment],
+    ):
+        if second is None:
+            files = [first.url]
+        else:
+            files = [first.url, second.url]
+
+        await ctx.send(f'You uploaded: {" ".join(files)}')
+
+
+In this example the user must provide at least one file but the second one is optional.
+
+As a special case, using :class:`~ext.commands.Greedy` will return the remaining attachments in the message, if any.
+
+.. code-block:: python3
+
+    import discord
+    from discord.ext import commands
+
+    @bot.command()
+    async def upload_many(
+        ctx,
+        first: discord.Attachment,
+        remaining: commands.Greedy[discord.Attachment],
+    ):
+        files = [first.url]
+        files.extend(a.url for a in remaining)
+        await ctx.send(f'You uploaded: {" ".join(files)}')
+
+
+Note that using a :class:`discord.Attachment` converter after a :class:`~ext.commands.Greedy` of :class:`discord.Attachment` will always fail since the greedy had already consumed the remaining attachments.
+
+If an attachment is expected but not given, then :exc:`~ext.commands.MissingRequiredAttachment` is raised to the error handlers.
 
 .. _ext_commands_flag_converter:
 
@@ -680,6 +803,10 @@ In order to customise the flag syntax we also have a few options that can be pas
     a command line parser. The syntax is mainly inspired by Discord's search bar input and as a result
     all flags need a corresponding value.
 
+Flag converters will only raise :exc:`~ext.commands.FlagError` derived exceptions. If an error is raised while
+converting a flag, :exc:`~ext.commands.BadFlagArgument` is raised instead and the original exception
+can be accessed with the :attr:`~ext.commands.BadFlagArgument.original` attribute.
+
 The flag converter is similar to regular commands and allows you to use most types of converters
 (with the exception of :class:`~ext.commands.Greedy`) as the type annotation. Some extra support is added for specific
 annotations as described below.
@@ -756,6 +883,129 @@ typing.Dict
 
 A :class:`dict` annotation is functionally equivalent to ``List[Tuple[K, V]]`` except with the return type
 given as a :class:`dict` rather than a :class:`list`.
+
+
+Hybrid Command Interaction
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When used as a hybrid command, the parameters are flattened into different parameters for the application command. For example, the following converter:
+
+.. code-block:: python3
+
+    class BanFlags(commands.FlagConverter):
+        member: discord.Member
+        reason: str
+        days: int = 1
+
+
+    @commands.hybrid_command()
+    async def ban(ctx, *, flags: BanFlags):
+        ...
+
+Would be equivalent to an application command defined as this:
+
+.. code-block:: python3
+
+    @commands.hybrid_command()
+    async def ban(ctx, member: discord.Member, reason: str, days: int = 1):
+        ...
+
+This means that decorators that refer to a parameter by name will use the flag name instead:
+
+.. code-block:: python3
+
+    class BanFlags(commands.FlagConverter):
+        member: discord.Member
+        reason: str
+        days: int = 1
+
+
+    @commands.hybrid_command()
+    @app_commands.describe(
+        member='The member to ban',
+        reason='The reason for the ban',
+        days='The number of days worth of messages to delete',
+    )
+    async def ban(ctx, *, flags: BanFlags):
+        ...
+
+For ease of use, the :func:`~ext.commands.flag` function accepts a ``description`` keyword argument to allow you to pass descriptions inline:
+
+.. code-block:: python3
+
+    class BanFlags(commands.FlagConverter):
+        member: discord.Member = commands.flag(description='The member to ban')
+        reason: str = commands.flag(description='The reason for the ban')
+        days: int = commands.flag(default=1, description='The number of days worth of messages to delete')
+
+
+    @commands.hybrid_command()
+    async def ban(ctx, *, flags: BanFlags):
+        ...
+
+
+Likewise, use of the ``name`` keyword argument allows you to pass renames for the parameter, similar to the :func:`~discord.app_commands.rename` decorator.
+
+Note that in hybrid command form, a few annotations are unsupported due to Discord limitations:
+
+- ``typing.Tuple``
+- ``typing.List``
+- ``typing.Dict``
+
+.. note::
+
+    Only one flag converter is supported per hybrid command. Due to the flag converter's way of working, it is unlikely for a user to have two of them in one signature.
+
+.. _ext_commands_parameter:
+
+Parameter Metadata
+-------------------
+
+:func:`~ext.commands.parameter` assigns custom metadata to a :class:`~ext.commands.Command`'s parameter.
+
+This is useful for:
+
+- Custom converters as annotating a parameter with a custom converter works at runtime, type checkers don't like it
+  because they can't understand what's going on.
+
+  .. code-block:: python3
+
+      class SomeType:
+          foo: int
+
+      class MyVeryCoolConverter(commands.Converter[SomeType]):
+          ...  # implementation left as an exercise for the reader
+
+      @bot.command()
+      async def bar(ctx, cool_value: MyVeryCoolConverter):
+          cool_value.foo  # type checker warns MyVeryCoolConverter has no value foo (uh-oh)
+
+  However, fear not we can use :func:`~ext.commands.parameter` to tell type checkers what's going on.
+
+  .. code-block:: python3
+
+      @bot.command()
+      async def bar(ctx, cool_value: SomeType = commands.parameter(converter=MyVeryCoolConverter)):
+          cool_value.foo  # no error (hurray)
+
+- Late binding behaviour
+
+  .. code-block:: python3
+
+      @bot.command()
+      async def wave(ctx, to: discord.User = commands.parameter(default=lambda ctx: ctx.author)):
+          await ctx.send(f'Hello {to.mention} :wave:')
+
+  Because this is such a common use-case, the library provides :obj:`~.ext.commands.Author`, :obj:`~.ext.commands.CurrentChannel` and
+  :obj:`~.ext.commands.CurrentGuild`, armed with this we can simplify ``wave`` to:
+
+  .. code-block:: python3
+
+      @bot.command()
+      async def wave(ctx, to: discord.User = commands.Author):
+          await ctx.send(f'Hello {to.mention} :wave:')
+
+  :obj:`~.ext.commands.Author` and co also have other benefits like having the displayed default being filled.
 
 
 .. _ext_commands_error_handler:
@@ -897,6 +1147,7 @@ If you want a more robust error system, you can derive from the exception and ra
             return True
         return commands.check(predicate)
 
+    @bot.command()
     @guild_only()
     async def test(ctx):
         await ctx.send('Hey this is not a DM! Nice.')
@@ -931,3 +1182,75 @@ For example, to block all DMs we could do the following:
     Be careful on how you write your global checks, as it could also lock you out of your own bot.
 
 .. need a note on global check once here I think
+
+
+Hybrid Commands
+---------------
+
+.. versionadded:: 2.0
+
+:class:`.commands.HybridCommand` is a command that can be invoked as both a text and a slash command.
+This allows you to define a command as both slash and text command without writing separate code for
+both counterparts.
+
+
+In order to define a hybrid command, The command callback should be decorated with
+:meth:`.Bot.hybrid_command` decorator.
+
+.. code-block:: python3
+
+    @bot.hybrid_command()
+    async def test(ctx):
+        await ctx.send("This is a hybrid command!")
+
+The above command can be invoked as both text and slash command. Note that you have to manually
+sync your :class:`~app_commands.CommandTree` by calling :class:`~app_commands.CommandTree.sync` in order
+for slash commands to appear.
+
+.. image:: /images/commands/hybrid1.png
+.. image:: /images/commands/hybrid2.png
+
+You can create hybrid command groups and sub-commands using the :meth:`.Bot.hybrid_group`
+decorator.
+
+.. code-block:: python3
+
+    @bot.hybrid_group(fallback="get")
+    async def tag(ctx, name):
+        await ctx.send(f"Showing tag: {name}")
+
+    @tag.command()
+    async def create(ctx, name):
+        await ctx.send(f"Created tag: {name}")
+
+Due to a Discord limitation, slash command groups cannot be invoked directly so the ``fallback``
+parameter allows you to create a sub-command that will be bound to callback of parent group.
+
+.. image:: /images/commands/hybrid3.png
+.. image:: /images/commands/hybrid4.png
+
+Due to certain limitations on slash commands, some features of text commands are not supported
+on hybrid commands. You can define a hybrid command as long as it meets the same subset that is
+supported for slash commands.
+
+Following are currently **not supported** by hybrid commands:
+
+- Variable number of arguments. e.g. ``*arg: int``
+- Group commands with a depth greater than 1.
+- Most :class:`typing.Union` types.
+    - Unions of channel types are allowed
+    - Unions of user types are allowed
+    - Unions of user types with roles are allowed
+
+Apart from that, all other features such as converters, checks, autocomplete, flags etc.
+are supported on hybrid commands. Note that due to a design constraint, decorators related to application commands
+such as :func:`discord.app_commands.autocomplete` should be placed below the :func:`~ext.commands.hybrid_command` decorator.
+
+For convenience and ease in writing code, The :class:`~ext.commands.Context` class implements
+some behavioural changes for various methods and attributes:
+
+- :attr:`.Context.interaction` can be used to retrieve the slash command interaction.
+- Since interaction can only be responded to once, The :meth:`.Context.send` automatically
+  determines whether to send an interaction response or a followup response.
+- :meth:`.Context.defer` defers the interaction response for slash commands but shows typing
+  indicator for text commands.

@@ -30,6 +30,7 @@ from .permissions import Permissions
 from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time, _bytes_to_base64_data, _get_as_snowflake, MISSING
+from .flags import RoleFlags
 
 __all__ = (
     'RoleTags',
@@ -37,8 +38,6 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
-
     import datetime
     from .types.role import (
         Role as RolePayload,
@@ -67,22 +66,33 @@ class RoleTags:
         The bot's user ID that manages this role.
     integration_id: Optional[:class:`int`]
         The integration ID that manages the role.
+    subscription_listing_id: Optional[:class:`int`]
+        The ID of this role's subscription SKU and listing.
+
+        .. versionadded:: 2.2
     """
 
     __slots__ = (
         'bot_id',
         'integration_id',
         '_premium_subscriber',
+        '_available_for_purchase',
+        'subscription_listing_id',
+        '_guild_connections',
     )
 
     def __init__(self, data: RoleTagPayload):
         self.bot_id: Optional[int] = _get_as_snowflake(data, 'bot_id')
         self.integration_id: Optional[int] = _get_as_snowflake(data, 'integration_id')
+        self.subscription_listing_id: Optional[int] = _get_as_snowflake(data, 'subscription_listing_id')
+
         # NOTE: The API returns "null" for this if it's valid, which corresponds to None.
         # This is different from other fields where "null" means "not there".
         # So in this case, a value of None is the same as True.
         # Which means we would need a different sentinel.
-        self._premium_subscriber: Optional[Any] = data.get('premium_subscriber', MISSING)
+        self._premium_subscriber: bool = data.get('premium_subscriber', MISSING) is None
+        self._available_for_purchase: bool = data.get('available_for_purchase', MISSING) is None
+        self._guild_connections: bool = data.get('guild_connections', MISSING) is None
 
     def is_bot_managed(self) -> bool:
         """:class:`bool`: Whether the role is associated with a bot."""
@@ -90,11 +100,25 @@ class RoleTags:
 
     def is_premium_subscriber(self) -> bool:
         """:class:`bool`: Whether the role is the premium subscriber, AKA "boost", role for the guild."""
-        return self._premium_subscriber is None
+        return self._premium_subscriber
 
     def is_integration(self) -> bool:
         """:class:`bool`: Whether the role is managed by an integration."""
         return self.integration_id is not None
+
+    def is_available_for_purchase(self) -> bool:
+        """:class:`bool`: Whether the role is available for purchase.
+
+        .. versionadded:: 2.2
+        """
+        return self._available_for_purchase
+
+    def is_guild_connection(self) -> bool:
+        """:class:`bool`: Whether the role is a guild's linked role.
+
+        .. versionadded:: 2.2
+        """
+        return self._guild_connections
 
     def __repr__(self) -> str:
         return (
@@ -196,6 +220,7 @@ class Role(Hashable):
         'hoist',
         'guild',
         'tags',
+        '_flags',
         '_state',
     )
 
@@ -211,7 +236,7 @@ class Role(Hashable):
     def __repr__(self) -> str:
         return f'<Role id={self.id} name={self.name!r}>'
 
-    def __lt__(self, other: Any) -> bool:
+    def __lt__(self, other: object) -> bool:
         if not isinstance(other, Role) or not isinstance(self, Role):
             return NotImplemented
 
@@ -228,7 +253,7 @@ class Role(Hashable):
             return True
 
         if self.position == other.position:
-            return int(self.id) > int(other.id)
+            return self.id > other.id
 
         return False
 
@@ -241,7 +266,7 @@ class Role(Hashable):
     def __gt__(self, other: Any) -> bool:
         return Role.__lt__(other, self)
 
-    def __ge__(self, other: Any) -> bool:
+    def __ge__(self, other: object) -> bool:
         r = Role.__lt__(self, other)
         if r is NotImplemented:
             return NotImplemented
@@ -258,6 +283,7 @@ class Role(Hashable):
         self.managed: bool = data.get('managed', False)
         self.mentionable: bool = data.get('mentionable', False)
         self.tags: Optional[RoleTags]
+        self._flags: int = data.get('flags', 0)
 
         try:
             self.tags = RoleTags(data['tags'])
@@ -349,12 +375,20 @@ class Role(Hashable):
     @property
     def members(self) -> List[Member]:
         """List[:class:`Member`]: Returns all the members with this role."""
-        all_members = self.guild.members
+        all_members = list(self.guild._members.values())
         if self.is_default():
             return all_members
 
         role_id = self.id
         return [member for member in all_members if member._roles.has(role_id)]
+
+    @property
+    def flags(self) -> RoleFlags:
+        """:class:`RoleFlags`: Returns the role's flags.
+
+        .. versionadded:: 2.4
+        """
+        return RoleFlags._from_value(self._flags)
 
     async def _move(self, position: int, reason: Optional[str]) -> None:
         if position <= 0:
@@ -396,8 +430,7 @@ class Role(Hashable):
 
         Edits the role.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_roles` to do this.
 
         All fields are optional.
 
@@ -411,8 +444,8 @@ class Role(Hashable):
             The ``display_icon`` keyword-only parameter was added.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError`.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         -----------
@@ -494,8 +527,7 @@ class Role(Hashable):
 
         Deletes the role.
 
-        You must have the :attr:`~Permissions.manage_roles` permission to
-        use this.
+        You must have :attr:`~Permissions.manage_roles` to do this.
 
         Parameters
         -----------

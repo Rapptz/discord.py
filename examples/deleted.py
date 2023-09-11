@@ -1,4 +1,7 @@
+# This example requires the 'message_content' privileged intent to function.
+
 import discord
+
 
 class MyClient(discord.Client):
     async def on_ready(self):
@@ -17,5 +20,9 @@ class MyClient(discord.Client):
         msg = f'{message.author} has deleted the message: {message.content}'
         await message.channel.send(msg)
 
-client = MyClient()
+
+intents = discord.Intents.default()
+intents.message_content = True
+
+client = MyClient(intents=intents)
 client.run('token')

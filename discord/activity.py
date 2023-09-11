@@ -74,9 +74,7 @@ type: int
 sync_id: str
 session_id: str
 flags: int
-buttons: list[dict]
-    label: str (max: 32)
-    url: str (max: 512)
+buttons: list[str (max: 32)]
 
 There are also activity flags which are mostly uninteresting for the library atm.
 
@@ -96,8 +94,9 @@ if TYPE_CHECKING:
         ActivityTimestamps,
         ActivityParty,
         ActivityAssets,
-        ActivityButton,
     )
+
+    from .state import ConnectionState
 
 
 class BaseActivity:
@@ -121,7 +120,7 @@ class BaseActivity:
 
     __slots__ = ('_created_at',)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         self._created_at: Optional[float] = kwargs.pop('created_at', None)
 
     @property
@@ -185,12 +184,8 @@ class Activity(BaseActivity):
 
         - ``id``: A string representing the party ID.
         - ``size``: A list of up to two integer elements denoting (current_size, maximum_size).
-    buttons: List[:class:`dict`]
-        An list of dictionaries representing custom buttons shown in a rich presence.
-        Each dictionary contains the following keys:
-
-        - ``label``: A string representing the text shown on the button.
-        - ``url``: A string representing the URL opened upon clicking the button.
+    buttons: List[:class:`str`]
+        A list of strings representing the labels of custom buttons shown in a rich presence.
 
         .. versionadded:: 2.0
 
@@ -201,7 +196,6 @@ class Activity(BaseActivity):
     __slots__ = (
         'state',
         'details',
-        '_created_at',
         'timestamps',
         'assets',
         'party',
@@ -216,7 +210,7 @@ class Activity(BaseActivity):
         'buttons',
     )
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.state: Optional[str] = kwargs.pop('state', None)
         self.details: Optional[str] = kwargs.pop('details', None)
@@ -229,7 +223,7 @@ class Activity(BaseActivity):
         self.flags: int = kwargs.pop('flags', 0)
         self.sync_id: Optional[str] = kwargs.pop('sync_id', None)
         self.session_id: Optional[str] = kwargs.pop('session_id', None)
-        self.buttons: List[ActivityButton] = kwargs.pop('buttons', [])
+        self.buttons: List[str] = kwargs.pop('buttons', [])
 
         activity_type = kwargs.pop('type', -1)
         self.type: ActivityType = (
@@ -290,38 +284,38 @@ class Activity(BaseActivity):
 
     @property
     def large_image_url(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity if applicable."""
-        if self.application_id is None:
-            return None
-
+        """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity, if applicable."""
         try:
             large_image = self.assets['large_image']
         except KeyError:
             return None
         else:
-            return Asset.BASE + f'/app-assets/{self.application_id}/{large_image}.png'
+            return self._image_url(large_image)
 
     @property
     def small_image_url(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity if applicable."""
-        if self.application_id is None:
-            return None
-
+        """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity, if applicable."""
         try:
             small_image = self.assets['small_image']
         except KeyError:
             return None
         else:
-            return Asset.BASE + f'/app-assets/{self.application_id}/{small_image}.png'
+            return self._image_url(small_image)
+
+    def _image_url(self, image: str) -> Optional[str]:
+        if image.startswith('mp:'):
+            return f'https://media.discordapp.net/{image[3:]}'
+        elif self.application_id is not None:
+            return Asset.BASE + f'/app-assets/{self.application_id}/{image}.png'
 
     @property
     def large_image_text(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns the large image asset hover text of this activity if applicable."""
+        """Optional[:class:`str`]: Returns the large image asset hover text of this activity, if applicable."""
         return self.assets.get('large_text', None)
 
     @property
     def small_image_text(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns the small image asset hover text of this activity if applicable."""
+        """Optional[:class:`str`]: Returns the small image asset hover text of this activity, if applicable."""
         return self.assets.get('small_text', None)
 
 
@@ -361,7 +355,7 @@ class Game(BaseActivity):
 
     __slots__ = ('name', '_end', '_start')
 
-    def __init__(self, name: str, **extra):
+    def __init__(self, name: str, **extra: Any) -> None:
         super().__init__(**extra)
         self.name: str = name
 
@@ -410,18 +404,16 @@ class Game(BaseActivity):
         if self._end:
             timestamps['end'] = self._end
 
-        # fmt: off
         return {
             'type': ActivityType.playing.value,
             'name': str(self.name),
-            'timestamps': timestamps
+            'timestamps': timestamps,
         }
-        # fmt: on
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Game) and other.name == self.name
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
@@ -475,7 +467,7 @@ class Streaming(BaseActivity):
 
     __slots__ = ('platform', 'name', 'game', 'url', 'details', 'assets')
 
-    def __init__(self, *, name: Optional[str], url: str, **extra: Any):
+    def __init__(self, *, name: Optional[str], url: str, **extra: Any) -> None:
         super().__init__(**extra)
         self.platform: Optional[str] = name
         self.name: Optional[str] = extra.pop('details', name)
@@ -499,7 +491,7 @@ class Streaming(BaseActivity):
         return f'<Streaming name={self.name!r}>'
 
     @property
-    def twitch_name(self):
+    def twitch_name(self) -> Optional[str]:
         """Optional[:class:`str`]: If provided, the twitch name of the user streaming.
 
         This corresponds to the ``large_image`` key of the :attr:`Streaming.assets`
@@ -514,22 +506,20 @@ class Streaming(BaseActivity):
             return name[7:] if name[:7] == 'twitch:' else None
 
     def to_dict(self) -> Dict[str, Any]:
-        # fmt: off
         ret: Dict[str, Any] = {
             'type': ActivityType.streaming.value,
             'name': str(self.name),
             'url': str(self.url),
-            'assets': self.assets
+            'assets': self.assets,
         }
-        # fmt: on
         if self.details:
             ret['details'] = self.details
         return ret
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, Streaming) and other.name == self.name and other.url == self.url
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
@@ -561,14 +551,14 @@ class Spotify:
 
     __slots__ = ('_state', '_details', '_timestamps', '_assets', '_party', '_sync_id', '_session_id', '_created_at')
 
-    def __init__(self, **data):
+    def __init__(self, **data: Any) -> None:
         self._state: str = data.pop('state', '')
         self._details: str = data.pop('details', '')
-        self._timestamps: Dict[str, int] = data.pop('timestamps', {})
+        self._timestamps: ActivityTimestamps = data.pop('timestamps', {})
         self._assets: ActivityAssets = data.pop('assets', {})
         self._party: ActivityParty = data.pop('party', {})
-        self._sync_id: str = data.pop('sync_id')
-        self._session_id: str = data.pop('session_id')
+        self._sync_id: str = data.pop('sync_id', '')
+        self._session_id: Optional[str] = data.pop('session_id')
         self._created_at: Optional[float] = data.pop('created_at', None)
 
     @property
@@ -620,7 +610,7 @@ class Spotify:
         """:class:`str`: The activity's name. This will always return "Spotify"."""
         return 'Spotify'
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return (
             isinstance(other, Spotify)
             and other._session_id == self._session_id
@@ -628,7 +618,7 @@ class Spotify:
             and other.start == self.start
         )
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
@@ -689,12 +679,14 @@ class Spotify:
     @property
     def start(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the user started playing this song in UTC."""
-        return datetime.datetime.fromtimestamp(self._timestamps['start'] / 1000, tz=datetime.timezone.utc)
+        # the start key will be present here
+        return datetime.datetime.fromtimestamp(self._timestamps['start'] / 1000, tz=datetime.timezone.utc)  # type: ignore
 
     @property
     def end(self) -> datetime.datetime:
         """:class:`datetime.datetime`: When the user will stop playing this song in UTC."""
-        return datetime.datetime.fromtimestamp(self._timestamps['end'] / 1000, tz=datetime.timezone.utc)
+        # the end key will be present here
+        return datetime.datetime.fromtimestamp(self._timestamps['end'] / 1000, tz=datetime.timezone.utc)  # type: ignore
 
     @property
     def duration(self) -> datetime.timedelta:
@@ -708,7 +700,7 @@ class Spotify:
 
 
 class CustomActivity(BaseActivity):
-    """Represents a Custom activity from Discord.
+    """Represents a custom activity from Discord.
 
     .. container:: operations
 
@@ -740,10 +732,10 @@ class CustomActivity(BaseActivity):
 
     __slots__ = ('name', 'emoji', 'state')
 
-    def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = None, **extra: Any):
+    def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = None, **extra: Any) -> None:
         super().__init__(**extra)
         self.name: Optional[str] = name
-        self.state: Optional[str] = extra.pop('state', None)
+        self.state: Optional[str] = extra.pop('state', name)
         if self.name == 'Custom Status':
             self.name = self.state
 
@@ -784,10 +776,10 @@ class CustomActivity(BaseActivity):
             o['emoji'] = self.emoji.to_dict()
         return o
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, CustomActivity) and other.name == self.name and other.emoji == self.emoji
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
@@ -809,16 +801,16 @@ ActivityTypes = Union[Activity, Game, CustomActivity, Streaming, Spotify]
 
 
 @overload
-def create_activity(data: ActivityPayload) -> ActivityTypes:
+def create_activity(data: ActivityPayload, state: ConnectionState) -> ActivityTypes:
     ...
 
 
 @overload
-def create_activity(data: None) -> None:
+def create_activity(data: None, state: ConnectionState) -> None:
     ...
 
 
-def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
+def create_activity(data: Optional[ActivityPayload], state: ConnectionState) -> Optional[ActivityTypes]:
     if not data:
         return None
 
@@ -829,12 +821,12 @@ def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
         return Game(**data)
     elif game_type is ActivityType.custom:
         try:
-            name = data.pop('name')
+            name = data.pop('name')  # type: ignore
         except KeyError:
-            return Activity(**data)
+            ret = Activity(**data)
         else:
             # we removed the name key from data already
-            return CustomActivity(name=name, **data)  # type: ignore
+            ret = CustomActivity(name=name, **data)  # type: ignore
     elif game_type is ActivityType.streaming:
         if 'url' in data:
             # the url won't be None here
@@ -842,4 +834,9 @@ def create_activity(data: Optional[ActivityPayload]) -> Optional[ActivityTypes]:
         return Activity(**data)
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)
-    return Activity(**data)
+    else:
+        ret = Activity(**data)
+
+    if isinstance(ret.emoji, PartialEmoji):
+        ret.emoji._state = state
+    return ret

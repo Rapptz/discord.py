@@ -15,3 +15,6 @@ from .models import *
 from .tree import *
 from .namespace import *
 from .transformers import *
+from .translator import *
+from . import checks as checks
+from .checks import Cooldown as Cooldown
