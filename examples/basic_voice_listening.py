@@ -77,7 +77,9 @@ async def send_audio_file(channel: discord.TextChannel, file: discord.AudioFile)
 # regardless of if it's None or not.
 async def on_listen_finish(sink: discord.AudioSink, exc=None, channel=None):
     # Convert the raw recorded audio to its chosen file type
+    # and wait for it to finish.
     sink.convert_files()
+    await sink.wait_for_convert()
     if channel is not None:
         for file in sink.output_files.values():
             await send_audio_file(channel, file)
@@ -140,8 +142,8 @@ async def stop(interaction: discord.Interaction):
     # Stop listening and disconnect from vc. The after function passed to vc.listen in the start command
     # will be called after listening stops.
     vc.stop_listening()
+    await interaction.response.send_message("Recording stopped. Sending audio recordings after processing has finished...")
     await vc.disconnect()
-    await interaction.response.send_message("Recording stopped.")
 
 
 @client.tree.command(description="Pause the current recording.")
