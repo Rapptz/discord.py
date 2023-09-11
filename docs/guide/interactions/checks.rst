@@ -1,3 +1,5 @@
+:orphan:
+
 .. currentmodule:: discord
 
 .. _guide_interactions_checks:
@@ -115,7 +117,7 @@ Dynamic cooldowns allow you to register a custom handler for cooldown checks.
 
     def cooldown_skip_owner(interaction: discord.Interaction) -> Optional[app_commands.Cooldown]:
         if interactions.user.id == 1234567890:
-            app_commands.Cooldown(1, 5.0)
+            return app_commands.Cooldown(1, 5.0)
         if interactions.guild is not None and interactions.guild.owner_id == interactions.user.id:
             return None
 
@@ -179,4 +181,4 @@ As an example, here is a command which only runs if a user has a certain role, `
 
 .. note::
 
-    When checks are failed, they will throw an error. By implementing custom error handling for these errors, you can create a system that will do something different when a check is failed. See the :ref:`error handling guide <guide_interactions_error-handling>` for further information on this.
+    When checks do not pass, they will throw an error. By implementing custom error handling for these errors, you can create a system that will do something different when a check is failed. See the :ref:`error handling guide <guide_interactions_error-handling>` for further information on this.
