@@ -34,7 +34,7 @@ class PartialUser(TypedDict):
     global_name: Optional[str]
 
 
-PremiumType = Literal[0, 1, 2]
+PremiumType = Literal[0, 1, 2, 3]
 
 
 class User(PartialUser, total=False):

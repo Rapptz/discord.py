@@ -58,7 +58,7 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .state import ConnectionState
     from .user import ClientUser
-    from .opus import Encoder
+    from .opus import Encoder, APPLICATION_CTL, BAND_CTL, SIGNAL_CTL
     from .channel import StageChannel, VoiceChannel
     from . import abc
 
@@ -421,6 +421,11 @@ class VoiceClient(VoiceProtocol):
 
         self.finish_handshake()
         self._potentially_reconnecting = False
+
+        if self.ws:
+            _log.debug("Closing existing voice websocket")
+            await self.ws.close()
+
         try:
             self.ws = await self.connect_websocket()
         except (ConnectionClosed, asyncio.TimeoutError):
@@ -564,7 +569,18 @@ class VoiceClient(VoiceProtocol):
 
         return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
 
-    def play(self, source: AudioSource, *, after: Optional[Callable[[Optional[Exception]], Any]] = None) -> None:
+    def play(
+        self,
+        source: AudioSource,
+        *,
+        after: Optional[Callable[[Optional[Exception]], Any]] = None,
+        application: APPLICATION_CTL = 'audio',
+        bitrate: int = 128,
+        fec: bool = True,
+        expected_packet_loss: float = 0.15,
+        bandwidth: BAND_CTL = 'full',
+        signal_type: SIGNAL_CTL = 'auto',
+    ) -> None:
         """Plays an :class:`AudioSource`.
 
         The finalizer, ``after`` is called after the source has been exhausted
@@ -574,8 +590,14 @@ class VoiceClient(VoiceProtocol):
         caught and the audio player is then stopped.  If no after callback is
         passed, any caught exception will be logged using the library logger.
 
+        Extra parameters may be passed to the internal opus encoder if a PCM based
+        source is used.  Otherwise, they are ignored.
+
         .. versionchanged:: 2.0
             Instead of writing to ``sys.stderr``, the library's logger is used.
+
+        .. versionchanged:: 2.4
+            Added encoder parameters as keyword arguments.
 
         Parameters
         -----------
@@ -585,6 +607,27 @@ class VoiceClient(VoiceProtocol):
             The finalizer that is called after the stream is exhausted.
             This function must have a single parameter, ``error``, that
             denotes an optional exception that was raised during playing.
+        application: :class:`str`
+            Configures the encoder's intended application.  Can be one of:
+            ``'audio'``, ``'voip'``, ``'lowdelay'``.
+            Defaults to ``'audio'``.
+        bitrate: :class:`int`
+            Configures the bitrate in the encoder.  Can be between ``16`` and ``512``.
+            Defaults to ``128``.
+        fec: :class:`bool`
+            Configures the encoder's use of inband forward error correction.
+            Defaults to ``True``.
+        expected_packet_loss: :class:`float`
+            Configures the encoder's expected packet loss percentage.  Requires FEC.
+            Defaults to ``0.15``.
+        bandwidth: :class:`str`
+            Configures the encoder's bandpass.  Can be one of:
+            ``'narrow'``, ``'medium'``, ``'wide'``, ``'superwide'``, ``'full'``.
+            Defaults to ``'full'``.
+        signal_type: :class:`str`
+            Configures the type of signal being encoded.  Can be one of:
+            ``'auto'``, ``'voice'``, ``'music'``.
+            Defaults to ``'auto'``.
 
         Raises
         -------
@@ -594,6 +637,8 @@ class VoiceClient(VoiceProtocol):
             Source is not a :class:`AudioSource` or after is not a callable.
         OpusNotLoaded
             Source is not opus encoded and opus is not loaded.
+        ValueError
+            An improper value was passed as an encoder parameter.
         """
 
         if not self.is_connected():
@@ -605,8 +650,15 @@ class VoiceClient(VoiceProtocol):
         if not isinstance(source, AudioSource):
             raise TypeError(f'source must be an AudioSource not {source.__class__.__name__}')
 
-        if not self.encoder and not source.is_opus():
-            self.encoder = opus.Encoder()
+        if not source.is_opus():
+            self.encoder = opus.Encoder(
+                application=application,
+                bitrate=bitrate,
+                fec=fec,
+                expected_packet_loss=expected_packet_loss,
+                bandwidth=bandwidth,
+                signal_type=signal_type,
+            )
 
         self._player = AudioPlayer(source, self, after=after)
         self._player.start()

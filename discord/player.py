@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import threading
 import subprocess
+import warnings
 import audioop
 import asyncio
 import logging
@@ -145,6 +146,8 @@ class FFmpegAudio(AudioSource):
     .. versionadded:: 1.3
     """
 
+    BLOCKSIZE: int = io.DEFAULT_BUFFER_SIZE
+
     def __init__(
         self,
         source: Union[str, io.BufferedIOBase],
@@ -153,12 +156,25 @@ class FFmpegAudio(AudioSource):
         args: Any,
         **subprocess_kwargs: Any,
     ):
-        piping = subprocess_kwargs.get('stdin') == subprocess.PIPE
-        if piping and isinstance(source, str):
+        piping_stdin = subprocess_kwargs.get('stdin') == subprocess.PIPE
+        if piping_stdin and isinstance(source, str):
             raise TypeError("parameter conflict: 'source' parameter cannot be a string when piping to stdin")
 
+        stderr: Optional[IO[bytes]] = subprocess_kwargs.pop('stderr', None)
+
+        if stderr == subprocess.PIPE:
+            warnings.warn("Passing subprocess.PIPE does nothing", DeprecationWarning, stacklevel=3)
+            stderr = None
+
+        piping_stderr = False
+        if stderr is not None:
+            try:
+                stderr.fileno()
+            except Exception:
+                piping_stderr = True
+
         args = [executable, *args]
-        kwargs = {'stdout': subprocess.PIPE}
+        kwargs = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE if piping_stderr else stderr}
         kwargs.update(subprocess_kwargs)
 
         # Ensure attribute is assigned even in the case of errors
@@ -166,15 +182,24 @@ class FFmpegAudio(AudioSource):
         self._process = self._spawn_process(args, **kwargs)
         self._stdout: IO[bytes] = self._process.stdout  # type: ignore # process stdout is explicitly set
         self._stdin: Optional[IO[bytes]] = None
-        self._pipe_thread: Optional[threading.Thread] = None
+        self._stderr: Optional[IO[bytes]] = None
+        self._pipe_writer_thread: Optional[threading.Thread] = None
+        self._pipe_reader_thread: Optional[threading.Thread] = None
 
-        if piping:
-            n = f'popen-stdin-writer:{id(self):#x}'
+        if piping_stdin:
+            n = f'popen-stdin-writer:pid-{self._process.pid}'
             self._stdin = self._process.stdin
-            self._pipe_thread = threading.Thread(target=self._pipe_writer, args=(source,), daemon=True, name=n)
-            self._pipe_thread.start()
+            self._pipe_writer_thread = threading.Thread(target=self._pipe_writer, args=(source,), daemon=True, name=n)
+            self._pipe_writer_thread.start()
+
+        if piping_stderr:
+            n = f'popen-stderr-reader:pid-{self._process.pid}'
+            self._stderr = self._process.stderr
+            self._pipe_reader_thread = threading.Thread(target=self._pipe_reader, args=(stderr,), daemon=True, name=n)
+            self._pipe_reader_thread.start()
 
     def _spawn_process(self, args: Any, **subprocess_kwargs: Any) -> subprocess.Popen:
+        _log.debug('Spawning ffmpeg process with command: %s', args)
         process = None
         try:
             process = subprocess.Popen(args, creationflags=CREATE_NO_WINDOW, **subprocess_kwargs)
@@ -207,8 +232,7 @@ class FFmpegAudio(AudioSource):
 
     def _pipe_writer(self, source: io.BufferedIOBase) -> None:
         while self._process:
-            # arbitrarily large read size
-            data = source.read(8192)
+            data = source.read(self.BLOCKSIZE)
             if not data:
                 if self._stdin is not None:
                     self._stdin.close()
@@ -222,9 +246,27 @@ class FFmpegAudio(AudioSource):
                 self._process.terminate()
                 return
 
+    def _pipe_reader(self, dest: IO[bytes]) -> None:
+        while self._process:
+            if self._stderr is None:
+                return
+            try:
+                data: bytes = self._stderr.read(self.BLOCKSIZE)
+            except Exception:
+                _log.debug('Read error for %s, this is probably not a problem', self, exc_info=True)
+                return
+            if data is None:
+                return
+            try:
+                dest.write(data)
+            except Exception:
+                _log.exception('Write error for %s', self)
+                self._stderr.close()
+                return
+
     def cleanup(self) -> None:
         self._kill_process()
-        self._process = self._stdout = self._stdin = MISSING
+        self._process = self._stdout = self._stdin = self._stderr = MISSING
 
 
 class FFmpegPCMAudio(FFmpegAudio):
@@ -250,7 +292,6 @@ class FFmpegPCMAudio(FFmpegAudio):
         to the stdin of ffmpeg. Defaults to ``False``.
     stderr: Optional[:term:`py:file object`]
         A file-like object to pass to the Popen constructor.
-        Could also be an instance of ``subprocess.PIPE``.
     before_options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
     options: Optional[:class:`str`]
@@ -268,7 +309,7 @@ class FFmpegPCMAudio(FFmpegAudio):
         *,
         executable: str = 'ffmpeg',
         pipe: bool = False,
-        stderr: Optional[IO[str]] = None,
+        stderr: Optional[IO[bytes]] = None,
         before_options: Optional[str] = None,
         options: Optional[str] = None,
     ) -> None:
@@ -280,7 +321,14 @@ class FFmpegPCMAudio(FFmpegAudio):
 
         args.append('-i')
         args.append('-' if pipe else source)
-        args.extend(('-f', 's16le', '-ar', '48000', '-ac', '2', '-loglevel', 'warning'))
+
+        # fmt: off
+        args.extend(('-f', 's16le',
+                     '-ar', '48000',
+                     '-ac', '2',
+                     '-loglevel', 'warning',
+                     '-blocksize', str(self.BLOCKSIZE)))
+        # fmt: on
 
         if isinstance(options, str):
             args.extend(shlex.split(options))
@@ -348,7 +396,6 @@ class FFmpegOpusAudio(FFmpegAudio):
         to the stdin of ffmpeg. Defaults to ``False``.
     stderr: Optional[:term:`py:file object`]
         A file-like object to pass to the Popen constructor.
-        Could also be an instance of ``subprocess.PIPE``.
     before_options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
     options: Optional[:class:`str`]
@@ -381,7 +428,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         args.append('-i')
         args.append('-' if pipe else source)
 
-        codec = 'copy' if codec in ('opus', 'libopus') else 'libopus'
+        codec = 'copy' if codec in ('opus', 'libopus', 'copy') else 'libopus'
         bitrate = bitrate if bitrate is not None else 128
 
         # fmt: off
@@ -391,7 +438,10 @@ class FFmpegOpusAudio(FFmpegAudio):
                      '-ar', '48000',
                      '-ac', '2',
                      '-b:a', f'{bitrate}k',
-                     '-loglevel', 'warning'))
+                     '-loglevel', 'warning',
+                     '-fec', 'true',
+                     '-packet_loss', '15',
+                     '-blocksize', str(self.BLOCKSIZE)))
         # fmt: on
 
         if isinstance(options, str):
@@ -643,8 +693,7 @@ class AudioPlayer(threading.Thread):
         *,
         after: Optional[Callable[[Optional[Exception]], Any]] = None,
     ) -> None:
-        threading.Thread.__init__(self)
-        self.daemon: bool = True
+        super().__init__(daemon=True, name=f'audio-player:{id(self):#x}')
         self.source: AudioSource = source
         self.client: VoiceClient = client
         self.after: Optional[Callable[[Optional[Exception]], Any]] = after

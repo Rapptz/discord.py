@@ -184,22 +184,6 @@ class Interaction(Generic[ClientT]):
         self.version: int = data['version']
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.channel: Optional[InteractionChannel] = None
-
-        raw_channel = data.get('channel', {})
-        raw_ch_type = raw_channel.get('type')
-        if raw_ch_type is not None:
-            factory, ch_type = _threaded_channel_factory(raw_ch_type)  # type is never None
-            if factory is None:
-                logging.info('Unknown channel type {type} for channel ID {id}.'.format_map(raw_channel))
-            else:
-                if ch_type in (ChannelType.group, ChannelType.private):
-                    channel = factory(me=self._client.user, data=raw_channel, state=self._state)  # type: ignore
-                else:
-                    guild = self._state._get_or_create_unavailable_guild(self.guild_id)  # type: ignore
-                    channel = factory(guild=guild, state=self._state, data=raw_channel)  # type: ignore
-
-                self.channel = channel
-
         self.application_id: int = int(data['application_id'])
 
         self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
@@ -208,6 +192,26 @@ class Interaction(Generic[ClientT]):
             self.guild_locale = try_enum(Locale, data['guild_locale'])
         except KeyError:
             self.guild_locale = None
+
+        guild = None
+        if self.guild_id:
+            guild = self._state._get_or_create_unavailable_guild(self.guild_id)
+
+        raw_channel = data.get('channel', {})
+        channel_id = utils._get_as_snowflake(raw_channel, 'id')
+        if channel_id is not None and guild is not None:
+            self.channel = guild and guild._resolve_channel(channel_id)
+
+        raw_ch_type = raw_channel.get('type')
+        if self.channel is None and raw_ch_type is not None:
+            factory, ch_type = _threaded_channel_factory(raw_ch_type)  # type is never None
+            if factory is None:
+                logging.info('Unknown channel type {type} for channel ID {id}.'.format_map(raw_channel))
+            else:
+                if ch_type in (ChannelType.group, ChannelType.private):
+                    self.channel = factory(me=self._client.user, data=raw_channel, state=self._state)  # type: ignore
+                elif guild is not None:
+                    self.channel = factory(guild=guild, state=self._state, data=raw_channel)  # type: ignore
 
         self.message: Optional[Message]
         try:
@@ -220,9 +224,7 @@ class Interaction(Generic[ClientT]):
         self._permissions: int = 0
         self._app_permissions: int = int(data.get('app_permissions', 0))
 
-        if self.guild_id:
-            guild = self._state._get_or_create_unavailable_guild(self.guild_id)
-
+        if guild is not None:
             # Upgrade Message.guild in case it's missing with partial guild data
             if self.message is not None and self.message.guild is None:
                 self.message.guild = guild
@@ -252,7 +254,10 @@ class Interaction(Generic[ClientT]):
     @property
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: The guild the interaction was sent from."""
-        return self._state and self._state._get_guild(self.guild_id)
+        # The user.guild attribute is set in __init__ to the fallback guild if available
+        # Therefore, we can use that instead of recreating it every time this property is
+        # accessed
+        return (self._state and self._state._get_guild(self.guild_id)) or getattr(self.user, 'guild', None)
 
     @property
     def channel_id(self) -> Optional[int]:

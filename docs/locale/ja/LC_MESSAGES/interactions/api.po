@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-29 20:45+0000\n"
-"PO-Revision-Date: 2023-01-30 13:38\n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -62,7 +62,7 @@ msgid "type"
 msgstr "型"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:12
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:36
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:38
 #: ../../../discord/message.py:docstring of discord.message.MessageInteraction:23
 #: ../../../discord/components.py:docstring of discord.components.SelectMenu:36
 #: ../../../discord/components.py:docstring of discord.components.SelectMenu:43
@@ -84,7 +84,7 @@ msgid "The guild ID the interaction was sent from."
 msgstr "インタラクションが送信されたギルドのID。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:24
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:30
+#: ../../../discord/interactions.py:docstring of discord.Interaction.channel_id:3
 #: ../../../discord/components.py:docstring of discord.components.TextInput:49
 #: ../../../discord/components.py:docstring of discord.components.TextInput:55
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommand:91
@@ -92,39 +92,47 @@ msgid "Optional[:class:`int`]"
 msgstr "Optional[:class:`int`]"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:28
-msgid "The channel ID the interaction was sent from."
-msgstr "インタラクションが送信されたチャンネルのID。"
+msgid "The channel the interaction was sent from."
+msgstr "インタラクションが送信されたチャンネル。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:34
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:30
+msgid "Note that due to a Discord limitation, if sent from a DM channel :attr:`~DMChannel.recipient` is ``None``."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:32
+msgid "Optional[Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]]"
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:36
 msgid "The application ID that the interaction was for."
 msgstr "インタラクションの対象となったアプリケーションのID。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:40
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:42
 msgid "The user or member that sent the interaction."
 msgstr "インタラクションを送信したユーザーまたはメンバー。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:42
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:44
 #: ../../../discord/message.py:docstring of discord.message.MessageInteraction:41
 msgid "Union[:class:`User`, :class:`Member`]"
 msgstr "Union[:class:`User`, :class:`Member`]"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:46
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:48
 msgid "The message that sent this interaction."
 msgstr "このインタラクションを送信したメッセージ。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:48
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:50
 msgid "This is only available for :attr:`InteractionType.component` interactions."
 msgstr "これは :attr:`InteractionType.component` インタラクションの場合にのみ使用できます。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:50
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:52
 msgid "Optional[:class:`Message`]"
 msgstr "Optional[:class:`Message`]"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:54
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:56
 msgid "The token to continue the interaction. These are valid for 15 minutes."
 msgstr "インタラクションを続行するのに使うトークン。有効期限は15分です。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:57
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:59
 #: ../../docstring of discord.InteractionMessage.clean_content:15
 #: ../../../discord/interactions.py:docstring of discord.InteractionMessage.jump_url:3
 #: ../../docstring of discord.InteractionMessage.system_content:8
@@ -132,43 +140,43 @@ msgstr "インタラクションを続行するのに使うトークン。有効
 msgid ":class:`str`"
 msgstr ":class:`str`"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:61
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:63
 msgid "The raw interaction data."
 msgstr "生のインタラクションデータ。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:63
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:83
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:65
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:85
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Command:95
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.ContextMenu:80
 #: ../../../discord/app_commands/commands.py:docstring of discord.app_commands.commands.Group:105
 msgid ":class:`dict`"
 msgstr ":class:`dict`"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:67
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:69
 msgid "The locale of the user invoking the interaction."
 msgstr "インタラクションを呼び出したユーザーのロケール。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:69
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:71
 msgid ":class:`Locale`"
 msgstr ":class:`Locale`"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:73
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:75
 msgid "The preferred locale of the guild the interaction was sent from, if any."
 msgstr "インタラクションの送信元のギルドの優先ロケール。もし無ければ ``None`` となります。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:75
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:77
 msgid "Optional[:class:`Locale`]"
 msgstr "Optional[:class:`Locale`]"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:79
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:81
 msgid "A dictionary that can be used to store extraneous data for use during interaction processing. The library will not touch any values or keys within this dictionary."
 msgstr "インタラクションの処理中に使用する追加のデータを保管できる辞書型。ライブラリは辞書型の中のキーや値を一切操作しません。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:87
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:89
 msgid "Whether the command associated with this interaction failed to execute. This includes checks and execution."
 msgstr "このインタラクションに関連付けられたコマンドの実行に失敗したかどうか。これにはチェックとコマンドの実行が含まれます。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:90
+#: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:92
 #: ../../../discord/components.py:docstring of discord.components.Button:35
 #: ../../../discord/components.py:docstring of discord.components.SelectMenu:55
 #: ../../../discord/components.py:docstring of discord.components.TextInput:43
@@ -196,17 +204,9 @@ msgstr "インタラクションが送信されたギルド。"
 msgid "Optional[:class:`Guild`]"
 msgstr "Optional[:class:`Guild`]"
 
-#: ../../docstring of discord.Interaction.channel:1
-msgid "The channel the interaction was sent from."
-msgstr "インタラクションが送信されたチャンネル。"
-
-#: ../../docstring of discord.Interaction.channel:3
-msgid "Note that due to a Discord limitation, DM channels are not resolved since there is no data to complete them. These are :class:`PartialMessageable` instead."
-msgstr "Discordの制限により、DMチャンネルは入れるデータがないため解決されないことに注意してください。代わりに :class:`PartialMessageable` があります。"
-
-#: ../../docstring of discord.Interaction.channel:6
-msgid "Optional[Union[:class:`abc.GuildChannel`, :class:`PartialMessageable`, :class:`Thread`]]"
-msgstr "Optional[Union[:class:`abc.GuildChannel`, :class:`PartialMessageable`, :class:`Thread`]]"
+#: ../../../discord/interactions.py:docstring of discord.Interaction.channel_id:1
+msgid "The ID of the channel the interaction was sent from."
+msgstr ""
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.permissions:1
 msgid "The resolved permissions of the member in the channel, including overwrites."
@@ -430,7 +430,7 @@ msgid "You specified both ``embed`` and ``embeds``"
 msgstr "``embed`` と ``embeds`` の両方を指定した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction.edit_original_response:36
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:39
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:44
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:35
 msgid "The length of ``embeds`` was invalid."
 msgstr "``embeds`` の長さが無効だった場合。"
@@ -564,7 +564,7 @@ msgstr "インタラクションの遅延に失敗した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.defer:25
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.pong:8
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:40
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:45
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.edit_message:35
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_modal:9
 msgid "This interaction has already been responded to before."
@@ -623,16 +623,20 @@ msgid "Whether to suppress embeds for the message. This sends the message withou
 msgstr "メッセージの埋め込みを抑制するかどうか。これが ``True`` に設定されている場合、埋め込みなしでメッセージを送信します。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:30
+msgid "Whether to suppress push and desktop notifications for the message. This will increment the mention counter in the UI, but will not actually send a notification."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:35
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:25
 msgid "If provided, the number of seconds to wait in the background before deleting the message we just sent. If the deletion fails, then it is silently ignored."
 msgstr "指定すると、これはメッセージを送信したあと削除するまでにバックグラウンドで待機する秒数となります。もし削除が失敗しても、それは静かに無視されます。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:37
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:42
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.reply:12
 msgid "Sending the message failed."
 msgstr "メッセージの送信に失敗した場合。"
 
-#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:38
+#: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:43
 msgid "You specified both ``embed`` and ``embeds`` or ``file`` and ``files``."
 msgstr "``embed`` と ``embeds`` または ``file`` と ``files`` の両方を指定した場合。"
 
@@ -851,34 +855,42 @@ msgid "The name of the thread."
 msgstr "スレッドの名前。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:14
-msgid "The duration in minutes before a thread is automatically archived for inactivity. If not provided, the channel's default auto archive duration is used."
-msgstr "スレッドが非アクティブ時に、自動的にアーカイブされるまでの分単位の長さ。指定しない場合は、チャンネルのデフォルトの自動アーカイブ期間が使用されます。"
+msgid "The duration in minutes before a thread is automatically hidden from the channel list. If not provided, the channel's default auto archive duration is used.  Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:14
+msgid "The duration in minutes before a thread is automatically hidden from the channel list. If not provided, the channel's default auto archive duration is used."
+msgstr ""
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:17
+msgid "Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:19
 msgid "Specifies the slowmode rate limit for user in this channel, in seconds. The maximum value possible is ``21600``. By default no slowmode rate limit if this is ``None``."
 msgstr "このチャンネルの秒単位での低速モードレート制限。 最大値は ``21600`` です。デフォルトは ``None`` でこの場合は低速モードレート制限が無しとなります。"
 
-#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:21
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:23
 msgid "The reason for creating a new thread. Shows up on the audit log."
 msgstr "スレッドを作成する理由。監査ログに表示されます。"
 
-#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:24
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:26
 msgid "You do not have permissions to create a thread."
 msgstr "スレッドを作成する権限を持っていない場合。"
 
-#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:25
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:27
 msgid "Creating the thread failed."
 msgstr "スレッドの作成に失敗した場合。"
 
-#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:26
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:28
 msgid "This message does not have guild info attached."
 msgstr "メッセージがギルド情報を持っていない場合。"
 
-#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:28
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:30
 msgid "The created thread."
 msgstr "作成されたスレッド"
 
-#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:29
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:31
 msgid ":class:`.Thread`"
 msgstr ":class:`Thread`"
 
@@ -957,22 +969,22 @@ msgid "Pinning the message failed, probably due to the channel     having more t
 msgstr "チャンネルにすでに50個ピン留めされたメッセージがあるなどの理由で、メッセージのピン留めに失敗した場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:3
-msgid "Publishes this message to your announcement channel."
-msgstr "このメッセージをアナウンスチャンネルに公開します。"
+msgid "Publishes this message to the channel's followers."
+msgstr ""
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:5
-msgid "You must have :attr:`~Permissions.send_messages` to do this."
-msgstr "これを行うには、 :attr:`~Permissions.send_messages` が必要です。"
+msgid "The message must have been sent in a news channel. You must have :attr:`~Permissions.send_messages` to do this."
+msgstr ""
 
-#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:7
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:8
 msgid "If the message is not your own then :attr:`~Permissions.manage_messages` is also needed."
 msgstr "自身のメッセージ以外の場合は :attr:`~Permissions.manage_messages` も必要です。"
 
-#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:10
-msgid "You do not have the proper permissions to publish this message."
-msgstr "メッセージを公開する適切な権限がない場合。"
-
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:11
+msgid "You do not have the proper permissions to publish this message     or the channel is not a news channel."
+msgstr ""
+
+#: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:12
 msgid "Publishing the message failed."
 msgstr "メッセージの公開に失敗した場合。"
 
@@ -1843,8 +1855,8 @@ msgid "The user's ID that archived this thread."
 msgstr "このスレッドをアーカイブしたユーザーのID。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:87
-msgid "The duration in minutes until the thread is automatically archived due to inactivity. Usually a value of 60, 1440, 4320 and 10080."
-msgstr "非アクティブのスレッドが自動的にアーカイブされるまでの分数です。通常は60、1440、4320、10080の値を設定します。"
+msgid "The duration in minutes until the thread is automatically hidden from the channel list. Usually a value of 60, 1440, 4320 and 10080."
+msgstr ""
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:94
 msgid "An aware timestamp of when the thread's archived status was last updated in UTC."
@@ -2450,7 +2462,7 @@ msgid "This object must be inherited to create a UI within Discord."
 msgstr "Discord内でUIを作成するには、このオブジェクトを継承する必要があります。"
 
 #: ../../../discord/ui/view.py:docstring of discord.ui.view.View:7
-#: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:22
+#: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:23
 msgid "Timeout in seconds from last interaction with the UI before no longer accepting input. If ``None`` then there is no timeout."
 msgstr "UIの最後のインタラクションから起算した、入力を受け付けなくなるまでの秒単位のタイムアウト。 ``None`` の場合タイムアウトはありません。"
 
@@ -2677,19 +2689,19 @@ msgstr "Discord内でモーダルポップアップウィンドウを作成す�
 msgid "Examples"
 msgstr "例"
 
-#: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:20
+#: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:21
 msgid "The title of the modal. Can only be up to 45 characters."
 msgstr "モーダルのタイトル。最大45文字までです。"
 
-#: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:25
+#: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:26
 msgid "The ID of the modal that gets received during an interaction. If not given then one is generated for you. Can only be up to 100 characters."
 msgstr "インタラクション中に受け取るモーダルID。 指定されていない場合は、自動で生成されます。最大 100 文字までしか使用できません。"
 
-#: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:32
+#: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:33
 msgid "The title of the modal."
 msgstr "モーダルのタイトル。"
 
-#: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:38
+#: ../../../discord/ui/modal.py:docstring of discord.ui.modal.Modal:39
 msgid "The ID of the modal that gets received during an interaction."
 msgstr "インタラクション中に受け取るモーダルID。"
 

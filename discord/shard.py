@@ -192,6 +192,10 @@ class Shard:
             self.ws = await asyncio.wait_for(coro, timeout=60.0)
         except self._handled_exceptions as e:
             await self._handle_disconnect(e)
+        except ReconnectWebSocket as e:
+            _log.debug('Somehow got a signal to %s while trying to %s shard ID %s.', e.op, exc.op, self.id)
+            op = EventType.resume if e.resume else EventType.identify
+            self._queue_put(EventItem(op, self, e))
         except asyncio.CancelledError:
             return
         except Exception as e:

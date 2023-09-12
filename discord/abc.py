@@ -48,7 +48,7 @@ from typing import (
 
 from .object import OLDEST_OBJECT, Object
 from .context_managers import Typing
-from .enums import ChannelType
+from .enums import ChannelType, InviteTarget
 from .errors import ClientException
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
@@ -93,7 +93,6 @@ if TYPE_CHECKING:
         StageChannel,
     )
     from .threads import Thread
-    from .enums import InviteTarget
     from .ui.view import View
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
@@ -1246,6 +1245,8 @@ class GuildChannel:
         :class:`~discord.Invite`
             The invite that was created.
         """
+        if target_type is InviteTarget.unknown:
+            raise ValueError('Cannot create invite with an unknown target type')
 
         data = await self._state.http.create_invite(
             self.id,
