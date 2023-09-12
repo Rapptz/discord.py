@@ -212,7 +212,8 @@ class FFmpegAudio(AudioSource):
             return process
 
     def _kill_process(self) -> None:
-        proc = self._process
+        # this function gets called in __del__ so instance attributes might not even exist
+        proc = getattr(self, '_process', MISSING)
         if proc is MISSING:
             return
 
