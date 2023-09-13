@@ -37,7 +37,7 @@ These checks allow a simple way to ensure that the user triggering a command has
     @app_commands.context_menu()
     @app_commands.checks.has_any_role('Role Name', 1234567890, 'AnotherOne')
     async def multiple_role_check(interaction: discord.Interaction, user: discord.User):
-        await interaction.response.send_message('You have all the roles!', ephemeral=True)
+        await interaction.response.send_message('You have one of the roles!', ephemeral=True)
 
 Let's take a quick look through the code here:
 
@@ -95,7 +95,7 @@ Static cooldowns are methods which limit a command to a certain number of uses p
     :emphasize-lines: 2
 
     @app_commands.command()
-    @app_commands.checks.cooldown(1, 5.0, key=lambda interaction: (i.guild_id, i.user.id))
+    @app_commands.checks.cooldown(1, 5.0, key=lambda interaction: (interaction.guild_id, interaction.user.id))
     async def cooldown_check(interaction: discord.Interaction):
         await interaction.response.send_message('Not on cooldown yet!', ephemeral=True)
 
@@ -107,8 +107,8 @@ The :func:`@cooldown <.app_commands.checks.cooldown>` decorator takes 3 possible
 
 Now that we know what the parameters for a static cooldown are, let's take a closer look at the shown example:
 
-- The ``rate`` is set to ``1``, so the cooldown will trigger every time the command is used.
-- The ``per`` param is set to ``5.0``, so the cooldown will lock the command for 5 seconds when it is used.
+- The ``rate`` parameter is set to ``1``, so the cooldown will trigger every time the command is used.
+- The ``per`` parameter is set to ``5.0``, so the cooldown will lock the command for 5 seconds when it is used.
 - The ``key`` parameter has a ``lambda`` function which accepts the :class:`.Interaction`, and then returns a tuple for the :attr:`~.Interaction.guild_id` and :attr:`user.id <.Interaction.user>` values. This means that the cooldown will be put in effect for each user individually, in each server.
 
 Putting it all together: an individual user can use the command once every five seconds in any one guild. This means that if they were to then proceed to use the command in another guild, the cooldown from the first guild would not be applied.
