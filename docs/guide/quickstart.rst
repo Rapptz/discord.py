@@ -28,7 +28,7 @@ You will need a bot application before being able to run a bot. A step-by-step t
 4. Create a new Bot user if you have not done so already:
     .. image:: /images/discord_create_bot_user.png
 
-5. If you need these intents, scroll down and click on these check boxes:
+5. If you need these `intents <_guide_intents>`_, scroll down and click on these check boxes:
     .. image:: /images/discord_privileged_intents.png
 
 6. Your bot token will only be retrievable upon creation and looks like this:
@@ -87,10 +87,12 @@ We import ``discord.ext.commands`` here as we will need it for our bot.
 .. code-block:: python3
 
     intents = discord.Intents.default()
+    intents.message_content = True
     bot = commands.Bot(command_prefix="!", description="This is my awesome bot!", intents=intents)
 
 This is your bot instance. You can name the variable whatever you like but for simplicity's sake we will name it ``bot``.
 You will need to specify a ``command_prefix`` here, we use ``!``, but you can use any string, or a list of strings for multiple prefixes.
+We also add the :attr:`Intents.message_content` intent, so that our bot can read regular text messages. You can read more in the `Intents guide <_guide_intents>`_.
 
 .. note::
 
@@ -288,6 +290,7 @@ If you ran a command, but the bot isn't responding, there can be a few reasons w
 - - If you set ``command_prefix="!"``, you must invoke the command with that specific prefix, e.g. ``!echo Hello, world``
 - Did you override ``on_message`` using :meth:`@bot.event <ext.commands.Bot.event>`?
 - - There are two ways to fix this: either replace ``@bot.event`` with :meth:`@bot.listen() <ext.commands.Bot.listen>`, or add :meth:`~ext.commands.Bot.process_commands` to your ``on_message`` event. See :ref:`here <guide_quickstart_bot_event_warning>` for more information.
+- You may be missing the :attr:`Intents.message_content` intents. Further information can be found in the `Intents guide <_guide_intents>`_.
 
 I can't find my issue here
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
