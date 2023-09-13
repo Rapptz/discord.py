@@ -10,6 +10,11 @@ Context Menus Guide
 Context menus allow for commands to be triggered through a context menu upon right clicking a related object in the Discord UI,
 then selecting the name of the command to run from the ``Apps`` menu.
 
+.. note::
+
+    Context menus are not designed to be put inside of cogs. If you would like to use a context menu within a cog,
+    you will need to handle creating the :class:`.app_commands.ContextMenu` yourself.
+
 
 Basic Usage
 ~~~~~~~~~~~~

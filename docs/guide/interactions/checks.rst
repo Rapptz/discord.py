@@ -206,9 +206,10 @@ In order to implement a global check, we will need to create our own subclass of
 .. code-block:: python3
 
     import discord
+    from discord import app_commands
     from discord.ext import commands
 
-    class MyCommandTree(discord.app_commands.CommandTree):
+    class MyCommandTree(app_commands.CommandTree):
         async def interaction_check(self, interaction: discord.Interaction) -> bool:
             if interaction.user.id == 1234567890:
                 return False
@@ -222,7 +223,7 @@ In order to implement a global check, we will need to create our own subclass of
     client = discord.Client(...)
     tree = MyCommandTree(client)
 
-    # Using with a discord.ext.commands.Bot implementation
+    # Using with a commands.Bot implementation
     bot = commands.Bot(..., tree_cls=MyCommandTree)
 
 
