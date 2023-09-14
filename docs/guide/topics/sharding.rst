@@ -64,6 +64,9 @@ Let's make a bot using :class:`~ext.commands.AutoShardedBot`:
     
     bot.run("token")
 
+.. note::
+    
+    You can specify the shard_count in AutoShardedBot, but that defeats the whole purpose of :class:`~AutoShardedBot` and you should just use :class:`~Bot` instead.
 
 If you don't wanna use discord's recommended shard count, you can specify your own:
 
