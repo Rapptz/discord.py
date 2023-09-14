@@ -9,7 +9,7 @@ Interaction Checks Guide
 
 Checks allow you to set requirements for a command to be executable. They can enforce a user being an administrator, any number of roles, the bot's permissions, cooldowns, custom checks, or any combination of these.
 
-These checks will be used as decorators in conjunction with any :func:`@app_commands.command <.app_commands.command>` or :func:`@app_commands.context_menu <.app_commands.context_menu>` decorators.
+Checks are decorators used with any :func:`@app_commands.command <.app_commands.command>` or :func:`@app_commands.context_menu <.app_commands.context_menu>` decorator.
 
 Before getting started, the examples shown below demonstrate both :class:`.app_commands.Command` and :class:`.app_commands.ContextMenu` checks. All of the checks present here can apply to either one. Let's take a look at each of the possible checks.
 
