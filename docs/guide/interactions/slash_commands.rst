@@ -1,3 +1,5 @@
+:orphan:
+
 .. _discord_slash_commands:
 
 Slash commands
@@ -9,10 +11,10 @@ Analogous to their name, they're previewed and invoked in the Discord client by 
 .. image:: /images/guide/app_commands/meow_command_preview.png
     :width: 400
 
-App commands are implemented within the :ref:`discord.app_commands <discord_app_commands>` package.
+Application commands are implemented within the :ref:`discord.app_commands <discord_app_commands>` package.
 Code examples in this page will always assume the following two imports:
 
-.. code-block:: python3
+.. code-block:: python
 
     import discord
     from discord import app_commands
@@ -27,10 +29,10 @@ You can enable this scope when generating an OAuth2 URL for your bot, shown :ref
 Defining a Tree
 ++++++++++++++++
 
-First, a :class:`.app_commands.CommandTree` needs to be instaniated
-- which is a container holding all of the bot's application commands.
+First, an :class:`.app_commands.CommandTree` needs to be created
+- which acts as a container holding all of the bot's application commands.
 
-This class contains any relevant methods for managing app commands:
+This class contains a few dedicated methods for managing and viewing app commands:
 
 - :meth:`.CommandTree.add_command` to add a command
 - :meth:`.CommandTree.remove_command` to remove a command
@@ -40,7 +42,10 @@ This class contains any relevant methods for managing app commands:
 Preferably, this tree should be attached to the client instance to
 play well with type checkers and to allow for easy access from anywhere in the code:
 
-.. code-block:: python3
+.. code-block:: python
+
+    import discord
+    from discord import app_commands
 
     class MyClient(discord.Client):
         def __init__(self):
@@ -63,7 +68,7 @@ This function is then called whenever the slash command is invoked.
 
 For example, the following code responds with "meow" on invocation:
 
-.. code-block:: python3
+.. code-block:: python
 
     @client.tree.command()
     async def meow(interaction: discord.Interaction):
@@ -76,8 +81,8 @@ left to the library to be called later.
 
 There are two main decorators to use when creating a command:
 
-- :meth:`tree.command() <.CommandTree.command>` (as seen above)
-- :func:`.app_commands.command`
+1. :meth:`tree.command() <.CommandTree.command>` (as seen above)
+2. :func:`.app_commands.command`
 
 Both decorators wrap an async function into a :class:`~.app_commands.Command`, however,
 the former also adds the command to the tree,
@@ -85,7 +90,7 @@ which skips the step of having to add it manually using :meth:`.CommandTree.add_
 
 For example, these two are functionally equivalent:
 
-.. code-block:: python3
+.. code-block:: python
 
     @app_commands.command()
     async def meow(interaction: discord.Interaction):
@@ -109,13 +114,13 @@ Some information is logically inferred from the function to populate the slash c
 
 To change them to something else, ``tree.command()`` accepts ``name`` and ``description`` as keyword arguments.
 
-.. code-block:: python3
+.. code-block:: python
 
     @client.tree.command(name="woof", description="Woof woof woof")
     async def meow(interaction: discord.Interaction):
         pass
 
-If a description isn't provided, an ellipsis "..." is used instead.
+If a description isn't provided through ``description`` or by the docstring, an ellipsis "..." is used instead.
 
 Interaction
 ++++++++++++
@@ -129,10 +134,10 @@ When an interaction is created on command invoke, some information about the sur
 - :class:`discord.Interaction.guild` - the guild it was invoked in, if any
 - :class:`discord.Interaction.user` - the user or member who invoked the command
 
-When it comes to responding to an interaction, by sending a message or otherwise,
-the methods from :attr:`.Interaction.response` need to be used.
+Attributes like these and others are a given, however when it comes to responding to an interaction,
+by sending a message or otherwise, the methods from :attr:`.Interaction.response` need to be used.
 
-A response needs to occur within 3 seconds, otherwise an interaction fails with this error on Discord:
+A response needs to occur within 3 seconds, otherwise this message pops up on Discord in red:
 
 .. image:: /images/guide/app_commands/interaction_failed.png
 
@@ -141,11 +146,11 @@ In practice, it's common to use either of the following two methods:
 - :meth:`.InteractionResponse.send_message` to send a message
 - :meth:`.InteractionResponse.defer` to defer a response
 
-In this case of deferring, a follow-up message needs to be sent within 15 minutes for app commands.
+In the case of deferring, a follow-up message needs to be sent within 15 minutes for app commands.
 
 For example, to send a deferred ephemeral message:
 
-.. code-block:: python3
+.. code-block:: python
 
     import asyncio
     import random
@@ -170,11 +175,12 @@ In order for this command to show up on Discord, the API needs some information 
 - Any checks attached (covered later)
 - Whether this command is a group (covered later)
 - Whether this is a global or local command (covered later)
+- Any localisations for the above (covered later)
 
 Syncing is the process of sending this information, which is done by
 calling the :meth:`.CommandTree.sync` method, typically in :meth:`.Client.setup_hook`:
 
-.. code-block:: python3
+.. code-block:: python
 
     class MyClient(discord.Client):
         def __init__(self):
@@ -202,7 +208,7 @@ Types are specified in code through :pep:`526` function annotations.
 For example, the following code implements a repeat command that repeats text a
 certain number of times using a ``content`` and an ``n_times`` parameter:
 
-.. code-block:: python3
+.. code-block:: python
 
     import textwrap
 
@@ -229,35 +235,17 @@ annotating to :class:`discord.Member` will show a selection of members to pick f
 
 A full list of available parameter types can be seen in the :ref:`type conversion table <type_conversion>`.
 
-User parameter
-+++++++++++++++
-
-Annotating to either :class:`discord.User` or :class:`discord.Member` both point to a ``USER`` Discord-type.
-
-The actual type given by Discord is dependent on whether the command was invoked in DM-messages or in a guild.
-It is important to annotate correctly based on this.
-
-For example, if a parameter annotates to :class:`~discord.Member`, and the command is invoked in a guild,
-discord.py will raise an error since the actual type given by Discord,
-:class:`~discord.User`, is incompatible with :class:`~discord.Member`.
-
-discord.py doesn't raise an error for the other way around, ie. a parameter annotated to :class:`~discord.User` invoked in a guild.
-This is because :class:`~discord.Member` is compatible with :class:`~discord.User`.
-
-It is still important to be aware of this, as it can cause unexpected behaviour in your code.
-
 typing.Optional
 ++++++++++++++++
 
-Discord also supports optional parameters, wherein a user doesn't need to provide a value during invocation.
+Discord supports optional parameters, wherein a user doesn't need to provide a value during invocation.
 
-To do this, a parameter should annotate to :obj:`~typing.Optional`.
-
-``None`` will be passed instead if a user didn't submit anything, or the parameter's default value.
+A parameter is considered optional if its assigned a default value and/or annotated
+to :obj:`~typing.Optional`.
 
 For example, this command displays a given user's avatar, or the current user's avatar:
 
-.. code-block:: python3
+.. code-block:: python
 
     from typing import Optional
 
@@ -283,7 +271,7 @@ Some types comprise of multiple other types. For example, a ``MENTIONABLE`` type
 
 To specify in code, a parameter should annotate to a :obj:`typing.Union` with all the different models:
 
-.. code-block:: python3
+.. code-block:: python
 
     from typing import Union
 
@@ -300,7 +288,7 @@ Types that point to other types also don't have to include everything.
 For example, a ``CHANNEL`` type parameter can point to any channel in a guild,
 but can be narrowed down to a specific set of channels:
 
-.. code-block:: python3
+.. code-block:: python
 
     from typing import Union
 
@@ -333,7 +321,8 @@ Describing
 Descriptions are added to parameters using the :func:`.app_commands.describe` decorator,
 where each keyword is treated as a parameter name.
 
-.. code-block:: python3
+.. code-block:: python
+    :emphasize-lines: 2-5
 
     @client.tree.command()
     @app_commands.describe(
@@ -351,7 +340,9 @@ These show up on Discord just beside the parameter's name:
 In addition to the decorator, parameter descriptions can also be added using
 Google, Sphinx or Numpy style docstrings.
 
-.. code-block:: python3
+Examples using a command to add 2 numbers together:
+
+.. code-block:: python
 
     @client.tree.command() # numpy
     async def addition(interaction: discord.Interaction, a: int, b: int):
@@ -394,7 +385,8 @@ the library offers a method to rename them with the :func:`.app_commands.rename`
 
 In use:
 
-.. code-block:: python3
+.. code-block:: python
+    :emphasize-lines: 2
 
     @client.tree.command()
     @app_commands.rename(n_times="number-of-times")
@@ -402,11 +394,10 @@ In use:
         to_send = textwrap.shorten(f"{content} " * n_times, width=2000)
         await interaction.response.send_message(to_send)
 
-
 When referring to a renamed parameter in other decorators, the original parameter name should be used.
 For example, to use :func:`~.app_commands.describe` and :func:`~.app_commands.rename` together:
 
-.. code-block:: python3
+.. code-block:: python
 
     @client.tree.command()
     @app_commands.describe(
@@ -432,7 +423,7 @@ Each individual choice contains 2 fields:
 
 To illustrate, the following command has a selection of 3 colours with each value being the colour code:
 
-.. code-block:: python3
+.. code-block:: python
 
     @client.tree.command()
     @app_commands.describe(colour="pick your favourite colour")
@@ -458,9 +449,39 @@ shown :func:`here <discord.app_commands.choices>` in the reference.
 Autocompletion
 +++++++++++++++
 
-waiting to be written
+Autocomplete callbacks allow the bot to dynamically return up to 25 choices
+to a user as they type a parameter.
 
-i mostly just want to link to the reference :meth:`~.app_commands.Command.autocomplete`
+In short:
+
+- User starts typing.
+
+- After a brief debounced pause from typing, Discord requests a list of choices from the bot.
+
+- An autocomplete callback is called with the current user input.
+
+- Returned choices are sent back to Discord and shown in the user's client.
+
+  - An empty list can be returned to denote no choices.
+
+Attaching an autocomplete function to a parameter can be done in 2 main ways:
+
+1. From the command, with the :meth:`~.app_commands.Command.autocomplete` decorator
+2. With a separate decorator, :func:`.app_commands.autocomplete`
+
+Code examples for either method can be found in the corresponding reference page.
+
+.. note::
+
+    Unlike :func:`.app_commands.choices`, a user can still submit any value instead of
+    being limited to the bot's suggestions.
+
+.. warning::
+
+    Since exceptions raised from within an autocomplete callback are not considered handleable,
+    they're silently ignored and discarded.
+
+    Instead, an empty list is returned to the user.
 
 Range
 ++++++
@@ -476,7 +497,7 @@ Transformers
 Sometimes additional logic for parsing arguments is wanted.
 For instance, to parse a date string into a :class:`datetime.datetime` we might do:
 
-.. code-block:: python3
+.. code-block:: python
 
     import datetime
 
@@ -493,7 +514,7 @@ It helps to isolate this code into it's own place, which we can do with transfor
 Transformers are effectively classes containing a ``transform`` method that "transforms" a raw argument value into a new value.
 Making one is done by inherting from :class:`.app_commands.Transformer` and overriding the :meth:`~.Transformer.transform` method.
 
-.. code-block:: python3
+.. code-block:: python
 
     # the above example adapted to a transformer
 
@@ -503,12 +524,12 @@ Making one is done by inherting from :class:`.app_commands.Transformer` and over
             when = when.replace(tzinfo=datetime.timezone.utc)
             return when
 
-If you're familar with ``ext.commands``, a lot of similarities can be drawn between transformers and converters.
+If you're familar with the commands extension :ref:`ext.commands <discord_ext_commands>`, a lot of similarities can be drawn between transformers and converters.
 
 To use this transformer in a command, a paramater needs to annotate to :class:`.app_commands.Transform`,
 passing the transformed type and transformer respectively.
 
-.. code-block:: python3
+.. code-block:: python
 
     @client.tree.command()
     async def date(interaction: discord.Interaction, when: app_commands.Transform[datetime.datetime, DateTransformer]):
@@ -531,7 +552,7 @@ These can be provided by overriding the following properties:
 Since these are properties, they must be decorated with :class:`property`.
 For example, to change the underlying type to :class:`~discord.User`:
 
-.. code-block:: python3
+.. code-block:: python
 
     class UserAvatar(app_commands.Transformer):
         async def transform(self, interaction: discord.Interaction, user: discord.User) -> discord.Asset:
@@ -572,6 +593,22 @@ The table below outlines the relationship between Discord and Python types.
 
 :ddocs:`Application command option types <interactions/application-commands#application-command-object-application-command-option-type>` as documented by Discord.
 
+User parameter
+^^^^^^^^^^^^^^^
+
+Annotating to either :class:`discord.User` or :class:`discord.Member` both point to a ``USER`` Discord-type.
+
+The actual type given by Discord is dependent on whether the command was invoked in DM-messages or in a guild.
+
+For example, if a parameter annotates to :class:`~discord.Member`, and the command is invoked in a guild,
+discord.py will raise an error since the actual type given by Discord,
+:class:`~discord.User`, is incompatible with :class:`~discord.Member`.
+
+discord.py doesn't raise an error for the other way around, ie. a parameter annotated to :class:`~discord.User` invoked in a guild.
+This is because :class:`~discord.Member` is compatible with :class:`~discord.User`.
+
+It's still important to be aware of this, as it can cause unexpected behaviour in your code.
+
 Checks
 -------
 
@@ -587,7 +624,7 @@ Indicates whether this command can only be used in NSFW channels or not.
 
 This can be configured by passing the ``nsfw`` keyword argument within the command decorator:
 
-.. code-block:: python3
+.. code-block:: python
 
     @client.tree.command(nsfw=True)
     async def evil(interaction: discord.Interaction):
@@ -600,12 +637,12 @@ Indicates whether this command can only be used in guilds or not.
 
 Enabled by adding the :func:`.app_commands.guild_only` decorator when defining a slash command:
 
-.. code-block:: python3
+.. code-block:: python
 
     @client.tree.command()
     @app_commands.guild_only()
     async def serverinfo(interaction: discord.Interaction):
-        assert interaction.guild
+        assert interaction.guild is not None
         await interaction.response.send_message(interaction.guild.name)
 
 Default permissions
@@ -615,7 +652,7 @@ This sets the default permissions a user needs in order to be able to see and in
 
 Configured by adding the :func:`.app_commands.default_permissions` decorator when defining a slash command:
 
-.. code-block:: python3
+.. code-block:: python
 
     import datetime
 
@@ -652,7 +689,7 @@ This method is called before every command invoke.
 
 For example:
 
-.. code-block:: python3
+.. code-block:: python
 
     whitelist = {236802254298939392, 402159684724719617} # cool people only
 
@@ -663,9 +700,11 @@ For example:
 .. note::
 
     If your project uses :class:`.ext.commands.Bot` as the client instance,
-    the :class:`.CommandTree` class can be configured via the ``tree_cls`` keyword argument in the bot constructor.
+    the :class:`.CommandTree` class can be configured via
+    the ``tree_cls`` keyword argument in the bot constructor:
 
-    .. code-block:: python3
+    .. code-block:: python
+        :emphasize-lines: 6
 
         from discord.ext import commands
 
@@ -706,18 +745,19 @@ Command groups
 ---------------
 
 To make a more organised and complex tree of commands, Discord implements command groups and subcommands.
-A group can contain up to 25 subcommands, with up to 1 level of nesting supported.
+A group can contain up to 25 subcommands or subgroups, with up to 1 level of nesting supported,
+effectively making the command limit max out at 62500.
 
 Meaning, a structure like this is possible:
 
 .. code-block::
 
-    highlight
-    ├── blocks
-    │   ├── /highlight blocks add
-    │   └── /highlight blocks remove
-    ├── /highlight add
-    └── /highlight delete
+    todo
+    ├── lists
+    │   ├── /todo lists create
+    │   └── /todo lists switch
+    ├── /todo add
+    └── /todo delete
 
 Command groups **are not invocable** on their own.
 
@@ -726,7 +766,7 @@ groups are created by using :class:`.app_commands.Group`.
 
 This class is customisable by subclassing and passing in any relevant fields at inheritance:
 
-.. code-block:: python3
+.. code-block:: python
 
     class Todo(app_commands.Group, name="todo", description="manages a todolist"):
         ...
@@ -743,7 +783,7 @@ version of the class name, and the class's docstring shortened to 100 characters
 
 Subcommands can be made in-line by decorating bound methods in the class:
 
-.. code-block:: python3
+.. code-block:: python
 
     class Todo(app_commands.Group, name="todo", description="manages a todolist"):
         @app_commands.command(name="add", description="add a todo")
@@ -759,7 +799,7 @@ After syncing:
 
 To add 1-level of nesting, create another :class:`~.app_commands.Group` in the class:
 
-.. code-block:: python3
+.. code-block:: python
 
     class Todo(app_commands.Group, name="todo", description="manages a todolist"):
         @app_commands.command(name="add", description="add a todo")
@@ -781,7 +821,7 @@ To add 1-level of nesting, create another :class:`~.app_commands.Group` in the c
 Decorators like :func:`.app_commands.default_permissions` and :func:`.app_commands.guild_only`
 can be added on top of the class to apply to the group, for example:
 
-.. code-block:: python3
+.. code-block:: python
 
     @app_commands.default_permissions(manage_guild=True)
     class Moderation(app_commands.Group):
@@ -804,7 +844,7 @@ There are 2 main ways to specify which guilds a command should sync to:
 
 To demonstrate:
 
-.. code-block:: python3
+.. code-block:: python
 
     @client.tree.command()
     @app_commands.guilds(discord.Object(336642139381301249))
@@ -828,7 +868,7 @@ Since local commands can be useful in a development scenario, as often we don't 
 to propagate to all guilds, the library offers a helper method :meth:`.CommandTree.copy_global_to`
 to copy all global commands to a certain guild for syncing:
 
-.. code-block:: python3
+.. code-block:: python
 
     class MyClient(discord.Client):
         def __init__(self):
@@ -845,7 +885,230 @@ You'll typically find this syncing paradigm in some of the examples in the repos
 Translating
 ------------
 
-waiting to be written
+heavy work-in-progress...!
+
+Discord supports localisation for the following fields:
+
+- Command names and descriptions
+- Parameter names and descriptions
+- Choice names (choices and autocomplete)
+
+This allows the above fields to appear differently according to a user client's language setting.
+
+Localisations can be done :ddocs:`partially <interactions/application-commands#localization>` -
+when a locale doesn't have a translation for a given field, Discord will use the default/original string instead.
+
+Support for localisation is implemented in discord.py with the :class:`.app_commands.Translator` interface,
+which are effectively classes containing a core ``transform`` method that
+takes the following parameters:
+
+1. a ``string`` - the string to be translated according to ``locale``
+2. a ``locale`` - the locale to translate to
+3. a ``context`` - the context of this translation (what type of string is being translated)
+
+When :meth:`.CommandTree.sync` is called, this method is called in a heavy loop for each
+string for each locale.
+
+A wide variety of translation systems can be implemented using this interface, such as
+`gettext <https://docs.python.org/3/library/gettext.html>`_ and
+`Project Fluent <https://projectfluent.org/>`_.
+
+Only strings marked as ready for translation are passed to the method.
+By default, every string is considered translatable and passed.
+
+Nonetheless, to specify a translatable string explicitly,
+simply pass a string wrapped in :class:`~.app_commands.locale_str` in places you'd usually use :class:`str`:
+
+.. code-block:: python
+
+    from discord.app_commands import locale_str as _
+
+    @client.tree.command(name=_("example"), description=_("an example command"))
+    async def example(interaction: discord.Interaction):
+        ...
+
+To toggle this behaviour, set the ``auto_locale_strings`` keyword-argument
+to :obj:`False` when creating a command:
+
+.. code-block:: python
+
+    @client.tree.command(name="example", description="an example command", auto_locale_strings=False)
+    async def example(interaction: discord.Interaction):
+        # i am not translated
+
+.. hint::
+
+    Additional keyword-arguments passed to the :class:`~.app_commands.locale_str` constructor are
+    inferred as "extra" information, which is kept untouched by the library in :attr:`~.locale_str.extras`.
+
+    Utilise this field if additional info surrounding the string is required for translation.
+
+Next, to create a translator, inherit from :class:`.app_commands.Translator` and
+override the :meth:`~.Translator.translate` method:
+
+.. code-block:: python
+
+    class MyTranslator(app_commands.Translator):
+        async def translate(
+            self,
+            string: app_commands.locale_str,
+            locale: discord.Locale,
+            context: app_commands.TranslationContext
+        ) -> str:
+            ...
+
+A string should be returned according to the given ``locale``. If no translation is available,
+:obj:`None` should be returned instead.
+
+:class:`~.app_commands.TranslationContext`  provides contextual info for what is being translated.
+
+This contains 2 properties:
+
+- :attr:`~.app_commands.TranslationContext.location` - an enum representing what is being translated, eg. a command description.
+
+- :attr:`~.app_commands.TranslationContext.data` - can point to different things depending on the ``location``.
+
+  - When translating a field for a command or group, such as the name, this points to the command in question.
+
+  - When translating a parameter name, this points to the :class:`~.app_commands.Parameter`.
+
+  - For choice names, this points to the :class:`~.app_commands.Choice`.
+
+Lastly, in order for a translator to be used, it needs to be attached to the tree
+by calling :meth:`.CommandTree.set_translator`.
+
+Since this is an async method, it's ideal to call it in an async entry-point, such as :meth:`.Client.setup_hook`:
+
+.. code-block:: python
+
+    class MyClient(discord.Client):
+        def __init__(self):
+            super().__init__(intents=discord.Intents.default())
+            self.tree = app_commands.CommandTree(self)
+
+        async def setup_hook(self):
+            await self.tree.set_translator(MyTranslator())
+
+In summary:
+
+- Use :class:`~.app_commands.locale_str` in-place of :class:`str` in parts of a command you want translated.
+
+  - Done by default, so this step is skipped in-practice.
+
+- Subclass :class:`.app_commands.Translator` and override the :meth:`.Translator.translate` method.
+
+  - Return a translated string or :obj:`None`.
+
+- Call :meth:`.CommandTree.set_translator` with a translator instance.
+
+- Call :meth:`.CommandTree.sync`.
+
+  - :meth:`.Translator.translate` will be called on all translatable strings.
+
+Following is a quick demo using the `Project Fluent <https://projectfluent.org/>`_ translation system
+and the `Python fluent library <https://pypi.org/project/fluent/>`_.
+
+Relative to the bot's working directory is a translation resource
+described in fluent's `FTL <https://projectfluent.org/fluent/guide/>`_ format - containing
+the Japanese (locale: ``ja``) translations for the bot:
+
+.. code-block::
+    :caption: l10n/ja/commands.ftl
+
+    # command metadata
+    apple-command-name = リンゴ
+    apple-command-description = ボットにリンゴを食べさせます。
+
+    # parameters
+    apple-command-amount = 食べさせるリンゴの数
+
+    # responses from the command body
+    apple-command-response = リンゴを{ $apple_count }個食べました。
+
+In code, strings are only considered translatable if they have an
+attached ``fluent_id`` identifier:
+
+.. code-block:: python
+
+    @client.tree.command(
+        name=_("apple", fluent_id="apple-command-name"),
+        description=_("tell the bot to eat some apples", fluent_id="apple-command-description")
+    )
+    @app_commands.describe(amount=_("how many apples?", fluent_id="apple-command-amount"))
+    async def apple(interaction: discord.Interaction, amount: int):
+        translator = client.tree.translator
+
+        # plurals for the bots native language (english) are handled here in the code.
+        # fluent can handle plurals for secondary languages if needed.
+        # see: https://projectfluent.org/fluent/guide/selectors.html
+
+        plural = "apple" if amount == 1 else "apples"
+
+        translated = await translator.translate_string(
+            _(f"i ate {amount} {plural}", fluent_id="apple-command-response"),
+            interaction.locale,
+            apple_count=amount
+        )
+
+        await interaction.response.send_message(translated)
+
+.. code-block:: python
+
+    from fluent.runtime import FluentLocalization, FluentResourceLoader
+
+    class JapaneseTranslator(app_commands.Translator):
+        def __init__(self):
+            self.resources = FluentResourceLoader("l10n/{locale}")
+            self.mapping = {
+                discord.Locale.japanese: FluentLocalization(["ja"], ["commands.ftl"], self.resources),
+                # + additional locales as needed
+            }
+
+        # translates a given string for a locale,
+        # subsituting any required parameters
+        async def translate_string(
+            self,
+            string: locale_str,
+            locale: discord.Locale,
+            **params: Any
+        ) -> str:
+            l10n = self.mapping.get(locale)
+            if not l10n:
+                # return the string untouched
+                return string.message
+
+            fluent_id = string.extras["fluent_id"]
+            return l10n.format_value(fluent_id, params)
+
+        # core translate method called by the library
+        async def translate(
+            self,
+            string: locale_str,
+            locale: discord.Locale,
+            context: app_commands.TranslationContext
+        ):
+            fluent_id = string.extras.get("fluent_id")
+            if not fluent_id:
+                # ignore strings without an attached fluent_id
+                return None
+
+            l10n = self.mapping.get(locale)
+            if not l10n:
+                # no translation available for this locale
+                return None
+
+            # otherwise, a translation is assumed to exist and is returned
+            return l10n.format_value(fluent_id)
+
+Viewing the command with an English (or any other) language setting:
+
+.. image:: /images/guide/app_commands/apple_command_english.png
+    :width: 300
+
+With a Japanese language setting:
+
+.. image:: /images/guide/app_commands/apple_command_japanese.png
+    :width: 300
 
 Recipes
 --------
@@ -861,9 +1124,9 @@ Therefore, it's helpful to control the syncing process manually.
 
 A common and recommended approach is to create an owner-only traditional message command to do this.
 
-The ``ext.commands`` extension makes this easy:
+The :ref:`commands extension <discord_ext_commands>` makes this easy:
 
-.. code-block:: python3
+.. code-block:: python
 
     from discord.ext import commands
 
@@ -883,7 +1146,7 @@ The ``ext.commands`` extension makes this easy:
 
 A more complex command that offers higher granularity using arguments:
 
-.. code-block:: python3
+.. code-block:: python
 
     from typing import Literal, Optional
 
@@ -892,7 +1155,6 @@ A more complex command that offers higher granularity using arguments:
 
     # requires the `message_content` intent to work!
 
-    # authored by Umbra
     # https://about.abstractumbra.dev/discord.py/2023/01/29/sync-command-example.html
 
     @bot.command()
@@ -933,7 +1195,7 @@ bots can still read message content for direct-messages and for messages that me
 
 :func:`.commands.when_mentioned` can be used to apply a mention prefix to your bot:
 
-.. code-block:: python3
+.. code-block:: python
 
     bot = commands.Bot(
         command_prefix=commands.when_mentioned,
