@@ -315,7 +315,7 @@ with the :meth:`~discord.Client.add_view` method.
         async def setup_hook(self) -> None:
             asyncio.create_task(self.setup_role_selector())
 
-    client = MyClient()
+    client = MyClient(intents=discord.Intents.default())
     client.run(...)
 
 If we did everything correctly, the user should be able to select a role and the role should be assigned to the user.
