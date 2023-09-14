@@ -120,7 +120,7 @@ Putting it all together: an individual user can use the command once every 5 sec
 Dynamic Cooldown
 ~~~~~~~~~~~~~~~~~
 
-Dynamic cooldowns allow you to register a custom handler for cooldown checks.
+Dynamic cooldowns allow you to register a custom check and a cooldown with different ``rate`` and ``per`` parameters for different scenarios.
 
 .. code-block:: python3
     :emphasize-lines: 10
@@ -138,7 +138,7 @@ Dynamic cooldowns allow you to register a custom handler for cooldown checks.
     async def dynamic_cooldown_check(interaction: discord.Interaction):
         await interaction.response.send_message('Not on cooldown!', ephemeral=True)
 
-The :func:`@dynamic_cooldown <.app_commands.checks.dynamic_cooldown>` is passed a reference to a function, which can be used to control when to apply a different cooldown to specific use-cases, or ignore it all together.
+The :func:`@dynamic_cooldown <.app_commands.checks.dynamic_cooldown>` is passed a function, which controls when to apply a cooldown and its ``rate`` and ``per`` parameters, or ignore it all together.
 
 In this specific use case, the function is used to apply a 10 second per usage cooldown to each individual user. However, if the user is the owner of the guild the command is used in, the command cooldown is bypassed. Similarly, if the user is a specific user mentioned by id, a lesser cooldown is applied, of just 5 seconds per usage.
 
