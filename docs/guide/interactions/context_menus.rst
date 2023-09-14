@@ -8,7 +8,7 @@ Context Menus Guide
 ====================
 
 Context menus allow for commands to be triggered through a context menu upon right clicking a related object in the Discord UI,
-then selecting the name of the command to run from the ``Apps`` menu.
+then selecting the name of the command to run from the "Apps" menu.
 
 .. note::
 
@@ -47,6 +47,6 @@ The Message Context Menu produces an option that looks like the following:
 Checks
 ~~~~~~~
 
-One of the most common current uses of context menus is to implement a variety of extended moderation features. Some ideas might include a ``Toggle Mute``, ``Warn``, ``Report``, or ``Info`` commands. For implementing moderation commands like these, it will be useful to add checks in order to ensure that only those who are allowed to can use said commands.
+Context menus can be used to implement a variety of extended moderation features. Some ideas might include a ``Toggle Mute``, ``Warn``, ``Report``, or ``Info`` commands. For implementing moderation commands like these, it is useful to add checks to ensure that only those who are allowed to can the commands.
 
 For examples of checks, view the :ref:`Interaction Checks Guide <guide_interaction_checks>`.

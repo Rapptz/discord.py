@@ -7,11 +7,11 @@
 Interaction Checks Guide
 =========================
 
-Checks are a feature that allows you to set requirements in order for a command to be executed. This can include things like requiring administrator permissions, requiring a user to have a role, making sure that the bot has necessary permissions to execute a task, adding a cooldown to a command, creating a custom check function, or any combination of these.
+Checks allow you to set requirements for a command to be executable. They can enforce a user being an administrator, any number of roles, the bot's permissions, cooldowns, custom checks, or any combination of these.
 
 These checks will be used as decorators in conjunction with any :func:`@app_commands.command <.app_commands.command>` or :func:`@app_commands.context_menu <.app_commands.context_menu>` decorators.
 
-Before getting started, the examples shown below are made using both :class:`.app_commands.Command` and :class:`.app_commands.ContextMenu` methods. All of the checks present here can apply to either one. Let's take a look at each of the possible checks.
+Before getting started, the examples shown below demonstrate both :class:`.app_commands.Command` and :class:`.app_commands.ContextMenu` checks. All of the checks present here can apply to either one. Let's take a look at each of the possible checks.
 
 .. note::
 
@@ -22,7 +22,7 @@ Before getting started, the examples shown below are made using both :class:`.ap
 Role Checks
 ------------
 
-These checks allow a simple way to ensure that the user triggering a command has a role, or any role from a set of roles.
+These checks ensure that the user triggering a command has a role, or any role from a set of roles.
 
 .. code-block:: python3
     :emphasize-lines: 2,7
@@ -48,7 +48,7 @@ Let's take a quick look through the code here:
 A very similar process happens for checking multiple roles:
 
 - First, a :class:`.app_commands.ContextMenu` is registered using the :func:`@app_commands.context_menu() <.app_commands.context_menu>` decorator.
-- Then, a :func:`@has_role <.app_commands.checks.has_any_role>` is added for multiple roles. Again, these roles are either :class:`str` or :class:`int` values.
+- Then, a :func:`@has_role <.app_commands.checks.has_any_role>` is added for multiple roles. Again, these roles are either :class:`str` or :class:`int` values with the types having the same meanings.
 - Then, the callback for the context menu is created.
 
 .. _guide_interaction_checks_permission-check:
@@ -56,7 +56,7 @@ A very similar process happens for checking multiple roles:
 Permission Checks
 ------------------
 
-These checks handle validating whether the user activating a command has certain permissions in a server, or whether the bot user has specific permissions.
+These checks handle validating whether the user activating a command has certain permissions in a guild, or whether the bot user has specific permissions.
 
 .. code-block:: python3
     :emphasize-lines: 3,9
@@ -73,7 +73,7 @@ These checks handle validating whether the user activating a command has certain
     async def bot_permission_check(interaction: discord.Interaction):
         await interaction.response.send_message('I can do that!', ephemeral=True)
 
-These two checks are identical in usage. The only difference is that one checks the permissions of the user who calls the command, and one checks the permissions of the bot user the command is issued to.
+These two checks are identical in usage. The only difference is that the first checks the permissions of the user who calls the command, and the other checks the permissions of the bot user the command is issued to.
 
 The permissions given to the check can be any number of permissions, which can be found in :class:`.Permissions`, and must have a boolean value.
 
@@ -84,12 +84,12 @@ Cooldown Checks
 
 It is also possible to use a check decorator that will directly attach a cooldown to your command.
 
-There are two cooldown methods, static and dynamic.
+There are two cooldown types, static and dynamic.
 
 Static Cooldown
 ~~~~~~~~~~~~~~~~
 
-Static cooldowns are methods which limit a command to a certain number of uses per time frame.
+Static cooldowns limit a command to a fixed number of uses, per time frame.
 
 .. code-block:: python3
     :emphasize-lines: 2
@@ -101,21 +101,21 @@ Static cooldowns are methods which limit a command to a certain number of uses p
 
 The :func:`@cooldown <.app_commands.checks.cooldown>` decorator takes 3 possible arguments:
 
-- The ``rate`` parameter first takes an integer value. This value is the number of usages that can be used within a time frame before the cooldown is activated.
-- The ``per`` parameter then takes a float value. This is the number of seconds to wait for a cooldown once it has been activated.
-- The third and final parameter, ``key``, can be used to specify what criteria are used for applying the cooldown. This is given as a function that takes a :class:`.Interaction` as an argument, and can be a coroutine.
+- The ``rate`` parameter first takes an :class:`int`, which determines the number of times a command can be used within a time frame before the cooldown is activated.
+- The ``per`` parameter then takes a :class:`float` which determines the number of seconds to wait for a cooldown once it has been activated.
+- The third and final parameter, ``key``, can be used to specify what criteria are used for applying the cooldown. This is given as a function that takes a :class:`.Interaction` as an argument, and can return a coroutine.
 
 Now that we know what the parameters for a static cooldown are, let's take a closer look at the shown example:
 
 - The ``rate`` parameter is set to ``1``, so the cooldown will trigger every time the command is used.
 - The ``per`` parameter is set to ``5.0``, so the cooldown will lock the command for 5 seconds when it is used.
-- The ``key`` parameter has a ``lambda`` function which accepts the :class:`.Interaction`, and then returns a tuple for the :attr:`~.Interaction.guild_id` and :attr:`user.id <.Interaction.user>` values. This means that the cooldown will be put in effect for each user individually, in each server.
+- The ``key`` parameter has a ``lambda`` function which accepts the :class:`.Interaction`, and then returns a :class:`tuple` for the :attr:`~.Interaction.guild_id` and :attr:`user.id <.Interaction.user>` values. This means that the cooldown will be put in effect for each user individually, in each guild.
 
-Putting it all together: an individual user can use the command once every five seconds in any one guild. This means that if they were to then proceed to use the command in another guild, the cooldown from the first guild would not be applied.
+Putting it all together: an individual user can use the command once every 5 seconds per guild. This means that if they were to then proceed to use the command in another guild, the cooldown from the first guild would not be applied.
 
 .. note::
 
-    By default, the "key" parameter will operate on the :class:`.User` level. So if no "key" parameter is specified, the cooldown will be applied per user, globally. Similarly, if the "key" parameter is set to "None", then the cooldown is considered a "global" cooldown for all users and guilds.
+    By default, the "key" parameter will operate on the :class:`.User` level. So if no "key" parameter is specified, the cooldown will be applied per user, globally. Similarly, if the "key" parameter is set to ``None``, then the cooldown is considered a "global" cooldown for all users and guilds.
 
 Dynamic Cooldown
 ~~~~~~~~~~~~~~~~~
@@ -140,14 +140,14 @@ Dynamic cooldowns allow you to register a custom handler for cooldown checks.
 
 The :func:`@dynamic_cooldown <.app_commands.checks.dynamic_cooldown>` is passed a reference to a function, which can be used to control when to apply a different cooldown to specific use-cases, or ignore it all together.
 
-In this specific use case, the function is used to apply a ``10.0`` second per usage cooldown to each individual user. However, if the user is the owner of the guild the command is used in, the command cooldown is bypassed. Similarly, if the user is a specific user mentioned by id, a lesser cooldown is applied, of just ``5.0`` seconds per usage.
+In this specific use case, the function is used to apply a 10 second per usage cooldown to each individual user. However, if the user is the owner of the guild the command is used in, the command cooldown is bypassed. Similarly, if the user is a specific user mentioned by id, a lesser cooldown is applied, of just 5 seconds per usage.
 
 .. _guide_interaction_checks_custom-check:
 
 Custom Check
 -------------
 
-Custom check commands can also be implemented if further functionality is needed outside of the checks listed above. These will generally come in two forms: a standard check decorator that is passed a custom function, or a custom decorator for common checks.
+Custom checks can also be implemented if further functionality is needed outside of the checks listed above or in the :ref:`API reference <interactions#checks>`. These generally come in two forms: a standard check decorator that is passed a custom function, or a custom decorator for common checks.
 
 .. code-block:: python3
     :emphasize-lines: 6,17
@@ -172,16 +172,16 @@ Custom check commands can also be implemented if further functionality is needed
     async def me_only(interaction: discord.Interaction):
         await interaction.response.send_message('I know you!', ephemeral=True)
 
-In this example, the first check is implemented to only allow the command usage if the user who runs the command is the owner of the guild the command is used in. This is simply a function which takes a :class:`.Interaction` as an argument, which is passed to a :func:`@check <.app_commands.check>` decorator. The second check implemented creates a custom decorator which checks if the user who activates a command has a specific id. This limits a command to only one user.
+In this example, the first check is implemented to only allow the command usage if the user who runs the command is the owner of the guild the command is used in. This is a function which takes a :class:`.Interaction` as an argument, which is passed to the :func:`@check <.app_commands.check>` decorator. The second check implemented creates a custom decorator which checks if the user who activates a command has a specific id. This limits a command to only one user.
 
 .. _guide_interaction_checks_combining-checks:
 
 Combining Checks
 -----------------
 
-You can combine multiple checks on a command to end up with a very particular functionality for your needs, in a very concise manner.
+You can combine multiple checks on a command which requires all to pass for invocation to succeed.
 
-As an example, here is a command which only runs if a user has a certain role, ``send_messages`` permissions, the bot has ``manage_messages`` permissions, and with a ``15`` second global cooldown:
+As an example, here is a command which only runs if a user has a certain role, ``send_messages`` permissions, the bot has ``manage_messages`` permissions, and with a 15 second global cooldown:
 
 .. code-block:: python3
 
@@ -248,9 +248,9 @@ Alright, let's deconstruct this now:
 Integration Permissions
 ------------------------
 
-In addition to the standard check functionality, there are a few additional functionalities that behave similarly.
+In addition to the previously mentioned checks, there are a few other "check-like" functionalities provided.
 
-These options include:
+These include:
 
 - The :func:`@app_commands.default_permissions() <.app_commands.default_permissions>` decorator.
 - The :func:`@app_commands.guild_only() <.app_commands.guild_only>` decorator.
@@ -263,8 +263,7 @@ handling when these situations arise.
 .. note::
 
     If you wish to perform error handling of these kinds of features yourself,
-    you can implement a :ref:`custom check <guide_interaction_checks_custom-check>` to do this and not utilize these
-    features.
+    you can implement a :ref:`custom check <guide_interaction_checks_custom-check>`.
 
 .. warning::
 
@@ -281,7 +280,7 @@ for a user to execute a slash command or interact with a context menu.
 
 Using this means that a slash command or context menu will by default require the provided permissions.
 However, an administrator in the server will be able to override these permissions directly in the Discord client,
-without the bot ever being any the wiser.
+without the bot's knowledge.
 
 .. code-block:: python3
 
@@ -304,7 +303,7 @@ In the first example above, we limit the permissions to use the slash command to
     in the default permissions being set to administrator only.
 
 In the second example, the context menu will be limited to only users with the ``delete_messages`` and ``manage_guild``
-permissions. The provided values can be any number of permissions, which can be found in :class:`.Permissions`,
+permissions. The provided values can be any number of :class:`.Permissions`,
 and must have a boolean value.
 
 Here is what the context menu above looks like in the Discord client, found inside of the ``Integrations`` section of
