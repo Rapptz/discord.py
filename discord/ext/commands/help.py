@@ -205,7 +205,12 @@ class Paginator:
         """List[:class:`str`]: Returns the rendered list of pages."""
         # we have more than just the prefix in our current page
         if len(self._current_page) > (0 if self.prefix is None else 1):
-            self.close_page()
+            # Render and include current page without closing
+            current_page = self.linesep.join(
+                [*self._current_page, self.suffix] if self.suffix is not None else self._current_page
+            )
+            return [*self._pages, current_page]
+
         return self._pages
 
     def __repr__(self) -> str:
@@ -288,6 +293,9 @@ class _HelpCommandImpl(Command):
         cog.get_commands = cog.get_commands.__wrapped__
         cog.walk_commands = cog.walk_commands.__wrapped__
         self.cog = None
+
+        # Revert `on_error` to use the original one in case of race conditions
+        self.on_error = self._injected.on_help_command_error
 
 
 class HelpCommand:
@@ -1161,7 +1169,7 @@ class DefaultHelpCommand(HelpCommand):
 
         get_width = discord.utils._string_width
         for argument in arguments:
-            name = argument.name
+            name = argument.displayed_name or argument.name
             width = max_size - (get_width(name) - len(name))
             entry = f'{self.indent * " "}{name:<{width}} {argument.description or self.default_argument_description}'
             # we do not want to shorten the default value, if any.

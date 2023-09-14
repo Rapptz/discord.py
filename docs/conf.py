@@ -42,12 +42,18 @@ extensions = [
     'attributetable',
     'resourcelinks',
     'nitpick_file_ignorer',
+    'colour_preview',
 ]
 
 autodoc_member_order = 'bysource'
 autodoc_typehints = 'none'
 # maybe consider this?
 # napoleon_attr_annotations = False
+
+extlinks = {
+    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),
+    'ddocs': ('https://discord.com/developers/docs/%s', None),
+}
 
 # Links used for cross-referencing stuff in other documentation
 intersphinx_mapping = {
@@ -96,7 +102,7 @@ release = version
 branch = 'master' if version.endswith('a') else 'v' + version
 
 extlinks = {
-    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-'),
+    'issue': ('https://github.com/Rapptz/discord.py/issues/%s', 'GH-%s'),
     'repo': (f'https://github.com/Rapptz/discord.py/tree/{branch}/%s', '/'),
     'ddocs': ('https://discord.com/developers/docs/%s', None),
 }

@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-24 11:01+0000\n"
-"PO-Revision-Date: 2023-01-30 13:38\n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -109,15 +109,19 @@ msgstr "いつものようにpipインストールを実行します。"
 msgid "Congratulations. You now have a virtual environment all set up."
 msgstr "おめでとうございます。これで仮想環境のセットアップができました。"
 
-#: ../../intro.rst:92
+#: ../../intro.rst:93
+msgid "Scripts executed with ``py -3`` will ignore any currently active virtual environment, as the ``-3`` specifies a global scope."
+msgstr ""
+
+#: ../../intro.rst:97
 msgid "Basic Concepts"
 msgstr "基本概念"
 
-#: ../../intro.rst:94
+#: ../../intro.rst:99
 msgid "discord.py revolves around the concept of :ref:`events <discord-api-events>`. An event is something you listen to and then respond to. For example, when a message happens, you will receive an event about it that you can respond to."
 msgstr "discord.pyは :ref:`イベント <discord-api-events>` の概念を中心としています。イベントは何かを受け取り、それに対する応答を行います。例えば、メッセージが発生すると、メッセージの発生に関連するイベントを受け取り、そのイベントに対して応答を返すことができます。"
 
-#: ../../intro.rst:98
+#: ../../intro.rst:103
 msgid "A quick example to showcase how events work:"
 msgstr "以下はイベントの仕組みを紹介する簡単な例です。"
 

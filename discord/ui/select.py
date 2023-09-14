@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
-from typing import List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict, overload
+from typing import Any, List, Literal, Optional, TYPE_CHECKING, Tuple, Type, TypeVar, Callable, Union, Dict, overload
 from contextvars import ContextVar
 import inspect
 import os
@@ -71,12 +71,12 @@ if TYPE_CHECKING:
     ]
 
 V = TypeVar('V', bound='View', covariant=True)
-BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect')
-SelectT = TypeVar('SelectT', bound='Select')
-UserSelectT = TypeVar('UserSelectT', bound='UserSelect')
-RoleSelectT = TypeVar('RoleSelectT', bound='RoleSelect')
-ChannelSelectT = TypeVar('ChannelSelectT', bound='ChannelSelect')
-MentionableSelectT = TypeVar('MentionableSelectT', bound='MentionableSelect')
+BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect[Any]')
+SelectT = TypeVar('SelectT', bound='Select[Any]')
+UserSelectT = TypeVar('UserSelectT', bound='UserSelect[Any]')
+RoleSelectT = TypeVar('RoleSelectT', bound='RoleSelect[Any]')
+ChannelSelectT = TypeVar('ChannelSelectT', bound='ChannelSelect[Any]')
+MentionableSelectT = TypeVar('MentionableSelectT', bound='MentionableSelect[Any]')
 SelectCallbackDecorator: TypeAlias = Callable[[ItemCallbackType[V, BaseSelectT]], BaseSelectT]
 
 selected_values: ContextVar[Dict[str, List[PossibleValue]]] = ContextVar('selected_values')
@@ -162,10 +162,10 @@ class BaseSelect(Item[V]):
     @custom_id.setter
     def custom_id(self, value: str) -> None:
         if not isinstance(value, str):
-            raise TypeError('custom_id must be None or str')
+            raise TypeError('custom_id must be a str')
 
         self._underlying.custom_id = value
-        self._provided_custom_id = value is not None
+        self._provided_custom_id = True
 
     @property
     def placeholder(self) -> Optional[str]:

@@ -40,7 +40,7 @@ if TYPE_CHECKING:
     from .view import View
     from ..components import Component
 
-I = TypeVar('I', bound='Item')
+I = TypeVar('I', bound='Item[Any]')
 V = TypeVar('V', bound='View', covariant=True)
 ItemCallbackType = Callable[[V, Interaction[Any], I], Coroutine[Any, Any, Any]]
 

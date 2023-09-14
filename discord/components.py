@@ -279,7 +279,7 @@ class SelectMenu(Component):
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
-            'type': self.type.value,
+            'type': self.type.value,  # type: ignore # we know this is a select menu.
             'custom_id': self.custom_id,
             'min_values': self.min_values,
             'max_values': self.max_values,
@@ -527,7 +527,7 @@ def _component_factory(data: ComponentPayload) -> Optional[Union[ActionRow, Acti
         return ActionRow(data)
     elif data['type'] == 2:
         return Button(data)
-    elif data['type'] == 3:
-        return SelectMenu(data)
     elif data['type'] == 4:
         return TextInput(data)
+    elif data['type'] in (3, 5, 6, 7, 8):
+        return SelectMenu(data)

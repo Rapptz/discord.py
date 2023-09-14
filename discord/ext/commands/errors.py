@@ -182,7 +182,7 @@ class MissingRequiredArgument(UserInputError):
 
     def __init__(self, param: Parameter) -> None:
         self.param: Parameter = param
-        super().__init__(f'{param.name} is a required argument that is missing.')
+        super().__init__(f'{param.displayed_name or param.name} is a required argument that is missing.')
 
 
 class MissingRequiredAttachment(UserInputError):
@@ -201,7 +201,7 @@ class MissingRequiredAttachment(UserInputError):
 
     def __init__(self, param: Parameter) -> None:
         self.param: Parameter = param
-        super().__init__(f'{param.name} is a required argument that is missing an attachment.')
+        super().__init__(f'{param.displayed_name or param.name} is a required argument that is missing an attachment.')
 
 
 class TooManyArguments(UserInputError):
@@ -901,7 +901,7 @@ class BadUnionArgument(UserInputError):
         else:
             fmt = ' or '.join(to_string)
 
-        super().__init__(f'Could not convert "{param.name}" into {fmt}.')
+        super().__init__(f'Could not convert "{param.displayed_name or param.name}" into {fmt}.')
 
 
 class BadLiteralArgument(UserInputError):
@@ -920,12 +920,17 @@ class BadLiteralArgument(UserInputError):
         A tuple of values compared against in conversion, in order of failure.
     errors: List[:class:`CommandError`]
         A list of errors that were caught from failing the conversion.
+    argument: :class:`str`
+        The argument's value that failed to be converted. Defaults to an empty string.
+
+        .. versionadded:: 2.3
     """
 
-    def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError]) -> None:
+    def __init__(self, param: Parameter, literals: Tuple[Any, ...], errors: List[CommandError], argument: str = "") -> None:
         self.param: Parameter = param
         self.literals: Tuple[Any, ...] = literals
         self.errors: List[CommandError] = errors
+        self.argument: str = argument
 
         to_string = [repr(l) for l in literals]
         if len(to_string) > 2:
@@ -933,7 +938,7 @@ class BadLiteralArgument(UserInputError):
         else:
             fmt = ' or '.join(to_string)
 
-        super().__init__(f'Could not convert "{param.name}" into the literal {fmt}.')
+        super().__init__(f'Could not convert "{param.displayed_name or param.name}" into the literal {fmt}.')
 
 
 class ArgumentParsingError(UserInputError):

@@ -636,9 +636,9 @@ class SyncWebhook(BaseWebhook):
 
         Returns
         --------
-        :class:`Webhook`
-            A partial :class:`Webhook`.
-            A partial webhook is just a webhook object with an ID and a token.
+        :class:`SyncWebhook`
+            A partial :class:`SyncWebhook`.
+            A partial :class:`SyncWebhook` is just a :class:`SyncWebhook` object with an ID and a token.
         """
         data: WebhookPayload = {
             'id': id,
@@ -678,11 +678,11 @@ class SyncWebhook(BaseWebhook):
 
         Returns
         --------
-        :class:`Webhook`
-            A partial :class:`Webhook`.
-            A partial webhook is just a webhook object with an ID and a token.
+        :class:`SyncWebhook`
+            A partial :class:`SyncWebhook`.
+            A partial :class:`SyncWebhook` is just a :class:`SyncWebhook` object with an ID and a token.
         """
-        m = re.search(r'discord(?:app)?\.com/api/webhooks/(?P<id>[0-9]{17,20})/(?P<token>[A-Za-z0-9\.\-\_]{60,68})', url)
+        m = re.search(r'discord(?:app)?\.com/api/webhooks/(?P<id>[0-9]{17,20})/(?P<token>[A-Za-z0-9\.\-\_]{60,})', url)
         if m is None:
             raise ValueError('Invalid webhook URL given.')
 
@@ -835,8 +835,7 @@ class SyncWebhook(BaseWebhook):
 
             payload['channel_id'] = channel.id
             data = adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
-
-        if prefer_auth and self.auth_token:
+        elif prefer_auth and self.auth_token:
             data = adapter.edit_webhook(self.id, self.auth_token, payload=payload, session=self.session, reason=reason)
         elif self.token:
             data = adapter.edit_webhook_with_token(self.id, self.token, payload=payload, session=self.session, reason=reason)

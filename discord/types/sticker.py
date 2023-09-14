@@ -30,7 +30,7 @@ from typing_extensions import NotRequired
 from .snowflake import Snowflake
 from .user import User
 
-StickerFormatType = Literal[1, 2, 3]
+StickerFormatType = Literal[1, 2, 3, 4]
 
 
 class StickerItem(TypedDict):
@@ -55,7 +55,7 @@ class StandardSticker(BaseSticker):
 
 class GuildSticker(BaseSticker):
     type: Literal[2]
-    available: bool
+    available: NotRequired[bool]
     guild_id: Snowflake
     user: NotRequired[User]
 

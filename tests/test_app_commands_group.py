@@ -354,3 +354,128 @@ def test_cog_group_with_subclassed_subclass_group():
     assert cog.sub_group.my_command.parent is cog.sub_group
     assert cog.my_cog_command.parent is cog.sub_group
     assert cog.my_cog_command.binding is cog
+
+
+def test_cog_group_with_custom_state_issue9383():
+    class InnerGroup(app_commands.Group):
+        def __init__(self):
+            super().__init__()
+            self.state: int = 20
+
+        @app_commands.command()
+        async def my_command(self, interaction: discord.Interaction) -> None:
+            ...
+
+    class MyCog(commands.GroupCog):
+        inner = InnerGroup()
+
+        @app_commands.command()
+        async def my_regular_command(self, interaction: discord.Interaction) -> None:
+            ...
+
+        @inner.command()
+        async def my_inner_command(self, interaction: discord.Interaction) -> None:
+            ...
+
+    cog = MyCog()
+    assert cog.inner.state == 20
+    assert cog.my_regular_command is not MyCog.my_regular_command
+
+    # Basically the same tests as above... (superset?)
+    assert MyCog.__cog_app_commands__[0].parent is not cog
+    assert MyCog.__cog_app_commands__[0].parent is not cog.__cog_app_commands_group__
+    assert InnerGroup.__discord_app_commands_group_children__[0].parent is not cog.inner
+    assert InnerGroup.__discord_app_commands_group_children__[0].parent is not cog.inner
+    assert cog.inner is not MyCog.inner
+    assert cog.inner.my_command is not InnerGroup.my_command
+    assert cog.inner.my_command is not InnerGroup.my_command
+    assert cog.my_inner_command is not MyCog.my_inner_command
+    assert not hasattr(cog.inner, 'my_inner_command')
+    assert cog.__cog_app_commands_group__ is not None
+    assert cog.__cog_app_commands_group__.parent is None
+    assert cog.inner.parent is cog.__cog_app_commands_group__
+    assert cog.inner.my_command.parent is cog.inner
+    assert cog.my_inner_command.parent is cog.inner
+    assert cog.my_inner_command.binding is cog
+
+
+def test_cog_hybrid_group_manual_command():
+    class MyCog(commands.Cog):
+        @commands.hybrid_group()
+        async def first(self, ctx: commands.Context) -> None:
+            ...
+
+        @first.command(name='both')
+        async def second_both(self, ctx: commands.Context) -> None:
+            ...
+
+        @first.app_command.command(name='second')
+        async def second_app(self, interaction: discord.Interaction) -> None:
+            ...
+
+    client = discord.Client(intents=discord.Intents.default())
+    tree = app_commands.CommandTree(client)
+
+    cog = MyCog()
+    tree.add_command(cog.first.app_command)
+
+    assert cog.first is not MyCog.first
+    assert cog.second_both is not MyCog.second_both
+    assert cog.second_app is not MyCog.second_app
+    assert cog.first.parent is None
+    assert cog.second_both.parent is cog.first
+    assert cog.second_app.parent is cog.first.app_command
+    assert cog.second_app.binding is cog
+    assert tree.get_command('first') is cog.first.app_command
+
+    first = tree.get_command('first')
+    assert isinstance(first, app_commands.Group)
+    both = first.get_command('both')
+    assert isinstance(both, app_commands.Command)
+    assert both.parent is first
+    assert both.binding is cog
+
+    second = first.get_command('second')
+    assert isinstance(second, app_commands.Command)
+    assert second.parent is first
+    assert second.binding is cog
+
+
+def test_cog_hybrid_group_manual_nested_command():
+    class MyCog(commands.Cog):
+        @commands.hybrid_group()
+        async def first(self, ctx: commands.Context) -> None:
+            pass
+
+        @first.group()
+        async def second(self, ctx: commands.Context) -> None:
+            pass
+
+        @second.app_command.command()
+        async def third(self, interaction: discord.Interaction) -> None:
+            pass
+
+    client = discord.Client(intents=discord.Intents.default())
+    tree = app_commands.CommandTree(client)
+
+    cog = MyCog()
+    tree.add_command(cog.first.app_command)
+
+    assert cog.first is not MyCog.first
+    assert cog.second is not MyCog.second
+    assert cog.third is not MyCog.third
+    assert cog.first.parent is None
+    assert cog.second.parent is cog.first
+    assert cog.third.parent is cog.second.app_command
+    assert cog.third.binding is cog
+
+    first = tree.get_command('first')
+    assert isinstance(first, app_commands.Group)
+
+    second = first.get_command('second')
+    assert isinstance(second, app_commands.Group)
+
+    third = second.get_command('third')
+    assert isinstance(third, app_commands.Command)
+    assert third.parent is second
+    assert third.binding is cog

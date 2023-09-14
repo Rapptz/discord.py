@@ -74,6 +74,7 @@ if TYPE_CHECKING:
     from .types.automod import AutoModerationTriggerMetadata, AutoModerationAction
     from .user import User
     from .app_commands import AppCommand
+    from .webhook import Webhook
 
     TargetType = Union[
         Guild,
@@ -89,6 +90,9 @@ if TYPE_CHECKING:
         Object,
         PartialIntegration,
         AutoModRule,
+        ScheduledEvent,
+        Webhook,
+        AppCommand,
         None,
     ]
 
@@ -283,11 +287,15 @@ def _flag_transformer(cls: Type[F]) -> Callable[[AuditLogEntry, Union[int, str]]
     return _transform
 
 
-def _transform_type(entry: AuditLogEntry, data: Union[int, str]) -> Union[enums.ChannelType, enums.StickerType, str]:
+def _transform_type(
+    entry: AuditLogEntry, data: Union[int, str]
+) -> Union[enums.ChannelType, enums.StickerType, enums.WebhookType, str]:
     if entry.action.name.startswith('sticker_'):
         return enums.try_enum(enums.StickerType, data)
     elif entry.action.name.startswith('integration_'):
         return data  # type: ignore  # integration type is str
+    elif entry.action.name.startswith('webhook_'):
+        return enums.try_enum(enums.WebhookType, data)
     else:
         return enums.try_enum(enums.ChannelType, data)
 
@@ -517,7 +525,7 @@ class _AuditLogProxyMessageBulkDelete(_AuditLogProxy):
 class _AuditLogProxyAutoModAction(_AuditLogProxy):
     automod_rule_name: str
     automod_rule_trigger_type: str
-    channel: Union[abc.GuildChannel, Thread]
+    channel: Optional[Union[abc.GuildChannel, Thread]]
 
 
 class AuditLogEntry(Hashable):
@@ -576,6 +584,7 @@ class AuditLogEntry(Hashable):
         integrations: Mapping[int, PartialIntegration],
         app_commands: Mapping[int, AppCommand],
         automod_rules: Mapping[int, AutoModRule],
+        webhooks: Mapping[int, Webhook],
         data: AuditLogEntryPayload,
         guild: Guild,
     ):
@@ -585,6 +594,7 @@ class AuditLogEntry(Hashable):
         self._integrations: Mapping[int, PartialIntegration] = integrations
         self._app_commands: Mapping[int, AppCommand] = app_commands
         self._automod_rules: Mapping[int, AutoModRule] = automod_rules
+        self._webhooks: Mapping[int, Webhook] = webhooks
         self._from_data(data)
 
     def _from_data(self, data: AuditLogEntryPayload) -> None:
@@ -640,13 +650,19 @@ class AuditLogEntry(Hashable):
                 or self.action is enums.AuditLogAction.automod_flag_message
                 or self.action is enums.AuditLogAction.automod_timeout_member
             ):
-                channel_id = int(extra['channel_id'])
+                channel_id = utils._get_as_snowflake(extra, 'channel_id')
+                channel = None
+
+                # May be an empty string instead of None due to a Discord issue
+                if channel_id:
+                    channel = self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id)
+
                 self.extra = _AuditLogProxyAutoModAction(
                     automod_rule_name=extra['auto_moderation_rule_name'],
                     automod_rule_trigger_type=enums.try_enum(
                         enums.AutoModRuleTriggerType, extra['auto_moderation_rule_trigger_type']
                     ),
-                    channel=self.guild.get_channel_or_thread(channel_id) or Object(id=channel_id),
+                    channel=channel,
                 )
 
             elif self.action.name.startswith('overwrite_'):
@@ -756,7 +772,12 @@ class AuditLogEntry(Hashable):
     def _convert_target_channel(self, target_id: int) -> Union[abc.GuildChannel, Object]:
         return self.guild.get_channel(target_id) or Object(id=target_id)
 
-    def _convert_target_user(self, target_id: int) -> Union[Member, User, Object]:
+    def _convert_target_user(self, target_id: Optional[int]) -> Optional[Union[Member, User, Object]]:
+        # For some reason the member_disconnect and member_move action types
+        # do not have a non-null target_id so safeguard against that
+        if target_id is None:
+            return None
+
         return self._get_member(target_id) or Object(id=target_id, type=Member)
 
     def _convert_target_role(self, target_id: int) -> Union[Role, Object]:
@@ -836,3 +857,9 @@ class AuditLogEntry(Hashable):
 
     def _convert_target_auto_moderation(self, target_id: int) -> Union[AutoModRule, Object]:
         return self._automod_rules.get(target_id) or Object(target_id, type=AutoModRule)
+
+    def _convert_target_webhook(self, target_id: int) -> Union[Webhook, Object]:
+        # circular import
+        from .webhook import Webhook
+
+        return self._webhooks.get(target_id) or Object(target_id, type=Webhook)

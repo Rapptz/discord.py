@@ -54,6 +54,8 @@ Cleaning Up
 
 Although rare, sometimes an extension needs to clean-up or know when it's being unloaded. For cases like these, there is another entry point named ``teardown`` which is similar to ``setup`` except called when the extension is unloaded.
 
+Exceptions raised in the ``teardown`` function are ignored, and the extension is still unloaded.
+
 .. code-block:: python3
     :caption: basic_ext.py
 

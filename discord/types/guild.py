@@ -84,6 +84,7 @@ GuildFeature = Literal[
     'VERIFIED',
     'VIP_REGIONS',
     'WELCOME_SCREEN_ENABLED',
+    'RAID_ALERTS_DISABLED',
 ]
 
 
@@ -159,6 +160,10 @@ class GuildWithCounts(Guild, _GuildPreviewUnique):
 
 class GuildPrune(TypedDict):
     pruned: Optional[int]
+
+
+class GuildMFALevel(TypedDict):
+    level: MFALevel
 
 
 class ChannelPositionUpdate(TypedDict):

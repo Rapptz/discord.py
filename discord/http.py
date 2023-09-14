@@ -48,6 +48,7 @@ from typing import (
 from urllib.parse import quote as _uriquote
 from collections import deque
 import datetime
+import socket
 
 import aiohttp
 
@@ -67,7 +68,6 @@ if TYPE_CHECKING:
     from .embeds import Embed
     from .message import Attachment
     from .flags import MessageFlags
-    from .enums import AuditLogAction
 
     from .types import (
         appinfo,
@@ -784,7 +784,8 @@ class HTTPClient:
     async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
-            self.connector = aiohttp.TCPConnector(limit=0)
+            # discord does not support ipv6
+            self.connector = aiohttp.TCPConnector(limit=0, family=socket.AF_INET)
 
         self.__session = aiohttp.ClientSession(
             connector=self.connector,
@@ -1148,6 +1149,7 @@ class HTTPClient:
             'available_tags',
             'applied_tags',
             'default_forum_layout',
+            'default_sort_order',
         )
 
         payload = {k: v for k, v in options.items() if k in valid_keys}
@@ -1189,6 +1191,9 @@ class HTTPClient:
             'video_quality_mode',
             'default_auto_archive_duration',
             'default_thread_rate_limit_per_user',
+            'default_sort_order',
+            'default_reaction_emoji',
+            'default_forum_layout',
             'available_tags',
         )
         payload.update({k: v for k, v in options.items() if k in valid_keys and v is not None})
@@ -1369,9 +1374,11 @@ class HTTPClient:
         limit: int,
         before: Optional[Snowflake] = None,
         after: Optional[Snowflake] = None,
+        with_counts: bool = True,
     ) -> Response[List[guild.Guild]]:
         params: Dict[str, Any] = {
             'limit': limit,
+            'with_counts': int(with_counts),
         }
 
         if before:
@@ -1422,11 +1429,18 @@ class HTTPClient:
             'public_updates_channel_id',
             'preferred_locale',
             'premium_progress_bar_enabled',
+            'safety_alerts_channel_id',
         )
 
         payload = {k: v for k, v in fields.items() if k in valid_keys}
 
         return self.request(Route('PATCH', '/guilds/{guild_id}', guild_id=guild_id), json=payload, reason=reason)
+
+    def edit_guild_mfa_level(
+        self, guild_id: Snowflake, *, mfa_level: int, reason: Optional[str] = None
+    ) -> Response[guild.GuildMFALevel]:
+        payload = {'level': mfa_level}
+        return self.request(Route('POST', '/guilds/{guild_id}/mfa', guild_id=guild_id), json=payload, reason=reason)
 
     def get_template(self, code: str) -> Response[template.Template]:
         return self.request(Route('GET', '/guilds/templates/{code}', code=code))
@@ -1712,12 +1726,12 @@ class HTTPClient:
         before: Optional[Snowflake] = None,
         after: Optional[Snowflake] = None,
         user_id: Optional[Snowflake] = None,
-        action_type: Optional[AuditLogAction] = None,
+        action_type: Optional[audit_log.AuditLogEvent] = None,
     ) -> Response[audit_log.AuditLog]:
         params: Dict[str, Any] = {'limit': limit}
         if before:
             params['before'] = before
-        if after:
+        if after is not None:
             params['after'] = after
         if user_id:
             params['user_id'] = user_id
@@ -1903,6 +1917,7 @@ class HTTPClient:
             'channel_id',
             'topic',
             'privacy_level',
+            'send_start_notification',
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
