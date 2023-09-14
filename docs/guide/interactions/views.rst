@@ -13,15 +13,15 @@ This section details how to create and use views in various situations.
 Creating a View
 -----------------
 
-Let's start off with a simple example, a confirmation prompt.
+Let's start with a simple example, a confirmation prompt.
 
-By the end of this section we'll have a generic confirmation prompt we can use in a variety of situations.
+By the end of this section, we'll have a generic confirmation prompt that we can use in a variety of situations.
 
 For example, a ban command:
 
 .. image:: /images/guide/interactions/view_prompt_example.png
 
-The first step is to create a :class:`~discord.ui.View` subclass. Let's call it ``Confirm``
+The first step is to create a :class:`~discord.ui.View` subclass. Let's call it ``Confirm``.
 
 .. code-block:: python
 
@@ -41,19 +41,19 @@ the prompt.
 
 The :class:`~discord.ui.View` class also supports a :meth:`~discord.ui.View.interaction_check` method, which we'll
 use to check if the user who clicked on buttons in the view is the same as the user we're prompting for confirmation.
-It should return a boolean value, which when ``False`` will ignore the interaction.
+It should return a boolean value which, when ``False``, will cause the interaction to be ignored.
 
 Creating components
 ~~~~~~~~~~~~~~~~~~~~
 
-We also need to create components for our UI, two buttons, a `Yes` and `No` button.
+We also need to create components for our UI. Two buttons; a `Yes` and a `No` button.
 
-There are two main ways to create components, we'll cover both in this section.
+There are two main ways to create components, which we'll cover in this section.
 
 Class-Based Components
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Firstly we can create a component by subclassing the related component class, for a button this is the :class:`~discord.ui.Button` class.
+Firstly we can create a component by subclassing the related component class. For a button this is the :class:`~discord.ui.Button` class.
 
 Our code might look like this:
 
@@ -74,13 +74,13 @@ Our code might look like this:
 There's a bit to unpack here already, the ``__init__`` is setting the ``style`` and ``label`` parameters, which 
 set the colour and text of the button respectively.
 
-And then there's the :meth:`Button.callback() <discord.ui.Button.callback>` method, this is the method that will be called when the button is clicked.
+And then there's the :meth:`Button.callback() <discord.ui.Button.callback>` method, which is the method that will be called when the button is clicked.
 In this case it's being used to set the ``result`` attribute of the :class:`~discord.ui.View` subclass we created earlier.
 
 Now we've made our first component, we should add it to the view.
 
 The :class:`~discord.ui.View` class has a :meth:`~discord.ui.View.add_item` method, which takes a component as a parameter.
-so in our ``__init__`` method we can add:
+so in our ``__init__`` method we can add the following after the call to the parent constructor.
 
 .. code-block:: python
     :emphasize-lines: 7
@@ -96,14 +96,12 @@ so in our ``__init__`` method we can add:
         async def interaction_check(self, interaction: discord.Interaction) -> bool:
             return interaction.user == self.user 
 
-After the call to the parent constructor.
-
 Decorator-based Components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In reality, our components are relatively simple, so we can use a helper function decorator instead.
 
-In this case, we're creating a button we can use the :func:`~discord.ui.button` decorator inside our ``View`` like so:
+In this case, we're creating a button, so we can use the :func:`~discord.ui.button` decorator inside our ``View`` like so:
 
 .. code-block:: python
     :emphasize-lines: 12-19
@@ -130,11 +128,11 @@ In this case, we're creating a button we can use the :func:`~discord.ui.button` 
             await interaction.response.defer()
 
 Using the decorator approach greatly simplifies the code, but it's not as flexible as using a custom class.
-We set parameters prior to the creation of the view-instance, so context-specific variables are not available.
+We set parameters prior to the creation of the view instance, so context-specific variables are not available.
 If modifications are needed, we would instead have to override component instance attributes in the ``__init__`` method.
 
 The function we're decorating acts similarly to the :meth:`~discord.ui.Button.callback` method, it's called when the button is clicked.
-However the arguments passed to the function are different. Rather than ``self`` referring to the component, it refers to the view, with
+However, the arguments passed to the function are different. Rather than ``self`` referring to the component, it refers to the view, with
 the component being passed as the last argument.
 
 When using component decorators, we no longer need to explicitly add the component to the view, this is done automatically.
@@ -142,9 +140,9 @@ When using component decorators, we no longer need to explicitly add the compone
 Sending views
 --------------
 
-We send views using the ``view`` parameter in methods which send messages. for example :meth:`TextChannel.send`.
+We send views using the ``view`` parameter in methods which send messages, for example :meth:`TextChannel.send`.
 
-In our case we're creating a confirmation prompt for our ban command, so we'll want to use the :meth:`InteractionResponse.send_message`.
+In our case we're creating a confirmation prompt for our ban command, so we'll want to use the :meth:`InteractionResponse.send_message` method.
 
 Our command might look like this:
 
@@ -167,7 +165,7 @@ which occurs either when the user clicks on a button (as we had called :meth:`Vi
 or the view had timed-out.
 
 Since our component callbacks assign the ``result`` attribute of the view, we can use it to determine if the user clicked on the
-`Yes` or `No` button, and in the `Yes` case we can ban the member.
+`Yes` or `No` button, and ban them if they clicked `Yes`.
 
 
 Persistent Views
@@ -184,13 +182,13 @@ Let's make one such view.
 Designing a Persistent View
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To start off we need to class to represent the view, again like above we'll create a 
+To start off, we need to create a class to represent the view, which we'll achieve by creating a 
 subclass of :class:`~discord.ui.View`. In that class we need a :class:`~discord.ui.Select` component,
 which is a dropdown menu using the :func:`@select <discord.ui.select>` decorator. We can set some 
 placeholder text for the dropdown menu and set both the minimum and maximum number of elements 
 a user can select to `1`.
 
-To start out our code might look like this:
+To start out, our code might look like this:
 
 .. code-block:: python
 
@@ -210,17 +208,16 @@ To start out our code might look like this:
         ) -> None:
             raise NotImplementedError
 
-This is missing a few important things however, for example the select component 
-needs to know what roles to display in the dropdown, so we'll need to pass in the roles to the component, 
-using the :meth:`~discord.ui.Select.add_option` method, we can iterate over the roles and add the
-role name as the ``label`` and the role ID as the ``value``.
+However, there are a few important things missing. For instance, the select component must be aware of which roles to display in the dropdown.
+To achieve this, we will pass the roles to the component. By utilizing the :meth:`~discord.ui.Select.add_option` method, 
+we can iterate through the roles and assign the role name to the ``label`` and the role ID to the ``value``.
 
 Additionally, since this view is persistent we need to specify a :attr:`~discord.ui.Select.custom_id` for our 
 :class:`~discord.ui.Select` component, which is used to identify the component when a user interacts with it.
-Since we could have multiple role selectors, it seems fitting to use the ID of the message the view is attached
+As we could have multiple role selectors, it seems fitting to use the ID of the message the view is attached
 to as part of the ``custom_id``.
 
-After adding these details our code will look something like this:
+After adding these details, our code will look something like this:
 
 .. code-block:: python
     :emphasize-lines: 2,5-9
@@ -229,7 +226,7 @@ After adding these details our code will look something like this:
         def __init__(self, message_id: int, roles: List[discord.Role]) -> None:
             super().__init__(timeout=None)
 
-            self.selector.custom_id = f'role_selector_{message_id}'
+            self.selector.custom_id = f'role_selector:{message_id}'
 
             self.roles: List[discord.Role] = roles
             for role in roles:
@@ -247,11 +244,11 @@ After adding these details our code will look something like this:
         ) -> None:
             raise NotImplementedError
 
-We also need to add a body to our ``selector`` callback function which will assign the selected role to the user:
+We also need to add a body to our ``selector`` callback function, which will assign the selected role to the user.
 This is fairly simple to do, when the callback is invoked we can access the options the user selected via the
-:attr:`~discord.ui.Select.options` attribute. This holds a list of values, but since we limited the number of values to `1`
-we can just access the first element directly. We can then use sets to determine what roles the user already has, and then with :meth:`Member.edit <discord.Member.edit>` 
-override the members roles.
+:attr:`~discord.ui.Select.options` attribute. This holds a list of values, but since we limited the number of values to `1`,
+we can just access the first element directly. We can then use sets to determine what roles the user already has, 
+and then override the member's roles with :meth:`Member.edit <discord.Member.edit>`.
 
 Our function body might look like this:
 
@@ -262,7 +259,7 @@ Our function body might look like this:
         def __init__(self, message_id: int, roles: List[discord.Role]) -> None:
             super().__init__(timeout=None)
 
-            self.selector.custom_id = f'role_selector_{message_id}'
+            self.selector.custom_id = f'role_selector:{message_id}'
 
             self.roles: List[discord.Role] = roles
             for role in roles:
@@ -288,8 +285,8 @@ Our function body might look like this:
 Making a View Persist
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Now our view class is complete we can manually attach an instance to a message to retrieve the ID.
-When we're doing this the ``custom_id`` can be set to anything since the view handling will be done 
+Now our view class is complete, we can manually attach an instance to a message to retrieve the ID.
+When we're doing this, the ``custom_id`` can be set to anything since the view handling will be done 
 when we mark the view as persistent.
 
 .. code-block:: python
@@ -298,7 +295,7 @@ when we mark the view as persistent.
     roles = [guild.get_role(id) for id in ROLE_IDS]
     await channel.send('Choose your house', view=RoleSelector(0, roles)) # we don't know the message ID yet.
 
-Once we have a message ID we just need to create an instance of our view and attach it to the :class:`~discord.Client`
+Once we have a message ID, we just need to create an instance of our view and attach it to the :class:`~discord.Client`
 with the :meth:`~discord.Client.add_view` method.
 
 .. code-block:: python
