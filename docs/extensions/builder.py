@@ -1,13 +1,53 @@
+from typing import Any, Optional
 from sphinx.builders.html import StandaloneHTMLBuilder
-from sphinx.builders.gettext import MessageCatalogBuilder, I18nBuilder, ctime,should_write, GettextRenderer
+from sphinx.builders.gettext import MessageCatalogBuilder, I18nBuilder, should_write, GettextRenderer
 from sphinx.locale import __
-from sphinx.util import status_iterator
+
 from sphinx.util.osutil import ensuredir
 from sphinx.environment.adapters.indexentries import IndexEntries
 from sphinx.writers.html5 import HTML5Translator
+try:
+    #Latest sphinx version lets you import ctime directly.
+    from sphinx.builders.gettext import ctime
+except Exception as exc:
+    #time to make ctime ourselves
+    from datetime import datetime, timedelta, tzinfo
+    import time
+    from os import getenv
+    # determine tzoffset once to remain unaffected by DST change during build
+
+    timestamp = time.time()
+
+    tzdelta = datetime.fromtimestamp(timestamp) - \
+        datetime.utcfromtimestamp(timestamp)
+    # set timestamp from SOURCE_DATE_EPOCH if set
+    # see https://reproducible-builds.org/specs/source-date-epoch/
+    source_date_epoch = getenv('SOURCE_DATE_EPOCH')
+    if source_date_epoch is not None:
+        timestamp = float(source_date_epoch)
+        tzdelta = timedelta(0)
+    
+
+    class LocalTimeZone(tzinfo):
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            super().__init__(*args, **kwargs)
+            self.tzdelta = tzdelta
+
+        def utcoffset(self, dt: Optional[datetime]) -> timedelta:
+            return self.tzdelta
+
+        def dst(self, dt: Optional[datetime]) -> timedelta:
+            return timedelta(0)
+    ltz=LocalTimeZone()
+    ctime= datetime.fromtimestamp(timestamp, ltz).strftime('%Y-%m-%d %H:%M%z')
+
 import datetime
 import os
 import re
+
+#This is deprecated...
+from sphinx.util import status_iterator 
+
 
 
 class DPYHTML5Translator(HTML5Translator):
