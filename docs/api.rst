@@ -2106,6 +2106,11 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`User` or :class:`Object` who got kicked.
 
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``integration_type``: An optional string that denotes the type of integration that did the action.
+
         When this is the action, :attr:`~AuditLogEntry.changes` is empty.
 
     .. attribute:: member_prune
@@ -2165,6 +2170,11 @@ of :class:`enum.Enum`.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Member`, :class:`User`, or :class:`Object` who got the role.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``integration_type``: An optional string that denotes the type of integration that did the action.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2848,6 +2858,27 @@ of :class:`enum.Enum`.
     .. attribute:: accepted
 
         Represents a member currently in the team.
+
+.. class:: TeamMemberRole
+
+    Represents the type of role of a team member retrieved through :func:`Client.application_info`.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: admin
+
+        The team member is an admin. This allows them to invite members to the team, access credentials, edit the application,
+        and do most things the owner can do. However they cannot do destructive actions.
+
+    .. attribute:: developer
+
+        The team member is a developer. This allows them to access information, like the client secret or public key.
+        They can also configure interaction endpoints or reset the bot token. Developers cannot invite anyone to the team
+        nor can they do destructive actions.
+
+    .. attribute:: read_only
+
+        The team member is a read-only member. This allows them to access information, but not edit anything.
 
 .. class:: WebhookType
 
@@ -4057,7 +4088,7 @@ AuditLogDiff
 
         See also :attr:`ForumChannel.default_reaction_emoji`
 
-        :type: :class:`default_reaction_emoji`
+        :type: Optional[:class:`PartialEmoji`]
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these

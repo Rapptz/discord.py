@@ -32,6 +32,7 @@ from typing import (
     Dict,
     Optional,
     TYPE_CHECKING,
+    Type,
     Union,
     Callable,
     Any,
@@ -84,6 +85,8 @@ if TYPE_CHECKING:
     from .http import HTTPClient
     from .voice_client import VoiceProtocol
     from .gateway import DiscordWebSocket
+    from .ui.item import Item
+    from .ui.dynamic import DynamicItem
     from .app_commands import CommandTree, Translator
 
     from .types.automod import AutoModerationRule, AutoModerationActionExecution
@@ -394,6 +397,12 @@ class ConnectionState(Generic[ClientT]):
 
     def prevent_view_updates_for(self, message_id: int) -> Optional[View]:
         return self._view_store.remove_message_tracking(message_id)
+
+    def store_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
+        self._view_store.add_dynamic_items(*items)
+
+    def remove_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
+        self._view_store.remove_dynamic_items(*items)
 
     @property
     def persistent_views(self) -> Sequence[View]:
