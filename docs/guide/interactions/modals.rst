@@ -22,11 +22,11 @@ For example:
 
 .. code-block:: python
 
-    class FeedbackForm(discord.ui.Modal, title="Feedback"):
-        name = discord.ui.TextInput(label="Name")
-        feedback = discord.ui.TextInput(label="Feedback", style=discord.TextStyle.long)
+    class FeedbackForm(discord.ui.Modal, title='Feedback'):
+        name = discord.ui.TextInput(label='Name')
+        feedback = discord.ui.TextInput(label='Feedback', style=discord.TextStyle.long)
         additional_information = discord.ui.TextInput(
-            label="Additional Information", style=discord.TextStyle.long, required=False
+            label='Additional Information', style=discord.TextStyle.long, required=False
         )
 
         async def on_submit(self, interaction: discord.Interaction) -> None:
@@ -71,12 +71,12 @@ Fields can also be added to or removed from a modal instance using the :meth:`~d
 
 
 You can customize individual modal instances with normal attribute access and assignment.
-For example, to change the label of the ``name`` field to ``"Your Name"`` you can do the following:
+For example, to change the label of the ``name`` field to ``'Your Name'`` you can do the following:
 
 .. code-block:: python
 
     form = FeedbackForm()
-    form.name.label = "Your Name"
+    form.name.label = 'Your Name'
 
 
 Handling User Responses
@@ -101,11 +101,11 @@ if necessary, send a response to the user.
 .. code-block:: python
     :emphasize-lines: 13-15
 
-    class FeedbackForm(discord.ui.Modal, title="Feedback"):
-        name = discord.ui.TextInput(label="Name")
-        feedback = discord.ui.TextInput(label="Feedback", style=discord.TextStyle.long)
+    class FeedbackForm(discord.ui.Modal, title='Feedback'):
+        name = discord.ui.TextInput(label='Name')
+        feedback = discord.ui.TextInput(label='Feedback', style=discord.TextStyle.long)
         additional_information = discord.ui.TextInput(
-            label="Additional Information", style=discord.TextStyle.long, required=False
+            label='Additional Information', style=discord.TextStyle.long, required=False
         )
 
         async def on_submit(self, interaction: discord.Interaction) -> None:

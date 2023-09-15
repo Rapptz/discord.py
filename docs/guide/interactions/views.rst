@@ -43,12 +43,14 @@ The :class:`~discord.ui.View` class also supports a :meth:`~discord.ui.View.inte
 use to check if the user who clicked on buttons in the view is the same as the user we're prompting for confirmation.
 It should return a boolean value which, when ``False``, will cause the interaction to be ignored.
 
+
 Creating components
 ~~~~~~~~~~~~~~~~~~~~
 
 We also need to create components for our UI. Two buttons; a `Yes` and a `No` button.
 
 There are two main ways to create components, which we'll cover in this section.
+
 
 Class-Based Components
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -62,7 +64,7 @@ Our code might look like this:
     class YesButton(discord.ui.Button[Confirm]):
         def __init__(self) -> None:
             super().__init__(
-                label="Yes",
+                label='Yes',
                 style=discord.ButtonStyle.danger,
             )
 
@@ -96,6 +98,7 @@ so in our ``__init__`` method we can add the following after the call to the par
         async def interaction_check(self, interaction: discord.Interaction) -> bool:
             return interaction.user == self.user 
 
+
 Decorator-based Components
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -117,7 +120,7 @@ In this case, we're creating a button, so we can use the :func:`~discord.ui.butt
         async def interaction_check(self, interaction: discord.Interaction) -> bool:
             return interaction.user == self.user 
 
-        @discord.ui.button(label="No", style=discord.ButtonStyle.primary)
+        @discord.ui.button(label='No', style=discord.ButtonStyle.primary)
         async def no_button(
             self,
             interaction: discord.Interaction,
@@ -137,6 +140,7 @@ the component being passed as the last argument.
 
 When using component decorators, we no longer need to explicitly add the component to the view, this is done automatically.
 
+
 Sending views
 --------------
 
@@ -149,11 +153,11 @@ Our command might look like this:
 .. code-block:: python
 
     @discord.app_commands.command()
-    @discord.app_commands.describe(member="The member to ban.")
+    @discord.app_commands.describe(member='The member to ban.')
     async def ban(interaction: discord.Interaction, member: discord.Member) -> None:
         """Ban a member from the server."""
         confirmation = Confirm(interaction.user)
-        await interaction.send_message(f'Are you sure you want to ban {member.name}?', view=confirmation)
+        await interaction.response.send_message(f'Are you sure you want to ban {member.name}?', view=confirmation)
         await confirmation.wait()
         if confirmation.result:
             await member.ban()
@@ -253,7 +257,7 @@ and then override the member's roles with :meth:`Member.edit <discord.Member.edi
 Our function body might look like this:
 
 .. code-block:: python
-    :emphasize-lines: 21-24
+    :emphasize-lines: 21-25
 
     class RoleSelector(discord.ui.View):
         def __init__(self, message_id: int, roles: List[discord.Role]) -> None:
@@ -276,9 +280,9 @@ Our function body might look like this:
             component: discord.ui.Select['RoleSelector'],
         ) -> None:
             role_id = int(component.values[0])
-            role = discord.Object(id=role_id)
-            await interaction.user.remove_roles(*self.roles)
-            await interaction.user.add_roles(role)
+            role = discord.Object(id=role_id, type=discord.Role)
+            roles = set(interaction.user.roles) - set(self.roles) | {role}
+            await interaction.user.edit(roles=roles)
             await interaction.response.defer()
 
 
@@ -319,6 +323,140 @@ with the :meth:`~discord.Client.add_view` method.
     client.run(...)
 
 If we did everything correctly, the user should be able to select a role and the role should be assigned to the user.
+
+
+Dynamic Components
+-------------------
+
+In some instances, there may be some additional data we'll need when handling a component interaction.
+For example, we could create a counter which increments every time the button is clicked.
+
+The :class:`~discord.ui.DynamicItem` class allows us to define components with custom data contained in the ``custom_id``.
+
+
+Designing a Dynamic Component
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Firstly, we'll need to create a subclass of :class:`~discord.ui.DynamicItem` which will represent out dynamic component.
+
+Our code might start out looking like this:
+
+.. code-block:: python
+
+    class DynamicCounter(discord.ui.DynamicItem[discord.ui.Button], template=r'counter:(?P<count>\d+)'):
+        def __init__(self, count: int = 0) -> None:
+            self.count: int = count
+            super().__init__(
+                discord.ui.Button(
+                    label=f'Total: {count}',
+                    style=discord.ButtonStyle.primary,
+                    custom_id=f'counter:{count}',
+                )
+            )
+
+There are a few things to note here;
+
+#. Dynamic components are defined by subclassing the :class:`~discord.ui.DynamicItem` class. They don't have an associated :class:`~discord.ui.View`.
+#. We need to specify the type of component we're creating, in this case a :class:`~discord.ui.Button`.
+#. We need to specify a regular expression pattern to match the ``custom_id`` against. This is done using the ``template`` parameter.
+#. We need to define a constructor which takes the data we need to construct the component and passes a component instance to the parent constructor.
+
+Subclasses of :class:`~discord.ui.DynamicItem` also require a :func:`classmethod` called :meth:`~discord.ui.DynamicItem.from_custom_id`,
+which is used to construct the component from the ``custom_id`` when an interaction is received.
+
+This method is passed both the :class:`~discord.Interaction` and a :class:`~re.Match` object, which contains the regular expression
+match details using the ``template`` attribute of the class as the pattern.
+
+In our case, we can cast the ``count`` group to an integer and pass it to the constructor.
+
+.. code-block:: python
+    :emphasize-lines: 12-15
+
+    class DynamicCounter(discord.ui.DynamicItem[discord.ui.Button], template=r'counter:(?P<count>\d+)'):
+        def __init__(self, count: int = 0) -> None:
+            self.count: int = count
+            super().__init__(
+                discord.ui.Button(
+                    label=f'Total: {count}',
+                    style=discord.ButtonStyle.primary,
+                    custom_id=f'counter:{count}',
+                )
+            )
+
+        @classmethod
+        async def from_custom_id(cls, interaction: discord.Interaction, match: re.Match[str], /):
+            count = int(match['count'])
+            return cls(count)
+
+
+And like all other interactions we'll need to define some kind of callback to handle the interaction.
+In this case we'll want to increment the counter and update the button label.
+
+Our callback might look like this:
+
+.. code-block:: python
+    :emphasize-lines: 17-21
+
+    class DynamicCounter(discord.ui.DynamicItem[discord.ui.Button], template=r'counter:(?P<count>\d+)'):
+        def __init__(self, count: int = 0) -> None:
+            self.count: int = count
+            super().__init__(
+                discord.ui.Button(
+                    label=f'Total: {count}',
+                    style=discord.ButtonStyle.primary,
+                    custom_id=f'counter:{count}',
+                )
+            )
+
+        @classmethod
+        async def from_custom_id(cls, interaction: discord.Interaction, match: re.Match[str], /):
+            count = int(match['count'])
+            return cls(count)
+
+        async def callback(self, interaction: discord.Interaction) -> None:
+            self.count += 1
+            self.item.label = f'Total: {self.count}'
+            self.custom_id = f'counter:{self.count}'
+            await interaction.response.edit_message(view=self.view)
+
+
+Sending and Registering Dynamic Components
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Now that we've defined out dynamic component, we'll need to attach send a message which contains the component in a :class:`~discord.ui.View`.
+
+Let's quickly define a view which contains our dynamic component.
+
+.. code-block:: python
+
+    class CounterView(discord.ui.View):
+        def __init__(self) -> None:
+            super().__init__(timeout=None)
+            self.add_item(DynamicCounter())
+
+We'll also need some way to send a message with the view, so let's create a command to do that.
+
+.. code-block:: python
+    
+    @discord.app_commands.command()
+    async def counter(interaction: discord.Interaction) -> None:
+        """Send a counter view."""
+        await interaction.response.send_message(view=CounterView())
+
+Lastly, to get our bot to handle interactions we'll need to register the dynamic component
+with the :class:`~discord.Client` with the :meth:`~discord.Client.add_dynamic_items` method.
+
+.. code-block:: python
+
+    class MyClient(discord.Client):
+
+        async def setup_hook(self) -> None:
+            self.add_dynamic_items(DynamicCounter)
+
+    client = MyClient(intents=discord.Intents.default())
+    client.run(...)
+
+Assuming we did everything right the bot should now increment the counter every time the button is clicked.
 
 
 Further Reading
