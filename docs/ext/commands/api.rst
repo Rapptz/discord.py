@@ -18,7 +18,7 @@ Bot
 .. autoclass:: discord.ext.commands.Bot
     :members:
     :inherited-members:
-    :exclude-members: after_invoke, before_invoke, check, check_once, command, event, group, listen
+    :exclude-members: after_invoke, before_invoke, check, check_once, command, event, group, hybrid_command, hybrid_group, listen
 
     .. automethod:: Bot.after_invoke()
         :decorator:
@@ -34,11 +34,17 @@ Bot
 
     .. automethod:: Bot.command(*args, **kwargs)
         :decorator:
-    
+
     .. automethod:: Bot.event()
         :decorator:
 
     .. automethod:: Bot.group(*args, **kwargs)
+        :decorator:
+
+    .. automethod:: Bot.hybrid_command(name=..., with_app_command=True, *args, **kwargs)
+        :decorator:
+
+    .. automethod:: Bot.hybrid_group(name=..., with_app_command=True, *args, **kwargs)
         :decorator:
 
     .. automethod:: Bot.listen(name=None)
@@ -114,6 +120,13 @@ Decorators
 .. autofunction:: discord.ext.commands.group
     :decorator:
 
+.. autofunction:: discord.ext.commands.hybrid_command
+    :decorator:
+
+.. autofunction:: discord.ext.commands.hybrid_group
+    :decorator:
+
+
 Command
 ~~~~~~~~~
 
@@ -173,6 +186,57 @@ GroupMixin
     .. automethod:: GroupMixin.group(*args, **kwargs)
         :decorator:
 
+HybridCommand
+~~~~~~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.HybridCommand
+
+.. autoclass:: discord.ext.commands.HybridCommand
+    :members:
+    :special-members: __call__
+    :exclude-members: after_invoke, autocomplete, before_invoke, error
+
+    .. automethod:: HybridCommand.after_invoke()
+        :decorator:
+
+    .. automethod:: HybridCommand.autocomplete(name)
+        :decorator:
+
+    .. automethod:: HybridCommand.before_invoke()
+        :decorator:
+
+    .. automethod:: HybridCommand.error()
+        :decorator:
+
+HybridGroup
+~~~~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.HybridGroup
+
+.. autoclass:: discord.ext.commands.HybridGroup
+    :members:
+    :inherited-members:
+    :exclude-members: after_invoke, autocomplete, before_invoke, command, error, group
+
+    .. automethod:: HybridGroup.after_invoke()
+        :decorator:
+
+    .. automethod:: HybridGroup.autocomplete(name)
+        :decorator:
+
+    .. automethod:: HybridGroup.before_invoke()
+        :decorator:
+
+    .. automethod:: HybridGroup.command(*args, **kwargs)
+        :decorator:
+
+    .. automethod:: HybridGroup.error()
+        :decorator:
+
+    .. automethod:: HybridGroup.group(*args, **kwargs)
+        :decorator:
+
+
 .. _ext_commands_api_cogs:
 
 Cogs
@@ -185,6 +249,15 @@ Cog
 
 .. autoclass:: discord.ext.commands.Cog
     :members:
+
+GroupCog
+~~~~~~~~~
+
+.. attributetable:: discord.ext.commands.GroupCog
+
+.. autoclass:: discord.ext.commands.GroupCog
+    :members: interaction_check
+
 
 CogMeta
 ~~~~~~~~
@@ -304,7 +377,7 @@ Checks
 .. autofunction:: discord.ext.commands.cooldown(rate, per, type=discord.ext.commands.BucketType.default)
     :decorator:
 
-.. autofunction:: discord.ext.commands.dynamic_cooldown(cooldown, type=BucketType.default)
+.. autofunction:: discord.ext.commands.dynamic_cooldown(cooldown, type)
     :decorator:
 
 .. autofunction:: discord.ext.commands.max_concurrency(number, per=discord.ext.commands.BucketType.default, *, wait=False)
@@ -330,14 +403,6 @@ Checks
 
 .. _ext_commands_api_context:
 
-Cooldown
----------
-
-.. attributetable:: discord.ext.commands.Cooldown
-
-.. autoclass:: discord.ext.commands.Cooldown
-    :members:
-
 Context
 --------
 
@@ -356,86 +421,176 @@ Context
 Converters
 ------------
 
+.. attributetable:: discord.ext.commands.Converter
+
 .. autoclass:: discord.ext.commands.Converter
     :members:
+
+.. attributetable:: discord.ext.commands.ObjectConverter
 
 .. autoclass:: discord.ext.commands.ObjectConverter
     :members:
 
+.. attributetable:: discord.ext.commands.MemberConverter
+
 .. autoclass:: discord.ext.commands.MemberConverter
     :members:
+
+.. attributetable:: discord.ext.commands.UserConverter
 
 .. autoclass:: discord.ext.commands.UserConverter
     :members:
 
+.. attributetable:: discord.ext.commands.MessageConverter
+
 .. autoclass:: discord.ext.commands.MessageConverter
     :members:
+
+.. attributetable:: discord.ext.commands.PartialMessageConverter
 
 .. autoclass:: discord.ext.commands.PartialMessageConverter
     :members:
 
+.. attributetable:: discord.ext.commands.GuildChannelConverter
+
 .. autoclass:: discord.ext.commands.GuildChannelConverter
     :members:
+
+.. attributetable:: discord.ext.commands.TextChannelConverter
 
 .. autoclass:: discord.ext.commands.TextChannelConverter
     :members:
 
+.. attributetable:: discord.ext.commands.VoiceChannelConverter
+
 .. autoclass:: discord.ext.commands.VoiceChannelConverter
     :members:
 
-.. autoclass:: discord.ext.commands.StoreChannelConverter
-    :members:
+.. attributetable:: discord.ext.commands.StageChannelConverter
 
 .. autoclass:: discord.ext.commands.StageChannelConverter
     :members:
 
+.. attributetable:: discord.ext.commands.CategoryChannelConverter
+
 .. autoclass:: discord.ext.commands.CategoryChannelConverter
     :members:
+
+.. attributetable:: discord.ext.commands.ForumChannelConverter
+
+.. autoclass:: discord.ext.commands.ForumChannelConverter
+    :members:
+
+.. attributetable:: discord.ext.commands.InviteConverter
 
 .. autoclass:: discord.ext.commands.InviteConverter
     :members:
 
+.. attributetable:: discord.ext.commands.GuildConverter
+
 .. autoclass:: discord.ext.commands.GuildConverter
     :members:
+
+.. attributetable:: discord.ext.commands.RoleConverter
 
 .. autoclass:: discord.ext.commands.RoleConverter
     :members:
 
+.. attributetable:: discord.ext.commands.GameConverter
+
 .. autoclass:: discord.ext.commands.GameConverter
     :members:
+
+.. attributetable:: discord.ext.commands.ColourConverter
 
 .. autoclass:: discord.ext.commands.ColourConverter
     :members:
 
+.. attributetable:: discord.ext.commands.EmojiConverter
+
 .. autoclass:: discord.ext.commands.EmojiConverter
     :members:
+
+.. attributetable:: discord.ext.commands.PartialEmojiConverter
 
 .. autoclass:: discord.ext.commands.PartialEmojiConverter
     :members:
 
+.. attributetable:: discord.ext.commands.ThreadConverter
+
 .. autoclass:: discord.ext.commands.ThreadConverter
     :members:
+
+.. attributetable:: discord.ext.commands.GuildStickerConverter
 
 .. autoclass:: discord.ext.commands.GuildStickerConverter
     :members:
 
+.. attributetable:: discord.ext.commands.ScheduledEventConverter
+
+.. autoclass:: discord.ext.commands.ScheduledEventConverter
+    :members:
+
+.. attributetable:: discord.ext.commands.clean_content
+
 .. autoclass:: discord.ext.commands.clean_content
     :members:
 
+.. attributetable:: discord.ext.commands.Greedy
+
 .. autoclass:: discord.ext.commands.Greedy()
+
+.. attributetable:: discord.ext.commands.Range
+
+.. autoclass:: discord.ext.commands.Range()
 
 .. autofunction:: discord.ext.commands.run_converters
 
 Flag Converter
 ~~~~~~~~~~~~~~~
 
+.. attributetable:: discord.ext.commands.FlagConverter
+
 .. autoclass:: discord.ext.commands.FlagConverter
     :members:
+
+.. attributetable:: discord.ext.commands.Flag
 
 .. autoclass:: discord.ext.commands.Flag()
     :members:
 
 .. autofunction:: discord.ext.commands.flag
+
+
+Defaults
+--------
+
+.. attributetable:: discord.ext.commands.Parameter
+
+.. autoclass:: discord.ext.commands.Parameter()
+    :members:
+
+.. autofunction:: discord.ext.commands.parameter
+
+.. autofunction:: discord.ext.commands.param
+
+.. data:: discord.ext.commands.Author
+
+    A default :class:`Parameter` which returns the :attr:`~.Context.author` for this context.
+
+    .. versionadded:: 2.0
+
+.. data:: discord.ext.commands.CurrentChannel
+
+    A default :class:`Parameter` which returns the :attr:`~.Context.channel` for this context.
+
+    .. versionadded:: 2.0
+
+.. data:: discord.ext.commands.CurrentGuild
+
+    A default :class:`Parameter` which returns the :attr:`~.Context.guild` for this context. This will never be ``None``. If the command is called in a DM context then :exc:`~discord.ext.commands.NoPrivateMessage` is raised to the error handlers.
+
+    .. versionadded:: 2.0
 
 .. _ext_commands_api_errors:
 
@@ -449,6 +604,9 @@ Exceptions
     :members:
 
 .. autoexception:: discord.ext.commands.MissingRequiredArgument
+    :members:
+
+.. autoexception:: discord.ext.commands.MissingRequiredAttachment
     :members:
 
 .. autoexception:: discord.ext.commands.ArgumentParsingError
@@ -547,7 +705,13 @@ Exceptions
 .. autoexception:: discord.ext.commands.GuildStickerNotFound
     :members:
 
+.. autoexception:: discord.ext.commands.ScheduledEventNotFound
+    :members:
+
 .. autoexception:: discord.ext.commands.BadBoolArgument
+    :members:
+
+.. autoexception:: discord.ext.commands.RangeError
     :members:
 
 .. autoexception:: discord.ext.commands.MissingPermissions
@@ -607,6 +771,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.CommandRegistrationError
     :members:
 
+.. autoexception:: discord.ext.commands.HybridCommandError
+    :members:
+
 
 Exception Hierarchy
 ~~~~~~~~~~~~~~~~~~~~~
@@ -618,6 +785,7 @@ Exception Hierarchy
             - :exc:`~.commands.ConversionError`
             - :exc:`~.commands.UserInputError`
                 - :exc:`~.commands.MissingRequiredArgument`
+                - :exc:`~.commands.MissingRequiredAttachment`
                 - :exc:`~.commands.TooManyArguments`
                 - :exc:`~.commands.BadArgument`
                     - :exc:`~.commands.MessageNotFound`
@@ -631,8 +799,10 @@ Exception Hierarchy
                     - :exc:`~.commands.BadInviteArgument`
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.GuildStickerNotFound`
+                    - :exc:`~.commands.ScheduledEventNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
+                    - :exc:`~.commands.RangeError`
                     - :exc:`~.commands.ThreadNotFound`
                     - :exc:`~.commands.FlagError`
                         - :exc:`~.commands.BadFlagArgument`
@@ -662,6 +832,7 @@ Exception Hierarchy
             - :exc:`~.commands.CommandInvokeError`
             - :exc:`~.commands.CommandOnCooldown`
             - :exc:`~.commands.MaxConcurrencyReached`
+            - :exc:`~.commands.HybridCommandError`
         - :exc:`~.commands.ExtensionError`
             - :exc:`~.commands.ExtensionAlreadyLoaded`
             - :exc:`~.commands.ExtensionNotLoaded`

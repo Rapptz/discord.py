@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict
+from typing_extensions import NotRequired
 from .user import User
 from .snowflake import Snowflake
 
@@ -41,9 +42,9 @@ class PartialPresenceUpdate(TypedDict):
 
 
 class ClientStatus(TypedDict, total=False):
-    desktop: str
-    mobile: str
-    web: str
+    desktop: StatusType
+    mobile: StatusType
+    web: StatusType
 
 
 class ActivityTimestamps(TypedDict, total=False):
@@ -69,30 +70,19 @@ class ActivitySecrets(TypedDict, total=False):
     match: str
 
 
-class _ActivityEmojiOptional(TypedDict, total=False):
-    id: Snowflake
-    animated: bool
-
-
-class ActivityEmoji(_ActivityEmojiOptional):
+class ActivityEmoji(TypedDict):
     name: str
-
-
-class ActivityButton(TypedDict):
-    label: str
-    url: str
-
-
-class _SendableActivityOptional(TypedDict, total=False):
-    url: Optional[str]
+    id: NotRequired[Snowflake]
+    animated: NotRequired[bool]
 
 
 ActivityType = Literal[0, 1, 2, 4, 5]
 
 
-class SendableActivity(_SendableActivityOptional):
+class SendableActivity(TypedDict):
     name: str
     type: ActivityType
+    url: NotRequired[Optional[str]]
 
 
 class _BaseActivity(SendableActivity):
@@ -111,4 +101,5 @@ class Activity(_BaseActivity, total=False):
     secrets: ActivitySecrets
     session_id: Optional[str]
     instance: bool
-    buttons: List[ActivityButton]
+    buttons: List[str]
+    sync_id: str

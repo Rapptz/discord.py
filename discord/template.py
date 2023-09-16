@@ -24,8 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, Optional, TYPE_CHECKING
-from .utils import parse_time, _get_as_snowflake, _bytes_to_base64_data, MISSING
+from typing import Any, Optional, TYPE_CHECKING, List
+from .utils import parse_time, _bytes_to_base64_data, MISSING
 from .guild import Guild
 
 # fmt: off
@@ -49,7 +49,7 @@ class _FriendlyHttpAttributeErrorHelper:
 
 
 class _PartialTemplateState:
-    def __init__(self, *, state):
+    def __init__(self, *, state) -> None:
         self.__state = state
         self.http = _FriendlyHttpAttributeErrorHelper()
 
@@ -69,19 +69,23 @@ class _PartialTemplateState:
     def member_cache_flags(self):
         return self.__state.member_cache_flags
 
-    def store_emoji(self, guild, packet):
+    @property
+    def cache_guild_expressions(self):
+        return False
+
+    def store_emoji(self, guild, packet) -> None:
         return None
 
-    def _get_voice_client(self, id):
+    def _get_voice_client(self, id) -> None:
         return None
 
-    def _get_message(self, id):
+    def _get_message(self, id) -> None:
         return None
 
     def _get_guild(self, id):
         return self.__state._get_guild(id)
 
-    async def query_members(self, **kwargs: Any):
+    async def query_members(self, **kwargs: Any) -> List[Any]:
         return []
 
     def __getattr__(self, attr):
@@ -111,7 +115,7 @@ class Template:
         An aware datetime in UTC representing when the template was last updated.
         This is referred to as "last synced" in the official Discord client.
     source_guild: :class:`Guild`
-        The source guild.
+        The guild snapshot that represents the data that this template currently holds.
     is_dirty: Optional[:class:`bool`]
         Whether the template has unsynced changes.
 
@@ -146,18 +150,11 @@ class Template:
         self.created_at: Optional[datetime.datetime] = parse_time(data.get('created_at'))
         self.updated_at: Optional[datetime.datetime] = parse_time(data.get('updated_at'))
 
-        guild_id = int(data['source_guild_id'])
-        guild: Optional[Guild] = self._state._get_guild(guild_id)
-
-        self.source_guild: Guild
-        if guild is None:
-            source_serialised = data['serialized_source_guild']
-            source_serialised['id'] = guild_id
-            state = _PartialTemplateState(state=self._state)
-            # Guild expects a ConnectionState, we're passing a _PartialTemplateState
-            self.source_guild = Guild(data=source_serialised, state=state)  # type: ignore
-        else:
-            self.source_guild = guild
+        source_serialised = data['serialized_source_guild']
+        source_serialised['id'] = int(data['source_guild_id'])
+        state = _PartialTemplateState(state=self._state)
+        # Guild expects a ConnectionState, we're passing a _PartialTemplateState
+        self.source_guild = Guild(data=source_serialised, state=state)  # type: ignore
 
         self.is_dirty: Optional[bool] = data.get('is_dirty', None)
 
@@ -178,8 +175,8 @@ class Template:
             The ``region`` parameter has been removed.
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError`.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Parameters
         ----------
@@ -214,8 +211,7 @@ class Template:
 
         Sync the template to the guild's current state.
 
-        You must have the :attr:`~Permissions.manage_guild` permission in the
-        source guild to do this.
+        You must have :attr:`~Permissions.manage_guild` in the source guild to do this.
 
         .. versionadded:: 1.7
 
@@ -250,8 +246,7 @@ class Template:
 
         Edit the template metadata.
 
-        You must have the :attr:`~Permissions.manage_guild` permission in the
-        source guild to do this.
+        You must have :attr:`~Permissions.manage_guild` in the source guild to do this.
 
         .. versionadded:: 1.7
 
@@ -294,8 +289,7 @@ class Template:
 
         Delete the template.
 
-        You must have the :attr:`~Permissions.manage_guild` permission in the
-        source guild to do this.
+        You must have :attr:`~Permissions.manage_guild` in the source guild to do this.
 
         .. versionadded:: 1.7
 

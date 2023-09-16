@@ -23,8 +23,9 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import List, Literal, Optional, TypedDict
+from typing_extensions import NotRequired, Required
 
-
+from .automod import AutoModerationAction, AutoModerationRuleTriggerType
 from .activity import PartialPresenceUpdate
 from .voice import GuildVoiceState
 from .integration import BaseIntegration, IntegrationApplication
@@ -33,7 +34,7 @@ from .channel import ChannelType, StageInstance
 from .interactions import Interaction
 from .invite import InviteTargetType
 from .emoji import Emoji, PartialEmoji
-from .member import Member, MemberWithUser
+from .member import MemberWithUser
 from .snowflake import Snowflake
 from .message import Message
 from .sticker import GuildSticker
@@ -42,6 +43,7 @@ from .guild import Guild, UnavailableGuild
 from .user import User
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
+from .audit_log import AuditLogEntry
 
 
 class SessionStartLimit(TypedDict):
@@ -60,17 +62,13 @@ class GatewayBot(Gateway):
     session_start_limit: SessionStartLimit
 
 
-class ShardInfo(TypedDict):
-    shard_id: int
-    shard_count: int
-
-
 class ReadyEvent(TypedDict):
     v: int
     user: User
     guilds: List[UnavailableGuild]
     session_id: str
-    shard: ShardInfo
+    resume_gateway_url: str
+    shard: List[int]  # shard_id, num_shards
     application: GatewayAppInfo
 
 
@@ -79,68 +77,51 @@ ResumedEvent = Literal[None]
 MessageCreateEvent = Message
 
 
-class _MessageDeleteEventOptional(TypedDict, total=False):
-    guild_id: Snowflake
-
-
-class MessageDeleteEvent(_MessageDeleteEventOptional):
+class MessageDeleteEvent(TypedDict):
     id: Snowflake
     channel_id: Snowflake
+    guild_id: NotRequired[Snowflake]
 
 
-class _MessageDeleteBulkEventOptional(TypedDict, total=False):
-    guild_id: Snowflake
-
-
-class MessageDeleteBulkEvent(_MessageDeleteBulkEventOptional):
+class MessageDeleteBulkEvent(TypedDict):
     ids: List[Snowflake]
     channel_id: Snowflake
+    guild_id: NotRequired[Snowflake]
 
 
 class MessageUpdateEvent(Message):
     channel_id: Snowflake
 
 
-class _MessageReactionAddEventOptional(TypedDict, total=False):
-    member: MemberWithUser
-    guild_id: Snowflake
-
-
-class MessageReactionAddEvent(_MessageReactionAddEventOptional):
+class MessageReactionAddEvent(TypedDict):
     user_id: Snowflake
     channel_id: Snowflake
     message_id: Snowflake
     emoji: PartialEmoji
+    member: NotRequired[MemberWithUser]
+    guild_id: NotRequired[Snowflake]
+    message_author_id: NotRequired[Snowflake]
 
 
-class _MessageReactionRemoveEventOptional(TypedDict, total=False):
-    guild_id: Snowflake
-
-
-class MessageReactionRemoveEvent(_MessageReactionRemoveEventOptional):
+class MessageReactionRemoveEvent(TypedDict):
     user_id: Snowflake
     channel_id: Snowflake
     message_id: Snowflake
     emoji: PartialEmoji
+    guild_id: NotRequired[Snowflake]
 
 
-class _MessageReactionRemoveAllEventOptional(TypedDict, total=False):
-    guild_id: Snowflake
-
-
-class MessageReactionRemoveAllEvent(_MessageReactionRemoveAllEventOptional):
+class MessageReactionRemoveAllEvent(TypedDict):
     message_id: Snowflake
     channel_id: Snowflake
+    guild_id: NotRequired[Snowflake]
 
 
-class _MessageReactionRemoveEmojiEventOptional(TypedDict, total=False):
-    guild_id: Snowflake
-
-
-class MessageReactionRemoveEmojiEvent(_MessageReactionRemoveEmojiEventOptional):
+class MessageReactionRemoveEmojiEvent(TypedDict):
     emoji: PartialEmoji
     message_id: Snowflake
     channel_id: Snowflake
+    guild_id: NotRequired[Snowflake]
 
 
 InteractionCreateEvent = Interaction
@@ -152,15 +133,7 @@ PresenceUpdateEvent = PartialPresenceUpdate
 UserUpdateEvent = User
 
 
-class _InviteCreateEventOptional(TypedDict, total=False):
-    guild_id: Snowflake
-    inviter: User
-    target_type: InviteTargetType
-    target_user: User
-    target_application: PartialAppInfo
-
-
-class InviteCreateEvent(_InviteCreateEventOptional):
+class InviteCreateEvent(TypedDict):
     channel_id: Snowflake
     code: str
     created_at: str
@@ -168,15 +141,17 @@ class InviteCreateEvent(_InviteCreateEventOptional):
     max_uses: int
     temporary: bool
     uses: Literal[0]
+    guild_id: NotRequired[Snowflake]
+    inviter: NotRequired[User]
+    target_type: NotRequired[InviteTargetType]
+    target_user: NotRequired[User]
+    target_application: NotRequired[PartialAppInfo]
 
 
-class _InviteDeleteEventOptional(TypedDict, total=False):
-    guild_id: Snowflake
-
-
-class InviteDeleteEvent(_InviteDeleteEventOptional):
+class InviteDeleteEvent(TypedDict):
     channel_id: Snowflake
     code: str
+    guild_id: NotRequired[Snowflake]
 
 
 class _ChannelEvent(TypedDict):
@@ -187,22 +162,15 @@ class _ChannelEvent(TypedDict):
 ChannelCreateEvent = ChannelUpdateEvent = ChannelDeleteEvent = _ChannelEvent
 
 
-class _ChannelPinsUpdateEventOptional(TypedDict, total=False):
-    guild_id: Snowflake
-    last_pin_timestamp: Optional[str]
-
-
-class ChannelPinsUpdateEvent(_ChannelPinsUpdateEventOptional):
+class ChannelPinsUpdateEvent(TypedDict):
     channel_id: Snowflake
+    guild_id: NotRequired[Snowflake]
+    last_pin_timestamp: NotRequired[Optional[str]]
 
 
-class _ThreadCreateEventOptional(TypedDict, total=False):
+class ThreadCreateEvent(Thread, total=False):
     newly_created: bool
     members: List[ThreadMember]
-
-
-class ThreadCreateEvent(Thread, _ThreadCreateEventOptional):
-    ...
 
 
 ThreadUpdateEvent = Thread
@@ -215,29 +183,23 @@ class ThreadDeleteEvent(TypedDict):
     type: ChannelType
 
 
-class _ThreadListSyncEventOptional(TypedDict, total=False):
-    channel_ids: List[Snowflake]
-
-
-class ThreadListSyncEvent(_ThreadListSyncEventOptional):
+class ThreadListSyncEvent(TypedDict):
     guild_id: Snowflake
     threads: List[Thread]
     members: List[ThreadMember]
+    channel_ids: NotRequired[List[Snowflake]]
 
 
 class ThreadMemberUpdate(ThreadMember):
     guild_id: Snowflake
 
 
-class _ThreadMembersUpdateOptional(TypedDict, total=False):
-    added_members: List[ThreadMember]
-    removed_member_ids: List[Snowflake]
-
-
-class ThreadMembersUpdate(_ThreadMembersUpdateOptional):
+class ThreadMembersUpdate(TypedDict):
     id: Snowflake
     guild_id: Snowflake
     member_count: int
+    added_members: NotRequired[List[ThreadMember]]
+    removed_member_ids: NotRequired[List[Snowflake]]
 
 
 class GuildMemberAddEvent(MemberWithUser):
@@ -249,21 +211,19 @@ class GuildMemberRemoveEvent(TypedDict):
     user: User
 
 
-class _GuildMemberUpdateEventOptional(TypedDict, total=False):
-    nick: str
-    premium_since: Optional[str]
-    deaf: bool
-    mute: bool
-    pending: bool
-    communication_disabled_until: str
-
-
-class GuildMemberUpdateEvent(_GuildMemberUpdateEventOptional):
+class GuildMemberUpdateEvent(TypedDict):
     guild_id: Snowflake
     roles: List[Snowflake]
     user: User
     avatar: Optional[str]
     joined_at: Optional[str]
+    flags: int
+    nick: NotRequired[str]
+    premium_since: NotRequired[Optional[str]]
+    deaf: NotRequired[bool]
+    mute: NotRequired[bool]
+    pending: NotRequired[bool]
+    communication_disabled_until: NotRequired[str]
 
 
 class GuildEmojisUpdateEvent(TypedDict):
@@ -301,24 +261,22 @@ class GuildRoleDeleteEvent(TypedDict):
 GuildRoleCreateEvent = GuildRoleUpdateEvent = _GuildRoleEvent
 
 
-class _GuildMembersChunkEventOptional(TypedDict, total=False):
-    not_found: List[Snowflake]
-    presences: List[PresenceUpdateEvent]
-    nonce: str
-
-
-class GuildMembersChunkEvent(_GuildMembersChunkEventOptional):
+class GuildMembersChunkEvent(TypedDict):
     guild_id: Snowflake
     members: List[MemberWithUser]
     chunk_index: int
     chunk_count: int
+    not_found: NotRequired[List[Snowflake]]
+    presences: NotRequired[List[PresenceUpdateEvent]]
+    nonce: NotRequired[str]
 
 
 class GuildIntegrationsUpdateEvent(TypedDict):
     guild_id: Snowflake
 
 
-class _IntegrationEventOptional(BaseIntegration, total=False):
+class _IntegrationEvent(BaseIntegration, total=False):
+    guild_id: Required[Snowflake]
     role_id: Optional[Snowflake]
     enable_emoticons: bool
     subscriber_count: int
@@ -326,20 +284,13 @@ class _IntegrationEventOptional(BaseIntegration, total=False):
     application: IntegrationApplication
 
 
-class _IntegrationEvent(_IntegrationEventOptional):
-    guild_id: Snowflake
-
-
 IntegrationCreateEvent = IntegrationUpdateEvent = _IntegrationEvent
 
 
-class _IntegrationDeleteEventOptional(TypedDict, total=False):
-    application_id: Snowflake
-
-
-class IntegrationDeleteEvent(_IntegrationDeleteEventOptional):
+class IntegrationDeleteEvent(TypedDict):
     id: Snowflake
     guild_id: Snowflake
+    application_id: NotRequired[Snowflake]
 
 
 class WebhooksUpdateEvent(TypedDict):
@@ -369,12 +320,27 @@ class VoiceServerUpdateEvent(TypedDict):
     endpoint: Optional[str]
 
 
-class _TypingStartEventOptional(TypedDict, total=False):
-    guild_id: Snowflake
-    member: MemberWithUser
-
-
-class TypingStartEvent(_TypingStartEventOptional):
+class TypingStartEvent(TypedDict):
     channel_id: Snowflake
     user_id: Snowflake
     timestamp: int
+    guild_id: NotRequired[Snowflake]
+    member: NotRequired[MemberWithUser]
+
+
+class AutoModerationActionExecution(TypedDict):
+    guild_id: Snowflake
+    action: AutoModerationAction
+    rule_id: Snowflake
+    rule_trigger_type: AutoModerationRuleTriggerType
+    user_id: Snowflake
+    channel_id: NotRequired[Snowflake]
+    message_id: NotRequired[Snowflake]
+    alert_system_message_id: NotRequired[Snowflake]
+    content: str
+    matched_keyword: Optional[str]
+    matched_content: Optional[str]
+
+
+class GuildAuditLogEntryCreate(AuditLogEntry):
+    guild_id: Snowflake

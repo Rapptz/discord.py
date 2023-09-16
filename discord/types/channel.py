@@ -23,6 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import List, Literal, Optional, TypedDict, Union
+from typing_extensions import NotRequired
+
 from .user import PartialUser
 from .snowflake import Snowflake
 from .threads import ThreadMetadata, ThreadMember, ThreadArchiveDuration, ThreadType
@@ -38,7 +40,7 @@ class PermissionOverwrite(TypedDict):
     deny: str
 
 
-ChannelTypeWithoutThread = Literal[0, 1, 2, 3, 4, 5, 6, 13]
+ChannelTypeWithoutThread = Literal[0, 1, 2, 3, 4, 5, 6, 13, 15, 16]
 ChannelType = Union[ChannelTypeWithoutThread, ThreadType]
 
 
@@ -59,64 +61,47 @@ class PartialChannel(_BaseChannel):
     type: ChannelType
 
 
-class _TextChannelOptional(TypedDict, total=False):
+class _BaseTextChannel(_BaseGuildChannel, total=False):
     topic: str
     last_message_id: Optional[Snowflake]
     last_pin_timestamp: str
     rate_limit_per_user: int
+    default_thread_rate_limit_per_user: int
     default_auto_archive_duration: ThreadArchiveDuration
 
 
-class TextChannel(_BaseGuildChannel, _TextChannelOptional):
+class TextChannel(_BaseTextChannel):
     type: Literal[0]
 
 
-class NewsChannel(_BaseGuildChannel, _TextChannelOptional):
+class NewsChannel(_BaseTextChannel):
     type: Literal[5]
 
 
 VideoQualityMode = Literal[1, 2]
 
 
-class _VoiceChannelOptional(TypedDict, total=False):
-    rtc_region: Optional[str]
-    video_quality_mode: VideoQualityMode
-
-
-class VoiceChannel(_BaseGuildChannel, _VoiceChannelOptional):
+class VoiceChannel(_BaseTextChannel):
     type: Literal[2]
     bitrate: int
     user_limit: int
+    rtc_region: NotRequired[Optional[str]]
+    video_quality_mode: NotRequired[VideoQualityMode]
 
 
 class CategoryChannel(_BaseGuildChannel):
     type: Literal[4]
 
 
-class StoreChannel(_BaseGuildChannel):
-    type: Literal[6]
-
-
-class _StageChannelOptional(TypedDict, total=False):
-    rtc_region: Optional[str]
-    topic: str
-
-
-class StageChannel(_BaseGuildChannel, _StageChannelOptional):
+class StageChannel(_BaseGuildChannel):
     type: Literal[13]
     bitrate: int
     user_limit: int
+    rtc_region: NotRequired[Optional[str]]
+    topic: NotRequired[str]
 
 
-class _ThreadChannelOptional(TypedDict, total=False):
-    member: ThreadMember
-    owner_id: Snowflake
-    rate_limit_per_user: int
-    last_message_id: Optional[Snowflake]
-    last_pin_timestamp: str
-
-
-class ThreadChannel(_BaseChannel, _ThreadChannelOptional):
+class ThreadChannel(_BaseChannel):
     type: Literal[10, 11, 12]
     guild_id: Snowflake
     parent_id: Snowflake
@@ -127,21 +112,71 @@ class ThreadChannel(_BaseChannel, _ThreadChannelOptional):
     message_count: int
     member_count: int
     thread_metadata: ThreadMetadata
+    member: NotRequired[ThreadMember]
+    owner_id: NotRequired[Snowflake]
+    rate_limit_per_user: NotRequired[int]
+    last_message_id: NotRequired[Optional[Snowflake]]
+    last_pin_timestamp: NotRequired[str]
+    flags: NotRequired[int]
+    applied_tags: NotRequired[List[Snowflake]]
 
 
-GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StoreChannel, StageChannel, ThreadChannel]
+class DefaultReaction(TypedDict):
+    emoji_id: Optional[Snowflake]
+    emoji_name: Optional[str]
 
 
-class DMChannel(_BaseChannel):
+class ForumTag(TypedDict):
+    id: Snowflake
+    name: str
+    moderated: bool
+    emoji_id: Optional[Snowflake]
+    emoji_name: Optional[str]
+
+
+ForumOrderType = Literal[0, 1]
+ForumLayoutType = Literal[0, 1, 2]
+
+
+class _BaseForumChannel(_BaseTextChannel):
+    available_tags: List[ForumTag]
+    default_reaction_emoji: Optional[DefaultReaction]
+    default_sort_order: Optional[ForumOrderType]
+    default_forum_layout: NotRequired[ForumLayoutType]
+    flags: NotRequired[int]
+
+
+class ForumChannel(_BaseForumChannel):
+    type: Literal[15]
+
+
+class MediaChannel(_BaseForumChannel):
+    type: Literal[16]
+
+
+GuildChannel = Union[
+    TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel, ForumChannel, MediaChannel
+]
+
+
+class _BaseDMChannel(_BaseChannel):
     type: Literal[1]
     last_message_id: Optional[Snowflake]
+
+
+class DMChannel(_BaseDMChannel):
     recipients: List[PartialUser]
+
+
+class InteractionDMChannel(_BaseDMChannel):
+    recipients: NotRequired[List[PartialUser]]
 
 
 class GroupDMChannel(_BaseChannel):
     type: Literal[3]
     icon: Optional[str]
     owner_id: Snowflake
+    recipients: List[PartialUser]
 
 
 Channel = Union[GuildChannel, DMChannel, GroupDMChannel]
@@ -156,3 +191,4 @@ class StageInstance(TypedDict):
     topic: str
     privacy_level: PrivacyLevel
     discoverable_disabled: bool
+    guild_scheduled_event_id: Optional[int]

@@ -1,4 +1,4 @@
-import typing
+# This example requires the 'message_content' privileged intent to function.
 
 import discord
 from discord.ext import commands
@@ -13,7 +13,7 @@ class Dropdown(discord.ui.Select):
         options = [
             discord.SelectOption(label='Red', description='Your favourite colour is red', emoji='🟥'),
             discord.SelectOption(label='Green', description='Your favourite colour is green', emoji='🟩'),
-            discord.SelectOption(label='Blue', description='Your favourite colour is blue', emoji='🟦')
+            discord.SelectOption(label='Blue', description='Your favourite colour is blue', emoji='🟦'),
         ]
 
         # The placeholder is what will be shown when no option is chosen
@@ -24,7 +24,7 @@ class Dropdown(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction):
         # Use the interaction object to send a response message containing
         # the user's favourite colour or choice. The self object refers to the
-        # Select object, and the values attribute gets a list of the user's 
+        # Select object, and the values attribute gets a list of the user's
         # selected options. We only want the first one.
         await interaction.response.send_message(f'Your favourite colour is {self.values[0]}')
 
@@ -39,13 +39,16 @@ class DropdownView(discord.ui.View):
 
 class Bot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=commands.when_mentioned_or('$'))
+        intents = discord.Intents.default()
+        intents.message_content = True
+
+        super().__init__(command_prefix=commands.when_mentioned_or('$'), intents=intents)
 
     async def on_ready(self):
         print(f'Logged in as {self.user} (ID: {self.user.id})')
         print('------')
-    
-    
+
+
 bot = Bot()
 
 

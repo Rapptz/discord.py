@@ -23,8 +23,9 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING, AsyncIterator, List, Union, Optional
+from typing import TYPE_CHECKING, AsyncIterator, Union, Optional
 
+from .user import User
 from .object import Object
 
 # fmt: off
@@ -34,7 +35,6 @@ __all__ = (
 # fmt: on
 
 if TYPE_CHECKING:
-    from .user import User
     from .member import Member
     from .types.message import Reaction as ReactionPayload
     from .message import Message
@@ -89,15 +89,14 @@ class Reaction:
         self.count: int = data.get('count', 1)
         self.me: bool = data['me']
 
-    # TODO: typeguard
     def is_custom_emoji(self) -> bool:
         """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and other.emoji == self.emoji
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
             return other.emoji != self.emoji
         return True
@@ -117,7 +116,7 @@ class Reaction:
         Remove the reaction by the provided :class:`User` from the message.
 
         If the reaction is not your own (i.e. ``user`` parameter is not you) then
-        the :attr:`~Permissions.manage_messages` permission is needed.
+        :attr:`~Permissions.manage_messages` is needed.
 
         The ``user`` parameter must represent a user or member and meet
         the :class:`abc.Snowflake` abc.
@@ -144,13 +143,13 @@ class Reaction:
 
         Clears this reaction from the message.
 
-        You need the :attr:`~Permissions.manage_messages` permission to use this.
+        You must have :attr:`~Permissions.manage_messages` to do this.
 
         .. versionadded:: 1.3
 
         .. versionchanged:: 2.0
-            This function no-longer raises ``InvalidArgument`` instead raising
-            :exc:`ValueError`.
+            This function will now raise :exc:`ValueError` instead of
+            ``InvalidArgument``.
 
         Raises
         --------
@@ -237,6 +236,9 @@ class Reaction:
             if data:
                 limit -= len(data)
                 after = Object(id=int(data[-1]['id']))
+            else:
+                # Terminate loop if we received no data
+                limit = 0
 
             if guild is None or isinstance(guild, Object):
                 for raw_user in reversed(data):

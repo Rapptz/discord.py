@@ -24,8 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, NamedTuple, Tuple
-from ..interactions import Interaction
+from typing import TYPE_CHECKING, Any, Dict, Iterable, Iterator, List, NamedTuple, Tuple
 from ..member import Member
 from ..object import Object
 from ..role import Role
@@ -35,6 +34,7 @@ from ..enums import AppCommandOptionType
 from .models import AppCommandChannel, AppCommandThread
 
 if TYPE_CHECKING:
+    from ..interactions import Interaction
     from ..types.interactions import ResolvedData, ApplicationCommandInteractionDataOption
 
 __all__ = ('Namespace',)
@@ -68,7 +68,13 @@ class Namespace:
 
     This class is deliberately simple and just holds the option name and resolved value as a simple
     key-pair mapping. These attributes can be accessed using dot notation. For example, an option
-    with the name of ``example`` can be accessed using ``ns.example``.
+    with the name of ``example`` can be accessed using ``ns.example``. If an attribute is not found,
+    then ``None`` is returned rather than an attribute error.
+
+    .. warning::
+
+        The key names come from the raw Discord data, which means that if a parameter was renamed then the
+        renamed key is used instead of the function parameter name.
 
     .. versionadded:: 2.0
 
@@ -80,6 +86,17 @@ class Namespace:
         .. describe:: x != y
 
             Checks if two namespaces are not equal.
+        .. describe:: x[key]
+
+            Returns an attribute if it is found, otherwise raises
+            a :exc:`KeyError`.
+        .. describe:: key in x
+
+            Checks if the attribute is in the namespace.
+        .. describe:: iter(x)
+
+           Returns an iterator of ``(name, value)`` pairs. This allows it
+           to be, for example, constructed as a dict or a list of pairs.
 
     This namespace object converts resolved objects into their appropriate form depending on their
     type. Consult the table below for conversion information.
@@ -105,6 +122,14 @@ class Namespace:
     +-------------------------------------------+-------------------------------------------------------------------------------+
     | :attr:`.AppCommandOptionType.attachment`  | :class:`~discord.Attachment`                                                  |
     +-------------------------------------------+-------------------------------------------------------------------------------+
+
+    .. note::
+
+        In autocomplete interactions, the namespace might not be validated or filled in. Discord does not
+        send the resolved data as well, so this means that certain fields end up just as IDs rather than
+        the resolved data. In these cases, a :class:`discord.Object` is returned instead.
+
+        This is a Discord limitation.
     """
 
     def __init__(
@@ -117,18 +142,24 @@ class Namespace:
         for option in options:
             opt_type = option['type']
             name = option['name']
+            focused = option.get('focused', False)
             if opt_type in (3, 4, 5):  # string, integer, boolean
-                value = option['value']  # type: ignore -- Key is there
+                value = option['value']  # type: ignore # Key is there
                 self.__dict__[name] = value
             elif opt_type == 10:  # number
-                value = option['value']  # type: ignore -- Key is there
-                if value is None:
+                value = option['value']  # type: ignore # Key is there
+                # This condition is written this way because 0 can be a valid float
+                if value is None or value == '':
                     self.__dict__[name] = float('nan')
                 else:
-                    self.__dict__[name] = float(value)
+                    if not focused:
+                        self.__dict__[name] = float(value)
+                    else:
+                        # Autocomplete focused values tend to be garbage in
+                        self.__dict__[name] = value
             elif opt_type in (6, 7, 8, 9, 11):
                 # Remaining ones should be snowflake based ones with resolved data
-                snowflake: str = option['value']  # type: ignore -- Key is there
+                snowflake: str = option['value']  # type: ignore # Key is there
                 if opt_type == 9:  # Mentionable
                     # Mentionable is User | Role, these do not cause any conflict
                     key = ResolveKey.any_with(snowflake)
@@ -139,7 +170,7 @@ class Namespace:
                     # servers will still have them so this needs to be handled.
                     key = ResolveKey(id=snowflake, type=opt_type)
 
-                value = completed.get(key)
+                value = completed.get(key) or Object(id=int(snowflake))
                 self.__dict__[name] = value
 
     @classmethod
@@ -148,7 +179,7 @@ class Namespace:
         state = interaction._state
         members = resolved.get('members', {})
         guild_id = interaction.guild_id
-        guild = (state._get_guild(guild_id) or Object(id=guild_id)) if guild_id is not None else None
+        guild = state._get_or_create_unavailable_guild(guild_id) if guild_id is not None else None
         type = AppCommandOptionType.user.value
         for (user_id, user_data) in resolved.get('users', {}).items():
             try:
@@ -193,9 +224,11 @@ class Namespace:
         for (message_id, message_data) in resolved.get('messages', {}).items():
             channel_id = int(message_data['channel_id'])
             if guild is None:
-                channel = PartialMessageable(state=state, id=channel_id)
+                channel = PartialMessageable(state=state, guild_id=guild_id, id=channel_id)
             else:
-                channel = guild.get_channel_or_thread(channel_id) or PartialMessageable(state=state, id=channel_id)
+                channel = guild.get_channel_or_thread(channel_id) or PartialMessageable(
+                    state=state, guild_id=guild_id, id=channel_id
+                )
 
             # Type checker doesn't understand this due to failure to narrow
             message = Message(state=state, channel=channel, data=message_data)  # type: ignore
@@ -212,6 +245,18 @@ class Namespace:
         if isinstance(self, Namespace) and isinstance(other, Namespace):
             return self.__dict__ == other.__dict__
         return NotImplemented
+
+    def __getitem__(self, key: str) -> Any:
+        return self.__dict__[key]
+
+    def __contains__(self, key: str) -> Any:
+        return key in self.__dict__
+
+    def __getattr__(self, attr: str) -> Any:
+        return None
+
+    def __iter__(self) -> Iterator[Tuple[str, Any]]:
+        yield from self.__dict__.items()
 
     def _update_with_defaults(self, defaults: Iterable[Tuple[str, Any]]) -> None:
         for key, value in defaults:
