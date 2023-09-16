@@ -313,7 +313,7 @@ with the :meth:`~discord.Client.add_view` method.
         async def setup_role_selector(self) -> None:
             await self.wait_until_ready()
             guild = self.get_guild(GUILD_ID)
-            roles = [guild.get_role() for id in ROLE_IDS]
+            roles = [guild.get_role(id) for id in ROLE_IDS]
             client.add_view(RoleSelector(SELECTOR_MESSAGE_ID, roles), message_id=SELECTOR_MESSAGE_ID)
 
         async def setup_hook(self) -> None:
