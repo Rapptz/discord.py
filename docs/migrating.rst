@@ -1006,6 +1006,20 @@ Due to a breaking API change by Discord, :meth:`Guild.bans` no longer returns a 
     async for ban in guild.bans(limit=1000):
         ...
 
+Flag classes now have a custom ``bool()`` implementation
+--------------------------------------------------------
+
+To allow library users to easily check whether an instance of a flag class has any flags enabled,
+using `bool` on them will now only return ``True`` if at least one flag is enabled.
+
+This means that evaluating instances of the following classes in a bool context (such as ``if obj:``) may no longer return ``True``:
+
+- :class:`Intents`
+- :class:`MemberCacheFlags`
+- :class:`MessageFlags`
+- :class:`Permissions`
+- :class:`PublicUserFlags`
+- :class:`SystemChannelFlags`
 
 Function Signature Changes
 ----------------------------

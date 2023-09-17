@@ -72,6 +72,7 @@ from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .appinfo import AppInfo
 from .ui.view import View
+from .ui.dynamic import DynamicItem
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
@@ -111,6 +112,7 @@ if TYPE_CHECKING:
     from .scheduled_event import ScheduledEvent
     from .threads import ThreadMember
     from .types.guild import Guild as GuildPayload
+    from .ui.item import Item
     from .voice_client import VoiceProtocol
     from .audit_logs import AuditLogEntry
 
@@ -2059,13 +2061,15 @@ class Client:
         limit: Optional[int] = 200,
         before: Optional[SnowflakeTime] = None,
         after: Optional[SnowflakeTime] = None,
+        with_counts: bool = True,
     ) -> AsyncIterator[Guild]:
         """Retrieves an :term:`asynchronous iterator` that enables receiving your guilds.
 
         .. note::
 
             Using this, you will only receive :attr:`.Guild.owner`, :attr:`.Guild.icon`,
-            :attr:`.Guild.id`, and :attr:`.Guild.name` per :class:`.Guild`.
+            :attr:`.Guild.id`, :attr:`.Guild.name`, :attr:`.Guild.approximate_member_count`,
+            and :attr:`.Guild.approximate_presence_count` per :class:`.Guild`.
 
         .. note::
 
@@ -2106,6 +2110,12 @@ class Client:
             Retrieve guilds after this date or object.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
             If the datetime is naive, it is assumed to be local time.
+        with_counts: :class:`bool`
+            Whether to include count information in the guilds. This fills the
+            :attr:`.Guild.approximate_member_count` and :attr:`.Guild.approximate_presence_count`
+            attributes without needing any privileged intents. Defaults to ``True``.
+
+            .. versionadded:: 2.3
 
         Raises
         ------
@@ -2120,7 +2130,7 @@ class Client:
 
         async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
-            data = await self.http.get_guilds(retrieve, before=before_id)
+            data = await self.http.get_guilds(retrieve, before=before_id, with_counts=with_counts)
 
             if data:
                 if limit is not None:
@@ -2132,7 +2142,7 @@ class Client:
 
         async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
-            data = await self.http.get_guilds(retrieve, after=after_id)
+            data = await self.http.get_guilds(retrieve, after=after_id, with_counts=with_counts)
 
             if data:
                 if limit is not None:
@@ -2233,8 +2243,8 @@ class Client:
 
         Raises
         ------
-        Forbidden
-            You do not have access to the guild.
+        NotFound
+            The guild doesn't exist or you got no access to it.
         HTTPException
             Getting the guild failed.
 
@@ -2669,6 +2679,54 @@ class Client:
 
         data = await state.http.start_private_message(user.id)
         return state.add_dm_channel(data)
+
+    def add_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
+        r"""Registers :class:`~discord.ui.DynamicItem` classes for persistent listening.
+
+        This method accepts *class types* rather than instances.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        \*items: Type[:class:`~discord.ui.DynamicItem`]
+            The classes of dynamic items to add.
+
+        Raises
+        -------
+        TypeError
+            A class is not a subclass of :class:`~discord.ui.DynamicItem`.
+        """
+
+        for item in items:
+            if not issubclass(item, DynamicItem):
+                raise TypeError(f'expected subclass of DynamicItem not {item.__name__}')
+
+        self._connection.store_dynamic_items(*items)
+
+    def remove_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
+        r"""Removes :class:`~discord.ui.DynamicItem` classes from persistent listening.
+
+        This method accepts *class types* rather than instances.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        \*items: Type[:class:`~discord.ui.DynamicItem`]
+            The classes of dynamic items to remove.
+
+        Raises
+        -------
+        TypeError
+            A class is not a subclass of :class:`~discord.ui.DynamicItem`.
+        """
+
+        for item in items:
+            if not issubclass(item, DynamicItem):
+                raise TypeError(f'expected subclass of DynamicItem not {item.__name__}')
+
+        self._connection.remove_dynamic_items(*items)
 
     def add_view(self, view: View, *, message_id: Optional[int] = None) -> None:
         """Registers a :class:`~discord.ui.View` for persistent listening.

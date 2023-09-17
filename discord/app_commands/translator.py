@@ -109,7 +109,7 @@ class TranslationContext(Generic[_L, _D]):
     def __init__(self, location: Literal[TranslationContextLocation.other], data: Any) -> None:
         ...
 
-    def __init__(self, location: _L, data: _D) -> None:
+    def __init__(self, location: _L, data: _D) -> None:  # type: ignore # pyright doesn't like the overloads
         self.location: _L = location
         self.data: _D = data
 

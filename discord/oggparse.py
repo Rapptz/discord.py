@@ -99,7 +99,7 @@ class OggStream:
         elif not head:
             return None
         else:
-            raise OggError('invalid header magic')
+            raise OggError(f'invalid header magic {head}')
 
     def _iter_pages(self) -> Generator[OggPage, None, None]:
         page = self._next_page()

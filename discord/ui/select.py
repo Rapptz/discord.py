@@ -162,10 +162,10 @@ class BaseSelect(Item[V]):
     @custom_id.setter
     def custom_id(self, value: str) -> None:
         if not isinstance(value, str):
-            raise TypeError('custom_id must be None or str')
+            raise TypeError('custom_id must be a str')
 
         self._underlying.custom_id = value
-        self._provided_custom_id = value is not None
+        self._provided_custom_id = True
 
     @property
     def placeholder(self) -> Optional[str]:
@@ -235,6 +235,7 @@ class BaseSelect(Item[V]):
     def from_component(cls, component: SelectMenu) -> Self:
         return cls(
             **{k: getattr(component, k) for k in cls.__item_repr_attributes__},
+            custom_id=component.custom_id,
             row=None,
         )
 
