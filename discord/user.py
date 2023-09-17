@@ -197,7 +197,7 @@ class BaseUser(_UserTag):
 
         If the user has not set an avatar decoration, ``None`` is returned.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
         """
         if self._avatar_decoration is not None:
             return Asset._from_avatar_decoration(self._state, self._avatar_decoration)
