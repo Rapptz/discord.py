@@ -110,7 +110,7 @@ class DynamicItem(Generic[BaseT], Item['View']):
             raise TypeError('item must be dispatchable, e.g. not a URL button')
 
         if not self.template.match(self.custom_id):
-            raise ValueError(f'item custom_id must match the template {self.template.pattern!r}')
+            raise ValueError(f'item custom_id {self.custom_id!r} must match the template {self.template.pattern!r}')
 
     @property
     def template(self) -> re.Pattern[str]:
