@@ -6,44 +6,31 @@ from sphinx.locale import __
 from sphinx.util.osutil import ensuredir
 from sphinx.environment.adapters.indexentries import IndexEntries
 from sphinx.writers.html5 import HTML5Translator
-try:
-    #Latest sphinx version lets you import ctime directly.
-    from sphinx.builders.gettext import ctime
-except Exception as exc:
-    #time to make ctime ourselves
-    from datetime import datetime, timedelta, tzinfo
-    import time
-    from os import getenv
-    # determine tzoffset once to remain unaffected by DST change during build
-
-    timestamp = time.time()
-
-    tzdelta = datetime.fromtimestamp(timestamp) - \
-        datetime.utcfromtimestamp(timestamp)
-    # set timestamp from SOURCE_DATE_EPOCH if set
-    # see https://reproducible-builds.org/specs/source-date-epoch/
-    source_date_epoch = getenv('SOURCE_DATE_EPOCH')
-    if source_date_epoch is not None:
-        timestamp = float(source_date_epoch)
-        tzdelta = timedelta(0)
-    
-
-    class LocalTimeZone(tzinfo):
-        def __init__(self, *args: Any, **kwargs: Any) -> None:
-            super().__init__(*args, **kwargs)
-            self.tzdelta = tzdelta
-
-        def utcoffset(self, dt: Optional[datetime]) -> timedelta:
-            return self.tzdelta
-
-        def dst(self, dt: Optional[datetime]) -> timedelta:
-            return timedelta(0)
-    ltz=LocalTimeZone()
-    ctime= datetime.fromtimestamp(timestamp, ltz).strftime('%Y-%m-%d %H:%M%z')
 
 import datetime
+
 import os
 import re
+try:
+    #Latest sphinx version lets you import ctime directly.
+    from sphinx import version_info
+
+    comp=version_info[:3]
+    if comp>=(7,2,0):
+        from sphinx.builders.gettext import ctime
+    else:
+        from sphinx.builders.gettext import timestamp, ltz
+        ctime = datetime.datetime.fromtimestamp(timestamp, ltz).strftime('%Y-%m-%d %H:%M%z')
+except Exception as exc:
+    #Fallback
+    import time
+    if (source_date_epoch := os.getenv('SOURCE_DATE_EPOCH')) is not None:
+        timestamp = time.gmtime(float(source_date_epoch))
+    else:
+        # determine timestamp once to remain unaffected by DST changes during build
+        timestamp = time.localtime()
+    ctime = time.strftime('%Y-%m-%d %H:%M%z', timestamp)
+
 
 #This is deprecated...
 from sphinx.util import status_iterator 
