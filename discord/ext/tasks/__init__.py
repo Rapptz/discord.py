@@ -278,23 +278,26 @@ class Loop(Generic[LF]):
         if obj is None:
             return self
 
-        copy: Loop[LF] = Loop(
-            self.coro,
-            seconds=self._seconds,
-            hours=self._hours,
-            minutes=self._minutes,
-            time=self._time,
-            count=self.count,
-            reconnect=self.reconnect,
-            name=self._name,
-            slot_name=self._slot_name,
-        )
-        copy._injected = obj
-        copy._before_loop = self._before_loop
-        copy._after_loop = self._after_loop
-        copy._error = self._error
-        setattr(obj, self._slot_name, copy)
-        return copy
+        try:
+            return getattr(obj, self._slot_name)
+        except AttributeError:
+            copy: Loop[LF] = Loop(
+                self.coro,
+                seconds=self._seconds,
+                hours=self._hours,
+                minutes=self._minutes,
+                time=self._time,
+                count=self.count,
+                reconnect=self.reconnect,
+                name=self._name,
+                slot_name=self._slot_name,
+            )
+            copy._injected = obj
+            copy._before_loop = self._before_loop
+            copy._after_loop = self._after_loop
+            copy._error = self._error
+            setattr(obj, self._slot_name, copy)
+            return copy
 
     @property
     def seconds(self) -> Optional[float]:
