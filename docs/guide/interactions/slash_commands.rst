@@ -192,9 +192,13 @@ calling the :meth:`.CommandTree.sync` method, typically in :meth:`.Client.setup_
 
 Commands need to be synced again each time a new command is added or removed, or if any of the above properties change.
 
-Reloading your own client is sometimes also needed for new changes to be visible.
+Reloading your own client is sometimes also needed for new changes to be visible -
+old commands tend to linger in the command preview if a client hasn't yet refreshed, but Discord
+blocks invocation with this message in red:
 
-discord.py will log warnings if there's a mismatch with what Discord provides and
+.. image:: /images/guide/app_commands/outdated_command.png
+
+As another measure, discord.py will log warnings if there's a mismatch with what Discord provides and
 what the bot defines in code during invocation.
 
 Parameters
@@ -607,7 +611,7 @@ discord.py will raise an error since the actual type given by Discord,
 discord.py doesn't raise an error for the other way around, ie. a parameter annotated to :class:`~discord.User` invoked in a guild -
 this is because :class:`~discord.Member` is compatible with :class:`~discord.User`.
 
-To accept both types, regardless of where the command was invoked, place both types in a :obj:`~typing.Union`:
+To accept member and user, regardless of where the command was invoked, place both types in a :obj:`~typing.Union`:
 
 .. code-block:: python
 
@@ -650,12 +654,16 @@ This can be configured by passing the ``nsfw`` keyword argument within the comma
     async def evil(interaction: discord.Interaction):
         await interaction.response.send_message("******") # very explicit text!
 
+    # or, for a group:
+    class Evil(app_commands.Group, nsfw=True):
+        """very evil commands"""
+
 Guild-only
 +++++++++++
 
 Indicates whether this command can only be used in guilds or not.
 
-Enabled by adding the :func:`.app_commands.guild_only` decorator when defining a slash command:
+Enabled by adding the :func:`.app_commands.guild_only` decorator when defining an app command:
 
 .. code-block:: python
 
@@ -665,12 +673,16 @@ Enabled by adding the :func:`.app_commands.guild_only` decorator when defining a
         assert interaction.guild is not None
         await interaction.response.send_message(interaction.guild.name)
 
+    # on a group:
+    class Server(app_commands.Group, guild_only=True):
+        """commands that can only be used in a server..."""
+
 Default permissions
 ++++++++++++++++++++
 
-This sets the default permissions a user needs in order to be able to see and invoke a slash command.
+This sets the default permissions a user needs in order to be able to see and invoke an app command.
 
-Configured by adding the :func:`.app_commands.default_permissions` decorator when defining a slash command:
+Configured by adding the :func:`.app_commands.default_permissions` decorator when defining an app command:
 
 .. code-block:: python
 
@@ -680,6 +692,13 @@ Configured by adding the :func:`.app_commands.default_permissions` decorator whe
     @app_commands.default_permissions(moderate_members=True)
     async def timeout(interaction: discord.Interaction, member: discord.Member, days: app_commands.Range[int, 1, 28]):
         await member.timeout(datetime.timedelta(days=days))
+
+    # groups need a permissions instance:
+
+    default_perms = discord.Permissions(manage_emojis=True)
+
+    class Emojis(app_commands.Group, default_permissions=default_perms):
+        """commands to do stuff with emojis"""
 
 .. warning::
 
