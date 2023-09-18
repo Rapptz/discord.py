@@ -787,7 +787,6 @@ Indicates whether this command can only be used in NSFW channels or not.
 This can be configured by passing the ``nsfw`` keyword argument within the command decorator:
 
 .. code-block:: python
-    :emphasize-lines: 1
 
     @client.tree.command(nsfw=True)
     async def evil(interaction: discord.Interaction):
@@ -801,7 +800,6 @@ Indicates whether this command can only be used in guilds or not.
 Enabled by adding the :func:`.app_commands.guild_only` decorator when defining an app command:
 
 .. code-block:: python
-    :emphasize-lines: 2
 
     @client.tree.command()
     @app_commands.guild_only()
@@ -817,24 +815,20 @@ This sets the default permissions a user needs in order to be able to see and in
 Configured by adding the :func:`.app_commands.default_permissions` decorator when defining an app command:
 
 .. code-block:: python
-    :emphasize-lines: 5
-
-    import random
 
     @client.tree.command()
-    @app_commands.default_permissions(manage_emojis=True)
-    async def emoji(interaction: discord.Interaction):
-        assert interaction.guild is not None
-
-        # sends a random emoji
-        emojis = interaction.guild.emojis
-        if not emojis:
-            await interaction.response.send_message("i don't see any emojis", ephemeral=True)
+    @app_commands.default_permissions(manage_nicknames=True)
+    async def nickname(interaction: discord.Interaction, newname: str):
+        guild = interaction.guild
+        if not guild:
+            await interaction.response.send_message("i can't change my name here")
         else:
-            emo = random.choice(interaction.guild.emojis)
-            await interaction.response.send_message(str(emo))
+            await guild.me.edit(nick=newname)
+            await interaction.response.send_message(f"hello i am {newname} now")
 
-Commands with this check are still visible in the bot's direct messages.
+Commands with this check are still visible and invocable in the bot's direct messages,
+regardless of the permissions specified.
+
 To prevent this, :func:`~.app_commands.guild_only` can also be added.
 
 .. warning::
