@@ -145,6 +145,7 @@ class Loop(Generic[LF]):
         count: Optional[int],
         reconnect: bool,
         name: Optional[str],
+        slot_name: Optional[str],
     ) -> None:
         self.coro: LF = coro
         self.reconnect: bool = reconnect
@@ -167,6 +168,7 @@ class Loop(Generic[LF]):
         self._has_failed = False
         self._stop_next_iteration = False
         self._name: str = f'discord-ext-tasks: {coro.__qualname__}' if name is None else name
+        self._slot_name: str = slot_name or coro.__name__
 
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
@@ -285,12 +287,13 @@ class Loop(Generic[LF]):
             count=self.count,
             reconnect=self.reconnect,
             name=self._name,
+            slot_name=self._slot_name,
         )
         copy._injected = obj
         copy._before_loop = self._before_loop
         copy._after_loop = self._after_loop
         copy._error = self._error
-        setattr(obj, self.coro.__name__, copy)
+        setattr(obj, self._slot_name, copy)
         return copy
 
     @property
@@ -774,6 +777,7 @@ def loop(
     count: Optional[int] = None,
     reconnect: bool = True,
     name: Optional[str] = None,
+    slot_name: Optional[str] = None,
 ) -> Callable[[LF], Loop[LF]]:
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
@@ -813,6 +817,12 @@ def loop(
 
         .. versionadded:: 2.4
 
+    slot_name: Optional[:class:`str`]
+        The name of the attribute to assign instances of this loop to when it is created in a class context.
+        By default it is assigned the name of the function being decorated.
+
+        .. versionadded:: 2.4
+
     Raises
     --------
     ValueError
@@ -832,6 +842,7 @@ def loop(
             time=time,
             reconnect=reconnect,
             name=name,
+            slot_name=slot_name,
         )
 
     return decorator
