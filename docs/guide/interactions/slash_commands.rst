@@ -549,8 +549,7 @@ These can be provided by overriding the following properties:
 - :attr:`~.Transformer.choices`
 - :attr:`~.Transformer.channel_types`
 
-Since these are properties, they must be decorated with :class:`property`.
-For example, to change the underlying type to :class:`~discord.User`:
+Since these are properties, they must be decorated with :class:`property`:
 
 .. code-block:: python
 
@@ -558,6 +557,7 @@ For example, to change the underlying type to :class:`~discord.User`:
         async def transform(self, interaction: discord.Interaction, user: discord.User) -> discord.Asset:
             return user.display_avatar
 
+        # changes the underlying type to discord.User
         @property
         def type(self) -> discord.AppCommandOptionType:
             return discord.AppCommandOptionType.user
@@ -604,10 +604,30 @@ For example, if a parameter annotates to :class:`~discord.Member`, and the comma
 discord.py will raise an error since the actual type given by Discord,
 :class:`~discord.User`, is incompatible with :class:`~discord.Member`.
 
-discord.py doesn't raise an error for the other way around, ie. a parameter annotated to :class:`~discord.User` invoked in a guild.
-This is because :class:`~discord.Member` is compatible with :class:`~discord.User`.
+discord.py doesn't raise an error for the other way around, ie. a parameter annotated to :class:`~discord.User` invoked in a guild -
+this is because :class:`~discord.Member` is compatible with :class:`~discord.User`.
 
-It's still important to be aware of this, as it can cause unexpected behaviour in your code.
+To accept both types, regardless of where the command was invoked, place both types in a :obj:`~typing.Union`:
+
+.. code-block:: python
+
+    from typing import Union
+
+    @client.tree.command()
+    async def userinfo(
+        interaction: discord.Interaction,
+        user: Union[discord.User, discord.Member]
+    ):
+        info = user.name
+
+        # add some extra info if this command was invoked in a guild
+        if isinstance(user, discord.Member):
+            joined = user.joined_at
+            if joined:
+                relative = discord.utils.format_dt(joined, "R")
+                info = f"{info} (joined this server {relative})"
+
+        await interaction.response.send_message(info)
 
 Checks
 -------
@@ -1026,7 +1046,7 @@ the Japanese (locale: ``ja``) translations for the bot:
     apple-command-response = リンゴを{ $apple_count }個食べました。
 
 In code, strings are only considered translatable if they have an
-attached ``fluent_id`` identifier:
+attached ``fluent_id`` extra:
 
 .. code-block:: python
 
