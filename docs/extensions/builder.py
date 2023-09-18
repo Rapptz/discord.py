@@ -18,9 +18,12 @@ try:
     comp=version_info[:3]
     if comp>=(7,2,0):
         from sphinx.builders.gettext import ctime
+        from sphinx.util.display import status_iterator
     else:
         from sphinx.builders.gettext import timestamp, ltz
         ctime = datetime.datetime.fromtimestamp(timestamp, ltz).strftime('%Y-%m-%d %H:%M%z')
+        from sphinx.util import status_iterator 
+
 except Exception as exc:
     #Fallback
     import time
@@ -31,9 +34,6 @@ except Exception as exc:
         timestamp = time.localtime()
     ctime = time.strftime('%Y-%m-%d %H:%M%z', timestamp)
 
-
-#This is deprecated...
-from sphinx.util import status_iterator 
 
 
 
