@@ -633,159 +633,11 @@ To accept member and user, regardless of where the command was invoked, place bo
 
         await interaction.response.send_message(info)
 
-Checks
--------
-
-Checks refer to the restrictions an app command can have for invocation.
-A user needs to pass all checks on a command in order to be able to invoke and see the command on their client.
-
-The following checks are supported:
-
-Age-restriction
-++++++++++++++++
-
-Indicates whether this command can only be used in NSFW channels or not.
-
-This can be configured by passing the ``nsfw`` keyword argument within the command decorator:
-
-.. code-block:: python
-
-    @client.tree.command(nsfw=True)
-    async def evil(interaction: discord.Interaction):
-        await interaction.response.send_message("******") # very explicit text!
-
-    # or, for a group:
-    class Evil(app_commands.Group, nsfw=True):
-        """very evil commands"""
-
-Guild-only
-+++++++++++
-
-Indicates whether this command can only be used in guilds or not.
-
-Enabled by adding the :func:`.app_commands.guild_only` decorator when defining an app command:
-
-.. code-block:: python
-
-    @client.tree.command()
-    @app_commands.guild_only()
-    async def serverinfo(interaction: discord.Interaction):
-        assert interaction.guild is not None
-        await interaction.response.send_message(interaction.guild.name)
-
-    # on a group:
-    class Server(app_commands.Group, guild_only=True):
-        """commands that can only be used in a server..."""
-
-Default permissions
-++++++++++++++++++++
-
-This sets the default permissions a user needs in order to be able to see and invoke an app command.
-
-Configured by adding the :func:`.app_commands.default_permissions` decorator when defining an app command:
-
-.. code-block:: python
-
-    import datetime
-
-    @client.tree.command()
-    @app_commands.default_permissions(moderate_members=True)
-    async def timeout(interaction: discord.Interaction, member: discord.Member, days: app_commands.Range[int, 1, 28]):
-        await member.timeout(datetime.timedelta(days=days))
-
-    # groups need a permissions instance:
-
-    default_perms = discord.Permissions(manage_emojis=True)
-
-    class Emojis(app_commands.Group, default_permissions=default_perms):
-        """commands to do stuff with emojis"""
-
-.. warning::
-
-    This can be overriden to a different set of permissions by server administrators through the "Integrations" tab on the official client,
-    meaning, an invoking user might not actually have the permissions specified in the decorator.
-
-Custom checks
-++++++++++++++
-
-waiting to be written
-
-cover:
-
-- how to make a check, what it should return, default behaviours
-- builtin common checks and exceptions
-
-Custom checks come in two forms:
-
-- A local check, which runs for a single command
-- A global check, which runs before all commands, and before any local checks
-
-Global check
-^^^^^^^^^^^^^
-
-To define a global check, override :meth:`.CommandTree.interaction_check` in a :class:`~.app_commands.CommandTree` subclass.
-This method is called before every command invoke.
-
-For example:
-
-.. code-block:: python
-
-    whitelist = {236802254298939392, 402159684724719617} # cool people only
-
-    class MyCommandTree(app_commands.CommandTree):
-        async def interaction_check(self, interaction: discord.Interaction) -> bool:
-            return interaction.user.id in whitelist
-
-.. note::
-
-    If your project uses :class:`.ext.commands.Bot` as the client instance,
-    the :class:`.CommandTree` class can be configured via
-    the ``tree_cls`` keyword argument in the bot constructor:
-
-    .. code-block:: python
-        :emphasize-lines: 6
-
-        from discord.ext import commands
-
-        bot = commands.Bot(
-            command_prefix="?",
-            intents=discord.Intents.default(),
-            tree_cls=MyCommandTree
-        )
-
-Error handling
----------------
-
-So far, any exceptions raised within a command callback, any custom checks or in a transformer should just be
-printed out in the program's ``stderr`` or through any custom logging handlers.
-
-In order to catch exceptions, the library uses something called error handlers.
-
-There are 3 handlers available:
-
-1. A local handler, which only catches errors for a specific command
-2. A group handler, which catches errors only for a certain group's subcommands
-3. A global handler, which catches all errors in all commands
-
-If an exception is raised, the library calls all 3 of these handlers in that order.
-
-If a subcommand has multiple parents,
-the subcommand's parent handler is called first, followed by it's parent handler.
-
-
-waiting to be written further:
-
-- code examples for each of the error handler types
-- CommandInvokeError, TransformerError, __cause__
-- creating custom erors to know which check/transformer raised what
-- an example logging setup
-
 Command groups
 ---------------
 
 To make a more organised and complex tree of commands, Discord implements command groups and subcommands.
-A group can contain up to 25 subcommands or subgroups, with up to 1 level of nesting supported,
-effectively making the command limit max out at 62500.
+A group can contain up to 25 subcommands or subgroups, with up to 1 level of nesting supported.
 
 Meaning, a structure like this is possible:
 
@@ -868,15 +720,15 @@ can be added on top of the class to apply to the group, for example:
 
 Due to a Discord limitation, individual subcommands cannot have differing official-checks.
 
-Guild Specific Commands
-------------------------
+Guild commands
+---------------
 
 So far, all the command examples in this page have been global commands,
 which every guild your bot is in can see and use.
 
-In contrast, guild-specific commands are only seeable and usable by members of a certain guild.
+In contrast, guild commands are only seeable and usable by members of a certain guild.
 
-There are 2 main ways to specify which guilds a command should sync to:
+There are 2 main ways to specify which guilds a command should sync a copy to:
 
 - Via the :func:`.app_commands.guilds` decorator, which takes a variadic amount of guilds
 - By passing in ``guild`` or ``guilds`` when adding a command to a :class:`~.app_commands.CommandTree`
@@ -903,7 +755,7 @@ To demonstrate:
     For these to show up, :meth:`.CommandTree.sync` needs to be called for **each** guild
     using the ``guild`` keyword-argument.
 
-Since local commands can be useful in a development scenario, as often we don't want unfinished commands
+Since guild commands can be useful in a development scenario, as often we don't want unfinished commands
 to propagate to all guilds, the library offers a helper method :meth:`.CommandTree.copy_global_to`
 to copy all global commands to a certain guild for syncing:
 
@@ -920,6 +772,164 @@ to copy all global commands to a certain guild for syncing:
             await self.tree.sync(guild=guild)
 
 You'll typically find this syncing paradigm in some of the examples in the repository.
+
+Checks
+-------
+
+Checks refer to the restrictions an app command can have for invocation.
+A user needs to pass all checks on a command in order to be able to invoke and see the command on their client.
+
+The following checks are supported:
+
+Age-restriction
+++++++++++++++++
+
+Indicates whether this command can only be used in NSFW channels or not.
+
+This can be configured by passing the ``nsfw`` keyword argument within the command decorator:
+
+.. code-block:: python
+
+    @client.tree.command(nsfw=True)
+    async def evil(interaction: discord.Interaction):
+        await interaction.response.send_message("******") # very explicit text!
+
+    # or, for a group:
+    class Evil(app_commands.Group, nsfw=True):
+        """very evil commands"""
+
+Guild-only
++++++++++++
+
+Indicates whether this command can only be used in guilds or not.
+
+Enabled by adding the :func:`.app_commands.guild_only` decorator when defining an app command:
+
+.. code-block:: python
+
+    @client.tree.command()
+    @app_commands.guild_only()
+    async def serverinfo(interaction: discord.Interaction):
+        assert interaction.guild is not None
+        await interaction.response.send_message(interaction.guild.name)
+
+    # on a group:
+    class Server(app_commands.Group, guild_only=True):
+        """commands that can only be used in a server..."""
+
+Default permissions
+++++++++++++++++++++
+
+This sets the default permissions a user needs in order to be able to see and invoke an app command.
+
+Configured by adding the :func:`.app_commands.default_permissions` decorator when defining an app command:
+
+.. code-block:: python
+
+    import random
+
+    @client.tree.command()
+    @app_commands.guild_only()
+    @app_commands.default_permissions(manage_emojis=True)
+    async def emoji(interaction: discord.Interaction):
+        assert interaction.guild is not None
+
+        emojis = interaction.guild.emojis
+        if not emojis:
+            await interaction.response.send_message("i don't see any emojis", ephemeral=True)
+        else:
+            emo = random.choice(interaction.guild.emojis)
+            await interaction.response.send_message(str(emo))
+
+    # groups need a permissions instance:
+
+    default_perms = discord.Permissions(manage_emojis=True)
+
+    class Emojis(app_commands.Group, default_permissions=default_perms):
+        """commands to do stuff with emojis"""
+
+Commands with this check are still visible in the bot's direct messages.
+To avoid this, :func:`~.app_commands.guild_only` can also be applied.
+
+.. warning::
+
+    This can be overriden to a different set of permissions by server administrators through the "Integrations" tab on the official client,
+    meaning, an invoking user might not actually have the permissions specified in the decorator.
+
+Custom checks
+++++++++++++++
+
+waiting to be written
+
+cover:
+
+- how to make a check, what it should return, default behaviours
+- builtin common checks and exceptions
+
+Custom checks come in two forms:
+
+- A local check, which runs for a single command
+- A global check, which runs before all commands, and before any local checks
+
+Global check
+^^^^^^^^^^^^^
+
+To define a global check, override :meth:`.CommandTree.interaction_check` in a :class:`~.app_commands.CommandTree` subclass.
+This method is called before every command invoke.
+
+For example:
+
+.. code-block:: python
+
+    whitelist = {236802254298939392, 402159684724719617} # cool people only
+
+    class MyCommandTree(app_commands.CommandTree):
+        async def interaction_check(self, interaction: discord.Interaction) -> bool:
+            return interaction.user.id in whitelist
+
+.. note::
+
+    If your project uses :class:`.ext.commands.Bot` as the client instance,
+    the :class:`.CommandTree` class can be configured via
+    the ``tree_cls`` keyword argument in the bot constructor:
+
+    .. code-block:: python
+        :emphasize-lines: 6
+
+        from discord.ext import commands
+
+        bot = commands.Bot(
+            command_prefix="?",
+            intents=discord.Intents.default(),
+            tree_cls=MyCommandTree
+        )
+
+Error handling
+---------------
+
+So far, any exceptions raised within a command callback, any custom checks or in a transformer should just be
+printed out in the program's ``stderr`` or through any custom logging handlers.
+
+In order to catch exceptions, the library uses something called error handlers.
+
+There are 3 handlers available:
+
+1. A local handler, which only catches errors for a specific command
+2. A group handler, which catches errors only for a certain group's subcommands
+3. A global handler, which catches all errors in all commands
+
+If an exception is raised, the library calls all 3 of these handlers in that order.
+
+If a subcommand has multiple parents,
+the subcommand's parent handler is called first, followed by it's parent handler.
+
+
+waiting to be written further:
+
+- code examples for each of the error handler types
+- CommandInvokeError, TransformerError, __cause__
+- creating custom erors to know which check/transformer raised what
+- an example logging setup
 
 Translating
 ------------
