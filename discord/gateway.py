@@ -983,10 +983,13 @@ class DiscordVoiceWebSocket:
         def get_ip_packet(data: bytes):
             if data[1] == 0x02 and len(data) == 74:
                 self.loop.call_soon_threadsafe(fut.set_result, data)
+            # TODO: add a second escape hatch condition if the connection gets killed or something, just in case
 
         fut.add_done_callback(lambda f: state.remove_socket_listener(get_ip_packet))
         state.add_socket_listener(get_ip_packet)
         recv = await fut
+
+        # TODO: is there any way that this future and listener can avoid being removed, i.e. being cancelled?
 
         _log.debug('Received ip discovery packet: %s', recv)
 

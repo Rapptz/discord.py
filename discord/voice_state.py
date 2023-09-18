@@ -352,6 +352,8 @@ class VoiceConnectionState:
             self._runner.cancel()
             self._runner = None
 
+        self.timeout = timeout
+        self.reconnect = reconnect
         self._connector = self.voice_client.loop.create_task(
             self._wrap_connect(reconnect, timeout, self_deaf, self_mute, resume), name='Voice connector'
         )
@@ -364,49 +366,43 @@ class VoiceConnectionState:
         except asyncio.CancelledError:
             _log.debug('Cancelling voice connection')
             await self.soft_disconnect()
+        except asyncio.TimeoutError:
+            _log.info('Timed out connecting to voice')
+            await self.disconnect()
         except Exception:
             _log.exception('Error connecting to voice... disconnecting')
             await self.disconnect()
 
     async def _connect(self, reconnect: bool, timeout: float, self_deaf: bool, self_mute: bool, resume: bool) -> None:
         _log.info('Connecting to voice...')
-        self.timeout = timeout
-        self.reconnect = reconnect
 
-        # FIXME: make timeout a total time window instead of per use
+        async with async_timeout.timeout(timeout):
+            for i in range(5):
+                _log.info('Starting voice handshake... (connection attempt %d)', i + 1)
 
-        for i in range(5):
-            _log.info('Starting voice handshake... (connection attempt %d)', i + 1)
+                await self._voice_connect(self_deaf=self_deaf, self_mute=self_mute)
+                # Setting this unnecessarily will break reconnecting
+                if self.state is ConnectionFlowState.disconnected:
+                    self.state = ConnectionFlowState.set_guild_voice_state
 
-            await self._voice_connect(self_deaf=self_deaf, self_mute=self_mute)
-            # Setting this unnecessarily will break reconnecting
-            if self.state is ConnectionFlowState.disconnected:
-                self.state = ConnectionFlowState.set_guild_voice_state
+                await self._wait_for_state(ConnectionFlowState.got_both_voice_updates)
 
-            try:
-                await self._wait_for_state(ConnectionFlowState.got_both_voice_updates, timeout=timeout)
-            except asyncio.TimeoutError:
-                _log.info('Timed out waiting for voice handshake.')
-                await self.disconnect()
-                raise
+                _log.info('Voice handshake complete. Endpoint found: %s', self.endpoint)
 
-            _log.info('Voice handshake complete. Endpoint found: %s', self.endpoint)
-
-            try:
-                async with async_timeout.timeout(self.timeout):
+                try:
                     self.ws = await self._connect_websocket(resume)
                     await self._handshake_websocket()
-                break
-            except (ConnectionClosed, asyncio.TimeoutError):
-                if reconnect:
-                    wait = 1 + i * 2.0
-                    _log.exception('Failed to connect to voice... Retrying in %ss...', wait)
-                    await self.disconnect(cleanup=False)
-                    await asyncio.sleep(wait)
-                    continue
-                else:
-                    await self.disconnect()
-                    raise
+                    break
+                except ConnectionClosed:
+                    if reconnect:
+                        wait = 1 + i * 2.0
+                        _log.exception('Failed to connect to voice... Retrying in %ss...', wait)
+                        await self.disconnect(cleanup=False)
+                        await asyncio.sleep(wait)
+                        continue
+                    else:
+                        await self.disconnect()
+                        raise
 
         if not self._runner:
             self._runner = self.voice_client.loop.create_task(self._poll_voice_ws(reconnect), name='Voice websocket poller')
@@ -573,7 +569,7 @@ class VoiceConnectionState:
                         timeout=self.timeout,
                         self_deaf=(self.self_voice_state or self).self_deaf,
                         self_mute=(self.self_voice_state or self).self_mute,
-                        resume=False
+                        resume=False,
                     )
                 except asyncio.TimeoutError:
                     # at this point we've retried 5 times... let's continue the loop.
