@@ -710,12 +710,12 @@ To add 1-level of nesting, create another :class:`~.app_commands.Group` in the c
     :width: 400
 
 Decorators like :func:`.app_commands.default_permissions` and :func:`.app_commands.guild_only`
-can be added on top of the class to apply to the group, for example:
+can be added on top of a subclass to apply to the group, for example:
 
 .. code-block:: python
 
-    @app_commands.default_permissions(manage_guild=True)
-    class Moderation(app_commands.Group):
+    @app_commands.default_permissions(manage_emojis=True)
+    class Emojis(app_commands.Group):
         ...
 
 Due to a Discord limitation, individual subcommands cannot have differing official-checks.
@@ -779,8 +779,6 @@ Checks
 Checks refer to the restrictions an app command can have for invocation.
 A user needs to pass all checks on a command in order to be able to invoke and see the command on their client.
 
-The following checks are supported:
-
 Age-restriction
 ++++++++++++++++
 
@@ -789,14 +787,11 @@ Indicates whether this command can only be used in NSFW channels or not.
 This can be configured by passing the ``nsfw`` keyword argument within the command decorator:
 
 .. code-block:: python
+    :emphasize-lines: 1
 
     @client.tree.command(nsfw=True)
     async def evil(interaction: discord.Interaction):
         await interaction.response.send_message("******") # very explicit text!
-
-    # or, for a group:
-    class Evil(app_commands.Group, nsfw=True):
-        """very evil commands"""
 
 Guild-only
 +++++++++++
@@ -806,16 +801,13 @@ Indicates whether this command can only be used in guilds or not.
 Enabled by adding the :func:`.app_commands.guild_only` decorator when defining an app command:
 
 .. code-block:: python
+    :emphasize-lines: 2
 
     @client.tree.command()
     @app_commands.guild_only()
     async def serverinfo(interaction: discord.Interaction):
         assert interaction.guild is not None
         await interaction.response.send_message(interaction.guild.name)
-
-    # on a group:
-    class Server(app_commands.Group, guild_only=True):
-        """commands that can only be used in a server..."""
 
 Default permissions
 ++++++++++++++++++++
@@ -825,15 +817,16 @@ This sets the default permissions a user needs in order to be able to see and in
 Configured by adding the :func:`.app_commands.default_permissions` decorator when defining an app command:
 
 .. code-block:: python
+    :emphasize-lines: 5
 
     import random
 
     @client.tree.command()
-    @app_commands.guild_only()
     @app_commands.default_permissions(manage_emojis=True)
     async def emoji(interaction: discord.Interaction):
         assert interaction.guild is not None
 
+        # sends a random emoji
         emojis = interaction.guild.emojis
         if not emojis:
             await interaction.response.send_message("i don't see any emojis", ephemeral=True)
@@ -841,15 +834,8 @@ Configured by adding the :func:`.app_commands.default_permissions` decorator whe
             emo = random.choice(interaction.guild.emojis)
             await interaction.response.send_message(str(emo))
 
-    # groups need a permissions instance:
-
-    default_perms = discord.Permissions(manage_emojis=True)
-
-    class Emojis(app_commands.Group, default_permissions=default_perms):
-        """commands to do stuff with emojis"""
-
 Commands with this check are still visible in the bot's direct messages.
-To avoid this, :func:`~.app_commands.guild_only` can also be applied.
+To prevent this, :func:`~.app_commands.guild_only` can also be added.
 
 .. warning::
 
