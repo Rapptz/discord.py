@@ -819,7 +819,7 @@ def loop(
 
     slot_name: Optional[:class:`str`]
         The name of the attribute to assign instances of this loop to when it is created in a class context.
-        By default it is assigned the name of the function being decorated.
+        By default it is assigned the name of the callable.
 
         .. versionadded:: 2.4
 
