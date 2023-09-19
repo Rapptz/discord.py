@@ -191,18 +191,22 @@ class VoiceConnectionState:
         self.reconnect: bool = True
         self.self_deaf: bool = False
         self.self_mute: bool = False
-        self.token: str = MISSING
-        self.session_id: str = MISSING
-        self.endpoint: str = MISSING
-        self.endpoint_ip: str = MISSING
-        self.server_id: int = MISSING
-        self.ip: str = MISSING
-        self.port: int = MISSING
-        self.voice_port: int = MISSING
+        self.token: Optional[str] = None
+        self.session_id: Optional[str] = None
+        self.endpoint: Optional[str] = None
+        self.endpoint_ip: Optional[str] = None
+        self.server_id: Optional[int] = None
+        self.ip: Optional[str] = None
+        self.port: Optional[int] = None
+        self.voice_port: Optional[int] = None
+        # TODO: These three MISSINGs are exposed as VoiceClient properties
+        #       I could type ignore them or just leave them as MISSING
         self.secret_key: List[int] = MISSING
         self.ssrc: int = MISSING
         self.mode: SupportedModes = MISSING
 
+        # TODO: These two cause a lot of issues if they're Optional
+        #       Even if they really are optional, access should be already restricted based on state
         self.socket: socket.socket = MISSING
         self.ws: DiscordVoiceWebSocket = MISSING
 
@@ -309,7 +313,7 @@ class VoiceConnectionState:
         self.endpoint, _, _ = endpoint.rpartition(':')
         if self.endpoint.startswith('wss://'):
             # Just in case, strip it off since we're going to add it later
-            self.endpoint: str = self.endpoint[6:]
+            self.endpoint = self.endpoint[6:]
 
         # we got the event while connecting
         if self.state in (ConnectionFlowState.set_guild_voice_state, ConnectionFlowState.got_voice_state_update):
@@ -525,7 +529,7 @@ class VoiceConnectionState:
         self.state = ConnectionFlowState.connected
 
     def _create_socket(self) -> None:
-        self.socket: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.setblocking(False)
         self._socket_reader.resume()
 
