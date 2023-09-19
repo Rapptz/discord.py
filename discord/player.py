@@ -733,9 +733,9 @@ class AudioPlayer(threading.Thread):
 
             # are we disconnected from voice?
             if not client.is_connected():
-                _log.debug('Not connected, waiting...')
-                # wait until we are connected
-                connected = client.wait_until_connected()
+                _log.debug('Not connected, waiting for %ss...', client.timeout)
+                # wait until we are connected, but not forever
+                connected = client.wait_until_connected(client.timeout)
                 if self._end.is_set() or not connected:
                     _log.debug('Aborting playback')
                     return

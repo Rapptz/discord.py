@@ -224,7 +224,6 @@ class VoiceClient(VoiceProtocol):
 
         self.sequence: int = 0
         self.timestamp: int = 0
-        self.timeout: float = 0
         self._player: Optional[AudioPlayer] = None
         self.encoder: Encoder = MISSING
         self._lite_nonce: int = 0
@@ -264,6 +263,10 @@ class VoiceClient(VoiceProtocol):
     def ws(self) -> DiscordVoiceWebSocket:
         return self._connection.ws
 
+    @property
+    def timeout(self) -> float:
+        return self._connection.timeout
+
     def checked_add(self, attr: str, value: int, limit: int) -> None:
         val = getattr(self, attr)
         if val + value > limit:
@@ -283,6 +286,10 @@ class VoiceClient(VoiceProtocol):
         await self._connection.connect(
             reconnect=reconnect, timeout=timeout, self_deaf=self_deaf, self_mute=self_mute, resume=False
         )
+
+    def wait_until_connected(self, timeout: Optional[float] = 30.0) -> bool:
+        self._connection.wait(timeout)
+        return self._connection.is_connected()
 
     @property
     def latency(self) -> float:
@@ -314,7 +321,7 @@ class VoiceClient(VoiceProtocol):
         await self._connection.disconnect(force=force)
         self.cleanup()
 
-    async def move_to(self, channel: Optional[abc.Snowflake], *, timeout: Optional[float] = None) -> None:
+    async def move_to(self, channel: Optional[abc.Snowflake], *, timeout: Optional[float] = 30.0) -> None:
         """|coro|
 
         Moves you to a different voice channel.
@@ -331,22 +338,6 @@ class VoiceClient(VoiceProtocol):
 
     def is_connected(self) -> bool:
         """Indicates if the voice client is connected to voice."""
-        return self._connection.is_connected()
-
-    def wait_until_connected(self, *, timeout: Optional[float] = None) -> bool:
-        """Waits until the voice client is connected.
-
-        Parameters
-        -----------
-        timeout: Optional[:class:`float`]
-            How long to wait to be connected.
-
-        Returns
-        ---------
-        :class:`bool`
-            If the client is connected (from ``is_connected()``).
-        """
-        self._connection.wait(timeout)
         return self._connection.is_connected()
 
     # audio related

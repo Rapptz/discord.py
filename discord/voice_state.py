@@ -187,7 +187,7 @@ class VoiceConnectionState:
         self.voice_client = voice_client
         self.hook = hook
 
-        self.timeout: float = 30
+        self.timeout: float = 30.0
         self.reconnect: bool = True
         self.self_deaf: bool = False
         self.self_mute: bool = False
@@ -366,12 +366,15 @@ class VoiceConnectionState:
         except asyncio.CancelledError:
             _log.debug('Cancelling voice connection')
             await self.soft_disconnect()
+            raise
         except asyncio.TimeoutError:
             _log.info('Timed out connecting to voice')
             await self.disconnect()
+            raise
         except Exception:
             _log.exception('Error connecting to voice... disconnecting')
             await self.disconnect()
+            raise
 
     async def _connect(self, reconnect: bool, timeout: float, self_deaf: bool, self_mute: bool, resume: bool) -> None:
         _log.info('Connecting to voice...')
@@ -403,6 +406,8 @@ class VoiceConnectionState:
                     else:
                         await self.disconnect()
                         raise
+
+        _log.info('Voice connection complete.')
 
         if not self._runner:
             self._runner = self.voice_client.loop.create_task(self._poll_voice_ws(reconnect), name='Voice websocket poller')
