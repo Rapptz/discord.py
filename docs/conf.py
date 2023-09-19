@@ -373,6 +373,8 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
 
+#Create table of contents entries for domain objects (e.g. functions, classes, attributes, etc.). Default is True.
+toc_object_entries=False
 def setup(app):
   if app.config.language == 'ja':
     app.config.intersphinx_mapping['py'] = ('https://docs.python.org/ja/3', None)
