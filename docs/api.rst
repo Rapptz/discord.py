@@ -1276,6 +1276,12 @@ Reactions
 
         To get the :class:`Message` being reacted, access it via :attr:`Reaction.message`.
 
+    .. warning::
+
+        This event does not have a way of differentiating whether a reaction is a
+        burst reaction (also known as "super reaction") or not. If you need this,
+        consider using :func:`on_raw_reaction_add` instead.
+
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
     :param user: The user who added the reaction.
@@ -1294,6 +1300,12 @@ Reactions
     .. note::
 
         Consider using :func:`on_raw_reaction_remove` if you need this and do not have a complete member cache.
+
+    .. warning::
+
+        This event does not have a way of differentiating whether a reaction is a
+        burst reaction (also known as "super reaction") or not. If you need this,
+        consider using :func:`on_raw_reaction_remove` instead.
 
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
