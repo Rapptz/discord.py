@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import inspect
 import discord
+import logging
 from discord import app_commands
 from discord.utils import maybe_coroutine, _to_kebab_case
 
@@ -65,6 +66,7 @@ __all__ = (
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
 MISSING: Any = discord.utils.MISSING
+_log = logging.getLogger(__name__)
 
 
 class CogMeta(type):
@@ -769,7 +771,7 @@ class Cog(metaclass=CogMeta):
             try:
                 await maybe_coroutine(self.cog_unload)
             except Exception:
-                pass
+                _log.exception('Ignoring exception in cog unload for Cog %r (%r)', cls, self.qualified_name)
 
 
 class GroupCog(Cog):
