@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import inspect
+import logging
 from discord.utils import maybe_coroutine, MISSING
 
 from typing import Any, Callable, Dict, Generator, List, Optional, TYPE_CHECKING, Tuple, TypeVar
@@ -43,6 +44,8 @@ __all__ = (
 )
 
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
+
+_log = logging.getLogger(__name__)
 
 
 class CogMeta(type):
@@ -508,4 +511,4 @@ class Cog(metaclass=CogMeta):
             try:
                 await maybe_coroutine(self.cog_unload)
             except Exception:
-                pass
+                _log.exception('Ignoring exception in cog unload for Cog %r (%r)', cls, self.qualified_name)
