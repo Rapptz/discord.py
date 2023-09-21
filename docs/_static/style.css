@@ -15,7 +15,15 @@ Historically however, thanks to:
 * {
   box-sizing: border-box;
 }
+/*Overriding undesired elements.*/
 
+nav.contents,
+aside.topic {
+  border: none;
+  padding: inherit!important;
+  margin: inherit!important;
+}
+/* root*/
 section {
   word-break: break-word;
 }
@@ -244,7 +252,10 @@ a:hover {
   text-decoration: underline;
   color: var(--link-hover-text);
 }
-
+a:visited {
+  text-decoration: none;
+  color: var(--link-text);
+}
 /* headers */
 
 header.grid-item {
@@ -267,7 +278,10 @@ header > nav {
 header > nav a {
   color: var(--white);
 }
-
+header > nav > a:visited {
+  color: var(--white);
+  text-decoration: underline;
+}
 header > nav.mobile-only {
   width: 100%;
   position: absolute;
