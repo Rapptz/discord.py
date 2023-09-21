@@ -112,13 +112,18 @@ Some information is logically inferred from the function to populate the slash c
 - The :attr:`~.app_commands.Command.name` takes after the function name "meow"
 - The :attr:`~.app_commands.Command.description` takes after the docstring "Meow meow meow"
 
-To change them to something else, ``tree.command()`` accepts ``name`` and ``description`` as keyword arguments.
+To change them to something else, ``tree.command()`` takes ``name`` and ``description`` keyword-arguments:
 
 .. code-block:: python
 
     @client.tree.command(name="woof", description="Woof woof woof")
     async def meow(interaction: discord.Interaction):
         pass
+
+    # or...
+    @client.tree.command(name="list")
+    async def list_(interaction: discord.Interaction):
+        # prevent shadowing the "list" builtin
 
 If a description isn't provided through ``description`` or by the docstring, an ellipsis "..." is used instead.
 
@@ -171,11 +176,11 @@ Syncing
 In order for this command to show up on Discord, the API needs some information regarding it, namely:
 
 - The name and description
-- Any parameter names, types, descriptions (covered later)
-- Any checks attached (covered later)
-- Whether this command is a group (covered later)
-- Whether this is a global or local command (covered later)
-- Any localisations for the above (covered later)
+- Any :ref:`parameter names, types, descriptions <parameters>`
+- Any :ref:`checks <checks>` attached
+- Whether this command is a :ref:`group <command_groups>`
+- Whether this is a :ref:`global or guild command <guild_commands>`
+- Any :ref:`localisations <translating>` for the above
 
 Syncing is the process of sending this information, which is done by
 calling the :meth:`.CommandTree.sync` method, typically in :meth:`.Client.setup_hook`:
@@ -200,6 +205,8 @@ blocks invocation with this message in red:
 
 As another measure, discord.py will log warnings if there's a mismatch with what Discord provides and
 what the bot defines in code during invocation.
+
+.. _parameters:
 
 Parameters
 -----------
@@ -416,14 +423,19 @@ For example, to use :func:`~.app_commands.describe` and :func:`~.app_commands.re
 Choices
 ++++++++
 
-To provide the user with a list of options to choose from for an argument, the :func:`.app_commands.choices` decorator can be applied.
+:class:`str`, :class:`int` and :class:`float` type parameters can optionally set a list of choices for an argument
+using the :func:`.app_commands.choices` decorator.
 
-A user is restricted to selecting a choice and can't type something else.
+During invocation, a user is restricted to picking one choice and can't type anything else.
 
 Each individual choice contains 2 fields:
 
-- A name, which is what the user sees
-- A value, which is hidden to the user and only visible to the API. Typically, this is either the same as the name or something more developer-friendly. Value types are limited to either a :class:`str`, :class:`int` or :class:`float`.
+- A name, which is what the user sees in their client
+- A value, which is hidden to the user and only visible to the bot and API.
+
+  Typically, this is either the same as the name or something else more developer-friendly.
+
+  Value types are limited to either a :class:`str`, :class:`int` or :class:`float`.
 
 To illustrate, the following command has a selection of 3 colours with each value being the colour code:
 
@@ -566,6 +578,8 @@ Since these are properties, they must be decorated with :class:`property`:
         def type(self) -> discord.AppCommandOptionType:
             return discord.AppCommandOptionType.user
 
+:meth:`~.Transformer.autocomplete` callbacks can also be defined in-line.
+
 .. _type_conversion:
 
 Type conversion
@@ -604,7 +618,7 @@ Annotating to either :class:`discord.User` or :class:`discord.Member` both point
 
 The actual type given by Discord is dependent on whether the command was invoked in DM-messages or in a guild.
 
-For example, if a parameter annotates to :class:`~discord.Member`, and the command is invoked in a guild,
+For example, if a parameter annotates to :class:`~discord.Member`, and the command is invoked in direct-messages,
 discord.py will raise an error since the actual type given by Discord,
 :class:`~discord.User`, is incompatible with :class:`~discord.Member`.
 
@@ -632,6 +646,8 @@ To accept member and user, regardless of where the command was invoked, place bo
                 info = f"{info} (joined this server {relative})"
 
         await interaction.response.send_message(info)
+
+.. _command_groups:
 
 Command groups
 ---------------
@@ -720,6 +736,8 @@ can be added on top of a subclass to apply to the group, for example:
 
 Due to a Discord limitation, individual subcommands cannot have differing official-checks.
 
+.. _guild_commands:
+
 Guild commands
 ---------------
 
@@ -772,6 +790,8 @@ to copy all global commands to a certain guild for syncing:
             await self.tree.sync(guild=guild)
 
 You'll typically find this syncing paradigm in some of the examples in the repository.
+
+.. _checks:
 
 Checks
 -------
@@ -833,7 +853,7 @@ To prevent this, :func:`~.app_commands.guild_only` can also be added.
 
 .. warning::
 
-    This can be overriden to a different set of permissions by server administrators through the "Integrations" tab on the official client,
+    This can be overridden to a different set of permissions by server administrators through the "Integrations" tab on the official client,
     meaning, an invoking user might not actually have the permissions specified in the decorator.
 
 Custom checks
@@ -888,7 +908,7 @@ Error handling
 ---------------
 
 So far, any exceptions raised within a command callback, any custom checks or in a transformer should just be
-printed out in the program's ``stderr`` or through any custom logging handlers.
+logged in the program's ``stderr`` or through any custom logging handlers.
 
 In order to catch exceptions, the library uses something called error handlers.
 
@@ -910,6 +930,8 @@ waiting to be written further:
 - CommandInvokeError, TransformerError, __cause__
 - creating custom erors to know which check/transformer raised what
 - an example logging setup
+
+.. _translating:
 
 Translating
 ------------
