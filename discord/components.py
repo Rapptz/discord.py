@@ -281,19 +281,25 @@ class SelectMenu(Component):
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, t) for t in data.get('channel_types', [])]
-        self.default_values: List[Object] = []
-        for dv in data.get("default_values", []):
-            for value_id, value_type in dv.items():
-                if self.type is ComponentType.user_select:
-                    self.default_values.append(Object(id=int(value_id), type=User))
-                elif self.type is ComponentType.role_select:
-                    self.default_values.append(Object(id=int(value_id), type=Role))
-                elif self.type is ComponentType.channel_select:
-                    self.default_values.append(Object(id=int(value_id), type=GuildChannel))
-                elif self.type is ComponentType.mentionable_select:
-                    _type = User if value_type == "user" else Role
-                    self.default_values.append(Object(id=int(value_id), type=_type))
-
+        if "default_values" in data:
+            if self.type is ComponentType.user_select:
+                self.default_values: List[Object] = [
+                    Object(id=int(d["id"]), type=User) for d in data["default_values"]
+                ]
+            elif self.type is ComponentType.role_select:
+                self.default_values: List[Object] = [
+                    Object(id=int(d["id"]), type=Role) for d in data["default_values"]
+                ]
+            elif self.type is ComponentType.channel_select:
+                self.default_values: List[Object] = [
+                    Object(id=int(d["id"]), type=GuildChannel) for d in data["default_values"]
+                ]
+            elif self.type is ComponentType.mentionable_select:
+                self.default_values: List[Object] = [
+                    Object(id=int(d["id"]), type=User if d["type"] == "user" else Role) for d in data["default_values"]
+                ]
+        else:
+            self.default_values: List[Object] = []
 
 
     def to_dict(self) -> SelectMenuPayload:
