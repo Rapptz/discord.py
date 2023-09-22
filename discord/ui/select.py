@@ -37,6 +37,9 @@ from ..components import (
     SelectMenu,
 )
 from ..app_commands.namespace import Namespace
+from ..abc import GuildChannel
+from ..role import Role
+from ..user import User
 
 __all__ = (
     'Select',
@@ -55,9 +58,8 @@ if TYPE_CHECKING:
     from ..types.interactions import SelectMessageComponentInteractionData
     from ..app_commands import AppCommandChannel, AppCommandThread
     from ..member import Member
-    from ..role import Role
-    from ..user import User
     from ..interactions import Interaction
+    from ..object import Object
 
     ValidSelectType: TypeAlias = Literal[
         ComponentType.string_select,
@@ -128,6 +130,7 @@ class BaseSelect(Item[V]):
         disabled: bool = False,
         options: List[SelectOption] = MISSING,
         channel_types: List[ChannelType] = MISSING,
+        default_values: List[Object] = MISSING,
     ) -> None:
         super().__init__()
         self._provided_custom_id = custom_id is not MISSING
@@ -144,6 +147,7 @@ class BaseSelect(Item[V]):
             disabled=disabled,
             channel_types=[] if channel_types is MISSING else channel_types,
             options=[] if options is MISSING else options,
+            default_values=[] if default_values is MISSING else default_values,
         )
 
         self.row = row
@@ -410,6 +414,8 @@ class UserSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    default_values: List[:class:`discord.Object`]
+        A list of :class:`discord.Object` representing the users that should be selected by default.
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -427,7 +433,12 @@ class UserSelect(BaseSelect[V]):
         max_values: int = 1,
         disabled: bool = False,
         row: Optional[int] = None,
+        default_values: List[Object] = MISSING,
     ) -> None:
+        if default_values is not MISSING:
+            for obj in default_values:
+                obj.type = User
+
         super().__init__(
             self.type,
             custom_id=custom_id,
@@ -436,6 +447,7 @@ class UserSelect(BaseSelect[V]):
             max_values=max_values,
             disabled=disabled,
             row=row,
+            default_values=default_values,
         )
 
     @property
@@ -479,6 +491,8 @@ class RoleSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    default_values: List[:class:`discord.Object`]
+        A list of :class:`discord.Object` representing the roles that should be selected by default.
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -496,7 +510,12 @@ class RoleSelect(BaseSelect[V]):
         max_values: int = 1,
         disabled: bool = False,
         row: Optional[int] = None,
+        default_values: List[Object] = MISSING,
     ) -> None:
+        if default_values is not MISSING:
+            for obj in default_values:
+                obj.type = Role
+
         super().__init__(
             self.type,
             custom_id=custom_id,
@@ -543,6 +562,9 @@ class MentionableSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    default_values: List[:class:`discord.Object`]
+        A list of :class:`discord.Object` representing the users/roles that should be selected by default.
+        The `type` kwarg must be specified for each object.
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -560,7 +582,13 @@ class MentionableSelect(BaseSelect[V]):
         max_values: int = 1,
         disabled: bool = False,
         row: Optional[int] = None,
+        default_values: List[Object] = MISSING,
     ) -> None:
+        if default_values is not MISSING:
+            for obj in default_values:
+                if obj.type == Object:
+                    raise ValueError("Please specify the type of object...")
+
         super().__init__(
             self.type,
             custom_id=custom_id,
@@ -614,6 +642,8 @@ class ChannelSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    default_values: List[:class:`discord.Object`]
+        A list of :class:`discord.Object` representing the channels that should be selected by default.
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -634,7 +664,12 @@ class ChannelSelect(BaseSelect[V]):
         max_values: int = 1,
         disabled: bool = False,
         row: Optional[int] = None,
+        default_values: List[Object] = MISSING,
     ) -> None:
+        if default_values is not MISSING:
+            for obj in default_values:
+                obj.type = GuildChannel
+
         super().__init__(
             self.type,
             custom_id=custom_id,
@@ -698,6 +733,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
+    default_values: List[Object] = ...,
     row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, UserSelectT]:
     ...
@@ -714,6 +750,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
+    default_values: List[Object] = ...,
     row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, RoleSelectT]:
     ...
@@ -730,6 +767,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
+    default_values: List[Object] = ...,
     row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, ChannelSelectT]:
     ...
@@ -746,6 +784,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
+    default_values: List[Object] = ...,
     row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, MentionableSelectT]:
     ...
@@ -761,6 +800,7 @@ def select(
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
+    default_values: List[Object] = MISSING,
     row: Optional[int] = None,
 ) -> SelectCallbackDecorator[V, BaseSelectT]:
     """A decorator that attaches a select menu to a component.
@@ -832,6 +872,10 @@ def select(
         with :class:`ChannelSelect` instances.
     disabled: :class:`bool`
         Whether the select is disabled or not. Defaults to ``False``.
+    default_values: List[:class:`discord.Object`]
+        A list of :class:`discord.Object` representing the channels that should be selected by default.
+        The `type` kwarg must be specified for each object. This can only be used with :class:`ChannelSelect`,
+        :class:`RoleSelect`, :class:`UserSelect`, and :class:`MentionableSelect` instances.
     """
 
     def decorator(func: ItemCallbackType[V, BaseSelectT]) -> ItemCallbackType[V, BaseSelectT]:
@@ -855,6 +899,8 @@ def select(
             func.__discord_ui_model_kwargs__['options'] = options
         if issubclass(callback_cls, ChannelSelect):
             func.__discord_ui_model_kwargs__['channel_types'] = channel_types
+        if not issubclass(callback_cls, Select):
+            func.__discord_ui_model_kwargs__['default_values'] = options
 
         return func
 

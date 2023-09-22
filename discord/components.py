@@ -24,10 +24,13 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
+from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload, Any, Dict
 from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
+from .abc import GuildChannel
+from .user import User
+from .role import Role
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -42,6 +45,7 @@ if TYPE_CHECKING:
         ActionRowChildComponent as ActionRowChildComponentPayload,
     )
     from .emoji import Emoji
+    from .object import Object
 
     ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
 
@@ -263,6 +267,7 @@ class SelectMenu(Component):
         'options',
         'disabled',
         'channel_types',
+        'default_values',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
@@ -276,6 +281,20 @@ class SelectMenu(Component):
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, t) for t in data.get('channel_types', [])]
+        self.default_values: List[Object] = []
+        for dv in data.get("default_values", []):
+            for value_id, value_type in dv.items():
+                if self.type is ComponentType.user_select:
+                    self.default_values.append(Object(id=int(value_id), type=User))
+                elif self.type is ComponentType.role_select:
+                    self.default_values.append(Object(id=int(value_id), type=Role))
+                elif self.type is ComponentType.channel_select:
+                    self.default_values.append(Object(id=int(value_id), type=GuildChannel))
+                elif self.type is ComponentType.mentionable_select:
+                    _type = User if value_type == "user" else Role
+                    self.default_values.append(Object(id=int(value_id), type=_type))
+
+
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
@@ -291,6 +310,20 @@ class SelectMenu(Component):
             payload['options'] = [op.to_dict() for op in self.options]
         if self.channel_types:
             payload['channel_types'] = [t.value for t in self.channel_types]
+        if self.default_values:
+            values = []
+            for obj in self.default_values:
+                base: Dict[str, Any] = {"id": obj.id}
+                if issubclass(obj.type, User):
+                    base["type"] = "user"
+                elif issubclass(obj.type, GuildChannel):
+                    base["type"] = "channel"
+                elif issubclass(obj.type, Role):
+                    base["type"] = "role"
+
+                values.append(base)
+
+            payload["default_values"] = values
 
         return payload
 
