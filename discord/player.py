@@ -40,7 +40,7 @@ from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, T
 
 from .enums import SpeakingState
 from .errors import ClientException
-from .opus import Encoder as OpusEncoder
+from .opus import Encoder as OpusEncoder, OPUS_SILENCE
 from .oggparse import OggStream
 from .utils import MISSING
 
@@ -720,6 +720,7 @@ class AudioPlayer(threading.Thread):
         while not self._end.is_set():
             # are we paused?
             if not self._resumed.is_set():
+                self.send_silence()
                 # wait until we aren't
                 self._resumed.wait()
                 continue
@@ -743,6 +744,8 @@ class AudioPlayer(threading.Thread):
             next_time = self._start + self.DELAY * self.loops
             delay = max(0, self.DELAY + (next_time - time.perf_counter()))
             time.sleep(delay)
+
+        self.send_silence()
 
     def run(self) -> None:
         try:
@@ -800,3 +803,11 @@ class AudioPlayer(threading.Thread):
             asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.client.loop)
         except Exception:
             _log.exception("Speaking call in player failed")
+
+    def send_silence(self, count: int = 5) -> None:
+        try:
+            for n in range(count):
+                self.client.send_audio_packet(OPUS_SILENCE, encode=False)
+        except Exception:
+            # Any possible error (probably a socket error) is so inconsequential it's not even worth logging
+            pass
