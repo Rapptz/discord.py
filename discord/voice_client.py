@@ -511,7 +511,7 @@ class VoiceClient(VoiceProtocol):
         if self._player is None:
             raise ValueError('Not playing anything.')
 
-        self._player._set_source(value)
+        self._player.set_source(value)
 
     def send_audio_packet(self, data: bytes, *, encode: bool = True) -> None:
         """Sends an audio packet composed of the data.

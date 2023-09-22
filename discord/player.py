@@ -798,7 +798,7 @@ class AudioPlayer(threading.Thread):
     def is_paused(self) -> bool:
         return not self._end.is_set() and not self._resumed.is_set()
 
-    def _set_source(self, source: AudioSource) -> None:
+    def set_source(self, source: AudioSource) -> None:
         with self._lock:
             self.pause(update_speaking=False)
             self.source = source
