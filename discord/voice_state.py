@@ -202,9 +202,6 @@ class VoiceConnectionState:
         self.secret_key: List[int] = MISSING
         self.ssrc: int = MISSING
         self.mode: SupportedModes = MISSING
-
-        # TODO: These two cause a lot of issues if they're Optional
-        #       Even if they really are optional, access should be already restricted based on state
         self.socket: socket.socket = MISSING
         self.ws: DiscordVoiceWebSocket = MISSING
 
