@@ -228,7 +228,7 @@ class VoiceClient(VoiceProtocol):
         self.encoder: Encoder = MISSING
         self._lite_nonce: int = 0
 
-        self._connection: VoiceConnectionState = VoiceConnectionState(self)
+        self._connection: VoiceConnectionState = self.create_connection_state()
 
     warn_nacl: bool = not has_nacl
     supported_modes: Tuple[SupportedModes, ...] = (
@@ -275,6 +275,9 @@ class VoiceClient(VoiceProtocol):
             setattr(self, attr, val + value)
 
     # connection related
+
+    def create_connection_state(self) -> VoiceConnectionState:
+        return VoiceConnectionState(self)
 
     async def on_voice_state_update(self, data: GuildVoiceStatePayload) -> None:
         await self._connection.voice_state_update(data)
