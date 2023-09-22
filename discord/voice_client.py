@@ -247,8 +247,6 @@ class VoiceClient(VoiceProtocol):
         """:class:`ClientUser`: The user connected to voice (i.e. ourselves)."""
         return self._state.user  # type: ignore
 
-    # TODO: Do I really need five (5) properties for these...?
-
     @property
     def ssrc(self) -> int:
         return self._connection.ssrc

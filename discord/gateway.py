@@ -874,8 +874,6 @@ class DiscordVoiceWebSocket:
         hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
     ) -> Self:
         """Creates a voice websocket for the :class:`VoiceClient`."""
-        # TODO: Do I add a `if state.endpoint is None: raise Something` check here?
-        #       Putting None in there would be awkward, if that's even possible
         gateway = f'wss://{state.endpoint}/?v=4'
         client = state.voice_client
         http = client._state.http

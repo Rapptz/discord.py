@@ -199,8 +199,6 @@ class VoiceConnectionState:
         self.ip: Optional[str] = None
         self.port: Optional[int] = None
         self.voice_port: Optional[int] = None
-        # TODO: These three MISSINGs are exposed as VoiceClient properties
-        #       I could type ignore them or just leave them as MISSING
         self.secret_key: List[int] = MISSING
         self.ssrc: int = MISSING
         self.mode: SupportedModes = MISSING
