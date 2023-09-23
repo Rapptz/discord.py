@@ -73,14 +73,14 @@ if TYPE_CHECKING:
         str, User, Member, Role, AppCommandChannel, AppCommandThread, Union[Role, Member], Union[Role, User]
     ]
     ValidDefaultValues: TypeAlias = Union[
-        Type[SelectDefaultValue],
-        Type[Object],
-        Type[Role],
-        Type[Member],
-        Type[User],
-        Type[AppCommandChannel],
-        Type[AppCommandThread],
-        Type[GuildChannel],
+        SelectDefaultValue,
+        Object,
+        Role,
+        Member,
+        User,
+        AppCommandChannel,
+        AppCommandThread,
+        GuildChannel,
     ]
 
 V = TypeVar('V', bound='View', covariant=True)
@@ -258,7 +258,7 @@ class BaseSelect(Item[V]):
     def _handle_select_defaults(
         defaults: List[ValidDefaultValues], value_type: Optional[SelectDefaultValueType] = None
     ) -> List[SelectDefaultValue]:
-        default_type_to_enum: Dict[ValidDefaultValues, SelectDefaultValueType] = {
+        default_type_to_enum: Dict[Type[ValidDefaultValues], SelectDefaultValueType] = {
             User: SelectDefaultValueType.user,
             Member: SelectDefaultValueType.user,
             Role: SelectDefaultValueType.role,
@@ -282,7 +282,7 @@ class BaseSelect(Item[V]):
                 values.append(
                     SelectDefaultValue(
                         id=obj.id,
-                        type=value_type or default_type_to_enum[obj.__class__ if not isinstance(obj, Object) else obj.type],
+                        type=value_type or default_type_to_enum[obj.__class__ if not isinstance(obj, Object) else obj.type],  # type: ignore
                     )
                 )
 
