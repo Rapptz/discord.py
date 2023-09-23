@@ -75,7 +75,6 @@ class SelectDefaultValues(TypedDict):
 class StringSelectComponent(SelectComponent):
     type: Literal[3]
     options: NotRequired[List[SelectOption]]
-    default_values: NotRequired[List[SelectDefaultValues]]
 
 
 class UserSelectComponent(SelectComponent):
