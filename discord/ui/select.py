@@ -141,7 +141,7 @@ class BaseSelect(Item[V]):
         disabled: bool = False,
         options: List[SelectOption] = MISSING,
         channel_types: List[ChannelType] = MISSING,
-        default_values: List[ValidDefaultValues] = MISSING,
+        default_values: List[SelectDefaultValue] = MISSING,
     ) -> None:
         super().__init__()
         self._provided_custom_id = custom_id is not MISSING
@@ -158,7 +158,7 @@ class BaseSelect(Item[V]):
             disabled=disabled,
             channel_types=[] if channel_types is MISSING else channel_types,
             options=[] if options is MISSING else options,
-            default_values=[] if default_values is MISSING else self._handle_select_defaults(default_values),
+            default_values=[] if default_values is MISSING else [],
         )
 
         self.row = row
@@ -488,7 +488,7 @@ class UserSelect(BaseSelect[V]):
             max_values=max_values,
             disabled=disabled,
             row=row,
-            default_values=default_values,
+            default_values=MISSING if default_values is MISSING else self._handle_select_defaults(default_values, SelectDefaultValueType.user),
         )
 
     @property
@@ -572,6 +572,7 @@ class RoleSelect(BaseSelect[V]):
             max_values=max_values,
             disabled=disabled,
             row=row,
+            default_values=MISSING if default_values is MISSING else self._handle_select_defaults(default_values, SelectDefaultValueType.role),
         )
 
     @property
@@ -651,6 +652,7 @@ class MentionableSelect(BaseSelect[V]):
             max_values=max_values,
             disabled=disabled,
             row=row,
+            default_values=MISSING if default_values is MISSING else self._handle_select_defaults(default_values),
         )
 
     @property
@@ -738,7 +740,7 @@ class ChannelSelect(BaseSelect[V]):
             disabled=disabled,
             row=row,
             channel_types=channel_types,
-            default_values=default_values,
+            default_values=MISSING if default_values is MISSING else self._handle_select_defaults(default_values, SelectDefaultValueType.channel),
         )
 
     @property
