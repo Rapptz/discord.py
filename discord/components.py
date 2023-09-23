@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload, Any, Dict
+from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
 from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType, SelectDefaultValueType
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
