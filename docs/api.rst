@@ -3392,6 +3392,24 @@ of :class:`enum.Enum`.
 
         Sort forum posts by creation time (from most recent to oldest).
 
+.. class:: SelectDefaultValueType
+
+    Represents the default value of a select menu.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: user
+
+        The ID is of a user.
+
+    .. attribute:: role
+
+        The ID is of a role.
+
+    .. attribute:: channel
+
+        The ID is of a channel.
+
 
 .. _discord-api-audit-logs:
 

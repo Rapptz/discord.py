@@ -519,6 +519,17 @@ class TextInput(Component):
         return self.value
     
 class SelectDefaultValue:
+    """Represents a select menu's default value.
+    
+    .. versionadded:: 2.5
+
+    Parameters
+    -----------
+    id: :class:`int`
+        The id of a role, user, or channel.
+    type: :class:`SelectDefaultValueType`
+        The type of value that ``id`` represents.
+    """
     def __init__(
         self,
         *,

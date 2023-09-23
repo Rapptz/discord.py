@@ -69,6 +69,7 @@ __all__ = (
     'AutoModRuleActionType',
     'ForumLayoutType',
     'ForumOrderType',
+    'SelectDefaultValueType',
 )
 
 if TYPE_CHECKING:
