@@ -66,9 +66,11 @@ class SelectComponent(TypedDict):
     max_values: NotRequired[int]
     disabled: NotRequired[bool]
 
+
 class SelectDefaultValues(TypedDict):
     id: int
     type: DefaultValueType
+
 
 class StringSelectComponent(SelectComponent):
     type: Literal[3]

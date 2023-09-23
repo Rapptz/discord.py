@@ -279,7 +279,9 @@ class SelectMenu(Component):
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, t) for t in data.get('channel_types', [])]
-        self.default_values: List[SelectDefaultValue] = [SelectDefaultValue.from_dict(d) for d in data.get('default_values', [])]
+        self.default_values: List[SelectDefaultValue] = [
+            SelectDefaultValue.from_dict(d) for d in data.get('default_values', [])
+        ]
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
@@ -299,7 +301,6 @@ class SelectMenu(Component):
             payload["default_values"] = [v.to_dict() for v in self.default_values]
 
         return payload
-
 
 
 class SelectOption:
@@ -517,10 +518,11 @@ class TextInput(Component):
         This is an alias to :attr:`value`.
         """
         return self.value
-    
+
+
 class SelectDefaultValue:
     """Represents a select menu's default value.
-    
+
     .. versionadded:: 2.5
 
     Parameters
@@ -530,6 +532,7 @@ class SelectDefaultValue:
     type: :class:`SelectDefaultValueType`
         The type of value that ``id`` represents.
     """
+
     def __init__(
         self,
         *,
@@ -538,28 +541,28 @@ class SelectDefaultValue:
     ) -> None:
         self.id: int = id
         self._type: SelectDefaultValueType = type
-    
+
     @property
     def type(self) -> SelectDefaultValueType:
         return self._type
-    
+
     @type.setter
     def type(self, value: SelectDefaultValueType) -> None:
         if not isinstance(value, SelectDefaultValueType):
             raise TypeError(f'expected SelectDefaultValueType, received {value.__class__.__name__} instead')
-    
+
         self._type = value
 
     def __repr__(self) -> str:
         return f'<SelectDefaultValue id={self.id!r} type={self.type!r}>'
-    
+
     @classmethod
     def from_dict(cls, data: SelectDefaultValuesPayload) -> SelectDefaultValue:
         return cls(
             id=data['id'],
             type=try_enum(SelectDefaultValueType, data['type']),
         )
-    
+
     def to_dict(self) -> SelectDefaultValuesPayload:
         return {
             'id': self.id,
