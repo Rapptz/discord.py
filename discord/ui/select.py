@@ -255,7 +255,7 @@ class BaseSelect(Item[V]):
         )
     
     @staticmethod
-    def _handle_select_defaults(defaults: List[ValidDefaultValues]) -> List[SelectDefaultValue]:
+    def _handle_select_defaults(defaults: List[ValidDefaultValues], value_type: Optional[SelectDefaultValueType] = None) -> List[SelectDefaultValue]:
         default_type_to_enum: Dict[ValidDefaultValues, SelectDefaultValueType] = {
             Role: SelectDefaultValueType.role,
             Member: SelectDefaultValueType.user,
@@ -267,7 +267,7 @@ class BaseSelect(Item[V]):
 
         values: List[SelectDefaultValue] = []
         for obj in defaults:
-            if isinstance(obj, Object) and obj.type == Object:
+            if not value_type and isinstance(obj, Object) and obj.type == Object:
                 raise ValueError("Please specify the type for Object...")
             
             if not isinstance(obj, (Object, Role, Member, User, GuildChannel, AppCommandChannel, AppCommandThread)):
@@ -280,7 +280,7 @@ class BaseSelect(Item[V]):
                 values.append(
                     SelectDefaultValue(
                         id=obj.id,
-                        type=default_type_to_enum[obj.__class__ if not isinstance(obj, Object) else obj.type],
+                        type=value_type or default_type_to_enum[obj.__class__ if not isinstance(obj, Object) else obj.type],
                     )
                 )
 
@@ -514,7 +514,7 @@ class UserSelect(BaseSelect[V]):
     
     @default_values.setter
     def default_values(self, value: List[ValidDefaultValues]) -> None:
-        self._underlying.default_values = self._handle_select_defaults(value)
+        self._underlying.default_values = self._handle_select_defaults(value, SelectDefaultValueType.user)
 
 
 class RoleSelect(BaseSelect[V]):
@@ -587,7 +587,7 @@ class RoleSelect(BaseSelect[V]):
     
     @default_values.setter
     def default_values(self, value: List[ValidDefaultValues]) -> None:
-        self._underlying.default_values = self._handle_select_defaults(value)
+        self._underlying.default_values = self._handle_select_defaults(value, SelectDefaultValueType.role)
 
 
 class MentionableSelect(BaseSelect[V]):
@@ -765,7 +765,7 @@ class ChannelSelect(BaseSelect[V]):
     
     @default_values.setter
     def default_values(self, value: List[ValidDefaultValues]) -> None:
-        self._underlying.default_values = self._handle_select_defaults(value)
+        self._underlying.default_values = self._handle_select_defaults(value, SelectDefaultValueType.channel)
 
 
 @overload
@@ -962,7 +962,12 @@ def select(
         if issubclass(callback_cls, ChannelSelect):
             func.__discord_ui_model_kwargs__['channel_types'] = channel_types
         if not issubclass(callback_cls, Select):
-            func.__discord_ui_model_kwargs__['default_values'] = BaseSelect._handle_select_defaults(default_values)
+            cls_to_default_type: Dict[Type[BaseSelect], SelectDefaultValueType] = {
+                UserSelect: SelectDefaultValueType.user,
+                RoleSelect: SelectDefaultValueType.role,
+                ChannelSelect: SelectDefaultValueType.channel,
+            }
+            func.__discord_ui_model_kwargs__['default_values'] = BaseSelect._handle_select_defaults(default_values,cls_to_default_type.get(cls))
 
         return func
 
