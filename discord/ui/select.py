@@ -258,6 +258,8 @@ class BaseSelect(Item[V]):
     def _handle_select_defaults(
         defaults: List[ValidDefaultValues], value_type: Optional[SelectDefaultValueType] = None
     ) -> List[SelectDefaultValue]:
+        from ..app_commands import AppCommandChannel, AppCommandThread
+
         default_type_to_enum: Dict[Type[ValidDefaultValues], SelectDefaultValueType] = {
             User: SelectDefaultValueType.user,
             Member: SelectDefaultValueType.user,
@@ -269,22 +271,24 @@ class BaseSelect(Item[V]):
 
         values: List[SelectDefaultValue] = []
         for obj in defaults:
+            if isinstance(obj, SelectDefaultValue):
+                values.append(obj)
+                continue
+
             if not value_type and isinstance(obj, Object) and obj.type == Object:
-                raise ValueError("Please specify the type for Object...")
+                raise ValueError("Object must have a type specified for the chosen select type. Please pass one using the `type` kwarg.")
 
             if not isinstance(obj, (Object, Role, Member, User, GuildChannel, AppCommandChannel, AppCommandThread)):
                 supported_classes = ', '.join(str(v) for v in default_type_to_enum)
                 raise TypeError(f"Invalid type {obj.__class__!r} for default value. Must be one of {supported_classes}")
 
-            if isinstance(obj, SelectDefaultValue):
-                values.append(obj)
-            else:
-                values.append(
-                    SelectDefaultValue(
-                        id=obj.id,
-                        type=value_type or default_type_to_enum[obj.__class__ if not isinstance(obj, Object) else obj.type],  # type: ignore
-                    )
+
+            values.append(
+                SelectDefaultValue(
+                    id=obj.id,
+                    type=value_type or default_type_to_enum[obj.__class__ if not isinstance(obj, Object) else obj.type],  # type: ignore
                 )
+            )
 
         return values
 
