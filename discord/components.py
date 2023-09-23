@@ -25,12 +25,9 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload, Any, Dict
-from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType
+from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType, SelectDefaultValueType
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
-from .abc import GuildChannel
-from .user import User
-from .role import Role
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -43,9 +40,9 @@ if TYPE_CHECKING:
         ActionRow as ActionRowPayload,
         TextInput as TextInputPayload,
         ActionRowChildComponent as ActionRowChildComponentPayload,
+        SelectDefaultValues as SelectDefaultValuesPayload,
     )
     from .emoji import Emoji
-    from .object import Object
 
     ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
 
@@ -57,6 +54,7 @@ __all__ = (
     'SelectMenu',
     'SelectOption',
     'TextInput',
+    'SelectDefaultValue',
 )
 
 
@@ -281,26 +279,7 @@ class SelectMenu(Component):
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, t) for t in data.get('channel_types', [])]
-        if "default_values" in data:
-            if self.type is ComponentType.user_select:
-                self.default_values: List[Object] = [
-                    Object(id=int(d["id"]), type=User) for d in data["default_values"]
-                ]
-            elif self.type is ComponentType.role_select:
-                self.default_values: List[Object] = [
-                    Object(id=int(d["id"]), type=Role) for d in data["default_values"]
-                ]
-            elif self.type is ComponentType.channel_select:
-                self.default_values: List[Object] = [
-                    Object(id=int(d["id"]), type=GuildChannel) for d in data["default_values"]
-                ]
-            elif self.type is ComponentType.mentionable_select:
-                self.default_values: List[Object] = [
-                    Object(id=int(d["id"]), type=User if d["type"] == "user" else Role) for d in data["default_values"]
-                ]
-        else:
-            self.default_values: List[Object] = []
-
+        self.default_values: List[SelectDefaultValue] = [SelectDefaultValue.from_dict(d) for d in data.get('default_values', [])]
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
@@ -317,21 +296,10 @@ class SelectMenu(Component):
         if self.channel_types:
             payload['channel_types'] = [t.value for t in self.channel_types]
         if self.default_values:
-            values = []
-            for obj in self.default_values:
-                base: Dict[str, Any] = {"id": obj.id}
-                if issubclass(obj.type, User):
-                    base["type"] = "user"
-                elif issubclass(obj.type, GuildChannel):
-                    base["type"] = "channel"
-                elif issubclass(obj.type, Role):
-                    base["type"] = "role"
-
-                values.append(base)
-
-            payload["default_values"] = values
+            payload["default_values"] = [v.to_dict() for v in self.default_values]
 
         return payload
+
 
 
 class SelectOption:
@@ -549,6 +517,43 @@ class TextInput(Component):
         This is an alias to :attr:`value`.
         """
         return self.value
+    
+class SelectDefaultValue:
+    def __init__(
+        self,
+        *,
+        id: int,
+        type: SelectDefaultValueType,
+    ) -> None:
+        self.id: int = id
+        self._type: SelectDefaultValueType = type
+    
+    @property
+    def type(self) -> SelectDefaultValueType:
+        return self._type
+    
+    @type.setter
+    def type(self, value: SelectDefaultValueType) -> None:
+        if not isinstance(value, SelectDefaultValueType):
+            raise TypeError(f'expected SelectDefaultValueType, received {value.__class__.__name__} instead')
+    
+        self._type = value
+
+    def __repr__(self) -> str:
+        return f'<SelectDefaultValue id={self.id!r} type={self.type!r}>'
+    
+    @classmethod
+    def from_dict(cls, data: SelectDefaultValuesPayload) -> SelectDefaultValue:
+        return cls(
+            id=data['id'],
+            type=try_enum(SelectDefaultValueType, data['type']),
+        )
+    
+    def to_dict(self) -> SelectDefaultValuesPayload:
+        return {
+            'id': self.id,
+            'type': self._type.value,
+        }
 
 
 @overload

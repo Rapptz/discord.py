@@ -28,18 +28,21 @@ import inspect
 import os
 
 from .item import Item, ItemCallbackType
-from ..enums import ChannelType, ComponentType
+from ..enums import ChannelType, ComponentType, SelectDefaultValueType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
 from ..utils import MISSING
 from ..components import (
     SelectOption,
     SelectMenu,
+    SelectDefaultValue,
 )
 from ..app_commands.namespace import Namespace
-from ..abc import GuildChannel
+from ..member import Member
+from ..object import Object
 from ..role import Role
 from ..user import User
+from ..abc import GuildChannel
 
 __all__ = (
     'Select',
@@ -57,9 +60,7 @@ if TYPE_CHECKING:
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import SelectMessageComponentInteractionData
     from ..app_commands import AppCommandChannel, AppCommandThread
-    from ..member import Member
     from ..interactions import Interaction
-    from ..object import Object
 
     ValidSelectType: TypeAlias = Literal[
         ComponentType.string_select,
@@ -70,6 +71,16 @@ if TYPE_CHECKING:
     ]
     PossibleValue: TypeAlias = Union[
         str, User, Member, Role, AppCommandChannel, AppCommandThread, Union[Role, Member], Union[Role, User]
+    ]
+    ValidDefaultValues: TypeAlias = Union[
+        Type[SelectDefaultValue],
+        Type[Object],
+        Type[Role],
+        Type[Member],
+        Type[User],
+        Type[AppCommandChannel],
+        Type[AppCommandThread],
+        Type[GuildChannel],
     ]
 
 V = TypeVar('V', bound='View', covariant=True)
@@ -130,7 +141,7 @@ class BaseSelect(Item[V]):
         disabled: bool = False,
         options: List[SelectOption] = MISSING,
         channel_types: List[ChannelType] = MISSING,
-        default_values: List[Object] = MISSING,
+        default_values: List[ValidDefaultValues] = MISSING,
     ) -> None:
         super().__init__()
         self._provided_custom_id = custom_id is not MISSING
@@ -147,7 +158,7 @@ class BaseSelect(Item[V]):
             disabled=disabled,
             channel_types=[] if channel_types is MISSING else channel_types,
             options=[] if options is MISSING else options,
-            default_values=[] if default_values is MISSING else default_values,
+            default_values=[] if default_values is MISSING else self._handle_select_defaults(default_values),
         )
 
         self.row = row
@@ -242,6 +253,38 @@ class BaseSelect(Item[V]):
             custom_id=component.custom_id,
             row=None,
         )
+    
+    @staticmethod
+    def _handle_select_defaults(defaults: List[ValidDefaultValues]) -> List[SelectDefaultValue]:
+        default_type_to_enum: Dict[ValidDefaultValues, SelectDefaultValueType] = {
+            Role: SelectDefaultValueType.role,
+            Member: SelectDefaultValueType.user,
+            User: SelectDefaultValueType.user,
+            GuildChannel: SelectDefaultValueType.channel,
+            AppCommandChannel: SelectDefaultValueType.channel,
+            AppCommandThread: SelectDefaultValueType.channel,
+        }
+
+        values: List[SelectDefaultValue] = []
+        for obj in defaults:
+            if isinstance(obj, Object) and obj.type == Object:
+                raise ValueError("Please specify the type for Object...")
+            
+            if not isinstance(obj, (Object, Role, Member, User, GuildChannel, AppCommandChannel, AppCommandThread)):
+                supported_classes = ', '.join(str(v) for v in default_type_to_enum)
+                raise TypeError(f"Invalid type {obj.__class__!r} for default value. Must be one of {supported_classes}")
+            
+            if isinstance(obj, SelectDefaultValue):
+                values.append(obj)
+            else:
+                values.append(
+                    SelectDefaultValue(
+                        id=obj.id,
+                        type=default_type_to_enum[obj.__class__ if not isinstance(obj, Object) else obj.type],
+                    )
+                )
+
+        return values
 
 
 class Select(BaseSelect[V]):
@@ -414,8 +457,8 @@ class UserSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
-    default_values: List[:class:`discord.Object`]
-        A list of :class:`discord.Object` representing the users that should be selected by default.
+    default_values: List[Any]
+        A list of objects representing the users that should be selected by default.
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -433,12 +476,8 @@ class UserSelect(BaseSelect[V]):
         max_values: int = 1,
         disabled: bool = False,
         row: Optional[int] = None,
-        default_values: List[Object] = MISSING,
+        default_values: List[ValidDefaultValues] = MISSING,
     ) -> None:
-        if default_values is not MISSING:
-            for obj in default_values:
-                obj.type = User
-
         super().__init__(
             self.type,
             custom_id=custom_id,
@@ -467,6 +506,15 @@ class UserSelect(BaseSelect[V]):
         If invoked in a guild, the values will always resolve to :class:`discord.Member`.
         """
         return super().values  # type: ignore
+    
+    @property
+    def default_values(self) -> List[SelectDefaultValue]:
+        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu."""
+        return self._underlying.default_values
+    
+    @default_values.setter
+    def default_values(self, value: List[ValidDefaultValues]) -> None:
+        self._underlying.default_values = self._handle_select_defaults(value)
 
 
 class RoleSelect(BaseSelect[V]):
@@ -491,8 +539,8 @@ class RoleSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
-    default_values: List[:class:`discord.Object`]
-        A list of :class:`discord.Object` representing the roles that should be selected by default.
+    default_values: List[Any]
+        A list of objects representing the users that should be selected by default.
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -510,12 +558,8 @@ class RoleSelect(BaseSelect[V]):
         max_values: int = 1,
         disabled: bool = False,
         row: Optional[int] = None,
-        default_values: List[Object] = MISSING,
+        default_values: List[ValidDefaultValues] = MISSING,
     ) -> None:
-        if default_values is not MISSING:
-            for obj in default_values:
-                obj.type = Role
-
         super().__init__(
             self.type,
             custom_id=custom_id,
@@ -535,6 +579,15 @@ class RoleSelect(BaseSelect[V]):
     def values(self) -> List[Role]:
         """List[:class:`discord.Role`]: A list of roles that have been selected by the user."""
         return super().values  # type: ignore
+
+    @property
+    def default_values(self) -> List[SelectDefaultValue]:
+        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu."""
+        return self._underlying.default_values
+    
+    @default_values.setter
+    def default_values(self, value: List[ValidDefaultValues]) -> None:
+        self._underlying.default_values = self._handle_select_defaults(value)
 
 
 class MentionableSelect(BaseSelect[V]):
@@ -562,9 +615,9 @@ class MentionableSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
-    default_values: List[:class:`discord.Object`]
-        A list of :class:`discord.Object` representing the users/roles that should be selected by default.
-        The `type` kwarg must be specified for each object.
+    default_values: List[Any]
+        A list of objects representing the users/roles that should be selected by default.
+        if :class:`.Object` is passed, then the type must be specified in the constructor.
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -582,13 +635,8 @@ class MentionableSelect(BaseSelect[V]):
         max_values: int = 1,
         disabled: bool = False,
         row: Optional[int] = None,
-        default_values: List[Object] = MISSING,
+        default_values: List[ValidDefaultValues] = MISSING,
     ) -> None:
-        if default_values is not MISSING:
-            for obj in default_values:
-                if obj.type == Object:
-                    raise ValueError("Please specify the type of object...")
-
         super().__init__(
             self.type,
             custom_id=custom_id,
@@ -616,6 +664,15 @@ class MentionableSelect(BaseSelect[V]):
         If invoked in a guild, the values will always resolve to :class:`discord.Member`.
         """
         return super().values  # type: ignore
+    
+    @property
+    def default_values(self) -> List[SelectDefaultValue]:
+        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu."""
+        return self._underlying.default_values
+    
+    @default_values.setter
+    def default_values(self, value: List[ValidDefaultValues]) -> None:
+        self._underlying.default_values = self._handle_select_defaults(value)
 
 
 class ChannelSelect(BaseSelect[V]):
@@ -642,8 +699,8 @@ class ChannelSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
-    default_values: List[:class:`discord.Object`]
-        A list of :class:`discord.Object` representing the channels that should be selected by default.
+    default_values: List[Any]
+        A list of objects representing the channels that should be selected by default.
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -664,12 +721,8 @@ class ChannelSelect(BaseSelect[V]):
         max_values: int = 1,
         disabled: bool = False,
         row: Optional[int] = None,
-        default_values: List[Object] = MISSING,
+        default_values: List[ValidDefaultValues] = MISSING,
     ) -> None:
-        if default_values is not MISSING:
-            for obj in default_values:
-                obj.type = GuildChannel
-
         super().__init__(
             self.type,
             custom_id=custom_id,
@@ -705,6 +758,15 @@ class ChannelSelect(BaseSelect[V]):
         """List[Union[:class:`~discord.app_commands.AppCommandChannel`, :class:`~discord.app_commands.AppCommandThread`]]: A list of channels selected by the user."""
         return super().values  # type: ignore
 
+    @property
+    def default_values(self) -> List[SelectDefaultValue]:
+        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu."""
+        return self._underlying.default_values
+    
+    @default_values.setter
+    def default_values(self, value: List[ValidDefaultValues]) -> None:
+        self._underlying.default_values = self._handle_select_defaults(value)
+
 
 @overload
 def select(
@@ -733,7 +795,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
-    default_values: List[Object] = ...,
+    default_values: List[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, UserSelectT]:
     ...
@@ -750,7 +812,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
-    default_values: List[Object] = ...,
+    default_values: List[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, RoleSelectT]:
     ...
@@ -767,7 +829,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
-    default_values: List[Object] = ...,
+    default_values: List[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, ChannelSelectT]:
     ...
@@ -784,7 +846,7 @@ def select(
     min_values: int = ...,
     max_values: int = ...,
     disabled: bool = ...,
-    default_values: List[Object] = ...,
+    default_values: List[ValidDefaultValues] = ...,
     row: Optional[int] = ...,
 ) -> SelectCallbackDecorator[V, MentionableSelectT]:
     ...
@@ -800,7 +862,7 @@ def select(
     min_values: int = 1,
     max_values: int = 1,
     disabled: bool = False,
-    default_values: List[Object] = MISSING,
+    default_values: List[ValidDefaultValues] = MISSING,
     row: Optional[int] = None,
 ) -> SelectCallbackDecorator[V, BaseSelectT]:
     """A decorator that attaches a select menu to a component.
@@ -872,10 +934,10 @@ def select(
         with :class:`ChannelSelect` instances.
     disabled: :class:`bool`
         Whether the select is disabled or not. Defaults to ``False``.
-    default_values: List[:class:`discord.Object`]
-        A list of :class:`discord.Object` representing the channels that should be selected by default.
-        The `type` kwarg must be specified for each object. This can only be used with :class:`ChannelSelect`,
+    default_values: List[Object]
+        A list of objects representing the default values for the select menu. This can only be used with :class:`ChannelSelect`,
         :class:`RoleSelect`, :class:`UserSelect`, and :class:`MentionableSelect` instances.
+        if `cls` is :class:`MentionableSelect` and :class:`.Object` is passed, then the type must be specified in the constructor.
     """
 
     def decorator(func: ItemCallbackType[V, BaseSelectT]) -> ItemCallbackType[V, BaseSelectT]:
@@ -900,7 +962,7 @@ def select(
         if issubclass(callback_cls, ChannelSelect):
             func.__discord_ui_model_kwargs__['channel_types'] = channel_types
         if not issubclass(callback_cls, Select):
-            func.__discord_ui_model_kwargs__['default_values'] = options
+            func.__discord_ui_model_kwargs__['default_values'] = BaseSelect._handle_select_defaults(default_values)
 
         return func
 

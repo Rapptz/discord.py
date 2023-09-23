@@ -771,6 +771,11 @@ class ForumOrderType(Enum):
     latest_activity = 0
     creation_date = 1
 
+class SelectDefaultValueType(Enum):    
+    user = "user"
+    role = "role"
+    channel = "channel"
+
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
     value_cls = cls._enum_value_cls_  # type: ignore # This is narrowed below
