@@ -732,6 +732,7 @@ class ChannelSelect(BaseSelect[V]):
             disabled=disabled,
             row=row,
             channel_types=channel_types,
+            default_values=default_values,
         )
 
     @property
