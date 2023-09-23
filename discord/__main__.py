@@ -157,7 +157,7 @@ _cog_extras = '''
     async def cog_command_error(self, ctx, error):
         # error handling to every command in here
         pass
-        
+
     async def cog_app_command_error(self, interaction, error):
         # error handling to every application command in here
         pass

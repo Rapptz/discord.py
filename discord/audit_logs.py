@@ -528,6 +528,10 @@ class _AuditLogProxyAutoModAction(_AuditLogProxy):
     channel: Optional[Union[abc.GuildChannel, Thread]]
 
 
+class _AuditLogProxyMemberKickOrMemberRoleUpdate(_AuditLogProxy):
+    integration_type: Optional[str]
+
+
 class AuditLogEntry(Hashable):
     r"""Represents an Audit Log entry.
 
@@ -614,6 +618,7 @@ class AuditLogEntry(Hashable):
             _AuditLogProxyStageInstanceAction,
             _AuditLogProxyMessageBulkDelete,
             _AuditLogProxyAutoModAction,
+            _AuditLogProxyMemberKickOrMemberRoleUpdate,
             Member, User, None, PartialIntegration,
             Role, Object
         ] = None
@@ -638,6 +643,10 @@ class AuditLogEntry(Hashable):
             elif self.action is enums.AuditLogAction.message_bulk_delete:
                 # The bulk message delete action has the number of messages deleted
                 self.extra = _AuditLogProxyMessageBulkDelete(count=int(extra['count']))
+            elif self.action in (enums.AuditLogAction.kick, enums.AuditLogAction.member_role_update):
+                # The member kick action has a dict with some information
+                integration_type = extra.get('integration_type')
+                self.extra = _AuditLogProxyMemberKickOrMemberRoleUpdate(integration_type=integration_type)
             elif self.action.name.endswith('pin'):
                 # the pin actions have a dict with some information
                 channel_id = int(extra['channel_id'])

@@ -113,6 +113,12 @@ section {
   --attribute-table-entry-hover-text: var(--blue-2);
   --attribute-table-badge: var(--grey-7);
   --highlighted-text: rgb(252, 233, 103);
+  --tabs--label-text: var(--main-text);
+  --tabs--label-text--hover: var(--main-text);
+  --tabs--label-text--active: var(--blue-1);
+  --tabs--label-text--active--hover: var(--blue-1);
+  --tabs--label-border--active: var(--blue-1);
+  --tabs--label-border--active--hover: var(--blue-1);
 }
 
 :root[data-font="serif"] {

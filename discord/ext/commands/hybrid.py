@@ -297,14 +297,18 @@ def replace_parameters(
 
 
 class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
-    def __init__(self, wrapped: Union[HybridCommand[CogT, ..., T], HybridGroup[CogT, ..., T]]) -> None:
+    def __init__(
+        self,
+        wrapped: Union[HybridCommand[CogT, ..., T], HybridGroup[CogT, ..., T]],
+        name: Optional[Union[str, app_commands.locale_str]] = None,
+    ) -> None:
         signature = inspect.signature(wrapped.callback)
         params = replace_parameters(wrapped.params, wrapped.callback, signature)
         wrapped.callback.__signature__ = signature.replace(parameters=params)
         nsfw = getattr(wrapped.callback, '__discord_app_commands_is_nsfw__', False)
         try:
             super().__init__(
-                name=wrapped._locale_name or wrapped.name,
+                name=name or wrapped._locale_name or wrapped.name,
                 callback=wrapped.callback,  # type: ignore # Signature doesn't match but we're overriding the invoke
                 description=wrapped._locale_description or wrapped.description or wrapped.short_doc or '…',
                 nsfw=nsfw,
@@ -594,6 +598,8 @@ class HybridGroup(Group[CogT, P, T]):
         application command groups cannot be invoked, this creates a subcommand within
         the group that can be invoked with the given group callback. If ``None``
         then no fallback command is given. Defaults to ``None``.
+    fallback_locale: Optional[:class:`~discord.app_commands.locale_str`]
+        The fallback command name's locale string, if available.
     """
 
     __commands_is_hybrid__: ClassVar[bool] = True
@@ -603,7 +609,7 @@ class HybridGroup(Group[CogT, P, T]):
         *args: Any,
         name: Union[str, app_commands.locale_str] = MISSING,
         description: Union[str, app_commands.locale_str] = MISSING,
-        fallback: Optional[str] = None,
+        fallback: Optional[Union[str, app_commands.locale_str]] = None,
         **attrs: Any,
     ) -> None:
         name, name_locale = (name.message, name) if isinstance(name, app_commands.locale_str) else (name, None)
@@ -631,7 +637,12 @@ class HybridGroup(Group[CogT, P, T]):
         # However, Python does not have conditional typing so it's very hard to
         # make this type depend on the with_app_command bool without a lot of needless repetition
         self.app_command: app_commands.Group = MISSING
+
+        fallback, fallback_locale = (
+            (fallback.message, fallback) if isinstance(fallback, app_commands.locale_str) else (fallback, None)
+        )
         self.fallback: Optional[str] = fallback
+        self.fallback_locale: Optional[app_commands.locale_str] = fallback_locale
 
         if self.with_app_command:
             guild_ids = attrs.pop('guild_ids', None) or getattr(
@@ -654,8 +665,7 @@ class HybridGroup(Group[CogT, P, T]):
             self.app_command.module = self.module
 
             if fallback is not None:
-                command = HybridAppCommand(self)
-                command.name = fallback
+                command = HybridAppCommand(self, name=fallback_locale or fallback)
                 self.app_command.add_command(command)
 
     @property
