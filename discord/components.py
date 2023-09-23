@@ -523,6 +523,8 @@ class TextInput(Component):
 class SelectDefaultValue:
     """Represents a select menu's default value.
 
+    These can be created by users.
+
     .. versionadded:: 2.5
 
     Parameters
