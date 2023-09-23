@@ -467,6 +467,8 @@ class UserSelect(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
+    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('default_values',)
+
     def __init__(
         self,
         *,
@@ -549,6 +551,8 @@ class RoleSelect(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
+    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('default_values',)
+
     def __init__(
         self,
         *,
@@ -625,6 +629,8 @@ class MentionableSelect(BaseSelect[V]):
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
+
+    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('default_values',)
 
     def __init__(
         self,
@@ -709,7 +715,7 @@ class ChannelSelect(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
-    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('channel_types',)
+    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('channel_types', 'default_values',)
 
     def __init__(
         self,
