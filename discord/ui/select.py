@@ -262,7 +262,7 @@ class BaseSelect(Item[V]):
     ) -> List[SelectDefaultValue]:
         if not defaults:
             return []
-        
+
         if not isinstance(defaults, list):
             raise TypeError('default_values must be a list.')
 
@@ -1027,8 +1027,8 @@ def select(
                 ChannelSelect: SelectDefaultValueType.channel,
             }
             func.__discord_ui_model_kwargs__['default_values'] = BaseSelect._handle_select_defaults(
-                 [] if default_values is MISSING else default_values,
-                 cls_to_default_type.get(cls),
+                [] if default_values is MISSING else default_values,
+                cls_to_default_type.get(cls),
             )
 
         return func
