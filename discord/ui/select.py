@@ -262,6 +262,9 @@ class BaseSelect(Item[V]):
     ) -> List[SelectDefaultValue]:
         if not defaults:
             return []
+        
+        if not isinstance(defaults, list):
+            raise TypeError('default_values must be a list.')
 
         from ..app_commands import AppCommandChannel, AppCommandThread
 
