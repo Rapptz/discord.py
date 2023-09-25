@@ -43,6 +43,7 @@ from ..object import Object
 from ..role import Role
 from ..user import User
 from ..abc import GuildChannel
+from ..threads import Thread
 
 __all__ = (
     'Select',
@@ -78,9 +79,10 @@ if TYPE_CHECKING:
         Role,
         Member,
         User,
+        GuildChannel,
         AppCommandChannel,
         AppCommandThread,
-        GuildChannel,
+        Thread,
     ]
 
 V = TypeVar('V', bound='View', covariant=True)
@@ -267,6 +269,7 @@ class BaseSelect(Item[V]):
             GuildChannel: SelectDefaultValueType.channel,
             AppCommandChannel: SelectDefaultValueType.channel,
             AppCommandThread: SelectDefaultValueType.channel,
+            Thread: SelectDefaultValueType.channel,
         }
 
         values: List[SelectDefaultValue] = []
@@ -280,7 +283,7 @@ class BaseSelect(Item[V]):
                     "Object must have a type specified for the chosen select type. Please pass one using the `type` kwarg."
                 )
 
-            if not isinstance(obj, (Object, Role, Member, User, GuildChannel, AppCommandChannel, AppCommandThread)):
+            if not isinstance(obj, (Object, Role, Member, User, GuildChannel, AppCommandChannel, AppCommandThread, Thread)):
                 supported_classes = ', '.join(str(v) for v in default_type_to_enum)
                 raise TypeError(f"Invalid type {obj.__class__!r} for default value. Must be one of {supported_classes}")
 
