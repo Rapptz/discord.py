@@ -260,6 +260,9 @@ class BaseSelect(Item[V]):
     def _handle_select_defaults(
         defaults: List[ValidDefaultValues], value_type: Optional[SelectDefaultValueType] = None
     ) -> List[SelectDefaultValue]:
+        if not defaults:
+            return []
+
         from ..app_commands import AppCommandChannel, AppCommandThread
 
         default_type_to_enum: Dict[Type[ValidDefaultValues], SelectDefaultValueType] = {
@@ -962,7 +965,7 @@ def select(
         with :class:`ChannelSelect` instances.
     disabled: :class:`bool`
         Whether the select is disabled or not. Defaults to ``False``.
-    default_values: List[Object]
+    default_values: List[Any]
         A list of objects representing the default values for the select menu. This can only be used with :class:`ChannelSelect`,
         :class:`RoleSelect`, :class:`UserSelect`, and :class:`MentionableSelect` instances.
         if `cls` is :class:`MentionableSelect` and :class:`.Object` is passed, then the type must be specified in the constructor.
@@ -996,7 +999,8 @@ def select(
                 ChannelSelect: SelectDefaultValueType.channel,
             }
             func.__discord_ui_model_kwargs__['default_values'] = BaseSelect._handle_select_defaults(
-                default_values, cls_to_default_type.get(cls)
+                 [] if default_values is MISSING else default_values,
+                 cls_to_default_type.get(cls),
             )
 
         return func
