@@ -43,6 +43,7 @@ if TYPE_CHECKING:
         SelectDefaultValues as SelectDefaultValuesPayload,
     )
     from .emoji import Emoji
+    from .abc import Snowflake
 
     ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
 
@@ -570,7 +571,28 @@ class SelectDefaultValue:
             'id': self.id,
             'type': self._type.value,
         }
-
+    
+    @classmethod
+    def from_channel(cls, channel: Snowflake, /) -> Self:
+        return cls(
+            id=channel.id,
+            type=SelectDefaultValueType.channel,
+        )
+    
+    @classmethod
+    def from_role(cls, role: Snowflake, /) -> Self:
+        return cls(
+            id=role.id,
+            type=SelectDefaultValueType.role,
+        )
+    
+    @classmethod
+    def from_user(cls, user: Snowflake, /) -> Self:
+        return cls(
+            id=user.id,
+            type=SelectDefaultValueType.user,
+        )
+    
 
 @overload
 def _component_factory(data: ActionRowChildComponentPayload) -> Optional[ActionRowChildComponentType]:
