@@ -3396,7 +3396,7 @@ of :class:`enum.Enum`.
 
     Represents the default value of a select menu.
 
-    .. versionadded:: 2.5
+    .. versionadded:: 2.4
 
     .. attribute:: user
 

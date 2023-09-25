@@ -525,7 +525,7 @@ class SelectDefaultValue:
 
     These can be created by users.
 
-    .. versionadded:: 2.5
+    .. versionadded:: 2.4
 
     Parameters
     -----------

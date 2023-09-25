@@ -475,6 +475,8 @@ class UserSelect(BaseSelect[V]):
         Whether the select is disabled or not.
     default_values: List[Any]
         A list of objects representing the users that should be selected by default.
+
+        .. versionchanged:: 2.4
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -529,7 +531,10 @@ class UserSelect(BaseSelect[V]):
 
     @property
     def default_values(self) -> List[SelectDefaultValue]:
-        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu."""
+        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu.
+
+        .. versionchanged:: 2.4
+        """
         return self._underlying.default_values
 
     @default_values.setter
@@ -561,6 +566,8 @@ class RoleSelect(BaseSelect[V]):
         Whether the select is disabled or not.
     default_values: List[Any]
         A list of objects representing the users that should be selected by default.
+
+        .. versionchanged:: 2.4
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -607,7 +614,10 @@ class RoleSelect(BaseSelect[V]):
 
     @property
     def default_values(self) -> List[SelectDefaultValue]:
-        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu."""
+        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu.
+
+        .. versionchanged:: 2.4
+        """
         return self._underlying.default_values
 
     @default_values.setter
@@ -643,6 +653,8 @@ class MentionableSelect(BaseSelect[V]):
     default_values: List[Any]
         A list of objects representing the users/roles that should be selected by default.
         if :class:`.Object` is passed, then the type must be specified in the constructor.
+
+        .. versionchanged:: 2.4
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -695,7 +707,10 @@ class MentionableSelect(BaseSelect[V]):
 
     @property
     def default_values(self) -> List[SelectDefaultValue]:
-        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu."""
+        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu.
+
+        .. versionchanged:: 2.4
+        """
         return self._underlying.default_values
 
     @default_values.setter
@@ -729,6 +744,8 @@ class ChannelSelect(BaseSelect[V]):
         Whether the select is disabled or not.
     default_values: List[Any]
         A list of objects representing the channels that should be selected by default.
+
+        .. versionchanged:: 2.4
     row: Optional[:class:`int`]
         The relative row this select menu belongs to. A Discord component can only have 5
         rows. By default, items are arranged automatically into those 5 rows. If you'd
@@ -794,7 +811,10 @@ class ChannelSelect(BaseSelect[V]):
 
     @property
     def default_values(self) -> List[SelectDefaultValue]:
-        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu."""
+        """List[:class:`discord.SelectDefaultValue`]: A list of default values for the select menu.
+
+        .. versionchanged:: 2.4
+        """
         return self._underlying.default_values
 
     @default_values.setter
@@ -925,6 +945,9 @@ def select(
     .. versionchanged:: 2.1
         Added the following keyword-arguments: ``cls``, ``channel_types``
 
+    .. versionchanged:: 2.4
+        Added the following keyword-arguments: ``default_values``
+
     Example
     ---------
     .. code-block:: python3
@@ -972,6 +995,8 @@ def select(
         A list of objects representing the default values for the select menu. This can only be used with :class:`ChannelSelect`,
         :class:`RoleSelect`, :class:`UserSelect`, and :class:`MentionableSelect` instances.
         if `cls` is :class:`MentionableSelect` and :class:`.Object` is passed, then the type must be specified in the constructor.
+
+        .. versionchanged:: 2.4
     """
 
     def decorator(func: ItemCallbackType[V, BaseSelectT]) -> ItemCallbackType[V, BaseSelectT]:
