@@ -2422,6 +2422,34 @@ class HTTPClient:
             ),
         )
 
+    def create_entitlement(
+        self, application_id: Snowflake, sku_id: Snowflake, owner_id: Snowflake, owner_type: sku.EntitlementType
+    ) -> Response[sku.Entitlement]:
+        payload = {
+            'sku_id': sku_id,
+            'owner_id': owner_id,
+            'owner_type': owner_type,
+        }
+
+        return self.request(
+            Route(
+                'POST',
+                '/applications/{application.id}/entitlements',
+                application_id=application_id,
+            ),
+            json=payload,
+        )
+
+    def delete_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[sku.Entitlement]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/applications/{application_id}/entitlements/{entitlement_id}',
+                application_id=application_id,
+                entitlement_id=entitlement_id,
+            ),
+        )
+
     # Misc
 
     def application_info(self) -> Response[appinfo.AppInfo]:

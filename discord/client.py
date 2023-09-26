@@ -66,7 +66,7 @@ from .activity import ActivityTypes, BaseActivity, create_activity
 from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
-from . import utils
+from . import utils, SKUType
 from .utils import MISSING, time_snowflake
 from .object import Object
 from .backoff import ExponentialBackoff
@@ -2828,6 +2828,51 @@ class Client:
 
             for e in data:
                 yield Entitlement(self._connection, e)
+
+    async def create_entitlement(
+        self,
+        sku_id: int,
+        owner_id: int,
+        owner_type: SKUType,
+    ) -> None:
+        """|coro|
+
+        Creates a test :class:`.Entitlement` for the application.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        sku_id: :class:`int`
+            The ID of the SKU to create the entitlement for.
+        owner_id: :class:`int`
+            The ID of the owner.
+        owner_type: :class:`SKUType`
+            The type of the owner.
+        """
+
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        await self.http.create_entitlement(self.application_id, sku_id, owner_id, owner_type.value)
+
+    async def delete_entitlement(self, entitlement_id: int) -> None:
+        """|coro|
+
+        Deletes a test :class:`.Entitlement` for the application.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        entitlement_id: :class:`int`
+            The ID of the entitlement to delete.
+        """
+
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        await self.http.delete_entitlement(self.application_id, entitlement_id)
 
     async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
         """|coro|

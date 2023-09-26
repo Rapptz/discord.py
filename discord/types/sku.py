@@ -1,4 +1,4 @@
-from typing import TypedDict, Optional, List
+from typing import TypedDict, Optional, List, Literal
 from typing_extensions import NotRequired
 
 
@@ -32,3 +32,6 @@ class Entitlement(TypedDict):
     ends_at: NotRequired[str]
     guild_id: Optional[str]
     subscription_id: NotRequired[str]
+
+
+EntitlementType = Literal[1, 2]
