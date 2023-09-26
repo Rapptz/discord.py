@@ -59,14 +59,14 @@ from .channel import _threaded_channel_factory, PartialMessageable
 from .enums import ChannelType
 from .mentions import AllowedMentions
 from .errors import *
-from .enums import Status
+from .enums import Status, SKUType
 from .flags import ApplicationFlags, Intents
 from .gateway import *
 from .activity import ActivityTypes, BaseActivity, create_activity
 from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
-from . import utils, SKUType
+from . import utils
 from .utils import MISSING, time_snowflake
 from .object import Object
 from .backoff import ExponentialBackoff
