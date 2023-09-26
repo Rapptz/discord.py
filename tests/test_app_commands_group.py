@@ -397,3 +397,85 @@ def test_cog_group_with_custom_state_issue9383():
     assert cog.inner.my_command.parent is cog.inner
     assert cog.my_inner_command.parent is cog.inner
     assert cog.my_inner_command.binding is cog
+
+
+def test_cog_hybrid_group_manual_command():
+    class MyCog(commands.Cog):
+        @commands.hybrid_group()
+        async def first(self, ctx: commands.Context) -> None:
+            ...
+
+        @first.command(name='both')
+        async def second_both(self, ctx: commands.Context) -> None:
+            ...
+
+        @first.app_command.command(name='second')
+        async def second_app(self, interaction: discord.Interaction) -> None:
+            ...
+
+    client = discord.Client(intents=discord.Intents.default())
+    tree = app_commands.CommandTree(client)
+
+    cog = MyCog()
+    tree.add_command(cog.first.app_command)
+
+    assert cog.first is not MyCog.first
+    assert cog.second_both is not MyCog.second_both
+    assert cog.second_app is not MyCog.second_app
+    assert cog.first.parent is None
+    assert cog.second_both.parent is cog.first
+    assert cog.second_app.parent is cog.first.app_command
+    assert cog.second_app.binding is cog
+    assert tree.get_command('first') is cog.first.app_command
+
+    first = tree.get_command('first')
+    assert isinstance(first, app_commands.Group)
+    both = first.get_command('both')
+    assert isinstance(both, app_commands.Command)
+    assert both.parent is first
+    assert both.binding is cog
+
+    second = first.get_command('second')
+    assert isinstance(second, app_commands.Command)
+    assert second.parent is first
+    assert second.binding is cog
+
+
+def test_cog_hybrid_group_manual_nested_command():
+    class MyCog(commands.Cog):
+        @commands.hybrid_group()
+        async def first(self, ctx: commands.Context) -> None:
+            pass
+
+        @first.group()
+        async def second(self, ctx: commands.Context) -> None:
+            pass
+
+        @second.app_command.command()
+        async def third(self, interaction: discord.Interaction) -> None:
+            pass
+
+    client = discord.Client(intents=discord.Intents.default())
+    tree = app_commands.CommandTree(client)
+
+    cog = MyCog()
+    tree.add_command(cog.first.app_command)
+
+    assert cog.first is not MyCog.first
+    assert cog.second is not MyCog.second
+    assert cog.third is not MyCog.third
+    assert cog.first.parent is None
+    assert cog.second.parent is cog.first
+    assert cog.third.parent is cog.second.app_command
+    assert cog.third.binding is cog
+
+    first = tree.get_command('first')
+    assert isinstance(first, app_commands.Group)
+
+    second = first.get_command('second')
+    assert isinstance(second, app_commands.Group)
+
+    third = second.get_command('third')
+    assert isinstance(third, app_commands.Command)
+    assert third.parent is second
+    assert third.binding is cog

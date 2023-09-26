@@ -27,7 +27,7 @@ from __future__ import annotations
 from . import utils
 from .user import BaseUser
 from .asset import Asset
-from .enums import TeamMembershipState, try_enum
+from .enums import TeamMemberRole, TeamMembershipState, try_enum
 
 from typing import TYPE_CHECKING, Optional, List
 
@@ -130,14 +130,19 @@ class TeamMember(BaseUser):
         The team that the member is from.
     membership_state: :class:`TeamMembershipState`
         The membership state of the member (e.g. invited or accepted)
+    role: :class:`TeamMemberRole`
+        The role of the member within the team.
+
+        .. versionadded:: 2.4
     """
 
-    __slots__ = ('team', 'membership_state', 'permissions')
+    __slots__ = ('team', 'membership_state', 'permissions', 'role')
 
     def __init__(self, team: Team, state: ConnectionState, data: TeamMemberPayload) -> None:
         self.team: Team = team
         self.membership_state: TeamMembershipState = try_enum(TeamMembershipState, data['membership_state'])
-        self.permissions: List[str] = data['permissions']
+        self.permissions: List[str] = data.get('permissions', [])
+        self.role: TeamMemberRole = try_enum(TeamMemberRole, data['role'])
         super().__init__(state=state, data=data['user'])
 
     def __repr__(self) -> str:
