@@ -69,8 +69,6 @@ __all__ = (
     'ForumLayoutType',
     'ForumOrderType',
     'SKUType',
-    'SKUAccessType',
-    'SKUFeature',
     'EntitlementType',
 )
 
@@ -771,19 +769,12 @@ class ForumOrderType(Enum):
 
 
 class SKUType(Enum):
-    pass
-
-
-class SKUAccessType(Enum):
-    pass
-
-
-class SKUFeature(Enum):
-    pass
+    subscription = 5
+    subscription_group = 6
 
 
 class EntitlementType(Enum):
-    pass
+    application_subscription = 8
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

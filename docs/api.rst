@@ -3389,6 +3389,32 @@ of :class:`enum.Enum`.
         Sort forum posts by creation time (from most recent to oldest).
 
 
+.. class:: SKUType
+
+    Represents the type of a SKU.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: subscription
+
+        The SKU is a recurring subscription.
+
+    .. attribute:: subscription_group
+
+        The SKU is a system-generated group which is created for each :attr:`SKUType.subscription`.
+
+
+.. class:: EntitlementType
+
+    Represents the type of an entitlement.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: application_subscription
+
+        The entitlement was purchased as an app subscription.
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data

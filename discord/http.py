@@ -2383,16 +2383,18 @@ class HTTPClient:
     def get_entitlements(
         self,
         application_id: Snowflake,
+        user_id: Optional[Snowflake] = None,
         sku_ids: Optional[SnowflakeList] = None,
         before: Optional[Snowflake] = None,
         after: Optional[Snowflake] = None,
         limit: Optional[int] = None,
-        user_id: Optional[Snowflake] = None,
         guild_id: Optional[Snowflake] = None,
         exclude_ended: Optional[bool] = None,
     ) -> Response[List[sku.Entitlement]]:
         params: Dict[str, Any] = {}
 
+        if user_id is not None:
+            params['user_id'] = user_id
         if sku_ids is not None:
             params['sku_ids'] = ','.join(map(str, sku_ids))
         if before is not None:
@@ -2401,8 +2403,6 @@ class HTTPClient:
             params['after'] = after
         if limit is not None:
             params['limit'] = limit
-        if user_id is not None:
-            params['user_id'] = user_id
         if guild_id is not None:
             params['guild_id'] = guild_id
         if exclude_ended is not None:
