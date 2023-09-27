@@ -1548,6 +1548,9 @@ class Group:
         if not self.description:
             raise TypeError('groups must have a description')
 
+        if not self.name:
+            raise TypeError('groups must have a name')
+
         self.parent: Optional[Group] = parent
         self.module: Optional[str]
         if cls.__discord_app_commands_has_module__:
