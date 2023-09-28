@@ -48,7 +48,7 @@ from typing import (
 
 from .object import OLDEST_OBJECT, Object
 from .context_managers import Typing
-from .enums import ApplicationCommandType, ChannelType
+from .enums import ApplicationCommandType, ChannelType, InviteTarget
 from .errors import ClientException
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
@@ -96,7 +96,6 @@ if TYPE_CHECKING:
         CategoryChannel,
     )
     from .threads import Thread
-    from .enums import InviteTarget
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
         Channel as ChannelPayload,
