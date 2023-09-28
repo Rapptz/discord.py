@@ -496,6 +496,45 @@ Debug
     :type payload: Union[:class:`bytes`, :class:`str`]
 
 
+Entitlements
+~~~~~~~~~~~~
+
+.. function:: on_entitlement_create(entitlement)
+
+    Called when a user subscribes to a SKU.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was created or deleted.
+    :type entitlement: :class:`Entitlement`
+
+.. function:: on_entitlement_update(entitlement)
+
+    Called when a user updates their subscription to a SKU. This is the case when
+    the user renews or cancels their subscription.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was updated.
+    :type entitlement: :class:`Entitlement`
+
+.. function:: on_entitlement_delete(entitlement)
+
+    Called when a users subscription to a SKU is cancelled. This is the case when
+    - Discord issues a refund for the subscription.
+    - Discord removes an entitlement from a user.
+
+    .. warning::
+        This even won't be called if the user cancels their subscription manually, instead
+        :func:`on_entitlement_update` will be called with :attr:`Entitlement.ends_at` set to the end of the
+        current billing period.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was updated.
+    :type entitlement: :class:`Entitlement`
+
+
 Gateway
 ~~~~~~~~
 
@@ -1214,45 +1253,6 @@ Scheduled Events
     :type event: :class:`ScheduledEvent`
     :param user: The user that was added or removed.
     :type user: :class:`User`
-
-
-Entitlements
-~~~~~~~~~~~~
-
-.. function:: on_entitlement_create(entitlement)
-
-    Called when a user subscribes to a SKU.
-
-    .. versionadded:: 2.4
-
-    :param entitlement: The entitlement that was created or deleted.
-    :type entitlement: :class:`Entitlement`
-
-.. function:: on_entitlement_update(entitlement)
-
-    Called when a user updates their subscription to a SKU. This is the case when
-    the user renews or cancels their subscription.
-
-    .. versionadded:: 2.4
-
-    :param entitlement: The entitlement that was updated.
-    :type entitlement: :class:`Entitlement`
-
-.. function:: on_entitlement_delete(entitlement)
-
-    Called when a users subscription to a SKU is cancelled. This is the case when
-    - Discord issues a refund for the subscription.
-    - Discord removes an entitlement from a user.
-
-    .. warning::
-        This even won't be called if the user cancels their subscription manually, instead
-        :func:`on_entitlement_update` will be called with :attr:`Entitlement.ends_at` set to the end of the
-        current billing period.
-
-    .. versionadded:: 2.4
-
-    :param entitlement: The entitlement that was updated.
-    :type entitlement: :class:`Entitlement`
 
 
 Stages
