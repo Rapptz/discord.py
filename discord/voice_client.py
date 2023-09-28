@@ -347,6 +347,14 @@ class VoiceClient(VoiceProtocol):
             The channel to move to. Must be a voice channel.
         timeout: Optional[:class:`float`]
             How long to wait for the move to complete.
+
+        .. versionchanged:: 2.4
+            Added timeout parameter.
+
+        Raises
+        -------
+        asyncio.TimeoutError
+            The move did not complete in time, but may still be ongoing.
         """
         await self._connection.move_to(channel)
         await self._connection.wait_async(timeout)
