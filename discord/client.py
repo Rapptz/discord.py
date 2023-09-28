@@ -675,7 +675,6 @@ class Client:
                 aiohttp.ClientError,
                 asyncio.TimeoutError,
             ) as exc:
-
                 self.dispatch('disconnect')
                 if not reconnect:
                     await self.close()
@@ -2699,7 +2698,7 @@ class Client:
         guild_id: Optional[int] = None,
         exclude_ended: bool = False,
     ) -> AsyncIterator[Entitlement]:
-        """Retrieves an :term:`asynchronous iterator` of the :class:`Entitlement` that applications has.
+        """Retrieves an :term:`asynchronous iterator` of the :class:`.Entitlement` that applications has.
 
         .. versionadded:: 2.4
 
@@ -2754,7 +2753,7 @@ class Client:
 
         Yields
         --------
-        :class:`Entitlement`
+        :class:`.Entitlement`
             The entitlement with the application.
         """
 
@@ -2849,7 +2848,7 @@ class Client:
             The ID of the SKU to create the entitlement for.
         owner_id: :class:`int`
             The ID of the owner.
-        owner_type: :class:`SKUType`
+        owner_type: :class:`.SKUType`
             The type of the owner.
 
         Raises
