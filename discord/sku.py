@@ -23,7 +23,7 @@ __all__ = (
 
 
 class SKU:
-    """Represents a SKU of an application.
+    """Represents a premium offering as a stock-keeping unit (SKU).
 
     .. versionadded:: 2.4
 
@@ -70,7 +70,7 @@ class SKU:
 
 
 class Entitlement:
-    """Represents an entitlement of a user.
+    """Represents an entitlement from user or guild which has been granted access to a premium offering.
 
     .. versionadded:: 2.4
 
