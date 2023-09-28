@@ -2851,6 +2851,15 @@ class Client:
             The ID of the owner.
         owner_type: :class:`SKUType`
             The type of the owner.
+
+        Raises
+        -------
+        MissingApplicationID
+            The application ID could not be found.
+        NotFound
+            The SKU or owner could not be found.
+        HTTPException
+            Creating the entitlement failed.
         """
 
         if self.application_id is None:
@@ -2869,6 +2878,15 @@ class Client:
         -----------
         entitlement_id: :class:`int`
             The ID of the entitlement to delete.
+
+        Raises
+        -------
+        MissingApplicationID
+            The application ID could not be found.
+        NotFound
+            The entitlement could not be found.
+        HTTPException
+            Deleting the entitlement failed.
         """
 
         if self.application_id is None:
