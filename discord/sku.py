@@ -16,7 +16,10 @@ if TYPE_CHECKING:
         Entitlement as EntitlementPayload,
     )
 
-__all__ = ('SKU', 'Entitlement')
+__all__ = (
+    'SKU',
+    'Entitlement',
+)
 
 
 class SKU:
