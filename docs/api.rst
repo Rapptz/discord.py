@@ -4743,6 +4743,22 @@ ShardInfo
 .. autoclass:: ShardInfo()
     :members:
 
+SKU
+~~~~~~~~~~~
+
+.. attributetable:: SKU
+
+.. autoclass:: SKU()
+    :members:
+
+Entitlement
+~~~~~~~~~~~
+
+.. attributetable:: Entitlement
+
+.. autoclass:: Entitlement()
+    :members:
+
 RawMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
 
