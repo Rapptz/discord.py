@@ -248,6 +248,18 @@ class VoiceClient(VoiceProtocol):
         return self._state.user  # type: ignore
 
     @property
+    def session_id(self) -> Optional[str]:
+        return self._connection.session_id
+
+    @property
+    def token(self) -> Optional[str]:
+        return self._connection.token
+
+    @property
+    def endpoint(self) -> Optional[str]:
+        return self._connection.endpoint
+
+    @property
     def ssrc(self) -> int:
         return self._connection.ssrc
 
