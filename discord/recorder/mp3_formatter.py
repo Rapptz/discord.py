@@ -21,35 +21,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
-from __future__ import annotations
-from discord.errors import DiscordException
-
-class RecorderError(DiscordException):
-    """Base exception class for all recorder errors.
-    Being a subclass of :class:`~.DiscordException`
-    """
-    pass
-
-class RecordingError(RecorderError):
-    """Exception raised when an error is caught while client was
-    recording a voice channel's audio.
-    """
-    pass
-
-class FormatError(RecorderError):
-    """Base exception class for all recorder errors related to audio extension formatters.
-    Being a subclass of :class:`~.RecorderError`
-    """
-    pass
-
-class MP3FormatError(FormatError):
-    """Exception raised when an error is caught while client was
-    converting a recording into a .mp3 file.
-    """
-    pass
-
-class MP4FormatError(FormatError):
-    """Exception raised when an error is caught while client was
-    converting a recording into a .mp4 file.
-    """
-    pass
