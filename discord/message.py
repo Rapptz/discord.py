@@ -54,7 +54,7 @@ from .errors import HTTPException
 from .components import _component_factory
 from .embeds import Embed
 from .member import Member
-from .flags import MessageFlags
+from .flags import MessageFlags, AttachmentFlags
 from .file import File
 from .utils import escape_mentions, MISSING
 from .http import handle_message_parameters
@@ -207,6 +207,7 @@ class Attachment(Hashable):
         'ephemeral',
         'duration',
         'waveform',
+        '_flags',
     )
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
@@ -225,6 +226,13 @@ class Attachment(Hashable):
 
         waveform = data.get('waveform')
         self.waveform: Optional[bytes] = utils._base64_to_bytes(waveform) if waveform is not None else None
+
+        self._flags: int = data.get('flags', 0)
+
+    @property
+    def flags(self) -> AttachmentFlags:
+        """:class:`AttachmentFlags`: The attachment's flags."""
+        return AttachmentFlags._from_value(self._flags)
 
     def is_spoiler(self) -> bool:
         """:class:`bool`: Whether this attachment contains a spoiler."""

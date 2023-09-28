@@ -39,6 +39,7 @@ extras_require = {
         'sphinxcontrib_trio==1.1.2',
         'sphinxcontrib-websupport',
         'typing-extensions>=4.3,<5',
+        'sphinx-inline-tabs',
     ],
     'speed': [
         'orjson>=3.5.4',
@@ -53,6 +54,7 @@ extras_require = {
         'pytest-cov',
         'pytest-mock',
         'typing-extensions>=4.3,<5',
+        'tzdata; sys_platform == "win32"',
     ],
 }
 

@@ -530,8 +530,18 @@ class CommandSyncFailure(AppCommandError, HTTPException):
         messages = [f'Failed to upload commands to Discord (HTTP status {self.status}, error code {self.code})']
 
         if self._errors:
-            for index, inner in self._errors.items():
-                _get_command_error(index, inner, commands, messages)
+            # Handle case where the errors dict has no actual chain such as APPLICATION_COMMAND_TOO_LARGE
+            if len(self._errors) == 1 and '_errors' in self._errors:
+                errors = self._errors['_errors']
+                if len(errors) == 1:
+                    extra = errors[0].get('message')
+                    if extra:
+                        messages[0] += f': {extra}'
+                else:
+                    messages.extend(f'Error {e.get("code", "")}: {e.get("message", "")}' for e in errors)
+            else:
+                for index, inner in self._errors.items():
+                    _get_command_error(index, inner, commands, messages)
 
         # Equivalent to super().__init__(...) but skips other constructors
         self.args = ('\n'.join(messages),)

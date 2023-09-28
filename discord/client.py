@@ -72,6 +72,7 @@ from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .appinfo import AppInfo
 from .ui.view import View
+from .ui.dynamic import DynamicItem
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
@@ -111,6 +112,7 @@ if TYPE_CHECKING:
     from .scheduled_event import ScheduledEvent
     from .threads import ThreadMember
     from .types.guild import Guild as GuildPayload
+    from .ui.item import Item
     from .voice_client import VoiceProtocol
     from .audit_logs import AuditLogEntry
 
@@ -2241,8 +2243,8 @@ class Client:
 
         Raises
         ------
-        Forbidden
-            You do not have access to the guild.
+        NotFound
+            The guild doesn't exist or you got no access to it.
         HTTPException
             Getting the guild failed.
 
@@ -2677,6 +2679,54 @@ class Client:
 
         data = await state.http.start_private_message(user.id)
         return state.add_dm_channel(data)
+
+    def add_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
+        r"""Registers :class:`~discord.ui.DynamicItem` classes for persistent listening.
+
+        This method accepts *class types* rather than instances.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        \*items: Type[:class:`~discord.ui.DynamicItem`]
+            The classes of dynamic items to add.
+
+        Raises
+        -------
+        TypeError
+            A class is not a subclass of :class:`~discord.ui.DynamicItem`.
+        """
+
+        for item in items:
+            if not issubclass(item, DynamicItem):
+                raise TypeError(f'expected subclass of DynamicItem not {item.__name__}')
+
+        self._connection.store_dynamic_items(*items)
+
+    def remove_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
+        r"""Removes :class:`~discord.ui.DynamicItem` classes from persistent listening.
+
+        This method accepts *class types* rather than instances.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        \*items: Type[:class:`~discord.ui.DynamicItem`]
+            The classes of dynamic items to remove.
+
+        Raises
+        -------
+        TypeError
+            A class is not a subclass of :class:`~discord.ui.DynamicItem`.
+        """
+
+        for item in items:
+            if not issubclass(item, DynamicItem):
+                raise TypeError(f'expected subclass of DynamicItem not {item.__name__}')
+
+        self._connection.remove_dynamic_items(*items)
 
     def add_view(self, view: View, *, message_id: Optional[int] = None) -> None:
         """Registers a :class:`~discord.ui.View` for persistent listening.

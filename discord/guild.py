@@ -490,9 +490,15 @@ class Guild(Hashable):
             role = Role(guild=self, data=r, state=state)
             self._roles[role.id] = role
 
-        self.emojis: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
-        self.stickers: Tuple[GuildSticker, ...] = tuple(
-            map(lambda d: state.store_sticker(self, d), guild.get('stickers', []))
+        self.emojis: Tuple[Emoji, ...] = (
+            tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
+            if state.cache_guild_expressions
+            else ()
+        )
+        self.stickers: Tuple[GuildSticker, ...] = (
+            tuple(map(lambda d: state.store_sticker(self, d), guild.get('stickers', [])))
+            if state.cache_guild_expressions
+            else ()
         )
         self.features: List[GuildFeature] = guild.get('features', [])
         self._splash: Optional[str] = guild.get('splash')
@@ -2921,7 +2927,10 @@ class Guild(Hashable):
         payload['tags'] = emoji
 
         data = await self._state.http.create_guild_sticker(self.id, payload, file, reason)
-        return self._state.store_sticker(self, data)
+        if self._state.cache_guild_expressions:
+            return self._state.store_sticker(self, data)
+        else:
+            return GuildSticker(state=self._state, data=data)
 
     async def delete_sticker(self, sticker: Snowflake, /, *, reason: Optional[str] = None) -> None:
         """|coro|
@@ -3330,7 +3339,10 @@ class Guild(Hashable):
             role_ids = []
 
         data = await self._state.http.create_custom_emoji(self.id, name, img, roles=role_ids, reason=reason)
-        return self._state.store_emoji(self, data)
+        if self._state.cache_guild_expressions:
+            return self._state.store_emoji(self, data)
+        else:
+            return Emoji(guild=self, state=self._state, data=data)
 
     async def delete_emoji(self, emoji: Snowflake, /, *, reason: Optional[str] = None) -> None:
         """|coro|
@@ -3618,7 +3630,7 @@ class Guild(Hashable):
 
         The guild must have ``COMMUNITY`` in :attr:`~Guild.features`.
 
-        You must have :attr:`~Permissions.manage_guild` to do this.as well.
+        You must have :attr:`~Permissions.manage_guild` to do this as well.
 
         .. versionadded:: 2.0
 
