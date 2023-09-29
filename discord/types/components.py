@@ -33,7 +33,7 @@ from .channel import ChannelType
 ComponentType = Literal[1, 2, 3, 4]
 ButtonStyle = Literal[1, 2, 3, 4, 5]
 TextStyle = Literal[1, 2]
-DefaultValueType = Literal["user", "role", "channel"]
+DefaultValueType = Literal['user', 'role', 'channel']
 
 
 class ActionRow(TypedDict):
