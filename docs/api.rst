@@ -3400,15 +3400,15 @@ of :class:`enum.Enum`.
 
     .. attribute:: user
 
-        The ID is of a user.
+        The underlying type of the ID is a user.
 
     .. attribute:: role
 
-        The ID is of a role.
+        The underlying type of the ID is a role.
 
     .. attribute:: channel
 
-        The ID is of a channel.
+        The underlying type of the ID is a channel or thread.
 
 
 .. _discord-api-audit-logs:

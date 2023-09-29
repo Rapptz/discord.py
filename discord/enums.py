@@ -774,9 +774,9 @@ class ForumOrderType(Enum):
 
 
 class SelectDefaultValueType(Enum):
-    user = "user"
-    role = "role"
-    channel = "channel"
+    user = 'user'
+    role = 'role'
+    channel = 'channel'
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
