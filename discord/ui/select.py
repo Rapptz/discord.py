@@ -123,14 +123,6 @@ def _handle_select_defaults(
     if not defaults or defaults is MISSING:
         return []
 
-    if component_type not in (
-        ComponentType.user_select,
-        ComponentType.role_select,
-        ComponentType.channel_select,
-        ComponentType.mentionable_select,
-    ):
-        raise TypeError('component_type must be one of user_select, role_select, channel_select, or mentionable_select')
-
     from ..app_commands import AppCommandChannel, AppCommandThread
 
     cls_to_type: Dict[Type[ValidDefaultValues], SelectDefaultValueType] = {
@@ -157,9 +149,8 @@ def _handle_select_defaults(
 
         object_type = obj.__class__ if not isinstance(obj, Object) else obj.type
 
-        print(object_type, component_type, object_type == Object)
-
         if object_type not in type_to_supported_classes[component_type]:
+            # TODO: split this into a util function
             supported_classes = [c.__name__ for c in type_to_supported_classes[component_type]]
             if len(supported_classes) > 2:
                 supported_classes = ', '.join(supported_classes[:-1]) + f', or {supported_classes[-1]}'
@@ -170,7 +161,7 @@ def _handle_select_defaults(
 
             raise TypeError(f'Expected an instance of {supported_classes} not {object_type.__name__}')
 
-        if object_type == Object:
+        if object_type is Object:
             if component_type is ComponentType.mentionable_select:
                 raise ValueError(
                     'Object must have a type specified for the chosen select type. Please pass one using the `type`` kwarg.'
