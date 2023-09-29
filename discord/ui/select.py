@@ -517,7 +517,7 @@ class UserSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
-    default_values: Sequence[:class:`~abc.Snowflake`]
+    default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the users that should be selected by default.
 
         .. versionadded:: 2.4
@@ -606,7 +606,7 @@ class RoleSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
-    default_values: Sequence[:class:`~abc.Snowflake`]
+    default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the users that should be selected by default.
 
         .. versionadded:: 2.4
@@ -690,7 +690,7 @@ class MentionableSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
-    default_values: Sequence[:class:`~abc.Snowflake`]
+    default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the users/roles that should be selected by default.
         if :class:`.Object` is passed, then the type must be specified in the constructor.
 
@@ -782,7 +782,7 @@ class ChannelSelect(BaseSelect[V]):
         Defaults to 1 and must be between 1 and 25.
     disabled: :class:`bool`
         Whether the select is disabled or not.
-    default_values: Sequence[:class:`~abc.Snowflake`]
+    default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the channels that should be selected by default.
 
         .. versionadded:: 2.4
@@ -1026,7 +1026,7 @@ def select(
         with :class:`ChannelSelect` instances.
     disabled: :class:`bool`
         Whether the select is disabled or not. Defaults to ``False``.
-    default_values: Sequence[:class:`~abc.Snowflake`]
+    default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the default values for the select menu. This cannot be used with regular :class:`Select` instances.
         If ``cls`` is :class:`MentionableSelect` and :class:`.Object` is passed, then the type must be specified in the constructor.
         if `cls` is :class:`MentionableSelect` and :class:`.Object` is passed, then the type must be specified in the constructor.
