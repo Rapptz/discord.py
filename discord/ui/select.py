@@ -56,8 +56,6 @@ from ..member import Member
 from ..object import Object
 from ..role import Role
 from ..user import User, ClientUser
-
-# from ..channel import TextChannel, VoiceChannel, StageChannel, CategoryChannel, ForumChannel
 from ..abc import GuildChannel
 from ..threads import Thread
 
