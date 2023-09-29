@@ -120,7 +120,7 @@ def _handle_select_defaults(
         ComponentType.mentionable_select,
     ],
 ) -> List[SelectDefaultValue]:
-    if not defaults:
+    if not defaults or defaults is MISSING:
         return []
 
     if component_type not in (
@@ -550,7 +550,7 @@ class UserSelect(BaseSelect[V]):
             max_values=max_values,
             disabled=disabled,
             row=row,
-            default_values=MISSING if default_values is MISSING else _handle_select_defaults(default_values, self.type),
+            default_values=_handle_select_defaults(default_values, self.type),
         )
 
     @property
@@ -639,7 +639,7 @@ class RoleSelect(BaseSelect[V]):
             max_values=max_values,
             disabled=disabled,
             row=row,
-            default_values=MISSING if default_values is MISSING else _handle_select_defaults(default_values, self.type),
+            default_values=_handle_select_defaults(default_values, self.type),
         )
 
     @property
@@ -724,7 +724,7 @@ class MentionableSelect(BaseSelect[V]):
             max_values=max_values,
             disabled=disabled,
             row=row,
-            default_values=MISSING if default_values is MISSING else _handle_select_defaults(default_values, self.type),
+            default_values=_handle_select_defaults(default_values, self.type),
         )
 
     @property
@@ -820,7 +820,7 @@ class ChannelSelect(BaseSelect[V]):
             disabled=disabled,
             row=row,
             channel_types=channel_types,
-            default_values=MISSING if default_values is MISSING else _handle_select_defaults(default_values, self.type),
+            default_values=_handle_select_defaults(default_values, self.type),
         )
 
     @property
