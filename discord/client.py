@@ -2639,20 +2639,15 @@ class Client:
 
         Raises
         -------
+        MissingApplicationID
+            The application ID could not be found.
         HTTPException
             Retrieving the SKUs failed.
 
         Returns
         --------
-        List[:class:`.SKU`]
+        List[:class:`SKU`]
             The bot's available SKUs.
-
-        Raises
-        -------
-        MissingApplicationID
-            The application ID could not be found.
-        HTTPException
-            Retrieving the SKUs failed.
         """
 
         if self.application_id is None:
@@ -2664,8 +2659,9 @@ class Client:
     async def fetch_entitlement(self, entitlement_id: int, /) -> Entitlement:
         """|coro|
 
-        Retrieves a :class:`.Entitlement` with the specified ID.
+        Retrieves a :class:`Entitlement` with the specified ID.
 
+        .. versionadded:: 2.4
         Parameters
         -----------
         entitlement_id: :class:`int`
@@ -2691,14 +2687,14 @@ class Client:
         self,
         *,
         limit: Optional[int] = 100,
-        before: Optional[SnowflakeTime] = MISSING,
-        after: Optional[SnowflakeTime] = MISSING,
-        sku_ids: Optional[List[int]] = None,
-        user_id: Optional[int] = None,
-        guild_id: Optional[int] = None,
+        before: Optional[SnowflakeTime] = None,
+        after: Optional[SnowflakeTime] = None,
+        skus: Optional[Sequence[Snowflake]] = None,
+        user: Optional[Snowflake] = None,
+        guild: Optional[Snowflake] = None,
         exclude_ended: bool = False,
     ) -> AsyncIterator[Entitlement]:
-        """Retrieves an :term:`asynchronous iterator` of the :class:`.Entitlement` that applications has.
+        """Retrieves an :term:`asynchronous iterator` of the :class:`Entitlement` that applications has.
 
         .. versionadded:: 2.4
 
@@ -2720,16 +2716,14 @@ class Client:
         Parameters
         -----------
         limit: Optional[:class:`int`]
-            The number of entitlements to retrieve.
-            If ``None``, it retrieves every entitlement for this application.
-            Note, however, that this would make it a slow operation.
-            Defaults to ``100``.
+            The number of entitlements to retrieve. If ``None``, it retrieves every entitlement for this application.
+            Note, however, that this would make it a slow operation. Defaults to ``100``.
         before: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
             Retrieve entitlements before this date or entitlement.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
             If the datetime is naive, it is assumed to be local time.
         after: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
-            Retrieve bans after this user.
+            Retrieve entitlements after this date or entitlement.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
             If the datetime is naive, it is assumed to be local time.
         sku_ids: Optional[List[:class:`int`]]
@@ -2753,7 +2747,7 @@ class Client:
 
         Yields
         --------
-        :class:`.Entitlement`
+        :class:`Entitlement`
             The entitlement with the application.
         """
 
@@ -2761,7 +2755,7 @@ class Client:
             raise MissingApplicationID
 
         if before is not MISSING and after is not MISSING:
-            raise TypeError('entitle pagination does not support both before and after')
+            raise TypeError('entitlements pagination does not support both before and after')
 
         # This endpoint paginates in ascending order.
         endpoint = self.http.get_entitlements
@@ -2769,7 +2763,7 @@ class Client:
         async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             data = await endpoint(
-                self.application_id,
+                self.application_id,  # type: ignore  # We already check for None above
                 limit=retrieve,
                 before=before_id,
                 sku_ids=sku_ids,
@@ -2789,7 +2783,7 @@ class Client:
         async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
             data = await endpoint(
-                self.application_id,
+                self.application_id,  # type: ignore  # We already check for None above
                 limit=retrieve,
                 after=after_id,
                 sku_ids=sku_ids,
@@ -2838,7 +2832,7 @@ class Client:
     ) -> None:
         """|coro|
 
-        Creates a test :class:`.Entitlement` for the application.
+        Creates a test :class:`Entitlement` for the application.
 
         .. versionadded:: 2.4
 
@@ -2869,7 +2863,7 @@ class Client:
     async def delete_entitlement(self, entitlement_id: int) -> None:
         """|coro|
 
-        Deletes a test :class:`.Entitlement` for the application.
+        Deletes a test :class:`Entitlement` for the application.
 
         .. versionadded:: 2.4
 

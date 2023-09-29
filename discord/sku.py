@@ -80,7 +80,7 @@ class Entitlement:
         The entitlement's ID.
     sku_id: :class:`int`
         The ID of the SKU that the entitlement belongs to.
-    user_id: :class:`int`
+    user_id: Optional[:class:`int`]
         The ID of the user that is granted access to the entitlement.
     guild_id: Optional[:class:`int`]
         The ID of the guild that is granted access to the entitlement
@@ -89,7 +89,7 @@ class Entitlement:
     type: :class:`EntitlementType`
         The type of the entitlement.
     consumed: :class:`bool`
-        Whether the entitlement has been consumed.
+        Whether the entitlement has been consumed. Not applicable to app subscriptions so will typically be ``False``.
     starts_at: Optional[:class:`datetime.datetime`]
         A UTC start date which the entitlement is valid. Not present when using test entitlements.
     ends_at: Optional[:class:`datetime.datetime`]
@@ -123,10 +123,10 @@ class Entitlement:
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.application_id: int = int(data['application_id'])
         self.type: EntitlementType = try_enum(EntitlementType, data['type'])
-        self.consumed: bool = data['consumed']
+        self.consumed: bool = data.get('consumed', False)
         self.starts_at: Optional[datetime] = utils.parse_time(data.get('starts_at', None))
         self.ends_at: Optional[datetime] = utils.parse_time(data.get('ends_at', None))
-        self.deleted: bool = data['deleted']
+        self.deleted: bool = data.get('deleted', False)
         self.subscription_id: Optional[int] = utils._get_as_snowflake(data, 'subscription_id')
 
     def __repr__(self) -> str:

@@ -193,7 +193,7 @@ class Interaction(Generic[ClientT]):
         self.channel: Optional[InteractionChannel] = None
         self.application_id: int = int(data['application_id'])
         self.entitlement_sku_ids: List[int] = [int(x) for x in data.get('entitlement_skus', []) or []]
-        self.entitlements: List[Entitlement] = [Entitlement(self._state, x) for x in data.get('entitlements', []) or []]
+        self.entitlements: List[Entitlement] = [Entitlement(self._state, x) for x in data.get('entitlements', [])]
 
         self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
         self.guild_locale: Optional[Locale]
@@ -993,15 +993,12 @@ class InteractionResponse(Generic[ClientT]):
             self._parent._state.store_view(modal)
         self._response_type = InteractionResponseType.modal
 
-    async def send_premium_required(self) -> None:
+    async def require_premium(self) -> None:
         """|coro|
 
-        Sends an ephemeral message to the user that they need premium to use this command. It also includes a Button
-        to purchase premium.
+        Sends a message to the user prompting them that a premium purchase is required for this interaction.
 
-        .. warning::
-
-            This type of response is only available for applications that got a premium SKU setup.
+        This type of response is only available for applications that have a premium SKU set up.
 
         Raises
         -------
@@ -1012,8 +1009,8 @@ class InteractionResponse(Generic[ClientT]):
         """
         if self._response_type:
             raise InteractionResponded(self._parent)
-        parent = self._parent
 
+        parent = self._parent
         adapter = async_context.get()
         http = parent._state.http
 
