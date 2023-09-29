@@ -3392,6 +3392,24 @@ of :class:`enum.Enum`.
 
         Sort forum posts by creation time (from most recent to oldest).
 
+.. class:: SelectDefaultValueType
+
+    Represents the default value of a select menu.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: user
+
+        The underlying type of the ID is a user.
+
+    .. attribute:: role
+
+        The underlying type of the ID is a role.
+
+    .. attribute:: channel
+
+        The underlying type of the ID is a channel or thread.
+
 
 .. _discord-api-audit-logs:
 
