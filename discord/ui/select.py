@@ -661,7 +661,7 @@ class RoleSelect(BaseSelect[V]):
         return self._underlying.default_values
 
     @default_values.setter
-    def default_values(self, value: List[ValidDefaultValues]) -> None:
+    def default_values(self, value: Sequence[ValidDefaultValues]) -> None:
         self._underlying.default_values = _handle_select_defaults(value, self.type)
 
 
@@ -754,7 +754,7 @@ class MentionableSelect(BaseSelect[V]):
         return self._underlying.default_values
 
     @default_values.setter
-    def default_values(self, value: List[ValidDefaultValues]) -> None:
+    def default_values(self, value: Sequence[ValidDefaultValues]) -> None:
         self._underlying.default_values = _handle_select_defaults(value, self.type)
 
 
@@ -856,7 +856,7 @@ class ChannelSelect(BaseSelect[V]):
         return self._underlying.default_values
 
     @default_values.setter
-    def default_values(self, value: List[ValidDefaultValues]) -> None:
+    def default_values(self, value: Sequence[ValidDefaultValues]) -> None:
         self._underlying.default_values = _handle_select_defaults(value, self.type)
 
 
