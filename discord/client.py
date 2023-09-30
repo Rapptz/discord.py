@@ -2835,7 +2835,7 @@ class Client:
     async def create_entitlement(
         self,
         sku_id: int,
-        owner_id: int,
+        owner: Snowflake,
         owner_type: EntitlementOwnerType,
     ) -> None:
         """|coro|
@@ -2848,7 +2848,7 @@ class Client:
         -----------
         sku_id: :class:`int`
             The ID of the SKU to create the entitlement for.
-        owner_id: :class:`int`
+        owner: Optional[:class:`~discord.abc.Snowflake`]
             The ID of the owner.
         owner_type: :class:`.EntitlementOwnerType`
             The type of the owner.
@@ -2866,7 +2866,7 @@ class Client:
         if self.application_id is None:
             raise MissingApplicationID
 
-        await self.http.create_entitlement(self.application_id, sku_id, owner_id, owner_type.value)
+        await self.http.create_entitlement(self.application_id, sku_id, owner.id, owner_type.value)
 
     async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
         """|coro|
