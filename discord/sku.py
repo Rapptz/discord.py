@@ -142,6 +142,8 @@ class Entitlement:
     @property
     def user(self) -> Optional[User]:
         """The user that is granted access to the entitlement"""
+        if self.user_id is None:
+            return None
         return self._state.get_user(self.user_id)
 
     async def delete(self) -> None:
