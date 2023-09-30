@@ -69,6 +69,7 @@ __all__ = (
     'AutoModRuleActionType',
     'ForumLayoutType',
     'ForumOrderType',
+    'SelectDefaultValueType',
     'SKUType',
     'EntitlementType',
 )
@@ -773,8 +774,14 @@ class ForumLayoutType(Enum):
 class ForumOrderType(Enum):
     latest_activity = 0
     creation_date = 1
+    
+    
+class SelectDefaultValueType(Enum):
+    user = 'user'
+    role = 'role'
+    channel = 'channel'
 
-
+    
 class SKUType(Enum):
     subscription = 5
     subscription_group = 6
