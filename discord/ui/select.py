@@ -813,7 +813,10 @@ class ChannelSelect(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
-    __component_attributes__ = BaseSelect.__component_attributes__ + ('channel_types', 'default_values',)
+    __component_attributes__ = BaseSelect.__component_attributes__ + (
+        'channel_types',
+        'default_values',
+    )
 
     def __init__(
         self,
