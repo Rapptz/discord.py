@@ -59,7 +59,7 @@ from .channel import _threaded_channel_factory, PartialMessageable
 from .enums import ChannelType, EntitlementOwnerType
 from .mentions import AllowedMentions
 from .errors import *
-from .enums import Status, SKUType
+from .enums import Status
 from .flags import ApplicationFlags, Intents
 from .gateway import *
 from .activity import ActivityTypes, BaseActivity, create_activity
