@@ -358,10 +358,7 @@ class BaseSelect(Item[V]):
             ComponentType.channel_select: ChannelSelect,
             ComponentType.mentionable_select: MentionableSelect,
         }
-        if component.type not in type_to_cls:
-            raise TypeError(f'Unknown component type {component.type}')
-
-        constructor = type_to_cls[component.type]
+        constructor = type_to_cls.get(component.type, Select)
         kwrgs = {key: getattr(component, key) for key in constructor.__component_attributes__}
         return constructor(**kwrgs)
 
