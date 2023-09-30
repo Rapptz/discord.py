@@ -56,7 +56,7 @@ from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
 from .channel import _threaded_channel_factory, PartialMessageable
-from .enums import ChannelType
+from .enums import ChannelType, EntitlementOwnerType
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status, SKUType
@@ -2836,7 +2836,7 @@ class Client:
         self,
         sku_id: int,
         owner_id: int,
-        owner_type: SKUType,
+        owner_type: EntitlementOwnerType,
     ) -> None:
         """|coro|
 
@@ -2850,7 +2850,7 @@ class Client:
             The ID of the SKU to create the entitlement for.
         owner_id: :class:`int`
             The ID of the owner.
-        owner_type: :class:`.SKUType`
+        owner_type: :class:`.EntitlementOwnerType`
             The type of the owner.
 
         Raises

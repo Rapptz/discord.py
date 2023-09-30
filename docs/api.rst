@@ -3476,6 +3476,21 @@ of :class:`enum.Enum`.
         The entitlement was purchased as an app subscription.
 
 
+.. class:: EntitlementOwnerType
+
+    Represents the type of an entitlement owner.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: guild
+
+        The entitlement owner is a guild.
+
+    .. attribute:: user
+
+            The entitlement owner is a user.
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
