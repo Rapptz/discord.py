@@ -58,7 +58,6 @@ from ..role import Role
 from ..user import User, ClientUser
 from ..abc import GuildChannel
 from ..threads import Thread
-from ..components import SelectMenu as SelectComponent
 
 __all__ = (
     'Select',
@@ -225,6 +224,13 @@ class BaseSelect(Item[V]):
         'max_values',
         'disabled',
     )
+    __component_attributes__: Tuple[str, ...] = (
+        'custom_id',
+        'placeholder',
+        'min_values',
+        'max_values',
+        'disabled',
+    )
 
     def __init__(
         self,
@@ -344,29 +350,20 @@ class BaseSelect(Item[V]):
         return True
 
     @classmethod
-    def from_component(cls, component: SelectComponent) -> Self:
-        if not isinstance(component, SelectComponent):
-            raise TypeError('Excepted an instance of SelectComponent not {component.__class__.__name__}')
-
-        kwrgs = {
-            'custom_id': component.custom_id,
-            'placeholder': component.placeholder,
-            'min_values': component.min_values,
-            'max_values': component.max_values,
-            'disabled': component.disabled,
+    def from_component(cls, component: SelectMenu) -> Self:
+        type_to_cls: Dict[ValidSelectType, Type[BaseSelect[Any]]] = {
+            ComponentType.string_select: Select,
+            ComponentType.user_select: UserSelect,
+            ComponentType.role_select: RoleSelect,
+            ComponentType.channel_select: ChannelSelect,
+            ComponentType.mentionable_select: MentionableSelect,
         }
-        if component.type is ComponentType.select:
-            return Select(**kwrgs, options=component.options)
-        elif component.type is ComponentType.user_select:
-            return UserSelect(**kwrgs, default_values=component.default_values)
-        elif component.type is ComponentType.role_select:
-            return RoleSelect(**kwrgs, default_values=component.default_values)
-        elif component.type is ComponentType.channel_select:
-            return ChannelSelect(**kwrgs, channel_types=component.channel_types)
-        elif component.type is ComponentType.mentionable_select:
-            return MentionableSelect(**kwrgs, default_values=component.default_values)
-        else:
+        if component.type not in type_to_cls:
             raise TypeError(f'Unknown component type {component.type}')
+
+        constructor = type_to_cls[component.type]
+        kwrgs = {key: getattr(component, key) for key in constructor.__component_attributes__}
+        return constructor(**kwrgs)
 
 
 class Select(BaseSelect[V]):
@@ -399,6 +396,8 @@ class Select(BaseSelect[V]):
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
+
+    __component_attributes__ = BaseSelect.__component_attributes__ + ('options',)
 
     def __init__(
         self,
@@ -549,6 +548,8 @@ class UserSelect(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
+    __component_attributes__ = BaseSelect.__component_attributes__ + ('default_values',)
+
     def __init__(
         self,
         *,
@@ -636,6 +637,8 @@ class RoleSelect(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
+    __component_attributes__ = BaseSelect.__component_attributes__ + ('default_values',)
+
     def __init__(
         self,
         *,
@@ -718,6 +721,8 @@ class MentionableSelect(BaseSelect[V]):
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
+
+    __component_attributes__ = BaseSelect.__component_attributes__ + ('default_values',)
 
     def __init__(
         self,
@@ -807,6 +812,8 @@ class ChannelSelect(BaseSelect[V]):
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
+
+    __component_attributes__ = BaseSelect.__component_attributes__ + ('channel_types', 'default_values',)
 
     def __init__(
         self,
