@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 
 from . import utils
+from .app_commands import MissingApplicationID
 from .enums import try_enum, SKUType, EntitlementType
 from .flags import SKUFlags
 
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
         SKU as SKUPayload,
         Entitlement as EntitlementPayload,
     )
+    from .user import User
 
 __all__ = (
     'SKU',
@@ -136,6 +138,11 @@ class Entitlement:
     def guild(self) -> Optional[Guild]:
         """The guild that is granted access to the entitlement"""
         return self._state._get_guild(self.guild_id)
+
+    @property
+    def user(self) -> Optional[User]:
+        """The user that is granted access to the entitlement"""
+        return self._state.get_user(self.user_id)
 
     async def delete(self) -> None:
         """|coro|
