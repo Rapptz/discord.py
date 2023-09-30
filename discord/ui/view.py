@@ -34,7 +34,6 @@ import time
 import os
 from .item import Item, ItemCallbackType
 from .dynamic import DynamicItem
-from ..enums import ComponentType
 from ..components import (
     Component,
     ActionRow as ActionRowComponent,
