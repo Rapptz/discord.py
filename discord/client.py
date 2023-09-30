@@ -2664,6 +2664,7 @@ class Client:
         Retrieves a :class:`Entitlement` with the specified ID.
 
         .. versionadded:: 2.4
+
         Parameters
         -----------
         entitlement_id: :class:`int`
@@ -2677,6 +2678,11 @@ class Client:
             The application ID could not be found.
         HTTPException
             Fetching the entitlement failed.
+
+        Returns
+        --------
+        :class:`Entitlement`
+            The entitlement you requested.
         """
 
         if self.application_id is None:
