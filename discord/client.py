@@ -2637,6 +2637,8 @@ class Client:
 
         Retrieves the bot's available SKUs.
 
+        .. versionadded:: 2.4
+
         Raises
         -------
         MissingApplicationID
