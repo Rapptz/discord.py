@@ -351,7 +351,7 @@ class BaseSelect(Item[V]):
 
     @classmethod
     def from_component(cls, component: SelectMenu) -> Self:
-        type_to_cls: Dict[ValidSelectType, Type[BaseSelect[Any]]] = {
+        type_to_cls: Dict[ComponentType, Type[BaseSelect[Any]]] = {
             ComponentType.string_select: Select,
             ComponentType.user_select: UserSelect,
             ComponentType.role_select: RoleSelect,
