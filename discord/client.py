@@ -2648,7 +2648,7 @@ class Client:
 
         Returns
         --------
-        List[:class:`SKU`]
+        List[:class:`.SKU`]
             The bot's available SKUs.
         """
 
@@ -2661,7 +2661,7 @@ class Client:
     async def fetch_entitlement(self, entitlement_id: int, /) -> Entitlement:
         """|coro|
 
-        Retrieves a :class:`Entitlement` with the specified ID.
+        Retrieves a :class:`.Entitlement` with the specified ID.
 
         .. versionadded:: 2.4
 
@@ -2681,7 +2681,7 @@ class Client:
 
         Returns
         --------
-        :class:`Entitlement`
+        :class:`.Entitlement`
             The entitlement you requested.
         """
 
@@ -2702,7 +2702,7 @@ class Client:
         guild: Optional[Snowflake] = None,
         exclude_ended: bool = False,
     ) -> AsyncIterator[Entitlement]:
-        """Retrieves an :term:`asynchronous iterator` of the :class:`Entitlement` that applications has.
+        """Retrieves an :term:`asynchronous iterator` of the :class:`.Entitlement` that applications has.
 
         .. versionadded:: 2.4
 
@@ -2755,7 +2755,7 @@ class Client:
 
         Yields
         --------
-        :class:`Entitlement`
+        :class:`.Entitlement`
             The entitlement with the application.
         """
 
@@ -2840,7 +2840,7 @@ class Client:
     ) -> None:
         """|coro|
 
-        Creates a test :class:`Entitlement` for the application.
+        Creates a test :class:`.Entitlement` for the application.
 
         .. versionadded:: 2.4
 
