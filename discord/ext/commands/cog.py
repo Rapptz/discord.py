@@ -362,6 +362,8 @@ class Cog(metaclass=CogMeta):
                     if isinstance(app_command, app_commands.Group):
                         for child in app_command.walk_commands():
                             app_command_refs[child.qualified_name] = child
+                            if hasattr(child, '__commands_is_hybrid_app_command__') and child.qualified_name in lookup:
+                                child.wrapped = lookup[child.qualified_name]  # type: ignore
 
                     if self.__cog_app_commands_group__:
                         children.append(app_command)  # type: ignore # Somehow it thinks it can be None here

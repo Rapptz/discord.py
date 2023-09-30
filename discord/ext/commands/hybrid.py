@@ -297,6 +297,8 @@ def replace_parameters(
 
 
 class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
+    __commands_is_hybrid_app_command__: ClassVar[bool] = True
+
     def __init__(
         self,
         wrapped: Union[HybridCommand[CogT, ..., T], HybridGroup[CogT, ..., T]],

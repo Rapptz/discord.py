@@ -45,7 +45,7 @@ from .item import Item, ItemCallbackType
 from ..enums import ChannelType, ComponentType, SelectDefaultValueType
 from ..partial_emoji import PartialEmoji
 from ..emoji import Emoji
-from ..utils import MISSING
+from ..utils import MISSING, _human_join
 from ..components import (
     SelectOption,
     SelectMenu,
@@ -160,15 +160,7 @@ def _handle_select_defaults(
         object_type = obj.__class__ if not isinstance(obj, Object) else obj.type
 
         if not _is_valid_object_type(object_type, component_type, type_to_supported_classes):
-            # TODO: split this into a util function
-            supported_classes = [c.__name__ for c in type_to_supported_classes[component_type]]
-            if len(supported_classes) > 2:
-                supported_classes = ', '.join(supported_classes[:-1]) + f', or {supported_classes[-1]}'
-            elif len(supported_classes) == 2:
-                supported_classes = f'{supported_classes[0]} or {supported_classes[1]}'
-            else:
-                supported_classes = supported_classes[0]
-
+            supported_classes = _human_join([c.__name__ for c in type_to_supported_classes[component_type]])
             raise TypeError(f'Expected an instance of {supported_classes} not {object_type.__name__}')
 
         if object_type is Object:
@@ -1033,7 +1025,6 @@ def select(
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
         A list of objects representing the default values for the select menu. This cannot be used with regular :class:`Select` instances.
         If ``cls`` is :class:`MentionableSelect` and :class:`.Object` is passed, then the type must be specified in the constructor.
-        if `cls` is :class:`MentionableSelect` and :class:`.Object` is passed, then the type must be specified in the constructor.
 
         .. versionadded:: 2.4
     """
@@ -1043,8 +1034,8 @@ def select(
             raise TypeError('select function must be a coroutine function')
         callback_cls = getattr(cls, '__origin__', cls)
         if not issubclass(callback_cls, BaseSelect):
-            supported_classes = ", ".join(["ChannelSelect", "MentionableSelect", "RoleSelect", "Select", "UserSelect"])
-            raise TypeError(f'cls must be one of {supported_classes} or a subclass of one of them, not {cls!r}.')
+            supported_classes = ', '.join(['ChannelSelect', 'MentionableSelect', 'RoleSelect', 'Select', 'UserSelect'])
+            raise TypeError(f'cls must be one of {supported_classes} or a subclass of one of them, not {cls.__name__}.')
 
         func.__discord_ui_model_type__ = callback_cls
         func.__discord_ui_model_kwargs__ = {
