@@ -2868,33 +2868,6 @@ class Client:
 
         await self.http.create_entitlement(self.application_id, sku_id, owner_id, owner_type.value)
 
-    async def delete_entitlement(self, entitlement_id: int) -> None:
-        """|coro|
-
-        Deletes a test :class:`Entitlement` for the application.
-
-        .. versionadded:: 2.4
-
-        Parameters
-        -----------
-        entitlement_id: :class:`int`
-            The ID of the entitlement to delete.
-
-        Raises
-        -------
-        MissingApplicationID
-            The application ID could not be found.
-        NotFound
-            The entitlement could not be found.
-        HTTPException
-            Deleting the entitlement failed.
-        """
-
-        if self.application_id is None:
-            raise MissingApplicationID
-
-        await self.http.delete_entitlement(self.application_id, entitlement_id)
-
     async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
         """|coro|
 

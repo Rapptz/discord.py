@@ -136,3 +136,23 @@ class Entitlement:
     def guild(self) -> Optional[Guild]:
         """The guild that is granted access to the entitlement"""
         return self._state._get_guild(self.guild_id)
+
+    async def delete(self) -> None:
+        """|coro|
+
+        Deletes the entitlement.
+
+        Raises
+        -------
+        MissingApplicationID
+            The application ID could not be found.
+        NotFound
+            The entitlement could not be found.
+        HTTPException
+            Deleting the entitlement failed.
+        """
+
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        await self._state.http.delete_entitlement(self.application_id, self.id)
