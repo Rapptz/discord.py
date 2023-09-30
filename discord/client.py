@@ -2734,12 +2734,12 @@ class Client:
             Retrieve entitlements after this date or entitlement.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
             If the datetime is naive, it is assumed to be local time.
-        sku_ids: Optional[List[:class:`int`]]
-            A list of SKU IDs to filter by.
-        user_id: Optional[:class:`int`]
-            The user ID to filter by.
-        guild_id: Optional[:class:`int`]
-            The guild ID to filter by.
+        skus: Optional[Sequence[:class:`~discord.abc.Snowflake`]]
+            A list of SKUs to filter by.
+        user: Optional[:class:`~discord.abc.Snowflake`]
+            The user to filter by.
+        guild: Optional[:class:`~discord.abc.Snowflake`]
+            The guild to filter by.
         exclude_ended: :class:`bool`
             Whether to exclude ended entitlements. Defaults to ``False``.
 
@@ -2774,9 +2774,9 @@ class Client:
                 self.application_id,  # type: ignore  # We already check for None above
                 limit=retrieve,
                 before=before_id,
-                sku_ids=sku_ids,
-                user_id=user_id,
-                guild_id=guild_id,
+                sku_ids=[sku.id for sku in skus] if skus else None,
+                user_id=user.id if user else None,
+                guild_id=guild.id if guild else None,
                 exclude_ended=exclude_ended,
             )
 
@@ -2794,9 +2794,9 @@ class Client:
                 self.application_id,  # type: ignore  # We already check for None above
                 limit=retrieve,
                 after=after_id,
-                sku_ids=sku_ids,
-                user_id=user_id,
-                guild_id=guild_id,
+                sku_ids=[sku.id for sku in skus] if skus else None,
+                user_id=user.id if user else None,
+                guild_id=guild.id if guild else None,
                 exclude_ended=exclude_ended,
             )
 
