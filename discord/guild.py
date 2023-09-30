@@ -109,6 +109,7 @@ if TYPE_CHECKING:
         Guild as GuildPayload,
         RolePositionUpdate as RolePositionUpdatePayload,
         GuildFeature,
+        IncidentData as IncidentDataPayload,
     )
     from .types.threads import (
         Thread as ThreadPayload,
@@ -150,6 +151,79 @@ class _GuildLimit(NamedTuple):
     stickers: int
     bitrate: float
     filesize: int
+
+
+class IncidentData:
+    """Represents the guild incident actions.
+    
+    .. versionadded:: 2.4
+
+    Attributes
+    ------------
+    guild: :class:`Guild`
+        The guild this incident data belongs to.
+    invites_disabled_until: Optional[:class:`datetime.datetime`]
+        When invites get enabled again.
+    dms_disabled_until: Optional[:class:`datetime.datetime`]
+        When direct messages get enabled again.
+    """
+    def __init__(self, *, guild: Guild, data: IncidentDataPayload) -> None:
+        self._update(guild, data)
+
+    def _update(self, guild: Guild, data: IncidentDataPayload) -> None:
+        self.guild: Guild = guild
+        self.invites_disabled_until: Optional[datetime.datetime] = utils.parse_time(data['invites_disabled_until'])
+        self.dms_disabled_until: Optional[datetime.datetime] = utils.parse_time(data['dms_disabled_until'])
+
+    def __repr__(self) -> str:
+        return f'<IncidentData invites_disabled_until={self.invites_disabled_until!r} dms_disabled_until={self.dms_disabled_until!r}>'
+
+    async def edit(
+        self,
+        *,
+        invites_disabled_until: Optional[datetime.datetime] = MISSING,
+        dms_disabled_until: Optional[datetime.datetime] = MISSING,
+    ) -> IncidentData:
+        r"""|coro|
+
+        Edits the guild incident actions.
+
+        You must have :attr:`~Permissions.manage_guild` to edit the actions.
+
+        Passing ``None`` will disable the action.
+
+        Parameters
+        ------------
+        invites_disabled_until: Optional[:class:`datetime.datetime`]
+            The time when disabled invites will expire. (up to 24 hours in the future)
+            This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
+        dms_disabled_until: Optional[:class:`datetime.datetime`]
+            The time when disabled direct messages will expire. (up to 24 hours in the future)
+            This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
+        """
+        payload: dict[str, Any] = {}
+        if invites_disabled_until is not MISSING:
+            if invites_disabled_until is None:
+                payload['invites_disabled_until'] = None
+            else:
+                if invites_disabled_until.tzinfo is None:
+                    raise TypeError(
+                        'invites_disabled_until must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                    )
+                payload['invites_disabled_until'] = invites_disabled_until.isoformat()
+
+        if dms_disabled_until is not MISSING:
+            if dms_disabled_until is None:
+                payload['dms_disabled_until'] = None
+            else:
+                if dms_disabled_until.tzinfo is None:
+                    raise TypeError(
+                        'dms_disabled_until must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                    )
+                payload['dms_disabled_until'] = dms_disabled_until.isoformat()
+
+        data = await self.guild._state.http.edit_incident_actions(self.guild.id, payload)  # type: ignore # ???
+        return self.__class__(guild=self.guild, data=data)
 
 
 class Guild(Hashable):
@@ -320,6 +394,7 @@ class Guild(Hashable):
         'premium_progress_bar_enabled',
         '_safety_alerts_channel_id',
         'max_stage_video_users',
+        '_incident_data',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -509,6 +584,7 @@ class Guild(Hashable):
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
         self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
+        self._incident_data: Optional[IncidentDataPayload] = guild.get('incident_data')
 
         if 'channels' in guild:
             channels = guild['channels']
@@ -1074,6 +1150,13 @@ class Guild(Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return utils.snowflake_time(self.id)
+    
+    @property
+    def incident_data(self) -> Optional[IncidentData]:
+        if self._incident_data is None:
+            return None
+
+        return IncidentData(guild=self, data=self._incident_data)
 
     def get_member_named(self, name: str, /) -> Optional[Member]:
         """Returns the first member found that matches the name provided.

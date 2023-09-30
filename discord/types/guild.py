@@ -48,6 +48,10 @@ class UnavailableGuild(TypedDict):
     id: Snowflake
     unavailable: NotRequired[bool]
 
+class IncidentData(TypedDict):
+    invites_disabled_until: Optional[str]
+    dms_disabled_until: Optional[str]
+
 
 DefaultMessageNotificationLevel = Literal[0, 1]
 ExplicitContentFilterLevel = Literal[0, 1, 2]
@@ -97,6 +101,7 @@ class _BaseGuildPreview(UnavailableGuild):
     stickers: List[GuildSticker]
     features: List[GuildFeature]
     description: Optional[str]
+    incident_data: Optional[IncidentData]
 
 
 class _GuildPreviewUnique(TypedDict):
