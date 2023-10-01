@@ -161,10 +161,6 @@ class _BaseForumChannel(_BaseTextChannel):
     default_forum_layout: NotRequired[ForumLayoutType]
 
 
-<<<<<<< HEAD
-GuildChannel = Union[
-    TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, DirectoryChannel, ThreadChannel, ForumChannel
-=======
 class ForumChannel(_BaseForumChannel):
     type: Literal[15]
 
@@ -174,8 +170,7 @@ class MediaChannel(_BaseForumChannel):
 
 
 GuildChannel = Union[
-    TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel, ForumChannel, MediaChannel
->>>>>>> e6a0dc5b (Add support for media channels)
+    TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, DirectoryChannel, ThreadChannel, ForumChannel, MediaChannel
 ]
 
 
