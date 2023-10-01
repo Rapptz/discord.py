@@ -459,16 +459,23 @@ class VoiceConnectionState:
             if self.socket:
                 self.socket.close()
 
-    async def move_to(self, channel: Optional[abc.Snowflake]) -> None:
+    async def move_to(self, channel: Optional[abc.Snowflake], timeout: Optional[float]) -> None:
         if channel is None:
             await self.disconnect()
             return
 
-        if self.guild:
-            await self.guild.change_voice_state(channel=channel)
-        else:
-            await self.voice_client._state.client.change_voice_state(channel=channel)
-        self.state = ConnectionFlowState.set_guild_voice_state
+        previous_state = self.state
+        # this is only an outgoing ws request
+        # if it fails, nothing happens and nothing changes (besides self.state)
+        await self._move_to(channel)
+        last_state = self.state
+        try:
+            await self.wait_async(timeout)
+        except asyncio.TimeoutError:
+            _log.warning('Timed out trying to move to channel %s in guild %s', channel.id, self.guild.id if self.guild else 'private')
+            if self.state is last_state:
+                _log.debug('Reverting to previous state %s', previous_state.name)
+                self.state = previous_state
 
     def wait(self, timeout: Optional[float] = None) -> bool:
         return self._connected.wait(timeout)
@@ -510,7 +517,7 @@ class VoiceConnectionState:
         _log.info(
             'The voice handshake is being terminated for Channel ID %s (Guild ID %s)',
             self.voice_client.channel.id,
-            self.guild.id if self.guild else "private",
+            self.guild.id if self.guild else 'private',
         )
         self.state = ConnectionFlowState.disconnected
         if self.guild:
@@ -603,3 +610,10 @@ class VoiceConnectionState:
             return False
         else:
             return True
+
+    async def _move_to(self, channel: abc.Snowflake) -> None:
+        if self.guild:
+            await self.guild.change_voice_state(channel=channel)
+        else:
+            await self.voice_client._state.client.change_voice_state(channel=channel)
+        self.state = ConnectionFlowState.set_guild_voice_state
