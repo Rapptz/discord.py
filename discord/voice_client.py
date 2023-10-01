@@ -355,8 +355,7 @@ class VoiceClient(VoiceProtocol):
         asyncio.TimeoutError
             The move did not complete in time, but may still be ongoing.
         """
-        await self._connection.move_to(channel)
-        await self._connection.wait_async(timeout)
+        await self._connection.move_to(channel, timeout)
 
     def is_connected(self) -> bool:
         """Indicates if the voice client is connected to voice."""
