@@ -1306,11 +1306,8 @@ class Webhook(BaseWebhook):
                 'discriminator': user.discriminator,
                 'id': user.id,
                 'avatar': user._avatar,
-                'avatar_decoration': user._avatar_decoration,
+                'avatar_decoration_data': user._avatar_decoration_data,
                 'global_name': user.global_name,
-                'id': user.id,
-                'avatar': user._avatar,
-                'avatar_decoration': user._avatar_decoration,
             },
         }
 

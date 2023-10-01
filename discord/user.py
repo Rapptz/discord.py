@@ -43,10 +43,7 @@ if TYPE_CHECKING:
     from .message import Message
     from .state import ConnectionState
     from .types.channel import DMChannel as DMChannelPayload
-    from .types.user import (
-        PartialUser as PartialUserPayload,
-        User as UserPayload,
-    )
+    from .types.user import PartialUser as PartialUserPayload, User as UserPayload, AvatarDecorationData
 
 
 __all__ = (
@@ -73,7 +70,7 @@ class BaseUser(_UserTag):
         'system',
         '_public_flags',
         '_state',
-        '_avatar_decoration',
+        '_avatar_decoration_data',
     )
 
     if TYPE_CHECKING:
@@ -88,7 +85,7 @@ class BaseUser(_UserTag):
         _banner: Optional[str]
         _accent_colour: Optional[int]
         _public_flags: int
-        _avatar_decoration: Optional[str]
+        _avatar_decoration_data: Optional[AvatarDecorationData]
 
     def __init__(self, *, state: ConnectionState, data: Union[UserPayload, PartialUserPayload]) -> None:
         self._state = state
@@ -125,7 +122,7 @@ class BaseUser(_UserTag):
         self._public_flags = data.get('public_flags', 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
-        self._avatar_decoration = data.get('avatar_decoration')
+        self._avatar_decoration_data = data.get('avatar_decoration_data')
 
     @classmethod
     def _copy(cls, user: Self) -> Self:
@@ -141,7 +138,7 @@ class BaseUser(_UserTag):
         self.bot = user.bot
         self._state = user._state
         self._public_flags = user._public_flags
-        self._avatar_decoration = user._avatar_decoration
+        self._avatar_decoration_data = user._avatar_decoration_data
 
         return self
 
@@ -199,8 +196,20 @@ class BaseUser(_UserTag):
 
         .. versionadded:: 2.4
         """
-        if self._avatar_decoration is not None:
-            return Asset._from_avatar_decoration(self._state, self._avatar_decoration)
+        if self._avatar_decoration_data is not None:
+            return Asset._from_avatar_decoration(self._state, self._avatar_decoration_data['asset'])
+        return None
+
+    @property
+    def avatar_decoration_sku_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns the SKU ID of the avatar decoration the user has.
+
+        If the user has not set an avatar decoration, ``None`` is returned.
+
+        .. versionadded:: 2.4
+        """
+        if self._avatar_decoration_data is not None:
+            return int(self._avatar_decoration_data['sku_id'])
         return None
 
     @property
