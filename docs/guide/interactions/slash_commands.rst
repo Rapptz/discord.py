@@ -6,13 +6,14 @@ Slash commands
 ===============
 
 Slash commands are one of Discord's primary methods of implementing a user-interface for bots.
-Analogous to their name, they're previewed and invoked in the Discord client by beginning your message with a forward-slash.
+They're a branch of application commands, the other type being context menu commands, and analogous to their name,
+they're previewed and invoked in the Discord client by beginning your message with a forward-slash:
 
 .. image:: /images/guide/app_commands/meow_command_preview.png
     :width: 400
 
-Application commands are implemented within the :ref:`discord.app_commands <discord_app_commands>` package.
-Code examples in this page will always assume the following two imports:
+Both types of app commands are implemented within the :ref:`discord.app_commands <discord_app_commands>` package.
+Any code example in this page will always assume the following two imports:
 
 .. code-block:: python
 
@@ -24,7 +25,7 @@ Setting up
 
 To work with app commands, bots need the ``applications.commands`` scope.
 
-You can enable this scope when generating an OAuth2 URL for your bot, shown :ref:`here <discord_invite_bot>`.
+You can enable this scope when generating an OAuth2 URL for your bot, the steps to do so outlined :ref:`here <discord_invite_bot>`.
 
 Defining a Tree
 ++++++++++++++++
@@ -333,7 +334,6 @@ Descriptions are added to parameters using the :func:`.app_commands.describe` de
 where each keyword is treated as a parameter name.
 
 .. code-block:: python
-    :emphasize-lines: 2-5
 
     @client.tree.command()
     @app_commands.describe(
@@ -386,6 +386,9 @@ Examples using a command to add 2 numbers together:
         :param b: right operand
         """
 
+Other meta info can be specified in the docstring, such as the function return type,
+but in-practice only the parameter descriptions are used.
+
 If both are used, :func:`.app_commands.describe` always takes precedence.
 
 Naming
@@ -397,7 +400,6 @@ the library offers a method to rename them with the :func:`.app_commands.rename`
 In use:
 
 .. code-block:: python
-    :emphasize-lines: 2
 
     @client.tree.command()
     @app_commands.rename(n_times="number-of-times")
@@ -547,8 +549,10 @@ passing the transformed type and transformer respectively.
 
 .. code-block:: python
 
+    from discord.app_commands import Transform
+
     @client.tree.command()
-    async def date(interaction: discord.Interaction, when: app_commands.Transform[datetime.datetime, DateTransformer]):
+    async def date(interaction: discord.Interaction, when: Transform[datetime.datetime, DateTransformer]):
         # do something with 'when'...
 
 It's also possible to instead pass an instance of the transformer instead of the class directly,
@@ -675,7 +679,7 @@ This class is customisable by subclassing and passing in any relevant fields at 
 
 .. code-block:: python
 
-    class Todo(app_commands.Group, name="todo", description="manages a todolist"):
+    class Todo(app_commands.Group, description="manages a todolist"):
         ...
 
     client.tree.add_command(Todo()) # required!
@@ -692,7 +696,7 @@ Subcommands can be made in-line by decorating bound methods in the class:
 
 .. code-block:: python
 
-    class Todo(app_commands.Group, name="todo", description="manages a todolist"):
+    class Todo(app_commands.Group, description="manages a todolist"):
         @app_commands.command(name="add", description="add a todo")
         async def todo_add(self, interaction: discord.Interaction):
             await interaction.response.send_message("added something to your todolist...!")
@@ -708,7 +712,7 @@ To add 1-level of nesting, create another :class:`~.app_commands.Group` in the c
 
 .. code-block:: python
 
-    class Todo(app_commands.Group, name="todo", description="manages a todolist"):
+    class Todo(app_commands.Group, description="manages a todolist"):
         @app_commands.command(name="add", description="add a todo")
         async def todo_add(self, interaction: discord.Interaction):
             await interaction.response.send_message("added something to your todolist...!")
@@ -724,6 +728,24 @@ To add 1-level of nesting, create another :class:`~.app_commands.Group` in the c
 
 .. image:: /images/guide/app_commands/todo_group_nested_preview.png
     :width: 400
+
+Nested group commands can be moved into another class if it ends up being a bit too much to read in one class:
+
+.. code-block:: python
+
+    class TodoLists(app_commands.Group, name="lists"):
+        """commands for managing different todolists for different purposes"""
+
+        @app_commands.command(name="switch", description="switch to a different todolist"):
+        async def todo_lists_switch(self, interaction: discord.Interaction):
+            ...
+
+    class Todo(app_commands.Group, description="manages a todolist"):
+        @app_commands.command(name="add", description="add a todo")
+        async def todo_add(self, interaction: discord.Interaction):
+            await interaction.response.send_message("added something to your todolist...!")
+
+        todo_lists = TodoLists()
 
 Decorators like :func:`.app_commands.default_permissions` and :func:`.app_commands.guild_only`
 can be added on top of a subclass to apply to the group, for example:
@@ -773,6 +795,12 @@ To demonstrate:
     For these to show up, :meth:`.CommandTree.sync` needs to be called for **each** guild
     using the ``guild`` keyword-argument.
 
+Whilst multiple guilds can be specified on a single command, it's important to be aware that after
+syncing individually to each guild, each guild is then maintaing its own copy of the command.
+
+New changes will require syncing to every guild again, which can cause a temporary mismatch with what a guild has
+and what's defined in code.
+
 Since guild commands can be useful in a development scenario, as often we don't want unfinished commands
 to propagate to all guilds, the library offers a helper method :meth:`.CommandTree.copy_global_to`
 to copy all global commands to a certain guild for syncing:
@@ -785,7 +813,7 @@ to copy all global commands to a certain guild for syncing:
             self.tree = app_commands.CommandTree(self)
 
         async def setup_hook(self):
-            guild = discord.Object(695868929154744360) # a testing server
+            guild = discord.Object(695868929154744360) # a bot testing server
             self.tree.copy_global_to(guild)
             await self.tree.sync(guild=guild)
 
@@ -881,9 +909,14 @@ For example:
 
 .. code-block:: python
 
-    whitelist = {236802254298939392, 402159684724719617} # cool people only
+    # cool people only
+    whitelist = {
+        236802254298939392,
+        402159684724719617,
+        155863164544614402
+    }
 
-    class MyCommandTree(app_commands.CommandTree):
+    class CoolPeopleTree(app_commands.CommandTree):
         async def interaction_check(self, interaction: discord.Interaction) -> bool:
             return interaction.user.id in whitelist
 
@@ -894,51 +927,147 @@ For example:
     the ``tree_cls`` keyword argument in the bot constructor:
 
     .. code-block:: python
-        :emphasize-lines: 6
 
         from discord.ext import commands
 
         bot = commands.Bot(
             command_prefix="?",
             intents=discord.Intents.default(),
-            tree_cls=MyCommandTree
+            tree_cls=CoolPeopleTree
         )
 
 Error handling
 ---------------
 
-So far, any exceptions raised within a command callback, any custom checks or in a transformer should just be
-logged in the program's ``stderr`` or through any custom logging handlers.
+So far, any exceptions raised within a command callback, any custom checks, in a transformer
+or during localisation, et cetera should just be logged in the program's ``stderr`` or through any custom logging handlers.
 
-In order to catch exceptions, the library uses something called error handlers.
+In order to catch exceptions and do something else, such as sending a message to let
+a user know their invocation failed for some reason, the library uses something called error handlers.
 
-There are 3 handlers available:
+There are 3 types of handlers:
 
-1. A local handler, which only catches errors for a specific command
-2. A group handler, which catches errors only for a certain group's subcommands
-3. A global handler, which catches all errors in all commands
+1. A local handler, which only catches exceptions for a specific command
+2. A group handler, which catches exceptions only for a certain group's subcommands
+3. A global handler, which catches all exceptions in all commands
 
-If an exception is raised, the library calls all 3 of these handlers in that order.
+If an exception is raised, the library calls **all 3** of these handlers in that order.
 
-If a subcommand has multiple parents,
-the subcommand's parent handler is called first, followed by it's parent handler.
+If a subcommand has multiple parents, the subcommand's parent handler is called first,
+followed by its parent handler.
 
+To attach a local handler to a command, use the :meth:`~.app_commands.Command.error` decorator:
 
-waiting to be written further:
+.. code-block:: python
 
-- code examples for each of the error handler types
-- CommandInvokeError, TransformerError, __cause__
-- creating custom erors to know which check/transformer raised what
-- an example logging setup
+    @app_commands.command()
+    @app_commands.checks.has_any_role("v1.0 Alpha Tester", "v2.0 Tester")
+    async def tester(interaction: discord.Interaction):
+        await interaction.response.send_message("thanks for testing")
+
+    @tester.error
+    async def tester_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, app_commands.MissingAnyRole):
+            roles = ", ".join(str(r) for r in error.missing_roles)
+            await interaction.response.send_message(f"i only thank people who have one of these roles!: {roles}")
+
+Catching exceptions from all subcommands in a group:
+
+.. code-block:: python
+
+    class MyGroup(app_commands.Group):
+        async def on_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+            ...
+
+When an exception that doesn't derive :class:`~.app_commands.AppCommandError` is raised, it's wrapped
+into :class:`~.app_commands.CommandInvokeError`, with the original exception being accessible with ``__cause__``.
+
+Likewise:
+
+- For transformers, exceptions that don't derive :class:`~.app_commands.AppCommandError` are wrapped in :class:`~.app_commands.TransformerError`.
+- For translators, exceptions that don't derive :class:`~.app_commands.TranslationError` are wrapped into it.
+
+This is helpful to differentiate between exceptions that the bot expects, such as :class:`~.app_commands.MissingAnyRole`,
+over exceptions like :class:`TypeError` or :class:`ValueError`, which typically trace back to a programming mistake.
+
+To catch these exceptions in a global error handler for example:
+
+.. tab:: Python versions below 3.10
+
+    .. code-block:: python
+
+        import sys
+        import traceback
+
+        @client.tree.error
+        async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+            assert interaction.command is not None
+
+            if isinstance(error, app_commands.CommandInvokeError):
+                print(f"Ignoring unknown exception in command {interaction.command.name}", file=sys.stderr)
+                traceback.print_exception(error.__class__, error, error.__traceback__)
+
+.. tab:: Python versions 3.10+
+
+    .. code-block:: python
+
+        import sys
+        import traceback
+
+        @client.tree.error
+        async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+            assert interaction.command is not None
+
+            if isinstance(error, app_commands.CommandInvokeError):
+                print(f"Ignoring unknown exception in command {interaction.command.name}", file=sys.stderr)
+                traceback.print_exception(error)
+
+.. hint::
+
+    Global error handlers can also be defined by overriding :meth:`.app_commands.CommandTree.on_error` in a subclass.
+
+Raising a custom exception from a transformer and catching it:
+
+.. code-block:: python
+
+    from discord.app_commands import Transform
+
+    class BadDateArgument(app_commands.Translator):
+        def __init__(self, argument: str):
+            super().__init__(f'expected a date in DD/MM/YYYY format, not "{argument}".')
+
+    class DateTransformer(app_commands.Transformer):
+        async def transform(self, interaction: discord.Interaction, value: str) -> datetime.datetime:
+            try:
+                when = datetime.datetime.strptime(date, "%d/%m/%Y")
+            except ValueError:
+                raise BadDateArgument(value)
+
+            when = when.replace(tzinfo=datetime.timezone.utc)
+            return when
+
+    @some_command.error
+    async def some_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, BadDateArgument):
+            await interaction.response.send_message(str(error))
+
+Logging
+++++++++
+
+Instead of printing plainly to :obj:`sys.stderr`, the standard ``logging`` module can be configured instead -
+which is what discord.py uses to write its own exceptions.
+
+Whilst logging is a little bit more involved to set up, it has some added benefits such as using coloured text
+in a terminal and being able to write to a file.
+
+Refer to the :ref:`Setting Up logging <logging_setup>` page for more info.
 
 .. _translating:
 
 Translating
 ------------
 
-heavy work-in-progress...!
-
-Discord supports localisation for the following fields:
+Discord supports localisation (l10n) for the following fields:
 
 - Command names and descriptions
 - Parameter names and descriptions
@@ -949,13 +1078,13 @@ This allows the above fields to appear differently according to a user client's 
 Localisations can be done :ddocs:`partially <interactions/application-commands#localization>` -
 when a locale doesn't have a translation for a given field, Discord will use the default/original string instead.
 
-Support for localisation is implemented in discord.py with the :class:`.app_commands.Translator` interface,
+Support for l10n is implemented in discord.py with the :class:`.app_commands.Translator` interface,
 which are effectively classes containing a core ``transform`` method that
 takes the following parameters:
 
-1. a ``string`` - the string to be translated according to ``locale``
-2. a ``locale`` - the locale to translate to
-3. a ``context`` - the context of this translation (what type of string is being translated)
+1. ``string`` - the string to be translated according to ``locale``
+2. ``locale`` - the locale to translate to
+3. ``context`` - the context of this translation (what type of string is being translated)
 
 When :meth:`.CommandTree.sync` is called, this method is called in a heavy loop for each
 string for each locale.
@@ -1013,7 +1142,7 @@ A string should be returned according to the given ``locale``. If no translation
 
 :class:`~.app_commands.TranslationContext`  provides contextual info for what is being translated.
 
-This contains 2 properties:
+This contains 2 attributes:
 
 - :attr:`~.app_commands.TranslationContext.location` - an enum representing what is being translated, eg. a command description.
 
@@ -1059,12 +1188,22 @@ In summary:
 Following is a quick demo using the `Project Fluent <https://projectfluent.org/>`_ translation system
 and the `Python fluent library <https://pypi.org/project/fluent/>`_.
 
-Relative to the bot's working directory is a translation resource
-described in fluent's `FTL <https://projectfluent.org/fluent/guide/>`_ format - containing
-the Japanese (locale: ``ja``) translations for the bot:
+Like a lot of other l10n systems, fluent uses directories and files to separate localisations.
+
+A structure like this is used for this example:
 
 .. code-block::
-    :caption: l10n/ja/commands.ftl
+
+    discord_bot/
+    └── l10n/
+        ├── ja/
+        │   └── commands.ftl
+        └── bot.py
+
+``commands.ftl`` is a translation resource described in fluent's `FTL <https://projectfluent.org/fluent/guide/>`_ format -
+containing the Japanese (locale: ``ja``) localisations for a certain command in the bot:
+
+.. code-block::
 
     # command metadata
     apple-command-name = リンゴ
@@ -1076,32 +1215,7 @@ the Japanese (locale: ``ja``) translations for the bot:
     # responses from the command body
     apple-command-response = リンゴを{ $apple_count }個食べました。
 
-In code, strings are only considered translatable if they have an
-attached ``fluent_id`` extra:
-
-.. code-block:: python
-
-    @client.tree.command(
-        name=_("apple", fluent_id="apple-command-name"),
-        description=_("tell the bot to eat some apples", fluent_id="apple-command-description")
-    )
-    @app_commands.describe(amount=_("how many apples?", fluent_id="apple-command-amount"))
-    async def apple(interaction: discord.Interaction, amount: int):
-        translator = client.tree.translator
-
-        # plurals for the bots native language (english) are handled here in the code.
-        # fluent can handle plurals for secondary languages if needed.
-        # see: https://projectfluent.org/fluent/guide/selectors.html
-
-        plural = "apple" if amount == 1 else "apples"
-
-        translated = await translator.translate_string(
-            _(f"i ate {amount} {plural}", fluent_id="apple-command-response"),
-            interaction.locale,
-            apple_count=amount
-        )
-
-        await interaction.response.send_message(translated)
+Onto the code:
 
 .. code-block:: python
 
@@ -1109,35 +1223,23 @@ attached ``fluent_id`` extra:
 
     class JapaneseTranslator(app_commands.Translator):
         def __init__(self):
+            # read and save any resources when the translator initialises.
+            # if asynchronous setup is needed, override `Translator.load()`!
+
             self.resources = FluentResourceLoader("l10n/{locale}")
             self.mapping = {
                 discord.Locale.japanese: FluentLocalization(["ja"], ["commands.ftl"], self.resources),
                 # + additional locales as needed
             }
 
-        # translates a given string for a locale,
-        # subsituting any required parameters
-        async def translate_string(
-            self,
-            string: locale_str,
-            locale: discord.Locale,
-            **params: Any
-        ) -> str:
-            l10n = self.mapping.get(locale)
-            if not l10n:
-                # return the string untouched
-                return string.message
-
-            fluent_id = string.extras["fluent_id"]
-            return l10n.format_value(fluent_id, params)
-
-        # core translate method called by the library
         async def translate(
             self,
             string: locale_str,
             locale: discord.Locale,
             context: app_commands.TranslationContext
         ):
+            """core translate method called by the library"""
+
             fluent_id = string.extras.get("fluent_id")
             if not fluent_id:
                 # ignore strings without an attached fluent_id
@@ -1151,12 +1253,60 @@ attached ``fluent_id`` extra:
             # otherwise, a translation is assumed to exist and is returned
             return l10n.format_value(fluent_id)
 
+        async def localise(
+            self,
+            string: locale_str,
+            locale: discord.Locale,
+            **params: Any
+        ) -> str:
+            """translates a given string for a locale, subsituting any required parameters.
+            meant to be called for things outside what discord handles, eg. a message sent from the bot
+            """
+
+            l10n = self.mapping.get(locale)
+            if not l10n:
+                # return the string untouched
+                return string.message
+
+            # strings passed to this method need to include a fluent_id extra
+            # since we are trying to explicitly localise a string
+            fluent_id = string.extras["fluent_id"]
+
+            return l10n.format_value(fluent_id, params)
+
+With the command, strings are only considered translatable if they have an
+attached ``fluent_id`` extra:
+
+.. code-block:: python
+
+    @client.tree.command(
+        name=_("apple", fluent_id="apple-command-name"),
+        description=_("tell the bot to eat some apples", fluent_id="apple-command-description")
+    )
+    @app_commands.describe(amount=_("how many apples?", fluent_id="apple-command-amount"))
+    async def apple(interaction: discord.Interaction, amount: int):
+        translator = client.tree.translator
+
+        # plurals for the bots native/default language (english) are handled here in the code.
+        # fluent can handle plurals for secondary languages if needed.
+        # see: https://projectfluent.org/fluent/guide/selectors.html
+
+        plural = "apple" if amount == 1 else "apples"
+
+        translated = await translator.localise(
+            _(f"i ate {amount} {plural}", fluent_id="apple-command-response"),
+            interaction.locale,
+            apple_count=amount
+        )
+
+        await interaction.response.send_message(translated)
+
 Viewing the command with an English (or any other) language setting:
 
 .. image:: /images/guide/app_commands/apple_command_english.png
     :width: 300
 
-With a Japanese language setting:
+A Japanese language setting shows the added localisations:
 
 .. image:: /images/guide/app_commands/apple_command_japanese.png
     :width: 300
