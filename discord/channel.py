@@ -1600,6 +1600,7 @@ class StageChannel(VocalGuildChannel):
         topic: str,
         privacy_level: PrivacyLevel = MISSING,
         send_start_notification: bool = False,
+        scheduled_event: Snowflake = MISSING,
         reason: Optional[str] = None,
     ) -> StageInstance:
         """|coro|
@@ -1621,6 +1622,10 @@ class StageChannel(VocalGuildChannel):
             You must have :attr:`~Permissions.mention_everyone` to do this.
 
             .. versionadded:: 2.3
+        scheduled_event: :class:`~discord.abc.Snowflake`
+            The guild scheduled event associated with the stage instance.
+
+            .. versionadded:: 2.4
         reason: :class:`str`
             The reason the stage instance was created. Shows up on the audit log.
 
@@ -1646,6 +1651,9 @@ class StageChannel(VocalGuildChannel):
                 raise TypeError('privacy_level field must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value
+
+        if scheduled_event is not MISSING:
+            payload['guild_scheduled_event_id'] = scheduled_event.id
 
         payload['send_start_notification'] = send_start_notification
 
