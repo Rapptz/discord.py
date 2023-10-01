@@ -257,6 +257,14 @@ class User(Snowflake, Protocol):
         raise NotImplementedError
 
     @property
+    def avatar_decoration_sku_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns an integer that represents the user's avatar decoration SKU ID, if present.
+
+        .. versionadded:: 2.4
+        """
+        raise NotImplementedError
+
+    @property
     def default_avatar(self) -> Asset:
         """:class:`~discord.Asset`: Returns the default avatar for a given user."""
         raise NotImplementedError
