@@ -56,7 +56,9 @@ Let's make a bot using :class:`~ext.commands.AutoShardedBot`:
     import discord
     from discord.ext import commands
 
-    bot = commands.AutoShardedBot(command_prefix='!')
+    intents = discord.Intents.default()
+    intents.message_content = True
+    bot = commands.AutoShardedBot(command_prefix='!', intents=intents)
 
     @bot.command()
     async def shards(ctx):
