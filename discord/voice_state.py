@@ -459,13 +459,26 @@ class VoiceConnectionState:
             if self.socket:
                 self.socket.close()
 
-    async def move_to(self, channel: Optional[abc.Snowflake]) -> None:
+    async def move_to(self, channel: Optional[abc.Snowflake], timeout: Optional[float]) -> None:
         if channel is None:
             await self.disconnect()
             return
 
-        await self.voice_client.channel.guild.change_voice_state(channel=channel)
-        self.state = ConnectionFlowState.set_guild_voice_state
+        # this is only an outgoing ws request; if it fails, nothing happens and nothing changes
+        await self._move_to(channel)
+
+        last_state = self.state
+        try:
+            await self.wait_async(timeout)
+        except asyncio.TimeoutError:
+            _log.warning(
+                'Timed out trying to move to channel %s in guild %s',
+                channel.id,
+                self.guild.id,
+            )
+            if self.state is last_state:
+                _log.debug('Reverting to previous state %s', last_state.name)
+                self.state = last_state
 
     def wait(self, timeout: Optional[float] = None) -> bool:
         return self._connected.wait(timeout)
@@ -594,3 +607,7 @@ class VoiceConnectionState:
             return False
         else:
             return True
+
+    async def _move_to(self, channel: abc.Snowflake) -> None:
+        await self.voice_client.channel.guild.change_voice_state(channel=channel)
+        self.state = ConnectionFlowState.set_guild_voice_state
