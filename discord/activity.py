@@ -31,6 +31,7 @@ from .asset import Asset
 from .enums import ActivityType, try_enum
 from .colour import Colour
 from .partial_emoji import PartialEmoji
+from .emoji import Emoji
 from .utils import _get_as_snowflake
 
 __all__ = (
@@ -732,7 +733,7 @@ class CustomActivity(BaseActivity):
 
     __slots__ = ('name', 'emoji', 'state')
 
-    def __init__(self, name: Optional[str], *, emoji: Optional[Union[PartialEmoji, dict, str]] = None, **extra: Any) -> None:
+    def __init__(self, name: Optional[str], *, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None, **extra: Any) -> None:
         super().__init__(**extra)
         self.name: Optional[str] = name
         self.state: Optional[str] = extra.pop('state', name)
@@ -742,8 +743,8 @@ class CustomActivity(BaseActivity):
         self.emoji: Optional[PartialEmoji]
         if emoji is None:
             self.emoji = emoji
-        elif isinstance(emoji, dict):
-            self.emoji = PartialEmoji.from_dict(emoji)
+        elif isinstance(emoji, Emoji):
+            self.emoji = emoji._to_partial()
         elif isinstance(emoji, str):
             self.emoji = PartialEmoji(name=emoji)
         elif isinstance(emoji, PartialEmoji):
