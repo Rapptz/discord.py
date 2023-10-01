@@ -475,7 +475,8 @@ class VoiceConnectionState:
         except asyncio.TimeoutError:
             _log.warning('Timed out trying to move to channel %s in guild %s', channel.id, self.guild.id)
             if self.state is last_state:
-                _log.debug('Reverting to previous state %s', last_state.name)
+                _log.debug('Reverting to previous state %s', previous_state.name)
+
                 self.state = previous_state
 
     def wait(self, timeout: Optional[float] = None) -> bool:
