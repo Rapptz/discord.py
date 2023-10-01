@@ -389,7 +389,7 @@ Examples using a command to add 2 numbers together:
 Other meta info can be specified in the docstring, such as the function return type,
 but in-practice only the parameter descriptions are used.
 
-If both are used, :func:`.app_commands.describe` always takes precedence.
+Parameter descriptions added using :func:`.app_commands.describe` always takes precedence over ones in the docstring.
 
 Naming
 ^^^^^^^
@@ -1195,10 +1195,10 @@ A structure like this is used for this example:
 .. code-block::
 
     discord_bot/
-    └── l10n/
-        ├── ja/
-        │   └── commands.ftl
-        └── bot.py
+    ├── l10n/
+    │   └── ja/
+    │       └── commands.ftl
+    └── bot.py
 
 ``commands.ftl`` is a translation resource described in fluent's `FTL <https://projectfluent.org/fluent/guide/>`_ format -
 containing the Japanese (locale: ``ja``) localisations for a certain command in the bot:
@@ -1223,10 +1223,10 @@ Onto the code:
 
     class JapaneseTranslator(app_commands.Translator):
         def __init__(self):
-            # read and save any resources when the translator initialises.
+            # load any resources when the translator initialises.
             # if asynchronous setup is needed, override `Translator.load()`!
 
-            self.resources = FluentResourceLoader("l10n/{locale}")
+            self.resources = FluentResourceLoader("./l10n/{locale}")
             self.mapping = {
                 discord.Locale.japanese: FluentLocalization(["ja"], ["commands.ftl"], self.resources),
                 # + additional locales as needed
