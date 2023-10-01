@@ -77,7 +77,9 @@ If you don't wanna use discord's recommended shard count, you can specify your o
     import discord
     from discord.ext import commands
 
-    bot = commands.Bot(command_prefix='!', shard_count=10)
+    intents = discord.Intents.default()
+    intents.message_content = True
+    bot = commands.Bot(command_prefix='!', shard_count=10, intents=intents)
 
     @bot.command()
     async def shards(ctx):
