@@ -464,21 +464,19 @@ class VoiceConnectionState:
             await self.disconnect()
             return
 
-        # this is only an outgoing ws request; if it fails, nothing happens and nothing changes
+        previous_state = self.state
+        # this is only an outgoing ws request
+        # if it fails, nothing happens and nothing changes (besides self.state)
         await self._move_to(channel)
 
         last_state = self.state
         try:
             await self.wait_async(timeout)
         except asyncio.TimeoutError:
-            _log.warning(
-                'Timed out trying to move to channel %s in guild %s',
-                channel.id,
-                self.guild.id,
-            )
+            _log.warning('Timed out trying to move to channel %s in guild %s', channel.id, self.guild.id)
             if self.state is last_state:
                 _log.debug('Reverting to previous state %s', last_state.name)
-                self.state = last_state
+                self.state = previous_state
 
     def wait(self, timeout: Optional[float] = None) -> bool:
         return self._connected.wait(timeout)
