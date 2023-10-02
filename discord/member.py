@@ -470,7 +470,16 @@ class Member(discord.abc.Messageable, _UserTag):
 
     def _update_inner_user(self, user: UserPayload) -> Optional[Tuple[User, User]]:
         u = self._user
-        original = (u.name, u.discriminator, u._avatar, u.global_name, u._public_flags, u._avatar_decoration_data)
+        original = (
+            u.name,
+            u.discriminator,
+            u._avatar,
+            u.global_name,
+            u._public_flags,
+            u._avatar_decoration_data['sku_id'] if u._avatar_decoration_data is not None else None,
+        )
+
+        decoration_payload = user.get('avatar_decoration_data')
         # These keys seem to always be available
         modified = (
             user['username'],
@@ -478,11 +487,18 @@ class Member(discord.abc.Messageable, _UserTag):
             user['avatar'],
             user.get('global_name'),
             user.get('public_flags', 0),
-            user.get('avatar_decoration_data'),
+            decoration_payload['sku_id'] if decoration_payload is not None else None,
         )
         if original != modified:
             to_return = User._copy(self._user)
-            u.name, u.discriminator, u._avatar, u.global_name, u._public_flags, u._avatar_decoration_data = modified
+            u.name, u.discriminator, u._avatar, u.global_name, u._public_flags, u._avatar_decoration_data = (
+                user['username'],
+                user['discriminator'],
+                user['avatar'],
+                user.get('global_name'),
+                user.get('public_flags', 0),
+                decoration_payload,
+            )
             # Signal to dispatch on_user_update
             return to_return, u
 
