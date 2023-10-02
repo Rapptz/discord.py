@@ -70,6 +70,11 @@ class SKU:
         """Returns the flags of the SKU."""
         return SKUFlags._from_value(self._flags)
 
+    @property
+    def created_at(self) -> datetime:
+        """:class:`datetime.datetime`: Returns the sku's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
 
 class Entitlement:
     """Represents an entitlement from user or guild which has been granted access to a premium offering.
@@ -127,16 +132,21 @@ class Entitlement:
         return f'<Entitlement id={self.id} type={self.type!r} user_id={self.user_id}>'
 
     @property
-    def guild(self) -> Optional[Guild]:
-        """The guild that is granted access to the entitlement"""
-        return self._state._get_guild(self.guild_id)
-
-    @property
     def user(self) -> Optional[User]:
         """The user that is granted access to the entitlement"""
         if self.user_id is None:
             return None
         return self._state.get_user(self.user_id)
+
+    @property
+    def guild(self) -> Optional[Guild]:
+        """The guild that is granted access to the entitlement"""
+        return self._state._get_guild(self.guild_id)
+
+    @property
+    def created_at(self) -> datetime:
+        """:class:`datetime.datetime`: Returns the entitlement's creation time in UTC."""
+        return utils.snowflake_time(self.id)
 
     async def delete(self) -> None:
         """|coro|
