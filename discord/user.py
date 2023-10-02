@@ -31,7 +31,7 @@ from .asset import Asset
 from .colour import Colour
 from .enums import DefaultAvatar
 from .flags import PublicUserFlags
-from .utils import snowflake_time, _bytes_to_base64_data, MISSING
+from .utils import snowflake_time, _bytes_to_base64_data, MISSING, _get_as_snowflake
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -208,9 +208,7 @@ class BaseUser(_UserTag):
 
         .. versionadded:: 2.4
         """
-        if self._avatar_decoration_data is not None:
-            return int(self._avatar_decoration_data['sku_id'])
-        return None
+        return _get_as_snowflake(self._avatar_decoration_data, 'sku_id')
 
     @property
     def banner(self) -> Optional[Asset]:
