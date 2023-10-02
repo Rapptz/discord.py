@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-21 01:17+0000\n"
-"PO-Revision-Date: 2023-06-21 01:20\n"
+"PO-Revision-Date: 2023-09-05 15:17\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -97,11 +97,11 @@ msgstr "インタラクションが送信されたチャンネル。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:30
 msgid "Note that due to a Discord limitation, if sent from a DM channel :attr:`~DMChannel.recipient` is ``None``."
-msgstr ""
+msgstr "Discordの制限により、DMチャンネルから送信された場合は :attr:`~DMChannel.recipient` は ``None`` になります。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:32
 msgid "Optional[Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]]"
-msgstr ""
+msgstr "Optional[Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]]"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.Interaction:36
 msgid "The application ID that the interaction was for."
@@ -206,7 +206,7 @@ msgstr "Optional[:class:`Guild`]"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.channel_id:1
 msgid "The ID of the channel the interaction was sent from."
-msgstr ""
+msgstr "インタラクションが送信されたチャンネルのID。"
 
 #: ../../../discord/interactions.py:docstring of discord.Interaction.permissions:1
 msgid "The resolved permissions of the member in the channel, including overwrites."
@@ -624,7 +624,7 @@ msgstr "メッセージの埋め込みを抑制するかどうか。これが ``
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:30
 msgid "Whether to suppress push and desktop notifications for the message. This will increment the mention counter in the UI, but will not actually send a notification."
-msgstr ""
+msgstr "メッセージのプッシュ通知とデスクトップ通知を抑制するかどうか。 抑制した場合、UIのメンションカウンターを増やしますが、実際に通知を送信することはありません。"
 
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionResponse.send_message:35
 #: ../../../discord/interactions.py:docstring of discord.interactions.InteractionMessage.edit:25
@@ -856,15 +856,15 @@ msgstr "スレッドの名前。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:14
 msgid "The duration in minutes before a thread is automatically hidden from the channel list. If not provided, the channel's default auto archive duration is used.  Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided."
-msgstr ""
+msgstr "スレッドがチャンネルリストから自動的に非表示になるまでの分単位の時間。 指定されていない場合、チャンネルのデフォルトの自動アーカイブ期間が使用されます。指定された場合は、 ``60`` 、 ``1440`` 、 ``4320`` 、または ``10080` `のいずれかでないといけません。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:14
 msgid "The duration in minutes before a thread is automatically hidden from the channel list. If not provided, the channel's default auto archive duration is used."
-msgstr ""
+msgstr "スレッドがチャンネルリストから自動的に非表示になるまでの分単位の時間。 指定されていない場合、チャンネルのデフォルトの自動アーカイブ期間が使用されます。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:17
 msgid "Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided."
-msgstr ""
+msgstr "指定された場合は、 ``60`` 、 ``1440`` 、 ``4320`` 、または ``10080` `のいずれかでないといけません。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.create_thread:19
 msgid "Specifies the slowmode rate limit for user in this channel, in seconds. The maximum value possible is ``21600``. By default no slowmode rate limit if this is ``None``."
@@ -970,11 +970,11 @@ msgstr "チャンネルにすでに50個ピン留めされたメッセージが�
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:3
 msgid "Publishes this message to the channel's followers."
-msgstr ""
+msgstr "このメッセージをチャンネルのフォロワーに公開します。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:5
 msgid "The message must have been sent in a news channel. You must have :attr:`~Permissions.send_messages` to do this."
-msgstr ""
+msgstr "メッセージはニュースチャンネルで送信されている必要があります。これを行うには、 :attr:`~Permissions.send_messages` が必要です。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:8
 msgid "If the message is not your own then :attr:`~Permissions.manage_messages` is also needed."
@@ -982,7 +982,7 @@ msgstr "自身のメッセージ以外の場合は :attr:`~Permissions.manage_me
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:11
 msgid "You do not have the proper permissions to publish this message     or the channel is not a news channel."
-msgstr ""
+msgstr "このメッセージを公開するための適切な権限がないか、チャンネルがニュースチャンネルでない場合。"
 
 #: ../../../discord/interactions.py:docstring of discord.message.PartialMessage.publish:12
 msgid "Publishing the message failed."
@@ -1856,7 +1856,7 @@ msgstr "このスレッドをアーカイブしたユーザーのID。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:87
 msgid "The duration in minutes until the thread is automatically hidden from the channel list. Usually a value of 60, 1440, 4320 and 10080."
-msgstr ""
+msgstr "スレッドがチャンネルリストから自動的に非表示になるまでの分単位の期間。通常は60、1440、4320、10080のいずれかの値です。"
 
 #: ../../../discord/app_commands/models.py:docstring of discord.app_commands.models.AppCommandThread:94
 msgid "An aware timestamp of when the thread's archived status was last updated in UTC."
