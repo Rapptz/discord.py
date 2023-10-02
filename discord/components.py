@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
-from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType
+from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType, SelectDefaultValueType
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
 
@@ -40,8 +40,10 @@ if TYPE_CHECKING:
         ActionRow as ActionRowPayload,
         TextInput as TextInputPayload,
         ActionRowChildComponent as ActionRowChildComponentPayload,
+        SelectDefaultValues as SelectDefaultValuesPayload,
     )
     from .emoji import Emoji
+    from .abc import Snowflake
 
     ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
 
@@ -53,6 +55,7 @@ __all__ = (
     'SelectMenu',
     'SelectOption',
     'TextInput',
+    'SelectDefaultValue',
 )
 
 
@@ -263,6 +266,7 @@ class SelectMenu(Component):
         'options',
         'disabled',
         'channel_types',
+        'default_values',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
@@ -276,6 +280,9 @@ class SelectMenu(Component):
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
         self.channel_types: List[ChannelType] = [try_enum(ChannelType, t) for t in data.get('channel_types', [])]
+        self.default_values: List[SelectDefaultValue] = [
+            SelectDefaultValue.from_dict(d) for d in data.get('default_values', [])
+        ]
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
@@ -291,6 +298,8 @@ class SelectMenu(Component):
             payload['options'] = [op.to_dict() for op in self.options]
         if self.channel_types:
             payload['channel_types'] = [t.value for t in self.channel_types]
+        if self.default_values:
+            payload["default_values"] = [v.to_dict() for v in self.default_values]
 
         return payload
 
@@ -510,6 +519,79 @@ class TextInput(Component):
         This is an alias to :attr:`value`.
         """
         return self.value
+
+
+class SelectDefaultValue:
+    """Represents a select menu's default value.
+
+    These can be created by users.
+
+    .. versionadded:: 2.4
+
+    Parameters
+    -----------
+    id: :class:`int`
+        The id of a role, user, or channel.
+    type: :class:`SelectDefaultValueType`
+        The type of value that ``id`` represents.
+    """
+
+    def __init__(
+        self,
+        *,
+        id: int,
+        type: SelectDefaultValueType,
+    ) -> None:
+        self.id: int = id
+        self._type: SelectDefaultValueType = type
+
+    @property
+    def type(self) -> SelectDefaultValueType:
+        return self._type
+
+    @type.setter
+    def type(self, value: SelectDefaultValueType) -> None:
+        if not isinstance(value, SelectDefaultValueType):
+            raise TypeError(f'expected SelectDefaultValueType, received {value.__class__.__name__} instead')
+
+        self._type = value
+
+    def __repr__(self) -> str:
+        return f'<SelectDefaultValue id={self.id!r} type={self.type!r}>'
+
+    @classmethod
+    def from_dict(cls, data: SelectDefaultValuesPayload) -> SelectDefaultValue:
+        return cls(
+            id=data['id'],
+            type=try_enum(SelectDefaultValueType, data['type']),
+        )
+
+    def to_dict(self) -> SelectDefaultValuesPayload:
+        return {
+            'id': self.id,
+            'type': self._type.value,
+        }
+
+    @classmethod
+    def from_channel(cls, channel: Snowflake, /) -> Self:
+        return cls(
+            id=channel.id,
+            type=SelectDefaultValueType.channel,
+        )
+
+    @classmethod
+    def from_role(cls, role: Snowflake, /) -> Self:
+        return cls(
+            id=role.id,
+            type=SelectDefaultValueType.role,
+        )
+
+    @classmethod
+    def from_user(cls, user: Snowflake, /) -> Self:
+        return cls(
+            id=user.id,
+            type=SelectDefaultValueType.user,
+        )
 
 
 @overload
