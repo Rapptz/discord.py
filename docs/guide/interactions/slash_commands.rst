@@ -923,7 +923,7 @@ To add a check, use the :func:`.app_commands.check` decorator:
     async def fiftyfifty(interaction: discord.Interaction):
         await interaction.response.send_message("you're lucky!")
 
-Transforming the check into its own decorator:
+Transforming the check into its own decorator for easier usage:
 
 .. code-block:: python
 
@@ -946,9 +946,9 @@ Take advantage of this order if, for example, you only want a cooldown to apply 
 .. code-block:: python
 
     @client.tree.command()
-    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id)) # called second
+    @app_commands.checks.cooldown(1, 5.0) # called second
     @coinflip() # called first
-    async def ratelimited_fiftyfifty(interaction: discord.Interaction):
+    async def fiftyfifty(interaction: discord.Interaction):
         await interaction.response.send_message("you're very patient and lucky!")
 
 Custom checks can either be:
@@ -1020,22 +1020,22 @@ There are 3 types of handlers:
 
 1. A local handler, which only catches exceptions for a specific command
 
-   Attached using the :meth:`.app_commands.Command.error` decorator
+   Attached using the :meth:`.app_commands.Command.error` decorator.
 
-2. A group handler, which catches exceptions only for a certain group's subcommands
+2. A group handler, which catches exceptions only for a certain group's subcommands.
 
-   Added by using the :meth:`.app_commands.Group.error` decorator or overriding :meth:`.app_commands.Group.on_error`
+   Added by using the :meth:`.app_commands.Group.error` decorator or overriding :meth:`.app_commands.Group.on_error`.
 
-3. A global handler, which catches all exceptions in all commands
+3. A global handler, which catches all exceptions in all commands.
 
-   Added by using the :meth:`.CommandTree.error` decorator or overriding :meth:`.CommandTree.on_error`
+   Added by using the :meth:`.CommandTree.error` decorator or overriding :meth:`.CommandTree.on_error`.
 
 If an exception is raised, the library calls **all 3** of these handlers in that order.
 
 If a subcommand has multiple parents, the subcommand's parent handler is called first,
 followed by its parent handler.
 
-Some examples:
+**Examples**
 
 Attaching a local handler to a command to catch a check exception:
 
