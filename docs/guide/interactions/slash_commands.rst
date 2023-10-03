@@ -443,14 +443,16 @@ To illustrate, the following command has a selection of 3 colours with each valu
 
 .. code-block:: python
 
+    from discord.app_commands import Choice
+
     @client.tree.command()
     @app_commands.describe(colour="pick your favourite colour")
     @app_commands.choices(colour=[
-        app_commands.Choice(name="Red", value=0xFF0000),
-        app_commands.Choice(name="Green", value=0x00FF00),
-        app_commands.Choice(name="Blue", value=0x0000FF)
+        Choice(name="Red", value=0xFF0000),
+        Choice(name="Green", value=0x00FF00),
+        Choice(name="Blue", value=0x0000FF)
     ])
-    async def colour(interaction: discord.Interaction, colour: app_commands.Choice[int]):
+    async def colour(interaction: discord.Interaction, colour: Choice[int]):
         """show a colour"""
 
         embed = discord.Embed(title=colour.name, colour=colour.value)
@@ -885,22 +887,91 @@ To prevent this, :func:`~.app_commands.guild_only` can also be added.
     meaning, an invoking user might not actually have the permissions specified in the decorator.
 
 Custom checks
-++++++++++++++
+--------------
 
-waiting to be written
+A custom check is something that can be applied to a command to check if someone should be able to run it.
 
-cover:
+They're unique to the :ref:`officially supported checks <checks>` by Discord in that they're handled
+entirely client-side.
 
-- how to make a check, what it should return, default behaviours
-- builtin common checks and exceptions
+In short, a check is an async function that takes in the :class:`~discord.Interaction` as its sole parameter.
+It has the following options:
 
-Custom checks come in two forms:
+- Return a :obj:`True`-like to signal this check passes.
 
-- A local check, which runs for a single command
-- A global check, which runs before all commands, and before any local checks
+ - If a command has multiple checks, **all** of them need to pass in order for the invocation to continue.
+
+- Raise a :class:`~.app_commands.AppCommandError`-derived exception to signal a person can't run the command.
+
+ - Exceptions are passed to the bot's :ref:`error handlers <error_handling>`.
+
+- Return a :obj:`False`-like to signal a person can't run the command.
+
+ - :class:`~.app_commands.CheckFailure` will be raised instead.
+
+To add a check, use the :func:`.app_commands.check` decorator:
+
+.. code-block:: python
+
+    import random
+
+    async def predicate(interaction: discord.Interaction) -> bool:
+        return random.randint(0, 1) == 1
+
+    @client.tree.command()
+    @app_commands.check(predicate)
+    async def fiftyfifty(interaction: discord.Interaction):
+        await interaction.response.send_message("you're lucky!")
+
+Transforming the check into its own decorator:
+
+.. code-block:: python
+
+    import random
+
+    def coinflip():
+        async def predicate(interaction: discord.Interaction) -> bool:
+            return random.randint(0, 1) == 1
+        return app_commands.check(predicate)
+
+    @client.tree.command()
+    @coinflip()
+    async def fiftyfifty(interaction: discord.Interaction):
+        await interaction.response.send_message("you're lucky!")
+
+Checks are called sequentially and retain decorator order, bottom-to-top.
+
+Take advantage of this order if, for example, you only want a cooldown to apply if a previous check passes:
+
+.. code-block:: python
+
+    @client.tree.command()
+    @app_commands.checks.cooldown(1, 5.0, key=lambda i: (i.guild_id, i.user.id)) # called second
+    @coinflip() # called first
+    async def ratelimited_fiftyfifty(interaction: discord.Interaction):
+        await interaction.response.send_message("you're very patient and lucky!")
+
+Custom checks can either be:
+
+- local, only running for a single command (as seen above).
+
+- on a group, running for all child commands, and before any local checks.
+
+ - Added using the :meth:`.app_commands.Group.error` decorator or overriding :meth:`.app_commands.Group.on_error`.
+
+- :ref:`global <global_check>`, running for all commands, and before any group or local checks.
+
+.. note::
+
+    In the ``app_commands.checks`` namespace, there exists a lot of builtin checks
+    to account for common use-cases, such as checking for roles or applying a cooldown.
+
+    Refer to the :ref:`checks guide <guide_interaction_checks>` for more info.
+
+.. _global_check:
 
 Global check
-^^^^^^^^^^^^^
++++++++++++++
 
 To define a global check, override :meth:`.CommandTree.interaction_check` in a :class:`~.app_commands.CommandTree` subclass.
 This method is called before every command invoke.
@@ -909,8 +980,8 @@ For example:
 
 .. code-block:: python
 
-    # cool people only
     whitelist = {
+        # cool people only
         236802254298939392,
         402159684724719617,
         155863164544614402
@@ -948,15 +1019,25 @@ a user know their invocation failed for some reason, the library uses something 
 There are 3 types of handlers:
 
 1. A local handler, which only catches exceptions for a specific command
+
+   Attached using the :meth:`.app_commands.Command.error` decorator
+
 2. A group handler, which catches exceptions only for a certain group's subcommands
+
+   Added by using the :meth:`.app_commands.Group.error` decorator or overriding :meth:`.app_commands.Group.on_error`
+
 3. A global handler, which catches all exceptions in all commands
+
+   Added by using the :meth:`.CommandTree.error` decorator or overriding :meth:`.CommandTree.on_error`
 
 If an exception is raised, the library calls **all 3** of these handlers in that order.
 
 If a subcommand has multiple parents, the subcommand's parent handler is called first,
 followed by its parent handler.
 
-To attach a local handler to a command, use the :meth:`~.app_commands.Command.error` decorator:
+Some examples:
+
+Attaching a local handler to a command to catch a check exception:
 
 .. code-block:: python
 
@@ -988,7 +1069,7 @@ Likewise:
 - For translators, exceptions that don't derive :class:`~.app_commands.TranslationError` are wrapped into it.
 
 This is helpful to differentiate between exceptions that the bot expects, such as :class:`~.app_commands.MissingAnyRole`,
-over exceptions like :class:`TypeError` or :class:`ValueError`, which typically trace back to a programming mistake.
+over exceptions like :class:`TypeError` or :class:`ValueError`, which typically trace back to a programming mistake or HTTP error.
 
 To catch these exceptions in a global error handler for example:
 
@@ -1022,11 +1103,34 @@ To catch these exceptions in a global error handler for example:
                 print(f"Ignoring unknown exception in command {interaction.command.name}", file=sys.stderr)
                 traceback.print_exception(error)
 
-.. hint::
+Raising a new error from a check for a more robust method of catching failed checks:
 
-    Global error handlers can also be defined by overriding :meth:`.app_commands.CommandTree.on_error` in a subclass.
+.. code-block:: python
 
-Raising a custom exception from a transformer and catching it:
+    import random
+
+    class Unlucky(app_commands.CheckFailure):
+        def __init__(self):
+            super().__init__("you're unlucky!")
+
+    def coinflip():
+        async def predicate(interaction: discord.Interaction) -> bool:
+            if random.randint(0, 1) == 0:
+                raise Unlucky()
+            return True
+        return app_commands.check(predicate)
+
+    @client.tree.command()
+    @coinflip()
+    async def fiftyfifty(interaction: discord.Interaction):
+        await interaction.response.send_message("you're lucky!")
+
+    @fiftyfifty.error
+    async def fiftyfifty_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+        if isinstance(error, Unlucky):
+            await interaction.response.send_message(str(error))
+
+Raising an exception from a transformer and catching it:
 
 .. code-block:: python
 
@@ -1034,7 +1138,7 @@ Raising a custom exception from a transformer and catching it:
 
     class BadDateArgument(app_commands.Translator):
         def __init__(self, argument: str):
-            super().__init__(f'expected a date in DD/MM/YYYY format, not "{argument}".')
+            super().__init__(f'expected a date in dd/mm/yyyy format, not "{argument}".')
 
     class DateTransformer(app_commands.Transformer):
         async def transform(self, interaction: discord.Interaction, value: str) -> datetime.datetime:
@@ -1046,13 +1150,12 @@ Raising a custom exception from a transformer and catching it:
             when = when.replace(tzinfo=datetime.timezone.utc)
             return when
 
+    # pretend `some_command` is a command that uses this transformer
+
     @some_command.error
     async def some_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
         if isinstance(error, BadDateArgument):
             await interaction.response.send_message(str(error))
-
-Logging
-++++++++
 
 Instead of printing plainly to :obj:`sys.stderr`, the standard ``logging`` module can be configured instead -
 which is what discord.py uses to write its own exceptions.
@@ -1215,7 +1318,7 @@ containing the Japanese (locale: ``ja``) localisations for a certain command in 
     # responses from the command body
     apple-command-response = リンゴを{ $apple_count }個食べました。
 
-Onto the code:
+Onto the translator:
 
 .. code-block:: python
 
