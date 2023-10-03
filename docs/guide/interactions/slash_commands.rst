@@ -75,7 +75,7 @@ For example, the following code responds with "meow" on invocation:
     async def meow(interaction: discord.Interaction):
         """Meow meow meow"""
 
-        await interaction.response.send_message("meow")
+        await interaction.response.send_message('meow')
 
 Functions of this pattern are called callbacks, since their execution is
 left to the library to be called later.
@@ -117,12 +117,12 @@ To change them to something else, ``tree.command()`` takes ``name`` and ``descri
 
 .. code-block:: python
 
-    @client.tree.command(name="woof", description="Woof woof woof")
+    @client.tree.command(name='woof', description='Woof woof woof')
     async def meow(interaction: discord.Interaction):
         pass
 
     # or...
-    @client.tree.command(name="list")
+    @client.tree.command(name='list')
     async def list_(interaction: discord.Interaction):
         # prevent shadowing the "list" builtin
 
@@ -165,11 +165,11 @@ For example, to send a deferred ephemeral message:
     async def weather(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True) # indicates the follow-up message will be ephemeral
 
-        weathers = ["clear", "cloudy", "rainy", "stormy"]
+        weathers = ['sunny', 'clear', 'cloudy', 'rainy', 'stormy', 'snowy']
         await asyncio.sleep(5) # an expensive operation... (no more than 15 minutes!)
         forecast = random.choice(weathers)
 
-        await interaction.followup.send(f"the weather today is {forecast}!")
+        await interaction.followup.send(f'the weather today is {forecast}!')
 
 Syncing
 ++++++++
@@ -226,7 +226,7 @@ certain number of times using a ``content`` and an ``n_times`` parameter:
 
     @client.tree.command()
     async def repeat(interaction: discord.Interaction, content: str, n_times: int):
-        to_send = textwrap.shorten(f"{content} " * n_times, width=2000)
+        to_send = textwrap.shorten(f'{content} ' * n_times, width=2000)
         await interaction.response.send_message(to_send)
 
 On the client, these parameters show up as "black boxes" that need to be filled out during invocation:
@@ -293,7 +293,7 @@ To specify in code, a parameter should annotate to a :obj:`typing.Union` with al
         mentionable: Union[discord.User, discord.Member, discord.Role]
     ):
         await interaction.response.send_message(
-            f"i got: {mentionable}, of type: {mentionable.__class__.__name__}"
+            f'i got: {mentionable}, of type: {mentionable.__class__.__name__}'
         )
 
 Types that point to other types also don't have to include everything.
@@ -337,11 +337,11 @@ where each keyword is treated as a parameter name.
 
     @client.tree.command()
     @app_commands.describe(
-        content="the text to repeat",
-        n_times="the number of times to repeat the text"
+        content='the text to repeat',
+        n_times='the number of times to repeat the text'
     )
     async def repeat(interaction: discord.Interaction, content: str, n_times: int):
-        to_send = textwrap.shorten(f"{content} " * n_times, width=2000)
+        to_send = textwrap.shorten(f'{content} ' * n_times, width=2000)
         await interaction.response.send_message(to_send)
 
 These show up on Discord just beside the parameter's name:
@@ -367,7 +367,7 @@ Examples using a command to add 2 numbers together:
             right operand
         """
 
-        await interaction.response.send_message(f"{a} + {b} is {a + b}!")
+        await interaction.response.send_message(f'{a} + {b} is {a + b}!')
 
     @client.tree.command() # google
     async def addition(interaction: discord.Interaction, a: int, b: int):
@@ -402,9 +402,9 @@ In use:
 .. code-block:: python
 
     @client.tree.command()
-    @app_commands.rename(n_times="number-of-times")
+    @app_commands.rename(n_times='number-of-times')
     async def repeat(interaction: discord.Interaction, content: str, n_times: int):
-        to_send = textwrap.shorten(f"{content} " * n_times, width=2000)
+        to_send = textwrap.shorten(f'{content} ' * n_times, width=2000)
         await interaction.response.send_message(to_send)
 
 When referring to a renamed parameter in other decorators, the original parameter name should be used.
@@ -414,12 +414,12 @@ For example, to use :func:`~.app_commands.describe` and :func:`~.app_commands.re
 
     @client.tree.command()
     @app_commands.describe(
-        content="the text to repeat",
-        n_times="the number of times to repeat the text"
+        content='the text to repeat',
+        n_times='the number of times to repeat the text'
     )
-    @app_commands.rename(n_times="number-of-times")
+    @app_commands.rename(n_times='number-of-times')
     async def repeat(interaction: discord.Interaction, content: str, n_times: int):
-        to_send = textwrap.shorten(f"{content} " * n_times, width=2000)
+        to_send = textwrap.shorten(f'{content} ' * n_times, width=2000)
         await interaction.response.send_message(to_send)
 
 Choices
@@ -446,11 +446,11 @@ To illustrate, the following command has a selection of 3 colours with each valu
     from discord.app_commands import Choice
 
     @client.tree.command()
-    @app_commands.describe(colour="pick your favourite colour")
+    @app_commands.describe(colour='pick your favourite colour')
     @app_commands.choices(colour=[
-        Choice(name="Red", value=0xFF0000),
-        Choice(name="Green", value=0x00FF00),
-        Choice(name="Blue", value=0x0000FF)
+        Choice(name='Red', value=0xFF0000),
+        Choice(name='Green', value=0x00FF00),
+        Choice(name='Blue', value=0x0000FF)
     ])
     async def colour(interaction: discord.Interaction, colour: Choice[int]):
         """show a colour"""
@@ -523,7 +523,7 @@ For instance, to parse a date string into a :class:`datetime.datetime` we might 
 
     @client.tree.command()
     async def date(interaction: discord.Interaction, date: str):
-        when = datetime.datetime.strptime(date, "%d/%m/%Y") # dd/mm/yyyy format
+        when = datetime.datetime.strptime(date, '%d/%m/%Y') # dd/mm/yyyy format
         when = when.replace(tzinfo=datetime.timezone.utc) # attach timezone information
 
         # do something with 'when'...
@@ -540,7 +540,7 @@ Making one is done by inherting from :class:`.app_commands.Transformer` and over
 
     class DateTransformer(app_commands.Transformer):
         async def transform(self, interaction: discord.Interaction, value: str) -> datetime.datetime:
-            when = datetime.datetime.strptime(date, "%d/%m/%Y")
+            when = datetime.datetime.strptime(date, '%d/%m/%Y')
             when = when.replace(tzinfo=datetime.timezone.utc)
             return when
 
@@ -648,8 +648,8 @@ To accept member and user, regardless of where the command was invoked, place bo
         if isinstance(user, discord.Member):
             joined = user.joined_at
             if joined:
-                relative = discord.utils.format_dt(joined, "R")
-                info = f"{info} (joined this server {relative})"
+                relative = discord.utils.format_dt(joined, 'R')
+                info = f'{info} (joined this server {relative})'
 
         await interaction.response.send_message(info)
 
@@ -681,7 +681,7 @@ This class is customisable by subclassing and passing in any relevant fields at 
 
 .. code-block:: python
 
-    class Todo(app_commands.Group, description="manages a todolist"):
+    class Todo(app_commands.Group, description='manages a todolist'):
         ...
 
     client.tree.add_command(Todo()) # required!
@@ -698,10 +698,10 @@ Subcommands can be made in-line by decorating bound methods in the class:
 
 .. code-block:: python
 
-    class Todo(app_commands.Group, description="manages a todolist"):
-        @app_commands.command(name="add", description="add a todo")
+    class Todo(app_commands.Group, description='manages a todolist'):
+        @app_commands.command(name='add', description='add a todo')
         async def todo_add(self, interaction: discord.Interaction):
-            await interaction.response.send_message("added something to your todolist...!")
+            await interaction.response.send_message('added something to your todolist...!')
 
     client.tree.add_command(Todo())
 
@@ -714,17 +714,17 @@ To add 1-level of nesting, create another :class:`~.app_commands.Group` in the c
 
 .. code-block:: python
 
-    class Todo(app_commands.Group, description="manages a todolist"):
-        @app_commands.command(name="add", description="add a todo")
+    class Todo(app_commands.Group, description='manages a todolist'):
+        @app_commands.command(name='add', description='add a todo')
         async def todo_add(self, interaction: discord.Interaction):
-            await interaction.response.send_message("added something to your todolist...!")
+            await interaction.response.send_message('added something to your todolist...!')
 
         todo_lists = app_commands.Group(
-            name="lists",
-            description="commands for managing different todolists for different purposes"
+            name='lists',
+            description='commands for managing different todolists for different purposes'
         )
 
-        @todo_lists.command(name="switch", description="switch to a different todolist")
+        @todo_lists.command(name='switch', description='switch to a different todolist')
         async def todo_lists_switch(self, interaction: discord.Interaction):
             ... # /todo lists switch
 
@@ -735,17 +735,17 @@ Nested group commands can be moved into another class if it ends up being a bit 
 
 .. code-block:: python
 
-    class TodoLists(app_commands.Group, name="lists"):
+    class TodoLists(app_commands.Group, name='lists'):
         """commands for managing different todolists for different purposes"""
 
-        @app_commands.command(name="switch", description="switch to a different todolist"):
+        @app_commands.command(name='switch', description='switch to a different todolist'):
         async def todo_lists_switch(self, interaction: discord.Interaction):
             ...
 
-    class Todo(app_commands.Group, description="manages a todolist"):
-        @app_commands.command(name="add", description="add a todo")
+    class Todo(app_commands.Group, description='manages a todolist'):
+        @app_commands.command(name='add', description='add a todo')
         async def todo_add(self, interaction: discord.Interaction):
-            await interaction.response.send_message("added something to your todolist...!")
+            await interaction.response.send_message('added something to your todolist...!')
 
         todo_lists = TodoLists()
 
@@ -782,13 +782,13 @@ To demonstrate:
     @client.tree.command()
     @app_commands.guilds(discord.Object(336642139381301249))
     async def support(interaction: discord.Interaction):
-        await interaction.response.send_message("hello, welcome to the discord.py server!")
+        await interaction.response.send_message('hello, welcome to the discord.py server!')
 
     # or:
 
     @app_commands.command()
     async def support(interaction: discord.Interaction):
-        await interaction.response.send_message("hello, welcome to the discord.py server!")
+        await interaction.response.send_message('hello, welcome to the discord.py server!')
 
     client.tree.add_command(support, guild=discord.Object(336642139381301249))
 
@@ -840,7 +840,7 @@ This can be configured by passing the ``nsfw`` keyword argument within the comma
 
     @client.tree.command(nsfw=True)
     async def evil(interaction: discord.Interaction):
-        await interaction.response.send_message("******") # very explicit text!
+        await interaction.response.send_message('******') # very explicit text!
 
 Guild-only
 +++++++++++
@@ -874,7 +874,7 @@ Configured by adding the :func:`.app_commands.default_permissions` decorator whe
             await interaction.response.send_message("i can't change my name here")
         else:
             await guild.me.edit(nick=newname)
-            await interaction.response.send_message(f"hello i am {newname} now")
+            await interaction.response.send_message(f'hello i am {newname} now')
 
 Commands with this check are still visible and invocable in the bot's direct messages,
 regardless of the permissions specified.
@@ -1002,7 +1002,7 @@ For example:
         from discord.ext import commands
 
         bot = commands.Bot(
-            command_prefix="?",
+            command_prefix='?',
             intents=discord.Intents.default(),
             tree_cls=CoolPeopleTree
         )
@@ -1042,15 +1042,15 @@ Attaching a local handler to a command to catch a check exception:
 .. code-block:: python
 
     @app_commands.command()
-    @app_commands.checks.has_any_role("v1.0 Alpha Tester", "v2.0 Tester")
+    @app_commands.checks.has_any_role('v1.0 Alpha Tester', 'v2.0 Tester')
     async def tester(interaction: discord.Interaction):
-        await interaction.response.send_message("thanks for testing")
+        await interaction.response.send_message('thanks for testing')
 
     @tester.error
     async def tester_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
         if isinstance(error, app_commands.MissingAnyRole):
-            roles = ", ".join(str(r) for r in error.missing_roles)
-            await interaction.response.send_message(f"i only thank people who have one of these roles!: {roles}")
+            roles = ', '.join(str(r) for r in error.missing_roles)
+            await interaction.response.send_message('i only thank people who have one of these roles!: {roles}')
 
 Catching exceptions from all subcommands in a group:
 
@@ -1085,7 +1085,7 @@ To catch these exceptions in a global error handler for example:
             assert interaction.command is not None
 
             if isinstance(error, app_commands.CommandInvokeError):
-                print(f"Ignoring unknown exception in command {interaction.command.name}", file=sys.stderr)
+                print(f'Ignoring unknown exception in command {interaction.command.name}', file=sys.stderr)
                 traceback.print_exception(error.__class__, error, error.__traceback__)
 
 .. tab:: Python versions 3.10+
@@ -1100,7 +1100,7 @@ To catch these exceptions in a global error handler for example:
             assert interaction.command is not None
 
             if isinstance(error, app_commands.CommandInvokeError):
-                print(f"Ignoring unknown exception in command {interaction.command.name}", file=sys.stderr)
+                print(f'Ignoring unknown exception in command {interaction.command.name}', file=sys.stderr)
                 traceback.print_exception(error)
 
 Raising a new error from a check for a more robust method of catching failed checks:
@@ -1143,7 +1143,7 @@ Raising an exception from a transformer and catching it:
     class DateTransformer(app_commands.Transformer):
         async def transform(self, interaction: discord.Interaction, value: str) -> datetime.datetime:
             try:
-                when = datetime.datetime.strptime(date, "%d/%m/%Y")
+                when = datetime.datetime.strptime(date, '%d/%m/%Y')
             except ValueError:
                 raise BadDateArgument(value)
 
@@ -1206,7 +1206,7 @@ simply pass a string wrapped in :class:`~.app_commands.locale_str` in places you
 
     from discord.app_commands import locale_str as _
 
-    @client.tree.command(name=_("example"), description=_("an example command"))
+    @client.tree.command(name=_('example'), description=_('an example command'))
     async def example(interaction: discord.Interaction):
         ...
 
@@ -1215,7 +1215,7 @@ to :obj:`False` when creating a command:
 
 .. code-block:: python
 
-    @client.tree.command(name="example", description="an example command", auto_locale_strings=False)
+    @client.tree.command(name='example', description='an example command', auto_locale_strings=False)
     async def example(interaction: discord.Interaction):
         # i am not translated
 
@@ -1329,9 +1329,9 @@ Onto the translator:
             # load any resources when the translator initialises.
             # if asynchronous setup is needed, override `Translator.load()`!
 
-            self.resources = FluentResourceLoader("./l10n/{locale}")
+            self.resources = FluentResourceLoader('./l10n/{locale}')
             self.mapping = {
-                discord.Locale.japanese: FluentLocalization(["ja"], ["commands.ftl"], self.resources),
+                discord.Locale.japanese: FluentLocalization(['ja'], ['commands.ftl'], self.resources),
                 # + additional locales as needed
             }
 
@@ -1343,7 +1343,7 @@ Onto the translator:
         ):
             """core translate method called by the library"""
 
-            fluent_id = string.extras.get("fluent_id")
+            fluent_id = string.extras.get('fluent_id')
             if not fluent_id:
                 # ignore strings without an attached fluent_id
                 return None
@@ -1373,7 +1373,7 @@ Onto the translator:
 
             # strings passed to this method need to include a fluent_id extra
             # since we are trying to explicitly localise a string
-            fluent_id = string.extras["fluent_id"]
+            fluent_id = string.extras['fluent_id']
 
             return l10n.format_value(fluent_id, params)
 
@@ -1383,10 +1383,10 @@ attached ``fluent_id`` extra:
 .. code-block:: python
 
     @client.tree.command(
-        name=_("apple", fluent_id="apple-command-name"),
-        description=_("tell the bot to eat some apples", fluent_id="apple-command-description")
+        name=_('apple', fluent_id='apple-command-name'),
+        description=_('tell the bot to eat some apples', fluent_id='apple-command-description')
     )
-    @app_commands.describe(amount=_("how many apples?", fluent_id="apple-command-amount"))
+    @app_commands.describe(amount=_('how many apples?', fluent_id='apple-command-amount'))
     async def apple(interaction: discord.Interaction, amount: int):
         translator = client.tree.translator
 
@@ -1394,10 +1394,10 @@ attached ``fluent_id`` extra:
         # fluent can handle plurals for secondary languages if needed.
         # see: https://projectfluent.org/fluent/guide/selectors.html
 
-        plural = "apple" if amount == 1 else "apples"
+        plural = 'apple' if amount == 1 else 'apples'
 
         translated = await translator.localise(
-            _(f"i ate {amount} {plural}", fluent_id="apple-command-response"),
+            _(f'i ate {amount} {plural}', fluent_id='apple-command-response'),
             interaction.locale,
             apple_count=amount
         )
@@ -1438,13 +1438,13 @@ The :ref:`commands extension <discord_ext_commands>` makes this easy:
 
     intents = discord.Intents.default()
     intents.message_content = True
-    bot = commands.Bot(command_prefix="?", intents=intents)
+    bot = commands.Bot(command_prefix='?', intents=intents)
 
     @bot.command()
     @commands.is_owner()
     async def sync(ctx: commands.Context):
         synced = await bot.tree.sync()
-        await ctx.reply(f"synced {len(synced)} global commands")
+        await ctx.reply(f'synced {len(synced)} global commands')
 
     # invocable only by yourself on discord using ?sync
 
