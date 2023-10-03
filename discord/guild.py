@@ -98,6 +98,7 @@ from .partial_emoji import _EmojiTag, PartialEmoji
 __all__ = (
     'Guild',
     'BanEntry',
+    'IncidentData',
 )
 
 MISSING = utils.MISSING
@@ -154,8 +155,8 @@ class _GuildLimit(NamedTuple):
 
 
 class IncidentData:
-    """Represents the guild incident actions.
-    
+    """Represents the guild incident actions or "Security Actions" as its called in the UI.
+
     .. versionadded:: 2.4
 
     Attributes
@@ -163,17 +164,22 @@ class IncidentData:
     guild: :class:`Guild`
         The guild this incident data belongs to.
     invites_disabled_until: Optional[:class:`datetime.datetime`]
-        When invites get enabled again.
+        An aware datetime object that specifies the date and time in UTC that invites will be enabled again.
+        This will be set to ``None`` if invites are not disabled.
     dms_disabled_until: Optional[:class:`datetime.datetime`]
-        When direct messages get enabled again.
+        An aware datetime object that specifies the date and time in UTC that direct messages will be allowed again.
+        This will be set to ``None`` if direct messages are not disabled.
     """
-    def __init__(self, *, guild: Guild, data: IncidentDataPayload) -> None:
-        self._update(guild, data)
 
-    def _update(self, guild: Guild, data: IncidentDataPayload) -> None:
+    __slots__ = ('guild', 'invites_disabled_until', 'dms_disabled_until')
+
+    def __init__(self, *, guild: Guild, data: IncidentDataPayload) -> None:
         self.guild: Guild = guild
-        self.invites_disabled_until: Optional[datetime.datetime] = utils.parse_time(data['invites_disabled_until'])
-        self.dms_disabled_until: Optional[datetime.datetime] = utils.parse_time(data['dms_disabled_until'])
+        self._from_data(data)
+
+    def _from_data(self, data: IncidentDataPayload) -> None:
+        self.invites_disabled_until: Optional[datetime.datetime] = utils.parse_time(data.get('invites_disabled_until'))
+        self.dms_disabled_until: Optional[datetime.datetime] = utils.parse_time(data.get('dms_disabled_until'))
 
     def __repr__(self) -> str:
         return f'<IncidentData invites_disabled_until={self.invites_disabled_until!r} dms_disabled_until={self.dms_disabled_until!r}>'
@@ -186,19 +192,19 @@ class IncidentData:
     ) -> IncidentData:
         r"""|coro|
 
-        Edits the guild incident actions.
+        Edits the guild's security actions.
 
         You must have :attr:`~Permissions.manage_guild` to edit the actions.
 
-        Passing ``None`` will disable the action.
+        Passing ``None`` to any will revert all actions.
 
         Parameters
         ------------
         invites_disabled_until: Optional[:class:`datetime.datetime`]
-            The time when disabled invites will expire. (up to 24 hours in the future)
+            The time when invites should be enabled again, or ``None`` to remove the timeout.
             This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
         dms_disabled_until: Optional[:class:`datetime.datetime`]
-            The time when disabled direct messages will expire. (up to 24 hours in the future)
+            The time when direct messages should be allowed again, or ``None`` to remove the timeout.
             This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
         """
         payload: dict[str, Any] = {}
@@ -394,7 +400,7 @@ class Guild(Hashable):
         'premium_progress_bar_enabled',
         '_safety_alerts_channel_id',
         'max_stage_video_users',
-        '_incident_data',
+        'incidents_data',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -584,7 +590,7 @@ class Guild(Hashable):
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
         self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
-        self._incident_data: Optional[IncidentDataPayload] = guild.get('incident_data')
+        self.incidents_data: Optional[IncidentData] = IncidentData(guild=self, data=guild.get('incidents_data', {}) or {})  # type: ignore # it's fine
 
         if 'channels' in guild:
             channels = guild['channels']
@@ -1150,13 +1156,6 @@ class Guild(Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
         return utils.snowflake_time(self.id)
-    
-    @property
-    def incident_data(self) -> Optional[IncidentData]:
-        if self._incident_data is None:
-            return None
-
-        return IncidentData(guild=self, data=self._incident_data)
 
     def get_member_named(self, name: str, /) -> Optional[Member]:
         """Returns the first member found that matches the name provided.
