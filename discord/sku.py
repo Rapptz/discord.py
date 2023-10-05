@@ -146,6 +146,10 @@ class Entitlement:
             return None
         return self._state.get_user(self.user_id)
 
+    def is_expired(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the entitlement is expired."""
+        return utils.utcnow() >= self.ends_at
+
     async def delete(self) -> None:
         """|coro|
 
