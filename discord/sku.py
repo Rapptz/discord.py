@@ -70,6 +70,11 @@ class SKU:
         """Returns the flags of the SKU."""
         return SKUFlags._from_value(self._flags)
 
+    @property
+    def created_at(self) -> datetime:
+        """:class:`datetime.datetime`: Returns the sku's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
 
 class Entitlement:
     """Represents an entitlement from user or guild which has been granted access to a premium offering.
@@ -96,10 +101,6 @@ class Entitlement:
         A UTC start date which the entitlement is valid. Not present when using test entitlements.
     ends_at: Optional[:class:`datetime.datetime`]
         A UTC date which entitlement is no longer valid. Not present when using test entitlements.
-    deleted: :class:`bool`
-        Whether the entitlement has been deleted. Not applicable to app subscriptions, since they are not consumable.
-    subscription_id: Optional[:class:`int`]
-        The ID of the subscription that the entitlement belongs to if any.
     """
 
     __slots__ = (
@@ -113,8 +114,6 @@ class Entitlement:
         'consumed',
         'starts_at',
         'ends_at',
-        'deleted',
-        'subscription_id',
     )
 
     def __init__(self, state: ConnectionState, data: EntitlementPayload):
@@ -128,16 +127,9 @@ class Entitlement:
         self.consumed: bool = data.get('consumed', False)
         self.starts_at: Optional[datetime] = utils.parse_time(data.get('starts_at', None))
         self.ends_at: Optional[datetime] = utils.parse_time(data.get('ends_at', None))
-        self.deleted: bool = data.get('deleted', False)
-        self.subscription_id: Optional[int] = utils._get_as_snowflake(data, 'subscription_id')
 
     def __repr__(self) -> str:
         return f'<Entitlement id={self.id} type={self.type!r} user_id={self.user_id}>'
-
-    @property
-    def guild(self) -> Optional[Guild]:
-        """The guild that is granted access to the entitlement"""
-        return self._state._get_guild(self.guild_id)
 
     @property
     def user(self) -> Optional[User]:
@@ -145,6 +137,16 @@ class Entitlement:
         if self.user_id is None:
             return None
         return self._state.get_user(self.user_id)
+
+    @property
+    def guild(self) -> Optional[Guild]:
+        """The guild that is granted access to the entitlement"""
+        return self._state._get_guild(self.guild_id)
+
+    @property
+    def created_at(self) -> datetime:
+        """:class:`datetime.datetime`: Returns the entitlement's creation time in UTC."""
+        return utils.snowflake_time(self.id)
 
     def is_expired(self) -> bool:
         """:class:`bool`: Returns ``True`` if the entitlement is expired."""
