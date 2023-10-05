@@ -2834,7 +2834,7 @@ class Client:
 
     async def create_entitlement(
         self,
-        sku_id: int,
+        sku: Snowflake,
         owner: Snowflake,
         owner_type: EntitlementOwnerType,
     ) -> None:
@@ -2846,8 +2846,8 @@ class Client:
 
         Parameters
         -----------
-        sku_id: :class:`int`
-            The ID of the SKU to create the entitlement for.
+        sku: :class:`~discord.abc.Snowflake`
+            The SKU to create the entitlement for.
         owner: Optional[:class:`~discord.abc.Snowflake`]
             The ID of the owner.
         owner_type: :class:`.EntitlementOwnerType`
