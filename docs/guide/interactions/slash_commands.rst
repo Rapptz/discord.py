@@ -217,35 +217,45 @@ Since slash commands are defined by making Python functions, parameters are simi
 Each parameter must have an assiociated type. This restricts what type of value a user can and cannot input.
 Types are specified in code through :pep:`526` function annotations.
 
-For example, the following code implements a repeat command that repeats text a
-certain number of times using a ``content`` and an ``n_times`` parameter:
+For example, the following command has a ``liquid`` string parameter:
 
 .. code-block:: python
 
-    import textwrap
+    @client.tree.command()
+    async def bottles(interaction: discord.Interaction, liquid: str):
+        await interaction.response.send_message(f'99 bottles of {liquid} on the wall!')
+
+On the client, parameters show up as these little black boxes that need to be filled out during invocation:
+
+.. image:: /images/guide/app_commands/bottles_command_preview.png
+    :width: 300
+
+Since this is a string parameter, virtually anything can be inputted (up to Discord's limits).
+
+Other parameter types are more restrictive - for example, if an integer parameter is added:
+
+.. code-block:: python
 
     @client.tree.command()
-    async def repeat(interaction: discord.Interaction, content: str, n_times: int):
-        to_send = textwrap.shorten(f'{content} ' * n_times, width=2000)
-        await interaction.response.send_message(to_send)
+    async def bottles(interaction: discord.Interaction, liquid: str, amount: int):
+        await interaction.response.send_message(f'{amount} bottles of {liquid} on the wall!')
 
-On the client, these parameters show up as "black boxes" that need to be filled out during invocation:
+Trying to enter a non-numeric character for ``amount`` will result with this red message:
 
-.. image:: /images/guide/app_commands/repeat_command_preview.png
+.. image:: /images/guide/app_commands/input_a_valid_integer.png
     :width: 300
 
-Parameters cannot have a value that doesn't match their type; trying to enter a non-numeric character for ``n_times`` will result in an error:
+Additionally, since both of these parameters are required, trying to skip one will result in this message in red:
 
-.. image:: /images/guide/app_commands/repeat_command_wrong_type.png
+.. image:: /images/guide/app_commands/this_option_is_required.png
     :width: 300
 
-Some types of parameters require different modes of input. For example,
-annotating to :class:`discord.Member` will show a selection of members to pick from in the current guild.
+Some parameter types have different modes of input.
 
-.. image:: /images/guide/app_commands/avatar_command_preview.png
-    :width: 300
+For example, annotating to :class:`~discord.User` will show a selection of users to
+pick from in the current context and :class:`~discord.Attachment` will show a file-dropbox.
 
-A full list of available parameter types can be seen in the :ref:`type conversion table <type_conversion>`.
+A full overview of supported types can be seen in the :ref:`type conversion table <type_conversion>`.
 
 typing.Optional
 ++++++++++++++++
@@ -269,6 +279,7 @@ For example, this command displays a given user's avatar, or the current user's 
 On Discord:
 
 .. image:: /images/guide/app_commands/avatar_command_optional_preview.png
+    :width: 300
 
 `Python version 3.10+ union types <https://peps.python.org/pep-0604/>`_ are also supported instead of :obj:`typing.Optional`.
 
@@ -337,16 +348,17 @@ where each keyword is treated as a parameter name.
 
     @client.tree.command()
     @app_commands.describe(
-        content='the text to repeat',
-        n_times='the number of times to repeat the text'
+        liquid="what type of liquid is on the wall",
+        amount="how much of it is on the wall"
     )
-    async def repeat(interaction: discord.Interaction, content: str, n_times: int):
-        to_send = textwrap.shorten(f'{content} ' * n_times, width=2000)
-        await interaction.response.send_message(to_send)
+    async def bottles(interaction: discord.Interaction, liquid: str, amount: int):
+        await interaction.response.send_message(f'{amount} bottles of {liquid} on the wall!')
 
 These show up on Discord just beside the parameter's name:
 
-.. image:: /images/guide/app_commands/repeat_command_described.png
+.. image:: /images/guide/app_commands/bottles_command_described.png
+
+Not specifying a description results with an ellipsis "..." being used instead.
 
 In addition to the decorator, parameter descriptions can also be added using
 Google, Sphinx or Numpy style docstrings.
@@ -402,10 +414,9 @@ In use:
 .. code-block:: python
 
     @client.tree.command()
-    @app_commands.rename(n_times='number-of-times')
-    async def repeat(interaction: discord.Interaction, content: str, n_times: int):
-        to_send = textwrap.shorten(f'{content} ' * n_times, width=2000)
-        await interaction.response.send_message(to_send)
+    @app_commands.rename(amount="liquid-count")
+    async def bottles(interaction: discord.Interaction, liquid: str, amount: int):
+        await interaction.response.send_message(f'{amount} bottles of {liquid} on the wall!')
 
 When referring to a renamed parameter in other decorators, the original parameter name should be used.
 For example, to use :func:`~.app_commands.describe` and :func:`~.app_commands.rename` together:
@@ -413,14 +424,13 @@ For example, to use :func:`~.app_commands.describe` and :func:`~.app_commands.re
 .. code-block:: python
 
     @client.tree.command()
+    @app_commands.rename(amount="liquid-count")
     @app_commands.describe(
-        content='the text to repeat',
-        n_times='the number of times to repeat the text'
+        liquid="what type of liquid is on the wall",
+        amount="how much of it is on the wall"
     )
-    @app_commands.rename(n_times='number-of-times')
-    async def repeat(interaction: discord.Interaction, content: str, n_times: int):
-        to_send = textwrap.shorten(f'{content} ' * n_times, width=2000)
-        await interaction.response.send_message(to_send)
+    async def bottles(interaction: discord.Interaction, liquid: str, amount: int):
+        await interaction.response.send_message(f'{amount} bottles of {liquid} on the wall!')
 
 Choices
 ++++++++
@@ -532,7 +542,7 @@ However, this can get verbose pretty quickly if the parsing is more complex or w
 It helps to isolate this code into it's own place, which we can do with transformers.
 
 Transformers are effectively classes containing a ``transform`` method that "transforms" a raw argument value into a new value.
-Making one is done by inherting from :class:`.app_commands.Transformer` and overriding the :meth:`~.Transformer.transform` method.
+Making one is done by inherting from :class:`.app_commands.Transformer` and overriding the :meth:`~.Transformer.transform` method:
 
 .. code-block:: python
 
@@ -738,7 +748,7 @@ Nested group commands can be moved into another class if it ends up being a bit 
     class TodoLists(app_commands.Group, name='lists'):
         """commands for managing different todolists for different purposes"""
 
-        @app_commands.command(name='switch', description='switch to a different todolist'):
+        @app_commands.command(name='switch', description='switch to a different todolist')
         async def todo_lists_switch(self, interaction: discord.Interaction):
             ...
 
@@ -1006,6 +1016,8 @@ For example:
             intents=discord.Intents.default(),
             tree_cls=CoolPeopleTree
         )
+
+.. _error_handling:
 
 Error handling
 ---------------
