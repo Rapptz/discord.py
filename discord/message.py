@@ -111,6 +111,7 @@ __all__ = (
     'DeletedReferencedMessage',
     'MessageApplication',
     'RoleSubscriptionInfo',
+    'URLAttachment'
 )
 
 
@@ -197,12 +198,9 @@ class Attachment(Hashable):
     """
 
     __slots__ = (
-        'expiry',
         'id',
-        'issued',
         'size',
         'height',
-        'hm',
         'width',
         'filename',
         'url',
