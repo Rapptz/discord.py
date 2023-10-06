@@ -177,14 +177,17 @@ Syncing
 In order for this command to show up on Discord, the API needs some information regarding it, namely:
 
 - The name and description
-- Any :ref:`parameter names, types, descriptions <parameters>`
+
+- Any :ref:`parameter names, types and descriptions <parameters>`
 - Any :ref:`checks <checks>` attached
 - Whether this command is a :ref:`group <command_groups>`
 - Whether this is a :ref:`global or guild command <guild_commands>`
 - Any :ref:`localisations <translating>` for the above
 
 Syncing is the process of sending this information, which is done by
-calling the :meth:`.CommandTree.sync` method, typically in :meth:`.Client.setup_hook`:
+calling the :meth:`.CommandTree.sync` method.
+
+Typically, this is called on start-up in :meth:`.Client.setup_hook`:
 
 .. code-block:: python
 
@@ -198,13 +201,17 @@ calling the :meth:`.CommandTree.sync` method, typically in :meth:`.Client.setup_
 
 Commands need to be synced again each time a new command is added or removed, or if any of the above properties change.
 
-Reloading your own client is sometimes also needed for new changes to be visible -
+Syncing is **not** required when changing client-side behaviour,
+such as by adding a :ref:`library-side check <custom_checks>`, adding a :ref:`transformer <transformers>`
+or changing anything within the function body.
+
+Reloading your own client is sometimes needed for new changes to be visible -
 old commands tend to linger in the command preview if a client hasn't yet refreshed, but Discord
 blocks invocation with this message in red:
 
 .. image:: /images/guide/app_commands/outdated_command.png
 
-As another measure, discord.py will log warnings if there's a mismatch with what Discord provides and
+As another measure, the library will log warnings if there's a mismatch with what Discord provides and
 what the bot defines in code during invocation.
 
 .. _parameters:
@@ -348,8 +355,8 @@ where each keyword is treated as a parameter name.
 
     @client.tree.command()
     @app_commands.describe(
-        liquid="what type of liquid is on the wall",
-        amount="how much of it is on the wall"
+        liquid='what type of liquid is on the wall',
+        amount='how much of it is on the wall'
     )
     async def bottles(interaction: discord.Interaction, liquid: str, amount: int):
         await interaction.response.send_message(f'{amount} bottles of {liquid} on the wall!')
@@ -401,7 +408,8 @@ Examples using a command to add 2 numbers together:
 Other meta info can be specified in the docstring, such as the function return type,
 but in-practice only the parameter descriptions are used.
 
-Parameter descriptions added using :func:`.app_commands.describe` always takes precedence over ones in the docstring.
+Parameter descriptions added using :func:`.app_commands.describe` always
+take precedence over ones specified in the docstring.
 
 Naming
 ^^^^^^^
@@ -414,7 +422,7 @@ In use:
 .. code-block:: python
 
     @client.tree.command()
-    @app_commands.rename(amount="liquid-count")
+    @app_commands.rename(amount='liquid-count')
     async def bottles(interaction: discord.Interaction, liquid: str, amount: int):
         await interaction.response.send_message(f'{amount} bottles of {liquid} on the wall!')
 
@@ -424,10 +432,10 @@ For example, to use :func:`~.app_commands.describe` and :func:`~.app_commands.re
 .. code-block:: python
 
     @client.tree.command()
-    @app_commands.rename(amount="liquid-count")
+    @app_commands.rename(amount='liquid-count')
     @app_commands.describe(
-        liquid="what type of liquid is on the wall",
-        amount="how much of it is on the wall"
+        liquid='what type of liquid is on the wall',
+        amount='how much of it is on the wall'
     )
     async def bottles(interaction: discord.Interaction, liquid: str, amount: int):
         await interaction.response.send_message(f'{amount} bottles of {liquid} on the wall!')
@@ -476,6 +484,8 @@ On the client:
 discord.py also supports 2 other pythonic ways of adding choices to a command,
 shown :func:`here <discord.app_commands.choices>` in the reference.
 
+.. _autocompletion:
+
 Autocompletion
 +++++++++++++++
 
@@ -521,6 +531,8 @@ For strings, this limits the character count, whereas for numeric types this lim
 
 To set a range, a parameter should annotate to :class:`.app_commands.Range`.
 
+.. _transformers:
+
 Transformers
 +++++++++++++
 
@@ -542,7 +554,8 @@ However, this can get verbose pretty quickly if the parsing is more complex or w
 It helps to isolate this code into it's own place, which we can do with transformers.
 
 Transformers are effectively classes containing a ``transform`` method that "transforms" a raw argument value into a new value.
-Making one is done by inherting from :class:`.app_commands.Transformer` and overriding the :meth:`~.Transformer.transform` method:
+
+To make one, inherit from :class:`.app_commands.Transformer` and override the :meth:`~.Transformer.transform` method:
 
 .. code-block:: python
 
@@ -554,7 +567,7 @@ Making one is done by inherting from :class:`.app_commands.Transformer` and over
             when = when.replace(tzinfo=datetime.timezone.utc)
             return when
 
-If you're familar with the commands extension :ref:`ext.commands <discord_ext_commands>`, a lot of similarities can be drawn between transformers and converters.
+If you're familar with the commands extension (:ref:`ext.commands <discord_ext_commands>`), a lot of similarities can be drawn between transformers and converters.
 
 To use this transformer in a command, a paramater needs to annotate to :class:`.app_commands.Transform`,
 passing the transformed type and transformer respectively.
@@ -895,6 +908,8 @@ To prevent this, :func:`~.app_commands.guild_only` can also be added.
 
     This can be overridden to a different set of permissions by server administrators through the "Integrations" tab on the official client,
     meaning, an invoking user might not actually have the permissions specified in the decorator.
+
+.. _custom_checks:
 
 Custom checks
 --------------
