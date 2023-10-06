@@ -368,42 +368,56 @@ These show up on Discord just beside the parameter's name:
 Not specifying a description results with an ellipsis "..." being used instead.
 
 In addition to the decorator, parameter descriptions can also be added using
-Google, Sphinx or Numpy style docstrings.
+Google, Sphinx or NumPy style docstrings.
 
 Examples using a command to add 2 numbers together:
 
-.. code-block:: python
+.. tab:: NumPy
 
-    @client.tree.command() # numpy
-    async def addition(interaction: discord.Interaction, a: int, b: int):
-        """adds 2 numbers together.
+    .. code-block:: python
 
-        Parameters
-        -----------
-        a: int
-            left operand
-        b: int
-            right operand
-        """
+        @client.tree.command()
+        async def addition(interaction: discord.Interaction, a: int, b: int):
+            """adds 2 numbers together.
 
-        await interaction.response.send_message(f'{a} + {b} is {a + b}!')
+            Parameters
+            -----------
+            a: int
+                left operand
+            b: int
+                right operand
+            """
 
-    @client.tree.command() # google
-    async def addition(interaction: discord.Interaction, a: int, b: int):
-        """adds 2 numbers together.
+            await interaction.response.send_message(f'{a} + {b} is {a + b}!')
 
-        Args:
-            a (int): left operand
-            b (int): right operand
-        """
+.. tab:: Google
 
-    @client.tree.command() # sphinx
-    async def addition(interaction: discord.Interaction, a: int, b: int):
-        """adds 2 numbers together.
+    .. code-block:: python
 
-        :param a: left operand
-        :param b: right operand
-        """
+        @client.tree.command()
+        async def addition(interaction: discord.Interaction, a: int, b: int):
+            """adds 2 numbers together.
+
+            Args:
+                a (int): left operand
+                b (int): right operand
+            """
+
+            await interaction.response.send_message(f'{a} + {b} is {a + b}!')
+
+.. tab:: Sphinx
+
+    .. code-block:: python
+
+        @client.tree.command()
+        async def addition(interaction: discord.Interaction, a: int, b: int):
+            """adds 2 numbers together.
+
+            :param a: left operand
+            :param b: right operand
+            """
+
+            await interaction.response.send_message(f'{a} + {b} is {a + b}!')
 
 Other meta info can be specified in the docstring, such as the function return type,
 but in-practice only the parameter descriptions are used.
