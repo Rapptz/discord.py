@@ -1258,7 +1258,7 @@ to :obj:`False` when creating a command:
 
     @client.tree.command(name='example', description='an example command', auto_locale_strings=False)
     async def example(interaction: discord.Interaction):
-        # i am not translated
+        ... # i am not translated
 
 .. hint::
 
