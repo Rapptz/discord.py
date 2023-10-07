@@ -293,13 +293,13 @@ On Discord:
 typing.Union
 +++++++++++++
 
-Some types comprise of multiple other types. For example, a ``MENTIONABLE`` type parameter can point to any of these:
+Some types comprise of multiple other types.
+For example, the ``MENTIONABLE`` type includes both the user and role types:
 
-- :class:`discord.User`
-- :class:`discord.Member`
+- :class:`discord.User` and :class:`discord.Member`
 - :class:`discord.Role`
 
-To specify in code, a parameter should annotate to a :obj:`typing.Union` with all the different models:
+To use a mentionable type, a parameter should annotate to a :obj:`~typing.Union` with each model:
 
 .. code-block:: python
 
@@ -314,9 +314,8 @@ To specify in code, a parameter should annotate to a :obj:`typing.Union` with al
             f'i got: {mentionable}, of type: {mentionable.__class__.__name__}'
         )
 
-Types that point to other types also don't have to include everything.
-For example, a ``CHANNEL`` type parameter can point to any channel in a guild,
-but can be narrowed down to a specific set of channels:
+Not everything has to be included - for example, a ``CHANNEL`` type parameter
+can point to any channel in a guild, but can be narrowed down to a specific set of types:
 
 .. code-block:: python
 
@@ -337,13 +336,13 @@ but can be narrowed down to a specific set of channels:
         # Threads and voice channels only
         pass
 
-.. note::
+.. warning::
 
     Union types can't mix Discord types.
 
     Something like ``Union[discord.Member, discord.TextChannel]`` isn't possible.
 
-Refer to the :ref:`type conversion table <type_conversion>` for full information on sub-types.
+Refer to the :ref:`type conversion table <type_conversion>` for full information.
 
 Describing
 +++++++++++
