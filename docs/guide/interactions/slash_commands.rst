@@ -1052,7 +1052,7 @@ Error handling
 ---------------
 
 So far, any exceptions raised within a command callback, any custom checks, in a transformer
-or during localisation, et cetera should just be logged in the program's ``stderr`` or through any custom logging handlers.
+or during localisation, et cetera should just be logged in the program's :obj:`~sys.stderr` or through any custom logging handlers.
 
 In order to catch exceptions and do something else, such as sending a message to let
 a user know their invocation failed for some reason, the library uses something called error handlers.
