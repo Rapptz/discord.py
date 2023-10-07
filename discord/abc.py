@@ -500,6 +500,13 @@ class GuildChannel:
                 raise TypeError('type field must be of type ChannelType')
             options['type'] = ch_type.value
 
+        try:
+            status = options.pop('status')
+        except KeyError:
+            pass
+        else:
+            await self._state.http.edit_voice_channel_status(status, channel_id=self.id, reason=reason)
+
         if options:
             return await self._state.http.edit_channel(self.id, reason=reason, **options)
 
