@@ -714,7 +714,7 @@ Command groups **are not invocable** on their own.
 Therefore, instead of creating a command the standard way by decorating an async function,
 groups are created by using :class:`.app_commands.Group`.
 
-This class is customisable by subclassing and passing in any relevant fields at inheritance:
+This class is customisable by subclassing and passing in any relevant fields in the class constructor:
 
 .. code-block:: python
 
