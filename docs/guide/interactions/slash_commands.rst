@@ -388,7 +388,7 @@ Examples using a command to add 2 numbers together:
                 right operand
             """
 
-            await interaction.response.send_message(f'{a} + {b} is {a + b}!')
+            await interaction.response.send_message(f'{a + b = }')
 
 .. tab:: Google
 
@@ -403,7 +403,7 @@ Examples using a command to add 2 numbers together:
                 b (int): right operand
             """
 
-            await interaction.response.send_message(f'{a} + {b} is {a + b}!')
+            await interaction.response.send_message(f'{a + b = }')
 
 .. tab:: Sphinx
 
@@ -417,7 +417,7 @@ Examples using a command to add 2 numbers together:
             :param b: right operand
             """
 
-            await interaction.response.send_message(f'{a} + {b} is {a + b}!')
+            await interaction.response.send_message(f'{a + b = }')
 
 Other meta info can be specified in the docstring, such as the function return type,
 but in-practice only the parameter descriptions are used.
