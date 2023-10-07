@@ -222,7 +222,7 @@ Parameters
 Since slash commands are defined by making Python functions, parameters are similarly defined with function parameters.
 
 Each parameter must have an assiociated type. This restricts what type of value a user can and cannot input.
-Types are specified in code through :pep:`526` function annotations.
+Types are specified in code through :pep:`3107` function annotations.
 
 For example, the following command has a ``liquid`` string parameter:
 
@@ -288,7 +288,7 @@ On Discord:
 .. image:: /images/guide/app_commands/avatar_command_optional_preview.png
     :width: 300
 
-`Python version 3.10+ union types <https://peps.python.org/pep-0604/>`_ are also supported instead of :obj:`typing.Optional`.
+:pep:`Python version 3.10+ union types <604>` are also supported instead of :obj:`typing.Optional`.
 
 typing.Union
 +++++++++++++
