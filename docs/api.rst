@@ -2839,6 +2839,40 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.4
 
+    .. attribute:: voice_channel_status_update
+
+        The status of a voice channel was updated.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`VoiceChannel`.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with 2 attributes:
+
+        - ``status``: The status of the voice channel.
+        - ``channel``: The channel of which the status was updated.
+
+        When this is the action, :attr:`AuditLogEntry.changes` is empty.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: voice_channel_status_delete
+
+        The status of a voice channel was deleted.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.target` is
+        a :class:`VoiceChannel`.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with 2 attributes:
+
+        - ``status``: The status of the voice channel. For this action this is ``None``.
+        - ``channel``: The channel of which the status was updated.
+
+        When this is the action, :attr:`AuditLogEntry.changes` is empty.
+
+        .. versionadded:: 2.4
+
 .. class:: AuditLogActionCategory
 
     Represents the category that the :class:`AuditLogAction` belongs to.
