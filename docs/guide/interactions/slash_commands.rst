@@ -1092,71 +1092,91 @@ Attaching a local handler to a command to catch a check exception:
             roles = ', '.join(str(r) for r in error.missing_roles)
             await interaction.response.send_message('i only thank people who have one of these roles!: {roles}')
 
-Catching exceptions from all subcommands in a group:
+Attaching an error handler to a group:
 
 .. code-block:: python
 
+    @my_group.error
+    async def my_group_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+        pass # im called for all subcommands and subgroups
+
+
+    # or in a subclass:
     class MyGroup(app_commands.Group):
         async def on_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
-            ...
+            pass
 
-When an exception that doesn't derive :class:`~.app_commands.AppCommandError` is raised, it's wrapped
-into :class:`~.app_commands.CommandInvokeError`, with the original exception being accessible with ``__cause__``.
+Adding a global error handler:
+
+.. code-block:: python
+
+    @client.tree.error
+    async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+        pass # im called for all commands
+
+
+    # alternatively, you can override `CommandTree.on_error`
+    # when using commands.Bot, ensure you pass this class to the `tree_cls` kwarg in the bot constructor!
+
+    class MyTree(app_commands.CommandTree):
+        async def on_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+            pass
+
+.. warning::
+
+    When overriding the global error handler, ensure you're at least catching any invocation errors (covered below)
+    to make sure your bot isn't unexpectedly failing silently.
+
+Invocation errors
+++++++++++++++++++
+
+When an exception that doesn't derive :class:`~.app_commands.AppCommandError` is raised in a command callback,
+it's wrapped into :class:`~.app_commands.CommandInvokeError` before being sent to any error handlers.
 
 Likewise:
 
 - For transformers, exceptions that don't derive :class:`~.app_commands.AppCommandError` are wrapped in :class:`~.app_commands.TransformerError`.
 - For translators, exceptions that don't derive :class:`~.app_commands.TranslationError` are wrapped into it.
 
-This is helpful to differentiate between exceptions that the bot expects, such as :class:`~.app_commands.MissingAnyRole`,
-over exceptions like :class:`TypeError` or :class:`ValueError`, which typically trace back to a programming mistake or HTTP error.
+This exception is helpful to differentiate between exceptions that the bot expects, such as those from a command check,
+over exceptions like :class:`TypeError` or :class:`ValueError`, which tend to trace back to a programming mistake or API error.
 
 To catch these exceptions in a global error handler for example:
 
-.. tab:: Python versions below 3.10
+.. code-block:: python
 
-    .. code-block:: python
+    import sys
+    import traceback
 
-        import sys
-        import traceback
+    @client.tree.error
+    async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+        assert interaction.command is not None
 
-        @client.tree.error
-        async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-            assert interaction.command is not None
+        if isinstance(error, app_commands.CommandInvokeError):
+            print(f'Ignoring unknown exception in command {interaction.command.name}', file=sys.stderr)
+            traceback.print_exception(error.__class__, error, error.__traceback__)
 
-            if isinstance(error, app_commands.CommandInvokeError):
-                print(f'Ignoring unknown exception in command {interaction.command.name}', file=sys.stderr)
-                traceback.print_exception(error.__class__, error, error.__traceback__)
+            # the original exception can be accessed using error.__cause__
 
-.. tab:: Python versions 3.10+
+Custom exceptions
+++++++++++++++++++
 
-    .. code-block:: python
+When a command has multiple checks, it can be hard to know *which* check failed in an error handler,
+since the default behaviour is to raise a blanket :class:`~.app_commands.CheckFailure` exception.
 
-        import sys
-        import traceback
-
-        @client.tree.error
-        async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-            assert interaction.command is not None
-
-            if isinstance(error, app_commands.CommandInvokeError):
-                print(f'Ignoring unknown exception in command {interaction.command.name}', file=sys.stderr)
-                traceback.print_exception(error)
-
-Raising a new error from a check for a more robust method of catching failed checks:
+To solve this, inherit from the exception and raise it from the check instead of returning :obj:`False`:
 
 .. code-block:: python
 
     import random
 
     class Unlucky(app_commands.CheckFailure):
-        def __init__(self):
-            super().__init__("you're unlucky!")
+        pass
 
     def coinflip():
         async def predicate(interaction: discord.Interaction) -> bool:
             if random.randint(0, 1) == 0:
-                raise Unlucky()
+                raise Unlucky("you're unlucky!")
             return True
         return app_commands.check(predicate)
 
@@ -1170,13 +1190,13 @@ Raising a new error from a check for a more robust method of catching failed che
         if isinstance(error, Unlucky):
             await interaction.response.send_message(str(error))
 
-Raising an exception from a transformer and catching it:
+Transformers behave similarly, but should derive :class:`~.app_commands.AppCommandError` instead:
 
 .. code-block:: python
 
     from discord.app_commands import Transform
 
-    class BadDateArgument(app_commands.Translator):
+    class BadDateArgument(app_commands.AppCommandError):
         def __init__(self, argument: str):
             super().__init__(f'expected a date in dd/mm/yyyy format, not "{argument}".')
 
@@ -1197,13 +1217,20 @@ Raising an exception from a transformer and catching it:
         if isinstance(error, BadDateArgument):
             await interaction.response.send_message(str(error))
 
-Instead of printing plainly to :obj:`sys.stderr`, the standard :mod:`logging` module can be configured instead -
+Since a unique exception is used, extra state can be attached using :meth:`~object.__init__` for the error handler to work with.
+
+One example of this is in the library with :attr:`.app_commands.MissingAnyRole.missing_roles`.
+
+Logging
+++++++++
+
+Instead of printing plainly to :obj:`~sys.stderr`, the standard :mod:`logging` module can be configured instead -
 which is what discord.py uses to write its own exceptions.
 
-Whilst logging is a little bit more involved to set up, it has some added benefits such as using coloured text
+Whilst its a little bit more involved to set up, it has some added benefits such as using coloured text
 in a terminal and being able to write to a file.
 
-Refer to the :ref:`Setting Up logging <logging_setup>` page for more info.
+Refer to the :ref:`Setting Up logging <logging_setup>` page for more info and examples.
 
 .. _translating:
 
