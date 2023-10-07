@@ -1198,7 +1198,7 @@ Raising an exception from a transformer and catching it:
         if isinstance(error, BadDateArgument):
             await interaction.response.send_message(str(error))
 
-Instead of printing plainly to :obj:`sys.stderr`, the standard ``logging`` module can be configured instead -
+Instead of printing plainly to :obj:`sys.stderr`, the standard :mod:`logging` module can be configured instead -
 which is what discord.py uses to write its own exceptions.
 
 Whilst logging is a little bit more involved to set up, it has some added benefits such as using coloured text
@@ -1234,8 +1234,7 @@ When :meth:`.CommandTree.sync` is called, this method is called in a heavy loop 
 string for each locale.
 
 A wide variety of translation systems can be implemented using this interface, such as
-`gettext <https://docs.python.org/3/library/gettext.html>`_ and
-`Project Fluent <https://projectfluent.org/>`_.
+:mod:`gettext` and `Project Fluent <https://projectfluent.org/>`_.
 
 Only strings marked as ready for translation are passed to the method.
 By default, every string is considered translatable and passed.
