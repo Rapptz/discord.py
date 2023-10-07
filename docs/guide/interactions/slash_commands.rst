@@ -1227,7 +1227,7 @@ Logging
 Instead of printing plainly to :obj:`~sys.stderr`, the standard :mod:`logging` module can be configured instead -
 which is what discord.py uses to write its own exceptions.
 
-Whilst its a little bit more involved to set up, it has some added benefits such as using coloured text
+Whilst it's a little bit more involved to set up, it has some added benefits such as using coloured text
 in a terminal and being able to write to a file.
 
 Refer to the :ref:`Setting Up logging <logging_setup>` page for more info and examples.
