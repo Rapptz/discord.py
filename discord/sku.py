@@ -112,46 +112,46 @@ class Entitlement:
         The entitlement's ID.
     sku_id: :class:`int`
         The ID of the SKU that the entitlement belongs to.
-    user_id: Optional[:class:`int`]
-        The ID of the user that is granted access to the entitlement.
-    guild_id: Optional[:class:`int`]
-        The ID of the guild that is granted access to the entitlement
     application_id: :class:`int`
         The ID of the application that the entitlement belongs to.
+    user_id: Optional[:class:`int`]
+        The ID of the user that is granted access to the entitlement.
     type: :class:`EntitlementType`
         The type of the entitlement.
-    consumed: :class:`bool`
-        Whether the entitlement has been consumed. Not applicable to app subscriptions so will typically be ``False``.
+    deleted: :class:`bool`
+        Whether the entitlement has been deleted.
     starts_at: Optional[:class:`datetime.datetime`]
         A UTC start date which the entitlement is valid. Not present when using test entitlements.
     ends_at: Optional[:class:`datetime.datetime`]
         A UTC date which entitlement is no longer valid. Not present when using test entitlements.
+    guild_id: Optional[:class:`int`]
+        The ID of the guild that is granted access to the entitlement
     """
 
     __slots__ = (
         '_state',
         'id',
         'sku_id',
-        'user_id',
-        'guild_id',
         'application_id',
+        'user_id',
         'type',
-        'consumed',
+        'deleted',
         'starts_at',
         'ends_at',
+        'guild_id',
     )
 
     def __init__(self, state: ConnectionState, data: EntitlementPayload):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
         self.sku_id: int = int(data['sku_id'])
-        self.user_id: Optional[int] = utils._get_as_snowflake(data, 'user_id')
-        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.application_id: int = int(data['application_id'])
+        self.user_id: Optional[int] = utils._get_as_snowflake(data, 'user_id')
         self.type: EntitlementType = try_enum(EntitlementType, data['type'])
-        self.consumed: bool = data.get('consumed', False)
+        self.deleted: bool = data['deleted']
         self.starts_at: Optional[datetime] = utils.parse_time(data.get('starts_at', None))
         self.ends_at: Optional[datetime] = utils.parse_time(data.get('ends_at', None))
+        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
 
     def __repr__(self) -> str:
         return f'<Entitlement id={self.id} type={self.type!r} user_id={self.user_id}>'

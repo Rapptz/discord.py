@@ -40,13 +40,13 @@ class SKU(TypedDict):
 class Entitlement(TypedDict):
     id: str
     sku_id: str
-    user_id: Optional[str]
-    guild_id: Optional[str]
     application_id: str
+    user_id: Optional[str]
     type: int
-    consumed: bool
+    deleted: bool
     starts_at: NotRequired[str]
     ends_at: NotRequired[str]
+    guild_id: Optional[str]
 
 
 EntitlementOwnerType = Literal[1, 2]
