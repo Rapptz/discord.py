@@ -72,6 +72,7 @@ __all__ = (
     'SelectDefaultValueType',
     'SKUType',
     'EntitlementType',
+    'EntitlementOwnerType',
 )
 
 if TYPE_CHECKING:
