@@ -2423,7 +2423,7 @@ class HTTPClient:
         )
 
     def create_entitlement(
-        self, application_id: Snowflake, sku_id: Snowflake, owner_id: Snowflake, owner_type: sku.EntitlementType
+        self, application_id: Snowflake, sku_id: Snowflake, owner_id: Snowflake, owner_type: sku.EntitlementOwnerType
     ) -> Response[sku.Entitlement]:
         payload = {
             'sku_id': sku_id,

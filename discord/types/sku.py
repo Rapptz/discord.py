@@ -22,6 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
 
 from typing import TypedDict, Optional, Literal
 from typing_extensions import NotRequired
@@ -48,4 +49,4 @@ class Entitlement(TypedDict):
     ends_at: NotRequired[str]
 
 
-EntitlementType = Literal[1, 2]
+EntitlementOwnerType = Literal[1, 2]
