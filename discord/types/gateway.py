@@ -347,3 +347,9 @@ class AutoModerationActionExecution(TypedDict):
 
 class GuildAuditLogEntryCreate(AuditLogEntry):
     guild_id: Snowflake
+
+
+class VoiceChannelStatusUpdate(TypedDict):
+    id: Snowflake
+    guild_id: Snowflake
+    status: Optional[str]

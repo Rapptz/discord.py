@@ -1584,6 +1584,20 @@ class ConnectionState(Generic[ClientT]):
 
         self.dispatch('raw_typing', raw)
 
+    def parse_voice_channel_status_update(self, data: gw.VoiceChannelStatusUpdate) -> None:
+        guild = self._get_guild(int(data['guild_id']))
+        if guild is not None:
+            channel = guild.get_channel(int(data['id']))
+            if channel is not None:
+                old_status = channel.status  # type: ignore # will be a voice channel
+                status = data['status'] or None  # empty string -> None
+                channel.status = status  # type: ignore # will be a voice channel
+                self.dispatch('voice_channel_status_update', channel, old_status, status)
+            else:
+                _log.debug('VOICE_CHANNEL_STATUS_UPDATE referencing unknown channel ID: %s. Discarding.', data['id'])
+        else:
+            _log.debug('VOICE_CHANNEL_STATUS_UPDATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, (TextChannel, Thread, VoiceChannel)):
             return channel.guild.get_member(user_id)
