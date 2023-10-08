@@ -1,40 +1,38 @@
-from typing import Any, Optional
-from sphinx.builders.html import StandaloneHTMLBuilder
-from sphinx.builders.gettext import MessageCatalogBuilder, I18nBuilder, should_write, GettextRenderer
-from sphinx.locale import __
-
-from sphinx.util.osutil import ensuredir
-from sphinx.environment.adapters.indexentries import IndexEntries
-from sphinx.writers.html5 import HTML5Translator
-
 import datetime
-
 import os
 import re
+
+from sphinx.builders.gettext import GettextRenderer, I18nBuilder, MessageCatalogBuilder, should_write
+from sphinx.builders.html import StandaloneHTMLBuilder
+from sphinx.environment.adapters.indexentries import IndexEntries
+from sphinx.locale import __
+from sphinx.util.osutil import ensuredir
+from sphinx.writers.html5 import HTML5Translator
+
 try:
-    #Latest sphinx version lets you import ctime directly.
+    # Latest sphinx version lets you import ctime directly.
     from sphinx import version_info
 
-    comp=version_info[:3]
-    if comp>=(7,2,0):
+    comp = version_info[:3]
+    if comp >= (7, 2, 0):
         from sphinx.builders.gettext import ctime
         from sphinx.util.display import status_iterator
     else:
-        from sphinx.builders.gettext import timestamp, ltz
+        from sphinx.builders.gettext import ltz, timestamp
+
         ctime = datetime.datetime.fromtimestamp(timestamp, ltz).strftime('%Y-%m-%d %H:%M%z')
-        from sphinx.util import status_iterator 
+        from sphinx.util import status_iterator
 
 except Exception as exc:
-    #Fallback
+    # Fallback
     import time
+
     if (source_date_epoch := os.getenv('SOURCE_DATE_EPOCH')) is not None:
         timestamp = time.gmtime(float(source_date_epoch))
     else:
         # determine timestamp once to remain unaffected by DST changes during build
         timestamp = time.localtime()
     ctime = time.strftime('%Y-%m-%d %H:%M%z', timestamp)
-
-
 
 
 class DPYHTML5Translator(HTML5Translator):
