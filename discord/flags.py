@@ -60,6 +60,7 @@ __all__ = (
     'MemberFlags',
     'AttachmentFlags',
     'RoleFlags',
+    'SKUFlags',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')

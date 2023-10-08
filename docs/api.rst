@@ -4784,6 +4784,14 @@ SKU
 .. autoclass:: SKU()
     :members:
 
+SKUFlags
+~~~~~~~~~~~
+
+.. attributetable:: SKUFlags
+
+.. autoclass:: SKUFlags()
+    :members:
+
 Entitlement
 ~~~~~~~~~~~
 
