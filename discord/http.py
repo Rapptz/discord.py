@@ -48,6 +48,7 @@ from typing import (
 from urllib.parse import quote as _uriquote
 from collections import deque
 import datetime
+import socket
 
 import aiohttp
 
@@ -67,7 +68,6 @@ if TYPE_CHECKING:
     from .embeds import Embed
     from .message import Attachment
     from .flags import MessageFlags
-    from .enums import AuditLogAction
 
     from .types import (
         appinfo,
@@ -784,7 +784,8 @@ class HTTPClient:
     async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
-            self.connector = aiohttp.TCPConnector(limit=0)
+            # discord does not support ipv6
+            self.connector = aiohttp.TCPConnector(limit=0, family=socket.AF_INET)
 
         self.__session = aiohttp.ClientSession(
             connector=self.connector,
@@ -1373,9 +1374,11 @@ class HTTPClient:
         limit: int,
         before: Optional[Snowflake] = None,
         after: Optional[Snowflake] = None,
+        with_counts: bool = True,
     ) -> Response[List[guild.Guild]]:
         params: Dict[str, Any] = {
             'limit': limit,
+            'with_counts': int(with_counts),
         }
 
         if before:
@@ -1426,6 +1429,7 @@ class HTTPClient:
             'public_updates_channel_id',
             'preferred_locale',
             'premium_progress_bar_enabled',
+            'safety_alerts_channel_id',
         )
 
         payload = {k: v for k, v in fields.items() if k in valid_keys}
@@ -1722,7 +1726,7 @@ class HTTPClient:
         before: Optional[Snowflake] = None,
         after: Optional[Snowflake] = None,
         user_id: Optional[Snowflake] = None,
-        action_type: Optional[AuditLogAction] = None,
+        action_type: Optional[audit_log.AuditLogEvent] = None,
     ) -> Response[audit_log.AuditLog]:
         params: Dict[str, Any] = {'limit': limit}
         if before:
@@ -1914,6 +1918,7 @@ class HTTPClient:
             'topic',
             'privacy_level',
             'send_start_notification',
+            'guild_scheduled_event_id',
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 

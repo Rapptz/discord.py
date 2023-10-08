@@ -196,6 +196,9 @@ class Colour:
             The string could not be converted into a colour.
         """
 
+        if not value:
+            raise ValueError('unknown colour format given')
+
         if value[0] == '#':
             return parse_hex_number(value[1:])
 
@@ -508,6 +511,16 @@ class Colour:
         .. versionadded:: 2.2
         """
         return cls(0xEEEFF1)
+
+    @classmethod
+    def pink(cls) -> Self:
+        """A factory method that returns a :class:`Colour` with a value of ``0xEB459F``.
+
+        .. colour:: #EB459F
+
+        .. versionadded:: 2.3
+        """
+        return cls(0xEB459F)
 
 
 Color = Colour

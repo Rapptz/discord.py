@@ -98,6 +98,7 @@ if TYPE_CHECKING:
         CategoryChannel as CategoryChannelPayload,
         GroupDMChannel as GroupChannelPayload,
         ForumChannel as ForumChannelPayload,
+        MediaChannel as MediaChannelPayload,
         ForumTag as ForumTagPayload,
     )
     from .types.snowflake import SnowflakeList
@@ -737,7 +738,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             If ``None`` is passed then a private thread is created.
             Defaults to ``None``.
         auto_archive_duration: :class:`int`
-            The duration in minutes before a thread is automatically archived for inactivity.
+            The duration in minutes before a thread is automatically hidden from the channel list.
             If not provided, the channel's default auto archive duration is used.
 
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided.
@@ -776,7 +777,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 self.id,
                 name=name,
                 auto_archive_duration=auto_archive_duration or self.default_auto_archive_duration,
-                type=type.value,
+                type=type.value,  # type: ignore # we're assuming that the user is passing a valid variant
                 reason=reason,
                 invitable=invitable,
                 rate_limit_per_user=slowmode_delay,
@@ -1599,6 +1600,7 @@ class StageChannel(VocalGuildChannel):
         topic: str,
         privacy_level: PrivacyLevel = MISSING,
         send_start_notification: bool = False,
+        scheduled_event: Snowflake = MISSING,
         reason: Optional[str] = None,
     ) -> StageInstance:
         """|coro|
@@ -1620,6 +1622,10 @@ class StageChannel(VocalGuildChannel):
             You must have :attr:`~Permissions.mention_everyone` to do this.
 
             .. versionadded:: 2.3
+        scheduled_event: :class:`~discord.abc.Snowflake`
+            The guild scheduled event associated with the stage instance.
+
+            .. versionadded:: 2.4
         reason: :class:`str`
             The reason the stage instance was created. Shows up on the audit log.
 
@@ -1645,6 +1651,9 @@ class StageChannel(VocalGuildChannel):
                 raise TypeError('privacy_level field must be of type PrivacyLevel')
 
             payload['privacy_level'] = privacy_level.value
+
+        if scheduled_event is not MISSING:
+            payload['guild_scheduled_event_id'] = scheduled_event.id
 
         payload['send_start_notification'] = send_start_notification
 
@@ -1687,6 +1696,7 @@ class StageChannel(VocalGuildChannel):
         *,
         name: str = ...,
         nsfw: bool = ...,
+        user_limit: int = ...,
         position: int = ...,
         sync_permissions: int = ...,
         category: Optional[CategoryChannel] = ...,
@@ -1726,6 +1736,8 @@ class StageChannel(VocalGuildChannel):
             The new channel's position.
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
+        user_limit: :class:`int`
+            The new channel's user limit.
         sync_permissions: :class:`bool`
             Whether to sync permissions with the channel's new or pre-existing
             category. Defaults to ``False``.
@@ -1968,6 +1980,16 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         ret.sort(key=lambda c: (c.position, c.id))
         return ret
 
+    @property
+    def forums(self) -> List[ForumChannel]:
+        """List[:class:`ForumChannel`]: Returns the forum channels that are under this category.
+
+        .. versionadded:: 2.4
+        """
+        r = [c for c in self.guild.channels if c.category_id == self.id and isinstance(c, ForumChannel)]
+        r.sort(key=lambda c: (c.position, c.id))
+        return r
+
     async def create_text_channel(self, name: str, **options: Any) -> TextChannel:
         """|coro|
 
@@ -2189,6 +2211,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         'topic',
         '_state',
         '_flags',
+        '_type',
         'nsfw',
         'category_id',
         'position',
@@ -2204,9 +2227,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         '_flags',
     )
 
-    def __init__(self, *, state: ConnectionState, guild: Guild, data: ForumChannelPayload):
+    def __init__(self, *, state: ConnectionState, guild: Guild, data: Union[ForumChannelPayload, MediaChannelPayload]):
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
+        self._type: Literal[15, 16] = data['type']
         self._update(guild, data)
 
     def __repr__(self) -> str:
@@ -2220,7 +2244,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         joined = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {joined}>'
 
-    def _update(self, guild: Guild, data: ForumChannelPayload) -> None:
+    def _update(self, guild: Guild, data: Union[ForumChannelPayload, MediaChannelPayload]) -> None:
         self.guild: Guild = guild
         self.name: str = data['name']
         self.category_id: Optional[int] = utils._get_as_snowflake(data, 'parent_id')
@@ -2254,8 +2278,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         self._fill_overwrites(data)
 
     @property
-    def type(self) -> Literal[ChannelType.forum]:
+    def type(self) -> Literal[ChannelType.forum, ChannelType.media]:
         """:class:`ChannelType`: The channel's Discord type."""
+        if self._type == 16:
+            return ChannelType.media
         return ChannelType.forum
 
     @property
@@ -2342,6 +2368,13 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     def is_nsfw(self) -> bool:
         """:class:`bool`: Checks if the forum is NSFW."""
         return self.nsfw
+
+    def is_media(self) -> bool:
+        """:class:`bool`: Checks if the channel is a media channel.
+
+        .. versionadded:: 2.4
+        """
+        return self._type == ChannelType.media.value
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> ForumChannel:
@@ -2607,7 +2640,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         name: :class:`str`
             The name of the thread.
         auto_archive_duration: :class:`int`
-            The duration in minutes before a thread is automatically archived for inactivity.
+            The duration in minutes before a thread is automatically hidden from the channel list.
             If not provided, the channel's default auto archive duration is used.
 
             Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided.
@@ -2887,7 +2920,12 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
         self._state: ConnectionState = state
-        self.recipient: Optional[User] = state.store_user(data['recipients'][0])
+        self.recipient: Optional[User] = None
+
+        recipients = data.get('recipients')
+        if recipients is not None:
+            self.recipient = state.store_user(recipients[0])
+
         self.me: ClientUser = me
         self.id: int = int(data['id'])
 
@@ -3295,6 +3333,8 @@ def _guild_channel_factory(channel_type: int):
     elif value is ChannelType.stage_voice:
         return StageChannel, value
     elif value is ChannelType.forum:
+        return ForumChannel, value
+    elif value is ChannelType.media:
         return ForumChannel, value
     else:
         return None, value
