@@ -34,7 +34,6 @@ import time
 import os
 from .item import Item, ItemCallbackType
 from .dynamic import DynamicItem
-from ..enums import ComponentType
 from ..components import (
     Component,
     ActionRow as ActionRowComponent,
@@ -79,26 +78,10 @@ def _component_to_item(component: Component) -> Item:
 
         return Button.from_component(component)
     if isinstance(component, SelectComponent):
-        if component.type is ComponentType.select:
-            from .select import Select
+        from .select import BaseSelect
 
-            return Select.from_component(component)
-        elif component.type is ComponentType.user_select:
-            from .select import UserSelect
+        return BaseSelect.from_component(component)
 
-            return UserSelect.from_component(component)
-        elif component.type is ComponentType.mentionable_select:
-            from .select import MentionableSelect
-
-            return MentionableSelect.from_component(component)
-        elif component.type is ComponentType.channel_select:
-            from .select import ChannelSelect
-
-            return ChannelSelect().from_component(component)
-        elif component.type is ComponentType.role_select:
-            from .select import RoleSelect
-
-            return RoleSelect.from_component(component)
     return Item.from_component(component)
 
 

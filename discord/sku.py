@@ -173,6 +173,12 @@ class Entitlement:
         """:class:`datetime.datetime`: Returns the entitlement's creation time in UTC."""
         return utils.snowflake_time(self.id)
 
+    def is_expired(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the entitlement is expired. Will be always False for test entitlements."""
+        if self.ends_at is None:
+            return False
+        return utils.utcnow() >= self.ends_at
+
     async def delete(self) -> None:
         """|coro|
 

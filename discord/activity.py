@@ -732,7 +732,9 @@ class CustomActivity(BaseActivity):
 
     __slots__ = ('name', 'emoji', 'state')
 
-    def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = None, **extra: Any) -> None:
+    def __init__(
+        self, name: Optional[str], *, emoji: Optional[Union[PartialEmoji, Dict[str, Any], str]] = None, **extra: Any
+    ) -> None:
         super().__init__(**extra)
         self.name: Optional[str] = name
         self.state: Optional[str] = extra.pop('state', name)
