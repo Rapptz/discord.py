@@ -128,6 +128,16 @@ To change them to something else, ``tree.command()`` takes ``name`` and ``descri
 
 If a description isn't provided through ``description`` or by the docstring, an ellipsis "..." is used instead.
 
+.. warning::
+
+    Without specifying otherwise, commands are global.
+
+    After `syncing`_ globally, these commands will show up on every guild your bot is in
+    provided it has the ``applications.commands`` scope.
+
+    To make space for yourself to experiment with app commands safely,
+    create a new testing bot instead or alternatively sync your commands :ref:`locally <guild_commands>`.
+
 Interaction
 ++++++++++++
 
@@ -170,6 +180,8 @@ For example, to send a deferred ephemeral message:
         forecast = random.choice(weathers)
 
         await interaction.followup.send(f'the weather today is {forecast}!')
+
+.. _syncing:
 
 Syncing
 ++++++++
@@ -601,11 +613,11 @@ the underlying type and other information must now be provided through the :clas
 
 These can be provided by overriding the following properties:
 
-- :attr:`~.Transformer.type`
-- :attr:`~.Transformer.min_value`
-- :attr:`~.Transformer.max_value`
-- :attr:`~.Transformer.choices`
-- :attr:`~.Transformer.channel_types`
+- :attr:`.Transformer.type`
+- :attr:`.Transformer.min_value`
+- :attr:`.Transformer.max_value`
+- :attr:`.Transformer.choices`
+- :attr:`.Transformer.channel_types`
 
 Since these are properties, they must be decorated with :class:`property`:
 
@@ -619,6 +631,8 @@ Since these are properties, they must be decorated with :class:`property`:
         @property
         def type(self) -> discord.AppCommandOptionType:
             return discord.AppCommandOptionType.user
+
+.. (todo) talk about this properly and write an example
 
 :meth:`~.Transformer.autocomplete` callbacks can also be defined in-line.
 
@@ -802,7 +816,7 @@ Guild commands
 ---------------
 
 So far, all the command examples in this page have been global commands,
-which every guild your bot is in can see and use.
+which every guild your bot is in can see and use, provided it has the ``applications.commands`` scope, and in direct-messages.
 
 In contrast, guild commands are only seeable and usable by members of a certain guild.
 
@@ -856,6 +870,23 @@ to copy all global commands to a certain guild for syncing:
             await self.tree.sync(guild=guild)
 
 You'll typically find this syncing paradigm in some of the examples in the repository.
+
+.. warning::
+
+    If your commands are showing up twice, it's often as a result of a command being synced
+    both globally and as a guild command.
+
+    Removing a command from Discord needs another call to :meth:`.CommandTree.sync` -
+    for example, to remove local commands from a guild:
+
+    .. code-block:: python
+
+        guild = discord.Object(695868929154744360) # a bot testing server
+
+        #self.tree.copy_global_to(guild) # dont copy the commands over
+        await self.tree.sync(guild=guild)
+
+        # afterwards, the local commands should be removed
 
 .. _checks:
 
