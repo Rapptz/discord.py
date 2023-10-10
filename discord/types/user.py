@@ -236,6 +236,7 @@ class FriendSuggestionReason(TypedDict):
 class FriendSuggestion(TypedDict):
     suggested_user: PartialUser
     reasons: List[FriendSuggestionReason]
+    from_suggested_user_contacts: NotRequired[bool]
 
 
 class Report(TypedDict):

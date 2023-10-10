@@ -382,17 +382,20 @@ class FriendSuggestion(Hashable):
         The suggested user.
     reasons: List[:class:`FriendSuggestionReason`]
         The reasons why the user was suggested.
+    from_user_contacts: :class:`bool`
+        Whether the suggested user had the current user in their contacts.
     """
 
-    __slots__ = ('user', 'reasons', '_state')
+    __slots__ = ('user', 'reasons', 'from_user_contacts', '_state')
 
     def __init__(self, *, state: ConnectionState, data: FriendSuggestionPayload):
         self._state = state
         self.user = state.store_user(data['suggested_user'])
         self.reasons = [FriendSuggestionReason(r) for r in data.get('reasons', [])]
+        self.from_user_contacts: bool = data.get('from_suggested_user_contacts', False)
 
     def __repr__(self) -> str:
-        return f'<FriendSuggestion user={self.user!r} reasons={self.reasons!r}>'
+        return f'<FriendSuggestion user={self.user!r} reasons={self.reasons!r} from_user_contacts={self.from_user_contacts!r}>'
 
     async def accept(self) -> None:
         """|coro|
