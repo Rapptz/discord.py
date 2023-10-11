@@ -208,7 +208,9 @@ class BaseUser(_UserTag):
 
         .. versionadded:: 2.4
         """
-        return _get_as_snowflake(self._avatar_decoration_data, 'sku_id')
+        if self._avatar_decoration_data is not None:
+            return _get_as_snowflake(self._avatar_decoration_data, 'sku_id')
+        return None
 
     @property
     def banner(self) -> Optional[Asset]:
