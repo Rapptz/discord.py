@@ -530,7 +530,7 @@ Miscellaneous
 v1.5.0
 --------
 
-This version came with forced breaking changes that Discord is requiring all bots to go through on October 7th. It is highly recommended to read the documentation on intents, :ref:`intents_primer`.
+This version came with forced breaking changes that Discord is requiring all bots to go through on October 7th. It is highly recommended to read the documentation on intents, :ref:`guide_topic_intents`.
 
 API Changes
 ~~~~~~~~~~~~~
