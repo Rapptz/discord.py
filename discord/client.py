@@ -2762,7 +2762,7 @@ class Client:
         if self.application_id is None:
             raise MissingApplicationID
 
-        if before is not MISSING and after is not MISSING:
+        if before is not None and after is not None:
             raise TypeError('entitlements pagination does not support both before and after')
 
         # This endpoint paginates in ascending order.
