@@ -2380,6 +2380,22 @@ class HTTPClient:
     def application_info(self) -> Response[appinfo.AppInfo]:
         return self.request(Route('GET', '/oauth2/applications/@me'))
 
+    def edit_application_info(self, *, reason: Optional[str], payload: Any) -> Response[appinfo.AppInfo]:
+        valid_keys = (
+            'custom_install_url',
+            'description',
+            'role_connections_verification_url',
+            'install_params',
+            'flags',
+            'icon',
+            'cover_image',
+            'interactions_endpoint_url ',
+            'tags',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+        return self.request(Route('PATCH', '/applications/@me'), json=payload, reason=reason)
+
     async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
         try:
             data = await self.request(Route('GET', '/gateway'))
