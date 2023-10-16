@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import asyncio
 import datetime
-import os
 import re
 import io
 from os import PathLike
@@ -44,7 +43,6 @@ from typing import (
     Type,
     overload,
 )
-from urllib import parse
 
 from . import utils
 from .asset import Asset
