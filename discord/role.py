@@ -66,19 +66,17 @@ class RoleTags:
         The bot's user ID that manages this role.
     integration_id: Optional[:class:`int`]
         The integration ID that manages the role.
-    boost_listing_id: Optional[:class:`int`]
-        The ID of this role's subscription SKU and listing.
     subscription_listing_id: Optional[:class:`int`]
-        An alias for `boost_listing_id`
+        The ID of this role's subscription SKU and listing.
+
         .. versionadded:: 2.2
     """
 
     __slots__ = (
         'bot_id',
         'integration_id',
-        '_nitro_subscriber',
+        '_premium_subscriber',
         '_available_for_purchase',
-        'boost_listing_id',
         'subscription_listing_id',
         '_guild_connections',
     )
@@ -86,14 +84,13 @@ class RoleTags:
     def __init__(self, data: RoleTagPayload):
         self.bot_id: Optional[int] = _get_as_snowflake(data, 'bot_id')
         self.integration_id: Optional[int] = _get_as_snowflake(data, 'integration_id')
-        self.boost_listing_id: Optional[int] = _get_as_snowflake(data, 'subscription_listing_id')
-        self.subscription_listing_id: Optional[int] = self.boost_listing_id
+        self.subscription_listing_id: Optional[int] = _get_as_snowflake(data, 'subscription_listing_id')
 
         # NOTE: The API returns "null" for this if it's valid, which corresponds to None.
         # This is different from other fields where "null" means "not there".
         # So in this case, a value of None is the same as True.
         # Which means we would need a different sentinel.
-        self._nitro_subscriber: bool = data.get('premium_subscriber', MISSING) is None
+        self._premium_subscriber: bool = data.get('premium_subscriber', MISSING) is None
         self._available_for_purchase: bool = data.get('available_for_purchase', MISSING) is None
         self._guild_connections: bool = data.get('guild_connections', MISSING) is None
 
@@ -101,13 +98,9 @@ class RoleTags:
         """:class:`bool`: Whether the role is associated with a bot."""
         return self.bot_id is not None
 
-    def is_booster(self) -> bool:
-        """:class:`bool`: Whether the role is the "boost", role for the guild."""
-        return self._nitro_subscriber
-    
     def is_premium_subscriber(self) -> bool:
-        """:class:`bool`: An alias for `is_booster`"""
-        return self.is_booster()
+        """:class:`bool`: Whether the role is the premium subscriber, AKA "boost", role for the guild."""
+        return self._premium_subscriber
 
     def is_integration(self) -> bool:
         """:class:`bool`: Whether the role is managed by an integration."""
@@ -130,7 +123,7 @@ class RoleTags:
     def __repr__(self) -> str:
         return (
             f'<RoleTags bot_id={self.bot_id} integration_id={self.integration_id} '
-            f'nitro_subscriber={self.is_booster()}>'
+            f'premium_subscriber={self.is_premium_subscriber()}>'
         )
 
 
@@ -308,16 +301,12 @@ class Role(Hashable):
         """
         return self.tags is not None and self.tags.is_bot_managed()
 
-    def is_booster(self) -> bool:
-        """:class:`bool`: Whether the role is the "booster" role for the guild.
+    def is_premium_subscriber(self) -> bool:
+        """:class:`bool`: Whether the role is the premium subscriber, AKA "boost", role for the guild.
 
         .. versionadded:: 1.6
         """
-        return self.tags is not None and self.tags.is_booster()
-    
-    def is_premium_subscriber(self) -> bool:
-        """:class:`bool`: An alias for `is_booster`"""
-        return self.is_booster()
+        return self.tags is not None and self.tags.is_premium_subscriber()
 
     def is_integration(self) -> bool:
         """:class:`bool`: Whether the role is managed by an integration.
