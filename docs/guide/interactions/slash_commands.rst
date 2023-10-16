@@ -264,7 +264,7 @@ Trying to enter a non-numeric character for ``amount`` will result with this red
 .. image:: /images/guide/app_commands/input_a_valid_integer.png
     :width: 300
 
-Additionally, since both of these parameters are required, trying to skip one will result in this message in red:
+Additionally, since both of these parameters are required, trying to skip one will result with:
 
 .. image:: /images/guide/app_commands/this_option_is_required.png
     :width: 300
@@ -554,7 +554,7 @@ Range
 :class:`str`, :class:`int` and :class:`float` type parameters can optionally set a minimum and maximum value.
 For strings, this limits the character count, whereas for numeric types this limits the magnitude.
 
-To set a range, a parameter should annotate to :class:`.app_commands.Range`.
+Refer to the :class:`.app_commands.Range` page for more info and code examples.
 
 .. _transformers:
 
@@ -594,8 +594,8 @@ To make one, inherit from :class:`.app_commands.Transformer` and override the :m
 
 If you're familar with the commands extension (:ref:`ext.commands <discord_ext_commands>`), a lot of similarities can be drawn between transformers and converters.
 
-To use this transformer in a command, a paramater needs to annotate to :class:`.app_commands.Transform`,
-passing the transformed type and transformer respectively.
+To use this transformer in a command, a paramater needs to annotate to :class:`~.app_commands.Transform`,
+passing the new type and class respectively.
 
 .. code-block:: python
 
@@ -667,41 +667,40 @@ The table below outlines the relationship between Discord and Python types.
 
 :ddocs:`Application command option types <interactions/application-commands#application-command-object-application-command-option-type>` as documented by Discord.
 
-User parameter
-^^^^^^^^^^^^^^^
+.. note::
 
-Annotating to either :class:`discord.User` or :class:`discord.Member` both point to a ``USER`` Discord-type.
+    Annotating to either :class:`discord.User` or :class:`discord.Member` both point to a ``USER`` Discord-type.
 
-The actual type given by Discord is dependent on whether the command was invoked in DM-messages or in a guild.
+    The actual type given by Discord is dependent on whether the command was invoked in direct-messages or in a guild.
 
-For example, if a parameter annotates to :class:`~discord.Member`, and the command is invoked in direct-messages,
-discord.py will raise an error since the actual type given by Discord,
-:class:`~discord.User`, is incompatible with :class:`~discord.Member`.
+    For example, if a parameter annotates to :class:`~discord.Member`, and the command is invoked in direct-messages,
+    discord.py will raise an error since the actual type given by Discord,
+    :class:`~discord.User`, is incompatible with :class:`~discord.Member`.
 
-discord.py doesn't raise an error for the other way around, ie. a parameter annotated to :class:`~discord.User` invoked in a guild -
-this is because :class:`~discord.Member` is compatible with :class:`~discord.User`.
+    discord.py doesn't raise an error for the other way around, ie. a parameter annotated to :class:`~discord.User` invoked in a guild -
+    this is because :class:`~discord.Member` is compatible with :class:`~discord.User`.
 
-To accept member and user, regardless of where the command was invoked, place both types in a :obj:`~typing.Union`:
+    To accept member and user, regardless of where the command was invoked, place both types in a :obj:`~typing.Union`:
 
-.. code-block:: python
+    .. code-block:: python
 
-    from typing import Union
+        from typing import Union
 
-    @client.tree.command()
-    async def userinfo(
-        interaction: discord.Interaction,
-        user: Union[discord.User, discord.Member]
-    ):
-        info = user.name
+        @client.tree.command()
+        async def userinfo(
+            interaction: discord.Interaction,
+            user: Union[discord.User, discord.Member]
+        ):
+            info = user.name
 
-        # add some extra info if this command was invoked in a guild
-        if isinstance(user, discord.Member):
-            joined = user.joined_at
-            if joined:
-                relative = discord.utils.format_dt(joined, 'R')
-                info = f'{info} (joined this server {relative})'
+            # add some extra info if this command was invoked in a guild
+            if isinstance(user, discord.Member):
+                joined = user.joined_at
+                if joined:
+                    relative = discord.utils.format_dt(joined, 'R')
+                    info = f'{info} (joined this server {relative})'
 
-        await interaction.response.send_message(info)
+            await interaction.response.send_message(info)
 
 .. _command_groups:
 
@@ -984,8 +983,9 @@ To add a check, use the :func:`.app_commands.check` decorator:
 
     import random
 
+    # takes the interaction and returns a boolean
     async def predicate(interaction: discord.Interaction) -> bool:
-        return random.randint(0, 1) == 1
+        return random.randint(0, 1) == 1 # 50% chance
 
     @client.tree.command()
     @app_commands.check(predicate)
@@ -1250,7 +1250,9 @@ Transformers behave similarly, but should derive :class:`~.app_commands.AppComma
 
 Since a unique exception is used, extra state can be attached using :meth:`~object.__init__` for the error handler to work with.
 
-One example of this is in the library with :attr:`.app_commands.MissingAnyRole.missing_roles`.
+One such example of this is in the library with the
+:attr:`~.app_commands.MissingAnyRole.missing_roles` attribute for the
+:class:`~.app_commands.MissingAnyRole` exception.
 
 Logging
 ++++++++
@@ -1373,7 +1375,7 @@ In summary:
 
 - Use :class:`~.app_commands.locale_str` in-place of :class:`str` in parts of a command you want translated.
 
-  - Done by default, so this step is skipped in-practice.
+  - Done by default, so this step can be skipped.
 
 - Subclass :class:`.app_commands.Translator` and override the :meth:`.Translator.translate` method.
 
@@ -1384,132 +1386,6 @@ In summary:
 - Call :meth:`.CommandTree.sync`.
 
   - :meth:`.Translator.translate` will be called on all translatable strings.
-
-Following is a quick demo using the `Project Fluent <https://projectfluent.org/>`_ translation system
-and the `Python fluent library <https://pypi.org/project/fluent/>`_.
-
-Like a lot of other l10n systems, fluent uses directories and files to separate localisations.
-
-A structure like this is used for this example:
-
-.. code-block::
-
-    discord_bot/
-    ├── l10n/
-    │   └── ja/
-    │       └── commands.ftl
-    └── bot.py
-
-``commands.ftl`` is a translation resource described in fluent's `FTL <https://projectfluent.org/fluent/guide/>`_ format -
-containing the Japanese (locale: ``ja``) localisations for a certain command in the bot:
-
-.. code-block::
-
-    # command metadata
-    apple-command-name = リンゴ
-    apple-command-description = ボットにリンゴを食べさせます。
-
-    # parameters
-    apple-command-amount = 食べさせるリンゴの数
-
-    # responses from the command body
-    apple-command-response = リンゴを{ $apple_count }個食べました。
-
-Onto the translator:
-
-.. code-block:: python
-
-    from fluent.runtime import FluentLocalization, FluentResourceLoader
-
-    class JapaneseTranslator(app_commands.Translator):
-        def __init__(self):
-            # load any resources when the translator initialises.
-            # if asynchronous setup is needed, override `Translator.load()`!
-
-            self.resources = FluentResourceLoader('./l10n/{locale}')
-            self.mapping = {
-                discord.Locale.japanese: FluentLocalization(['ja'], ['commands.ftl'], self.resources),
-                # + additional locales as needed
-            }
-
-        async def translate(
-            self,
-            string: locale_str,
-            locale: discord.Locale,
-            context: app_commands.TranslationContext
-        ):
-            """core translate method called by the library"""
-
-            fluent_id = string.extras.get('fluent_id')
-            if not fluent_id:
-                # ignore strings without an attached fluent_id
-                return None
-
-            l10n = self.mapping.get(locale)
-            if not l10n:
-                # no translation available for this locale
-                return None
-
-            # otherwise, a translation is assumed to exist and is returned
-            return l10n.format_value(fluent_id)
-
-        async def localise(
-            self,
-            string: locale_str,
-            locale: discord.Locale,
-            **params: Any
-        ) -> str:
-            """translates a given string for a locale, subsituting any required parameters.
-            meant to be called for things outside what discord handles, eg. a message sent from the bot
-            """
-
-            l10n = self.mapping.get(locale)
-            if not l10n:
-                # return the string untouched
-                return string.message
-
-            # strings passed to this method need to include a fluent_id extra
-            # since we are trying to explicitly localise a string
-            fluent_id = string.extras['fluent_id']
-
-            return l10n.format_value(fluent_id, params)
-
-With the command, strings are only considered translatable if they have an
-attached ``fluent_id`` extra:
-
-.. code-block:: python
-
-    @client.tree.command(
-        name=_('apple', fluent_id='apple-command-name'),
-        description=_('tell the bot to eat some apples', fluent_id='apple-command-description')
-    )
-    @app_commands.describe(amount=_('how many apples?', fluent_id='apple-command-amount'))
-    async def apple(interaction: discord.Interaction, amount: int):
-        translator = client.tree.translator
-
-        # plurals for the bots native/default language (english) are handled here in the code.
-        # fluent can handle plurals for secondary languages if needed.
-        # see: https://projectfluent.org/fluent/guide/selectors.html
-
-        plural = 'apple' if amount == 1 else 'apples'
-
-        translated = await translator.localise(
-            _(f'i ate {amount} {plural}', fluent_id='apple-command-response'),
-            interaction.locale,
-            apple_count=amount
-        )
-
-        await interaction.response.send_message(translated)
-
-Viewing the command with an English (or any other) language setting:
-
-.. image:: /images/guide/app_commands/apple_command_english.png
-    :width: 300
-
-A Japanese language setting shows the added localisations:
-
-.. image:: /images/guide/app_commands/apple_command_japanese.png
-    :width: 300
 
 Recipes
 --------
@@ -1523,7 +1399,7 @@ Syncing app commands on startup, such as inside :meth:`.Client.setup_hook` can o
 and incur the heavy ratelimits set by Discord.
 Therefore, it's helpful to control the syncing process manually.
 
-A common and recommended approach is to create an owner-only traditional message command to do this.
+A common and recommended approach is to create an owner-only traditional command to do this.
 
 The :ref:`commands extension <discord_ext_commands>` makes this easy:
 
@@ -1531,10 +1407,8 @@ The :ref:`commands extension <discord_ext_commands>` makes this easy:
 
     from discord.ext import commands
 
-    # requires the `message_content` intent to work!
-
     intents = discord.Intents.default()
-    intents.message_content = True
+    intents.message_content = True # required!
     bot = commands.Bot(command_prefix='?', intents=intents)
 
     @bot.command()
@@ -1545,7 +1419,8 @@ The :ref:`commands extension <discord_ext_commands>` makes this easy:
 
     # invocable only by yourself on discord using ?sync
 
-A more complex command that offers higher granularity using arguments:
+A `more complex command <https://about.abstractumbra.dev/discord.py/2023/01/29/sync-command-example.html>`_
+that offers higher granularity using arguments:
 
 .. code-block:: python
 
@@ -1555,8 +1430,6 @@ A more complex command that offers higher granularity using arguments:
     from discord.ext import commands
 
     # requires the `message_content` intent to work!
-
-    # https://about.abstractumbra.dev/discord.py/2023/01/29/sync-command-example.html
 
     @bot.command()
     @commands.guild_only()
@@ -1600,5 +1473,7 @@ bots can still read message content for direct-messages and for messages that me
 
     bot = commands.Bot(
         command_prefix=commands.when_mentioned,
-        intents=discord.Intents.default()
+        # or...
+        command_prefix=commands.when_mentioned_or(">", "!"),
+        ...
     )
