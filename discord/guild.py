@@ -48,6 +48,8 @@ from typing import (
 )
 import warnings
 
+from discord.types.guild import GuildShop
+
 from . import utils, abc
 from .role import Role
 from .member import Member, VoiceState
@@ -763,6 +765,22 @@ class Guild(Hashable):
         emoji = self._state.get_emoji(emoji_id)
         if emoji and emoji.guild == self:
             return emoji
+        return None
+    
+    def get_guild_shop(self) -> Optional[GuildShop]:
+        """Returns the guild shop.
+
+        .. versionadded:: 2.4
+
+        Returns
+        -------
+        Optional[:class:`GuildShop`]
+            The returned Guild Shop or ``None`` if no shop is enabled.
+        """
+
+        shop = self._state.http.get_guild_shop(self.id)
+        if shop:
+            return shop # type: ignore
         return None
 
     @property
