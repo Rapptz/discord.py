@@ -111,7 +111,6 @@ __all__ = (
     'DeletedReferencedMessage',
     'MessageApplication',
     'RoleSubscriptionInfo',
-    'URLAttachment'
 )
 
 
@@ -417,106 +416,6 @@ class Attachment(Hashable):
         if self.description is not None:
             result['description'] = self.description
         return result
-
-
-class URLAttachment:  # NOTE: This class is not a subclass of Attachment because it doesn't have the same features
-    """Represents a CDN attachment in a messages content.
-
-    .. container:: operations
-        .. describe:: str(x)
-            Returns the URL of the attachment
-
-    Attributes
-    ----------
-    channel_id: :class:`int`
-        The channel id this attachment was sent to.
-    
-    id: :class:`int`
-        The attachment id.
-
-    filename: :class:`str`
-        The attachment original name.
-
-    file_extension: :class:`str`
-        The attachment file extension, this can be `png`, `jpeg`, `gif`...
-
-    expiry: Optional[:class:`str`]
-        The attachment expiry timestamp.
-
-    issued: Optional[:class:`str`]
-        The attachment issued timestamp.
-        .. note::
-            This is not clear for me yet, so I will document it as I guess it is
-
-    hm: Optional[:class:`str`]
-        The attachment unique signtarue available until it expires.
-    """
-
-    # NOTE: this class, as mentioned before, won't have the same features as a
-    # normal attachment as is based on its URL
-
-    def __init__(self, url: str) -> None:
-        self.__url: str = url
-        splitted_url: List[str] = url.split("/")
-        parsed_url = parse.urlparse(url)
-        url_params = parse.parse_qs(parsed_url.query)
-
-        filename: str = os.path.basename(parsed_url.path)
-        self.__filename, self.__file_ext = os.path.splitext(filename)
-
-        self.__channel_id: int = int(
-            splitted_url[splitted_url.index("attachments") + 1])
-        self.__id: int = int(
-            splitted_url[splitted_url.index("attachments") + 2])
-        self.__ex: Optional[List[str]] = url_params.get("ex", None)
-        self.__is: Optional[List[str]] = url_params.get("is", None)
-        self.__hm: Optional[List[str]] = url_params.get("hm", None)
-        print(self.__ex, self.__is, self.__hm)
-        # NOTE: ex, is and hm are string lists because parsed url params return that
-
-    @property
-    def channel_id(self) -> int:
-        """Returns the channel ID the original attachment was sent to."""
-        return self.__channel_id
-
-    @property
-    def id(self) -> int:
-        """Returns the attachment ID."""
-        return self.__id
-
-    @property
-    def filename(self) -> str:
-        """Returns the attachment name."""
-        return self.__filename
-
-    @property
-    def file_extension(self) -> str:
-        """Returns the file extension."""
-        return self.__file_ext
-
-    @property
-    def expiry(self) -> Optional[int]:
-        """Returns the integer timestamp of the expiry date that the attachment has."""
-        if self.__ex == None:
-            return
-        return int(self.__ex[0], 16)
-
-    @property
-    def issued(self) -> Optional[int]:
-        """Returns the integer timestamp of the issued date that the attachment has."""
-        if self.__is == None:
-            return
-        return int(self.__is[0], 16)
-
-    @property
-    def hm(self) -> Optional[str]:
-        """Returns the `hm` of the file, if no expiry is set then this parameter will be None."""
-        if self.__hm == None:
-            return
-        return self.__hm[0]
-
-    def __str__(self) -> str:
-        return self.__url
 
 
 class DeletedReferencedMessage:
@@ -2480,17 +2379,3 @@ class Message(PartialMessage, Hashable):
             The newly edited message.
         """
         return await self.edit(attachments=[a for a in self.attachments if a not in attachments])
-
-    def get_url_attachments(self) -> List[URLAttachment]:
-        r"""Returns all URL based attachments in the message content.
-        
-        Returns
-        -------
-        List[:class:`URLAttachment`]
-            The list of URL attachments in the message content.
-        """
-
-        pattern: str = r'https://cdn\.discordapp\.com/attachments/[^\s]+'
-        urls: List[str] = re.findall(pattern, self.content)
-
-        return [URLAttachment(url) for url in urls]

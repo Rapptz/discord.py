@@ -942,6 +942,18 @@ class HTTPClient:
         if after:
             params['after'] = after
         return self.request(r, params=params)
+    
+    def get_guild_shop(
+        self,
+        guild_id: Snowflake
+    ) -> Response[Optional[guild.GuildShop]]:
+        r = Route(
+            'GET',
+            '/channels/{guild_id}/shop',
+            guild_id = guild_id
+        )
+
+        return self.request(r)
 
     def clear_reactions(self, channel_id: Snowflake, message_id: Snowflake) -> Response[None]:
         r = Route(

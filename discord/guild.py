@@ -145,6 +145,8 @@ class BanEntry(NamedTuple):
     reason: Optional[str]
     user: User
 
+class GuildShop(NamedTuple):
+    ...
 
 class _GuildLimit(NamedTuple):
     emoji: int
@@ -795,6 +797,21 @@ class Guild(Hashable):
         emoji = self._state.get_emoji(emoji_id)
         if emoji and emoji.guild == self:
             return emoji
+        return None
+    
+    def get_shop(self, /) -> Optional[GuildShop]:
+        """Returns the guild shop, if any.
+        
+        Returns
+        -------
+        Optional[:class:`GuildShop`]
+            The returned shop or ``None`` if there isn't any.
+        """
+
+        shop = self._state.http.get_guild_shop(self.id)
+        if shop:
+            return shop
+        
         return None
 
     @property
