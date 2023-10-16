@@ -165,6 +165,8 @@ class GuildPrune(TypedDict):
 class GuildMFALevel(TypedDict):
     level: MFALevel
 
+class GuildShop(TypedDict):
+    ...
 
 class ChannelPositionUpdate(TypedDict):
     id: Snowflake
