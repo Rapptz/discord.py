@@ -1,0 +1,19 @@
+version: 2
+formats: []
+
+build:
+  os: "ubuntu-22.04"
+  tools:
+    python: "3.8"
+
+sphinx:
+  configuration: docs/conf.py
+  fail_on_warning: false
+  builder: html
+
+python:
+  install:
+    - method: pip
+      path: .
+      extra_requirements:
+        - docs

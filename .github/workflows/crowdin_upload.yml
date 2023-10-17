@@ -1,0 +1,44 @@
+name: crowdin upload
+
+on:
+  workflow_dispatch:
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    environment: Crowdin
+    name: upload
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up CPython 3.x
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+
+      - name: Install system dependencies
+        run: |
+          wget -qO - https://artifacts.crowdin.com/repo/GPG-KEY-crowdin | sudo apt-key add -
+          echo "deb https://artifacts.crowdin.com/repo/deb/ /" | sudo tee -a /etc/apt/sources.list.d/crowdin.list
+          sudo apt-get update -qq
+          sudo apt-get install -y crowdin3
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e .[docs,speed,voice]
+
+      - name: Build gettext
+        run: |
+          cd docs
+          make gettext
+
+      - name: Upload sources
+        shell: bash
+        run: |
+          cd docs
+          crowdin upload
+        env:
+          CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}

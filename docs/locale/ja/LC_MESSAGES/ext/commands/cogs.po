@@ -1,0 +1,187 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Project-ID: 362783\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: /ext/commands/cogs.pot\n"
+"X-Crowdin-File-ID: 60\n"
+"Language: ja_JP\n"
+
+#: ../../ext/commands/cogs.rst:6
+msgid "Cogs"
+msgstr "コグ"
+
+#: ../../ext/commands/cogs.rst:8
+msgid "There comes a point in your bot's development when you want to organize a collection of commands, listeners, and some state into one class. Cogs allow you to do just that."
+msgstr "Bot開発においてコマンドやリスナー、いくつかの状態を一つのクラスにまとめてしまいたい場合があるでしょう。コグはそれを実現したものです。"
+
+#: ../../ext/commands/cogs.rst:10
+msgid "The gist:"
+msgstr "要旨:"
+
+#: ../../ext/commands/cogs.rst:12
+msgid "Each cog is a Python class that subclasses :class:`.commands.Cog`."
+msgstr "すべてのコグは :class:`.commands.Cog` を継承したPythonクラスです。"
+
+#: ../../ext/commands/cogs.rst:13
+msgid "Every command is marked with the :func:`.commands.command` decorator."
+msgstr "すべてのコマンドは :func:`.commands.command` デコレータで装飾されます。"
+
+#: ../../ext/commands/cogs.rst:14
+msgid "Every hybrid command is marked with the :func:`.commands.hybrid_command` decorator."
+msgstr "すべてのハイブリッドコマンドは :func:`.commands.hybrid_command` デコレータで装飾されます。"
+
+#: ../../ext/commands/cogs.rst:15
+msgid "Every listener is marked with the :meth:`.commands.Cog.listener` decorator."
+msgstr "すべてのリスナーは :meth:`.commands.Cog.listener` デコレータで装飾されます。"
+
+#: ../../ext/commands/cogs.rst:16
+msgid "Cogs are then registered with the :meth:`.Bot.add_cog` call."
+msgstr "コグは :meth:`.Bot.add_cog` を呼び出して登録します。"
+
+#: ../../ext/commands/cogs.rst:17
+msgid "Cogs are subsequently removed with the :meth:`.Bot.remove_cog` call."
+msgstr "コグは :meth:`.Bot.remove_cog` を呼び出すことで除去されます。"
+
+#: ../../ext/commands/cogs.rst:19
+msgid "It should be noted that cogs are typically used alongside with :ref:`ext_commands_extensions`."
+msgstr "コグは :ref:`ext_commands_extensions` とともに使用されるのが一般的であることを覚えておきましょう。"
+
+#: ../../ext/commands/cogs.rst:22
+msgid "Quick Example"
+msgstr "簡単な例"
+
+#: ../../ext/commands/cogs.rst:24
+msgid "This example cog defines a ``Greetings`` category for your commands, with a single :ref:`command <ext_commands_commands>` named ``hello`` as well as a listener to listen to an :ref:`Event <discord-api-events>`."
+msgstr "この例で紹介するコグは ``hello`` という名前の :ref:`command <ext_commands_commands>` と、 :ref:`Event <discord-api-events>` を受信するリスナーを実装した ``Greetings`` という名前のコマンドカテゴリを定義しています。"
+
+#: ../../ext/commands/cogs.rst:49
+msgid "A couple of technical notes to take into consideration:"
+msgstr "考慮すべき二つのテクニカルノート:"
+
+#: ../../ext/commands/cogs.rst:51
+msgid "All listeners must be explicitly marked via decorator, :meth:`~.commands.Cog.listener`."
+msgstr "すべてのリスナーは :meth:`~.commands.Cog.listener` で明示的に装飾する必要があります。"
+
+#: ../../ext/commands/cogs.rst:52
+msgid "The name of the cog is automatically derived from the class name but can be overridden. See :ref:`ext_commands_cogs_meta_options`."
+msgstr "コグの名前は、自動的にクラスの名前が引用されますが、上書きも可能です。 :ref:`ext_commands_cogs_meta_options` を参照してください。"
+
+#: ../../ext/commands/cogs.rst:53
+msgid "All commands must now take a ``self`` parameter to allow usage of instance attributes that can be used to maintain state."
+msgstr "すべてのコマンドは状態を保持するインスタンスの属性を使用するために ``self`` パラメータを持つ必要があります。"
+
+#: ../../ext/commands/cogs.rst:56
+msgid "Cog Registration"
+msgstr "コグの登録"
+
+#: ../../ext/commands/cogs.rst:58
+msgid "Once you have defined your cogs, you need to tell the bot to register the cogs to be used. We do this via the :meth:`~.commands.Bot.add_cog` method."
+msgstr "コグを定義したら、Botにコグを登録する処理が必要になります。 :meth:`~.commands.Bot.add_cog` メソッドを用いて登録ができます。"
+
+#: ../../ext/commands/cogs.rst:64
+msgid "This binds the cog to the bot, adding all commands and listeners to the bot automatically."
+msgstr "これはコグとボットを紐づけ、すべてのコマンドとリスナーを自動的にボットに追加します。"
+
+#: ../../ext/commands/cogs.rst:66
+msgid "Note that we reference the cog by name, which we can override through :ref:`ext_commands_cogs_meta_options`. So if we ever want to remove the cog eventually, we would have to do the following."
+msgstr "コグを名前で参照している点に注意してください。これは :ref:`ext_commands_cogs_meta_options` で上書きが可能です。そのため、後でコグを除去したい場合は、次の処理を行う必要があります。"
+
+#: ../../ext/commands/cogs.rst:73
+msgid "Using Cogs"
+msgstr "コグの使用"
+
+#: ../../ext/commands/cogs.rst:75
+msgid "Just as we remove a cog by its name, we can also retrieve it by its name as well. This allows us to use a cog as an inter-command communication protocol to share data. For example:"
+msgstr "コグを名前で除去するのと同様に、名前でコグを検索することもできます。これによってコグをデータ共有のためのコマンド間通信プロトコルとして使うことができます。例えば:"
+
+#: ../../ext/commands/cogs.rst:110
+msgid "Special Methods"
+msgstr "特殊なメソッド"
+
+#: ../../ext/commands/cogs.rst:112
+msgid "As cogs get more complicated and have more commands, there comes a point where we want to customise the behaviour of the entire cog or bot."
+msgstr "コグが複雑化し、多くのコマンドを持つようになるにつれ、コグあるいはBot全体の挙動をカスタマイズしたくなることがあります。"
+
+#: ../../ext/commands/cogs.rst:114
+msgid "They are as follows:"
+msgstr "そのための特殊なメソッドは以下のとおりです:"
+
+#: ../../ext/commands/cogs.rst:116
+msgid ":meth:`.Cog.cog_load`"
+msgstr ":meth:`.Cog.cog_load`"
+
+#: ../../ext/commands/cogs.rst:117
+msgid ":meth:`.Cog.cog_unload`"
+msgstr ":meth:`.Cog.cog_unload`"
+
+#: ../../ext/commands/cogs.rst:118
+msgid ":meth:`.Cog.cog_check`"
+msgstr ":meth:`.Cog.cog_check`"
+
+#: ../../ext/commands/cogs.rst:119
+msgid ":meth:`.Cog.cog_command_error`"
+msgstr ":meth:`.Cog.cog_command_error`"
+
+#: ../../ext/commands/cogs.rst:120
+msgid ":meth:`.Cog.cog_before_invoke`"
+msgstr ":meth:`.Cog.cog_before_invoke`"
+
+#: ../../ext/commands/cogs.rst:121
+msgid ":meth:`.Cog.cog_after_invoke`"
+msgstr ":meth:`.Cog.cog_after_invoke`"
+
+#: ../../ext/commands/cogs.rst:122
+msgid ":meth:`.Cog.bot_check`"
+msgstr ":meth:`.Cog.bot_check`"
+
+#: ../../ext/commands/cogs.rst:123
+msgid ":meth:`.Cog.bot_check_once`"
+msgstr ":meth:`.Cog.bot_check_once`"
+
+#: ../../ext/commands/cogs.rst:125
+msgid "You can visit the reference to get more detail."
+msgstr "詳細はリファレンスを参照してください。"
+
+#: ../../ext/commands/cogs.rst:130
+msgid "Meta Options"
+msgstr "メタオプション"
+
+#: ../../ext/commands/cogs.rst:132
+msgid "At the heart of a cog resides a metaclass, :class:`.commands.CogMeta`, which can take various options to customise some of the behaviour. To do this, we pass keyword arguments to the class definition line. For example, to change the cog name we can pass the ``name`` keyword argument as follows:"
+msgstr "コグの中核にはメタクラスである :class:`.commands.CogMeta` が存在します。これにはいくつかの挙動を変更ができる様々なオプションが用意されています。オプションを使用する際はキーワード引数をクラス定義の行で渡します。例えば、コグの名前を変更する場合はキーワード引数 ``name`` を次のように渡します。"
+
+#: ../../ext/commands/cogs.rst:139
+msgid "To see more options that you can set, see the documentation of :class:`.commands.CogMeta`."
+msgstr "設定可能な他のオプションについては :class:`.commands.CogMeta` のドキュメントを参照してください。"
+
+#: ../../ext/commands/cogs.rst:142
+msgid "Inspection"
+msgstr "インスペクション"
+
+#: ../../ext/commands/cogs.rst:144
+msgid "Since cogs ultimately are classes, we have some tools to help us inspect certain properties of the cog."
+msgstr "コグは究極的にはクラスのため、コグの特定のプロパティを調べるのに役立つツールがいくつか用意されています。"
+
+#: ../../ext/commands/cogs.rst:147
+msgid "To get a :class:`list` of commands, we can use :meth:`.Cog.get_commands`. ::"
+msgstr ":meth:`.Cog.get_commands` を使うことで、コマンドの :class:`list` を取得できます。"
+
+#: ../../ext/commands/cogs.rst:153
+msgid "If we want to get the subcommands as well, we can use the :meth:`.Cog.walk_commands` generator. ::"
+msgstr "サブコマンドを取得したい場合は :meth:`.Cog.walk_commands` ジェネレータを使うことができます。"
+
+#: ../../ext/commands/cogs.rst:157
+msgid "To do the same with listeners, we can query them with :meth:`.Cog.get_listeners`. This returns a list of tuples -- the first element being the listener name and the second one being the actual function itself. ::"
+msgstr "これと同様の処理をリスナーで行う場合は、 :meth:`.Cog.get_listeners` が使用できます。これはタプルのリストを返します -- 最初の要素がリスナーの名前で、二つ目の要素が関数そのものです。"
+

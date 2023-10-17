@@ -1,0 +1,131 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Project-ID: 362783\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: sphinx.pot\n"
+"X-Crowdin-File-ID: 70\n"
+"Language: ja_JP\n"
+
+#: ../../_templates/layout.html:30
+msgid "Copy Code"
+msgstr "コードをコピー"
+
+#: ../../_templates/layout.html:31
+msgid "Could not copy codeblock:"
+msgstr "コードブロックをコピーできませんでした:"
+
+#: ../../_templates/layout.html:46
+msgid "About these documents"
+msgstr "ドキュメントについて"
+
+#: ../../_templates/layout.html:49
+msgid "Index"
+msgstr "目次"
+
+#: ../../_templates/layout.html:52
+#: ../../_templates/layout.html:76
+msgid "Search"
+msgstr "検索"
+
+#: ../../_templates/layout.html:55
+msgid "Copyright"
+msgstr "コピーライト"
+
+#: ../../_templates/layout.html:73
+msgid "Discord"
+msgstr "Discord"
+
+#: ../../_templates/layout.html:74
+msgid "FAQ"
+msgstr "よくある質問"
+
+#: ../../_templates/layout.html:77
+#: ../../_templates/layout.html:170
+msgid "Close"
+msgstr "閉じる"
+
+#: ../../_templates/layout.html:82
+#: ../../_templates/layout.html:105
+#: ../../_templates/layout.html:126
+msgid "Search documentation"
+msgstr "ドキュメントを検索"
+
+#: ../../_templates/layout.html:92
+msgid "View Documentation For"
+msgstr "表示ドキュメント"
+
+#: ../../_templates/layout.html:143
+msgid "&#169; <a href=\"%(path)s\">Copyright</a> %(copyright)s."
+msgstr "&#169; <a href=\"%(path)s\">Copyright</a> %(copyright)s."
+
+#: ../../_templates/layout.html:145
+msgid "&#169; Copyright %(copyright)s."
+msgstr "&#169; Copyright %(copyright)s."
+
+#: ../../_templates/layout.html:149
+msgid "Last updated on %(last_updated)s."
+msgstr "最終更新日: %(last_updated)s"
+
+#: ../../_templates/layout.html:152
+msgid "Created using <a href=\"https://www.sphinx-doc.org/\">Sphinx</a> %(sphinx_version)s."
+msgstr "<a href=\"https://www.sphinx-doc.org/\">Sphinx</a> %(sphinx_version)s にて作成。"
+
+#: ../../_templates/layout.html:173
+msgid "Settings"
+msgstr "設定"
+
+#: ../../_templates/layout.html:175
+msgid "Font"
+msgstr "フォント"
+
+#: ../../_templates/layout.html:177
+msgid "Use a serif font:"
+msgstr "セリフフォントを使用:"
+
+#: ../../_templates/layout.html:179
+msgid "Use a serif font? Your system font will be used, falling back to serif."
+msgstr "セリフフォントを使用しますか？ フォールバックフォントとしてシステムのフォントが使用されます。"
+
+#: ../../_templates/layout.html:186
+msgid "Theme"
+msgstr "テーマ"
+
+#: ../../_templates/layout.html:189
+msgid "Set your theme based on your system preferences"
+msgstr "システム設定に基づいてテーマを設定します。"
+
+#: ../../_templates/layout.html:192
+msgid "Automatic"
+msgstr "自動"
+
+#: ../../_templates/layout.html:195
+msgid "Set your theme to light theme"
+msgstr "テーマをライトテーマに設定します。"
+
+#: ../../_templates/layout.html:198
+msgid "Light"
+msgstr "ライト"
+
+#: ../../_templates/layout.html:201
+msgid "Set your theme to dark theme"
+msgstr "テーマをダークテーマに設定します。"
+
+#: ../../_templates/layout.html:204
+msgid "Dark"
+msgstr "ダーク"
+
+#: ../../_templates/layout.html:212
+msgid "to top"
+msgstr "先頭へ"
+

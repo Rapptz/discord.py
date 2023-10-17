@@ -1,0 +1,1055 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Project-ID: 362783\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: /ext/commands/commands.pot\n"
+"X-Crowdin-File-ID: 64\n"
+"Language: ja_JP\n"
+
+#: ../../ext/commands/commands.rst:6
+msgid "Commands"
+msgstr "コマンド"
+
+#: ../../ext/commands/commands.rst:8
+msgid "One of the most appealing aspects of the command extension is how easy it is to define commands and how you can arbitrarily nest groups and commands to have a rich sub-command system."
+msgstr "コマンド拡張の最も魅力的な機能の一つは、簡単にコマンドが定義でき、かつそのコマンドを好きなようにネスト状にして、豊富なサブコマンドを用意することができる点です。"
+
+#: ../../ext/commands/commands.rst:11
+msgid "Commands are defined by attaching it to a regular Python function. The command is then invoked by the user using a similar signature to the Python function."
+msgstr "コマンドは、Pythonの関数と関連付けすることによって定義され、同様のシグネチャを使用してユーザーに呼び出されます。"
+
+#: ../../ext/commands/commands.rst:16
+msgid "You must have access to the :attr:`~discord.Intents.message_content` intent for the commands extension to function. This must be set both in the developer portal and within your code."
+msgstr "コマンド拡張機能が機能するには、 :attr:`~discord.Intents.message_content` インテントが必要です。これは、デベロッパーポータルとコード内の両方で有効化しないといけません。"
+
+#: ../../ext/commands/commands.rst:19
+msgid "Failure to do this will result in your bot not responding to any of your commands."
+msgstr "そうしない場合は、ボットはコマンドに応答しなくなります。"
+
+#: ../../ext/commands/commands.rst:21
+msgid "For example, in the given command definition:"
+msgstr "例えば、次のコマンド定義を使うと次のようになります。"
+
+#: ../../ext/commands/commands.rst:29
+msgid "With the following prefix (``$``), it would be invoked by the user via:"
+msgstr "接頭辞を (``$``) としたとすると、このコマンドは次のように実行できます。"
+
+#: ../../ext/commands/commands.rst:35
+msgid "A command must always have at least one parameter, ``ctx``, which is the :class:`.Context` as the first one."
+msgstr "コマンドには、少なくとも :class:`.Context` を渡すための引数 ``ctx`` が必要です。"
+
+#: ../../ext/commands/commands.rst:37
+msgid "There are two ways of registering a command. The first one is by using :meth:`.Bot.command` decorator, as seen in the example above. The second is using the :func:`~ext.commands.command` decorator followed by :meth:`.Bot.add_command` on the instance."
+msgstr "コマンドを登録するには二通りの方法があります。一つ目は :meth:`.Bot.command` を使用する方法で、二つ目が :func:`~ext.commands.command` デコレータを使用して :meth:`.Bot.add_command` でインスタンスにコマンドを追加していく方法です。"
+
+#: ../../ext/commands/commands.rst:41
+msgid "Essentially, these two are equivalent: ::"
+msgstr "本質的に、これら2つは同等になります: ::"
+
+#: ../../ext/commands/commands.rst:63
+msgid "Since the :meth:`.Bot.command` decorator is shorter and easier to comprehend, it will be the one used throughout the documentation here."
+msgstr ":meth:`.Bot.command` が簡単かつ理解がしやすいので、ドキュメント上ではこちらを使っています。"
+
+#: ../../ext/commands/commands.rst:66
+msgid "Any parameter that is accepted by the :class:`~discord.ext.commands.Command` constructor can be passed into the decorator. For example, to change the name to something other than the function would be as simple as doing this:"
+msgstr ":class:`~discord.ext.commands.Command` のコンストラクタの引数はデコレータに渡すことで利用できます。例えば、コマンドの名前を関数以外のものへと変更したい場合は以下のように簡単に設定することができます。"
+
+#: ../../ext/commands/commands.rst:76
+msgid "Parameters"
+msgstr "パラメータ"
+
+#: ../../ext/commands/commands.rst:78
+msgid "Since we define commands by making Python functions, we also define the argument passing behaviour by the function parameters."
+msgstr "Pythonの関数定義によって、同時にコマンドを定義するので、関数のパラメータを設定することにより、コマンドの引数受け渡し動作も定義することができます。"
+
+#: ../../ext/commands/commands.rst:81
+msgid "Certain parameter types do different things in the user side and most forms of parameter types are supported."
+msgstr "特定のパラメータタイプはユーザーサイドで異なる動作を行い、そしてほとんどの形式のパラメータタイプがサポートされています。"
+
+#: ../../ext/commands/commands.rst:84
+msgid "Positional"
+msgstr "位置パラメータ"
+
+#: ../../ext/commands/commands.rst:86
+msgid "The most basic form of parameter passing is the positional parameter. This is where we pass a parameter as-is:"
+msgstr "最も基本的な引数は位置パラメータです。与えられた値をそのまま渡します。"
+
+#: ../../ext/commands/commands.rst:95
+msgid "On the bot using side, you can provide positional arguments by just passing a regular string:"
+msgstr "Botの使用者側は、通常の文字列を渡すだけで位置パラメータに値を渡すことができます。"
+
+#: ../../ext/commands/commands.rst:99
+msgid "To make use of a word with spaces in between, you should quote it:"
+msgstr "間に空白を含む文字列を渡す場合は、文字列を引用符で囲む必要があります。"
+
+#: ../../ext/commands/commands.rst:103
+msgid "As a note of warning, if you omit the quotes, you will only get the first word:"
+msgstr "引用符を用いなかった場合、最初の文字列のみが渡されます。"
+
+#: ../../ext/commands/commands.rst:107
+msgid "Since positional arguments are just regular Python arguments, you can have as many as you want:"
+msgstr "位置パラメータは、Pythonの引数と同じものなので、好きなだけ設定することが可能です。"
+
+#: ../../ext/commands/commands.rst:116
+msgid "Variable"
+msgstr "可変長引数"
+
+#: ../../ext/commands/commands.rst:118
+msgid "Sometimes you want users to pass in an undetermined number of parameters. The library supports this similar to how variable list parameters are done in Python:"
+msgstr "場合によっては、可変長のパラメータを設定したい場合もあるでしょう。このライブラリはPythonの可変長パラメータと同様にこれをサポートしています。"
+
+#: ../../ext/commands/commands.rst:128
+msgid "This allows our user to accept either one or many arguments as they please. This works similar to positional arguments, so multi-word parameters should be quoted."
+msgstr "これによって一つ、あるいは複数の引数を受け取ることができます。ただし、引数を渡す際の挙動は位置パラメータと同様のため、複数の単語を含む文字列は引用符で囲む必要があります。"
+
+#: ../../ext/commands/commands.rst:131
+msgid "For example, on the bot side:"
+msgstr "例えば、ボット側ではこのように動きます。"
+
+#: ../../ext/commands/commands.rst:135
+msgid "If the user wants to input a multi-word argument, they have to quote it like earlier:"
+msgstr "複数単語の文字列を渡す際は、引用符で囲んでください。"
+
+#: ../../ext/commands/commands.rst:139
+msgid "Do note that similar to the Python function behaviour, a user can technically pass no arguments at all:"
+msgstr "Pythonの振る舞いと同様に、ユーザーは引数なしの状態を渡すことも一応できます。"
+
+#: ../../ext/commands/commands.rst:144
+msgid "Since the ``args`` variable is a :class:`py:tuple`, you can do anything you would usually do with one."
+msgstr "``args`` 変数は :class:`py:tuple` となるため、通常のタプルと同様の操作が行なえます。"
+
+#: ../../ext/commands/commands.rst:148
+msgid "Keyword-Only Arguments"
+msgstr "キーワード引数"
+
+#: ../../ext/commands/commands.rst:150
+msgid "When you want to handle parsing of the argument yourself or do not feel like you want to wrap multi-word user input into quotes, you can ask the library to give you the rest as a single argument. We do this by using a **keyword-only argument**, seen below:"
+msgstr "引数の構文解析を自分で行う場合や、複数単語の入力を引用符で囲む必要のないようにしたい場合は、渡された値を単一の引数として受け取るようにライブラリに求めることができます。以下のコードのようにキーワード引数のみを使用することでこれが可能になります。"
+
+#: ../../ext/commands/commands.rst:162
+msgid "You can only have one keyword-only argument due to parsing ambiguities."
+msgstr "解析が曖昧になるため、キーワード引数は一つまでしか扱えません。"
+
+#: ../../ext/commands/commands.rst:164
+msgid "On the bot side, we do not need to quote input with spaces:"
+msgstr "ボット側では、スペースを含む入力を引用符で囲む必要がありません:"
+
+#: ../../ext/commands/commands.rst:168
+msgid "Do keep in mind that wrapping it in quotes leaves it as-is:"
+msgstr "引用符で囲んだ場合、消えずに残るので注意してください:"
+
+#: ../../ext/commands/commands.rst:172
+msgid "By default, the keyword-only arguments are stripped of white space to make it easier to work with. This behaviour can be toggled by the :attr:`.Command.rest_is_raw` argument in the decorator."
+msgstr "通常、キーワード引数は利便性のために空白文字で分割されます。この動作はデコレータの引数として :attr:`.Command.rest_is_raw` を使うことで切り替えることが可能です。"
+
+#: ../../ext/commands/commands.rst:178
+msgid "Invocation Context"
+msgstr "呼び出しコンテキスト"
+
+#: ../../ext/commands/commands.rst:180
+msgid "As seen earlier, every command must take at least a single parameter, called the :class:`~ext.commands.Context`."
+msgstr "前述の通り、すべてのコマンドは必ず :class:`~ext.commands.Context` と呼ばれるパラメータを受け取らなければいけません。"
+
+#: ../../ext/commands/commands.rst:182
+msgid "This parameter gives you access to something called the \"invocation context\". Essentially all the information you need to know how the command was executed. It contains a lot of useful information:"
+msgstr "このパラメータにより、「呼び出しコンテキスト」というものにアクセスできます。言うなればコマンドがどのように実行されたのかを知るのに必要な基本的情報です。これにはたくさんの有用な情報が含まれています。"
+
+#: ../../ext/commands/commands.rst:185
+msgid ":attr:`.Context.guild` returns the :class:`Guild` of the command, if any."
+msgstr "存在する場合、:attr:`.Context.guild` は、コマンドの :class:`Guild` を返します。"
+
+#: ../../ext/commands/commands.rst:186
+msgid ":attr:`.Context.message` returns the :class:`Message` of the command."
+msgstr ":attr:`.Context.message` は、コマンドの :class:`Message` を返します。"
+
+#: ../../ext/commands/commands.rst:187
+msgid ":attr:`.Context.author` returns the :class:`Member` or :class:`User` that called the command."
+msgstr ":attr:`.Context.author` は、 コマンドを呼び出した :class:`Member` または :class:`User` を返します。"
+
+#: ../../ext/commands/commands.rst:188
+msgid ":meth:`.Context.send` to send a message to the channel the command was used in."
+msgstr ":meth:`.Context.send` で、コマンドが実行されたチャンネルにメッセージを送信できます。"
+
+#: ../../ext/commands/commands.rst:190
+msgid "The context implements the :class:`abc.Messageable` interface, so anything you can do on a :class:`abc.Messageable` you can do on the :class:`~ext.commands.Context`."
+msgstr "コンテキストは :class:`abc.Messageable` インタフェースを実装しているため、 :class:`abc.Messageable` 上でできることは :class:`~ext.commands.Context` 上でも行うことが可能です。"
+
+#: ../../ext/commands/commands.rst:194
+msgid "Converters"
+msgstr "コンバーター"
+
+#: ../../ext/commands/commands.rst:196
+msgid "Adding bot arguments with function parameters is only the first step in defining your bot's command interface. To actually make use of the arguments, we usually want to convert the data into a target type. We call these :ref:`ext_commands_api_converters`."
+msgstr "ボットの引数を関数のパラメータとして設定するのは、ボットのコマンドインタフェースを定義する第一歩でしかありません。引数を実際に扱うには、大抵の場合、データを目的の型へとと変換する必要があります。私達はこれを :ref:`ext_commands_api_converters` と呼んでいます。"
+
+#: ../../ext/commands/commands.rst:200
+msgid "Converters come in a few flavours:"
+msgstr "コンバーターにはいくつかの種類があります:"
+
+#: ../../ext/commands/commands.rst:202
+msgid "A regular callable object that takes an argument as a sole parameter and returns a different type."
+msgstr "引数を単独のパラメータとして受け取り、異なる型として返す、通常の呼び出し可能オブジェクト。"
+
+#: ../../ext/commands/commands.rst:204
+msgid "These range from your own function, to something like :class:`bool` or :class:`int`."
+msgstr "これらにはあなたの作った関数、 :class:`bool` や :class:`int` といったものまで含まれます。"
+
+#: ../../ext/commands/commands.rst:206
+msgid "A custom class that inherits from :class:`~ext.commands.Converter`."
+msgstr ":class:`~ext.commands.Converter` を継承したカスタムクラス。"
+
+#: ../../ext/commands/commands.rst:211
+msgid "Basic Converters"
+msgstr "基本的なコンバーター"
+
+#: ../../ext/commands/commands.rst:213
+msgid "At its core, a basic converter is a callable that takes in an argument and turns it into something else."
+msgstr "基本的なコンバーターは、中核をなすものであり、受け取った引数を別のものへと変換します。"
+
+#: ../../ext/commands/commands.rst:215
+msgid "For example, if we wanted to add two numbers together, we could request that they are turned into integers for us by specifying the converter:"
+msgstr "例えば、二つの値を加算したい場合、コンバーターを指定することにより、受け取った値を整数型へ変換するように要求できます。"
+
+#: ../../ext/commands/commands.rst:224
+msgid "We specify converters by using something called a **function annotation**. This is a Python 3 exclusive feature that was introduced in :pep:`3107`."
+msgstr "コンバーターの指定には関数アノテーションというもの用います。これは :pep:`3107` にて追加された Python 3 にのみ実装されている機能です。"
+
+#: ../../ext/commands/commands.rst:227
+msgid "This works with any callable, such as a function that would convert a string to all upper-case:"
+msgstr "これは、文字列をすべて大文字に変換する関数などといった、任意の呼び出し可能関数でも動作します。"
+
+#: ../../ext/commands/commands.rst:239
+msgid "bool"
+msgstr "論理型"
+
+#: ../../ext/commands/commands.rst:241
+msgid "Unlike the other basic converters, the :class:`bool` converter is treated slightly different. Instead of casting directly to the :class:`bool` type, which would result in any non-empty argument returning ``True``, it instead evaluates the argument as ``True`` or ``False`` based on its given content:"
+msgstr "他の基本的なコンバーターとは違って、 :class:`bool` のコンバーターは若干扱いが異なります。 :class:`bool` 型に直接キャストして、空でない引数を ``True`` と判断するのではなく、与えられた値に基づいて ``True`` か ``False`` かを評価します。"
+
+#: ../../ext/commands/commands.rst:253
+msgid "Advanced Converters"
+msgstr "応用的なコンバーター"
+
+#: ../../ext/commands/commands.rst:255
+msgid "Sometimes a basic converter doesn't have enough information that we need. For example, sometimes we want to get some information from the :class:`Message` that called the command or we want to do some asynchronous processing."
+msgstr "場合によっては、基本的なコンバーターを動かすのに必要な情報が不足していることがあります。例えば、実行されたコマンドの :class:`Message` から情報を取得したい場合や、非同期処理を行いたい場合です。"
+
+#: ../../ext/commands/commands.rst:258
+msgid "For this, the library provides the :class:`~ext.commands.Converter` interface. This allows you to have access to the :class:`.Context` and have the callable be asynchronous. Defining a custom converter using this interface requires overriding a single method, :meth:`.Converter.convert`."
+msgstr "そういった用途のために、このライブラリは :class:`~ext.commands.Converter` インタフェースを提供します。これによって :class:`.Context` にアクセスが可能になり、また、呼び出し可能関数を非同期にもできるようになります。このインタフェースを使用して、カスタムコンバーターを定義したい場合は :meth:`.Converter.convert` をオーバーライドしてください。"
+
+#: ../../ext/commands/commands.rst:262
+msgid "An example converter:"
+msgstr "コンバーターの例"
+
+#: ../../ext/commands/commands.rst:277
+msgid "The converter provided can either be constructed or not. Essentially these two are equivalent:"
+msgstr "コンバーターはインスタンス化されていなくても構いません。以下の例の二つのは同じ処理になります。"
+
+#: ../../ext/commands/commands.rst:291
+msgid "Having the possibility of the converter be constructed allows you to set up some state in the converter's ``__init__`` for fine tuning the converter. An example of this is actually in the library, :class:`~ext.commands.clean_content`."
+msgstr "コンバーターをインスタンス化する可能性がある場合、コンバーターの調整を行うために ``__init__`` で何かしらの状態を設定することが出来ます。この例としてライブラリに実際に存在する :class:`~ext.commands.clean_content` があります。"
+
+#: ../../ext/commands/commands.rst:307
+msgid "If a converter fails to convert an argument to its designated target type, the :exc:`.BadArgument` exception must be raised."
+msgstr "コンバーターが渡された引数を指定の型に変換できなかった場合は :exc:`.BadArgument` を送出しないといけません。"
+
+#: ../../ext/commands/commands.rst:311
+msgid "Inline Advanced Converters"
+msgstr "埋込み型の応用的なコンバーター"
+
+#: ../../ext/commands/commands.rst:313
+msgid "If we don't want to inherit from :class:`~ext.commands.Converter`, we can still provide a converter that has the advanced functionalities of an advanced converter and save us from specifying two types."
+msgstr ":class:`~ext.commands.Converter` を継承したくない場合のために、応用的なコンバーターの高度な機能を備えたコンバーターを提供しています。これを使用することで２つのクラスを作成する必要がなくなります。"
+
+#: ../../ext/commands/commands.rst:316
+msgid "For example, a common idiom would be to have a class and a converter for that class:"
+msgstr "例えば、一般的な書き方だと、クラスとそのクラスへのコンバーターを定義します:"
+
+#: ../../ext/commands/commands.rst:342
+msgid "This can get tedious, so an inline advanced converter is possible through a :func:`classmethod` inside the type:"
+msgstr "これでは面倒なので、 :func:`classmethod` を使って組み込み型の応用的なコンバーターの実装が可能です。"
+
+#: ../../ext/commands/commands.rst:369
+msgid "Discord Converters"
+msgstr "Discord コンバーター"
+
+#: ../../ext/commands/commands.rst:371
+msgid "Working with :ref:`discord_api_models` is a fairly common thing when defining commands, as a result the library makes working with them easy."
+msgstr ":ref:`discord_api_models` を使用して作業を行うのは、コマンドを定義する際には一般的なことです。そのため、このライブラリでは簡単に作業が行えるようになっています。"
+
+#: ../../ext/commands/commands.rst:374
+msgid "For example, to receive a :class:`Member` you can just pass it as a converter:"
+msgstr "例えば、 :class:`Member` を受け取るには、これをコンバーターとして渡すだけです。"
+
+#: ../../ext/commands/commands.rst:382
+msgid "When this command is executed, it attempts to convert the string given into a :class:`Member` and then passes it as a parameter for the function. This works by checking if the string is a mention, an ID, a nickname, a username + discriminator, or just a regular username. The default set of converters have been written to be as easy to use as possible."
+msgstr "このコマンドが実行されると、与えられた文字列を :class:`Member` に変換して、それを関数のパラメーターとして渡します。これは文字列がメンション、ID、ニックネーム、ユーザー名 + Discordタグ、または普通のユーザー名かどうかをチェックすることで機能しています。デフォルトで定義されているコンバーターは、できるだけ簡単に使えるように作られています。"
+
+#: ../../ext/commands/commands.rst:386
+msgid "A lot of discord models work out of the gate as a parameter:"
+msgstr "Discordモデルの多くがコンバーターとして動作します。"
+
+#: ../../ext/commands/commands.rst:388
+msgid ":class:`Object` (since v2.0)"
+msgstr ":class:`Object` (v2.0から)"
+
+#: ../../ext/commands/commands.rst:389
+#: ../../ext/commands/commands.rst:421
+msgid ":class:`Member`"
+msgstr ":class:`Member`"
+
+#: ../../ext/commands/commands.rst:390
+#: ../../ext/commands/commands.rst:423
+msgid ":class:`User`"
+msgstr ":class:`User`"
+
+#: ../../ext/commands/commands.rst:391
+msgid ":class:`Message` (since v1.1)"
+msgstr ":class:`Message` (v1.1 から)"
+
+#: ../../ext/commands/commands.rst:392
+msgid ":class:`PartialMessage` (since v1.7)"
+msgstr ":class:`PartialMessage` (v1.7 から)"
+
+#: ../../ext/commands/commands.rst:393
+msgid ":class:`abc.GuildChannel` (since 2.0)"
+msgstr ":class:`abc.GuildChannel` (v2.0から)"
+
+#: ../../ext/commands/commands.rst:394
+#: ../../ext/commands/commands.rst:431
+msgid ":class:`TextChannel`"
+msgstr ":class:`TextChannel`"
+
+#: ../../ext/commands/commands.rst:395
+#: ../../ext/commands/commands.rst:433
+msgid ":class:`VoiceChannel`"
+msgstr ":class:`VoiceChannel`"
+
+#: ../../ext/commands/commands.rst:396
+msgid ":class:`StageChannel` (since v1.7)"
+msgstr ":class:`StageChannel` (v1.7から)"
+
+#: ../../ext/commands/commands.rst:397
+#: ../../ext/commands/commands.rst:437
+msgid ":class:`CategoryChannel`"
+msgstr ":class:`CategoryChannel`"
+
+#: ../../ext/commands/commands.rst:398
+msgid ":class:`ForumChannel` (since v2.0)"
+msgstr ":class:`ForumChannel` (v2.0から)"
+
+#: ../../ext/commands/commands.rst:399
+#: ../../ext/commands/commands.rst:441
+msgid ":class:`Invite`"
+msgstr ":class:`Invite`"
+
+#: ../../ext/commands/commands.rst:400
+msgid ":class:`Guild` (since v1.7)"
+msgstr ":class:`Guild` (v1.7 から)"
+
+#: ../../ext/commands/commands.rst:401
+#: ../../ext/commands/commands.rst:445
+msgid ":class:`Role`"
+msgstr ":class:`Role`"
+
+#: ../../ext/commands/commands.rst:402
+#: ../../ext/commands/commands.rst:447
+msgid ":class:`Game`"
+msgstr ":class:`Game`"
+
+#: ../../ext/commands/commands.rst:403
+#: ../../ext/commands/commands.rst:449
+msgid ":class:`Colour`"
+msgstr ":class:`Colour`"
+
+#: ../../ext/commands/commands.rst:404
+#: ../../ext/commands/commands.rst:451
+msgid ":class:`Emoji`"
+msgstr ":class:`Emoji`"
+
+#: ../../ext/commands/commands.rst:405
+#: ../../ext/commands/commands.rst:453
+msgid ":class:`PartialEmoji`"
+msgstr ":class:`PartialEmoji`"
+
+#: ../../ext/commands/commands.rst:406
+msgid ":class:`Thread` (since v2.0)"
+msgstr ":class:`Thread` (v2.0から)"
+
+#: ../../ext/commands/commands.rst:407
+msgid ":class:`GuildSticker` (since v2.0)"
+msgstr ":class:`GuildSticker` （v2.0から）"
+
+#: ../../ext/commands/commands.rst:408
+msgid ":class:`ScheduledEvent` (since v2.0)"
+msgstr ":class:`ScheduledEvent` （v2.0から）"
+
+#: ../../ext/commands/commands.rst:410
+msgid "Having any of these set as the converter will intelligently convert the argument to the appropriate target type you specify."
+msgstr "これらをコンバーターとして設定すると、引数を指定した型へとインテリジェントに変換します。"
+
+#: ../../ext/commands/commands.rst:413
+msgid "Under the hood, these are implemented by the :ref:`ext_commands_adv_converters` interface. A table of the equivalent converter is given below:"
+msgstr "これらは :ref:`ext_commands_adv_converters` インタフェースによって実装されています。コンバーターとクラスの関係は以下の通りです。"
+
+#: ../../ext/commands/commands.rst:417
+msgid "Discord Class"
+msgstr "Discord クラス"
+
+#: ../../ext/commands/commands.rst:417
+msgid "Converter"
+msgstr "コンバーター"
+
+#: ../../ext/commands/commands.rst:419
+msgid ":class:`Object`"
+msgstr ":class:`Object`"
+
+#: ../../ext/commands/commands.rst:419
+msgid ":class:`~ext.commands.ObjectConverter`"
+msgstr ":class:`~ext.commands.ObjectConverter`"
+
+#: ../../ext/commands/commands.rst:421
+msgid ":class:`~ext.commands.MemberConverter`"
+msgstr ":class:`~ext.commands.MemberConverter`"
+
+#: ../../ext/commands/commands.rst:423
+msgid ":class:`~ext.commands.UserConverter`"
+msgstr ":class:`~ext.commands.UserConverter`"
+
+#: ../../ext/commands/commands.rst:425
+msgid ":class:`Message`"
+msgstr ":class:`Message`"
+
+#: ../../ext/commands/commands.rst:425
+msgid ":class:`~ext.commands.MessageConverter`"
+msgstr ":class:`~ext.commands.MessageConverter`"
+
+#: ../../ext/commands/commands.rst:427
+msgid ":class:`PartialMessage`"
+msgstr ":class:`PartialMessage`"
+
+#: ../../ext/commands/commands.rst:427
+msgid ":class:`~ext.commands.PartialMessageConverter`"
+msgstr ":class:`~ext.commands.PartialMessageConverter`"
+
+#: ../../ext/commands/commands.rst:429
+msgid ":class:`.GuildChannel`"
+msgstr ":class:`.GuildChannel`"
+
+#: ../../ext/commands/commands.rst:429
+msgid ":class:`~ext.commands.GuildChannelConverter`"
+msgstr ":class:`~ext.commands.GuildChannelConverter`"
+
+#: ../../ext/commands/commands.rst:431
+msgid ":class:`~ext.commands.TextChannelConverter`"
+msgstr ":class:`~ext.commands.TextChannelConverter`"
+
+#: ../../ext/commands/commands.rst:433
+msgid ":class:`~ext.commands.VoiceChannelConverter`"
+msgstr ":class:`~ext.commands.VoiceChannelConverter`"
+
+#: ../../ext/commands/commands.rst:435
+msgid ":class:`StageChannel`"
+msgstr ":class:`StageChannel`"
+
+#: ../../ext/commands/commands.rst:435
+msgid ":class:`~ext.commands.StageChannelConverter`"
+msgstr ":class:`~ext.commands.StageChannelConverter`"
+
+#: ../../ext/commands/commands.rst:437
+msgid ":class:`~ext.commands.CategoryChannelConverter`"
+msgstr ":class:`~ext.commands.CategoryChannelConverter`"
+
+#: ../../ext/commands/commands.rst:439
+msgid ":class:`ForumChannel`"
+msgstr ":class:`ForumChannel`"
+
+#: ../../ext/commands/commands.rst:439
+msgid ":class:`~ext.commands.ForumChannelConverter`"
+msgstr ":class:`~ext.commands.ForumChannelConverter`"
+
+#: ../../ext/commands/commands.rst:441
+msgid ":class:`~ext.commands.InviteConverter`"
+msgstr ":class:`~ext.commands.InviteConverter`"
+
+#: ../../ext/commands/commands.rst:443
+msgid ":class:`Guild`"
+msgstr ":class:`Guild`"
+
+#: ../../ext/commands/commands.rst:443
+msgid ":class:`~ext.commands.GuildConverter`"
+msgstr ":class:`~ext.commands.GuildConverter`"
+
+#: ../../ext/commands/commands.rst:445
+msgid ":class:`~ext.commands.RoleConverter`"
+msgstr ":class:`~ext.commands.RoleConverter`"
+
+#: ../../ext/commands/commands.rst:447
+msgid ":class:`~ext.commands.GameConverter`"
+msgstr ":class:`~ext.commands.GameConverter`"
+
+#: ../../ext/commands/commands.rst:449
+msgid ":class:`~ext.commands.ColourConverter`"
+msgstr ":class:`~ext.commands.ColourConverter`"
+
+#: ../../ext/commands/commands.rst:451
+msgid ":class:`~ext.commands.EmojiConverter`"
+msgstr ":class:`~ext.commands.EmojiConverter`"
+
+#: ../../ext/commands/commands.rst:453
+msgid ":class:`~ext.commands.PartialEmojiConverter`"
+msgstr ":class:`~ext.commands.PartialEmojiConverter`"
+
+#: ../../ext/commands/commands.rst:455
+msgid ":class:`Thread`"
+msgstr ":class:`Thread`"
+
+#: ../../ext/commands/commands.rst:455
+msgid ":class:`~ext.commands.ThreadConverter`"
+msgstr ":class:`~ext.commands.ThreadConverter`"
+
+#: ../../ext/commands/commands.rst:457
+msgid ":class:`GuildSticker`"
+msgstr ":class:`GuildSticker`"
+
+#: ../../ext/commands/commands.rst:457
+msgid ":class:`~ext.commands.GuildStickerConverter`"
+msgstr ":class:`~ext.commands.GuildStickerConverter`"
+
+#: ../../ext/commands/commands.rst:459
+msgid ":class:`ScheduledEvent`"
+msgstr ":class:`ScheduledEvent`"
+
+#: ../../ext/commands/commands.rst:459
+msgid ":class:`~ext.commands.ScheduledEventConverter`"
+msgstr ":class:`~ext.commands.ScheduledEventConverter`"
+
+#: ../../ext/commands/commands.rst:462
+msgid "By providing the converter it allows us to use them as building blocks for another converter:"
+msgstr "コンバーターを継承することで、他のコンバーターの一部として使うことができます:"
+
+#: ../../ext/commands/commands.rst:479
+msgid "Special Converters"
+msgstr "特殊なコンバーター"
+
+#: ../../ext/commands/commands.rst:481
+msgid "The command extension also has support for certain converters to allow for more advanced and intricate use cases that go beyond the generic linear parsing. These converters allow you to introduce some more relaxed and dynamic grammar to your commands in an easy to use manner."
+msgstr "コマンド拡張機能は一般的な線形解析を超える、より高度で複雑な使用法に対応するため、特殊なコンバーターをサポートしています。これらのコンバーターは、簡単な方法でコマンドに更に容易で動的な文法の導入を可能にします。"
+
+#: ../../ext/commands/commands.rst:486
+msgid "typing.Union"
+msgstr "typing.Union"
+
+#: ../../ext/commands/commands.rst:488
+msgid "A :data:`typing.Union` is a special type hint that allows for the command to take in any of the specific types instead of a singular type. For example, given the following:"
+msgstr ":data:`typing.Union` はコマンドが単数の型の代わりに、複数の特定の型を取り込める特殊な型ヒントです。例えば:"
+
+#: ../../ext/commands/commands.rst:500
+msgid "The ``what`` parameter would either take a :class:`discord.TextChannel` converter or a :class:`discord.Member` converter. The way this works is through a left-to-right order. It first attempts to convert the input to a :class:`discord.TextChannel`, and if it fails it tries to convert it to a :class:`discord.Member`. If all converters fail, then a special error is raised, :exc:`~ext.commands.BadUnionArgument`."
+msgstr "``what`` パラメータには :class:`discord.TextChannel` コンバーターか :class:`discord.Member` コンバーターのいずれかが用いられます。これは左から右の順で変換できるか試行することになります。最初に渡された値を :class:`discord.TextChannel` へ変換しようと試み、失敗した場合は :class:`discord.Member` に変換しようとします。すべてのコンバーターで失敗した場合は :exc:`~ext.commands.BadUnionArgument` というエラーが発生します。"
+
+#: ../../ext/commands/commands.rst:505
+msgid "Note that any valid converter discussed above can be passed in to the argument list of a :data:`typing.Union`."
+msgstr "以前に説明した有効なコンバーターは、すべて :data:`typing.Union` にわたすことが可能です。"
+
+#: ../../ext/commands/commands.rst:508
+msgid "typing.Optional"
+msgstr "typing.Optional"
+
+#: ../../ext/commands/commands.rst:510
+msgid "A :data:`typing.Optional` is a special type hint that allows for \"back-referencing\" behaviour. If the converter fails to parse into the specified type, the parser will skip the parameter and then either ``None`` or the specified default will be passed into the parameter instead. The parser will then continue on to the next parameters and converters, if any."
+msgstr ":data:`typing.Optional` は「後方参照」のような動作をする特殊な型ヒントです。コンバーターが指定された型へのパースに失敗した場合、パーサーは代わりに ``None`` または指定されたデフォルト値をパラメータに渡したあと、そのパラメータをスキップします。次のパラメータまたはコンバータがあれば、そちらに進みます。"
+
+#: ../../ext/commands/commands.rst:514
+#: ../../ext/commands/commands.rst:588
+#: ../../ext/commands/commands.rst:655
+msgid "Consider the following example:"
+msgstr "次の例をみてください:"
+
+#: ../../ext/commands/commands.rst:527
+msgid "In this example, since the argument could not be converted into an ``int``, the default of ``99`` is passed and the parser resumes handling, which in this case would be to pass it into the ``liquid`` parameter."
+msgstr "この例では引数を ``int`` に変換することができなかったので、デフォルト値である ``99`` を代入し、パーサーは処理を続行しています。この場合、先程の変換に失敗した引数は ``liquid`` パラメータに渡されます。"
+
+#: ../../ext/commands/commands.rst:532
+msgid "This converter only works in regular positional parameters, not variable parameters or keyword-only parameters."
+msgstr "このコンバーターは位置パラメータでのみ動作し、可変長パラメータやキーワードパラメータでは機能しません。"
+
+#: ../../ext/commands/commands.rst:535
+msgid "typing.Literal"
+msgstr "typing.Literal"
+
+#: ../../ext/commands/commands.rst:539
+msgid "A :data:`typing.Literal` is a special type hint that requires the passed parameter to be equal to one of the listed values after being converted to the same type. For example, given the following:"
+msgstr ":data:`typing.Literal` は、渡されたパラメータが同じ型に変換された後にリストされた値のいずれかに等しいことを要求する特別な型ヒントです。 例えば、以下のように指定します。"
+
+#: ../../ext/commands/commands.rst:551
+msgid "The ``buy_sell`` parameter must be either the literal string ``\"buy\"`` or ``\"sell\"`` and ``amount`` must convert to the ``int`` ``1`` or ``2``. If ``buy_sell`` or ``amount`` don't match any value, then a special error is raised, :exc:`~.ext.commands.BadLiteralArgument`. Any literal values can be mixed and matched within the same :data:`typing.Literal` converter."
+msgstr "``buy_sell`` パラメータはリテラル文字列の ``\"buy\"`` または ``\"sell\"`` のどちらかで、 ``amount`` は ``int`` の ``1`` または ``2`` に変換されなければなりません。 ``buy_sell`` または ``amount`` がどの値にも一致しない場合は、特別なエラー :exc:`~.ext.commands.BadLiteralArgument` が発生します。任意のリテラル値は、同じ :data:`typing.Literal` コンバーター内で混合してマッチさせることができます。"
+
+#: ../../ext/commands/commands.rst:555
+msgid "Note that ``typing.Literal[True]`` and ``typing.Literal[False]`` still follow the :class:`bool` converter rules."
+msgstr "``typing.Literal[True]`` と ``typing.Literal[False]`` は :class:`bool` コンバーターのルールに従っていることに注意してください。"
+
+#: ../../ext/commands/commands.rst:558
+msgid "typing.Annotated"
+msgstr "typing.Annotated"
+
+#: ../../ext/commands/commands.rst:562
+msgid "A :data:`typing.Annotated` is a special type introduced in Python 3.9 that allows the type checker to see one type, but allows the library to see another type. This is useful for appeasing the type checker for complicated converters. The second parameter of ``Annotated`` must be the converter that the library should use."
+msgstr ":data:`typing.Annotated` は Python 3.9 で導入された特別な型です。 これを使用すると、型チェッカは1つのタイプを参照できますが、ライブラリは別のタイプを参照できます。 これは複雑なコンバータにて型チェッカを通すのに役立ちます。 ``Annotated`` の2番目のパラメータはライブラリが使用するコンバータでなければなりません。"
+
+#: ../../ext/commands/commands.rst:564
+msgid "For example, given the following:"
+msgstr "例えば、以下の例では:"
+
+#: ../../ext/commands/commands.rst:574
+msgid "The type checker will see ``arg`` as a regular :class:`str` but the library will know you wanted to change the input into all upper-case."
+msgstr "型チェッカは ``arg`` を通常の :class:`str` として認識しますが、ライブラリは入力をすべて大文字に変更したいことを知っています。"
+
+#: ../../ext/commands/commands.rst:578
+msgid "For Python versions below 3.9, it is recommended to install the ``typing_extensions`` library and import ``Annotated`` from there."
+msgstr "Python 3.9未満では、 ``typing_extensions`` ライブラリをインストールして ``Annotated`` をそこからインポートすることを推奨します。"
+
+#: ../../ext/commands/commands.rst:582
+msgid "Greedy"
+msgstr "Greedy"
+
+#: ../../ext/commands/commands.rst:584
+msgid "The :class:`~ext.commands.Greedy` converter is a generalisation of the :data:`typing.Optional` converter, except applied to a list of arguments. In simple terms, this means that it tries to convert as much as it can until it can't convert any further."
+msgstr ":class:`~ext.commands.Greedy` コンバーターは引数にリストが適用される以外は :data:`typing.Optional` を一般化したものです。簡単に言うと、与えられた引数を変換ができなくなるまで指定の型に変換しようと試みます。"
+
+#: ../../ext/commands/commands.rst:597
+msgid "When invoked, it allows for any number of members to be passed in:"
+msgstr "これが呼び出されると、任意の数のメンバーを渡すことができます:"
+
+#: ../../ext/commands/commands.rst:601
+msgid "The type passed when using this converter depends on the parameter type that it is being attached to:"
+msgstr "このコンバータを利用した際に渡される型は、その対象となっているパラメータの種類によって異なります。"
+
+#: ../../ext/commands/commands.rst:603
+msgid "Positional parameter types will receive either the default parameter or a :class:`list` of the converted values."
+msgstr "位置パラメータの場合、型はデフォルトのものか変換された値からなる :class:`list` になります。"
+
+#: ../../ext/commands/commands.rst:604
+msgid "Variable parameter types will be a :class:`tuple` as usual."
+msgstr "可変長パラメータの場合、型は通常同様 :class:`tuple` になります。"
+
+#: ../../ext/commands/commands.rst:605
+msgid "Keyword-only parameter types will be the same as if :class:`~ext.commands.Greedy` was not passed at all."
+msgstr "キーワードパラメータの場合、型は :class:`~ext.commands.Greedy` を使用していないときと同じになります。"
+
+#: ../../ext/commands/commands.rst:607
+msgid ":class:`~ext.commands.Greedy` parameters can also be made optional by specifying an optional value."
+msgstr ":class:`~ext.commands.Greedy` パラメータはデフォルト値を指定することでオプションにすることもできます。"
+
+#: ../../ext/commands/commands.rst:609
+msgid "When mixed with the :data:`typing.Optional` converter you can provide simple and expressive command invocation syntaxes:"
+msgstr ":data:`typing.Optional` コンバータと併用することで、シンプルかつ表現に富む呼び出し構文を提供できます。"
+
+#: ../../ext/commands/commands.rst:625
+msgid "This command can be invoked any of the following ways:"
+msgstr "このコマンドは以下のような方法で呼び出すことが可能です。"
+
+#: ../../ext/commands/commands.rst:635
+msgid "The usage of :class:`~ext.commands.Greedy` and :data:`typing.Optional` are powerful and useful, however as a price, they open you up to some parsing ambiguities that might surprise some people."
+msgstr ":class:`~ext.commands.Greedy` と :data:`typing.Optional` の利用は強力かつ便利である反面、その代償として一部の人が驚いてしまうような曖昧な構文解析を許容することとなります。"
+
+#: ../../ext/commands/commands.rst:638
+msgid "For example, a signature expecting a :data:`typing.Optional` of a :class:`discord.Member` followed by a :class:`int` could catch a member named after a number due to the different ways a :class:`~ext.commands.MemberConverter` decides to fetch members. You should take care to not introduce unintended parsing ambiguities in your code. One technique would be to clamp down the expected syntaxes allowed through custom converters or reordering the parameters to minimise clashes."
+msgstr "例えば、 :class:`discord.Member` の :data:`typing.Optional` の後に :class:`int` が続くようなシグネチャでは :class:`~ext.commands.MemberConverter` がメンバー取得のために様々な方法をとることが要因となり、名前が数字になっているメンバーを取得してしまう可能性があります。コードが意図しない曖昧な構文解析を引き起こさないよう注意してください。テクニックの一つとして、カスタムコンバーターを用いて予期される構文の許容を制限するか、このような衝突を最小限に抑えるために、パラメータを並び替えることなどが挙げられます。"
+
+#: ../../ext/commands/commands.rst:644
+msgid "To help aid with some parsing ambiguities, :class:`str`, ``None``, :data:`typing.Optional` and :class:`~ext.commands.Greedy` are forbidden as parameters for the :class:`~ext.commands.Greedy` converter."
+msgstr "曖昧な構文解析を防ぐため、 :class:`str` 、 ``None`` 、 :data:`typing.Optional` 、そして :class:`~ext.commands.Greedy` を :class:`~ext.commands.Greedy` コンバーターのパラメーターにするのは禁止されています。"
+
+#: ../../ext/commands/commands.rst:649
+msgid "discord.Attachment"
+msgstr "discord.Attachment"
+
+#: ../../ext/commands/commands.rst:653
+msgid "The :class:`discord.Attachment` converter is a special converter that retrieves an attachment from the uploaded attachments on a message. This converter *does not* look at the message content at all and just the uploaded attachments."
+msgstr ":class:`discord.Attachment` コンバータはメッセージにアップロードされた添付ファイルから添付ファイルを一個取得する特別なコンバータです。このコンバータは、メッセージ内容は *確認せず* アップロードされた添付ファイルのみ確認します。"
+
+#: ../../ext/commands/commands.rst:666
+msgid "When this command is invoked, the user must directly upload a file for the command body to be executed. When combined with the :data:`typing.Optional` converter, the user does not have to provide an attachment."
+msgstr "コマンドの呼び出し時に、ユーザーはコマンドを実行するときにはファイルを直接アップロードしないといけません。これを :data:`typing.Optional` コンバータと組み合わせた場合、添付ファイルを提供する必要はありません。"
+
+#: ../../ext/commands/commands.rst:681
+msgid "This also works with multiple attachments:"
+msgstr "これは複数の添付ファイルでも動作します："
+
+#: ../../ext/commands/commands.rst:702
+msgid "In this example the user must provide at least one file but the second one is optional."
+msgstr "この例では、ユーザーは少なくとも1つのファイルを提供する必要がありますが、2つ目のファイルはオプションです。"
+
+#: ../../ext/commands/commands.rst:704
+msgid "As a special case, using :class:`~ext.commands.Greedy` will return the remaining attachments in the message, if any."
+msgstr "特別なケースとして、 :class:`~ext.commands.Greedy` を使用すると、存在する場合はメッセージ内の残りの添付ファイルが返されます。"
+
+#: ../../ext/commands/commands.rst:722
+msgid "Note that using a :class:`discord.Attachment` converter after a :class:`~ext.commands.Greedy` of :class:`discord.Attachment` will always fail since the greedy had already consumed the remaining attachments."
+msgstr "なお、 :class:`discord.Attachment` の :class:`~ext.commands.Greedy` の後に :class:`discord.Attachment` コンバータを使用するのは、Greedyが残りの添付ファイルをすでに使用しているため、常に失敗します。"
+
+#: ../../ext/commands/commands.rst:724
+msgid "If an attachment is expected but not given, then :exc:`~ext.commands.MissingRequiredAttachment` is raised to the error handlers."
+msgstr "添付ファイルが期待されているのに与えられていない場合、 :exc:`~ext.commands.MissingRequiredAttachment` がエラーハンドラに送出されます。"
+
+#: ../../ext/commands/commands.rst:729
+msgid "FlagConverter"
+msgstr "FlagConverter"
+
+#: ../../ext/commands/commands.rst:733
+msgid "A :class:`~ext.commands.FlagConverter` allows the user to specify user-friendly \"flags\" using :pep:`526` type annotations or a syntax more reminiscent of the :mod:`py:dataclasses` module."
+msgstr ":class:`~ext.commands.FlagConverter` を使用すると、型アノテーション :pep:`526` を使用してユーザーフレンドリーな「フラグ」を指定したり、 :mod:`py:dataclasses` モジュールを彷彿とさせる構文を使用できます。"
+
+#: ../../ext/commands/commands.rst:736
+msgid "For example, the following code:"
+msgstr "例えば、以下のコードです。"
+
+#: ../../ext/commands/commands.rst:753
+msgid "Allows the user to invoke the command using a simple flag-like syntax:"
+msgstr "フラグに似たシンプルな構文を使用してコマンドを呼び出すことができます："
+
+#: ../../ext/commands/commands.rst:757
+msgid "Flags use a syntax that allows the user to not require quotes when passing in values to the flag. The goal of the flag syntax is to be as user-friendly as possible. This makes flags a good choice for complicated commands that can have multiple knobs to turn or simulating keyword-only parameters in your external command interface. **It is recommended to use keyword-only parameters with the flag converter**. This ensures proper parsing and behaviour with quoting."
+msgstr "フラグは、フラグに値を渡す際に引用符を必要としない構文を使用しています。フラグ構文の目標は、できるだけユーザーフレンドリーにすることです。このため、複数のノブを使用する複雑なコマンドや、外部コマンド・インターフェースでキーワードのみのパラメータをシミュレートする場合、フラグを使用するのが適しています。 **フラグ・コンバータでは、キーワード専用パラメータを使用することをお勧めします。** これにより、適切な解析と引用符での動作が保証されます。"
+
+#: ../../ext/commands/commands.rst:762
+msgid "Internally, the :class:`~ext.commands.FlagConverter` class examines the class to find flags. A flag can either be a class variable with a type annotation or a class variable that's been assigned the result of the :func:`~ext.commands.flag` function. These flags are then used to define the interface that your users will use. The annotations correspond to the converters that the flag arguments must adhere to."
+msgstr "内部的には、:class:`~ext.commands.FlagConverter` クラスがクラスを調べてフラグを見つけます。フラグには、型アノテーションが付いたクラス変数と、 :func:`~ext.commands.flag` 関数の結果が代入されたクラス変数があります。これらのフラグは、ユーザーが使用するインターフェースを定義するために使用されます。アノテーションは、フラグの引数が準拠しなければならないコンバーターに対応しています。"
+
+#: ../../ext/commands/commands.rst:767
+msgid "For most use cases, no extra work is required to define flags. However, if customisation is needed to control the flag name or the default value then the :func:`~ext.commands.flag` function can come in handy:"
+msgstr "ほとんどの場合、フラグを定義するために余分な作業は必要ありません。 しかし、フラグ名やデフォルト値を制御するためにカスタマイズが必要な場合は、 :func:`~ext.commands.flag` 関数が便利です："
+
+#: ../../ext/commands/commands.rst:777
+msgid "This tells the parser that the ``members`` attribute is mapped to a flag named ``member`` and that the default value is an empty list. For greater customisability, the default can either be a value or a callable that takes the :class:`~ext.commands.Context` as a sole parameter. This callable can either be a function or a coroutine."
+msgstr "これは ``members`` 属性が ``member`` というフラグにマップされ、デフォルト値が空のリストであることをパーサーに伝えます。 カスタマイズ性を向上させるために、デフォルトは値か呼び出し可能な値で、 :class:`~ext.commands.Context` を唯一のパラメータとして取ります。この呼び出し可能な値は関数またはコルーチンのいずれかを使用できます。"
+
+#: ../../ext/commands/commands.rst:781
+msgid "In order to customise the flag syntax we also have a few options that can be passed to the class parameter list:"
+msgstr "フラグ構文をカスタマイズするために、クラスのパラメーターリストに渡せるオプションもいくつか用意されています。"
+
+#: ../../ext/commands/commands.rst:802
+msgid "Despite the similarities in these examples to command like arguments, the syntax and parser is not a command line parser. The syntax is mainly inspired by Discord's search bar input and as a result all flags need a corresponding value."
+msgstr "これらの例では引数のようにコマンドを実行するのと似ていますが、この構文と解析機はコマンドライン解析機ではありません。 この構文は主にDiscordの検索バー入力に触発されており、その結果、すべてのフラグに対応する値が必要になります。"
+
+#: ../../ext/commands/commands.rst:806
+msgid "Flag converters will only raise :exc:`~ext.commands.FlagError` derived exceptions. If an error is raised while converting a flag, :exc:`~ext.commands.BadFlagArgument` is raised instead and the original exception can be accessed with the :attr:`~ext.commands.BadFlagArgument.original` attribute."
+msgstr "フラグコンバータは :exc:`~ext.commands.FlagError` 派生の例外のみ送出します。フラグ変換中にエラーが発生した場合、 :exc:`~ext.commands.BadFlagArgument` が代わりに送出され、元の例外は :attr:`~ext.commands.BadFlagArgument.original` 属性でアクセスできます。"
+
+#: ../../ext/commands/commands.rst:810
+msgid "The flag converter is similar to regular commands and allows you to use most types of converters (with the exception of :class:`~ext.commands.Greedy`) as the type annotation. Some extra support is added for specific annotations as described below."
+msgstr "フラグコンバーターは通常のコマンドと似ており、ほとんどのタイプのコンバータを型アノテーションとして使用できます(例外は :class:`~ext.commands.Greedy`) 。以下で説明するように、特定のアノテーションに対する追加のサポートが追加されます。"
+
+#: ../../ext/commands/commands.rst:815
+msgid "typing.List"
+msgstr "typing.List"
+
+#: ../../ext/commands/commands.rst:817
+msgid "If a list is given as a flag annotation it tells the parser that the argument can be passed multiple times."
+msgstr "リストがフラグアノテーションとして与えられた場合、引数が何回も渡せることをパーサーに知らせます。"
+
+#: ../../ext/commands/commands.rst:819
+msgid "For example, augmenting the example above:"
+msgstr "例えば、上記の例を拡張すると："
+
+#: ../../ext/commands/commands.rst:841
+msgid "This is called by repeatedly specifying the flag:"
+msgstr "これはフラグを繰り返し指定することで呼び出されます："
+
+#: ../../ext/commands/commands.rst:846
+msgid "typing.Tuple"
+msgstr "typing.Tuple"
+
+#: ../../ext/commands/commands.rst:848
+msgid "Since the above syntax can be a bit repetitive when specifying a flag many times, the :class:`py:tuple` type annotation allows for \"greedy-like\" semantics using a variadic tuple:"
+msgstr "フラグを何度も指定する場合、上記の構文は少し繰り返しになるので、 :class:`py:tuple` 型アノテーションを使用すると、可変タプルを使用した「欲張りな」セマンティクスを実現することができます。"
+
+#: ../../ext/commands/commands.rst:862
+msgid "This allows the previous ``ban`` command to be called like this:"
+msgstr "これにより、以前の ``ban`` コマンドを以下のように呼び出すことができます。"
+
+#: ../../ext/commands/commands.rst:866
+msgid "The :class:`py:tuple` annotation also allows for parsing of pairs. For example, given the following code:"
+msgstr ":class:`py:tuple` アノテーションはペアの解析を可能にします。例えば、以下のコードがあります。"
+
+#: ../../ext/commands/commands.rst:877
+msgid "Due to potential parsing ambiguities, the parser expects tuple arguments to be quoted if they require spaces. So if one of the inner types is :class:`str` and the argument requires spaces then quotes should be used to disambiguate it from the other element of the tuple."
+msgstr "解析が曖昧になってしまうため、パーサーはタプル引数がスペースを必要とする場合、引用符で囲むことを期待します。そのため、もし内部型のひとつが :class:`str` で、その引数がスペースを必要とする場合には、タプルの他の要素と区別するために引用符が使用されなければなりません。"
+
+#: ../../ext/commands/commands.rst:882
+msgid "typing.Dict"
+msgstr "typing.Dict"
+
+#: ../../ext/commands/commands.rst:884
+msgid "A :class:`dict` annotation is functionally equivalent to ``List[Tuple[K, V]]`` except with the return type given as a :class:`dict` rather than a :class:`list`."
+msgstr ":class:`dict` アノテーションは、:class:`list` ではなく、:class:`dict` として与えられた戻り値の値を除いて、``List[Tuple[K, V]]`` と同等です"
+
+#: ../../ext/commands/commands.rst:889
+msgid "Hybrid Command Interaction"
+msgstr "ハイブリッドコマンドでの動作"
+
+#: ../../ext/commands/commands.rst:891
+msgid "When used as a hybrid command, the parameters are flattened into different parameters for the application command. For example, the following converter:"
+msgstr "ハイブリッドコマンドとして使用された場合、パラメータはアプリケーションコマンドでは別々のものになります。例えば、次のコンバータは："
+
+#: ../../ext/commands/commands.rst:905
+msgid "Would be equivalent to an application command defined as this:"
+msgstr "以下のように定義されたアプリケーションコマンドと同等です："
+
+#: ../../ext/commands/commands.rst:913
+msgid "This means that decorators that refer to a parameter by name will use the flag name instead:"
+msgstr "これは、パラメータを名前で参照するデコレータはフラグ名を代わりに使用するということです。"
+
+#: ../../ext/commands/commands.rst:932
+msgid "For ease of use, the :func:`~ext.commands.flag` function accepts a ``description`` keyword argument to allow you to pass descriptions inline:"
+msgstr "使いやすいように、 :func:`~ext.commands.flag` 関数は ``description`` キーワード引数を受け取るので、説明をインラインで渡すことができます。"
+
+#: ../../ext/commands/commands.rst:947
+msgid "Likewise, use of the ``name`` keyword argument allows you to pass renames for the parameter, similar to the :func:`~discord.app_commands.rename` decorator."
+msgstr "同様に、 ``name`` キーワード引数を使用すると、 :func:`~discord.app_commands.rename` デコレータと同様に、パラメータの改名ができます。"
+
+#: ../../ext/commands/commands.rst:949
+msgid "Note that in hybrid command form, a few annotations are unsupported due to Discord limitations:"
+msgstr "ハイブリッドコマンド形式では、Discordの制限によりいくつかのアノテーションがサポートされていないことに注意してください。"
+
+#: ../../ext/commands/commands.rst:951
+msgid "``typing.Tuple``"
+msgstr "``typing.Tuple``"
+
+#: ../../ext/commands/commands.rst:952
+msgid "``typing.List``"
+msgstr "``typing.List``"
+
+#: ../../ext/commands/commands.rst:953
+msgid "``typing.Dict``"
+msgstr "``typing.Dict``"
+
+#: ../../ext/commands/commands.rst:957
+msgid "Only one flag converter is supported per hybrid command. Due to the flag converter's way of working, it is unlikely for a user to have two of them in one signature."
+msgstr "ハイブリッドコマンド1個ごとにフラグコンバータ1個までサポートされています。 フラグコンバーターの動作の仕組みのため、あるシグネチャに2個フラグコンバータが存在するのはまれです。"
+
+#: ../../ext/commands/commands.rst:962
+msgid "Parameter Metadata"
+msgstr "パラメータのメタデータ"
+
+#: ../../ext/commands/commands.rst:964
+msgid ":func:`~ext.commands.parameter` assigns custom metadata to a :class:`~ext.commands.Command`'s parameter."
+msgstr ":func:`~ext.commands.parameter` はカスタムメタデータを :class:`~ext.commands.Command` のパラメータに割り当てます。"
+
+#: ../../ext/commands/commands.rst:966
+msgid "This is useful for:"
+msgstr "これは以下の場合に便利です:"
+
+#: ../../ext/commands/commands.rst:968
+msgid "Custom converters as annotating a parameter with a custom converter works at runtime, type checkers don't like it because they can't understand what's going on."
+msgstr "パラメータのアノテーションにカスタムコンバーターを付するカスタムコンバーターはランタイムで動作するため、型チェッカが理解できず、問題が発生します。"
+
+#: ../../ext/commands/commands.rst:983
+msgid "However, fear not we can use :func:`~ext.commands.parameter` to tell type checkers what's going on."
+msgstr "しかし、 :func:`~ext.commands.parameter` を使用すれば、型チェッカが何が起こっているかを理解できるようになります。"
+
+#: ../../ext/commands/commands.rst:991
+msgid "Late binding behaviour"
+msgstr "既定値の動的評価"
+
+#: ../../ext/commands/commands.rst:999
+msgid "Because this is such a common use-case, the library provides :obj:`~.ext.commands.Author`, :obj:`~.ext.commands.CurrentChannel` and :obj:`~.ext.commands.CurrentGuild`, armed with this we can simplify ``wave`` to:"
+msgstr "これが非常に一般的な使用法であることから、ライブラリは :obj:`~.ext.commands.Author` 、 :obj:`~.ext.commands.CurrentChannel` 、 :obj:`~.ext.commands.CurrentGuild` を提供します。これらを使用すると ``wave`` は以下のように簡素化できます："
+
+#: ../../ext/commands/commands.rst:1008
+msgid ":obj:`~.ext.commands.Author` and co also have other benefits like having the displayed default being filled."
+msgstr ":obj:`~.ext.commands.Author` などは、表示される既定値が事前に指定されているなど、他の利点もあります。"
+
+#: ../../ext/commands/commands.rst:1014
+msgid "Error Handling"
+msgstr "エラーハンドリング"
+
+#: ../../ext/commands/commands.rst:1016
+msgid "When our commands fail to parse we will, by default, receive a noisy error in ``stderr`` of our console that tells us that an error has happened and has been silently ignored."
+msgstr "コマンドの解析に失敗すると、デフォルトではエラーの発生とそれが握り潰されたことを知らせるノイズのようなエラーがコンソールの ``stderr`` に出力されます。"
+
+#: ../../ext/commands/commands.rst:1019
+msgid "In order to handle our errors, we must use something called an error handler. There is a global error handler, called :func:`.on_command_error` which works like any other event in the :ref:`discord-api-events`. This global error handler is called for every error reached."
+msgstr "エラーを処理するには、エラーハンドラと呼ばれるものを利用する必要があります。\n"
+":func:`.on_command_error` グローバルエラーハンドラが存在し、これは :ref:`discord-api-events` のイベントのように動作します。\n"
+"このハンドラはエラーが発生するたびに呼び出されます。"
+
+#: ../../ext/commands/commands.rst:1023
+msgid "Most of the time however, we want to handle an error local to the command itself. Luckily, commands come with local error handlers that allow us to do just that. First we decorate an error handler function with :meth:`~discord.ext.commands.Command.error`:"
+msgstr "しかし、ほとんどの場合においては、コマンド自体に対応するローカルなエラー処理を行いたいと考えるでしょう。幸いなことに、コマンドにはローカルエラーハンドラが存在するため、これを利用して実現することができます。まず、エラーハンドラとして利用する関数を :meth:`~discord.ext.commands.Command.error` でデコレートします。"
+
+#: ../../ext/commands/commands.rst:1039
+msgid "The first parameter of the error handler is the :class:`.Context` while the second one is an exception that is derived from :exc:`~ext.commands.CommandError`. A list of errors is found in the :ref:`ext_commands_api_errors` page of the documentation."
+msgstr "ハンドラの最初の引数には :class:`.Context` が渡され、２番目の引数には :exc:`~ext.commands.CommandError` が渡されます。 エラー一覧は :ref:`ext_commands_api_errors` から見ることができます。"
+
+#: ../../ext/commands/commands.rst:1043
+msgid "Checks"
+msgstr "チェック"
+
+#: ../../ext/commands/commands.rst:1045
+msgid "There are cases when we don't want a user to use our commands. They don't have permissions to do so or maybe we blocked them from using our bot earlier. The commands extension comes with full support for these things in a concept called a :ref:`ext_commands_api_checks`."
+msgstr "コマンドをユーザーに使ってほしくない場合などがあります。例えば、使用者が権限を持っていない場合や、ボットによりブロックされている場合などです。コマンド拡張機能ではこのような機能を :ref:`ext_commands_api_checks` と呼び、完全にサポートしています。"
+
+#: ../../ext/commands/commands.rst:1049
+msgid "A check is a basic predicate that can take in a :class:`.Context` as its sole parameter. Within it, you have the following options:"
+msgstr "チェックは :class:`.Context` を引数とする関数です。関数はこれらの選択ができます："
+
+#: ../../ext/commands/commands.rst:1052
+msgid "Return ``True`` to signal that the person can run the command."
+msgstr "``True`` を返し、その人がコマンドを実行できることを示します。"
+
+#: ../../ext/commands/commands.rst:1053
+msgid "Return ``False`` to signal that the person cannot run the command."
+msgstr "``False`` を返し、その人がコマンドを実行できないことを示します。"
+
+#: ../../ext/commands/commands.rst:1054
+msgid "Raise a :exc:`~ext.commands.CommandError` derived exception to signal the person cannot run the command."
+msgstr ":exc:`~ext.commands.CommandError` を継承する例外を発生させ、コマンドを実行できないことを示します。"
+
+#: ../../ext/commands/commands.rst:1056
+msgid "This allows you to have custom error messages for you to handle in the :ref:`error handlers <ext_commands_error_handler>`."
+msgstr ":ref:`エラーハンドラ <ext_commands_error_handler>` のように独自のエラーメッセージを使うことができます。"
+
+#: ../../ext/commands/commands.rst:1059
+msgid "To register a check for a command, we would have two ways of doing so. The first is using the :meth:`~ext.commands.check` decorator. For example:"
+msgstr "チェックを登録するには２つの方法があります：１つ目は :meth:`~ext.commands.check` を使う方法です。"
+
+#: ../../ext/commands/commands.rst:1073
+msgid "This would only evaluate the command if the function ``is_owner`` returns ``True``. Sometimes we re-use a check often and want to split it into its own decorator. To do that we can just add another level of depth:"
+msgstr "例えば、この場合は ``is_owner`` が ``True`` だったときのみコマンドを実行します。しかし、チェックを使い回すために独自のデコレーターにしたくなることもあるでしょう。そうしたい場合は、"
+
+#: ../../ext/commands/commands.rst:1090
+msgid "Since an owner check is so common, the library provides it for you (:func:`~ext.commands.is_owner`):"
+msgstr "このようにすると独自のデコレーターになります。\n"
+"このチェックはとてもよく使われるため、ライブラリに標準で実装されています（ :func:`~ext.commands.is_owner` ）。"
+
+#: ../../ext/commands/commands.rst:1100
+msgid "When multiple checks are specified, **all** of them must be ``True``:"
+msgstr "複数のチェックが渡されたときには、 **すべて** のチェックが ``True`` になる必要があります。"
+
+#: ../../ext/commands/commands.rst:1116
+msgid "If any of those checks fail in the example above, then the command will not be run."
+msgstr "もしチェックのうちどれかが失敗した場合、コマンドは実行されません。"
+
+#: ../../ext/commands/commands.rst:1118
+msgid "When an error happens, the error is propagated to the :ref:`error handlers <ext_commands_error_handler>`. If you do not raise a custom :exc:`~ext.commands.CommandError` derived exception, then it will get wrapped up into a :exc:`~ext.commands.CheckFailure` exception as so:"
+msgstr "もし例外が発生した場合、 :ref:`エラーハンドラ<ext_commands_error_handler>` によって例外が処理されます。もし :exc:`~ext.commands.CommandError` を継承しないエラーを発生させた場合、 :exc:`~ext.commands.CheckFailure` が発生します。"
+
+#: ../../ext/commands/commands.rst:1136
+msgid "If you want a more robust error system, you can derive from the exception and raise it instead of returning ``False``:"
+msgstr "もし強化されたエラーシステムが必要な場合は、例外を継承し、``False`` を返す代わりに例外を発生させることができます。"
+
+#: ../../ext/commands/commands.rst:1162
+msgid "Since having a ``guild_only`` decorator is pretty common, it comes built-in via :func:`~ext.commands.guild_only`."
+msgstr "``guild_only`` デコレータはよく使われるため、標準で実装されています（ :func:`~ext.commands.guild_only` ）。"
+
+#: ../../ext/commands/commands.rst:1165
+msgid "Global Checks"
+msgstr "グローバルチェック"
+
+#: ../../ext/commands/commands.rst:1167
+msgid "Sometimes we want to apply a check to **every** command, not just certain commands. The library supports this as well using the global check concept."
+msgstr "**すべての** コマンドにチェックをかけたいこともあるでしょう。そうしたい場合は、ライブラリのグローバルチェックを使うことができます。"
+
+#: ../../ext/commands/commands.rst:1170
+msgid "Global checks work similarly to regular checks except they are registered with the :meth:`.Bot.check` decorator."
+msgstr "グローバルチェックは、 :meth:`.Bot.check` デコレータで登録されることを除き、通常のチェックと同様に動作します。"
+
+#: ../../ext/commands/commands.rst:1172
+msgid "For example, to block all DMs we could do the following:"
+msgstr "例えば、全DMをブロックするには、次の操作を行います。"
+
+#: ../../ext/commands/commands.rst:1182
+msgid "Be careful on how you write your global checks, as it could also lock you out of your own bot."
+msgstr "グローバルチェックを追加するときには注意して下さい。ボットを操作できなくなる可能性があります。"
+
+#: ../../ext/commands/commands.rst:1188
+msgid "Hybrid Commands"
+msgstr "ハイブリッドコマンド"
+
+#: ../../ext/commands/commands.rst:1192
+msgid ":class:`.commands.HybridCommand` is a command that can be invoked as both a text and a slash command. This allows you to define a command as both slash and text command without writing separate code for both counterparts."
+msgstr ":class:`.commands.HybridCommand` は、テキストコマンドとしても、スラッシュコマンドとしても呼び出せるコマンドです。これを使用すれば、別々のコードを書かずにコマンドをスラッシュコマンドとテキストコマンドの両方として定義できます。"
+
+#: ../../ext/commands/commands.rst:1197
+msgid "In order to define a hybrid command, The command callback should be decorated with :meth:`.Bot.hybrid_command` decorator."
+msgstr "ハイブリッドコマンドを定義するには、コマンドコールバックを :meth:`.Bot.hybrid_command` デコレータで装飾しないといけません。"
+
+#: ../../ext/commands/commands.rst:1206
+msgid "The above command can be invoked as both text and slash command. Note that you have to manually sync your :class:`~app_commands.CommandTree` by calling :class:`~app_commands.CommandTree.sync` in order for slash commands to appear."
+msgstr "上のコマンドはテキストコマンドとスラッシュコマンドの両方として実行できます。なお、スラッシュコマンドを表示するには、 :class:`~app_commands.CommandTree.sync` を呼び出して :class:`~app_commands.CommandTree` を手動で同期しないといけません。"
+
+#: ../../ext/commands/commands.rst:1213
+msgid "You can create hybrid command groups and sub-commands using the :meth:`.Bot.hybrid_group` decorator."
+msgstr ":meth:`.Bot.hybrid_group` デコレータを使用して、ハイブリッドコマンドグループとサブコマンドを作成できます。"
+
+#: ../../ext/commands/commands.rst:1226
+msgid "Due to a Discord limitation, slash command groups cannot be invoked directly so the ``fallback`` parameter allows you to create a sub-command that will be bound to callback of parent group."
+msgstr "Discordの制限により、 スラッシュコマンドグループは直接呼び出すことができないため、 ``fallback`` パラメータを使用して、親グループのコールバックを呼び出すサブコマンドを作成できます。"
+
+#: ../../ext/commands/commands.rst:1232
+msgid "Due to certain limitations on slash commands, some features of text commands are not supported on hybrid commands. You can define a hybrid command as long as it meets the same subset that is supported for slash commands."
+msgstr "スラッシュコマンドには制限があるため、ハイブリッドコマンドではテキストコマンドの一部の機能がサポートされていません。スラッシュコマンドでサポートされている機能のみ使用している場合にハイブリッドコマンドを定義できます。"
+
+#: ../../ext/commands/commands.rst:1236
+msgid "Following are currently **not supported** by hybrid commands:"
+msgstr "以下は現時点でハイブリッドコマンドではサポート **されていません**:"
+
+#: ../../ext/commands/commands.rst:1238
+msgid "Variable number of arguments. e.g. ``*arg: int``"
+msgstr "可変長引数。例: ``*arg: int``"
+
+#: ../../ext/commands/commands.rst:1239
+msgid "Group commands with a depth greater than 1."
+msgstr "深さが1より大きいグループコマンド。"
+
+#: ../../ext/commands/commands.rst:1243
+msgid "Most :class:`typing.Union` types."
+msgstr "ほとんどの :class:`typing.Union` 型。"
+
+#: ../../ext/commands/commands.rst:1241
+msgid "Unions of channel types are allowed"
+msgstr "チャンネルの型のユニオン型は使用できます"
+
+#: ../../ext/commands/commands.rst:1242
+msgid "Unions of user types are allowed"
+msgstr "ユーザーの型のユニオン型は使用できます"
+
+#: ../../ext/commands/commands.rst:1243
+msgid "Unions of user types with roles are allowed"
+msgstr "チャンネルの型とロールの型のユニオン型は使用できます"
+
+#: ../../ext/commands/commands.rst:1245
+msgid "Apart from that, all other features such as converters, checks, autocomplete, flags etc. are supported on hybrid commands. Note that due to a design constraint, decorators related to application commands such as :func:`discord.app_commands.autocomplete` should be placed below the :func:`~ext.commands.hybrid_command` decorator."
+msgstr "それ以外の、コンバーター、チェック、オートコンプリート、フラグ、その他はすべてハイブリッドコマンドで利用できます。なお、設計上の制限により、 :func:`discord.app_commands.autocomplete` といったアプリケーションコマンド関連のデコレータは :func:`~ext.commands.hybrid_command` デコレータの下に配置しないといけません。"
+
+#: ../../ext/commands/commands.rst:1249
+msgid "For convenience and ease in writing code, The :class:`~ext.commands.Context` class implements some behavioural changes for various methods and attributes:"
+msgstr "コードを簡単に書くために、 :class:`~ext.commands.Context` クラスのメソッドや属性の動作が変化します:"
+
+#: ../../ext/commands/commands.rst:1252
+msgid ":attr:`.Context.interaction` can be used to retrieve the slash command interaction."
+msgstr ":attr:`.Context.interaction` を用いてスラッシュコマンドのインタラクションを取得できます。"
+
+#: ../../ext/commands/commands.rst:1253
+msgid "Since interaction can only be responded to once, The :meth:`.Context.send` automatically determines whether to send an interaction response or a followup response."
+msgstr "インタラクションは一度しか応答できないため、 :meth:`.Context.send` は、インタラクション応答とフォローアップ応答のどちらを送信するかを自動的に決定します。"
+
+#: ../../ext/commands/commands.rst:1255
+msgid ":meth:`.Context.defer` defers the interaction response for slash commands but shows typing indicator for text commands."
+msgstr ":meth:`.Context.defer` はスラッシュコマンドではインタラクション応答を遅らせ、テキストコマンドでは入力インジケーターを表示します。"
+

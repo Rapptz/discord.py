@@ -1,0 +1,87 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Project-ID: 362783\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: version_guarantees.pot\n"
+"X-Crowdin-File-ID: 46\n"
+"Language: ja_JP\n"
+
+#: ../../version_guarantees.rst:4
+msgid "Version Guarantees"
+msgstr "バージョン保証"
+
+#: ../../version_guarantees.rst:6
+msgid "The library follows a `semantic versioning principle <https://semver.org/>`_ which means that the major version is updated every time there is an incompatible API change. However due to the lack of guarantees on the Discord side when it comes to breaking changes along with the fairly dynamic nature of Python it can be hard to discern what can be considered a breaking change and what isn't."
+msgstr "このライブラリは `セマンティック バージョニングの原則 <https://semver.org/>`_ に従います。それが意味するのは、互換性のないAPIの変更が行われるたびにメジャーバージョンが更新されるということです。しかしながら、Discord側にはPythonの非常に動的な性質とともに破壊的変更を行う際の保証がないため、破壊的変更とみなされるもの、そうでないものを区別するのは困難です。"
+
+#: ../../version_guarantees.rst:8
+msgid "The first thing to keep in mind is that breaking changes only apply to **publicly documented functions and classes**. If it's not listed in the documentation here then it is not part of the public API and is thus bound to change. This includes attributes that start with an underscore or functions without an underscore that are not documented."
+msgstr "最初に覚えておくべきことは、破壊的変更は **公開ドキュメント化してある関数とクラス** のみに適用されるということです。ドキュメントにないものはパブリックAPIの一部ではないため、変更される可能性があります。これにはドキュメントに載っていないアンダースコアから始まる関数や、通常の関数が含まれます。"
+
+#: ../../version_guarantees.rst:12
+msgid "The examples below are non-exhaustive."
+msgstr "以下の例は網羅的なものではありません。"
+
+#: ../../version_guarantees.rst:15
+msgid "Examples of Breaking Changes"
+msgstr "破壊的変更の例"
+
+#: ../../version_guarantees.rst:17
+msgid "Changing the default parameter value to something else."
+msgstr "デフォルトのパラメータ値を別のものに変更。"
+
+#: ../../version_guarantees.rst:18
+msgid "Renaming a function without an alias to an old function."
+msgstr "古い関数へのエイリアスのない関数の名称を変更。"
+
+#: ../../version_guarantees.rst:19
+msgid "Adding or removing parameters to an event."
+msgstr "イベントへのパラメータの追加、あるいは削除。"
+
+#: ../../version_guarantees.rst:22
+msgid "Examples of Non-Breaking Changes"
+msgstr "破壊的変更ではないものの例"
+
+#: ../../version_guarantees.rst:24
+msgid "Adding or removing private underscored attributes."
+msgstr "アンダースコア付きのプライベート関数の追加、あるいは削除。"
+
+#: ../../version_guarantees.rst:25
+msgid "Adding an element into the ``__slots__`` of a data class."
+msgstr "データクラスの ``__slots__`` への要素の追加。"
+
+#: ../../version_guarantees.rst:26
+msgid "Changing the behaviour of a function to fix a bug."
+msgstr "バグ修正のための関数の動作の変更。"
+
+#: ../../version_guarantees.rst:27
+msgid "Changes in the typing behaviour of the library"
+msgstr "ライブラリの型の動作の変更"
+
+#: ../../version_guarantees.rst:28
+msgid "Changes in the calling convention of functions that are primarily meant as callbacks"
+msgstr "主にコールバックとして使用される関数の呼び出し方法の変更"
+
+#: ../../version_guarantees.rst:29
+msgid "Changes in the documentation."
+msgstr "ドキュメントの変更。"
+
+#: ../../version_guarantees.rst:30
+msgid "Modifying the internal HTTP handling."
+msgstr "内部HTTP処理の変更。"
+
+#: ../../version_guarantees.rst:31
+msgid "Upgrading the dependencies to a new version, major or otherwise."
+msgstr "依存関係をメジャー、またはそれ以外の新しいバージョンへアップグレード。"
+

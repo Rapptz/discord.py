@@ -1,0 +1,78 @@
+name: Bug Report
+description: Report broken or incorrect behaviour
+labels: unconfirmed bug
+body:
+  - type: markdown
+    attributes:
+      value: >
+        Thanks for taking the time to fill out a bug.
+        If you want real-time support, consider joining our Discord at https://discord.gg/r3sSKJJ instead.
+
+        Please note that this form is for bugs only!
+  - type: input
+    attributes:
+      label: Summary
+      description: A simple summary of your bug report
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduction Steps
+      description: >
+         What you did to make it happen.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Minimal Reproducible Code
+      description: >
+        A short snippet of code that showcases the bug.
+      render: python
+  - type: textarea
+    attributes:
+      label: Expected Results
+      description: >
+        What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Actual Results
+      description: >
+        What actually happened?
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Intents
+      description: >
+        What intents are you using for your bot?
+        This is the `discord.Intents` class you pass to the client.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: System Information
+      description: >
+        Run `python -m discord -v` and paste this information below.
+
+        This command required v1.1.0 or higher of the library. If this errors out then show some basic
+        information involving your system such as operating system and Python version.
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Checklist
+      description: >
+        Let's make sure you've properly done due diligence when reporting this issue!
+      options:
+        - label: I have searched the open issues for duplicates.
+          required: true
+        - label: I have shown the entire traceback, if possible.
+          required: true
+        - label: I have removed my token from display, if visible.
+          required: true
+  - type: textarea
+    attributes:
+      label: Additional Context
+      description: If there is anything else to say, please do so here.

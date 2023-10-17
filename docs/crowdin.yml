@@ -1,0 +1,21 @@
+# -*- coding: utf-8 -*-
+
+project_id: "362783"
+api_token_env: CROWDIN_API_KEY
+
+files:
+  - source: /_build/locale/**/*.pot
+    translation: /locale/%two_letters_code%/LC_MESSAGES/%original_path%/%file_name%.po
+
+# You must use `crowdin download --all` for this project
+# I discovered after like an hour of debugging the Java CLI that `--all` actually means "use server sources"
+# Without this, crowdin tries to determine the mapping itself, and decides that because
+#  `/locale/ja/LC_MESSAGES/_build/locale/...` doesn't exist, that it won't download anything
+# There is no workaround for this. I tried. Trying to adjust the project base path just breaks things further.
+
+# Crowdin does the conflict resolution on its end. The process to update translations is thus:
+# - make gettext
+# - crowdin upload
+# - crowdin download --all
+# You must set ${CROWDIN_API_KEY} in the environment.
+# I will write an Actions workflow for this at a later date.

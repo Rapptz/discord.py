@@ -1,0 +1,363 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Project-ID: 362783\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: migrating_to_async.pot\n"
+"X-Crowdin-File-ID: 48\n"
+"Language: ja_JP\n"
+
+#: ../../migrating_to_async.rst:8
+msgid "Migrating to v0.10.0"
+msgstr "v0.10.0への移行"
+
+#: ../../migrating_to_async.rst:10
+msgid "v0.10.0 is one of the biggest breaking changes in the library due to massive fundamental changes in how the library operates."
+msgstr "v0.10.0は、ライブラリの根本的動作が大幅に変更された、ライブラリの中でも大きな更新の一つです。"
+
+#: ../../migrating_to_async.rst:13
+msgid "The biggest major change is that the library has dropped support to all versions prior to Python 3.4.2. This was made to support :mod:`asyncio`, in which more detail can be seen :issue:`in the corresponding issue <50>`. To reiterate this, the implication is that **python version 2.7 and 3.3 are no longer supported**."
+msgstr "最大の大きな変更点はPython 3.4.2以前のすべてのバージョンのサポートが打ち切られたことです。これは :mod:`asyncio` をサポートするためで、対応する :issue:`in the corresponding issue <50>` で詳細が見られます。繰り返しになりますが、 **Python 2.7及びPython3.3は、既にサポートされていません** 。"
+
+#: ../../migrating_to_async.rst:18
+msgid "Below are all the other major changes from v0.9.0 to v0.10.0."
+msgstr "以下は、v0.9.0からv0.10.0までのその他の主要な変更点です。"
+
+#: ../../migrating_to_async.rst:21
+msgid "Event Registration"
+msgstr "イベント登録"
+
+#: ../../migrating_to_async.rst:23
+msgid "All events before were registered using :meth:`Client.event`. While this is still possible, the events must be decorated with ``@asyncio.coroutine``."
+msgstr "以前まではすべてのイベントが :meth:`Client.event` を使用して登録されていました。このやり方はまだ可能ですが、 ``@asyncio.coroutine`` で修飾が必要です。"
+
+#: ../../migrating_to_async.rst:26
+#: ../../migrating_to_async.rst:71
+#: ../../migrating_to_async.rst:105
+#: ../../migrating_to_async.rst:166
+msgid "Before:"
+msgstr "更新前:"
+
+#: ../../migrating_to_async.rst:34
+#: ../../migrating_to_async.rst:83
+#: ../../migrating_to_async.rst:111
+#: ../../migrating_to_async.rst:174
+#: ../../migrating_to_async.rst:284
+msgid "After:"
+msgstr "更新後:"
+
+#: ../../migrating_to_async.rst:43
+msgid "Or in Python 3.5+:"
+msgstr "Python 3.5以降の場合:"
+
+#: ../../migrating_to_async.rst:51
+msgid "Because there is a lot of typing, a utility decorator (:meth:`Client.async_event`) is provided for easier registration. For example:"
+msgstr "多くの型付けがあるため、登録を簡単にするためにユーティリティデコレータ (:meth:`Client.async_event`) が用意されています。例:"
+
+#: ../../migrating_to_async.rst:61
+msgid "Be aware however, that this is still a coroutine and your other functions that are coroutines must be decorated with ``@asyncio.coroutine`` or be ``async def``."
+msgstr "しかし、これはまだコルーチンであり、コルーチンである関数には ``@asyncio.coroutine`` あるいは ``async def`` での修飾が必要であることに注意してください。"
+
+#: ../../migrating_to_async.rst:65
+msgid "Event Changes"
+msgstr "イベントの変更"
+
+#: ../../migrating_to_async.rst:67
+msgid "Some events in v0.9.0 were considered pretty useless due to having no separate states. The main events that were changed were the ``_update`` events since previously they had no context on what was changed."
+msgstr "v0.9.0でいくつかのイベントは、別の状態を持たないために、役に立たないと考えられていました。変更された主なイベントは、更新前と更新後の二つの状態を持つ ``_update`` イベントです。"
+
+#: ../../migrating_to_async.rst:93
+msgid "Note that ``on_status`` was removed. If you want its functionality, use :func:`on_member_update`. See :ref:`discord-api-events` for more information. Other removed events include ``on_socket_closed``, ``on_socket_receive``, and ``on_socket_opened``."
+msgstr "``on_status`` が削除されていることに注意してください。似たような機能が使いたい場合は、 :func:`on_member_update` を使用します。詳細は :ref:`discord-api-events` を参照してください。他に、 ``on_socket_closed`` 、 ``on_socket_receive`` や ``on_socket_opened`` も削除されています。"
+
+#: ../../migrating_to_async.rst:98
+msgid "Coroutines"
+msgstr "コルーチン"
+
+#: ../../migrating_to_async.rst:100
+msgid "The biggest change that the library went through is that almost every function in :class:`Client` was changed to be a `coroutine <py:library/asyncio-task.html>`_. Functions that are marked as a coroutine in the documentation must be awaited from or yielded from in order for the computation to be done. For example..."
+msgstr "ライブラリの最大の変更点は :class:`Client` を使用していたほとんどの関数が `コルーチン <py:library/asyncio-task.html>`_ へと変更されたことです。ドキュメントのコルーチンとして定義された関数は、処理の終了を待機します。例えば、"
+
+#: ../../migrating_to_async.rst:120
+msgid "In order for you to ``yield from`` or ``await`` a coroutine then your function must be decorated with ``@asyncio.coroutine`` or ``async def``."
+msgstr "``yield from`` あるいは ``await`` を使用するには、関数が ``@asyncio.coroutine`` または ``async def`` で修飾されている必要があります。"
+
+#: ../../migrating_to_async.rst:124
+msgid "Iterables"
+msgstr "イテラブル"
+
+#: ../../migrating_to_async.rst:126
+msgid "For performance reasons, many of the internal data structures were changed into a dictionary to support faster lookup. As a consequence, this meant that some lists that were exposed via the API have changed into iterables and not sequences. In short, this means that certain attributes now only support iteration and not any of the sequence functions."
+msgstr "パフォーマンス上の理由から、より高速な情報の取得を可能とするため、多くの内部データ構造が辞書に変更されました。結果として、これはAPIを介して公開された一部リストが、シーケンスではなくイテラブルに変更されたことを意味します。つまるところ、現在、特定の属性はイテラブルのみをサポートしており、シーケンスを扱うことができないことを意味しています。"
+
+#: ../../migrating_to_async.rst:131
+msgid "The affected attributes are as follows:"
+msgstr "影響を受ける属性は以下のとおりです。"
+
+#: ../../migrating_to_async.rst:133
+msgid ":attr:`Client.servers`"
+msgstr ":attr:`Client.servers`"
+
+#: ../../migrating_to_async.rst:134
+msgid ":attr:`Client.private_channels`"
+msgstr ":attr:`Client.private_channels`"
+
+#: ../../migrating_to_async.rst:135
+msgid ":attr:`Server.channels`"
+msgstr ":attr:`Server.channels`"
+
+#: ../../migrating_to_async.rst:136
+msgid ":attr:`Server.members`"
+msgstr ":attr:`Server.members`"
+
+#: ../../migrating_to_async.rst:138
+msgid "Some examples of previously valid behaviour that is now invalid"
+msgstr "以前は有効であったが、現在は無効である操作の例。"
+
+#: ../../migrating_to_async.rst:145
+msgid "Since they are no longer :obj:`list`\\s, they no longer support indexing or any operation other than iterating. In order to get the old behaviour you should explicitly cast it to a list."
+msgstr "これらは、既に :obj:`list` ではないため、インデックスや反復処理以外の操作はサポートされなくなりました。以前の動作で処理を行うには、listに明示的にキャストする必要があります。"
+
+#: ../../migrating_to_async.rst:155
+msgid "Due to internal changes of the structure, the order you receive the data in is not in a guaranteed order."
+msgstr "構造の内部的な変更のため、データを受け取った順序は保証されません。"
+
+#: ../../migrating_to_async.rst:159
+msgid "Enumerations"
+msgstr "列挙型"
+
+#: ../../migrating_to_async.rst:161
+msgid "Due to dropping support for versions lower than Python 3.4.2, the library can now use :doc:`py:library/enum` in places where it makes sense."
+msgstr "Python 3.4.2以前のバージョンのサポートを打ち切ったため、ライブラリは理にかなった場所での :doc:`py:library/enum` の使用が可能になりました。"
+
+#: ../../migrating_to_async.rst:164
+msgid "The common places where this was changed was in the server region, member status, and channel type."
+msgstr "変更された主な場所は、サーバーリージョン、メンバーのステータス、およびチャンネルタイプです。"
+
+#: ../../migrating_to_async.rst:182
+msgid "The main reason for this change was to reduce the use of finicky strings in the API as this could give users a false sense of power. More information can be found in the :ref:`discord-api-enums` page."
+msgstr "この変更の主な理由は、APIでの厄介な文字列の使用を削減することでした。ユーザーに誤った感覚を与える可能性があったためです。詳細は :ref:`discord-api-enums` を参照してください。"
+
+#: ../../migrating_to_async.rst:186
+msgid "Properties"
+msgstr "プロパティ"
+
+#: ../../migrating_to_async.rst:188
+msgid "A lot of function calls that returned constant values were changed into Python properties for ease of use in format strings."
+msgstr "定数値を返す関数呼び出しの多くは、書式化した文字列での使いやすさ向上を図るため、Pythonのプロパティに変更されました。"
+
+#: ../../migrating_to_async.rst:191
+msgid "The following functions were changed into properties:"
+msgstr "以下はプロパティに変更された関数です。"
+
+#: ../../migrating_to_async.rst:194
+#: ../../migrating_to_async.rst:223
+#: ../../migrating_to_async.rst:238
+msgid "Before"
+msgstr "変更前"
+
+#: ../../migrating_to_async.rst:194
+#: ../../migrating_to_async.rst:223
+#: ../../migrating_to_async.rst:238
+msgid "After"
+msgstr "変更後"
+
+#: ../../migrating_to_async.rst:196
+msgid "``User.avatar_url()``"
+msgstr "``User.avatar_url()``"
+
+#: ../../migrating_to_async.rst:196
+msgid ":attr:`User.avatar_url`"
+msgstr ":attr:`User.avatar_url`"
+
+#: ../../migrating_to_async.rst:198
+msgid "``User.mention()``"
+msgstr "``User.mention()``"
+
+#: ../../migrating_to_async.rst:198
+msgid ":attr:`User.mention`"
+msgstr ":attr:`User.mention`"
+
+#: ../../migrating_to_async.rst:200
+msgid "``Channel.mention()``"
+msgstr "``Channel.mention()``"
+
+#: ../../migrating_to_async.rst:200
+msgid ":attr:`Channel.mention`"
+msgstr ":attr:`Channel.mention`"
+
+#: ../../migrating_to_async.rst:202
+msgid "``Channel.is_default_channel()``"
+msgstr "``Channel.is_default_channel()``"
+
+#: ../../migrating_to_async.rst:202
+msgid ":attr:`Channel.is_default`"
+msgstr ":attr:`Channel.is_default`"
+
+#: ../../migrating_to_async.rst:204
+msgid "``Role.is_everyone()``"
+msgstr "``Role.is_everyone()``"
+
+#: ../../migrating_to_async.rst:204
+msgid ":attr:`Role.is_everyone`"
+msgstr ":attr:`Role.is_everyone`"
+
+#: ../../migrating_to_async.rst:206
+msgid "``Server.get_default_role()``"
+msgstr "``Server.get_default_role()``"
+
+#: ../../migrating_to_async.rst:206
+msgid ":attr:`Server.default_role`"
+msgstr ":attr:`Server.default_role`"
+
+#: ../../migrating_to_async.rst:208
+msgid "``Server.icon_url()``"
+msgstr "``Server.icon_url()``"
+
+#: ../../migrating_to_async.rst:208
+msgid ":attr:`Server.icon_url`"
+msgstr ":attr:`Server.icon_url`"
+
+#: ../../migrating_to_async.rst:210
+msgid "``Server.get_default_channel()``"
+msgstr "``Server.get_default_channel()``"
+
+#: ../../migrating_to_async.rst:210
+msgid ":attr:`Server.default_channel`"
+msgstr ":attr:`Server.default_channel`"
+
+#: ../../migrating_to_async.rst:212
+msgid "``Message.get_raw_mentions()``"
+msgstr "``Message.get_raw_mentions()``"
+
+#: ../../migrating_to_async.rst:212
+msgid ":attr:`Message.raw_mentions`"
+msgstr ":attr:`Message.raw_mentions`"
+
+#: ../../migrating_to_async.rst:214
+msgid "``Message.get_raw_channel_mentions()``"
+msgstr "``Message.get_raw_channel_mentions()``"
+
+#: ../../migrating_to_async.rst:214
+msgid ":attr:`Message.raw_channel_mentions`"
+msgstr ":attr:`Message.raw_channel_mentions`"
+
+#: ../../migrating_to_async.rst:218
+msgid "Member Management"
+msgstr "メンバー管理"
+
+#: ../../migrating_to_async.rst:220
+msgid "Functions that involved banning and kicking were changed."
+msgstr "BANやキックを含む関数が追加されました。"
+
+#: ../../migrating_to_async.rst:225
+msgid "``Client.ban(server, user)``"
+msgstr "``Client.ban(server, user)``"
+
+#: ../../migrating_to_async.rst:225
+msgid "``Client.ban(member)``"
+msgstr "``Client.ban(member)``"
+
+#: ../../migrating_to_async.rst:227
+msgid "``Client.kick(server, user)``"
+msgstr "``Client.kick(server, user)``"
+
+#: ../../migrating_to_async.rst:227
+msgid "``Client.kick(member)``"
+msgstr "``Client.kick(member)``"
+
+#: ../../migrating_to_async.rst:233
+msgid "Renamed Functions"
+msgstr "関数の改名"
+
+#: ../../migrating_to_async.rst:235
+msgid "Functions have been renamed."
+msgstr "いくつかの関数名が変更されました。"
+
+#: ../../migrating_to_async.rst:240
+msgid "``Client.set_channel_permissions``"
+msgstr "``Client.set_channel_permissions``"
+
+#: ../../migrating_to_async.rst:240
+#: ../../migrating_to_async.rst:263
+msgid ":meth:`Client.edit_channel_permissions`"
+msgstr ":meth:`Client.edit_channel_permissions`"
+
+#: ../../migrating_to_async.rst:243
+msgid "All the :class:`Permissions` related attributes have been renamed and the `can_` prefix has been dropped. So for example, ``can_manage_messages`` has become ``manage_messages``."
+msgstr "すべての :class:`Permissions` 関連の属性の名称が変更され、 接頭詞であった `can_` が削除されました。例を挙げると ``can_manage_messages`` が ``manage_messages`` になりました。"
+
+#: ../../migrating_to_async.rst:247
+msgid "Forced Keyword Arguments"
+msgstr "強制キーワード引数"
+
+#: ../../migrating_to_async.rst:249
+msgid "Since 3.0+ of Python, we can now force questions to take in forced keyword arguments. A keyword argument is when you explicitly specify the name of the variable and assign to it, for example: ``foo(name='test')``. Due to this support, some functions in the library were changed to force things to take said keyword arguments. This is to reduce errors of knowing the argument order and the issues that could arise from them."
+msgstr "Python 3.0以降では、強制的にキーワード引数をとるようにすることができるようになりました。キーワード引数は、変数の名前を明示的に指定してそれに割り当てることで、例えば ``foo(name='test')`` などです。このサポートにより、ライブラリ内のいくつかの関数が変更され、キーワード引数を取るようになりました。これは引数の順序が誤っていることが原因で発生するエラーを減らすためです。"
+
+#: ../../migrating_to_async.rst:254
+msgid "The following parameters are now exclusively keyword arguments:"
+msgstr "次のパラメータは、現在、排他的なキーワード引数です。"
+
+#: ../../migrating_to_async.rst:256
+msgid ":meth:`Client.send_message`"
+msgstr ":meth:`Client.send_message`"
+
+#: ../../migrating_to_async.rst:257
+msgid "``tts``"
+msgstr "``tts``"
+
+#: ../../migrating_to_async.rst:259
+msgid ":meth:`Client.logs_from`"
+msgstr ":meth:`Client.logs_from`"
+
+#: ../../migrating_to_async.rst:259
+msgid "``before``"
+msgstr "``before``"
+
+#: ../../migrating_to_async.rst:260
+msgid "``after``"
+msgstr "``after``"
+
+#: ../../migrating_to_async.rst:262
+msgid "``allow``"
+msgstr "``allow``"
+
+#: ../../migrating_to_async.rst:263
+msgid "``deny``"
+msgstr "``deny``"
+
+#: ../../migrating_to_async.rst:265
+msgid "In the documentation you can tell if a function parameter is a forced keyword argument if it is after ``\\*,`` in the function signature."
+msgstr "ドキュメントでは、関数シグネチャ内の ``\\*,`` の後に引数があるかどうかで、関数の引数が強制的なキーワード引数であるかを知ることができます。"
+
+#: ../../migrating_to_async.rst:271
+msgid "Running the Client"
+msgstr "クライアントの実行"
+
+#: ../../migrating_to_async.rst:273
+msgid "In earlier versions of discord.py, ``client.run()`` was a blocking call to the main thread that called it. In v0.10.0 it is still a blocking call but it handles the event loop for you. However, in order to do that you must pass in your credentials to :meth:`Client.run`."
+msgstr "以前のバージョンのdiscord.pyでは ``client.run()`` は呼び出したメインスレッドをブロッキングするブロック付き呼び出しでした。v0.10.0でも未だブロック付き呼び出しですが、イベントループで処理を行います。ただし、それを行うためには認証情報を :meth:`Client.run` に渡す必要があります。"
+
+#: ../../migrating_to_async.rst:277
+msgid "Basically, before:"
+msgstr "以前:"
+
+#: ../../migrating_to_async.rst:292
+msgid "Like in the older ``Client.run`` function, the newer one must be the one of the last functions to call. This is because the function is **blocking**. Registering events or doing anything after :meth:`Client.run` will not execute until the function returns."
+msgstr "以前の ``Client.run`` 同様、新しくなった関数も最後に呼び出す必要があります。これは関数がブロッキングを行うためです。 :meth:`Client.run` の後に何かを定義しても、この関数が終了するまで、それらの処理は行われません。"
+
+#: ../../migrating_to_async.rst:297
+msgid "This is a utility function that abstracts the event loop for you. There's no need for the run call to be blocking and out of your control. Indeed, if you want control of the event loop then doing so is quite straightforward:"
+msgstr "これはイベントループを抽象化するユーティリティ関数です。 実行呼び出しがブロックされ、コントロールから外れる必要はありません。実際に、イベントループを制御したい場合、この方法では非常に簡単です。"
+

@@ -1,0 +1,127 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Project-ID: 362783\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: intro.pot\n"
+"X-Crowdin-File-ID: 80\n"
+"Language: ja_JP\n"
+
+#: ../../intro.rst:8
+msgid "Introduction"
+msgstr "はじめに"
+
+#: ../../intro.rst:10
+msgid "This is the documentation for discord.py, a library for Python to aid in creating applications that utilise the Discord API."
+msgstr "これはDiscord APIを利用したアプリケーションを作成するのに便利なPythonライブラリ、discord.pyのドキュメントです。"
+
+#: ../../intro.rst:14
+msgid "Prerequisites"
+msgstr "前提"
+
+#: ../../intro.rst:16
+msgid "discord.py works with Python 3.8 or higher. Support for earlier versions of Python is not provided. Python 2.7 or lower is not supported. Python 3.7 or lower is not supported."
+msgstr "discord.py は Python 3.8 以降で動作します。それ以前のPython に対するサポートは提供されていません。 Python 2.7 以下はサポートされていません。Python 3.7 以下はサポートされていません。"
+
+#: ../../intro.rst:23
+msgid "Installing"
+msgstr "インストール"
+
+#: ../../intro.rst:25
+msgid "You can get the library directly from PyPI: ::"
+msgstr "PyPIから直接ライブラリをインストールできます。"
+
+#: ../../intro.rst:29
+msgid "If you are using Windows, then the following should be used instead: ::"
+msgstr "Windowsを使用している場合は、以下のコマンドで実行してください。"
+
+#: ../../intro.rst:34
+msgid "To get voice support, you should use ``discord.py[voice]`` instead of ``discord.py``, e.g. ::"
+msgstr "音声のサポートが必要な場合は、 ``discord.py`` ではなく、以下の例のように ``discord.py[voice]`` を使うべきです。"
+
+#: ../../intro.rst:38
+msgid "On Linux environments, installing voice requires getting the following dependencies:"
+msgstr "Linux環境では、依存関係にある以下のライブラリが必要になるので注意してください。"
+
+#: ../../intro.rst:40
+msgid "`libffi <https://github.com/libffi/libffi>`_"
+msgstr "`libffi <https://github.com/libffi/libffi>`_"
+
+#: ../../intro.rst:41
+msgid "`libnacl <https://github.com/saltstack/libnacl>`_"
+msgstr "`libnacl <https://github.com/saltstack/libnacl>`_"
+
+#: ../../intro.rst:42
+msgid "`python3-dev <https://packages.debian.org/python3-dev>`_"
+msgstr "`python3-dev <https://packages.debian.org/python3-dev>`_"
+
+#: ../../intro.rst:44
+msgid "For a Debian-based system, the following command will get these dependencies:"
+msgstr "Debianベースのシステムでは、次のコマンドで依存関係にあるライブラリを取得できます。"
+
+#: ../../intro.rst:50
+msgid "Remember to check your permissions!"
+msgstr "自分の権限の確認は忘れないようにしてください！"
+
+#: ../../intro.rst:53
+msgid "Virtual Environments"
+msgstr "仮想環境"
+
+#: ../../intro.rst:55
+msgid "Sometimes you want to keep libraries from polluting system installs or use a different version of libraries than the ones installed on the system. You might also not have permissions to install libraries system-wide. For this purpose, the standard library as of Python 3.3 comes with a concept called \"Virtual Environment\"s to help maintain these separate versions."
+msgstr "システムにインストールされている環境をライブラリで汚したくない場合や、現在システムにインストールされているものとは別のバージョンのライブラリを利用したい場合があると思います。システムへライブラリをインストールする権限がない場合などもです。こういった要望に応えるため、Python3.3の標準ライブラリには異なるバージョンの管理を補助する「仮想環境」と呼ばれる概念が追加されました。"
+
+#: ../../intro.rst:60
+msgid "A more in-depth tutorial is found on :doc:`py:tutorial/venv`."
+msgstr "より詳しいチュートリアルは :doc:`py:tutorial/venv` にあります。"
+
+#: ../../intro.rst:62
+msgid "However, for the quick and dirty:"
+msgstr "簡単に仮想環境を構築する方法。"
+
+#: ../../intro.rst:64
+msgid "Go to your project's working directory:"
+msgstr "プロジェクトの作業ディレクトリに移動してください。"
+
+#: ../../intro.rst:71
+msgid "Activate the virtual environment:"
+msgstr "下記コマンドで仮想環境を有効化します。"
+
+#: ../../intro.rst:77
+msgid "On Windows you activate it with:"
+msgstr "Windowsの場合は、こちらを使ってください。"
+
+#: ../../intro.rst:83
+msgid "Use pip like usual:"
+msgstr "いつものようにpipインストールを実行します。"
+
+#: ../../intro.rst:89
+msgid "Congratulations. You now have a virtual environment all set up."
+msgstr "おめでとうございます。これで仮想環境のセットアップができました。"
+
+#: ../../intro.rst:93
+msgid "Scripts executed with ``py -3`` will ignore any currently active virtual environment, as the ``-3`` specifies a global scope."
+msgstr ""
+
+#: ../../intro.rst:97
+msgid "Basic Concepts"
+msgstr "基本概念"
+
+#: ../../intro.rst:99
+msgid "discord.py revolves around the concept of :ref:`events <discord-api-events>`. An event is something you listen to and then respond to. For example, when a message happens, you will receive an event about it that you can respond to."
+msgstr "discord.pyは :ref:`イベント <discord-api-events>` の概念を中心としています。イベントは何かを受け取り、それに対する応答を行います。例えば、メッセージが発生すると、メッセージの発生に関連するイベントを受け取り、そのイベントに対して応答を返すことができます。"
+
+#: ../../intro.rst:103
+msgid "A quick example to showcase how events work:"
+msgstr "以下はイベントの仕組みを紹介する簡単な例です。"
+

@@ -1,0 +1,73 @@
+name: crowdin download
+
+on:
+  schedule:
+    - cron: '0 18 * * 1'
+  workflow_dispatch:
+
+jobs:
+  check-environment:
+    runs-on: ubuntu-latest
+    environment: Crowdin
+    outputs:
+      available: ${{ steps.check.outputs.available }}
+    steps:
+      - id: check
+        if: env.CROWDIN_API_KEY != null
+        run: |
+          echo "available=true" >> $GITHUB_OUTPUT
+        env:
+          CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
+
+  download:
+    runs-on: ubuntu-latest
+    needs: [ check-environment ]
+    # secrets cannot be accessed inside an `if` so this needs to be checked in separate job
+    if: needs.check-environment.outputs.available == 'true'
+    environment: Crowdin
+    name: download
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: master
+
+      - name: Install system dependencies
+        run: |
+          wget -qO - https://artifacts.crowdin.com/repo/GPG-KEY-crowdin | sudo apt-key add -
+          echo "deb https://artifacts.crowdin.com/repo/deb/ /" | sudo tee -a /etc/apt/sources.list.d/crowdin.list
+          sudo apt-get update -qq
+          sudo apt-get install -y crowdin3
+
+      - name: Download translations
+        shell: bash
+        run: |
+          cd docs
+          crowdin download --all
+        env:
+          CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
+
+      - name: Create pull request
+        id: cpr_crowdin
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Crowdin translations download
+          title: "[Crowdin] Updated translation files"
+          body: |
+            Created by the [Crowdin download workflow](.github/workflows/crowdin_download.yml).
+          branch: "auto/crowdin"
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+
+      - name: Close and reopen the PR with different token to trigger CI
+        uses: actions/github-script@v3
+        env:
+          PR_NUMBER: ${{ steps.cpr_crowdin.outputs.pull-request-number }}
+          PR_OPERATION: ${{ steps.cpr_crowdin.outputs.pull-request-operation }}
+        with:
+          github-token: ${{ secrets.GH_REPO_SCOPED_TOKEN }}
+          script: |
+            const script = require(
+              `${process.env.GITHUB_WORKSPACE}/.github/workflows/scripts/close_and_reopen_pr.js`
+            );
+            console.log(script({github, context}));

@@ -1,0 +1,91 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Project-ID: 362783\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: quickstart.pot\n"
+"X-Crowdin-File-ID: 50\n"
+"Language: ja_JP\n"
+
+#: ../../quickstart.rst:8
+msgid "Quickstart"
+msgstr "クイックスタート"
+
+#: ../../quickstart.rst:10
+msgid "This page gives a brief introduction to the library. It assumes you have the library installed, if you don't check the :ref:`installing` portion."
+msgstr "ここでは、ライブラリの概要を説明します。ライブラリがインストールされていることを前提としているので、インストールを終えていない人は :ref:`installing` を参照してください。"
+
+#: ../../quickstart.rst:14
+msgid "A Minimal Bot"
+msgstr "最小限のBot"
+
+#: ../../quickstart.rst:16
+msgid "Let's make a bot that responds to a specific message and walk you through it."
+msgstr "特定のメッセージに対して返事をするBotを作ってみましょう。一通り説明していきます。"
+
+#: ../../quickstart.rst:18
+msgid "It looks something like this:"
+msgstr "結論から書くと、このように書くことができます。"
+
+#: ../../quickstart.rst:45
+msgid "Let's name this file ``example_bot.py``. Make sure not to name it ``discord.py`` as that'll conflict with the library."
+msgstr "ファイルの名前を ``example_bot.py`` としましょう。ライブラリと競合してしまうので、 ``discord.py`` というファイル名にはしないでください。"
+
+#: ../../quickstart.rst:48
+msgid "There's a lot going on here, so let's walk you through it step by step."
+msgstr "さて、では順を追って一つづつ説明していきます。"
+
+#: ../../quickstart.rst:50
+msgid "The first line just imports the library, if this raises a :exc:`ModuleNotFoundError` or :exc:`ImportError` then head on over to :ref:`installing` section to properly install."
+msgstr "最初の行は、ただライブラリをインポートしただけです。 :exc:`ModuleNotFoundError` や :exc:`ImportError` が発生した場合は :ref:`installing` を見て、ライブラリをきちんとインストールしましょう。"
+
+#: ../../quickstart.rst:52
+msgid "Next, we create an instance of a :class:`Client`. This client is our connection to Discord."
+msgstr "次に、 :class:`Client` のインスタンスを作成します。クライアントはDiscordへの接続を行います。"
+
+#: ../../quickstart.rst:53
+msgid "We then use the :meth:`Client.event` decorator to register an event. This library has many events. Since this library is asynchronous, we do things in a \"callback\" style manner."
+msgstr "続いて、 :meth:`Client.event` デコレータを使用してイベントを登録します。ライブラリにはたくさんのイベントが用意されています。このライブラリは非同期のため、「コールバック」のスタイルで処理を行います。"
+
+#: ../../quickstart.rst:56
+msgid "A callback is essentially a function that is called when something happens. In our case, the :func:`on_ready` event is called when the bot has finished logging in and setting things up and the :func:`on_message` event is called when the bot has received a message."
+msgstr "コールバックは基本的に、何かが発生した場合に呼び出される関数です。今回の場合だと、Botがログインして、設定などを終えたときに :func:`on_ready` が、メッセージを受信したときに :func:`on_message` が呼び出されます。"
+
+#: ../../quickstart.rst:59
+msgid "Since the :func:`on_message` event triggers for *every* message received, we have to make sure that we ignore messages from ourselves. We do this by checking if the :attr:`Message.author` is the same as the :attr:`Client.user`."
+msgstr ":func:`on_message` イベントは受信したメッセージすべてに対して呼び出されるため、Bot自身からのメッセージは無視するように設定する必要があります。これは、メッセージの送信者である :attr:`Message.author` と、Bot自身を表す :attr:`Client.user` が等しいか比較することで実装できます。"
+
+#: ../../quickstart.rst:62
+msgid "Afterwards, we check if the :class:`Message.content` starts with ``'$hello'``. If it does, then we send a message in the channel it was used in with ``'Hello!'``. This is a basic way of handling commands, which can be later automated with the :doc:`./ext/commands/index` framework."
+msgstr "その後、 :class:`Message.content` が ``'$hello'`` から始まるかどうかを確認し、当てはまればそのチャンネルに ``'Hello!'`` という返事を送信します。これはコマンドを処理する基本的な方法であり、後で :doc:`./ext/commands/index` フレームワークを使用して自動化できます。"
+
+#: ../../quickstart.rst:65
+msgid "Finally, we run the bot with our login token. If you need help getting your token or creating a bot, look in the :ref:`discord-intro` section."
+msgstr "最後に、ログイン用トークンを用いてBotを起動します。トークンの取得やBotの作成について分からないことがあれば、 :ref:`discord-intro` を参照してください。"
+
+#: ../../quickstart.rst:69
+msgid "Now that we've made a bot, we have to *run* the bot. Luckily, this is simple since this is just a Python script, we can run it directly."
+msgstr "さて、これでBotは完成なので、Botを *実行* してみましょう。幸いにも、これはただのPythonスクリプトなので実行は簡単です。直接実行が可能です。"
+
+#: ../../quickstart.rst:72
+msgid "On Windows:"
+msgstr "Windowsの場合:"
+
+#: ../../quickstart.rst:78
+msgid "On other systems:"
+msgstr "その他のシステムの場合:"
+
+#: ../../quickstart.rst:84
+msgid "Now you can try playing around with your basic bot."
+msgstr "これで、あなたが作ったBotと遊ぶことができます。"
+

@@ -1,0 +1,10 @@
+@font-face {
+    font-family: 'Custom Icons';
+    font-style: normal;
+    font-weight: 400;
+    src: url('icons.woff') format('woff2');
+}
+
+.custom-icons {
+    font-family: 'Custom Icons' !important;
+}

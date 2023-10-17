@@ -1,0 +1,408 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Project-ID: 362783\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: /ext/tasks/index.pot\n"
+"X-Crowdin-File-ID: 56\n"
+"Language: ja_JP\n"
+
+#: ../../ext/tasks/index.rst:4
+msgid "``discord.ext.tasks`` -- asyncio.Task helpers"
+msgstr "``discord.ext.tasks`` -- asyncio.Task ヘルパー"
+
+#: ../../ext/tasks/index.rst:8
+msgid "One of the most common operations when making a bot is having a loop run in the background at a specified interval. This pattern is very common but has a lot of things you need to look out for:"
+msgstr "ボットを作成するときの最も一般的な操作の1つは、指定した間隔でバックグラウンドでループを実行させることです。このパターンは非常に一般的ですが、注意すべきことがたくさんあります。"
+
+#: ../../ext/tasks/index.rst:10
+msgid "How do I handle :exc:`asyncio.CancelledError`?"
+msgstr ":exc:`asyncio.CancelledError` はどのように処理するべきですか？"
+
+#: ../../ext/tasks/index.rst:11
+msgid "What do I do if the internet goes out?"
+msgstr "インターネット接続が切れた場合はどうするべきですか？"
+
+#: ../../ext/tasks/index.rst:12
+msgid "What is the maximum number of seconds I can sleep anyway?"
+msgstr "スリープできる最大時間は何秒ですか？"
+
+#: ../../ext/tasks/index.rst:14
+msgid "The goal of this discord.py extension is to abstract all these worries away from you."
+msgstr "discord.pyの拡張機能の目的は、こういった苦労の種を抽象化することです。"
+
+#: ../../ext/tasks/index.rst:17
+msgid "Recipes"
+msgstr "レシピ"
+
+#: ../../ext/tasks/index.rst:19
+msgid "A simple background task in a :class:`~discord.ext.commands.Cog`:"
+msgstr ":class:`~discord.ext.commands.Cog` におけるシンプルなバックグラウンドタスク:"
+
+#: ../../ext/tasks/index.rst:38
+msgid "Adding an exception to handle during reconnect:"
+msgstr "再接続中に処理する例外を追加します:"
+
+#: ../../ext/tasks/index.rst:61
+msgid "Looping a certain amount of times before exiting:"
+msgstr "特定の回数ループさせる:"
+
+#: ../../ext/tasks/index.rst:80
+msgid "Waiting until the bot is ready before the loop starts:"
+msgstr "ループが始まる前に、Botの準備が整うまで待機する:"
+
+#: ../../ext/tasks/index.rst:105
+msgid "Doing something during cancellation:"
+msgstr "キャンセルする場合、その間に何らかの処理を行う:"
+
+#: ../../ext/tasks/index.rst:138
+msgid "Doing something at a specific time each day:"
+msgstr "毎日特定の時間に何かを行う:"
+
+#: ../../ext/tasks/index.rst:162
+msgid "Doing something at multiple specific times each day:"
+msgstr "毎日複数の特定の時間に何かを行う:"
+
+#: ../../ext/tasks/index.rst:193
+msgid "API Reference"
+msgstr "APIリファレンス"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop:1
+msgid "A background task helper that abstracts the loop and reconnection logic for you."
+msgstr "ループと再接続処理を抽象化するバックグラウンドタスクのヘルパー。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop:3
+msgid "The main interface to create this is through :func:`loop`."
+msgstr ":func:`loop` はこれを作成するための主要なインタフェースです。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.after_loop:1
+msgid "A decorator that registers a coroutine to be called after the loop finishes running."
+msgstr "ループが終了した後に呼び出されるようにコルーチンを登録するデコレータ。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.after_loop:3
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.before_loop:6
+msgid "The coroutine must take no arguments (except ``self`` in a class context)."
+msgstr "コルーチンは、引数をとりません。(クラス内での ``self`` は除く)"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.after_loop:7
+msgid "This coroutine is called even during cancellation. If it is desirable to tell apart whether something was cancelled or not, check to see whether :meth:`is_being_cancelled` is ``True`` or not."
+msgstr "このコルーチンはキャンセル中も呼び出されます。キャンセルされたかを判断したい場合は、 :meth:`is_being_cancelled` が ``True`` か確認してください。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.after_loop:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.before_loop:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.__call__:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.start:0
+msgid "Parameters"
+msgstr "パラメーター"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.after_loop:11
+msgid "The coroutine to register after the loop finishes."
+msgstr "ループが終了した後に登録するコルーチン。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.after_loop:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.before_loop:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.start:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.add_exception_type:0
+msgid "Raises"
+msgstr "例外"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.after_loop:14
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.before_loop:14
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:17
+msgid "The function was not a coroutine."
+msgstr "渡された関数がコルーチンでない場合に発生します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.before_loop:1
+msgid "A decorator that registers a coroutine to be called before the loop starts running."
+msgstr "ループが始まる前に呼び出されるようにコルーチンを登録するデコレータ。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.before_loop:3
+msgid "This is useful if you want to wait for some bot state before the loop starts, such as :meth:`discord.Client.wait_until_ready`."
+msgstr ":meth:`discord.Client.wait_until_ready` などを用いて、ループ開始前にボットの状態が整うまで待つのに便利です。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.before_loop:8
+msgid "Calling :meth:`stop` in this coroutine will stop the loop before the initial iteration is run."
+msgstr "このコルーチンで :meth:`stop` を呼び出すと、最初のループの実行前にループが停止します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.before_loop:11
+msgid "The coroutine to register before the loop runs."
+msgstr "ループを実行する前に登録するコルーチンを示します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:1
+msgid "A decorator that registers a coroutine to be called if the task encounters an unhandled exception."
+msgstr "タスクが未処理の例外に遭遇した場合に呼び出されるコルーチンを登録するデコレータ。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:3
+msgid "The coroutine must take only one argument the exception raised (except ``self`` in a class context)."
+msgstr "コルーチンは、送出された例外を引数としてとります。(クラス内での ``self`` は除く)"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:5
+msgid "By default this logs to the library logger however it could be overridden to have a different implementation."
+msgstr "デフォルトではライブラリロガーに出力しますが、他の実装をするために上書きすることもできます。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:12
+msgid "Instead of writing to ``sys.stderr``, the library's logger is used."
+msgstr "``sys.stderr`` に出力する代わりに、ライブラリロガーを使用するようになりました。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.error:14
+msgid "The coroutine to register in the event of an unhandled exception."
+msgstr "処理されない例外が発生した場合に登録するコルーチンを示します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.seconds:1
+msgid "Read-only value for the number of seconds between each iteration. ``None`` if an explicit ``time`` value was passed instead."
+msgstr "各ループ間の秒数を示す読み取り専用の値です。代わりに、明示的な ``time`` が渡された場合は ``None`` となります。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.seconds:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.minutes:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.hours:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.time:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.current_loop:0
+msgid "type"
+msgstr "型"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.seconds:6
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.minutes:6
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.hours:6
+msgid "Optional[:class:`float`]"
+msgstr "Optional[:class:`float`]"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.minutes:1
+msgid "Read-only value for the number of minutes between each iteration. ``None`` if an explicit ``time`` value was passed instead."
+msgstr "各ループ間の分数を示す読み取り専用の値です。代わりに、明示的な ``time`` が渡された場合は ``None`` となります。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.hours:1
+msgid "Read-only value for the number of hours between each iteration. ``None`` if an explicit ``time`` value was passed instead."
+msgstr "各ループ間の時間数を示す読み取り専用の値です。代わりに、明示的な ``time`` が渡された場合は ``None`` となります。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.time:1
+msgid "Read-only list for the exact times this loop runs at. ``None`` if relative times were passed instead."
+msgstr "このループが実行する正確な時刻の読み取り専用のリスト。 相対的な時間が代わりに渡された場合は ``None`` 。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.time:6
+msgid "Optional[List[:class:`datetime.time`]]"
+msgstr "Optional[List[:class:`datetime.time`]]"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.current_loop:1
+msgid "The current iteration of the loop."
+msgstr "ループの現在の実行回数。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.current_loop:3
+msgid ":class:`int`"
+msgstr ":class:`int`"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.next_iteration:1
+msgid "When the next iteration of the loop will occur."
+msgstr "次のループがいつ発火するか。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.next_iteration:5
+msgid "Optional[:class:`datetime.datetime`]"
+msgstr "Optional[:class:`datetime.datetime`]"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.__call__:1
+msgid "|coro|"
+msgstr "|coro|"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.__call__:3
+msgid "Calls the internal callback that the task holds."
+msgstr "タスク内のコールバックを呼び出します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.__call__:7
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.start:3
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.restart:8
+msgid "The arguments to use."
+msgstr "使用する引数。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.__call__:8
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.start:4
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.restart:9
+msgid "The keyword arguments to use."
+msgstr "使用するキーワード引数。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.start:1
+msgid "Starts the internal task in the event loop."
+msgstr "イベントループでタスクを開始します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.start:6
+msgid "A task has already been launched and is running."
+msgstr "タスクはすでに実行されていて実行中である。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.start:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.remove_exception_type:0
+msgid "Returns"
+msgstr "戻り値"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.start:8
+msgid "The task that has been created."
+msgstr "作成されたタスク。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.start:0
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.remove_exception_type:0
+msgid "Return type"
+msgstr "戻り値の型"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.start:9
+msgid ":class:`asyncio.Task`"
+msgstr ":class:`asyncio.Task`"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.stop:1
+msgid "Gracefully stops the task from running."
+msgstr "タスクを正常に停止させます。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.stop:3
+msgid "Unlike :meth:`cancel`\\, this allows the task to finish its current iteration before gracefully exiting."
+msgstr ":meth:`cancel` とは違い、現在のループが終了してからタスクを終了します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.stop:8
+msgid "If the internal function raises an error that can be handled before finishing then it will retry until it succeeds."
+msgstr "もし終了前に内部の関数が処理可能な例外を送出した場合は成功するまで再試行します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.stop:12
+msgid "If this is undesirable, either remove the error handling before stopping via :meth:`clear_exception_types` or use :meth:`cancel` instead."
+msgstr "この動作が望ましくない場合は、停止前に :meth:`clear_exception_types` を用いてエラー処理を除去するか、代わりに :meth:`cancel` を使用してください。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.stop:16
+msgid "Calling this method in :meth:`before_loop` will stop the loop before the initial iteration is run."
+msgstr ":meth:`before_loop` にてこのメソッドを呼び出すと、最初のループの実行前にループが停止します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.cancel:1
+msgid "Cancels the internal task, if it is running."
+msgstr "実行中の場合、内部のタスクをキャンセルします。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.restart:1
+msgid "A convenience method to restart the internal task."
+msgstr "内部タスクを再起動する便利なメソッド。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.restart:5
+msgid "Due to the way this function works, the task is not returned like :meth:`start`."
+msgstr "この関数の動作により、 :meth:`start` とは異なりタスクは返されません。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.add_exception_type:1
+msgid "Adds exception types to be handled during the reconnect logic."
+msgstr "再接続中に処理する例外を追加します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.add_exception_type:3
+msgid "By default the exception types handled are those handled by :meth:`discord.Client.connect`\\, which includes a lot of internet disconnection errors."
+msgstr "デフォルトでは、 :meth:`discord.Client.connect` によって処理される例外は、多くのインターネット切断エラーを含んでいます。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.add_exception_type:7
+msgid "This function is useful if you're interacting with a 3rd party library that raises its own set of exceptions."
+msgstr "独自の例外を送出するサードパーティー・ライブラリーを使用している場合に便利です。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.add_exception_type:10
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.remove_exception_type:3
+msgid "An argument list of exception classes to handle."
+msgstr "処理するべき例外のクラスの引数リスト。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.add_exception_type:13
+msgid "An exception passed is either not a class or not inherited from :class:`BaseException`."
+msgstr "渡された例外はクラスでないか、 :class:`BaseException` を継承していません。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.clear_exception_types:1
+msgid "Removes all exception types that are handled."
+msgstr "処理すべき例外タイプをすべて除去します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.clear_exception_types:5
+msgid "This operation obviously cannot be undone!"
+msgstr "この動作は当然ながら元に戻せません！"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.remove_exception_type:1
+msgid "Removes exception types from being handled during the reconnect logic."
+msgstr "再接続中に処理する例外を除去します:"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.remove_exception_type:6
+msgid "Whether all exceptions were successfully removed."
+msgstr "すべての例外が正常に除去されたかどうか。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.remove_exception_type:7
+msgid ":class:`bool`"
+msgstr ":class:`bool`"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.get_task:1
+msgid "Optional[:class:`asyncio.Task`]: Fetches the internal task or ``None`` if there isn't one running."
+msgstr "Optional[:class:`asyncio.Task`]: 内部タスクを取得します。実行中のものがない場合は ``None`` を返します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.is_being_cancelled:1
+msgid "Whether the task is being cancelled."
+msgstr "タスクがキャンセルされているかどうか。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.failed:1
+msgid ":class:`bool`: Whether the internal task has failed."
+msgstr ":class:`bool`: 内部タスクが失敗したかどうか。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.is_running:1
+msgid ":class:`bool`: Check if the task is currently running."
+msgstr ":class:`bool`: タスクが現在実行されているか確認します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.change_interval:1
+msgid "Changes the interval for the sleep time."
+msgstr "ループ間の間隔を変更します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.change_interval:5
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.loop:4
+msgid "The number of seconds between every iteration."
+msgstr "各繰り返しの間の秒数。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.change_interval:7
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.loop:6
+msgid "The number of minutes between every iteration."
+msgstr "各繰り返しの間の 分数。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.change_interval:9
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.loop:8
+msgid "The number of hours between every iteration."
+msgstr "各繰り返しの間の時間数。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.change_interval:11
+msgid "The exact times to run this loop at. Either a non-empty list or a single value of :class:`datetime.time` should be passed. This cannot be used in conjunction with the relative time parameters."
+msgstr "ループを実行する正確な時刻。空でないリストか、 :class:`datetime.time` が単独で渡されるべきです。これは、相対的な時間を指定するパラメーターと同時に使用できません。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.change_interval:19
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.loop:18
+msgid "Duplicate times will be ignored, and only run once."
+msgstr "重複された時刻は無視され、一回だけ実行されます。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.change_interval:22
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.loop:30
+msgid "An invalid value was given."
+msgstr "無効な値が渡された場合。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.Loop.change_interval:23
+msgid "An invalid value for the ``time`` parameter was passed, or the     ``time`` parameter was passed in conjunction with relative time parameters."
+msgstr "``time`` パラメーターに無効な値が渡され、または ``time`` パラメーターと相対的な時間を指定するパラメーターが同時に使用された場合。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.loop:1
+msgid "A decorator that schedules a task in the background for you with optional reconnect logic. The decorator returns a :class:`Loop`."
+msgstr "バックグラウンドでタスクをスケジュールし、オプションで再接続ロジックを扱うデコレータ。デコレータは :class:`Loop` を返します。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.loop:10
+msgid "The exact times to run this loop at. Either a non-empty list or a single value of :class:`datetime.time` should be passed. Timezones are supported. If no timezone is given for the times, it is assumed to represent UTC time."
+msgstr "ループを実行する正確な時刻。空でないリストか、 :class:`datetime.time` が単独で渡されるべきです。タイムゾーンが使用できます。タイムゾーンが設定されてない場合はUTCと推定されます。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.loop:14
+msgid "This cannot be used in conjunction with the relative time parameters."
+msgstr "これは、相対的な時間を指定するパラメーターと同時に使用できません。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.loop:22
+msgid "The number of loops to do, ``None`` if it should be an infinite loop."
+msgstr "実行するループの回数、無限ループの場合は ``None`` です。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.loop:25
+msgid "Whether to handle errors and restart the task using an exponential back-off algorithm similar to the one used in :meth:`discord.Client.connect`."
+msgstr "エラーを処理し、 :meth:`discord.Client.connect` で使用されたものと同様のエクスポネンシャルバックオフ アルゴリズムを用いてタスクを再起動するべきか。"
+
+#: ../../../discord/ext/tasks/__init__.py:docstring of discord.ext.tasks.loop:31
+msgid "The function was not a coroutine, an invalid value for the ``time`` parameter was passed,     or ``time`` parameter was passed in conjunction with relative time parameters."
+msgstr "関数がコルーチンではない場合、 ``time`` パラメーターに無効な値が渡された場合、または ``time`` パラメーターと相対的な時間を指定するパラメーターが同時に使用された場合。"
+

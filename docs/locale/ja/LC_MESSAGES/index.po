@@ -1,0 +1,131 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: discordpy\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: discordpy\n"
+"X-Crowdin-Project-ID: 362783\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: index.pot\n"
+"X-Crowdin-File-ID: 82\n"
+"Language: ja_JP\n"
+
+#: ../../index.rst:59
+msgid "discord.ext.commands API Reference"
+msgstr "discord.ext.commands API リファレンス"
+
+#: ../../index.rst:59
+msgid "discord.ext.tasks API Reference"
+msgstr "discord.ext.tasks API リファレンス"
+
+#: ../../index.rst:7
+msgid "Welcome to discord.py"
+msgstr "discord.py へようこそ。"
+
+#: ../../index.rst:12
+msgid "discord.py is a modern, easy to use, feature-rich, and async ready API wrapper for Discord."
+msgstr "discord.py は機能豊富かつモダンで使いやすい、非同期処理にも対応したDiscord用のAPIラッパーです。"
+
+#: ../../index.rst:15
+msgid "**Features:**"
+msgstr "**特徴:**"
+
+#: ../../index.rst:17
+msgid "Modern Pythonic API using ``async``\\/``await`` syntax"
+msgstr "``async``\\/``await`` 構文を使ったモダンなPythonらしいAPI"
+
+#: ../../index.rst:18
+msgid "Sane rate limit handling that prevents 429s"
+msgstr "429エラー防止の為のレート制限"
+
+#: ../../index.rst:19
+msgid "Command extension to aid with bot creation"
+msgstr "Bot作成に便利なコマンド拡張"
+
+#: ../../index.rst:20
+msgid "Easy to use with an object oriented design"
+msgstr "オブジェクト指向設計で使いやすい"
+
+#: ../../index.rst:21
+msgid "Optimised for both speed and memory"
+msgstr "メモリと速度の両方を最適化"
+
+#: ../../index.rst:24
+msgid "Getting started"
+msgstr "はじめに"
+
+#: ../../index.rst:26
+msgid "Is this your first time using the library? This is the place to get started!"
+msgstr "このライブラリを利用するのは初めてですか？ ここから始めてみましょう！"
+
+#: ../../index.rst:28
+msgid "**First steps:** :doc:`intro` | :doc:`quickstart` | :doc:`logging`"
+msgstr "**初めの一歩:** :doc:`intro` | :doc:`quickstart` | :doc:`logging`"
+
+#: ../../index.rst:29
+msgid "**Working with Discord:** :doc:`discord` | :doc:`intents`"
+msgstr "**Discordでの作業:** :doc:`discord` | :doc:`intents`"
+
+#: ../../index.rst:30
+msgid "**Examples:** Many examples are available in the :resource:`repository <examples>`."
+msgstr "**サンプル:** :resource:`レポジトリ <examples>` にたくさんのサンプルが用意されています。"
+
+#: ../../index.rst:33
+msgid "Getting help"
+msgstr "ヘルプの参照"
+
+#: ../../index.rst:35
+msgid "If you're having trouble with something, these resources might help."
+msgstr "何か困ることがあれば、次のリソースが役立つかもしれません。"
+
+#: ../../index.rst:37
+msgid "Try the :doc:`faq` first, it's got answers to all common questions."
+msgstr "初めに :doc:`faq` を確認してみましょう。よくある質問に対する回答がまとめられています。"
+
+#: ../../index.rst:38
+msgid "Ask us and hang out with us in our :resource:`Discord <discord>` server."
+msgstr ":resource:`Discord <discord>` サーバーに参加し、質問してみましょう。"
+
+#: ../../index.rst:39
+msgid "If you're looking for something specific, try the :ref:`index <genindex>` or :ref:`searching <search>`."
+msgstr "特定の何かを探している場合は :ref:`目次 <genindex>` か :ref:`検索 <search>` を利用してください。"
+
+#: ../../index.rst:40
+msgid "Report bugs in the :resource:`issue tracker <issues>`."
+msgstr "バグは :resource:`issue tracker <issues>` で報告してください。"
+
+#: ../../index.rst:41
+msgid "Ask in our :resource:`GitHub discussions page <discussions>`."
+msgstr ":resource:`GitHubの議論ページ <discussions>` で質問してください。"
+
+#: ../../index.rst:44
+msgid "Extensions"
+msgstr "拡張機能"
+
+#: ../../index.rst:46
+msgid "These extensions help you during development when it comes to common tasks."
+msgstr "この拡張機能は開発中におけるよくあるタスクを解決するのに役立ちます。"
+
+#: ../../index.rst:55
+msgid "Manuals"
+msgstr "マニュアル"
+
+#: ../../index.rst:57
+msgid "These pages go into great detail about everything the API can do."
+msgstr "次のページではAPIができることすべてについて詳細に解説しています。"
+
+#: ../../index.rst:68
+msgid "Meta"
+msgstr "メタ情報"
+
+#: ../../index.rst:70
+msgid "If you're looking for something related to the project itself, it's here."
+msgstr "プロジェクト自体に関連するものを探しているのであれば、こちらを参照してください。"
+

@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 125
+skip-string-normalization = true
+
+[tool.coverage.run]
+omit = [
+    "discord/__main__.py",
+    "discord/types/*",
+    "*/_types.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "@overload"
+]
+
+[tool.isort]
+profile = "black"
+combine_as_imports = true
+combine_star = true
+line_length = 125
+
+[tool.pyright]
+include = [
+    "discord",
+    "discord/app_commands",
+    "discord/types",
+    "discord/ui",
+    "discord/ext",
+    "discord/ext/commands",
+    "discord/ext/tasks",
+]
+exclude = [
+    "**/__pycache__",
+    "build",
+    "dist",
+    "docs",
+]
+reportUnnecessaryTypeIgnoreComment = "warning"
+reportUnusedImport = "error"
+pythonVersion = "3.8"
+typeCheckingMode = "basic"
+
+[tool.pytest.ini_options]
+asyncio_mode = "strict"
