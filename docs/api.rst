@@ -835,7 +835,7 @@ Members
 
 .. function:: on_member_ban(guild, user)
 
-    Called when user gets banned from a :class:`Guild`.
+    Called when a user gets banned from a :class:`Guild`.
 
     This requires :attr:`Intents.moderation` to be enabled.
 
