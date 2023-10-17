@@ -48,8 +48,6 @@ from typing import (
 )
 import warnings
 
-from discord.types.guild import GuildShop
-
 from . import utils, abc
 from .role import Role
 from .member import Member, VoiceState
@@ -111,6 +109,8 @@ if TYPE_CHECKING:
         Guild as GuildPayload,
         RolePositionUpdate as RolePositionUpdatePayload,
         GuildFeature,
+        GuildShop as GuildShopPayload,
+        GuildShopProduct as GuildShopProductPayload
     )
     from .types.threads import (
         Thread as ThreadPayload,
@@ -146,13 +146,229 @@ class BanEntry(NamedTuple):
     reason: Optional[str]
     user: User
 
-
 class _GuildLimit(NamedTuple):
     emoji: int
     stickers: int
     bitrate: float
     filesize: int
 
+class GuildShopProduct:
+    """Represents a guild shop product.
+    
+    .. note::
+        No more description until Shop is fully rolled out,
+        the following attributes are the one expected, name is
+        not final.
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The product ID.
+    guild: :class:`Guild`
+        The guild this product is in.
+    name: :class:`str`
+        The product name.
+    price: :class:`float`
+        The product buying price.
+    short_description: Optional[:class:`str`]
+        The short description of the product.
+    description: Optional[:class:`str`]
+        The long description of the product.
+    roles: Optional[Tuple[:class:`Role`, ...]]
+        All roles that are given when buying the product.
+
+    .. versionadded:: 2.4
+    """
+
+    __slots__ = (
+        "id",
+        "guild",
+        "name",
+        "price",
+        "short_description",
+        "description",
+        "roles",
+
+        "_state"
+    )
+
+    def __init__(self, *, data: GuildShopProductPayload, state: ConnectionState) -> None:
+        self._state: ConnectionState = state
+
+        self.id: int = int(data.get("id"))
+        """The product ID"""
+        self.guild: Guild = Guild(data = data.get("guild"), state = state)
+        """The guild the product is in"""
+        self.name: str = data.get("name")
+        """The product name"""
+        self.price: float = data.get("price")
+        """The product buying price"""
+        self.short_description: Optional[str] = data.get("short_description", None)
+        """The short description of the product"""
+        self.description: Optional[str] = data.get("description", None)
+        """The long description of the product"""
+        self.roles: Optional[Tuple[Role, ...]] = tuple(Role(guild=self.guild, state=state, data=role) for role in data.get("roles")) if data.get("roles") is not None else None # type: ignore # Used type ignore to supress a Pylance error
+        """All roles that are given when buying the product"""
+
+    async def edit(self, *, name: str = MISSING, price: float = MISSING, short_description: str = MISSING, description: str = MISSING, roles: Union[List[Role], Tuple[Role, ...]]) -> None:
+        """|coro|
+
+        Edits this guild product.
+
+        You must have :attr:`~Permissions.manage_guild` to do this
+
+        .. note::
+            The permissions needed are still in the air, there might
+            be a new set of permissions such us `manage_guild_shop`
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The product name. Cannot be None.
+        price: :class:`float`
+            The product price. Cannot be None.
+        short_description: :class:`str`
+            The product short description. Shown embedded when sharing a product link.
+        description: :class:`str`
+            The product long description.
+        roles: Union[List[:class:`Role`], Tuple[:class:`Role`, ...]]
+            The roles given when a user buys the product.
+        
+        Raises
+        ------
+        Forbidden
+            You are not allowed to edit guild products.
+        HTTPException
+            An error occurred while deleting the product.
+        """
+
+        payload: Dict[str, Union[str, float, List[Role], Tuple[Role, ...]]] = {}
+
+        payload['short_description'] = short_description
+        payload['description'] = description
+        payload['roles'] = roles
+
+        if name:
+            if name is None:
+                raise ValueError("'name' can't be None when editing a guild product")
+            
+            payload['name'] = name
+
+        if price:
+            if price is None or price < 0:
+                raise ValueError("'name' can't be None or less than 0")
+            
+            payload['price'] = price
+
+        await self._state.http.edit_guild_product(self.guild.id, self.id, payload=payload)
+
+    async def delete(self, *, reason: str = MISSING) -> None:
+        """|coro|
+        
+        Deletes the current product from the guild's shop.
+
+        You must have :attr:`~Permissions.manage_guild` to do this.
+
+        Parameters
+        ----------
+        reason: :class:`str`
+            The reason for deleting this product. Shows up in the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You are not allowed to delete guild products.
+        HTTPException
+            An error occurred while deleting the product.
+        """
+
+        await self._state.http.delete_guild_shop_product(self.guild.id, self.id, reason=reason)
+
+class GuildShop:
+    """Represents a guild Shop.
+
+    .. note::
+        No more description until Shop is fully rolled out,
+        the following attributes are the one expected, name
+        is not final.
+
+    Attributes
+    ----------
+    guild_id: :class:`int`
+        The guild ID this shop is linked to.
+    products: Optional[Tuple[:class:`ShopProduct`, ...]]
+        The products in the guild shop.
+
+    .. versionadded:: 2.4
+    """
+
+    def __init__(self, *, data: GuildShopPayload, state: ConnectionState) -> None:
+        self._state: ConnectionState = state
+        self._products: Optional[List[GuildShopProductPayload]] = data.get("products")
+
+        self.guild_id: int = int(data.get("guild_id"))
+        """The guild ID this shop is linked to"""
+
+    @property
+    def products(self) -> Optional[Tuple[GuildShopProduct, ...]]:
+        """Returns an iterable of all the shop products, if any."""
+        if not self._products:
+            return None
+        
+        return tuple(GuildShopProduct(data=data, state=self._state) for data in self._products)
+    
+    async def create_product(
+        self,
+        *,
+        name: str,
+        price: float,
+        short_description: str = MISSING,
+        description: str = MISSING,
+        roles: Union[List[Role], Tuple[Role, ...]]
+    ) -> GuildShopProduct:
+        """|coro|
+        
+        Creates a :class:`ShopProduct`.
+
+        You must have :attr:`~Permissions.manage_guild` to do this.
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The product name.
+        price: :class:`float`
+            The product price.
+        short_description: :class:`str`
+            The short description for the product. Can be None.
+        description: :class:`str`
+            The long description for the product.
+        roles: Union[List[:class:`Role`], Tuple[:class:`Role`, ...]]
+            The roles that are going to be given when buying the product.
+        
+        Raises
+        ------
+        Forbidden
+            You are not allowed to create products.
+        HTTPException
+            An error occurred while creating the product.
+
+        Returns
+        -------
+        The created Guild Shop Product
+        """
+
+        payload: Dict[str, Union[str, float, list, tuple, None]] = {
+            "name": name,
+            "price": price,
+            "short_description": short_description or None,
+            "description": description or None,
+            "roles": roles or None
+        }
+
+        data = await self._state.http.create_guild_shop_product(self.guild_id, payload=payload)
+        product = GuildShopProduct(data=data, state=self._state)
+
+        return product
 
 class Guild(Hashable):
     """Represents a Discord guild.
@@ -765,22 +981,6 @@ class Guild(Hashable):
         emoji = self._state.get_emoji(emoji_id)
         if emoji and emoji.guild == self:
             return emoji
-        return None
-    
-    def get_guild_shop(self) -> Optional[GuildShop]:
-        """Returns the guild shop.
-
-        .. versionadded:: 2.4
-
-        Returns
-        -------
-        Optional[:class:`GuildShop`]
-            The returned Guild Shop or ``None`` if no shop is enabled.
-        """
-
-        shop = self._state.http.get_guild_shop(self.id)
-        if shop:
-            return shop # type: ignore
         return None
 
     @property
@@ -4310,3 +4510,21 @@ class Guild(Hashable):
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)
+    
+    
+    async def guild_shop(self) -> Optional[GuildShop]:
+        """Returns the guild shop, if any.
+
+        .. versionadded:: 2.4
+
+        Returns
+        -------
+        Optional[:class:`GuildShop`]
+            The returned Guild Shop or ``None`` if there is not one.
+        """
+
+        shop = await self._state.http.get_guild_shop(self.id)
+
+        if not shop.get("products"): # I'm guessing that if a guild has this feature enabled it will have a products list that will be filled with items or just blank []
+            return None
+        return GuildShop

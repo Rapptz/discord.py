@@ -165,7 +165,18 @@ class GuildPrune(TypedDict):
 class GuildMFALevel(TypedDict):
     level: MFALevel
 
+class GuildShopProduct(TypedDict):
+    guild: Guild
+    id: Snowflake
+    name: str
+    price: float
+    short_description: NotRequired[Optional[str]]
+    description: NotRequired[Optional[str]]
+    roles: NotRequired[Optional[List[Role]]]
+
 class GuildShop(TypedDict):
+    guild_id: int # This field may also be called "id" as it refers to the guild ID itself
+    products: NotRequired[List[GuildShopProduct]]
     ...
 
 class ChannelPositionUpdate(TypedDict):

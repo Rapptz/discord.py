@@ -946,14 +946,63 @@ class HTTPClient:
     def get_guild_shop(
         self,
         guild_id: Snowflake
-    ) -> Response[Optional[guild.GuildShop]]:
+    ) -> Response[guild.GuildShop]:
         r = Route(
             'GET',
             '/channels/{guild_id}/shop',
-            guild_id = guild_id
+            guild_id=guild_id
         )
 
         return self.request(r)
+    
+    def create_guild_shop_product(
+        self,
+        guild_id: Snowflake,
+        *,
+        payload: Dict[str, Union[str, float, list, tuple, None]]
+    ) -> Response[guild.GuildShopProduct]:
+        # NOTE: This isn't the official parameters discord will take, but based on information there will be
+        # a name, description, short description, price, given role if it is bought and the product itself
+        # so i made them params and then wait until the guild shop it's fully rolled out.
+        r = Route(
+            'PUT', # Maybe "PUT"? No final method provided, reason above
+            '/channels/{guild_id}/shop',
+            guild_id=guild_id
+        )
+
+        return self.request(r, json=payload)
+        
+    def delete_guild_shop_product(
+        self,
+        guild_id: Snowflake,
+        product_id: Snowflake,
+        *,
+        reason: Optional[str] = None
+    ) -> Response[None]:
+        r = Route(
+            'DELETE',
+            '/channels/{guild_id}/shop/{product_id}',
+            guild_id=guild_id,
+            product_id=product_id
+        )
+
+        return self.request(r, json={"reason": reason or None})
+
+    def edit_guild_product(
+        self,
+        guild_id: Snowflake,
+        product_id: Snowflake,
+        *,
+        payload: Dict[str, Union[str, float, list, tuple]]
+    ) -> Response[None]:
+        r = Route(
+            'PATCH',
+            '/channels/{guild_id}/shop/{product_id}',
+            guild_id=guild_id,
+            product_id=product_id
+        )
+
+        return self.request(r, json=payload)
 
     def clear_reactions(self, channel_id: Snowflake, message_id: Snowflake) -> Response[None]:
         r = Route(
