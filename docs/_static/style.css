@@ -476,7 +476,7 @@ aside .material-icons,
   list-style: none;
 }
 
-.toc li.current {
+.toc li.current > a {
   font-weight: bold;
 }
 
