@@ -116,7 +116,7 @@ function getCurrentSection() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  sidebar = new Sidebar(document.getElementById('sidebar'));
+  sidebar = new Sidebar(document.querySelector('#local-toc .toc'));
   sidebar.resize();
   sidebar.createCollapsableSections();
 

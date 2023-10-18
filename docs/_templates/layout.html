@@ -110,17 +110,15 @@
       </form>
       <a accesskey="S" class="settings" onclick="settingsModal.open();"><span class="material-icons">settings</span></a>
     </div>
-    {#- The sidebar component #}
-    <aside class="grid-item">
-      {%- if display_toc %}
+    {#- The left sidebar component #}
+    <aside id="global-toc" class="grid-item">
       <span id="hamburger-toggle">
         <span class="material-icons">menu</span>
       </span>
-      {%- endif %}
       <span id="settings-toggle" class="settings" onclick="settingsModal.open();">
         <span class="material-icons">settings</span>
       </span>
-      <div id="sidebar">
+      <div class="toc">
         <form id="sidebar-form" role="search" class="search" action="{{ pathto('search') }}" method="get">
           <div class="search-wrapper search-sidebar">
             <input type="search" name="q" placeholder="{{ _('Search documentation') }}" />
@@ -129,13 +127,33 @@
             </button>
           </div>
         </form>
-        {%- include "localtoc.html" %}
+        <div>
+          <h3>Site Navigation</h3>
+          <ul>
+            <li>{{ toctree() }}</li>
+          </ul>
+        <div>
+        {%- if display_toc %}
+        <div class="mobile-only">
+          <h3>Table of Contents</h3>
+          {{ toc }}
+        </div>
+        {%- endif %}
       </div>
     </aside>
     {#- The actual body of the contents #}
     <main class="grid-item" role="main">
       {% block body %} {% endblock %}
     </main>
+    {#- The right sidebar component #}
+    {%- if display_toc %}
+    <aside id="local-toc" class="grid-item">
+      <div class="toc">
+        <h3>Table of Contents</h3>
+        {{ toc }}
+      </div>
+    </aside>
+    {%- endif %}
 {%- block footer %}
     <footer class="grid-item">
     {%- if show_copyright %}
