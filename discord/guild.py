@@ -75,6 +75,7 @@ from .enums import (
     AutoModRuleEventType,
     ForumOrderType,
     ForumLayoutType,
+    GuildShopSortType
 )
 from .mixins import Hashable
 from .user import User
@@ -97,6 +98,8 @@ from .partial_emoji import _EmojiTag, PartialEmoji
 
 __all__ = (
     'Guild',
+    'GuildShop',
+    'GuildShopProduct',
     'BanEntry',
 )
 
@@ -164,30 +167,33 @@ class GuildShopProduct:
     ----------
     id: :class:`int`
         The product ID.
-    guild: :class:`Guild`
-        The guild this product is in.
+    application_id: :class:`int`
+        ...
+    guild_id: :class:`int`
+        The guild ID this product is in.
     name: :class:`str`
         The product name.
-    price: :class:`float`
-        The product buying price.
+    price_tier: :class:`float`
+        The product buying price. This is, by default, in US$.
     short_description: Optional[:class:`str`]
         The short description of the product.
     description: Optional[:class:`str`]
         The long description of the product.
-    roles: Optional[Tuple[:class:`Role`, ...]]
-        All roles that are given when buying the product.
+    role_id: Optional[:class:`int`]
+        The ID for the role that is given when buying this product.
 
     .. versionadded:: 2.4
     """
 
     __slots__ = (
         "id",
-        "guild",
+        "application_id",
+        "guild_id",
         "name",
-        "price",
+        "price_tier",
         "short_description",
         "description",
-        "roles",
+        "role_id",
 
         "_state"
     )
@@ -197,20 +203,26 @@ class GuildShopProduct:
 
         self.id: int = int(data.get("id"))
         """The product ID"""
-        self.guild: Guild = Guild(data = data.get("guild"), state = state)
+        self.application_id: int = int(data.get("application_id"))
+        self.guild_id: int = int(data.get("guild_id"))
         """The guild the product is in"""
         self.name: str = data.get("name")
         """The product name"""
-        self.price: float = data.get("price")
-        """The product buying price"""
-        self.short_description: Optional[str] = data.get("short_description", None)
-        """The short description of the product"""
+        self.price_tier: float = data.get("price_tier")
+        """The product buying price. This is, by default, in US$"""
         self.description: Optional[str] = data.get("description", None)
         """The long description of the product"""
-        self.roles: Optional[Tuple[Role, ...]] = tuple(Role(guild=self.guild, state=state, data=role) for role in data.get("roles")) if data.get("roles") is not None else None # type: ignore # Used type ignore to supress a Pylance error
-        """All roles that are given when buying the product"""
+        self.role_id: Optional[int] = data.get("role_id", None)
+        """The ID for the role that is given when buying this product"""
 
-    async def edit(self, *, name: str = MISSING, price: float = MISSING, short_description: str = MISSING, description: str = MISSING, roles: Union[List[Role], Tuple[Role, ...]]) -> None:
+    async def edit(
+        self,
+        *,
+        name: str = MISSING,
+        price_tier: float = MISSING,
+        description: str = MISSING,
+        role: Role = MISSING,
+    ) -> None:
         """|coro|
 
         Edits this guild product.
@@ -225,14 +237,12 @@ class GuildShopProduct:
         ----------
         name: :class:`str`
             The product name. Cannot be None.
-        price: :class:`float`
+        price_tier: :class:`float`
             The product price. Cannot be None.
-        short_description: :class:`str`
-            The product short description. Shown embedded when sharing a product link.
         description: :class:`str`
-            The product long description.
-        roles: Union[List[:class:`Role`], Tuple[:class:`Role`, ...]]
-            The roles given when a user buys the product.
+            The product description.
+        role_id: :class:`Role`
+            The role given when a user buys the product.
         
         Raises
         ------
@@ -242,25 +252,24 @@ class GuildShopProduct:
             An error occurred while deleting the product.
         """
 
-        payload: Dict[str, Union[str, float, List[Role], Tuple[Role, ...]]] = {}
+        payload: Dict[str, Union[str, float, int]] = {}
 
-        payload['short_description'] = short_description
         payload['description'] = description
-        payload['roles'] = roles
+        payload['role_id'] = role.id
 
-        if name:
+        if name is not MISSING:
             if name is None:
                 raise ValueError("'name' can't be None when editing a guild product")
             
             payload['name'] = name
 
-        if price:
-            if price is None or price < 0:
+        if price_tier is not MISSING:
+            if price_tier is None or price_tier < 0:
                 raise ValueError("'name' can't be None or less than 0")
             
-            payload['price'] = price
+            payload['price_tier'] = price_tier
 
-        await self._state.http.edit_guild_product(self.guild.id, self.id, payload=payload)
+        await self._state.http.edit_guild_product(self.guild_id, self.id, payload=payload)
 
     async def delete(self, *, reason: str = MISSING) -> None:
         """|coro|
@@ -282,7 +291,7 @@ class GuildShopProduct:
             An error occurred while deleting the product.
         """
 
-        await self._state.http.delete_guild_shop_product(self.guild.id, self.id, reason=reason)
+        await self._state.http.delete_guild_shop_product(self.guild_id, self.id, reason=reason)
 
 class GuildShop:
     """Represents a guild Shop.
@@ -296,39 +305,53 @@ class GuildShop:
     ----------
     guild_id: :class:`int`
         The guild ID this shop is linked to.
-    products: Optional[Tuple[:class:`ShopProduct`, ...]]
-        The products in the guild shop.
+    full_server_gate: :class:`bool`
+        ...
+    description: Optional[:class:`str`]
+        The guild's shop description.
+    primary_color: Optional[:class:`Any`]
+        The guild's shop primary color.
+    trailer_url: Optional[:class:`str`]
+        The URL of the trailer shown when users go to the shop page.
+    show_subscriber_count: :class:`bool`
+        If the member count that bought a server subscription is shown to everyone.
+    products_sort: Optional[:class:`GuildShopSortType`]
+        The sort order the products will follow.
+    image_asset: Optional[:class:`Asset`]
+        The image asset shown when accessing the shop.
+    slug: Optional[:class:`str`]
+        The URL that is used to share the guild shop.
 
     .. versionadded:: 2.4
     """
 
     def __init__(self, *, data: GuildShopPayload, state: ConnectionState) -> None:
         self._state: ConnectionState = state
-        self._products: Optional[List[GuildShopProductPayload]] = data.get("products")
 
-        self.guild_id: int = int(data.get("guild_id"))
+        self.guild_id: int = int(data.get("guild_id")) # MyPy syntax highlighting
         """The guild ID this shop is linked to"""
-
-    @property
-    def products(self) -> Optional[Tuple[GuildShopProduct, ...]]:
-        """Returns an iterable of all the shop products, if any."""
-        if not self._products:
-            return None
-        
-        return tuple(GuildShopProduct(data=data, state=self._state) for data in self._products)
+        self.full_server_gate: bool = data.get("full_server_gate", False)
+        """..."""
+        self.description: Optional[str] = data.get("description", None)
+        """The guild's shop description"""
+        self.primary_color: Optional[Any] = data.get("store_page_primary_color", None)
+        """The guild's shop primary color"""
+        self.trailer_url: Optional[str] = data.get("store_page_trailer_url", None)
+        """The URL of the trailer shown when users go to the shop page"""
+        self.show_subscriber_count: bool = data.get("store_page_show_subscriber_count", False)
+        """If the member count that bought a server subscription is shown to everyone"""
     
     async def create_product(
         self,
         *,
         name: str,
-        price: float,
-        short_description: str = MISSING,
+        price_tier: float,
         description: str = MISSING,
-        roles: Union[List[Role], Tuple[Role, ...]]
+        role: Role = MISSING
     ) -> GuildShopProduct:
         """|coro|
         
-        Creates a :class:`ShopProduct`.
+        Creates a :class:`GuildShopProduct`.
 
         You must have :attr:`~Permissions.manage_guild` to do this.
 
@@ -336,14 +359,12 @@ class GuildShop:
         ----------
         name: :class:`str`
             The product name.
-        price: :class:`float`
+        price_tier: :class:`float`
             The product price.
-        short_description: :class:`str`
-            The short description for the product. Can be None.
         description: :class:`str`
-            The long description for the product.
-        roles: Union[List[:class:`Role`], Tuple[:class:`Role`, ...]]
-            The roles that are going to be given when buying the product.
+            The description for the product. Can be None
+        role: :class:`Role`
+            The role that is going to be given when buying the product.
         
         Raises
         ------
@@ -359,16 +380,42 @@ class GuildShop:
 
         payload: Dict[str, Union[str, float, list, tuple, None]] = {
             "name": name,
-            "price": price,
-            "short_description": short_description or None,
+            "price_tier": price_tier,
             "description": description or None,
-            "roles": roles or None
+            "role_id": role.id or None
         }
 
         data = await self._state.http.create_guild_shop_product(self.guild_id, payload=payload)
         product = GuildShopProduct(data=data, state=self._state)
 
         return product
+    
+    async def products(self, *, country_code: str = "US") -> Tuple[GuildShopProduct, ...]:
+        """|coro|
+        
+        Fetches and returns a tuple containing all :class:`GuildShopProduct`
+        available in the guild.
+
+        Parameters
+        ----------
+        country_code: Union[:class:`str`, :class:`Locale`]
+            The country code.
+            This country code will add a field into the GuildShopProduct that
+            is the US$ price "translated" to that country's currency.
+
+        Raises
+        ------
+        HTTPException
+            An error occurred while fetching the guild products.
+
+        Returns
+        -------
+        A tuple containing all Guild Shop Products
+        """
+
+        data = await self._state.http.get_guild_shop_products(self.guild_id, country_code=country_code)
+
+        return tuple(GuildShopProduct(data=d, state=self._state) for d in data['listings'])
 
 class Guild(Hashable):
     """Represents a Discord guild.
@@ -4527,4 +4574,4 @@ class Guild(Hashable):
 
         if not shop.get("products"): # I'm guessing that if a guild has this feature enabled it will have a products list that will be filled with items or just blank []
             return None
-        return GuildShop
+        return GuildShop(data=shop, state=self._state)

@@ -955,6 +955,21 @@ class HTTPClient:
 
         return self.request(r)
     
+    def get_guild_shop_products(
+        self,
+        guild_id: Snowflake,
+        *,
+        country_code: str
+    ) -> Response[guild.GuildShopProductsListings]:
+        r = Route(
+            'GET',
+            '/channels/{guild_id}/shop/products/listings?country_code={country_code}',
+            guild_id=guild_id,
+            country_code=country_code
+        )
+
+        return self.request(r)
+    
     def create_guild_shop_product(
         self,
         guild_id: Snowflake,
@@ -1003,6 +1018,13 @@ class HTTPClient:
         )
 
         return self.request(r, json=payload)
+    
+    def get_guild_subcriptions(
+        self,
+        guild_id: Snowflake,
+        *,
+        include_soft_deleted: bool = True
+    ) -> Response[guild.GuildSubscription]
 
     def clear_reactions(self, channel_id: Snowflake, message_id: Snowflake) -> Response[None]:
         r = Route(

@@ -70,6 +70,7 @@ __all__ = (
     'ForumLayoutType',
     'ForumOrderType',
     'SelectDefaultValueType',
+    'GuildShopSort'
 )
 
 if TYPE_CHECKING:
@@ -777,6 +778,10 @@ class SelectDefaultValueType(Enum):
     user = 'user'
     role = 'role'
     channel = 'channel'
+
+class GuildShopSortType(Enum):
+    ... # Only knowing that there is a sort type with value 4 doesnt
+        # mean anything
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

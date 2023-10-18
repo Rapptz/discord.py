@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Literal, Optional, TypedDict
+from typing import Any, List, Literal, Optional, TypedDict, Dict
 from typing_extensions import NotRequired
 
 from .scheduled_event import GuildScheduledEvent
@@ -37,6 +37,7 @@ from .member import Member
 from .emoji import Emoji
 from .user import User
 from .threads import Thread
+from .asset import Asset
 
 
 class Ban(TypedDict):
@@ -165,19 +166,66 @@ class GuildPrune(TypedDict):
 class GuildMFALevel(TypedDict):
     level: MFALevel
 
-class GuildShopProduct(TypedDict):
-    guild: Guild
+class _ProductPrice(TypedDict):
+    amount: float
+    currency: str
+    currency_exponent: int
+
+class _ProductAttachments(TypedDict): # does not derive from Attachment type because this is more like a "partial attachment"
     id: Snowflake
+    filename: str
+    size: int
+    content_type: str
+
+class GuildShopProduct(TypedDict):
+    id: Snowflake
+    application_id: Snowflake
+    guild_id: Snowflake
     name: str
-    price: float
-    short_description: NotRequired[Optional[str]]
-    description: NotRequired[Optional[str]]
-    roles: NotRequired[Optional[List[Role]]]
+    description: str
+    image_asset: Asset
+    role_id: NotRequired[Optional[Snowflake]]
+    published: bool
+    has_entitlement: bool
+    attachments_count: int
+    published_at: NotRequired[str]
+    price: _ProductPrice
+    price_tier: float
+    attachments: List[_ProductAttachments]
+    
+class GuildShopProductsListings(TypedDict):
+    listings: List[GuildShopProduct]
 
 class GuildShop(TypedDict):
-    guild_id: int # This field may also be called "id" as it refers to the guild ID itself
-    products: NotRequired[List[GuildShopProduct]]
-    ...
+    guild_id: Snowflake
+    full_server_gate: bool
+    description: NotRequired[Optional[str]]
+    store_page_primary_color: NotRequired[Optional[Any]] # Will use typing.Any until a guild sets this up
+    store_page_trailer_url: NotRequired[Optional[str]]
+    store_page_show_subscriber_count: bool
+    store_page_guild_products_default_sort: int
+    cover_image_asset: NotRequired[Optional[Asset]]
+    store_page_slug: NotRequired[Optional[str]]
+
+class GuildSubscriptionPlan(TypedDict):
+    id: Snowflake
+    name: str
+    interval: int
+    interval_count: int
+    tax_inclusive: bool
+    sku_id: Snowflake
+    currency: str
+    price: float
+    price_tier: NotRequired[Optional[float]]
+    prices: NotRequired[Dict[str, _ProductPrice]] # using Dict[str, _ProductPrice] because
+                                                # the returning payload is {"(any integer, but as string)": {"country_prices": _ProductPrice}}
+
+class GuildSubscription(TypedDict):
+    id: Snowflake
+    name: str
+    description: NotRequired[Optional[str]]
+    image_asset: NotRequired[Optional[Asset]]
+    subscription_plans: List[GuildSubscriptionPlan]
 
 class ChannelPositionUpdate(TypedDict):
     id: Snowflake
