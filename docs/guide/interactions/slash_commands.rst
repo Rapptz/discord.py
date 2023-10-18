@@ -5,43 +5,48 @@
 Slash commands
 ===============
 
-Slash commands are one of Discord's primary methods of implementing a user-interface for bots.
-They're a branch of application commands, the other type being context menu commands, and analogous to their name,
-they're previewed and invoked in the Discord client by beginning your message with a forward-slash:
+Slash commands are one of Discord's native ways to let users interact with apps in the Discord client.
+They're a branch of application commands,
+with the other type being context menu commands (right-click / tap-hold menu).
+
+Analogous to their name, slash commands are previewed and invoked in the Discord client
+by beginning your message with a forward-slash:
 
 .. image:: /images/guide/app_commands/meow_command_preview.png
     :width: 400
 
+Setting up
+-----------
+
+To work with app commands, bots need the ``applications.commands`` scope.
+You can enable this scope when generating an OAuth2 URL for your bot, the steps to do so outlined :ref:`here <discord_invite_bot>`.
+
 Both types of app commands are implemented within the :ref:`discord.app_commands <discord_app_commands>` package.
-Any code example in this page will always assume the following two imports:
+Any code example in this page will always assume the following two imports, so make sure to import them!
 
 .. code-block:: python
 
     import discord
     from discord import app_commands
 
-Setting up
------------
-
-To work with app commands, bots need the ``applications.commands`` scope.
-
-You can enable this scope when generating an OAuth2 URL for your bot, the steps to do so outlined :ref:`here <discord_invite_bot>`.
-
-Defining a Tree
+Defining a tree
 ++++++++++++++++
 
-First, an :class:`.app_commands.CommandTree` needs to be created
-- which acts as a container holding all of the bot's application commands.
+A :class:`~.app_commands.CommandTree` acts as a container holding all of the bot's app commands.
 
-This class contains a few dedicated methods for managing and viewing app commands:
+It contains a few dedicated methods for adding, viewing and removing app commands internally:
 
 - :meth:`.CommandTree.add_command` to add a command
 - :meth:`.CommandTree.remove_command` to remove a command
-- :meth:`.CommandTree.get_command` to find a specific command
-- :meth:`.CommandTree.get_commands` to return all commands
+- :meth:`.CommandTree.get_command` to find a specific command (returns the command object)
+- :meth:`.CommandTree.get_commands` to return all commands (returns a list)
 
-Preferably, this tree should be attached to the client instance to
-play well with type checkers and to allow for easy access from anywhere in the code:
+An instance of this (only one!) needs to be created so that we can begin adding commands to it.
+
+It helps to directly attach the tree to the client instance, since this plays well with
+any type checker if you're using one, and to allow for easy access from anywhere in the code.
+
+To do this, simply attach the tree to the ``self`` instance in a client subclass:
 
 .. code-block:: python
 
@@ -59,15 +64,16 @@ play well with type checkers and to allow for easy access from anywhere in the c
 
     If your project instead uses :class:`.ext.commands.Bot` as the client instance,
     a :class:`~discord.app_commands.CommandTree` has already been defined at :attr:`.Bot.tree`,
-    so this step is largely skipped.
+    so this step is technically skipped.
 
-Creating a command
--------------------
+Creating a slash command
+-------------------------
 
-Slash commands are created by decorating an async function.
-This function is then called whenever the slash command is invoked.
+Slash commands are created by decorating an async function,
+and that function is then called whenever the slash command is invoked by someone,
+in a "callback" fashion.
 
-For example, the following code responds with "meow" on invocation:
+For example, the following code registers a command that responds with "meow" on invocation:
 
 .. code-block:: python
 
@@ -77,15 +83,12 @@ For example, the following code responds with "meow" on invocation:
 
         await interaction.response.send_message('meow')
 
-Functions of this pattern are called callbacks, since their execution is
-left to the library to be called later.
-
-There are two main decorators to use when creating a command:
+Two main decorators can be used:
 
 1. :meth:`tree.command() <.CommandTree.command>` (as seen above)
 2. :func:`.app_commands.command`
 
-Both decorators wrap an async function into a :class:`~.app_commands.Command`, however,
+Both decorators wrap an async function into a :class:`~.app_commands.Command` instance, however
 the former also adds the command to the tree,
 which skips the step of having to add it manually using :meth:`.CommandTree.add_command()`.
 
@@ -108,7 +111,7 @@ For example, these two are functionally equivalent:
 Since ``tree.command()`` is more concise and easier to understand,
 it'll be the main method used to create slash commands in this guide.
 
-Some information is logically inferred from the function to populate the slash command's fields:
+Some information is logically inferred from the async function to populate the slash command's fields:
 
 - The :attr:`~.app_commands.Command.name` takes after the function name "meow"
 - The :attr:`~.app_commands.Command.description` takes after the docstring "Meow meow meow"
@@ -124,19 +127,9 @@ To change them to something else, ``tree.command()`` takes ``name`` and ``descri
     # or...
     @client.tree.command(name='list')
     async def list_(interaction: discord.Interaction):
-        # prevent shadowing the "list" builtin
+        # prevent shadowing the 'list' builtin
 
 If a description isn't provided through ``description`` or by the docstring, an ellipsis "..." is used instead.
-
-.. warning::
-
-    Without specifying otherwise, commands are global.
-
-    After `syncing`_ globally, these commands will show up on every guild your bot is in
-    provided it has the ``applications.commands`` scope.
-
-    To make space for yourself to experiment with app commands safely,
-    create a new testing bot instead or alternatively sync your commands :ref:`locally <guild_commands>`.
 
 Interaction
 ++++++++++++
@@ -186,12 +179,11 @@ For example, to send a deferred ephemeral message:
 Syncing
 ++++++++
 
-In order for this command to show up on Discord, the API needs some information regarding it, namely:
+In order for this command to show up on Discord, the API needs some information to render it, namely:
 
 - The name and description
-
 - Any :ref:`parameter names, types and descriptions <parameters>`
-- Any :ref:`checks <checks>` attached
+- Any :ref:`checks <integration_checks>` attached
 - Whether this command is a :ref:`group <command_groups>`
 - Whether this is a :ref:`global or guild command <guild_commands>`
 - Any :ref:`localisations <translating>` for the above
@@ -199,7 +191,8 @@ In order for this command to show up on Discord, the API needs some information 
 Syncing is the process of sending this information, which is done by
 calling the :meth:`.CommandTree.sync` method.
 
-Typically, this is called on start-up in :meth:`.Client.setup_hook`:
+Typically, this is called on start-up in :meth:`.Client.setup_hook`, after all the commands have
+been added to the tree:
 
 .. code-block:: python
 
@@ -215,16 +208,26 @@ Commands need to be synced again each time a new command is added or removed, or
 
 Syncing is **not** required when changing client-side behaviour,
 such as by adding a :ref:`library-side check <custom_checks>`, adding a :ref:`transformer <transformers>`
-or changing anything within the function body.
+or changing anything within the function body (how you respond is up to you!).
 
-Reloading your own client is sometimes needed for new changes to be visible -
+If there's a mismatch with how the command looks in Discord compared to your code,
+the library will log warning's and block any incoming invocations.
+
+After syncing, reloading your own client is sometimes also needed for new changes to be visible -
 old commands tend to linger in the command preview if a client hasn't yet refreshed, but Discord
 blocks invocation with this message in red:
 
 .. image:: /images/guide/app_commands/outdated_command.png
 
-As another measure, the library will log warnings if there's a mismatch with what Discord provides and
-what the bot defines in code during invocation.
+.. warning::
+
+    Without specifying otherwise, slash commands are global.
+
+    After syncing globally, these commands will show up on every guild your bot is in
+    provided it has the ``applications.commands`` scope.
+
+    To make space for yourself to experiment with app commands safely,
+    create a new testing bot instead or alternatively sync your commands :ref:`locally <guild_commands>`.
 
 .. _parameters:
 
@@ -233,7 +236,7 @@ Parameters
 
 Since slash commands are defined by making Python functions, parameters are similarly defined with function parameters.
 
-Each parameter must have an assiociated type. This restricts what type of value a user can and cannot input.
+Each parameter must have an assiociated type, which restricts what type of value a user can and cannot input.
 Types are specified in code through :pep:`3107` function annotations.
 
 For example, the following command has a ``liquid`` string parameter:
@@ -295,10 +298,19 @@ For example, this command displays a given user's avatar, or the current user's 
         avatar = (user or interaction.user).display_avatar
         await interaction.response.send_message(avatar.url)
 
-On Discord:
+After syncing:
 
 .. image:: /images/guide/app_commands/avatar_command_optional_preview.png
     :width: 300
+
+When assigning a default value that isn't ``None``, the default's type needs to match the parameter type:
+
+.. code-block:: python
+
+    @client.tree.command()
+    async def is_even(interaction: discord.Interaction, number: int = '2'): # not allowed!
+        even = (number % 2) == 0
+        await interaction.response.send_message('yes' if even else 'no!')
 
 :pep:`Python version 3.10+ union types <604>` are also supported instead of :obj:`typing.Optional`.
 
@@ -514,8 +526,8 @@ shown :func:`here <discord.app_commands.choices>` in the reference.
 Autocompletion
 +++++++++++++++
 
-Autocomplete callbacks allow the bot to dynamically return up to 25 choices
-to a user as they type a parameter.
+Autocompletes allow the bot to dynamically suggest up to 25 choices
+to a user as they type an argument.
 
 In short:
 
@@ -544,9 +556,9 @@ Code examples for either method can be found in the corresponding reference page
 .. warning::
 
     Since exceptions raised from within an autocomplete callback are not considered handleable,
-    they're silently ignored and discarded.
+    they're not sent sent to any :ref:`error handlers <error_handling>`.
 
-    Instead, an empty list is returned to the user.
+    An empty list is returned by the library instead of the autocomplete failing after the 3 second timeout.
 
 Range
 ++++++
@@ -677,30 +689,46 @@ The table below outlines the relationship between Discord and Python types.
     discord.py will raise an error since the actual type given by Discord,
     :class:`~discord.User`, is incompatible with :class:`~discord.Member`.
 
-    discord.py doesn't raise an error for the other way around, ie. a parameter annotated to :class:`~discord.User` invoked in a guild -
-    this is because :class:`~discord.Member` is compatible with :class:`~discord.User`.
+    discord.py doesn't raise an error for the other way around (a parameter annotated to :class:`~discord.User` invoked in a guild)
+    since :class:`~discord.Member` implements the same interface as :class:`~discord.User`.
 
-    To accept member and user, regardless of where the command was invoked, place both types in a :obj:`~typing.Union`:
+    Some examples to help visualise:
 
     .. code-block:: python
 
-        from typing import Union
+        @client.tree.command()
+        async def memberinfo(interaction: discord.Interaction, member: discord.Member):
+            ... # unsafe, `member` could be a `discord.User`!
+
+        @client.tree.command()
+        @app_commands.guild_only()
+        async def memberinfo(interaction: discord.Interaction, member: discord.Member):
+            ... # safe, since this command can't be invoked in direct-messages
+
+
+        # you can take advantage of this behaviour:
 
         @client.tree.command()
         async def userinfo(
             interaction: discord.Interaction,
-            user: Union[discord.User, discord.Member]
+            user: discord.User
         ):
-            info = user.name
+            embed = discord.Embed()
 
-            # add some extra info if this command was invoked in a guild
+            embed.set_author(name=user.name, icon_url=user.display_avatar.url)
+            embed.add_field(name='ID', value=str(user.id))
+
             if isinstance(user, discord.Member):
+                # add some extra info if this command was invoked in a guild
                 joined = user.joined_at
                 if joined:
                     relative = discord.utils.format_dt(joined, 'R')
-                    info = f'{info} (joined this server {relative})'
+                    embed.add_field(name='Joined', value=relative)
 
-            await interaction.response.send_message(info)
+                # change the embed's colour to match their role
+                embed.colour = user.colour
+
+            await interaction.response.send_message(embed=embed)
 
 .. _command_groups:
 
@@ -721,7 +749,7 @@ Meaning, a structure like this is possible:
     ├── /todo add
     └── /todo delete
 
-Command groups **are not invocable** on their own.
+Command groups **are not invocable** on their own due to a Discord limitation.
 
 Therefore, instead of creating a command the standard way by decorating an async function,
 groups are created by using :class:`.app_commands.Group`.
@@ -807,7 +835,7 @@ can be added on top of a subclass to apply to the group, for example:
     class Emojis(app_commands.Group):
         ...
 
-Due to a Discord limitation, individual subcommands cannot have differing official-checks.
+Due to a Discord limitation, individual subcommands cannot have differing :ref:`integration checks <integration_checks>`.
 
 .. _guild_commands:
 
@@ -887,20 +915,21 @@ You'll typically find this syncing paradigm in some of the examples in the repos
 
         # afterwards, the local commands should be removed
 
-.. _checks:
+.. _integration_checks:
 
-Checks
--------
+Integration checks
+-------------------
 
-Checks refer to the restrictions an app command can have for invocation.
+Integration checks refer officially supported restrictions an app command can have for invocation.
 A user needs to pass all checks on a command in order to be able to invoke and see the command on their client.
+
+Since this behaviour is handled by Discord alone, bots can't add any extra or custom behaviour.
 
 Age-restriction
 ++++++++++++++++
 
 Indicates whether this command can only be used in NSFW channels or not.
-
-This can be configured by passing the ``nsfw`` keyword argument within the command decorator:
+Configured by passing the ``nsfw`` keyword argument within the command decorator:
 
 .. code-block:: python
 
@@ -912,16 +941,19 @@ Guild-only
 +++++++++++
 
 Indicates whether this command can only be used in guilds or not.
-
 Enabled by adding the :func:`.app_commands.guild_only` decorator when defining an app command:
 
 .. code-block:: python
 
+    import random
+
     @client.tree.command()
     @app_commands.guild_only()
-    async def serverinfo(interaction: discord.Interaction):
+    async def roulette(interaction: discord.Interaction):
         assert interaction.guild is not None
-        await interaction.response.send_message(interaction.guild.name)
+
+        victim = random.choice(interaction.guild.members)
+        await victim.ban(reason='unlucky')
 
 Default permissions
 ++++++++++++++++++++
@@ -949,7 +981,8 @@ To prevent this, :func:`~.app_commands.guild_only` can also be added.
 
 .. warning::
 
-    This can be overridden to a different set of permissions by server administrators through the "Integrations" tab on the official client,
+    This can be overridden to a different set of permissions by server administrators
+    through the "Integrations" tab on the Discord client,
     meaning, an invoking user might not actually have the permissions specified in the decorator.
 
 .. _custom_checks:
@@ -959,13 +992,11 @@ Custom checks
 
 A custom check is something that can be applied to a command to check if someone should be able to run it.
 
-They're unique to the :ref:`officially supported checks <checks>` by Discord in that they're handled
-entirely client-side.
+At their core, a check is a basic predicate that takes in the :class:`~discord.Interaction` as its sole parameter.
 
-In short, a check is an async function that takes in the :class:`~discord.Interaction` as its sole parameter.
 It has the following options:
 
-- Return a :obj:`True`-like to signal this check passes.
+- Return a ``True``-like to signal this check passes.
 
  - If a command has multiple checks, **all** of them need to pass in order for the invocation to continue.
 
@@ -973,7 +1004,7 @@ It has the following options:
 
  - Exceptions are passed to the bot's :ref:`error handlers <error_handling>`.
 
-- Return a :obj:`False`-like to signal a person can't run the command.
+- Return a ``False``-like to signal a person can't run the command.
 
  - :class:`~.app_commands.CheckFailure` will be raised instead.
 
@@ -1010,7 +1041,7 @@ Transforming the check into its own decorator for easier usage:
 
 Checks are called sequentially and retain decorator order, bottom-to-top.
 
-Take advantage of this order if, for example, you only want a cooldown to apply if a previous check passes:
+Take advantage of this order if, for example, you only want a certain check to apply if a previous check passes:
 
 .. code-block:: python
 
@@ -1221,7 +1252,7 @@ To solve this, inherit from the exception and raise it from the check instead of
         if isinstance(error, Unlucky):
             await interaction.response.send_message(str(error))
 
-Transformers behave similarly, but should derive :class:`~.app_commands.AppCommandError` instead:
+Transformers behave similarly, but exceptions should derive :class:`~.app_commands.AppCommandError` instead:
 
 .. code-block:: python
 
@@ -1236,7 +1267,7 @@ Transformers behave similarly, but should derive :class:`~.app_commands.AppComma
             try:
                 when = datetime.datetime.strptime(date, '%d/%m/%Y')
             except ValueError:
-                raise BadDateArgument(value)
+                raise BadDateArgument(value) from None
 
             when = when.replace(tzinfo=datetime.timezone.utc)
             return when
@@ -1387,13 +1418,8 @@ In summary:
 
   - :meth:`.Translator.translate` will be called on all translatable strings.
 
-Recipes
---------
-
-This section covers some common use-cases for slash commands.
-
 Manually syncing
-+++++++++++++++++
+-----------------
 
 Syncing app commands on startup, such as inside :meth:`.Client.setup_hook` can often be spammy
 and incur the heavy ratelimits set by Discord.
