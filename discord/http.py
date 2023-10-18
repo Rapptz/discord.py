@@ -1024,7 +1024,15 @@ class HTTPClient:
         guild_id: Snowflake,
         *,
         include_soft_deleted: bool = True
-    ) -> Response[guild.GuildSubscription]
+    ) -> Response[guild.GuildSubscription]:
+        r = Route(
+            'GET',
+            '/channels/{guild_id}/role-subcsriptions/group-listings?include_soft_deleted={include_soft_deleted}',
+            guild_id=guild_id,
+            include_soft_deleted="true" if include_soft_deleted else "false"
+        )
+
+        return self.request(r)
 
     def clear_reactions(self, channel_id: Snowflake, message_id: Snowflake) -> Response[None]:
         r = Route(

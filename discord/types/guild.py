@@ -219,6 +219,7 @@ class GuildSubscriptionPlan(TypedDict):
     price_tier: NotRequired[Optional[float]]
     prices: NotRequired[Dict[str, _ProductPrice]] # using Dict[str, _ProductPrice] because
                                                 # the returning payload is {"(any integer, but as string)": {"country_prices": _ProductPrice}}
+                                                # this parameter is not yet finished
 
 class GuildSubscription(TypedDict):
     id: Snowflake
