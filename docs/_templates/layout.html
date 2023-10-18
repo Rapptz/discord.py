@@ -122,13 +122,13 @@
       </span>
       <div id="sidebar">
         <form id="sidebar-form" role="search" class="search" action="{{ pathto('search') }}" method="get">
-        <div class="search-wrapper search-sidebar">
-          <input type="search" name="q" placeholder="{{ _('Search documentation') }}" />
-          <button type="submit" onmousedown="searchBarClick(event, document.getElementById('sidebar-form'));">
-            <span class="material-icons">search</span>
-          </button>
-        </div>
-      </form>
+          <div class="search-wrapper search-sidebar">
+            <input type="search" name="q" placeholder="{{ _('Search documentation') }}" />
+            <button type="submit" onmousedown="searchBarClick(event, document.getElementById('sidebar-form'));">
+              <span class="material-icons">search</span>
+            </button>
+          </div>
+        </form>
         {%- include "localtoc.html" %}
       </div>
     </aside>
