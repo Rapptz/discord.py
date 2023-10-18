@@ -1050,7 +1050,7 @@ Members
 
 .. function:: on_member_ban(guild, user)
 
-    Called when user gets banned from a :class:`Guild`.
+    Called when a user gets banned from a :class:`Guild`.
 
     :param guild: The guild the user got banned from.
     :type guild: :class:`Guild`
