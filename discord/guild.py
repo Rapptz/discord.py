@@ -159,9 +159,7 @@ class GuildShopProduct:
     """Represents a guild shop product.
     
     .. note::
-        No more description until Shop is fully rolled out,
-        the following attributes are the one expected, name is
-        not final.
+        No more description until Shop is fully rolled out.
 
     Attributes
     ----------
@@ -228,10 +226,6 @@ class GuildShopProduct:
 
         You must have :attr:`~Permissions.manage_guild` to do this
 
-        .. note::
-            The permissions needed are still in the air, there might
-            be a new set of permissions such us `manage_guild_shop`
-
         Parameters
         ----------
         name: :class:`str`
@@ -296,9 +290,7 @@ class GuildShop:
     """Represents a guild Shop.
 
     .. note::
-        No more description until Shop is fully rolled out,
-        the following attributes are the one expected, name
-        is not final.
+        No more description until Shop is fully rolled out.
 
     Attributes
     ----------
@@ -4570,7 +4562,7 @@ class Guild(Hashable):
         return AutoModRule(data=data, guild=self, state=self._state)
     
     
-    async def guild_shop(self) -> Optional[GuildShop]:
+    async def shop(self) -> Optional[GuildShop]:
         """Returns the guild shop, if any.
 
         .. versionadded:: 2.4
