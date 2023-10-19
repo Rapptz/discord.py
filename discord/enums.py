@@ -70,7 +70,7 @@ __all__ = (
     'ForumLayoutType',
     'ForumOrderType',
     'SelectDefaultValueType',
-    'GuildShopSort'
+    'GuildShopSortType'
 )
 
 if TYPE_CHECKING:
