@@ -48,6 +48,7 @@ from typing import (
 
 import aiohttp
 
+from .sku import SKU, Entitlement
 from .user import User, ClientUser
 from .invite import Invite
 from .template import Template
@@ -55,7 +56,7 @@ from .widget import Widget
 from .guild import Guild
 from .emoji import Emoji
 from .channel import _threaded_channel_factory, PartialMessageable
-from .enums import ChannelType
+from .enums import ChannelType, EntitlementOwnerType
 from .mentions import AllowedMentions
 from .errors import *
 from .enums import Status
@@ -83,7 +84,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .abc import Messageable, PrivateChannel, Snowflake, SnowflakeTime
-    from .app_commands import Command, ContextMenu
+    from .app_commands import Command, ContextMenu, MissingApplicationID
     from .automod import AutoModAction, AutoModRule
     from .channel import DMChannel, GroupChannel
     from .ext.commands import AutoShardedBot, Bot, Context, CommandError
@@ -674,7 +675,6 @@ class Client:
                 aiohttp.ClientError,
                 asyncio.TimeoutError,
             ) as exc:
-
                 self.dispatch('disconnect')
                 if not reconnect:
                     await self.close()
@@ -2631,6 +2631,242 @@ class Client:
         cls, _ = _sticker_factory(data['type'])
         # The type checker is not smart enough to figure out the constructor is correct
         return cls(state=self._connection, data=data)  # type: ignore
+
+    async def fetch_skus(self) -> List[SKU]:
+        """|coro|
+
+        Retrieves the bot's available SKUs.
+
+        .. versionadded:: 2.4
+
+        Raises
+        -------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Retrieving the SKUs failed.
+
+        Returns
+        --------
+        List[:class:`.SKU`]
+            The bot's available SKUs.
+        """
+
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        data = await self.http.get_skus(self.application_id)
+        return [SKU(state=self._connection, data=sku) for sku in data]
+
+    async def fetch_entitlement(self, entitlement_id: int, /) -> Entitlement:
+        """|coro|
+
+        Retrieves a :class:`.Entitlement` with the specified ID.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        entitlement_id: :class:`int`
+            The entitlement's ID to fetch from.
+
+        Raises
+        -------
+        NotFound
+            An entitlement with this ID does not exist.
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Fetching the entitlement failed.
+
+        Returns
+        --------
+        :class:`.Entitlement`
+            The entitlement you requested.
+        """
+
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        data = await self.http.get_entitlement(self.application_id, entitlement_id)
+        return Entitlement(state=self._connection, data=data)
+
+    async def entitlements(
+        self,
+        *,
+        limit: Optional[int] = 100,
+        before: Optional[SnowflakeTime] = None,
+        after: Optional[SnowflakeTime] = None,
+        skus: Optional[Sequence[Snowflake]] = None,
+        user: Optional[Snowflake] = None,
+        guild: Optional[Snowflake] = None,
+        exclude_ended: bool = False,
+    ) -> AsyncIterator[Entitlement]:
+        """Retrieves an :term:`asynchronous iterator` of the :class:`.Entitlement` that applications has.
+
+        .. versionadded:: 2.4
+
+        Examples
+        ---------
+
+        Usage ::
+
+            async for entitlement in client.entitlements(limit=100):
+                print(entitlement.user_id, entitlement.ends_at)
+
+        Flattening into a list ::
+
+            entitlements = [entitlement async for entitlement in client.entitlements(limit=100)]
+            # entitlements is now a list of Entitlement...
+
+        All parameters are optional.
+
+        Parameters
+        -----------
+        limit: Optional[:class:`int`]
+            The number of entitlements to retrieve. If ``None``, it retrieves every entitlement for this application.
+            Note, however, that this would make it a slow operation. Defaults to ``100``.
+        before: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
+            Retrieve entitlements before this date or entitlement.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+        after: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
+            Retrieve entitlements after this date or entitlement.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+        skus: Optional[Sequence[:class:`~discord.abc.Snowflake`]]
+            A list of SKUs to filter by.
+        user: Optional[:class:`~discord.abc.Snowflake`]
+            The user to filter by.
+        guild: Optional[:class:`~discord.abc.Snowflake`]
+            The guild to filter by.
+        exclude_ended: :class:`bool`
+            Whether to exclude ended entitlements. Defaults to ``False``.
+
+        Raises
+        -------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Fetching the entitlements failed.
+        TypeError
+            Both ``after`` and ``before`` were provided, as Discord does not
+            support this type of pagination.
+
+        Yields
+        --------
+        :class:`.Entitlement`
+            The entitlement with the application.
+        """
+
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        if before is not None and after is not None:
+            raise TypeError('entitlements pagination does not support both before and after')
+
+        # This endpoint paginates in ascending order.
+        endpoint = self.http.get_entitlements
+
+        async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
+            before_id = before.id if before else None
+            data = await endpoint(
+                self.application_id,  # type: ignore  # We already check for None above
+                limit=retrieve,
+                before=before_id,
+                sku_ids=[sku.id for sku in skus] if skus else None,
+                user_id=user.id if user else None,
+                guild_id=guild.id if guild else None,
+                exclude_ended=exclude_ended,
+            )
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                before = Object(id=int(data[0]['id']))
+
+            return data, before, limit
+
+        async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
+            after_id = after.id if after else None
+            data = await endpoint(
+                self.application_id,  # type: ignore  # We already check for None above
+                limit=retrieve,
+                after=after_id,
+                sku_ids=[sku.id for sku in skus] if skus else None,
+                user_id=user.id if user else None,
+                guild_id=guild.id if guild else None,
+                exclude_ended=exclude_ended,
+            )
+
+            if data:
+                if limit is not None:
+                    limit -= len(data)
+
+                after = Object(id=int(data[-1]['id']))
+
+            return data, after, limit
+
+        if isinstance(before, datetime.datetime):
+            before = Object(id=utils.time_snowflake(before, high=False))
+        if isinstance(after, datetime.datetime):
+            after = Object(id=utils.time_snowflake(after, high=True))
+
+        if before:
+            strategy, state = _before_strategy, before
+        else:
+            strategy, state = _after_strategy, after
+
+        while True:
+            retrieve = 100 if limit is None else min(limit, 100)
+            if retrieve < 1:
+                return
+
+            data, state, limit = await strategy(retrieve, state, limit)
+
+            # Terminate loop on next iteration; there's no data left after this
+            if len(data) < 1000:
+                limit = 0
+
+            for e in data:
+                yield Entitlement(self._connection, e)
+
+    async def create_entitlement(
+        self,
+        sku: Snowflake,
+        owner: Snowflake,
+        owner_type: EntitlementOwnerType,
+    ) -> None:
+        """|coro|
+
+        Creates a test :class:`.Entitlement` for the application.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        sku: :class:`~discord.abc.Snowflake`
+            The SKU to create the entitlement for.
+        owner: :class:`~discord.abc.Snowflake`
+            The ID of the owner.
+        owner_type: :class:`.EntitlementOwnerType`
+            The type of the owner.
+
+        Raises
+        -------
+        MissingApplicationID
+            The application ID could not be found.
+        NotFound
+            The SKU or owner could not be found.
+        HTTPException
+            Creating the entitlement failed.
+        """
+
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        await self.http.create_entitlement(self.application_id, sku.id, owner.id, owner_type.value)
 
     async def fetch_premium_sticker_packs(self) -> List[StickerPack]:
         """|coro|

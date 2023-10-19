@@ -70,6 +70,9 @@ __all__ = (
     'ForumLayoutType',
     'ForumOrderType',
     'SelectDefaultValueType',
+    'SKUType',
+    'EntitlementType',
+    'EntitlementOwnerType',
 )
 
 if TYPE_CHECKING:
@@ -591,6 +594,7 @@ class InteractionResponseType(Enum):
     message_update = 7  # for components
     autocomplete_result = 8
     modal = 9  # for modals
+    premium_required = 10
 
 
 class VideoQualityMode(Enum):
@@ -780,6 +784,20 @@ class SelectDefaultValueType(Enum):
     user = 'user'
     role = 'role'
     channel = 'channel'
+
+
+class SKUType(Enum):
+    subscription = 5
+    subscription_group = 6
+
+
+class EntitlementType(Enum):
+    application_subscription = 8
+
+
+class EntitlementOwnerType(Enum):
+    guild = 1
+    user = 2
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
