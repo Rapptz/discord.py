@@ -956,6 +956,20 @@ class HTTPClient:
 
         return self.request(r)
     
+    def edit_guild_shop(
+        self,
+        guild_id: Snowflake,
+        *,
+        payload: Dict
+    ) -> Response[None]:
+        r = Route(
+            'PATCH',
+            '/channels/{guild_id}/shop',
+            guild_id=guild_id
+        )
+
+        return self.request(r, json=payload)
+    
     def get_guild_shop_products(
         self,
         guild_id: Snowflake,
@@ -1025,7 +1039,7 @@ class HTTPClient:
         guild_id: Snowflake,
         *,
         include_soft_deleted: bool = True
-    ) -> Response[guild.GuildSubscription]:
+    ) -> Response[guild.GuildSubscriptionPlan]:
         r = Route(
             'GET',
             '/channels/{guild_id}/role-subcsriptions/group-listings?include_soft_deleted={include_soft_deleted}',

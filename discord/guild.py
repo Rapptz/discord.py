@@ -75,7 +75,8 @@ from .enums import (
     AutoModRuleEventType,
     ForumOrderType,
     ForumLayoutType,
-    GuildShopSortType
+    GuildShopSortType,
+    CountryCode
 )
 from .mixins import Hashable
 from .user import User
@@ -158,8 +159,11 @@ class _GuildLimit(NamedTuple):
 class GuildShopProduct:
     """Represents a guild shop product.
     
-    .. note::
-        No more description until Shop is fully rolled out.
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Returns the product's name
 
     Attributes
     ----------
@@ -173,8 +177,6 @@ class GuildShopProduct:
         The product name.
     price_tier: :class:`float`
         The product buying price. This is, by default, in US$.
-    short_description: Optional[:class:`str`]
-        The short description of the product.
     description: Optional[:class:`str`]
         The long description of the product.
     role_id: Optional[:class:`int`]
@@ -201,6 +203,7 @@ class GuildShopProduct:
         self.id: int = int(data.get("id"))
         """The product ID"""
         self.application_id: int = int(data.get("application_id"))
+        """..."""
         self.guild_id: int = int(data.get("guild_id"))
         """The guild the product is in"""
         self.name: str = data.get("name")
@@ -211,6 +214,16 @@ class GuildShopProduct:
         """The long description of the product"""
         self.role_id: Optional[int] = data.get("role_id", None)
         """The ID for the role that is given when buying this product"""
+
+    def __repr__(self) -> str:
+        return (
+            "<GuildShopProduct "
+            f"id={self.id} application_id={self.application_id} "
+            f"guild_id={self.guild_id} name={self.name!r}>"
+        )
+    
+    def __str__(self) -> str:
+        return self.name
 
     async def edit(
         self,
@@ -289,8 +302,15 @@ class GuildShopProduct:
 class GuildShop:
     """Represents a guild Shop.
 
-    .. note::
-        No more description until Shop is fully rolled out.
+    .. container::
+
+        .. describe:: x == y
+
+            Checks if two shops are equal.
+
+        .. describe:: x != y
+
+            Checks if two shops are not equal.
 
     Attributes
     ----------
@@ -302,6 +322,8 @@ class GuildShop:
         The guild's shop description.
     primary_color: Optional[:class:`Any`]
         The guild's shop primary color.
+    primary_colour: Optional[:class:`Any`]
+        The guild's shop primary colour.
     trailer_url: Optional[:class:`str`]
         The URL of the trailer shown when users go to the shop page.
     show_subscriber_count: :class:`bool`
@@ -311,7 +333,7 @@ class GuildShop:
     image_asset: Optional[:class:`Asset`]
         The image asset shown when accessing the shop.
     slug: Optional[:class:`str`]
-        The URL that is used to share the guild shop.
+        A system-generated URL referring to the shop
 
     .. versionadded:: 2.4
     """
@@ -320,9 +342,10 @@ class GuildShop:
         "guild_id",
         "full_server_gate",
         "description",
-        "primary_color",
         "trailer_url",
+        "primary_color",
         "show_subscriber_count",
+        "slug",
 
         "_state",
     )
@@ -336,13 +359,76 @@ class GuildShop:
         """..."""
         self.description: Optional[str] = data.get("description", None)
         """The guild's shop description"""
-        self.primary_color: Optional[Any] = data.get("store_page_primary_color", None)
-        """The guild's shop primary color"""
         self.trailer_url: Optional[str] = data.get("store_page_trailer_url", None)
         """The URL of the trailer shown when users go to the shop page"""
+        self.primary_color: Optional[Any] = data.get("store_page_primary_color", None)
+        """The guild's shop primary color"""
         self.show_subscriber_count: bool = data.get("store_page_show_subscriber_count", False)
         """If the member count that bought a server subscription is shown to everyone"""
-        self.slug: Optional[str] = data.get("guild_shop_slug", None)
+        self.slug: Optional[str] = data.get("store_page_slug", None)
+        """A system-generated URL referring to the shop"""
+
+    def __eq__(self, other: GuildShop) -> bool:
+        if not isinstance(other, GuildShop) or not isinstance(self, GuildShop):
+            return NotImplemented
+
+        return other.guild_id == self.guild_id
+
+    @property
+    def primary_colour(self) -> Any:
+        """The guild's shop primary colour"""
+        return self.primary_color
+    
+    async def edit(
+        self,
+        *,
+        description: Optional[str] = MISSING,
+        primary_color: Any = MISSING,
+        primary_colour: Any = MISSING,
+        trailer_url: str = MISSING,
+        show_subscriber_count: bool = MISSING
+    ) -> None:
+        """|coro|
+        
+        Edits the Guild Shop.
+
+        You must have :attr:`~Permissions.manage_guild` to do this.
+
+        Parameters
+        ----------
+        description: Optional[:class:`str`]
+            The shop description. If ``None``, it resets it.
+        primary_color: :class:`Any`
+            The shop primary color.
+        primary_colour: :class:`Any`
+            An alias for :param:``primary_color``.
+        trailer_url: :class:`str`
+            The trailer URL that is shown to users when accessing the shop.
+        show_subscriber_count: :class:`bool`
+            Whether to show the member count that bought in this shop.
+        """
+
+        payload = {}
+
+        if description is not MISSING:
+            payload['description'] = description
+
+        if primary_color is not MISSING and primary_colour is not MISSING:
+            raise ValueError("You passed both 'primary_color' and 'primary_colour' parameters. Pass one, not both.")
+        
+        if primary_color is not MISSING:
+            payload['store_page_primary_color'] = primary_color
+
+        elif primary_colour is not MISSING:
+            payload['store_page_primary_color'] = primary_colour
+
+        if trailer_url is not MISSING:
+            payload['store_page_trailer_url'] = trailer_url
+
+        if show_subscriber_count is not MISSING:
+            payload['store_page_show_subscriber_count'] = show_subscriber_count
+
+        await self._state.http.edit_guild_shop(self.guild_id, payload=payload)
     
     async def create_product(
         self,
@@ -393,7 +479,7 @@ class GuildShop:
 
         return product
     
-    async def products(self, *, country_code: str = "US") -> Tuple[GuildShopProduct, ...]:
+    async def products(self, *, country: CountryCode = MISSING) -> Tuple[GuildShopProduct, ...]:
         """|coro|
         
         Fetches and returns a tuple containing all :class:`GuildShopProduct`
@@ -416,7 +502,16 @@ class GuildShop:
         A tuple containing all Guild Shop Products
         """
 
-        data = await self._state.http.get_guild_shop_products(self.guild_id, country_code=country_code)
+        if country is not MISSING:
+            if not isinstance(country, CountryCode):
+                raise ValueError(f"Expected CountryCode in 'country', got '{country.__class__.__name__}' instead")
+            
+            code: str = country.value
+
+        else:
+            code: str = CountryCode.united_states_of_america.value # Using this in case something changes (NOT POSSIBLY AT ALL) this will remain the same.
+
+        data = await self._state.http.get_guild_shop_products(self.guild_id, country_code=code)
 
         return tuple(GuildShopProduct(data=d, state=self._state) for d in data['listings'])
 
@@ -4574,6 +4669,6 @@ class Guild(Hashable):
         """
         shop = await self._state.http.get_guild_shop(self.id)
 
-        if not shop.get("full_server_gate"): # I'm guessing that if a guild has this feature enabled it will have a products list that will be filled with items or just blank []
+        if not shop.get("full_server_gate"):
             return None
         return GuildShop(data=shop, state=self._state)
