@@ -236,7 +236,7 @@ class AutoModTrigger:
     mention_raid_protection: :class:`bool`
         Whether mention raid protection is enabled or not.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
