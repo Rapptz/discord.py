@@ -3266,7 +3266,7 @@ of :class:`enum.Enum`.
 
         The rule will trigger when a user's profile contains a keyword.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
 
 .. class:: AutoModRuleEventType
 
@@ -3282,7 +3282,7 @@ of :class:`enum.Enum`.
 
         The rule will trigger when a member's profile is updated.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
 
 .. class:: AutoModRuleActionType
 
@@ -3307,7 +3307,7 @@ of :class:`enum.Enum`.
         Similar to :attr:`timeout`, except the user will be timed out indefinitely.
         This will request the user to edit it's profile.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
 
 .. class:: ForumLayoutType
 
