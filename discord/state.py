@@ -1589,11 +1589,11 @@ class ConnectionState(Generic[ClientT]):
         entitlement = Entitlement(data=data, state=self)
         self.dispatch('entitlement_create', entitlement)
 
-    def parse_entitlement_update(self, data: gw.EntitlementCreateEvent) -> None:
+    def parse_entitlement_update(self, data: gw.EntitlementUpdateEvent) -> None:
         entitlement = Entitlement(data=data, state=self)
         self.dispatch('entitlement_update', entitlement)
 
-    def parse_entitlement_delete(self, data: gw.EntitlementCreateEvent) -> None:
+    def parse_entitlement_delete(self, data: gw.EntitlementDeleteEvent) -> None:
         entitlement = Entitlement(data=data, state=self)
         self.dispatch('entitlement_update', entitlement)
 

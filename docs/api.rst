@@ -505,12 +505,12 @@ Entitlements
 
     .. versionadded:: 2.4
 
-    :param entitlement: The entitlement that was created or deleted.
+    :param entitlement: The entitlement that was created.
     :type entitlement: :class:`Entitlement`
 
 .. function:: on_entitlement_update(entitlement)
 
-    Called when a user updates their subscription to a SKU. This is the case when
+    Called when a user updates their subscription to a SKU. This is usually called when
     the user renews or cancels their subscription.
 
     .. versionadded:: 2.4
@@ -520,18 +520,20 @@ Entitlements
 
 .. function:: on_entitlement_delete(entitlement)
 
-    Called when a users subscription to a SKU is cancelled. This is the case when
+    Called when a users subscription to a SKU is cancelled. This is typically only called when:
+
     - Discord issues a refund for the subscription.
     - Discord removes an entitlement from a user.
 
     .. warning::
-        This even won't be called if the user cancels their subscription manually, instead
+
+        This event won't be called if the user cancels their subscription manually, instead
         :func:`on_entitlement_update` will be called with :attr:`Entitlement.ends_at` set to the end of the
         current billing period.
 
     .. versionadded:: 2.4
 
-    :param entitlement: The entitlement that was updated.
+    :param entitlement: The entitlement that was deleted.
     :type entitlement: :class:`Entitlement`
 
 
