@@ -191,7 +191,6 @@ class GuildShopProduct:
         "guild_id",
         "name",
         "price_tier",
-        "short_description",
         "description",
         "role_id",
 
@@ -265,7 +264,7 @@ class GuildShopProduct:
 
         if price_tier is not MISSING:
             if price_tier is None or price_tier < 0:
-                raise ValueError("'name' can't be None or less than 0")
+                raise ValueError("'price_tier' can't be None or less than 0")
             
             payload['price_tier'] = price_tier
 
@@ -325,6 +324,17 @@ class GuildShop:
     .. versionadded:: 2.4
     """
 
+    __slots__ = (
+        "guild_id",
+        "full_server_gate",
+        "description",
+        "primary_color",
+        "trailer_url",
+        "show_subscriber_count",
+
+        "_state",
+    )
+
     def __init__(self, *, data: GuildShopPayload, state: ConnectionState) -> None:
         self._state: ConnectionState = state
 
@@ -340,6 +350,7 @@ class GuildShop:
         """The URL of the trailer shown when users go to the shop page"""
         self.show_subscriber_count: bool = data.get("store_page_show_subscriber_count", False)
         """If the member count that bought a server subscription is shown to everyone"""
+        self.slug: Optional[str] = data.get("guild_shop_slug", None)
     
     async def create_product(
         self,
@@ -4569,9 +4580,8 @@ class Guild(Hashable):
         Optional[:class:`GuildShop`]
             The returned Guild Shop or ``None`` if there is not one.
         """
-
         shop = await self._state.http.get_guild_shop(self.id)
 
-        if not shop.get("products"): # I'm guessing that if a guild has this feature enabled it will have a products list that will be filled with items or just blank []
+        if not shop.get("full_server_gate"): # I'm guessing that if a guild has this feature enabled it will have a products list that will be filled with items or just blank []
             return None
         return GuildShop(data=shop, state=self._state)
