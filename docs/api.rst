@@ -496,6 +496,47 @@ Debug
     :type payload: Union[:class:`bytes`, :class:`str`]
 
 
+Entitlements
+~~~~~~~~~~~~
+
+.. function:: on_entitlement_create(entitlement)
+
+    Called when a user subscribes to a SKU.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was created.
+    :type entitlement: :class:`Entitlement`
+
+.. function:: on_entitlement_update(entitlement)
+
+    Called when a user updates their subscription to a SKU. This is usually called when
+    the user renews or cancels their subscription.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was updated.
+    :type entitlement: :class:`Entitlement`
+
+.. function:: on_entitlement_delete(entitlement)
+
+    Called when a users subscription to a SKU is cancelled. This is typically only called when:
+
+    - Discord issues a refund for the subscription.
+    - Discord removes an entitlement from a user.
+
+    .. warning::
+
+        This event won't be called if the user cancels their subscription manually, instead
+        :func:`on_entitlement_update` will be called with :attr:`Entitlement.ends_at` set to the end of the
+        current billing period.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was deleted.
+    :type entitlement: :class:`Entitlement`
+
+
 Gateway
 ~~~~~~~~
 
@@ -835,7 +876,7 @@ Members
 
 .. function:: on_member_ban(guild, user)
 
-    Called when user gets banned from a :class:`Guild`.
+    Called when a user gets banned from a :class:`Guild`.
 
     This requires :attr:`Intents.moderation` to be enabled.
 
@@ -3330,6 +3371,12 @@ of :class:`enum.Enum`.
         The rule will trigger when combined number of role and user mentions
         is greater than the set limit.
 
+    .. attribute:: member_profile
+
+        The rule will trigger when a user's profile contains a keyword.
+
+        .. versionadded:: 2.4
+
 .. class:: AutoModRuleEventType
 
     Represents the event type of an automod rule.
@@ -3339,6 +3386,12 @@ of :class:`enum.Enum`.
     .. attribute:: message_send
 
         The rule will trigger when a message is sent.
+
+    .. attribute:: member_update
+
+        The rule will trigger when a member's profile is updated.
+
+        .. versionadded:: 2.4
 
 .. class:: AutoModRuleActionType
 
@@ -3358,6 +3411,12 @@ of :class:`enum.Enum`.
 
         The rule will timeout a user.
 
+    .. attribute:: block_member_interactions
+
+        Similar to :attr:`timeout`, except the user will be timed out indefinitely.
+        This will request the user to edit it's profile.
+
+        .. versionadded:: 2.4
 
 .. class:: ForumLayoutType
 
@@ -3409,6 +3468,47 @@ of :class:`enum.Enum`.
     .. attribute:: channel
 
         The underlying type of the ID is a channel or thread.
+
+
+.. class:: SKUType
+
+    Represents the type of a SKU.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: subscription
+
+        The SKU is a recurring subscription.
+
+    .. attribute:: subscription_group
+
+        The SKU is a system-generated group which is created for each :attr:`SKUType.subscription`.
+
+
+.. class:: EntitlementType
+
+    Represents the type of an entitlement.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: application_subscription
+
+        The entitlement was purchased as an app subscription.
+
+
+.. class:: EntitlementOwnerType
+
+    Represents the type of an entitlement owner.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: guild
+
+        The entitlement owner is a guild.
+
+    .. attribute:: user
+
+            The entitlement owner is a user.
 
 
 .. _discord-api-audit-logs:
@@ -4694,6 +4794,30 @@ ShardInfo
 .. attributetable:: ShardInfo
 
 .. autoclass:: ShardInfo()
+    :members:
+
+SKU
+~~~~~~~~~~~
+
+.. attributetable:: SKU
+
+.. autoclass:: SKU()
+    :members:
+
+SKUFlags
+~~~~~~~~~~~
+
+.. attributetable:: SKUFlags
+
+.. autoclass:: SKUFlags()
+    :members:
+
+Entitlement
+~~~~~~~~~~~
+
+.. attributetable:: Entitlement
+
+.. autoclass:: Entitlement()
     :members:
 
 RawMessageDeleteEvent
