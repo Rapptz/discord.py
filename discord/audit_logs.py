@@ -33,7 +33,7 @@ from .invite import Invite
 from .mixins import Hashable
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
-from .automod import AutoModTrigger, AutoModRuleAction, AutoModPresets, AutoModRule
+from .automod import AutoModTrigger, AutoModRuleAction, AutoModRule
 from .role import Role
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
