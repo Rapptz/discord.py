@@ -244,23 +244,18 @@ def _transform_automod_trigger_metadata(
             pass
 
     # Try to infer trigger type from available keys in data
+    _type = None
     if 'presets' in data:
-        return AutoModTrigger(
-            type=enums.AutoModRuleTriggerType.keyword_preset,
-            presets=AutoModPresets._from_value(data['presets']),  # type: ignore
-            allow_list=data.get('allow_list'),
-        )
-    elif 'keyword_filter' in data:
-        return AutoModTrigger(
-            type=enums.AutoModRuleTriggerType.keyword,
-            keyword_filter=data['keyword_filter'],  # type: ignore
-            allow_list=data.get('allow_list'),
-            regex_patterns=data.get('regex_patterns'),
-        )
-    elif 'mention_total_limit' in data:
-        return AutoModTrigger(type=enums.AutoModRuleTriggerType.mention_spam, mention_limit=data['mention_total_limit'])  # type: ignore
+        _type = enums.AutoModRuleTriggerType.keyword_preset
+    elif 'keyword_filter' in data or 'regex_patterns' in data:
+        _type = enums.AutoModRuleTriggerType.keyword
+    elif 'mention_total_limit' in data or 'mention_raid_protection_enabled' in data:
+        _type = enums.AutoModRuleTriggerType.mention_spam
     else:
-        return AutoModTrigger(type=enums.AutoModRuleTriggerType.spam)
+        _type = enums.AutoModRuleTriggerType.spam
+
+    if _type:
+        return AutoModTrigger.from_data(type=_type.value, data=data)
 
 
 def _transform_automod_actions(entry: AuditLogEntry, data: List[AutoModerationAction]) -> List[AutoModRuleAction]:

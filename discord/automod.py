@@ -260,8 +260,8 @@ class AutoModTrigger:
         regex_patterns: Optional[List[str]] = None,
         mention_raid_protection: Optional[bool] = None,
     ) -> None:
-        if type is None and sum(arg is not None for arg in (keyword_filter or regex_patterns, presets, mention_limit)) > 1:
-            raise ValueError('Please pass only one of keyword_filter, regex_patterns, presets, or mention_limit.')
+        if type is None and sum(arg is not None for arg in (keyword_filter or regex_patterns, presets, mention_limit or mention_raid_protection is not None)) > 1:
+            raise ValueError('Please pass only one of keyword_filter/regex_patterns, presets, or mention_limit/mention_raid_protection.')
 
         if type is not None:
             self.type = type
@@ -273,7 +273,7 @@ class AutoModTrigger:
             self.type = AutoModRuleTriggerType.mention_spam
         else:
             raise ValueError(
-                'Please pass the trigger type explicitly if not using keyword_filter, presets, or mention_limit.'
+                'Please pass the trigger type explicitly if not using keyword_filter, regex_patterns, presets, mention_limit, or mention_raid_protection.'
             )
 
         self.keyword_filter: List[str] = keyword_filter if keyword_filter is not None else []
@@ -296,7 +296,7 @@ class AutoModTrigger:
         type_ = try_enum(AutoModRuleTriggerType, type)
         if data is None:
             return cls(type=type_)
-        elif type_ is AutoModRuleTriggerType.keyword:
+        elif type_ in (AutoModRuleTriggerType.keyword, AutoModRuleTriggerType.member_profile):
             return cls(
                 type=type_,
                 keyword_filter=data.get('keyword_filter'),
@@ -317,7 +317,7 @@ class AutoModTrigger:
             return cls(type=type_)
 
     def to_metadata_dict(self) -> Optional[Dict[str, Any]]:
-        if self.type is AutoModRuleTriggerType.keyword:
+        if self.type in (AutoModRuleTriggerType.keyword, AutoModRuleTriggerType.member_profile):
             return {
                 'keyword_filter': self.keyword_filter,
                 'regex_patterns': self.regex_patterns,
