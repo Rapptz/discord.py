@@ -213,8 +213,8 @@ class AutoModTrigger:
     type: :class:`AutoModRuleTriggerType`
         The type of trigger.
     keyword_filter: List[:class:`str`]
-        The list of strings that will trigger the keyword filter. Maximum of 1000.
-        Keywords can only be up to 60 characters in length.
+        The list of strings that will trigger the filter.
+        Maximum of 1000. Keywords can only be up to 60 characters in length.
 
         This could be combined with :attr:`regex_patterns`.
     regex_patterns: List[:class:`str`]
@@ -260,8 +260,11 @@ class AutoModTrigger:
         regex_patterns: Optional[List[str]] = None,
         mention_raid_protection: Optional[bool] = None,
     ) -> None:
-        if type is None and sum(arg is not None for arg in (keyword_filter or regex_patterns, presets, mention_limit or mention_raid_protection is not None)) > 1:
-            raise ValueError('Please pass only one of keyword_filter/regex_patterns, presets, or mention_limit/mention_raid_protection.')
+        unique_args = (keyword_filter or regex_patterns, presets, mention_limit or mention_raid_protection is not None)
+        if type is None and sum(arg is not None for arg in unique_args) > 1:
+            raise ValueError(
+                'Please pass only one of keyword_filter/regex_patterns, presets, or mention_limit/mention_raid_protection.'
+            )
 
         if type is not None:
             self.type = type
