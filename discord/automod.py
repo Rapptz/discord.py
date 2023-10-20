@@ -260,7 +260,7 @@ class AutoModTrigger:
         regex_patterns: Optional[List[str]] = None,
         mention_raid_protection: Optional[bool] = None,
     ) -> None:
-        unique_args = (keyword_filter or regex_patterns, presets, mention_limit or mention_raid_protection is not None)
+        unique_args = (keyword_filter or regex_patterns, presets, mention_limit or mention_raid_protection)
         if type is None and sum(arg is not None for arg in unique_args) > 1:
             raise ValueError(
                 'Please pass only one of keyword_filter/regex_patterns, presets, or mention_limit/mention_raid_protection.'
@@ -358,6 +358,8 @@ class AutoModRule:
         The IDs of the roles that are exempt from the rule.
     exempt_channel_ids: Set[:class:`int`]
         The IDs of the channels that are exempt from the rule.
+    event_type: :class:`AutoModRuleEventType`
+        The type of event that will trigger the the rule.
     """
 
     __slots__ = (
