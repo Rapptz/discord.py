@@ -166,6 +166,7 @@ class GuildPrune(TypedDict):
 class GuildMFALevel(TypedDict):
     level: MFALevel
 
+
 class _ProductPrice(TypedDict):
     amount: float
     currency: str
@@ -176,6 +177,12 @@ class _ProductAttachments(TypedDict): # does not derive from Attachment type bec
     filename: str
     size: int
     content_type: str
+
+class ActiveTrial(TypedDict):
+    id: Snowflake
+    interval: int
+    interval_count: int
+    sku_id: Snowflake
 
 class GuildShopProduct(TypedDict):
     id: Snowflake
@@ -196,6 +203,7 @@ class GuildShopProduct(TypedDict):
 class GuildShopProductsListings(TypedDict):
     listings: List[GuildShopProduct]
 
+
 class GuildShop(TypedDict):
     guild_id: Snowflake
     full_server_gate: bool
@@ -206,6 +214,12 @@ class GuildShop(TypedDict):
     store_page_guild_products_default_sort: int
     cover_image_asset: NotRequired[Optional[Asset]]
     store_page_slug: NotRequired[Optional[str]]
+
+class GuildProductTrial(TypedDict):
+    id: Snowflake
+    num_active_trial_users: int
+    max_num_active_trial_users: Optional[int]
+    active_trial: ActiveTrial
 
 class GuildSubscriptionPlan(TypedDict):
     id: Snowflake

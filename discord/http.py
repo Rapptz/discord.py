@@ -950,7 +950,7 @@ class HTTPClient:
     ) -> Response[guild.GuildShop]:
         r = Route(
             'GET',
-            '/channels/{guild_id}/shop',
+            '/guilds/{guild_id}/role-subscriptions/settings',
             guild_id=guild_id
         )
 
@@ -1042,9 +1042,21 @@ class HTTPClient:
     ) -> Response[guild.GuildSubscriptionPlan]:
         r = Route(
             'GET',
-            '/channels/{guild_id}/role-subcsriptions/group-listings?include_soft_deleted={include_soft_deleted}',
+            '/guilds/{guild_id}/role-subcsriptions/group-listings?include_soft_deleted={include_soft_deleted}',
             guild_id=guild_id,
             include_soft_deleted="true" if include_soft_deleted else "false"
+        )
+
+        return self.request(r)
+    
+    def get_guild_subcriptions_trials(
+        self,
+        guild_id: Snowflake
+    ) -> Response[List[guild.ActiveTrial]]:
+        r = Route(
+            'GET',
+            '/guilds/{guild_id}/role-subscriptions/trials',
+            guild_id=guild_id
         )
 
         return self.request(r)
