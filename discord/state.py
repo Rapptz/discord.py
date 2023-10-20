@@ -1595,7 +1595,7 @@ class ConnectionState(Generic[ClientT]):
 
     def parse_entitlement_delete(self, data: gw.EntitlementDeleteEvent) -> None:
         entitlement = Entitlement(data=data, state=self)
-        self.dispatch('entitlement_update', entitlement)
+        self.dispatch('entitlement_delete', entitlement)
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, (TextChannel, Thread, VoiceChannel)):
