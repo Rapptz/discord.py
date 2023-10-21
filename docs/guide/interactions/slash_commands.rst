@@ -477,6 +477,8 @@ For example, to use :func:`~.app_commands.describe` and :func:`~.app_commands.re
     async def bottles(interaction: discord.Interaction, liquid: str, amount: int):
         await interaction.response.send_message(f'{amount} bottles of {liquid} on the wall!')
 
+.. _choices:
+
 Choices
 ++++++++
 
@@ -920,7 +922,7 @@ You'll typically find this syncing paradigm in some of the examples in the repos
 Integration checks
 -------------------
 
-Integration checks refer officially supported restrictions an app command can have for invocation.
+Integration checks refer to the officially supported restrictions an app command can have for invocation.
 A user needs to pass all checks on a command in order to be able to invoke and see the command on their client.
 
 Since this behaviour is handled by Discord alone, bots can't add any extra or custom behaviour.
@@ -1301,63 +1303,77 @@ Refer to the :ref:`Setting Up logging <logging_setup>` page for more info and ex
 Translating
 ------------
 
-Discord supports localisation (l10n) for the following fields:
+Localisations can be added to the following fields, such that they'll appear differently
+depending on a user's language setting:
 
 - Command names and descriptions
 - Parameter names and descriptions
-- Choice names (choices and autocomplete)
-
-This allows the above fields to appear differently according to a user client's language setting.
+- Choice names (used for both :ref:`choices <choices>` and :ref:`autocomplete <autocompletion>`)
 
 Localisations can be done :ddocs:`partially <interactions/application-commands#localization>` -
-when a locale doesn't have a translation for a given field, Discord will use the default/original string instead.
+when a field doesn't have a translation for a given locale, Discord instead uses the original string.
 
-Support for l10n is implemented in discord.py with the :class:`.app_commands.Translator` interface,
-which are effectively classes containing a core ``transform`` method that
-takes the following parameters:
+.. warning::
+
+    A translation should only be added for a locale if it's something distinct from the original string -
+    duplicates are ignored by the API.
+
+In discord.py, localisations are set using the :class:`.app_commands.Translator` interface,
+which is a class containing a ``transform`` method that needs to be overriden with the following parameters:
 
 1. ``string`` - the string to be translated according to ``locale``
 2. ``locale`` - the locale to translate to
 3. ``context`` - the context of this translation (what type of string is being translated)
 
-When :meth:`.CommandTree.sync` is called, this method is called in a heavy loop for each
-string for each locale.
+When :meth:`.CommandTree.sync` is called, this method is called in a heavy loop for each string for each locale.
 
-A wide variety of translation systems can be implemented using this interface, such as
-:mod:`gettext` and `Project Fluent <https://projectfluent.org/>`_.
-
-Only strings marked as ready for translation are passed to the method.
-By default, every string is considered translatable and passed.
-
-Nonetheless, to specify a translatable string explicitly,
-simply pass a string wrapped in :class:`~.app_commands.locale_str` in places you'd usually use :class:`str`:
+Strings need to be marked as ready for translation in order for this method to be called,
+which you can do by using a special :class:`~.app_commands.locale_str` type in places you'd usually :class:`str`:
 
 .. code-block:: python
 
     from discord.app_commands import locale_str as _
 
-    @client.tree.command(name=_('example'), description=_('an example command'))
-    async def example(interaction: discord.Interaction):
-        ...
-
-To toggle this behaviour, set the ``auto_locale_strings`` keyword-argument
-to :obj:`False` when creating a command:
-
-.. code-block:: python
-
-    @client.tree.command(name='example', description='an example command', auto_locale_strings=False)
-    async def example(interaction: discord.Interaction):
-        ... # i am not translated
+    @client.tree.command(name=_('avatar'), description=_('display your avatar'))
+    async def avatar(interaction: discord.Interaction):
+        url = interaction.user.avatar.url
+        await interaction.response.send_message(url)
 
 .. hint::
 
-    Additional keyword-arguments passed to the :class:`~.app_commands.locale_str` constructor are
-    inferred as "extra" information, which is kept untouched by the library in :attr:`~.locale_str.extras`.
+    Every string is actually already considered translatable by default and
+    wrapped into :class:`~.app_commands.locale_str` before being passed to ``transform``,
+    so this step can be skipped in some cases.
 
-    Utilise this field if additional info surrounding the string is required for translation.
+    To toggle this behaviour, set the ``auto_locale_strings`` keyword-argument to ``False`` when creating a command:
 
-Next, to create a translator, inherit from :class:`.app_commands.Translator` and
-override the :meth:`~.Translator.translate` method:
+    .. code-block:: python
+
+        @client.tree.command(name='avatar', description='display your avatar', auto_locale_strings=False)
+        async def avatar(interaction: discord.Interaction):
+            ... # this command is ignored by the translator
+
+From this example, ``'avatar'`` and ``'display your avatar'`` are used as the default strings for the command name and description respectively.
+
+Translation systems like `Project Fluent <https://projectfluent.org/>`_ require a separate translation ID than the default string as-is.
+For this reason, additional keyword-arguments passed to the :class:`~.app_commands.locale_str` constructor
+are inferred as "extra" information by the library, which is kept untouched at :attr:`.locale_str.extras`.
+
+For example, to pass a ``fluent_id`` extra whilst keeping the original string:
+
+.. code-block:: python
+
+    @client.tree.command(
+        name=_('avatar', fluent_id='avatar-cmd.name'),
+        description=_('display your avatar', fluent_id='avatar-cmd.description')
+    )
+    async def avatar(interaction: discord.Interaction):
+        ...
+
+A translator can then read off of :attr:`~.locale_str.extras` for the translation identifier.
+Systems like :mod:`gettext` don't need this type of behaviour, so it works out of the box without specifying the extra.
+
+Next, to create a translator, inherit from :class:`.app_commands.Translator` and override the :meth:`~.Translator.translate` method:
 
 .. code-block:: python
 
@@ -1370,27 +1386,25 @@ override the :meth:`~.Translator.translate` method:
         ) -> str:
             ...
 
-A string should be returned according to the given ``locale``. If no translation is available,
-:obj:`None` should be returned instead.
+A string should be returned according to the given ``locale``. If no translation is available, ``None`` should be returned instead.
 
 :class:`~.app_commands.TranslationContext`  provides contextual info for what is being translated.
-
-This contains 2 attributes:
+It contains 2 attributes:
 
 - :attr:`~.app_commands.TranslationContext.location` - an enum representing what is being translated, eg. a command description.
 
 - :attr:`~.app_commands.TranslationContext.data` - can point to different things depending on the ``location``.
 
-  - When translating a field for a command or group, such as the name, this points to the command in question.
+ - When translating a field for a command or group, such as the name, this points to the command in question.
 
-  - When translating a parameter name, this points to the :class:`~.app_commands.Parameter`.
+ - When translating a parameter name, this points to the :class:`~.app_commands.Parameter`.
 
-  - For choice names, this points to the :class:`~.app_commands.Choice`.
+ - For choice names, this points to the :class:`~.app_commands.Choice`.
 
 Lastly, in order for a translator to be used, it needs to be attached to the tree
 by calling :meth:`.CommandTree.set_translator`.
 
-Since this is an async method, it's ideal to call it in an async entry-point, such as :meth:`.Client.setup_hook`:
+Since this is a coroutine, it's ideal to call it in an async entry-point, such as :meth:`.Client.setup_hook`:
 
 .. code-block:: python
 
@@ -1418,11 +1432,11 @@ In summary:
 
   - :meth:`.Translator.translate` will be called on all translatable strings.
 
-Manually syncing
+Syncing manually
 -----------------
 
 Syncing app commands on startup, such as inside :meth:`.Client.setup_hook` can often be spammy
-and incur the heavy ratelimits set by Discord.
+and incur the heavy ratelimits set by the API.
 Therefore, it's helpful to control the syncing process manually.
 
 A common and recommended approach is to create an owner-only traditional command to do this.
