@@ -2441,7 +2441,7 @@ class HTTPClient:
             json=payload,
         )
 
-    def delete_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[sku.Entitlement]:
+    def delete_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[None]:
         return self.request(
             Route(
                 'DELETE',
