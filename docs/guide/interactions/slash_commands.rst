@@ -1,6 +1,6 @@
 :orphan:
 
-.. _discord_slash_commands:
+.. _guide_slash_commands:
 
 Slash commands
 ===============
@@ -66,8 +66,8 @@ To do this, simply attach the tree to the ``self`` instance in a client subclass
     a :class:`~discord.app_commands.CommandTree` has already been defined at :attr:`.Bot.tree`,
     so this step is technically skipped.
 
-Creating a slash command
--------------------------
+Creating a command
+-------------------
 
 Slash commands are created by decorating an async function,
 and that function is then called whenever the slash command is invoked by someone,
@@ -139,9 +139,9 @@ a Discord model used for both app commands and UI message components.
 
 When an interaction is created on command invoke, some information about the surrounding context is given, such as:
 
-- :class:`discord.Interaction.channel` - the channel it was invoked in
-- :class:`discord.Interaction.guild` - the guild it was invoked in, if any
-- :class:`discord.Interaction.user` - the user or member who invoked the command
+- :attr:`.Interaction.channel` - the channel it was invoked in
+- :attr:`.Interaction.guild` - the guild it was invoked in, if any
+- :attr:`.Interaction.user` - the user or member who invoked the command
 
 Attributes like these and others are a given, however when it comes to responding to an interaction,
 by sending a message or otherwise, the methods from :attr:`.Interaction.response` need to be used.
@@ -174,7 +174,7 @@ For example, to send a deferred ephemeral message:
 
         await interaction.followup.send(f'the weather today is {forecast}!')
 
-.. _syncing:
+.. _guide_slash_commands_syncing:
 
 Syncing
 ++++++++
@@ -182,11 +182,11 @@ Syncing
 In order for this command to show up on Discord, the API needs some information to render it, namely:
 
 - The name and description
-- Any :ref:`parameter names, types and descriptions <parameters>`
-- Any :ref:`checks <integration_checks>` attached
-- Whether this command is a :ref:`group <command_groups>`
-- Whether this is a :ref:`global or guild command <guild_commands>`
-- Any :ref:`localisations <translating>` for the above
+- Any :ref:`parameter names, types and descriptions <guide_slash_commands_parameters>`
+- Any :ref:`integration checks <guide_slash_commands_integration_checks>` attached
+- Whether this command is a :ref:`group <guide_slash_commands_command_groups>`
+- Whether this is a :ref:`global or guild command <guide_slash_commands_guild_commands>`
+- Any :ref:`localisations <guide_slash_commands_translating>` for the above
 
 Syncing is the process of sending this information, which is done by
 calling the :meth:`.CommandTree.sync` method.
@@ -207,7 +207,7 @@ been added to the tree:
 Commands need to be synced again each time a new command is added or removed, or if any of the above properties change.
 
 Syncing is **not** required when changing client-side behaviour,
-such as by adding a :ref:`library-side check <custom_checks>`, adding a :ref:`transformer <transformers>`
+such as by adding a :ref:`library-side check <guide_slash_commands_custom_checks>`, adding a :ref:`transformer <guide_slash_commands_transformers>`
 or changing anything within the function body (how you respond is up to you!).
 
 If there's a mismatch with how the command looks in Discord compared to your code,
@@ -227,9 +227,9 @@ blocks invocation with this message in red:
     provided it has the ``applications.commands`` scope.
 
     To make space for yourself to experiment with app commands safely,
-    create a new testing bot instead or alternatively sync your commands :ref:`locally <guild_commands>`.
+    create a new testing bot instead or alternatively sync your commands :ref:`locally <guide_slash_commands_guild_commands>`.
 
-.. _parameters:
+.. _guide_slash_commands_parameters:
 
 Parameters
 -----------
@@ -277,7 +277,7 @@ Some parameter types have different modes of input.
 For example, annotating to :class:`~discord.User` will show a selection of users to
 pick from in the current context and :class:`~discord.Attachment` will show a file-dropbox.
 
-A full overview of supported types can be seen in the :ref:`type conversion table <type_conversion>`.
+A full overview of supported types can be seen in the :ref:`type conversion table <guide_slash_commands_type_conversion>`.
 
 typing.Optional
 ++++++++++++++++
@@ -366,7 +366,7 @@ can point to any channel in a guild, but can be narrowed down to a specific set 
 
     Something like ``Union[discord.Member, discord.TextChannel]`` isn't possible.
 
-Refer to the :ref:`type conversion table <type_conversion>` for full information.
+Refer to the :ref:`type conversion table <guide_slash_commands_type_conversion>` for full information.
 
 Describing
 +++++++++++
@@ -400,7 +400,7 @@ Examples using a command to add 2 numbers together:
     .. code-block:: python
 
         @client.tree.command()
-        async def addition(interaction: discord.Interaction, a: int, b: int):
+        async def add(interaction: discord.Interaction, a: int, b: int):
             """adds 2 numbers together.
 
             Parameters
@@ -418,7 +418,7 @@ Examples using a command to add 2 numbers together:
     .. code-block:: python
 
         @client.tree.command()
-        async def addition(interaction: discord.Interaction, a: int, b: int):
+        async def add(interaction: discord.Interaction, a: int, b: int):
             """adds 2 numbers together.
 
             Args:
@@ -433,7 +433,7 @@ Examples using a command to add 2 numbers together:
     .. code-block:: python
 
         @client.tree.command()
-        async def addition(interaction: discord.Interaction, a: int, b: int):
+        async def add(interaction: discord.Interaction, a: int, b: int):
             """adds 2 numbers together.
 
             :param a: left operand
@@ -443,10 +443,10 @@ Examples using a command to add 2 numbers together:
             await interaction.response.send_message(f'{a + b = }')
 
 Other meta info can be specified in the docstring, such as the function return type,
-but in-practice only the parameter descriptions are used.
+but only the parameter descriptions are read by the library.
 
-Parameter descriptions added using :func:`.app_commands.describe` always
-take precedence over ones specified in the docstring.
+Descriptions added using :func:`.app_commands.describe` always take precedence over
+ones specified in the docstring.
 
 Naming
 ^^^^^^^
@@ -469,15 +469,15 @@ For example, to use :func:`~.app_commands.describe` and :func:`~.app_commands.re
 .. code-block:: python
 
     @client.tree.command()
-    @app_commands.rename(amount='liquid-count')
     @app_commands.describe(
         liquid='what type of liquid is on the wall',
         amount='how much of it is on the wall'
     )
+    @app_commands.rename(amount='liquid-count')
     async def bottles(interaction: discord.Interaction, liquid: str, amount: int):
         await interaction.response.send_message(f'{amount} bottles of {liquid} on the wall!')
 
-.. _choices:
+.. _guide_slash_commands_choices:
 
 Choices
 ++++++++
@@ -503,12 +503,12 @@ To illustrate, the following command has a selection of 3 colours with each valu
     from discord.app_commands import Choice
 
     @client.tree.command()
-    @app_commands.describe(colour='pick your favourite colour')
     @app_commands.choices(colour=[
         Choice(name='Red', value=0xFF0000),
         Choice(name='Green', value=0x00FF00),
         Choice(name='Blue', value=0x0000FF)
     ])
+    @app_commands.describe(colour='pick your favourite colour')
     async def colour(interaction: discord.Interaction, colour: Choice[int]):
         """show a colour"""
 
@@ -523,7 +523,7 @@ On the client:
 discord.py also supports 2 other pythonic ways of adding choices to a command,
 shown :func:`here <discord.app_commands.choices>` in the reference.
 
-.. _autocompletion:
+.. _guide_slash_commands_autocompletion:
 
 Autocompletion
 +++++++++++++++
@@ -558,7 +558,7 @@ Code examples for either method can be found in the corresponding reference page
 .. warning::
 
     Since exceptions raised from within an autocomplete callback are not considered handleable,
-    they're not sent sent to any :ref:`error handlers <error_handling>`.
+    they're not sent sent to any :ref:`error handlers <guide_slash_commands_error_handling>`.
 
     An empty list is returned by the library instead of the autocomplete failing after the 3 second timeout.
 
@@ -570,7 +570,7 @@ For strings, this limits the character count, whereas for numeric types this lim
 
 Refer to the :class:`.app_commands.Range` page for more info and code examples.
 
-.. _transformers:
+.. _guide_slash_commands_transformers:
 
 Transformers
 +++++++++++++
@@ -650,7 +650,7 @@ Since these are properties, they must be decorated with :class:`property`:
 
 :meth:`~.Transformer.autocomplete` callbacks can also be defined in-line.
 
-.. _type_conversion:
+.. _guide_slash_commands_type_conversion:
 
 Type conversion
 ++++++++++++++++
@@ -689,7 +689,7 @@ The table below outlines the relationship between Discord and Python types.
 
     For example, if a parameter annotates to :class:`~discord.Member`, and the command is invoked in direct-messages,
     discord.py will raise an error since the actual type given by Discord,
-    :class:`~discord.User`, is incompatible with :class:`~discord.Member`.
+    :class:`~discord.User`, is incompatible with :class:`~discord.Member`, due to the presence of guild-specific attributes.
 
     discord.py doesn't raise an error for the other way around (a parameter annotated to :class:`~discord.User` invoked in a guild)
     since :class:`~discord.Member` implements the same interface as :class:`~discord.User`.
@@ -732,7 +732,7 @@ The table below outlines the relationship between Discord and Python types.
 
             await interaction.response.send_message(embed=embed)
 
-.. _command_groups:
+.. _guide_slash_commands_command_groups:
 
 Command groups
 ---------------
@@ -837,9 +837,9 @@ can be added on top of a subclass to apply to the group, for example:
     class Emojis(app_commands.Group):
         ...
 
-Due to a Discord limitation, individual subcommands cannot have differing :ref:`integration checks <integration_checks>`.
+Due to a Discord limitation, individual subcommands cannot have differing :ref:`integration checks <guide_slash_commands_integration_checks>`.
 
-.. _guild_commands:
+.. _guide_slash_commands_guild_commands:
 
 Guild commands
 ---------------
@@ -917,7 +917,7 @@ You'll typically find this syncing paradigm in some of the examples in the repos
 
         # afterwards, the local commands should be removed
 
-.. _integration_checks:
+.. _guide_slash_commands_integration_checks:
 
 Integration checks
 -------------------
@@ -987,7 +987,7 @@ To prevent this, :func:`~.app_commands.guild_only` can also be added.
     through the "Integrations" tab on the Discord client,
     meaning, an invoking user might not actually have the permissions specified in the decorator.
 
-.. _custom_checks:
+.. _guide_slash_commands_custom_checks:
 
 Custom checks
 --------------
@@ -1004,7 +1004,7 @@ It has the following options:
 
 - Raise a :class:`~.app_commands.AppCommandError`-derived exception to signal a person can't run the command.
 
- - Exceptions are passed to the bot's :ref:`error handlers <error_handling>`.
+ - Exceptions are passed to the bot's :ref:`error handlers <guide_slash_commands_error_handling>`.
 
 - Return a ``False``-like to signal a person can't run the command.
 
@@ -1061,7 +1061,7 @@ Custom checks can either be:
 
  - Added using the :meth:`.app_commands.Group.error` decorator or overriding :meth:`.app_commands.Group.on_error`.
 
-- :ref:`global <global_check>`, running for all commands, and before any group or local checks.
+- :ref:`global <guide_slash_commands_global_check>`, running for all commands, and before any group or local checks.
 
 .. note::
 
@@ -1070,7 +1070,7 @@ Custom checks can either be:
 
     Refer to the :ref:`checks guide <guide_interaction_checks>` for more info.
 
-.. _global_check:
+.. _guide_slash_commands_global_check:
 
 Global check
 +++++++++++++
@@ -1109,7 +1109,7 @@ For example:
             tree_cls=CoolPeopleTree
         )
 
-.. _error_handling:
+.. _guide_slash_commands_error_handling:
 
 Error handling
 ---------------
@@ -1298,7 +1298,7 @@ in a terminal and being able to write to a file.
 
 Refer to the :ref:`Setting Up logging <logging_setup>` page for more info and examples.
 
-.. _translating:
+.. _guide_slash_commands_translating:
 
 Translating
 ------------
@@ -1308,7 +1308,7 @@ depending on a user's language setting:
 
 - Command names and descriptions
 - Parameter names and descriptions
-- Choice names (used for both :ref:`choices <choices>` and :ref:`autocomplete <autocompletion>`)
+- Choice names (used for both :ref:`choices <guide_slash_commands_choices>` and :ref:`autocomplete <guide_slash_commands_autocompletion>`)
 
 Localisations can be done :ddocs:`partially <interactions/application-commands#localization>` -
 when a field doesn't have a translation for a given locale, Discord instead uses the original string.
