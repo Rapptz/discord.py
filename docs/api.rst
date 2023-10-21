@@ -493,6 +493,48 @@ Debug
     :param payload: The message that is about to be passed on to the
                     WebSocket library. It can be :class:`bytes` to denote a binary
                     message or :class:`str` to denote a regular text message.
+    :type payload: Union[:class:`bytes`, :class:`str`]
+
+
+Entitlements
+~~~~~~~~~~~~
+
+.. function:: on_entitlement_create(entitlement)
+
+    Called when a user subscribes to a SKU.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was created.
+    :type entitlement: :class:`Entitlement`
+
+.. function:: on_entitlement_update(entitlement)
+
+    Called when a user updates their subscription to a SKU. This is usually called when
+    the user renews or cancels their subscription.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was updated.
+    :type entitlement: :class:`Entitlement`
+
+.. function:: on_entitlement_delete(entitlement)
+
+    Called when a users subscription to a SKU is cancelled. This is typically only called when:
+
+    - Discord issues a refund for the subscription.
+    - Discord removes an entitlement from a user.
+
+    .. warning::
+
+        This event won't be called if the user cancels their subscription manually, instead
+        :func:`on_entitlement_update` will be called with :attr:`Entitlement.ends_at` set to the end of the
+        current billing period.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was deleted.
+    :type entitlement: :class:`Entitlement`
 
 
 Gateway
@@ -834,7 +876,7 @@ Members
 
 .. function:: on_member_ban(guild, user)
 
-    Called when user gets banned from a :class:`Guild`.
+    Called when a user gets banned from a :class:`Guild`.
 
     This requires :attr:`Intents.moderation` to be enabled.
 
@@ -1028,6 +1070,12 @@ Reactions
         Consider using :func:`on_raw_reaction_add` if you need this and do not otherwise want
         to enable the members intent.
 
+    .. warning::
+
+        This event does not have a way of differentiating whether a reaction is a
+        burst reaction (also known as "super reaction") or not. If you need this,
+        consider using :func:`on_raw_reaction_add` instead.
+
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
     :param user: The user who added the reaction.
@@ -1049,6 +1097,12 @@ Reactions
 
         Consider using :func:`on_raw_reaction_remove` if you need this and do not want
         to enable the members intent.
+
+    .. warning::
+
+        This event does not have a way of differentiating whether a reaction is a
+        burst reaction (also known as "super reaction") or not. If you need this,
+        consider using :func:`on_raw_reaction_remove` instead.
 
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
@@ -1392,7 +1446,7 @@ Threads
     .. versionadded:: 2.0
 
     :param payload: The raw event payload data.
-    :type member: :class:`RawThreadMembersUpdate`
+    :type payload: :class:`RawThreadMembersUpdate`
 
 Voice
 ~~~~~~
@@ -1551,6 +1605,12 @@ of :class:`enum.Enum`.
         A forum channel.
 
         .. versionadded:: 2.0
+
+    .. attribute:: media
+
+        A media channel.
+
+        .. versionadded:: 2.4
 
 .. class:: MessageType
 
@@ -2139,6 +2199,11 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`User` or :class:`Object` who got kicked.
 
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``integration_type``: An optional string that denotes the type of integration that did the action.
+
         When this is the action, :attr:`~AuditLogEntry.changes` is empty.
 
     .. attribute:: member_prune
@@ -2198,6 +2263,11 @@ of :class:`enum.Enum`.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Member`, :class:`User`, or :class:`Object` who got the role.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``integration_type``: An optional string that denotes the type of integration that did the action.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2838,6 +2908,18 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.1
 
+    .. attribute:: creator_monetization_request_created
+
+        A request to monetize the server was created.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: creator_monetization_terms_accepted
+
+        The terms and conditions for creator monetization were accepted.
+
+        .. versionadded:: 2.4
+
     .. attribute:: soundboard_sound_create
 
         A soundboard sound was created.
@@ -2906,6 +2988,27 @@ of :class:`enum.Enum`.
 
         Represents a member currently in the team.
 
+.. class:: TeamMemberRole
+
+    Represents the type of role of a team member retrieved through :func:`Client.application_info`.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: admin
+
+        The team member is an admin. This allows them to invite members to the team, access credentials, edit the application,
+        and do most things the owner can do. However they cannot do destructive actions.
+
+    .. attribute:: developer
+
+        The team member is a developer. This allows them to access information, like the client secret or public key.
+        They can also configure interaction endpoints or reset the bot token. Developers cannot invite anyone to the team
+        nor can they do destructive actions.
+
+    .. attribute:: read_only
+
+        The team member is a read-only member. This allows them to access information, but not edit anything.
+
 .. class:: WebhookType
 
     Represents the type of webhook that can be received.
@@ -2950,27 +3053,33 @@ of :class:`enum.Enum`.
 
     .. attribute:: blurple
 
-        Represents the default avatar with the color blurple.
+        Represents the default avatar with the colour blurple.
         See also :attr:`Colour.blurple`
     .. attribute:: grey
 
-        Represents the default avatar with the color grey.
+        Represents the default avatar with the colour grey.
         See also :attr:`Colour.greyple`
     .. attribute:: gray
 
         An alias for :attr:`grey`.
     .. attribute:: green
 
-        Represents the default avatar with the color green.
+        Represents the default avatar with the colour green.
         See also :attr:`Colour.green`
     .. attribute:: orange
 
-        Represents the default avatar with the color orange.
+        Represents the default avatar with the colour orange.
         See also :attr:`Colour.orange`
     .. attribute:: red
 
-        Represents the default avatar with the color red.
+        Represents the default avatar with the colour red.
         See also :attr:`Colour.red`
+    .. attribute:: pink
+
+        Represents the default avatar with the colour pink.
+        See also :attr:`Colour.pink`
+
+        .. versionadded:: 2.3
 
 .. class:: StickerType
 
@@ -3338,6 +3447,12 @@ of :class:`enum.Enum`.
         The rule will trigger when combined number of role and user mentions
         is greater than the set limit.
 
+    .. attribute:: member_profile
+
+        The rule will trigger when a user's profile contains a keyword.
+
+        .. versionadded:: 2.4
+
 .. class:: AutoModRuleEventType
 
     Represents the event type of an automod rule.
@@ -3347,6 +3462,12 @@ of :class:`enum.Enum`.
     .. attribute:: message_send
 
         The rule will trigger when a message is sent.
+
+    .. attribute:: member_update
+
+        The rule will trigger when a member's profile is updated.
+
+        .. versionadded:: 2.4
 
 .. class:: AutoModRuleActionType
 
@@ -3366,6 +3487,12 @@ of :class:`enum.Enum`.
 
         The rule will timeout a user.
 
+    .. attribute:: block_member_interactions
+
+        Similar to :attr:`timeout`, except the user will be timed out indefinitely.
+        This will request the user to edit it's profile.
+
+        .. versionadded:: 2.4
 
 .. class:: ForumLayoutType
 
@@ -3399,6 +3526,65 @@ of :class:`enum.Enum`.
     .. attribute:: creation_date
 
         Sort forum posts by creation time (from most recent to oldest).
+
+.. class:: SelectDefaultValueType
+
+    Represents the default value of a select menu.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: user
+
+        The underlying type of the ID is a user.
+
+    .. attribute:: role
+
+        The underlying type of the ID is a role.
+
+    .. attribute:: channel
+
+        The underlying type of the ID is a channel or thread.
+
+
+.. class:: SKUType
+
+    Represents the type of a SKU.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: subscription
+
+        The SKU is a recurring subscription.
+
+    .. attribute:: subscription_group
+
+        The SKU is a system-generated group which is created for each :attr:`SKUType.subscription`.
+
+
+.. class:: EntitlementType
+
+    Represents the type of an entitlement.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: application_subscription
+
+        The entitlement was purchased as an app subscription.
+
+
+.. class:: EntitlementOwnerType
+
+    Represents the type of an entitlement owner.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: guild
+
+        The entitlement owner is a guild.
+
+    .. attribute:: user
+
+            The entitlement owner is a user.
 
 
 .. class:: VoiceChannelEffectAnimationType
@@ -3512,6 +3698,12 @@ AuditLogDiff
         A name of something.
 
         :type: :class:`str`
+
+    .. attribute:: guild
+
+        The guild of something.
+
+        :type: :class:`Guild`
 
     .. attribute:: icon
 
@@ -4088,6 +4280,38 @@ AuditLogDiff
         See also :attr:`ForumChannel.flags` and :attr:`Thread.flags`
 
         :type: :class:`ChannelFlags`
+
+    .. attribute:: default_thread_slowmode_delay
+
+        The default slowmode delay for threads created in this text channel or forum.
+
+        See also :attr:`TextChannel.default_thread_slowmode_delay` and :attr:`ForumChannel.default_thread_slowmode_delay`
+
+        :type: :class:`int`
+
+    .. attribute:: applied_tags
+
+        The applied tags of a forum post.
+
+        See also :attr:`Thread.applied_tags`
+
+        :type: List[Union[:class:`ForumTag`, :class:`Object`]]
+
+    .. attribute:: available_tags
+
+        The available tags of a forum.
+
+        See also :attr:`ForumChannel.available_tags`
+
+        :type: Sequence[:class:`ForumTag`]
+
+    .. attribute:: default_reaction_emoji
+
+        The default_reaction_emoji for forum posts.
+
+        See also :attr:`ForumChannel.default_reaction_emoji`
+
+        :type: Optional[:class:`PartialEmoji`]
 
     .. attribute:: user
 
@@ -4726,6 +4950,22 @@ ShardInfo
 .. autoclass:: ShardInfo()
     :members:
 
+SKU
+~~~~~~~~~~~
+
+.. attributetable:: SKU
+
+.. autoclass:: SKU()
+    :members:
+
+Entitlement
+~~~~~~~~~~~
+
+.. attributetable:: Entitlement
+
+.. autoclass:: Entitlement()
+    :members:
+
 RawMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -5077,6 +5317,30 @@ MemberFlags
 .. attributetable:: MemberFlags
 
 .. autoclass:: MemberFlags
+    :members:
+
+AttachmentFlags
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: AttachmentFlags
+
+.. autoclass:: AttachmentFlags
+    :members:
+
+RoleFlags
+~~~~~~~~~~
+
+.. attributetable:: RoleFlags
+
+.. autoclass:: RoleFlags
+    :members:
+
+SKUFlags
+~~~~~~~~~~~
+
+.. attributetable:: SKUFlags
+
+.. autoclass:: SKUFlags()
     :members:
 
 ForumTag

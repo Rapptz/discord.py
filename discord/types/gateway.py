@@ -27,6 +27,7 @@ from typing_extensions import NotRequired, Required
 
 from .automod import AutoModerationAction, AutoModerationRuleTriggerType
 from .activity import PartialPresenceUpdate
+from .sku import Entitlement
 from .voice import GuildVoiceState
 from .integration import BaseIntegration, IntegrationApplication
 from .role import Role
@@ -101,6 +102,9 @@ class MessageReactionAddEvent(TypedDict):
     emoji: PartialEmoji
     member: NotRequired[MemberWithUser]
     guild_id: NotRequired[Snowflake]
+    message_author_id: NotRequired[Snowflake]
+    burst: bool
+    burst_colors: NotRequired[List[str]]
 
 
 class MessageReactionRemoveEvent(TypedDict):
@@ -109,6 +113,7 @@ class MessageReactionRemoveEvent(TypedDict):
     message_id: Snowflake
     emoji: PartialEmoji
     guild_id: NotRequired[Snowflake]
+    burst: bool
 
 
 class MessageReactionRemoveAllEvent(TypedDict):
@@ -314,6 +319,13 @@ GuildScheduledEventUserAdd = GuildScheduledEventUserRemove = _GuildScheduledEven
 VoiceStateUpdateEvent = GuildVoiceState
 VoiceChannelEffectSendEvent = VoiceChannelEffect
 
+GuildSoundBoardSoundCreateEvent = SoundboardSound
+
+
+class GuildSoundBoardSoundDeleteEvent(TypedDict):
+    sound_id: Snowflake
+    guild_id: Snowflake
+
 
 class VoiceServerUpdateEvent(TypedDict):
     token: str
@@ -347,9 +359,4 @@ class GuildAuditLogEntryCreate(AuditLogEntry):
     guild_id: Snowflake
 
 
-GuildSoundBoardSoundCreateEvent = SoundboardSound
-
-
-class GuildSoundBoardSoundDeleteEvent(TypedDict):
-    sound_id: Snowflake
-    guild_id: Snowflake
+EntitlementCreateEvent = EntitlementUpdateEvent = EntitlementDeleteEvent = Entitlement

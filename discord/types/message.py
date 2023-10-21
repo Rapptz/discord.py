@@ -50,10 +50,18 @@ class ChannelMention(TypedDict):
     name: str
 
 
+class ReactionCountDetails(TypedDict):
+    burst: int
+    normal: int
+
+
 class Reaction(TypedDict):
     count: int
     me: bool
     emoji: PartialEmoji
+    me_burst: bool
+    count_details: ReactionCountDetails
+    burst_colors: List[str]
 
 
 class Attachment(TypedDict):
@@ -68,6 +76,9 @@ class Attachment(TypedDict):
     content_type: NotRequired[str]
     spoiler: NotRequired[bool]
     ephemeral: NotRequired[bool]
+    duration_secs: NotRequired[float]
+    waveform: NotRequired[str]
+    flags: NotRequired[int]
 
 
 MessageActivityType = Literal[1, 2, 3, 5]

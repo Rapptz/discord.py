@@ -132,6 +132,7 @@ if TYPE_CHECKING:
     from .types.integration import IntegrationType
     from .types.snowflake import SnowflakeList
     from .types.widget import EditWidgetSettings
+    from .types.audit_log import AuditLogEvent
     from .message import EmojiInputType
     from .soundboard import SoundboardSound
 
@@ -187,8 +188,6 @@ class Guild(Hashable):
         .. versionadded:: 2.0
     afk_timeout: :class:`int`
         The number of seconds until someone is moved to the AFK channel.
-    afk_channel: Optional[:class:`VoiceChannel`]
-        The channel that denotes the AFK channel. ``None`` if it doesn't exist.
     id: :class:`int`
         The guild's ID.
     owner_id: :class:`int`
@@ -251,13 +250,13 @@ class Guild(Hashable):
 
     approximate_member_count: Optional[:class:`int`]
         The approximate number of members in the guild. This is ``None`` unless the guild is obtained
-        using :meth:`Client.fetch_guild` with ``with_counts=True``.
+        using :meth:`Client.fetch_guild` or :meth:`Client.fetch_guilds` with ``with_counts=True``.
 
         .. versionadded:: 2.0
     approximate_presence_count: Optional[:class:`int`]
         The approximate number of members currently active in the guild.
         Offline members are excluded. This is ``None`` unless the guild is obtained using
-        :meth:`Client.fetch_guild` with ``with_counts=True``.
+        :meth:`Client.fetch_guild` or :meth:`Client.fetch_guilds` with ``with_counts=True``.
 
         .. versionchanged:: 2.0
     premium_progress_bar_enabled: :class:`bool`
@@ -268,11 +267,14 @@ class Guild(Hashable):
         Indicates if the guild has widget enabled.
 
         .. versionadded:: 2.0
+    max_stage_video_users: Optional[:class:`int`]
+        The maximum amount of users in a stage video channel.
+
+        .. versionadded:: 2.3
     """
 
     __slots__ = (
         'afk_timeout',
-        'afk_channel',
         'name',
         'id',
         'unavailable',
@@ -295,6 +297,7 @@ class Guild(Hashable):
         'vanity_url_code',
         'widget_enabled',
         '_widget_channel_id',
+        '_afk_channel_id',
         '_members',
         '_channels',
         '_icon',
@@ -316,13 +319,15 @@ class Guild(Hashable):
         'approximate_member_count',
         'approximate_presence_count',
         'premium_progress_bar_enabled',
+        '_safety_alerts_channel_id',
+        'max_stage_video_users',
         '_soundboard_sounds',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
-        None: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=8388608),
-        0: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=8388608),
-        1: _GuildLimit(emoji=100, stickers=15, bitrate=128e3, filesize=8388608),
+        None: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=utils.DEFAULT_FILE_SIZE_LIMIT_BYTES),
+        0: _GuildLimit(emoji=50, stickers=5, bitrate=96e3, filesize=utils.DEFAULT_FILE_SIZE_LIMIT_BYTES),
+        1: _GuildLimit(emoji=100, stickers=15, bitrate=128e3, filesize=utils.DEFAULT_FILE_SIZE_LIMIT_BYTES),
         2: _GuildLimit(emoji=150, stickers=30, bitrate=256e3, filesize=52428800),
         3: _GuildLimit(emoji=250, stickers=60, bitrate=384e3, filesize=104857600),
     }
@@ -470,9 +475,15 @@ class Guild(Hashable):
             role = Role(guild=self, data=r, state=state)
             self._roles[role.id] = role
 
-        self.emojis: Tuple[Emoji, ...] = tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
-        self.stickers: Tuple[GuildSticker, ...] = tuple(
-            map(lambda d: state.store_sticker(self, d), guild.get('stickers', []))
+        self.emojis: Tuple[Emoji, ...] = (
+            tuple(map(lambda d: state.store_emoji(self, d), guild.get('emojis', [])))
+            if state.cache_guild_expressions
+            else ()
+        )
+        self.stickers: Tuple[GuildSticker, ...] = (
+            tuple(map(lambda d: state.store_sticker(self, d), guild.get('stickers', [])))
+            if state.cache_guild_expressions
+            else ()
         )
         self.features: List[GuildFeature] = guild.get('features', [])
         self._splash: Optional[str] = guild.get('splash')
@@ -481,6 +492,7 @@ class Guild(Hashable):
         self.max_presences: Optional[int] = guild.get('max_presences')
         self.max_members: Optional[int] = guild.get('max_members')
         self.max_video_channel_users: Optional[int] = guild.get('max_video_channel_users')
+        self.max_stage_video_users: Optional[int] = guild.get('max_stage_video_channel_users')
         self.premium_tier: int = guild.get('premium_tier', 0)
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
@@ -491,62 +503,53 @@ class Guild(Hashable):
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
         self._rules_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'public_updates_channel_id')
+        self._safety_alerts_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'safety_alerts_channel_id')
         self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, guild.get('nsfw_level', 0))
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
         self.approximate_presence_count: Optional[int] = guild.get('approximate_presence_count')
         self.approximate_member_count: Optional[int] = guild.get('approximate_member_count')
         self.premium_progress_bar_enabled: bool = guild.get('premium_progress_bar_enabled', False)
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
-
-        self._sync(guild)
         self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
+        self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
 
-        self.afk_channel: Optional[VocalGuildChannel] = self.get_channel(utils._get_as_snowflake(guild, 'afk_channel_id'))  # type: ignore
-
-    # TODO: refactor/remove?
-    def _sync(self, data: GuildPayload) -> None:
-        try:
-            self._large = data['large']
-        except KeyError:
-            pass
-
-        if 'channels' in data:
-            channels = data['channels']
+        if 'channels' in guild:
+            channels = guild['channels']
             for c in channels:
                 factory, ch_type = _guild_channel_factory(c['type'])
                 if factory:
                     self._add_channel(factory(guild=self, data=c, state=self._state))  # type: ignore
 
-        for obj in data.get('voice_states', []):
+        for obj in guild.get('voice_states', []):
             self._update_voice_state(obj, int(obj['channel_id']))
 
         cache_joined = self._state.member_cache_flags.joined
         cache_voice = self._state.member_cache_flags.voice
         self_id = self._state.self_id
-        for mdata in data.get('members', []):
+        for mdata in guild.get('members', []):
             member = Member(data=mdata, guild=self, state=self._state)  # type: ignore # Members will have the 'user' key in this scenario
             if cache_joined or member.id == self_id or (cache_voice and member.id in self._voice_states):
                 self._add_member(member)
 
         empty_tuple = ()
-        for presence in data.get('presences', []):
+        for presence in guild.get('presences', []):
             user_id = int(presence['user']['id'])
             member = self.get_member(user_id)
             if member is not None:
                 member._presence_update(presence, empty_tuple)  # type: ignore
 
-        if 'threads' in data:
-            threads = data['threads']
+        if 'threads' in guild:
+            threads = guild['threads']
             for thread in threads:
                 self._add_thread(Thread(guild=self, state=self._state, data=thread))
 
-        if 'stage_instances' in data:
-            for s in data['stage_instances']:
+        if 'stage_instances' in guild:
+            for s in guild['stage_instances']:
                 stage_instance = StageInstance(guild=self, data=s, state=self._state)
                 self._stage_instances[stage_instance.id] = stage_instance
 
-        if 'guild_scheduled_events' in data:
-            for s in data['guild_scheduled_events']:
+        if 'guild_scheduled_events' in guild:
+            for s in guild['guild_scheduled_events']:
                 scheduled_event = ScheduledEvent(data=s, state=self._state)
                 self._scheduled_events[scheduled_event.id] = scheduled_event
 
@@ -766,6 +769,14 @@ class Guild(Hashable):
         return None
 
     @property
+    def afk_channel(self) -> Optional[VocalGuildChannel]:
+        """Optional[Union[:class:`VoiceChannel`, :class:`StageChannel`]]: The channel that denotes the AFK channel.
+
+        If no channel is set, then this returns ``None``.
+        """
+        return self.get_channel(self._afk_channel_id)  # type: ignore
+
+    @property
     def system_channel(self) -> Optional[TextChannel]:
         """Optional[:class:`TextChannel`]: Returns the guild's channel used for system messages.
 
@@ -802,6 +813,17 @@ class Guild(Hashable):
         .. versionadded:: 1.4
         """
         channel_id = self._public_updates_channel_id
+        return channel_id and self._channels.get(channel_id)  # type: ignore
+
+    @property
+    def safety_alerts_channel(self) -> Optional[TextChannel]:
+        """Optional[:class:`TextChannel`]: Return's the guild's channel used for safety alerts, if set.
+
+        For example, this is used for the raid protection setting. The guild must have the ``COMMUNITY`` feature.
+
+        .. versionadded:: 2.3
+        """
+        channel_id = self._safety_alerts_channel_id
         return channel_id and self._channels.get(channel_id)  # type: ignore
 
     @property
@@ -1059,15 +1081,13 @@ class Guild(Hashable):
     def get_member_named(self, name: str, /) -> Optional[Member]:
         """Returns the first member found that matches the name provided.
 
-        The name can have an optional discriminator argument, e.g. "Jake#0001"
-        or "Jake" will both do the lookup. However the former will give a more
-        precise result. Note that the discriminator must have all 4 digits
-        for this to work.
+        The name is looked up in the following order:
 
-        If a nickname is passed, then it is looked up via the nickname. Note
-        however, that a nickname + discriminator combo will not lookup the nickname
-        but rather the username + discriminator combo due to nickname + discriminator
-        not being unique.
+        - Username#Discriminator (deprecated)
+        - Username#0 (deprecated, only gets users that migrated from their discriminator)
+        - Nickname
+        - Global name
+        - Username
 
         If no member is found, ``None`` is returned.
 
@@ -1075,10 +1095,14 @@ class Guild(Hashable):
 
             ``name`` parameter is now positional-only.
 
+        .. deprecated:: 2.3
+
+            Looking up users via discriminator due to Discord API change.
+
         Parameters
         -----------
         name: :class:`str`
-            The name of the member to lookup with an optional discriminator.
+            The name of the member to lookup.
 
         Returns
         --------
@@ -1087,22 +1111,19 @@ class Guild(Hashable):
             then ``None`` is returned.
         """
 
-        result = None
         members = self.members
-        if len(name) > 5 and name[-5] == '#':
-            # The 5 length is checking to see if #0000 is in the string,
-            # as a#0000 has a length of 6, the minimum for a potential
-            # discriminator lookup.
-            potential_discriminator = name[-4:]
 
-            # do the actual lookup and return if found
-            # if it isn't found then we'll do a full name lookup below.
-            result = utils.get(members, name=name[:-5], discriminator=potential_discriminator)
-            if result is not None:
-                return result
+        username, _, discriminator = name.rpartition('#')
+
+        # If # isn't found then "discriminator" actually has the username
+        if not username:
+            discriminator, username = username, discriminator
+
+        if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
+            return utils.find(lambda m: m.name == username and m.discriminator == discriminator, members)
 
         def pred(m: Member) -> bool:
-            return m.nick == name or m.name == name
+            return m.nick == name or m.global_name == name or m.name == name
 
         return utils.find(pred, members)
 
@@ -1306,7 +1327,7 @@ class Guild(Hashable):
         nsfw: :class:`bool`
             To mark the channel as NSFW or not.
         news: :class:`bool`
-             Whether to create the text channel as a news channel.
+            Whether to create the text channel as a news channel.
 
             .. versionadded:: 2.0
         default_auto_archive_duration: :class:`int`
@@ -1823,6 +1844,8 @@ class Guild(Hashable):
         widget_enabled: bool = MISSING,
         widget_channel: Optional[Snowflake] = MISSING,
         mfa_level: MFALevel = MISSING,
+        raid_alerts_disabled: bool = MISSING,
+        safety_alerts_channel: TextChannel = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1937,6 +1960,18 @@ class Guild(Hashable):
         reason: Optional[:class:`str`]
             The reason for editing this guild. Shows up on the audit log.
 
+        raid_alerts_disabled: :class:`bool`
+            Whether the alerts for raid protection should be disabled for the guild.
+
+            .. versionadded:: 2.3
+
+        safety_alerts_channel: Optional[:class:`TextChannel`]
+            The new channel that is used for safety alerts. This is only available to
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no
+            safety alerts channel.
+
+            .. versionadded:: 2.3
+
         Raises
         -------
         Forbidden
@@ -1948,9 +1983,9 @@ class Guild(Hashable):
             PNG or JPG. This is also raised if you are not the owner of the
             guild and request an ownership transfer.
         TypeError
-            The type passed to the ``default_notifications``, ``verification_level``,
-            ``explicit_content_filter``, ``system_channel_flags``, or ``mfa_level`` parameter was
-            of the incorrect type.
+            The type passed to the ``default_notifications``, ``rules_channel``, ``public_updates_channel``,
+            ``safety_alerts_channel`` ``verification_level``, ``explicit_content_filter``,
+            ``system_channel_flags``, or ``mfa_level`` parameter was of the incorrect type.
 
         Returns
         --------
@@ -2022,13 +2057,32 @@ class Guild(Hashable):
             if rules_channel is None:
                 fields['rules_channel_id'] = rules_channel
             else:
+                if not isinstance(rules_channel, TextChannel):
+                    raise TypeError(f'rules_channel must be of type TextChannel not {rules_channel.__class__.__name__}')
+
                 fields['rules_channel_id'] = rules_channel.id
 
         if public_updates_channel is not MISSING:
             if public_updates_channel is None:
                 fields['public_updates_channel_id'] = public_updates_channel
             else:
+                if not isinstance(public_updates_channel, TextChannel):
+                    raise TypeError(
+                        f'public_updates_channel must be of type TextChannel not {public_updates_channel.__class__.__name__}'
+                    )
+
                 fields['public_updates_channel_id'] = public_updates_channel.id
+
+        if safety_alerts_channel is not MISSING:
+            if safety_alerts_channel is None:
+                fields['safety_alerts_channel_id'] = safety_alerts_channel
+            else:
+                if not isinstance(safety_alerts_channel, TextChannel):
+                    raise TypeError(
+                        f'safety_alerts_channel must be of type TextChannel not {safety_alerts_channel.__class__.__name__}'
+                    )
+
+            fields['safety_alerts_channel_id'] = safety_alerts_channel.id
 
         if owner is not MISSING:
             if self.owner_id != self._state.self_id:
@@ -2054,7 +2108,7 @@ class Guild(Hashable):
 
             fields['system_channel_flags'] = system_channel_flags.value
 
-        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled)):
+        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled, raid_alerts_disabled)):
             features = set(self.features)
 
             if community is not MISSING:
@@ -2079,6 +2133,12 @@ class Guild(Hashable):
                     features.add('INVITES_DISABLED')
                 else:
                     features.discard('INVITES_DISABLED')
+
+            if raid_alerts_disabled is not MISSING:
+                if raid_alerts_disabled:
+                    features.add('RAID_ALERTS_DISABLED')
+                else:
+                    features.discard('RAID_ALERTS_DISABLED')
 
             fields['features'] = list(features)
 
@@ -2847,7 +2907,10 @@ class Guild(Hashable):
         payload['tags'] = emoji
 
         data = await self._state.http.create_guild_sticker(self.id, payload, file, reason)
-        return self._state.store_sticker(self, data)
+        if self._state.cache_guild_expressions:
+            return self._state.store_sticker(self, data)
+        else:
+            return GuildSticker(state=self._state, data=data)
 
     async def delete_sticker(self, sticker: Snowflake, /, *, reason: Optional[str] = None) -> None:
         """|coro|
@@ -3256,7 +3319,10 @@ class Guild(Hashable):
             role_ids = []
 
         data = await self._state.http.create_custom_emoji(self.id, name, img, roles=role_ids, reason=reason)
-        return self._state.store_emoji(self, data)
+        if self._state.cache_guild_expressions:
+            return self._state.store_emoji(self, data)
+        else:
+            return Emoji(guild=self, state=self._state, data=data)
 
     async def delete_emoji(self, emoji: Snowflake, /, *, reason: Optional[str] = None) -> None:
         """|coro|
@@ -3435,7 +3501,6 @@ class Guild(Hashable):
         data = await self._state.http.create_role(self.id, reason=reason, **fields)
         role = Role(guild=self, data=data, state=self._state)
 
-        # TODO: add to cache
         return role
 
     async def edit_role_positions(self, positions: Mapping[Snowflake, int], *, reason: Optional[str] = None) -> List[Role]:
@@ -3545,7 +3610,7 @@ class Guild(Hashable):
 
         The guild must have ``COMMUNITY`` in :attr:`~Guild.features`.
 
-        You must have :attr:`~Permissions.manage_guild` to do this.as well.
+        You must have :attr:`~Permissions.manage_guild` to do this as well.
 
         .. versionadded:: 2.0
 
@@ -3804,7 +3869,7 @@ class Guild(Hashable):
         async def _before_strategy(retrieve: int, before: Optional[Snowflake], limit: Optional[int]):
             before_id = before.id if before else None
             data = await self._state.http.get_audit_logs(
-                self.id, limit=retrieve, user_id=user_id, action_type=action, before=before_id
+                self.id, limit=retrieve, user_id=user_id, action_type=action_type, before=before_id
             )
 
             entries = data.get('audit_log_entries', [])
@@ -3820,7 +3885,7 @@ class Guild(Hashable):
         async def _after_strategy(retrieve: int, after: Optional[Snowflake], limit: Optional[int]):
             after_id = after.id if after else None
             data = await self._state.http.get_audit_logs(
-                self.id, limit=retrieve, user_id=user_id, action_type=action, after=after_id
+                self.id, limit=retrieve, user_id=user_id, action_type=action_type, after=after_id
             )
 
             entries = data.get('audit_log_entries', [])
@@ -3838,8 +3903,10 @@ class Guild(Hashable):
         else:
             user_id = None
 
-        if action:
-            action = action.value
+        if action is not MISSING:
+            action_type: Optional[AuditLogEvent] = action.value
+        else:
+            action_type = None
 
         if isinstance(before, datetime.datetime):
             before = Object(id=utils.time_snowflake(before, high=False))
@@ -3863,6 +3930,7 @@ class Guild(Hashable):
 
         # avoid circular import
         from .app_commands import AppCommand
+        from .webhook import Webhook
 
         while True:
             retrieve = 100 if limit is None else min(limit, 100)
@@ -3889,6 +3957,9 @@ class Guild(Hashable):
             )
             automod_rule_map = {rule.id: rule for rule in automod_rules}
 
+            webhooks = (Webhook.from_state(data=raw_webhook, state=self._state) for raw_webhook in data.get('webhooks', []))
+            webhook_map = {webhook.id: webhook for webhook in webhooks}
+
             count = 0
 
             for count, raw_entry in enumerate(raw_entries, 1):
@@ -3902,6 +3973,7 @@ class Guild(Hashable):
                     integrations=integration_map,
                     app_commands=app_command_map,
                     automod_rules=automod_rule_map,
+                    webhooks=webhook_map,
                     guild=self,
                 )
 

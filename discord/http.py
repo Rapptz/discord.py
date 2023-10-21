@@ -48,6 +48,7 @@ from typing import (
 from urllib.parse import quote as _uriquote
 from collections import deque
 import datetime
+import socket
 
 import aiohttp
 
@@ -67,7 +68,6 @@ if TYPE_CHECKING:
     from .embeds import Embed
     from .message import Attachment
     from .flags import MessageFlags
-    from .enums import AuditLogAction
 
     from .types import (
         appinfo,
@@ -90,6 +90,7 @@ if TYPE_CHECKING:
         scheduled_event,
         sticker,
         welcome_screen,
+        sku,
         soundboard,
     )
     from .types.snowflake import Snowflake, SnowflakeList
@@ -785,7 +786,8 @@ class HTTPClient:
     async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
-            self.connector = aiohttp.TCPConnector(limit=0)
+            # discord does not support ipv6
+            self.connector = aiohttp.TCPConnector(limit=0, family=socket.AF_INET)
 
         self.__session = aiohttp.ClientSession(
             connector=self.connector,
@@ -1374,9 +1376,11 @@ class HTTPClient:
         limit: int,
         before: Optional[Snowflake] = None,
         after: Optional[Snowflake] = None,
+        with_counts: bool = True,
     ) -> Response[List[guild.Guild]]:
         params: Dict[str, Any] = {
             'limit': limit,
+            'with_counts': int(with_counts),
         }
 
         if before:
@@ -1427,6 +1431,7 @@ class HTTPClient:
             'public_updates_channel_id',
             'preferred_locale',
             'premium_progress_bar_enabled',
+            'safety_alerts_channel_id',
         )
 
         payload = {k: v for k, v in fields.items() if k in valid_keys}
@@ -1723,7 +1728,7 @@ class HTTPClient:
         before: Optional[Snowflake] = None,
         after: Optional[Snowflake] = None,
         user_id: Optional[Snowflake] = None,
-        action_type: Optional[AuditLogAction] = None,
+        action_type: Optional[audit_log.AuditLogEvent] = None,
     ) -> Response[audit_log.AuditLog]:
         params: Dict[str, Any] = {'limit': limit}
         if before:
@@ -1915,6 +1920,7 @@ class HTTPClient:
             'topic',
             'privacy_level',
             'send_start_notification',
+            'guild_scheduled_event_id',
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
@@ -2369,6 +2375,81 @@ class HTTPClient:
         return self.request(
             Route('DELETE', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
             reason=reason,
+        )
+
+    # SKU
+
+    def get_skus(self, application_id: Snowflake) -> Response[List[sku.SKU]]:
+        return self.request(Route('GET', '/applications/{application_id}/skus', application_id=application_id))
+
+    def get_entitlements(
+        self,
+        application_id: Snowflake,
+        user_id: Optional[Snowflake] = None,
+        sku_ids: Optional[SnowflakeList] = None,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+        limit: Optional[int] = None,
+        guild_id: Optional[Snowflake] = None,
+        exclude_ended: Optional[bool] = None,
+    ) -> Response[List[sku.Entitlement]]:
+        params: Dict[str, Any] = {}
+
+        if user_id is not None:
+            params['user_id'] = user_id
+        if sku_ids is not None:
+            params['sku_ids'] = ','.join(map(str, sku_ids))
+        if before is not None:
+            params['before'] = before
+        if after is not None:
+            params['after'] = after
+        if limit is not None:
+            params['limit'] = limit
+        if guild_id is not None:
+            params['guild_id'] = guild_id
+        if exclude_ended is not None:
+            params['exclude_ended'] = int(exclude_ended)
+
+        return self.request(
+            Route('GET', '/applications/{application_id}/entitlements', application_id=application_id), params=params
+        )
+
+    def get_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[sku.Entitlement]:
+        return self.request(
+            Route(
+                'GET',
+                '/applications/{application_id}/entitlements/{entitlement_id}',
+                application_id=application_id,
+                entitlement_id=entitlement_id,
+            ),
+        )
+
+    def create_entitlement(
+        self, application_id: Snowflake, sku_id: Snowflake, owner_id: Snowflake, owner_type: sku.EntitlementOwnerType
+    ) -> Response[sku.Entitlement]:
+        payload = {
+            'sku_id': sku_id,
+            'owner_id': owner_id,
+            'owner_type': owner_type,
+        }
+
+        return self.request(
+            Route(
+                'POST',
+                '/applications/{application.id}/entitlements',
+                application_id=application_id,
+            ),
+            json=payload,
+        )
+
+    def delete_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[None]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/applications/{application_id}/entitlements/{entitlement_id}',
+                application_id=application_id,
+                entitlement_id=entitlement_id,
+            ),
         )
 
     # Soundboard

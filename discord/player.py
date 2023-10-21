@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import threading
 import subprocess
+import warnings
 import audioop
 import asyncio
 import logging
@@ -39,7 +40,7 @@ from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, T
 
 from .enums import SpeakingState
 from .errors import ClientException
-from .opus import Encoder as OpusEncoder
+from .opus import Encoder as OpusEncoder, OPUS_SILENCE
 from .oggparse import OggStream
 from .utils import MISSING
 
@@ -145,6 +146,8 @@ class FFmpegAudio(AudioSource):
     .. versionadded:: 1.3
     """
 
+    BLOCKSIZE: int = io.DEFAULT_BUFFER_SIZE
+
     def __init__(
         self,
         source: Union[str, io.BufferedIOBase],
@@ -153,12 +156,25 @@ class FFmpegAudio(AudioSource):
         args: Any,
         **subprocess_kwargs: Any,
     ):
-        piping = subprocess_kwargs.get('stdin') == subprocess.PIPE
-        if piping and isinstance(source, str):
+        piping_stdin = subprocess_kwargs.get('stdin') == subprocess.PIPE
+        if piping_stdin and isinstance(source, str):
             raise TypeError("parameter conflict: 'source' parameter cannot be a string when piping to stdin")
 
+        stderr: Optional[IO[bytes]] = subprocess_kwargs.pop('stderr', None)
+
+        if stderr == subprocess.PIPE:
+            warnings.warn("Passing subprocess.PIPE does nothing", DeprecationWarning, stacklevel=3)
+            stderr = None
+
+        piping_stderr = False
+        if stderr is not None:
+            try:
+                stderr.fileno()
+            except Exception:
+                piping_stderr = True
+
         args = [executable, *args]
-        kwargs = {'stdout': subprocess.PIPE}
+        kwargs = {'stdout': subprocess.PIPE, 'stderr': subprocess.PIPE if piping_stderr else stderr}
         kwargs.update(subprocess_kwargs)
 
         # Ensure attribute is assigned even in the case of errors
@@ -166,15 +182,24 @@ class FFmpegAudio(AudioSource):
         self._process = self._spawn_process(args, **kwargs)
         self._stdout: IO[bytes] = self._process.stdout  # type: ignore # process stdout is explicitly set
         self._stdin: Optional[IO[bytes]] = None
-        self._pipe_thread: Optional[threading.Thread] = None
+        self._stderr: Optional[IO[bytes]] = None
+        self._pipe_writer_thread: Optional[threading.Thread] = None
+        self._pipe_reader_thread: Optional[threading.Thread] = None
 
-        if piping:
-            n = f'popen-stdin-writer:{id(self):#x}'
+        if piping_stdin:
+            n = f'popen-stdin-writer:pid-{self._process.pid}'
             self._stdin = self._process.stdin
-            self._pipe_thread = threading.Thread(target=self._pipe_writer, args=(source,), daemon=True, name=n)
-            self._pipe_thread.start()
+            self._pipe_writer_thread = threading.Thread(target=self._pipe_writer, args=(source,), daemon=True, name=n)
+            self._pipe_writer_thread.start()
+
+        if piping_stderr:
+            n = f'popen-stderr-reader:pid-{self._process.pid}'
+            self._stderr = self._process.stderr
+            self._pipe_reader_thread = threading.Thread(target=self._pipe_reader, args=(stderr,), daemon=True, name=n)
+            self._pipe_reader_thread.start()
 
     def _spawn_process(self, args: Any, **subprocess_kwargs: Any) -> subprocess.Popen:
+        _log.debug('Spawning ffmpeg process with command: %s', args)
         process = None
         try:
             process = subprocess.Popen(args, creationflags=CREATE_NO_WINDOW, **subprocess_kwargs)
@@ -187,7 +212,8 @@ class FFmpegAudio(AudioSource):
             return process
 
     def _kill_process(self) -> None:
-        proc = self._process
+        # this function gets called in __del__ so instance attributes might not even exist
+        proc = getattr(self, '_process', MISSING)
         if proc is MISSING:
             return
 
@@ -207,10 +233,10 @@ class FFmpegAudio(AudioSource):
 
     def _pipe_writer(self, source: io.BufferedIOBase) -> None:
         while self._process:
-            # arbitrarily large read size
-            data = source.read(8192)
+            data = source.read(self.BLOCKSIZE)
             if not data:
-                self._process.terminate()
+                if self._stdin is not None:
+                    self._stdin.close()
                 return
             try:
                 if self._stdin is not None:
@@ -221,9 +247,27 @@ class FFmpegAudio(AudioSource):
                 self._process.terminate()
                 return
 
+    def _pipe_reader(self, dest: IO[bytes]) -> None:
+        while self._process:
+            if self._stderr is None:
+                return
+            try:
+                data: bytes = self._stderr.read(self.BLOCKSIZE)
+            except Exception:
+                _log.debug('Read error for %s, this is probably not a problem', self, exc_info=True)
+                return
+            if data is None:
+                return
+            try:
+                dest.write(data)
+            except Exception:
+                _log.exception('Write error for %s', self)
+                self._stderr.close()
+                return
+
     def cleanup(self) -> None:
         self._kill_process()
-        self._process = self._stdout = self._stdin = MISSING
+        self._process = self._stdout = self._stdin = self._stderr = MISSING
 
 
 class FFmpegPCMAudio(FFmpegAudio):
@@ -249,7 +293,6 @@ class FFmpegPCMAudio(FFmpegAudio):
         to the stdin of ffmpeg. Defaults to ``False``.
     stderr: Optional[:term:`py:file object`]
         A file-like object to pass to the Popen constructor.
-        Could also be an instance of ``subprocess.PIPE``.
     before_options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
     options: Optional[:class:`str`]
@@ -267,7 +310,7 @@ class FFmpegPCMAudio(FFmpegAudio):
         *,
         executable: str = 'ffmpeg',
         pipe: bool = False,
-        stderr: Optional[IO[str]] = None,
+        stderr: Optional[IO[bytes]] = None,
         before_options: Optional[str] = None,
         options: Optional[str] = None,
     ) -> None:
@@ -279,7 +322,14 @@ class FFmpegPCMAudio(FFmpegAudio):
 
         args.append('-i')
         args.append('-' if pipe else source)
-        args.extend(('-f', 's16le', '-ar', '48000', '-ac', '2', '-loglevel', 'warning'))
+
+        # fmt: off
+        args.extend(('-f', 's16le',
+                     '-ar', '48000',
+                     '-ac', '2',
+                     '-loglevel', 'warning',
+                     '-blocksize', str(self.BLOCKSIZE)))
+        # fmt: on
 
         if isinstance(options, str):
             args.extend(shlex.split(options))
@@ -347,7 +397,6 @@ class FFmpegOpusAudio(FFmpegAudio):
         to the stdin of ffmpeg. Defaults to ``False``.
     stderr: Optional[:term:`py:file object`]
         A file-like object to pass to the Popen constructor.
-        Could also be an instance of ``subprocess.PIPE``.
     before_options: Optional[:class:`str`]
         Extra command line arguments to pass to ffmpeg before the ``-i`` flag.
     options: Optional[:class:`str`]
@@ -380,7 +429,7 @@ class FFmpegOpusAudio(FFmpegAudio):
         args.append('-i')
         args.append('-' if pipe else source)
 
-        codec = 'copy' if codec in ('opus', 'libopus') else 'libopus'
+        codec = 'copy' if codec in ('opus', 'libopus', 'copy') else 'libopus'
         bitrate = bitrate if bitrate is not None else 128
 
         # fmt: off
@@ -390,7 +439,10 @@ class FFmpegOpusAudio(FFmpegAudio):
                      '-ar', '48000',
                      '-ac', '2',
                      '-b:a', f'{bitrate}k',
-                     '-loglevel', 'warning'))
+                     '-loglevel', 'warning',
+                     '-fec', 'true',
+                     '-packet_loss', '15',
+                     '-blocksize', str(self.BLOCKSIZE)))
         # fmt: on
 
         if isinstance(options, str):
@@ -642,8 +694,7 @@ class AudioPlayer(threading.Thread):
         *,
         after: Optional[Callable[[Optional[Exception]], Any]] = None,
     ) -> None:
-        threading.Thread.__init__(self)
-        self.daemon: bool = True
+        super().__init__(daemon=True, name=f'audio-player:{id(self):#x}')
         self.source: AudioSource = source
         self.client: VoiceClient = client
         self.after: Optional[Callable[[Optional[Exception]], Any]] = after
@@ -652,7 +703,6 @@ class AudioPlayer(threading.Thread):
         self._resumed: threading.Event = threading.Event()
         self._resumed.set()  # we are not paused
         self._current_error: Optional[Exception] = None
-        self._connected: threading.Event = client._connected
         self._lock: threading.Lock = threading.Lock()
 
         if after is not None and not callable(after):
@@ -663,35 +713,45 @@ class AudioPlayer(threading.Thread):
         self._start = time.perf_counter()
 
         # getattr lookup speed ups
-        play_audio = self.client.send_audio_packet
+        client = self.client
+        play_audio = client.send_audio_packet
         self._speak(SpeakingState.voice)
 
         while not self._end.is_set():
             # are we paused?
             if not self._resumed.is_set():
+                self.send_silence()
                 # wait until we aren't
                 self._resumed.wait()
                 continue
 
-            # are we disconnected from voice?
-            if not self._connected.is_set():
-                # wait until we are connected
-                self._connected.wait()
-                # reset our internal data
-                self.loops = 0
-                self._start = time.perf_counter()
-
-            self.loops += 1
             data = self.source.read()
 
             if not data:
                 self.stop()
                 break
 
+            # are we disconnected from voice?
+            if not client.is_connected():
+                _log.debug('Not connected, waiting for %ss...', client.timeout)
+                # wait until we are connected, but not forever
+                connected = client.wait_until_connected(client.timeout)
+                if self._end.is_set() or not connected:
+                    _log.debug('Aborting playback')
+                    return
+                _log.debug('Reconnected, resuming playback')
+                self._speak(SpeakingState.voice)
+                # reset our internal data
+                self.loops = 0
+                self._start = time.perf_counter()
+
             play_audio(data, encode=not self.source.is_opus())
+            self.loops += 1
             next_time = self._start + self.DELAY * self.loops
             delay = max(0, self.DELAY + (next_time - time.perf_counter()))
             time.sleep(delay)
+
+        self.send_silence()
 
     def run(self) -> None:
         try:
@@ -738,7 +798,7 @@ class AudioPlayer(threading.Thread):
     def is_paused(self) -> bool:
         return not self._end.is_set() and not self._resumed.is_set()
 
-    def _set_source(self, source: AudioSource) -> None:
+    def set_source(self, source: AudioSource) -> None:
         with self._lock:
             self.pause(update_speaking=False)
             self.source = source
@@ -749,3 +809,11 @@ class AudioPlayer(threading.Thread):
             asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.client.loop)
         except Exception:
             _log.exception("Speaking call in player failed")
+
+    def send_silence(self, count: int = 5) -> None:
+        try:
+            for n in range(count):
+                self.client.send_audio_packet(OPUS_SILENCE, encode=False)
+        except Exception:
+            # Any possible error (probably a socket error) is so inconsequential it's not even worth logging
+            pass

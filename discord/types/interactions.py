@@ -27,7 +27,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
 from typing_extensions import NotRequired
 
-from .channel import ChannelTypeWithoutThread, ThreadMetadata
+from .channel import ChannelTypeWithoutThread, ThreadMetadata, GuildChannel, InteractionDMChannel, GroupDMChannel
+from .sku import Entitlement
 from .threads import ThreadType
 from .member import Member
 from .message import Attachment
@@ -204,9 +205,12 @@ class _BaseInteraction(TypedDict):
     version: Literal[1]
     guild_id: NotRequired[Snowflake]
     channel_id: NotRequired[Snowflake]
+    channel: Union[GuildChannel, InteractionDMChannel, GroupDMChannel]
     app_permissions: NotRequired[str]
     locale: NotRequired[str]
     guild_locale: NotRequired[str]
+    entitlement_sku_ids: NotRequired[List[Snowflake]]
+    entitlements: NotRequired[List[Entitlement]]
 
 
 class PingInteraction(_BaseInteraction):

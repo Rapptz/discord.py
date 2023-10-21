@@ -64,6 +64,7 @@ class Modal(View):
 
     .. code-block:: python3
 
+        import discord
         from discord import ui
 
         class Questionnaire(ui.Modal, title='Questionnaire Response'):

@@ -251,7 +251,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         if command is None:
             raise ValueError('interaction does not have command data')
 
-        bot: BotT = interaction.client  # type: ignore
+        bot: BotT = interaction.client
         data: ApplicationCommandInteractionData = interaction.data  # type: ignore
         if interaction.message is None:
             synthetic_payload = {
@@ -429,6 +429,14 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         if self.command is None:
             return None
         return self.command.cog
+
+    @property
+    def filesize_limit(self) -> int:
+        """:class:`int`: Returns the maximum number of bytes files can have when uploaded to this guild or DM channel associated with this context.
+
+        .. versionadded:: 2.3
+        """
+        return self.guild.filesize_limit if self.guild is not None else discord.utils.DEFAULT_FILE_SIZE_LIMIT_BYTES
 
     @discord.utils.cached_property
     def guild(self) -> Optional[Guild]:
