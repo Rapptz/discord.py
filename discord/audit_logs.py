@@ -402,6 +402,16 @@ class AuditLogChanges:
             elif attr == '$remove':
                 self._handle_role(self.after, self.before, entry, elem['new_value'])  # type: ignore # new_value is a list of roles in this case
                 continue
+            elif attr == 'trigger_metadata':
+                self._handle_trigger_metadata(entry, elem, data)
+                continue
+            elif entry.action is enums.AuditLogAction.automod_rule_update and attr.startswith('$'):
+                action, _, trigger_attr = attr.partition('_')
+                if action == '$add':
+                    ...
+                elif action == '$remove':
+                    ...
+
 
             try:
                 key, transformer = self.TRANSFORMERS[attr]
@@ -478,6 +488,58 @@ class AuditLogChanges:
         state = entry._state
         guild = entry.guild
         diff.app_command_permissions.append(AppCommandPermissions(data=data, guild=guild, state=state))
+
+    def _handle_trigger_metadata(
+        self,
+        entry: AuditLogEntry,
+        data: AuditLogChangePayload,
+        full_data: List[AuditLogChangePayload],
+    ):
+        trigger_value: Optional[int] = None
+        trigger_type: Optional[enums.AutoModRuleTriggerType] = None
+
+        # try to get trigger type from before or after
+        if entry.category is enums.AuditLogActionCategory.delete:
+            trigger_type = getattr(self.before, 'trigger_type', None)
+        elif entry.category is enums.AuditLogActionCategory.create:
+            trigger_type = getattr(self.after, 'trigger_type', None)
+
+
+        if trigger_type is None:
+            if isinstance(entry.target, AutoModRule):
+                # Trigger type cannot be changed, so type should be the same before and after updates.
+                # Avoids checking which keys are in data to guess trigger type
+                trigger_value = entry.target.trigger.type.value
+        else:
+            # found a trigger type from before or after
+            trigger_value = trigger_type.value
+
+        if trigger_value is None:
+            # try to find trigger type in the full list of changes
+            for _elem in full_data:
+                if _elem['key'] == 'trigger_type':
+                    trigger_value = _elem.get('old_value', _elem.get('new_value'))
+                    if trigger_value is not None:
+                        break
+
+            if trigger_value is None:
+                # try to infer trigger_type from the keys in data
+                # don't care about the values yet so just get all keys that appear
+                combined = data.get('old_value', {}).keys() | data.get('old_value', {}).keys()
+                if not combined:
+                    trigger_value = enums.AutoModRuleTriggerType.spam.value
+                elif 'presets' in combined:
+                    trigger_value = enums.AutoModRuleTriggerType.keyword_preset.value
+                elif 'keyword_filter' in combined or 'regex_patterns' in combined:
+                    trigger_value = enums.AutoModRuleTriggerType.keyword.value
+                elif 'mention_total_limit' in combined or 'mention_raid_protection_enabled' in combined:
+                    trigger_value = enums.AutoModRuleTriggerType.mention_spam.value
+                else:
+                    # some unknown type
+                    trigger_value = -1
+
+        self.before.trigger = AutoModTrigger.from_data(trigger_value, data.get('old_value'))
+        self.after.trigger = AutoModTrigger.from_data(trigger_value, data.get('new_value'))
 
 
 class _AuditLogProxy:
