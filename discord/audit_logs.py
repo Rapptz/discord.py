@@ -33,7 +33,7 @@ from .invite import Invite
 from .mixins import Hashable
 from .object import Object
 from .permissions import PermissionOverwrite, Permissions
-from .automod import AutoModTrigger, AutoModRuleAction, AutoModPresets, AutoModRule
+from .automod import AutoModTrigger, AutoModRuleAction, AutoModRule
 from .role import Role
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
@@ -234,33 +234,24 @@ def _transform_automod_trigger_metadata(
     entry: AuditLogEntry, data: AutoModerationTriggerMetadata
 ) -> Optional[AutoModTrigger]:
 
+    # Try to get trigger type from target.trigger or infer from keys in data
     if isinstance(entry.target, AutoModRule):
         # Trigger type cannot be changed, so type should be the same before and after updates.
         # Avoids checking which keys are in data to guess trigger type
-        # or returning None if data is empty.
-        try:
-            return AutoModTrigger.from_data(type=entry.target.trigger.type.value, data=data)
-        except Exception:
-            pass
-
-    # Try to infer trigger type from available keys in data
-    if 'presets' in data:
-        return AutoModTrigger(
-            type=enums.AutoModRuleTriggerType.keyword_preset,
-            presets=AutoModPresets._from_value(data['presets']),  # type: ignore
-            allow_list=data.get('allow_list'),
-        )
-    elif 'keyword_filter' in data:
-        return AutoModTrigger(
-            type=enums.AutoModRuleTriggerType.keyword,
-            keyword_filter=data['keyword_filter'],  # type: ignore
-            allow_list=data.get('allow_list'),
-            regex_patterns=data.get('regex_patterns'),
-        )
-    elif 'mention_total_limit' in data:
-        return AutoModTrigger(type=enums.AutoModRuleTriggerType.mention_spam, mention_limit=data['mention_total_limit'])  # type: ignore
+        _type = entry.target.trigger.type.value
+    elif not data:
+        _type = enums.AutoModRuleTriggerType.spam.value
+    elif 'presets' in data:
+        _type = enums.AutoModRuleTriggerType.keyword_preset.value
+    elif 'keyword_filter' in data or 'regex_patterns' in data:
+        _type = enums.AutoModRuleTriggerType.keyword.value
+    elif 'mention_total_limit' in data or 'mention_raid_protection_enabled' in data:
+        _type = enums.AutoModRuleTriggerType.mention_spam.value
     else:
-        return AutoModTrigger(type=enums.AutoModRuleTriggerType.spam)
+        # some unknown type
+        _type = -1
+
+    return AutoModTrigger.from_data(type=_type, data=data)
 
 
 def _transform_automod_actions(entry: AuditLogEntry, data: List[AutoModerationAction]) -> List[AutoModRuleAction]:

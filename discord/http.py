@@ -90,6 +90,7 @@ if TYPE_CHECKING:
         scheduled_event,
         sticker,
         welcome_screen,
+        sku,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -2373,6 +2374,81 @@ class HTTPClient:
         return self.request(
             Route('DELETE', '/guilds/{guild_id}/auto-moderation/rules/{rule_id}', guild_id=guild_id, rule_id=rule_id),
             reason=reason,
+        )
+
+    # SKU
+
+    def get_skus(self, application_id: Snowflake) -> Response[List[sku.SKU]]:
+        return self.request(Route('GET', '/applications/{application_id}/skus', application_id=application_id))
+
+    def get_entitlements(
+        self,
+        application_id: Snowflake,
+        user_id: Optional[Snowflake] = None,
+        sku_ids: Optional[SnowflakeList] = None,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+        limit: Optional[int] = None,
+        guild_id: Optional[Snowflake] = None,
+        exclude_ended: Optional[bool] = None,
+    ) -> Response[List[sku.Entitlement]]:
+        params: Dict[str, Any] = {}
+
+        if user_id is not None:
+            params['user_id'] = user_id
+        if sku_ids is not None:
+            params['sku_ids'] = ','.join(map(str, sku_ids))
+        if before is not None:
+            params['before'] = before
+        if after is not None:
+            params['after'] = after
+        if limit is not None:
+            params['limit'] = limit
+        if guild_id is not None:
+            params['guild_id'] = guild_id
+        if exclude_ended is not None:
+            params['exclude_ended'] = int(exclude_ended)
+
+        return self.request(
+            Route('GET', '/applications/{application_id}/entitlements', application_id=application_id), params=params
+        )
+
+    def get_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[sku.Entitlement]:
+        return self.request(
+            Route(
+                'GET',
+                '/applications/{application_id}/entitlements/{entitlement_id}',
+                application_id=application_id,
+                entitlement_id=entitlement_id,
+            ),
+        )
+
+    def create_entitlement(
+        self, application_id: Snowflake, sku_id: Snowflake, owner_id: Snowflake, owner_type: sku.EntitlementOwnerType
+    ) -> Response[sku.Entitlement]:
+        payload = {
+            'sku_id': sku_id,
+            'owner_id': owner_id,
+            'owner_type': owner_type,
+        }
+
+        return self.request(
+            Route(
+                'POST',
+                '/applications/{application.id}/entitlements',
+                application_id=application_id,
+            ),
+            json=payload,
+        )
+
+    def delete_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[sku.Entitlement]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/applications/{application_id}/entitlements/{entitlement_id}',
+                application_id=application_id,
+                entitlement_id=entitlement_id,
+            ),
         )
 
     # Misc
