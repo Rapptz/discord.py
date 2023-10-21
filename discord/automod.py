@@ -135,6 +135,10 @@ class AutoModRuleAction:
             raise ValueError('Only one of channel_id, duration, or custom_message can be passed.')
 
         self.type: AutoModRuleActionType
+        self.channel_id: Optional[int] = None
+        self.duration: Optional[datetime.timedelta] = None
+        self.custom_message: Optional[str] = None
+
         if type is not None:
             self.type = type
         elif channel_id is not None:
@@ -147,14 +151,15 @@ class AutoModRuleAction:
         if self.type is AutoModRuleActionType.send_alert_message:
             if channel_id is None:
                 raise ValueError('channel_id cannot be None if type is send_alert_message')
-            self.channel_id: Optional[int] = channel_id
+            self.channel_id = channel_id
 
         if self.type is AutoModRuleActionType.timeout:
             if duration is None:
                 raise ValueError('duration cannot be None set if type is timeout')
-            self.duration: Optional[datetime.timedelta] = duration
+            self.duration = duration
 
-        self.custom_message: Optional[str] = custom_message
+        if self.type is AutoModRuleActionType.block_message:
+            self.custom_message = custom_message
 
     def __repr__(self) -> str:
         return f'<AutoModRuleAction type={self.type.value} channel={self.channel_id} duration={self.duration}>'
