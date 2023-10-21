@@ -92,7 +92,7 @@ class SKU:
 
     @property
     def flags(self) -> SKUFlags:
-        """Returns the flags of the SKU."""
+        """:class:`SKUFlags`: Returns the flags of the SKU."""
         return SKUFlags._from_value(self._flags)
 
     @property
@@ -158,14 +158,14 @@ class Entitlement:
 
     @property
     def user(self) -> Optional[User]:
-        """The user that is granted access to the entitlement"""
+        """Optional[:class:`User`]: The user that is granted access to the entitlement."""
         if self.user_id is None:
             return None
         return self._state.get_user(self.user_id)
 
     @property
     def guild(self) -> Optional[Guild]:
-        """The guild that is granted access to the entitlement"""
+        """Optional[:class:`Guild`]: The guild that is granted access to the entitlement."""
         return self._state._get_guild(self.guild_id)
 
     @property

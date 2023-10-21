@@ -4804,14 +4804,6 @@ SKU
 .. autoclass:: SKU()
     :members:
 
-SKUFlags
-~~~~~~~~~~~
-
-.. attributetable:: SKUFlags
-
-.. autoclass:: SKUFlags()
-    :members:
-
 Entitlement
 ~~~~~~~~~~~
 
@@ -5187,6 +5179,14 @@ RoleFlags
 .. attributetable:: RoleFlags
 
 .. autoclass:: RoleFlags
+    :members:
+
+SKUFlags
+~~~~~~~~~~~
+
+.. attributetable:: SKUFlags
+
+.. autoclass:: SKUFlags()
     :members:
 
 ForumTag
