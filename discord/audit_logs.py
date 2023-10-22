@@ -384,11 +384,9 @@ class AuditLogChanges:
                 self._handle_trigger_metadata(entry, elem, data)
                 continue
             elif entry.action is enums.AuditLogAction.automod_rule_update and attr.startswith('$'):
-                # on update, trigger attributes are keys and formatted as $(add/remove)_{attribute}
-                # ex. $add_allow_list, $remove_regex_patterns
-                # only contains the added or removed strings, not the full before and after state
+                # on update, some trigger attributes are keys and formatted as $(add/remove)_{attribute}
                 action, _, trigger_attr = attr.partition('_')
-                # new_value should be a list of strings for keyword_filter, regex_patterns, or allow_list
+                # new_value should be a list of added/removed strings for keyword_filter, regex_patterns, or allow_list
                 if action == '$add':
                     self._handle_trigger_attr_update(self.before, self.after, entry, trigger_attr, elem['new_value'])  # type: ignore
                 elif action == '$remove':
@@ -497,13 +495,11 @@ class AuditLogChanges:
             for _elem in full_data:
                 if _elem['key'] == 'trigger_type':
                     trigger_value = _elem.get('old_value', _elem.get('new_value'))
-                    if trigger_value is not None:
-                        break
+                    break
 
             if trigger_value is None:
-                # try to infer trigger_type from the keys in data
-                # don't care about the values yet so just get all keys that appear
-                combined = data.get('old_value', {}).keys() | data.get('new_value', {}).keys()  # type: ignore  # data values should be trigger metadata dict
+                # try to infer trigger_type from the keys in old or new value
+                combined = data.get('old_value', {}).keys() | data.get('new_value', {}).keys()  # type: ignore  # data values should be trigger metadata
                 if not combined:
                     trigger_value = enums.AutoModRuleTriggerType.spam.value
                 elif 'presets' in combined:
