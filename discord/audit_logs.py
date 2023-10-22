@@ -61,7 +61,7 @@ if TYPE_CHECKING:
     from .types.audit_log import (
         AuditLogChange as AuditLogChangePayload,
         AuditLogEntry as AuditLogEntryPayload,
-        _AuditLogChange_TriggerMetadata as AuditLogChangeTriggerMetadataPayload
+        _AuditLogChange_TriggerMetadata as AuditLogChangeTriggerMetadataPayload,
     )
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,

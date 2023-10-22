@@ -37,7 +37,7 @@ from .role import Role
 from .channel import ChannelType, DefaultReaction, PrivacyLevel, VideoQualityMode, PermissionOverwrite, ForumTag
 from .threads import Thread
 from .command import ApplicationCommand, ApplicationCommandPermissions
-from.automod import AutoModerationTriggerMetadata
+from .automod import AutoModerationTriggerMetadata
 
 AuditLogEvent = Literal[
     1,
