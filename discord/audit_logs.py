@@ -357,7 +357,7 @@ class AuditLogChanges:
         'image_hash':                            ('cover_image', _transform_cover_image),
         'trigger_type':                          (None, _enum_transformer(enums.AutoModRuleTriggerType)),
         'event_type':                            (None, _enum_transformer(enums.AutoModRuleEventType)),
-        'trigger_metadata':                      ('trigger', _transform_automod_trigger_metadata),
+        #'trigger_metadata':                      ('trigger', _transform_automod_trigger_metadata),
         'actions':                               (None, _transform_automod_actions),
         'exempt_channels':                       (None, _transform_channels_or_threads),
         'exempt_roles':                          (None, _transform_roles),
@@ -402,16 +402,23 @@ class AuditLogChanges:
             elif attr == '$remove':
                 self._handle_role(self.after, self.before, entry, elem['new_value'])  # type: ignore # new_value is a list of roles in this case
                 continue
-            elif attr == 'trigger_metadata':
+
+            # special case for automod trigger
+            if attr == 'trigger_metadata':
+                # given full metadata dict
                 self._handle_trigger_metadata(entry, elem, data)
                 continue
             elif entry.action is enums.AuditLogAction.automod_rule_update and attr.startswith('$'):
+                # on update, trigger attributes are keys and formatted as $(add/remove)_{attribute}
+                # ex. $add_allow_list, $remove_regex_patterns
+                # only contains the added or removed strings, not the full before and after state
                 action, _, trigger_attr = attr.partition('_')
+                # new_value should be a list of strings for keyword_filter, regex_patterns, or allow_list
                 if action == '$add':
-                    ...
+                    self._handle_trigger_attr_update(self.before, self.after, entry, trigger_attr, elem['new_value'])  # type: ignore
                 elif action == '$remove':
-                    ...
-
+                    self._handle_trigger_attr_update(self.after, self.before, entry, trigger_attr, elem['new_value'])  # type: ignore
+                continue
 
             try:
                 key, transformer = self.TRANSFORMERS[attr]
@@ -499,11 +506,7 @@ class AuditLogChanges:
         trigger_type: Optional[enums.AutoModRuleTriggerType] = None
 
         # try to get trigger type from before or after
-        if entry.category is enums.AuditLogActionCategory.delete:
-            trigger_type = getattr(self.before, 'trigger_type', None)
-        elif entry.category is enums.AuditLogActionCategory.create:
-            trigger_type = getattr(self.after, 'trigger_type', None)
-
+        trigger_type = getattr(self.before, 'trigger_type', getattr(self.after, 'trigger_type', None))
 
         if trigger_type is None:
             if isinstance(entry.target, AutoModRule):
@@ -525,7 +528,7 @@ class AuditLogChanges:
             if trigger_value is None:
                 # try to infer trigger_type from the keys in data
                 # don't care about the values yet so just get all keys that appear
-                combined = data.get('old_value', {}).keys() | data.get('old_value', {}).keys()
+                combined = data.get('old_value', {}).keys() | data.get('new_value', {}).keys()  # type: ignore  # data values should be trigger metadata dict
                 if not combined:
                     trigger_value = enums.AutoModRuleTriggerType.spam.value
                 elif 'presets' in combined:
@@ -540,6 +543,32 @@ class AuditLogChanges:
 
         self.before.trigger = AutoModTrigger.from_data(trigger_value, data.get('old_value'))
         self.after.trigger = AutoModTrigger.from_data(trigger_value, data.get('new_value'))
+
+    def _handle_trigger_attr_update(
+            self,
+            first: AuditLogDiff,
+            second: AuditLogDiff,
+            entry: AuditLogEntry,
+            attr: str,
+            data: List
+        ):
+        self._create_trigger(first, entry)
+        trigger = self._create_trigger(second, entry)
+        getattr(trigger, attr, []).extend(data)
+
+    def _create_trigger(self, diff: AuditLogDiff, entry: AuditLogEntry) -> AutoModTrigger:
+        # check if trigger has already been created
+        if not hasattr(diff, 'trigger'):
+            # create a trigger
+            if isinstance(entry.target, AutoModRule):
+                # get trigger type from the automod rule
+                trigger_type = entry.target.trigger.type
+            else:
+                # unknown trigger type
+                trigger_type = enums.try_enum(enums.AutoModRuleTriggerType, -1)
+
+            diff.trigger = AutoModTrigger(type=trigger_type)
+        return diff.trigger
 
 
 class _AuditLogProxy:
