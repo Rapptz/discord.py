@@ -954,8 +954,14 @@ Enabled by adding the :func:`.app_commands.guild_only` decorator when defining a
     async def roulette(interaction: discord.Interaction):
         assert interaction.guild is not None
 
-        victim = random.choice(interaction.guild.members)
+        members = interaction.guild.members
+        victim = random.choice(members)
         await victim.ban(reason='unlucky')
+
+        chance = 1 / len(members)
+        await interaction.response.send_message(
+            f'{victim.name} was chosen... ({chance:.2f}% chance)'
+        )
 
 Default permissions
 ++++++++++++++++++++
@@ -983,7 +989,7 @@ To prevent this, :func:`~.app_commands.guild_only` can also be added.
 
 .. warning::
 
-    This can be overridden to a different set of permissions by server administrators
+    Default permissions can be overridden to a different set of permissions by server administrators
     through the "Integrations" tab on the Discord client,
     meaning, an invoking user might not actually have the permissions specified in the decorator.
 
