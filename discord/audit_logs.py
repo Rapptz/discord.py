@@ -71,7 +71,7 @@ if TYPE_CHECKING:
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
     from .types.command import ApplicationCommandPermissions
-    from .types.automod import AutoModerationTriggerMetadata, AutoModerationAction
+    from .types.automod import AutoModerationAction
     from .user import User
     from .app_commands import AppCommand
     from .webhook import Webhook
@@ -230,30 +230,6 @@ def _guild_hash_transformer(path: str) -> Callable[[AuditLogEntry, Optional[str]
     return _transform
 
 
-def _transform_automod_trigger_metadata(
-    entry: AuditLogEntry, data: AutoModerationTriggerMetadata
-) -> Optional[AutoModTrigger]:
-
-    # Try to get trigger type from target.trigger or infer from keys in data
-    if isinstance(entry.target, AutoModRule):
-        # Trigger type cannot be changed, so type should be the same before and after updates.
-        # Avoids checking which keys are in data to guess trigger type
-        _type = entry.target.trigger.type.value
-    elif not data:
-        _type = enums.AutoModRuleTriggerType.spam.value
-    elif 'presets' in data:
-        _type = enums.AutoModRuleTriggerType.keyword_preset.value
-    elif 'keyword_filter' in data or 'regex_patterns' in data:
-        _type = enums.AutoModRuleTriggerType.keyword.value
-    elif 'mention_total_limit' in data or 'mention_raid_protection_enabled' in data:
-        _type = enums.AutoModRuleTriggerType.mention_spam.value
-    else:
-        # some unknown type
-        _type = -1
-
-    return AutoModTrigger.from_data(type=_type, data=data)
-
-
 def _transform_automod_actions(entry: AuditLogEntry, data: List[AutoModerationAction]) -> List[AutoModRuleAction]:
     return [AutoModRuleAction.from_data(action) for action in data]
 
@@ -357,7 +333,6 @@ class AuditLogChanges:
         'image_hash':                            ('cover_image', _transform_cover_image),
         'trigger_type':                          (None, _enum_transformer(enums.AutoModRuleTriggerType)),
         'event_type':                            (None, _enum_transformer(enums.AutoModRuleEventType)),
-        #'trigger_metadata':                      ('trigger', _transform_automod_trigger_metadata),
         'actions':                               (None, _transform_automod_actions),
         'exempt_channels':                       (None, _transform_channels_or_threads),
         'exempt_roles':                          (None, _transform_roles),
@@ -510,7 +485,7 @@ class AuditLogChanges:
 
         if trigger_type is None:
             if isinstance(entry.target, AutoModRule):
-                # Trigger type cannot be changed, so type should be the same before and after updates.
+                # Trigger type cannot be changed, so it should be the same before and after updates.
                 # Avoids checking which keys are in data to guess trigger type
                 trigger_value = entry.target.trigger.type.value
         else:
@@ -545,16 +520,14 @@ class AuditLogChanges:
         self.after.trigger = AutoModTrigger.from_data(trigger_value, data.get('new_value'))
 
     def _handle_trigger_attr_update(
-            self,
-            first: AuditLogDiff,
-            second: AuditLogDiff,
-            entry: AuditLogEntry,
-            attr: str,
-            data: List
-        ):
+        self, first: AuditLogDiff, second: AuditLogDiff, entry: AuditLogEntry, attr: str, data: List[str]
+    ):
         self._create_trigger(first, entry)
         trigger = self._create_trigger(second, entry)
-        getattr(trigger, attr, []).extend(data)
+        try:
+            getattr(trigger, attr, []).extend(data)
+        except AttributeError:
+            pass
 
     def _create_trigger(self, diff: AuditLogDiff, entry: AuditLogEntry) -> AutoModTrigger:
         # check if trigger has already been created
