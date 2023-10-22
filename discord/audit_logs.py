@@ -521,8 +521,9 @@ class AuditLogChanges:
         self._create_trigger(first, entry)
         trigger = self._create_trigger(second, entry)
         try:
-            getattr(trigger, attr, []).extend(data)
-        except AttributeError:
+            # guard unexpecte non list attributes or non iterable data
+            getattr(trigger, attr).extend(data)
+        except (AttributeError, TypeError):
             pass
 
     def _create_trigger(self, diff: AuditLogDiff, entry: AuditLogEntry) -> AutoModTrigger:
