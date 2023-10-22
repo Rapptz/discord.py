@@ -512,8 +512,8 @@ class AuditLogChanges:
                     # some unknown type
                     trigger_value = -1
 
-        self.before.trigger = AutoModTrigger.from_data(trigger_value, data.get('old_value')) # type: ignore  # data values should be trigger metadata
-        self.after.trigger = AutoModTrigger.from_data(trigger_value, data.get('new_value')) # type: ignore  # data values should be trigger metadata
+        self.before.trigger = AutoModTrigger.from_data(trigger_value, data.get('old_value'))  # type: ignore  # data values should be trigger metadata
+        self.after.trigger = AutoModTrigger.from_data(trigger_value, data.get('new_value'))  # type: ignore  # data values should be trigger metadata
 
     def _handle_trigger_attr_update(
         self, first: AuditLogDiff, second: AuditLogDiff, entry: AuditLogEntry, attr: str, data: List[str]
