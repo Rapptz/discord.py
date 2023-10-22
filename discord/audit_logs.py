@@ -494,7 +494,7 @@ class AuditLogChanges:
             # try to find trigger type in the full list of changes
             for _elem in full_data:
                 if _elem['key'] == 'trigger_type':
-                    trigger_value = _elem.get('old_value', _elem.get('new_value'))
+                    trigger_value = _elem.get('old_value', _elem.get('new_value'))  # type: ignore  # trigger type values should be int
                     break
 
             if trigger_value is None:
@@ -512,8 +512,8 @@ class AuditLogChanges:
                     # some unknown type
                     trigger_value = -1
 
-        self.before.trigger = AutoModTrigger.from_data(trigger_value, data.get('old_value'))
-        self.after.trigger = AutoModTrigger.from_data(trigger_value, data.get('new_value'))
+        self.before.trigger = AutoModTrigger.from_data(trigger_value, data.get('old_value')) # type: ignore  # data values should be trigger metadata
+        self.after.trigger = AutoModTrigger.from_data(trigger_value, data.get('new_value')) # type: ignore  # data values should be trigger metadata
 
     def _handle_trigger_attr_update(
         self, first: AuditLogDiff, second: AuditLogDiff, entry: AuditLogEntry, attr: str, data: List[str]
