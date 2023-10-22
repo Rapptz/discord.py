@@ -61,6 +61,7 @@ if TYPE_CHECKING:
     from .types.audit_log import (
         AuditLogChange as AuditLogChangePayload,
         AuditLogEntry as AuditLogEntryPayload,
+        _AuditLogChange_TriggerMetadata as AuditLogChangeTriggerMetadataPayload
     )
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
@@ -381,7 +382,7 @@ class AuditLogChanges:
             # special case for automod trigger
             if attr == 'trigger_metadata':
                 # given full metadata dict
-                self._handle_trigger_metadata(entry, elem, data)
+                self._handle_trigger_metadata(entry, elem, data)  # type: ignore  # should be trigger metadata
                 continue
             elif entry.action is enums.AuditLogAction.automod_rule_update and attr.startswith('$'):
                 # on update, some trigger attributes are keys and formatted as $(add/remove)_{attribute}
@@ -472,7 +473,7 @@ class AuditLogChanges:
     def _handle_trigger_metadata(
         self,
         entry: AuditLogEntry,
-        data: AuditLogChangePayload,
+        data: AuditLogChangeTriggerMetadataPayload,
         full_data: List[AuditLogChangePayload],
     ):
         trigger_value: Optional[int] = None
@@ -492,14 +493,13 @@ class AuditLogChanges:
 
         if trigger_value is None:
             # try to find trigger type in the full list of changes
-            for _elem in full_data:
-                if _elem['key'] == 'trigger_type':
-                    trigger_value = _elem.get('old_value', _elem.get('new_value'))  # type: ignore  # trigger type values should be int
-                    break
+            _elem = utils.find(lambda elem: elem['key'] == 'trigger_type', full_data)
+            if _elem is not None:
+                trigger_value = _elem.get('old_value', _elem.get('new_value'))  # type: ignore  # trigger type values should be int
 
             if trigger_value is None:
                 # try to infer trigger_type from the keys in old or new value
-                combined = data.get('old_value', {}).keys() | data.get('new_value', {}).keys()  # type: ignore  # data values should be trigger metadata
+                combined = (data.get('old_value') or {}).keys() | (data.get('new_value') or {}).keys()
                 if not combined:
                     trigger_value = enums.AutoModRuleTriggerType.spam.value
                 elif 'presets' in combined:
@@ -512,8 +512,8 @@ class AuditLogChanges:
                     # some unknown type
                     trigger_value = -1
 
-        self.before.trigger = AutoModTrigger.from_data(trigger_value, data.get('old_value'))  # type: ignore  # data values should be trigger metadata
-        self.after.trigger = AutoModTrigger.from_data(trigger_value, data.get('new_value'))  # type: ignore  # data values should be trigger metadata
+        self.before.trigger = AutoModTrigger.from_data(trigger_value, data.get('old_value'))
+        self.after.trigger = AutoModTrigger.from_data(trigger_value, data.get('new_value'))
 
     def _handle_trigger_attr_update(
         self, first: AuditLogDiff, second: AuditLogDiff, entry: AuditLogEntry, attr: str, data: List[str]
