@@ -36,6 +36,7 @@ from .snowflake import Snowflake
 from .role import Role
 from .channel import ChannelType, DefaultReaction, PrivacyLevel, VideoQualityMode, PermissionOverwrite, ForumTag
 from .threads import Thread
+from .automod import AutoModerationTriggerMetadata
 
 AuditLogEvent = Literal[
     1,
@@ -271,6 +272,12 @@ class _AuditLogChange_DefaultReactionEmoji(TypedDict):
     old_value: Optional[DefaultReaction]
 
 
+class _AuditLogChange_TriggerMetadata(TypedDict):
+    key: Literal['trigger_metadata']
+    new_value: Optional[AutoModerationTriggerMetadata]
+    old_value: Optional[AutoModerationTriggerMetadata]
+
+
 AuditLogChange = Union[
     _AuditLogChange_Str,
     _AuditLogChange_AssetHash,
@@ -292,6 +299,7 @@ AuditLogChange = Union[
     _AuditLogChange_AppliedTags,
     _AuditLogChange_AvailableTags,
     _AuditLogChange_DefaultReactionEmoji,
+    _AuditLogChange_TriggerMetadata,
 ]
 
 
