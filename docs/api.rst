@@ -4132,6 +4132,12 @@ AuditLogDiff
 
         The trigger for the automod rule.
 
+        .. note ::
+
+            The :attr:`~AutoModTrigger.type` of the trigger may be incorrect.
+            Some attributes such as :attr:`~AutoModTrigger.keyword_filter`, :attr:`~AutoModTrigger.regex_patterns`,
+            and :attr:`~AutoModTrigger.allow_list` will only have the added or removed values.
+
         :type: :class:`AutoModTrigger`
 
     .. attribute:: actions
