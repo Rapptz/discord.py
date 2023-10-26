@@ -611,8 +611,12 @@ class Client:
         if not isinstance(token, str):
             raise TypeError(f'expected token to be a str, received {token.__class__.__name__} instead')
         token = token.strip()
-
-        data = await self.http.static_login(token)
+        try:
+            data = await self.http.static_login(token)
+        except Exception as e:
+            _log.info(e)
+            
+        
         self._connection.user = ClientUser(state=self._connection, data=data)
         self._application = await self.application_info()
         if self._connection.application_id is None:
