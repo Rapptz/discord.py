@@ -553,6 +553,11 @@ class Guild(Hashable):
                 scheduled_event = ScheduledEvent(data=s, state=self._state)
                 self._scheduled_events[scheduled_event.id] = scheduled_event
 
+        if 'soundboard_sounds' in guild:
+            for s in guild['soundboard_sounds']:
+                soundboard_sound = SoundboardSound(data=s, state=self._state)
+                self._soundboard_sounds[soundboard_sound.id] = soundboard_sound
+
     @property
     def channels(self) -> Sequence[GuildChannel]:
         """Sequence[:class:`abc.GuildChannel`]: A list of channels that belongs to this guild."""
@@ -1001,6 +1006,31 @@ class Guild(Hashable):
             The scheduled event or ``None`` if not found.
         """
         return self._scheduled_events.get(scheduled_event_id)
+
+    @property
+    def soundboard_sounds(self) -> Sequence[SoundboardSound]:
+        """Sequence[:class:`SoundboardSound`]: Returns a sequence of the guild's soundboard sounds.
+
+        .. versionadded:: 2.4
+        """
+        return utils.SequenceProxy(self._soundboard_sounds.values())
+
+    def get_soundboard_sound(self, sound_id: int, /) -> Optional[SoundboardSound]:
+        """Returns a soundboard sound with the given ID.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        sound_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`SoundboardSound`]
+            The soundboard sound or ``None`` if not found.
+        """
+        return self._scheduled_events.get(sound_id)
 
     @property
     def owner(self) -> Optional[Member]:
@@ -4295,3 +4325,68 @@ class Guild(Hashable):
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)
+
+    async def create_soundboard_sound(
+        self,
+        *,
+        name: str,
+        sound: bytes,
+        volume: Optional[float] = None,
+        emoji: Optional[EmojiInputType] = None,
+        reason: Optional[str] = None,
+    ) -> SoundboardSound:
+        """|coro|
+
+        Creates a :class:`SoundboardSound` for the guild.
+        You must have :attr:`Permissions.manage_expressions` to do this.
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The name of the sound. Must be between 2 and 32 characters.
+        sound: :class:`bytes`
+            The :term:`py:bytes-like object` representing the sound data.
+            Only MP3 sound files that don't exceed the duration of 5.2s are supported.
+        volume: Optional[:class:`float`]
+            The volume of the sound. Must be between 0 and 1.
+        emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
+            The emoji of the sound.
+        reason: Optional[:class:`str`]
+            The reason for creating the sound. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to create a soundboard sound.
+        HTTPException
+            Creating the soundboard sound failed.
+
+        Returns
+        -------
+        :class:`SoundboardSound`
+            The newly created soundboard sound.
+        """
+        payload: Dict[str, Any] = {
+            'name': name,
+            'sound': utils._bytes_to_base64_data(sound),
+            'volume': volume,
+            'emoji_id': None,
+            'emoji_name': None,
+        }
+
+        if emoji is not None:
+            if isinstance(emoji, _EmojiTag):
+                partial_emoji = emoji._to_partial()
+            elif isinstance(emoji, str):
+                partial_emoji = PartialEmoji.from_str(emoji)
+            else:
+                partial_emoji = None
+
+            if partial_emoji is not None:
+                if partial_emoji.id is None:
+                    payload['emoji_name'] = partial_emoji.name
+                else:
+                    payload['emoji_id'] = partial_emoji.id
+
+        data = await self._state.http.create_soundboard_sound(self.id, reason=reason, **payload)
+        return SoundboardSound(state=self._state, data=data)

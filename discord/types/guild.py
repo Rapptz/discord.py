@@ -37,6 +37,7 @@ from .member import Member
 from .emoji import Emoji
 from .user import User
 from .threads import Thread
+from .soundboard import SoundboardSound
 
 
 class Ban(TypedDict):
@@ -149,7 +150,7 @@ class Guild(_BaseGuildPreview):
     max_members: NotRequired[int]
     premium_subscription_count: NotRequired[int]
     max_video_channel_users: NotRequired[int]
-
+    soundboard_sounds: NotRequired[List[SoundboardSound]]
 
 class InviteGuild(Guild, total=False):
     welcome_screen: WelcomeScreen

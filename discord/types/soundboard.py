@@ -29,23 +29,22 @@ from .user import User
 
 
 class BaseSoundboardSound(TypedDict):
-    sound_id: Union[str, int]
+    sound_id: Union[Snowflake, str]  # basic string number when it's a default sound
     volume: float
-    override_path: Optional[str]
-
-
-class DefaultSoundboardSound(BaseSoundboardSound):
-    name: str
-    emoji_id: Optional[Snowflake]
-    emoji_name: str
-    user_id: Snowflake
 
 
 class SoundboardSound(BaseSoundboardSound):
     name: str
+    emoji_name: Optional[str]
     emoji_id: Optional[Snowflake]
-    emoji_name: str
     user_id: Snowflake
     available: bool
     guild_id: Snowflake
     user: User
+
+
+class SoundboardDefaultSound(BaseSoundboardSound):
+    name: str
+    emoji_name: str
+    emoji_id: Optional[Snowflake]
+    user_id: Snowflake

@@ -69,7 +69,6 @@ from .flags import ChannelFlags
 from .http import handle_message_parameters
 from .object import Object
 from .soundboard import BaseSoundboardSound
-from .utils import snowflake_time
 
 __all__ = (
     'TextChannel',
@@ -134,7 +133,7 @@ class VoiceChannelEffectAnimation(NamedTuple):
 class VoiceChannelSoundEffect(BaseSoundboardSound):
     """Represents a Discord voice channel sound effect.
 
-    .. versionadded:: 2.3
+    .. versionadded:: 2.4
 
     .. container:: operations
 
@@ -156,20 +155,16 @@ class VoiceChannelSoundEffect(BaseSoundboardSound):
         The ID of the sound.
     volume: :class:`float`
         The volume of the sound as floating point percentage (e.g. ``1.0`` for 100%).
-    override_path: Optional[:class:`str`]
-        The override path of the sound (e.g. 'default_quack.mp3').
     """
 
     __slots__ = ('_state',)
 
-    def __init__(self, *, state: ConnectionState, id: int, volume: float, override_path: Optional[str]):
-        self._state: ConnectionState = state
+    def __init__(self, *, state: ConnectionState, id: int, volume: float):
         data: BaseSoundboardSoundPayload = {
             'sound_id': id,
             'volume': volume,
-            'override_path': override_path,
         }
-        super().__init__(data=data)
+        super().__init__(state=state, data=data)
 
     def __repr__(self) -> str:
         attrs = [
@@ -181,33 +176,23 @@ class VoiceChannelSoundEffect(BaseSoundboardSound):
 
     @property
     def created_at(self) -> Optional[datetime.datetime]:
-        """:class:`datetime.datetime`: Returns the snowflake's creation time in UTC.
+        """Optional[:class:`datetime.datetime`]: Returns the snowflake's creation time in UTC.
         Returns ``None`` if it's a default sound."""
         if self.is_default():
             return None
         else:
-            return snowflake_time(self.id)
+            return utils.snowflake_time(self.id)
 
-    async def is_default(self) -> bool:
-        """|coro|
-
-        Checks if the sound is a default sound.
-
-        Returns
-        ---------
-        :class:`bool`
-            Whether it's a default sound or not.
-        """
-        default_sounds = await self._state.http.get_default_soundboard_sounds()
-        default_sounds = [int(sound['sound_id']) for sound in default_sounds]
-
-        return self.id in default_sounds
+    def is_default(self) -> bool:
+        """:class:`bool`: Whether it's a default sound or not."""
+        # if it's smaller than the Discord Epoch it cannot be a snowflake
+        return self.id < 1420070400000
 
 
 class VoiceChannelEffect:
     """Represents a Discord voice channel effect.
 
-    .. versionadded:: 2.3
+    .. versionadded:: 2.4
 
     Attributes
     ------------
@@ -235,17 +220,14 @@ class VoiceChannelEffect:
             animation_type = try_enum(VoiceChannelEffectAnimationType, data['animation_type'])  # type: ignore # cannot be None here
             self.animation = VoiceChannelEffectAnimation(id=animation_id, type=animation_type)
 
-        emoji = data['emoji']
+        emoji = data.get('emoji')
         self.emoji: Optional[PartialEmoji] = PartialEmoji.from_dict(emoji) if emoji is not None else None
         self.sound: Optional[VoiceChannelSoundEffect] = None
 
         sound_id: Optional[int] = utils._get_as_snowflake(data, 'sound_id')
         if sound_id is not None:
             sound_volume = data['sound_volume']  # type: ignore # sound_volume cannot be None here
-            sound_override_path = data.get('sound_override_path')
-            self.sound = VoiceChannelSoundEffect(
-                state=state, id=sound_id, volume=sound_volume, override_path=sound_override_path
-            )
+            self.sound = VoiceChannelSoundEffect(state=state, id=sound_id, volume=sound_volume)
 
     def __repr__(self) -> str:
         attrs = [

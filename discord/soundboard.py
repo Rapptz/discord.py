@@ -28,25 +28,31 @@ from typing import TYPE_CHECKING, Optional
 
 from . import utils
 from .mixins import Hashable
-from .partial_emoji import PartialEmoji
+from .partial_emoji import PartialEmoji, _EmojiTag
 from .user import User
+from .utils import MISSING
 
 if TYPE_CHECKING:
+    import datetime
+    from typing import Dict, Any
+
     from .types.soundboard import (
         BaseSoundboardSound as BaseSoundboardSoundPayload,
-        DefaultSoundboardSound as DefaultSoundboardSoundPayload,
+        SoundboardDefaultSound as SoundboardDefaultSoundPayload,
         SoundboardSound as SoundboardSoundPayload,
     )
     from .state import ConnectionState
     from .guild import Guild
+    from .asset import Asset
+    from .message import EmojiInputType
 
-__all__ = ('DefaultSoundboardSound', 'SoundboardSound')
+__all__ = ('SoundboardDefaultSound', 'SoundboardSound')
 
 
 class BaseSoundboardSound(Hashable):
     """Represents a generic Discord soundboard sound.
 
-    .. versionadded:: 2.3
+    .. versionadded:: 2.4
 
     .. container:: operations
 
@@ -68,15 +74,13 @@ class BaseSoundboardSound(Hashable):
         The ID of the sound.
     volume: :class:`float`
         The volume of the sound as floating point percentage (e.g. ``1.0`` for 100%).
-    override_path: Optional[:class:`str`]
-        The override path of the sound (e.g. 'default_quack.mp3').
     """
 
-    __slots__ = ('id', 'volume', 'override_path')
+    __slots__ = ('_state', 'id', 'volume')
 
-    def __init__(self, *, data: BaseSoundboardSoundPayload):
+    def __init__(self, *, state: ConnectionState, data: BaseSoundboardSoundPayload):
+        self._state: ConnectionState = state
         self.id: int = int(data['sound_id'])
-        self.override_path: Optional[str] = data['override_path']
         self._update(data)
 
     def __eq__(self, other: object) -> bool:
@@ -84,16 +88,22 @@ class BaseSoundboardSound(Hashable):
             return self.id == other.id
         return NotImplemented
 
-    __hash__ = Hashable.__hash__
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
     def _update(self, data: BaseSoundboardSoundPayload):
         self.volume: float = data['volume']
 
+    @property
+    def file(self) -> Asset:
+        """:class:`Asset`: Returns the sound file asset."""
+        return Asset._from_soundboard_sound(self._state, self.id)
 
-class DefaultSoundboardSound(BaseSoundboardSound):
-    """Represents a Discord default soundboard sound.
 
-    .. versionadded:: 2.3
+class SoundboardDefaultSound(BaseSoundboardSound):
+    """Represents a Discord soundboard default sound.
+
+    .. versionadded:: 2.4
 
     .. container:: operations
 
@@ -115,8 +125,6 @@ class DefaultSoundboardSound(BaseSoundboardSound):
         The ID of the sound.
     volume: :class:`float`
         The volume of the sound as floating point percentage (e.g. ``1.0`` for 100%).
-    override_path: Optional[:class:`str`]
-        The override path of the sound (e.g. 'default_quack.mp3').
     name: :class:`str`
         The name of the sound.
     emoji: :class:`PartialEmoji`
@@ -125,10 +133,10 @@ class DefaultSoundboardSound(BaseSoundboardSound):
 
     __slots__ = ('name', 'emoji')
 
-    def __init__(self, *, data: DefaultSoundboardSoundPayload):
+    def __init__(self, *, state: ConnectionState, data: SoundboardDefaultSoundPayload):
         self.name: str = data['name']
-        self.emoji: PartialEmoji = PartialEmoji(name=data['emoji_name'])
-        super().__init__(data=data)
+        self.emoji: PartialEmoji = PartialEmoji(name=data['emoji_name'], id=utils._get_as_snowflake(data, 'emoji_id'))
+        super().__init__(state=state, data=data)
 
     def __repr__(self) -> str:
         attrs = [
@@ -144,7 +152,7 @@ class DefaultSoundboardSound(BaseSoundboardSound):
 class SoundboardSound(BaseSoundboardSound):
     """Represents a Discord soundboard sound.
 
-    .. versionadded:: 2.3
+    .. versionadded:: 2.4
 
     .. container:: operations
 
@@ -166,8 +174,6 @@ class SoundboardSound(BaseSoundboardSound):
         The ID of the sound.
     volume: :class:`float`
         The volume of the sound as floating point percentage (e.g. ``1.0`` for 100%).
-    override_path: Optional[:class:`str`]
-        The override path of the sound (e.g. 'default_quack.mp3').
     name: :class:`str`
         The name of the sound.
     emoji: :class:`PartialEmoji`
@@ -183,13 +189,11 @@ class SoundboardSound(BaseSoundboardSound):
     __slots__ = ('_state', 'guild_id', 'name', 'emoji', 'user', 'available')
 
     def __init__(self, *, state: ConnectionState, data: SoundboardSoundPayload):
-        super().__init__(data=data)
-        self._state: ConnectionState = state
-        self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
+        super().__init__(state=state, data=data)
+        self.guild_id: int = int(data['guild_id'])
 
         user = data.get('user')
         self.user: Optional[User] = User(state=self._state, data=user) if user is not None else None
-
         self._update(data)
 
     def __repr__(self) -> str:
@@ -212,7 +216,7 @@ class SoundboardSound(BaseSoundboardSound):
         emoji_id = utils._get_as_snowflake(data, 'emoji_id')
         emoji_name = data['emoji_name']
         if emoji_id is not None or emoji_name is not None:
-            self.emoji = PartialEmoji(id=emoji_id, name=emoji_name)
+            self.emoji = PartialEmoji(id=emoji_id, name=emoji_name)  # type: ignore # emoji_name cannot be None here
 
         self.available: bool = data['available']
 
@@ -220,3 +224,90 @@ class SoundboardSound(BaseSoundboardSound):
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`Guild`]: The guild in which the sound is uploaded."""
         return self._state._get_guild(self.guild_id)
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: Returns the snowflake's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+    async def edit(
+        self,
+        name: str = MISSING,
+        volume: Optional[float] = MISSING,
+        emoji: Optional[EmojiInputType] = MISSING,
+        reason: Optional[str] = None,
+    ):
+        """|coro|
+
+        Edits the soundboard sound.
+
+        You must have :attr:`~Permissions.manage_expressions` to edit the sound.
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The new name of the sound. Must be between 2 and 32 characters.
+        volume: Optional[:class:`float`]
+            The new volume of the sound. Must be between 0 and 1.
+        emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
+            The new emoji of the sound.
+        reason: Optional[:class:`str`]
+            The reason for editing this sound. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to edit the soundboard sound.
+        HTTPException
+            Editing the soundboard sound failed.
+
+        Returns
+        -------
+        :class:`SoundboardSound`
+            The newly updated soundboard sound.
+        """
+
+        payload: Dict[str, Any] = {}
+
+        if name is not MISSING:
+            payload['name'] = name
+
+        if volume is not MISSING:
+            payload['volume'] = volume
+
+        if emoji is not MISSING:
+            if emoji is None:
+                payload['emoji_id'] = None
+                payload['emoji_name'] = None
+            else:
+                if isinstance(emoji, _EmojiTag):
+                    partial_emoji = emoji._to_partial()
+                elif isinstance(emoji, str):
+                    partial_emoji = PartialEmoji.from_str(emoji)
+                else:
+                    partial_emoji = None
+
+                if partial_emoji is not None:
+                    if partial_emoji.id is None:
+                        payload['emoji_name'] = partial_emoji.name
+                    else:
+                        payload['emoji_id'] = partial_emoji.id
+
+        data = await self._state.http.edit_soundboard_sound(self.guild_id, self.id, reason=reason, **payload)
+        return SoundboardSound(state=self._state, data=data)
+
+    async def delete(self, *, reason: Optional[str] = None) -> None:
+        """|coro|
+
+        Deletes the soundboard sound.
+
+        You must have :attr:`~Permissions.manage_expressions` to delete the sound.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to delete the soundboard sound.
+        HTTPException
+            Deleting the soundboard sound failed.
+        """
+        await self._state.http.delete_soundboard_sound(self.guild_id, self.id, reason=reason)

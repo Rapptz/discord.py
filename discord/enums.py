@@ -809,7 +809,7 @@ class EntitlementOwnerType(Enum):
 
 class VoiceChannelEffectAnimationType(Enum):
     premium = 0
-    normal = 1
+    basic = 1
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

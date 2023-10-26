@@ -1528,6 +1528,7 @@ class ConnectionState(Generic[ClientT]):
             _log.debug('SCHEDULED_EVENT_USER_REMOVE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_guild_soundboard_sound_create(self, data: gw.GuildSoundBoardSoundCreateEvent) -> None:
+        print("SOUNDBOARD_SOUND_CREATE\n" "-----------------------\n" f"{data}\n")
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             sound = SoundboardSound(state=self, data=data)
@@ -1537,6 +1538,7 @@ class ConnectionState(Generic[ClientT]):
             _log.debug('GUILD_SOUNDBOARD_SOUND_CREATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_guild_soundboard_sound_update(self, data: gw.GuildSoundBoardSoundCreateEvent) -> None:
+        print("SOUNDBOARD_SOUND_UPDATE\n" "-----------------------\n" f"{data}\n")
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             sound = guild._soundboard_sounds.get(int(data['sound_id']))
@@ -1550,6 +1552,7 @@ class ConnectionState(Generic[ClientT]):
             _log.debug('GUILD_SOUNDBOARD_SOUND_UPDATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
     def parse_guild_soundboard_sound_delete(self, data: gw.GuildSoundBoardSoundDeleteEvent) -> None:
+        print("SOUNDBOARD_SOUND_DELETE\n" "-----------------------\n" f"{data}\n")
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
             try:

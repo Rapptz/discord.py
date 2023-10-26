@@ -90,16 +90,18 @@ class VoiceChannel(_BaseTextChannel):
     video_quality_mode: NotRequired[VideoQualityMode]
 
 
+VoiceChannelEffectAnimationType = Literal[0, 1]
+
+
 class VoiceChannelEffect(TypedDict):
     guild_id: Snowflake
     channel_id: Snowflake
     user_id: Snowflake
-    emoji: Optional[PartialEmoji]
-    animation_type: NotRequired[int]
+    emoji: NotRequired[Optional[PartialEmoji]]
+    animation_type: NotRequired[VoiceChannelEffectAnimationType]
     animation_id: NotRequired[int]
     sound_id: NotRequired[Union[int, str]]
     sound_volume: NotRequired[float]
-    sound_override_path: NotRequired[Optional[str]]
 
 
 class CategoryChannel(_BaseGuildChannel):

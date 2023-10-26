@@ -77,7 +77,7 @@ from .ui.dynamic import DynamicItem
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
-from .soundboard import DefaultSoundboardSound
+from .soundboard import SoundboardDefaultSound
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -2889,12 +2889,12 @@ class Client:
         data = await self.http.list_premium_sticker_packs()
         return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
 
-    async def fetch_default_soundboard_sounds(self) -> List[DefaultSoundboardSound]:
+    async def fetch_soundboard_default_sounds(self) -> List[SoundboardDefaultSound]:
         """|coro|
 
         Retrieves all default soundboard sounds.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
 
         Raises
         -------
@@ -2903,11 +2903,11 @@ class Client:
 
         Returns
         ---------
-        List[:class:`.DefaultSoundboardSound`]
+        List[:class:`SoundboardDefaultSound`]
             All default soundboard sounds.
         """
-        data = await self.http.get_default_soundboard_sounds()
-        return [DefaultSoundboardSound(data=sound) for sound in data]
+        data = await self.http.get_soundboard_default_sounds()
+        return [SoundboardDefaultSound(state=self._connection, data=sound) for sound in data]
 
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|
