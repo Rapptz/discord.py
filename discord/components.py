@@ -576,7 +576,7 @@ class SelectDefaultValue:
     @classmethod
     def from_channel(cls, channel: Snowflake, /) -> Self:
         """Creates a :class:`SelectDefaultValue` with the type set to :attr:`~SelectDefaultValueType.channel`.
-        
+
         Parameters
         -----------
         channel: :class:`~discord.abc.Snowflake`
@@ -614,7 +614,7 @@ class SelectDefaultValue:
     @classmethod
     def from_user(cls, user: Snowflake, /) -> Self:
         """Creates a :class:`SelectDefaultValue` with the type set to :attr:`~SelectDefaultValueType.user`.
-        
+
         Parameters
         -----------
         user: :class:`~discord.abc.Snowflake`
