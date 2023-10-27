@@ -92,12 +92,12 @@ Getting all entries made by a specific user
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Perhaps we wanted to check to see if a specific mod in our guild is possibly inactive. We could 
-achieve this by finding out how many actions they have performed in the past 90 days, like so:
+achieve this by finding out how many actions they have performed in the past 45 days, like so:
 
 .. code-block:: python3
 
     entries = [entry async for entry in guild.audit_logs(user=message.author)]
-    await channel.send(f'{message.author} has made {len(entries)} moderation actions in the last 90 days.')
+    await channel.send(f'{message.author} has made {len(entries)} moderation actions in the last 45 days.')
 
 Sorting entries from oldest to newest
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
