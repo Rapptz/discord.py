@@ -55,7 +55,7 @@ Getting Audit Logs
 
 Audit logs can be retrieved via :func:`guild.audit_logs`, assuming you have the :attr:`~Permissions.view_audit_log` permission. 
 
-Note that this function returns an :class:`AsyncIterator` and so to properly go through the audit logs, you will need to iterate over them.
+Note that this function returns an :term:`asynchronous iterator` and so to properly go through the audit logs, you will need to iterate over them.
 
 Examples
 ==========
