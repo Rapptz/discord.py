@@ -577,10 +577,6 @@ class DiscordWebSocket:
         else:
             func(data)
 
-        print(f"{event}\n"
-              f"----------------------------\n"
-              f"{data}\n\n")
-
         # remove the dispatched listeners
         removed = []
         for index, entry in enumerate(self._dispatch_listeners):
@@ -757,6 +753,17 @@ class DiscordWebSocket:
         }
 
         _log.debug('Updating our voice state to %s.', payload)
+        await self.send_as_json(payload)
+
+    async def request_soundboard_sounds(self, guild_ids: List[int]) -> None:
+        payload = {
+            'op': self.REQUEST_SOUNDBOARD_SOUNDS,
+            'd': {
+                'guild_ids': guild_ids,
+            },
+        }
+
+        _log.debug('Sending "%s" to request soundboard sounds', payload)
         await self.send_as_json(payload)
 
     async def close(self, code: int = 4000) -> None:

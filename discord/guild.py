@@ -93,6 +93,7 @@ from .object import OLDEST_OBJECT, Object
 from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 from .partial_emoji import _EmojiTag, PartialEmoji
+from .soundboard import SoundboardSound
 
 
 __all__ = (
@@ -134,7 +135,6 @@ if TYPE_CHECKING:
     from .types.widget import EditWidgetSettings
     from .types.audit_log import AuditLogEvent
     from .message import EmojiInputType
-    from .soundboard import SoundboardSound
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
@@ -384,6 +384,12 @@ class Guild(Hashable):
             del self._threads[k]
         return to_remove
 
+    def _add_soundboard_sound(self, sound: SoundboardSound, /) -> None:
+        self._soundboard_sounds[sound.id] = sound
+
+    def _remove_soundboard_sound(self, sound: SoundboardSound, /) -> None:
+        self._soundboard_sounds.pop(sound.id, None)
+
     def __str__(self) -> str:
         return self.name or ''
 
@@ -556,7 +562,7 @@ class Guild(Hashable):
         if 'soundboard_sounds' in guild:
             for s in guild['soundboard_sounds']:
                 soundboard_sound = SoundboardSound(data=s, state=self._state)
-                self._soundboard_sounds[soundboard_sound.id] = soundboard_sound
+                self._add_soundboard_sound(soundboard_sound)
 
     @property
     def channels(self) -> Sequence[GuildChannel]:
@@ -1030,7 +1036,7 @@ class Guild(Hashable):
         Optional[:class:`SoundboardSound`]
             The soundboard sound or ``None`` if not found.
         """
-        return self._scheduled_events.get(sound_id)
+        return self._soundboard_sounds.get(sound_id)
 
     @property
     def owner(self) -> Optional[Member]:
@@ -4331,7 +4337,7 @@ class Guild(Hashable):
         *,
         name: str,
         sound: bytes,
-        volume: Optional[float] = None,
+        volume: float = 1,
         emoji: Optional[EmojiInputType] = None,
         reason: Optional[str] = None,
     ) -> SoundboardSound:
@@ -4340,6 +4346,8 @@ class Guild(Hashable):
         Creates a :class:`SoundboardSound` for the guild.
         You must have :attr:`Permissions.manage_expressions` to do this.
 
+        .. versionadded:: 2.4
+
         Parameters
         ----------
         name: :class:`str`
@@ -4347,8 +4355,8 @@ class Guild(Hashable):
         sound: :class:`bytes`
             The :term:`py:bytes-like object` representing the sound data.
             Only MP3 sound files that don't exceed the duration of 5.2s are supported.
-        volume: Optional[:class:`float`]
-            The volume of the sound. Must be between 0 and 1.
+        volume: :class:`float`
+            The volume of the sound. Must be between 0 and 1. Defaults to ``1``.
         emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
             The emoji of the sound.
         reason: Optional[:class:`str`]
@@ -4390,3 +4398,30 @@ class Guild(Hashable):
 
         data = await self._state.http.create_soundboard_sound(self.id, reason=reason, **payload)
         return SoundboardSound(state=self._state, data=data)
+
+    async def request_soundboard_sounds(self, *, cache: bool = True) -> List[SoundboardSound]:
+        """|coro|
+
+        Requests the soundboard sounds of the guild.
+
+        This is a websocket operation and can be slow.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        ----------
+        cache: :class:`bool`
+            Whether to cache the soundboard sounds internally. Defaults to ``True``.
+
+        Raises
+        -------
+        asyncio.TimeoutError
+            The query timed out waiting for the sounds.
+
+        Returns
+        --------
+        List[:class:`SoundboardSound`]
+            A list of guilds with it's requested soundboard sounds.
+        """
+
+        return await self._state.request_soundboard_sounds(self, cache=cache)

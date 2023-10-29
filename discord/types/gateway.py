@@ -360,3 +360,8 @@ class GuildAuditLogEntryCreate(AuditLogEntry):
 
 
 EntitlementCreateEvent = EntitlementUpdateEvent = EntitlementDeleteEvent = Entitlement
+
+
+class SoundboardSoundsRequestEvent(TypedDict):
+    guild_id: Snowflake
+    soundboard_sounds: List[SoundboardSound]

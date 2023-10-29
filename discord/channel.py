@@ -186,7 +186,7 @@ class VoiceChannelSoundEffect(BaseSoundboardSound):
     def is_default(self) -> bool:
         """:class:`bool`: Whether it's a default sound or not."""
         # if it's smaller than the Discord Epoch it cannot be a snowflake
-        return self.id < 1420070400000
+        return self.id < utils.DISCORD_EPOCH
 
 
 class VoiceChannelEffect:

@@ -46,7 +46,7 @@ if TYPE_CHECKING:
     from .asset import Asset
     from .message import EmojiInputType
 
-__all__ = ('SoundboardDefaultSound', 'SoundboardSound')
+__all__ = ('BaseSoundboardSound', 'SoundboardDefaultSound', 'SoundboardSound')
 
 
 class BaseSoundboardSound(Hashable):
@@ -176,8 +176,8 @@ class SoundboardSound(BaseSoundboardSound):
         The volume of the sound as floating point percentage (e.g. ``1.0`` for 100%).
     name: :class:`str`
         The name of the sound.
-    emoji: :class:`PartialEmoji`
-        The emoji of the sound.
+    emoji: Optional[:class:`PartialEmoji`]
+        The emoji of the sound. ``None`` if no emoji is set.
     guild_id: Optional[:class:`int`]
         The ID of the guild in which the sound is uploaded.
     user: Optional[:class:`User`]
@@ -302,6 +302,11 @@ class SoundboardSound(BaseSoundboardSound):
         Deletes the soundboard sound.
 
         You must have :attr:`~Permissions.manage_expressions` to delete the sound.
+
+        Parameters
+        -----------
+        reason: Optional[:class:`str`]
+            The reason for deleting this sound. Shows up on the audit log.
 
         Raises
         -------

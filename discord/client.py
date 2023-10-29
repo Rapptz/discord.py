@@ -2903,7 +2903,7 @@ class Client:
 
         Returns
         ---------
-        List[:class:`SoundboardDefaultSound`]
+        List[:class:`.SoundboardDefaultSound`]
             All default soundboard sounds.
         """
         data = await self.http.get_soundboard_default_sounds()

@@ -1265,7 +1265,7 @@ Soundboard
 
     Called when a :class:`SoundboardSound` is created or deleted.
 
-    .. versionadded:: 2.3
+    .. versionadded:: 2.4
 
     :param sound: The soundboard sound that was created or deleted.
     :type sound: :class:`SoundboardSound`
@@ -1280,7 +1280,7 @@ Soundboard
     - The emoji is changed.
     - The volume is changed.
 
-    .. versionadded:: 2.3
+    .. versionadded:: 2.4
 
     :param sound: The soundboard sound that was updated.
     :type sound: :class:`SoundboardSound`
@@ -2930,7 +2930,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.emoji`
         - :attr:`~AuditLogDiff.volume`
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
 
     .. attribute:: soundboard_sound_update
 
@@ -2942,7 +2942,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.emoji`
         - :attr:`~AuditLogDiff.volume`
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
 
     .. attribute:: soundboard_sound_delete
 
@@ -2954,7 +2954,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.emoji`
         - :attr:`~AuditLogDiff.volume`
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.4
 
 .. class:: AuditLogActionCategory
 
@@ -4926,20 +4926,28 @@ GuildSticker
 .. autoclass:: GuildSticker()
     :members:
 
+BaseSoundboardSound
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: BaseSoundboardSound
+
+.. autoclass:: BaseSoundboardSound()
+    :members:
+
+SoundboardDefaultSound
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SoundboardDefaultSound
+
+.. autoclass:: SoundboardDefaultSound()
+    :members:
+
 SoundboardSound
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 .. attributetable:: SoundboardSound
 
 .. autoclass:: SoundboardSound()
-    :members:
-
-DefaultSoundboardSound
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. attributetable:: DefaultSoundboardSound
-
-.. autoclass:: DefaultSoundboardSound()
     :members:
 
 ShardInfo

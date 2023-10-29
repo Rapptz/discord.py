@@ -152,6 +152,7 @@ class Guild(_BaseGuildPreview):
     max_video_channel_users: NotRequired[int]
     soundboard_sounds: NotRequired[List[SoundboardSound]]
 
+
 class InviteGuild(Guild, total=False):
     welcome_screen: WelcomeScreen
 
