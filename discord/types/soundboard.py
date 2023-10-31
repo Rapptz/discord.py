@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import TypedDict, Optional, Union
+from typing_extensions import NotRequired
 
 from .snowflake import Snowflake
 from .user import User
@@ -39,7 +40,7 @@ class SoundboardSound(BaseSoundboardSound):
     emoji_id: Optional[Snowflake]
     user_id: Snowflake
     available: bool
-    guild_id: Snowflake
+    guild_id: NotRequired[Snowflake]
     user: User
 
 

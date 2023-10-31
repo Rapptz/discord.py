@@ -561,7 +561,7 @@ class Guild(Hashable):
 
         if 'soundboard_sounds' in guild:
             for s in guild['soundboard_sounds']:
-                soundboard_sound = SoundboardSound(data=s, state=self._state)
+                soundboard_sound = SoundboardSound(guild=self, data=s, state=self._state)
                 self._add_soundboard_sound(soundboard_sound)
 
     @property
@@ -4397,7 +4397,7 @@ class Guild(Hashable):
                     payload['emoji_id'] = partial_emoji.id
 
         data = await self._state.http.create_soundboard_sound(self.id, reason=reason, **payload)
-        return SoundboardSound(state=self._state, data=data)
+        return SoundboardSound(guild=self, state=self._state, data=data)
 
     async def request_soundboard_sounds(self, *, cache: bool = True) -> List[SoundboardSound]:
         """|coro|

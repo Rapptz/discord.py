@@ -31,6 +31,7 @@ from .mixins import Hashable
 from .partial_emoji import PartialEmoji, _EmojiTag
 from .user import User
 from .utils import MISSING
+from .asset import Asset
 
 if TYPE_CHECKING:
     import datetime
@@ -43,7 +44,6 @@ if TYPE_CHECKING:
     )
     from .state import ConnectionState
     from .guild import Guild
-    from .asset import Asset
     from .message import EmojiInputType
 
 __all__ = ('BaseSoundboardSound', 'SoundboardDefaultSound', 'SoundboardSound')
@@ -178,22 +178,25 @@ class SoundboardSound(BaseSoundboardSound):
         The name of the sound.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji of the sound. ``None`` if no emoji is set.
-    guild_id: Optional[:class:`int`]
+    guild: :class:`Guild`
+        The guild in which the sound is uploaded.
+    guild_id: :class:`int`
         The ID of the guild in which the sound is uploaded.
-    user: Optional[:class:`User`]
-        The user who uploaded the sound.
+    user_id: :class:`int`
+        The ID of the user who uploaded the sound.
     available: :class:`bool`
         Whether this sound is available for use.
     """
 
-    __slots__ = ('_state', 'guild_id', 'name', 'emoji', 'user', 'available')
+    __slots__ = ('_state', 'guild_id', 'name', 'emoji', '_user', 'available', 'user_id', 'guild')
 
-    def __init__(self, *, state: ConnectionState, data: SoundboardSoundPayload):
+    def __init__(self, *, guild: Guild, state: ConnectionState, data: SoundboardSoundPayload):
         super().__init__(state=state, data=data)
-        self.guild_id: int = int(data['guild_id'])
+        self.guild = guild
+        self.guild_id: int = guild.id
+        self.user_id: int = int(data['user_id'])
+        self._user = data.get('user')
 
-        user = data.get('user')
-        self.user: Optional[User] = User(state=self._state, data=user) if user is not None else None
         self._update(data)
 
     def __repr__(self) -> str:
@@ -221,14 +224,17 @@ class SoundboardSound(BaseSoundboardSound):
         self.available: bool = data['available']
 
     @property
-    def guild(self) -> Optional[Guild]:
-        """Optional[:class:`Guild`]: The guild in which the sound is uploaded."""
-        return self._state._get_guild(self.guild_id)
-
-    @property
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the snowflake's creation time in UTC."""
         return utils.snowflake_time(self.id)
+
+    @property
+    def user(self) -> Optional[User]:
+        """Optional[:class:`User`]: The user who uploaded the sound."""
+        if self._user is None:
+            return self._state.get_user(self.user_id)
+
+        return User(state=self._state, data=self._user)
 
     async def edit(
         self,
@@ -294,7 +300,7 @@ class SoundboardSound(BaseSoundboardSound):
                         payload['emoji_id'] = partial_emoji.id
 
         data = await self._state.http.edit_soundboard_sound(self.guild_id, self.id, reason=reason, **payload)
-        return SoundboardSound(state=self._state, data=data)
+        return SoundboardSound(guild=self.guild, state=self._state, data=data)
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|

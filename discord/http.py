@@ -1590,7 +1590,7 @@ class HTTPClient:
         initial_bytes = file.fp.read(16)
 
         try:
-            mime_type = utils._get_mime_type_for_image(initial_bytes)
+            mime_type = utils._get_mime_type_for_file(initial_bytes)
         except ValueError:
             if initial_bytes.startswith(b'{'):
                 mime_type = 'application/json'
@@ -2489,7 +2489,7 @@ class HTTPClient:
         return self.request(
             Route(
                 'PATCH',
-                '/guilds/{guild_id}/soundboard-sounds/{sound_id}/soundboard-sound-object',
+                '/guilds/{guild_id}/soundboard-sounds/{sound_id}',
                 guild_id=guild_id,
                 sound_id=sound_id,
             ),
@@ -2501,7 +2501,7 @@ class HTTPClient:
         return self.request(
             Route(
                 'DELETE',
-                '/guilds/{guild_id}/soundboard-sounds/{sound_id}/soundboard-sound-object',
+                '/guilds/{guild_id}/soundboard-sounds/{sound_id}',
                 guild_id=guild_id,
                 sound_id=sound_id,
             ),
