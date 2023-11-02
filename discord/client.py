@@ -77,7 +77,7 @@ from .ui.dynamic import DynamicItem
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
-from .soundboard import SoundboardDefaultSound
+from .soundboard import SoundboardDefaultSound, SoundboardSound
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -365,6 +365,14 @@ class Client:
         .. versionadded:: 2.0
         """
         return self._connection.stickers
+
+    @property
+    def soundboard_sounds(self) -> Sequence[SoundboardSound]:
+        """Sequence[:class:`.SoundboardSound`]: The soundboard sounds that the connected client has.
+
+        .. versionadded:: 2.4
+        """
+        return self._connection.soundboard_sounds
 
     @property
     def cached_messages(self) -> Sequence[Message]:
@@ -1084,6 +1092,23 @@ class Client:
             The sticker or ``None`` if not found.
         """
         return self._connection.get_sticker(id)
+
+    def get_soundboard_sound(self, id: int, /) -> Optional[SoundboardSound]:
+        """Returns a soundboard sound with the given ID.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        ----------
+        id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`.SoundboardSound`]
+            The soundboard sound or ``None`` if not found.
+        """
+        return self._connection.get_soundboard_sound(id)
 
     def get_all_channels(self) -> Generator[GuildChannel, None, None]:
         """A generator that retrieves every :class:`.abc.GuildChannel` the client can 'access'.

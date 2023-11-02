@@ -501,6 +501,14 @@ class ConnectionState(Generic[ClientT]):
     def stickers(self) -> Sequence[GuildSticker]:
         return utils.SequenceProxy(self._stickers.values())
 
+    @property
+    def soundboard_sounds(self) -> Sequence[SoundboardSound]:
+        all_sounds = []
+        for guild in self.guilds:
+            all_sounds.extend(guild.soundboard_sounds)
+
+        return utils.SequenceProxy(all_sounds)
+
     def get_emoji(self, emoji_id: Optional[int]) -> Optional[Emoji]:
         # the keys of self._emojis are ints
         return self._emojis.get(emoji_id)  # type: ignore
@@ -1767,6 +1775,15 @@ class ConnectionState(Generic[ClientT]):
 
     def create_message(self, *, channel: MessageableChannel, data: MessagePayload) -> Message:
         return Message(state=self, channel=channel, data=data)
+
+    def get_soundboard_sound(self, id: Optional[int]) -> Optional[SoundboardSound]:
+        if id is None:
+            return
+
+        for guild in self.guilds:
+            sound = guild._resolve_soundboard_sound(id)
+            if sound is not None:
+                return sound
 
 
 class AutoShardedConnectionState(ConnectionState[ClientT]):

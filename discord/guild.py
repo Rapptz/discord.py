@@ -1038,6 +1038,12 @@ class Guild(Hashable):
         """
         return self._soundboard_sounds.get(sound_id)
 
+    def _resolve_soundboard_sound(self, id: Optional[int], /) -> Optional[SoundboardSound]:
+        if id is None:
+            return
+
+        return self._soundboard_sounds.get(id)
+
     @property
     def owner(self) -> Optional[Member]:
         """Optional[:class:`Member`]: The member that owns the guild."""
