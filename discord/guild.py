@@ -4350,7 +4350,7 @@ class Guild(Hashable):
         :class:`Onboarding`
             The new onboarding configuration.
         """
-        data = await self._state.http.modify_guild_onboarding(
+        data = await self._state.http.edit_guild_onboarding(
             self.id,
             prompts=[p.to_dict(id=i) for i, p in enumerate(prompts)] if prompts is not MISSING else None,
             default_channel_ids=[c.id for c in default_channels] if default_channels is not MISSING else None,
