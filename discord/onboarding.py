@@ -101,16 +101,23 @@ class PartialOnboardingPromptOption:
         self.role_ids: Set[int] = set(role_ids or [])
 
     def to_dict(self, *, id: int = MISSING) -> PromptOptionPayload:
-        from .state import ConnectionState  # circular import
+        if isinstance(self.emoji, str):
+            emoji_payload = {"emoji_name": self.emoji}
+        else:
+            emoji_payload = {
+                "emoji_id": self.emoji.id,
+                "emoji_name": self.emoji.name,
+                "emoji_animated": self.emoji.animated,
+            }
 
         return {
             'id': id or os.urandom(16).hex(),
             'title': self.title,
             'description': self.description,
-            'emoji': ConnectionState.emoji_to_partial_payload(self.emoji),
             'channel_ids': list(self.channel_ids),
             'role_ids': list(self.role_ids),
-        }
+            **emoji_payload,
+        }  # type: ignore
 
 
 class OnboardingPromptOption(PartialOnboardingPromptOption, Hashable):

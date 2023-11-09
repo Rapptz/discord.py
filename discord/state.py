@@ -1616,14 +1616,6 @@ class ConnectionState(Generic[ClientT]):
                 self, animated=data.get('animated', False), id=emoji_id, name=data['name']  # type: ignore
             )
 
-    @staticmethod
-    def emoji_to_partial_payload(emoji: Union[Emoji, PartialEmoji, str]) -> PartialEmojiPayload:
-        if isinstance(emoji, str):
-            return {'name': emoji}  # type: ignore
-        elif isinstance(emoji, Emoji):
-            emoji = emoji._to_partial()
-        return emoji.to_dict()
-
     def _upgrade_partial_emoji(self, emoji: PartialEmoji) -> Union[Emoji, PartialEmoji, str]:
         emoji_id = emoji.id
         if not emoji_id:
