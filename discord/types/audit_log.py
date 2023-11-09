@@ -37,6 +37,7 @@ from .role import Role
 from .channel import ChannelType, DefaultReaction, PrivacyLevel, VideoQualityMode, PermissionOverwrite, ForumTag
 from .threads import Thread
 from .command import ApplicationCommand, ApplicationCommandPermissions
+from .automod import AutoModerationTriggerMetadata
 from .onboarding import PromptOption, Prompt
 
 AuditLogEvent = Literal[
@@ -94,6 +95,8 @@ AuditLogEvent = Literal[
     143,
     144,
     145,
+    150,
+    151,
     163,
     164,
     167,
@@ -285,6 +288,12 @@ class _AuditLogChange_DefaultReactionEmoji(TypedDict):
     old_value: Optional[DefaultReaction]
 
 
+class _AuditLogChange_TriggerMetadata(TypedDict):
+    key: Literal['trigger_metadata']
+    new_value: Optional[AutoModerationTriggerMetadata]
+    old_value: Optional[AutoModerationTriggerMetadata]
+
+
 class _AuditLogChange_Prompts(TypedDict):
     key: Literal['prompts']
     new_value: List[Prompt]
@@ -319,6 +328,7 @@ AuditLogChange = Union[
     _AuditLogChange_SnowflakeList,
     _AuditLogChange_AvailableTags,
     _AuditLogChange_DefaultReactionEmoji,
+    _AuditLogChange_TriggerMetadata,
     _AuditLogChange_Prompts,
     _AuditLogChange_Options,
 ]
@@ -337,6 +347,7 @@ class AuditEntryInfo(TypedDict):
     guild_id: Snowflake
     auto_moderation_rule_name: str
     auto_moderation_rule_trigger_type: str
+    integration_type: str
 
 
 class AuditLogEntry(TypedDict):

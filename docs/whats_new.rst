@@ -11,6 +11,23 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p3p2:
+
+v2.3.2
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix the ``name`` parameter not being respected when sending a :class:`CustomActivity`.
+- Fix :attr:`Intents.emoji` and :attr:`Intents.emojis_and_stickers` having swapped alias values (:issue:`9471`).
+- Fix ``NameError`` when using :meth:`abc.GuildChannel.create_invite` (:issue:`9505`).
+- Fix crash when disconnecting during the middle of a ``HELLO`` packet when using :class:`AutoShardedClient`.
+- Fix overly eager escape behaviour for lists and header markdown in :func:`utils.escape_markdown` (:issue:`9516`).
+- Fix voice websocket not being closed before being replaced by a new one (:issue:`9518`).
+- |commands| Fix the wrong :meth:`~ext.commands.HelpCommand.on_help_command_error` being called when ejected from a cog.
+- |commands| Fix ``=None`` being displayed in :attr:`~ext.commands.Command.signature`.
+
 .. _vp2p3p1:
 
 v2.3.1

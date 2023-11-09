@@ -1,3 +1,5 @@
+# This example requires the 'message_content' privileged intent to function, however your own bot might not.
+
 # This example covers advanced startup options and uses some real world examples for why you may need them.
 
 import asyncio
@@ -88,9 +90,16 @@ async def main():
         # 2. We become responsible for starting the bot.
 
         exts = ['general', 'mod', 'dice']
-        async with CustomBot(commands.when_mentioned, db_pool=pool, web_client=our_client, initial_extensions=exts) as bot:
-
-            await bot.start(os.getenv('TOKEN', ''))
+        intents = discord.Intents.default()
+        intents.message_content = True
+        async with CustomBot(
+            commands.when_mentioned,
+            db_pool=pool,
+            web_client=our_client,
+            initial_extensions=exts,
+            intents=intents,
+        ) as bot:
+            await bot.start('token')
 
 
 # For most use cases, after defining what needs to run, we can just tell asyncio to run it:

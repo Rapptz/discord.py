@@ -175,7 +175,13 @@ class Parameter(inspect.Parameter):
         if self._displayed_default is not empty:
             return self._displayed_default
 
-        return None if self.required else str(self.default)
+        if self.required:
+            return None
+
+        if callable(self.default) or self.default is None:
+            return None
+
+        return str(self.default)
 
     @property
     def displayed_name(self) -> Optional[str]:
@@ -197,7 +203,7 @@ class Parameter(inspect.Parameter):
         """
         # pre-condition: required is False
         if callable(self.default):
-            return await maybe_coroutine(self.default, ctx)  # type: ignore
+            return await maybe_coroutine(self.default, ctx)
         return self.default
 
 
@@ -300,6 +306,7 @@ CurrentGuild = parameter(
     displayed_default='<this server>',
     converter=GuildConverter,
 )
+CurrentGuild._fallback = True
 
 
 class Signature(inspect.Signature):

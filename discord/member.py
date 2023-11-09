@@ -840,7 +840,7 @@ class Member(discord.abc.Messageable, _UserTag):
         Raises
         -------
         Forbidden
-            You do not have the proper permissions to the action requested.
+            You do not have the proper permissions to do the action requested.
         HTTPException
             The operation failed.
         TypeError
@@ -932,7 +932,7 @@ class Member(discord.abc.Messageable, _UserTag):
         ClientException
             You are not connected to a voice channel.
         Forbidden
-            You do not have the proper permissions to the action requested.
+            You do not have the proper permissions to do the action requested.
         HTTPException
             The operation failed.
         """

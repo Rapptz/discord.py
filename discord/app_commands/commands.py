@@ -976,7 +976,7 @@ class Command(Generic[GroupT, P, T]):
         if self.binding is not None:
             check: Optional[Check] = getattr(self.binding, 'interaction_check', None)
             if check:
-                ret = await maybe_coroutine(check, interaction)  # type: ignore # Probable pyright bug
+                ret = await maybe_coroutine(check, interaction)
                 if not ret:
                     return False
 
@@ -1547,6 +1547,9 @@ class Group:
 
         if not self.description:
             raise TypeError('groups must have a description')
+
+        if not self.name:
+            raise TypeError('groups must have a name')
 
         self.parent: Optional[Group] = parent
         self.module: Optional[str]

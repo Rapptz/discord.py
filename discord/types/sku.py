@@ -24,23 +24,29 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Literal, TypedDict, List, Optional
-
-from .user import PartialUser
-from .snowflake import Snowflake
+from typing import TypedDict, Optional, Literal
+from typing_extensions import NotRequired
 
 
-class TeamMember(TypedDict):
-    user: PartialUser
-    membership_state: int
-    permissions: List[str]
-    team_id: Snowflake
-    role: Literal['admin', 'developer', 'read_only']
-
-
-class Team(TypedDict):
-    id: Snowflake
+class SKU(TypedDict):
+    id: str
+    type: int
+    application_id: str
     name: str
-    owner_id: Snowflake
-    members: List[TeamMember]
-    icon: Optional[str]
+    slug: str
+    flags: int
+
+
+class Entitlement(TypedDict):
+    id: str
+    sku_id: str
+    application_id: str
+    user_id: Optional[str]
+    type: int
+    deleted: bool
+    starts_at: NotRequired[str]
+    ends_at: NotRequired[str]
+    guild_id: Optional[str]
+
+
+EntitlementOwnerType = Literal[1, 2]

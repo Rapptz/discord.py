@@ -39,6 +39,7 @@ class Role(TypedDict):
     permissions: str
     managed: bool
     mentionable: bool
+    flags: int
     icon: NotRequired[Optional[str]]
     unicode_emoji: NotRequired[Optional[str]]
     tags: NotRequired[RoleTags]

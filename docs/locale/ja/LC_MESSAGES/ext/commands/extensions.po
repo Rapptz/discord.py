@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-24 11:01+0000\n"
-"PO-Revision-Date: 2023-01-30 13:38\n"
+"POT-Creation-Date: 2023-06-21 01:17+0000\n"
+"PO-Revision-Date: 2023-06-21 01:20\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -78,6 +78,10 @@ msgid "Although rare, sometimes an extension needs to clean-up or know when it's
 msgstr "稀ではありますが、エクステンションにクリーンアップが必要だったり、いつアンロードするかを確認したい場合があります。このために ``setup`` に似たエクステンションがアンロードされるときに呼び出される ``teardown`` というエントリポイントが用意されています。"
 
 #: ../../ext/commands/extensions.rst:57
+msgid "Exceptions raised in the ``teardown`` function are ignored, and the extension is still unloaded."
+msgstr ""
+
+#: ../../ext/commands/extensions.rst:59
 msgid "basic_ext.py"
 msgstr "basic_ext.py"
 
