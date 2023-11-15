@@ -2435,7 +2435,7 @@ class HTTPClient:
         return self.request(
             Route(
                 'POST',
-                '/applications/{application.id}/entitlements',
+                '/applications/{application_id}/entitlements',
                 application_id=application_id,
             ),
             json=payload,
