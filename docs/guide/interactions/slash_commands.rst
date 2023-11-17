@@ -134,8 +134,8 @@ If a description isn't provided through ``description`` or by the docstring, an 
 Interaction
 ++++++++++++
 
-As shown above, app commands always keep the first parameter for an :class:`~discord.Interaction`,
-a Discord model used for both app commands and UI message components.
+Shown above, the first parameter is ``interaction`` - app commands always need to have this as the first parameter.
+It represents a :class:`~discord.Interaction`, a Discord model used for both app commands and UI message components.
 
 When an interaction is created on command invoke, some information about the surrounding context is given, such as:
 
@@ -155,7 +155,7 @@ In practice, it's common to use either of the following two methods:
 - :meth:`.InteractionResponse.send_message` to send a message
 - :meth:`.InteractionResponse.defer` to defer a response
 
-In the case of deferring, a follow-up message needs to be sent within 15 minutes for app commands.
+When deferring, a follow-up message needs to be sent within 15 minutes for app commands.
 
 For example, to send a deferred ephemeral message:
 
@@ -168,9 +168,9 @@ For example, to send a deferred ephemeral message:
     async def weather(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True) # indicates the follow-up message will be ephemeral
 
-        weathers = ['sunny', 'clear', 'cloudy', 'rainy', 'stormy', 'snowy']
-        await asyncio.sleep(5) # an expensive operation... (no more than 15 minutes!)
-        forecast = random.choice(weathers)
+        climates = ['sunny', 'clear', 'cloudy', 'rainy', 'stormy', 'snowy']
+        await asyncio.sleep(5.0) # an expensive operation... (no more than 15 minutes!)
+        forecast = random.choice(climates)
 
         await interaction.followup.send(f'the weather today is {forecast}!')
 
@@ -191,8 +191,8 @@ In order for this command to show up on Discord, the API needs some information 
 Syncing is the process of sending this information, which is done by
 calling the :meth:`.CommandTree.sync` method.
 
-Typically, this is called on start-up in :meth:`.Client.setup_hook`, after all the commands have
-been added to the tree:
+Typically, this is called on start-up in :meth:`.Client.setup_hook`, since usually this is a spot
+where all the app commands have been added to the tree:
 
 .. code-block:: python
 
@@ -224,7 +224,7 @@ blocks invocation with this message in red:
     Without specifying otherwise, slash commands are global.
 
     After syncing globally, these commands will show up on every guild your bot is in
-    provided it has the ``applications.commands`` scope.
+    provided it has the ``applications.commands`` scope for that guild.
 
     To make space for yourself to experiment with app commands safely,
     create a new testing bot instead or alternatively sync your commands :ref:`locally <guide_slash_commands_guild_commands>`.
@@ -272,7 +272,7 @@ Additionally, since both of these parameters are required, trying to skip one wi
 .. image:: /images/guide/app_commands/this_option_is_required.png
     :width: 300
 
-Some parameter types have different modes of input.
+Other parameter types have different modes of input.
 
 For example, annotating to :class:`~discord.User` will show a selection of users to
 pick from in the current context and :class:`~discord.Attachment` will show a file-dropbox.
@@ -282,10 +282,9 @@ A full overview of supported types can be seen in the :ref:`type conversion tabl
 typing.Optional
 ++++++++++++++++
 
-Discord supports optional parameters, wherein a user doesn't need to provide a value during invocation.
+When a parameter is optional, a user can skip inputting a value for it during invocation.
 
-A parameter is considered optional if its assigned a default value and/or annotated
-to :obj:`~typing.Optional`.
+To do this, wrap the existing type with :obj:`typing.Optional`, and/or assign a default value.
 
 For example, this command displays a given user's avatar, or the current user's avatar:
 
@@ -309,7 +308,7 @@ When assigning a default value that isn't ``None``, the default's type needs to 
 
     @client.tree.command()
     async def is_even(interaction: discord.Interaction, number: int = '2'): # not allowed!
-        even = (number % 2) == 0
+        even = (int(number) % 2) == 0
         await interaction.response.send_message('yes' if even else 'no!')
 
 :pep:`Python version 3.10+ union types <604>` are also supported instead of :obj:`typing.Optional`.
@@ -323,7 +322,7 @@ For example, the ``MENTIONABLE`` type includes both the user and role types:
 - :class:`discord.User` and :class:`discord.Member`
 - :class:`discord.Role`
 
-To use a mentionable type, a parameter should annotate to a :obj:`~typing.Union` with each model:
+Since you need to specify multiple distinct types here, a :obj:`~typing.Union` annotation needs to be used:
 
 .. code-block:: python
 
@@ -390,10 +389,15 @@ These show up on Discord just beside the parameter's name:
 
 Not specifying a description results with an ellipsis "..." being used instead.
 
-In addition to the decorator, parameter descriptions can also be added using
-Google, Sphinx or NumPy style docstrings.
+For programmers who like to document their commands, to avoid stacking a lot of info within decorators
+or to maintain a style more consistent with other functions, the library actions this by
+parsing 3 popular and widely-used docstring formats in the Python ecosystem:
 
-Examples using a command to add 2 numbers together:
+- `Google's original styleguide for docstrings <https://google.github.io/styleguide/pyguide.html#383-functions-and-methods>`_
+- `NumPy's header-based docstring standard <https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard>`_ (this is what discord.py uses!)
+- `Sphinx's reST style docstrings <https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html#the-sphinx-docstring-format>`_
+
+Examples:
 
 .. tab:: NumPy
 
@@ -401,7 +405,7 @@ Examples using a command to add 2 numbers together:
 
         @client.tree.command()
         async def add(interaction: discord.Interaction, a: int, b: int):
-            """adds 2 numbers together.
+            """adds two numbers together.
 
             Parameters
             -----------
@@ -417,16 +421,18 @@ Examples using a command to add 2 numbers together:
 
     .. code-block:: python
 
+        from urllib.parse import quote_plus
+
         @client.tree.command()
-        async def add(interaction: discord.Interaction, a: int, b: int):
-            """adds 2 numbers together.
+        async def google(interaction: discord.Interaction, query: str):
+            """search google with a query.
 
             Args:
-                a (int): left operand
-                b (int): right operand
+                query (str): what you want to search for
             """
 
-            await interaction.response.send_message(f'{a + b = }')
+            url = 'https://google.com/search?q='
+            await interaction.response.send_message(url + quote_plus(query))
 
 .. tab:: Sphinx
 
@@ -434,25 +440,30 @@ Examples using a command to add 2 numbers together:
 
         @client.tree.command()
         async def add(interaction: discord.Interaction, a: int, b: int):
-            """adds 2 numbers together.
+            """adds two numbers together.
 
             :param a: left operand
+            :type a: int
+
             :param b: right operand
+            :type a: int
             """
 
             await interaction.response.send_message(f'{a + b = }')
 
-Other meta info can be specified in the docstring, such as the function return type,
-but only the parameter descriptions are read by the library.
+Lots of info is skipped over and ignored (only the parameter descriptions matter) so these
+formats are not strict and thus weakly parsed.
 
-Descriptions added using :func:`.app_commands.describe` always take precedence over
-ones specified in the docstring.
+.. note::
+
+    When the :func:`~.app_commands.describe` decorator is used in conjunction with a docstring,
+    it always take precedence.
 
 Naming
 ^^^^^^^
 
 Since parameter names are confined to the rules of Python's syntax,
-the library offers a method to rename them with the :func:`.app_commands.rename` decorator.
+the library offers a method to later rename them with the :func:`.app_commands.rename` decorator.
 
 In use:
 
@@ -482,12 +493,17 @@ For example, to use :func:`~.app_commands.describe` and :func:`~.app_commands.re
 Choices
 ++++++++
 
-:class:`str`, :class:`int` and :class:`float` type parameters can optionally set a list of choices for an argument
-using the :func:`.app_commands.choices` decorator.
+A list of values can be optionally set as choices using the :func:`.app_commands.choices` decorator
+for the following 3 primitive types:
 
-During invocation, a user is restricted to picking one choice and can't type anything else.
+- :class:`str`
+- :class:`int`
+- :class:`float`
 
-Each individual choice contains 2 fields:
+Normally, a user can type out any value for the parameter, but with choices,
+they're restricted to selecting one choice and can't type anything else.
+
+Each individual choice is an object containing two fields:
 
 - A name, which is what the user sees in their client
 - A value, which is hidden to the user and only visible to the bot and API.
@@ -515,13 +531,14 @@ To illustrate, the following command has a selection of 3 colours with each valu
         embed = discord.Embed(title=colour.name, colour=colour.value)
         await interaction.response.send_message(embed=embed)
 
-On the client:
+On the client, after syncing:
 
 .. image:: /images/guide/app_commands/colour_command_preview.png
     :width: 400
 
-discord.py also supports 2 other pythonic ways of adding choices to a command,
-shown :func:`here <discord.app_commands.choices>` in the reference.
+Choices can also be set in two other pythonic ways (:class:`~typing.Literal` typehints and from the values in an :class:`~enum.Enum`)
+
+:func:`Jump <discord.app_commands.choices>` to the reference for more info and code examples!
 
 .. _guide_slash_commands_autocompletion:
 
@@ -565,10 +582,17 @@ Code examples for either method can be found in the corresponding reference page
 Range
 ++++++
 
-:class:`str`, :class:`int` and :class:`float` type parameters can optionally set a minimum and maximum value.
-For strings, this limits the character count, whereas for numeric types this limits the magnitude.
+Setting a range allows for keeping user-input within certain boundaries or limits.
 
-Refer to the :class:`.app_commands.Range` page for more info and code examples.
+Only the following 3 parameter types support ranges:
+
+- :class:`str`
+- :class:`int`
+- :class:`float`
+
+For a string, a range limits the character count, whereas for the numeric types, the magnitude is limited.
+
+Jump to the :class:`.app_commands.Range` page for further info and code examples!
 
 .. _guide_slash_commands_transformers:
 
@@ -581,13 +605,19 @@ For instance, to parse a date string into a :class:`datetime.datetime` we might 
 .. code-block:: python
 
     import datetime
+    import random
 
     @client.tree.command()
-    async def date(interaction: discord.Interaction, date: str):
+    async def forecast(interaction: discord.Interaction, date: str):
         when = datetime.datetime.strptime(date, '%d/%m/%Y') # dd/mm/yyyy format
         when = when.replace(tzinfo=datetime.timezone.utc) # attach timezone information
 
-        # do something with 'when'...
+        # randomly find the forecast using the day of the month as a seed...
+        seed = random.Random(when.day)
+        weather = seed.choice(['clear', 'cloudy', 'stormy'])
+
+        with_weekday = when.strftime('%A %d/%m/%Y')
+        await interaction.response.send_message(f'{with_weekday} - {weather}')
 
 However, this can get verbose pretty quickly if the parsing is more complex or we need to do this parsing in multiple commands.
 It helps to isolate this code into it's own place, which we can do with transformers.
@@ -606,21 +636,53 @@ To make one, inherit from :class:`.app_commands.Transformer` and override the :m
             when = when.replace(tzinfo=datetime.timezone.utc)
             return when
 
-If you're familar with the commands extension (:ref:`ext.commands <discord_ext_commands>`), a lot of similarities can be drawn between transformers and converters.
+If you're familar with the commands extension (:ref:`ext.commands <discord_ext_commands>`),
+you can draw a lot of similarities in the design with converters.
 
-To use this transformer in a command, a paramater needs to annotate to :class:`~.app_commands.Transform`,
-passing the new type and class respectively.
+To then attach this transformer to a parameter, annotate to :class:`~.app_commands.Transform`:
 
 .. code-block:: python
 
     from discord.app_commands import Transform
 
     @client.tree.command()
-    async def date(interaction: discord.Interaction, when: Transform[datetime.datetime, DateTransformer]):
-        # do something with 'when'...
+    async def forecast(
+        interaction: discord.Interaction,
+        day: Transform[datetime.datetime, DateTransformer]
+    ):
+        # accurately find the forecast...
+
+    @client.tree.command()
+    async def birthday(
+        interaction: discord.Interaction,
+        date: Transform[datetime.datetime, DateTransformer]
+    ):
+        # prepare birthday celebrations...
 
 It's also possible to instead pass an instance of the transformer instead of the class directly,
 which opens up the possibility of setting up some state in :meth:`~object.__init__`.
+
+For example, we could modify the constructor to take a  ``past`` parameter to exclude past dates:
+
+.. code-block:: python
+
+    class DateTransformer(app_commands.Transformer):
+        def __init__(self, *, past: bool = True):
+            self._allow_past_dates = past
+
+        async def transform(self, interaction: discord.Interaction, value: str) -> datetime.datetime:
+            when = datetime.datetime.strptime(date, '%d/%m/%Y')
+            when = when.replace(tzinfo=datetime.timezone.utc)
+
+            now = discord.utils.utcnow().date() # only get the `date` component from the datetime
+            if not self._allow_past_dates and when < now:
+                raise app_commands.AppCommandError('this date is in the past!')
+                # note: more on exceptions and error handling later in this page...
+
+            return when
+
+    # to disallow past dates when annotating:
+    Transform[datetime.datetime, DateTransformer(past=False)]
 
 Since the parameter's type annotation is replaced with :class:`~.app_commands.Transform`,
 the underlying type and other information must now be provided through the :class:`~.app_commands.Transformer` itself.
@@ -810,7 +872,7 @@ To add 1-level of nesting, create another :class:`~.app_commands.Group` in the c
 .. image:: /images/guide/app_commands/todo_group_nested_preview.png
     :width: 400
 
-Nested group commands can be moved into another class if it ends up being a bit too much to read in one class:
+Nested group commands can be moved out into a separate class if it ends up being a bit too much to read in one level:
 
 .. code-block:: python
 
@@ -828,8 +890,8 @@ Nested group commands can be moved into another class if it ends up being a bit 
 
         todo_lists = TodoLists()
 
-Decorators like :func:`.app_commands.default_permissions` and :func:`.app_commands.guild_only`
-can be added on top of a subclass to apply to the group, for example:
+Since decorators can be used on both functions and classes, you can also add them here
+to make them apply to the group, for example:
 
 .. code-block:: python
 
@@ -837,7 +899,24 @@ can be added on top of a subclass to apply to the group, for example:
     class Emojis(app_commands.Group):
         ...
 
-Due to a Discord limitation, individual subcommands cannot have differing :ref:`integration checks <guide_slash_commands_integration_checks>`.
+.. warning::
+
+    Integration checks can only be added to the root command; individual subcommands and subgroups
+    can't have their own checks due to a Discord limitation.
+
+    .. code-block:: python
+
+        @app_commands.default_permissions(manage_emojis=True)
+        class Emojis(app_commands.Group):
+            subgroup = app_commands.Group(
+                name="subgroup",
+                description="...",
+
+                default_permissions=discord.Permissions(manage_messages=True)
+                # these default permissions are ignored.
+                # users only need `manage_emojis` above to be
+                # able to invoke all subcommands and subgroups
+            )
 
 .. _guide_slash_commands_guild_commands:
 
@@ -879,8 +958,9 @@ To demonstrate:
 Whilst multiple guilds can be specified on a single command, it's important to be aware that after
 syncing individually to each guild, each guild is then maintaing its own copy of the command.
 
-New changes will require syncing to every guild again, which can cause a temporary mismatch with what a guild has
-and what's defined in code.
+New changes will require syncing to every guild again -
+for very large guild sets, this can cause a temporary mismatch with what a guild currently has,
+compared to whats newly defined in code.
 
 Since guild commands can be useful in a development scenario, as often we don't want unfinished commands
 to propagate to all guilds, the library offers a helper method :meth:`.CommandTree.copy_global_to`
@@ -906,16 +986,16 @@ You'll typically find this syncing paradigm in some of the examples in the repos
     both globally and as a guild command.
 
     Removing a command from Discord needs another call to :meth:`.CommandTree.sync` -
-    for example, to remove local commands from a guild:
+    so, to remove local commands from a guild we can do:
 
     .. code-block:: python
 
         guild = discord.Object(695868929154744360) # a bot testing server
 
-        #self.tree.copy_global_to(guild) # dont copy the commands over
+        #self.tree.copy_global_to(guild) # dont copy the commands over this time
         await self.tree.sync(guild=guild)
 
-        # afterwards, the local commands should be removed
+        # after the sync, the local commands should be removed
 
 .. _guide_slash_commands_integration_checks:
 
@@ -952,15 +1032,15 @@ Enabled by adding the :func:`.app_commands.guild_only` decorator when defining a
     @client.tree.command()
     @app_commands.guild_only()
     async def roulette(interaction: discord.Interaction):
-        assert interaction.guild is not None
+        assert interaction.guild is not None # (optional) for type-checkers
 
         members = interaction.guild.members
         victim = random.choice(members)
         await victim.ban(reason='unlucky')
 
-        chance = 1 / len(members)
+        chance = 1 / len(members) * 100.0
         await interaction.response.send_message(
-            f'{victim.name} was chosen... ({chance:.2f}% chance)'
+            f'{victim.name} was chosen... ({chance:.2}% chance)'
         )
 
 Default permissions
@@ -1160,7 +1240,7 @@ Attaching a local handler to a command to catch a check exception:
     async def tester_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
         if isinstance(error, app_commands.MissingAnyRole):
             roles = ', '.join(str(r) for r in error.missing_roles)
-            await interaction.response.send_message('i only thank people who have one of these roles!: {roles}')
+            await interaction.response.send_message(f'you need at least one of these roles to use this command: {roles}')
 
 Attaching an error handler to a group:
 
@@ -1220,7 +1300,7 @@ To catch these exceptions in a global error handler for example:
 
     @client.tree.error
     async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
-        assert interaction.command is not None
+        assert interaction.command is not None # for type-checking purposes
 
         if isinstance(error, app_commands.CommandInvokeError):
             print(f'Ignoring unknown exception in command {interaction.command.name}', file=sys.stderr)
@@ -1316,7 +1396,7 @@ depending on a user's language setting:
 - Parameter names and descriptions
 - Choice names (used for both :ref:`choices <guide_slash_commands_choices>` and :ref:`autocomplete <guide_slash_commands_autocompletion>`)
 
-Localisations can be done :ddocs:`partially <interactions/application-commands#localization>` -
+Localisations are done :ddocs:`partially <interactions/application-commands#localization>` -
 when a field doesn't have a translation for a given locale, Discord instead uses the original string.
 
 .. warning::
@@ -1340,15 +1420,16 @@ which you can do by using a special :class:`~.app_commands.locale_str` type in p
 
     from discord.app_commands import locale_str as _
 
-    @client.tree.command(name=_('avatar'), description=_('display your avatar'))
-    async def avatar(interaction: discord.Interaction):
-        url = interaction.user.avatar.url
+    @client.tree.command(name=_('avatar'), description=_('display someones avatar'))
+    @app_commands.rename(member=_('member'))
+    async def avatar(interaction: discord.Interaction, member: discord.Member):
+        url = member.display_avatar.url
         await interaction.response.send_message(url)
 
 .. hint::
 
-    Every string is actually already considered translatable by default and
-    wrapped into :class:`~.app_commands.locale_str` before being passed to ``transform``,
+    To make things easier, every string is actually already wrapped into
+    :class:`~.app_commands.locale_str` before being passed to ``transform``,
     so this step can be skipped in some cases.
 
     To toggle this behaviour, set the ``auto_locale_strings`` keyword-argument to ``False`` when creating a command:
@@ -1377,7 +1458,7 @@ For example, to pass a ``fluent_id`` extra whilst keeping the original string:
         ...
 
 A translator can then read off of :attr:`~.locale_str.extras` for the translation identifier.
-Systems like :mod:`gettext` don't need this type of behaviour, so it works out of the box without specifying the extra.
+Systems like :mod:`GNU gettext <gettext>` don't need this type of behaviour, so it works out of the box without specifying the extra.
 
 Next, to create a translator, inherit from :class:`.app_commands.Translator` and override the :meth:`~.Translator.translate` method:
 
@@ -1513,7 +1594,12 @@ that offers higher granularity using arguments:
 If your bot isn't able to use the message content intent, due to verification requirements or otherwise,
 bots can still read message content for direct-messages and for messages that mention the bot.
 
-:func:`.commands.when_mentioned` can be used to apply a mention prefix to your bot:
+Two builtin prefix callables exist that can be used to quickly apply a mention prefix to your bot:
+
+- :func:`.commands.when_mentioned` to match mentions exclusively
+- :func:`.commands.when_mentioned_or` to add mentions on top of other prefixes
+
+For example:
 
 .. code-block:: python
 
