@@ -45,9 +45,10 @@ import inspect
 
 from collections.abc import Sequence
 from discord.backoff import ExponentialBackoff
-from discord.utils import MISSING
+from discord.utils import MISSING, setup_logging
 
 _log = logging.getLogger(__name__)
+setup_logging()
 
 # fmt: off
 __all__ = (
