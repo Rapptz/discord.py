@@ -547,6 +547,7 @@ class SelectDefaultValue:
 
     @property
     def type(self) -> SelectDefaultValueType:
+        """:class:`SelectDefaultValueType`: The type of value that ``id`` represents."""
         return self._type
 
     @type.setter
@@ -574,6 +575,18 @@ class SelectDefaultValue:
 
     @classmethod
     def from_channel(cls, channel: Snowflake, /) -> Self:
+        """Creates a :class:`SelectDefaultValue` with the type set to :attr:`~SelectDefaultValueType.channel`.
+
+        Parameters
+        -----------
+        channel: :class:`~discord.abc.Snowflake`
+            The channel to create the default value for.
+
+        Returns
+        --------
+        :class:`SelectDefaultValue`
+            The default value created with the channel.
+        """
         return cls(
             id=channel.id,
             type=SelectDefaultValueType.channel,
@@ -581,6 +594,18 @@ class SelectDefaultValue:
 
     @classmethod
     def from_role(cls, role: Snowflake, /) -> Self:
+        """Creates a :class:`SelectDefaultValue` with the type set to :attr:`~SelectDefaultValueType.role`.
+
+        Parameters
+        -----------
+        role: :class:`~discord.abc.Snowflake`
+            The role to create the default value for.
+
+        Returns
+        --------
+        :class:`SelectDefaultValue`
+            The default value created with the role.
+        """
         return cls(
             id=role.id,
             type=SelectDefaultValueType.role,
@@ -588,6 +613,18 @@ class SelectDefaultValue:
 
     @classmethod
     def from_user(cls, user: Snowflake, /) -> Self:
+        """Creates a :class:`SelectDefaultValue` with the type set to :attr:`~SelectDefaultValueType.user`.
+
+        Parameters
+        -----------
+        user: :class:`~discord.abc.Snowflake`
+            The user to create the default value for.
+
+        Returns
+        --------
+        :class:`SelectDefaultValue`
+            The default value created with the user.
+        """
         return cls(
             id=user.id,
             type=SelectDefaultValueType.user,
