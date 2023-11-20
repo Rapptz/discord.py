@@ -380,7 +380,6 @@ class AppInfo:
 
         if tags is not MISSING:
             payload['tags'] = tags
-        print(payload)
         data = await self._state.http.edit_application_info(reason=reason, payload=payload)
         return AppInfo(data=data, state=self._state)
 
