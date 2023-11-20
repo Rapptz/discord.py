@@ -269,43 +269,40 @@ class AppInfo:
 
         .. versionadded:: 2.4
 
-        .. note::
-
-            All parameters can be ``None`` to remove the respective one.
-
         Parameters
         ----------
         custom_install_url: Optional[:class:`str`]
-            The new custom authorization URL for the application.
+            The new custom authorization URL for the application. Can be ``None`` to remove the URL.
         description: Optional[:class:`str`]
-            The new application description.
+            The new application description. Can be ``None`` to remove the description.
         role_connections_verification_url: Optional[:class:`str`]
             The new application’s connection verification URL which will render the application
-            as a verification method in the guild’s role verification configuration.
+            as a verification method in the guild’s role verification configuration. Can be ``None`` to remove the URL.
         install_params_scopes: Optional[List[:class:`str`]]
             The new list of :ddocs:`OAuth2 scopes <topics/oauth2#shared-resources-oauth2-scopes>` of
-            the :attr:`~install_params`.
+            the :attr:`~install_params`. Can be ``None`` to remove the scopes.
         install_params_permissions: Optional[:class:`Permissions`]
-            The new permissions of the :attr:`~install_params`.
+            The new permissions of the :attr:`~install_params`. Can be ``None`` to remove the permissions.
         flags: Optional[:class:`ApplicationFlags`]
             The new application’s flags. Only limited intent flags (:attr:`~ApplicationFlags.gateway_presence_limited`,
             :attr:`~ApplicationFlags.gateway_guild_members_limited`, :attr:`~ApplicationFlags.gateway_message_content_limited`)
-            can be edited.
+            can be edited. Can be ``None`` to remove the flags.
 
             .. warning::
 
                 Editing the limited intent flags leads to the termination of the bot.
 
         icon: Optional[:class:`bytes`]
-            The new application’s icon as a :term:`py:bytes-like object`.
+            The new application’s icon as a :term:`py:bytes-like object`. Can be ``None`` to remove the icon.
         cover_image: Optional[:class:`bytes`]
             The new application’s cover image as a :term:`py:bytes-like object` on a store embed.
             The cover image is only available if the application is a game sold on Discord.
+            Can be ``None`` to remove the image.
         interactions_endpoint_url: Optional[:class:`str`]
             The new interactions endpoint url of the application to receive interactions over this endpoint rather than
-            over the gateway.
+            over the gateway. Can be ``None`` to remove the URL.
         tags: Optional[List[:class:`str`]]
-            The new list of tags describing the functionality of the application.
+            The new list of tags describing the functionality of the application. Can be ``None`` to remove the tags.
         reason: Optional[:class:`str`]
             The reason for editing the application. Shows up on the audit log.
 
