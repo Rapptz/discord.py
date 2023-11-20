@@ -615,7 +615,7 @@ class RoleSelect(BaseSelect[V]):
     disabled: :class:`bool`
         Whether the select is disabled or not.
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
-        A list of objects representing the users that should be selected by default.
+        A list of objects representing the roles that should be selected by default.
 
         .. versionadded:: 2.4
     row: Optional[:class:`int`]
