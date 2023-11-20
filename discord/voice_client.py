@@ -110,7 +110,6 @@ class VoiceProtocol:
         data: :class:`dict`
             The raw :ddocs:`voice state payload <resources/voice#voice-state-object>`.
 
-
         .. warning ::
         
             This method is not the same as the event. See: :func:`on_voice_state_update`
