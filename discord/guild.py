@@ -1973,7 +1973,7 @@ class Guild(Hashable):
             safety alerts channel.
 
             .. versionadded:: 2.3
-        
+
         invites_disabled_until: Optional[:class:`datetime.datetime`]
             The time when invites should be enabled again, or ``None`` to disable the action.
             This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
@@ -4337,7 +4337,7 @@ class Guild(Hashable):
     @property
     def invites_paused_until(self) -> Optional[datetime.datetime]:
         """:class:`datetime.datetime`: When invites get enabled again.
-        
+
         .. versionadded:: 2.4
         """
         if not self._incidents_data:
@@ -4348,7 +4348,7 @@ class Guild(Hashable):
     @property
     def dms_paused_until(self) -> Optional[datetime.datetime]:
         """:class:`datetime.datetime`: When direct messages get enabled again.
-        
+
         .. versionadded:: 2.4
         """
         if not self._incidents_data:
@@ -4358,7 +4358,7 @@ class Guild(Hashable):
 
     def invites_paused(self) -> bool:
         """:class:`bool`: Whether invites are paused in the guild.
-        
+
         .. versionadded:: 2.4
         """
         if not self.invites_paused_until:
@@ -4368,7 +4368,7 @@ class Guild(Hashable):
 
     def dms_paused(self) -> bool:
         """:class:`bool`: Whether dms are paused in the guild.
-        
+
         .. versionadded:: 2.4
         """
         if not self.dms_paused_until:
