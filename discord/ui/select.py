@@ -216,6 +216,13 @@ class BaseSelect(Item[V]):
         'max_values',
         'disabled',
     )
+    __component_attributes__: Tuple[str, ...] = (
+        'custom_id',
+        'placeholder',
+        'min_values',
+        'max_values',
+        'disabled',
+    )
 
     def __init__(
         self,
@@ -336,11 +343,16 @@ class BaseSelect(Item[V]):
 
     @classmethod
     def from_component(cls, component: SelectMenu) -> Self:
-        return cls(
-            **{k: getattr(component, k) for k in cls.__item_repr_attributes__},
-            custom_id=component.custom_id,
-            row=None,
-        )
+        type_to_cls: Dict[ComponentType, Type[BaseSelect[Any]]] = {
+            ComponentType.string_select: Select,
+            ComponentType.user_select: UserSelect,
+            ComponentType.role_select: RoleSelect,
+            ComponentType.channel_select: ChannelSelect,
+            ComponentType.mentionable_select: MentionableSelect,
+        }
+        constructor = type_to_cls.get(component.type, Select)
+        kwrgs = {key: getattr(component, key) for key in constructor.__component_attributes__}
+        return constructor(**kwrgs)
 
 
 class Select(BaseSelect[V]):
@@ -374,7 +386,7 @@ class Select(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
-    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('options',)
+    __component_attributes__ = BaseSelect.__component_attributes__ + ('options',)
 
     def __init__(
         self,
@@ -525,7 +537,7 @@ class UserSelect(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
-    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('default_values',)
+    __component_attributes__ = BaseSelect.__component_attributes__ + ('default_values',)
 
     def __init__(
         self,
@@ -603,7 +615,7 @@ class RoleSelect(BaseSelect[V]):
     disabled: :class:`bool`
         Whether the select is disabled or not.
     default_values: Sequence[:class:`~discord.abc.Snowflake`]
-        A list of objects representing the users that should be selected by default.
+        A list of objects representing the roles that should be selected by default.
 
         .. versionadded:: 2.4
     row: Optional[:class:`int`]
@@ -614,7 +626,7 @@ class RoleSelect(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
-    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('default_values',)
+    __component_attributes__ = BaseSelect.__component_attributes__ + ('default_values',)
 
     def __init__(
         self,
@@ -699,7 +711,7 @@ class MentionableSelect(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
-    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + ('default_values',)
+    __component_attributes__ = BaseSelect.__component_attributes__ + ('default_values',)
 
     def __init__(
         self,
@@ -790,7 +802,7 @@ class ChannelSelect(BaseSelect[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
-    __item_repr_attributes__ = BaseSelect.__item_repr_attributes__ + (
+    __component_attributes__ = BaseSelect.__component_attributes__ + (
         'channel_types',
         'default_values',
     )

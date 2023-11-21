@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-21 01:17+0000\n"
-"PO-Revision-Date: 2023-06-21 01:20\n"
+"PO-Revision-Date: 2023-10-30 15:32\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -27,7 +27,7 @@ msgstr "このページでは、特定のバージョンの新機能や変更さ
 
 #: ../../whats_new.rst:17
 msgid "v2.3.0"
-msgstr ""
+msgstr "v2.3.0"
 
 #: ../../whats_new.rst:20
 #: ../../whats_new.rst:116
@@ -39,127 +39,127 @@ msgstr "新機能"
 
 #: ../../whats_new.rst:28
 msgid "Add support for the new username system (also known as \"pomelo\")."
-msgstr ""
+msgstr "新しいユーザー名システム (\"pomelo\"とも呼ばれます) のサポートを追加しました。"
 
 #: ../../whats_new.rst:23
 msgid "Add :attr:`User.global_name` to get their global nickname or \"display name\"."
-msgstr ""
+msgstr "グローバルのニックネーム、つまり「表示名」を取得する :attr:`User.global_name` を追加しました。"
 
 #: ../../whats_new.rst:24
 msgid "Update :attr:`User.display_name` and :attr:`Member.display_name` to understand global nicknames."
-msgstr ""
+msgstr ":attr:`User.display_name` と :attr:`Member.display_name` を、グローバルのニックネームを使用するように変更しました。"
 
 #: ../../whats_new.rst:25
 msgid "Update ``__str__`` for :class:`User` to drop discriminators if the user has been migrated."
-msgstr ""
+msgstr ":class:`User` の ``__str__`` が、移行したユーザーのタグを含まないよう、変更しました。"
 
 #: ../../whats_new.rst:26
 msgid "Update :meth:`Guild.get_member_named` to work with migrated users."
-msgstr ""
+msgstr "移行したユーザーでも動くよう :meth:`Guild.get_member_named` を変更しました。"
 
 #: ../../whats_new.rst:27
 msgid "Update :attr:`User.default_avatar` to work with migrated users."
-msgstr ""
+msgstr "移行したユーザーでも動くよう :attr:`User.default_avatar` を変更しました。"
 
 #: ../../whats_new.rst:28
 msgid "|commands| Update user and member converters to understand migrated users."
-msgstr ""
+msgstr "|commands| 移行したユーザーを解釈するよう、ユーザーとメンバーコンバータを変更しました。"
 
 #: ../../whats_new.rst:30
 msgid "Add :attr:`DefaultAvatar.pink` for new pink default avatars."
-msgstr ""
+msgstr "新しいピンクのデフォルトアバタ―用の :attr:`DefaultAvatar.pink` を追加しました。"
 
 #: ../../whats_new.rst:31
 msgid "Add :meth:`Colour.pink` to get the pink default avatar colour."
-msgstr ""
+msgstr "ピンクのデフォルトアバターの色を取得する :meth:`Colour.pink` を追加しました。"
 
 #: ../../whats_new.rst:36
 msgid "Add support for voice messages (:issue:`9358`)"
-msgstr ""
+msgstr "ボイスメッセージのサポートを追加しました。 (:issue:`9358`)"
 
 #: ../../whats_new.rst:33
 msgid "Add :attr:`MessageFlags.voice`"
-msgstr ""
+msgstr ":attr:`MessageFlags.voice` を追加しました。"
 
 #: ../../whats_new.rst:34
 msgid "Add :attr:`Attachment.duration` and :attr:`Attachment.waveform`"
-msgstr ""
+msgstr ":attr:`Attachment.duration` と :attr:`Attachment.waveform` を追加しました。"
 
 #: ../../whats_new.rst:35
 msgid "Add :meth:`Attachment.is_voice_message`"
-msgstr ""
+msgstr ":meth:`Attachment.is_voice_message` を追加しました。"
 
 #: ../../whats_new.rst:36
 msgid "This does not support *sending* voice messages because this is currently unsupported by the API."
-msgstr ""
+msgstr "ボイスメッセージの *送信* は現在APIで対応していないため、サポートされていません。"
 
 #: ../../whats_new.rst:38
 msgid "Add support for new :attr:`Interaction.channel` attribute from the API update (:issue:`9339`)."
-msgstr ""
+msgstr "API更新で追加された :attr:`Interaction.channel` 属性のサポートを追加しました。 (:issue:`9339`)"
 
 #: ../../whats_new.rst:39
 msgid "Add support for :attr:`TextChannel.default_thread_slowmode_delay` (:issue:`9291`)."
-msgstr ""
+msgstr ":attr:`TextChannel.default_thread_slowmode_delay` のサポートを追加しました。 (:issue:`9291`)"
 
 #: ../../whats_new.rst:40
 msgid "Add support for :attr:`ForumChannel.default_sort_order` (:issue:`9290`)."
-msgstr ""
+msgstr ":attr:`ForumChannel.default_sort_order` のサポートを追加しました。 (:issue:`9290`)"
 
 #: ../../whats_new.rst:41
 msgid "Add support for ``default_reaction_emoji`` and ``default_forum_layout`` in :meth:`Guild.create_forum` (:issue:`9300`)."
-msgstr ""
+msgstr ":meth:`Guild.create_forum` にて、 ``default_reaction_emoji`` と ``default_forum_layout`` のサポートを追加しました。 (:issue:`9300`)"
 
 #: ../../whats_new.rst:42
 msgid "Add support for ``widget_channel``, ``widget_enabled``, and ``mfa_level`` in :meth:`Guild.edit` (:issue:`9302`, :issue:`9303`)."
-msgstr ""
+msgstr ":meth:`Guild.edit` にて、 ``widget_channel`` 、 ``widget_enabled`` 、 ``mfa_level`` のサポートを追加しました。(:issue:`9302` 、 :issue:`9303`)"
 
 #: ../../whats_new.rst:45
 msgid "Add various new :class:`Permissions` and changes (:issue:`9312`, :issue:`9325`, :issue:`9358`, :issue:`9378`)"
-msgstr ""
+msgstr "新しい :class:`Permissions` を追加しました。 (:issue:`9312` 、 :issue:`9325` 、 :issue:`9358` 、 :issue:`9378`)"
 
 #: ../../whats_new.rst:44
 msgid "Add new :attr:`~Permissions.manage_expressions`, :attr:`~Permissions.use_external_sounds`, :attr:`~Permissions.use_soundboard`, :attr:`~Permissions.send_voice_messages`, :attr:`~Permissions.create_expressions` permissions."
-msgstr ""
+msgstr "新しい :attr:`~Permissions.manage_expressions` 、 :attr:`~Permissions.use_external_sounds` 、 :attr:`~Permissions.use_soundboard` 、 :attr:`~Permissions.send_voice_messages` 、 :attr:`~Permissions.create_expressions` 権限を追加しました。"
 
 #: ../../whats_new.rst:45
 msgid "Change :attr:`Permissions.manage_emojis` to be an alias of :attr:`~Permissions.manage_expressions`."
-msgstr ""
+msgstr ":attr:`Permissions.manage_emojis` を :attr:`~Permissions.manage_expressions` のエイリアスに変更しました。"
 
 #: ../../whats_new.rst:47
 msgid "Add various new properties to :class:`PartialAppInfo` and :class:`AppInfo` (:issue:`9298`)."
-msgstr ""
+msgstr ":class:`PartialAppInfo` と :class:`AppInfo` にさまざまな新しいプロパティを追加しました。 (:issue:`9298`)"
 
 #: ../../whats_new.rst:48
 msgid "Add support for ``with_counts`` parameter to :meth:`Client.fetch_guilds` (:issue:`9369`)."
-msgstr ""
+msgstr ":meth:`Client.fetch_guilds` に ``with_counts`` 引数のサポートを追加しました。 (:issue:`9369`)"
 
 #: ../../whats_new.rst:49
 msgid "Add new :meth:`Guild.get_emoji` helper (:issue:`9296`)."
-msgstr ""
+msgstr "新しく :meth:`Guild.get_emoji` ヘルパーを追加しました。 (:issue:`9296`)"
 
 #: ../../whats_new.rst:50
 msgid "Add :attr:`ApplicationFlags.auto_mod_badge` (:issue:`9313`)."
-msgstr ""
+msgstr ":attr:`ApplicationFlags.auto_mod_badge` を追加しました。 (:issue:`9313`)"
 
 #: ../../whats_new.rst:51
 msgid "Add :attr:`Guild.max_stage_video_users` and :attr:`Guild.safety_alerts_channel` (:issue:`9318`)."
-msgstr ""
+msgstr ":attr:`Guild.max_stage_video_users` と :attr:`Guild.safety_alerts_channel` を追加しました。 (:issue:`9318`)"
 
 #: ../../whats_new.rst:52
 msgid "Add support for ``raid_alerts_disabled`` and ``safety_alerts_channel`` in :meth:`Guild.edit` (:issue:`9318`)."
-msgstr ""
+msgstr ":meth:`Guild.edit` にて ``raid_alerts_disabled`` と ``safety_alerts_channel`` のサポートを追加しました。 (:issue:`9318`)"
 
 #: ../../whats_new.rst:53
 msgid "|commands| Add :attr:`BadLiteralArgument.argument <ext.commands.BadLiteralArgument.argument>` to get the failed argument's value (:issue:`9283`)."
-msgstr ""
+msgstr "|commands| 失敗した引数の値を取得するための :attr:`BadLiteralArgument.argument <ext.commands.BadLiteralArgument.argument>` を追加しました。 (:issue:`9283`)"
 
 #: ../../whats_new.rst:54
 msgid "|commands| Add :attr:`Context.filesize_limit <ext.commands.Context.filesize_limit>` property (:issue:`9416`)."
-msgstr ""
+msgstr "|commands| :attr:`Context.filesize_limit <ext.commands.Context.filesize_limit>` 属性を追加しました。 (:issue:`9416`)"
 
 #: ../../whats_new.rst:55
 msgid "|commands| Add support for :attr:`Parameter.displayed_name <ext.commands.Parameter.displayed_name>` (:issue:`9427`)."
-msgstr ""
+msgstr "|commands| :attr:`Parameter.displayed_name <ext.commands.Parameter.displayed_name>` のサポートを追加しました。 (:issue:`9427`)"
 
 #: ../../whats_new.rst:58
 #: ../../whats_new.rst:92
@@ -171,71 +171,71 @@ msgstr "バグ修正"
 
 #: ../../whats_new.rst:61
 msgid "Fix ``FileHandler`` handlers being written ANSI characters when the bot is executed inside PyCharm."
-msgstr ""
+msgstr "PyCharm 内でボットが実行された場合、 ``FileHandler`` ハンドラにANSI 文字が出力されるのを修正しました。"
 
 #: ../../whats_new.rst:61
 msgid "This has the side effect of removing coloured logs from the PyCharm terminal due an upstream bug involving TTY detection. This issue is tracked under `PY-43798 <https://youtrack.jetbrains.com/issue/PY-43798>`_."
-msgstr ""
+msgstr "PyCharmのTTY検出のバグの影響により、PyCharm ターミナル内でログに色が付かなくなる副作用があります。このバグは `PY-43798 <https://youtrack.jetbrains.com/issue/PY-43798>`_ で追跡されています。"
 
 #: ../../whats_new.rst:63
 msgid "Fix channel edits with :meth:`Webhook.edit` sending two requests instead of one."
-msgstr ""
+msgstr ":meth:`Webhook.edit` でチャンネルを編集するときに2回リクエストが行われるバグを修正しました。"
 
 #: ../../whats_new.rst:64
 msgid "Fix :attr:`StageChannel.last_message_id` always being ``None`` (:issue:`9422`)."
-msgstr ""
+msgstr ":attr:`StageChannel.last_message_id` が常に ``None`` となるのを修正しました。 (:issue:`9422`)"
 
 #: ../../whats_new.rst:65
 msgid "Fix piped audio input ending prematurely (:issue:`9001`, :issue:`9380`)."
-msgstr ""
+msgstr "パイプによるオーディオ入力が終了するのが早すぎる問題を修正しました。 (:issue:`9001` 、 :issue:`9380`)"
 
 #: ../../whats_new.rst:66
 msgid "Fix persistent detection for :class:`ui.TextInput` being incorrect if the ``custom_id`` is set later (:issue:`9438`)."
-msgstr ""
+msgstr "``custom_id`` が後で設定された場合、 :class:`ui.TextInput` の永続的な検出が正しくない問題を修正しました。 (:issue:`9438`)"
 
 #: ../../whats_new.rst:67
 msgid "Fix custom attributes not being copied over when inheriting from :class:`app_commands.Group` (:issue:`9383`)."
-msgstr ""
+msgstr ":class:`app_commands.Group` から継承するときにカスタム属性がコピーされない問題を修正しました。 (:issue:`9383`)"
 
 #: ../../whats_new.rst:68
 msgid "Fix AutoMod audit log entry error due to empty channel_id (:issue:`9384`)."
-msgstr ""
+msgstr "空の channel_id により自動管理の監査ログ項目でエラーが発生するのを修正しました。 (:issue:`9384`)"
 
 #: ../../whats_new.rst:69
 msgid "Fix handling of ``around`` parameter in :meth:`abc.Messageable.history` (:issue:`9388`)."
-msgstr ""
+msgstr ":meth:`abc.Messageable.history` の ``around`` 引数の扱いを修正しました。 (:issue:`9388`)"
 
 #: ../../whats_new.rst:70
 msgid "Fix occasional :exc:`AttributeError` when accessing the :attr:`ClientUser.mutual_guilds` property (:issue:`9387`)."
-msgstr ""
+msgstr ":attr:`ClientUser.mutual_guilds` プロパティにアクセスするとき時々 :exc:`AttributeError` が発生する問題を修正しました。 (:issue:`9387`)"
 
 #: ../../whats_new.rst:71
 msgid "Fix :func:`utils.escape_markdown` not escaping the new markdown (:issue:`9361`)."
-msgstr ""
+msgstr ":func:`utils.escape_markdown` が新しいマークダウンを正しくエスケープしない問題を修正しました。 (:issue:`9361`)"
 
 #: ../../whats_new.rst:72
 msgid "Fix webhook targets not being converted in audit logs (:issue:`9332`)."
-msgstr ""
+msgstr "監査ログでWebhookターゲットが変換されない問題を修正しました。 (:issue:`9332`)"
 
 #: ../../whats_new.rst:73
 msgid "Fix error when not passing ``enabled`` in :meth:`Guild.create_automod_rule` (:issue:`9292`)."
-msgstr ""
+msgstr ":meth:`Guild.create_automod_rule` で ``enabled`` を渡さないときに生じるエラーを修正しました。 (:issue:`9292`)"
 
 #: ../../whats_new.rst:74
 msgid "Fix how various parameters are handled in :meth:`Guild.create_scheduled_event` (:issue:`9275`)."
-msgstr ""
+msgstr ":meth:`Guild.create_scheduled_event` のパラメータの扱いを修正しました。 (:issue:`9275`)"
 
 #: ../../whats_new.rst:75
 msgid "Fix not sending the ``ssrc`` parameter when sending the SPEAKING payload (:issue:`9301`)."
-msgstr ""
+msgstr "SPEAKING ペイロードの送信時に ``ssrc`` パラメータを送信しない問題を修正しました。 (:issue:`9301`)"
 
 #: ../../whats_new.rst:76
 msgid "Fix :attr:`Message.guild` being ``None`` sometimes when received via an interaction."
-msgstr ""
+msgstr "インタラクションで受け取った :attr:`Message.guild` が時々 ``None`` になる問題を修正しました。"
 
 #: ../../whats_new.rst:77
 msgid "Fix :attr:`Message.system_content` for :attr:`MessageType.channel_icon_change` (:issue:`9410`)."
-msgstr ""
+msgstr ":attr:`MessageType.channel_icon_change` の :attr:`Message.system_content` を修正しました。 (:issue:`9410`)"
 
 #: ../../whats_new.rst:80
 #: ../../whats_new.rst:180
@@ -247,291 +247,291 @@ msgstr "その他"
 
 #: ../../whats_new.rst:82
 msgid "Update the base :attr:`Guild.filesize_limit` to 25MiB (:issue:`9353`)."
-msgstr ""
+msgstr "基本の :attr:`Guild.filesize_limit` を 25MiB に更新しました。 (:issue:`9353`)"
 
 #: ../../whats_new.rst:83
 msgid "Allow Interaction webhook URLs to be used in :meth:`Webhook.from_url`."
-msgstr ""
+msgstr ":meth:`Webhook.from_url` でインタラクション Webhook URLを使用できるようになりました。"
 
 #: ../../whats_new.rst:84
 msgid "Set the socket family of internal connector to ``AF_INET`` to prevent IPv6 connections (:issue:`9442`, :issue:`9443`)."
-msgstr ""
+msgstr "IPv6 接続を防ぐために、内部コネクタのソケットファミリを ``AF_INET`` に設定するようにしました。 (:issue:`9442` 、 :issue:`9443`)"
 
 #: ../../whats_new.rst:89
 msgid "v2.2.3"
-msgstr ""
+msgstr "v2.2.3"
 
 #: ../../whats_new.rst:94
 msgid "Fix crash from Discord sending null ``channel_id`` for automod audit logs."
-msgstr ""
+msgstr "Discordが自動管理の監査ログに関し null の ``channel_id`` を送ることによって生じたクラッシュを修正しました。"
 
 #: ../../whats_new.rst:95
 msgid "Fix ``channel`` edits when using :meth:`Webhook.edit` sending two requests."
-msgstr ""
+msgstr ":meth:`Webhook.edit` を使用して ``channel`` を変更するときに2回リクエストが送信されるバグを修正しました。"
 
 #: ../../whats_new.rst:96
 msgid "Fix :attr:`AuditLogEntry.target` being ``None`` for invites (:issue:`9336`)."
-msgstr ""
+msgstr "招待に関し :attr:`AuditLogEntry.target` が ``None`` となるのを修正しました。 (:issue:`9336`)"
 
 #: ../../whats_new.rst:97
 msgid "Fix :exc:`KeyError` when accessing data for :class:`GuildSticker` (:issue:`9324`)."
-msgstr ""
+msgstr ":class:`GuildSticker` のデータにアクセスするときの :exc:`KeyError` を修正しました。 (:issue:`9324`)"
 
 #: ../../whats_new.rst:103
 msgid "v2.2.2"
-msgstr ""
+msgstr "v2.2.2"
 
 #: ../../whats_new.rst:108
 msgid "Fix UDP discovery in voice not using new 74 byte layout which caused voice to break (:issue:`9277`, :issue:`9278`)"
-msgstr ""
+msgstr "ボイスのUDP検出が、新しい74バイトレイアウトを使用していないため、ボイスが使用できない問題を修正しました。 (:issue:`9277` 、 :issue:`9278`)"
 
 #: ../../whats_new.rst:113
 msgid "v2.2.0"
-msgstr ""
+msgstr "v2.2.0"
 
 #: ../../whats_new.rst:118
 msgid "Add support for new :func:`on_audit_log_entry_create` event"
-msgstr ""
+msgstr "新しい :func:`on_audit_log_entry_create` イベントのサポートを追加しました。"
 
 #: ../../whats_new.rst:120
 msgid "Add support for silent messages via ``silent`` parameter in :meth:`abc.Messageable.send`"
-msgstr ""
+msgstr "サイレントメッセージを送信する :meth:`abc.Messageable.send` の ``silent`` パラメータのサポートを追加しました。"
 
 #: ../../whats_new.rst:120
 msgid "This is queryable via :attr:`MessageFlags.suppress_notifications`"
-msgstr ""
+msgstr "これは :attr:`MessageFlags.suppress_notifications` から確認できます。"
 
 #: ../../whats_new.rst:122
 msgid "Implement :class:`abc.Messageable` for :class:`StageChannel` (:issue:`9248`)"
-msgstr ""
+msgstr ":class:`StageChannel` が :class:`abc.Messageable` を実装するようにしました。 (:issue:`9248`)"
 
 #: ../../whats_new.rst:123
 msgid "Add setter for :attr:`discord.ui.ChannelSelect.channel_types` (:issue:`9068`)"
-msgstr ""
+msgstr ":attr:`discord.ui.ChannelSelect.channel_types` のセッターを追加しました。 (:issue:`9068`)"
 
 #: ../../whats_new.rst:124
 msgid "Add support for custom messages in automod via :attr:`AutoModRuleAction.custom_message` (:issue:`9267`)"
-msgstr ""
+msgstr ":attr:`AutoModRuleAction.custom_message` で、自動管理のカスタムメッセージのサポートを追加しました。 (:issue:`9267`)"
 
 #: ../../whats_new.rst:125
 msgid "Add :meth:`ForumChannel.get_thread` (:issue:`9106`)"
-msgstr ""
+msgstr ":meth:`ForumChannel.get_thread` を追加しました。 (:issue:`9106`)"
 
 #: ../../whats_new.rst:126
 msgid "Add :attr:`StageChannel.slowmode_delay` and :attr:`VoiceChannel.slowmode_delay` (:issue:`9111`)"
-msgstr ""
+msgstr ":attr:`StageChannel.slowmode_delay` と :attr:`VoiceChannel.slowmode_delay` を追加しました。 (:issue:`9111`)"
 
 #: ../../whats_new.rst:127
 msgid "Add support for editing the slowmode for :class:`StageChannel` and :class:`VoiceChannel` (:issue:`9111`)"
-msgstr ""
+msgstr ":class:`StageChannel` と :class:`VoiceChannel` の低速モードの変更のサポートを追加しました。 (:issue:`9111`)"
 
 #: ../../whats_new.rst:128
 msgid "Add :attr:`Locale.indonesian`"
-msgstr ""
+msgstr ":attr:`Locale.indonesian` を追加しました。"
 
 #: ../../whats_new.rst:129
 msgid "Add ``delete_after`` keyword argument to :meth:`Interaction.edit_message` (:issue:`9415`)"
-msgstr ""
+msgstr ":meth:`Interaction.edit_message` に ``delete_after`` キーワード引数を追加しました。 (:issue:`9415`)"
 
 #: ../../whats_new.rst:130
 msgid "Add ``delete_after`` keyword argument to :meth:`InteractionMessage.edit` (:issue:`9206`)"
-msgstr ""
+msgstr ":meth:`InteractionMessage.edit` に ``delete_after`` キーワード引数を追加しました。 (:issue:`9206`)"
 
 #: ../../whats_new.rst:133
 msgid "Add support for member flags (:issue:`9204`)"
-msgstr ""
+msgstr "メンバーフラグのサポートを追加しました。 (:issue:`9204`)"
 
 #: ../../whats_new.rst:132
 msgid "Accessible via :attr:`Member.flags` and has a type of :class:`MemberFlags`"
-msgstr ""
+msgstr ":attr:`Member.flags` でアクセスでき、型は :class:`MemberFlags` です。"
 
 #: ../../whats_new.rst:133
 msgid "Support ``bypass_verification`` within :meth:`Member.edit`"
-msgstr ""
+msgstr ":meth:`Member.edit` にて ``bypass_verification`` のサポートを追加しました。"
 
 #: ../../whats_new.rst:136
 msgid "Add support for passing a client to :meth:`Webhook.from_url` and :meth:`Webhook.partial`"
-msgstr ""
+msgstr ":meth:`Webhook.from_url` と :meth:`Webhook.partial` にクライアントを渡せるようにしました。"
 
 #: ../../whats_new.rst:136
 msgid "This allows them to use views (assuming they are \"bot owned\" webhooks)"
-msgstr ""
+msgstr "これにより、ビューを使用することができます (「ボット所有」Webhookである場合は)。"
 
 #: ../../whats_new.rst:138
 msgid "Add :meth:`Colour.dark_embed` and :meth:`Colour.light_embed` (:issue:`9219`)"
-msgstr ""
+msgstr ":meth:`Colour.dark_embed` と :meth:`Colour.light_embed` を追加しました。 (:issue:`9219`)"
 
 #: ../../whats_new.rst:139
 msgid "Add support for many more parameters within :meth:`Guild.create_stage_channel` (:issue:`9245`)"
-msgstr ""
+msgstr ":meth:`Guild.create_stage_channel` で対応するパラメータを追加しました。 (:issue:`9245`)"
 
 #: ../../whats_new.rst:140
 msgid "Add :attr:`AppInfo.role_connections_verification_url`"
-msgstr ""
+msgstr ":attr:`AppInfo.role_connections_verification_url` を追加しました。"
 
 #: ../../whats_new.rst:141
 msgid "Add support for :attr:`ForumChannel.default_layout`"
-msgstr ""
+msgstr ":attr:`ForumChannel.default_layout` のサポートを追加しました。"
 
 #: ../../whats_new.rst:142
 msgid "Add various new :class:`MessageType` values such as ones related to stage channel and role subscriptions"
-msgstr ""
+msgstr "ステージチャンネルやロールサブスクリプションに関連するものなど、新しい :class:`MessageType` 値を追加しました。"
 
 #: ../../whats_new.rst:149
 msgid "Add support for role subscription related attributes"
-msgstr ""
+msgstr "ロールサブスクリプション関連属性のサポートを追加しました。"
 
 #: ../../whats_new.rst:144
 msgid ":class:`RoleSubscriptionInfo` within :attr:`Message.role_subscription`"
-msgstr ""
+msgstr ":attr:`Message.role_subscription` と :class:`RoleSubscriptionInfo` 。"
 
 #: ../../whats_new.rst:145
 msgid ":attr:`MessageType.role_subscription_purchase`"
-msgstr ""
+msgstr ":attr:`MessageType.role_subscription_purchase`"
 
 #: ../../whats_new.rst:146
 msgid ":attr:`SystemChannelFlags.role_subscription_purchase_notifications`"
-msgstr ""
+msgstr ":attr:`SystemChannelFlags.role_subscription_purchase_notifications`"
 
 #: ../../whats_new.rst:147
 msgid ":attr:`SystemChannelFlags.role_subscription_purchase_notification_replies`"
-msgstr ""
+msgstr ":attr:`SystemChannelFlags.role_subscription_purchase_notification_replies`"
 
 #: ../../whats_new.rst:148
 msgid ":attr:`RoleTags.subscription_listing_id`"
-msgstr ""
+msgstr ":attr:`RoleTags.subscription_listing_id`"
 
 #: ../../whats_new.rst:149
 msgid ":meth:`RoleTags.is_available_for_purchase`"
-msgstr ""
+msgstr ":meth:`RoleTags.is_available_for_purchase`"
 
 #: ../../whats_new.rst:151
 msgid "Add support for checking if a role is a linked role under :meth:`RoleTags.is_guild_connection`"
-msgstr ""
+msgstr ":meth:`RoleTags.is_guild_connection` で、ロールが紐づいたロールかの確認のサポートを追加しました。"
 
 #: ../../whats_new.rst:152
 msgid "Add support for GIF sticker type"
-msgstr ""
+msgstr "GIFスタンプタイプのサポートを追加しました。"
 
 #: ../../whats_new.rst:153
 msgid "Add support for :attr:`Message.application_id` and :attr:`Message.position`"
-msgstr ""
+msgstr ":attr:`Message.application_id` と :attr:`Message.position` のサポートを追加しました。"
 
 #: ../../whats_new.rst:154
 msgid "Add :func:`utils.maybe_coroutine` helper"
-msgstr ""
+msgstr ":func:`utils.maybe_coroutine` ヘルパーを追加しました。"
 
 #: ../../whats_new.rst:155
 msgid "Add :attr:`ScheduledEvent.creator_id` attribute"
-msgstr ""
+msgstr ":attr:`ScheduledEvent.creator_id` 属性を追加しました。"
 
 #: ../../whats_new.rst:156
 msgid "|commands| Add support for :meth:`~ext.commands.Cog.interaction_check` for :class:`~ext.commands.GroupCog` (:issue:`9189`)"
-msgstr ""
+msgstr "|commands| :class:`~ext.commands.GroupCog` にて :meth:`~ext.commands.Cog.interaction_check` のサポートを追加しました。 (:issue:`9189`)"
 
 #: ../../whats_new.rst:161
 msgid "Fix views not being removed from message store backing leading to a memory leak when used from an application command context"
-msgstr ""
+msgstr "アプリケーションコマンドから使用されたビューがメッセージストアから除去されず、メモリリークを引き起こすバグを修正しました。"
 
 #: ../../whats_new.rst:162
 msgid "Fix async iterators requesting past their bounds when using ``oldest_first`` and ``after`` or ``before`` (:issue:`9093`)"
-msgstr ""
+msgstr "非同期イテレータが ``oldest_first`` と ``after`` または ``before`` を指定した場合に境界を越えてリクエストをするのを修正しました。 (:issue:`9093`)"
 
 #: ../../whats_new.rst:163
 msgid "Fix :meth:`Guild.audit_logs` pagination logic being buggy when using ``after`` (:issue:`9269`)"
-msgstr ""
+msgstr ":meth:`Guild.audit_logs` にて、 ``after`` を使用したときにページネーションで発生するバグを修正しました。 (:issue:`9269`)"
 
 #: ../../whats_new.rst:164
 msgid "Fix :attr:`Message.channel` sometimes being :class:`Object` instead of :class:`PartialMessageable`"
-msgstr ""
+msgstr ":attr:`Message.channel` が時々 :class:`PartialMessageable` ではなく :class:`Object` となるバグを修正しました。"
 
 #: ../../whats_new.rst:165
 msgid "Fix :class:`ui.View` not properly calling ``super().__init_subclass__`` (:issue:`9231`)"
-msgstr ""
+msgstr ":class:`ui.View` が ``super().__init_subclass__`` を適切に呼び出さないのを修正しました。 (:issue:`9231`)"
 
 #: ../../whats_new.rst:166
 msgid "Fix ``available_tags`` and ``default_thread_slowmode_delay`` not being respected in :meth:`Guild.create_forum`"
-msgstr ""
+msgstr ":meth:`Guild.create_forum` で渡された ``available_tags`` と ``default_thread_slowmode_delay`` が使用されない問題を修正しました。"
 
 #: ../../whats_new.rst:167
 msgid "Fix :class:`AutoModTrigger` ignoring ``allow_list`` with type keyword (:issue:`9107`)"
-msgstr ""
+msgstr ":class:`AutoModTrigger` が type キーワードのある ``allow_list`` を無視するバグを修正しました。 (:issue:`9107`)"
 
 #: ../../whats_new.rst:168
 msgid "Fix implicit permission resolution for :class:`Thread` (:issue:`9153`)"
-msgstr ""
+msgstr ":class:`Thread` の暗黙的な権限の解決を修正しました。 (:issue:`9153`)"
 
 #: ../../whats_new.rst:169
 msgid "Fix :meth:`AutoModRule.edit` to work with actual snowflake types such as :class:`Object` (:issue:`9159`)"
-msgstr ""
+msgstr ":meth:`AutoModRule.edit` を、 :class:`Object` のようなスノウフレーク型で動くよう修正しました。 (:issue:`9159`)"
 
 #: ../../whats_new.rst:170
 msgid "Fix :meth:`Webhook.send` returning :class:`ForumChannel` for :attr:`WebhookMessage.channel`"
-msgstr ""
+msgstr ":meth:`Webhook.send` が :attr:`WebhookMessage.channel` に関し :class:`ForumChannel` を返すのを修正しました。"
 
 #: ../../whats_new.rst:171
 msgid "When a lookup for :attr:`AuditLogEntry.target` fails, it will fallback to :class:`Object` with the appropriate :attr:`Object.type` (:issue:`9171`)"
-msgstr ""
+msgstr ":attr:`AuditLogEntry.target` の検索が失敗したとき、適切な :attr:`Object.type` をもつ :class:`Object` にフォールバックするようにしました。 (:issue:`9171`)"
 
 #: ../../whats_new.rst:172
 msgid "Fix :attr:`AuditLogDiff.type` for integrations returning :class:`ChannelType` instead of :class:`str` (:issue:`9200`)"
-msgstr ""
+msgstr "インテグレーションの :attr:`AuditLogDiff.type` が :class:`str` ではなく :class:`ChannelType` を返すのを修正しました。 (:issue:`9200`)"
 
 #: ../../whats_new.rst:173
 msgid "Fix :attr:`AuditLogDiff.type` for webhooks returning :class:`ChannelType` instead of :class:`WebhookType` (:issue:`9251`)"
-msgstr ""
+msgstr "Webhookの :attr:`AuditLogDiff.type` が :class:`WebhookType` ではなく :class:`ChannelType` を返すのを修正しました。 (:issue:`9251`)"
 
 #: ../../whats_new.rst:174
 msgid "Fix webhooks and interactions not properly closing files after the request has completed"
-msgstr ""
+msgstr "Webhookとインタラクションが、リクエストが完了した後にファイルを正しく閉じないバグを修正しました。"
 
 #: ../../whats_new.rst:175
 msgid "Fix :exc:`NameError` in audit log target for app commands"
-msgstr ""
+msgstr "アプリケーションコマンドの監査ログターゲットでの :exc:`NameError` を修正しました。"
 
 #: ../../whats_new.rst:176
 msgid "Fix :meth:`ScheduledEvent.edit` requiring some arguments to be passed in when unnecessary (:issue:`9261`, :issue:`9268`)"
-msgstr ""
+msgstr ":meth:`ScheduledEvent.edit` にて不必要な引数が必須とされるバグを修正しました。 (:issue:`9261` 、 :issue:`9268`)"
 
 #: ../../whats_new.rst:177
 msgid "|commands| Explicit set a traceback for hybrid command invocations (:issue:`9205`)"
-msgstr ""
+msgstr "|commands| ハイブリッドコマンドを呼び出すとき、明示的にトレースバックを設定するようにしました。 (:issue:`9205`)"
 
 #: ../../whats_new.rst:182
 msgid "Add colour preview for the colours predefined in :class:`Colour`"
-msgstr ""
+msgstr ":class:`Colour` で定義された色のプレビューを追加しました。"
 
 #: ../../whats_new.rst:183
 msgid "Finished views are no longer stored by the library when sending them (:issue:`9235`)"
-msgstr ""
+msgstr "終了したビューは送信時にライブラリで保管されないようになりました。 (:issue:`9235`)"
 
 #: ../../whats_new.rst:184
 msgid "Force enable colour logging for the default logging handler when run under Docker."
-msgstr ""
+msgstr "Docker下で実行するときに、デフォルトの logging ハンドラで色のついたログを常に有効にするようにしました。"
 
 #: ../../whats_new.rst:185
 msgid "Add various overloads for :meth:`Client.wait_for` to aid in static analysis (:issue:`9184`)"
-msgstr ""
+msgstr "静的解析のために、 :meth:`Client.wait_for` のオーバーロードを追加しました。 (:issue:`9184`)"
 
 #: ../../whats_new.rst:186
 msgid ":class:`Interaction` can now optionally take a generic parameter, ``ClientT`` to represent the type for :attr:`Interaction.client`"
-msgstr ""
+msgstr ":class:`Interaction` は、オプションでジェネリックのパラメータ ``ClientT`` をとり、 :attr:`Interaction.client` の型を指定できるようになりました。"
 
 #: ../../whats_new.rst:187
 msgid "|commands| Respect :attr:`~ext.commands.Command.ignore_extra` for :class:`~discord.ext.commands.FlagConverter` keyword-only parameters"
-msgstr ""
+msgstr "|commands| :class:`~discord.ext.commands.FlagConverter` キーワードのみのパラメータでも、 :attr:`~ext.commands.Command.ignore_extra` に従うようにしました。"
 
 #: ../../whats_new.rst:188
 msgid "|commands| Change :attr:`Paginator.pages <ext.commands.Paginator.pages>` to not prematurely close (:issue:`9257`)"
-msgstr ""
+msgstr "|commands| :attr:`Paginator.pages <ext.commands.Paginator.pages>` を早期に閉じないように変更しました。 (:issue:`9257`)"
 
 #: ../../whats_new.rst:193
 msgid "v2.1.1"
-msgstr ""
+msgstr "v2.1.1"
 
 #: ../../whats_new.rst:198
 msgid "Fix crash involving GIF stickers when looking up their filename extension."
-msgstr ""
+msgstr "GIF スタンプのファイル名の拡張子を検索するときのクラッシュを修正しました。"
 
 #: ../../whats_new.rst:203
 msgid "v2.1.0"

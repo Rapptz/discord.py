@@ -105,6 +105,10 @@ class VoiceProtocol:
         An abstract method that is called when the client's voice state
         has changed. This corresponds to ``VOICE_STATE_UPDATE``.
 
+        .. warning::
+
+            This method is not the same as the event. See: :func:`on_voice_state_update`
+
         Parameters
         ------------
         data: :class:`dict`
@@ -355,8 +359,7 @@ class VoiceClient(VoiceProtocol):
         asyncio.TimeoutError
             The move did not complete in time, but may still be ongoing.
         """
-        await self._connection.move_to(channel)
-        await self._connection.wait_async(timeout)
+        await self._connection.move_to(channel, timeout)
 
     def is_connected(self) -> bool:
         """Indicates if the voice client is connected to voice."""

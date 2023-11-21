@@ -27,6 +27,7 @@ from typing_extensions import NotRequired, Required
 
 from .automod import AutoModerationAction, AutoModerationRuleTriggerType
 from .activity import PartialPresenceUpdate
+from .sku import Entitlement
 from .voice import GuildVoiceState
 from .integration import BaseIntegration, IntegrationApplication
 from .role import Role
@@ -347,3 +348,6 @@ class AutoModerationActionExecution(TypedDict):
 
 class GuildAuditLogEntryCreate(AuditLogEntry):
     guild_id: Snowflake
+
+
+EntitlementCreateEvent = EntitlementUpdateEvent = EntitlementDeleteEvent = Entitlement
