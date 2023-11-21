@@ -98,7 +98,6 @@ from .partial_emoji import _EmojiTag, PartialEmoji
 __all__ = (
     'Guild',
     'BanEntry',
-    'IncidentData',
 )
 
 MISSING = utils.MISSING
@@ -110,7 +109,7 @@ if TYPE_CHECKING:
         Guild as GuildPayload,
         RolePositionUpdate as RolePositionUpdatePayload,
         GuildFeature,
-        IncidentData as IncidentDataPayload,
+        IncidentData,
     )
     from .types.threads import (
         Thread as ThreadPayload,
@@ -512,7 +511,7 @@ class Guild(Hashable):
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
         self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
-        self._incidents_data: Optional[IncidentDataPayload] = guild.get("incidents_data")
+        self._incidents_data: Optional[IncidentData] = guild.get("incidents_data")
 
         if 'channels' in guild:
             channels = guild['channels']
@@ -1976,13 +1975,13 @@ class Guild(Hashable):
             .. versionadded:: 2.3
         
         invites_disabled_until: Optional[:class:`datetime.datetime`]
-            The time when invites should be enabled again, or ``None`` to revert the action.
+            The time when invites should be enabled again, or ``None`` to disable the action.
             This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
 
             .. versionadded:: 2.4
 
         dms_disabled_until: Optional[:class:`datetime.datetime`]
-            The time when direct messages should be allowed again, or ``None`` to revert the action.
+            The time when direct messages should be allowed again, or ``None`` to disable the action.
             This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
 
             .. versionadded:: 2.4
@@ -2175,25 +2174,29 @@ class Guild(Hashable):
 
             await http.edit_guild_mfa_level(self.id, mfa_level=mfa_level.value)
 
+        incident_actions_payload: IncidentData = {}
         if invites_disabled_until is not MISSING:
             if invites_disabled_until is None:
-                payload['invites_disabled_until'] = None
+                incident_actions_payload['invites_disabled_until'] = None
             else:
                 if invites_disabled_until.tzinfo is None:
                     raise TypeError(
                         'invites_disabled_until must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
                     )
-                payload['invites_disabled_until'] = invites_disabled_until.isoformat()
+                incident_actions_payload['invites_disabled_until'] = invites_disabled_until.isoformat()
 
         if dms_disabled_until is not MISSING:
             if dms_disabled_until is None:
-                payload['dms_disabled_until'] = None
+                incident_actions_payload['dms_disabled_until'] = None
             else:
                 if dms_disabled_until.tzinfo is None:
                     raise TypeError(
                         'dms_disabled_until must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
                     )
-                payload['dms_disabled_until'] = dms_disabled_until.isoformat()
+                incident_actions_payload['dms_disabled_until'] = dms_disabled_until.isoformat()
+
+        if incident_actions_payload:
+            await http.edit_incident_actions(self.id, payload=incident_actions_payload)
 
         data = await http.edit_guild(self.id, reason=reason, **fields)
         return Guild(data=data, state=self._state)
@@ -4333,36 +4336,42 @@ class Guild(Hashable):
 
     @property
     def invites_paused_until(self) -> Optional[datetime.datetime]:
-        """:class:`datetime.datetime`: invites disabled until
+        """:class:`datetime.datetime`: When invites get enabled again.
         
         .. versionadded:: 2.4
         """
-        if not self.incidents_data:
+        if not self._incidents_data:
             return None
 
-        return utils.parse_time(self.incidents_data.get("invites_disabled_until"))
+        return utils.parse_time(self._incidents_data.get("invites_disabled_until"))
 
     @property
     def dms_paused_until(self) -> Optional[datetime.datetime]:
-        """:class:`datetime.datetime`: dms disabled until
+        """:class:`datetime.datetime`: When direct messages get enabled again.
         
         .. versionadded:: 2.4
         """
-        if not self.incidents_data:
+        if not self._incidents_data:
             return None
 
-        return utils.parse_time(self.incidents_data.get("dms_disabled_until"))
+        return utils.parse_time(self._incidents_data.get("dms_disabled_until"))
 
     def invites_paused(self) -> bool:
-        """:class:`bool`: Whether invites are paused in the guild
+        """:class:`bool`: Whether invites are paused in the guild.
         
         .. versionadded:: 2.4
         """
-        return self.invites_paused_until and self.invites_paused_until > utils.utcnow()
+        if not self.invites_paused_until:
+            return False
+
+        return self.invites_paused_until > utils.utcnow()
 
     def dms_paused(self) -> bool:
-        """:class:`bool`: Whether dms are paused in the guild
+        """:class:`bool`: Whether dms are paused in the guild.
         
         .. versionadded:: 2.4
         """
-        return self.dms_paused_until and self.dms_paused_until > utils.utcnow()
+        if not self.dms_paused_until:
+            return False
+
+        return self.dms_paused_until > utils.utcnow()
