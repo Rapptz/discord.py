@@ -1999,7 +1999,7 @@ class Guild(Hashable):
         TypeError
             The type passed to the ``default_notifications``, ``rules_channel``, ``public_updates_channel``,
             ``safety_alerts_channel`` ``verification_level``, ``explicit_content_filter``,
-            ``system_channel_flags`` or ``mfa_level`` parameter was of the incorrect type.
+            ``system_channel_flags``, or ``mfa_level`` parameter was of the incorrect type.
 
         Returns
         --------
