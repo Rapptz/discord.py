@@ -1073,7 +1073,7 @@ class Client:
 
         Returns
         --------
-        Optional[:class:`User`]
+        Optional[:class:`~discord.User`]
             The user sharing a server with the bot with the associated name. If not found
             then ``None`` is returned.
         """
