@@ -586,13 +586,9 @@ class HTTPClient:
             headers['Content-Type'] = 'application/json'
             kwargs['data'] = utils._to_json(kwargs.pop('json'))
 
-        try:
-            reason = kwargs.pop('reason')
-        except KeyError:
-            pass
-        else:
-            if reason:
-                headers['X-Audit-Log-Reason'] = _uriquote(reason, safe='/ ')
+        reason = kwargs.pop('reason', None)
+        if reason:
+            headers['X-Audit-Log-Reason'] = _uriquote(reason, safe='/ ')
 
         kwargs['headers'] = headers
 
