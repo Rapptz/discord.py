@@ -440,7 +440,7 @@ class AuditLogAction(Enum):
             AuditLogAction.creator_monetization_terms_accepted:      None,
         }
         # fmt: on
-        return lookup[self]
+        return lookup.get(self)
 
     @property
     def target_type(self) -> Optional[str]:
