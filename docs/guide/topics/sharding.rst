@@ -20,7 +20,7 @@ Client vs AutoShardedClient
 
 Both :class:`~Client` and :class:`~ext.commands.Bot` have auto sharded variants, :class:`~AutoShardedClient` and :class:`~ext.commands.AutoShardedBot` respectively.
 
-The key difference between the two is that the former can only support one connection (one shard), while the auto sharded variants can handle multiple gateway connections. If you are running multiple shards, it is recommended to use the auto sharded variants.
+The key difference between the two is that the former can only support one connection (one shard), while the auto sharded variants can handle multiple gateway connections.
 
 There's 2 ways you can do sharding:
 
@@ -81,7 +81,7 @@ If you don't want to use discord's recommended shard count, you can specify your
 
     intents = discord.Intents.default()
     intents.message_content = True
-    bot = commands.Bot(command_prefix='!', shard_count=10, intents=intents)
+    bot = commands.AutoShardedBot(command_prefix='!', shard_count=10, intents=intents)
 
     @bot.command()
     async def shards(ctx):
