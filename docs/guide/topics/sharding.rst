@@ -5,7 +5,7 @@
 Sharding
 ==========
 
-When bots start to get considerably large, the amount of events they have to deal with can start to become problematic. At high user and guild counts, the number of incoming messages, typing events, and status updates can start to climb to being as frequent as hundreds per second.
+When bots start to get considerably large, the amount of events they have to deal with can start to become problematic. At high user and guild counts, the number of incoming messages, typing events, and status updates can start to become as high as hundreds per second.
 
 To help deal with this large amount of traffic, Discord supports **sharding**, a feature where your bot can split its guilds amongst separate connections, reducing the amount of data each connection has to handle.
 
