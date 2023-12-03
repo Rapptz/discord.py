@@ -90,7 +90,7 @@ Two main decorators can be used:
 
 Both decorators wrap an async function into a :class:`~.app_commands.Command` instance, however
 the former also adds the command to the tree,
-which skips the step of having to add it manually using :meth:`.CommandTree.add_command()`.
+which skips the step of having to later add it yourself by calling :meth:`.CommandTree.add_command()`.
 
 For example, these two are functionally equivalent:
 
@@ -536,7 +536,10 @@ On the client, after syncing:
 .. image:: /images/guide/app_commands/colour_command_preview.png
     :width: 400
 
-Choices can also be set in two other pythonic ways (:class:`~typing.Literal` typehints and from the values in an :class:`~enum.Enum`)
+You can also set choices in two other pythonic ways:
+
+- Via a :class:`~typing.Literal` typehint
+- From the values in an :class:`~enum.Enum`
 
 :func:`Jump <discord.app_commands.choices>` to the reference for more info and code examples!
 
@@ -548,19 +551,19 @@ Autocompletion
 Autocompletes allow the bot to dynamically suggest up to 25 choices
 to a user as they type an argument.
 
-In short:
+Quick rundown:
 
 - User starts typing.
 
 - After a brief debounced pause from typing, Discord requests a list of choices from the bot.
 
-- An autocomplete callback is called with the current user input.
+- An **autocomplete callback** is called with the current user input.
 
 - Returned choices are sent back to Discord and shown in the user's client.
 
   - An empty list can be returned to denote no choices.
 
-Attaching an autocomplete function to a parameter can be done in 2 main ways:
+Attaching an autocomplete callback to a parameter can be done in two main ways:
 
 1. From the command, with the :meth:`~.app_commands.Command.autocomplete` decorator
 2. With a separate decorator, :func:`.app_commands.autocomplete`
@@ -600,7 +603,8 @@ Transformers
 +++++++++++++
 
 Sometimes additional logic for parsing arguments is wanted.
-For instance, to parse a date string into a :class:`datetime.datetime` we might do:
+For instance, to parse a date string into a :class:`datetime.datetime` we might
+use :meth:`datetime.strptime<datetime.datetime.strptime>` in the command callback:
 
 .. code-block:: python
 
@@ -636,8 +640,10 @@ To make one, inherit from :class:`.app_commands.Transformer` and override the :m
             when = when.replace(tzinfo=datetime.timezone.utc)
             return when
 
-If you're familar with the commands extension (:ref:`ext.commands <discord_ext_commands>`),
-you can draw a lot of similarities in the design with converters.
+.. hint::
+
+    If you're familar with the commands extension (:ref:`ext.commands <discord_ext_commands>`),
+    you can draw a lot of similarities in the design with converters.
 
 To then attach this transformer to a parameter, annotate to :class:`~.app_commands.Transform`:
 
@@ -659,10 +665,13 @@ To then attach this transformer to a parameter, annotate to :class:`~.app_comman
     ):
         # prepare birthday celebrations...
 
+Since the parsing responsibility is abstracted away from the command, it makes it easier
+to do it in multiple commands.
+
 It's also possible to instead pass an instance of the transformer instead of the class directly,
 which opens up the possibility of setting up some state in :meth:`~object.__init__`.
 
-For example, we could modify the constructor to take a  ``past`` parameter to exclude past dates:
+For example, we could modify the constructor to take a ``past`` parameter to exclude past dates:
 
 .. code-block:: python
 
@@ -685,7 +694,8 @@ For example, we could modify the constructor to take a  ``past`` parameter to ex
     Transform[datetime.datetime, DateTransformer(past=False)]
 
 Since the parameter's type annotation is replaced with :class:`~.app_commands.Transform`,
-the underlying type and other information must now be provided through the :class:`~.app_commands.Transformer` itself.
+the underlying Discord type and other information must now be provided
+through the :class:`~.app_commands.Transformer` itself.
 
 These can be provided by overriding the following properties:
 
@@ -773,10 +783,7 @@ The table below outlines the relationship between Discord and Python types.
         # you can take advantage of this behaviour:
 
         @client.tree.command()
-        async def userinfo(
-            interaction: discord.Interaction,
-            user: discord.User
-        ):
+        async def userinfo(interaction: discord.Interaction, user: discord.User):
             embed = discord.Embed()
 
             embed.set_author(name=user.name, icon_url=user.display_avatar.url)
