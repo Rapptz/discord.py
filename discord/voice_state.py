@@ -62,7 +62,7 @@ if TYPE_CHECKING:
     from . import abc
     from .guild import Guild
     from .user import ClientUser
-    from .member import VoiceState
+    from .member import Member, VoiceState
     from .voice_client import VoiceClient
 
     from .types.voice import (
@@ -255,7 +255,7 @@ class VoiceConnectionState:
 
         if channel_id is None:
             # If we know we're going to get a voice_state_update where we have no channel due to
-            # being in the reconnect flow, we ignore it.  Otherwise, it probably wasn't from us.
+            # being in the reconnect or disconnect flow, we ignore it.  Otherwise, it probably wasn't from us.
             if self._expecting_disconnect:
                 self._expecting_disconnect = False
             else:
@@ -419,9 +419,9 @@ class VoiceConnectionState:
             return
 
         try:
+            await self._voice_disconnect()
             if self.ws:
                 await self.ws.close()
-            await self._voice_disconnect()
         except Exception:
             _log.debug('Ignoring exception disconnecting from voice', exc_info=True)
         finally:
@@ -440,6 +440,26 @@ class VoiceConnectionState:
 
             if self.socket:
                 self.socket.close()
+
+            # Ignore this part if disconnect was called from the poll loop task
+            if self._runner and asyncio.current_task() != self._runner:
+                # Wait for the voice_state_update event confirming the bot left the voice channel.
+                # This prevents a race condition caused by disconnecting and immediately connecting again.
+                # The new VoiceConnectionState object receives the voice_state_update event containing channel=None,
+                # leaving it in a bad state.  Since there's no nice way to transfer state to the new one, we have to do this.
+
+                def check(member: Member, before: VoiceState, after: VoiceState):
+                    return (
+                        member == self.user
+                        and member.guild == self.guild
+                        and before.channel is not None
+                        and after.channel is None
+                    )
+
+                try:
+                    await self.voice_client.client.wait_for('voice_state_update', check=check, timeout=self.timeout)
+                except TimeoutError:
+                    _log.debug('Timed out waiting for disconnect confirmation event')
 
     async def soft_disconnect(self, *, with_state: ConnectionFlowState = ConnectionFlowState.got_both_voice_updates) -> None:
         _log.debug('Soft disconnecting from voice')
@@ -557,8 +577,10 @@ class VoiceConnectionState:
                     # 4014 - we were externally disconnected (voice channel deleted, we were moved, etc)
                     # 4015 - voice server has crashed
                     if exc.code in (1000, 4015):
-                        _log.info('Disconnecting from voice normally, close code %d.', exc.code)
-                        await self.disconnect()
+                        # Don't call disconnect a second time if the websocket closed from a disconnect call
+                        if not self._expecting_disconnect:
+                            _log.info('Disconnecting from voice normally, close code %d.', exc.code)
+                            await self.disconnect()
                         break
 
                     if exc.code == 4014:
