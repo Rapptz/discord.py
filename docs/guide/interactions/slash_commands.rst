@@ -43,7 +43,7 @@ It contains a few dedicated methods for adding, viewing and removing app command
 
 An instance of this (only one!) needs to be created so that we can begin adding commands to it.
 
-It helps to directly attach the tree to the client instance, since this plays well with
+Its customary to directly attach the tree to the client instance, since this plays well with
 any type checker if you're using one, and to allow for easy access from anywhere in the code.
 
 To do this, simply attach the tree to the ``self`` instance in a client subclass:
