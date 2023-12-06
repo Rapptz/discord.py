@@ -602,6 +602,8 @@ class VoiceConnectionState:
             )
         except asyncio.TimeoutError:
             return False
+
+        previous_ws = self.ws
         try:
             self.ws = await self._connect_websocket(False)
             await self._handshake_websocket()
@@ -609,6 +611,8 @@ class VoiceConnectionState:
             return False
         else:
             return True
+        finally:
+            await previous_ws.close()
 
     async def _move_to(self, channel: abc.Snowflake) -> None:
         await self.voice_client.channel.guild.change_voice_state(channel=channel)
