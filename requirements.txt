@@ -1,1 +1,5 @@
 aiohttp>=3.7.4,<4
+<<<<<<< HEAD
+=======
+async-timeout>=4.0,<5.0; python_version<"3.11"
+>>>>>>> 536cf5c01fa4237306eadb29fc32abd65b485205

@@ -45,7 +45,10 @@ import asyncio
 import logging
 import threading
 
-import async_timeout
+try:
+    from asyncio import timeout as atimeout  # type: ignore
+except ImportError:
+    from async_timeout import timeout as atimeout  # type: ignore
 
 from typing import TYPE_CHECKING, Optional, Dict, List, Callable, Coroutine, Any, Tuple
 
@@ -378,7 +381,7 @@ class VoiceConnectionState:
     async def _connect(self, reconnect: bool, timeout: float, self_deaf: bool, self_mute: bool, resume: bool) -> None:
         _log.info('Connecting to voice...')
 
-        async with async_timeout.timeout(timeout):
+        async with atimeout(timeout):
             for i in range(5):
                 _log.info('Starting voice handshake... (connection attempt %d)', i + 1)
 
