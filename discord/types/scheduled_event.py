@@ -34,6 +34,20 @@ EventStatus = Literal[1, 2, 3, 4]
 EntityType = Literal[1, 2, 3]
 
 
+class GuildScheduledEventRecurrence(TypedDict):
+    start: str
+    end: Optional[str]
+    frequency: int
+    interval: int
+    by_weekday: Optional[List[Literal[0, 1, 2, 3, 4, 5, 6]]] # NOTE: 0 = monday; 6 = sunday
+    by_month: Optional[List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]
+    by_month_day: Optional[List[int]] # NOTE: day range between 1 and 31
+    by_year_day: Optional[List[int]]
+    count: Optional[int] # maybe?
+# NOTE: for this ^ enum, it is recommended to use "calendar" module constants: MONDAY; TUESDAY; WEDNESDAY; etc
+# as they follow these patterns and is a built-in module.
+
+
 class _BaseGuildScheduledEvent(TypedDict):
     id: Snowflake
     guild_id: Snowflake
@@ -42,6 +56,10 @@ class _BaseGuildScheduledEvent(TypedDict):
     scheduled_start_time: str
     privacy_level: PrivacyLevel
     status: EventStatus
+    auto_start: bool
+    guild_scheduled_events_exceptions: List # Didn't found items in the list yet
+    recurrence_rule: Optional[GuildScheduledEventRecurrence]
+    sku_ids: List[Snowflake]
     creator_id: NotRequired[Optional[Snowflake]]
     description: NotRequired[Optional[str]]
     creator: NotRequired[User]

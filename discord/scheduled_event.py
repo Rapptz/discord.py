@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, AsyncIterator, Dict, Optional, Union, overload, Literal
+from typing import TYPE_CHECKING, AsyncIterator, Dict, Optional, Union, overload, Literal, List
 
 from .asset import Asset
 from .enums import EventStatus, EntityType, PrivacyLevel, try_enum
@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from .types.scheduled_event import (
         GuildScheduledEvent as BaseGuildScheduledEventPayload,
         GuildScheduledEventWithUserCount as GuildScheduledEventWithUserCountPayload,
+        GuildScheduledEventRecurrence as GuildScheduledEventRecurrencePayload,
         EntityMetadata,
     )
 
@@ -51,8 +52,95 @@ if TYPE_CHECKING:
 # fmt: off
 __all__ = (
     "ScheduledEvent",
+    "ScheduledEventRecurrence"
 )
 # fmt: on
+
+
+class ScheduledEventRecurrence:
+    """""" # Someone please suggest a description for this class if it needs one... I don't know what to write
+
+    @overload
+    def __init__(
+        self, 
+        *,
+        start: datetime, 
+        end: datetime, 
+        frequency: int, 
+        interval: int,
+        count: int,
+        weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = ...,
+        months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = ...,
+        month_days: List[int] = ...,
+        year_days: List[int] = ... 
+    ) -> None:
+        ...
+    
+    @overload
+    def __init__(
+        self, 
+        *,
+        start: datetime, 
+        end: Optional[datetime] = ..., 
+        frequency: int, 
+        interval: int,
+        count: int,
+        weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = ...,
+        months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = ...,
+        month_days: List[int] = ...,
+        year_days: List[int] = ... 
+    ) -> None:
+        ...
+
+    def __init__(
+        self, 
+        *,
+        start: datetime, 
+        end: Optional[datetime] = MISSING,
+        frequency: int, 
+        interval: int,
+        count: int,
+        weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = MISSING,
+        months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = MISSING,
+        month_days: List[int] = MISSING,
+        year_days: List[int] = MISSING, 
+    ) -> None:
+        
+        if not start.tzinfo:
+            raise ValueError('\'start\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
+            
+        if end:
+            if not end.tzinfo:
+                raise ValueError('\'end\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
+
+        self.start: datetime = start
+        self.end: Optional[datetime] = end
+        self.frequency: int = frequency
+        self.interval: int = interval
+        self.weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = weekdays
+        self.months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = months
+        self.month_days: List[int] = month_days
+        self.year_days: List[int] = year_days
+        self.count: int = count
+
+    def to_dict(self) -> GuildScheduledEventRecurrencePayload:
+        payload: GuildScheduledEventRecurrencePayload = {
+            "start": self.start.isoformat(),
+            "frequency": self.frequency,
+            "interval": self.interval,
+            "by_weekday": self.weekdays,
+            "by_month": self.months,
+            "by_month_day": self.month_days,
+            "by_year_day": self.year_days,
+            "count": self.count
+        } # type: ignore # Pylance type check error (it doesn't affect anything)
+
+        if self.end:
+            payload['end'] = self.end.isoformat()
+        else:
+            payload['end'] = None
+
+        return payload
 
 
 class ScheduledEvent(Hashable):
@@ -125,6 +213,7 @@ class ScheduledEvent(Hashable):
         'channel_id',
         'creator_id',
         'location',
+        'recurrence'
     )
 
     def __init__(self, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
@@ -145,6 +234,17 @@ class ScheduledEvent(Hashable):
         self._cover_image: Optional[str] = data.get('image', None)
         self.user_count: int = data.get('user_count', 0)
         self.creator_id: Optional[int] = _get_as_snowflake(data, 'creator_id')
+        self.recurrence: Optional[ScheduledEventRecurrence] = ScheduledEventRecurrence(
+            start=data['recurrence_rule']['start'],
+            end=parse_time(data['recurrence_rule']['end']) if 'end' in data['recurrence_rule'] else None,
+            frequency=int(data['recurrence_rule']['frequency']),
+            interval=int(data['recurrence_rule']['interval']),
+            count=int(data['recurrence_rule']['count']),
+            months=data['recurrence_rule']['by_month'] if data['recurrence_rule'].get('by_month', None) else [],
+            weekdays=data['recurrence_rule']['by_weekday'] if data['recurrence_rule'].get('by_weekday', None) else [],
+            month_days=data['recurrence_rule']['by_month_day'] if data['recurrence_rule'].get('by_month_day', None) else [],
+            year_days=data['recurrence_rule']['by_year_day'] if data['recurrence_rule'].get('by_year_day', None) else []
+        ) if data.get('recurrence_rule', None) else None # type: ignore # Pylance check error (not critical nor important)
 
         creator = data.get('creator')
         self.creator: Optional[User] = self._state.store_user(creator) if creator else None
@@ -310,6 +410,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
+        recurrence: Optional[ScheduledEventRecurrence] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -327,6 +428,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
+        recurrence: Optional[ScheduledEventRecurrence] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -344,6 +446,7 @@ class ScheduledEvent(Hashable):
         image: bytes = ...,
         location: str,
         reason: Optional[str] = ...,
+        recurrence: Optional[ScheduledEventRecurrence] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -360,6 +463,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
+        recurrence: Optional[ScheduledEventRecurrence] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -376,6 +480,7 @@ class ScheduledEvent(Hashable):
         image: bytes = ...,
         location: str,
         reason: Optional[str] = ...,
+        recurrence: Optional[ScheduledEventRecurrence] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -393,6 +498,7 @@ class ScheduledEvent(Hashable):
         image: bytes = MISSING,
         location: str = MISSING,
         reason: Optional[str] = None,
+        recurrence: Optional[ScheduledEventRecurrence] = MISSING,
     ) -> ScheduledEvent:
         r"""|coro|
 
@@ -550,6 +656,10 @@ class ScheduledEvent(Hashable):
                 payload['scheduled_end_time'] = end_time.isoformat()
             else:
                 payload['scheduled_end_time'] = end_time
+
+        if recurrence is not MISSING:
+            if recurrence is not None:
+                payload['recurrence_rule'] = recurrence.to_dict()
 
         if metadata:
             payload['entity_metadata'] = metadata
