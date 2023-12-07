@@ -128,4 +128,3 @@ msgstr "メタ情報"
 #: ../../index.rst:70
 msgid "If you're looking for something related to the project itself, it's here."
 msgstr "プロジェクト自体に関連するものを探しているのであれば、こちらを参照してください。"
-
