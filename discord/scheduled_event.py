@@ -192,6 +192,10 @@ class ScheduledEvent(Hashable):
         .. versionadded:: 2.2
     location: Optional[:class:`str`]
         The location of the scheduled event.
+    recurrence: Optional[:class:`ScheduledEventRecurrence`]
+        The recurrence this event follows, if any.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -213,6 +217,7 @@ class ScheduledEvent(Hashable):
         'channel_id',
         'creator_id',
         'location',
+        'recurrence',
     )
 
     def __init__(self, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
@@ -233,6 +238,7 @@ class ScheduledEvent(Hashable):
         self._cover_image: Optional[str] = data.get('image', None)
         self.user_count: int = data.get('user_count', 0)
         self.creator_id: Optional[int] = _get_as_snowflake(data, 'creator_id')
+        self.recurrence: Optional[ScheduledEventRecurrence] = ScheduledEventRecurrence.from_dict(data['recurrence_rule']) if data.get('recurrence_rule') is not None else None
 
         creator = data.get('creator')
         self.creator: Optional[User] = self._state.store_user(creator) if creator else None
