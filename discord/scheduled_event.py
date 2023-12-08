@@ -149,7 +149,7 @@ class ScheduledEventRecurrence:
         end: Optional[datetime] = parse_time(data['end']) if data.get('end') is not None else None
 
         return cls(
-            start=parse_time(data['start'],
+            start=parse_time(data['start']),
             end=end,
             frequency=int(data['frequency']),
             interval=int(data['interval']),
