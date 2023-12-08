@@ -58,7 +58,15 @@ __all__ = (
 
 
 class ScheduledEventRecurrence:
-    """""" # Someone please suggest a description for this class if it needs one... I don't know what to write
+    """Represents a Scheduled Event Recurrence.
+
+    Parameters
+    ----------
+    start: :class:`datetime.datetime`
+        When the first event of this series is started.
+    end: Optional[:class:`datetime.datetime`]
+        When the events of this series will stop. If none, it will repeat forever.
+    """ # TODO: add all remaining parameters description
 
     @overload
     def __init__(
