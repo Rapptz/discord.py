@@ -142,6 +142,24 @@ class ScheduledEventRecurrence:
 
         return payload
 
+    @classmethod
+    def from_dict(cls, data: GuildScheduledEventRecurrencePayload) -> ScheduledEventRecurrence:
+        """Creates a new instance of this class using raw data"""
+        
+        end: Optional[datetime] = parse_time(data['end']) if data.get('end') is not None else None
+
+        return cls(
+            start=parse_time(data['start'],
+            end=end,
+            frequency=int(data['frequency']),
+            interval=int(data['interval']),
+            weekdays=data.get('by_weekday', []),
+            months=data.get('by_month', []),
+            month_days=data.get('by_month_day', []),
+            year_days=data.get('by_year_day', []),
+            count=int(data['count']) if data.get('count') is not None else None,
+        )
+
 
 class ScheduledEvent(Hashable):
     """Represents a scheduled event in a guild.
