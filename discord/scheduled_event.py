@@ -117,7 +117,7 @@ class ScheduledEventRecurrence:
         if not start.tzinfo:
             raise ValueError('\'start\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
             
-        if end:
+        if end is not MISSING:
             if not end.tzinfo:
                 raise ValueError('\'end\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
 
