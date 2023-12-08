@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from .types.scheduled_event import (
         GuildScheduledEvent as BaseGuildScheduledEventPayload,
         GuildScheduledEventWithUserCount as GuildScheduledEventWithUserCountPayload,
+        GuildScheduledEventRecurrence as GuildScheduledEventRecurrencePayload,
         EntityMetadata,
     )
 
@@ -51,8 +52,95 @@ if TYPE_CHECKING:
 # fmt: off
 __all__ = (
     "ScheduledEvent",
+    "ScheduledEventRecurrence"
 )
 # fmt: on
+
+
+class ScheduledEventRecurrence:
+    """""" # Someone please suggest a description for this class if it needs one... I don't know what to write
+
+    @overload
+    def __init__(
+        self, 
+        *,
+        start: datetime, 
+        end: datetime, 
+        frequency: int, 
+        interval: int,
+        count: int,
+        weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = ...,
+        months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = ...,
+        month_days: List[int] = ...,
+        year_days: List[int] = ... 
+    ) -> None:
+        ...
+    
+    @overload
+    def __init__(
+        self, 
+        *,
+        start: datetime, 
+        end: Optional[datetime] = ..., 
+        frequency: int, 
+        interval: int,
+        count: int,
+        weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = ...,
+        months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = ...,
+        month_days: List[int] = ...,
+        year_days: List[int] = ... 
+    ) -> None:
+        ...
+
+    def __init__(
+        self, 
+        *,
+        start: datetime, 
+        end: Optional[datetime] = MISSING,
+        frequency: int, 
+        interval: int,
+        count: int,
+        weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = MISSING,
+        months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = MISSING,
+        month_days: List[int] = MISSING,
+        year_days: List[int] = MISSING, 
+    ) -> None:
+        
+        if not start.tzinfo:
+            raise ValueError('\'start\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
+            
+        if end:
+            if not end.tzinfo:
+                raise ValueError('\'end\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
+
+        self.start: datetime = start
+        self.end: Optional[datetime] = end
+        self.frequency: int = frequency
+        self.interval: int = interval
+        self.weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = weekdays
+        self.months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = months
+        self.month_days: List[int] = month_days
+        self.year_days: List[int] = year_days
+        self.count: int = count
+
+    def to_dict(self) -> GuildScheduledEventRecurrencePayload:
+        payload: GuildScheduledEventRecurrencePayload = {
+            "start": self.start.isoformat(),
+            "frequency": self.frequency,
+            "interval": self.interval,
+            "by_weekday": self.weekdays,
+            "by_month": self.months,
+            "by_month_day": self.month_days,
+            "by_year_day": self.year_days,
+            "count": self.count
+        } # type: ignore # Pylance type check error (it doesn't affect anything)
+
+        if self.end:
+            payload['end'] = self.end.isoformat()
+        else:
+            payload['end'] = None
+
+        return payload
 
 
 class ScheduledEvent(Hashable):
