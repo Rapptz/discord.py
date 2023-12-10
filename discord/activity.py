@@ -164,6 +164,8 @@ class Activity(BaseActivity):
         The detail of the user's current activity.
     platform: Optional[:class:`str`]
         The user's current platform.
+
+        .. versionadded:: 2.4
     timestamps: :class:`dict`
         A dictionary of timestamps. It contains the following optional keys:
 
@@ -359,8 +361,12 @@ class Game(BaseActivity):
     platform: Optional[:class:`str`]
         Where the user is playing from (ie. PS5, Xbox).
 
+        .. versionadded:: 2.4
+
     assets: Optional[:class:`ActivityAssets`]
         A dictionary representing the images and their hover text of a game.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = ('name', '_end', '_start', 'platform', 'assets')
