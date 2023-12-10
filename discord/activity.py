@@ -365,6 +365,12 @@ class Game(BaseActivity):
 
     assets: :class:`dict`
         A dictionary representing the images and their hover text of a game.
+        It contains the following optional keys:
+
+        - ``large_image``: A string representing the ID for the large image asset.
+        - ``large_text``: A string representing the text when hovering over the large image asset.
+        - ``small_image``: A string representing the ID for the small image asset.
+        - ``small_text``: A string representing the text when hovering over the small image asset.
 
         .. versionadded:: 2.4
     """
