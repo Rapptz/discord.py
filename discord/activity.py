@@ -363,7 +363,7 @@ class Game(BaseActivity):
 
         .. versionadded:: 2.4
 
-    assets: Optional[:class:`ActivityAssets`]
+    assets: :class:`dict`
         A dictionary representing the images and their hover text of a game.
 
         .. versionadded:: 2.4
@@ -375,7 +375,7 @@ class Game(BaseActivity):
         super().__init__(**extra)
         self.name: str = name
         self.platform: Optional[str] = extra.get('platform')
-        self.assets: Optional[ActivityAssets] = extra.get('assets')
+        self.assets: ActivityAssets = extra.get('assets', {}) or {}
 
         try:
             timestamps: ActivityTimestamps = extra['timestamps']
