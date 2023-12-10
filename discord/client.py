@@ -1089,7 +1089,7 @@ class Client:
         if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
             pred = lambda u: u.name == username and u.discriminator == discriminator
         else:
-            pred = lambda u: u.global_name == name or u.name == name
+            pred = lambda u: u.name == name or u.global_name == name
 
         return utils.find(pred, users)
 
