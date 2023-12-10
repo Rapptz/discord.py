@@ -38,6 +38,7 @@ if TYPE_CHECKING:
         GuildScheduledEvent as BaseGuildScheduledEventPayload,
         GuildScheduledEventWithUserCount as GuildScheduledEventWithUserCountPayload,
         GuildScheduledEventRecurrence as GuildScheduledEventRecurrencePayload,
+        GuildScheduledEventRecurrence as GuildScheduledEventRecurrencePayload,
         EntityMetadata,
     )
 
@@ -58,7 +59,15 @@ __all__ = (
 
 
 class ScheduledEventRecurrence:
-    """""" # Someone please suggest a description for this class if it needs one... I don't know what to write
+    """Represents a Scheduled Event Recurrence.
+
+    Parameters
+    ----------
+    start: :class:`datetime.datetime`
+        When the first event of this series is started.
+    end: Optional[:class:`datetime.datetime`]
+        When the events of this series will stop. If none, it will repeat forever.
+    """ # TODO: add all remaining parameters description
 
     @overload
     def __init__(
@@ -109,7 +118,7 @@ class ScheduledEventRecurrence:
         if not start.tzinfo:
             raise ValueError('\'start\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
             
-        if end:
+        if end is not MISSING:
             if not end.tzinfo:
                 raise ValueError('\'end\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
 
@@ -141,6 +150,24 @@ class ScheduledEventRecurrence:
             payload['end'] = None
 
         return payload
+
+    @classmethod
+    def from_dict(cls, data: GuildScheduledEventRecurrencePayload) -> ScheduledEventRecurrence:
+        """Creates a new instance of this class using raw data"""
+        
+        end: Optional[datetime] = parse_time(data['end']) if data.get('end') is not None else None
+
+        return cls(
+            start=parse_time(data['start']),
+            end=end,
+            frequency=int(data['frequency']),
+            interval=int(data['interval']),
+            weekdays=data.get('by_weekday', []),
+            months=data.get('by_month', []),
+            month_days=data.get('by_month_day', []),
+            year_days=data.get('by_year_day', []),
+            count=int(data['count']) if data.get('count') is not None else None,
+        )
 
 
 class ScheduledEvent(Hashable):
@@ -192,6 +219,10 @@ class ScheduledEvent(Hashable):
         .. versionadded:: 2.2
     location: Optional[:class:`str`]
         The location of the scheduled event.
+    recurrence: Optional[:class:`ScheduledEventRecurrence`]
+        The recurrence this event follows, if any.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -213,7 +244,7 @@ class ScheduledEvent(Hashable):
         'channel_id',
         'creator_id',
         'location',
-        'recurrence'
+        'recurrence',
     )
 
     def __init__(self, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
@@ -234,17 +265,7 @@ class ScheduledEvent(Hashable):
         self._cover_image: Optional[str] = data.get('image', None)
         self.user_count: int = data.get('user_count', 0)
         self.creator_id: Optional[int] = _get_as_snowflake(data, 'creator_id')
-        self.recurrence: Optional[ScheduledEventRecurrence] = ScheduledEventRecurrence(
-            start=data['recurrence_rule']['start'],
-            end=parse_time(data['recurrence_rule']['end']) if 'end' in data['recurrence_rule'] else None,
-            frequency=int(data['recurrence_rule']['frequency']),
-            interval=int(data['recurrence_rule']['interval']),
-            count=int(data['recurrence_rule']['count']),
-            months=data['recurrence_rule']['by_month'] if data['recurrence_rule'].get('by_month', None) else [],
-            weekdays=data['recurrence_rule']['by_weekday'] if data['recurrence_rule'].get('by_weekday', None) else [],
-            month_days=data['recurrence_rule']['by_month_day'] if data['recurrence_rule'].get('by_month_day', None) else [],
-            year_days=data['recurrence_rule']['by_year_day'] if data['recurrence_rule'].get('by_year_day', None) else []
-        ) if data.get('recurrence_rule', None) else None # type: ignore # Pylance check error (not critical nor important)
+        self.recurrence: Optional[ScheduledEventRecurrence] = ScheduledEventRecurrence.from_dict(data['recurrence_rule']) if data.get('recurrence_rule') is not None else None
 
         creator = data.get('creator')
         self.creator: Optional[User] = self._state.store_user(creator) if creator else None

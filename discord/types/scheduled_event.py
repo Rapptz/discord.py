@@ -67,6 +67,7 @@ class _BaseGuildScheduledEvent(TypedDict):
     image: NotRequired[Optional[str]]
 
 
+
 class _VoiceChannelScheduledEvent(_BaseGuildScheduledEvent):
     channel_id: Snowflake
     entity_metadata: Literal[None]
