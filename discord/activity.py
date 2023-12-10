@@ -425,15 +425,13 @@ class Game(BaseActivity):
         }
 
     def __eq__(self, other: object) -> bool:
-        return (isinstance(other, Game)
-                and other.name == self.name
-                and other.platform == self.platform)
+        return isinstance(other, Game) and other.name == self.name
 
     def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __hash__(self) -> int:
-        return hash((self.name, self.platform))
+        return hash(self.name)
 
 
 class Streaming(BaseActivity):
