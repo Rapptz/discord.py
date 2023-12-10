@@ -162,6 +162,8 @@ class Activity(BaseActivity):
         The user's current state. For example, "In Game".
     details: Optional[:class:`str`]
         The detail of the user's current activity.
+    platform: Optional[:class:`str`]
+        The user's current platform.
     timestamps: :class:`dict`
         A dictionary of timestamps. It contains the following optional keys:
 
@@ -197,6 +199,7 @@ class Activity(BaseActivity):
         'state',
         'details',
         'timestamps',
+        'platform',
         'assets',
         'party',
         'flags',
@@ -215,6 +218,7 @@ class Activity(BaseActivity):
         self.state: Optional[str] = kwargs.pop('state', None)
         self.details: Optional[str] = kwargs.pop('details', None)
         self.timestamps: ActivityTimestamps = kwargs.pop('timestamps', {})
+        self.platform: Optional[str] = kwargs.pop('platform', None)
         self.assets: ActivityAssets = kwargs.pop('assets', {})
         self.party: ActivityParty = kwargs.pop('party', {})
         self.application_id: Optional[int] = _get_as_snowflake(kwargs, 'application_id')
@@ -238,6 +242,7 @@ class Activity(BaseActivity):
             ('type', self.type),
             ('name', self.name),
             ('url', self.url),
+            ('platform', self.platform),
             ('details', self.details),
             ('application_id', self.application_id),
             ('session_id', self.session_id),
