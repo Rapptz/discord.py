@@ -1594,6 +1594,7 @@ class Webhook(BaseWebhook):
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        voice_message: bool = MISSING,
     ) -> WebhookMessage:
         ...
 
@@ -1617,6 +1618,7 @@ class Webhook(BaseWebhook):
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        voice_message: bool = MISSING,
     ) -> None:
         ...
 
@@ -1639,6 +1641,7 @@ class Webhook(BaseWebhook):
         wait: bool = False,
         suppress_embeds: bool = False,
         silent: bool = False,
+        voice_message: bool = False,
     ) -> Optional[WebhookMessage]:
         """|coro|
 
@@ -1724,6 +1727,10 @@ class Webhook(BaseWebhook):
             in the UI, but will not actually send a notification.
 
             .. versionadded:: 2.2
+        voice_message: :class:`bool`
+            Whether to send this message as a voice message. This will only work with audio files.
+
+            .. versionadded:: 2.3
 
         Raises
         --------
@@ -1754,11 +1761,12 @@ class Webhook(BaseWebhook):
         previous_mentions: Optional[AllowedMentions] = getattr(self._state, 'allowed_mentions', None)
         if content is None:
             content = MISSING
-        if ephemeral or suppress_embeds or silent:
+        if ephemeral or suppress_embeds or silent or voice_message:
             flags = MessageFlags._from_value(0)
             flags.ephemeral = ephemeral
             flags.suppress_embeds = suppress_embeds
             flags.suppress_notifications = silent
+            flags.voice = voice_message
         else:
             flags = MISSING
 
