@@ -351,13 +351,16 @@ class Game(BaseActivity):
     -----------
     name: :class:`str`
         The game's name.
+    platform: Optional[:class:`str`]
+        Where the user is playing from (ie. PS5, Xbox).
     """
 
-    __slots__ = ('name', '_end', '_start')
+    __slots__ = ('name', '_end', '_start', 'platform')
 
     def __init__(self, name: str, **extra: Any) -> None:
         super().__init__(**extra)
         self.name: str = name
+        self.platform: Optional[str] = extra.get('platform')
 
         try:
             timestamps: ActivityTimestamps = extra['timestamps']
@@ -408,6 +411,7 @@ class Game(BaseActivity):
             'type': ActivityType.playing.value,
             'name': str(self.name),
             'timestamps': timestamps,
+            'platform': str(self.platform) if self.platform else None,
         }
 
     def __eq__(self, other: object) -> bool:
