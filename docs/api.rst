@@ -2825,7 +2825,7 @@ of :class:`enum.Enum`.
         set to an unspecified proxy object with 3 attributes:
 
         - ``automod_rule_name``: The name of the automod rule that was triggered.
-        - ``automod_rule_trigger``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``automod_rule_trigger_type``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
         - ``channel``: The channel in which the automod rule was triggered.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
@@ -2843,7 +2843,7 @@ of :class:`enum.Enum`.
         set to an unspecified proxy object with 3 attributes:
 
         - ``automod_rule_name``: The name of the automod rule that was triggered.
-        - ``automod_rule_trigger``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``automod_rule_trigger_type``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
         - ``channel``: The channel in which the automod rule was triggered.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
@@ -2861,7 +2861,7 @@ of :class:`enum.Enum`.
         set to an unspecified proxy object with 3 attributes:
 
         - ``automod_rule_name``: The name of the automod rule that was triggered.
-        - ``automod_rule_trigger``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``automod_rule_trigger_type``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
         - ``channel``: The channel in which the automod rule was triggered.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
