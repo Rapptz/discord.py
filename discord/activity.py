@@ -165,6 +165,10 @@ class Activity(BaseActivity):
         The user's current state. For example, "In Game".
     details: Optional[:class:`str`]
         The detail of the user's current activity.
+    platform: Optional[:class:`str`]
+        The user's current platform.
+
+        .. versionadded:: 2.4
     timestamps: :class:`dict`
         A dictionary of timestamps. It contains the following optional keys:
 
@@ -200,6 +204,7 @@ class Activity(BaseActivity):
         'state',
         'details',
         'timestamps',
+        'platform',
         'assets',
         'party',
         'flags',
@@ -219,6 +224,7 @@ class Activity(BaseActivity):
         self.state: Optional[str] = kwargs.pop('state', None)
         self.details: Optional[str] = kwargs.pop('details', None)
         self.timestamps: ActivityTimestamps = kwargs.pop('timestamps', {})
+        self.platform: Optional[str] = kwargs.pop('platform', None)
         self.assets: ActivityAssets = kwargs.pop('assets', {})
         self.party: ActivityParty = kwargs.pop('party', {})
         self.application_id: Optional[int] = _get_as_snowflake(kwargs, 'application_id')
@@ -243,6 +249,7 @@ class Activity(BaseActivity):
             ('type', self.type),
             ('name', self.name),
             ('url', self.url),
+            ('platform', self.platform),
             ('details', self.details),
             ('application_id', self.application_id),
             ('session_id', self.session_id),
@@ -372,13 +379,30 @@ class Game(BaseActivity):
     -----------
     name: :class:`str`
         The game's name.
+    platform: Optional[:class:`str`]
+        Where the user is playing from (ie. PS5, Xbox).
+
+        .. versionadded:: 2.4
+
+    assets: :class:`dict`
+        A dictionary representing the images and their hover text of a game.
+        It contains the following optional keys:
+
+        - ``large_image``: A string representing the ID for the large image asset.
+        - ``large_text``: A string representing the text when hovering over the large image asset.
+        - ``small_image``: A string representing the ID for the small image asset.
+        - ``small_text``: A string representing the text when hovering over the small image asset.
+
+        .. versionadded:: 2.4
     """
 
-    __slots__ = ('name', '_end', '_start')
+    __slots__ = ('name', '_end', '_start', 'platform', 'assets')
 
     def __init__(self, name: str, **extra: Any) -> None:
         super().__init__(**extra)
         self.name: str = name
+        self.platform: Optional[str] = extra.get('platform')
+        self.assets: ActivityAssets = extra.get('assets', {}) or {}
 
         try:
             timestamps: ActivityTimestamps = extra['timestamps']
@@ -429,6 +453,8 @@ class Game(BaseActivity):
             'type': ActivityType.playing.value,
             'name': str(self.name),
             'timestamps': timestamps,  # type: ignore
+            'platform': str(self.platform) if self.platform else None,
+            'assets': self.assets,
         }
 
     def __eq__(self, other: object) -> bool:
