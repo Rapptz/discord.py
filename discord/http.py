@@ -241,6 +241,7 @@ def handle_message_parameters(
     thread_name: str = MISSING,
     network_type: NetworkConnectionType = MISSING,
     channel_payload: Dict[str, Any] = MISSING,
+    applied_tags: Optional[SnowflakeList] = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -328,6 +329,12 @@ def handle_message_parameters(
                 attachments_payload.append(attachment.to_dict())
 
         payload['attachments'] = attachments_payload
+
+    if applied_tags is not MISSING:
+        if applied_tags is not None:
+            payload['applied_tags'] = applied_tags
+        else:
+            payload['applied_tags'] = []
 
     if channel_payload is not MISSING:
         payload = {
