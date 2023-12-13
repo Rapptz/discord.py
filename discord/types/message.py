@@ -36,6 +36,7 @@ from .channel import ChannelType
 from .components import Component
 from .interactions import MessageInteraction
 from .sticker import StickerItem
+from .threads import Thread
 
 
 class PartialMessage(TypedDict):
@@ -146,6 +147,7 @@ class Message(PartialMessage):
     components: NotRequired[List[Component]]
     position: NotRequired[int]
     role_subscription_data: NotRequired[RoleSubscriptionData]
+    thread: NotRequired[Thread]
 
 
 AllowedMentionType = Literal['roles', 'users', 'everyone']

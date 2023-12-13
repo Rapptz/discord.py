@@ -804,6 +804,20 @@ class PartialMessage(Hashable):
         guild_id = getattr(self.guild, 'id', '@me')
         return f'https://discord.com/channels/{guild_id}/{self.channel.id}/{self.id}'
 
+    @property
+    def thread(self) -> Optional[Thread]:
+        """Optional[:class:`Thread`]: The public thread created from this message, if it exists.
+
+        .. note::
+
+            This does not retrieve archived threads, as they are not retained in the internal
+            cache. Use :meth:`fetch_thread` instead.
+
+        .. versionadded:: 2.4
+        """
+        if self.guild is not None:
+            return self.guild.get_thread(self.id)
+
     async def fetch(self) -> Message:
         """|coro|
 
@@ -1280,6 +1294,40 @@ class PartialMessage(Hashable):
         )
         return Thread(guild=self.guild, state=self._state, data=data)
 
+    async def fetch_thread(self) -> Thread:
+        """|coro|
+
+        Retrieves the public thread attached to this message.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`thread` instead.
+
+        .. versionadded:: 2.4
+
+        Raises
+        -------
+        InvalidData
+            An unknown channel type was received from Discord
+            or the guild the thread belongs to is not the same
+            as the one in this object points to.
+        HTTPException
+            Retrieving the thread failed.
+        NotFound
+            There is no thread attached to this message.
+        Forbidden
+            You do not have permission to fetch this channel.
+
+        Returns
+        --------
+        :class:`.Thread`
+            The public thread attached to this message.
+        """
+        if self.guild is None:
+            raise ValueError('This message does not have guild info attached.')
+
+        return await self.guild.fetch_channel(self.id)  # type: ignore  # Can only be Thread in this case
+
     @overload
     async def reply(
         self,
@@ -1572,6 +1620,7 @@ class Message(PartialMessage, Hashable):
         '_cs_raw_channel_mentions',
         '_cs_raw_role_mentions',
         '_cs_system_content',
+        '_thread',
         'tts',
         'content',
         'webhook_id',
@@ -1639,6 +1688,21 @@ class Message(PartialMessage, Hashable):
             self.guild = channel.guild
         except AttributeError:
             self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
+
+        self._thread: Optional[Thread] = None
+
+        if self.guild is not None:
+            try:
+                thread = data['thread']
+            except KeyError:
+                pass
+            else:
+                self._thread = self.guild.get_thread(int(thread['id']))
+
+                if self._thread is not None:
+                    self._thread._update(thread)
+                else:
+                    self._thread = Thread(guild=self.guild, state=state, data=thread)
 
         self.interaction: Optional[MessageInteraction] = None
 
@@ -1981,6 +2045,21 @@ class Message(PartialMessage, Hashable):
     def edited_at(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the message."""
         return self._edited_timestamp
+
+    @property
+    def thread(self) -> Optional[Thread]:
+        """Optional[:class:`Thread`]: The public thread created from this message, if it exists.
+
+        .. note::
+
+            For messages received via the gateway this does not retrieve archived threads, as they
+            are not retained in the internal cache. Use :meth:`fetch_thread` instead.
+
+        .. versionadded:: 2.4
+        """
+        if self.guild is not None:
+            # Fall back to guild threads in case one was created after the message
+            return self._thread or self.guild.get_thread(self.id)
 
     def is_system(self) -> bool:
         """:class:`bool`: Whether the message is a system message.
