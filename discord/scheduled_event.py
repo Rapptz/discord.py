@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, AsyncIterator, Dict, Optional, Union, overload, Literal
+from typing import TYPE_CHECKING, AsyncIterator, Dict, Optional, Union, overload, Literal, List, Tuple
 
 from .asset import Asset
 from .enums import EventStatus, EntityType, PrivacyLevel, try_enum
@@ -37,6 +37,8 @@ if TYPE_CHECKING:
     from .types.scheduled_event import (
         GuildScheduledEvent as BaseGuildScheduledEventPayload,
         GuildScheduledEventWithUserCount as GuildScheduledEventWithUserCountPayload,
+        GuildScheduledEventRecurrence as GuildScheduledEventRecurrencePayload,
+        GuildScheduledEventExceptionCounts as GuildScheduledEventExceptionCountsPayload,
         EntityMetadata,
     )
 
@@ -51,8 +53,218 @@ if TYPE_CHECKING:
 # fmt: off
 __all__ = (
     "ScheduledEvent",
+    "ScheduledEventRecurrence",
+    "ScheduledEventExceptionCount"
 )
 # fmt: on
+
+
+class ScheduledEventExceptionCount:
+    """Represents the exception counts in a Scheduled Event.
+    
+    .. versionadded:: 2.4
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two Exception Counts are equal.
+    """
+
+    def __init__(self, data: GuildScheduledEventExceptionCountsPayload) -> None:
+        self.count: int = int(data.get('guild_scheduled_event_count'))
+
+        self._exception_snowflakes: Dict[Union[str, int], int] = data.get('guild_scheduled_event_exception_counts')
+
+    @property
+    def exception_ids(self) -> List[int]:
+        """List[:class:`int`]: A list containing all the exception event IDs"""
+        return [int(id) for id in self._exception_snowflakes.keys()]
+    
+    @property
+    def exceptions(self) -> Dict[int, int]:
+        """Dict[:class:`int`, :class:`int`]: A dictionary containing all the
+        event IDs as keys and their respective exception counts as value.
+        """
+
+        return {int(snowflake): count for snowflake, count in self._exception_snowflakes.items()}
+
+
+class ScheduledEventRecurrence:
+    """Represents a Scheduled Event Recurrence
+    
+    .. versionadded:: 2.4
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two Scheduled Event Recurrences are equal
+
+    Parameters
+    ----------
+    start: :class:`datetime.datetime`
+        When the first event of this series is started.
+    end: Optional[:class:`datetime.datetime`]
+        When the events of this series will stop. If it is `None`, it will repeat forever.
+    weekday: :class:`int`
+        An integer representing the weekday this event will repeat in. Monday is 0
+        and Sunday is 6.
+    n_weekday: Tuple[:class:`int`, :class:`int`]
+        A tuple that contain the N weekday this event will repeat in.
+
+        For example, if you want for this event to repeat the 1st Monday of the month,
+        then this param should have a value of `(1, 0)`. Where ``1`` represents the
+        'first' and ``0`` the weekday, in this case, Monday.
+    month: :class:`int`
+        An integer representing the month this event will repeat in.
+    month_days: List[:class:`int`]
+        A list of integers representing the month days this event will repeat in.
+
+        This marks the days of the month this event will repeat in, for example, if it
+        is set to `1`, this event will repeat the first day of every month.
+    year_days: List[:class:`int`]
+        A list of integers representing the year days this event will repeat in.
+
+        This marks the days of the year this event will repeat in, for example, if it
+        is set to `1`, this event will repeat the first day of every year.
+    """
+
+    @overload
+    def __init__(
+        self,
+        start: datetime,
+        *,
+        weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]],
+        end: Optional[datetime] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        start: datetime,
+        *,
+        n_weekday: Tuple[Literal[1, 2, 3, 4], int],
+        end: Optional[datetime] = ...,
+    ) -> None:
+        ...
+    
+    @overload
+    def __init__(
+        self,
+        start: datetime,
+        *,
+        month: Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        month_days: List[int],
+        end: Optional[datetime] = ...,
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        start: datetime,
+        *,
+        year_days: List[int],
+        end: Optional[datetime] = ...,
+    ) -> None:
+        ...
+
+    def __init__(
+        self,
+        start: datetime,
+        *,
+        weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = MISSING,
+        n_weekday: Tuple[Literal[1, 2, 3, 4], int] = MISSING,
+        month: Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] = MISSING,
+        month_days: List[int] = MISSING,
+        year_days: List[int] = MISSING,
+        end: Optional[datetime] = MISSING,
+    ) -> None:
+        
+        if not start.tzinfo:
+            raise ValueError(
+                '\'start\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+            )
+        
+        if end not in (MISSING, None):
+            if not end.tzinfo:
+                raise ValueError(
+                    '\'end\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                )
+
+        self.start: datetime = start
+        self.end: Optional[datetime] = end if end is not MISSING else None
+
+        self.weekdays: Optional[List[int]] = weekdays if weekdays is not MISSING else None
+        self.n_weekday: Optional[Tuple[int, int]] = n_weekday if n_weekday is not MISSING else None
+        self.month: Optional[int] = month if month is not MISSING else None
+        self.month_days: Optional[List[int]] = month_days if month_days is not MISSING else None
+        self.year_days: Optional[List[int]] = year_days if year_days is not MISSING else None
+        self._interval: int = 1
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            return (
+                self.start == other.start
+            )
+        return NotImplemented
+    
+    def __set_interval(self, value: int) -> None:
+        # Inner function to set the interval to the one that we
+        # recieved from the API
+        self._interval: int = value
+
+    @property
+    def frequency(self) -> int:
+        """:class:`int`: Returns the frequency of this recurrent scheduled event"""
+
+        # This is now an internal parameter because if it is user-provided this could cause
+        # HTTPExceptions when creating or editing events.
+
+        if self.weekdays is not None:
+            return 2 if len(self.weekdays) == 1 else 3
+        elif self.n_weekday is not None:
+            return 1
+        elif self.month is not None and self.month_days is not None:
+            return 0
+        return 0 # In case None of the cases matches (i.e.: year_days) then we return 0
+    
+    @property
+    def interval(self) -> int:
+        """:class:`int`: Returns the interval of this recurrent scheduled event"""
+        return self._interval
+    
+    def to_dict(self) -> GuildScheduledEventRecurrencePayload:
+        return {
+            "start": self.start.isoformat(),
+            "end": self.end.isoformat() if self.end else None,
+            "by_weekday": self.weekdays or [],
+            "by_month": [self.month,] if self.month else [],
+            "by_month_day": self.month_days or [],
+            "by_n_weekday": [self.n_weekday,] if self.n_weekday else [],
+            "by_year_day": self.year_days or [],
+            "count": None, # There isn't counts, yet
+            "frequency": self.frequency,
+            "interval": self.interval,
+        } # type: ignore
+    
+    @classmethod
+    def from_dict(cls, data: GuildScheduledEventRecurrencePayload) -> ScheduledEventRecurrence:
+        self: cls = cls(
+            start=datetime.fromisoformat(data.get('start')),
+            weekdays=data.get('by_weekday', MISSING),
+            n_weekdays=((d['n'], d['day']) for d in data.get('by_n_weekday')) if data.get('by_n_weekday', MISSING) is not MISSING else MISSING,
+            month=data.get('by_month')[0] if len(data.get('by_month', [])) > 0 and data.get('by_month', MISSING) is not MISSING else MISSING,
+            month_days=data.get('by_month_day', MISSING),
+            year_days=data.get('by_year_day', MISSING),
+            end=data.get('end', MISSING)
+        ) # type: ignore
+
+        self.__set_interval(int(data.get('interval', 1)))
+
+        return self
 
 
 class ScheduledEvent(Hashable):
@@ -104,6 +316,10 @@ class ScheduledEvent(Hashable):
         .. versionadded:: 2.2
     location: Optional[:class:`str`]
         The location of the scheduled event.
+    recurrence: Optional[:class:`ScheduledEventRecurrence`]
+        The recurrence rule this event follows, if any.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -125,6 +341,7 @@ class ScheduledEvent(Hashable):
         'channel_id',
         'creator_id',
         'location',
+        'recurrence',
     )
 
     def __init__(self, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
@@ -145,6 +362,7 @@ class ScheduledEvent(Hashable):
         self._cover_image: Optional[str] = data.get('image', None)
         self.user_count: int = data.get('user_count', 0)
         self.creator_id: Optional[int] = _get_as_snowflake(data, 'creator_id')
+        self.recurrence: Optional[ScheduledEventRecurrence] = ScheduledEventRecurrence.from_dict(data.get('recurrence_rule')) if data.get('recurrence_rule', None) is not None else None
 
         creator = data.get('creator')
         self.creator: Optional[User] = self._state.store_user(creator) if creator else None
@@ -310,6 +528,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
+        recurrence: Optional[ScheduledEventRecurrence] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -327,6 +546,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
+        recurrence: Optional[ScheduledEventRecurrence] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -344,6 +564,7 @@ class ScheduledEvent(Hashable):
         image: bytes = ...,
         location: str,
         reason: Optional[str] = ...,
+        recurrence: Optional[ScheduledEventRecurrence] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -360,6 +581,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
+        recurrence: Optional[ScheduledEventRecurrence] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -376,6 +598,7 @@ class ScheduledEvent(Hashable):
         image: bytes = ...,
         location: str,
         reason: Optional[str] = ...,
+        recurrence: Optional[ScheduledEventRecurrence] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -393,6 +616,7 @@ class ScheduledEvent(Hashable):
         image: bytes = MISSING,
         location: str = MISSING,
         reason: Optional[str] = None,
+        recurrence: Optional[ScheduledEventRecurrence] = MISSING,
     ) -> ScheduledEvent:
         r"""|coro|
 
@@ -441,6 +665,9 @@ class ScheduledEvent(Hashable):
             Required if the entity type is :attr:`EntityType.external`.
         reason: Optional[:class:`str`]
             The reason for editing the scheduled event. Shows up on the audit log.
+        recurrence: Optional[:class:`ScheduledEventRecurrence`]
+            The recurrence rule this event will follow, or `None` to set it to a
+            one-time event.
 
         Raises
         -------
@@ -550,6 +777,12 @@ class ScheduledEvent(Hashable):
                 payload['scheduled_end_time'] = end_time.isoformat()
             else:
                 payload['scheduled_end_time'] = end_time
+
+        if recurrence is not MISSING:
+            if recurrence is not None:
+                payload['recurrence_rule'] = recurrence.to_dict()
+            else:
+                payload['recurrence_rule'] = None
 
         if metadata:
             payload['entity_metadata'] = metadata
@@ -674,6 +907,40 @@ class ScheduledEvent(Hashable):
             if count < 100:
                 # There's no data left after this
                 break
+
+    async def fetch_counts(self, *children: Snowflake) -> ScheduledEventExceptionCount:
+        """|coro|
+        
+        Retrieves all the counts for this Event children, if this event isn't
+        recurrent, then this will return `None`.
+
+        This also contains the exceptions of this Scheduled event.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        ----------
+        *children: :class:`Snowflake`
+            The snowflakes of the children to fetcht the counts of.
+
+        Raises
+        ------
+        HTTPException
+            Fetching the counts failed.
+
+        Returns
+        -------
+        Optional[:class:`ScheduledEventExceptionCount`]
+            The counts of this event, or `None` if this event isn't recurrent or
+            there isn't any exception.
+        """
+
+        if not self.recurrence:
+            return None
+        
+        data = await self._state.http.get_scheduled_event_counts(self.guild_id, self.id, tuple([child.id for child in children]))
+
+        return ScheduledEventExceptionCount(data)
 
     def _add_user(self, user: User) -> None:
         self._users[user.id] = user

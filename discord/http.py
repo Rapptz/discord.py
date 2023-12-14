@@ -1985,6 +1985,7 @@ class HTTPClient:
             'description',
             'entity_type',
             'image',
+            'recurrence_rule'
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
@@ -2038,6 +2039,7 @@ class HTTPClient:
             'description',
             'entity_type',
             'image',
+            'recurrence_rule'
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
@@ -2132,6 +2134,27 @@ class HTTPClient:
                 guild_scheduled_event_id=guild_scheduled_event_id,
             ),
             params=params,
+        )
+    
+    def get_scheduled_event_counts(
+        self,
+        guild_id: Snowflake,
+        guild_scheduled_event_id: Snowflake,
+        scheduled_event_exception_ids: Tuple[Snowflake, ...]
+    ) -> Response[scheduled_event.GuildScheduledEventExceptionCounts]:
+        route: str = '/guilds/{guild_id}/scheduled-events/{guild_scheduled_event_id}/users/counts?'
+
+        if len(scheduled_event_exception_ids) > 0:
+            for exception_id in scheduled_event_exception_ids:
+                route += f"guild_scheduled_event_exception_ids={exception_id}&"
+
+        return self.request(
+            Route(
+                'GET',
+                route,
+                guild_id=guild_id,
+                guild_scheduled_event_id=guild_scheduled_event_id
+            )
         )
 
     # Application commands (global)
