@@ -62,7 +62,7 @@ if TYPE_CHECKING:
     from . import abc
     from .guild import Guild
     from .user import ClientUser
-    from .member import Member, VoiceState
+    from .member import VoiceState
     from .voice_client import VoiceClient
 
     from .types.voice import (
@@ -212,6 +212,7 @@ class VoiceConnectionState:
         self._expecting_disconnect: bool = False
         self._connected = threading.Event()
         self._state_event = asyncio.Event()
+        self._disconnected = asyncio.Event()
         self._runner: Optional[asyncio.Task] = None
         self._connector: Optional[asyncio.Task] = None
         self._socket_reader = SocketReader(self)
@@ -254,6 +255,8 @@ class VoiceConnectionState:
         channel_id = data['channel_id']
 
         if channel_id is None:
+            self._disconnected.set()
+
             # If we know we're going to get a voice_state_update where we have no channel due to
             # being in the reconnect or disconnect flow, we ignore it.  Otherwise, it probably wasn't from us.
             if self._expecting_disconnect:
@@ -436,30 +439,24 @@ class VoiceConnectionState:
 
             if cleanup:
                 self._socket_reader.stop()
-                self.voice_client.cleanup()
 
             if self.socket:
                 self.socket.close()
 
-            # Ignore this part if disconnect was called from the poll loop task
+            # Skip this part if disconnect was called from the poll loop task
             if self._runner and asyncio.current_task() != self._runner:
                 # Wait for the voice_state_update event confirming the bot left the voice channel.
                 # This prevents a race condition caused by disconnecting and immediately connecting again.
-                # The new VoiceConnectionState object receives the voice_state_update event containing channel=None,
-                # leaving it in a bad state.  Since there's no nice way to transfer state to the new one, we have to do this.
-
-                def check(member: Member, before: VoiceState, after: VoiceState):
-                    return (
-                        member == self.user
-                        and member.guild == self.guild
-                        and before.channel is not None
-                        and after.channel is None
-                    )
-
+                # The new VoiceConnectionState object receives the voice_state_update event containing channel=None while still
+                # connecting leaving it in a bad state.  Since there's no nice way to transfer state to the new one, we have to do this.
                 try:
-                    await self.voice_client.client.wait_for('voice_state_update', check=check, timeout=self.timeout)
+                    async with atimeout(self.timeout):
+                        await self._disconnected.wait()
                 except TimeoutError:
                     _log.debug('Timed out waiting for disconnect confirmation event')
+
+            if cleanup:
+                self.voice_client.cleanup()
 
     async def soft_disconnect(self, *, with_state: ConnectionFlowState = ConnectionFlowState.got_both_voice_updates) -> None:
         _log.debug('Soft disconnecting from voice')
@@ -544,6 +541,7 @@ class VoiceConnectionState:
         self.state = ConnectionFlowState.disconnected
         await self.voice_client.channel.guild.change_voice_state(channel=None)
         self._expecting_disconnect = True
+        self._disconnected.clear()
 
     async def _connect_websocket(self, resume: bool) -> DiscordVoiceWebSocket:
         ws = await DiscordVoiceWebSocket.from_connection_state(self, resume=resume, hook=self.hook)
