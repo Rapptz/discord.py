@@ -191,11 +191,11 @@ class ScheduledEventRecurrence:
         self.end: Optional[datetime] = end
         self.frequency: int = frequency
         self.interval: int = interval
-        self.weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = weekdays
-        self.n_weekdays: List[Tuple[int, int]] = n_weekdays
-        self.months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = months
-        self.month_days: List[int] = month_days
-        self.year_days: List[int] = year_days
+        self.weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = weekdays if weekdays is not MISSING else []
+        self.n_weekdays: List[Tuple[int, int]] = n_weekdays if n_weekdays is not MISSING else []
+        self.months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = months if months is not MISSING else []
+        self.month_days: List[int] = month_days if month_days is not MISSING else []
+        self.year_days: List[int] = year_days if year_days is not MISSING else []
         self.count: Optional[int] = count if count is not MISSING else None
 
     def __eq__(self, other: object) -> bool:
