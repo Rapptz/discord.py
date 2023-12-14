@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, AsyncIterator, Dict, Optional, Union, overload, Literal, List
+from typing import TYPE_CHECKING, AsyncIterator, Dict, Optional, Union, overload, Literal, List, Tuple
 
 from .asset import Asset
 from .enums import EventStatus, EntityType, PrivacyLevel, try_enum
@@ -39,6 +39,7 @@ if TYPE_CHECKING:
         GuildScheduledEventWithUserCount as GuildScheduledEventWithUserCountPayload,
         GuildScheduledEventRecurrence as GuildScheduledEventRecurrencePayload,
         GuildScheduledEventRecurrence as GuildScheduledEventRecurrencePayload,
+        GuildScheduledEventExceptionCounts as GuildScheduledEventExceptionCountsPayload,
         EntityMetadata,
     )
 
@@ -53,7 +54,8 @@ if TYPE_CHECKING:
 # fmt: off
 __all__ = (
     "ScheduledEvent",
-    "ScheduledEventRecurrence"
+    "ScheduledEventRecurrence",
+    "ScheduledEventExceptionCount",
 )
 # fmt: on
 
@@ -61,43 +63,104 @@ __all__ = (
 class ScheduledEventRecurrence:
     """Represents a Scheduled Event Recurrence.
 
+    .. container:: operations
+
+        .. descibre:: x == y
+
+            Checks if to Scheduled Event Recurrences are equal.
+
     Parameters
     ----------
     start: :class:`datetime.datetime`
         When the first event of this series is started.
     end: Optional[:class:`datetime.datetime`]
         When the events of this series will stop. If none, it will repeat forever.
-    """ # TODO: add all remaining parameters description
+    frequency: :class:`int`
+        The frequency the recurrence of this event will be.
+    interval: :class:`int`
+        The interval between events.
+    count: :class:`int`
+        ...
+    weekdays: List[:class:`int`]
+        A list of integers representing the weekdays this event will repeat in.
+    n_weekdays: List[Tuple[:class:`int`, :class:`int`]]
+        A list of tuples that contain the N weekday this event will repeat in.
+    months: List[:class:`int`]
+        A list of integers representing the months this event will repeat in.
+    month_days: List[:class:`int`]
+        A list of integers representing the month days this event will repeat in.
+
+        This marks the days of the month this event will repeat in, for example, if it
+        is set to `1`, this event will repeat the first day of every month.
+    year_days: List[:class:`int`]
+        A list of integers representing the year days this event will repeat in.
+
+        This marks the days of the year this event will repeat in, for example, if it
+        is set to `1`, this event will repeat the first day of every year.
+    """
 
     @overload
     def __init__(
-        self, 
+        self,
         *,
-        start: datetime, 
-        end: datetime, 
-        frequency: int, 
-        interval: int,
+        start: datetime,
+        end: Optional[datetime] = ...,
+        frequency: int,
+        interval: Literal[1, 2],
         count: int,
-        weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = ...,
-        months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = ...,
-        month_days: List[int] = ...,
-        year_days: List[int] = ... 
+        weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]]
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        *,
+        start: datetime,
+        end: Optional[datetime] = ...,
+        frequency: int,
+        interval: Literal[1, 2],
+        count: int,
+        n_weekdays: List[Tuple[int, int]]
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        *,
+        start: datetime,
+        end: Optional[datetime] = ...,
+        frequency: int,
+        interval: Literal[1, 2],
+        count: int,
+        months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]
     ) -> None:
         ...
     
     @overload
     def __init__(
-        self, 
+        self,
         *,
-        start: datetime, 
-        end: Optional[datetime] = ..., 
-        frequency: int, 
-        interval: int,
+        start: datetime,
+        end: Optional[datetime] = ...,
+        frequency: int,
+        interval: Literal[1, 2],
         count: int,
-        weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = ...,
-        months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = ...,
-        month_days: List[int] = ...,
-        year_days: List[int] = ... 
+        month_days: List[int]
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        *,
+        start: datetime,
+        end: Optional[datetime] = ...,
+        frequency: int,
+        interval: Literal[1, 2],
+        count: int,
+        year_days: List[int]
     ) -> None:
         ...
 
@@ -107,9 +170,10 @@ class ScheduledEventRecurrence:
         start: datetime, 
         end: Optional[datetime] = MISSING,
         frequency: int, 
-        interval: int,
+        interval: Literal[1, 2],
         count: int,
         weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = MISSING,
+        n_weekdays: List[Tuple[int, int]] = MISSING,
         months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = MISSING,
         month_days: List[int] = MISSING,
         year_days: List[int] = MISSING, 
@@ -119,18 +183,29 @@ class ScheduledEventRecurrence:
             raise ValueError('\'start\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
             
         if end is not MISSING:
-            if not end.tzinfo:
-                raise ValueError('\'end\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
+            if end is not None:
+                if not end.tzinfo:
+                    raise ValueError('\'end\' must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.')
 
         self.start: datetime = start
         self.end: Optional[datetime] = end
         self.frequency: int = frequency
         self.interval: int = interval
         self.weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = weekdays
+        self.n_weekdays: List[Tuple[int, int]] = n_weekdays
         self.months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = months
         self.month_days: List[int] = month_days
         self.year_days: List[int] = year_days
         self.count: int = count
+
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            return (
+                self.start == other.start and
+                self.frequency == other.frequency and
+                self.interval == other.interval
+            )
+        return NotImplemented
 
     def to_dict(self) -> GuildScheduledEventRecurrencePayload:
         payload: GuildScheduledEventRecurrencePayload = {
@@ -138,11 +213,12 @@ class ScheduledEventRecurrence:
             "frequency": self.frequency,
             "interval": self.interval,
             "by_weekday": self.weekdays,
+            "by_n_weekday": [{"n": n, "day": day} for n, day in self.n_weekdays], # type: ignore # Supressed error because it says int isnt compatible with int literal
             "by_month": self.months,
             "by_month_day": self.month_days,
             "by_year_day": self.year_days,
             "count": self.count
-        } # type: ignore # Pylance type check error (it doesn't affect anything)
+        }
 
         if self.end:
             payload['end'] = self.end.isoformat()
@@ -156,6 +232,7 @@ class ScheduledEventRecurrence:
         """Creates a new instance of this class using raw data"""
         
         end: Optional[datetime] = parse_time(data['end']) if data.get('end') is not None else None
+        n_weekdays: List = data.get('by_n_weekday', [])
 
         return cls(
             start=parse_time(data['start']),
@@ -163,11 +240,48 @@ class ScheduledEventRecurrence:
             frequency=int(data['frequency']),
             interval=int(data['interval']),
             weekdays=data.get('by_weekday', []),
+            n_weekdays=[(payload['n'], payload['day']) for payload in n_weekdays],
             months=data.get('by_month', []),
             month_days=data.get('by_month_day', []),
             year_days=data.get('by_year_day', []),
-            count=int(data['count']) if data.get('count') is not None else None,
+            count=int(data['count']) if data.get('count') is not None else 0, # type: ignore # This ensures the value is an int, and type checker complains about it
         )
+
+
+class ScheduledEventExceptionCount:
+    """Represents the Exception Counts in a Scheduled Event
+    
+    .. versionadded:: 2.4
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two exceptions are equal.
+
+        .. descibre:: x != y
+            
+            Checks if two exceptions are not equal.
+    """
+
+    def __init__(self, data: GuildScheduledEventExceptionCountsPayload) -> None:
+        self.count: int = int(data.get('guild_scheduled_event_count'))
+
+        self._exception_snowflakes: Dict[Union[str, int], int] = data.get('guild_scheduled_event_exception_counts', {})
+
+    @property
+    def exceptions_ids(self) -> List[int]:
+        """List[:class:`int`]: A list containing all exception event IDs"""
+
+        return [int(snowflake) for snowflake in self._exception_snowflakes.keys()]
+    
+    @property
+    def exceptions(self) -> Dict[int, int]:
+        """Dict[:class:`int`, :class:`int`]: A dict containing all the event IDs as keys
+        and their exception count as value.
+        """
+
+        return {int(snowflake): count for snowflake, count in self._exception_snowflakes.items()}
 
 
 class ScheduledEvent(Hashable):
@@ -265,8 +379,8 @@ class ScheduledEvent(Hashable):
         self._cover_image: Optional[str] = data.get('image', None)
         self.user_count: int = data.get('user_count', 0)
         self.creator_id: Optional[int] = _get_as_snowflake(data, 'creator_id')
-        self.recurrence: Optional[ScheduledEventRecurrence] = ScheduledEventRecurrence.from_dict(data['recurrence_rule']) if data.get('recurrence_rule') is not None else None
-
+        self.recurrence: Optional[ScheduledEventRecurrence] = ScheduledEventRecurrence.from_dict(data['recurrence_rule']) if data.get('recurrence_rule', None) is not None else None # type: ignore
+        # Checker complains that 'recurrence_rule' may be None and that ScheduledEventRecurrence.from_dict doesn't accepts None
         creator = data.get('creator')
         self.creator: Optional[User] = self._state.store_user(creator) if creator else None
 
@@ -805,6 +919,40 @@ class ScheduledEvent(Hashable):
             if count < 100:
                 # There's no data left after this
                 break
+
+    async def fetch_counts(self, *ids: int) -> Optional[ScheduledEventExceptionCount]:
+        """|coro|
+        
+        Retrieves all the counts for this Event children, if this event isn't
+        recurrent, then this will return ``None``.
+
+        This also contains the exceptions of this Scheduled event.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        ----------
+        *ids: Tuple[:class:`int`]
+            All the event IDs to fetch the counts of.
+            These must be children of this event.
+
+        Raises
+        ------
+        HTTPException
+            Fetching the count failed.
+
+        Returns
+        -------
+        Optional[:class:`ScheduledEventExceptionCount`]
+            The counts of this event, or ``None`` if this event isn't recurrent or there
+            isn't any exception.
+        """
+
+        if not self.recurrence:
+            return None
+
+        data = await self._state.http.get_scheduled_event_counts(self.guild_id, self.id, ids)
+        return ScheduledEventExceptionCount(data)
 
     def _add_user(self, user: User) -> None:
         self._users[user.id] = user
