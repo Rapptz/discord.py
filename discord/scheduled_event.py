@@ -107,7 +107,7 @@ class ScheduledEventRecurrence:
         end: Optional[datetime] = ...,
         frequency: int,
         interval: Literal[1, 2],
-        count: int,
+        count: Optional[int],
         weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]]
     ) -> None:
         ...
@@ -120,7 +120,7 @@ class ScheduledEventRecurrence:
         end: Optional[datetime] = ...,
         frequency: int,
         interval: Literal[1, 2],
-        count: int,
+        count: Optional[int],
         n_weekdays: List[Tuple[int, int]]
     ) -> None:
         ...
@@ -133,7 +133,7 @@ class ScheduledEventRecurrence:
         end: Optional[datetime] = ...,
         frequency: int,
         interval: Literal[1, 2],
-        count: int,
+        count: Optional[int],
         months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]
     ) -> None:
         ...
@@ -146,7 +146,7 @@ class ScheduledEventRecurrence:
         end: Optional[datetime] = ...,
         frequency: int,
         interval: Literal[1, 2],
-        count: int,
+        count: Optional[int],
         month_days: List[int]
     ) -> None:
         ...
@@ -159,7 +159,7 @@ class ScheduledEventRecurrence:
         end: Optional[datetime] = ...,
         frequency: int,
         interval: Literal[1, 2],
-        count: int,
+        count: Optional[int],
         year_days: List[int]
     ) -> None:
         ...
@@ -171,7 +171,7 @@ class ScheduledEventRecurrence:
         end: Optional[datetime] = MISSING,
         frequency: int, 
         interval: Literal[1, 2],
-        count: int,
+        count: Optional[int] = MISSING,
         weekdays: List[Literal[0, 1, 2, 3, 4, 5, 6]] = MISSING,
         n_weekdays: List[Tuple[int, int]] = MISSING,
         months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = MISSING,
@@ -196,7 +196,7 @@ class ScheduledEventRecurrence:
         self.months: List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]] = months
         self.month_days: List[int] = month_days
         self.year_days: List[int] = year_days
-        self.count: int = count
+        self.count: Optional[int] = count if count is not MISSING else None
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, self.__class__):
@@ -232,7 +232,7 @@ class ScheduledEventRecurrence:
         """Creates a new instance of this class using raw data"""
         
         end: Optional[datetime] = parse_time(data['end']) if data.get('end') is not None else None
-        n_weekdays: List = data.get('by_n_weekday', [])
+        n_weekdays = data.get('by_n_weekday', None)
 
         return cls(
             start=parse_time(data['start']),
@@ -240,11 +240,11 @@ class ScheduledEventRecurrence:
             frequency=int(data['frequency']),
             interval=int(data['interval']),
             weekdays=data.get('by_weekday', []),
-            n_weekdays=[(payload['n'], payload['day']) for payload in n_weekdays],
+            n_weekdays=[(payload['n'], payload['day']) for payload in n_weekdays] if n_weekdays is not None else [],
             months=data.get('by_month', []),
             month_days=data.get('by_month_day', []),
             year_days=data.get('by_year_day', []),
-            count=int(data['count']) if data.get('count') is not None else 0, # type: ignore # This ensures the value is an int, and type checker complains about it
+            count=int(data['count']) if data.get('count') is not None else None, # type: ignore # This ensures the value is an int, and type checker complains about it
         )
 
 
