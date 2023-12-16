@@ -76,6 +76,11 @@ class ScheduledEventExceptionCount:
 
         self._exception_snowflakes: Dict[Union[str, int], int] = data.get('guild_scheduled_event_exception_counts')
 
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, self.__class__):
+            return self.exception_ids == other.exception_ids
+        return NotImplemented
+
     @property
     def exception_ids(self) -> List[int]:
         """List[:class:`int`]: A list containing all the exception event IDs"""
