@@ -183,7 +183,7 @@ class BotBase(GroupMixin[None]):
         self._help_command: Optional[HelpCommand] = None
         self.description: str = inspect.cleandoc(description) if description else ''
         self.owner_id: Optional[int] = options.get('owner_id')
-        self.owner_ids: Optional[Collection[int]] = options.get('owner_ids', set())
+        self.owner_ids: Optional[Collection[int]] = options.get('owner_ids')
         self.strip_after_prefix: bool = options.get('strip_after_prefix', False)
 
         if self.owner_id and self.owner_ids:
