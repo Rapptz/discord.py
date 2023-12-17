@@ -73,7 +73,6 @@ import sys
 from threading import Timer
 import types
 import warnings
-import logging
 
 import yarl
 
