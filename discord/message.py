@@ -2084,7 +2084,8 @@ class Message(PartialMessage, Hashable):
 
         In the case of :attr:`MessageType.default` and :attr:`MessageType.reply`\,
         this just returns the regular :attr:`Message.content`. Otherwise this
-        returns an English message denoting the contents of the system message.
+        returns an English message denoting the contents of the system message. Dates and times are
+        in UTC.
         """
 
         if self.type is MessageType.default:
@@ -2215,6 +2216,20 @@ class Message(PartialMessage, Hashable):
 
         if self.type is MessageType.stage_topic:
             return f'{self.author.name} changed Stage topic: **{self.content}**.'
+
+        if self.type is MessageType.guild_incident_alert_mode_enabled:
+            dt = datetime.datetime.strptime(self.content, '%Y-%m-%dT%H:%M:%S.%f+00:00')
+            dt_content = dt.strftime('%d/%m/%Y, %H:%M')
+            return f'{self.author.name} enabled security actions until {dt_content}.'
+
+        if self.type is MessageType.guild_incident_alert_mode_disabled:
+            return f'{self.author.name} disabled security actions.'
+
+        if self.type is MessageType.guild_incident_report_raid:
+            return f'{self.author.name} reported a raid in {self.guild}.'
+
+        if self.type is MessageType.guild_incident_report_false_alarm:
+            return f'{self.author.name} reported a false alarm in {self.guild}.'
 
         # Fallback for unknown message types
         return ''
