@@ -2084,8 +2084,7 @@ class Message(PartialMessage, Hashable):
 
         In the case of :attr:`MessageType.default` and :attr:`MessageType.reply`\,
         this just returns the regular :attr:`Message.content`. Otherwise this
-        returns an English message denoting the contents of the system message. Dates and times are
-        in UTC.
+        returns an English message denoting the contents of the system message.
         """
 
         if self.type is MessageType.default:
