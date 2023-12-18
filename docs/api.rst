@@ -3212,6 +3212,10 @@ of :class:`enum.Enum`.
 
         The ``ko`` locale.
 
+    .. attribute:: latam_spanish
+
+        The ``es-419`` locale.
+
     .. attribute:: lithuanian
 
         The ``lt`` locale.
