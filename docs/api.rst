@@ -1956,6 +1956,30 @@ of :class:`enum.Enum`.
 
         A friend invite.
 
+    .. attribute:: guild_incident_alert_mode_enabled
+
+        The system message sent when security actions is enabled.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: guild_incident_alert_mode_disabled
+
+        The system message sent when security actions is disabled.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: guild_incident_report_raid
+
+        The system message sent when a raid is reported.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: guild_incident_report_false_alarm
+
+        The system message sent when a false alarm is reported.
+
+        .. versionadded:: 2.4
+
 .. class:: UserFlags
 
     Represents Discord User flags.
