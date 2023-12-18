@@ -2216,6 +2216,20 @@ class Message(PartialMessage, Hashable):
         if self.type is MessageType.stage_topic:
             return f'{self.author.name} changed Stage topic: **{self.content}**.'
 
+        if self.type is MessageType.guild_incident_alert_mode_enabled:
+            dt = utils.parse_time(self.content)
+            dt_content = utils.format_dt(dt)
+            return f'{self.author.name} enabled security actions until {dt_content}.'
+
+        if self.type is MessageType.guild_incident_alert_mode_disabled:
+            return f'{self.author.name} disabled security actions.'
+
+        if self.type is MessageType.guild_incident_report_raid:
+            return f'{self.author.name} reported a raid in {self.guild}.'
+
+        if self.type is MessageType.guild_incident_report_false_alarm:
+            return f'{self.author.name} reported a false alarm in {self.guild}.'
+
         # Fallback for unknown message types
         return ''
 
