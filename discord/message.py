@@ -2218,8 +2218,8 @@ class Message(PartialMessage, Hashable):
             return f'{self.author.name} changed Stage topic: **{self.content}**.'
 
         if self.type is MessageType.guild_incident_alert_mode_enabled:
-            dt = datetime.datetime.strptime(self.content, '%Y-%m-%dT%H:%M:%S.%f+00:00')
-            dt_content = dt.strftime('%d/%m/%Y, %H:%M')
+            dt = utils.parse_time(self.content)
+            dt_content = utils.format_dt(dt)
             return f'{self.author.name} enabled security actions until {dt_content}.'
 
         if self.type is MessageType.guild_incident_alert_mode_disabled:
