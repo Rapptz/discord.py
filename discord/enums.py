@@ -686,6 +686,7 @@ class Locale(Enum):
     italian = 'it'
     japanese = 'ja'
     korean = 'ko'
+    latam_spanish = 'es-419'
     lithuanian = 'lt'
     norwegian = 'no'
     polish = 'pl'
