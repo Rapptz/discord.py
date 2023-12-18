@@ -3216,6 +3216,8 @@ of :class:`enum.Enum`.
 
         The ``es-419`` locale.
 
+        .. versionadded:: 2.4
+
     .. attribute:: lithuanian
 
         The ``lt`` locale.
