@@ -461,7 +461,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         # bandaid for the fact that sometimes parent can be the bot instance
         parent: Optional[GroupMixin[Any]] = kwargs.get('parent')
-        self.parent: Optional[GroupMixin[Any]] = parent if isinstance(parent, _BaseCommand) else None  # type: ignore # Does not recognise mixin usage
+        self.parent: Optional[GroupMixin[Any]] = parent if isinstance(parent, _BaseCommand) else None
 
         self._before_invoke: Optional[Hook] = None
         try:

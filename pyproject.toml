@@ -43,8 +43,12 @@ exclude = [
 ]
 reportUnnecessaryTypeIgnoreComment = "warning"
 reportUnusedImport = "error"
+reportOverlappingOverload = "none"
+reportIncompatibleVariableOverride = "none"
+reportIncompatibleMethodOverride = "none"
+reportFunctionMemberAccess = "none"
 pythonVersion = "3.8"
-typeCheckingMode = "basic"
+typeCheckingMode = "standard"
 
 [tool.pytest.ini_options]
 asyncio_mode = "strict"

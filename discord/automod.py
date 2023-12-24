@@ -541,7 +541,7 @@ class AutoModRule:
             **payload,
         )
 
-        return AutoModRule(data=data, guild=self.guild, state=self._state)
+        return self.__class__(data=data, guild=self.guild, state=self._state)
 
     async def delete(self, *, reason: str = MISSING) -> None:
         """|coro|

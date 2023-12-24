@@ -214,4 +214,4 @@ class WelcomeScreen:
             fields['enabled'] = enabled
 
         data = await self._state.http.edit_welcome_screen(self._guild.id, reason=reason, **fields)
-        return WelcomeScreen(data=data, guild=self._guild)
+        return self.__class__(data=data, guild=self._guild)

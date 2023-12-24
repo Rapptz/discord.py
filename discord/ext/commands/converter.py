@@ -1045,7 +1045,7 @@ class Greedy(List[T]):
             raise TypeError('Greedy[...] expects a type or a Converter instance.')
 
         if converter in (str, type(None)) or origin is Greedy:
-            raise TypeError(f'Greedy[{converter.__name__}] is invalid.')  # type: ignore
+            raise TypeError(f'Greedy[{converter.__name__}] is invalid.')
 
         if origin is Union and type(None) in args:
             raise TypeError(f'Greedy[{converter!r}] is invalid.')
@@ -1185,7 +1185,7 @@ def _convert_to_bool(argument: str) -> bool:
         raise BadBoolArgument(lowered)
 
 
-_GenericAlias = type(List[T])
+_GenericAlias = type(List[T])  # type: ignore
 
 
 def is_generic_type(tp: Any, *, _GenericAlias: type = _GenericAlias) -> bool:

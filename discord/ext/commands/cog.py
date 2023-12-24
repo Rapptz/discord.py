@@ -366,7 +366,7 @@ class Cog(metaclass=CogMeta):
                                 child.wrapped = lookup[child.qualified_name]  # type: ignore
 
                     if self.__cog_app_commands_group__:
-                        children.append(app_command)  # type: ignore # Somehow it thinks it can be None here
+                        children.append(app_command)
 
         if Cog._get_overridden_method(self.cog_app_command_error) is not None:
             error_handler = self.cog_app_command_error
