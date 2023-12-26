@@ -370,18 +370,15 @@ Channels
     :param payload: The raw event payload data.
     :type payload: :class:`RawTypingEvent`
 
-.. function:: on_voice_channel_status_update(channel, before, after)
+.. function:: on_raw_voice_channel_status_update(payload)
 
     Called whenever the status of a voice channel has changed.
+    This is called regardless of the voice channel being in the internal cache.
 
     .. versionadded:: 2.4
 
-    :param channel: The channel whose status has changed.
-    :type channel: :class:`VoiceChannel`
-    :param before: The status before the update.
-    :type before: Optional[:class:`str`]
-    :param after: The status after the update.
-    :type after: Optional[:class:`str`]
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawVoiceChannelStatusUpdateEvent`
 
 Connection
 ~~~~~~~~~~~
@@ -4969,6 +4966,14 @@ RawAppCommandPermissionsUpdateEvent
 .. attributetable:: RawAppCommandPermissionsUpdateEvent
 
 .. autoclass:: RawAppCommandPermissionsUpdateEvent()
+    :members:
+
+RawVoiceChannelStatusUpdateEvent
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawVoiceChannelStatusUpdateEvent
+
+.. autoclass:: RawVoiceChannelStatusUpdateEvent()
     :members:
 
 PartialWebhookGuild

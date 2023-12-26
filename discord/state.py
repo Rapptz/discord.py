@@ -1586,18 +1586,15 @@ class ConnectionState(Generic[ClientT]):
         self.dispatch('raw_typing', raw)
 
     def parse_voice_channel_status_update(self, data: gw.VoiceChannelStatusUpdate) -> None:
-        guild = self._get_guild(int(data['guild_id']))
+        raw = RawVoiceChannelStatusUpdateEvent(data)
+        guild = self._get_guild(raw.guild_id)
         if guild is not None:
-            channel = guild.get_channel(int(data['id']))
+            channel = guild.get_channel(raw.channel_id)
             if channel is not None:
-                old_status = channel.status  # type: ignore # will be a voice channel
-                status = data['status'] or None  # empty string -> None
-                channel.status = status  # type: ignore # will be a voice channel
-                self.dispatch('voice_channel_status_update', channel, old_status, status)
-            else:
-                _log.debug('VOICE_CHANNEL_STATUS_UPDATE referencing unknown channel ID: %s. Discarding.', data['id'])
-        else:
-            _log.debug('VOICE_CHANNEL_STATUS_UPDATE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
+                raw.cached_status = channel.status  # type: ignore # must be a voice channel
+                channel.status = raw.status         # type: ignore # must be a voice channel
+
+        self.dispatch('raw_voice_channel_status_update', raw)
 
     def parse_entitlement_create(self, data: gw.EntitlementCreateEvent) -> None:
         entitlement = Entitlement(data=data, state=self)
