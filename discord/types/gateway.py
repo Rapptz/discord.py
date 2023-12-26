@@ -355,5 +355,5 @@ class VoiceChannelStatusUpdate(TypedDict):
     guild_id: Snowflake
     status: Optional[str]
 
-      
+
 EntitlementCreateEvent = EntitlementUpdateEvent = EntitlementDeleteEvent = Entitlement
