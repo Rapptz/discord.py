@@ -1592,7 +1592,7 @@ class ConnectionState(Generic[ClientT]):
             channel = guild.get_channel(raw.channel_id)
             if channel is not None:
                 raw.cached_status = channel.status  # type: ignore # must be a voice channel
-                channel.status = raw.status         # type: ignore # must be a voice channel
+                channel.status = raw.status  # type: ignore # must be a voice channel
 
         self.dispatch('raw_voice_channel_status_update', raw)
 
