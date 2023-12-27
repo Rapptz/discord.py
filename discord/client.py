@@ -5182,6 +5182,11 @@ class Client:
         ------
         HTTPException
             Joining the hub or requesting the verification code failed.
+
+        Returns
+        --------
+        Optional[:class:`.Guild`]
+            The joined hub, if a code was provided.
         """
         state = self._connection
 
