@@ -189,7 +189,7 @@ def flatten_user(cls: T) -> T:
 
         # If it's a slotted attribute or a property, redirect it
         # Slotted members are implemented as member_descriptors in Type.__dict__
-        if not hasattr(value, '__annotations__'):
+        if not hasattr(value, '__annotations__') or isinstance(value, utils.CachedSlotProperty):
             getter = attrgetter('_user.' + attr)
             setattr(cls, attr, property(getter, doc=f'Equivalent to :attr:`User.{attr}`'))
         else:
