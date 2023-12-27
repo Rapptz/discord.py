@@ -122,6 +122,8 @@ __all__ = (
     'DirectoryEntryType',
     'DirectoryCategory',
     'HubType',
+    'NetworkConnectionType',
+    'NetworkConnectionSpeed',
 )
 
 if TYPE_CHECKING:
@@ -1597,6 +1599,32 @@ class HubType(Enum):
     high_school = 1
     college = 2
     university = 2
+
+
+class NetworkConnectionType(Enum):
+    bluetooth = 'bluetooth'
+    cellular = 'cellular'
+    ethernet = 'ethernet'
+    none = 'none'
+    other = 'other'
+    unknown = 'unknown'
+    wifi = 'wifi'
+    wimax = 'wimax'
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class NetworkConnectionSpeed(Enum):
+    five_g = '5g'
+    four_g = '4g'
+    three_g = '3g'
+    two_g = '2g'
+    slow_two_g = 'slow-2g'
+    unknown = 'unknown'
+
+    def __str__(self) -> str:
+        return self.value
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
