@@ -67,7 +67,7 @@ T = TypeVar('T')
 
 
 class UserPresenceUpdateEvent(BasePresenceUpdate):
-    last_modified: int
+    ...
 
 
 PresenceUpdateEvent = Union[PartialPresenceUpdate, UserPresenceUpdateEvent]
