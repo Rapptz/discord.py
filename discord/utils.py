@@ -1436,25 +1436,37 @@ class ExpiringString(collections.UserString):
         self._timer.cancel()
 
 
-async def _get_info(session: ClientSession) -> Tuple[Dict[str, Any], str]:
-    for _ in range(3):
-        try:
-            async with session.post('https://cordapi.dolfi.es/api/v2/properties/web', timeout=5) as resp:
-                json = await resp.json()
-                return json['properties'], json['encoded']
-        except Exception:
-            continue
+FALLBACK_BUILD_NUMBER = 9999  # Used in marketing and dev portal :)
+FALLBACK_BROWSER_VERSION = '120.0.0.1'
+_SENTRY_ASSET_REGEX = re.compile(r'assets/(sentry\.\w+)\.js')
+_BUILD_NUMBER_REGEX = re.compile(r'buildNumber\D+(\d+)"')
 
-    _log.warning('Info API down. Falling back to manual fetching...')
-    ua = await _get_user_agent(session)
-    bn = await _get_build_number(session)
-    bv = _get_browser_version(ua)
+
+async def _get_info(session: ClientSession) -> Tuple[Dict[str, Any], str]:
+    try:
+        async with session.post('https://cordapi.dolfi.es/api/v2/properties/web', timeout=5) as resp:
+            json = await resp.json()
+            return json['properties'], json['encoded']
+    except Exception:
+        _log.info('Info API temporarily down. Falling back to manual retrieval...')
+
+    try:
+        bn = await _get_build_number(session)
+    except Exception:
+        _log.critical('Could not retrieve client build number. Falling back to hardcoded value...')
+        bn = FALLBACK_BUILD_NUMBER
+
+    try:
+        bv = await _get_browser_version(session)
+    except Exception:
+        _log.critical('Could not retrieve browser version. Falling back to hardcoded value...')
+        bv = FALLBACK_BROWSER_VERSION
 
     properties = {
         'os': 'Windows',
         'browser': 'Chrome',
         'device': '',
-        'browser_user_agent': ua,
+        'browser_user_agent': _get_user_agent(bv),
         'browser_version': bv,
         'os_version': '10',
         'referrer': '',
@@ -1470,38 +1482,37 @@ async def _get_info(session: ClientSession) -> Tuple[Dict[str, Any], str]:
     return properties, b64encode(_to_json(properties).encode()).decode('utf-8')
 
 
-async def _get_build_number(session: ClientSession) -> int:  # Thank you Discord-S.C.U.M
+async def _get_build_number(session: ClientSession) -> int:
     """Fetches client build number"""
-    default_build_number = 9999
-    try:
-        login_page_request = await session.get('https://discord.com/login', timeout=7)
-        login_page = await login_page_request.text()
-        build_url = 'https://discord.com/assets/' + re.compile(r'assets/+([a-z.0-9]+)\.js').findall(login_page)[-2] + '.js'
-        build_request = await session.get(build_url, timeout=7)
-        build_file = await build_request.text()
-        build_find = re.findall(r'Build Number:\D+"(\d+)"', build_file)
-        return int(build_find[0]) if build_find else default_build_number
-    except asyncio.TimeoutError:
-        _log.critical('Could not fetch client build number. Falling back to hardcoded value...')
-        return default_build_number
+    async with session.get('https://discord.com/login') as resp:
+        app = await resp.text()
+        match = _SENTRY_ASSET_REGEX.search(app)
+        if match is None:
+            raise RuntimeError('Could not find sentry asset file')
+        sentry = match.group(1)
+
+    async with session.get(f'https://discord.com/assets/{sentry}.js') as resp:
+        build = await resp.text()
+        match = _BUILD_NUMBER_REGEX.search(build)
+        if match is None:
+            raise RuntimeError('Could not find build number')
+        return int(match.group(1))
 
 
-async def _get_user_agent(session: ClientSession) -> str:
+async def _get_browser_version(session: ClientSession) -> str:
+    """Fetches the latest Windows 10/Chrome major browser version."""
+    async with session.get(
+        'https://versionhistory.googleapis.com/v1/chrome/platforms/win/channels/stable/versions'
+    ) as response:
+        data = await response.json()
+        major = data['versions'][0]['version'].split('.')[0]
+        return f'{major}.0.0.0'
+
+
+def _get_user_agent(version: str) -> str:
     """Fetches the latest Windows 10/Chrome user-agent."""
-    try:
-        request = await session.request('GET', 'https://jnrbsn.github.io/user-agents/user-agents.json', timeout=7)
-        response = json.loads(await request.text())
-        return response[0]
-    except asyncio.TimeoutError:
-        _log.critical('Could not fetch user-agent. Falling back to hardcoded value...')
-        return (
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
-        )
-
-
-def _get_browser_version(user_agent: str) -> str:
-    """Fetches the latest Windows 10/Chrome version."""
-    return user_agent.split('Chrome/')[1].split()[0]
+    # Because of [user agent reduction](https://www.chromium.org/updates/ua-reduction/), we just need the major version now :)
+    return f'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{version} Safari/537.36'
 
 
 def is_docker() -> bool:

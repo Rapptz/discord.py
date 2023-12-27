@@ -395,7 +395,9 @@ class FriendSuggestion(Hashable):
         self.from_user_contacts: bool = data.get('from_suggested_user_contacts', False)
 
     def __repr__(self) -> str:
-        return f'<FriendSuggestion user={self.user!r} reasons={self.reasons!r} from_user_contacts={self.from_user_contacts!r}>'
+        return (
+            f'<FriendSuggestion user={self.user!r} reasons={self.reasons!r} from_user_contacts={self.from_user_contacts!r}>'
+        )
 
     async def accept(self) -> None:
         """|coro|
