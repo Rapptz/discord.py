@@ -25,6 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from datetime import date
+from operator import attrgetter
 from typing import TYPE_CHECKING, Optional, Union
 
 from .channel import PartialMessageable
@@ -188,7 +189,7 @@ class ReadState:
         if self.type == ReadStateType.channel:
             return resource.last_message_id or 0  # type: ignore
         elif self.type == ReadStateType.scheduled_events:
-            return max(resource.scheduled_events, key=lambda e: e.id).id  # type: ignore
+            return max(resource.scheduled_events, key=attrgetter('id')).id  # type: ignore
         return 0
 
     @property

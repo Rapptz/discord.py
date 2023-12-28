@@ -43,6 +43,7 @@ from typing import (
     overload,
 )
 import datetime
+from operator import attrgetter
 
 import discord.abc
 from .scheduled_event import ScheduledEvent
@@ -2072,14 +2073,14 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
     def text_channels(self) -> List[TextChannel]:
         """List[:class:`TextChannel`]: Returns the text channels that are under this category."""
         ret = [c for c in self.guild.channels if c.category_id == self.id and isinstance(c, TextChannel)]
-        ret.sort(key=lambda c: (c.position, c.id))
+        ret.sort(key=attrgetter('position', 'id'))
         return ret
 
     @property
     def voice_channels(self) -> List[VoiceChannel]:
         """List[:class:`VoiceChannel`]: Returns the voice channels that are under this category."""
         ret = [c for c in self.guild.channels if c.category_id == self.id and isinstance(c, VoiceChannel)]
-        ret.sort(key=lambda c: (c.position, c.id))
+        ret.sort(key=attrgetter('position', 'id'))
         return ret
 
     @property
@@ -2089,7 +2090,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         .. versionadded:: 1.7
         """
         ret = [c for c in self.guild.channels if c.category_id == self.id and isinstance(c, StageChannel)]
-        ret.sort(key=lambda c: (c.position, c.id))
+        ret.sort(key=attrgetter('position', 'id'))
         return ret
 
     @property
@@ -2098,9 +2099,9 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         .. versionadded:: 2.1
         """
-        r = [c for c in self.guild.channels if c.category_id == self.id and isinstance(c, ForumChannel)]
-        r.sort(key=lambda c: (c.position, c.id))
-        return r
+        ret = [c for c in self.guild.channels if c.category_id == self.id and isinstance(c, ForumChannel)]
+        ret.sort(key=attrgetter('position', 'id'))
+        return ret
 
     @property
     def directory_channels(self) -> List[DirectoryChannel]:
@@ -2108,9 +2109,9 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
 
         .. versionadded:: 2.1
         """
-        r = [c for c in self.guild.channels if c.category_id == self.id and isinstance(c, DirectoryChannel)]
-        r.sort(key=lambda c: (c.position, c.id))
-        return r
+        ret = [c for c in self.guild.channels if c.category_id == self.id and isinstance(c, DirectoryChannel)]
+        ret.sort(key=attrgetter('position', 'id'))
+        return ret
 
     @property
     def directories(self) -> List[DirectoryChannel]:
