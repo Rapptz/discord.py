@@ -61,8 +61,8 @@ if TYPE_CHECKING:
     from .opus import Encoder
     from . import abc
 
+    from .types.gateway import VoiceStateUpdateEvent as VoiceStateUpdatePayload
     from .types.voice import (
-        GuildVoiceState as GuildVoiceStatePayload,
         VoiceServerUpdate as VoiceServerUpdatePayload,
         SupportedModes,
     )
@@ -114,7 +114,7 @@ class VoiceProtocol:
         self.client: Client = client
         self.channel: VocalChannel = channel
 
-    async def on_voice_state_update(self, data: GuildVoiceStatePayload, /) -> None:
+    async def on_voice_state_update(self, data: VoiceStateUpdatePayload, /) -> None:
         """|coro|
 
         An abstract method that is called when the client's voice state
@@ -288,7 +288,7 @@ class VoiceClient(VoiceProtocol):
 
     # connection related
 
-    async def on_voice_state_update(self, data: GuildVoiceStatePayload) -> None:
+    async def on_voice_state_update(self, data: VoiceStateUpdatePayload) -> None:
         self.session_id: str = data['session_id']
         channel_id = data['channel_id']
 

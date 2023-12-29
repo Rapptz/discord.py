@@ -73,10 +73,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState, Presence
     from .message import Message
     from .role import Role
-    from .types.voice import (
-        GuildVoiceState as GuildVoiceStatePayload,
-        VoiceState as VoiceStatePayload,
-    )
+    from .types.voice import BaseVoiceState as VoiceStatePayload
     from .user import Note
     from .relationship import Relationship
     from .calls import PrivateCall
@@ -147,12 +144,12 @@ class VoiceState:
     )
 
     def __init__(
-        self, *, data: Union[VoiceStatePayload, GuildVoiceStatePayload], channel: Optional[ConnectableChannel] = None
+        self, *, data: VoiceStatePayload, channel: Optional[ConnectableChannel] = None
     ):
         self.session_id: Optional[str] = data.get('session_id')
         self._update(data, channel)
 
-    def _update(self, data: Union[VoiceStatePayload, GuildVoiceStatePayload], channel: Optional[ConnectableChannel]):
+    def _update(self, data: VoiceStatePayload, channel: Optional[ConnectableChannel]):
         self.self_mute: bool = data.get('self_mute', False)
         self.self_deaf: bool = data.get('self_deaf', False)
         self.self_stream: bool = data.get('self_stream', False)

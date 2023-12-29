@@ -112,7 +112,7 @@ if TYPE_CHECKING:
     from .types.threads import (
         Thread as ThreadPayload,
     )
-    from .types.voice import GuildVoiceState
+    from .types.voice import BaseVoiceState as VoiceStatePayload
     from .permissions import Permissions
     from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel
     from .template import Template
@@ -572,7 +572,7 @@ class Guild(Hashable):
         return f'<Guild {inner}>'
 
     def _update_voice_state(
-        self, data: GuildVoiceState, channel_id: Optional[int]
+        self, data: VoiceStatePayload, channel_id: Optional[int]
     ) -> Tuple[Optional[Member], VoiceState, VoiceState]:
         cache_flags = self._state.member_cache_flags
         user_id = int(data['user_id'])

@@ -128,7 +128,7 @@ if TYPE_CHECKING:
         PartialMessage as PartialMessagePayload,
     )
     from .types import gateway as gw
-    from .types.voice import VoiceState as VoiceStatePayload
+    from .types.voice import BaseVoiceState as VoiceStatePayload
     from .types.activity import ClientStatus as ClientStatusPayload
 
     T = TypeVar('T')
@@ -2797,10 +2797,15 @@ class ConnectionState:
             self.dispatch('call_delete', call)
 
     def parse_voice_state_update(self, data: gw.VoiceStateUpdateEvent) -> None:
-        guild = self._get_guild(utils._get_as_snowflake(data, 'guild_id'))
+        guild_id = utils._get_as_snowflake(data, 'guild_id')
+        guild = self._get_guild(guild_id)
         channel_id = utils._get_as_snowflake(data, 'channel_id')
         flags = self.member_cache_flags
         self_id = self.self_id
+
+        if guild_id is not None and guild is None:
+            _log.debug('VOICE_STATE_UPDATE referencing unknown guild ID: %s. Discarding.', guild_id)
+            return
 
         if int(data['user_id']) == self_id:
             voice = self._get_voice_client(guild.id if guild else self_id)

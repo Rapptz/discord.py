@@ -29,7 +29,7 @@ from .scheduled_event import GuildScheduledEvent
 from .sticker import GuildSticker
 from .snowflake import Snowflake
 from .channel import GuildChannel, StageInstance
-from .voice import GuildVoiceState
+from .voice import VoiceState
 from .welcome_screen import WelcomeScreen
 from .activity import PartialPresenceUpdate
 from .role import Role
@@ -116,7 +116,7 @@ class Guild(UnavailableGuild, _GuildMedia):
     joined_at: NotRequired[Optional[str]]
     large: NotRequired[bool]
     member_count: NotRequired[int]
-    voice_states: NotRequired[List[GuildVoiceState]]
+    voice_states: NotRequired[List[VoiceState]]
     members: NotRequired[List[MemberWithUser]]
     channels: NotRequired[List[GuildChannel]]
     presences: NotRequired[List[PartialPresenceUpdate]]
@@ -189,4 +189,4 @@ class CommandScopeMigration(TypedDict):
 
 class SupplementalGuild(UnavailableGuild):
     embedded_activities: list
-    voice_states: List[GuildVoiceState]
+    voice_states: List[VoiceState]
