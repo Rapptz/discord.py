@@ -143,9 +143,7 @@ class VoiceState:
         'suppress',
     )
 
-    def __init__(
-        self, *, data: VoiceStatePayload, channel: Optional[ConnectableChannel] = None
-    ):
+    def __init__(self, *, data: VoiceStatePayload, channel: Optional[ConnectableChannel] = None):
         self.session_id: Optional[str] = data.get('session_id')
         self._update(data, channel)
 

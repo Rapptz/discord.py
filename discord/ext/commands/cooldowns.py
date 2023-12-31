@@ -31,14 +31,14 @@ import time
 import asyncio
 from collections import deque
 
-from ...abc import PrivateChannel
+from discord.abc import PrivateChannel
 from .errors import MaxConcurrencyReached
 from .context import Context
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from ...message import Message
+    from discord.message import Message
 
 __all__ = (
     'BucketType',
