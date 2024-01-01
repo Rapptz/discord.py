@@ -1961,7 +1961,6 @@ class Client:
         HTTPException
             Leaving the guild failed.
         """
-        lurking = lurking if lurking is not MISSING else MISSING
         if lurking is MISSING:
             attr = getattr(guild, 'joined', lurking)
             if attr is not MISSING:
@@ -1969,7 +1968,7 @@ class Client:
             elif (new_guild := self._connection._get_guild(guild.id)) is not None:
                 lurking = not new_guild.is_joined()
 
-        await self.http.leave_guild(guild.id, lurking=lurking)
+        await self.http.leave_guild(guild.id, lurking=lurking or False)
 
     async def fetch_stage_instance(self, channel_id: int, /) -> StageInstance:
         """|coro|
