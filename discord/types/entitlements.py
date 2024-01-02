@@ -30,7 +30,7 @@ from typing_extensions import NotRequired
 from .payments import PartialPayment
 from .promotions import Promotion
 from .snowflake import Snowflake
-from .store import SKU, StoreListing
+from .store import PublicSKU, PublicStoreListing
 from .subscriptions import PartialSubscriptionPlan, SubscriptionPlan, SubscriptionTrial
 from .user import PartialUser
 
@@ -55,7 +55,7 @@ class Entitlement(TypedDict):
     ends_at: NotRequired[str]
     subscription_id: NotRequired[Snowflake]
     subscription_plan: NotRequired[PartialSubscriptionPlan]
-    sku: NotRequired[SKU]
+    sku: NotRequired[PublicSKU]
     payment: NotRequired[PartialPayment]
 
 
@@ -78,7 +78,7 @@ class Gift(GatewayGift):
     uses: int
     redeemed: bool
     revoked: NotRequired[bool]
-    store_listing: NotRequired[StoreListing]
+    store_listing: NotRequired[PublicStoreListing]
     promotion: NotRequired[Promotion]
     subscription_trial: NotRequired[SubscriptionTrial]
     subscription_plan: NotRequired[SubscriptionPlan]

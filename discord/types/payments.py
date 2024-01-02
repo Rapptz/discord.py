@@ -29,7 +29,7 @@ from typing_extensions import NotRequired
 
 from .billing import PartialPaymentSource
 from .snowflake import Snowflake
-from .store import SKU
+from .store import PublicSKU
 from .subscriptions import PartialSubscription
 
 
@@ -56,6 +56,6 @@ class Payment(PartialPayment):
     downloadable_refund_invoices: NotRequired[List[str]]
     refund_disqualification_reasons: NotRequired[List[str]]
     flags: int
-    sku: NotRequired[SKU]
+    sku: NotRequired[PublicSKU]
     payment_source: NotRequired[PartialPaymentSource]
     subscription: NotRequired[PartialSubscription]

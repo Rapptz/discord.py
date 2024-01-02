@@ -41,6 +41,7 @@ from .enums import (
     SKUAccessLevel,
     SKUFeature,
     SKUGenre,
+    SKUProductLine,
     SKUType,
     SubscriptionInterval,
     SubscriptionPlanPurchaseType,
@@ -76,6 +77,7 @@ if TYPE_CHECKING:
         SKU as SKUPayload,
         CarouselItem as CarouselItemPayload,
         ContentRating as ContentRatingPayload,
+        PremiumPrice as PremiumPricePayload,
         SKUPrice as SKUPricePayload,
         StoreListing as StoreListingPayload,
         StoreNote as StoreNotePayload,
@@ -329,6 +331,8 @@ class SystemRequirements:
     recommended_notes: Optional[:class:`str`]
         Any extra notes on recommended requirements.
     """
+
+    # I hate this class so much
 
     if TYPE_CHECKING:
         os: OperatingSystem
@@ -607,6 +611,19 @@ class StoreListing(Hashable):
         The guild tied to this listing, if any.
     published: :class:`bool`
         Whether the listing is published and publicly visible.
+    published_at: Optional[:class:`datetime.datetime`]
+        When the listing was published, if available.
+
+        .. note::
+
+            This data is not available for all listings.
+
+        .. versionadded:: 2.1
+    unpublished_at: Optional[:class:`datetime.datetime`]
+        When the listing was last unpublished, if available.
+        If this is a future date, the listing will be unpublished at that time.
+
+        .. versionadded:: 2.1
     staff_note: Optional[:class:`StoreNote`]
         The staff note attached to this listing.
     assets: List[:class:`StoreAsset`]
@@ -645,6 +662,8 @@ class StoreListing(Hashable):
         'entitlement_branch_id',
         'guild',
         'published',
+        'published_at',
+        'unpublished_at',
         'staff_note',
         'assets',
         'carousel_items',
@@ -693,6 +712,8 @@ class StoreListing(Hashable):
         self.entitlement_branch_id: Optional[int] = _get_as_snowflake(data, 'entitlement_branch_id')
         self.guild: Optional[Guild] = state.create_guild(data['guild']) if 'guild' in data else None
         self.published: bool = data.get('published', True)
+        self.published_at: Optional[datetime] = parse_time(data['published_at']) if 'published_at' in data else None
+        self.unpublished_at: Optional[datetime] = parse_time(data['unpublished_at']) if 'unpublished_at' in data else None
         self.staff_note: Optional[StoreNote] = (
             StoreNote(data=data['staff_notes'], state=state) if 'staff_notes' in data else None
         )
@@ -902,27 +923,51 @@ class SKUPrice:
         The price of the SKU with discounts applied, if any.
     sale_percentage: :class:`int`
         The percentage of the price discounted, if any.
+    exponent: :class:`int`
+        The offset of the currency's decimal point.
+        For example, if the price is 1000 and the exponent is 2, the price is $10.00.
+
+        .. versionadded:: 2.1
+    premium: Dict[:class:`PremiumType`, :class:`SKUPrice`]
+        Special SKU prices for premium (Nitro) users.
+
+        .. versionadded:: 2.1
     """
 
-    __slots__ = ('currency', 'amount', 'sale_amount', 'sale_percentage', 'premium', 'exponent')
+    __slots__ = ('currency', 'amount', 'sale_amount', 'sale_percentage', 'exponent', 'premium')
 
     def __init__(self, data: Union[SKUPricePayload, SubscriptionPricePayload]) -> None:
         self.currency: str = data.get('currency', 'usd')
         self.amount: int = data.get('amount', 0)
         self.sale_amount: Optional[int] = data.get('sale_amount')
         self.sale_percentage: int = data.get('sale_percentage', 0)
-        self.premium = data.get('premium')
-        self.exponent: Optional[int] = data.get('exponent')
+        self.exponent: int = data.get('exponent', data.get('currency_exponent', 0))
+        self.premium: Dict[PremiumType, SKUPrice] = {
+            try_enum(PremiumType, premium_type): SKUPrice.from_premium(self, premium_data)
+            for premium_type, premium_data in data.get('premium', {}).items()
+        }
 
     @classmethod
     def from_private(cls, data: SKUPayload) -> SKUPrice:
         payload: SKUPricePayload = {
             'currency': 'usd',
+            'currency_exponent': 2,
             'amount': data.get('price_tier') or 0,
             'sale_amount': data.get('sale_price_tier'),
         }
         if payload['sale_amount'] is not None:
             payload['sale_percentage'] = int((1 - (payload['sale_amount'] / payload['amount'])) * 100)
+        return cls(payload)
+
+    @classmethod
+    def from_premium(cls, parent: SKUPrice, data: PremiumPricePayload) -> SKUPrice:
+        payload: SKUPricePayload = {
+            'currency': parent.currency,
+            'currency_exponent': parent.exponent,
+            'amount': parent.amount,
+            'sale_amount': data.get('amount'),
+            'sale_percentage': data.get('percentage'),
+        }
         return cls(payload)
 
     def __repr__(self) -> str:
@@ -939,8 +984,13 @@ class SKUPrice:
         return self.sale_percentage > 0
 
     def is_free(self) -> bool:
-        """:class:`bool`: Checks whether the SKU is free."""
-        return self.amount == 0
+        """:class:`bool`: Checks whether the SKU is free.
+
+        .. versionchanged:: 2.1
+
+            This now also checks the :attr:`sale_amount` to see if the SKU is free with discounts applied.
+        """
+        return self.sale_amount == 0 or self.amount == 0
 
     @property
     def discounts(self) -> int:
@@ -1047,6 +1097,10 @@ class SKU(Hashable):
         The legal notice of the SKU localized to different languages.
     type: :class:`SKUType`
         The type of the SKU.
+    product_line: Optional[:class:`SKUProductLine`]
+        The product line of the SKU, if any.
+
+        .. versionadded:: 2.1
     slug: :class:`str`
         The URL slug of the SKU.
     dependent_sku_id: Optional[:class:`int`]
@@ -1098,6 +1152,10 @@ class SKU(Hashable):
         Whether this SKU is restricted.
     exclusive: :class:`bool`
         Whether this SKU is exclusive to Discord.
+    deleted: :class:`bool`
+        Whether this SKU has been soft-deleted.
+
+        .. versionadded:: 2.1
     show_age_gate: :class:`bool`
         Whether the client should prompt the user to verify their age.
     bundled_skus: List[:class:`SKU`]
@@ -1116,6 +1174,7 @@ class SKU(Hashable):
         'legal_notice',
         'legal_notice_localizations',
         'type',
+        'product_line',
         'slug',
         'price_tier',
         'price_overrides',
@@ -1139,6 +1198,7 @@ class SKU(Hashable):
         'premium',
         'restricted',
         'exclusive',
+        'deleted',
         'show_age_gate',
         'bundled_skus',
         'manifests',
@@ -1179,6 +1239,9 @@ class SKU(Hashable):
 
         self.id: int = int(data['id'])
         self.type: SKUType = try_enum(SKUType, data['type'])
+        self.product_line: Optional[SKUProductLine] = (
+            try_enum(SKUProductLine, data['product_line']) if data.get('product_line') else None
+        )
         self.slug: str = data['slug']
         self.dependent_sku_id: Optional[int] = _get_as_snowflake(data, 'dependent_sku_id')
         self.application_id: int = int(data['application_id'])
@@ -1233,6 +1296,7 @@ class SKU(Hashable):
         self.premium: bool = data.get('premium', False)
         self.restricted: bool = data.get('restricted', False)
         self.exclusive: bool = data.get('exclusive', False)
+        self.deleted: bool = data.get('deleted', False)
         self.show_age_gate: bool = data.get('show_age_gate', False)
         self.bundled_skus: List[SKU] = [
             SKU(data=sku, state=state, application=self.application) for sku in data.get('bundled_skus', [])

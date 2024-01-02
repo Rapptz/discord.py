@@ -107,6 +107,7 @@ __all__ = (
     'ApplicationAssetType',
     'SKUType',
     'SKUAccessLevel',
+    'SKUProductLine',
     'SKUFeature',
     'SKUGenre',
     'OperatingSystem',
@@ -1188,6 +1189,7 @@ class PaymentSourceType(Enum):
     bancontact = 14
     eps = 15
     ideal = 16
+    cash_app = 17
     payment_request = 99
 
 
@@ -1285,6 +1287,19 @@ class SKUAccessLevel(Enum, comparable=True):
     full = 1
     early_access = 2
     vip_access = 3
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class SKUProductLine(Enum):
+    premium = 1
+    guild_premium = 2
+    iap = 3
+    guild_role = 4
+    guild_product = 5
+    application = 6
+    collectible = 7
 
     def __int__(self) -> int:
         return self.value

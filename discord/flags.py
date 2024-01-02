@@ -1591,6 +1591,23 @@ class SKUFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the SKU is a application subscription. These are subscriptions made to applications for premium perks bound to a user."""
         return 1 << 8
 
+    @flag_value
+    def creator_monetization(self):
+        """:class:`bool`: Returns ``True`` if the SKU is a creator monetization product (e.g. guild role subscription, guild product).
+
+        .. versionadded:: 2.1
+        """
+        # For some reason this is only actually present on products...
+        return 1 << 9
+
+    @flag_value
+    def guild_product(self):
+        """:class:`bool`: Returns ``True`` if the SKU is a guild product. These are one-time purchases made by guilds for premium perks.
+
+        .. versionadded:: 2.1
+        """
+        return 1 << 10
+
 
 @fill_with_flags()
 class PaymentFlags(BaseFlags):

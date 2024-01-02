@@ -201,9 +201,13 @@ class SubscriptionInvoiceItem(Hashable):
         The price of the subscription plan the item represents. This does not include discounts.
     discounts: List[:class:`SubscriptionDiscount`]
         A list of discounts applied to the item.
+    metadata: :class:`Metadata`
+        Extra metadata about the invoice item.
+
+        .. versionadded:: 2.1
     """
 
-    __slots__ = ('id', 'quantity', 'amount', 'proration', 'plan_id', 'plan_price', 'discounts')
+    __slots__ = ('id', 'quantity', 'amount', 'proration', 'plan_id', 'plan_price', 'discounts', 'metadata')
 
     def __init__(self, data: SubscriptionInvoiceItemPayload) -> None:
         self.id: int = int(data['id'])
@@ -213,6 +217,7 @@ class SubscriptionInvoiceItem(Hashable):
         self.plan_id: int = int(data['subscription_plan_id'])
         self.plan_price: int = data['subscription_plan_price']
         self.discounts: List[SubscriptionDiscount] = [SubscriptionDiscount(d) for d in data['discounts']]
+        self.metadata: Metadata = Metadata(data.get('tenant_metadata', {}))
 
     def __repr__(self) -> str:
         return f'<SubscriptionInvoiceItem id={self.id} quantity={self.quantity} amount={self.amount}>'
@@ -277,6 +282,10 @@ class SubscriptionInvoice(Hashable):
         When the current billing period started.
     current_period_end: :class:`datetime.datetime`
         When the current billing period ends.
+    applied_discount_ids: List[:class:`int`]
+        The IDs of the discounts applied to the invoice.
+
+        .. versionadded:: 2.1
     """
 
     __slots__ = (
@@ -292,6 +301,8 @@ class SubscriptionInvoice(Hashable):
         'items',
         'current_period_start',
         'current_period_end',
+        'applied_discount_ids',
+        'applied_user_discounts',
     )
 
     def __init__(
@@ -315,6 +326,12 @@ class SubscriptionInvoice(Hashable):
 
         self.current_period_start: datetime = parse_time(data['subscription_period_start'])  # type: ignore # Should always be a datetime
         self.current_period_end: datetime = parse_time(data['subscription_period_end'])  # type: ignore # Should always be a datetime
+
+        # These fields are unknown
+        self.applied_discount_ids: List[int] = [int(id) for id in data.get('applied_discount_ids', [])]
+        self.applied_user_discounts: Dict[int, Optional[Any]] = {
+            int(k): v for k, v in data.get('applied_user_discounts', {}).items()
+        }
 
     def __repr__(self) -> str:
         return f'<SubscriptionInvoice id={self.id} status={self.status!r} total={self.total}>'

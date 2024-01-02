@@ -73,6 +73,7 @@ class SubscriptionInvoiceItem(TypedDict):
     subscription_plan_id: Snowflake
     subscription_plan_price: int
     discounts: List[SubscriptionDiscount]
+    tenant_metadata: NotRequired[Dict[str, Any]]
 
 
 class SubscriptionInvoice(TypedDict):
@@ -86,6 +87,8 @@ class SubscriptionInvoice(TypedDict):
     items: List[SubscriptionInvoiceItem]
     current_period_start: str
     current_period_end: str
+    applied_discount_ids: NotRequired[List[Snowflake]]
+    applied_user_discounts: NotRequired[Dict[Snowflake, Optional[Any]]]
 
 
 class SubscriptionRenewalMutations(TypedDict, total=False):

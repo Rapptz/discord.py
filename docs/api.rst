@@ -3960,6 +3960,12 @@ of :class:`enum.Enum`.
 
         The payment source is an iDEAL account.
 
+    .. attribute:: cash_app
+
+        The payment source is a Cash App account.
+
+        .. versionadded:: 2.1
+
 .. class:: PaymentGateway
 
     Represents the payment gateway used for a payment source.
