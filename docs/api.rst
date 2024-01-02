@@ -5055,6 +5055,12 @@ of :class:`enum.Enum`.
 
         The ``en-US`` locale.
 
+    .. attribute:: arabic
+
+        The ``ar`` locale.
+
+        .. versionadded:: 2.1
+
     .. attribute:: british_english
 
         The ``en-GB`` locale.
@@ -5078,12 +5084,6 @@ of :class:`enum.Enum`.
     .. attribute:: czech
 
         The ``cs`` locale.
-
-    .. attribute:: indonesian
-
-        The ``id`` locale.
-
-        .. versionadded:: 2.0
 
     .. attribute:: danish
 
@@ -5117,6 +5117,10 @@ of :class:`enum.Enum`.
 
         The ``hu`` locale.
 
+    .. attribute:: indonesian
+
+        The ``id`` locale.
+
     .. attribute:: italian
 
         The ``it`` locale.
@@ -5128,6 +5132,12 @@ of :class:`enum.Enum`.
     .. attribute:: korean
 
         The ``ko`` locale.
+
+    .. attribute:: latin_american_spanish
+
+        The ``es-419`` locale.
+
+        .. versionadded:: 2.1
 
     .. attribute:: lithuanian
 
