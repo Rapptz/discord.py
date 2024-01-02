@@ -484,6 +484,9 @@ class VoiceConnectionState:
             await self.disconnect()
             return
 
+        if self.voice_client.channel and channel.id == self.voice_client.channel.id:
+            return
+
         previous_state = self.state
         # this is only an outgoing ws request
         # if it fails, nothing happens and nothing changes (besides self.state)
