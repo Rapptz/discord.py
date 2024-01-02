@@ -40,7 +40,7 @@ from .enums import (
 from .errors import ClientException, NotFound
 from .flags import PublicUserFlags, PrivateUserFlags, PremiumUsageFlags, PurchasedFlags
 from .relationship import Relationship
-from .utils import _bytes_to_base64_data, cached_slot_property, copy_doc, snowflake_time, MISSING
+from .utils import _bytes_to_base64_data, _get_as_snowflake, cached_slot_property, copy_doc, snowflake_time, MISSING
 from .voice_client import VoiceClient
 
 if TYPE_CHECKING:
@@ -61,6 +61,7 @@ if TYPE_CHECKING:
         APIUser as APIUserPayload,
         PartialUser as PartialUserPayload,
         User as UserPayload,
+        UserAvatarDecorationData,
     )
     from .types.snowflake import Snowflake
 
@@ -243,6 +244,7 @@ class BaseUser(_UserTag):
         'global_name',
         '_avatar',
         '_avatar_decoration',
+        '_avatar_decoration_sku_id',
         '_banner',
         '_accent_colour',
         'bot',
@@ -262,6 +264,7 @@ class BaseUser(_UserTag):
         _state: ConnectionState
         _avatar: Optional[str]
         _avatar_decoration: Optional[str]
+        _avatar_decoration_sku_id: Optional[Snowflake]
         _banner: Optional[str]
         _accent_colour: Optional[int]
         _public_flags: int
@@ -296,12 +299,15 @@ class BaseUser(_UserTag):
         self.discriminator = data['discriminator']
         self.global_name = data.get('global_name')
         self._avatar = data['avatar']
-        self._avatar_decoration = data.get('avatar_decoration')
         self._banner = data.get('banner', None)
         self._accent_colour = data.get('accent_color', None)
         self._public_flags = data.get('public_flags', 0)
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
+
+        decoration_data = data.get('avatar_decoration_data')
+        self._avatar_decoration = decoration_data.get('asset') if decoration_data else None
+        self._avatar_decoration_sku_id = _get_as_snowflake(decoration_data, 'sku_id') if decoration_data else None
 
     @classmethod
     def _copy(cls, user: Self) -> Self:
@@ -313,6 +319,7 @@ class BaseUser(_UserTag):
         self.global_name = user.global_name
         self._avatar = user._avatar
         self._avatar_decoration = user._avatar_decoration
+        self._avatar_decoration_sku_id = user._avatar_decoration_sku_id
         self._banner = user._banner
         self._accent_colour = user._accent_colour
         self._public_flags = user._public_flags
@@ -323,11 +330,17 @@ class BaseUser(_UserTag):
         return self
 
     def _to_minimal_user_json(self) -> APIUserPayload:
+        decoration: Optional[UserAvatarDecorationData] = None
+        if self._avatar_decoration is not None:
+            decoration = {'asset': self._avatar_decoration}
+            if self._avatar_decoration_sku_id is not None:
+                decoration['sku_id'] = self._avatar_decoration_sku_id
+
         user: APIUserPayload = {
             'username': self.name,
             'id': self.id,
             'avatar': self._avatar,
-            'avatar_decoration': self._avatar_decoration,
+            'avatar_decoration_data': decoration,
             'discriminator': self.discriminator,
             'global_name': self.global_name,
             'bot': self.bot,
@@ -388,8 +401,18 @@ class BaseUser(_UserTag):
         .. versionadded:: 2.0
         """
         if self._avatar_decoration is not None:
-            return Asset._from_avatar_decoration(self._state, self.id, self._avatar_decoration)
+            return Asset._from_avatar_decoration(self._state, self._avatar_decoration)
         return None
+
+    @property
+    def avatar_decoration_sku_id(self) -> Optional[Snowflake]:
+        """Optional[:class:`int`]: Returns the avatar decoration's SKU ID.
+
+        If the user does not have a preset avatar decoration, ``None`` is returned.
+
+        .. versionadded:: 2.1
+        """
+        return self._avatar_decoration_sku_id
 
     @property
     def banner(self) -> Optional[Asset]:
@@ -1045,14 +1068,20 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         if len(user) == 0 or len(user) <= 1:  # Done because of typing
             return
 
-        original = (self.name, self._avatar, self.discriminator, self._public_flags, self._avatar_decoration)
-        # These keys seem to always be available
+        original = (
+            self.name,
+            self._avatar,
+            self.discriminator,
+            self._public_flags,
+            self._avatar_decoration,
+            self.global_name,
+        )
         modified = (
             user['username'],
             user.get('avatar'),
             user['discriminator'],
             user.get('public_flags', 0),
-            user.get('avatar_decoration'),
+            (user.get('avatar_decoration_data') or {}).get('asset'),
             user.get('global_name'),
         )
         if original != modified:

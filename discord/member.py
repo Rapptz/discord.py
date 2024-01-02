@@ -289,6 +289,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         default_avatar: Asset
         avatar: Optional[Asset]
         avatar_decoration: Optional[Asset]
+        avatar_decoration_sku_id: Optional[int]
         note: Note
         relationship: Optional[Relationship]
         is_friend: Callable[[], bool]

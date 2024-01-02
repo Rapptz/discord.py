@@ -239,12 +239,8 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_avatar_decoration(cls, state: _State, user_id: int, decoration: str) -> Self:
-        # Avatar decoration presets are not available through the regular CDN endpoint
-        if decoration.startswith(('v1_', 'v2_')):
-            url = f'{cls.BASE}/avatar-decoration-presets/{decoration}.png?size=256&passthrough=true'
-        else:
-            url = f'{cls.BASE}/avatar-decorations/{user_id}/{decoration}.png?size=256&passthrough=true'
+    def _from_avatar_decoration(cls, state: _State, decoration: str) -> Self:
+        url = f'{cls.BASE}/avatar-decoration-presets/{decoration}.png?size=256&passthrough=true'
         return cls(state, url=url, key=decoration, animated=False, passthrough=True)
 
     @classmethod
