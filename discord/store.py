@@ -710,7 +710,7 @@ class StoreListing(Hashable):
         self.child_skus: List[SKU] = [SKU(data=sku, state=state) for sku in data.get('child_skus', [])]
         self.alternative_skus: List[SKU] = [SKU(data=sku, state=state) for sku in data.get('alternative_skus', [])]
         self.entitlement_branch_id: Optional[int] = _get_as_snowflake(data, 'entitlement_branch_id')
-        self.guild: Optional[Guild] = state.create_guild(data['guild']) if 'guild' in data else None
+        self.guild: Optional[Guild] = state.create_guild(data['guild']) if 'guild' in data else None  # type: ignore
         self.published: bool = data.get('published', True)
         self.published_at: Optional[datetime] = parse_time(data['published_at']) if 'published_at' in data else None
         self.unpublished_at: Optional[datetime] = parse_time(data['unpublished_at']) if 'unpublished_at' in data else None
@@ -1279,7 +1279,7 @@ class SKU(Hashable):
         self.genres: List[SKUGenre] = [try_enum(SKUGenre, genre) for genre in data.get('genres', [])]
         self.available_regions: Optional[List[str]] = data.get('available_regions')
         self.content_ratings: List[ContentRating] = (
-            [ContentRating.from_dict(data['content_rating'], data['content_rating_agency'])]
+            [ContentRating.from_dict(data['content_rating'], data['content_rating_agency'])]  # type: ignore
             if 'content_rating' in data and 'content_rating_agency' in data
             else ContentRating.from_dicts(data.get('content_ratings'))
         )

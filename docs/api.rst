@@ -4277,6 +4277,40 @@ of :class:`enum.Enum`.
 
         The SKU is available to VIP users only.
 
+.. class:: SKUProductLine
+
+    Represents the product line of a SKU.
+
+    .. versionadded:: 2.1
+
+    .. attribute:: premium
+
+        The SKU is a premium (Nitro) product.
+
+    .. attribute:: premium_guild
+
+        The SKU is a premium guild product.
+
+    .. attribute:: iap
+
+        The SKU is an embedded in-app purchase.
+
+    .. attribute:: guild_role
+
+        The SKU is a guild role subscription.
+
+    .. attribute:: guild_product
+
+        The SKU is a guild product.
+
+    .. attribute:: application
+
+        The SKU is an application subscription.
+
+    .. attribute:: collectible
+
+        The SKU is a collectible avatar decoration or profile effect.
+
 .. class:: SKUFeature
 
     Represents a feature of a SKU.

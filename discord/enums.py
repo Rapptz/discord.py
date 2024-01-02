@@ -1294,7 +1294,7 @@ class SKUAccessLevel(Enum, comparable=True):
 
 class SKUProductLine(Enum):
     premium = 1
-    guild_premium = 2
+    premium_guild = 2
     iap = 3
     guild_role = 4
     guild_product = 5
