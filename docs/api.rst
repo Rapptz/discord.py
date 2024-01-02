@@ -4229,6 +4229,83 @@ of :class:`enum.Enum`.
 
         The entitlement is an application subscription.
 
+.. class:: RefundReason
+
+    Represents the reason for a refund.
+
+    .. versionadded:: 2.1
+
+    .. attribute:: other
+
+        The refund is due to another reason.
+
+    .. attribute:: gifting_refund
+
+        The refund is due to an unwanted gift.
+
+    .. attribute:: buyers_remorse
+
+        The refund is due to buyer's remorse.
+
+    .. attribute:: wrong_purchase
+
+        The refund is due to a wrong purchase.
+
+    .. attribute:: forgot_to_cancel
+
+        The refund is due to forgetting to cancel a subscription.
+
+    .. attribute:: premium_guild_cooldown
+
+        The refund is due to a premium guild (boosting) cooldown.
+
+    .. attribute:: user_confusion
+
+        The refund is due to user confusion.
+
+    .. attribute:: want_to_switch_tiers
+
+        The refund is due to wanting to switch premium (Nitro) tiers.
+
+    .. attribute:: dont_need
+
+        The refund is due to not needing the purchase.
+
+.. class:: RefundDisqualificationReason
+
+    Represents the reason for a refund disqualification.
+
+    .. versionadded:: 2.1
+
+    .. attribute:: other
+
+        The purchase is disqualified from a refund due to another reason.
+
+    .. attribute:: already_refunded
+
+        The purchase is disqualified from a refund because it has already been refunded.
+
+    .. attribute:: not_user_refundable_type
+
+        The purchase is disqualified from a refund because it is not a user refundable type.
+        The user must contact Discord support to request a refund.
+
+    .. attribute:: past_refundable_date
+
+        The purchase is disqualified from a refund because it is past the refundable date.
+
+    .. attribute:: entitlement_already_consumed
+
+        The purchase is disqualified from a refund because the purchased entitlement has already been consumed.
+
+    .. attribute:: already_refunded_premium
+
+        The purchase is disqualified from a refund because the user has already refunded a premium (Nitro) purchase.
+
+    .. attribute:: already_refunded_premium_guild
+
+        The purchase is disqualified from a refund because the user has already refunded a premium guild (boosting) purchase.
+
 .. class:: SKUType
 
     Represents the type of a SKU.

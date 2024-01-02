@@ -114,6 +114,8 @@ __all__ = (
     'ContentRatingAgency',
     'Distributor',
     'EntitlementType',
+    'RefundReason',
+    'RefundDisqualificationReason',
     'AutoModRuleTriggerType',
     'AutoModRuleEventType',
     'AutoModRuleActionType',
@@ -1553,6 +1555,31 @@ class EntitlementType(Enum):
 
     def __int__(self) -> int:
         return self.value
+
+
+class RefundReason(Enum):
+    other = 0
+    gifting_refund = 1
+    buyers_remorse = 2
+    wrong_purchase = 3
+    forgot_to_cancel = 4
+    premium_guild_cooldown = 5
+    user_confusion = 6
+    want_to_switch_tiers = 7
+    dont_need = 8
+
+    def __int__(self) -> int:
+        return self.value
+
+
+class RefundDisqualificationReason(Enum):
+    other = 0
+    already_refunded = 1
+    not_user_refundable_type = 2
+    past_refundable_date = 3
+    entitlement_already_consumed = 4
+    already_refunded_premium = 5
+    already_refunded_premium_guild = 6
 
 
 class AutoModRuleTriggerType(Enum):
