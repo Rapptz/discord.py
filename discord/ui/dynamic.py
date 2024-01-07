@@ -76,6 +76,8 @@ class DynamicItem(Generic[BaseT], Item['View']):
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    disabled: Optional[:class:`bool`]
+        Whether the button is disabled or not. Defaults to :class:`.Button` default value.
 
     Attributes
     -----------
@@ -101,11 +103,14 @@ class DynamicItem(Generic[BaseT], Item['View']):
         item: BaseT,
         *,
         row: Optional[int] = None,
+        disabled: Optional[bool] = None,
     ) -> None:
         super().__init__()
         self.item: BaseT = item
         if row is not None:
             self.row = row
+        if disabled is not None:
+            self.disabled = disabled
 
         if not self.item.is_dispatchable():
             raise TypeError('item must be dispatchable, e.g. not a URL button')
@@ -164,6 +169,14 @@ class DynamicItem(Generic[BaseT], Item['View']):
     @row.setter
     def row(self, value: Optional[int]) -> None:
         self.item.row = value
+
+    @property
+    def disabled(self) -> bool:
+        return self.item.disabled
+
+    @disabled.setter
+    def disabled(self, value: Optional[bool]) -> None:
+        self.item.disabled = value
 
     @property
     def width(self) -> int:
