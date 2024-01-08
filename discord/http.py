@@ -1550,6 +1550,23 @@ class HTTPClient:
 
     def get_member(self, guild_id: Snowflake, member_id: Snowflake) -> Response[member.MemberWithUser]:
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
+    
+    def get_member_safety_information(self, guild_id: Snowflake, member_id: Snowflake, after: int, bot_id: Snowflake) -> Response[member.MemberSearchResults]:
+        payload = {}
+
+        payload['after'] = {
+            'guild_joined_at': after,
+            'user_id': str(bot_id)
+        }
+        payload['and_query'] = {
+            'user_id': {
+                'or_query': [str(member_id)]
+            }
+        }
+        payload['limit'] = 1
+        payload['or_query'] = {}
+
+        return self.request(Route('POST', '/guilds/{guild_id}/members-search', guild_id=guild_id), json=payload)
 
     def prune_members(
         self,
@@ -1952,6 +1969,71 @@ class HTTPClient:
 
     def delete_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id), reason=reason)
+    
+    def get_guild_member_safety(self, guild_id: Snowflake, limit: int, joined_at: int, bot_id: int, **kwargs) -> Response[member.MemberSearchResults]:
+        payload = {}
+        payload['after'] = {
+            'guild_joined_at': joined_at,
+            'user_id': str(bot_id)
+        }
+        payload['limit'] = limit
+        payload['and_query'] = {}
+        payload['or_query'] = {}
+
+        for key, value in kwargs.items():
+            if value is Ellipsis:
+                continue
+
+            if key == 'timed_out_until':
+                # This key's value is meant to be
+                # a datetime.datetime object
+                if 'safety_signals' not in payload['or_query'].keys():
+                    payload['or_query']['safety_signals'] = {
+                        'communication_disabled_until': {
+                            'range': {
+                                'gte': value.timestamp()
+                            }
+                        }
+                    }
+                    continue
+
+                payload['or_query']['safety_signals']['communication_disabled_until'] = {
+                    'range': {
+                        'gte': value.timestamp()
+                    }
+                }
+
+            elif key == 'unusual_dms_until':
+                # This key's value is meant to be
+                # a datetime.datetime object
+                if 'safety_signals' not in payload['or_query'].keys():
+                    payload['or_query']['safety_signals'] = {
+                        'unusual_dm_activity_until': {
+                            'range': {
+                                'gte': value.timestamp()
+                            }
+                        }
+                    }
+                    continue
+
+                payload['or_query']['safety_signals']['unusual_dm_activity_until'] = {
+                    'range': {
+                        'gte': value.timestamp()
+                    }
+                }
+
+            elif key == 'users_ids':
+                payload['and_query']['user_id'] = {
+                    'or_query': list((str(user.id) if not isinstance(user, int) else str(user)) for user in value)
+                }
+
+            elif key == 'roles':
+                payload['and_query']['role_ids'] = {
+                    'and_query': list((str(role.id) if not isinstance(role, int) else str(role)) for role in value)
+                }
+
+
+        return self.request(Route('POST', '/guilds/{guild_id}/members-search', guild_id=guild_id), json=payload)
 
     # Guild scheduled event management
 

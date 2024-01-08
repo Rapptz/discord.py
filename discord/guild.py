@@ -45,12 +45,13 @@ from typing import (
     Tuple,
     Union,
     overload,
+    TypedDict,
 )
 import warnings
 
 from . import utils, abc
 from .role import Role
-from .member import Member, VoiceState
+from .member import Member, VoiceState, MemberSearch
 from .emoji import Emoji
 from .errors import InvalidData
 from .permissions import PermissionOverwrite
@@ -103,6 +104,8 @@ __all__ = (
 MISSING = utils.MISSING
 
 if TYPE_CHECKING:
+    from typing_extensions import Unpack
+
     from .abc import Snowflake, SnowflakeTime
     from .types.guild import (
         Ban as BanPayload,
@@ -150,6 +153,14 @@ class _GuildLimit(NamedTuple):
     stickers: int
     bitrate: float
     filesize: int
+
+
+class MemberSearchQueries(TypedDict, total=False):
+    joined_after: datetime.datetime
+    users_ids: List[Union[Snowflake, int]]
+    roles: List[Union[Snowflake, int]]
+    timed_out_until: datetime.datetime
+    unusual_dms_until: datetime.datetime
 
 
 class Guild(Hashable):
@@ -4292,3 +4303,55 @@ class Guild(Hashable):
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)
+    
+    async def fetch_members_safety_information(self, *, limit: int = 15, **filters: Unpack[MemberSearchQueries]) -> Optional[Tuple[MemberSearch, ...]]:
+        r"""|coro|
+        
+        Fetches all the members safety information with the applied filters.
+
+        You must have :attr:`Permissions.manage_members` in order to
+        do this.
+
+        Parameters
+        ----------
+        limit: :class:`int`
+            The limit of members to fetch safety information.
+        **filters
+            Simple filters to sort members. If you provide
+            filters that none of the members satisfy, this
+            will return `None`.
+
+            Simple filters table:
+
+            +------------------+-----------------------------------------+
+            |    Parameter     |                 Sort type               |
+            +------------------+-----------------------------------------+
+            | joined_after     | Return users that joined after that date|
+            +------------------+-----------------------------------------+
+            | timed_out_until  | Return users timed out until that date  |
+            +------------------+-----------------------------------------+
+            | unusual_dms_until| Return users with unusual DM activities |
+            +------------------+-----------------------------------------+
+            | users_ids        | Return users that match any of the IDS  |
+            +------------------+-----------------------------------------+
+            | roles            | Return users that have any of the roles |
+            +------------------+-----------------------------------------+
+        
+        Raises
+        ------
+        Forbidden
+            You do not have enough permissions to
+            fetch this information.
+        HTTPException
+            Fetching the information failed.
+
+        Returns
+        -------
+        Optional[Tuple[:class:`MemberSafety`, ...]]
+            The members that got fetched, or `None` if there
+            aren't or none of the filters were satisfied.
+        """
+
+        data = await self._state.http.get_guild_member_safety(self.id, limit, int(filters.pop('joined_after', self.created_at).timestamp()), self._state.self_id, **filters)
+
+        return tuple([MemberSearch(data=member_data, guild=self, state=self._state) for member_data in data.get('members')]) if len(data.get('members')) > 0 else None

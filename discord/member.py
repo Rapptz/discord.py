@@ -38,7 +38,7 @@ from .utils import MISSING
 from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
-from .enums import Status, try_enum
+from .enums import Status, try_enum, JoinType
 from .errors import ClientException
 from .colour import Colour
 from .object import Object
@@ -47,6 +47,7 @@ from .flags import MemberFlags
 __all__ = (
     'VoiceState',
     'Member',
+    'MemberSearch',
 )
 
 T = TypeVar('T', bound=type)
@@ -65,6 +66,7 @@ if TYPE_CHECKING:
         MemberWithUser as MemberWithUserPayload,
         Member as MemberPayload,
         UserWithMember as UserWithMemberPayload,
+        MemberSearch as MemberSearchPayload,
     )
     from .types.gateway import GuildMemberUpdateEvent
     from .types.user import User as UserPayload
@@ -250,6 +252,37 @@ def flatten_user(cls: T) -> T:
     return cls
 
 
+class MemberSearch:
+    """Represents a fetched member from member search.
+    
+    .. versionadded:: 2.4
+
+    Attributes
+    ----------
+    member: :class:`Member`
+        The member this search if of.
+    source_invite_code: Optional[:class:`str`]
+        The Invite Code this user joined with.
+    join_type: :class:`JoinType`
+        The join type.
+    inviter: Optional[:class:`User`]
+        The inviter, or `None` if not cached or
+        not present.
+    """
+
+    __slots__ = (
+        'member',
+        'source_invite_code',
+        'join_type',
+        'inviter',
+    )
+
+    def __init__(self, *, data: MemberSearchPayload, guild: Guild, state: ConnectionState) -> None:
+        self.member: Member = Member(data=data.get('member'), guild=guild, state=state)
+        self.source_invite_code: Optional[str] = data.get('source_invite_code')
+        self.join_type: JoinType = try_enum(JoinType, data.get('join_source_type'))
+        self.inviter: Optional[User] = state.get_user(int(data.get('inviter_id'))) if data.get('inviter_id') else None
+
 @flatten_user
 class Member(discord.abc.Messageable, _UserTag):
     """Represents a Discord member to a :class:`Guild`.
@@ -317,6 +350,7 @@ class Member(discord.abc.Messageable, _UserTag):
         'pending',
         'nick',
         'timed_out_until',
+        'unusual_dms_until',
         '_permissions',
         '_client_status',
         '_user',
@@ -363,6 +397,7 @@ class Member(discord.abc.Messageable, _UserTag):
             self._permissions = None
 
         self.timed_out_until: Optional[datetime.datetime] = utils.parse_time(data.get('communication_disabled_until'))
+        self.unusual_dms_until: Optional[datetime.datetime] = utils.parse_time(data.get('unusual_dm_activity_until'))
 
     def __str__(self) -> str:
         return str(self._user)
@@ -1010,6 +1045,37 @@ class Member(discord.abc.Messageable, _UserTag):
             raise TypeError(f'expected None, datetime.datetime, or datetime.timedelta not {until.__class__.__name__}')
 
         await self.edit(timed_out_until=timed_out_until, reason=reason)
+
+    async def fetch_safety_information(self) -> Optional[MemberSearch]:
+        r"""|coro|
+        
+        Fetches the safety information for this member.
+
+        You must have :attr:`Permissions.manage_members` to
+        use this.
+
+        Raises
+        ------
+        Forbidden
+            You do not have permission to view member safety
+            information.
+        HTTPException
+            Fetching the information failed.
+        
+        Returns
+        -------
+        Optional[:class:`MemberSafety`]
+            The member safety information, or `None` if there
+            isn't.
+        """
+
+        data = await self._state.http.get_member_safety_information(self.guild.id, self.id, int(self.guild.created_at.timestamp()), self._state.self_id)
+        member = data.get('members')[0] if len(data.get('members')) > 0 else None
+
+        if not member:
+            return
+        
+        return MemberSearch(data=member, guild=self.guild, state=self._state)
 
     async def add_roles(self, *roles: Snowflake, reason: Optional[str] = None, atomic: bool = True) -> None:
         r"""|coro|

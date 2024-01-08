@@ -22,10 +22,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
-from .snowflake import SnowflakeList
+from typing import Optional, TypedDict, Literal, List
+from .snowflake import SnowflakeList, Snowflake
 from .user import User
 
+JoinType = Literal[0, 3, 5]
 
 class Nickname(TypedDict):
     nick: str
@@ -47,6 +48,7 @@ class Member(PartialMember, total=False):
     pending: bool
     permissions: str
     communication_disabled_until: str
+    unusual_dm_activity_until: Optional[str]
 
 
 class _OptionalMemberWithUser(PartialMember, total=False):
@@ -64,3 +66,17 @@ class MemberWithUser(_OptionalMemberWithUser):
 
 class UserWithMember(User, total=False):
     member: _OptionalMemberWithUser
+
+
+class MemberSearch(TypedDict):
+    member: MemberWithUser
+    source_invite_code: Optional[str]
+    join_source_type: JoinType
+    inviter_id: Optional[Snowflake]
+
+
+class MemberSearchResults(TypedDict):
+    guild_id: Snowflake
+    members: List[MemberSearch]
+    page_result_count: int
+    total_result_count: int

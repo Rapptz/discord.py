@@ -73,6 +73,7 @@ __all__ = (
     'SKUType',
     'EntitlementType',
     'EntitlementOwnerType',
+    'JoinType',
 )
 
 if TYPE_CHECKING:
@@ -804,6 +805,10 @@ class EntitlementOwnerType(Enum):
     guild = 1
     user = 2
 
+class JoinType(Enum):
+    unknown = 0
+    discovery = 3
+    user_invite = 5
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
     value_cls = cls._enum_value_cls_  # type: ignore # This is narrowed below
