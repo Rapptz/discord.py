@@ -261,7 +261,7 @@ class MemberSearch:
     ----------
     member: :class:`Member`
         The member this search if of.
-    source_invite_code: Optional[:class:`str`]
+    invite_code: Optional[:class:`str`]
         The Invite Code this user joined with.
     join_type: :class:`JoinType`
         The join type.
@@ -272,14 +272,14 @@ class MemberSearch:
 
     __slots__ = (
         'member',
-        'source_invite_code',
+        'invite_code',
         'join_type',
         'inviter',
     )
 
     def __init__(self, *, data: MemberSearchPayload, guild: Guild, state: ConnectionState) -> None:
         self.member: Member = Member(data=data.get('member'), guild=guild, state=state)
-        self.source_invite_code: Optional[str] = data.get('source_invite_code')
+        self.invite_code: Optional[str] = data.get('source_invite_code')
         self.join_type: JoinType = try_enum(JoinType, data.get('join_source_type'))
         self.inviter: Optional[User] = state.get_user(int(data.get('inviter_id'))) if data.get('inviter_id') else None
 
@@ -1054,6 +1054,8 @@ class Member(discord.abc.Messageable, _UserTag):
         You must have :attr:`Permissions.manage_members` to
         use this.
 
+        .. versionadded:: 2.4
+
         Raises
         ------
         Forbidden
@@ -1069,7 +1071,7 @@ class Member(discord.abc.Messageable, _UserTag):
             isn't.
         """
 
-        data = await self._state.http.get_member_safety_information(self.guild.id, self.id, int(self.guild.created_at.timestamp()), self._state.self_id)
+        data = await self._state.http.get_member_safety_information(self.guild.id, self.id, self._state.self_id)
         member = data.get('members')[0] if len(data.get('members')) > 0 else None
 
         if not member:

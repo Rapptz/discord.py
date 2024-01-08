@@ -156,7 +156,6 @@ class _GuildLimit(NamedTuple):
 
 
 class MemberSearchQueries(TypedDict, total=False):
-    joined_after: datetime.datetime
     users_ids: List[Union[Snowflake, int]]
     roles: List[Union[Snowflake, int]]
     timed_out_until: datetime.datetime
@@ -4326,8 +4325,6 @@ class Guild(Hashable):
             +------------------+-----------------------------------------+
             |    Parameter     |                 Sort type               |
             +------------------+-----------------------------------------+
-            | joined_after     | Return users that joined after that date|
-            +------------------+-----------------------------------------+
             | timed_out_until  | Return users timed out until that date  |
             +------------------+-----------------------------------------+
             | unusual_dms_until| Return users with unusual DM activities |
@@ -4352,6 +4349,6 @@ class Guild(Hashable):
             aren't or none of the filters were satisfied.
         """
 
-        data = await self._state.http.get_guild_member_safety(self.id, limit, int(filters.pop('joined_after', self.created_at).timestamp()), self._state.self_id, **filters)
+        data = await self._state.http.get_guild_member_safety(self.id, limit, self._state.self_id, **filters)
 
         return tuple([MemberSearch(data=member_data, guild=self, state=self._state) for member_data in data.get('members')]) if len(data.get('members')) > 0 else None

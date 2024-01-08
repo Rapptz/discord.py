@@ -1551,11 +1551,11 @@ class HTTPClient:
     def get_member(self, guild_id: Snowflake, member_id: Snowflake) -> Response[member.MemberWithUser]:
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
     
-    def get_member_safety_information(self, guild_id: Snowflake, member_id: Snowflake, after: int, bot_id: Snowflake) -> Response[member.MemberSearchResults]:
+    def get_member_safety_information(self, guild_id: Snowflake, member_id: Snowflake, bot_id: Snowflake) -> Response[member.MemberSearchResults]:
         payload = {}
 
         payload['after'] = {
-            'guild_joined_at': after,
+            'guild_joined_at': 1704734571433,
             'user_id': str(bot_id)
         }
         payload['and_query'] = {
@@ -1970,10 +1970,10 @@ class HTTPClient:
     def delete_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id), reason=reason)
     
-    def get_guild_member_safety(self, guild_id: Snowflake, limit: int, joined_at: int, bot_id: int, **kwargs) -> Response[member.MemberSearchResults]:
+    def get_guild_member_safety(self, guild_id: Snowflake, limit: int, bot_id: int, **kwargs) -> Response[member.MemberSearchResults]:
         payload = {}
         payload['after'] = {
-            'guild_joined_at': joined_at,
+            'guild_joined_at': 1704734571433,
             'user_id': str(bot_id)
         }
         payload['limit'] = limit
