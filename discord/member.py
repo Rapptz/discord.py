@@ -1051,8 +1051,15 @@ class Member(discord.abc.Messageable, _UserTag):
         
         Fetches the safety information for this member.
 
-        You must have :attr:`Permissions.manage_members` to
-        use this.
+        You must have __any__ of the following permissions:
+
+        - :attr:`Permissions.administrator`
+        - :attr:`Permissions.manage_guild`
+        - :attr:`Permissions.manage_roles`
+        - :attr:`Permissions.manage_nicknames`
+        - :attr:`Permissions.ban_members`
+        - :attr:`Permissions.moderate_members`
+        - :attr:`Permissions.kick_members`
 
         .. versionadded:: 2.4
 

@@ -4308,8 +4308,15 @@ class Guild(Hashable):
         
         Fetches all the members safety information with the applied filters.
 
-        You must have :attr:`Permissions.manage_members` in order to
-        do this.
+        You must have __any__ of the following permissions:
+
+        - :attr:`Permissions.administrator`
+        - :attr:`Permissions.manage_guild`
+        - :attr:`Permissions.manage_roles`
+        - :attr:`Permissions.manage_nicknames`
+        - :attr:`Permissions.ban_members`
+        - :attr:`Permissions.moderate_members`
+        - :attr:`Permissions.kick_members`
 
         Parameters
         ----------
