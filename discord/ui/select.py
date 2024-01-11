@@ -235,6 +235,7 @@ class BaseSelect(Item[V]):
     def from_component(cls, component: SelectMenu) -> Self:
         return cls(
             **{k: getattr(component, k) for k in cls.__item_repr_attributes__},
+            custom_id=component.custom_id,
             row=None,
         )
 

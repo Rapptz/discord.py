@@ -37,6 +37,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinxcontrib_trio',
+    'sphinx_inline_tabs',
     'details',
     'exception_hierarchy',
     'attributetable',
