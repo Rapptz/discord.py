@@ -137,25 +137,54 @@ Interaction
 Shown above, the first parameter is ``interaction`` - app commands always need to have this as the first parameter.
 It represents a :class:`~discord.Interaction`, a Discord model used for both app commands and UI message components.
 
-When an interaction is created on command invoke, some information about the surrounding context is given, such as:
+When a user invokes an app command, an interaction is created representing that action, hence the name.
+Some information from the surrounding context is given from this model, including but not limited to:
 
 - :attr:`.Interaction.channel` - the channel it was invoked in
-- :attr:`.Interaction.guild` - the guild it was invoked in, if any
-- :attr:`.Interaction.user` - the user or member who invoked the command
+- :attr:`.Interaction.guild` - the guild it was invoked in - this can be ``None`` in a direct-message scenario
+- :attr:`.Interaction.user` - the :class:`~discord.User` or :class:`~discord.Member` object representing who invoked the command
 
 Attributes like these and others are a given, however when it comes to responding to an interaction,
 by sending a message or otherwise, the methods from :attr:`.Interaction.response` need to be used.
-
-A response needs to occur within 3 seconds, otherwise this message pops up on Discord in red:
-
-.. image:: /images/guide/app_commands/interaction_failed.png
 
 In practice, it's common to use either of the following two methods:
 
 - :meth:`.InteractionResponse.send_message` to send a message
 - :meth:`.InteractionResponse.defer` to defer a response
 
-When deferring, a follow-up message needs to be sent within 15 minutes for app commands.
+.. warning::
+
+    A response needs to occur within 3 seconds, otherwise this message pops up on Discord in red:
+
+    .. image:: /images/guide/app_commands/interaction_failed.png
+
+Sending a single message is straightforward:
+
+.. code-block:: python
+
+    @client.tree.command()
+    async def hi(interaction: discord.Interaction):
+        await interaction.response.send_message('hello!')
+
+After this, the interaction is completed "done" and subsequent calls to
+any method from :class:`~discord.InteractionResponse` will result
+with a :class:`404 Not Found<discord.NotFound>` exception.
+
+To send additional messages, the "follow-up" webhook needs to be used, which opens up after
+the initial response:
+
+.. code-block:: python
+
+    @client.tree.command()
+    async def hi(interaction: discord.Interaction):
+        await interaction.response.send_message('hello!')
+        await interaction.followup.send('goodbye!')
+
+.. note::
+
+    Follow-up webhooks only stay valid for 15 minutes.
+
+Deferring is another way to respond to an interaction - for app commands, it indicates that a message will be sent later.
 
 For example, to send a deferred ephemeral message:
 
@@ -166,7 +195,7 @@ For example, to send a deferred ephemeral message:
 
     @client.tree.command()
     async def weather(self, interaction: discord.Interaction):
-        await interaction.response.defer(ephemeral=True) # indicates the follow-up message will be ephemeral
+        await interaction.response.defer(ephemeral=True) # makes the bot's "thinking" indicator ephemeral
 
         climates = ['sunny', 'clear', 'cloudy', 'rainy', 'stormy', 'snowy']
         await asyncio.sleep(5.0) # an expensive operation... (no more than 15 minutes!)
