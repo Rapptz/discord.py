@@ -15,7 +15,8 @@ Creating a View
 
 Let's start with a simple example, a confirmation prompt.
 
-By the end of this section, we'll have a generic confirmation prompt that we can use in a variety of situations.
+This view will have two buttons, 'Yes' and 'No', allowing a user to confirm or cancel an action.
+This could be used in a number of situations, ususally when a user is about to perform an action which cannot be undone.
 
 For example, a ban command:
 
@@ -78,6 +79,12 @@ set the colour and text of the button respectively.
 
 And then there's the :meth:`Button.callback() <discord.ui.Button.callback>` method, which is the method that will be called when the button is clicked.
 In this case it's being used to set the ``result`` attribute of the :class:`~discord.ui.View` subclass we created earlier.
+
+.. note::
+
+    For the sake of simplicity, this example uses the :meth:`InteractionResponse.defer() <discord.InteractionResponse.defer>`
+    method to acknowledge the interaction. However depending on the use-case it may be more appropriate to use a different method,
+    such as :meth:`InteractionResponse.send_message() <discord.InteractionResponse.send_message>`.
 
 Now we've made our first component, we should add it to the view.
 
@@ -157,7 +164,7 @@ Our command might look like this:
     async def ban(interaction: discord.Interaction, member: discord.Member) -> None:
         """Ban a member from the server."""
         confirmation = Confirm(interaction.user)
-        await interaction.response.send_message(f'Are you sure you want to ban {member.name}?', view=confirmation)
+        await interaction.response.send_message(f'Are you sure you want to ban {member.name}?', view=confirmation, ephemeral=True)
         await confirmation.wait()
         if confirmation.result:
             await member.ban()
@@ -300,7 +307,8 @@ when we mark the view as persistent.
     await channel.send('Choose your house', view=RoleSelector(0, roles)) # we don't know the message ID yet.
 
 Once we have a message ID, we just need to create an instance of our view and attach it to the :class:`~discord.Client`
-with the :meth:`~discord.Client.add_view` method.
+with the :meth:`~discord.Client.add_view` method. This is done in the ``setup_hook`` method of our :class:`~discord.Client` 
+subclass to ensure the view is attached on startup.
 
 .. code-block:: python
 

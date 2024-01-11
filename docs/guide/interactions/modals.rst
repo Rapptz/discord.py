@@ -86,6 +86,7 @@ Once the user has clicked `Submit` the :meth:`Modal.on_submit <discord.ui.Modal.
 The callback is passed a new :class:`~discord.Interaction` instance, which requires a response.
 
 In the example above we respond by sending a message to the user confirming their submission was recorded.
+Users responses to specific fields can be accessed via the field's ``value`` attribute.
 
 
 Handling an error
@@ -113,7 +114,7 @@ if necessary, send a response to the user.
 
             await interaction.response.send_message(f'Thank you {self.name.value}, your submission was recorded.')
 
-        async def on_error(self, error: Exception, interaction: discord.Interaction) -> None:
+        async def on_error(self, interaction: discord.Interaction, error: Exception) -> None:
             if not interaction.response.is_done():
                 await interaction.response.send_message('An error occurred, please try again.')
 
