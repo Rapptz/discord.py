@@ -580,7 +580,7 @@ Autocompletion
 Autocompletes allow the bot to dynamically suggest up to 25 choices
 to a user as they type an argument.
 
-Quick rundown:
+To outline the process:
 
 - User starts typing.
 
