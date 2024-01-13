@@ -10,7 +10,7 @@ There comes a time in the bot development when you want to extend the bot functi
 Primer
 --------
 
-An extension at its core is a python file with an entry point called ``setup``. This setup must be a plain Python function (not a coroutine). It takes a single parameter -- the :class:`~.commands.Bot` that loads the extension.
+An extension at its core is a python file with an entry point called ``setup``. This setup function must be a Python coroutine. It takes a single parameter -- the :class:`~.commands.Bot` that loads the extension.
 
 An example extension looks like this:
 
@@ -53,6 +53,8 @@ Cleaning Up
 -------------
 
 Although rare, sometimes an extension needs to clean-up or know when it's being unloaded. For cases like these, there is another entry point named ``teardown`` which is similar to ``setup`` except called when the extension is unloaded.
+
+Exceptions raised in the ``teardown`` function are ignored, and the extension is still unloaded.
 
 .. code-block:: python3
     :caption: basic_ext.py

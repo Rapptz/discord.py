@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Union, List, TYPE_CHECKING, Any
+from typing import Union, Sequence, TYPE_CHECKING, Any
 
 # fmt: off
 __all__ = (
@@ -63,13 +63,13 @@ class AllowedMentions:
     ------------
     everyone: :class:`bool`
         Whether to allow everyone and here mentions. Defaults to ``True``.
-    users: Union[:class:`bool`, List[:class:`abc.Snowflake`]]
+    users: Union[:class:`bool`, Sequence[:class:`abc.Snowflake`]]
         Controls the users being mentioned. If ``True`` (the default) then
         users are mentioned based on the message content. If ``False`` then
         users are not mentioned at all. If a list of :class:`abc.Snowflake`
         is given then only the users provided will be mentioned, provided those
         users are in the message content.
-    roles: Union[:class:`bool`, List[:class:`abc.Snowflake`]]
+    roles: Union[:class:`bool`, Sequence[:class:`abc.Snowflake`]]
         Controls the roles being mentioned. If ``True`` (the default) then
         roles are mentioned based on the message content. If ``False`` then
         roles are not mentioned at all. If a list of :class:`abc.Snowflake`
@@ -88,13 +88,13 @@ class AllowedMentions:
         self,
         *,
         everyone: bool = default,
-        users: Union[bool, List[Snowflake]] = default,
-        roles: Union[bool, List[Snowflake]] = default,
+        users: Union[bool, Sequence[Snowflake]] = default,
+        roles: Union[bool, Sequence[Snowflake]] = default,
         replied_user: bool = default,
     ):
         self.everyone: bool = everyone
-        self.users: Union[bool, List[Snowflake]] = users
-        self.roles: Union[bool, List[Snowflake]] = roles
+        self.users: Union[bool, Sequence[Snowflake]] = users
+        self.roles: Union[bool, Sequence[Snowflake]] = roles
         self.replied_user: bool = replied_user
 
     @classmethod

@@ -29,7 +29,7 @@ discord.py は機能豊富かつモダンで使いやすい、非同期処理に
 
 .. code:: sh
 
-    # Linux/OS X
+    # Linux/macOS
     python3 -m pip install -U discord.py
 
     # Windows
@@ -39,7 +39,7 @@ discord.py は機能豊富かつモダンで使いやすい、非同期処理に
 
 .. code:: sh
 
-    # Linux/OS X
+    # Linux/macOS
     python3 -m pip install -U discord.py[voice]
 
     # Windows
@@ -63,7 +63,7 @@ discord.py は機能豊富かつモダンで使いやすい、非同期処理に
 Linuxで音声サポートを導入するには、前述のコマンドを実行する前にお気に入りのパッケージマネージャー(例えば ``apt`` や ``dnf`` など)を使って以下のパッケージをインストールする必要があります:
 
 * libffi-dev (システムによっては ``libffi-devel``)
-* python-dev (例えばPython 3.6用の ``python3.6-dev``)
+* python-dev (例えばPython 3.8用の ``python3.8-dev``)
 
 簡単な例
 --------------

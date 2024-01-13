@@ -29,8 +29,8 @@ import datetime
 import logging
 from typing import (
     Any,
-    Awaitable,
     Callable,
+    Coroutine,
     Generic,
     List,
     Optional,
@@ -42,8 +42,6 @@ from typing import (
 import aiohttp
 import discord
 import inspect
-import sys
-import traceback
 
 from collections.abc import Sequence
 from discord.backoff import ExponentialBackoff
@@ -58,10 +56,10 @@ __all__ = (
 # fmt: on
 
 T = TypeVar('T')
-_func = Callable[..., Awaitable[Any]]
+_func = Callable[..., Coroutine[Any, Any, Any]]
 LF = TypeVar('LF', bound=_func)
 FT = TypeVar('FT', bound=_func)
-ET = TypeVar('ET', bound=Callable[[Any, BaseException], Awaitable[Any]])
+ET = TypeVar('ET', bound=Callable[[Any, BaseException], Coroutine[Any, Any, Any]])
 
 
 def is_ambiguous(dt: datetime.datetime) -> bool:
@@ -113,12 +111,12 @@ class SleepHandle:
         self.loop: asyncio.AbstractEventLoop = loop
         self.future: asyncio.Future[None] = loop.create_future()
         relative_delta = discord.utils.compute_timedelta(dt)
-        self.handle = loop.call_later(relative_delta, self.future.set_result, True)
+        self.handle = loop.call_later(relative_delta, self.future.set_result, None)
 
     def recalculate(self, dt: datetime.datetime) -> None:
         self.handle.cancel()
         relative_delta = discord.utils.compute_timedelta(dt)
-        self.handle: asyncio.TimerHandle = self.loop.call_later(relative_delta, self.future.set_result, True)
+        self.handle: asyncio.TimerHandle = self.loop.call_later(relative_delta, self.future.set_result, None)
 
     def wait(self) -> asyncio.Future[Any]:
         return self.future
@@ -146,6 +144,7 @@ class Loop(Generic[LF]):
         time: Union[datetime.time, Sequence[datetime.time]],
         count: Optional[int],
         reconnect: bool,
+        name: Optional[str],
     ) -> None:
         self.coro: LF = coro
         self.reconnect: bool = reconnect
@@ -167,6 +166,7 @@ class Loop(Generic[LF]):
         self._is_being_cancelled = False
         self._has_failed = False
         self._stop_next_iteration = False
+        self._name: str = f'discord-ext-tasks: {coro.__qualname__}' if name is None else name
 
         if self.count is not None and self.count <= 0:
             raise ValueError('count must be greater than 0 or None.')
@@ -271,7 +271,6 @@ class Loop(Generic[LF]):
             self._is_being_cancelled = False
             self._current_loop = 0
             self._stop_next_iteration = False
-            self._has_failed = False
 
     def __get__(self, obj: T, objtype: Type[T]) -> Loop[LF]:
         if obj is None:
@@ -285,6 +284,7 @@ class Loop(Generic[LF]):
             time=self._time,
             count=self.count,
             reconnect=self.reconnect,
+            name=self._name,
         )
         copy._injected = obj
         copy._before_loop = self._before_loop
@@ -397,7 +397,8 @@ class Loop(Generic[LF]):
         if self._injected is not None:
             args = (self._injected, *args)
 
-        self._task = asyncio.create_task(self._loop(*args, **kwargs))
+        self._has_failed = False
+        self._task = asyncio.create_task(self._loop(*args, **kwargs), name=self._name)
         return self._task
 
     def stop(self) -> None:
@@ -417,7 +418,7 @@ class Loop(Generic[LF]):
             use :meth:`cancel` instead.
 
         .. versionchanged:: 2.0
-            Calling this method in :meth:`before_loop` will stop the first iteration from running.
+            Calling this method in :meth:`before_loop` will stop the loop before the initial iteration is run.
 
         .. versionadded:: 1.2
         """
@@ -493,7 +494,7 @@ class Loop(Generic[LF]):
 
             This operation obviously cannot be undone!
         """
-        self._valid_exception = tuple()
+        self._valid_exception = ()
 
     def remove_exception_type(self, *exceptions: Type[BaseException]) -> bool:
         r"""Removes exception types from being handled during the reconnect logic.
@@ -536,8 +537,7 @@ class Loop(Generic[LF]):
 
     async def _error(self, *args: Any) -> None:
         exception: Exception = args[-1]
-        print(f'Unhandled exception in internal background task {self.coro.__name__!r}.', file=sys.stderr)
-        traceback.print_exception(type(exception), exception, exception.__traceback__, file=sys.stderr)
+        _log.error('Unhandled exception in internal background task %r.', self.coro.__name__, exc_info=exception)
 
     def before_loop(self, coro: FT) -> FT:
         """A decorator that registers a coroutine to be called before the loop starts running.
@@ -548,7 +548,7 @@ class Loop(Generic[LF]):
         The coroutine must take no arguments (except ``self`` in a class context).
 
         .. versionchanged:: 2.0
-            Calling :meth:`stop` in this coroutine will stop the initial iteration from running.
+            Calling :meth:`stop` in this coroutine will stop the loop before the initial iteration is run.
 
         Parameters
         ------------
@@ -562,7 +562,7 @@ class Loop(Generic[LF]):
         """
 
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__}.')
 
         self._before_loop = coro
         return coro
@@ -590,7 +590,7 @@ class Loop(Generic[LF]):
         """
 
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__}.')
 
         self._after_loop = coro
         return coro
@@ -600,10 +600,14 @@ class Loop(Generic[LF]):
 
         The coroutine must take only one argument the exception raised (except ``self`` in a class context).
 
-        By default this prints to :data:`sys.stderr` however it could be
+        By default this logs to the library logger however it could be
         overridden to have a different implementation.
 
         .. versionadded:: 1.4
+
+        .. versionchanged:: 2.0
+
+            Instead of writing to ``sys.stderr``, the library's logger is used.
 
         Parameters
         ------------
@@ -616,7 +620,7 @@ class Loop(Generic[LF]):
             The function was not a coroutine.
         """
         if not inspect.iscoroutinefunction(coro):
-            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__!r}.')
+            raise TypeError(f'Expected coroutine function, received {coro.__class__.__name__}.')
 
         self._error = coro  # type: ignore
         return coro
@@ -753,7 +757,8 @@ class Loop(Generic[LF]):
             self._time = self._get_time_parameter(time)
             self._sleep = self._seconds = self._minutes = self._hours = MISSING
 
-        if self.is_running():
+        # Only update the interval if we've ran the body at least once
+        if self.is_running() and self._last_iteration is not MISSING:
             self._next_iteration = self._get_next_sleep_time()
             if self._handle and not self._handle.done():
                 # the loop is sleeping, recalculate based on new interval
@@ -768,6 +773,7 @@ def loop(
     time: Union[datetime.time, Sequence[datetime.time]] = MISSING,
     count: Optional[int] = None,
     reconnect: bool = True,
+    name: Optional[str] = None,
 ) -> Callable[[LF], Loop[LF]]:
     """A decorator that schedules a task in the background for you with
     optional reconnect logic. The decorator returns a :class:`Loop`.
@@ -800,6 +806,12 @@ def loop(
         Whether to handle errors and restart the task
         using an exponential back-off algorithm similar to the
         one used in :meth:`discord.Client.connect`.
+    name: Optional[:class:`str`]
+        The name to assign to the internal task. By default
+        it is assigned a name based off of the callable name
+        such as ``discord-ext-tasks: function_name``.
+
+        .. versionadded:: 2.4
 
     Raises
     --------
@@ -819,6 +831,7 @@ def loop(
             count=count,
             time=time,
             reconnect=reconnect,
+            name=name,
         )
 
     return decorator

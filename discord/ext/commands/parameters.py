@@ -87,7 +87,7 @@ class Parameter(inspect.Parameter):
     .. versionadded:: 2.0
     """
 
-    __slots__ = ('_displayed_default', '_fallback')
+    __slots__ = ('_displayed_default', '_description', '_fallback', '_displayed_name')
 
     def __init__(
         self,
@@ -95,15 +95,19 @@ class Parameter(inspect.Parameter):
         kind: ParamKinds,
         default: Any = empty,
         annotation: Any = empty,
+        description: str = empty,
         displayed_default: str = empty,
+        displayed_name: str = empty,
     ) -> None:
         super().__init__(name=name, kind=kind, default=default, annotation=annotation)
         self._name = name
         self._kind = kind
+        self._description = description
         self._default = default
         self._annotation = annotation
         self._displayed_default = displayed_default
         self._fallback = False
+        self._displayed_name = displayed_name
 
     def replace(
         self,
@@ -112,7 +116,9 @@ class Parameter(inspect.Parameter):
         kind: ParamKinds = MISSING,
         default: Any = MISSING,
         annotation: Any = MISSING,
+        description: str = MISSING,
         displayed_default: Any = MISSING,
+        displayed_name: Any = MISSING,
     ) -> Self:
         if name is MISSING:
             name = self._name
@@ -122,15 +128,21 @@ class Parameter(inspect.Parameter):
             default = self._default
         if annotation is MISSING:
             annotation = self._annotation
+        if description is MISSING:
+            description = self._description
         if displayed_default is MISSING:
             displayed_default = self._displayed_default
+        if displayed_name is MISSING:
+            displayed_name = self._displayed_name
 
         return self.__class__(
             name=name,
             kind=kind,
             default=default,
             annotation=annotation,
+            description=description,
             displayed_default=displayed_default,
+            displayed_name=displayed_name,
         )
 
     if not TYPE_CHECKING:  # this is to prevent anything breaking if inspect internals change
@@ -153,12 +165,31 @@ class Parameter(inspect.Parameter):
         return self.annotation
 
     @property
+    def description(self) -> Optional[str]:
+        """Optional[:class:`str`]: The description of this parameter."""
+        return self._description if self._description is not empty else None
+
+    @property
     def displayed_default(self) -> Optional[str]:
         """Optional[:class:`str`]: The displayed default in :class:`Command.signature`."""
         if self._displayed_default is not empty:
             return self._displayed_default
 
-        return None if self.required else str(self.default)
+        if self.required:
+            return None
+
+        if callable(self.default) or self.default is None:
+            return None
+
+        return str(self.default)
+
+    @property
+    def displayed_name(self) -> Optional[str]:
+        """Optional[:class:`str`]: The name that is displayed to the user.
+
+        .. versionadded:: 2.3
+        """
+        return self._displayed_name if self._displayed_name is not empty else None
 
     async def get_default(self, ctx: Context[Any]) -> Any:
         """|coro|
@@ -172,7 +203,7 @@ class Parameter(inspect.Parameter):
         """
         # pre-condition: required is False
         if callable(self.default):
-            return await maybe_coroutine(self.default, ctx)  # type: ignore
+            return await maybe_coroutine(self.default, ctx)
         return self.default
 
 
@@ -180,9 +211,11 @@ def parameter(
     *,
     converter: Any = empty,
     default: Any = empty,
+    description: str = empty,
     displayed_default: str = empty,
+    displayed_name: str = empty,
 ) -> Any:
-    r"""parameter(\*, converter=..., default=..., displayed_default=...)
+    r"""parameter(\*, converter=..., default=..., description=..., displayed_default=..., displayed_name=...)
 
     A way to assign custom metadata for a :class:`Command`\'s parameter.
 
@@ -205,15 +238,23 @@ def parameter(
     default: Any
         The default value for the parameter, if this is a :term:`callable` or a |coroutine_link|_ it is called with a
         positional :class:`Context` argument.
+    description: :class:`str`
+        The description of this parameter.
     displayed_default: :class:`str`
         The displayed default in :attr:`Command.signature`.
+    displayed_name: :class:`str`
+        The name that is displayed to the user.
+
+        .. versionadded:: 2.3
     """
     return Parameter(
         name='empty',
         kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,
         annotation=converter,
         default=default,
+        description=description,
         displayed_default=displayed_default,
+        displayed_name=displayed_name,
     )
 
 
@@ -223,13 +264,15 @@ class ParameterAlias(Protocol):
         *,
         converter: Any = empty,
         default: Any = empty,
+        description: str = empty,
         displayed_default: str = empty,
+        displayed_name: str = empty,
     ) -> Any:
         ...
 
 
 param: ParameterAlias = parameter
-r"""param(\*, converter=..., default=..., displayed_default=...)
+r"""param(\*, converter=..., default=..., description=..., displayed_default=..., displayed_name=...)
 
 An alias for :func:`parameter`.
 
@@ -263,6 +306,7 @@ CurrentGuild = parameter(
     displayed_default='<this server>',
     converter=GuildConverter,
 )
+CurrentGuild._fallback = True
 
 
 class Signature(inspect.Signature):

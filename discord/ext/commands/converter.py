@@ -35,6 +35,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    overload,
     Protocol,
     Tuple,
     Type,
@@ -42,6 +43,7 @@ from typing import (
     Union,
     runtime_checkable,
 )
+import types
 
 import discord
 
@@ -74,6 +76,7 @@ __all__ = (
     'EmojiConverter',
     'PartialEmojiConverter',
     'CategoryChannelConverter',
+    'ForumChannelConverter',
     'IDConverter',
     'ThreadConverter',
     'GuildChannelConverter',
@@ -81,6 +84,7 @@ __all__ = (
     'ScheduledEventConverter',
     'clean_content',
     'Greedy',
+    'Range',
     'run_converters',
 )
 
@@ -151,7 +155,7 @@ class IDConverter(Converter[T_co]):
 class ObjectConverter(IDConverter[discord.Object]):
     """Converts to a :class:`~discord.Object`.
 
-    The argument must follow the valid ID or mention formats (e.g. `<@80088516616269824>`).
+    The argument must follow the valid ID or mention formats (e.g. ``<@80088516616269824>``).
 
     .. versionadded:: 2.0
 
@@ -182,9 +186,11 @@ class MemberConverter(IDConverter[discord.Member]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name#discrim
-    4. Lookup by name
-    5. Lookup by nickname
+    3. Lookup by username#discriminator (deprecated).
+    4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
+    5. Lookup by user name.
+    6. Lookup by global name.
+    7. Lookup by guild nickname.
 
     .. versionchanged:: 1.5
          Raise :exc:`.MemberNotFound` instead of generic :exc:`.BadArgument`
@@ -192,17 +198,29 @@ class MemberConverter(IDConverter[discord.Member]):
     .. versionchanged:: 1.5.1
         This converter now lazily fetches members from the gateway and HTTP APIs,
         optionally caching the result if :attr:`.MemberCacheFlags.joined` is enabled.
+
+    .. deprecated:: 2.3
+        Looking up users by discriminator will be removed in a future version due to
+        the removal of discriminators in an API change.
     """
 
     async def query_member_named(self, guild: discord.Guild, argument: str) -> Optional[discord.Member]:
         cache = guild._state.member_cache_flags.joined
-        if len(argument) > 5 and argument[-5] == '#':
-            username, _, discriminator = argument.rpartition('#')
-            members = await guild.query_members(username, limit=100, cache=cache)
-            return discord.utils.get(members, name=username, discriminator=discriminator)
+        username, _, discriminator = argument.rpartition('#')
+
+        # If # isn't found then "discriminator" actually has the username
+        if not username:
+            discriminator, username = username, discriminator
+
+        if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
+            lookup = username
+            predicate = lambda m: m.name == username and m.discriminator == discriminator
         else:
-            members = await guild.query_members(argument, limit=100, cache=cache)
-            return discord.utils.find(lambda m: m.name == argument or m.nick == argument, members)
+            lookup = argument
+            predicate = lambda m: m.name == argument or m.global_name == argument or m.nick == argument
+
+        members = await guild.query_members(lookup, limit=100, cache=cache)
+        return discord.utils.find(predicate, members)
 
     async def query_member_by_id(self, bot: _Bot, guild: discord.Guild, user_id: int) -> Optional[discord.Member]:
         ws = bot._get_websocket(shard_id=guild.shard_id)
@@ -231,6 +249,7 @@ class MemberConverter(IDConverter[discord.Member]):
         guild = ctx.guild
         result = None
         user_id = None
+
         if match is None:
             # not a mention...
             if guild:
@@ -244,7 +263,7 @@ class MemberConverter(IDConverter[discord.Member]):
             else:
                 result = _get_from_guilds(bot, 'get_member', user_id)
 
-        if result is None:
+        if not isinstance(result, discord.Member):
             if guild is None:
                 raise MemberNotFound(argument)
 
@@ -256,7 +275,7 @@ class MemberConverter(IDConverter[discord.Member]):
             if not result:
                 raise MemberNotFound(argument)
 
-        return result  # type: ignore
+        return result
 
 
 class UserConverter(IDConverter[discord.User]):
@@ -268,8 +287,10 @@ class UserConverter(IDConverter[discord.User]):
 
     1. Lookup by ID.
     2. Lookup by mention.
-    3. Lookup by name#discrim
-    4. Lookup by name
+    3. Lookup by username#discriminator (deprecated).
+    4. Lookup by username#0 (deprecated, only gets users that migrated from their discriminator).
+    5. Lookup by user name.
+    6. Lookup by global name.
 
     .. versionchanged:: 1.5
          Raise :exc:`.UserNotFound` instead of generic :exc:`.BadArgument`
@@ -277,6 +298,10 @@ class UserConverter(IDConverter[discord.User]):
     .. versionchanged:: 1.6
         This converter now lazily fetches users from the HTTP APIs if an ID is passed
         and it's not available in cache.
+
+    .. deprecated:: 2.3
+        Looking up users by discriminator will be removed in a future version due to
+        the removal of discriminators in an API change.
     """
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.User:
@@ -295,25 +320,18 @@ class UserConverter(IDConverter[discord.User]):
 
             return result  # type: ignore
 
-        arg = argument
+        username, _, discriminator = argument.rpartition('#')
 
-        # Remove the '@' character if this is the first character from the argument
-        if arg[0] == '@':
-            # Remove first character
-            arg = arg[1:]
+        # If # isn't found then "discriminator" actually has the username
+        if not username:
+            discriminator, username = username, discriminator
 
-        # check for discriminator if it exists,
-        if len(arg) > 5 and arg[-5] == '#':
-            discrim = arg[-4:]
-            name = arg[:-5]
-            predicate = lambda u: u.name == name and u.discriminator == discrim
-            result = discord.utils.find(predicate, state._users.values())
-            if result is not None:
-                return result
+        if discriminator == '0' or (len(discriminator) == 4 and discriminator.isdigit()):
+            predicate = lambda u: u.name == username and u.discriminator == discriminator
+        else:
+            predicate = lambda u: u.name == argument or u.global_name == argument
 
-        predicate = lambda u: u.name == arg
         result = discord.utils.find(predicate, state._users.values())
-
         if result is None:
             raise UserNotFound(argument)
 
@@ -333,7 +351,7 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
     """
 
     @staticmethod
-    def _get_id_matches(ctx, argument):
+    def _get_id_matches(ctx: Context[BotT], argument: str) -> Tuple[Optional[int], int, int]:
         id_regex = re.compile(r'(?:(?P<channel_id>[0-9]{15,20})-)?(?P<message_id>[0-9]{15,20})$')
         link_regex = re.compile(
             r'https?://(?:(ptb|canary|www)\.)?discord(?:app)?\.com/channels/'
@@ -375,7 +393,7 @@ class PartialMessageConverter(Converter[discord.PartialMessage]):
         guild_id, message_id, channel_id = self._get_id_matches(ctx, argument)
         channel = self._resolve_channel(ctx, guild_id, channel_id)
         if not channel or not isinstance(channel, discord.abc.Messageable):
-            raise ChannelNotFound(channel_id)  # type: ignore # channel_id won't be None here
+            raise ChannelNotFound(channel_id)
         return discord.PartialMessage(channel=channel, id=message_id)
 
 
@@ -562,7 +580,7 @@ class CategoryChannelConverter(IDConverter[discord.CategoryChannel]):
 
 
 class ThreadConverter(IDConverter[discord.Thread]):
-    """Coverts to a :class:`~discord.Thread`.
+    """Converts to a :class:`~discord.Thread`.
 
     All lookups are via the local guild.
 
@@ -577,6 +595,25 @@ class ThreadConverter(IDConverter[discord.Thread]):
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.Thread:
         return GuildChannelConverter._resolve_thread(ctx, argument, 'threads', discord.Thread)
+
+
+class ForumChannelConverter(IDConverter[discord.ForumChannel]):
+    """Converts to a :class:`~discord.ForumChannel`.
+
+    All lookups are via the local guild. If in a DM context, then the lookup
+    is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by mention.
+    3. Lookup by name
+
+    .. versionadded:: 2.0
+    """
+
+    async def convert(self, ctx: Context[BotT], argument: str) -> discord.ForumChannel:
+        return GuildChannelConverter._resolve_channel(ctx, argument, 'forums', discord.ForumChannel)
 
 
 class ColourConverter(Converter[discord.Colour]):
@@ -605,61 +642,15 @@ class ColourConverter(Converter[discord.Colour]):
         Added support for ``rgb`` function and 3-digit hex shortcuts
     """
 
-    RGB_REGEX = re.compile(r'rgb\s*\((?P<r>[0-9]{1,3}%?)\s*,\s*(?P<g>[0-9]{1,3}%?)\s*,\s*(?P<b>[0-9]{1,3}%?)\s*\)')
-
-    def parse_hex_number(self, argument: str) -> discord.Colour:
-        arg = ''.join(i * 2 for i in argument) if len(argument) == 3 else argument
-        try:
-            value = int(arg, base=16)
-            if not (0 <= value <= 0xFFFFFF):
-                raise BadColourArgument(argument)
-        except ValueError:
-            raise BadColourArgument(argument)
-        else:
-            return discord.Color(value=value)
-
-    def parse_rgb_number(self, argument: str, number: str) -> int:
-        if number[-1] == '%':
-            value = int(number[:-1])
-            if not (0 <= value <= 100):
-                raise BadColourArgument(argument)
-            return round(255 * (value / 100))
-
-        value = int(number)
-        if not (0 <= value <= 255):
-            raise BadColourArgument(argument)
-        return value
-
-    def parse_rgb(self, argument: str, *, regex: re.Pattern[str] = RGB_REGEX) -> discord.Colour:
-        match = regex.match(argument)
-        if match is None:
-            raise BadColourArgument(argument)
-
-        red = self.parse_rgb_number(argument, match.group('r'))
-        green = self.parse_rgb_number(argument, match.group('g'))
-        blue = self.parse_rgb_number(argument, match.group('b'))
-        return discord.Color.from_rgb(red, green, blue)
-
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.Colour:
-        if argument[0] == '#':
-            return self.parse_hex_number(argument[1:])
-
-        if argument[0:2] == '0x':
-            rest = argument[2:]
-            # Legacy backwards compatible syntax
-            if rest.startswith('#'):
-                return self.parse_hex_number(rest[1:])
-            return self.parse_hex_number(rest)
-
-        arg = argument.lower()
-        if arg[0:3] == 'rgb':
-            return self.parse_rgb(arg)
-
-        arg = arg.replace(' ', '_')
-        method = getattr(discord.Colour, arg, None)
-        if arg.startswith('from_') or method is None or not inspect.ismethod(method):
-            raise BadColourArgument(arg)
-        return method()
+        try:
+            return discord.Colour.from_str(argument)
+        except ValueError:
+            arg = argument.lower().replace(' ', '_')
+            method = getattr(discord.Colour, arg, None)
+            if arg.startswith('from_') or method is None or not inspect.ismethod(method):
+                raise BadColourArgument(arg)
+            return method()
 
 
 ColorConverter = ColourConverter
@@ -698,7 +689,7 @@ class RoleConverter(IDConverter[discord.Role]):
 
 
 class GameConverter(Converter[discord.Game]):
-    """Converts to :class:`~discord.Game`."""
+    """Converts to a :class:`~discord.Game`."""
 
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.Game:
         return discord.Game(name=argument)
@@ -1020,6 +1011,12 @@ class Greedy(List[T]):
     ``[1, 2, 3, 4, 5, 6]`` and ``reason`` with ``hello``\.
 
     For more information, check :ref:`ext_commands_special_converters`.
+
+    .. note::
+
+        For interaction based contexts the conversion error is propagated
+        rather than swallowed due to the difference in user experience with
+        application commands.
     """
 
     __slots__ = ('converter',)
@@ -1038,8 +1035,11 @@ class Greedy(List[T]):
             raise TypeError('Greedy[...] only takes a single argument')
         converter = params[0]
 
-        origin = getattr(converter, '__origin__', None)
         args = getattr(converter, '__args__', ())
+        if discord.utils.PY_310 and converter.__class__ is types.UnionType:  # type: ignore
+            converter = Union[args]  # type: ignore
+
+        origin = getattr(converter, '__origin__', None)
 
         if not (callable(converter) or isinstance(converter, Converter) or origin is not None):
             raise TypeError('Greedy[...] expects a type or a Converter instance.')
@@ -1051,6 +1051,128 @@ class Greedy(List[T]):
             raise TypeError(f'Greedy[{converter!r}] is invalid.')
 
         return cls(converter=converter)
+
+    @property
+    def constructed_converter(self) -> Any:
+        # Only construct a converter once in order to maintain state between convert calls
+        if (
+            inspect.isclass(self.converter)
+            and issubclass(self.converter, Converter)
+            and not inspect.ismethod(self.converter.convert)
+        ):
+            return self.converter()
+        return self.converter
+
+
+if TYPE_CHECKING:
+    from typing_extensions import Annotated as Range
+else:
+
+    class Range:
+        """A special converter that can be applied to a parameter to require a numeric
+        or string type to fit within the range provided.
+
+        During type checking time this is equivalent to :obj:`typing.Annotated` so type checkers understand
+        the intent of the code.
+
+        Some example ranges:
+
+        - ``Range[int, 10]`` means the minimum is 10 with no maximum.
+        - ``Range[int, None, 10]`` means the maximum is 10 with no minimum.
+        - ``Range[int, 1, 10]`` means the minimum is 1 and the maximum is 10.
+        - ``Range[float, 1.0, 5.0]`` means the minimum is 1.0 and the maximum is 5.0.
+        - ``Range[str, 1, 10]`` means the minimum length is 1 and the maximum length is 10.
+
+        Inside a :class:`HybridCommand` this functions equivalently to :class:`discord.app_commands.Range`.
+
+        If the value cannot be converted to the provided type or is outside the given range,
+        :class:`~.ext.commands.BadArgument` or :class:`~.ext.commands.RangeError` is raised to
+        the appropriate error handlers respectively.
+
+        .. versionadded:: 2.0
+
+        Examples
+        ----------
+
+        .. code-block:: python3
+
+            @bot.command()
+            async def range(ctx: commands.Context, value: commands.Range[int, 10, 12]):
+                await ctx.send(f'Your value is {value}')
+        """
+
+        def __init__(
+            self,
+            *,
+            annotation: Any,
+            min: Optional[Union[int, float]] = None,
+            max: Optional[Union[int, float]] = None,
+        ) -> None:
+            self.annotation: Any = annotation
+            self.min: Optional[Union[int, float]] = min
+            self.max: Optional[Union[int, float]] = max
+
+            if min and max and min > max:
+                raise TypeError('minimum cannot be larger than maximum')
+
+        async def convert(self, ctx: Context[BotT], value: str) -> Union[int, float]:
+            try:
+                count = converted = self.annotation(value)
+            except ValueError:
+                raise BadArgument(
+                    f'Converting to "{self.annotation.__name__}" failed for parameter "{ctx.current_parameter.name}".'
+                )
+
+            if self.annotation is str:
+                count = len(value)
+
+            if (self.min is not None and count < self.min) or (self.max is not None and count > self.max):
+                raise RangeError(converted, minimum=self.min, maximum=self.max)
+
+            return converted
+
+        def __call__(self) -> None:
+            # Trick to allow it inside typing.Union
+            pass
+
+        def __or__(self, rhs) -> Any:
+            return Union[self, rhs]
+
+        def __repr__(self) -> str:
+            return f'{self.__class__.__name__}[{self.annotation.__name__}, {self.min}, {self.max}]'
+
+        def __class_getitem__(cls, obj) -> Range:
+            if not isinstance(obj, tuple):
+                raise TypeError(f'expected tuple for arguments, received {obj.__class__.__name__} instead')
+
+            if len(obj) == 2:
+                obj = (*obj, None)
+            elif len(obj) != 3:
+                raise TypeError('Range accepts either two or three arguments with the first being the type of range.')
+
+            annotation, min, max = obj
+
+            if min is None and max is None:
+                raise TypeError('Range must not be empty')
+
+            if min is not None and max is not None:
+                # At this point max and min are both not none
+                if type(min) != type(max):
+                    raise TypeError('Both min and max in Range must be the same type')
+
+            if annotation not in (int, float, str):
+                raise TypeError(f'expected int, float, or str as range type, received {annotation!r} instead')
+
+            if annotation in (str, int):
+                cast = int
+            else:
+                cast = float
+
+            return cls(
+                annotation=annotation,
+                min=cast(min) if min is not None else None,
+                max=cast(max) if max is not None else None,
+            )
 
 
 def _convert_to_bool(argument: str) -> bool:
@@ -1091,10 +1213,11 @@ CONVERTER_MAPPING: Dict[type, Any] = {
     discord.abc.GuildChannel: GuildChannelConverter,
     discord.GuildSticker: GuildStickerConverter,
     discord.ScheduledEvent: ScheduledEventConverter,
+    discord.ForumChannel: ForumChannelConverter,
 }
 
 
-async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param: inspect.Parameter):
+async def _actual_conversion(ctx: Context[BotT], converter: Any, argument: str, param: inspect.Parameter):
     if converter is bool:
         return _convert_to_bool(argument)
 
@@ -1111,7 +1234,7 @@ async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param
             if inspect.ismethod(converter.convert):
                 return await converter.convert(ctx, argument)
             else:
-                return await converter().convert(ctx, argument)  # type: ignore
+                return await converter().convert(ctx, argument)
         elif isinstance(converter, Converter):
             return await converter.convert(ctx, argument)  # type: ignore
     except CommandError:
@@ -1127,9 +1250,21 @@ async def _actual_conversion(ctx: Context[BotT], converter, argument: str, param
         try:
             name = converter.__name__
         except AttributeError:
-            name = converter.__class__.__name__  # type: ignore
+            name = converter.__class__.__name__
 
         raise BadArgument(f'Converting to "{name}" failed for parameter "{param.name}".') from exc
+
+
+@overload
+async def run_converters(
+    ctx: Context[BotT], converter: Union[Type[Converter[T]], Converter[T]], argument: str, param: Parameter
+) -> T:
+    ...
+
+
+@overload
+async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: Parameter) -> Any:
+    ...
 
 
 async def run_converters(ctx: Context[BotT], converter: Any, argument: str, param: Parameter) -> Any:
@@ -1208,7 +1343,7 @@ async def run_converters(ctx: Context[BotT], converter: Any, argument: str, para
                 return value
 
         # if we're here, then we failed to match all the literals
-        raise BadLiteralArgument(param, literal_args, errors)
+        raise BadLiteralArgument(param, literal_args, errors, argument)
 
     # This must be the last if-clause in the chain of origin checking
     # Nearly every type is a generic type within the typing library

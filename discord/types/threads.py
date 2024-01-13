@@ -28,6 +28,7 @@ from typing import List, Literal, Optional, TypedDict
 from typing_extensions import NotRequired
 
 from .snowflake import Snowflake
+from .message import Message
 
 ThreadType = Literal[10, 11, 12]
 ThreadArchiveDuration = Literal[60, 1440, 4320, 10080]
@@ -66,9 +67,14 @@ class Thread(TypedDict):
     last_pin_timestamp: NotRequired[Optional[Snowflake]]
     newly_created: NotRequired[bool]
     flags: NotRequired[int]
+    applied_tags: NotRequired[List[Snowflake]]
 
 
 class ThreadPaginationPayload(TypedDict):
     threads: List[Thread]
     members: List[ThreadMember]
     has_more: bool
+
+
+class ForumThread(Thread):
+    message: Message

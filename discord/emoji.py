@@ -92,7 +92,7 @@ class Emoji(_EmojiTag, AssetMixin):
         Whether the emoji is available for use.
     user: Optional[:class:`User`]
         The user that created the emoji. This can only be retrieved using :meth:`Guild.fetch_emoji` and
-        having the :attr:`~Permissions.manage_emojis` permission.
+        having :attr:`~Permissions.manage_emojis`.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -108,12 +108,12 @@ class Emoji(_EmojiTag, AssetMixin):
         'available',
     )
 
-    def __init__(self, *, guild: Guild, state: ConnectionState, data: EmojiPayload):
+    def __init__(self, *, guild: Guild, state: ConnectionState, data: EmojiPayload) -> None:
         self.guild_id: int = guild.id
         self._state: ConnectionState = state
         self._from_data(data)
 
-    def _from_data(self, emoji: EmojiPayload):
+    def _from_data(self, emoji: EmojiPayload) -> None:
         self.require_colons: bool = emoji.get('require_colons', False)
         self.managed: bool = emoji.get('managed', False)
         self.id: int = int(emoji['id'])  # type: ignore # This won't be None for full emoji objects.
@@ -196,8 +196,7 @@ class Emoji(_EmojiTag, AssetMixin):
 
         Deletes the custom emoji.
 
-        You must have :attr:`~Permissions.manage_emojis` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_emojis` to do this.
 
         Parameters
         -----------
@@ -221,8 +220,7 @@ class Emoji(_EmojiTag, AssetMixin):
 
         Edits the custom emoji.
 
-        You must have :attr:`~Permissions.manage_emojis` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_emojis` to do this.
 
         .. versionchanged:: 2.0
             The newly updated emoji is returned.

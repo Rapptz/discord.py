@@ -24,6 +24,8 @@ Examples of Non-Breaking Changes
 - Adding or removing private underscored attributes.
 - Adding an element into the ``__slots__`` of a data class.
 - Changing the behaviour of a function to fix a bug.
+- Changes in the typing behaviour of the library
+- Changes in the calling convention of functions that are primarily meant as callbacks
 - Changes in the documentation.
 - Modifying the internal HTTP handling.
 - Upgrading the dependencies to a new version, major or otherwise.

@@ -15,13 +15,14 @@ jobs:
       - id: check
         if: env.CROWDIN_API_KEY != null
         run: |
-          echo "::set-output name=available::true"
+          echo "available=true" >> $GITHUB_OUTPUT
         env:
           CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
 
   download:
     runs-on: ubuntu-latest
     needs: [ check-environment ]
+    # secrets cannot be accessed inside an `if` so this needs to be checked in separate job
     if: needs.check-environment.outputs.available == 'true'
     environment: Crowdin
     name: download

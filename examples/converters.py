@@ -1,6 +1,7 @@
 # This example requires the 'members' privileged intent to use the Member converter.
 # This example also requires the 'message_content' privileged intent to function.
 
+import traceback
 import typing
 
 import discord
@@ -36,10 +37,15 @@ async def userinfo(ctx: commands.Context, user: discord.User):
 
 @userinfo.error
 async def userinfo_error(ctx: commands.Context, error: commands.CommandError):
-    # if the conversion above fails for any reason, it will raise `commands.BadArgument`
+    # If the conversion above fails for any reason, it will raise `commands.BadArgument`
     # so we handle this in this error handler:
     if isinstance(error, commands.BadArgument):
         return await ctx.send('Couldn\'t find that user.')
+    # The default `on_command_error` will ignore errors from this command
+    # because we made our own command-specific error handler,
+    # so we need to log tracebacks ourselves.
+    else:
+        traceback.print_exception(type(error), error, error.__traceback__)
 
 
 # Custom Converter here

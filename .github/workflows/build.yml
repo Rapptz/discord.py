@@ -3,7 +3,7 @@ name: build
 on:
   push:
   pull_request:
-    types: [ opened, synchronize ]
+    types: [ opened, reopened, synchronize ]
 
 jobs:
   dists-and-docs:
@@ -16,12 +16,12 @@ jobs:
 
     name: dists & docs (${{ matrix.python-version }}/${{ matrix.language }})
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
       - name: Set up CPython ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: |
           cd docs
-          sphinx-build -b html -D language=${DOCS_LANGUAGE} -a -n -T -W --keep-going . _build/html
+          sphinx-build -b html -D language=${DOCS_LANGUAGE} -j auto -a -n -T -W --keep-going . _build/html
         env:
           DOCS_LANGUAGE: ${{ matrix.language }}
 

@@ -24,8 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Any, ClassVar, Dict, List, Optional, TYPE_CHECKING, Tuple, Union
-from .enums import try_enum, ComponentType, ButtonStyle, TextStyle
+from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
+from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType, SelectDefaultValueType
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
 
@@ -39,8 +39,13 @@ if TYPE_CHECKING:
         SelectOption as SelectOptionPayload,
         ActionRow as ActionRowPayload,
         TextInput as TextInputPayload,
+        ActionRowChildComponent as ActionRowChildComponentPayload,
+        SelectDefaultValues as SelectDefaultValuesPayload,
     )
     from .emoji import Emoji
+    from .abc import Snowflake
+
+    ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
 
 
 __all__ = (
@@ -50,6 +55,7 @@ __all__ = (
     'SelectMenu',
     'SelectOption',
     'TextInput',
+    'SelectDefaultValue',
 )
 
 
@@ -61,25 +67,25 @@ class Component:
     - :class:`ActionRow`
     - :class:`Button`
     - :class:`SelectMenu`
+    - :class:`TextInput`
 
     This class is abstract and cannot be instantiated.
 
     .. versionadded:: 2.0
-
-    Attributes
-    ------------
-    type: :class:`ComponentType`
-        The type of component.
     """
 
-    __slots__: Tuple[str, ...] = ('type',)
+    __slots__: Tuple[str, ...] = ()
 
     __repr_info__: ClassVar[Tuple[str, ...]]
-    type: ComponentType
 
     def __repr__(self) -> str:
         attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__repr_info__)
         return f'<{self.__class__.__name__} {attrs}>'
+
+    @property
+    def type(self) -> ComponentType:
+        """:class:`ComponentType`: The type of component."""
+        raise NotImplementedError
 
     @classmethod
     def _raw_construct(cls, **kwargs) -> Self:
@@ -93,7 +99,7 @@ class Component:
                 setattr(self, slot, value)
         return self
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> ComponentPayload:
         raise NotImplementedError
 
 
@@ -108,9 +114,7 @@ class ActionRow(Component):
 
     Attributes
     ------------
-    type: :class:`ComponentType`
-        The type of component.
-    children: List[:class:`Component`]
+    children: List[Union[:class:`Button`, :class:`SelectMenu`, :class:`TextInput`]]
         The children components that this holds, if any.
     """
 
@@ -118,15 +122,25 @@ class ActionRow(Component):
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: ComponentPayload):
-        self.type: ComponentType = try_enum(ComponentType, data['type'])
-        self.children: List[Component] = [_component_factory(d) for d in data.get('components', [])]
+    def __init__(self, data: ActionRowPayload, /) -> None:
+        self.children: List[ActionRowChildComponentType] = []
+
+        for component_data in data.get('components', []):
+            component = _component_factory(component_data)
+
+            if component is not None:
+                self.children.append(component)
+
+    @property
+    def type(self) -> Literal[ComponentType.action_row]:
+        """:class:`ComponentType`: The type of component."""
+        return ComponentType.action_row
 
     def to_dict(self) -> ActionRowPayload:
         return {
-            'type': int(self.type),
+            'type': self.type.value,
             'components': [child.to_dict() for child in self.children],
-        }  # type: ignore # Type checker does not understand these are the same
+        }
 
 
 class Button(Component):
@@ -169,8 +183,7 @@ class Button(Component):
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: ButtonComponentPayload):
-        self.type: ComponentType = try_enum(ComponentType, data['type'])
+    def __init__(self, data: ButtonComponentPayload, /) -> None:
         self.style: ButtonStyle = try_enum(ButtonStyle, data['style'])
         self.custom_id: Optional[str] = data.get('custom_id')
         self.url: Optional[str] = data.get('url')
@@ -182,13 +195,21 @@ class Button(Component):
         except KeyError:
             self.emoji = None
 
+    @property
+    def type(self) -> Literal[ComponentType.button]:
+        """:class:`ComponentType`: The type of component."""
+        return ComponentType.button
+
     def to_dict(self) -> ButtonComponentPayload:
-        payload = {
+        payload: ButtonComponentPayload = {
             'type': 2,
-            'style': int(self.style),
-            'label': self.label,
+            'style': self.style.value,
             'disabled': self.disabled,
         }
+
+        if self.label:
+            payload['label'] = self.label
+
         if self.custom_id:
             payload['custom_id'] = self.custom_id
 
@@ -198,7 +219,7 @@ class Button(Component):
         if self.emoji:
             payload['emoji'] = self.emoji.to_dict()
 
-        return payload  # type: ignore # Type checker does not understand these are the same
+        return payload
 
 
 class SelectMenu(Component):
@@ -216,13 +237,15 @@ class SelectMenu(Component):
 
     Attributes
     ------------
+    type: :class:`ComponentType`
+        The type of component.
     custom_id: Optional[:class:`str`]
         The ID of the select menu that gets received during an interaction.
     placeholder: Optional[:class:`str`]
         The placeholder text that is shown if nothing is selected, if any.
     min_values: :class:`int`
         The minimum number of items that must be chosen for this select menu.
-        Defaults to 1 and must be between 1 and 25.
+        Defaults to 1 and must be between 0 and 25.
     max_values: :class:`int`
         The maximum number of items that must be chosen for this select menu.
         Defaults to 1 and must be between 1 and 25.
@@ -230,40 +253,53 @@ class SelectMenu(Component):
         A list of options that can be selected in this menu.
     disabled: :class:`bool`
         Whether the select is disabled or not.
+    channel_types: List[:class:`.ChannelType`]
+        A list of channel types that are allowed to be chosen in this select menu.
     """
 
     __slots__: Tuple[str, ...] = (
+        'type',
         'custom_id',
         'placeholder',
         'min_values',
         'max_values',
         'options',
         'disabled',
+        'channel_types',
+        'default_values',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: SelectMenuPayload):
-        self.type = ComponentType.select
+    def __init__(self, data: SelectMenuPayload, /) -> None:
+        self.type: ComponentType = try_enum(ComponentType, data['type'])
         self.custom_id: str = data['custom_id']
         self.placeholder: Optional[str] = data.get('placeholder')
         self.min_values: int = data.get('min_values', 1)
         self.max_values: int = data.get('max_values', 1)
         self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
+        self.channel_types: List[ChannelType] = [try_enum(ChannelType, t) for t in data.get('channel_types', [])]
+        self.default_values: List[SelectDefaultValue] = [
+            SelectDefaultValue.from_dict(d) for d in data.get('default_values', [])
+        ]
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
-            'type': self.type.value,
+            'type': self.type.value,  # type: ignore # we know this is a select menu.
             'custom_id': self.custom_id,
             'min_values': self.min_values,
             'max_values': self.max_values,
-            'options': [op.to_dict() for op in self.options],
             'disabled': self.disabled,
         }
-
         if self.placeholder:
             payload['placeholder'] = self.placeholder
+        if self.options:
+            payload['options'] = [op.to_dict() for op in self.options]
+        if self.channel_types:
+            payload['channel_types'] = [t.value for t in self.channel_types]
+        if self.default_values:
+            payload["default_values"] = [v.to_dict() for v in self.default_values]
 
         return payload
 
@@ -275,7 +311,7 @@ class SelectOption:
 
     .. versionadded:: 2.0
 
-    Attributes
+    Parameters
     -----------
     label: :class:`str`
         The label of the option. This is displayed to users.
@@ -291,13 +327,28 @@ class SelectOption:
         The emoji of the option, if available.
     default: :class:`bool`
         Whether this option is selected by default.
+
+    Attributes
+    -----------
+    label: :class:`str`
+        The label of the option. This is displayed to users.
+        Can only be up to 100 characters.
+    value: :class:`str`
+        The value of the option. This is not displayed to users.
+        If not provided when constructed then it defaults to the
+        label. Can only be up to 100 characters.
+    description: Optional[:class:`str`]
+        An additional description of the option, if any.
+        Can only be up to 100 characters.
+    default: :class:`bool`
+        Whether this option is selected by default.
     """
 
     __slots__: Tuple[str, ...] = (
         'label',
         'value',
         'description',
-        'emoji',
+        '_emoji',
         'default',
     )
 
@@ -314,15 +365,7 @@ class SelectOption:
         self.value: str = label if value is MISSING else value
         self.description: Optional[str] = description
 
-        if emoji is not None:
-            if isinstance(emoji, str):
-                emoji = PartialEmoji.from_str(emoji)
-            elif isinstance(emoji, _EmojiTag):
-                emoji = emoji._to_partial()
-            else:
-                raise TypeError(f'expected emoji to be str, Emoji, or PartialEmoji not {emoji.__class__}')
-
-        self.emoji: Optional[Union[str, Emoji, PartialEmoji]] = emoji
+        self.emoji = emoji
         self.default: bool = default
 
     def __repr__(self) -> str:
@@ -340,6 +383,23 @@ class SelectOption:
         if self.description:
             return f'{base}\n{self.description}'
         return base
+
+    @property
+    def emoji(self) -> Optional[PartialEmoji]:
+        """Optional[:class:`.PartialEmoji`]: The emoji of the option, if available."""
+        return self._emoji
+
+    @emoji.setter
+    def emoji(self, value: Optional[Union[str, Emoji, PartialEmoji]]) -> None:
+        if value is not None:
+            if isinstance(value, str):
+                self._emoji = PartialEmoji.from_str(value)
+            elif isinstance(value, _EmojiTag):
+                self._emoji = value._to_partial()
+            else:
+                raise TypeError(f'expected str, Emoji, or PartialEmoji, received {value.__class__.__name__} instead')
+        else:
+            self._emoji = None
 
     @classmethod
     def from_dict(cls, data: SelectOptionPayload) -> SelectOption:
@@ -364,7 +424,7 @@ class SelectOption:
         }
 
         if self.emoji:
-            payload['emoji'] = self.emoji.to_dict()  # type: ignore # This Dict[str, Any] is compatible with PartialEmoji
+            payload['emoji'] = self.emoji.to_dict()
 
         if self.description:
             payload['description'] = self.description
@@ -414,8 +474,7 @@ class TextInput(Component):
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
-    def __init__(self, data: TextInputPayload) -> None:
-        self.type: ComponentType = ComponentType.text_input
+    def __init__(self, data: TextInputPayload, /) -> None:
         self.style: TextStyle = try_enum(TextStyle, data['style'])
         self.label: str = data['label']
         self.custom_id: str = data['custom_id']
@@ -424,6 +483,11 @@ class TextInput(Component):
         self.required: bool = data.get('required', True)
         self.min_length: Optional[int] = data.get('min_length')
         self.max_length: Optional[int] = data.get('max_length')
+
+    @property
+    def type(self) -> Literal[ComponentType.text_input]:
+        """:class:`ComponentType`: The type of component."""
+        return ComponentType.text_input
 
     def to_dict(self) -> TextInputPayload:
         payload: TextInputPayload = {
@@ -457,19 +521,132 @@ class TextInput(Component):
         return self.value
 
 
-def _component_factory(data: ComponentPayload) -> Component:
-    component_type = data['type']
-    if component_type == 1:
+class SelectDefaultValue:
+    """Represents a select menu's default value.
+
+    These can be created by users.
+
+    .. versionadded:: 2.4
+
+    Parameters
+    -----------
+    id: :class:`int`
+        The id of a role, user, or channel.
+    type: :class:`SelectDefaultValueType`
+        The type of value that ``id`` represents.
+    """
+
+    def __init__(
+        self,
+        *,
+        id: int,
+        type: SelectDefaultValueType,
+    ) -> None:
+        self.id: int = id
+        self._type: SelectDefaultValueType = type
+
+    @property
+    def type(self) -> SelectDefaultValueType:
+        """:class:`SelectDefaultValueType`: The type of value that ``id`` represents."""
+        return self._type
+
+    @type.setter
+    def type(self, value: SelectDefaultValueType) -> None:
+        if not isinstance(value, SelectDefaultValueType):
+            raise TypeError(f'expected SelectDefaultValueType, received {value.__class__.__name__} instead')
+
+        self._type = value
+
+    def __repr__(self) -> str:
+        return f'<SelectDefaultValue id={self.id!r} type={self.type!r}>'
+
+    @classmethod
+    def from_dict(cls, data: SelectDefaultValuesPayload) -> SelectDefaultValue:
+        return cls(
+            id=data['id'],
+            type=try_enum(SelectDefaultValueType, data['type']),
+        )
+
+    def to_dict(self) -> SelectDefaultValuesPayload:
+        return {
+            'id': self.id,
+            'type': self._type.value,
+        }
+
+    @classmethod
+    def from_channel(cls, channel: Snowflake, /) -> Self:
+        """Creates a :class:`SelectDefaultValue` with the type set to :attr:`~SelectDefaultValueType.channel`.
+
+        Parameters
+        -----------
+        channel: :class:`~discord.abc.Snowflake`
+            The channel to create the default value for.
+
+        Returns
+        --------
+        :class:`SelectDefaultValue`
+            The default value created with the channel.
+        """
+        return cls(
+            id=channel.id,
+            type=SelectDefaultValueType.channel,
+        )
+
+    @classmethod
+    def from_role(cls, role: Snowflake, /) -> Self:
+        """Creates a :class:`SelectDefaultValue` with the type set to :attr:`~SelectDefaultValueType.role`.
+
+        Parameters
+        -----------
+        role: :class:`~discord.abc.Snowflake`
+            The role to create the default value for.
+
+        Returns
+        --------
+        :class:`SelectDefaultValue`
+            The default value created with the role.
+        """
+        return cls(
+            id=role.id,
+            type=SelectDefaultValueType.role,
+        )
+
+    @classmethod
+    def from_user(cls, user: Snowflake, /) -> Self:
+        """Creates a :class:`SelectDefaultValue` with the type set to :attr:`~SelectDefaultValueType.user`.
+
+        Parameters
+        -----------
+        user: :class:`~discord.abc.Snowflake`
+            The user to create the default value for.
+
+        Returns
+        --------
+        :class:`SelectDefaultValue`
+            The default value created with the user.
+        """
+        return cls(
+            id=user.id,
+            type=SelectDefaultValueType.user,
+        )
+
+
+@overload
+def _component_factory(data: ActionRowChildComponentPayload) -> Optional[ActionRowChildComponentType]:
+    ...
+
+
+@overload
+def _component_factory(data: ComponentPayload) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
+    ...
+
+
+def _component_factory(data: ComponentPayload) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
+    if data['type'] == 1:
         return ActionRow(data)
-    elif component_type == 2:
-        # The type checker does not properly do narrowing here.
-        return Button(data)  # type: ignore
-    elif component_type == 3:
-        # The type checker does not properly do narrowing here.
-        return SelectMenu(data)  # type: ignore
-    elif component_type == 4:
-        # The type checker does not properly do narrowing here.
-        return TextInput(data)  # type: ignore
-    else:
-        as_enum = try_enum(ComponentType, component_type)
-        return Component._raw_construct(type=as_enum)
+    elif data['type'] == 2:
+        return Button(data)
+    elif data['type'] == 4:
+        return TextInput(data)
+    elif data['type'] in (3, 5, 6, 7, 8):
+        return SelectMenu(data)

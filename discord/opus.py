@@ -39,8 +39,15 @@ from .errors import DiscordException
 
 if TYPE_CHECKING:
     T = TypeVar('T')
+    APPLICATION_CTL = Literal['audio', 'voip', 'lowdelay']
     BAND_CTL = Literal['narrow', 'medium', 'wide', 'superwide', 'full']
     SIGNAL_CTL = Literal['auto', 'voice', 'music']
+
+
+class ApplicationCtl(TypedDict):
+    audio: int
+    voip: int
+    lowdelay: int
 
 
 class BandCtl(TypedDict):
@@ -64,6 +71,8 @@ __all__ = (
 )
 
 _log = logging.getLogger(__name__)
+
+OPUS_SILENCE = b'\xF8\xFF\xFE'
 
 c_int_ptr = ctypes.POINTER(ctypes.c_int)
 c_int16_ptr = ctypes.POINTER(ctypes.c_int16)
@@ -90,9 +99,10 @@ OK      = 0
 BAD_ARG = -1
 
 # Encoder CTLs
-APPLICATION_AUDIO    = 2049
-APPLICATION_VOIP     = 2048
-APPLICATION_LOWDELAY = 2051
+APPLICATION_AUDIO    = 'audio'
+APPLICATION_VOIP     = 'voip'
+APPLICATION_LOWDELAY = 'lowdelay'
+# These remain as strings for backwards compat
 
 CTL_SET_BITRATE      = 4002
 CTL_SET_BANDWIDTH    = 4008
@@ -104,6 +114,12 @@ CTL_SET_SIGNAL       = 4024
 CTL_SET_GAIN             = 4034
 CTL_LAST_PACKET_DURATION = 4039
 # fmt: on
+
+application_ctl: ApplicationCtl = {
+    'audio': 2049,
+    'voip': 2048,
+    'lowdelay': 2051,
+}
 
 band_ctl: BandCtl = {
     'narrow': 1101,
@@ -122,7 +138,7 @@ signal_ctl: SignalCtl = {
 
 def _err_lt(result: int, func: Callable, args: List) -> int:
     if result < OK:
-        _log.info('error has happened in %s', func.__name__)
+        _log.debug('error has happened in %s', func.__name__)
         raise OpusError(result)
     return result
 
@@ -130,7 +146,7 @@ def _err_lt(result: int, func: Callable, args: List) -> int:
 def _err_ne(result: T, func: Callable, args: List) -> T:
     ret = args[-1]._obj
     if ret.value != OK:
-        _log.info('error has happened in %s', func.__name__)
+        _log.debug('error has happened in %s', func.__name__)
         raise OpusError(ret.value)
     return result
 
@@ -142,7 +158,7 @@ def _err_ne(result: T, func: Callable, args: List) -> T:
 # The fourth is the error handler.
 exported_functions: List[Tuple[Any, ...]] = [
     # Generic
-    ('opus_get_version_string', None, ctypes.c_char_p, None),
+    ('opus_get_version_string', [], ctypes.c_char_p, None),
     ('opus_strerror', [ctypes.c_int], ctypes.c_char_p, None),
     # Encoder functions
     ('opus_encoder_get_size', [ctypes.c_int], ctypes.c_int, None),
@@ -154,7 +170,7 @@ exported_functions: List[Tuple[Any, ...]] = [
         ctypes.c_int32,
         _err_lt,
     ),
-    ('opus_encoder_ctl', None, ctypes.c_int32, _err_lt),
+    ('opus_encoder_ctl', [EncoderStructPtr, ctypes.c_int], ctypes.c_int32, _err_lt),
     ('opus_encoder_destroy', [EncoderStructPtr], None, None),
     # Decoder functions
     ('opus_decoder_get_size', [ctypes.c_int], ctypes.c_int, None),
@@ -171,7 +187,7 @@ exported_functions: List[Tuple[Any, ...]] = [
         ctypes.c_int,
         _err_lt,
     ),
-    ('opus_decoder_ctl', None, ctypes.c_int32, _err_lt),
+    ('opus_decoder_ctl', [DecoderStructPtr, ctypes.c_int], ctypes.c_int32, _err_lt),
     ('opus_decoder_destroy', [DecoderStructPtr], None, None),
     ('opus_decoder_get_nb_samples', [DecoderStructPtr, ctypes.c_char_p, ctypes.c_int32], ctypes.c_int, _err_lt),
     # Packet functions
@@ -291,7 +307,7 @@ class OpusError(DiscordException):
     def __init__(self, code: int):
         self.code: int = code
         msg = _lib.opus_strerror(self.code).decode('utf-8')
-        _log.info('"%s" has happened', msg)
+        _log.debug('"%s" has happened', msg)
         super().__init__(msg)
 
 
@@ -319,16 +335,38 @@ class _OpusStruct:
 
 
 class Encoder(_OpusStruct):
-    def __init__(self, application: int = APPLICATION_AUDIO):
-        _OpusStruct.get_opus_version()
+    def __init__(
+        self,
+        *,
+        application: APPLICATION_CTL = 'audio',
+        bitrate: int = 128,
+        fec: bool = True,
+        expected_packet_loss: float = 0.15,
+        bandwidth: BAND_CTL = 'full',
+        signal_type: SIGNAL_CTL = 'auto',
+    ):
+        if application not in application_ctl:
+            raise ValueError(f'{application} is not a valid application setting. Try one of: {"".join(application_ctl)}')
 
-        self.application: int = application
+        if not 16 <= bitrate <= 512:
+            raise ValueError(f'bitrate must be between 16 and 512, not {bitrate}')
+
+        if not 0 < expected_packet_loss <= 1.0:
+            raise ValueError(
+                f'expected_packet_loss must be a positive number less than or equal to 1, not {expected_packet_loss}'
+            )
+
+        _OpusStruct.get_opus_version()  # lazy loads the opus library
+
+        self.application: int = application_ctl[application]
         self._state: EncoderStruct = self._create_state()
-        self.set_bitrate(128)
-        self.set_fec(True)
-        self.set_expected_packet_loss_percent(0.15)
-        self.set_bandwidth('full')
-        self.set_signal_type('auto')
+
+        self.set_bitrate(bitrate)
+        self.set_fec(fec)
+        if fec:
+            self.set_expected_packet_loss_percent(expected_packet_loss)
+        self.set_bandwidth(bandwidth)
+        self.set_signal_type(signal_type)
 
     def __del__(self) -> None:
         if hasattr(self, '_state'):
@@ -355,7 +393,7 @@ class Encoder(_OpusStruct):
 
     def set_signal_type(self, req: SIGNAL_CTL) -> None:
         if req not in signal_ctl:
-            raise KeyError(f'{req!r} is not a valid bandwidth setting. Try one of: {",".join(signal_ctl)}')
+            raise KeyError(f'{req!r} is not a valid signal type setting. Try one of: {",".join(signal_ctl)}')
 
         k = signal_ctl[req]
         _lib.opus_encoder_ctl(self._state, CTL_SET_SIGNAL, k)
@@ -454,7 +492,9 @@ class Decoder(_OpusStruct):
             channel_count = self.CHANNELS
         else:
             frames = self.packet_get_nb_frames(data)
-            channel_count = self.packet_get_nb_channels(data)
+            # Discord silent frames erroneously present themselves as 1 channel instead of 2
+            # Therefore we need to hardcode the number instead of using packet_get_nb_channels
+            channel_count = self.CHANNELS
             samples_per_frame = self.packet_get_samples_per_frame(data)
             frame_size = frames * samples_per_frame
 

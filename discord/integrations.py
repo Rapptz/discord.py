@@ -36,6 +36,7 @@ __all__ = (
     'Integration',
     'StreamIntegration',
     'BotIntegration',
+    'PartialIntegration',
 )
 
 if TYPE_CHECKING:
@@ -49,6 +50,7 @@ if TYPE_CHECKING:
         BotIntegration as BotIntegrationPayload,
         IntegrationType,
         IntegrationApplication as IntegrationApplicationPayload,
+        PartialIntegration as PartialIntegrationPayload,
     )
 
 
@@ -115,7 +117,7 @@ class Integration:
         self._from_data(data)
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} id={self.id} name={self.name!r}>"
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
 
     def _from_data(self, data: IntegrationPayload) -> None:
         self.id: int = int(data['id'])
@@ -132,8 +134,7 @@ class Integration:
 
         Deletes the integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         Parameters
         -----------
@@ -229,8 +230,7 @@ class StreamIntegration(Integration):
 
         Edits the integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         .. versionchanged:: 2.0
             This function will now raise :exc:`TypeError` instead of
@@ -276,8 +276,7 @@ class StreamIntegration(Integration):
 
         Syncs the integration.
 
-        You must have the :attr:`~Permissions.manage_guild` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_guild` to do this.
 
         Raises
         -------
@@ -360,6 +359,53 @@ class BotIntegration(Integration):
     def _from_data(self, data: BotIntegrationPayload) -> None:
         super()._from_data(data)
         self.application: IntegrationApplication = IntegrationApplication(data=data['application'], state=self._state)
+
+
+class PartialIntegration:
+    """Represents a partial guild integration.
+
+    .. versionadded:: 2.0
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The integration ID.
+    name: :class:`str`
+        The integration name.
+    guild: :class:`Guild`
+        The guild of the integration.
+    type: :class:`str`
+        The integration type (i.e. Twitch).
+    account: :class:`IntegrationAccount`
+        The account linked to this integration.
+    application_id: Optional[:class:`int`]
+        The id of the application this integration belongs to.
+    """
+
+    __slots__ = (
+        'guild',
+        '_state',
+        'id',
+        'type',
+        'name',
+        'account',
+        'application_id',
+    )
+
+    def __init__(self, *, data: PartialIntegrationPayload, guild: Guild):
+        self.guild: Guild = guild
+        self._state: ConnectionState = guild._state
+        self._from_data(data)
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r}>'
+
+    def _from_data(self, data: PartialIntegrationPayload) -> None:
+        self.id: int = int(data['id'])
+        self.type: IntegrationType = data['type']
+        self.name: str = data['name']
+        self.account: IntegrationAccount = IntegrationAccount(data['account'])
+        self.application_id: Optional[int] = _get_as_snowflake(data, 'application_id')
 
 
 def _integration_factory(value: str) -> Tuple[Type[Integration], str]:

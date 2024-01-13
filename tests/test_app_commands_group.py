@@ -260,20 +260,22 @@ def test_cog_with_group_subclass_with_group_subclass():
 
 
 def test_cog_group_with_commands():
-    class MyCog(commands.Cog, app_commands.Group):
+    class MyCog(commands.GroupCog):
         @app_commands.command()
         async def my_command(self, interaction: discord.Interaction) -> None:
             ...
 
     cog = MyCog()
-    assert MyCog.__discord_app_commands_group_children__[0].parent is not cog
+    assert MyCog.__cog_app_commands__[0].parent is not cog
+    assert MyCog.__cog_app_commands__[0].parent is not cog.__cog_app_commands_group__
     assert cog.my_command is not MyCog.my_command
-    assert cog.parent is None
-    assert cog.my_command.parent is cog
+    assert cog.__cog_app_commands_group__ is not None
+    assert cog.__cog_app_commands_group__.parent is None
+    assert cog.my_command.parent is cog.__cog_app_commands_group__
 
 
 def test_cog_group_with_group():
-    class MyCog(commands.Cog, app_commands.Group):
+    class MyCog(commands.GroupCog):
         sub_group = app_commands.Group(name='mysubgroup', description='My sub-group')
 
         @sub_group.command()
@@ -281,11 +283,13 @@ def test_cog_group_with_group():
             ...
 
     cog = MyCog()
-    assert MyCog.__discord_app_commands_group_children__[0].parent is not cog
+    assert MyCog.__cog_app_commands__[0].parent is not cog
+    assert MyCog.__cog_app_commands__[0].parent is not cog.__cog_app_commands_group__
     assert cog.sub_group is not MyCog.sub_group
     assert cog.my_command is not MyCog.my_command
-    assert cog.parent is None
-    assert cog.sub_group.parent is cog
+    assert cog.__cog_app_commands_group__ is not None
+    assert cog.__cog_app_commands_group__.parent is None
+    assert cog.sub_group.parent is cog.__cog_app_commands_group__
     assert cog.my_command.parent is cog.sub_group
 
 
@@ -295,7 +299,7 @@ def test_cog_group_with_subclass_group():
         async def my_command(self, interaction: discord.Interaction) -> None:
             ...
 
-    class MyCog(commands.Cog, app_commands.Group):
+    class MyCog(commands.GroupCog):
         sub_group = MyGroup()
 
         @sub_group.command()
@@ -303,14 +307,16 @@ def test_cog_group_with_subclass_group():
             ...
 
     cog = MyCog()
-    assert MyCog.__discord_app_commands_group_children__[0].parent is not cog
+    assert MyCog.__cog_app_commands__[0].parent is not cog
+    assert MyCog.__cog_app_commands__[0].parent is not cog.__cog_app_commands_group__
     assert MyGroup.__discord_app_commands_group_children__[0].parent is not cog.sub_group
     assert cog.sub_group is not MyCog.sub_group
     assert cog.sub_group.my_command is not MyGroup.my_command
     assert cog.my_cog_command is not MyCog.my_cog_command
     assert not hasattr(cog.sub_group, 'my_cog_command')
-    assert cog.parent is None
-    assert cog.sub_group.parent is cog
+    assert cog.__cog_app_commands_group__ is not None
+    assert cog.__cog_app_commands_group__.parent is None
+    assert cog.sub_group.parent is cog.__cog_app_commands_group__
     assert cog.sub_group.my_command.parent is cog.sub_group
     assert cog.my_cog_command.parent is cog.sub_group
     assert cog.my_cog_command.binding is cog
@@ -325,7 +331,7 @@ def test_cog_group_with_subclassed_subclass_group():
     class MySubclassedGroup(MyGroup, name='mygroup'):
         ...
 
-    class MyCog(commands.Cog, app_commands.Group):
+    class MyCog(commands.GroupCog):
         sub_group = MySubclassedGroup()
 
         @sub_group.command()
@@ -333,7 +339,8 @@ def test_cog_group_with_subclassed_subclass_group():
             ...
 
     cog = MyCog()
-    assert MyCog.__discord_app_commands_group_children__[0].parent is not cog
+    assert MyCog.__cog_app_commands__[0].parent is not cog
+    assert MyCog.__cog_app_commands__[0].parent is not cog.__cog_app_commands_group__
     assert MyGroup.__discord_app_commands_group_children__[0].parent is not cog.sub_group
     assert MySubclassedGroup.__discord_app_commands_group_children__[0].parent is not cog.sub_group
     assert cog.sub_group is not MyCog.sub_group
@@ -341,8 +348,162 @@ def test_cog_group_with_subclassed_subclass_group():
     assert cog.sub_group.my_command is not MySubclassedGroup.my_command
     assert cog.my_cog_command is not MyCog.my_cog_command
     assert not hasattr(cog.sub_group, 'my_cog_command')
-    assert cog.parent is None
-    assert cog.sub_group.parent is cog
+    assert cog.__cog_app_commands_group__ is not None
+    assert cog.__cog_app_commands_group__.parent is None
+    assert cog.sub_group.parent is cog.__cog_app_commands_group__
     assert cog.sub_group.my_command.parent is cog.sub_group
     assert cog.my_cog_command.parent is cog.sub_group
     assert cog.my_cog_command.binding is cog
+
+
+def test_cog_group_with_custom_state_issue9383():
+    class InnerGroup(app_commands.Group):
+        def __init__(self):
+            super().__init__()
+            self.state: int = 20
+
+        @app_commands.command()
+        async def my_command(self, interaction: discord.Interaction) -> None:
+            ...
+
+    class MyCog(commands.GroupCog):
+        inner = InnerGroup()
+
+        @app_commands.command()
+        async def my_regular_command(self, interaction: discord.Interaction) -> None:
+            ...
+
+        @inner.command()
+        async def my_inner_command(self, interaction: discord.Interaction) -> None:
+            ...
+
+    cog = MyCog()
+    assert cog.inner.state == 20
+    assert cog.my_regular_command is not MyCog.my_regular_command
+
+    # Basically the same tests as above... (superset?)
+    assert MyCog.__cog_app_commands__[0].parent is not cog
+    assert MyCog.__cog_app_commands__[0].parent is not cog.__cog_app_commands_group__
+    assert InnerGroup.__discord_app_commands_group_children__[0].parent is not cog.inner
+    assert InnerGroup.__discord_app_commands_group_children__[0].parent is not cog.inner
+    assert cog.inner is not MyCog.inner
+    assert cog.inner.my_command is not InnerGroup.my_command
+    assert cog.inner.my_command is not InnerGroup.my_command
+    assert cog.my_inner_command is not MyCog.my_inner_command
+    assert not hasattr(cog.inner, 'my_inner_command')
+    assert cog.__cog_app_commands_group__ is not None
+    assert cog.__cog_app_commands_group__.parent is None
+    assert cog.inner.parent is cog.__cog_app_commands_group__
+    assert cog.inner.my_command.parent is cog.inner
+    assert cog.my_inner_command.parent is cog.inner
+    assert cog.my_inner_command.binding is cog
+
+
+def test_cog_hybrid_group_manual_command():
+    class MyCog(commands.Cog):
+        @commands.hybrid_group()
+        async def first(self, ctx: commands.Context) -> None:
+            ...
+
+        @first.command(name='both')
+        async def second_both(self, ctx: commands.Context) -> None:
+            ...
+
+        @first.app_command.command(name='second')
+        async def second_app(self, interaction: discord.Interaction) -> None:
+            ...
+
+    client = discord.Client(intents=discord.Intents.default())
+    tree = app_commands.CommandTree(client)
+
+    cog = MyCog()
+    tree.add_command(cog.first.app_command)
+
+    assert cog.first is not MyCog.first
+    assert cog.second_both is not MyCog.second_both
+    assert cog.second_app is not MyCog.second_app
+    assert cog.first.parent is None
+    assert cog.second_both.parent is cog.first
+    assert cog.second_app.parent is cog.first.app_command
+    assert cog.second_app.binding is cog
+    assert tree.get_command('first') is cog.first.app_command
+
+    first = tree.get_command('first')
+    assert isinstance(first, app_commands.Group)
+    both = first.get_command('both')
+    assert isinstance(both, app_commands.Command)
+    assert both.parent is first
+    assert both.binding is cog
+
+    second = first.get_command('second')
+    assert isinstance(second, app_commands.Command)
+    assert second.parent is first
+    assert second.binding is cog
+
+
+def test_cog_hybrid_group_manual_nested_command():
+    class MyCog(commands.Cog):
+        @commands.hybrid_group()
+        async def first(self, ctx: commands.Context) -> None:
+            pass
+
+        @first.group()
+        async def second(self, ctx: commands.Context) -> None:
+            pass
+
+        @second.app_command.command()
+        async def third(self, interaction: discord.Interaction) -> None:
+            pass
+
+    client = discord.Client(intents=discord.Intents.default())
+    tree = app_commands.CommandTree(client)
+
+    cog = MyCog()
+    tree.add_command(cog.first.app_command)
+
+    assert cog.first is not MyCog.first
+    assert cog.second is not MyCog.second
+    assert cog.third is not MyCog.third
+    assert cog.first.parent is None
+    assert cog.second.parent is cog.first
+    assert cog.third.parent is cog.second.app_command
+    assert cog.third.binding is cog
+
+    first = tree.get_command('first')
+    assert isinstance(first, app_commands.Group)
+
+    second = first.get_command('second')
+    assert isinstance(second, app_commands.Group)
+
+    third = second.get_command('third')
+    assert isinstance(third, app_commands.Command)
+    assert third.parent is second
+    assert third.binding is cog
+
+
+def test_cog_hybrid_group_wrapped_instance():
+    class MyCog(commands.Cog):
+        @commands.hybrid_group(fallback='fallback')
+        async def first(self, ctx: commands.Context) -> None:
+            pass
+
+        @first.command()
+        async def second(self, ctx: commands.Context) -> None:
+            pass
+
+        @first.group()
+        async def nested(self, ctx: commands.Context) -> None:
+            pass
+
+        @nested.app_command.command()
+        async def child(self, interaction: discord.Interaction) -> None:
+            pass
+
+    cog = MyCog()
+
+    fallback = cog.first.app_command.get_command('fallback')
+    assert fallback is not None
+    assert getattr(fallback, 'wrapped', None) is cog.first
+    assert fallback.parent is cog.first.app_command
+    assert cog.second.app_command is not None
+    assert cog.second.app_command.wrapped is cog.second

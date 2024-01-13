@@ -198,7 +198,7 @@ class StickerItem(_StickerTag):
 
     __slots__ = ('_state', 'name', 'id', 'format', 'url')
 
-    def __init__(self, *, state: ConnectionState, data: StickerItemPayload):
+    def __init__(self, *, state: ConnectionState, data: StickerItemPayload) -> None:
         self._state: ConnectionState = state
         self.name: str = data['name']
         self.id: int = int(data['id'])
@@ -405,7 +405,7 @@ class GuildSticker(Sticker):
         The ID of the guild that this sticker is from.
     user: Optional[:class:`User`]
         The user that created this sticker. This can only be retrieved using :meth:`Guild.fetch_sticker` and
-        having the :attr:`~Permissions.manage_emojis_and_stickers` permission.
+        having :attr:`~Permissions.manage_emojis_and_stickers`.
     emoji: :class:`str`
         The name of a unicode emoji that represents this sticker.
     """
@@ -414,7 +414,7 @@ class GuildSticker(Sticker):
 
     def _from_data(self, data: GuildStickerPayload) -> None:
         super()._from_data(data)
-        self.available: bool = data['available']
+        self.available: bool = data.get('available', True)
         self.guild_id: int = int(data['guild_id'])
         user = data.get('user')
         self.user: Optional[User] = self._state.store_user(user) if user else None
@@ -494,8 +494,7 @@ class GuildSticker(Sticker):
 
         Deletes the custom :class:`Sticker` from the guild.
 
-        You must have :attr:`~Permissions.manage_emojis_and_stickers` permission to
-        do this.
+        You must have :attr:`~Permissions.manage_emojis_and_stickers` to do this.
 
         Parameters
         -----------

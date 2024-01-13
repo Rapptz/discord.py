@@ -1,12 +1,9 @@
-# This example requires the 'message_content' privileged intent to function.
-
 import typing
 
 import discord
 from discord.ext import commands
 
 intents = discord.Intents.default()
-intents.message_content = True
 
 bot = commands.Bot(command_prefix=commands.when_mentioned, description="Nothing to see here!", intents=intents)
 

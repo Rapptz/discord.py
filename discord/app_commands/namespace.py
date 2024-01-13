@@ -71,6 +71,11 @@ class Namespace:
     with the name of ``example`` can be accessed using ``ns.example``. If an attribute is not found,
     then ``None`` is returned rather than an attribute error.
 
+    .. warning::
+
+        The key names come from the raw Discord data, which means that if a parameter was renamed then the
+        renamed key is used instead of the function parameter name.
+
     .. versionadded:: 2.0
 
     .. container:: operations
@@ -137,15 +142,21 @@ class Namespace:
         for option in options:
             opt_type = option['type']
             name = option['name']
+            focused = option.get('focused', False)
             if opt_type in (3, 4, 5):  # string, integer, boolean
                 value = option['value']  # type: ignore # Key is there
                 self.__dict__[name] = value
             elif opt_type == 10:  # number
                 value = option['value']  # type: ignore # Key is there
-                if value is None:
+                # This condition is written this way because 0 can be a valid float
+                if value is None or value == '':
                     self.__dict__[name] = float('nan')
                 else:
-                    self.__dict__[name] = float(value)
+                    if not focused:
+                        self.__dict__[name] = float(value)
+                    else:
+                        # Autocomplete focused values tend to be garbage in
+                        self.__dict__[name] = value
             elif opt_type in (6, 7, 8, 9, 11):
                 # Remaining ones should be snowflake based ones with resolved data
                 snowflake: str = option['value']  # type: ignore # Key is there
@@ -168,7 +179,7 @@ class Namespace:
         state = interaction._state
         members = resolved.get('members', {})
         guild_id = interaction.guild_id
-        guild = (state._get_guild(guild_id) or Object(id=guild_id)) if guild_id is not None else None
+        guild = state._get_or_create_unavailable_guild(guild_id) if guild_id is not None else None
         type = AppCommandOptionType.user.value
         for (user_id, user_data) in resolved.get('users', {}).items():
             try:
@@ -213,9 +224,11 @@ class Namespace:
         for (message_id, message_data) in resolved.get('messages', {}).items():
             channel_id = int(message_data['channel_id'])
             if guild is None:
-                channel = PartialMessageable(state=state, id=channel_id)
+                channel = PartialMessageable(state=state, guild_id=guild_id, id=channel_id)
             else:
-                channel = guild.get_channel_or_thread(channel_id) or PartialMessageable(state=state, id=channel_id)
+                channel = guild.get_channel_or_thread(channel_id) or PartialMessageable(
+                    state=state, guild_id=guild_id, id=channel_id
+                )
 
             # Type checker doesn't understand this due to failure to narrow
             message = Message(state=state, channel=channel, data=message_data)  # type: ignore

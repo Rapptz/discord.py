@@ -74,22 +74,41 @@ class Reaction:
     emoji: Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]
         The reaction emoji. May be a custom emoji, or a unicode emoji.
     count: :class:`int`
-        Number of times this reaction was made
+        Number of times this reaction was made. This is a sum of :attr:`normal_count` and :attr:`burst_count`.
     me: :class:`bool`
         If the user sent this reaction.
     message: :class:`Message`
         Message this reaction is for.
+    me_burst: :class:`bool`
+        If the user sent this super reaction.
+
+        .. versionadded:: 2.4
+    normal_count: :class:`int`
+        The number of times this reaction was made using normal reactions.
+        This is not available in the gateway events such as :func:`on_reaction_add`
+        or :func:`on_reaction_remove`.
+
+        .. versionadded:: 2.4
+    burst_count: :class:`int`
+        The number of times this reaction was made using super reactions.
+        This is not available in the gateway events such as :func:`on_reaction_add`
+        or :func:`on_reaction_remove`.
+
+        .. versionadded:: 2.4
     """
 
-    __slots__ = ('message', 'count', 'emoji', 'me')
+    __slots__ = ('message', 'count', 'emoji', 'me', 'me_burst', 'normal_count', 'burst_count')
 
     def __init__(self, *, message: Message, data: ReactionPayload, emoji: Optional[Union[PartialEmoji, Emoji, str]] = None):
         self.message: Message = message
         self.emoji: Union[PartialEmoji, Emoji, str] = emoji or message._state.get_reaction_emoji(data['emoji'])
         self.count: int = data.get('count', 1)
         self.me: bool = data['me']
+        details = data.get('count_details', {})
+        self.normal_count: int = details.get('normal', 0)
+        self.burst_count: int = details.get('burst', 0)
+        self.me_burst: bool = data.get('me_burst', False)
 
-    # TODO: typeguard
     def is_custom_emoji(self) -> bool:
         """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
@@ -117,7 +136,7 @@ class Reaction:
         Remove the reaction by the provided :class:`User` from the message.
 
         If the reaction is not your own (i.e. ``user`` parameter is not you) then
-        the :attr:`~Permissions.manage_messages` permission is needed.
+        :attr:`~Permissions.manage_messages` is needed.
 
         The ``user`` parameter must represent a user or member and meet
         the :class:`abc.Snowflake` abc.
@@ -144,7 +163,7 @@ class Reaction:
 
         Clears this reaction from the message.
 
-        You need the :attr:`~Permissions.manage_messages` permission to use this.
+        You must have :attr:`~Permissions.manage_messages` to do this.
 
         .. versionadded:: 1.3
 
@@ -237,6 +256,9 @@ class Reaction:
             if data:
                 limit -= len(data)
                 after = Object(id=int(data[-1]['id']))
+            else:
+                # Terminate loop if we received no data
+                limit = 0
 
             if guild is None or isinstance(guild, Object):
                 for raw_user in reversed(data):

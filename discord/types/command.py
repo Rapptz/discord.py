@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Literal, TypedDict, Union
+from typing import Dict, List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired, Required
 
 from .channel import ChannelType
@@ -37,6 +37,8 @@ ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 class _BaseApplicationCommandOption(TypedDict):
     name: str
     description: str
+    name_localizations: NotRequired[Optional[Dict[str, str]]]
+    description_localizations: NotRequired[Optional[Dict[str, str]]]
 
 
 class _SubCommandCommandOption(_BaseApplicationCommandOption):
@@ -55,17 +57,21 @@ class _BaseValueApplicationCommandOption(_BaseApplicationCommandOption, total=Fa
 
 class _StringApplicationCommandOptionChoice(TypedDict):
     name: str
+    name_localizations: NotRequired[Optional[Dict[str, str]]]
     value: str
 
 
 class _StringApplicationCommandOption(_BaseApplicationCommandOption):
     type: Literal[3]
     choices: NotRequired[List[_StringApplicationCommandOptionChoice]]
+    min_length: NotRequired[int]
+    max_length: NotRequired[int]
     autocomplete: NotRequired[bool]
 
 
 class _IntegerApplicationCommandOptionChoice(TypedDict):
     name: str
+    name_localizations: NotRequired[Optional[Dict[str, str]]]
     value: int
 
 
@@ -98,6 +104,7 @@ _SnowflakeApplicationCommandOptionChoice = Union[
 
 class _NumberApplicationCommandOptionChoice(TypedDict):
     name: str
+    name_localizations: NotRequired[Optional[Dict[str, str]]]
     value: float
 
 
@@ -134,7 +141,12 @@ class _BaseApplicationCommand(TypedDict):
     id: Snowflake
     application_id: Snowflake
     name: str
+    dm_permission: NotRequired[Optional[bool]]
+    default_member_permissions: NotRequired[Optional[str]]
+    nsfw: NotRequired[bool]
     version: Snowflake
+    name_localizations: NotRequired[Optional[Dict[str, str]]]
+    description_localizations: NotRequired[Optional[Dict[str, str]]]
 
 
 class _ChatInputApplicationCommand(_BaseApplicationCommand, total=False):
@@ -190,7 +202,7 @@ ApplicationCommand = Union[
 ]
 
 
-ApplicationCommandPermissionType = Literal[1, 2]
+ApplicationCommandPermissionType = Literal[1, 2, 3]
 
 
 class ApplicationCommandPermissions(TypedDict):

@@ -153,7 +153,6 @@ The following have been changed to :func:`runtime-checkable <typing.runtime_chec
 
 - :class:`abc.Snowflake`
 - :class:`abc.User`
-- :class:`abc.PrivateChannel`
 
 The following have been changed to subclass :class:`~typing.Protocol`:
 
@@ -163,6 +162,7 @@ The following have been changed to subclass :class:`~typing.Protocol`:
 The following have been changed to use the default metaclass instead of :class:`abc.ABCMeta`:
 
 - :class:`abc.Messageable`
+- :class:`abc.PrivateChannel`
 
 ``datetime`` Objects Are Now UTC-Aware
 ----------------------------------------
@@ -176,7 +176,7 @@ naive :class:`~datetime.datetime`, such exceptions are listed below).
 Because naive :class:`~datetime.datetime` objects are treated by many of its methods as local times, the previous behavior
 was more likely to result in programming errors with their usage.
 
-To ease the migration :func:`utils.utcnow` helper function has been added.
+To ease the migration, :func:`utils.utcnow` helper function has been added.
 
 .. warning::
     Using :meth:`datetime.datetime.utcnow` can be problematic since it returns a naive UTC ``datetime`` object.
@@ -255,7 +255,7 @@ The following now accept aware :class:`~datetime.datetime` and assume that if th
 - :attr:`Embed` constructor
 - :attr:`Embed.timestamp` property setter
 - :func:`utils.sleep_until` function
-- ``utils.time_snowflake`` function
+- :func:`utils.time_snowflake` function
 
 Currently, there's only one place in this library that doesn't accept naive :class:`datetime.datetime` objects:
 
@@ -864,22 +864,47 @@ The return type of the following methods has been changed to an :term:`asynchron
 The ``NoMoreItems`` exception was removed as calling :func:`anext` or :meth:`~object.__anext__` on an
 :term:`asynchronous iterator` will now raise :class:`StopAsyncIteration`.
 
-Removal of ``Embed.Empty``
----------------------------
+Changing certain lists to be lazy sequences instead
+-----------------------------------------------------
+
+In order to improve performance when calculating the length of certain lists, certain attributes were changed to return a sequence rather than a :class:`list`.
+
+A sequence is similar to a :class:`list` except it is read-only. In order to get a list again you can call :class:`list` on the resulting sequence.
+
+The following properties were changed to return a sequence instead of a list:
+
+- :attr:`Client.guilds`
+- :attr:`Client.emojis`
+- :attr:`Client.private_channels`
+- :attr:`Guild.roles`
+- :attr:`Guild.channels`
+- :attr:`Guild.members`
+
+This change should be transparent, unless you are modifying the sequence by doing things such as ``list.append``.
+
+
+Embed Changes
+--------------
 
 Originally, embeds used a special sentinel to denote emptiness or remove an attribute from display. The ``Embed.Empty`` sentinel was made when Discord's embed design was in a nebulous state of flux. Since then, the embed design has stabilised and thus the sentinel is seen as legacy.
 
 Therefore, ``Embed.Empty`` has been removed in favour of ``None``.
+
+Additionally, ``Embed.__eq__`` has been implemented thus embeds becoming unhashable (e.g. using them in sets or dict keys).
 
 .. code-block:: python
 
     # before
     embed = discord.Embed(title='foo')
     embed.title = discord.Embed.Empty
+    embed == embed.copy() # False
 
     # after
     embed = discord.Embed(title='foo')
     embed.title = None
+    embed == embed.copy() # True
+    {embed, embed} # Raises TypeError
+
 
 
 Removal of ``InvalidArgument`` Exception
@@ -933,10 +958,32 @@ The following methods have been changed:
 - :meth:`Webhook.send`
 - :meth:`abc.GuildChannel.set_permissions`
 
+Logging Changes
+----------------
+
+The library now provides a default logging configuration if using :meth:`Client.run`. To disable it, pass ``None`` to the ``log_handler`` keyword parameter. Since the library now provides a default logging configuration, certain methods were changed to no longer print to :data:`sys.stderr` but use the logger instead:
+
+- :meth:`Client.on_error`
+- :meth:`discord.ext.tasks.Loop.error`
+- :meth:`discord.ext.commands.Bot.on_command_error`
+- :meth:`VoiceClient.play`
+
+For more information, check :doc:`logging`.
+
+Text in Voice
+---------------
+
+In order to support text in voice functionality, a few changes had to be made:
+
+- :class:`VoiceChannel` is now :class:`abc.Messageable` so it can have messages sent and received.
+- :attr:`Message.channel` can now be :class:`VoiceChannel`.
+
+In the future this may include :class:`StageChannel` when Discord implements it.
+
 Removal of ``StoreChannel``
 -----------------------------
 
-Discord's API has removed store channels as of `March 10th, 2022 <https://support-dev.discord.com/hc/en-us/articles/4414590563479>`_. Therefore, the library has removed support for it as well.
+Discord's API has removed store channels as of `March 10th, 2022 <https://support-dev.discord.com/hc/en-us/articles/6309018858647>`_. Therefore, the library has removed support for it as well.
 
 This removes the following:
 
@@ -959,6 +1006,20 @@ Due to a breaking API change by Discord, :meth:`Guild.bans` no longer returns a 
     async for ban in guild.bans(limit=1000):
         ...
 
+Flag classes now have a custom ``bool()`` implementation
+--------------------------------------------------------
+
+To allow library users to easily check whether an instance of a flag class has any flags enabled,
+using `bool` on them will now only return ``True`` if at least one flag is enabled.
+
+This means that evaluating instances of the following classes in a bool context (such as ``if obj:``) may no longer return ``True``:
+
+- :class:`Intents`
+- :class:`MemberCacheFlags`
+- :class:`MessageFlags`
+- :class:`Permissions`
+- :class:`PublicUserFlags`
+- :class:`SystemChannelFlags`
 
 Function Signature Changes
 ----------------------------
@@ -991,20 +1052,22 @@ Parameters in the following methods are now all positional-only:
 - :meth:`TextChannel.get_partial_message`
 - :meth:`TextChannel.delete_messages`
 - :meth:`Webhook.delete_message`
-- :meth:`utils.find`
+- :func:`utils.find`
+- :func:`utils.snowflake_time`
 
 The following parameters are now positional-only:
 
-- ``iterable`` in :meth:`utils.get`
-- ``event`` in :meth:`Client.dispatch`
+- ``iterable`` in :func:`utils.get`
 - ``event_method`` in :meth:`Client.on_error`
 - ``event`` in :meth:`Client.wait_for`
+- ``dt`` in :func:`utils.time_snowflake`
 
 The following are now keyword-only:
 
 - Parameters in :meth:`Reaction.users`
 - Parameters in :meth:`Client.create_guild`
-- ``permissions``, ``guild``, ``redirect_uri``, and ``scopes`` parameters in :meth:`utils.oauth_url`
+- ``permissions``, ``guild``, ``redirect_uri``, and ``scopes`` parameters in :func:`utils.oauth_url`
+- ``high`` in :func:`utils.snowflake_time`
 
 The library now less often uses ``None`` as the default value for function/method parameters.
 
@@ -1073,6 +1136,7 @@ The following changes have been made:
 - :attr:`AuditLogEntry.target` may now be a :class:`PartialMessageable`.
 - :attr:`PartialMessage.channel` may now be a :class:`PartialMessageable`.
 - :attr:`Guild.preferred_locale` is now of type :class:`Locale`.
+- :attr:`abc.GuildChannel.overwrites` keys can now have :class:`Object` in them.
 
 Removals
 ----------
@@ -1094,6 +1158,9 @@ The following deprecated functionality have been removed:
 - ``fetch_offline_members`` parameter from :class:`Client` constructor
 
     - Use ``chunk_guild_at_startup`` instead.
+
+- ``Permissions.use_slash_commands`` and ``PermissionOverwrite.use_slash_commands``
+    - Use :attr:`Permissions.use_application_commands` and ``PermissionOverwrite.use_application_commands`` instead.
 
 The following have been removed:
 
@@ -1148,6 +1215,10 @@ The following have been removed:
 - The undocumented private ``on_socket_response`` event
 
     - Consider using the newer documented :func:`on_socket_event_type` event instead.
+
+- ``abc.Messageable.trigger_typing``
+
+    - Use :meth:`abc.Messageable.typing` with ``await`` instead.
 
 Miscellaneous Changes
 ----------------------
@@ -1210,8 +1281,15 @@ The following changes have been made:
 
 - :meth:`Permissions.stage_moderator` now includes the :attr:`Permissions.manage_channels` permission and the :attr:`Permissions.request_to_speak` permission is no longer included.
 
-- :attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to `'untitled'`.
+- :attr:`File.filename` will no longer be ``None``, in situations where previously this was the case the filename is set to ``'untitled'``.
 
+- :attr:`Message.application` will no longer be a raw :class:`dict` of the API payload and now returns an instance of :class:`MessageApplication`.
+
+:meth:`VoiceProtocol.connect` signature changes.
+--------------------------------------------------
+
+:meth:`VoiceProtocol.connect` will now be passed 2 keyword only arguments, ``self_deaf`` and ``self_mute``. These indicate
+whether or not the client should join the voice chat being deafened or muted.
 
 .. _migrating_2_0_commands:
 
@@ -1311,29 +1389,18 @@ Parameters in the following methods are now all positional-only:
 - :meth:`ext.commands.Bot.get_prefix`
 - :meth:`ext.commands.Bot.invoke`
 - :meth:`ext.commands.Bot.process_commands`
-- :meth:`ext.commands.Bot.on_message`
-- :meth:`ext.commands.Command.dispatch_error`
-- :meth:`ext.commands.Command.transform`
-- :meth:`ext.commands.Command.call_before_hooks`
-- :meth:`ext.commands.Command.call_after_hooks`
-- :meth:`ext.commands.Command.prepare`
 - :meth:`ext.commands.Command.is_on_cooldown`
 - :meth:`ext.commands.Command.reset_cooldown`
 - :meth:`ext.commands.Command.get_cooldown_retry_after`
-- :meth:`ext.commands.Command.invoke`
 - :meth:`ext.commands.Command.error`
 - :meth:`ext.commands.Command.before_invoke`
 - :meth:`ext.commands.Command.after_invoke`
 - :meth:`ext.commands.Command.can_run`
-- :meth:`ext.commands.Group.invoke`
 - :meth:`ext.commands.check`
 - :meth:`ext.commands.has_role`
 - :meth:`ext.commands.bot_has_role`
 - :meth:`ext.commands.before_invoke`
 - :meth:`ext.commands.after_invoke`
-- :meth:`ext.commands.HelpCommand.call_before_hooks`
-- :meth:`ext.commands.HelpCommand.call_after_hooks`
-- :meth:`ext.commands.HelpCommand.can_run`
 - :meth:`ext.commands.HelpCommand.get_command_signature`
 - :meth:`ext.commands.HelpCommand.remove_mentions`
 - :meth:`ext.commands.HelpCommand.command_not_found`
@@ -1348,39 +1415,24 @@ Parameters in the following methods are now all positional-only:
 - :meth:`ext.commands.HelpCommand.prepare_help_command`
 - :meth:`ext.commands.DefaultHelpCommand.shorten_text`
 - :meth:`ext.commands.DefaultHelpCommand.add_command_formatting`
-- :meth:`ext.commands.DefaultHelpCommand.prepare_help_command`
-- :meth:`ext.commands.DefaultHelpCommand.send_bot_help`
-- :meth:`ext.commands.DefaultHelpCommand.send_command_help`
-- :meth:`ext.commands.DefaultHelpCommand.send_group_help`
-- :meth:`ext.commands.DefaultHelpCommand.send_cog_help`
 - :meth:`ext.commands.MinimalHelpCommand.get_command_signature`
 - :meth:`ext.commands.MinimalHelpCommand.add_bot_commands_formatting`
 - :meth:`ext.commands.MinimalHelpCommand.add_subcommand_formatting`
 - :meth:`ext.commands.MinimalHelpCommand.add_aliases_formatting`
 - :meth:`ext.commands.MinimalHelpCommand.add_command_formatting`
-- :meth:`ext.commands.MinimalHelpCommand.prepare_help_command`
-- :meth:`ext.commands.MinimalHelpCommand.send_bot_help`
-- :meth:`ext.commands.MinimalHelpCommand.send_cog_help`
-- :meth:`ext.commands.MinimalHelpCommand.send_group_help`
-- :meth:`ext.commands.MinimalHelpCommand.send_command_help`
 
 The following parameters are now positional-only:
 
-- ``event_name`` in :meth:`ext.commands.Bot.dispatch`
 - ``func`` in :meth:`ext.commands.Bot.check`
 - ``func`` in :meth:`ext.commands.Bot.add_check`
 - ``func`` in :meth:`ext.commands.Bot.remove_check`
 - ``func`` in :meth:`ext.commands.Bot.check_once`
-- ``ctx`` in :meth:`ext.commands.Bot.can_run`
 - ``func`` in :meth:`ext.commands.Bot.add_listener`
 - ``func`` in :meth:`ext.commands.Bot.remove_listener`
 - ``message`` in :meth:`ext.commands.Bot.get_context`
 - ``func`` in :meth:`ext.commands.Command.add_check`
 - ``func`` in :meth:`ext.commands.Command.remove_check`
 - ``context`` in :meth:`ext.commands.Command.__call__`
-- ``ctx`` in :meth:`ext.commands.Command.reinvoke`
-- ``ctx`` in :meth:`ext.commands.Group.reinvoke`
-- ``context`` in :meth:`ext.commands.HelpCommand.__call__`
 - ``commands`` in :meth:`ext.commands.HelpCommand.filter_commands`
 - ``ctx`` in :meth:`ext.commands.HelpCommand.command_callback`
 - ``func`` in :meth:`ext.commands.HelpCommand.add_check`
@@ -1434,9 +1486,11 @@ Miscellaneous Changes
 
     - To override a cog, the new ``override`` parameter can be used.
 
+- When passing a callable to ``type`` argument of :meth:`~ext.commands.cooldown`,
+  it now needs to accept :class:`~ext.commands.Context` rather than :class:`Message` as its only argument.
 - Metaclass of :class:`~ext.commands.Context` changed from :class:`abc.ABCMeta` to :class:`type`.
 - Changed type of :attr:`ext.commands.Command.clean_params` from :class:`collections.OrderedDict` to :class:`dict`.
-  as the latter is guaranteed to preserve insertion order since Python 3.7.
+  As the latter is guaranteed to preserve insertion order since Python 3.7.
 - :attr:`ext.commands.ChannelNotReadable.argument` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes.
 - :attr:`ext.commands.NSFWChannelRequired.channel` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes.
 - :attr:`ext.commands.Context.channel` may now be a :class:`Thread` due to the :ref:`migrating_2_0_thread_support` changes.

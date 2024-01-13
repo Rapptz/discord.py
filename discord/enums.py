@@ -42,6 +42,7 @@ __all__ = (
     'ActivityType',
     'NotificationLevel',
     'TeamMembershipState',
+    'TeamMemberRole',
     'WebhookType',
     'ExpireBehaviour',
     'ExpireBehavior',
@@ -62,6 +63,16 @@ __all__ = (
     'EventStatus',
     'AppCommandType',
     'AppCommandOptionType',
+    'AppCommandPermissionType',
+    'AutoModRuleTriggerType',
+    'AutoModRuleEventType',
+    'AutoModRuleActionType',
+    'ForumLayoutType',
+    'ForumOrderType',
+    'SelectDefaultValueType',
+    'SKUType',
+    'EntitlementType',
+    'EntitlementOwnerType',
 )
 
 if TYPE_CHECKING:
@@ -196,6 +207,7 @@ class ChannelType(Enum):
     private_thread = 12
     stage_voice = 13
     forum = 15
+    media = 16
 
     def __str__(self) -> str:
         return self.name
@@ -226,6 +238,19 @@ class MessageType(Enum):
     thread_starter_message = 21
     guild_invite_reminder = 22
     context_menu_command = 23
+    auto_moderation_action = 24
+    role_subscription_purchase = 25
+    interaction_premium_upsell = 26
+    stage_start = 27
+    stage_end = 28
+    stage_speaker = 29
+    stage_raise_hand = 30
+    stage_topic = 31
+    guild_application_premium_subscription = 32
+    guild_incident_alert_mode_enabled = 36
+    guild_incident_alert_mode_disabled = 37
+    guild_incident_report_raid = 38
+    guild_incident_report_false_alarm = 39
 
 
 class SpeakingState(Enum):
@@ -280,6 +305,7 @@ class DefaultAvatar(Enum):
     green = 2
     orange = 3
     red = 4
+    pink = 5
 
     def __str__(self) -> str:
         return self.name
@@ -298,106 +324,124 @@ class AuditLogActionCategory(Enum):
 
 class AuditLogAction(Enum):
     # fmt: off
-    guild_update             = 1
-    channel_create           = 10
-    channel_update           = 11
-    channel_delete           = 12
-    overwrite_create         = 13
-    overwrite_update         = 14
-    overwrite_delete         = 15
-    kick                     = 20
-    member_prune             = 21
-    ban                      = 22
-    unban                    = 23
-    member_update            = 24
-    member_role_update       = 25
-    member_move              = 26
-    member_disconnect        = 27
-    bot_add                  = 28
-    role_create              = 30
-    role_update              = 31
-    role_delete              = 32
-    invite_create            = 40
-    invite_update            = 41
-    invite_delete            = 42
-    webhook_create           = 50
-    webhook_update           = 51
-    webhook_delete           = 52
-    emoji_create             = 60
-    emoji_update             = 61
-    emoji_delete             = 62
-    message_delete           = 72
-    message_bulk_delete      = 73
-    message_pin              = 74
-    message_unpin            = 75
-    integration_create       = 80
-    integration_update       = 81
-    integration_delete       = 82
-    stage_instance_create    = 83
-    stage_instance_update    = 84
-    stage_instance_delete    = 85
-    sticker_create           = 90
-    sticker_update           = 91
-    sticker_delete           = 92
-    scheduled_event_create   = 100
-    scheduled_event_update   = 101
-    scheduled_event_delete   = 102
-    thread_create            = 110
-    thread_update            = 111
-    thread_delete            = 112
+    guild_update                                      = 1
+    channel_create                                    = 10
+    channel_update                                    = 11
+    channel_delete                                    = 12
+    overwrite_create                                  = 13
+    overwrite_update                                  = 14
+    overwrite_delete                                  = 15
+    kick                                              = 20
+    member_prune                                      = 21
+    ban                                               = 22
+    unban                                             = 23
+    member_update                                     = 24
+    member_role_update                                = 25
+    member_move                                       = 26
+    member_disconnect                                 = 27
+    bot_add                                           = 28
+    role_create                                       = 30
+    role_update                                       = 31
+    role_delete                                       = 32
+    invite_create                                     = 40
+    invite_update                                     = 41
+    invite_delete                                     = 42
+    webhook_create                                    = 50
+    webhook_update                                    = 51
+    webhook_delete                                    = 52
+    emoji_create                                      = 60
+    emoji_update                                      = 61
+    emoji_delete                                      = 62
+    message_delete                                    = 72
+    message_bulk_delete                               = 73
+    message_pin                                       = 74
+    message_unpin                                     = 75
+    integration_create                                = 80
+    integration_update                                = 81
+    integration_delete                                = 82
+    stage_instance_create                             = 83
+    stage_instance_update                             = 84
+    stage_instance_delete                             = 85
+    sticker_create                                    = 90
+    sticker_update                                    = 91
+    sticker_delete                                    = 92
+    scheduled_event_create                            = 100
+    scheduled_event_update                            = 101
+    scheduled_event_delete                            = 102
+    thread_create                                     = 110
+    thread_update                                     = 111
+    thread_delete                                     = 112
+    app_command_permission_update                     = 121
+    automod_rule_create                               = 140
+    automod_rule_update                               = 141
+    automod_rule_delete                               = 142
+    automod_block_message                             = 143
+    automod_flag_message                              = 144
+    automod_timeout_member                            = 145
+    creator_monetization_request_created              = 150
+    creator_monetization_terms_accepted               = 151
     # fmt: on
 
     @property
     def category(self) -> Optional[AuditLogActionCategory]:
         # fmt: off
         lookup: Dict[AuditLogAction, Optional[AuditLogActionCategory]] = {
-            AuditLogAction.guild_update:           AuditLogActionCategory.update,
-            AuditLogAction.channel_create:         AuditLogActionCategory.create,
-            AuditLogAction.channel_update:         AuditLogActionCategory.update,
-            AuditLogAction.channel_delete:         AuditLogActionCategory.delete,
-            AuditLogAction.overwrite_create:       AuditLogActionCategory.create,
-            AuditLogAction.overwrite_update:       AuditLogActionCategory.update,
-            AuditLogAction.overwrite_delete:       AuditLogActionCategory.delete,
-            AuditLogAction.kick:                   None,
-            AuditLogAction.member_prune:           None,
-            AuditLogAction.ban:                    None,
-            AuditLogAction.unban:                  None,
-            AuditLogAction.member_update:          AuditLogActionCategory.update,
-            AuditLogAction.member_role_update:     AuditLogActionCategory.update,
-            AuditLogAction.member_move:            None,
-            AuditLogAction.member_disconnect:      None,
-            AuditLogAction.bot_add:                None,
-            AuditLogAction.role_create:            AuditLogActionCategory.create,
-            AuditLogAction.role_update:            AuditLogActionCategory.update,
-            AuditLogAction.role_delete:            AuditLogActionCategory.delete,
-            AuditLogAction.invite_create:          AuditLogActionCategory.create,
-            AuditLogAction.invite_update:          AuditLogActionCategory.update,
-            AuditLogAction.invite_delete:          AuditLogActionCategory.delete,
-            AuditLogAction.webhook_create:         AuditLogActionCategory.create,
-            AuditLogAction.webhook_update:         AuditLogActionCategory.update,
-            AuditLogAction.webhook_delete:         AuditLogActionCategory.delete,
-            AuditLogAction.emoji_create:           AuditLogActionCategory.create,
-            AuditLogAction.emoji_update:           AuditLogActionCategory.update,
-            AuditLogAction.emoji_delete:           AuditLogActionCategory.delete,
-            AuditLogAction.message_delete:         AuditLogActionCategory.delete,
-            AuditLogAction.message_bulk_delete:    AuditLogActionCategory.delete,
-            AuditLogAction.message_pin:            None,
-            AuditLogAction.message_unpin:          None,
-            AuditLogAction.integration_create:     AuditLogActionCategory.create,
-            AuditLogAction.integration_update:     AuditLogActionCategory.update,
-            AuditLogAction.integration_delete:     AuditLogActionCategory.delete,
-            AuditLogAction.stage_instance_create:  AuditLogActionCategory.create,
-            AuditLogAction.stage_instance_update:  AuditLogActionCategory.update,
-            AuditLogAction.stage_instance_delete:  AuditLogActionCategory.delete,
-            AuditLogAction.sticker_create:         AuditLogActionCategory.create,
-            AuditLogAction.sticker_update:         AuditLogActionCategory.update,
-            AuditLogAction.sticker_delete:         AuditLogActionCategory.delete,
-            AuditLogAction.scheduled_event_create: AuditLogActionCategory.create,
-            AuditLogAction.scheduled_event_update: AuditLogActionCategory.update,
-            AuditLogAction.scheduled_event_delete: AuditLogActionCategory.delete,
-            AuditLogAction.thread_create:          AuditLogActionCategory.create,
-            AuditLogAction.thread_update:          AuditLogActionCategory.update,
-            AuditLogAction.thread_delete:          AuditLogActionCategory.delete,
+            AuditLogAction.guild_update:                             AuditLogActionCategory.update,
+            AuditLogAction.channel_create:                           AuditLogActionCategory.create,
+            AuditLogAction.channel_update:                           AuditLogActionCategory.update,
+            AuditLogAction.channel_delete:                           AuditLogActionCategory.delete,
+            AuditLogAction.overwrite_create:                         AuditLogActionCategory.create,
+            AuditLogAction.overwrite_update:                         AuditLogActionCategory.update,
+            AuditLogAction.overwrite_delete:                         AuditLogActionCategory.delete,
+            AuditLogAction.kick:                                     None,
+            AuditLogAction.member_prune:                             None,
+            AuditLogAction.ban:                                      None,
+            AuditLogAction.unban:                                    None,
+            AuditLogAction.member_update:                            AuditLogActionCategory.update,
+            AuditLogAction.member_role_update:                       AuditLogActionCategory.update,
+            AuditLogAction.member_move:                              None,
+            AuditLogAction.member_disconnect:                        None,
+            AuditLogAction.bot_add:                                  None,
+            AuditLogAction.role_create:                              AuditLogActionCategory.create,
+            AuditLogAction.role_update:                              AuditLogActionCategory.update,
+            AuditLogAction.role_delete:                              AuditLogActionCategory.delete,
+            AuditLogAction.invite_create:                            AuditLogActionCategory.create,
+            AuditLogAction.invite_update:                            AuditLogActionCategory.update,
+            AuditLogAction.invite_delete:                            AuditLogActionCategory.delete,
+            AuditLogAction.webhook_create:                           AuditLogActionCategory.create,
+            AuditLogAction.webhook_update:                           AuditLogActionCategory.update,
+            AuditLogAction.webhook_delete:                           AuditLogActionCategory.delete,
+            AuditLogAction.emoji_create:                             AuditLogActionCategory.create,
+            AuditLogAction.emoji_update:                             AuditLogActionCategory.update,
+            AuditLogAction.emoji_delete:                             AuditLogActionCategory.delete,
+            AuditLogAction.message_delete:                           AuditLogActionCategory.delete,
+            AuditLogAction.message_bulk_delete:                      AuditLogActionCategory.delete,
+            AuditLogAction.message_pin:                              None,
+            AuditLogAction.message_unpin:                            None,
+            AuditLogAction.integration_create:                       AuditLogActionCategory.create,
+            AuditLogAction.integration_update:                       AuditLogActionCategory.update,
+            AuditLogAction.integration_delete:                       AuditLogActionCategory.delete,
+            AuditLogAction.stage_instance_create:                    AuditLogActionCategory.create,
+            AuditLogAction.stage_instance_update:                    AuditLogActionCategory.update,
+            AuditLogAction.stage_instance_delete:                    AuditLogActionCategory.delete,
+            AuditLogAction.sticker_create:                           AuditLogActionCategory.create,
+            AuditLogAction.sticker_update:                           AuditLogActionCategory.update,
+            AuditLogAction.sticker_delete:                           AuditLogActionCategory.delete,
+            AuditLogAction.scheduled_event_create:                   AuditLogActionCategory.create,
+            AuditLogAction.scheduled_event_update:                   AuditLogActionCategory.update,
+            AuditLogAction.scheduled_event_delete:                   AuditLogActionCategory.delete,
+            AuditLogAction.thread_create:                            AuditLogActionCategory.create,
+            AuditLogAction.thread_delete:                            AuditLogActionCategory.delete,
+            AuditLogAction.thread_update:                            AuditLogActionCategory.update,
+            AuditLogAction.app_command_permission_update:            AuditLogActionCategory.update,
+            AuditLogAction.automod_rule_create:                      AuditLogActionCategory.create,
+            AuditLogAction.automod_rule_update:                      AuditLogActionCategory.update,
+            AuditLogAction.automod_rule_delete:                      AuditLogActionCategory.delete,
+            AuditLogAction.automod_block_message:                    None,
+            AuditLogAction.automod_flag_message:                     None,
+            AuditLogAction.automod_timeout_member:                   None,
+            AuditLogAction.creator_monetization_request_created:     None,
+            AuditLogAction.creator_monetization_terms_accepted:      None,
         }
         # fmt: on
         return lookup[self]
@@ -435,6 +479,14 @@ class AuditLogAction(Enum):
             return 'guild_scheduled_event'
         elif v < 113:
             return 'thread'
+        elif v < 122:
+            return 'integration_or_app_command'
+        elif 139 < v < 143:
+            return 'auto_moderation'
+        elif v < 146:
+            return 'user'
+        elif v < 152:
+            return 'creator_monetization'
 
 
 class UserFlags(Enum):
@@ -457,6 +509,7 @@ class UserFlags(Enum):
     discord_certified_moderator = 262144
     bot_http_interactions = 524288
     spammer = 1048576
+    active_developer = 4194304
 
 
 class ActivityType(Enum):
@@ -475,6 +528,12 @@ class ActivityType(Enum):
 class TeamMembershipState(Enum):
     invited = 1
     accepted = 2
+
+
+class TeamMemberRole(Enum):
+    admin = 'admin'
+    developer = 'developer'
+    read_only = 'read_only'
 
 
 class WebhookType(Enum):
@@ -500,6 +559,7 @@ class StickerFormatType(Enum):
     png = 1
     apng = 2
     lottie = 3
+    gif = 4
 
     @property
     def file_extension(self) -> str:
@@ -508,9 +568,10 @@ class StickerFormatType(Enum):
             StickerFormatType.png: 'png',
             StickerFormatType.apng: 'png',
             StickerFormatType.lottie: 'json',
+            StickerFormatType.gif: 'gif',
         }
         # fmt: on
-        return lookup[self]
+        return lookup.get(self, 'png')
 
 
 class InviteTarget(Enum):
@@ -537,6 +598,7 @@ class InteractionResponseType(Enum):
     message_update = 7  # for components
     autocomplete_result = 8
     modal = 9  # for modals
+    premium_required = 10
 
 
 class VideoQualityMode(Enum):
@@ -551,7 +613,12 @@ class ComponentType(Enum):
     action_row = 1
     button = 2
     select = 3
+    string_select = 3
     text_input = 4
+    user_select = 5
+    role_select = 6
+    mentionable_select = 7
+    channel_select = 8
 
     def __int__(self) -> int:
         return self.value
@@ -611,6 +678,7 @@ class Locale(Enum):
     taiwan_chinese = 'zh-TW'
     croatian = 'hr'
     czech = 'cs'
+    indonesian = 'id'
     danish = 'da'
     dutch = 'nl'
     finnish = 'fi'
@@ -622,6 +690,7 @@ class Locale(Enum):
     italian = 'it'
     japanese = 'ja'
     korean = 'ko'
+    latin_american_spanish = 'es-419'
     lithuanian = 'lt'
     norwegian = 'no'
     polish = 'pl'
@@ -676,6 +745,64 @@ class AppCommandType(Enum):
     chat_input = 1
     user = 2
     message = 3
+
+
+class AppCommandPermissionType(Enum):
+    role = 1
+    user = 2
+    channel = 3
+
+
+class AutoModRuleTriggerType(Enum):
+    keyword = 1
+    harmful_link = 2
+    spam = 3
+    keyword_preset = 4
+    mention_spam = 5
+    member_profile = 6
+
+
+class AutoModRuleEventType(Enum):
+    message_send = 1
+    member_update = 2
+
+
+class AutoModRuleActionType(Enum):
+    block_message = 1
+    send_alert_message = 2
+    timeout = 3
+    block_member_interactions = 4
+
+
+class ForumLayoutType(Enum):
+    not_set = 0
+    list_view = 1
+    gallery_view = 2
+
+
+class ForumOrderType(Enum):
+    latest_activity = 0
+    creation_date = 1
+
+
+class SelectDefaultValueType(Enum):
+    user = 'user'
+    role = 'role'
+    channel = 'channel'
+
+
+class SKUType(Enum):
+    subscription = 5
+    subscription_group = 6
+
+
+class EntitlementType(Enum):
+    application_subscription = 8
+
+
+class EntitlementOwnerType(Enum):
+    guild = 1
+    user = 2
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

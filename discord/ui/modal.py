@@ -27,12 +27,11 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-import sys
-import traceback
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any, Dict, Optional, Sequence, ClassVar, List
 
 from ..utils import MISSING, find
+from .._types import ClientT
 from .item import Item
 from .view import View
 
@@ -65,6 +64,7 @@ class Modal(View):
 
     .. code-block:: python3
 
+        import discord
         from discord import ui
 
         class Questionnaire(ui.Modal, title='Questionnaire Response'):
@@ -136,7 +136,7 @@ class Modal(View):
 
         super().__init__(timeout=timeout)
 
-    async def on_submit(self, interaction: Interaction) -> None:
+    async def on_submit(self, interaction: Interaction[ClientT], /) -> None:
         """|coro|
 
         Called when the modal is submitted.
@@ -148,52 +148,55 @@ class Modal(View):
         """
         pass
 
-    async def on_error(self, error: Exception, interaction: Interaction) -> None:
+    async def on_error(self, interaction: Interaction[ClientT], error: Exception, /) -> None:
         """|coro|
 
         A callback that is called when :meth:`on_submit`
         fails with an error.
 
-        The default implementation prints the traceback to stderr.
+        The default implementation logs to the library logger.
 
         Parameters
         -----------
-        error: :class:`Exception`
-            The exception that was raised.
         interaction: :class:`~discord.Interaction`
             The interaction that led to the failure.
+        error: :class:`Exception`
+            The exception that was raised.
         """
-        print(f'Ignoring exception in modal {self}:', file=sys.stderr)
-        traceback.print_exception(error.__class__, error, error.__traceback__, file=sys.stderr)
+        _log.error('Ignoring exception in modal %r:', self, exc_info=error)
 
-    def _refresh(self, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
+    def _refresh(self, interaction: Interaction, components: Sequence[ModalSubmitComponentInteractionDataPayload]) -> None:
         for component in components:
             if component['type'] == 1:
-                self._refresh(component['components'])
+                self._refresh(interaction, component['components'])
             else:
                 item = find(lambda i: i.custom_id == component['custom_id'], self._children)  # type: ignore
                 if item is None:
                     _log.debug("Modal interaction referencing unknown item custom_id %s. Discarding", component['custom_id'])
                     continue
-                item._refresh_state(component)  # type: ignore
+                item._refresh_state(interaction, component)  # type: ignore
 
-    async def _scheduled_task(self, interaction: Interaction):
+    async def _scheduled_task(self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]):
         try:
             self._refresh_timeout()
+            self._refresh(interaction, components)
+
             allow = await self.interaction_check(interaction)
             if not allow:
                 return
 
             await self.on_submit(interaction)
         except Exception as e:
-            return await self.on_error(e, interaction)
+            return await self.on_error(interaction, e)
         else:
             # No error, so assume this will always happen
             # In the future, maybe this will require checking if we set an error response.
             self.stop()
 
-    def _dispatch_submit(self, interaction: Interaction) -> None:
-        asyncio.create_task(self._scheduled_task(interaction), name=f'discord-ui-modal-dispatch-{self.id}')
+    def _dispatch_submit(
+        self, interaction: Interaction, components: List[ModalSubmitComponentInteractionDataPayload]
+    ) -> None:
+        asyncio.create_task(self._scheduled_task(interaction, components), name=f'discord-ui-modal-dispatch-{self.id}')
 
     def to_dict(self) -> Dict[str, Any]:
         payload = {

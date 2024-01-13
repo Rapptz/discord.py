@@ -39,6 +39,7 @@ class Role(TypedDict):
     permissions: str
     managed: bool
     mentionable: bool
+    flags: int
     icon: NotRequired[Optional[str]]
     unicode_emoji: NotRequired[Optional[str]]
     tags: NotRequired[RoleTags]
@@ -47,4 +48,7 @@ class Role(TypedDict):
 class RoleTags(TypedDict, total=False):
     bot_id: Snowflake
     integration_id: Snowflake
+    subscription_listing_id: Snowflake
     premium_subscriber: None
+    available_for_purchase: None
+    guild_connections: None

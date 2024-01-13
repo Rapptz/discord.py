@@ -41,7 +41,7 @@ if TYPE_CHECKING:
 
     from .state import ConnectionState
     from datetime import datetime
-    from .types.message import PartialEmoji as PartialEmojiPayload
+    from .types.emoji import Emoji as EmojiPayload, PartialEmoji as PartialEmojiPayload
     from .types.activity import ActivityEmoji
 
 
@@ -94,7 +94,7 @@ class PartialEmoji(_EmojiTag, AssetMixin):
 
     __slots__ = ('animated', 'name', 'id', '_state')
 
-    _CUSTOM_EMOJI_RE = re.compile(r'<?(?P<animated>a)?:?(?P<name>[A-Za-z0-9\_]+):(?P<id>[0-9]{13,20})>?')
+    _CUSTOM_EMOJI_RE = re.compile(r'<?(?:(?P<animated>a)?:)?(?P<name>[A-Za-z0-9\_]+):(?P<id>[0-9]{13,20})>?')
 
     if TYPE_CHECKING:
         id: Optional[int]
@@ -148,16 +148,24 @@ class PartialEmoji(_EmojiTag, AssetMixin):
 
         return cls(name=value, id=None, animated=False)
 
-    def to_dict(self) -> Dict[str, Any]:
-        o: Dict[str, Any] = {'name': self.name}
-        if self.id:
-            o['id'] = self.id
+    def to_dict(self) -> EmojiPayload:
+        payload: EmojiPayload = {
+            'id': self.id,
+            'name': self.name,
+        }
+
         if self.animated:
-            o['animated'] = self.animated
-        return o
+            payload['animated'] = self.animated
+
+        return payload
 
     def _to_partial(self) -> PartialEmoji:
         return self
+
+    def _to_forum_tag_payload(self) -> Dict[str, Any]:
+        if self.id is not None:
+            return {'emoji_id': self.id, 'emoji_name': None}
+        return {'emoji_id': None, 'emoji_name': self.name}
 
     @classmethod
     def with_state(
@@ -173,11 +181,13 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         return self
 
     def __str__(self) -> str:
+        # Coerce empty names to _ so it renders in the client regardless of having no name
+        name = self.name or '_'
         if self.id is None:
-            return self.name
+            return name
         if self.animated:
-            return f'<a:{self.name}:{self.id}>'
-        return f'<:{self.name}:{self.id}>'
+            return f'<a:{name}:{self.id}>'
+        return f'<:{name}:{self.id}>'
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} animated={self.animated} name={self.name!r} id={self.id}>'
@@ -233,6 +243,26 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         return f'{Asset.BASE}/emojis/{self.id}.{fmt}'
 
     async def read(self) -> bytes:
+        """|coro|
+
+        Retrieves the content of this asset as a :class:`bytes` object.
+
+        Raises
+        ------
+        DiscordException
+            There was no internal connection state.
+        HTTPException
+            Downloading the asset failed.
+        NotFound
+            The asset was deleted.
+        ValueError
+            The PartialEmoji is not a custom emoji.
+
+        Returns
+        -------
+        :class:`bytes`
+            The content of the asset.
+        """
         if self.is_unicode_emoji():
             raise ValueError('PartialEmoji is not a custom emoji')
 

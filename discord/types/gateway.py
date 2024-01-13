@@ -25,7 +25,9 @@ DEALINGS IN THE SOFTWARE.
 from typing import List, Literal, Optional, TypedDict
 from typing_extensions import NotRequired, Required
 
+from .automod import AutoModerationAction, AutoModerationRuleTriggerType
 from .activity import PartialPresenceUpdate
+from .sku import Entitlement
 from .voice import GuildVoiceState
 from .integration import BaseIntegration, IntegrationApplication
 from .role import Role
@@ -42,6 +44,7 @@ from .guild import Guild, UnavailableGuild
 from .user import User
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
+from .audit_log import AuditLogEntry
 
 
 class SessionStartLimit(TypedDict):
@@ -60,17 +63,13 @@ class GatewayBot(Gateway):
     session_start_limit: SessionStartLimit
 
 
-class ShardInfo(TypedDict):
-    shard_id: int
-    shard_count: int
-
-
 class ReadyEvent(TypedDict):
     v: int
     user: User
     guilds: List[UnavailableGuild]
     session_id: str
-    shard: ShardInfo
+    resume_gateway_url: str
+    shard: List[int]  # shard_id, num_shards
     application: GatewayAppInfo
 
 
@@ -102,6 +101,9 @@ class MessageReactionAddEvent(TypedDict):
     emoji: PartialEmoji
     member: NotRequired[MemberWithUser]
     guild_id: NotRequired[Snowflake]
+    message_author_id: NotRequired[Snowflake]
+    burst: bool
+    burst_colors: NotRequired[List[str]]
 
 
 class MessageReactionRemoveEvent(TypedDict):
@@ -110,6 +112,7 @@ class MessageReactionRemoveEvent(TypedDict):
     message_id: Snowflake
     emoji: PartialEmoji
     guild_id: NotRequired[Snowflake]
+    burst: bool
 
 
 class MessageReactionRemoveAllEvent(TypedDict):
@@ -218,6 +221,7 @@ class GuildMemberUpdateEvent(TypedDict):
     user: User
     avatar: Optional[str]
     joined_at: Optional[str]
+    flags: int
     nick: NotRequired[str]
     premium_since: NotRequired[Optional[str]]
     deaf: NotRequired[bool]
@@ -326,3 +330,24 @@ class TypingStartEvent(TypedDict):
     timestamp: int
     guild_id: NotRequired[Snowflake]
     member: NotRequired[MemberWithUser]
+
+
+class AutoModerationActionExecution(TypedDict):
+    guild_id: Snowflake
+    action: AutoModerationAction
+    rule_id: Snowflake
+    rule_trigger_type: AutoModerationRuleTriggerType
+    user_id: Snowflake
+    channel_id: NotRequired[Snowflake]
+    message_id: NotRequired[Snowflake]
+    alert_system_message_id: NotRequired[Snowflake]
+    content: str
+    matched_keyword: Optional[str]
+    matched_content: Optional[str]
+
+
+class GuildAuditLogEntryCreate(AuditLogEntry):
+    guild_id: Snowflake
+
+
+EntitlementCreateEvent = EntitlementUpdateEvent = EntitlementDeleteEvent = Entitlement

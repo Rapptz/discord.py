@@ -40,7 +40,7 @@ class PermissionOverwrite(TypedDict):
     deny: str
 
 
-ChannelTypeWithoutThread = Literal[0, 1, 2, 3, 4, 5, 6, 13, 15]
+ChannelTypeWithoutThread = Literal[0, 1, 2, 3, 4, 5, 6, 13, 15, 16]
 ChannelType = Union[ChannelTypeWithoutThread, ThreadType]
 
 
@@ -66,6 +66,7 @@ class _BaseTextChannel(_BaseGuildChannel, total=False):
     last_message_id: Optional[Snowflake]
     last_pin_timestamp: str
     rate_limit_per_user: int
+    default_thread_rate_limit_per_user: int
     default_auto_archive_duration: ThreadArchiveDuration
 
 
@@ -117,25 +118,65 @@ class ThreadChannel(_BaseChannel):
     last_message_id: NotRequired[Optional[Snowflake]]
     last_pin_timestamp: NotRequired[str]
     flags: NotRequired[int]
+    applied_tags: NotRequired[List[Snowflake]]
 
 
-class ForumChannel(_BaseTextChannel):
+class DefaultReaction(TypedDict):
+    emoji_id: Optional[Snowflake]
+    emoji_name: Optional[str]
+
+
+class ForumTag(TypedDict):
+    id: Snowflake
+    name: str
+    moderated: bool
+    emoji_id: Optional[Snowflake]
+    emoji_name: Optional[str]
+
+
+ForumOrderType = Literal[0, 1]
+ForumLayoutType = Literal[0, 1, 2]
+
+
+class _BaseForumChannel(_BaseTextChannel):
+    available_tags: List[ForumTag]
+    default_reaction_emoji: Optional[DefaultReaction]
+    default_sort_order: Optional[ForumOrderType]
+    default_forum_layout: NotRequired[ForumLayoutType]
+    flags: NotRequired[int]
+
+
+class ForumChannel(_BaseForumChannel):
     type: Literal[15]
 
 
-GuildChannel = Union[TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel, ForumChannel]
+class MediaChannel(_BaseForumChannel):
+    type: Literal[16]
 
 
-class DMChannel(_BaseChannel):
+GuildChannel = Union[
+    TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, ThreadChannel, ForumChannel, MediaChannel
+]
+
+
+class _BaseDMChannel(_BaseChannel):
     type: Literal[1]
     last_message_id: Optional[Snowflake]
+
+
+class DMChannel(_BaseDMChannel):
     recipients: List[PartialUser]
+
+
+class InteractionDMChannel(_BaseDMChannel):
+    recipients: NotRequired[List[PartialUser]]
 
 
 class GroupDMChannel(_BaseChannel):
     type: Literal[3]
     icon: Optional[str]
     owner_id: Snowflake
+    recipients: List[PartialUser]
 
 
 Channel = Union[GuildChannel, DMChannel, GroupDMChannel]

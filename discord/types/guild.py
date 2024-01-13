@@ -56,13 +56,19 @@ VerificationLevel = Literal[0, 1, 2, 3, 4]
 NSFWLevel = Literal[0, 1, 2, 3]
 PremiumTier = Literal[0, 1, 2, 3]
 GuildFeature = Literal[
+    'ANIMATED_BANNER',
     'ANIMATED_ICON',
+    'APPLICATION_COMMAND_PERMISSIONS_V2',
+    'AUTO_MODERATION',
     'BANNER',
-    'COMMERCE',
     'COMMUNITY',
+    'CREATOR_MONETIZABLE_PROVISIONAL',
+    'CREATOR_STORE_PAGE',
+    'DEVELOPER_SUPPORT_SERVER',
     'DISCOVERABLE',
     'FEATURABLE',
     'INVITE_SPLASH',
+    'INVITES_DISABLED',
     'MEMBER_VERIFICATION_GATE_ENABLED',
     'MONETIZATION_ENABLED',
     'MORE_EMOJI',
@@ -70,15 +76,15 @@ GuildFeature = Literal[
     'NEWS',
     'PARTNERED',
     'PREVIEW_ENABLED',
-    'PRIVATE_THREADS',
     'ROLE_ICONS',
-    'SEVEN_DAY_THREAD_ARCHIVE',
-    'THREE_DAY_THREAD_ARCHIVE',
+    'ROLE_SUBSCRIPTIONS_AVAILABLE_FOR_PURCHASE',
+    'ROLE_SUBSCRIPTIONS_ENABLED',
     'TICKETED_EVENTS_ENABLED',
     'VANITY_URL',
     'VERIFIED',
     'VIP_REGIONS',
     'WELCOME_SCREEN_ENABLED',
+    'RAID_ALERTS_DISABLED',
 ]
 
 
@@ -154,6 +160,10 @@ class GuildWithCounts(Guild, _GuildPreviewUnique):
 
 class GuildPrune(TypedDict):
     pruned: Optional[int]
+
+
+class GuildMFALevel(TypedDict):
+    level: MFALevel
 
 
 class ChannelPositionUpdate(TypedDict):

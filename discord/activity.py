@@ -74,9 +74,7 @@ type: int
 sync_id: str
 session_id: str
 flags: int
-buttons: list[dict]
-    label: str (max: 32)
-    url: str (max: 512)
+buttons: list[str (max: 32)]
 
 There are also activity flags which are mostly uninteresting for the library atm.
 
@@ -96,7 +94,6 @@ if TYPE_CHECKING:
         ActivityTimestamps,
         ActivityParty,
         ActivityAssets,
-        ActivityButton,
     )
 
     from .state import ConnectionState
@@ -165,6 +162,10 @@ class Activity(BaseActivity):
         The user's current state. For example, "In Game".
     details: Optional[:class:`str`]
         The detail of the user's current activity.
+    platform: Optional[:class:`str`]
+        The user's current platform.
+
+        .. versionadded:: 2.4
     timestamps: :class:`dict`
         A dictionary of timestamps. It contains the following optional keys:
 
@@ -187,12 +188,8 @@ class Activity(BaseActivity):
 
         - ``id``: A string representing the party ID.
         - ``size``: A list of up to two integer elements denoting (current_size, maximum_size).
-    buttons: List[:class:`dict`]
-        An list of dictionaries representing custom buttons shown in a rich presence.
-        Each dictionary contains the following keys:
-
-        - ``label``: A string representing the text shown on the button.
-        - ``url``: A string representing the URL opened upon clicking the button.
+    buttons: List[:class:`str`]
+        A list of strings representing the labels of custom buttons shown in a rich presence.
 
         .. versionadded:: 2.0
 
@@ -203,8 +200,8 @@ class Activity(BaseActivity):
     __slots__ = (
         'state',
         'details',
-        '_created_at',
         'timestamps',
+        'platform',
         'assets',
         'party',
         'flags',
@@ -223,6 +220,7 @@ class Activity(BaseActivity):
         self.state: Optional[str] = kwargs.pop('state', None)
         self.details: Optional[str] = kwargs.pop('details', None)
         self.timestamps: ActivityTimestamps = kwargs.pop('timestamps', {})
+        self.platform: Optional[str] = kwargs.pop('platform', None)
         self.assets: ActivityAssets = kwargs.pop('assets', {})
         self.party: ActivityParty = kwargs.pop('party', {})
         self.application_id: Optional[int] = _get_as_snowflake(kwargs, 'application_id')
@@ -231,7 +229,7 @@ class Activity(BaseActivity):
         self.flags: int = kwargs.pop('flags', 0)
         self.sync_id: Optional[str] = kwargs.pop('sync_id', None)
         self.session_id: Optional[str] = kwargs.pop('session_id', None)
-        self.buttons: List[ActivityButton] = kwargs.pop('buttons', [])
+        self.buttons: List[str] = kwargs.pop('buttons', [])
 
         activity_type = kwargs.pop('type', -1)
         self.type: ActivityType = (
@@ -246,6 +244,7 @@ class Activity(BaseActivity):
             ('type', self.type),
             ('name', self.name),
             ('url', self.url),
+            ('platform', self.platform),
             ('details', self.details),
             ('application_id', self.application_id),
             ('session_id', self.session_id),
@@ -292,38 +291,38 @@ class Activity(BaseActivity):
 
     @property
     def large_image_url(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity if applicable."""
-        if self.application_id is None:
-            return None
-
+        """Optional[:class:`str`]: Returns a URL pointing to the large image asset of this activity, if applicable."""
         try:
             large_image = self.assets['large_image']
         except KeyError:
             return None
         else:
-            return Asset.BASE + f'/app-assets/{self.application_id}/{large_image}.png'
+            return self._image_url(large_image)
 
     @property
     def small_image_url(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity if applicable."""
-        if self.application_id is None:
-            return None
-
+        """Optional[:class:`str`]: Returns a URL pointing to the small image asset of this activity, if applicable."""
         try:
             small_image = self.assets['small_image']
         except KeyError:
             return None
         else:
-            return Asset.BASE + f'/app-assets/{self.application_id}/{small_image}.png'
+            return self._image_url(small_image)
+
+    def _image_url(self, image: str) -> Optional[str]:
+        if image.startswith('mp:'):
+            return f'https://media.discordapp.net/{image[3:]}'
+        elif self.application_id is not None:
+            return Asset.BASE + f'/app-assets/{self.application_id}/{image}.png'
 
     @property
     def large_image_text(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns the large image asset hover text of this activity if applicable."""
+        """Optional[:class:`str`]: Returns the large image asset hover text of this activity, if applicable."""
         return self.assets.get('large_text', None)
 
     @property
     def small_image_text(self) -> Optional[str]:
-        """Optional[:class:`str`]: Returns the small image asset hover text of this activity if applicable."""
+        """Optional[:class:`str`]: Returns the small image asset hover text of this activity, if applicable."""
         return self.assets.get('small_text', None)
 
 
@@ -359,13 +358,30 @@ class Game(BaseActivity):
     -----------
     name: :class:`str`
         The game's name.
+    platform: Optional[:class:`str`]
+        Where the user is playing from (ie. PS5, Xbox).
+
+        .. versionadded:: 2.4
+
+    assets: :class:`dict`
+        A dictionary representing the images and their hover text of a game.
+        It contains the following optional keys:
+
+        - ``large_image``: A string representing the ID for the large image asset.
+        - ``large_text``: A string representing the text when hovering over the large image asset.
+        - ``small_image``: A string representing the ID for the small image asset.
+        - ``small_text``: A string representing the text when hovering over the small image asset.
+
+        .. versionadded:: 2.4
     """
 
-    __slots__ = ('name', '_end', '_start')
+    __slots__ = ('name', '_end', '_start', 'platform', 'assets')
 
     def __init__(self, name: str, **extra: Any) -> None:
         super().__init__(**extra)
         self.name: str = name
+        self.platform: Optional[str] = extra.get('platform')
+        self.assets: ActivityAssets = extra.get('assets', {}) or {}
 
         try:
             timestamps: ActivityTimestamps = extra['timestamps']
@@ -412,13 +428,13 @@ class Game(BaseActivity):
         if self._end:
             timestamps['end'] = self._end
 
-        # fmt: off
         return {
             'type': ActivityType.playing.value,
             'name': str(self.name),
-            'timestamps': timestamps
+            'timestamps': timestamps,
+            'platform': str(self.platform) if self.platform else None,
+            'assets': self.assets,
         }
-        # fmt: on
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, Game) and other.name == self.name
@@ -516,14 +532,12 @@ class Streaming(BaseActivity):
             return name[7:] if name[:7] == 'twitch:' else None
 
     def to_dict(self) -> Dict[str, Any]:
-        # fmt: off
         ret: Dict[str, Any] = {
             'type': ActivityType.streaming.value,
             'name': str(self.name),
             'url': str(self.url),
-            'assets': self.assets
+            'assets': self.assets,
         }
-        # fmt: on
         if self.details:
             ret['details'] = self.details
         return ret
@@ -712,7 +726,7 @@ class Spotify:
 
 
 class CustomActivity(BaseActivity):
-    """Represents a Custom activity from Discord.
+    """Represents a custom activity from Discord.
 
     .. container:: operations
 
@@ -744,10 +758,12 @@ class CustomActivity(BaseActivity):
 
     __slots__ = ('name', 'emoji', 'state')
 
-    def __init__(self, name: Optional[str], *, emoji: Optional[PartialEmoji] = None, **extra: Any) -> None:
+    def __init__(
+        self, name: Optional[str], *, emoji: Optional[Union[PartialEmoji, Dict[str, Any], str]] = None, **extra: Any
+    ) -> None:
         super().__init__(**extra)
         self.name: Optional[str] = name
-        self.state: Optional[str] = extra.pop('state', None)
+        self.state: Optional[str] = extra.pop('state', name)
         if self.name == 'Custom Status':
             self.name = self.state
 
@@ -833,7 +849,7 @@ def create_activity(data: Optional[ActivityPayload], state: ConnectionState) -> 
         return Game(**data)
     elif game_type is ActivityType.custom:
         try:
-            name = data.pop('name')
+            name = data.pop('name')  # type: ignore
         except KeyError:
             ret = Activity(**data)
         else:
