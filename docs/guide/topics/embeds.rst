@@ -3,10 +3,6 @@
 .. _guide_topic_embeds:
 
 
-.. todo
-    - cover footer
-    - cover timestamp
-
 Embeds
 =======
 
@@ -112,6 +108,7 @@ The :class:`Embed` class allows usage of the `factory` pattern.
 
     We will discover this as we go through the guide.
 
+
 Markdown
 ~~~~~~~~~
 
@@ -211,7 +208,7 @@ Let's see what happens when we set it to ``False`` for the ``Wind`` field.
 
 .. code-block:: python3
 
-    my_weather_embeds.add_field(name="Wind", value="4 mph", inline=False)
+    my_weather_embed.add_field(name="Wind", value="4 mph", inline=False)
 
 .. image:: /images/guide/topics/embeds/inline_field_embed.png
     :scale: 50%
@@ -316,3 +313,178 @@ Since we called our file ``thumbnail.png``, we will set the ``url`` parameter to
     .. code-block:: python3
 
         await message.channel.send(embed=my_weather_embed, file=my_file)
+
+Footer
+~~~~~~
+
+Embeds can also have a footer.
+This is a small section of information that appears at the bottom of the embed, it can contain an icon, a name, and the timestamp but that's for later.
+
+Let's set the footer of the embed to "Powered by OpenWeatherMap"
+
+.. code-block:: python3
+
+    my_weather_embed.set_footer(
+        text="Powered by OpenWeatherMap",
+    )
+
+That will look like this:
+
+.. image:: /images/guide/topics/embeds/footer_embed_1.png
+    :scale: 50%
+
+It appears as the last thing in the embed.
+
+Just like with the author, we can also set the icon of the footer.
+The ``icon_url`` keyword-only argument of :meth:`my_weather_embed.set_footer() <Embed.set_footer>` accepts a string, or anything that can be cast to a string, as the URL.
+
+In this example, we set it to something that matches the ``text``, the logo of OpenWeatherMap.
+
+.. code-block:: python3
+    :emphasize-lines: 3
+
+    my_weather_embed.set_footer(
+        text="Powered by OpenWeatherMap",
+        icon_url="https://openweathermap.org/themes/openweathermap/assets/vendor/owm/img/icons/logo_32x32.png",
+    )
+
+Here is how it looks:
+
+.. image:: /images/guide/topics/embeds/footer_embed.png
+    :scale: 50%
+
+
+Timestamp
+~~~~~~~~~
+
+There is another parameter of the constructor that we haven't covered yet, ``timestamp``.
+This is an aware datetime. If a naive datetime is passed, it is converted to an aware datetime with the local timezone.
+
+Let's set the timestamp of the embed to the current time.
+
+.. code-block:: python3
+
+    my_weather_embed = discord.Embed(
+        colour=discord.Colour.yellow(),
+        title="Weather in San Francisco, CA",
+        description="Clear with a high of 59 degrees Fahrenheit.",
+        timestamp=discord.utils.utcnow(),
+    )
+
+.. image:: /images/guide/topics/embeds/timestamp_embed_1.png
+    :scale: 50%
+
+But that's with the footer, what if we remove that?
+
+.. image:: /images/guide/topics/embeds/timestamp_embed.png
+    :scale: 50%
+
+As you can see, the timestamp is still there, but without the middle dot between the footer text and the timestamp that discord adds.
+
+The timestamp is translated to the user's local time, and it is displayed in the same format as the user's local time format.
+
+Getting
+-------
+
+Now that we have constructed our embed, let's see how we can get the values from it.
+
+Let's start by getting the title of the embed.
+
+We can do this by accessing the :attr:`Embed.title` attribute.
+
+.. code-block:: python3
+
+    print(my_weather_embed.title)
+
+    # Weather in San Francisco, CA
+
+That was easy!
+
+Now, let's get the footer text.
+
+.. code-block:: python3
+
+    print(my_weather_embed.footer.text)
+
+    # Powered by OpenWeatherMap
+
+But what if we remove the footer and try again?
+
+.. code-block:: python3
+
+    my_weather_embed.remove_footer()
+
+    print(my_weather_embed.footer.text)
+
+    # None
+
+As you can see, it returns ``None``, this is because attribute like ``author`` and ``footer`` return a special object that returns ``None`` when the attribute is not set.
+
+This is the same for all other attributes that got more than one value like ``fields``, ``image``, etc.
+
+Setters
+-------
+
+You may have noticed that we have been using keyword argument to set the title, description, etc. of the embed. But 
+those can also be set after the embed has been constructed.
+
+Let's change the title of the embed by setting the :attr:`Embed.title` attribute.
+
+.. code-block:: python3
+
+    my_weather_embed.title = "San Francisco (CA) Weather"
+
+And see how that looks:
+
+.. image:: /images/guide/topics/embeds/setters_embed_title.png
+    :scale: 50%
+
+All possible setters are listed below:
+
+- ``title``
+- ``description``
+- ``url``
+- ``colour`` / ``color``
+- ``timestamp``
+
+
+Other Methods
+-------------
+
+There are a few other methods that may be useful when working with embeds.
+
+.. method:: Embed.from_dict()
+    :noindex:
+    
+    Creates an embed from a dictionary.
+
+    .. code-block:: python3
+
+        embed_dict = {
+            "title": "Hello, World!",
+            "description": "This bot is running on discord.py!",
+            "colour": 0x00FF00
+        }
+
+        my_embed = discord.Embed.from_dict(embed_dict)
+
+    .. note::
+            
+            The dict must match the structure of the Embed from Discord's API.
+            You can find the structure of the Embed in the ':ddocs:`resources/channel#embed-object`'
+        
+
+.. method:: Embed.to_dict()
+    :noindex:
+
+    Converts the embed to a dictionary.
+
+    .. code-block:: python3
+
+        my_embed_dict = my_embed.to_dict()
+        print(my_embed_dict)
+
+        # {'title': 'Hello, World!', 'description': 'This bot is running on discord.py!', 'type': 'rich', 'color': 65280}
+
+Other can be found in the :class:`Embed` documentation.
+
