@@ -71,6 +71,17 @@ Let's see how that looks so far if we send it.
 .. image:: /images/guide/topics/embeds/simple_embed_2.png
     :scale: 38%
 
+You can also hyperlink the title using the ``url`` parameter of the constructor:
+
+.. code-block:: python3
+    :emphasize-lines: 3
+
+    my_embed = discord.Embed(
+        colour=discord.Colour.purple(),
+        title="Hello, World!",
+        url="https://google.com",
+    )
+
 So close! Now, all we need to do is add the description.
 
 .. code-block:: python3
@@ -78,11 +89,12 @@ So close! Now, all we need to do is add the description.
     my_embed = discord.Embed(
         colour=discord.Colour.purple(),
         title="Hello, World!",
-        description="This bot is running on discord.py!"
+        description="This bot is running on discord.py!",
+        url="https://discord.gg/invite/dpy",
     )
 
 .. image:: /images/guide/topics/embeds/simple_embed_final.png
-    :scale: 38%
+    :scale: 50%
 
 And that's it!
 
@@ -93,6 +105,7 @@ To summarise, we call the constructor for :class:`Embed` and provide the followi
 - ``colour`` to set the colour of the embed.
 - ``title`` to set the title of the embed.
 - ``description`` to set the description of the embed.
+- ``url`` to hyperlink the title of the embed.
 
 Let's take a look at what else we can add to an embed.
 
@@ -115,8 +128,7 @@ Markdown
 An embed's description and fields allow you to use markdown, so
 that includes **this**, *that*, and even ``this`` -- read more about it at :ref:`_guide_topic_markdown`.
 
-Usually, in a message's content it is not possible to send masked links, but with
-embeds allow you to include them! So you can do little tricks like:
+Just like masked links in the message content, you can also hyperlink text in the description and fields of an embed:
 
 .. code-block:: python3
 
@@ -143,6 +155,7 @@ It is also possible to add tooltips to hyperlinks, which are displayed when you 
 
 .. image:: /images/guide/topics/embeds/hyperlink_tooltip_description_embed.png
     :scale: 38%
+
 
 Fields
 ~~~~~~~
