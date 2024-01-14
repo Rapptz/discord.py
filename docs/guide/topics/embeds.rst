@@ -73,8 +73,8 @@ First, we imported the ``discord`` module. This is required to access the ``Embe
 Next, we created an instance of the ``Embed`` class. This is the object that will contain the basic fields of our embed.
 
 The ``title`` and ``description`` fields are pretty self-explanatory. The ``colour`` field is a bit more interesting.
-This field is used to set the colour of the left-hand side of the embed. We used the ``blurple`` classmethod on the 
-``Colour`` class that discord.py provides to get the blurple colour. It can also be set to an integer
+This field is used to set the colour of the left-hand side of the embed. We used the :meth:`discord.Colour.blurple()` classmethod on the 
+:class:`discord.Colour` class that discord.py provides to get the blurple colour. It can also be set to an integer
 representing a hexadecimal colour code like ``0x5865f2`` or ``5793266``.
 
 .. note::
@@ -398,34 +398,63 @@ Restrictions and limits
 
 There are a few restrictions and limits that you should be aware of when working with embeds.
 
-Markdown support is limited
+Markdown support
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Markdown like **this**, *that*, and even ``this`` is supported in embeds, but only in certain fields.
 
 More about this can be found at :ref:`_guide_topic_markdown`.
 
-All fields must be strings
+All strings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Except for ``timestamp`` and ``colour`` which must be a ``datetime.datetime`` and ``discord.Colour`` / ``int`` 
+All values passed to the embed must be a string.
+
+Except for ``timestamp`` and ``colour`` which must be a ``datetime.datetime`` and :class:`Colour` / ``int`` 
 object respectively.
 
 discord.py attempts to convert all values given to string using ``str()``.
 This can be confusing for beginning users of Python as they may not be aware of this, most objects have a ``__str__`` method that 
-returns a string representation of the object. Most objects in discord.py also do this, like :class:`discord.Asset`, that is returned from
-attributes like :attr:`discord.User.avatar` and :attr:`discord.Guild.icon`, calling ``str()`` on any of those returns the URL of the asset.
-That is precisely why you can pass these attributes to the ``url`` or ``icon_url`` parameter of the methods or :attr:`discord.User` to ``name`` in
-:meth:`embed.set_author() <Embed.set_author>`. it will work but it's not encouraged to do so.
+returns a string representation of the object. Most objects in discord.py also do this, like :class:`Asset`, that is returned from
+attributes like :attr:`User.avatar` and :attr:`Guild.icon`, calling ``str()`` on any of those returns the URL of the asset.
+That is precisely why you can pass these attributes to the ``url`` or ``icon_url`` parameter of the methods or :attr:`User` to ``name`` in
+:meth:`embed.set_author() <Embed.set_author>`. It will work but it's not encouraged to do so.
 
 Try it out:
 
 .. code-block:: python
 
-    embed.set_author(name=bot.user, icon_url=bot.user.avatar)
+    embed.set_author(name=bot.user, icon_url=bot.user.display_avatar)
 
+[EXPERIMENTAL]
+Empty spaces are not allowed but it can be tricked with a zero-width space (ZWS) character, ``\u200b``.
 
-Each field has a character limit
+Let's make a staircase of fields because why not?
+
+.. code-block:: python
+
+    embed = discord.Embed()
+    embed.add_field(name="Step 1", value="\u200b", inline=False)
+    embed.add_field(name="\u200b", value="\u200b")
+    embed.add_field(name="Step 2", value="\u200b")
+    embed.add_field(name="\u200b", value="\u200b")
+    embed.add_field(name="\u200b", value="\u200b")
+    embed.add_field(name="\u200b", value="\u200b")
+    embed.add_field(name="Step 3", value="\u200b")
+    embed.add_field(name="\u200b", value="\u200b")
+    embed.add_field(name="Step 4", value="\u200b")
+    embed.add_field(name="\u200b", value="\u200b")
+    embed.add_field(name="Step 5", value="\u200b", inline=False)
+
+    await channel.send(embed=embed)
+
+.. image:: /images/guide/topics/embeds/zws_embed_1.png
+    :scale: 50%
+
+[EXPERIMENTAL]
+
+Character limits
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Unfortunately, listing all the limits here would get the fastly outdated, so you can find them in the :ddocs:`API documentation for Embed<resources/channel#embed-object>`.
+Each field has its own character limit. Unfortunately, listing all the limits here would get fastly
+outdated, but you can find them in the :ddocs:`API documentation<resources/channel#embed-object>`.
