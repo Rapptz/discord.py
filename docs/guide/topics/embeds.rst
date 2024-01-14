@@ -1,3 +1,4 @@
+:orphan:
 .. currentmodule:: discord
 
 .. _guide_topic_embeds:
@@ -6,459 +7,354 @@
 Embeds
 =======
 
-Embeds are a fundamental part of Discord's message format.
+Embeds are special message that are formatted to embed rich content within. You may have ever sent a link to a server and
+seen one appear with a brief description and maybe an image or video.
 
-They allow you to add additional content into your messages.
 
-Discord typically uses embeds to display information related to links:
 
-.. image:: /images/guide/topics/embeds/link_embed.png
+.. |link_embed_google| image:: /images/guide/topics/embeds/link_embed_google.png
+   :scale: 38%
+   :target: https://google.com/search?q=discord%20inc
+.. |link_embed_discord| image:: /images/guide/topics/embeds/link_embed_discord.png
+   :scale: 38%
+   :target: https://discord.com
+.. |link_embed_youtube| image:: /images/guide/topics/embeds/link_embed_youtube.png
+   :scale: 38%
+   :target: https://www.youtube.com/watch?v=TJ13BA3-NR4&
+.. |link_embed_github| image:: /images/guide/topics/embeds/link_embed_github.png
+   :scale: 38%
+   :target: https://github.com/Rapptz/discord.py
+
++---------------------+----------------------+----------------------+---------------------+
+| |link_embed_google| | |link_embed_discord| | |link_embed_youtube| | |link_embed_github| |
++---------------------+----------------------+----------------------+---------------------+
+
+
+The examples above are just a few common samples of what you seen often around Discord, these are automatically generated 
+by discord based on the netadata from the site that is being linked but you don't need to remember all of this.
+
+Internally, an embed is represented with a JSON payload by the API. discord.py offers a 
+builder-esque interface over this payload to help make the process more straightforward and intuitive in Python.
+
+Let's take a look at a basic example of using the builder:
+
+.. code-block:: python
+
+    import discord
+
+    embed = discord.Embed(
+        title = "Hello World",
+        description = "This is a description",
+        colour = discord.Colour.blurple()
+    )
+
+And then we can send it to a channel using the ``embed`` keyword-only argument:
+
+.. code-block:: python
+
+    await channel.send(embed=embed)
+
+On Discord, this will look like:
+
+.. image:: /images/guide/topics/embeds/basic_embed.png
     :scale: 50%
 
-Bots and webhooks alike are also able to send embeds without any links in the message content:
+Let's break down what we did.
 
-.. image:: /images/guide/topics/embeds/simple_embed.png
-    :scale: 50%
-
-Defining an Embed
-------------------
-
-Embeds are fairly straightforward to define in discord.py.
-
-Let's try recreating the image above.
-First, we'll need to construct a :class:`Embed` object.
-
-.. code-block:: python3
-
-    my_embed = discord.Embed()
-
-We should set the colour of the embed next.
-
-Seems like it's conveniently the same colour as :meth:`Colour.purple`!
-So, all we need to do is provide it to the ``colour`` parameter of the constructor.
-
-.. code-block:: python3
-    :emphasize-lines: 2
-
-    my_embed = discord.Embed(
-        colour=discord.Colour.purple()
-    )
-
-.. tip::
-
-    There is also a ``color`` parameter, and respective aliases for ``discord.Color``.
-    In case you prefer that spelling.
-
-Next, we'll set the title of the embed.
-
-Just like ``colour``, it's another parameter of the constructor, called ``title``.
-
-.. code-block:: python3
-    :emphasize-lines: 3
-
-    my_embed = discord.Embed(
-        colour=discord.Colour.purple(),
-        title="Hello, World!",
-    )
-
-Let's see how that looks so far if we send it.
-
-.. code-block:: python3
-
-    await channel.send(embed=my_embed)
-
-
-.. image:: /images/guide/topics/embeds/simple_embed_2.png
-    :scale: 38%
-
-You can also hyperlink the title using the ``url`` parameter of the constructor:
-
-.. code-block:: python3
-    :emphasize-lines: 3
-
-    my_embed = discord.Embed(
-        colour=discord.Colour.purple(),
-        title="Hello, World!",
-        url="https://google.com",
-    )
-
-So close! Now, all we need to do is add the description.
-
-.. code-block:: python3
-
-    my_embed = discord.Embed(
-        colour=discord.Colour.purple(),
-        title="Hello, World!",
-        description="This bot is running on discord.py!",
-        url="https://discord.gg/invite/dpy",
-    )
-
-.. image:: /images/guide/topics/embeds/simple_embed_final.png
-    :scale: 50%
-
-And that's it!
-
-As you can see, the interface that discord.py provides is essentially a direct mapping of what you see in the Discord client.
-
-To summarise, we call the constructor for :class:`Embed` and provide the following keyword arguments:
-
-- ``colour`` to set the colour of the embed.
-- ``title`` to set the title of the embed.
-- ``description`` to set the description of the embed.
-- ``url`` to hyperlink the title of the embed.
-
-Let's take a look at what else we can add to an embed.
-
-Using Embed Components
------------------------
-
-The :class:`Embed` class allows usage of the `factory` pattern.
-
-.. hint::
-
-    This means that certain methods will return a modified instance of the embed class,
-    so you can chain method calls.
-
-    We will discover this as we go through the guide.
-
-
-Markdown
-~~~~~~~~~
-
-An embed's description and fields allow you to use markdown, so
-that includes **this**, *that*, and even ``this`` -- read more about it at :ref:`_guide_topic_markdown`.
-
-Just like masked links in the message content, you can also hyperlink text in the description and fields of an embed:
-
-.. code-block:: python3
-
-    my_embed.description = """**Hello**! My name is Danny!
-    Check out my GitHub: [click here!](https://github.com/Rapptz)
-    I have a page dedicated to [`C++ Tutorials`](https://rapptz.github.io/cpptuts)!
-    """
-
-.. image:: /images/guide/topics/embeds/hyperlink_description_embed.png
-    :scale: 38%
-
-.. tip::
-
-    Hyperlinks in markdown follow a specific format: ``[text](link)``.
-
-It is also possible to add tooltips to hyperlinks, which are displayed when you hover over the hyperlink.
-
-.. code-block:: python3
-
-    my_embed.description = """**Hello**! My name is Danny!
-    Check out my GitHub: [click here!](https://github.com/Rapptz "My GitHub")
-    I have a page dedicated to [`C++ Tutorials`](https://rapptz.github.io/cpptuts)!
-    """
-
-.. image:: /images/guide/topics/embeds/hyperlink_tooltip_description_embed.png
-    :scale: 38%
-
-
-Fields
-~~~~~~~
-
-Fields can be used to add subsections to an embed, they can contain two articles of information; a name and a value.
-
-Let's make an embed that tells us the weather in San Francisco.
-
-We'll start off with the simple stuff, a colour, a title and a description.
-
-.. code-block:: python3
-
-    my_weather_embed = discord.Embed(
-        colour=discord.Colour.yellow(),
-        title="Weather in San Francisco, CA",
-        description="Clear with a high of 59 degrees Fahrenheit.",
-    )
-
-That will look like this:
-
-.. image:: /images/guide/topics/embeds/field_weather_embed_1.png
-    :scale: 38%
-
-Now, let's add a field that tells us the precipitation in San Francisco.
-
-We should use :meth:`my_weather_embed.add_field() <Embed.add_field>` to add it.
-
-.. code-block:: python3
-
-    my_weather_embed.add_field(name="Precipitation", value="2%")
-
-Let's see what that looks like:
-
-.. image:: /images/guide/topics/embeds/field_weather_embed_2.png
-    :scale: 38%
-
-We should add two more fields to tell us the humidity and wind speed.
-
-.. code-block:: python3
-
-    my_weather_embed.add_field(name="Humidity", value="76%")
-    my_weather_embed.add_field(name="Wind Speed", value="4 mph")
-
-.. image:: /images/guide/topics/embeds/field_weather_embed_3.png
-    :scale: 38%
-
-Alright! Now, what happens if we try to add a fourth field...?
-
-.. image:: /images/guide/topics/embeds/field_weather_embed_4.png
-    :scale: 38%
-
-.. hint::
-
-    In the Discord client, each row of fields can contain a maximum of 3 fields.
-
-If you wanted to, you could try using the ``inline`` keyword-only argument of :meth:`~Embed.add_field`.
-This determines the positioning of the field within the embed.
-
-By default, ``inline`` is set to ``True`` for all fields.
-If it is set to ``False`` it will be displayed in a block, on its own.
-
-Let's see what happens when we set it to ``False`` for the ``Wind`` field.
-
-.. code-block:: python3
-
-    my_weather_embed.add_field(name="Wind", value="4 mph", inline=False)
-
-.. image:: /images/guide/topics/embeds/inline_field_embed.png
-    :scale: 50%
+First, we imported the ``discord`` module. This is required to access the ``Embed`` class.
 
 .. note::
 
-    If you want to set ``inline`` to ``False`` for a field in the middle, such as the
-    ``Humidity`` field, it will appear as such:
+    You can also import the ``Embed`` class directly from the ``discord`` module like so:
 
-    .. image:: /images/guide/topics/embeds/inline_middle_field_embed.png
-        :scale: 50%
+    .. code-block:: python
 
-Author
-~~~~~~~
+        from discord import Embed
 
-Embeds can also have an author.
-This is a small section of information that appears at the top of the embed, it can contain an icon, a name, and a URL, which is opened when the user clicks on the name.
+        embed = Embed(...)
 
-Let's set the author of the embed to "Today's Weather" and link to a Google search of "Weather In San Francisco".
-We'll use :meth:`my_weather_embed.set_author() <Embed.set_author>` to set these values.
+Next, we created an instance of the ``Embed`` class. This is the object that will contain the basic fields of our embed.
 
-.. code-block:: python3
+The ``title`` and ``description`` fields are pretty self-explanatory. The ``colour`` field is a bit more interesting.
+This field is used to set the colour of the left-hand side of the embed. We used the ``blurple`` classmethod on the 
+``Colour`` class that discord.py provides to get the blurple colour. The field can also be set to an integer
+representing a hexadecimal colour code like ``0x5865f2`` or ``5793266``.
 
-    my_weather_embed.set_author(
-        name="Today's Weather",
-        url="https://goo.gl/search/Weather+In+San+Francisco",
+.. note::
+
+    There is another way to set the basic fields of an embed, you can also set them after construction, like so:
+
+    .. code-block:: python
+
+        embed = discord.Embed()
+        embed.title = "Hello World"
+        embed.description = "This is a description"
+        embed.colour = discord.Colour.blurple()
+
+.. tip::
+    
+    US English spellings can use the respective `color` and `Color` aliases instead.
+
+.. note::
+    There are two other basic fields that we didn't show here, ``url`` and ``timestamp``. The ``url`` field is used to set the
+    URL that the title of the embed should be masked with. The ``timestamp`` field is used to set the timestamp of the embed. This
+    field takes a ``datetime.datetime`` aware object.
+
+    Try adding these two fields to the embed the same way we did with the other fields and see what happens.
+
+Finally, we sent the embed to a channel. We used the ``embed`` keyword-only argument to do this. This argument takes an 
+instance of the ``Embed`` class which we created earlier and assigned to the ``embed`` variable.
+
+Fields
+-------
+
+Fields can be used to add subsections to an embed, each one contains two articles of information; a name and a value.
+
+Starting off with a few basic fields.
+
+Since embed fields need both a name and value, a field is added by calling :meth:`embed.add_field()<Embed.add_field>`:
+
+.. code-block:: python
+
+    embed = discord.Embed(
+        title = "Weather in San Francisco, CA",
+        description = "Sunny with a High of 55F and a Low of 49F\nFeels like: 55F",
+        colour = discord.Colour.yellow()
     )
 
-That will like this:
+    embed.add_field(name="Precipitation", value="0%", inline=False)
+    embed.add_field(name="Wind", value="5 mph", inline=True)
+    embed.add_field(name="Humidity", value="96%")
 
-.. image:: /images/guide/topics/embeds/author_embed_1.png
-    :scale: 38%
+    await channel.send(embed=embed)	
 
-It appears like a "subtitle" above the title in the embed.
+Let's see it on Discord:
 
-With :attr:`Embed.author`, we can also set the icon of the author.
-The ``icon_url`` keyword-only argument of :meth:`my_weather_embed.set_author() <Embed.set_author>` accepts a string, or anything that can be cast to a string, as the URL.
-This allows us to conveniently provide an :class:`Asset` instance, which is used throughout the library.
-
-In this example, we will use the :meth:`bot.user.display_avatar <ClientUser.display_avatar>`, an :class:`Asset` instance, for the icon.
-
-.. code-block:: python3
-    :emphasize-lines: 3
-
-    my_weather_embed.set_author(
-        name="Today's Weather",
-        url="https://goo.gl/search/Weather+In+San+Francisco",
-        icon_url=bot.user.display_avatar,
-    )
-
-.. image:: /images/guide/topics/embeds/author_embed.png
+.. image:: /images/guide/topics/embeds/fields_embed.png
     :scale: 50%
 
-This isn't the only place you can add images though. Let's see how else we can incorporate images into our weather embed.
+
+Notice how how the fields are in a certain order, the ``Precipitation`` field is on the top and the other two are next to
+each other on the bottom. This is because of the ``inline`` parameter. This argument takes either ``True`` or ``False`` to 
+determine whether or not the field should be on its own block. This is why the ``Precipitation`` field is on the top. 
+If the parameter is not passed, it's always ``True``.
+
+
+Let's see what happens when we add a fourth field and don't pass the ``inline`` parameter:
+
+.. code-block:: python
+
+    embed = discord.Embed(
+        title = "Weather in San Francisco, CA",
+        description = "Sunny with a High of 55F and a Low of 49F\nFeels like: 55F",
+        colour = discord.Colour.yellow()
+    )
+
+    embed.add_field(name="Precipitation", value="0%", inline=False)
+    embed.add_field(name="Wind", value="5 mph", inline=True)
+    embed.add_field(name="Humidity", value="96%")
+    embed.add_field(
+        name="Fact about this location",
+        value="Golden Gate Park outstrips Central Park"
+    )
+
+    await channel.send(embed=embed)
+
+.. image:: /images/guide/topics/embeds/fields_embed_inline.png
+
+As you can see, the ``Fact about this location`` field was added next to the ``Humidity`` field. This is because we didn't 
+specify the ``ìnline`` argument. If you want to force a field to be on its own row, you can pass ``inline=False`` to 
+the ``add_field`` method. 
+
+Each row of fields can only contain a maximum of 3 fields, depending on the user's display size.
+
+.. note::
+
+    Fields should be displayed in the order they were added, but if you want to change the order, you can use 
+    the :meth:`embed.insert_field_at()<Embed.insert_field_at>` method to insert a field at a specific index or
+    :meth:`embed.set_field_at()<Embed.set_field_at>` to replace a field at a specific index.
+
+    Try using these methods to change the order of the fields in the embed.
+    
+    Remember that the index of the first field is 0, the second field is 1, and so on.
+
+Author & Footer
+----------------
+
+Let's quickly glance over the ``author`` and ``footer`` fields.
+
+The ``author`` field is a the top of the embed containing:
+
+- A name (``name=`` argument, required)
+- An icon URL (``icon_url=`` argument, optional)
+- A hyperlinked URL, masked by the name (``url=`` argument, optional)
+
+The ``footer`` field is at the bottom of the embed containing:
+
+- A text (``text=`` argument, required)
+- An icon URL (``icon_url=`` argument, optional)
+
+All arguments are keyword-only.
+
+Let's see an example of both:
+
+.. code-block:: python
+
+    embed = discord.Embed(
+        title = "Weather in San Francisco, CA",
+        description = "Sunny with a High of 55F and a Low of 49F\nFeels like: 55F",
+        colour = discord.Colour.yellow()
+    )
+
+    embed.add_field(name="Precipitation", value="0%", inline=False)
+    embed.add_field(name="Wind", value="5 mph", inline=True)
+    embed.add_field(name="Humidity", value="96%")
+    embed.add_field(
+        name="Fact about this location",
+        value="Golden Gate Park outstrips Central Park"
+    )
+
+    embed.set_author(name=bot.user.name, icon_url=bot.user.display_avatar.url)
+    embed.set_footer(
+        text="Powered by OpenWeatherMap",
+        icon_url="https://openweathermap.org/themes/openweathermap/assets/vendor/owm/img/icons/logo_32x32.png"
+    )
+
+    await channel.send(embed=embed)
+
+.. image:: /images/guide/topics/embeds/author_footer_embed.png
+    :scale: 50%
+
+A breakdown of what we did, we set the ``author`` field to the bot's name and avatar URL and the ``footer``'s text to 
+"Powered by OpenWeatherMap" and ``icon_url`` to OpenWeatherMap's logo.
 
 Images
-~~~~~~~
+-------
 
 There are two ways to add images to an embed:
 
 - As the embed's ``image``.
 - As the embed's ``thumbnail``.
 
-We will add an `image of the Golden Gate Bridge`_ to the weather embed by calling :meth:`my_weather_embed.set_image() <Embed.set_image>`:
+At the time of writing, bots cannot embed videos.
 
-.. code-block:: python3
+We will add an `image of the Golden Gate Bridge`_ to the embed by calling :meth:`embed.set_image() <Embed.set_image>`:
+
+.. code-block:: python
 
     image_url = "https://upload.wikimedia.org/wikipedia/commons/0/0c/GoldenGateBridge-001.jpg"
-    my_weather_embed.set_image(url=image_url)
+    embed.set_image(url=image_url)
 
 .. _image of the Golden Gate Bridge: https://commons.wikimedia.org/wiki/Golden_Gate_Bridge#/media/File:GoldenGateBridge-001.jpg
 
 .. image:: /images/guide/topics/embeds/image_embed.png
-    :scale: 50%
+    :scale: 70%
 
 As seen above, when setting :attr:`Embed.image`, the provided URL will be displayed at the bottom of the embed.
 
 The alternative to this, is to set :attr:`Embed.thumbnail`, which would be displayed in the top right corner of the embed.
 
-Rather than setting the image to a URL like we did before, let's try attaching a file for thumbnail.
+Files
+------
+
+You may have noticed that we used URLs to for each of the images in the embeds above but what if we wanted to use a local file? 
+That's possible too, we can use the :class:`File` class and set the url fields to a special URI scheme that Discord provides - ``attachment://``.
+
+Let's set the thumbnail of the weather embed to a local file.
 
 First, we have to construct a :class:`File` object. The first argument is the file path, and the second is the name of the attachment that will be used to refer to it within Discord.
 
-.. code-block:: python3
+.. code-block:: python
 
-    my_file = discord.File('./images/sunny_weather.png', 'thumbnail.png')
-
-Next, we need to call :meth:`my_weather_embed.set_thumbnail() <Embed.set_thumbnail>` to set the thumbnail.
-To refer to our attachment for the thumbnail, we will use a special URI scheme that Discord provides - ``attachment://``.
-
-Since we called our file ``thumbnail.png``, we will set the ``url`` parameter to ``attachment://thumbnail.png``.
-
-.. code-block:: python3
-
-    my_weather_embed.set_thumbnail(url="attachment://thumbnail.png")
+    file = discord.File('./images/sunny_weather.png', 'thumbnail.png')
 
 .. warning::
 
-    Make sure to provide the file with the ``file`` parameter before sending the message.
-    Otherwise, Discord will not know what attachment you are referring to within the embed.
+    The filename for these URLs must be ASCII alphanumeric with underscores, dashes, or dots. This is a Discord limitation.
 
-    .. code-block:: python3
+Next, we need to call :meth:`embed.set_thumbnail() <Embed.set_thumbnail>` to set the thumbnail.
+To refer to our attachment for the thumbnail, we will use a special URI scheme as discussed above.
 
-        await message.channel.send(embed=my_weather_embed, file=my_file)
+Since we called our file ``thumbnail.png``, we will set the ``url`` parameter to ``attachment://thumbnail.png``.
 
-Footer
-~~~~~~
+.. code-block:: python
 
-Embeds can also have a footer.
-This is a small section of information that appears at the bottom of the embed, it can contain an icon, a name, and the timestamp but that's for later.
+    embed.set_thumbnail(url="attachment://thumbnail.png")
 
-Let's set the footer of the embed to "Powered by OpenWeatherMap"
+And finally, we will send the embed with the ``file`` parameter set to our file.
 
-.. code-block:: python3
+.. code-block:: python
 
-    my_weather_embed.set_footer(
-        text="Powered by OpenWeatherMap",
-    )
+    await channel.send(file=file, embed=embed)
 
-That will look like this:
+It should look the same as before but now we are using a local file instead of a URL.
 
-.. image:: /images/guide/topics/embeds/footer_embed_1.png
-    :scale: 50%
-
-It appears as the last thing in the embed.
-
-Just like with the author, we can also set the icon of the footer.
-The ``icon_url`` keyword-only argument of :meth:`my_weather_embed.set_footer() <Embed.set_footer>` accepts a string, or anything that can be cast to a string, as the URL.
-
-In this example, we set it to something that matches the ``text``, the logo of OpenWeatherMap.
-
-.. code-block:: python3
-    :emphasize-lines: 3
-
-    my_weather_embed.set_footer(
-        text="Powered by OpenWeatherMap",
-        icon_url="https://openweathermap.org/themes/openweathermap/assets/vendor/owm/img/icons/logo_32x32.png",
-    )
-
-Here is how it looks:
-
-.. image:: /images/guide/topics/embeds/footer_embed.png
-    :scale: 50%
+More about this can be found at :ref:`local_image`
 
 
-Timestamp
-~~~~~~~~~
+Reading values off an embed
+----------------------------
 
-There is another parameter of the constructor that we haven't covered yet, ``timestamp``.
-This is an aware datetime. If a naive datetime is passed, it is converted to an aware datetime with the local timezone.
-
-Let's set the timestamp of the embed to the current time.
-
-.. code-block:: python3
-
-    my_weather_embed = discord.Embed(
-        colour=discord.Colour.yellow(),
-        title="Weather in San Francisco, CA",
-        description="Clear with a high of 59 degrees Fahrenheit.",
-        timestamp=discord.utils.utcnow(),
-    )
-
-.. image:: /images/guide/topics/embeds/timestamp_embed_1.png
-    :scale: 50%
-
-But that's with the footer, what if we remove that?
-
-.. image:: /images/guide/topics/embeds/timestamp_embed.png
-    :scale: 50%
-
-As you can see, the timestamp is still there, but without the middle dot between the footer text and the timestamp that discord adds.
-
-The timestamp is translated to the user's local time, and it is displayed in the same format as the user's local time format.
-
-Getting
--------
-
-Now that we have constructed our embed, let's see how we can get the values from it.
+Now that we have constructed our embed, let's see how we can get the values from it if for example we get it from a :class:`Message`.
 
 Let's start by getting the title of the embed.
 
-We can do this by accessing the :attr:`Embed.title` attribute.
+We can do this by using the :attr:`Embed.title` attribute.
 
-.. code-block:: python3
+.. code-block:: python
 
-    print(my_weather_embed.title)
-
-    # Weather in San Francisco, CA
+    >>> print(embed.title)
+    'Weather in San Francisco, CA'
 
 That was easy!
 
 Now, let's get the footer text.
 
-.. code-block:: python3
+.. code-block:: python
 
-    print(my_weather_embed.footer.text)
-
-    # Powered by OpenWeatherMap
+    >>> print(embed.footer.text)
+    'Powered by OpenWeatherMap'
 
 But what if we remove the footer and try again?
 
-.. code-block:: python3
+.. code-block:: python
 
-    my_weather_embed.remove_footer()
-
-    print(my_weather_embed.footer.text)
-
-    # None
+    >>> embed.remove_footer()
+    >>> print(my_weather_embed.footer.text)
+    None
 
 As you can see, it returns ``None``, this is because attribute like ``author`` and ``footer`` return a special object that returns ``None`` when the attribute is not set.
 
-This is the same for all other attributes that got more than one value like ``fields``, ``image``, etc.
+This is the same for all other attributes that got more than one value like :attr:`Embed.fields`, :attr:`Embed.image`, etc.
 
-Setters
--------
+Most of these attributes have more attributes compared to what we can set, for example, the :attr:`Embed.image` attributes called ``width`` and 
+``height`` that return the width and height of the image respectively.
 
-You may have noticed that we have been using keyword argument to set the title, description, etc. of the embed. But 
-those can also be set after the embed has been constructed.
+.. code-block:: python
 
-Let's change the title of the embed by setting the :attr:`Embed.title` attribute.
+    >>> print(embed.image.width)
+    1024 # or None
+    >>> print(embed.image.height)
+    768 # or None
 
-.. code-block:: python3
+Other attributes can be found in the :class:`Embed` documentation for the reprecive attribute.
 
-    my_weather_embed.title = "San Francisco (CA) Weather"
+Proxy URLs
+~~~~~~~~~~~
 
-And see how that looks:
+This is a cached version of the url in the case of images. When the message is deleted, this URL might be valid for a few minutes or not valid at all.
 
-.. image:: /images/guide/topics/embeds/setters_embed_title.png
-    :scale: 50%
+The following field can have a proxy URL:
 
-All possible setters are listed below:
+- :attr:`Embed.image`
+- :attr:`Embed.thumbnail`
+- :attr:`Embed.author`
+- :attr:`Embed.footer`
 
-- ``title``
-- ``description``
-- ``url``
-- ``colour`` / ``color``
-- ``timestamp``
+.. code-block:: python
+
+    >>> print(embed.thumbnail.proxy_url)
+    'https://media.discordapp.net/attachments/123456789012345678/8765432187654321/image.png'
 
 
 Other Methods
@@ -469,35 +365,70 @@ There are a few other methods that may be useful when working with embeds.
 .. method:: Embed.from_dict()
     :noindex:
     
-    Creates an embed from a dictionary.
+    Creates an embed from a Python dictionary.
 
-    .. code-block:: python3
+    .. code-block:: python
 
-        embed_dict = {
+        payload = {
             "title": "Hello, World!",
             "description": "This bot is running on discord.py!",
-            "colour": 0x00FF00
+            "color": 0x00FF00
         }
+        embed = discord.Embed.from_dict(payload)
 
-        my_embed = discord.Embed.from_dict(embed_dict)
-
-    .. note::
-            
-            The dict must match the structure of the Embed from Discord's API.
-            You can find the structure of the Embed in the ':ddocs:`resources/channel#embed-object`'
+    .. warning::
+        
+        Each key needs to match the structure of an embed from Discord's API.
+        Namely, the API doesn't alias `colour` and `color` needs to be used instead.
+        :ddocs:`Embeds as documented by Discord<resources/channel#embed-object>`.
         
 
 .. method:: Embed.to_dict()
     :noindex:
 
-    Converts the embed to a dictionary.
+    Inversely, `to_dict` converts the embed to a dictionary compatible with the API's embed specification.
 
-    .. code-block:: python3
+    .. code-block:: python
 
-        my_embed_dict = my_embed.to_dict()
-        print(my_embed_dict)
-
-        # {'title': 'Hello, World!', 'description': 'This bot is running on discord.py!', 'type': 'rich', 'color': 65280}
+        >>> embed.to_dict()
+        {'title': 'Hello, World!', 'description': 'This bot is running on discord.py!', 'type': 'rich', 'color': 65280}
 
 Other can be found in the :class:`Embed` documentation.
 
+
+Restrictions and limits
+------------------------
+
+There are a few restrictions and limits that you should be aware of when working with embeds.
+
+Markdown support is limited
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Markdown like **this**, *that*, and even ``this`` is supported in embeds, but only in certain fields.
+
+More about this can be found at :ref:`_guide_topic_markdown`.
+
+All fields must be strings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Except for ``timestamp`` and ``colour`` which must be a ``datetime.datetime`` object and ``discord.Colour`` / ``int`` 
+object respectively.
+
+discord.py attempts to convert all values given to string using ``str()``.
+This can be confusing for beginning users of Python as they may not be aware of this, most objects have a ``__str__`` method that 
+returns a string representation of the object. Most objects in discord.py also do this, like :class:`discord.Asset`, that is returned from
+attributes like :attr:`discord.User.avatar` and :attr:`discord.Guild.icon` and calling ``str()`` on it returns the URL of the asset.
+That is precisely why you can pass these attributes to the ``url`` parameter of the embed or :attr:`discord.User` to the ``name`` argument in
+:meth:`embed.set_author() <Embed.set_author>` and it will work but it's not encouraged to do so.
+
+Try it out:
+
+.. code-block:: python
+
+    embed.set_author(name=bot.user, icon_url=bot.user.avatar)
+
+
+Each field has a character limit
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Unfortunately, listing all the limits here would get the fastly outdated, so you can find them in the :ddocs:`API documentation for Embed<resources/channel#embed-object>`.
