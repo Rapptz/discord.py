@@ -10,8 +10,6 @@ Embeds
 Embeds are special message that are formatted to embed rich content within. You may have ever sent a link to a server and
 seen one appear with a brief description and maybe an image or video.
 
-
-
 .. |link_embed_google| image:: /images/guide/topics/embeds/link_embed_google.png
    :scale: 38%
    :target: https://google.com/search?q=discord%20inc
@@ -29,9 +27,8 @@ seen one appear with a brief description and maybe an image or video.
 | |link_embed_google| | |link_embed_discord| | |link_embed_youtube| | |link_embed_github| |
 +---------------------+----------------------+----------------------+---------------------+
 
-
 The examples above are just a few common samples of what you seen often around Discord, these are automatically generated 
-by discord based on the netadata from the site that is being linked but you don't need to remember all of this.
+by discord based on the metadata from the site that is being linked but you don't need to remember any of this.
 
 Internally, an embed is represented with a JSON payload by the API. discord.py offers a 
 builder-esque interface over this payload to help make the process more straightforward and intuitive in Python.
@@ -77,7 +74,7 @@ Next, we created an instance of the ``Embed`` class. This is the object that wil
 
 The ``title`` and ``description`` fields are pretty self-explanatory. The ``colour`` field is a bit more interesting.
 This field is used to set the colour of the left-hand side of the embed. We used the ``blurple`` classmethod on the 
-``Colour`` class that discord.py provides to get the blurple colour. The field can also be set to an integer
+``Colour`` class that discord.py provides to get the blurple colour. It can also be set to an integer
 representing a hexadecimal colour code like ``0x5865f2`` or ``5793266``.
 
 .. note::
@@ -93,7 +90,7 @@ representing a hexadecimal colour code like ``0x5865f2`` or ``5793266``.
 
 .. tip::
     
-    US English spellings can use the respective `color` and `Color` aliases instead.
+    US English spellings can use the respective ``color`` and ``Color`` aliases instead.
 
 .. note::
     There are two other basic fields that we didn't show here, ``url`` and ``timestamp``. The ``url`` field is used to set the
@@ -320,7 +317,7 @@ But what if we remove the footer and try again?
 .. code-block:: python
 
     >>> embed.remove_footer()
-    >>> print(my_weather_embed.footer.text)
+    >>> print(embed.footer.text)
     None
 
 As you can see, it returns ``None``, this is because attribute like ``author`` and ``footer`` return a special object that returns ``None`` when the attribute is not set.
@@ -411,15 +408,15 @@ More about this can be found at :ref:`_guide_topic_markdown`.
 All fields must be strings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Except for ``timestamp`` and ``colour`` which must be a ``datetime.datetime`` object and ``discord.Colour`` / ``int`` 
+Except for ``timestamp`` and ``colour`` which must be a ``datetime.datetime`` and ``discord.Colour`` / ``int`` 
 object respectively.
 
 discord.py attempts to convert all values given to string using ``str()``.
 This can be confusing for beginning users of Python as they may not be aware of this, most objects have a ``__str__`` method that 
 returns a string representation of the object. Most objects in discord.py also do this, like :class:`discord.Asset`, that is returned from
-attributes like :attr:`discord.User.avatar` and :attr:`discord.Guild.icon` and calling ``str()`` on it returns the URL of the asset.
-That is precisely why you can pass these attributes to the ``url`` parameter of the embed or :attr:`discord.User` to the ``name`` argument in
-:meth:`embed.set_author() <Embed.set_author>` and it will work but it's not encouraged to do so.
+attributes like :attr:`discord.User.avatar` and :attr:`discord.Guild.icon`, calling ``str()`` on any of those returns the URL of the asset.
+That is precisely why you can pass these attributes to the ``url`` or ``icon_url`` parameter of the methods or :attr:`discord.User` to ``name`` in
+:meth:`embed.set_author() <Embed.set_author>`. it will work but it's not encouraged to do so.
 
 Try it out:
 
