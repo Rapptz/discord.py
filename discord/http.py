@@ -4341,6 +4341,12 @@ class HTTPClient:
     def get_user(self, user_id: Snowflake) -> Response[user.APIUser]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
 
+    def get_user_named(self, username: str, dicriminator: Optional[str] = None) -> Response[user.APIUser]:
+        params = {}
+        if dicriminator:
+            params['discriminator'] = dicriminator
+        return self.request(Route('GET', '/users/username/{username}', username=username), params=params)
+
     def get_user_profile(
         self,
         user_id: Snowflake,
