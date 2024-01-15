@@ -100,6 +100,7 @@ from .guild_premium import PremiumGuildSubscription
 from .entitlements import Entitlement
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 from .partial_emoji import _EmojiTag, PartialEmoji
+from .commands import _command_factory
 
 if TYPE_CHECKING:
     from .abc import Snowflake, SnowflakeTime
@@ -140,6 +141,7 @@ if TYPE_CHECKING:
     from .types.oauth2 import OAuth2Guild as OAuth2GuildPayload
     from .message import EmojiInputType, Message
     from .read_state import ReadState
+    from .commands import UserCommand, MessageCommand, SlashCommand
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     NonCategoryChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, DirectoryChannel]
@@ -1318,7 +1320,7 @@ class Guild(Hashable):
 
     @property
     def application_command_count(self) -> Optional[int]:
-        """Optional[:class:`int`]: Returns the application command count if available.
+        """Optional[:class:`int`]: Returns the application command count, if available.
 
         .. versionadded:: 2.0
         """
@@ -3272,6 +3274,39 @@ class Guild(Hashable):
             return factory(guild=self, data=d)
 
         return [convert(d) for d in data]
+
+    async def application_commands(self) -> List[Union[SlashCommand, UserCommand, MessageCommand]]:
+        """|coro|
+
+        Returns a list of all application commands available in the guild.
+
+        .. versionadded:: 2.1
+
+        .. note::
+
+            Commands that the user does not have permission to use will not be returned.
+
+        Raises
+        -------
+        HTTPException
+            Fetching the commands failed.
+
+        Returns
+        --------
+        List[Union[:class:`SlashCommand`, :class:`UserCommand`, :class:`MessageCommand`]]
+            The list of application commands that are available in the guild.
+        """
+        state = self._state
+        data = await state.http.guild_application_command_index(self.id)
+        cmds = data['application_commands']
+        apps = {int(app['id']): state.create_integration_application(app) for app in data.get('applications') or []}
+
+        result = []
+        for cmd in cmds:
+            _, cls = _command_factory(cmd['type'])
+            application = apps.get(int(cmd['application_id']))
+            result.append(cls(state=state, data=cmd, application=application))
+        return result
 
     async def fetch_stickers(self) -> List[GuildSticker]:
         r"""|coro|

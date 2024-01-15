@@ -4451,6 +4451,15 @@ class HTTPClient:
             Route('GET', '/channels/{channel_id}/application-commands/search', channel_id=channel_id), params=params
         )
 
+    def guild_application_command_index(self, guild_id: Snowflake) -> Response[command.GuildApplicationCommandIndex]:
+        return self.request(Route('GET', '/guilds/{guild_id}/application-command-index', guild_id=guild_id))
+
+    def channel_application_command_index(self, channel_id: Snowflake) -> Response[command.ApplicationCommandIndex]:
+        return self.request(Route('GET', '/channels/{channel_id}/application-command-index', channel_id=channel_id))
+
+    def user_application_command_index(self) -> Response[command.ApplicationCommandIndex]:
+        return self.request(Route('GET', '/users/@me/application-command-index'))
+
     def interact(
         self,
         type: InteractionType,

@@ -2338,6 +2338,7 @@ class Message(PartialMessage, Hashable):
         """
         return await self.edit(attachments=[a for a in self.attachments if a not in attachments])
 
+    @utils.deprecated("Message.channel.application_commands")
     def message_commands(
         self,
         query: Optional[str] = None,
@@ -2348,6 +2349,8 @@ class Message(PartialMessage, Hashable):
         with_applications: bool = True,
     ) -> AsyncIterator[MessageCommand]:
         """Returns a :term:`asynchronous iterator` of the message commands available to use on the message.
+
+        .. deprecated:: 2.1
 
         Examples
         ---------
@@ -2368,13 +2371,8 @@ class Message(PartialMessage, Hashable):
         ----------
         query: Optional[:class:`str`]
             The query to search for. Specifying this limits results to 25 commands max.
-
-            This parameter is faked if ``application`` is specified.
         limit: Optional[:class:`int`]
-            The maximum number of commands to send back. Defaults to 0 if ``command_ids`` is passed, else 25.
-            If ``None``, returns all commands.
-
-            This parameter is faked if ``application`` is specified.
+            The maximum number of commands to send back. If ``None``, returns all commands.
         command_ids: Optional[List[:class:`int`]]
             List of up to 100 command IDs to search for. If the command doesn't exist, it won't be returned.
 
@@ -2383,7 +2381,7 @@ class Message(PartialMessage, Hashable):
         application: Optional[:class:`~discord.abc.Snowflake`]
             Whether to return this application's commands. Always set to DM recipient in a private channel context.
         with_applications: :class:`bool`
-            Whether to include applications in the response. Defaults to ``True``.
+            Whether to include applications in the response.
 
         Raises
         ------
@@ -2411,6 +2409,5 @@ class Message(PartialMessage, Hashable):
             limit=limit,
             command_ids=command_ids,
             application=application,
-            with_applications=with_applications,
             target=self,
         )

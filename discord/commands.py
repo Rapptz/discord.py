@@ -219,7 +219,7 @@ class BaseCommand(ApplicationCommand, Hashable):
         self._data = data
         self.application = application
         self.name = data['name']
-        self.description = data['description']
+        self.description = data.get('description', '')
         self._channel = channel
         self.application_id: int = int(data['application_id'])
         self.id: int = int(data['id'])

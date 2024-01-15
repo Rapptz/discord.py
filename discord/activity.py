@@ -211,7 +211,7 @@ class Activity(BaseActivity):
         'application_id',
         'emoji',
         'buttons',
-        'metadata'
+        'metadata',
     )
 
     def __init__(self, **kwargs: Any) -> None:

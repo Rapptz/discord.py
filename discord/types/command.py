@@ -222,7 +222,14 @@ class ApplicationCommandCursor(TypedDict):
     repaired: Optional[str]
 
 
-class ApplicationCommandSearch(TypedDict):
+class ApplicationCommandIndex(TypedDict):
     application_commands: List[ApplicationCommand]
     applications: Optional[List[IntegrationApplication]]
+
+
+class GuildApplicationCommandIndex(ApplicationCommandIndex):
+    version: Snowflake
+
+
+class ApplicationCommandSearch(ApplicationCommandIndex):
     cursor: ApplicationCommandCursor

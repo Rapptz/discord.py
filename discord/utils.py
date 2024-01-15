@@ -1354,6 +1354,7 @@ def format_dt(dt: datetime.datetime, /, style: Optional[TimestampStyle] = None) 
     return f'<t:{int(dt.timestamp())}:{style}>'
 
 
+@deprecated()
 def set_target(
     items: Iterable[ApplicationCommand],
     *,
@@ -1367,6 +1368,10 @@ def set_target(
 
     Suppresses all AttributeErrors so you can pass multiple types of commands and
     not worry about which elements support which parameter.
+
+    .. versionadded:: 2.0
+
+    .. deprecated:: 2.1
 
     Parameters
     -----------
