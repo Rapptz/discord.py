@@ -164,8 +164,8 @@ class ReadState:
         return ReadStateFlags._from_value(self._flags)
 
     @property
-    def resource(self) -> Optional[Union[ClientUser, Guild, MessageableChannel]]:
-        """Optional[Union[:class:`ClientUser`, :class:`Guild`, :class:`TextChannel`, :class:`StageChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]]: The entity associated with the read state."""
+    def resource(self) -> Union[ClientUser, Guild, MessageableChannel]:
+        """Union[:class:`ClientUser`, :class:`Guild`, :class:`TextChannel`, :class:`StageChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]: The entity associated with the read state."""
         state = self._state
 
         if self.type == ReadStateType.channel:
@@ -173,7 +173,9 @@ class ReadState:
         elif self.type in (ReadStateType.scheduled_events, ReadStateType.guild_home, ReadStateType.onboarding):
             return state._get_or_create_unavailable_guild(self.id)
         elif self.type == ReadStateType.notification_center and self.id == state.self_id:
-            return state.user
+            return state.user  # type: ignore
+        else:
+            raise NotImplementedError(f'Unknown read state type {self.type!r}')
 
     @property
     def last_entity_id(self) -> int:

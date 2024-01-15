@@ -264,7 +264,7 @@ class BaseUser(_UserTag):
         _state: ConnectionState
         _avatar: Optional[str]
         _avatar_decoration: Optional[str]
-        _avatar_decoration_sku_id: Optional[Snowflake]
+        _avatar_decoration_sku_id: Optional[int]
         _banner: Optional[str]
         _accent_colour: Optional[int]
         _public_flags: int
@@ -405,7 +405,7 @@ class BaseUser(_UserTag):
         return None
 
     @property
-    def avatar_decoration_sku_id(self) -> Optional[Snowflake]:
+    def avatar_decoration_sku_id(self) -> Optional[int]:
         """Optional[:class:`int`]: Returns the avatar decoration's SKU ID.
 
         If the user does not have a preset avatar decoration, ``None`` is returned.
