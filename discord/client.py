@@ -2252,11 +2252,6 @@ class Client:
 
             This method is an API call. If you have member cache enabled, consider :meth:`get_user` instead.
 
-        .. warning::
-
-            This API route is not well-used by the Discord client and may increase your chances at getting detected.
-            Consider :meth:`fetch_user_profile` if you share a guild/relationship with the user.
-
         .. versionchanged:: 2.0
 
             ``user_id`` parameter is now positional-only.
