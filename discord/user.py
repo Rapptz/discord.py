@@ -250,6 +250,7 @@ class BaseUser(_UserTag):
         'bot',
         'system',
         '_public_flags',
+        'premium_type',
         '_cs_note',
         '_state',
     )
@@ -261,6 +262,7 @@ class BaseUser(_UserTag):
         global_name: Optional[str]
         bot: bool
         system: bool
+        premium_type: Optional[PremiumType]
         _state: ConnectionState
         _avatar: Optional[str]
         _avatar_decoration: Optional[str]
@@ -302,6 +304,7 @@ class BaseUser(_UserTag):
         self._banner = data.get('banner', None)
         self._accent_colour = data.get('accent_color', None)
         self._public_flags = data.get('public_flags', 0)
+        self.premium_type = try_enum(PremiumType, data['premium_type'] or 0) if 'premium_type' in data else None
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
 
@@ -349,6 +352,9 @@ class BaseUser(_UserTag):
             'banner': self._banner,
             'accent_color': self._accent_colour,
         }
+        if self.premium_type is not None:
+            user['premium_type'] = self.premium_type.value
+
         return user
 
     @property
@@ -391,6 +397,11 @@ class BaseUser(_UserTag):
         .. versionadded:: 2.0
         """
         return self.avatar or self.default_avatar
+
+    @property
+    def premium(self) -> bool:
+        """Indicates if the user is a premium user (i.e. has Discord Nitro)."""
+        return bool(self.premium_type.value) if self.premium_type else False
 
     @property
     def avatar_decoration(self) -> Optional[Asset]:
@@ -701,8 +712,12 @@ class ClientUser(BaseUser):
             This now returns a :class:`str` instead of an :class:`int` to match the API.
     mfa_enabled: :class:`bool`
         Specifies if the user has MFA turned on and working.
-    premium_type: Optional[:class:`PremiumType`]
-        Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic). Could be None if the user is not premium.
+    premium_type: :class:`PremiumType`
+        Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic).
+
+        .. versionchanged:: 2.1
+
+            This is now :attr:`PremiumType.none` instead of ``None`` if the user is not premium.
     note: :class:`Note`
         The user's note. Not pre-fetched.
 
@@ -730,7 +745,6 @@ class ClientUser(BaseUser):
         'mfa_enabled',
         'email',
         'phone',
-        'premium_type',
         'note',
         'bio',
         'nsfw_allowed',
@@ -747,7 +761,7 @@ class ClientUser(BaseUser):
         _locale: str
         _flags: int
         mfa_enabled: bool
-        premium_type: Optional[PremiumType]
+        premium_type: PremiumType
         bio: Optional[str]
         nsfw_allowed: Optional[bool]
 
@@ -772,7 +786,7 @@ class ClientUser(BaseUser):
         self._purchased_flags = data.get('purchased_flags', 0)
         self._premium_usage_flags = data.get('premium_usage_flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
-        self.premium_type = try_enum(PremiumType, data.get('premium_type')) if data.get('premium_type') else None
+        self.premium_type = try_enum(PremiumType, data.get('premium_type') or 0)
         self.bio = data.get('bio') or None
         self.nsfw_allowed = data.get('nsfw_allowed')
         self.desktop: bool = data.get('desktop', False)
@@ -786,11 +800,6 @@ class ClientUser(BaseUser):
     def locale(self) -> Locale:
         """:class:`Locale`: The IETF language tag used to identify the language the user is using."""
         return self._state.settings.locale if self._state.settings else try_enum(Locale, self._locale)
-
-    @property
-    def premium(self) -> bool:
-        """Indicates if the user is a premium user (i.e. has Discord Nitro)."""
-        return self.premium_type is not None
 
     @property
     def flags(self) -> PrivateUserFlags:
@@ -1051,6 +1060,14 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         Specifies if the user is a bot account.
     system: :class:`bool`
         Specifies if the user is a system user (i.e. represents Discord officially).
+    premium_type: Optional[:class:`PremiumType`]
+        Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic).
+
+        .. note::
+
+            This information is only available in certain contexts.
+
+        .. versionadded:: 2.1
     """
 
     __slots__ = ('__weakref__',)

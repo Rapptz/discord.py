@@ -3872,6 +3872,12 @@ of :class:`enum.Enum`.
 
     Represents the user's Discord Nitro subscription type.
 
+    .. attribute:: none
+
+        The user does not have a Discord Nitro subscription.
+
+        .. versionadded:: 2.0
+
     .. attribute:: nitro
 
         Represents the new, full Discord Nitro.

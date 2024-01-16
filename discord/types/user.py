@@ -41,6 +41,7 @@ class PartialUser(TypedDict):
     bot: NotRequired[bool]
     system: NotRequired[bool]
     global_name: Optional[str]
+    premium_type: NotRequired[PremiumType]
 
 
 ConnectionType = Literal[

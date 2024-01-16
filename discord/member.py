@@ -77,6 +77,7 @@ if TYPE_CHECKING:
     from .user import Note
     from .relationship import Relationship
     from .calls import PrivateCall
+    from .enums import PremiumType
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     ConnectableChannel = Union[VocalGuildChannel, DMChannel, GroupChannel]
@@ -302,6 +303,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         remove_friend: Callable[[], Awaitable[None]]
         fetch_mutual_friends: Callable[[], Awaitable[List[User]]]
         public_flags: PublicUserFlags
+        premium_type: Optional[PremiumType]
         banner: Optional[Asset]
         accent_color: Optional[Colour]
         accent_colour: Optional[Colour]

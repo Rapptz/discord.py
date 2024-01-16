@@ -67,6 +67,7 @@ class Profile:
     def __init__(self, **kwargs) -> None:
         data: ProfilePayload = kwargs.pop('data')
         user = data['user']
+        profile = data.get('user_profile')
         mutual_friends: List[PartialUserPayload] = kwargs.pop('mutual_friends', None)
 
         member = data.get('guild_member')
@@ -91,10 +92,10 @@ class Profile:
             self.guild_premium_since = guild_premium_since
 
         self.premium_type: Optional[PremiumType] = (
-            try_enum(PremiumType, data['premium_type']) if user.get('premium_type') else None
+            try_enum(PremiumType, data.get('premium_type') or 0) if profile else None
         )
-        self.premium_since: Optional[datetime] = utils.parse_time(data['premium_since'])
-        self.premium_guild_since: Optional[datetime] = utils.parse_time(data['premium_guild_since'])
+        self.premium_since: Optional[datetime] = utils.parse_time(data.get('premium_since'))
+        self.premium_guild_since: Optional[datetime] = utils.parse_time(data.get('premium_guild_since'))
         self.connections: List[PartialConnection] = [PartialConnection(d) for d in data['connected_accounts']]
 
         self.badges: List[ProfileBadge] = [
@@ -351,6 +352,10 @@ class UserProfile(Profile, User):
 
             Returns the user's name with discriminator.
 
+    .. note::
+
+        Information may be missing or inaccurate if the user has blocked the client user.
+
     .. versionadded:: 2.0
 
     Attributes
@@ -360,7 +365,11 @@ class UserProfile(Profile, User):
     bio: Optional[:class:`str`]
         The user's "about me" field. Could be ``None``.
     premium_type: Optional[:class:`PremiumType`]
-        Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic). Could be None if the user is not premium.
+        Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic).
+
+        .. versionchanged:: 2.1
+
+            This is now :attr:`PremiumType.none` instead of ``None`` if the user is not premium.
     premium_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies how long a user has been premium (had Nitro).
         ``None`` if the user is not a premium user.
@@ -430,6 +439,10 @@ class MemberProfile(Profile, Member):
 
             Returns the member's name with the discriminator.
 
+    .. note::
+
+        Information may be missing or inaccurate if the user has blocked the client user.
+
     .. versionadded:: 2.0
 
     Attributes
@@ -448,7 +461,11 @@ class MemberProfile(Profile, Member):
 
             This is renamed from :attr:`Member.premium_since` because of name collisions.
     premium_type: Optional[:class:`PremiumType`]
-        Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic). Could be ``None`` if the user is not premium.
+        Specifies the type of premium a user has (i.e. Nitro, Nitro Classic, or Nitro Basic).
+
+        .. versionchanged:: 2.1
+
+            This is now :attr:`PremiumType.none` instead of ``None`` if the user is not premium.
     premium_since: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies how long a user has been premium (had Nitro).
         ``None`` if the user is not a premium user.
