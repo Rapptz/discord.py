@@ -248,6 +248,10 @@ class MessageType(Enum):
     stage_raise_hand = 30
     stage_topic = 31
     guild_application_premium_subscription = 32
+    guild_incident_alert_mode_enabled = 36
+    guild_incident_alert_mode_disabled = 37
+    guild_incident_report_raid = 38
+    guild_incident_report_false_alarm = 39
 
 
 class SpeakingState(Enum):
@@ -484,7 +488,7 @@ class AuditLogAction(Enum):
             return 'thread'
         elif v < 122:
             return 'integration_or_app_command'
-        elif v < 143:
+        elif 139 < v < 143:
             return 'auto_moderation'
         elif v < 146:
             return 'user'
@@ -693,6 +697,7 @@ class Locale(Enum):
     italian = 'it'
     japanese = 'ja'
     korean = 'ko'
+    latin_american_spanish = 'es-419'
     lithuanian = 'lt'
     norwegian = 'no'
     polish = 'pl'

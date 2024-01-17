@@ -104,7 +104,8 @@ class DynamicItem(Generic[BaseT], Item['View']):
     ) -> None:
         super().__init__()
         self.item: BaseT = item
-        self.row = row
+        if row is not None:
+            self.row = row
 
         if not self.item.is_dispatchable():
             raise TypeError('item must be dispatchable, e.g. not a URL button')

@@ -105,6 +105,10 @@ class VoiceProtocol:
         An abstract method that is called when the client's voice state
         has changed. This corresponds to ``VOICE_STATE_UPDATE``.
 
+        .. warning::
+
+            This method is not the same as the event. See: :func:`on_voice_state_update`
+
         Parameters
         ------------
         data: :class:`dict`

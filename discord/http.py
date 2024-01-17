@@ -154,6 +154,7 @@ def handle_message_parameters(
     mention_author: Optional[bool] = None,
     thread_name: str = MISSING,
     channel_payload: Dict[str, Any] = MISSING,
+    applied_tags: Optional[SnowflakeList] = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -243,6 +244,12 @@ def handle_message_parameters(
                 attachments_payload.append(attachment.to_dict())
 
         payload['attachments'] = attachments_payload
+
+    if applied_tags is not MISSING:
+        if applied_tags is not None:
+            payload['applied_tags'] = applied_tags
+        else:
+            payload['applied_tags'] = []
 
     if channel_payload is not MISSING:
         payload = {
@@ -1155,6 +1162,13 @@ class HTTPClient:
         )
 
         payload = {k: v for k, v in options.items() if k in valid_keys}
+        return self.request(r, reason=reason, json=payload)
+
+    def edit_voice_channel_status(
+        self, status: Optional[str], *, channel_id: int, reason: Optional[str] = None
+    ) -> Response[None]:
+        r = Route('PUT', '/channels/{channel_id}/voice-status', channel_id=channel_id)
+        payload = {'status': status}
         return self.request(r, reason=reason, json=payload)
 
     def bulk_channel_update(
@@ -2436,7 +2450,7 @@ class HTTPClient:
         return self.request(
             Route(
                 'POST',
-                '/applications/{application.id}/entitlements',
+                '/applications/{application_id}/entitlements',
                 application_id=application_id,
             ),
             json=payload,
@@ -2512,6 +2526,22 @@ class HTTPClient:
 
     def application_info(self) -> Response[appinfo.AppInfo]:
         return self.request(Route('GET', '/oauth2/applications/@me'))
+
+    def edit_application_info(self, *, reason: Optional[str], payload: Any) -> Response[appinfo.AppInfo]:
+        valid_keys = (
+            'custom_install_url',
+            'description',
+            'role_connections_verification_url',
+            'install_params',
+            'flags',
+            'icon',
+            'cover_image',
+            'interactions_endpoint_url ',
+            'tags',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+        return self.request(Route('PATCH', '/applications/@me'), json=payload, reason=reason)
 
     async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
         try:

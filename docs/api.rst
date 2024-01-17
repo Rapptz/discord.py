@@ -1785,6 +1785,30 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.2
 
+    .. attribute:: guild_incident_alert_mode_enabled
+
+        The system message sent when security actions is enabled.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: guild_incident_alert_mode_disabled
+
+        The system message sent when security actions is disabled.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: guild_incident_report_raid
+
+        The system message sent when a raid is reported.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: guild_incident_report_false_alarm
+
+        The system message sent when a false alarm is reported.
+
+        .. versionadded:: 2.4
+
 .. class:: UserFlags
 
     Represents Discord User flags.
@@ -2865,7 +2889,7 @@ of :class:`enum.Enum`.
         set to an unspecified proxy object with 3 attributes:
 
         - ``automod_rule_name``: The name of the automod rule that was triggered.
-        - ``automod_rule_trigger``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``automod_rule_trigger_type``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
         - ``channel``: The channel in which the automod rule was triggered.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
@@ -2883,7 +2907,7 @@ of :class:`enum.Enum`.
         set to an unspecified proxy object with 3 attributes:
 
         - ``automod_rule_name``: The name of the automod rule that was triggered.
-        - ``automod_rule_trigger``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``automod_rule_trigger_type``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
         - ``channel``: The channel in which the automod rule was triggered.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
@@ -2901,7 +2925,7 @@ of :class:`enum.Enum`.
         set to an unspecified proxy object with 3 attributes:
 
         - ``automod_rule_name``: The name of the automod rule that was triggered.
-        - ``automod_rule_trigger``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``automod_rule_trigger_type``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
         - ``channel``: The channel in which the automod rule was triggered.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
@@ -3287,6 +3311,12 @@ of :class:`enum.Enum`.
     .. attribute:: korean
 
         The ``ko`` locale.
+
+    .. attribute:: latin_american_spanish
+
+        The ``es-419`` locale.
+
+        .. versionadded:: 2.4
 
     .. attribute:: lithuanian
 
@@ -4224,6 +4254,12 @@ AuditLogDiff
     .. attribute:: trigger
 
         The trigger for the automod rule.
+
+        .. note ::
+
+            The :attr:`~AutoModTrigger.type` of the trigger may be incorrect.
+            Some attributes such as :attr:`~AutoModTrigger.keyword_filter`, :attr:`~AutoModTrigger.regex_patterns`,
+            and :attr:`~AutoModTrigger.allow_list` will only have the added or removed values.
 
         :type: :class:`AutoModTrigger`
 

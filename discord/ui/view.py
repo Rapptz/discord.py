@@ -613,7 +613,7 @@ class ViewStore:
         if interaction.message is None:
             return
 
-        view = View.from_message(interaction.message)
+        view = View.from_message(interaction.message, timeout=None)
 
         base_item_index: Optional[int] = None
         for index, child in enumerate(view._children):
