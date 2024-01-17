@@ -2095,6 +2095,27 @@ class Client:
         )
         return Invite.from_incomplete(state=self._connection, data=data)
 
+    async def create_invite(self) -> Invite:
+        """|coro|
+
+        Creates a new friend :class:`.Invite`.
+
+        .. versionadded:: 2.0
+
+        Raises
+        ------
+        HTTPException
+            Creating the invite failed.
+
+        Returns
+        --------
+        :class:`.Invite`
+            The created friend invite.
+        """
+        state = self._connection
+        data = await state.http.create_friend_invite()
+        return Invite.from_incomplete(state=state, data=data)
+
     async def accept_invite(self, url: Union[Invite, str], /) -> Invite:
         """|coro|
 
