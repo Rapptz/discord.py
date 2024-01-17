@@ -77,25 +77,24 @@ This field is used to set the colour of the left-hand side of the embed. We used
 :class:`discord.Colour` class that discord.py provides to get the blurple colour. It can also be set to an integer
 representing a hexadecimal colour code like ``0x5865f2`` or ``5793266``.
 
-.. note::
 
-    There is another way to set the basic fields of an embed, you can also set them after construction, like so:
+Instead of passing fields directly to ``Embed``, you can also set basic fields after construction, like so:  
 
-    .. code-block:: python
+.. code-block:: python  
 
-        embed = discord.Embed()
-        embed.title = "Hello World"
-        embed.description = "This is a description"
-        embed.colour = discord.Colour.blurple()
+    embed = discord.Embed()  
+    embed.title = "Hello World"  
+    embed.description = "This is a description"  
+    embed.colour = discord.Colour.blurple()  
 
-.. tip::
+.. tip::  
     
-    US English spellings can use the respective ``color`` and ``Color`` aliases instead.
+    US English spellings can use the respective ``color`` and ``Color`` aliases instead.  
 
 .. note::
     There are two other basic fields that we didn't show here, ``url`` and ``timestamp``. The ``url`` field is used to set the
     URL that the title of the embed should be masked with. The ``timestamp`` field is used to set the timestamp of the embed. This
-    field takes a ``datetime.datetime`` aware object.
+    field takes a :class:`datetime.datetime` timezone-aware object, such as from :func:`utils.utcnow`.
 
     Try adding these two fields to the embed the same way we did with the other fields and see what happens.
 
@@ -410,8 +409,7 @@ All strings
 
 All values passed to the embed must be a string.
 
-Except for ``timestamp`` and ``colour`` which must be a ``datetime.datetime`` and :class:`Colour` / ``int`` 
-object respectively.
+Except for ``timestamp`` and ``colour`` which must be a :class:`datetime.datetime` and :class:`Colour` / ``int``, respectively.
 
 discord.py attempts to convert all values given to string using ``str()``.
 This can be confusing for beginning users of Python as they may not be aware of this, most objects have a ``__str__`` method that 
@@ -456,5 +454,5 @@ Let's make a staircase of fields because why not?
 Character limits
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each field has its own character limit. Unfortunately, listing all the limits here would get fastly
-outdated, but you can find them in the :ddocs:`API documentation<resources/channel#embed-object>`.
+Each field has its own character limit. Unfortunately, listing all the limits here would quickly become 
+outdated, but you can find them in the :ddocs:`Discord API documentation<resources/channel#embed-object>`.
