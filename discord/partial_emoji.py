@@ -116,6 +116,14 @@ class PartialEmoji(_EmojiTag, AssetMixin):
         )
 
     @classmethod
+    def from_dict_stateful(
+        cls, data: Union[PartialEmojiPayload, ActivityEmoji, Dict[str, Any]], state: ConnectionState
+    ) -> Self:
+        self = cls.from_dict(data)
+        self._state = state
+        return self
+
+    @classmethod
     def from_str(cls, value: str) -> Self:
         """Converts a Discord string representation of an emoji to a :class:`PartialEmoji`.
 

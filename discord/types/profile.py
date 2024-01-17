@@ -22,10 +22,11 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Optional, TypedDict
-from typing_extensions import NotRequired
+from typing import List, Optional, Tuple, TypedDict
+from typing_extensions import NotRequired, Required
 
 from .application import ApplicationInstallParams, RoleConnection
+from .emoji import Emoji
 from .member import PrivateMember as ProfileMember
 from .snowflake import Snowflake
 from .user import APIUser, PartialConnection, PremiumType
@@ -35,12 +36,20 @@ class ProfileUser(APIUser):
     bio: str
 
 
-class ProfileMetadata(TypedDict):
-    guild_id: NotRequired[int]
-    bio: NotRequired[str]
-    banner: NotRequired[Optional[str]]
-    accent_color: NotRequired[Optional[int]]
-    theme_colors: NotRequired[List[int]]
+class ProfileEffect(TypedDict):
+    id: Snowflake
+
+
+class ProfileMetadata(TypedDict, total=False):
+    guild_id: int
+    bio: str
+    banner: Optional[str]
+    accent_color: Optional[int]
+    theme_colors: Optional[Tuple[int, int]]
+    emoji: Optional[Emoji]
+    popout_animation_particle_type: Optional[Snowflake]
+    profile_effect: Optional[ProfileEffect]
+    pronouns: Required[str]
 
 
 class MutualGuild(TypedDict):
@@ -79,4 +88,5 @@ class Profile(TypedDict):
     premium_type: Optional[PremiumType]
     premium_since: Optional[str]
     premium_guild_since: Optional[str]
+    legacy_username: Optional[str]
     application: NotRequired[ProfileApplication]

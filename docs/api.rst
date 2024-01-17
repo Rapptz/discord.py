@@ -6826,6 +6826,11 @@ User
     :members:
     :inherited-members:
 
+.. attributetable:: ProfileMetadata
+
+.. autoclass:: ProfileMetadata()
+    :members:
+
 .. attributetable:: ProfileBadge
 
 .. autoclass:: ProfileBadge()
