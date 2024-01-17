@@ -28,7 +28,7 @@ seen one appear with a brief description and maybe an image or video.
 +---------------------+----------------------+----------------------+---------------------+
 
 The examples above are just a few common samples of what you seen often around Discord, these are automatically generated 
-by discord based on the metadata from the site that is being linked but you don't need to remember any of this.
+by discord based on the metadata from the linked sites but you don't need to remember any of this.
 
 Internally, an embed is represented with a JSON payload by the API. discord.py offers a 
 builder-esque interface over this payload to help make the process more straightforward and intuitive in Python.
@@ -131,12 +131,12 @@ Let's see it on Discord:
 
 
 Notice how how the fields are in a certain order, the ``Precipitation`` field is on the top and the other two are next to
-each other on the bottom. This is because of the ``inline`` parameter. This argument takes either ``True`` or ``False`` to 
+each other on the bottom. This is because of the ``inline`` argument. This argument takes either ``True`` or ``False`` to 
 determine whether or not the field should be on its own block. This is why the ``Precipitation`` field is on the top. 
-If the parameter is not passed, it's always ``True``.
+If the argument is not passed, it's always ``True``.
 
 
-Let's see what happens when we add a fourth field and don't pass the ``inline`` parameter:
+Let's see what happens when we add a fourth field and don't pass the ``inline`` argument:
 
 .. code-block:: python
 
@@ -425,6 +425,8 @@ Try it out:
     embed.set_author(name=bot.user, icon_url=bot.user.display_avatar)
 
 [EXPERIMENTAL]
+
+
 Empty spaces are not allowed but it can be tricked with a zero-width space (ZWS) character, ``\u200b``.
 
 Let's make a staircase of fields because why not?
