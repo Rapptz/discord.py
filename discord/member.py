@@ -1099,6 +1099,8 @@ class Member(discord.abc.Messageable, _UserTag):
         """Returns a role with the given ID from roles which the member has.
 
         .. versionadded:: 2.0
+        .. versionchanged:: 2.4
+            This can now return :attr:`Guild.default_role` if ``role_id`` is the same as the member's guild ID.
 
         Parameters
         -----------
@@ -1110,6 +1112,9 @@ class Member(discord.abc.Messageable, _UserTag):
         Optional[:class:`Role`]
             The role or ``None`` if not found in the member's roles.
         """
+        if role_id == self.guild.id:
+            return self.guild.default_role
+
         return self.guild.get_role(role_id) if self._roles.has(role_id) else None
 
     def is_timed_out(self) -> bool:
