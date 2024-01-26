@@ -37,9 +37,9 @@ extras_require = {
     'docs': [
         'sphinx==4.4.0',
         'sphinxcontrib_trio==1.1.2',
-        'sphinxcontrib-websupport',
+        'sphinxcontrib-websupport==1.2.6',
         'typing-extensions>=4.3,<5',
-        'sphinx-inline-tabs',
+        'sphinx-inline-tabs==2023.4.21',
     ],
     'speed': [
         'orjson>=3.5.4',
