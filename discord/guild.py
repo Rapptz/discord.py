@@ -511,7 +511,7 @@ class Guild(Hashable):
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
         self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
-        self._incidents_data: Optional[IncidentData] = guild.get("incidents_data")
+        self._incidents_data: Optional[IncidentData] = guild.get('incidents_data')
 
         if 'channels' in guild:
             channels = guild['channels']
@@ -4336,25 +4336,27 @@ class Guild(Hashable):
 
     @property
     def invites_paused_until(self) -> Optional[datetime.datetime]:
-        """:class:`datetime.datetime`: When invites get enabled again.
+        """Optional[:class:`datetime.datetime`]: If invites are paused, returns when 
+        invites will get enabled in UTC, otherwise returns None.
 
         .. versionadded:: 2.4
         """
         if not self._incidents_data:
             return None
 
-        return utils.parse_time(self._incidents_data.get("invites_disabled_until"))
+        return utils.parse_time(self._incidents_data.get('invites_disabled_until'))
 
     @property
     def dms_paused_until(self) -> Optional[datetime.datetime]:
-        """:class:`datetime.datetime`: When direct messages get enabled again.
+        """Optional[:class:`datetime.datetime`]: If DMs are paused, returns when DMs 
+        will get enabled in UTC, otherwise returns None.
 
         .. versionadded:: 2.4
         """
         if not self._incidents_data:
             return None
 
-        return utils.parse_time(self._incidents_data.get("dms_disabled_until"))
+        return utils.parse_time(self._incidents_data.get('dms_disabled_until'))
 
     def invites_paused(self) -> bool:
         """:class:`bool`: Whether invites are paused in the guild.
