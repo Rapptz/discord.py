@@ -37,7 +37,14 @@ extras_require = {
     'docs': [
         'sphinx==4.4.0',
         'sphinxcontrib_trio==1.1.2',
+        # TODO: bump these when migrating to a newer Sphinx version
         'sphinxcontrib-websupport==1.2.4',
+        'sphinxcontrib-applehelp==1.0.4',
+        'sphinxcontrib-devhelp==1.0.2',
+        'sphinxcontrib-htmlhelp==2.0.1',
+        'sphinxcontrib-jsmath==1.0.1',
+        'sphinxcontrib-qthelp==1.0.3',
+        'sphinxcontrib-serializinghtml==1.1.5',
         'typing-extensions>=4.3,<5',
         'sphinx-inline-tabs==2023.4.21',
     ],
