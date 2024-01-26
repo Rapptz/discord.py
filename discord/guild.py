@@ -4336,7 +4336,7 @@ class Guild(Hashable):
 
     @property
     def invites_paused_until(self) -> Optional[datetime.datetime]:
-        """Optional[:class:`datetime.datetime`]: If invites are paused, returns when 
+        """Optional[:class:`datetime.datetime`]: If invites are paused, returns when
         invites will get enabled in UTC, otherwise returns None.
 
         .. versionadded:: 2.4
@@ -4348,7 +4348,7 @@ class Guild(Hashable):
 
     @property
     def dms_paused_until(self) -> Optional[datetime.datetime]:
-        """Optional[:class:`datetime.datetime`]: If DMs are paused, returns when DMs 
+        """Optional[:class:`datetime.datetime`]: If DMs are paused, returns when DMs
         will get enabled in UTC, otherwise returns None.
 
         .. versionadded:: 2.4
