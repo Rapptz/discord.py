@@ -73,7 +73,7 @@ Wait for reaction
     def check(reaction: discord.Reaction, user: discord.User):
         return user == message.author and reaction.message == message # check that the reaction is on a specific message and by a specific user
 
-    reaction, user = await client.wait_for('reaction_add', check = check)
+    reaction, user = await client.wait_for('reaction_add', check=check)
     await message.channel.send(f'You reacted with {reaction.emoji}!')
 
 Notice the ``reaction_add`` event, unlike the ``message`` event, takes 2 arguments. Thus, the check function takes the same arguments as that, ``reaction, user``.
