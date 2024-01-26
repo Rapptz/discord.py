@@ -73,6 +73,8 @@ __all__ = (
     'SKUType',
     'EntitlementType',
     'EntitlementOwnerType',
+    'OnboardingPromptType',
+    'OnboardingMode',
 )
 
 if TYPE_CHECKING:
@@ -380,6 +382,11 @@ class AuditLogAction(Enum):
     automod_timeout_member                            = 145
     creator_monetization_request_created              = 150
     creator_monetization_terms_accepted               = 151
+    onboarding_question_create                        = 163
+    onboarding_question_update                        = 164
+    onboarding_update                                 = 167
+    server_guide_create                               = 190
+    server_guide_update                               = 191
     # fmt: on
 
     @property
@@ -442,6 +449,10 @@ class AuditLogAction(Enum):
             AuditLogAction.automod_timeout_member:                   None,
             AuditLogAction.creator_monetization_request_created:     None,
             AuditLogAction.creator_monetization_terms_accepted:      None,
+            AuditLogAction.onboarding_question_create:               AuditLogActionCategory.create,
+            AuditLogAction.onboarding_question_update:               AuditLogActionCategory.update,
+            AuditLogAction.onboarding_update:                        AuditLogActionCategory.update,
+        
         }
         # fmt: on
         return lookup[self]
@@ -487,6 +498,10 @@ class AuditLogAction(Enum):
             return 'user'
         elif v < 152:
             return 'creator_monetization'
+        elif v < 165:
+            return 'onboarding_question'
+        elif v < 168:
+            return 'onboarding'
 
 
 class UserFlags(Enum):
@@ -803,6 +818,16 @@ class EntitlementType(Enum):
 class EntitlementOwnerType(Enum):
     guild = 1
     user = 2
+
+
+class OnboardingPromptType(Enum):
+    multiple_choice = 0
+    dropdown = 1
+
+
+class OnboardingMode(Enum):
+    default = 0
+    advanced = 1
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

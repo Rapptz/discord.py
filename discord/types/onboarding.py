@@ -22,27 +22,40 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
-from typing_extensions import NotRequired
-from .snowflake import Snowflake, SnowflakeList
-from .user import User
+from __future__ import annotations
+
+from typing import Literal, Optional, TypedDict
+
+from .emoji import PartialEmoji
+from .snowflake import Snowflake
 
 
-class PartialEmoji(TypedDict):
-    id: Optional[Snowflake]
-    name: Optional[str]
-    animated: NotRequired[bool]
+PromptType = Literal[0, 1]
+OnboardingMode = Literal[0, 1]
 
 
-class Emoji(PartialEmoji, total=False):
-    roles: SnowflakeList
-    user: User
-    require_colons: bool
-    managed: bool
-    animated: bool
-    available: bool
+class PromptOption(TypedDict):
+    id: Snowflake
+    channel_ids: list[Snowflake]
+    role_ids: list[Snowflake]
+    emoji: PartialEmoji
+    title: str
+    description: Optional[str]
 
 
-class EditEmoji(TypedDict):
-    name: str
-    roles: Optional[SnowflakeList]
+class Prompt(TypedDict):
+    id: Snowflake
+    options: list[PromptOption]
+    title: str
+    single_select: bool
+    required: bool
+    in_onboarding: bool
+    type: PromptType
+
+
+class Onboarding(TypedDict):
+    guild_id: Snowflake
+    prompts: list[Prompt]
+    default_channel_ids: list[Snowflake]
+    enabled: bool
+    mode: OnboardingMode

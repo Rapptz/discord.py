@@ -732,7 +732,7 @@ class _WebhookState:
 
     def get_reaction_emoji(self, data: PartialEmojiPayload) -> Union[PartialEmoji, Emoji, str]:
         if self._parent is not None:
-            return self._parent.get_reaction_emoji(data)
+            return self._parent.get_emoji_from_partial_payload(data)
 
         emoji_id = utils._get_as_snowflake(data, 'id')
 
