@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Dict, Final, Iterator, List, Optional, Sequenc
 
 from .enums import HubType, try_enum
 from .metadata import Metadata
-from .utils import SequenceProxy, SnowflakeList, murmurhash32
+from .utils import SequenceProxy, SnowflakeList, murmurhash32, utcnow
 
 if TYPE_CHECKING:
     from .abc import Snowflake
@@ -126,6 +126,7 @@ class ExperimentFilters:
     FILTER_KEYS: Final[Dict[int, str]] = {
         1604612045: 'guild_has_feature',
         2404720969: 'guild_id_range',
+        3730341874: 'guild_age_range_days',
         2918402255: 'guild_member_count_range',
         3013771838: 'guild_ids',
         4148745523: 'guild_hub_types',
@@ -143,7 +144,16 @@ class ExperimentFilters:
         self.options: Metadata = self.array_object(data)
 
     def __repr__(self) -> str:
-        keys = ('features', 'id_range', 'member_count_range', 'ids', 'range_by_hash', 'has_vanity_url')
+        keys = (
+            'features',
+            'id_range',
+            'age_range',
+            'member_count_range',
+            'ids',
+            'hub_types',
+            'range_by_hash',
+            'has_vanity_url',
+        )
         attrs = [f'{attr}={getattr(self, attr)!r}' for attr in keys if getattr(self, attr) is not None]
         if attrs:
             return f'<ExperimentFilters {" ".join(attrs)}>'
@@ -168,7 +178,7 @@ class ExperimentFilters:
         return metadata
 
     @staticmethod
-    def in_range(num: int, start: Optional[int], end: Optional[int], /) -> bool:
+    def in_range(num: float, start: Optional[float], end: Optional[float], /) -> bool:
         if start is not None and num < start:
             return False
         if end is not None and num > end:
@@ -188,6 +198,13 @@ class ExperimentFilters:
         id_range_filter = self.options.guild_id_range
         if id_range_filter is not None:
             return id_range_filter.min_id, id_range_filter.max_id
+
+    @property
+    def age_range(self) -> Optional[Tuple[Optional[int], Optional[int]]]:
+        """Optional[Tuple[Optional[:class:`int`], Optional[:class:`int`]]]: The range of guild ages that are eligible for the population."""
+        age_range_filter = self.options.guild_age_range_days
+        if age_range_filter is not None:
+            return age_range_filter.min_id, age_range_filter.max_id
 
     @property
     def member_count_range(self) -> Optional[Tuple[Optional[int], Optional[int]]]:
@@ -251,6 +268,12 @@ class ExperimentFilters:
         if id_range is not None:
             # Guild must be within the range of snowflakes
             if not self.in_range(guild.id, *id_range):
+                return False
+
+        age_range = self.age_range
+        if age_range is not None:
+            # Guild must be within the range of ages (in days)
+            if not self.in_range((utcnow() - guild.created_at).days, *age_range):
                 return False
 
         member_count_range = self.member_count_range
