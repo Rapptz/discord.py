@@ -851,6 +851,7 @@ class InteractionResponse(Generic[ClientT]):
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
         delete_after: Optional[float] = None,
+        suppress_embeds: bool = MISSING,
     ) -> None:
         """|coro|
 
@@ -886,6 +887,13 @@ class InteractionResponse(Generic[ClientT]):
             then it is silently ignored.
 
             .. versionadded:: 2.2
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This removes
+            all the embeds if set to ``True``. If set to ``False``
+            this brings the embeds back if they were suppressed.
+            Using this parameter requires :attr:`~.Permissions.manage_messages`.
+
+            .. versionadded:: 2.4
 
         Raises
         -------
@@ -917,6 +925,12 @@ class InteractionResponse(Generic[ClientT]):
         if view is not MISSING and message_id is not None:
             state.prevent_view_updates_for(message_id)
 
+        if suppress_embeds is not MISSING:
+            flags = MessageFlags._from_value(0)
+            flags.suppress_embeds = suppress_embeds
+        else:
+            flags = MISSING
+
         adapter = async_context.get()
         params = interaction_message_response_params(
             type=InteractionResponseType.message_update.value,
@@ -927,6 +941,7 @@ class InteractionResponse(Generic[ClientT]):
             attachments=attachments,
             previous_allowed_mentions=parent._state.allowed_mentions,
             allowed_mentions=allowed_mentions,
+            flags=flags,
         )
 
         http = parent._state.http
