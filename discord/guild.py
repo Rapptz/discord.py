@@ -4369,7 +4369,7 @@ class Guild(Hashable):
         return self.invites_paused_until > utils.utcnow()
 
     def dms_paused(self) -> bool:
-        """:class:`bool`: Whether direct messages are paused in the guild.
+        """:class:`bool`: Whether DMs are paused in the guild.
 
         .. versionadded:: 2.4
         """
