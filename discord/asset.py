@@ -247,6 +247,15 @@ class Asset(AssetMixin):
         )
 
     @classmethod
+    def _from_avatar_decoration(cls, state: _State, avatar_decoration: str) -> Self:
+        return cls(
+            state,
+            url=f'{cls.BASE}/avatar-decoration-presets/{avatar_decoration}.png?size=96',
+            key=avatar_decoration,
+            animated=True,
+        )
+
+    @classmethod
     def _from_icon(cls, state: _State, object_id: int, icon_hash: str, path: str) -> Self:
         return cls(
             state,
