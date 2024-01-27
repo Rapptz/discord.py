@@ -44,6 +44,8 @@ You may want to specify a total shard count instead of relying on Discord's reco
 
 Specifying shard IDs is useful for bots running as multiple processes. For example, if a bot has 16 shards, you may have one process run shards 0-7 and another process run shards 8-15. These values can be specified with, for example, an environment variable, to allow passing different values to each process. This behaviour can be achieved with ``commands.AutoShardedBot`` and its ``shard_ids`` parameter which accepts a list of values, such as ``list(range(8))``
 
+To calculate which shard receives which events, we can use the following formula ``shard_id = (guild_id >> 22) % num_shards``. For example, this may be used to calculate which cluster to send a payload to along an IPC which connects shards and a web dashboard.
+
 .. note::
 
     If you specify shard IDs, you must also specify a shard count, however if you choose to run all your bot's shards under one process, you can simply provide a ``shard_count`` and omit the ``shard_ids`` parameter altogether.
