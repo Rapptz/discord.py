@@ -31,7 +31,7 @@ from .mixins import Hashable
 from .partial_emoji import PartialEmoji, _EmojiTag
 from .user import User
 from .utils import MISSING
-from .asset import Asset
+from .asset import Asset, AssetMixin
 
 if TYPE_CHECKING:
     import datetime
@@ -49,7 +49,7 @@ if TYPE_CHECKING:
 __all__ = ('BaseSoundboardSound', 'SoundboardDefaultSound', 'SoundboardSound')
 
 
-class BaseSoundboardSound(Hashable):
+class BaseSoundboardSound(Hashable, AssetMixin):
     """Represents a generic Discord soundboard sound.
 
     .. versionadded:: 2.4
@@ -95,9 +95,9 @@ class BaseSoundboardSound(Hashable):
         self.volume: float = data['volume']
 
     @property
-    def file(self) -> Asset:
-        """:class:`Asset`: Returns the sound file asset."""
-        return Asset._from_soundboard_sound(self._state, self.id)
+    def url(self) -> str:
+        """:class:`str`: Returns the URL of the sound."""
+        return f'{Asset.BASE}/soundboard-sounds/{self.id}'
 
 
 class SoundboardDefaultSound(BaseSoundboardSound):
