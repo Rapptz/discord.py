@@ -226,7 +226,7 @@ class VoiceChannelEffect:
 
         sound_id: Optional[int] = utils._get_as_snowflake(data, 'sound_id')
         if sound_id is not None:
-            sound_volume = data['sound_volume']  # type: ignore # sound_volume cannot be None here
+            sound_volume = data.get('sound_volume') or 0.0
             self.sound = VoiceChannelSoundEffect(state=state, id=sound_id, volume=sound_volume)
 
     def __repr__(self) -> str:
