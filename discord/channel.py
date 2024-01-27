@@ -198,8 +198,8 @@ class VoiceChannelEffect:
     ------------
     channel: :class:`VoiceChannel`
         The channel in which the effect is sent.
-    user: :class:`Member`
-        The user who sent the effect.
+    user: Optional[:class:`Member`]
+        The user who sent the effect. ``None`` if not found in cache.
     animation: Optional[:class:`VoiceChannelEffectAnimation`]
         The animation the effect has. Returns ``None`` if the effect has no animation.
     emoji: Optional[:class:`PartialEmoji`]
@@ -212,7 +212,7 @@ class VoiceChannelEffect:
 
     def __init__(self, *, state: ConnectionState, data: VoiceChannelEffectPayload, guild: Guild):
         self.channel: VoiceChannel = guild.get_channel(int(data['channel_id']))  # type: ignore # will always be a VoiceChannel
-        self.user: Member = guild.get_member(int(data['user_id']))  # type: ignore # will always be a Member
+        self.user: Optional[Member] = guild.get_member(int(data['user_id']))
         self.animation: Optional[VoiceChannelEffectAnimation] = None
 
         animation_id = data.get('animation_id')
