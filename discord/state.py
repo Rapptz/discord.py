@@ -514,12 +514,12 @@ class ConnectionState(Generic[ClientT]):
         return utils.SequenceProxy(self._stickers.values())
 
     @property
-    def soundboard_sounds(self) -> Sequence[SoundboardSound]:
+    def soundboard_sounds(self) -> List[SoundboardSound]:
         all_sounds = []
         for guild in self.guilds:
             all_sounds.extend(guild.soundboard_sounds)
 
-        return utils.SequenceProxy(all_sounds)
+        return all_sounds
 
     def get_emoji(self, emoji_id: Optional[int]) -> Optional[Emoji]:
         # the keys of self._emojis are ints
