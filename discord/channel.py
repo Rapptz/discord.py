@@ -167,12 +167,7 @@ class VoiceChannelSoundEffect(BaseSoundboardSound):
         super().__init__(state=state, data=data)
 
     def __repr__(self) -> str:
-        attrs = [
-            ('id', self.id),
-            ('volume', self.volume),
-        ]
-        inner = ' '.join('%s=%r' % t for t in attrs)
-        return f"<{self.__class__.__name__} {inner}>"
+        return f"<{self.__class__.__name__} id={self.id} volume={self.volume}>"
 
     @property
     def created_at(self) -> Optional[datetime.datetime]:
