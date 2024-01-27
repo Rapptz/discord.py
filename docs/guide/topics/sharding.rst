@@ -50,7 +50,7 @@ Specifying shard IDs is useful for bots running as multiple processes. For examp
 
 .. warning::
 
-    Don't forget that indexing in Python starts at 0, and that shard_id 0 is a valid thing.
+    Discord will only dispatch DMs to the first shard, that is the shard with ID ``0``.
 
 Examples
 ~~~~~~~~~~
