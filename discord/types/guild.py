@@ -49,6 +49,11 @@ class UnavailableGuild(TypedDict):
     unavailable: NotRequired[bool]
 
 
+class IncidentData(TypedDict):
+    invites_disabled_until: NotRequired[Optional[str]]
+    dms_disabled_until: NotRequired[Optional[str]]
+
+
 DefaultMessageNotificationLevel = Literal[0, 1]
 ExplicitContentFilterLevel = Literal[0, 1, 2]
 MFALevel = Literal[0, 1]
@@ -127,6 +132,7 @@ class Guild(UnavailableGuild, _GuildMedia):
     max_video_channel_users: NotRequired[int]
     # application_command_counts: ApplicationCommandCounts
     hub_type: Optional[Literal[0, 1, 2]]
+    incidents_data: Optional[IncidentData]
 
 
 class UserGuild(BaseGuild):
