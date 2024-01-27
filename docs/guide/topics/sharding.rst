@@ -36,7 +36,7 @@ You may want to specify a total shard count instead of relying on Discord's reco
 
 .. note::
 
-    When nearing 150,000 guilds, Discord will migrate your bot to [large bot sharding](https://discord.com/developers/docs/topics/gateway#sharding-for-large-bots). More details are available on their documentation page.
+    When nearing 150,000 guilds, Discord will migrate your bot to `large bot sharding <https://discord.com/developers/docs/topics/gateway#sharding-for-large-bots>`_. More details are available on their documentation page.
 
 .. warning::
 
