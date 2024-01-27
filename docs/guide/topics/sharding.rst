@@ -91,4 +91,3 @@ If you don't want to use discord's recommended shard count, you can specify your
 
 .. note::
     
-    You can specify the shard_count in AutoShardedBot, but it makes more sense to use :class:`~ext.commands.Bot` for this.
