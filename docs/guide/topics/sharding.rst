@@ -22,7 +22,7 @@ Both :class:`~Client` and :class:`~ext.commands.Bot` have auto sharded variants,
 
 The key difference between the two is that the former can only support one connection (one shard), while the auto sharded variants can handle multiple gateway connections.
 
-There's 2 ways you can do sharding:
+There are 2 ways you can shard your bot:
 
 Using auto sharding
 ~~~~~~~~~~~~~~~~~~~~~
