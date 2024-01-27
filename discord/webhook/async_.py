@@ -1305,9 +1305,10 @@ class Webhook(BaseWebhook):
             'user': {
                 'username': user.name,
                 'discriminator': user.discriminator,
-                'global_name': user.global_name,
                 'id': user.id,
                 'avatar': user._avatar,
+                'avatar_decoration_data': user._avatar_decoration_data,
+                'global_name': user.global_name,
             },
         }
 

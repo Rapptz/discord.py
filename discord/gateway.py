@@ -827,7 +827,7 @@ class DiscordVoiceWebSocket:
         self.loop: asyncio.AbstractEventLoop = loop
         self._keep_alive: Optional[VoiceKeepAliveHandler] = None
         self._close_code: Optional[int] = None
-        self.secret_key: Optional[str] = None
+        self.secret_key: Optional[List[int]] = None
         if hook:
             self._hook = hook
 
