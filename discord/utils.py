@@ -609,7 +609,7 @@ def _get_as_snowflake(data: Any, key: str) -> Optional[int]:
         return value and int(value)
 
 
-def _get_mime_type_for_file(data: bytes):
+def _get_mime_type_for_image(data: bytes):
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         return 'image/png'
     elif data[0:3] == b'\xff\xd8\xff' or data[6:10] in (b'JFIF', b'Exif'):
@@ -618,15 +618,23 @@ def _get_mime_type_for_file(data: bytes):
         return 'image/gif'
     elif data.startswith(b'RIFF') and data[8:12] == b'WEBP':
         return 'image/webp'
-    elif data.startswith(b'\x49\x44\x33') or data.startswith(b'\xff\xfb'):
+    else:
+        raise ValueError('Unsupported image type given')
+
+
+def _get_mime_type_for_audio(data: bytes):
+    if data.startswith(b'\x49\x44\x33') or data.startswith(b'\xff\xfb'):
         return 'audio/mpeg'
     else:
-        raise ValueError('Unsupported file type given')
+        raise ValueError('Unsupported audio type given')
 
 
-def _bytes_to_base64_data(data: bytes) -> str:
+def _bytes_to_base64_data(data: bytes, *, audio: bool = False) -> str:
     fmt = 'data:{mime};base64,{data}'
-    mime = _get_mime_type_for_file(data)
+    if audio:
+        mime = _get_mime_type_for_audio(data)
+    else:
+        mime = _get_mime_type_for_image(data)
     b64 = b64encode(data).decode('ascii')
     return fmt.format(mime=mime, data=b64)
 

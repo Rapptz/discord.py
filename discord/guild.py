@@ -4467,7 +4467,7 @@ class Guild(Hashable):
         """
         payload: Dict[str, Any] = {
             'name': name,
-            'sound': utils._bytes_to_base64_data(sound),
+            'sound': utils._bytes_to_base64_data(sound, audio=True),
             'volume': volume,
             'emoji_id': None,
             'emoji_name': None,

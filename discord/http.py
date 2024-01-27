@@ -1604,7 +1604,7 @@ class HTTPClient:
         initial_bytes = file.fp.read(16)
 
         try:
-            mime_type = utils._get_mime_type_for_file(initial_bytes)
+            mime_type = utils._get_mime_type_for_image(initial_bytes)
         except ValueError:
             if initial_bytes.startswith(b'{'):
                 mime_type = 'application/json'
