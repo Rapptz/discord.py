@@ -46,7 +46,7 @@ Specifying shard IDs is useful for bots running as multiple processes. For examp
 
 .. note::
 
-    If you specify shard IDs, you must also specify a shard count. This does not do the same effect vice versa.
+    If you specify shard IDs, you must also specify a shard count, however if you choose to run all your bot's shards under one process, you can simply provide a ``shard_count`` and omit the ``shard_ids`` parameter altogether.
 
 .. warning::
 
