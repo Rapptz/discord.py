@@ -32,7 +32,11 @@ If you want to use a single process to run multiple shards under, you can simply
 Specifying shard count and IDs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You may want to specify a total shard count instead of relying on Discord's recommendation if you find you need more or less shards, or if you want to keep it consistent across restarts of your bot.
+You may want to specify a total shard count instead of relying on Discord's recommendation to regulate load balancing, if for example, your clusters do not have the computational requirements to handle the recommended number.
+
+.. note::
+
+    The shard count does not restrict the number of potential shards you have as it is only used for routing traffic. In other words, you can have multiple sessions running as shard ``3`` for example, allowing you to orchestrate a "zero-downtime" solution.
 
 .. note::
 
