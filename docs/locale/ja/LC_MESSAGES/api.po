@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-21 01:17+0000\n"
-"PO-Revision-Date: 2023-06-21 01:20\n"
+"PO-Revision-Date: 2023-10-30 15:32\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -825,7 +825,7 @@ msgstr "Botが所属するGuildを取得できる、 :term:`asynchronous iterato
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_guilds:5
 msgid "Using this, you will only receive :attr:`.Guild.owner`, :attr:`.Guild.icon`, :attr:`.Guild.id`, :attr:`.Guild.name`, :attr:`.Guild.approximate_member_count`, and :attr:`.Guild.approximate_presence_count` per :class:`.Guild`."
-msgstr ""
+msgstr "これを使用した場合、各 :class:`.Guild` の :attr:`.Guild.owner` 、 :attr:`.Guild.icon` 、 :attr:`.Guild.id` 、 :attr:`.Guild.name` 、 :attr:`.Guild.approximate_member_count` 、および :attr:`.Guild.approximate_presence_count` のみ受け取ります。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_guilds:11
 msgid "This method is an API call. For general usage, consider :attr:`guilds` instead."
@@ -870,7 +870,7 @@ msgstr "渡された日付、またはギルドより後のギルドを取得し
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_guilds:44
 msgid "Whether to include count information in the guilds. This fills the :attr:`.Guild.approximate_member_count` and :attr:`.Guild.approximate_presence_count` attributes without needing any privileged intents. Defaults to ``True``."
-msgstr ""
+msgstr "ギルドにカウント情報を含めるかどうか。これを使うことで特権インテントがなくても :attr:`.Guild.approximate_member_count` と :attr:`.Guild.approximate_presence_count` 属性が設定されます。デフォルトは ``True`` です。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_guilds:51
 msgid "Getting the guilds failed."
@@ -1344,7 +1344,7 @@ msgstr "ビューが渡されない場合。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.add_view:16
 msgid "The view is not persistent or is already finished. A persistent view has no timeout     and all their components have an explicitly provided custom_id."
-msgstr ""
+msgstr "ビューが永続しないか、すでに終了している場合。永続するビューにはタイムアウトがなく、すべてのコンポーネントに明示的に渡された custom_id があります。"
 
 #: ../../../discord/client.py:docstring of discord.Client.persistent_views:1
 msgid "A sequence of persistent views added to the client."
@@ -1655,19 +1655,19 @@ msgstr ":func:`~discord.abc.GuildChannel.create_invite` により与えられた
 
 #: ../../../discord/appinfo.py:docstring of discord.appinfo.PartialAppInfo:50
 msgid "The approximate count of the guilds the bot was added to."
-msgstr ""
+msgstr "ボットが追加されたギルドのおおよその数。"
 
 #: ../../../discord/appinfo.py:docstring of discord.appinfo.PartialAppInfo:58
 msgid "A list of authentication redirect URIs."
-msgstr ""
+msgstr "認証リダイレクトURIのリスト。"
 
 #: ../../../discord/appinfo.py:docstring of discord.appinfo.PartialAppInfo:66
 msgid "The interactions endpoint url of the application to receive interactions over this endpoint rather than over the gateway, if configured."
-msgstr ""
+msgstr "設定されている場合、ゲートウェイではなくエンドポイントからインタラクションを受け取るアプリケーションの、インタラクションエンドポイントのURI。"
 
 #: ../../../discord/appinfo.py:docstring of discord.PartialAppInfo.cover_image:1
 msgid "Retrieves the cover image of the application's default rich presence."
-msgstr ""
+msgstr "存在する場合は、アプリケーションの既定のリッチプレゼンスのカバー画像を取得します。"
 
 #: ../../api.rst:76
 msgid "AppInstallParams"
@@ -1755,7 +1755,7 @@ msgstr "チームメンバーのハッシュ値を返します。"
 
 #: ../../../discord/team.py:docstring of discord.team.TeamMember:19
 msgid "Returns the team member's handle (e.g. ``name`` or ``name#discriminator``)."
-msgstr ""
+msgstr "チームメンバーのハンドル（例えば ``name`` や ``name#discriminator`` など）を返します。"
 
 #: ../../../discord/team.py:docstring of discord.team.TeamMember:25
 msgid "The team member's username."
@@ -1767,11 +1767,11 @@ msgstr "チームメンバーの一意のID。"
 
 #: ../../../discord/team.py:docstring of discord.team.TeamMember:37
 msgid "The team member's discriminator. This is a legacy concept that is no longer used."
-msgstr ""
+msgstr "チームメンバーのタグ。これは、現在は使用されていない、過去の遺物です。"
 
 #: ../../../discord/team.py:docstring of discord.team.TeamMember:43
 msgid "The team member's global nickname, taking precedence over the username in display."
-msgstr ""
+msgstr "チームメンバーのグローバルの表示名。ユーザー名より優先して表示されます。"
 
 #: ../../../discord/team.py:docstring of discord.team.TeamMember:51
 #: ../../../discord/user.py:docstring of discord.user.ClientUser:49
@@ -1789,7 +1789,7 @@ msgstr ":class:`Team`"
 
 #: ../../../discord/team.py:docstring of discord.team.TeamMember:63
 msgid "The membership state of the member (e.g. invited or accepted)"
-msgstr "メンバーの参加状態（(例：招待されたか、承認されたか）"
+msgstr "メンバーの参加状態 (例：招待されたか、承認されたか)"
 
 #: ../../../discord/team.py:docstring of discord.team.TeamMember:65
 msgid ":class:`TeamMembershipState`"
@@ -1946,7 +1946,7 @@ msgstr ":class:`datetime.datetime`"
 #: ../../../discord/user.py:docstring of discord.User.default_avatar:1
 #: ../../../discord/widget.py:docstring of discord.WidgetMember.default_avatar:1
 msgid "Returns the default avatar for a given user."
-msgstr ""
+msgstr "ユーザーの既定のアバターを返します。"
 
 #: ../../../discord/team.py:docstring of discord.TeamMember.default_avatar:3
 #: ../../../discord/team.py:docstring of discord.TeamMember.display_avatar:7
@@ -1985,7 +1985,7 @@ msgstr "ユーザーの表示名を返します。"
 #: ../../../discord/user.py:docstring of discord.User.display_name:3
 #: ../../../discord/member.py:docstring of discord.Member.display_name:3
 msgid "For regular users this is just their global name or their username, but if they have a guild specific nickname then that is returned instead."
-msgstr ""
+msgstr "通常であれば、これはグローバル表示名またはユーザー名がそのまま返りますが、ギルドにてニックネームを設定している場合は、代替としてニックネームが返ります。"
 
 #: ../../../discord/team.py:docstring of discord.TeamMember.mention:1
 #: ../../../discord/abc.py:docstring of discord.abc.User.mention:1
@@ -4559,23 +4559,23 @@ msgstr "ユーザーに対し、インタラクション中にアプリケーシ
 
 #: ../../api.rst:1660
 msgid "The system message sent when the stage starts."
-msgstr ""
+msgstr "ステージ開始時に送信されるシステムメッセージ。"
 
 #: ../../api.rst:1665
 msgid "The system message sent when the stage ends."
-msgstr ""
+msgstr "ステージ終了時に送信されるシステムメッセージ。"
 
 #: ../../api.rst:1670
 msgid "The system message sent when the stage speaker changes."
-msgstr ""
+msgstr "ステージの発言者が変わるときに送信されるシステムメッセージ。"
 
 #: ../../api.rst:1675
 msgid "The system message sent when a user is requesting to speak by raising their hands."
-msgstr ""
+msgstr "ユーザーが挙手して発言許可を求めているときに送信されるシステムメッセージ。"
 
 #: ../../api.rst:1680
 msgid "The system message sent when the stage topic changes."
-msgstr ""
+msgstr "ステージのトピックが変わるときに送信されるシステムメッセージ。"
 
 #: ../../api.rst:1685
 msgid "The system message sent when an application's premium subscription is purchased for the guild."
@@ -4992,11 +4992,11 @@ msgstr ":attr:`~AuditLogDiff.widget_enabled`"
 
 #: ../../api.rst:1979
 msgid ":attr:`~AuditLogDiff.premium_progress_bar_enabled`"
-msgstr ""
+msgstr ":attr:`~AuditLogDiff.premium_progress_bar_enabled`"
 
 #: ../../api.rst:1980
 msgid ":attr:`~AuditLogDiff.system_channel_flags`"
-msgstr ""
+msgstr ":attr:`~AuditLogDiff.system_channel_flags`"
 
 #: ../../api.rst:1984
 msgid "A new channel was created."
@@ -5074,16 +5074,16 @@ msgstr ":attr:`~AuditLogDiff.default_auto_archive_duration`"
 #: ../../api.rst:2022
 #: ../../api.rst:2042
 msgid ":attr:`~AuditLogDiff.nsfw`"
-msgstr ""
+msgstr ":attr:`~AuditLogDiff.nsfw`"
 
 #: ../../api.rst:2023
 #: ../../api.rst:2043
 msgid ":attr:`~AuditLogDiff.slowmode_delay`"
-msgstr ""
+msgstr ":attr:`~AuditLogDiff.slowmode_delay`"
 
 #: ../../api.rst:2024
 msgid ":attr:`~AuditLogDiff.user_limit`"
-msgstr ""
+msgstr ":attr:`~AuditLogDiff.user_limit`"
 
 #: ../../api.rst:2028
 msgid "A channel was deleted."
@@ -5099,7 +5099,7 @@ msgstr ":attr:`~AuditLogEntry.before` オブジェクトを使用すると、よ
 
 #: ../../api.rst:2041
 msgid ":attr:`~AuditLogDiff.flags`"
-msgstr ""
+msgstr ":attr:`~AuditLogDiff.flags`"
 
 #: ../../api.rst:2047
 msgid "A channel permission overwrite was created."
@@ -5173,7 +5173,7 @@ msgstr "これが上記のactionならば、 :attr:`~AuditLogEntry.extra` は以
 
 #: ../../api.rst:2115
 msgid "``delete_member_days``: An integer specifying how far the prune was."
-msgstr ""
+msgstr "``delete_members_days`` ： 一括キック対象の期間を示す整数。"
 
 #: ../../api.rst:2116
 msgid "``members_removed``: An integer specifying how many members were removed."
@@ -5868,11 +5868,11 @@ msgstr "Discord :class:`User` のデフォルトのアバター。"
 
 #: ../../api.rst:2878
 msgid "Represents the default avatar with the colour blurple. See also :attr:`Colour.blurple`"
-msgstr ""
+msgstr "ブループル色のデフォルトのアバター。 :attr:`Colour.blurple` も参照してください。"
 
 #: ../../api.rst:2882
 msgid "Represents the default avatar with the colour grey. See also :attr:`Colour.greyple`"
-msgstr ""
+msgstr "灰色のデフォルトのアバター。 :attr:`Colour.greyple` も参照してください。"
 
 #: ../../api.rst:2886
 msgid "An alias for :attr:`grey`."
@@ -5880,19 +5880,19 @@ msgstr ":attr:`grey` のエイリアス。"
 
 #: ../../api.rst:2889
 msgid "Represents the default avatar with the colour green. See also :attr:`Colour.green`"
-msgstr ""
+msgstr "緑色のデフォルトのアバター。 :attr:`Colour.green` も参照してください。"
 
 #: ../../api.rst:2893
 msgid "Represents the default avatar with the colour orange. See also :attr:`Colour.orange`"
-msgstr ""
+msgstr "オレンジ色のデフォルトのアバター。 :attr:`Colour.orange` も参照してください。"
 
 #: ../../api.rst:2897
 msgid "Represents the default avatar with the colour red. See also :attr:`Colour.red`"
-msgstr ""
+msgstr "赤色のデフォルトのアバター。 :attr:`Colour.red` も参照してください。"
 
 #: ../../api.rst:2901
 msgid "Represents the default avatar with the colour pink. See also :attr:`Colour.pink`"
-msgstr ""
+msgstr "ピンク色のデフォルトのアバター。 :attr:`Colour.pink` も参照してください。"
 
 #: ../../api.rst:2908
 msgid "Represents the type of sticker."
@@ -6280,15 +6280,15 @@ msgstr "投稿をタイルの集まりとして表示します。"
 
 #: ../../api.rst:3322
 msgid "Represents how a forum's posts are sorted in the client."
-msgstr ""
+msgstr "フォーラムの投稿がクライアントでどのように並び替えられるかを表します。"
 
 #: ../../api.rst:3328
 msgid "Sort forum posts by activity."
-msgstr ""
+msgstr "最終更新日時順でフォーラム投稿を並び替えます。"
 
 #: ../../api.rst:3332
 msgid "Sort forum posts by creation time (from most recent to oldest)."
-msgstr ""
+msgstr "作成日時順 (新しいものから古いものの順) でフォーラム投稿を並び替えます。"
 
 #: ../../api.rst:3338
 msgid "Audit Log Data"
@@ -6507,7 +6507,7 @@ msgstr "何かの名前。"
 
 #: ../../api.rst:3434
 msgid "The guild of something."
-msgstr ""
+msgstr "ギルド属性。"
 
 #: ../../api.rst:3440
 msgid "A guild's or role's icon. See also :attr:`Guild.icon` or :attr:`Role.icon`."
@@ -6663,11 +6663,11 @@ msgstr ":class:`Role` や :class:`abc.GuildChannel` の位置。"
 
 #: ../../api.rst:3581
 msgid "The type of channel, sticker, webhook or integration."
-msgstr ""
+msgstr "チャンネル、スタンプ、Webhookまたは連携サービスのタイプ。"
 
 #: ../../api.rst:3583
 msgid "Union[:class:`ChannelType`, :class:`StickerType`, :class:`WebhookType`, :class:`str`]"
-msgstr ""
+msgstr "Union[:class:`ChannelType`, :class:`StickerType`, :class:`WebhookType`, :class:`str`]"
 
 #: ../../api.rst:3587
 msgid "The topic of a :class:`TextChannel` or :class:`StageChannel`."
@@ -7116,15 +7116,15 @@ msgstr "List[:class:`abc.GuildChannel`, :class:`Thread`, :class:`Object`]"
 
 #: ../../api.rst:3978
 msgid "The guild’s display setting to show boost progress bar."
-msgstr ""
+msgstr "ギルドのブーストの進捗バーを表示するかの設定。"
 
 #: ../../api.rst:3984
 msgid "The guild’s system channel settings."
-msgstr ""
+msgstr "ギルドのシステムチャンネルの設定。"
 
 #: ../../api.rst:3986
 msgid "See also :attr:`Guild.system_channel_flags`"
-msgstr ""
+msgstr ":attr:`Guild.system_channel_flags` を参照してください。"
 
 #: ../../api.rst:3988
 #: ../../../discord/guild.py:docstring of discord.Guild.system_channel_flags:3
@@ -7133,23 +7133,23 @@ msgstr ":class:`SystemChannelFlags`"
 
 #: ../../api.rst:3992
 msgid "Whether the channel is marked as “not safe for work” or “age restricted”."
-msgstr ""
+msgstr "チャンネルに年齢制限がかかっているか。"
 
 #: ../../api.rst:3998
 msgid "The channel’s limit for number of members that can be in a voice or stage channel."
-msgstr ""
+msgstr "ボイスまたはステージチャンネルに参加できるメンバー数の制限。"
 
 #: ../../api.rst:4000
 msgid "See also :attr:`VoiceChannel.user_limit` and :attr:`StageChannel.user_limit`"
-msgstr ""
+msgstr ":attr:`VoiceChannel.user_limit` と :attr:`StageChannel.user_limit` も参照してください。"
 
 #: ../../api.rst:4006
 msgid "The channel flags associated with this thread or forum post."
-msgstr ""
+msgstr "このスレッドやフォーラム投稿に関連付けられたチャンネルフラグ。"
 
 #: ../../api.rst:4008
 msgid "See also :attr:`ForumChannel.flags` and :attr:`Thread.flags`"
-msgstr ""
+msgstr ":attr:`ForumChannel.flags` と :attr:`Thread.flags` も参照してください。"
 
 #: ../../api.rst:4010
 #: ../../../discord/channel.py:docstring of discord.ForumChannel.flags:5
@@ -7159,31 +7159,31 @@ msgstr ":class:`ChannelFlags`"
 
 #: ../../api.rst:4014
 msgid "The default slowmode delay for threads created in this text channel or forum."
-msgstr ""
+msgstr "このテキストチャンネルやフォーラムで作成されたスレッドのデフォルトの低速モードのレート制限。"
 
 #: ../../api.rst:4016
 msgid "See also :attr:`TextChannel.default_thread_slowmode_delay` and :attr:`ForumChannel.default_thread_slowmode_delay`"
-msgstr ""
+msgstr ":attr:`TextChannel.default_thread_slowmode_delay` と :attr:`ForumChannel.default_thread_slowmode_delay` も参照してください。"
 
 #: ../../api.rst:4022
 msgid "The applied tags of a forum post."
-msgstr ""
+msgstr "フォーラム投稿に適用されたタグ。"
 
 #: ../../api.rst:4024
 msgid "See also :attr:`Thread.applied_tags`"
-msgstr ""
+msgstr ":attr:`Thread.applied_tags` も参照してください。"
 
 #: ../../api.rst:4026
 msgid "List[Union[:class:`ForumTag`, :class:`Object`]]"
-msgstr ""
+msgstr "List[Union[:class:`ForumTag`, :class:`Object`]]"
 
 #: ../../api.rst:4030
 msgid "The available tags of a forum."
-msgstr ""
+msgstr "フォーラムにて利用可能なタグ。"
 
 #: ../../api.rst:4032
 msgid "See also :attr:`ForumChannel.available_tags`"
-msgstr ""
+msgstr ":attr:`ForumChannel.available_tags` も参照してください。"
 
 #: ../../api.rst:4034
 #: ../../../discord/channel.py:docstring of discord.ForumChannel.available_tags:5
@@ -7192,15 +7192,15 @@ msgstr "Sequence[:class:`ForumTag`]"
 
 #: ../../api.rst:4038
 msgid "The default_reaction_emoji for forum posts."
-msgstr ""
+msgstr "フォーラム投稿の default_reaction_emoji。"
 
 #: ../../api.rst:4040
 msgid "See also :attr:`ForumChannel.default_reaction_emoji`"
-msgstr ""
+msgstr ":attr:`ForumChannel.default_reaction_emoji` も参照してください。"
 
 #: ../../api.rst:4042
 msgid ":class:`default_reaction_emoji`"
-msgstr ""
+msgstr ":class:`default_reaction_emoji`"
 
 #: ../../api.rst:4048
 msgid "Webhook Support"
@@ -7346,7 +7346,7 @@ msgstr "リクエストを送信するために使用するセッション。ラ
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.partial:13
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.from_url:15
 msgid "The client to initialise this webhook with. This allows it to attach the client's internal state. If ``session`` is not given while this is given then the client's internal session will be used."
-msgstr ""
+msgstr "このWebhookを初期化するためのクライアント。これによりクライアントの内部状態を付属できます。このとき、 ``session`` が指定されていない場合は、クライアントの内部セッションが使用されます。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.partial:19
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.from_url:21
@@ -7358,7 +7358,7 @@ msgstr "Webhook関連の認証が必要なリクエストに使用するボッ�
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.partial:25
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.from_url:28
 msgid "Neither ``session`` nor ``client`` were given."
-msgstr ""
+msgstr "``session`` と ``client`` のどちらも指定されていない場合。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.partial:27
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.from_url:30
@@ -7664,7 +7664,7 @@ msgstr "メッセージの埋め込みを抑制するかどうか。これが ``
 #: ../../../discord/user.py:docstring of discord.abc.Messageable.send:76
 #: ../../../discord/member.py:docstring of discord.abc.Messageable.send:76
 msgid "Whether to suppress push and desktop notifications for the message. This will increment the mention counter in the UI, but will not actually send a notification."
-msgstr ""
+msgstr "メッセージのプッシュ通知とデスクトップ通知を抑制するかどうか。 抑制した場合、UIのメンションカウンターを増やしますが、実際に通知を送信することはありません。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.webhook.async_.Webhook.send:84
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.reply:12
@@ -8168,7 +8168,7 @@ msgstr "スレッドの名前。"
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_thread:13
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.create_thread:14
 msgid "The duration in minutes before a thread is automatically hidden from the channel list. If not provided, the channel's default auto archive duration is used.  Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided."
-msgstr ""
+msgstr "スレッドがチャンネルリストから自動的に非表示になるまでの分単位の時間。 指定されていない場合、チャンネルのデフォルトの自動アーカイブ期間が使用されます。指定された場合は、 ``60`` 、 ``1440`` 、 ``4320`` 、または ``10080`` のいずれかでないといけません。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.create_thread:14
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.create_thread:14
@@ -8176,7 +8176,7 @@ msgstr ""
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_thread:13
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.create_thread:14
 msgid "The duration in minutes before a thread is automatically hidden from the channel list. If not provided, the channel's default auto archive duration is used."
-msgstr ""
+msgstr "スレッドがチャンネルリストから自動的に非表示になるまでの分単位の時間。 指定されていない場合、チャンネルのデフォルトの自動アーカイブ期間が使用されます。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.create_thread:17
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.create_thread:17
@@ -8184,7 +8184,7 @@ msgstr ""
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.create_thread:16
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.create_thread:17
 msgid "Must be one of ``60``, ``1440``, ``4320``, or ``10080``, if provided."
-msgstr ""
+msgstr "指定された場合は、 ``60`` 、 ``1440`` 、 ``4320`` 、または ``10080`` のいずれかでないといけません。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.create_thread:19
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.create_thread:19
@@ -8330,13 +8330,13 @@ msgstr "チャンネルにすでに50個ピン留めされたメッセージが�
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:3
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:3
 msgid "Publishes this message to the channel's followers."
-msgstr ""
+msgstr "このメッセージをチャンネルのフォロワーに公開します。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.publish:5
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:5
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:5
 msgid "The message must have been sent in a news channel. You must have :attr:`~Permissions.send_messages` to do this."
-msgstr ""
+msgstr "メッセージはニュースチャンネルで送信されている必要があります。これを行うには、 :attr:`~Permissions.send_messages` が必要です。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.publish:8
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:8
@@ -8348,7 +8348,7 @@ msgstr "自身のメッセージ以外の場合は :attr:`~Permissions.manage_me
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:11
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:11
 msgid "You do not have the proper permissions to publish this message     or the channel is not a news channel."
-msgstr ""
+msgstr "このメッセージを公開するための適切な権限がないか、チャンネルがニュースチャンネルでない場合。"
 
 #: ../../../discord/webhook/async_.py:docstring of discord.message.PartialMessage.publish:12
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage.publish:12
@@ -8560,7 +8560,7 @@ msgstr "リクエストを送信するために使うセッション。ライブ
 #: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.partial:16
 #: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.from_url:16
 msgid "A partial :class:`SyncWebhook`. A partial :class:`SyncWebhook` is just a :class:`SyncWebhook` object with an ID and a token."
-msgstr ""
+msgstr "部分的な :class:`SyncWebhook` 。部分的な :class:`SyncWebhook` はただのIDとトークンのみを持つ :class:`SyncWebhook` オブジェクトです。"
 
 #: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.partial:18
 #: ../../../discord/webhook/sync.py:docstring of discord.webhook.sync.SyncWebhook.from_url:18
@@ -8681,11 +8681,11 @@ msgstr "ユーザー名。"
 #: ../../../discord/user.py:docstring of discord.user.ClientUser:35
 #: ../../../discord/user.py:docstring of discord.user.User:35
 msgid "The user's discriminator. This is a legacy concept that is no longer used."
-msgstr ""
+msgstr "ユーザーのタグ。これは、現在は使用されていない、過去の遺物です。"
 
 #: ../../../discord/abc.py:docstring of discord.abc.User:25
 msgid "The user's global nickname."
-msgstr ""
+msgstr "ユーザーのグローバルの表示名。"
 
 #: ../../../discord/abc.py:docstring of discord.abc.User:31
 msgid "If the user is a bot account."
@@ -10063,7 +10063,7 @@ msgstr "ユーザーのハッシュ値を返します。"
 #: ../../../discord/user.py:docstring of discord.user.ClientUser:19
 #: ../../../discord/user.py:docstring of discord.user.User:19
 msgid "Returns the user's handle (e.g. ``name`` or ``name#discriminator``)."
-msgstr ""
+msgstr "ユーザーのハンドル（例えば ``name`` や ``name#discriminator`` など）を返します。"
 
 #: ../../../discord/user.py:docstring of discord.user.ClientUser:29
 #: ../../../discord/user.py:docstring of discord.user.User:29
@@ -10073,7 +10073,7 @@ msgstr "ユーザーのユニークなID。"
 #: ../../../discord/user.py:docstring of discord.user.ClientUser:41
 #: ../../../discord/user.py:docstring of discord.user.User:41
 msgid "The user's global nickname, taking precedence over the username in display."
-msgstr ""
+msgstr "ユーザーのグローバルの表示名。ユーザー名より優先して表示されます。"
 
 #: ../../../discord/user.py:docstring of discord.user.ClientUser:55
 #: ../../../discord/user.py:docstring of discord.user.User:55
@@ -10499,19 +10499,19 @@ msgstr "添付ファイルが一時的であるかどうか。"
 
 #: ../../../discord/message.py:docstring of discord.message.Attachment:95
 msgid "The duration of the audio file in seconds. Returns ``None`` if it's not a voice message."
-msgstr ""
+msgstr "音声ファイルの秒単位の長さ。ボイスメッセージでない場合 ``None`` を返します。"
 
 #: ../../../discord/message.py:docstring of discord.message.Attachment:99
 msgid "Optional[:class:`float`]"
-msgstr ""
+msgstr "Optional[:class:`float`]"
 
 #: ../../../discord/message.py:docstring of discord.message.Attachment:103
 msgid "The waveform (amplitudes) of the audio in bytes. Returns ``None`` if it's not a voice message."
-msgstr ""
+msgstr "音声の波形（振幅）をバイト単位で返します。ボイスメッセージでない場合は ``None`` を返します。"
 
 #: ../../../discord/message.py:docstring of discord.message.Attachment:107
 msgid "Optional[:class:`bytes`]"
-msgstr ""
+msgstr "Optional[:class:`bytes`]"
 
 #: ../../../discord/message.py:docstring of discord.message.Attachment.is_spoiler:1
 msgid ":class:`bool`: Whether this attachment contains a spoiler."
@@ -10519,7 +10519,7 @@ msgstr ":class:`bool`: この添付ファイルにスポイラーが含まれて
 
 #: ../../../discord/message.py:docstring of discord.message.Attachment.is_voice_message:1
 msgid ":class:`bool`: Whether this attachment is a voice message."
-msgstr ""
+msgstr ":class:`bool`: 添付ファイルがボイスメッセージであるかどうか。"
 
 #: ../../../discord/message.py:docstring of discord.message.Attachment.save:3
 msgid "Saves this attachment into a file-like object."
@@ -10863,7 +10863,7 @@ msgstr "メッセージの送信された :class:`TextChannel` や :class:`Threa
 
 #: ../../../discord/message.py:docstring of discord.message.Message:67
 msgid "Union[:class:`TextChannel`, :class:`StageChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]"
-msgstr ""
+msgstr "Union[:class:`TextChannel`, :class:`StageChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`, :class:`GroupChannel`, :class:`PartialMessageable`]"
 
 #: ../../../discord/message.py:docstring of discord.message.Message:71
 msgid "The message that this message references. This is only applicable to messages of type :attr:`MessageType.pins_add`, crossposted messages created by a followed channel integration, or message replies."
@@ -11348,11 +11348,11 @@ msgstr "このフィールドが :class:`int` から列挙型に変更されま�
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild:177
 msgid "The approximate number of members in the guild. This is ``None`` unless the guild is obtained using :meth:`Client.fetch_guild` or :meth:`Client.fetch_guilds` with ``with_counts=True``."
-msgstr ""
+msgstr "ギルドのおおよそのメンバーの数を示します。 :meth:`Client.fetch_guild` や :meth:`Client.fetch_guilds` にて ``with_counts=True`` を指定してギルドを取得しない限り、 ``None`` を返します。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild:186
 msgid "The approximate number of members currently active in the guild. Offline members are excluded. This is ``None`` unless the guild is obtained using :meth:`Client.fetch_guild` or :meth:`Client.fetch_guilds` with ``with_counts=True``."
-msgstr ""
+msgstr "ギルドで現在アクティブなメンバーのおおよその数を示します。オフラインのメンバーは除外された値となります。 :meth:`Client.fetch_guild` や :meth:`Client.fetch_guilds` にて ``with_counts=True`` を指定してギルドを取得しない限り、 ``None`` を返します。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild:196
 msgid "Indicates if the guild has premium AKA server boost level progress bar enabled."
@@ -11364,7 +11364,7 @@ msgstr "ギルドにてウィジェットが有効になっているかどうか
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild:212
 msgid "The maximum amount of users in a stage video channel."
-msgstr ""
+msgstr "ステージビデオチャンネルのユーザーの最大数。"
 
 #: ../../../discord/guild.py:docstring of discord.Guild.channels:1
 msgid "A list of channels that belongs to this guild."
@@ -11523,15 +11523,15 @@ msgstr "Optional[:class:`Thread`]"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_emoji:8
 msgid "The returned Emoji or ``None`` if not found."
-msgstr ""
+msgstr "絵文字、または該当するものが見つからない場合 ``None`` が返ります。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_emoji:9
 msgid "Optional[:class:`Emoji`]"
-msgstr ""
+msgstr "Optional[:class:`Emoji`]"
 
 #: ../../../discord/guild.py:docstring of discord.Guild.afk_channel:1
 msgid "The channel that denotes the AFK channel."
-msgstr ""
+msgstr "AFKチャンネルを示すチャンネル。"
 
 #: ../../../discord/guild.py:docstring of discord.Guild.afk_channel:3
 #: ../../../discord/guild.py:docstring of discord.Guild.system_channel:3
@@ -11572,19 +11572,19 @@ msgstr "ギルドの管理者とモデレータがDiscordからの通知を受�
 
 #: ../../../discord/guild.py:docstring of discord.Guild.safety_alerts_channel:1
 msgid "Return's the guild's channel used for safety alerts, if set."
-msgstr ""
+msgstr "存在する場合、ギルドの「セーフティ通知チャンネル」として設定されているチャンネルを返します。"
 
 #: ../../../discord/guild.py:docstring of discord.Guild.safety_alerts_channel:3
 msgid "For example, this is used for the raid protection setting. The guild must have the ``COMMUNITY`` feature."
-msgstr ""
+msgstr "例えば、これはレイドプロテクションの設定に使用されます。ギルドには ``COMMUNITY`` 機能が必要です。"
 
 #: ../../../discord/guild.py:docstring of discord.Guild.widget_channel:1
 msgid "Returns the widget channel of the guild."
-msgstr ""
+msgstr "ギルドのウィジェットチャンネルを返します。"
 
 #: ../../../discord/guild.py:docstring of discord.Guild.widget_channel:8
 msgid "Optional[Union[:class:`TextChannel`, :class:`ForumChannel`, :class:`VoiceChannel`, :class:`StageChannel`]]"
-msgstr ""
+msgstr "Optional[Union[:class:`TextChannel`, :class:`ForumChannel`, :class:`VoiceChannel`, :class:`StageChannel`]]"
 
 #: ../../../discord/guild.py:docstring of discord.Guild.emoji_limit:1
 msgid "The maximum number of emoji slots this guild has."
@@ -11782,27 +11782,27 @@ msgstr "指定された名前に一致する最初のメンバーを返します
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_member_named:3
 msgid "The name is looked up in the following order:"
-msgstr ""
+msgstr "名前は以下の順番で検索されます:"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_member_named:5
 msgid "Username#Discriminator (deprecated)"
-msgstr ""
+msgstr "ユーザー名#タグ (非推奨)"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_member_named:6
 msgid "Username#0 (deprecated, only gets users that migrated from their discriminator)"
-msgstr ""
+msgstr "ユーザー名#0 (非推奨、タグから移行したユーザーのみ取得)"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_member_named:7
 msgid "Nickname"
-msgstr ""
+msgstr "ニックネーム"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_member_named:8
 msgid "Global name"
-msgstr ""
+msgstr "グローバルの表示名"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_member_named:9
 msgid "Username"
-msgstr ""
+msgstr "ユーザー名"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_member_named:11
 msgid "If no member is found, ``None`` is returned."
@@ -11814,11 +11814,11 @@ msgstr "``name`` 引数は位置限定引数になりました。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_member_named:19
 msgid "Looking up users via discriminator due to Discord API change."
-msgstr ""
+msgstr "Discord APIの変更のため、ユーザーのタグによる検索。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_member_named:21
 msgid "The name of the member to lookup."
-msgstr ""
+msgstr "検索するメンバーの名前。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.get_member_named:24
 msgid "The member in this guild with the associated name. If not found then ``None`` is returned."
@@ -11898,7 +11898,7 @@ msgstr "このテキストチャンネルで作成されたスレッドの分単
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_text_channel:70
 msgid "The default slowmode delay in seconds for threads created in the text channel."
-msgstr ""
+msgstr "このテキストチャンネルで作成されたスレッドの、デフォルトの秒単位の低速モードレート制限。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_text_channel:74
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_voice_channel:35
@@ -12007,7 +12007,7 @@ msgstr "このフォーラムで作成されたスレッドの、デフォルト
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_forum:41
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel:118
 msgid "The default sort order for posts in this forum channel."
-msgstr ""
+msgstr "このフォーラムチャネルの投稿の並び替え順。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_forum:45
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel:100
@@ -12016,7 +12016,7 @@ msgstr "このフォーラムで作成されたスレッドで、デフォルト
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_forum:50
 msgid "The default layout for posts in this forum."
-msgstr ""
+msgstr "このフォーラムの投稿のデフォルトの表示レイアウト。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_forum:54
 msgid "The available tags for this forum channel."
@@ -12133,7 +12133,7 @@ msgstr "ギルドの新しい優先ロケール。ギルドの主要言語とし
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit:70
 msgid "Now accepts an enum instead of :class:`str`."
-msgstr ""
+msgstr ":class:`str` の代わりに列挙型を受け付けます。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit:72
 msgid "The new channel that is used for rules. This is only available to guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no rules channel."
@@ -12167,7 +12167,7 @@ msgstr "新しいウィジェットチャンネル。``None`` を指定すると
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit:104
 msgid "The new guild's Multi-Factor Authentication requirement level. Note that you must be owner of the guild to do this."
-msgstr ""
+msgstr "新しいギルドの二要素認証要件レベル。これを行うにはギルドの所有者でないといけません。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit:109
 msgid "The reason for editing this guild. Shows up on the audit log."
@@ -12175,11 +12175,11 @@ msgstr "ギルドを編集する理由。監査ログに表示されます。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit:111
 msgid "Whether the alerts for raid protection should be disabled for the guild."
-msgstr ""
+msgstr "レイドプロテクションのアラートをギルドで無効にするかどうか。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit:115
 msgid "The new channel that is used for safety alerts. This is only available to guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no safety alerts channel."
-msgstr ""
+msgstr "安全アラートに使用される新しいチャンネル。これは :attr:`Guild.features` に ``COMMUNITY`` を含むギルドでのみ利用できます。安全アラートチャネルがない場合は ``None`` を指定できます。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit:122
 msgid "You do not have permissions to edit the guild."
@@ -12196,7 +12196,7 @@ msgstr "``icon`` に渡された画像形式が無効な場合。これはPNGか
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit:125
 msgid "The type passed to the ``default_notifications``, ``rules_channel``, ``public_updates_channel``,     ``safety_alerts_channel`` ``verification_level``, ``explicit_content_filter``,     ``system_channel_flags``, or ``mfa_level`` parameter was of the incorrect type."
-msgstr ""
+msgstr "``default_notifications`` 、 ``rules_channel`` 、 ``public_updates_channel`` 、 ``safety_alerts_channel`` 、 ``verification_level`` 、 ``explicit_content_filter`` 、 ``system_channel_flags`` 、 ``mfa_level`` に間違った型の値が渡されたとき。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit:127
 msgid "The newly updated guild. Note that this has the same limitations as mentioned in :meth:`Client.fetch_guild` and may not have full data."
@@ -13295,7 +13295,7 @@ msgstr ":class:`Widget`"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit_widget:3
 msgid "Edits the widget of the guild. This can also be done with :attr:`~Guild.edit`."
-msgstr ""
+msgstr "ギルドのウィジェットを編集します。これは :attr:`~Guild.edit` でも行えます。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.edit_widget:13
 msgid "The reason for editing this widget. Shows up on the audit log."
@@ -13428,7 +13428,7 @@ msgstr "自動管理ルールが発動したときの対応。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_automod_rule:17
 msgid "Whether the automod rule is enabled. Defaults to ``False``."
-msgstr ""
+msgstr "自動管理ルールを有効にするか。デフォルトは ``False`` です。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.create_automod_rule:20
 msgid "A list of roles that will be exempt from the automod rule."
@@ -13959,7 +13959,7 @@ msgstr "メンバーのハッシュ値を返します。"
 
 #: ../../../discord/member.py:docstring of discord.member.Member:23
 msgid "Returns the member's handle (e.g. ``name`` or ``name#discriminator``)."
-msgstr ""
+msgstr "メンバーのハンドル（例えば ``name`` や ``name#discriminator`` など）を返します。"
 
 #: ../../../discord/member.py:docstring of discord.member.Member:27
 msgid "An aware datetime object that specifies the date and time in UTC that the member joined the guild. If the member left and rejoined the guild, this will be the latest date. In certain cases, this can be ``None``."
@@ -13983,7 +13983,7 @@ msgstr "メンバーが属するギルド。"
 
 #: ../../../discord/member.py:docstring of discord.member.Member:52
 msgid "The guild specific nickname of the user. Takes precedence over the global name."
-msgstr ""
+msgstr "ユーザーのギルド内専用のニックネーム。グローバルの表示名よりも優先されます。"
 
 #: ../../../discord/member.py:docstring of discord.member.Member:58
 msgid "Whether the member is pending member verification."
@@ -14011,7 +14011,7 @@ msgstr ":attr:`User.discriminator` と同じです。"
 
 #: ../../../discord/member.py:docstring of discord.Member.global_name:1
 msgid "Equivalent to :attr:`User.global_name`"
-msgstr ""
+msgstr ":attr:`User.global_name` と同じです。"
 
 #: ../../../discord/member.py:docstring of discord.Member.bot:1
 msgid "Equivalent to :attr:`User.bot`"
@@ -15319,7 +15319,7 @@ msgstr "このチャンネルで作成されたスレッドのデフォルトの
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel:90
 msgid "The default slowmode delay in seconds for threads created in this channel."
-msgstr ""
+msgstr "このチャンネルで作成されたスレッドの、デフォルトの秒単位の低速モードレート制限。"
 
 #: ../../../discord/channel.py:docstring of discord.TextChannel.type:1
 #: ../../../discord/channel.py:docstring of discord.ForumChannel.type:1
@@ -15482,7 +15482,7 @@ msgstr "このチャンネルで作成されたスレッドの分単位のデフ
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.edit:51
 msgid "The new default slowmode delay in seconds for threads created in this channel."
-msgstr ""
+msgstr "このチャンネルで作成されたスレッドの、新しいデフォルトの秒単位の低速モードレート制限。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.TextChannel.edit:56
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.edit:61
@@ -15943,7 +15943,7 @@ msgstr "Optional[:class:`PartialEmoji`]"
 
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel:109
 msgid "The default layout for posts in this forum channel. Defaults to :attr:`ForumLayoutType.not_set`."
-msgstr "このフォーラムチャネルの投稿のデフォルトの配列。デフォルトは :attr:`ForumLayoutType.not_set` です。"
+msgstr "このフォーラムチャネルの投稿のデフォルトの表示レイアウト。デフォルトは :attr:`ForumLayoutType.not_set` です。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel:114
 msgid ":class:`ForumLayoutType`"
@@ -15951,7 +15951,7 @@ msgstr ":class:`ForumLayoutType`"
 
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel:122
 msgid "Optional[:class:`ForumOrderType`]"
-msgstr ""
+msgstr "Optional[:class:`ForumOrderType`]"
 
 #: ../../../discord/channel.py:docstring of discord.ForumChannel.flags:1
 #: ../../../discord/threads.py:docstring of discord.Thread.flags:1
@@ -16036,11 +16036,11 @@ msgstr "新しいチャンネル内のスレッドのデフォルトのリアク
 
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.edit:48
 msgid "The new default layout for posts in this forum."
-msgstr "このフォーラムの新しい投稿のデフォルトの配列。"
+msgstr "このフォーラムの新しい投稿のデフォルトの表示レイアウト。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.edit:52
 msgid "The new default sort order for posts in this forum."
-msgstr ""
+msgstr "このフォーラムの新しい投稿のデフォルトの並び替え順。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.ForumChannel.edit:56
 msgid "Whether to require a tag for threads in this channel or not."
@@ -16229,7 +16229,7 @@ msgstr "このスレッドをアーカイブしたユーザーのID。"
 
 #: ../../../discord/threads.py:docstring of discord.threads.Thread:115
 msgid "The duration in minutes until the thread is automatically hidden from the channel list. Usually a value of 60, 1440, 4320 and 10080."
-msgstr ""
+msgstr "スレッドがチャンネルリストから自動的に非表示になるまでの分単位の期間。通常は60、1440、4320、10080のいずれかの値です。"
 
 #: ../../../discord/threads.py:docstring of discord.threads.Thread:122
 msgid "An aware timestamp of when the thread's archived status was last updated in UTC."
@@ -16399,7 +16399,7 @@ msgstr "モデレータでないユーザーがこのスレッドに他のモデ
 
 #: ../../../discord/threads.py:docstring of discord.threads.Thread.edit:23
 msgid "The new duration in minutes before a thread is automatically hidden from the channel list. Must be one of ``60``, ``1440``, ``4320``, or ``10080``."
-msgstr ""
+msgstr "スレッドが自動的にチャンネルリストから非表示となるまでの分単位の新しい期間。``60``、``1440``、``4320``、または ``10080`` のいずれかでなければなりません。"
 
 #: ../../../discord/threads.py:docstring of discord.threads.Thread.edit:26
 msgid "Specifies the slowmode rate limit for user in this thread, in seconds. A value of ``0`` disables slowmode. The maximum value possible is ``21600``."
@@ -16768,7 +16768,7 @@ msgstr "ステージインスタンスのプライバシーレベル。デフォ
 
 #: ../../../discord/channel.py:docstring of discord.channel.StageChannel.create_instance:13
 msgid "Whether to send a start notification. This sends a push notification to @everyone if ``True``. Defaults to ``False``. You must have :attr:`~Permissions.mention_everyone` to do this."
-msgstr ""
+msgstr "開始通知を送信するかどうか。 ``True`` の場合、プッシュ通知を@everyoneに送信します。 デフォルトは ``False`` です。これを行うには、 :attr:`~Permissions.mention_everyone` が必要です。"
 
 #: ../../../discord/channel.py:docstring of discord.channel.StageChannel.create_instance:18
 msgid "The reason the stage instance was created. Shows up on the audit log."
@@ -17742,7 +17742,7 @@ msgstr "ウィジェットメンバーのハッシュ値を返します。"
 
 #: ../../../discord/widget.py:docstring of discord.widget.WidgetMember:19
 msgid "Returns the widget member's handle (e.g. ``name`` or ``name#discriminator``)."
-msgstr ""
+msgstr "ウィジェットメンバーのハンドル（例えば ``name`` や ``name#discriminator`` など）を返します。"
 
 #: ../../../discord/widget.py:docstring of discord.widget.WidgetMember:23
 msgid "The member's ID."
@@ -17754,11 +17754,11 @@ msgstr "メンバーのユーザー名。"
 
 #: ../../../discord/widget.py:docstring of discord.widget.WidgetMember:35
 msgid "The member's discriminator. This is a legacy concept that is no longer used."
-msgstr ""
+msgstr "メンバーのタグ。これは、現在は使用されていない、過去の遺物です。"
 
 #: ../../../discord/widget.py:docstring of discord.widget.WidgetMember:41
 msgid "The member's global nickname, taking precedence over the username in display."
-msgstr ""
+msgstr "メンバーのグローバルの表示名。ユーザー名より優先して表示されます。"
 
 #: ../../../discord/widget.py:docstring of discord.widget.WidgetMember:49
 msgid "Whether the member is a bot."
@@ -17770,7 +17770,7 @@ msgstr "メンバーのステータス。"
 
 #: ../../../discord/widget.py:docstring of discord.widget.WidgetMember:61
 msgid "The member's guild-specific nickname. Takes precedence over the global name."
-msgstr ""
+msgstr "メンバーのギルド内専用のニックネーム。グローバルの表示名よりも優先されます。"
 
 #: ../../../discord/widget.py:docstring of discord.widget.WidgetMember:67
 msgid "The member's avatar hash."
@@ -17846,7 +17846,7 @@ msgstr "Discordの制限により、このデータが利用可能な場合、�
 
 #: ../../../discord/widget.py:docstring of discord.widget.Widget:47
 msgid "List[:class:`WidgetMember`]"
-msgstr ""
+msgstr "List[:class:`WidgetMember`]"
 
 #: ../../../discord/widget.py:docstring of discord.widget.Widget:51
 msgid "The approximate number of online members in the guild. Offline members are not included in this count."
@@ -19030,7 +19030,7 @@ msgstr ":meth:`VoiceChannel.get_partial_message`"
 
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage:9
 msgid ":meth:`StageChannel.get_partial_message`"
-msgstr ""
+msgstr ":meth:`StageChannel.get_partial_message`"
 
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage:10
 msgid ":meth:`Thread.get_partial_message`"
@@ -19058,7 +19058,7 @@ msgstr "この部分的なメッセージに関連付けられたチャンネル
 
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage:35
 msgid "Union[:class:`PartialMessageable`, :class:`TextChannel`, :class:`StageChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`]"
-msgstr ""
+msgstr "Union[:class:`PartialMessageable`, :class:`TextChannel`, :class:`StageChannel`, :class:`VoiceChannel`, :class:`Thread`, :class:`DMChannel`]"
 
 #: ../../../discord/message.py:docstring of discord.message.PartialMessage:45
 msgid "The guild that the partial message belongs to, if applicable."
@@ -19181,7 +19181,7 @@ msgstr "``(name, value)`` ペアのイテレータを返します。これによ
 
 #: ../../../discord/flags.py:docstring of discord.flags.Intents:62
 msgid "Returns whether any intent is enabled."
-msgstr ""
+msgstr "何らかのインテントが有効かどうかを返します。"
 
 #: ../../../discord/flags.py:docstring of discord.flags.Intents:68
 #: ../../../discord/flags.py:docstring of discord.flags.MemberCacheFlags:71
@@ -19369,7 +19369,7 @@ msgstr ":attr:`User.discriminator`"
 
 #: ../../docstring of discord.Intents.members:26
 msgid ":attr:`User.global_name`"
-msgstr ""
+msgstr ":attr:`User.global_name`"
 
 #: ../../docstring of discord.Intents.members:28
 msgid "For more information go to the :ref:`member intent documentation <need_members_intent>`."
@@ -19936,7 +19936,7 @@ msgstr "x のすべてのフラグが反転したMemberCacheFlagsインスタン
 #: ../../../discord/flags.py:docstring of discord.flags.AutoModPresets:54
 #: ../../../discord/flags.py:docstring of discord.flags.SystemChannelFlags:58
 msgid "Returns whether any flag is set to ``True``."
-msgstr ""
+msgstr "何らかのフラグが ``True`` に設定されているかどうかを返します。"
 
 #: ../../../discord/flags.py:docstring of discord.flags.MemberCacheFlags.all:1
 msgid "A factory method that creates a :class:`MemberCacheFlags` with everything enabled."
@@ -20028,7 +20028,7 @@ msgstr "``(name, value)`` ペアのイテレータを返します。これによ
 
 #: ../../docstring of discord.ApplicationFlags.auto_mod_badge:1
 msgid "Returns ``True`` if the application uses at least 100 automod rules across all guilds. This shows up as a badge in the official client."
-msgstr ""
+msgstr "アプリケーションがすべてのギルドを合算して少なくとも100の自動管理ルールを使用している場合 ``True`` を返します。これは公式クライアントにバッジとして表示されます。"
 
 #: ../../docstring of discord.ApplicationFlags.gateway_presence:1
 msgid "Returns ``True`` if the application is verified and is allowed to receive presence information over the gateway."
@@ -20172,7 +20172,7 @@ msgstr "自動管理ルールの対応を表します。"
 
 #: ../../../discord/automod.py:docstring of discord.automod.AutoModRuleAction:4
 msgid "Only one of ``channel_id``, ``duration``, or ``custom_message`` can be used."
-msgstr ""
+msgstr "``channel_id`` 、 ``duration`` 、 ``custom_message`` のいずれか一つのみが使用できます。"
 
 #: ../../../discord/automod.py:docstring of discord.automod.AutoModRuleAction:10
 msgid "The type of action to take. Defaults to :attr:`~AutoModRuleActionType.block_message`."
@@ -20196,7 +20196,7 @@ msgstr "Optional[:class:`datetime.timedelta`]"
 
 #: ../../../discord/automod.py:docstring of discord.automod.AutoModRuleAction:32
 msgid "A custom message which will be shown to a user when their message is blocked. Passing this sets :attr:`type` to :attr:`~AutoModRuleActionType.block_message`."
-msgstr ""
+msgstr "メッセージがブロックされたときに送信者に表示されるカスタムメッセージ。 :attr:`type` を :attr:`~AutoModRuleActionType.block_message` に設定します。"
 
 #: ../../api.rst:4862
 msgid "AutoModTrigger"
@@ -20252,7 +20252,7 @@ msgstr "発動条件の種類。"
 
 #: ../../../discord/automod.py:docstring of discord.automod.AutoModTrigger:28
 msgid "The list of strings that will trigger the keyword filter. Maximum of 1000. Keywords can only be up to 60 characters in length."
-msgstr ""
+msgstr "キーワードフィルタを発動させる文字列の一覧。最大1000個まで。キーワードは各60文字以内です。"
 
 #: ../../../discord/automod.py:docstring of discord.automod.AutoModTrigger:31
 msgid "This could be combined with :attr:`regex_patterns`."
@@ -20260,7 +20260,7 @@ msgstr ":attr:`regex_patterns` と組み合わせることができます。"
 
 #: ../../../discord/automod.py:docstring of discord.automod.AutoModTrigger:37
 msgid "The regex pattern that will trigger the filter. The syntax is based off of `Rust's regex syntax <https://docs.rs/regex/latest/regex/#syntax>`_. Maximum of 10. Regex strings can only be up to 260 characters in length."
-msgstr ""
+msgstr "フィルタを発動させる正規表現パターン。構文は `Rust の正規表現構文 <https://docs.rs/regex/latest/regex/#syntax>`_ に基づいています。 最大 10 個まで。正規表現文字列は 260 文字までしか使用できません。"
 
 #: ../../../discord/automod.py:docstring of discord.automod.AutoModTrigger:41
 msgid "This could be combined with :attr:`keyword_filter` and/or :attr:`allow_list`"
@@ -20276,7 +20276,7 @@ msgstr ":class:`AutoModPresets`"
 
 #: ../../../discord/automod.py:docstring of discord.automod.AutoModTrigger:55
 msgid "The list of words that are exempt from the commonly flagged words. Maximum of 100. Keywords can only be up to 60 characters in length."
-msgstr ""
+msgstr "共通のキーワードフィルタの単語から除外される単語の一覧。最大100個まで。キーワードは各60文字以内です。"
 
 #: ../../../discord/automod.py:docstring of discord.automod.AutoModTrigger:62
 msgid "The total number of user and role mentions a message can contain. Has a maximum of 50."
@@ -20356,7 +20356,7 @@ msgstr "生の色の値を返します。"
 
 #: ../../../discord/colour.py:docstring of discord.colour.Colour:30
 msgid "The colour values in the classmethods are mostly provided as-is and can change between versions should the Discord client's representation of that colour also change."
-msgstr ""
+msgstr "クラスメソッドの色はDiscordクライアントの色をほぼそのまま提供しているため、クライアントで使用する色が変更された場合、値がバージョン間で変更されることがあります。"
 
 #: ../../../discord/colour.py:docstring of discord.colour.Colour:35
 msgid "The raw integer colour value."
@@ -20540,15 +20540,15 @@ msgstr "``0x99AAB5`` の値を持つ :class:`Colour` を返すクラスメソッ
 
 #: ../../../discord/colour.py:docstring of discord.colour.Colour.dark_theme:1
 msgid "A factory method that returns a :class:`Colour` with a value of ``0x313338``."
-msgstr ""
+msgstr "``0x313338`` の値を持つ :class:`Colour` を返すクラスメソッドです。"
 
 #: ../../../discord/colour.py:docstring of discord.colour.Colour.dark_theme:3
 msgid "This will appear transparent on Discord's dark theme."
-msgstr ""
+msgstr "これはDiscordのダークテーマでは透明に見えます。"
 
 #: ../../../discord/colour.py:docstring of discord.colour.Colour.dark_theme:9
 msgid "Updated colour from previous ``0x36393F`` to reflect discord theme changes."
-msgstr ""
+msgstr "Discordテーマの変更を反映するため以前の ``0x36393F`` から色を変更しました。"
 
 #: ../../../discord/colour.py:docstring of discord.colour.Colour.fuchsia:1
 msgid "A factory method that returns a :class:`Colour` with a value of ``0xEB459E``."
@@ -20560,15 +20560,15 @@ msgstr "``0xFEE75C`` の値を持つ :class:`Colour` を返すクラスメソッ
 
 #: ../../../discord/colour.py:docstring of discord.colour.Colour.dark_embed:1
 msgid "A factory method that returns a :class:`Colour` with a value of ``0x2B2D31``."
-msgstr ""
+msgstr "``0x2B2D31`` の値を持つ :class:`Colour` を返すクラスメソッドです。"
 
 #: ../../../discord/colour.py:docstring of discord.colour.Colour.light_embed:1
 msgid "A factory method that returns a :class:`Colour` with a value of ``0xEEEFF1``."
-msgstr ""
+msgstr "``0xEEEFF1`` の値を持つ :class:`Colour` を返すクラスメソッドです。"
 
 #: ../../../discord/colour.py:docstring of discord.colour.Colour.pink:1
 msgid "A factory method that returns a :class:`Colour` with a value of ``0xEB459F``."
-msgstr ""
+msgstr "``0xEB459F`` の値を持つ :class:`Colour` を返すクラスメソッドです。"
 
 #: ../../api.rst:4886
 msgid "BaseActivity"
@@ -20929,7 +20929,7 @@ msgstr "``(perm, value)`` ペアのイテレータを返します。これによ
 
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions:70
 msgid "Returns whether the permissions object has any permissions set to ``True``."
-msgstr ""
+msgstr "権限オブジェクトの権限のいずれかが ``True`` に設定されているかどうかを返します。"
 
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions:76
 msgid "The raw value. This value is a bit array field of a 53-bit integer representing the currently available permissions. You should query permissions via the properties rather than using this raw value."
@@ -20966,7 +20966,7 @@ msgstr "チャンネル特有の権限が ``True`` に、ギルド特有の権�
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions.all_channel:5
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions.elevated:12
 msgid ":attr:`manage_expressions`"
-msgstr ""
+msgstr ":attr:`manage_expressions`"
 
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions.all_channel:6
 msgid ":attr:`view_audit_log`"
@@ -21006,7 +21006,7 @@ msgstr ":attr:`administrator`"
 
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions.all_channel:14
 msgid ":attr:`create_expressions`"
-msgstr ""
+msgstr ":attr:`create_expressions`"
 
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions.all_channel:16
 msgid "Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_application_commands` permissions."
@@ -21018,7 +21018,7 @@ msgstr ":attr:`create_public_threads` 、 :attr:`create_private_threads` 、 :at
 
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions.all_channel:24
 msgid "Added :attr:`use_soundboard`, :attr:`create_expressions` permissions."
-msgstr ""
+msgstr ":attr:`use_soundboard` と :attr:`create_expressions` 権限を追加しました。"
 
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions.general:1
 msgid "A factory method that creates a :class:`Permissions` with all \"General\" permissions from the official Discord UI set to ``True``."
@@ -21030,7 +21030,7 @@ msgstr ":attr:`read_messages` が全般の権限に含まれるようになり�
 
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions.general:10
 msgid "Added :attr:`create_expressions` permission."
-msgstr ""
+msgstr ":attr:`create_expressions` 権限を追加しました。"
 
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions.membership:1
 msgid "A factory method that creates a :class:`Permissions` with all \"Membership\" permissions from the official Discord UI set to ``True``."
@@ -21050,7 +21050,7 @@ msgstr ":attr:`create_public_threads` 、 :attr:`create_private_threads` 、 :at
 
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions.text:12
 msgid "Added :attr:`send_voice_messages` permission."
-msgstr ""
+msgstr ":attr:`send_voice_messages` 権限を追加しました。"
 
 #: ../../../discord/permissions.py:docstring of discord.permissions.Permissions.voice:1
 msgid "A factory method that creates a :class:`Permissions` with all \"Voice\" permissions from the official Discord UI set to ``True``."
@@ -21272,12 +21272,12 @@ msgstr "ユーザーがWebhookを作成、編集、削除できる場合は、``
 
 #: ../../docstring of discord.Permissions.manage_expressions:1
 msgid "Returns ``True`` if a user can edit or delete emojis, stickers, and soundboard sounds."
-msgstr ""
+msgstr "絵文字、スタンプ、サウンドボードのサウンドを編集または削除できる場合は ``True`` を返します。"
 
 #: ../../docstring of discord.Permissions.manage_emojis:1
 #: ../../docstring of discord.Permissions.manage_emojis_and_stickers:1
 msgid "An alias for :attr:`manage_expressions`."
-msgstr ""
+msgstr ":attr:`manage_expressions` のエイリアス。"
 
 #: ../../docstring of discord.Permissions.use_application_commands:1
 msgid "Returns ``True`` if a user can use slash commands."
@@ -21325,19 +21325,19 @@ msgstr "ユーザーが他のユーザーをタイムアウトできる場合は
 
 #: ../../docstring of discord.Permissions.use_soundboard:1
 msgid "Returns ``True`` if a user can use the soundboard."
-msgstr ""
+msgstr "ユーザーがサウンドボードを使用できる場合は ``True`` を返します。"
 
 #: ../../docstring of discord.Permissions.create_expressions:1
 msgid "Returns ``True`` if a user can create emojis, stickers, and soundboard sounds."
-msgstr ""
+msgstr "絵文字、スタンプ、サウンドボードのサウンドを作成できる場合は ``True`` を返します。"
 
 #: ../../docstring of discord.Permissions.use_external_sounds:1
 msgid "Returns ``True`` if a user can use sounds from other guilds."
-msgstr ""
+msgstr "ユーザーが他のギルドのサウンドを使用できる場合は ``True`` を返します。"
 
 #: ../../docstring of discord.Permissions.send_voice_messages:1
 msgid "Returns ``True`` if a user can send voice messages."
-msgstr ""
+msgstr "ユーザーがボイスメッセージを送信できる場合は ``True`` を返します。"
 
 #: ../../api.rst:4934
 msgid "PermissionOverwrite"
@@ -21523,15 +21523,15 @@ msgstr "メッセージがロールをメンションし、そのメンバーを
 
 #: ../../docstring of discord.MessageFlags.suppress_notifications:1
 msgid "Returns ``True`` if the message will not trigger push and desktop notifications."
-msgstr ""
+msgstr "メッセージがプッシュ通知やデスクトップ通知を送信しない場合は ``True`` を返します。"
 
 #: ../../docstring of discord.MessageFlags.silent:1
 msgid "Alias for :attr:`suppress_notifications`."
-msgstr ""
+msgstr ":attr:`suppress_notifications` のエイリアス。"
 
 #: ../../docstring of discord.MessageFlags.voice:1
 msgid "Returns ``True`` if the message is a voice message."
-msgstr ""
+msgstr "メッセージがボイスメッセージの場合に ``True`` を返します。"
 
 #: ../../api.rst:4958
 msgid "PublicUserFlags"

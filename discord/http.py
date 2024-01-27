@@ -90,6 +90,7 @@ if TYPE_CHECKING:
         scheduled_event,
         sticker,
         welcome_screen,
+        sku,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -152,6 +153,7 @@ def handle_message_parameters(
     mention_author: Optional[bool] = None,
     thread_name: str = MISSING,
     channel_payload: Dict[str, Any] = MISSING,
+    applied_tags: Optional[SnowflakeList] = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -241,6 +243,12 @@ def handle_message_parameters(
                 attachments_payload.append(attachment.to_dict())
 
         payload['attachments'] = attachments_payload
+
+    if applied_tags is not MISSING:
+        if applied_tags is not None:
+            payload['applied_tags'] = applied_tags
+        else:
+            payload['applied_tags'] = []
 
     if channel_payload is not MISSING:
         payload = {
@@ -1155,6 +1163,13 @@ class HTTPClient:
         payload = {k: v for k, v in options.items() if k in valid_keys}
         return self.request(r, reason=reason, json=payload)
 
+    def edit_voice_channel_status(
+        self, status: Optional[str], *, channel_id: int, reason: Optional[str] = None
+    ) -> Response[None]:
+        r = Route('PUT', '/channels/{channel_id}/voice-status', channel_id=channel_id)
+        payload = {'status': status}
+        return self.request(r, reason=reason, json=payload)
+
     def bulk_channel_update(
         self,
         guild_id: Snowflake,
@@ -1749,6 +1764,9 @@ class HTTPClient:
     ) -> Response[widget.WidgetSettings]:
         return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload, reason=reason)
 
+    def edit_incident_actions(self, guild_id: Snowflake, payload: guild.IncidentData) -> Response[guild.IncidentData]:
+        return self.request(Route('PUT', '/guilds/{guild_id}/incident-actions', guild_id=guild_id), json=payload)
+
     # Invite management
 
     def create_invite(
@@ -1918,6 +1936,7 @@ class HTTPClient:
             'topic',
             'privacy_level',
             'send_start_notification',
+            'guild_scheduled_event_id',
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
@@ -2374,10 +2393,101 @@ class HTTPClient:
             reason=reason,
         )
 
+    # SKU
+
+    def get_skus(self, application_id: Snowflake) -> Response[List[sku.SKU]]:
+        return self.request(Route('GET', '/applications/{application_id}/skus', application_id=application_id))
+
+    def get_entitlements(
+        self,
+        application_id: Snowflake,
+        user_id: Optional[Snowflake] = None,
+        sku_ids: Optional[SnowflakeList] = None,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+        limit: Optional[int] = None,
+        guild_id: Optional[Snowflake] = None,
+        exclude_ended: Optional[bool] = None,
+    ) -> Response[List[sku.Entitlement]]:
+        params: Dict[str, Any] = {}
+
+        if user_id is not None:
+            params['user_id'] = user_id
+        if sku_ids is not None:
+            params['sku_ids'] = ','.join(map(str, sku_ids))
+        if before is not None:
+            params['before'] = before
+        if after is not None:
+            params['after'] = after
+        if limit is not None:
+            params['limit'] = limit
+        if guild_id is not None:
+            params['guild_id'] = guild_id
+        if exclude_ended is not None:
+            params['exclude_ended'] = int(exclude_ended)
+
+        return self.request(
+            Route('GET', '/applications/{application_id}/entitlements', application_id=application_id), params=params
+        )
+
+    def get_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[sku.Entitlement]:
+        return self.request(
+            Route(
+                'GET',
+                '/applications/{application_id}/entitlements/{entitlement_id}',
+                application_id=application_id,
+                entitlement_id=entitlement_id,
+            ),
+        )
+
+    def create_entitlement(
+        self, application_id: Snowflake, sku_id: Snowflake, owner_id: Snowflake, owner_type: sku.EntitlementOwnerType
+    ) -> Response[sku.Entitlement]:
+        payload = {
+            'sku_id': sku_id,
+            'owner_id': owner_id,
+            'owner_type': owner_type,
+        }
+
+        return self.request(
+            Route(
+                'POST',
+                '/applications/{application_id}/entitlements',
+                application_id=application_id,
+            ),
+            json=payload,
+        )
+
+    def delete_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[None]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/applications/{application_id}/entitlements/{entitlement_id}',
+                application_id=application_id,
+                entitlement_id=entitlement_id,
+            ),
+        )
+
     # Misc
 
     def application_info(self) -> Response[appinfo.AppInfo]:
         return self.request(Route('GET', '/oauth2/applications/@me'))
+
+    def edit_application_info(self, *, reason: Optional[str], payload: Any) -> Response[appinfo.AppInfo]:
+        valid_keys = (
+            'custom_install_url',
+            'description',
+            'role_connections_verification_url',
+            'install_params',
+            'flags',
+            'icon',
+            'cover_image',
+            'interactions_endpoint_url ',
+            'tags',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+        return self.request(Route('PATCH', '/applications/@me'), json=payload, reason=reason)
 
     async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
         try:

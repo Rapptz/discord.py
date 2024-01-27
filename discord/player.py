@@ -40,7 +40,7 @@ from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, T
 
 from .enums import SpeakingState
 from .errors import ClientException
-from .opus import Encoder as OpusEncoder
+from .opus import Encoder as OpusEncoder, OPUS_SILENCE
 from .oggparse import OggStream
 from .utils import MISSING
 
@@ -212,7 +212,8 @@ class FFmpegAudio(AudioSource):
             return process
 
     def _kill_process(self) -> None:
-        proc = self._process
+        # this function gets called in __del__ so instance attributes might not even exist
+        proc = getattr(self, '_process', MISSING)
         if proc is MISSING:
             return
 
@@ -702,7 +703,6 @@ class AudioPlayer(threading.Thread):
         self._resumed: threading.Event = threading.Event()
         self._resumed.set()  # we are not paused
         self._current_error: Optional[Exception] = None
-        self._connected: threading.Event = client._connected
         self._lock: threading.Lock = threading.Lock()
 
         if after is not None and not callable(after):
@@ -713,35 +713,45 @@ class AudioPlayer(threading.Thread):
         self._start = time.perf_counter()
 
         # getattr lookup speed ups
-        play_audio = self.client.send_audio_packet
+        client = self.client
+        play_audio = client.send_audio_packet
         self._speak(SpeakingState.voice)
 
         while not self._end.is_set():
             # are we paused?
             if not self._resumed.is_set():
+                self.send_silence()
                 # wait until we aren't
                 self._resumed.wait()
                 continue
 
-            # are we disconnected from voice?
-            if not self._connected.is_set():
-                # wait until we are connected
-                self._connected.wait()
-                # reset our internal data
-                self.loops = 0
-                self._start = time.perf_counter()
-
-            self.loops += 1
             data = self.source.read()
 
             if not data:
                 self.stop()
                 break
 
+            # are we disconnected from voice?
+            if not client.is_connected():
+                _log.debug('Not connected, waiting for %ss...', client.timeout)
+                # wait until we are connected, but not forever
+                connected = client.wait_until_connected(client.timeout)
+                if self._end.is_set() or not connected:
+                    _log.debug('Aborting playback')
+                    return
+                _log.debug('Reconnected, resuming playback')
+                self._speak(SpeakingState.voice)
+                # reset our internal data
+                self.loops = 0
+                self._start = time.perf_counter()
+
             play_audio(data, encode=not self.source.is_opus())
+            self.loops += 1
             next_time = self._start + self.DELAY * self.loops
             delay = max(0, self.DELAY + (next_time - time.perf_counter()))
             time.sleep(delay)
+
+        self.send_silence()
 
     def run(self) -> None:
         try:
@@ -788,7 +798,7 @@ class AudioPlayer(threading.Thread):
     def is_paused(self) -> bool:
         return not self._end.is_set() and not self._resumed.is_set()
 
-    def _set_source(self, source: AudioSource) -> None:
+    def set_source(self, source: AudioSource) -> None:
         with self._lock:
             self.pause(update_speaking=False)
             self.source = source
@@ -799,3 +809,11 @@ class AudioPlayer(threading.Thread):
             asyncio.run_coroutine_threadsafe(self.client.ws.speak(speaking), self.client.client.loop)
         except Exception:
             _log.exception("Speaking call in player failed")
+
+    def send_silence(self, count: int = 5) -> None:
+        try:
+            for n in range(count):
+                self.client.send_audio_packet(OPUS_SILENCE, encode=False)
+        except Exception:
+            # Any possible error (probably a socket error) is so inconsequential it's not even worth logging
+            pass

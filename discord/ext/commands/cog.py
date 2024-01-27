@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import inspect
 import discord
+import logging
 from discord import app_commands
 from discord.utils import maybe_coroutine, _to_kebab_case
 
@@ -65,6 +66,7 @@ __all__ = (
 FuncT = TypeVar('FuncT', bound=Callable[..., Any])
 
 MISSING: Any = discord.utils.MISSING
+_log = logging.getLogger(__name__)
 
 
 class CogMeta(type):
@@ -360,6 +362,8 @@ class Cog(metaclass=CogMeta):
                     if isinstance(app_command, app_commands.Group):
                         for child in app_command.walk_commands():
                             app_command_refs[child.qualified_name] = child
+                            if hasattr(child, '__commands_is_hybrid_app_command__') and child.qualified_name in lookup:
+                                child.wrapped = lookup[child.qualified_name]  # type: ignore
 
                     if self.__cog_app_commands_group__:
                         children.append(app_command)  # type: ignore # Somehow it thinks it can be None here
@@ -769,7 +773,7 @@ class Cog(metaclass=CogMeta):
             try:
                 await maybe_coroutine(self.cog_unload)
             except Exception:
-                pass
+                _log.exception('Ignoring exception in cog unload for Cog %r (%r)', cls, self.qualified_name)
 
 
 class GroupCog(Cog):

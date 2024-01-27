@@ -104,13 +104,14 @@ class DynamicItem(Generic[BaseT], Item['View']):
     ) -> None:
         super().__init__()
         self.item: BaseT = item
-        self.row = row
+        if row is not None:
+            self.row = row
 
         if not self.item.is_dispatchable():
             raise TypeError('item must be dispatchable, e.g. not a URL button')
 
         if not self.template.match(self.custom_id):
-            raise ValueError(f'item custom_id must match the template {self.template.pattern!r}')
+            raise ValueError(f'item custom_id {self.custom_id!r} must match the template {self.template.pattern!r}')
 
     @property
     def template(self) -> re.Pattern[str]:
@@ -207,3 +208,9 @@ class DynamicItem(Generic[BaseT], Item['View']):
             from the ``match`` object.
         """
         raise NotImplementedError
+
+    async def callback(self, interaction: Interaction[ClientT]) -> Any:
+        return await self.item.callback(interaction)
+
+    async def interaction_check(self, interaction: Interaction[ClientT], /) -> bool:
+        return await self.item.interaction_check(interaction)
