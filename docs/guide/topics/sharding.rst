@@ -27,7 +27,7 @@ There are 2 ways you can shard your bot:
 Using auto sharding
 ~~~~~~~~~~~~~~~~~~~~~
 
-If you want to use a single process and the recommended number of shards by Discord, you can simply use :class:`~AutoShardedClient` or :class:`~ext.commands.AutoShardedBot` instead of :class:`~Client` or :class:`~ext.commands.Bot` respectively.
+If you want to use a single process to run multiple shards under, you can simply use :class:`~AutoShardedClient` or :class:`~ext.commands.AutoShardedBot` instead of :class:`~Client` or :class:`~ext.commands.Bot` respectively. By default, if ``shard_ids`` and ``shard_count`` are not provided, they will use Discord's recommended number of shards.
 
 Specifying shard count and IDs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
