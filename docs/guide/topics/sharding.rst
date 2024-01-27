@@ -42,7 +42,7 @@ You may want to specify a total shard count instead of relying on Discord's reco
 
     When specifying a shard count, note that each shard must have less than 2,500 guilds.
 
-Specifying shard IDs is useful for bots running as multiple processes. For example, if a bot has 16 shards, you may have one process run shards 0-7 and another process run shards 8-15. These values can be specified with, for example, an environment variable, to allow passing different values to each process.
+Specifying shard IDs is useful for bots running as multiple processes. For example, if a bot has 16 shards, you may have one process run shards 0-7 and another process run shards 8-15. These values can be specified with, for example, an environment variable, to allow passing different values to each process. This behaviour can be achieved with ``commands.AutoShardedBot`` and its ``shard_ids`` parameter which accepts a list of values, such as ``list(range(8))``
 
 .. note::
 
