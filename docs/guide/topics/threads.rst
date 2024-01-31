@@ -1,5 +1,3 @@
-:orphan:
-
 .. currentmodule:: discord
 
 .. _guide_threads:
