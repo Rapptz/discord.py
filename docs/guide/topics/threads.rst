@@ -221,14 +221,14 @@ To delete a thread you can use the :meth:`Thread.delete` method.
 Browsing threads in a channel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can browse threads within :class:`~TextChannel` instances with the following methods:
-    - :attr:`~TextChannel.threads`
-    - :meth:`~TextChannel.archived_threads`
+You can browse threads within :class:`TextChannel` instances with the following methods:
+    - :attr:`TextChannel.threads`
+    - :meth:`TextChannel.archived_threads`
 
-The former is a property of the channel instance that returns a list of all valid :class:`~Thread` instances
+The former is a property of the channel instance that returns a list of all non-archived :class:`Thread` instances.
 
 The latter returns an :term:`asynchronous iterator` that iterates over all of the archived threads in the guild,
-in order of descending ID for threads you have joined, or descending :attr:`~Thread.archive_timestamp` otherwise.
+in order of descending ID for threads you have joined, or descending :attr:`Thread.archive_timestamp` otherwise.
 
 Notes for receiving messages from a thread
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
