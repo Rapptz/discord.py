@@ -172,10 +172,10 @@ Setting the archive duration
 Threads automatically "hide" after a set period of time of inactivity. Meaning they will move to the lower end of the thread view list. You can choose this period when creating the thread.
 The current accepted values are:
 
-    - 1 hour
-    - 24 hours
-    - 3 days
-    - 1 week
+    - 1 hour (represented as ``60`` in code)
+    - 24 hours (represented as ``1440`` in code)
+    - 3 days (represented as ``4320`` in code)
+    - 1 week (represented as ``10080`` in code)
 
 
 To pass an auto-archive duration during thread creation, you can use the ``auto_archive_duration`` keyword argument to the :meth:`TextChannel.create_thread` call:
