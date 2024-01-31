@@ -388,14 +388,14 @@ Restrictions and limits
 There are a few restrictions and limits that you should be aware of when working with embeds.
 
 Markdown support
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 Markdown like **this**, *that*, and even ``this`` is supported in embeds, but only in certain fields.
 
 More about this can be found at :ref:`_guide_topic_markdown`.
 
 All strings
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~
 
 All values passed to the embed must be a string.
 
@@ -415,7 +415,7 @@ Try it out:
     embed.set_author(name=bot.user, icon_url=bot.user.display_avatar)
 
 Character limits
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 Each field has its own character limit. Unfortunately, listing all the limits here would quickly become 
 outdated, but you can find them in the :ddocs:`Discord API documentation<resources/channel#embed-object>`.
