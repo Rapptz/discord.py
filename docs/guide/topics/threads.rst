@@ -247,7 +247,7 @@ It should be noted that you cannot receive gateway events for private threads yo
 Forum Channels
 ===============
 
-Forum Channels are an addition to the Discord channel repertoire which is special cased as container type channels which allow the creation of threads (and only threads) within them.
+Forum Channels are an addition to the Discord channel repertoire which are special cased as container type channels which allow the creation of threads (and only threads) within them.
 
 They are presented in the form of a small browser style window which shows the thread title, an excerpt of the thread text, related image previews as well as any applied 'tags' to the post.
 
