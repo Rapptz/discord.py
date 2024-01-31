@@ -198,6 +198,9 @@ You can delete or force archive threads if you have the :attr:`~Permissions.mana
 
 If you wish to force archive the thread you can use the :meth:`Thread.edit` method and set the ``archived=True`` keyword argument.
 
+Alternatively there is also the capability to *lock* threads. This means that general users can no longer message in them, only thread moderators (one who had :attr:`~Permissions.manage_threads`) can effectively re-open the thread.
+To do this you can call :meth:`Thread.edit` and set the ``locked=`` keyword argument to ``True``.
+
 To delete a thread you can use the :meth:`Thread.delete` method.
 
 
