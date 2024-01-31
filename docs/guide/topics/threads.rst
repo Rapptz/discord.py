@@ -115,9 +115,9 @@ If this wasn't done, then the thread would be created, but the command author wo
 Note that this mention is only guaranteed to work because we own the thread.
 Mentions from regular users wouldn't work in this thread, because it is not ``invitable``.
 
-You can also use the :meth:`~Thread.add_user` method to add someone, without sending a mention. This requires ``invitable`` to be ``False``.
+You can also use the :meth:`Thread.add_user` method to add someone. This will mention the user to add them but the content will look like a system message similar to "<Bot> added <User> to the thread.". This also requires ``invitable`` to be ``False``.
 
-Unlike a public thread, private threads are not tied to messages, so they won't appear in the channel they're attached to.
+Private threads are not tied to messages (unlike public threads, which *can* be), so they won't appear in the channel they're attached to.
 The member list will look like this inside in the thread:
 
 .. image:: /images/guide/threads/create_private_thread.png
