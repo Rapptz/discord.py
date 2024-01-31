@@ -48,7 +48,7 @@ Public threads
 Public threads can be viewed by anyone who can see the channel they belong to.
 People can browse and join these threads as they please.
 
-All public threads are tied to a specific message. You can use a message that already exists, but you can also send a new message to attach the thread to.
+Public threads can be tied to a specific message. You can use a message that already exists, but you can also send a new message to attach the thread to.
 
 Let's expand on our example from before by making it possible to name the thread. We can also switch to using the convenient :meth:`Message.create_thread` shortcut.
 
@@ -69,6 +69,19 @@ As discussed before, we can see it from the thread list, even if we're not a mem
 
 .. image:: /images/guide/threads/not_a_member.png
     :scale: 90
+
+Public threads can also be standalone, with no message tied to the creation. The example code above would be similar to do this:-
+
+.. code-block:: python3
+    :emphasize-lines: 3
+
+    @bot.command()
+    async def create_thread(ctx: commands.Context, *, thread_name: str):
+        thread = await ctx.channel.create_thread(name=thread_name, type=discord.ChannelType.public_thread)
+
+        await thread.send(f"Hello from the {thread_name} thread!")
+
+You can see here we now utilise ``ctx.channel`` over ``ctx.message`` to create the thread, but we also pass :attr:`ChannelType.public_thread` to the ``type=`` keyword argument to denote that it will be a public thread.
 
 
 Private threads
