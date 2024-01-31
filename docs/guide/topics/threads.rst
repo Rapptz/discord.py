@@ -204,3 +204,17 @@ The former is a property of the channel instance that returns a list of all vali
 The latter returns an :term:`asynchronous iterator` that iterates over all of the archived threads in the guild,
 in order of descending ID for threads you have joined, or descending :attr:`~Thread.archive_timestamp` otherwise.
 
+Notes for receiving messages from a thread
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To identify messages that your client receives from a thread, you can check the type of :attr:`Message.channel`:-
+
+.. code-block:: python3
+
+    if isinstance(message.channel, discord.Thread):
+        # Hey, we're in a thread!
+
+Replying to this message or interacting with it in any discernible way will add your client to the thread.
+
+It should be noted that you cannot receive gateway events for private threads you are not a member of.
+
