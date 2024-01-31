@@ -228,7 +228,7 @@ They are presented in the form of a small browser style window which shows the t
 
 As such we now have :class:`ForumChannel` and :class:`ForumTag` within the library for interacting with these types of channels and tags, respectively.
 
-To create a new thread within this forum channel, we utilise the :meth:`ForumChannel.create_thread` method as normal, the only notable difference is we can add :class:`ForumTag`s to the message.
+To create a new thread within this forum channel, we utilise the :meth:`ForumChannel.create_thread` method as normal, the only notable difference is we can add multiple :class:`ForumTag` to the message.
 A small example of this would be:-
 
 .. code-block:: python3
@@ -239,6 +239,7 @@ A small example of this would be:-
     # let's get the baking tag for our post, this is one of the simpler ways of doing so:-
     baking_tag = discord.utils.get(tags, name="Baking")
 
-    thread = await your_forum_channel.create_thread(name="My brownie recipe!", content="1 tbsp sugar...", applied_tags=[baking_tag])
+    thread, message = await your_forum_channel.create_thread(name="My brownie recipe!", content="1 tbsp sugar...", applied_tags=[baking_tag])
 
     # we can send more messages using the new `thread` variable here
+    # the `message` variable is the starter message that was sent.
