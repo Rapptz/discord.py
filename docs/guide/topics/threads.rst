@@ -11,7 +11,7 @@ They act as offshoots of regular text channels, allowing for a focused, but temp
 
 This section will show you how to create and manage threads within your code.
 
-You can view the API Reference at :class:`~Thread`.
+You can view the API Reference at :class:`Thread`.
 
 Creating a thread
 ~~~~~~~~~~~~~~~~~~
@@ -125,7 +125,7 @@ The go-to practice for doing this is pinging the member, like so:
 
 .. image:: /images/guide/threads/mention_member_to_thread.png
 
-The API has methods of adding members that do not require pinging them, which is implemeted with :meth:`~Thread.add_user`.
+The API has methods of adding members that do not require pinging them, which is implemented with :meth:`Thread.add_user`.
 You can add it as a command, like so:
 
 .. code-block:: python3
@@ -169,7 +169,7 @@ The current accepted values are:
     The options for both "3 days" and "1 week" are locked behind server boost level 1 and 2, respectively.
 
 
-To pass an auto-archive duration during thread creation, you can use the ``auto_archive_duration`` keyword argument to the :meth:`~TextChannel.create_thread` call:
+To pass an auto-archive duration during thread creation, you can use the ``auto_archive_duration`` keyword argument to the :meth:`TextChannel.create_thread` call:
 
 .. code-block:: python3
     :emphasize-lines: 5
@@ -187,9 +187,9 @@ Deleting or archiving a thread
 
 You can delete or force archive threads if you have the :attr:`~Permissions.manage_threads` permission.
 
-If you wish to force archive the thread you can use the :meth:`~Thread.edit` method and set the ``archived=True`` keyword argument.
+If you wish to force archive the thread you can use the :meth:`Thread.edit` method and set the ``archived=True`` keyword argument.
 
-To delete a thread you can use the :meth:`~Thread.delete` method.
+To delete a thread you can use the :meth:`Thread.delete` method.
 
 
 Browsing threads in a channel
