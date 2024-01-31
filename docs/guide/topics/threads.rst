@@ -39,7 +39,6 @@ For a quick primer, let's try making a command that creates a thread and then se
 which will create a thread like so:
 
 .. image:: /images/guide/threads/create_public_thread.png
-    :scale: 90
 
 Simple, right? Let's discuss some of the finer details.
 
@@ -54,21 +53,19 @@ All public threads are tied to a specific message. You can use a message that al
 Let's expand on our example from before by making it possible to name the thread. We can also switch to using the convenient :meth:`Message.create_thread` shortcut.
 
 .. code-block:: python3
+    :emphasize-lines: 3
 
     @bot.command()
     async def create_thread(ctx: commands.Context, *, thread_name: str):
-        thread = await ctx.message.create_thread(
-            name=thread_name
-        )
+        thread = await ctx.message.create_thread(name=thread_name)
 
         await thread.send(f"Hello from the {thread_name} thread!")
 
-and then we have our public thread:
+and then we have our public thread:-
 
 .. image:: /images/guide/threads/create_public_thread_param.png
-    :scale: 90
 
-As discussed before, we can see it from the thread list, even if we're not a member:
+As discussed before, we can see it from the thread list, even if we're not a member:-
 
 .. image:: /images/guide/threads/not_a_member.png
     :scale: 90
@@ -89,6 +86,7 @@ Users with :attr:`~Permissions.manage_threads` ("Moderators") can also see a lis
 Let's create a private, non-invitable thread with a command:
 
 .. code-block:: python3
+    :emphasize-lines: 5
 
     @bot.command()
     async def secret_thread(ctx: commands.Context):
@@ -131,6 +129,7 @@ The API has methods of adding members that do not require pinging them, which is
 You can add it as a command, like so:
 
 .. code-block:: python3
+    :emphasize-lines: 10
 
     async def is_thread():
         def predicate(ctx: commands.Context) -> bool:
@@ -139,7 +138,8 @@ You can add it as a command, like so:
 
     @bot.command()
     @is_thread() # we use the defined check above so that this command can only be used in a thread.
-    async def add_to_thread(ctx: commands.Context, *, member: discord.Member):
+    async def add_to_thread(ctx: commands.Context, *, member: discord.Member) -> None:
+        assert isinstance(ctx.channel, discord.Thread) # guarded by decorated check!
         await ctx.channel.add_user(member)
         await ctx.message.add_reaction("\U00002705")
 
@@ -172,6 +172,7 @@ The current accepted values are:
 To pass an auto-archive duration during thread creation, you can use the ``auto_archive_duration`` keyword argument to the :meth:`~TextChannel.create_thread` call:
 
 .. code-block:: python3
+    :emphasize-lines: 5
 
     async def create_daily_thread(ctx: commands.Context):
         duration = 1440 # 24 hours represented as minutes
@@ -202,3 +203,4 @@ The former is a property of the channel instance that returns a list of all vali
 
 The latter returns an :term:`asynchronous iterator` that iterates over all of the archived threads in the guild,
 in order of descending ID for threads you have joined, or descending :attr:`~Thread.archive_timestamp` otherwise.
+
