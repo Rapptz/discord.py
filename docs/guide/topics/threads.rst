@@ -138,7 +138,7 @@ The go-to practice for doing this is pinging the member, like so:
 
 .. image:: /images/guide/threads/mention_member_to_thread.png
 
-The API has methods of adding members that do not require pinging them, which is implemented with :meth:`Thread.add_user`.
+The API has methods of adding members without sending a message directly, which is implemented with :meth:`Thread.add_user`.
 You can add it as a command, like so:
 
 .. code-block:: python3
