@@ -180,6 +180,19 @@ The current accepted values are:
 
 .. note::
     The options for both "3 days" and "1 week" are locked behind server boost level 1 and 2, respectively.
+    You can conditionally check for for this using :attr:`Guild.premium_tier`. An example would be:-
+
+    .. code-block:: python3
+
+        def requires_tier_3():
+            def predicate(ctx: commands.Context) -> bool:
+                return ctx.guild.premium_tier >= 3
+            return commands.check(predicate)
+
+        @bot.command()
+        @requires_tier_3()
+        async def create_thread(ctx: commands.Context):
+            await ctx.channel.create_thread(name="My cool thread", auto_archive_duration=10080) # 60 * 24 * 7 (minutes * hours * days)
 
 
 To pass an auto-archive duration during thread creation, you can use the ``auto_archive_duration`` keyword argument to the :meth:`TextChannel.create_thread` call:
