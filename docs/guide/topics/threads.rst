@@ -94,7 +94,7 @@ Private threads can optionally be 'invitable'.
 If a thread is invitable, it means anyone in that thread can invite others to it.
 Otherwise, only the owner and people with the :attr:`~Permissions.manage_threads` permission can add new people to the thread.
 
-Users with :attr:`~Permissions.manage_threads` ("Moderators") can also see a list of private threads they're not in, similar to public threads.
+Users with :attr:`~Permissions.manage_threads` can also see a list of private threads they're not in, similar to public threads.
 
 Let's create a private, non-invitable thread with a command:
 
