@@ -414,35 +414,6 @@ Try it out:
 
     embed.set_author(name=bot.user, icon_url=bot.user.display_avatar)
 
-[EXPERIMENTAL]
-
-
-Empty spaces are not allowed but it can be tricked with a zero-width space (ZWS) character, ``\u200b``.
-
-Let's make a staircase of fields because why not?
-
-.. code-block:: python
-
-    embed = discord.Embed()
-    embed.add_field(name="Step 1", value="\u200b", inline=False)
-    embed.add_field(name="\u200b", value="\u200b")
-    embed.add_field(name="Step 2", value="\u200b")
-    embed.add_field(name="\u200b", value="\u200b")
-    embed.add_field(name="\u200b", value="\u200b")
-    embed.add_field(name="\u200b", value="\u200b")
-    embed.add_field(name="Step 3", value="\u200b")
-    embed.add_field(name="\u200b", value="\u200b")
-    embed.add_field(name="Step 4", value="\u200b")
-    embed.add_field(name="\u200b", value="\u200b")
-    embed.add_field(name="Step 5", value="\u200b", inline=False)
-
-    await channel.send(embed=embed)
-
-.. image:: /images/guide/topics/embeds/zws_embed_1.png
-    :scale: 50%
-
-[EXPERIMENTAL]
-
 Character limits
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
