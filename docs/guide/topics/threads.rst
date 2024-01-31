@@ -110,7 +110,7 @@ Let's create a private, non-invitable thread with a command:
         await thread.send(ctx.author.mention)
 
 We've chosen here to mention the author as soon as we make the thread.
-If we didn't do this, then the thread would be created, but we wouldn't necessarily be able to see it!
+If this wasn't done, then the thread would be created, but the command author wouldn't necessarily be able to see it!
 
 Note that this mention is only guaranteed to work because we own the thread.
 Mentions from regular users wouldn't work in this thread, because it is not ``invitable``.
