@@ -60,16 +60,6 @@ Let's break down what we did.
 
 First, we imported the ``discord`` module. This is required to access the ``Embed`` class.
 
-.. note::
-
-    You can also import the ``Embed`` class directly from the ``discord`` module like so:
-
-    .. code-block:: python
-
-        from discord import Embed
-
-        embed = Embed(...)
-
 Next, we created an instance of the ``Embed`` class. This is the object that will contain the basic fields of our embed.
 
 The ``title`` and ``description`` fields are pretty self-explanatory. The ``colour`` field is a bit more interesting.
