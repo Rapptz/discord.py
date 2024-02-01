@@ -471,7 +471,7 @@ class AutoModRule:
         exempt_roles: Sequence[Snowflake] = MISSING,
         exempt_channels: Sequence[Snowflake] = MISSING,
         reason: str = MISSING,
-    ) -> Self:
+    ) -> AutoModRule:
         """|coro|
 
         Edits this auto moderation rule.
