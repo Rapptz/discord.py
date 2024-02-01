@@ -371,7 +371,7 @@ class Asset(AssetMixin):
         size: int = MISSING,
         format: ValidAssetFormatTypes = MISSING,
         static_format: ValidStaticFormatTypes = MISSING,
-    ) -> Self:
+    ) -> Asset:
         """Returns a new asset with the passed components replaced.
 
 
@@ -431,7 +431,7 @@ class Asset(AssetMixin):
         url = str(url)
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
-    def with_size(self, size: int, /) -> Self:
+    def with_size(self, size: int, /) -> Asset:
         """Returns a new asset with the specified size.
 
         .. versionchanged:: 2.0
@@ -459,7 +459,7 @@ class Asset(AssetMixin):
         url = str(yarl.URL(self._url).with_query(size=size))
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
-    def with_format(self, format: ValidAssetFormatTypes, /) -> Self:
+    def with_format(self, format: ValidAssetFormatTypes, /) -> Asset:
         """Returns a new asset with the specified format.
 
         .. versionchanged:: 2.0
@@ -494,7 +494,7 @@ class Asset(AssetMixin):
         url = str(url.with_path(f'{path}.{format}').with_query(url.raw_query_string))
         return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
 
-    def with_static_format(self, format: ValidStaticFormatTypes, /) -> Self:
+    def with_static_format(self, format: ValidStaticFormatTypes, /) -> Asset:
         """Returns a new asset with the specified static format.
 
         This only changes the format if the underlying asset is
