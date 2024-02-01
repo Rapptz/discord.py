@@ -36,7 +36,6 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
     from .types.welcome_screen import (
         WelcomeScreen as WelcomeScreenPayload,
         WelcomeScreenChannel as WelcomeScreenChannelPayload,
@@ -153,7 +152,7 @@ class WelcomeScreen:
         welcome_channels: List[WelcomeChannel] = MISSING,
         enabled: bool = MISSING,
         reason: Optional[str] = None,
-    ) -> Self:
+    ) -> WelcomeScreen:
         """|coro|
 
         Edit the welcome screen.
