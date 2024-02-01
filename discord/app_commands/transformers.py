@@ -638,7 +638,7 @@ class BaseChannelTransformer(Transformer):
                 except KeyError:
                     raise TypeError('Union type of channels must be entirely made up of channels') from None
 
-        self._types: Tuple[Type[Any]] = channel_types
+        self._types: Tuple[Type[Any], ...] = channel_types
         self._channel_types: List[ChannelType] = types
         self._display_name = display_name
 
