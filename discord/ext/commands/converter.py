@@ -1185,7 +1185,7 @@ def _convert_to_bool(argument: str) -> bool:
         raise BadBoolArgument(lowered)
 
 
-_GenericAlias = type(List[T])
+_GenericAlias = type(List[T])  # type: ignore # no way to resolve generic alias
 
 
 def is_generic_type(tp: Any, *, _GenericAlias: type = _GenericAlias) -> bool:
