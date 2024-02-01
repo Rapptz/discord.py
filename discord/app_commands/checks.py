@@ -55,7 +55,6 @@ from ..utils import get as utils_get, MISSING, maybe_coroutine
 T = TypeVar('T')
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
     from ..interactions import Interaction
 
     CooldownFunction = Union[
@@ -178,7 +177,7 @@ class Cooldown:
         self._tokens = self.rate
         self._last = 0.0
 
-    def copy(self) -> Self:
+    def copy(self) -> Cooldown:
         """Creates a copy of this cooldown.
 
         Returns
