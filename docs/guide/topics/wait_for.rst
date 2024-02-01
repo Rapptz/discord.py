@@ -4,11 +4,12 @@
 .. _guide_wait_for:
 
 Waiting for Events
-=============================
+==================
 A common step when creating commands or handling events involves having to wait for an action or user-input. To aid with this, the library offers a special method :meth:`Client.wait_for` to wait for an event in-line instead of having to define a separate event listener.
+
 What is ``wait_for``?
 ~~~~~~~~~~~~~~~~~~~~~
-Similar to callbacks decorated with `@client.event`, :meth:`Client.wait_for` waits for the first event it finds tied to the passed event name (without the `on_` prefix!) and returns the event's arguments.
+Similar to callbacks decorated with ``@client.event``, :meth:`Client.wait_for` waits for the first event it finds tied to the passed event name (without the `on_` prefix!) and returns the event's arguments.
 
 Here is a quick example:
 
@@ -42,11 +43,12 @@ Oftentimes, we want to narrow it down to a specific message, which we can do by 
 
 In this example, ``wait_for`` will only accept the incoming message when the predicate returns ``True``.
 The arguments passed to the predicate match the signature of the corresponding event.
-For example, when defining a message event handler we do `async def on_message(message)` - a predicate would similarly be defined with `def check(message)`.
+For example, when defining a message event handler we do ``async def on_message(message)`` - a predicate would similarly be defined with ``def check(message)``.
 
 Likewise, a predicate for `reaction_add` would take `def check(reaction, user)`.
 
 It's common to also include a timeout in addition to a check so our code doesn't potentially end up waiting indefinitely, or to add a limited time window for the author to send a message.
+
 .. code-block:: python3
    :emphasize-lines: 2, 3, 4, 5
 
@@ -59,12 +61,14 @@ It's common to also include a timeout in addition to a check so our code doesn't
         await msg.reply('hello!')
 
 We pass the timeout in seconds to the ``timeout`` keyword-argument. Timeouts behave like :meth:`asyncio.wait_for`, so we do the usual `try` and `except`, catching :class:`asyncio.TimeoutError`:
+
 .. warning::
 
     Avoid calling :meth:`Client.wait_for` within a loop to catch events. Due to the nature of async IO, events may be fired between loops, causing the loop to miss events.
 
 Examples
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+
 Wait for reaction
 +++++++++++++++++
 
