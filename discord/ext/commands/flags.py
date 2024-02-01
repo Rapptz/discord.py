@@ -280,7 +280,7 @@ class FlagsMeta(type):
         case_insensitive: bool = MISSING,
         delimiter: str = MISSING,
         prefix: str = MISSING,
-    ) -> Self:
+    ) -> FlagsMeta:
         attrs['__commands_is_flag__'] = True
 
         try:
