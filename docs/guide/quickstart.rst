@@ -167,6 +167,7 @@ They can be used like so:-
     > bot.py cogs/ config.py .gitignore
 
 Which will create a basic bot project with an assortment of essentials for getting started. This includes:-
+
 - A basic ``bot.py`` which is prefilled with a basic :class:`~ext.commands.Bot` subclass and functionality for extending it.
 - A ``cogs/`` directory for creating extension files in with Cog functionality (which is optional).
 - A ``config.py`` which acts as your token or general configuration storage.
