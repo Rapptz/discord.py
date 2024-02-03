@@ -32,6 +32,8 @@ Where can I use ``await``\?
 
 You can only use ``await`` inside ``async def`` functions and nowhere else.
 
+.. _faq_blocking:
+
 What does "blocking" mean?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -350,6 +352,8 @@ Commands Extension
 -------------------
 
 Questions regarding ``discord.ext.commands`` belong here.
+
+.. _ext_commands_on_message:
 
 Why does ``on_message`` make my commands stop working?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

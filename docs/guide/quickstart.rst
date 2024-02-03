@@ -23,23 +23,19 @@ You need a bot application before being able to run a bot. Creating one is easy:
     .. image:: /images/discord_bot_tab.png
         :scale: 80%
 
-4. Create a new Bot user if you have not done so already:
-    .. image:: /images/discord_create_bot_user.png
-
-5. Your bot token will only be accessible upon creation and looks like this:
+4. Your bot token will only be accessible upon creation and looks like this:
     .. image:: /images/discord_bot_token.png
 
-5a. Otherwise it will look like this:
+4a. Otherwise it will look like this:
     .. image:: /images/discord_bot_token_no_copy.png
 
 .. danger::
 
     This token is **VERY IMPORTANT** and you should treat it like the password to your bot. Keep it as secure as possible and never give this to anyone.
     If you ever leak it, you can click the ``Regenerate`` button to forcibly invalidate all copies of the token. This will also terminate all running instances of your bot.
+    You can find more information at :ref:`securing_token`.
 
 .. _guide_quickstart_client_secret:
-
-You can find more information on this `here <#securing-your-bots-token>`.
 
 .. warning::
 
@@ -55,7 +51,7 @@ This step-by-step walk-through will show you how to make a bot using the command
 
 .. note::
 
-    This walk-through does not cover application commands (slash commands). For a detailed walk-through of application commands, see :ref:`guide_app_commands`.
+    This walk-through does not cover application commands (slash commands). For a detailed walk-through of application commands, see :ref:`_guide_app_commands`.
 
 
 1. Create a new Python file in the folder you want to work in.
@@ -107,11 +103,12 @@ This is the :func:`on_ready` event. It is called when the bot has finished loadi
 We use the :meth:`@bot.listen() <ext.commands.Bot.listen>` decorator as to not override the main event.
 For a list of available events, see :ref:`discord-api-events`.
 
-A warning to consider on this can be found in the :ref:`_faq#why-does-on-message-make-my-commands-stop-working`
+A warning to consider on this can be found at :ref:`ext_commands_on_message`.
 
 .. warning::
 
     :func:`on_ready` can and will be called multiple times throughout your bot's uptime. You should avoid doing any kind of state-management here, such as connecting and loading your database.
+
     Consider using :meth:`~ext.commands.Bot.setup_hook` for this purpose instead.
 
 .. code-block:: python
@@ -131,7 +128,7 @@ This creates a command ``!apples`` that we can type into a channel, and the bot 
 
 - Using ``int`` as a parameter type annotation here will instruct the library to attempt to convert the part of the discord message this refers to, to an :class:`int` type. This means you will have the correct functionality of an integer and not a string.
 
-For more information on the commands extension and other converters, please reference :ref:`_ext_commands_commands`.
+For more information on the commands extension and other converters, please reference :ref:`ext_commands_commands`.
 
 .. code-block:: python
 
@@ -141,12 +138,12 @@ This is the final step, you put your bot token here, save and run the file and t
 
 .. note::
 
-    :meth:`~ext.commands.Bot.run` is blocking, so any code after it will **not be run** until the bot has been stopped.
+    :meth:`~ext.commands.Bot.run` is :ref:`blocking <faq_blocking>`, so any code after it will **not be run** until the bot has been stopped.
 
 .. warning::
 
     As this is an example, token security is not applied here. However, you should be very careful with your bot token. Keep it in a secure place and only access it when you are starting the bot.
-    See `here <#securing-your-bots-token>` for more information.
+    See :ref:`securing_token` for more information.
 
 
 Running Your New Bot
@@ -172,9 +169,7 @@ And run your bot!
     (.venv) $ python your_bot.py
     Ready! I am Documentation#7968 and my ID is 699701272739053589
 
-.. image:: /images/discord_echo_example.png
-    :scale: 100 %
-
+.. _securing_token:
 
 Securing your bot's token
 --------------------------
@@ -239,9 +234,7 @@ Is your bot not starting, or is something going wrong? Here is a list of possibl
 Improper token has been passed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you get an :exc:`LoginFailure` exception with a message "Improper token has been passed"
-
-This means you have passed an invalid token to :meth:`bot.run() <ext.commands.Bot.run>`:
+If you get an :exc:`LoginFailure` exception with a message ``"Improper token has been passed"`` this means you have passed an invalid token to :meth:`bot.run() <ext.commands.Bot.run>`:
 
 - Perhaps you are reading from your secure file incorrectly?
 - Did you copy the :ref:`Client Secret <guide_quickstart_client_secret>` instead of your bot token?
@@ -259,7 +252,7 @@ If you ran a command, but the bot isn't responding, there can be a few reasons w
 - Are you using the correct prefix?
 - - If you set ``command_prefix="!"``, you must invoke the command with that specific prefix, e.g. ``!echo Hello, world``
 - Did you override ``on_message`` using :meth:`@bot.event <ext.commands.Bot.event>`?
-- - There are two ways to fix this: either replace ``@bot.event`` with :meth:`@bot.listen() <ext.commands.Bot.listen>`, or add :meth:`~ext.commands.Bot.process_commands` to your ``on_message`` event. See :ref:`here <guide_quickstart_bot_event_warning>` for more information.
+- - There are two ways to fix this: either replace ``@bot.event`` with :meth:`@bot.listen() <ext.commands.Bot.listen>`, or add :meth:`~ext.commands.Bot.process_commands` to your ``on_message`` event. See :ref:`here <ext_commands_on_message>` for more information.
 - You may be missing the :attr:`Intents.message_content` intents. Further information can be found in the `Intents guide <_guide_intents>`_.
 
 I can't find my issue here
