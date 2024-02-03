@@ -181,7 +181,7 @@ There is also ``newcog`` which does the following:-
     $ python -m discord newcog CoolCog CoolBot/cogs
     > successfully made cog at CoolBot/cogs/CoolCog.py
 
-This tool creates a new file within the passed directory with the provided name, and again this is a blanket implementation of an :ref:`extension <ext/commands/extensions>` file for use with the :meth:`~ext.commands.Bot.load_extension` method.
+This tool creates a new file within the passed directory with the provided name, and again this is a blanket implementation of an :ref:`extension <ext_commands_extensions>` file for use with the :meth:`~ext.commands.Bot.load_extension` method.
 
 The file imports the necessary items and defines a Cog class that you can extend, and adds the necessary ``setup`` method for the extension to function correctly.
 
