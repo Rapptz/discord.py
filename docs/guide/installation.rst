@@ -1,8 +1,8 @@
 .. currentmodule:: discord
 
-.. _guide_intro:
+.. _guide_install:
 
-Introduction
+Installation
 =============
 
 Welcome to discord.py, a library for Python to aid in creating applications for Discord.
@@ -12,9 +12,9 @@ Prerequisites
 
 To install discord.py you'll need Python version 3.8 or higher. Earlier versions of Python are not supported.
 
-.. _guide_intro_installation:
+.. _guide_install_primer:
 
-Installation
+Primer
 -------------
 
 On Unix systems you can run the following command to install discord.py from PyPI.
@@ -100,4 +100,4 @@ For a more in-depth look into virtual environments, see :doc:`py:tutorial/venv`.
 Next Steps
 -----------
 
-Now that you've installed discord.py, the next step is to begin making your bot application. See :ref:`_guide_quickstart` for a simple explanation of the commands extension.
+Now that you've installed discord.py, the next step is to begin making your bot application. See :ref:`_guide_intro` for further getting started steps.
