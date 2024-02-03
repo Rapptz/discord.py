@@ -168,6 +168,7 @@ Our command might look like this:
         await interaction.response.send_message(f'Are you sure you want to report {member.mention}?', view=confirmation, ephemeral=True)
         await confirmation.wait()
         if confirmation.result:
+            moderator_channel = interaction.guild.get_channel(883515764236230726)
             await moderator_channel.send(f'{interaction.user.mention} has reported {member.mention}\nReason: {reason or "No reason provided."}')
 
 We first assign the ``View`` instance to the variable ``confirmation``, because we'll need it later.
