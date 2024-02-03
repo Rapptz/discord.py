@@ -60,13 +60,15 @@ document.addEventListener('DOMContentLoaded', () => {
   bottomHeightThreshold = document.documentElement.scrollHeight - 30;
   sections = document.querySelectorAll('section');
   hamburgerToggle = document.getElementById('hamburger-toggle');
-  
+
   toTop = document.getElementById('to-top');
   toTop.hidden = !(window.scrollY > 0);
 
   if (hamburgerToggle) {
     hamburgerToggle.addEventListener('click', (e) => {
-      sidebar.element.classList.toggle('sidebar-toggle');
+      document.querySelectorAll('.toc').forEach((element) => {
+        element.classList.toggle('sidebar-toggle');
+      });
       let button = hamburgerToggle.firstElementChild;
       if (button.textContent == 'menu') {
         button.textContent = 'close';
