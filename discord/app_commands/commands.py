@@ -1068,7 +1068,7 @@ class Command(Generic[GroupT, P, T]):
 
         def decorator(coro: AutocompleteCallback[GroupT, ChoiceT]) -> AutocompleteCallback[GroupT, ChoiceT]:
             if not inspect.iscoroutinefunction(coro):
-                raise TypeError('The error handler must be a coroutine.')
+                raise TypeError('The autocomplete callback must be a coroutine function.')
 
             try:
                 param = self._params[name]
@@ -1547,6 +1547,9 @@ class Group:
 
         if not self.description:
             raise TypeError('groups must have a description')
+
+        if not self.name:
+            raise TypeError('groups must have a name')
 
         self.parent: Optional[Group] = parent
         self.module: Optional[str]

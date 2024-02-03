@@ -61,12 +61,14 @@ class Button(Item[V]):
     custom_id: Optional[:class:`str`]
         The ID of the button that gets received during an interaction.
         If this button is for a URL, it does not have a custom ID.
+        Can only be up to 100 characters.
     url: Optional[:class:`str`]
         The URL this button sends you to.
     disabled: :class:`bool`
         Whether the button is disabled or not.
     label: Optional[:class:`str`]
         The label of the button, if any.
+        Can only be up to 80 characters.
     emoji: Optional[Union[:class:`.PartialEmoji`, :class:`.Emoji`, :class:`str`]]
         The emoji of the button, if available.
     row: Optional[:class:`int`]
@@ -258,9 +260,11 @@ def button(
     ------------
     label: Optional[:class:`str`]
         The label of the button, if any.
+        Can only be up to 80 characters.
     custom_id: Optional[:class:`str`]
         The ID of the button that gets received during an interaction.
         It is recommended not to set this parameter to prevent conflicts.
+        Can only be up to 100 characters.
     style: :class:`.ButtonStyle`
         The style of the button. Defaults to :attr:`.ButtonStyle.grey`.
     disabled: :class:`bool`
