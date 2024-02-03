@@ -5,7 +5,8 @@
 Views
 =======
 
-Views are the primary way to design message component based UIs.
+Views are the primary way to design and handle :ddocs:`component interactions <interactions/message-components>` in Discord. They are used to group components such as :ddocs:`buttons <interactions/message-components#buttons>` and :ddocs:`select menus <interactions/message-components#select-menus>` together.
+These views are attached to messsages when they are being send or edited.
 
 This section details how to create and use views in various situations.
 
@@ -18,7 +19,7 @@ Let's start with a simple example, a confirmation prompt.
 This view will have two buttons, 'Yes' and 'No', allowing a user to confirm or cancel an action.
 This could be used in a number of situations, ususally when a user is about to perform an action which cannot be undone.
 
-For example, a ban command:
+For example, a report command:
 
 .. image:: /images/guide/interactions/view_prompt_example.png
 
@@ -153,21 +154,21 @@ Sending views
 
 We send views using the ``view`` parameter in methods which send messages, for example :meth:`TextChannel.send`.
 
-In our case we're creating a confirmation prompt for our ban command, so we'll want to use the :meth:`InteractionResponse.send_message` method.
+In our case we're creating a confirmation prompt for our report command, so we'll want to use the :meth:`InteractionResponse.send_message` method.
 
 Our command might look like this:
 
 .. code-block:: python
 
     @discord.app_commands.command()
-    @discord.app_commands.describe(member='The member to ban.')
-    async def ban(interaction: discord.Interaction, member: discord.Member) -> None:
-        """Ban a member from the server."""
+    @discord.app_commands.describe(member='The member to report.')
+    async def report(interaction: discord.Interaction, member: discord.Member, reason: str | None) -> None:
+        """Report a member of the server to the moderators."""
         confirmation = Confirm(interaction.user)
-        await interaction.response.send_message(f'Are you sure you want to ban {member.name}?', view=confirmation, ephemeral=True)
+        await interaction.response.send_message(f'Are you sure you want to report {member.mention}?', view=confirmation, ephemeral=True)
         await confirmation.wait()
         if confirmation.result:
-            await member.ban()
+            await moderator_channel.send(f'{interaction.user.mention} has reported {member.mention}\nReason: {reason or "No reason provided."}')
 
 We first assign the ``View`` instance to the variable ``confirmation``, because we'll need it later.
 In our interaction response we send the instance via the ``view`` parameter.
@@ -176,7 +177,7 @@ which occurs either when the user clicks on a button (as we had called :meth:`Vi
 or the view had timed-out.
 
 Since our component callbacks assign the ``result`` attribute of the view, we can use it to determine if the user clicked on the
-`Yes` or `No` button, and ban them if they clicked `Yes`.
+`Yes` or `No` button, and report them if they clicked `Yes`.
 
 
 Persistent Views
@@ -341,6 +342,11 @@ For example, we could create a counter which increments every time the button is
 
 The :class:`~discord.ui.DynamicItem` class allows us to define components with custom data contained in the ``custom_id``.
 
+One example we could use is a counter, which increments every time the button is clicked.
+
+.. image:: /images/guide/interactions/view_dynamic_example_before.png
+
+Let's make a dynamic component to handle this.
 
 Designing a Dynamic Component
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -417,7 +423,7 @@ Our callback might look like this:
             )
 
         @classmethod
-        async def from_custom_id(cls, interaction: discord.Interaction, match: re.Match[str], /):
+        async def from_custom_id(cls, interaction: discord.Interaction, item: discord.ui.Button, match: re.Match[str], /):
             count = int(match['count'])
             return cls(count)
 
@@ -466,6 +472,7 @@ with the :class:`~discord.Client` with the :meth:`~discord.Client.add_dynamic_it
 
 Assuming we did everything right the bot should now increment the counter every time the button is clicked.
 
+.. image:: /images/guide/interactions/view_dynamic_example_after.png
 
 Further Reading
 -----------------
