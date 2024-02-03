@@ -12,7 +12,7 @@ Welcome to discord.py, a library for Python to aid in creating applications for 
 Prerequisites
 --------------
 
-To install discord.py you'll need Python version 3.8.0 or later.
+To install discord.py you'll need Python version 3.8 or higher. Earlier versions of Python are not supported.
 
 .. _guide_intro_installation:
 
@@ -34,39 +34,37 @@ On Windows systems, you can use the following command instead.
 Voice Support
 ~~~~~~~~~~~~~~
 
-Voice support (e.g. joining voice channels and playing music) is not supported by default, and can be installed by installing ``discord.py[voice]`` instead of ``discord.py``; ::
+Voice support (e.g. playing audio in voice channels) is not enabled by default and can be enabled by installing ``discord.py[voice]`` instead of ``discord.py``. ::
 
-    pip install -U discord.py[voice]
+    pip install -U "discord.py[voice]"
 
-.. note::
+Linux systems may need to install additional dependencies via your package manager to get full voice support.
 
-    Linux systems may need to install additional dependencies via your package manager to get full voice support.
+On Debian and Ubuntu systems:
 
-    On Debian and Ubuntu systems:
+.. code-block:: shell
 
-    .. code-block:: shell
+    $ sudo apt install libffi-dev libsodium-dev python3-dev
 
-        $ sudo apt install libffi-dev libsodium-dev python3-dev
+For Fedora and CentOS systems:
 
-    For Fedora and CentOS systems:
+.. code-block:: shell
 
-    .. code-block:: shell
+    $ sudo dnf install libffi-devel libsodium-devel python3-devel
 
-        $ sudo dnf install libffi-devel libsodium-devel python3-devel
+For Arch Linux systems:
 
-    For Arch Linux systems:
+.. code-block:: shell
 
-    .. code-block:: shell
+    $ pacman -Syu libsodium
 
-        $ pacman -Syu libsodium
-
-    For other distributions, please use your package manager to find libraries for ``libffi``, ``libsodium``, and the Python 3 development headers.
+For other distributions, please use your package manager to find libraries for ``libffi``, ``libsodium``, and the Python 3 development headers.
 
 Virtual Environments
 ~~~~~~~~~~~~~~~~~~~~~
 
 Global Python environments get cluttered with dependencies very easily - virtual environments can help separate your projects into clean, organized folders.
-Virtual environment (or "venv") is a concept introduced in Python 3.3 used to help separate project dependencies from the global Python installation, thereby not polluting
+Virtual environments (or "venvs") help separate project dependencies from the global Python installation, avoiding polluting
 other projects using the same Python version. They also allow you to install libraries that you may not have permission to install globally.
 
 To quickly get a virtual environment working in your project folder:
@@ -104,4 +102,4 @@ For a more in-depth look into virtual environments, see :doc:`py:tutorial/venv`.
 Next Steps
 -----------
 
-Now that you've installed discord.py, the next step is to begin making your bot application. See :ref:`guide_quickstart` for a simple explanation on the commands extension.
+Now that you've installed discord.py, the next step is to begin making your bot application. See :ref:`_guide_quickstart` for a simple explanation of the commands extension.
