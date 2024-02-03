@@ -1,5 +1,3 @@
-:orphan:
-
 .. currentmodule:: discord
 
 .. _guide_quickstart:
@@ -7,13 +5,13 @@
 Quickstart
 ===========
 
-This page will contain a simple explanation of how to make a basic bot using the commands extension "ext.commands".
+This page shows how to make a basic bot using the commands extension "ext.commands".
 Before you begin, make sure to install discord.py - see :ref:`guide_intro_installation` for more information.
 
 Obtaining a Bot Token
 ----------------------
 
-You will need a bot application before being able to run a bot. A step-by-step tutorial with screenshots follows:
+You need a bot application before being able to run a bot. Creating one is easy:
 
 1. Go to the `Discord Developer Portal <https://discord.com/developers/applications/>`_.
 
@@ -28,13 +26,10 @@ You will need a bot application before being able to run a bot. A step-by-step t
 4. Create a new Bot user if you have not done so already:
     .. image:: /images/discord_create_bot_user.png
 
-5. If you need these `intents <_guide_intents>`_, scroll down and click on these check boxes:
-    .. image:: /images/discord_privileged_intents.png
-
-6. Your bot token will only be retrievable upon creation and looks like this:
+5. Your bot token will only be accessible upon creation and looks like this:
     .. image:: /images/discord_bot_token.png
 
-6a. Otherwise it will look like this:
+5a. Otherwise it will look like this:
     .. image:: /images/discord_bot_token_no_copy.png
 
 .. danger::
@@ -44,9 +39,11 @@ You will need a bot application before being able to run a bot. A step-by-step t
 
 .. _guide_quickstart_client_secret:
 
+You can find more information on this `here <#securing-your-bots-token>`.
+
 .. warning::
 
-    You may be thinking of using the ``Client Secret`` for your bot token. This is **NOT** what you are looking for - you need the bot **Token**, which is a completely different format.
+    If you accidentally use the ``Client Secret`` for your bot token, it's **NOT** what you are looking for - you need the bot **Token**, which has a different format.
 
     .. image:: /images/discord_client_secret_big_nono.png
         :scale: 90 %
@@ -58,86 +55,73 @@ This step-by-step walk-through will show you how to make a bot using the command
 
 .. note::
 
-    This walk-through does not cover application commands (slash commands). For a detailed walk-through of application commands, see _guide_app_commands.
+    This walk-through does not cover application commands (slash commands). For a detailed walk-through of application commands, see :ref:`guide_app_commands`.
 
 
 1. Create a new Python file in the folder you want to work in.
 
     .. warning::
 
-        Do not name the file ``discord.py``, as this will cause conflicts with the discord.py library. Also, do not create a sub-folder in your project named ``discord``, as that too will cause conflicts.
+        Do not name the file ``discord.py``, as this will cause conflicts with the discord.py library. Likewise, do not create a sub-folder in your project named ``discord``, as that too will cause conflicts.
 
 2. Open the new Python file in your preferred editor.
 
     If you do not have an editor installed, you can use a community recommended one, such as `Visual Studio Code <https://code.visualstudio.com/>`_,
     `PyCharm <https://www.jetbrains.com/pycharm/>`_ or `Sublime Text 4 <https://www.sublimetext.com/>`_.
-    We don't recommend Python's built in IDLE, as the lack of features compared to other simple editors makes it very bothersome for projects with many files.
+    We don't recommend Python's built in IDLE, as the lack of features compared to other simple editors makes it difficult to use for projects with many files.
 
 3. Now you can start creating your bot. The following steps will go over a simple bot line-by-line to help you understand what's happening.
 
 First, you need to import the discord.py library:
 
 .. code-block:: python3
+    :emphasize-lines: 2
 
     import discord
     from discord.ext import commands
 
 We import ``discord.ext.commands`` here as we will need it for our bot.
+This manner of importing ``commands`` is important. ``discord.ext`` is a namespace package and this means you cannot directly import from it, and it must be accessed via name, like above.
 
 .. code-block:: python3
 
     intents = discord.Intents.default()
     intents.message_content = True
-    bot = commands.Bot(command_prefix="!", description="This is my awesome bot!", intents=intents)
+    bot = commands.Bot(command_prefix='!', description='This is my awesome bot!', intents=intents)
 
-This is your bot instance. You can name the variable whatever you like but for simplicity's sake we will name it ``bot``.
+This is your bot instance. You can name the variable whatever you like but it is customary to name :class:`~ext.commands.Bot` instances ``bot``.
 You will need to specify a ``command_prefix`` here, we use ``!``, but you can use any string, or a list of strings for multiple prefixes.
 We also add the :attr:`Intents.message_content` intent, so that our bot can read regular text messages. You can read more in the `Intents guide <_guide_intents>`_.
 
 .. note::
+    This use of :class:`~ext.commands.Bot` is using the library provided implementation of Bot. For extending usage you may wish to consider subclassing it.
 
-    As of 2.0, the ``intents`` argument is required.
-    ``Intents`` are the method to specify which gateway events you wish to receive. ``Intents.default()`` means you will receive all events that are not locked behind bot verification.
-    For more information, see :ref:`intents_primer`.
 
 .. code-block:: python
 
     @bot.listen()
     async def on_ready():
-        print(f"Ready! I am {bot.user} and my ID is {bot.user.id}")
+        print(f'Ready! I am {bot.user} and my ID is {bot.user.id}')
 
-This is the ``ready`` event. It is called when the bot has finished loading and everything is cached.
+This is the :func:`on_ready` event. It is called when the bot has finished loading and everything necessary is cached.
 We use the :meth:`@bot.listen() <ext.commands.Bot.listen>` decorator as to not override the main event.
 For a list of available events, see :ref:`discord-api-events`.
 
-.. _guide_quickstart_bot_event_warning:
+A warning to consider on this can be found in the :ref:`_faq#why-does-on-message-make-my-commands-stop-working`
 
 .. warning::
 
-    Using :meth:`@bot.event <ext.commands.Bot.event>` is also valid, but keep in mind that using :meth:`@bot.event <ext.commands.Bot.event>` with the ``on_message`` event can cause your commands to stop responding.
-
-    To remedy this, either switch to :meth:`@bot.listen() <ext.commands.Bot.listen>`, or add :meth:`~ext.commands.Bot.process_commands` to your ``on_message`` event:
-
-    .. code-block:: python
-
-        @bot.event
-        async def on_message(message: discord.Message):
-            print(f'Received "{message.clean_content}" from {message.author}')
-            # IMPORTANT:
-            await bot.process_commands(message)
-
-.. warning::
-
-    ``on_ready`` can and will be called multiple times throughout your bot's uptime. You should avoid doing any kind of state-management here, such as connecting and loading your database.
+    :func:`on_ready` can and will be called multiple times throughout your bot's uptime. You should avoid doing any kind of state-management here, such as connecting and loading your database.
+    Consider using :meth:`~ext.commands.Bot.setup_hook` for this purpose instead.
 
 .. code-block:: python
 
     @bot.command()
-    async def echo(ctx: commands.Context, *, sentence: commands.clean_content):
-        await ctx.send(sentence)
+    async def apples(ctx: commands.Context, *, amount: int) -> None:
+        await ctx.send(f"Hello, I would like {amount} apples please!")
 
 Here's where our commands will be defined. We use the :meth:`@bot.command() <ext.commands.Bot.command>` decorator to flag this function as a command.
-This creates a command ``!echo`` that we can type into a channel, and the bot will respond with the given sentence. A few key features:
+This creates a command ``!apples`` that we can type into a channel, and the bot will respond with the given amount of applies in a predefined sentence.. A few key features:
 
 - :class:`~ext.commands.Context` refers to the command invocation context - this includes the :attr:`~ext.commands.Context.channel`, command :attr:`~ext.commands.Context.author`, :attr:`~ext.commands.Context.message` and more.
 - The ``*`` is a sign to tell discord.py that the following parameter should **consume all text afterward** and condense it into that parameter.
@@ -145,7 +129,9 @@ This creates a command ``!echo`` that we can type into a channel, and the bot wi
 
         As this consumes all text, parameters defined **after the next** will never be filled, so you should never have more than one parameter after the ``*``.
 
-- :meth:`~ext.commands.clean_content` is a :ref:`Converter <ext_commands_api_converters>` used to clean user pings and ``@everyone`` mentions. This way people will not be able to ping everyone by using your bot. For more information, see :ref:`ext_commands_commands_converters`.
+- Using ``int`` as a parameter type annotation here will instruct the library to attempt to convert the part of the discord message this refers to, to an :class:`int` type. This means you will have the correct functionality of an integer and not a string.
+
+For more information on the commands extension and other converters, please reference :ref:`_ext_commands_commands`.
 
 .. code-block:: python
 
@@ -160,6 +146,7 @@ This is the final step, you put your bot token here, save and run the file and t
 .. warning::
 
     As this is an example, token security is not applied here. However, you should be very careful with your bot token. Keep it in a secure place and only access it when you are starting the bot.
+    See `here <#securing-your-bots-token>` for more information.
 
 
 Running Your New Bot
@@ -192,8 +179,8 @@ And run your bot!
 Securing your bot's token
 --------------------------
 
-The token to your bot is **very important**. If an unauthorized user obtains it, they can do very malicious tasks that can delete your private guilds or get you and your bot banned.
-This short sub-guide will go over a couple of basic ways to secure your token so that it is not obtainable in a public environment.
+Your bot's token is **very important**. If a malicious user obtains it, they can delete your private guilds or get you and your bot banned.
+This short sub-guide shows a few basic ways to secure your token, so it's not publicly obtainable.
 
 .. note::
 
@@ -252,24 +239,7 @@ Is your bot not starting, or is something going wrong? Here is a list of possibl
 Improper token has been passed
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you get a traceback similar to:
-
-.. code-block:: python
-
-    Traceback (most recent call last):
-        File "bot.py", line 17, in <module>
-            bot.run(INVALID_TOKEN)
-        File "venv\Lib\discord\client.py", line 704, in run
-            return future.result()
-        File "venv\Lib\discord\client.py", line 683, in runner
-            await self.start(*args, **kwargs)
-        File "venv\Lib\discord\client.py", line 646, in start
-            await self.login(token)
-        File "venv\Lib\discord\client.py", line 512, in login
-            data = await self.http.static_login(token.strip())
-        File "venv\Lib\discord\http.py", line 537, in static_login
-            raise LoginFailure('Improper token has been passed.') from exc
-    discord.errors.LoginFailure: Improper token has been passed.
+If you get an :exc:`LoginFailure` exception with a message "Improper token has been passed"
 
 This means you have passed an invalid token to :meth:`bot.run() <ext.commands.Bot.run>`:
 
