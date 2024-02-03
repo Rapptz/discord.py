@@ -145,6 +145,45 @@ This is the final step, you put your bot token here, save and run the file and t
     As this is an example, token security is not applied here. However, you should be very careful with your bot token. Keep it in a secure place and only access it when you are starting the bot.
     See :ref:`securing_token` for more information.
 
+.. _quickstart_newbot_newcog:
+
+Convenience methods
+~~~~~~~~~~~~~~~~~~~
+
+discord.py provides some useful cli tools for getting a fresh workspace up and ready to go. These utilities are:-
+
+- ``newbot``
+- ``newcog``
+
+They can be used like so:-
+
+.. code-block:: shell
+    :emphasize-lines: 1
+
+    $ python -m discord newbot CoolBot
+    > successfully made bot at /your/path/CoolBot
+
+    $ ls CoolBot/
+    > bot.py cogs/ config.py .gitignore
+
+Which will create a basic bot project with an assortment of essentials for getting started. This includes:-
+- A basic ``bot.py`` which is prefilled with a basic :class:`~ext.commands.Bot` subclass and functionality for extending it.
+- A ``cogs/`` directory for creating extension files in with Cog functionality (which is optional).
+- A ``config.py`` which acts as your token or general configuration storage.
+- A ``.gitignore`` file so you don't accidentally push the ``config.py`` file to a version control system like GitHub.
+
+There is also ``newcog`` which does the following:-
+
+.. code-block:: shell
+    :emphasize-lines: 1
+
+    $ python -m discord newcog CoolCog CoolBot/cogs
+    > successfully made cog at CoolBot/cogs/CoolCog.py
+
+This tool creates a new file within the passed directory with the provided name, and again this is a blanket implementation of an :ref:`extension <ext/commands/extensions>` file for use with the :meth:`~ext.commands.Bot.load_extension` method.
+
+The file imports the necessary items and defines a Cog class that you can extend, and adds the necessary ``setup`` method for the extension to function correctly.
+
 
 Running Your New Bot
 ---------------------
