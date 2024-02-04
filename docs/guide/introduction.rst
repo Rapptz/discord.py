@@ -114,19 +114,14 @@ A warning to consider on this can be found at :ref:`ext_commands_on_message`.
 .. code-block:: python
 
     @bot.command()
-    async def apples(ctx: commands.Context, *, amount: int) -> None:
+    async def apples(ctx: commands.Context, amount: int) -> None:
         await ctx.send(f"Hello, I would like {amount} apples please!")
 
 Here's where our commands will be defined. We use the :meth:`@bot.command() <ext.commands.Bot.command>` decorator to flag this function as a command.
 This creates a command ``!apples`` that we can type into a channel, and the bot will respond with the given amount of applies in a predefined sentence.. A few key features:
 
 - :class:`~ext.commands.Context` refers to the command invocation context - this includes the :attr:`~ext.commands.Context.channel`, command :attr:`~ext.commands.Context.author`, :attr:`~ext.commands.Context.message` and more.
-- The ``*`` is a sign to tell discord.py that the following parameter should **consume all text afterward** and condense it into that parameter.
-    .. note::
-
-        As this consumes all text, parameters defined **after the next** will never be filled, so you should never have more than one parameter after the ``*``.
-
-- Using ``int`` as a parameter type annotation here will instruct the library to attempt to convert the part of the discord message this refers to, to an :class:`int` type. This means you will have the correct functionality of an integer and not a string.
+- Using ``int`` as a parameter type annotation here will instruct the library to attempt the given argument to an :class:`int` type. This means you'll have an integer in the command body and not a string.
 
 For more information on the commands extension and other converters, please reference :ref:`ext_commands_commands`.
 
@@ -150,7 +145,7 @@ This is the final step, you put your bot token here, save and run the file and t
 Convenience methods
 ~~~~~~~~~~~~~~~~~~~
 
-discord.py provides some useful cli tools for getting a fresh workspace up and ready to go. These utilities are:-
+discord.py provides a pair of useful cli tools for getting a fresh workspace up and ready to go. These utilities are:-
 
 - ``newbot``
 - ``newcog``
@@ -227,18 +222,18 @@ This short sub-guide shows a few basic ways to secure your token, so it's not pu
 
     - JSON, YAML, TOML
     - Python (you can import the config!)
-    - Environment Variable (either on your system, or a ``.env`` file)
+    - Environment Variable (either on your system, or with a ``.env`` file)
 
-    (For this example, we will use a Python file.)
+    For this example, we will use a Python file.
 
 2. Store your token and other secrets here.
 
     .. code-block:: python
 
-        my_token = "123"
+        token = "123"
         database_password = "hello_world"
 
-3. Import your config data into your main bot file
+3. Import your config module into your main bot file
 
     .. code-block:: python
 
