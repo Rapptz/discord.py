@@ -36,25 +36,25 @@ Voice support (e.g. playing audio in voice channels) is not enabled by default a
 
     pip install -U "discord.py[voice]"
 
-Linux systems may need to install additional dependencies via your package manager to get full voice support.
+Linux systems may need to install additional dependencies via your package manager to get full voice support:-
 
-On Debian and Ubuntu systems:
+.. tab:: Debian/Ubuntu
 
-.. code-block:: shell
+    .. code-block:: shell
 
-    $ sudo apt install libffi-dev libsodium-dev python3-dev
+        $ sudo apt install libffi-dev libsodium-dev python3-dev
 
-For Fedora and CentOS systems:
+.. tab:: Fedora/CentOS
 
-.. code-block:: shell
+    .. code-block:: shell
 
-    $ sudo dnf install libffi-devel libsodium-devel python3-devel
+        $ sudo dnf install libffi-devel libsodium-devel python3-devel
 
-For Arch Linux systems:
+.. tab:: Arch Linux
 
-.. code-block:: shell
+    .. code-block:: shell
 
-    $ pacman -Syu libsodium
+        $ pacman -Syu libsodium
 
 For other distributions, please use your package manager to find libraries for ``libffi``, ``libsodium``, and the Python 3 development headers.
 
