@@ -87,7 +87,7 @@ Waiting for Multiple Events
 +++++++++++++++++++++++++++
 
 .. code-block:: python3
-   :emphasize-lines 2, 5, 6, 7
+   :emphasize-lines: 2, 5, 6, 7
 
    participants = []
 
