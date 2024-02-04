@@ -78,7 +78,7 @@ Permission values
 ------------------
 
 A small preface to this is that Discord represents the permissions system as a bit field.
-They have a great in-depth `explanation to this <https://discord.com/developers/docs/topics/permissions>`_ on their API documentation page.
+They have a great in-depth :ddocs:`explanation to this <topics/permissions>` on their API documentation page.
 
 If you desire to use permission integers within discord.py, you can do it similar to the below:
 
