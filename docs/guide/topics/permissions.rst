@@ -6,9 +6,9 @@
 Permissions
 ============
 
-Permissions are the bread and butter of how control over a Discord server (which will from now on be referenced as a "guild" to align with Discord's official API terminology).
+Permissions are the bread and butter of control over a guild.
 
-Controlling permissions is necessary for securing and controlling how your guild functions and operates.
+Controlling permissions is necessary for securing your guild and controlling how it functions and operates.
 
 
 Permission hierarchy explanation
@@ -16,14 +16,14 @@ Permission hierarchy explanation
 
 Discord permissions work on a hierarchy system. This means that roles placed logically above each other (in the Roles UI) have descending order of precedence.
 
-If you have a role list, like so:
+Say you have a role list, like so:
 
 - ``Administrator (#1)``
 - ``Manager (#2)``
 - ``Moderator (#3)``
 - ``@everyone (#4)``
 
-This means that Administrator role (someone who has it) can kick, ban and timeout Manager.
+Here, someone with the Administrator role can kick, ban and timeout Manager.
 Manager **cannot** kick, ban or timeout Administrator.
 
 discord.py is aware of this and has implemented the ``__gt__`` and other methods on :class:`Role`, which allows you to do the following:
@@ -33,7 +33,13 @@ discord.py is aware of this and has implemented the ``__gt__`` and other methods
     if administrator_role > manager_role:
         # The administrator role is greater in the hierarchy than manager.
 
-One small caveat to note with the discord permissions system, is that in the case of overwrites, explicit allow will always overwrite explicit deny.
+One small caveat to note with the discord permissions system is that, in the case of overwrites, the highest overwrite in the hierarchy will be applied. The hierarchy is as follows:
+1. Member allow
+2. Member deny
+3. Role allow
+4. Role deny
+5. @everyone allow
+6. @everyone deny
 
 In clearer terms, imagine this:
 
@@ -61,7 +67,7 @@ This allows for permissions to be cascaded to it.
 Using permissions within discord.py
 ------------------------------------
 
-discord.py has two primary ways of interaction with the permissions of a guild or channels:
+discord.py has two primary ways of interacting with the permissions of a guild or channels:
 
 - :class:`~Permissions` for interacting with general permissions for roles and channels.
 - :class:`~PermissionOverwrite` for interacting with the overwrites on a guild channel.
@@ -71,7 +77,7 @@ Let's use both of these now in actual examples.
 Permission values
 ------------------
 
-A small preface to this, is that Discord themselves represent the permissions system as a bit field.
+A small preface to this is that Discord represents the permissions system as a bit field.
 They have a great in-depth `explanation to this <https://discord.com/developers/docs/topics/permissions>`_ on their API documentation page.
 
 If you desire to use permission integers within discord.py, you can do it similar to the below:
@@ -90,7 +96,7 @@ If you desire to use permission integers within discord.py, you can do it simila
     # This Permissions instance has the `view_audit_log`, `manage_server`, `manage_roles`, `manage_channels` and `kick_members` permissions.
 
 
-Using Permissions to create a new role
+Using permissions to create a new role
 ---------------------------------------
 
 Let's imagine we have a server where we talk about the latest games.
@@ -106,38 +112,37 @@ Let's flesh it out more, and use the :meth:`~Guild.create_role` method to its fu
 
 .. code-block:: python3
 
-    # So we want to create a new role, and to give that role some permissions.
+    # So we want to create a new role, and give that role some permissions.
     # We will define a set of `Permissions` that do what we need:
     permissions = discord.Permissions()
     permissions.send_messages = True
     permissions.add_reactions = True
     permissions.create_public_threads = True
 
-    # Above is now a working Permissions instance with the name `permissions`, we could also define it like so:
+    # Above is now a working Permissions instance with the name `permissions`. We could also define it like so:
     permissions = discord.Permissions(send_messages=True, add_reactions=True, create_public_threads=True)
 
-    # and we pass this to the role creation method!
+    # We can now pass this to the role creation method!
     await guild.create_role(name="My cool game", mentionable=True, permissions=permissions, reason="New game!")
 
-Now we have a brand new role, named ``"My cool game"`` and it now also has the permissions we outlined above.
+Now we have a brand new role, named ``"My cool game"``, with the permissions we outlined above.
 
 Setting permissions on an existing channel
 -------------------------------------------
 
 Let's say you wanted to edit the permissions of an existing channel, perhaps to give a role more access.
 An example here is that my new moderator role needs the Manage Messages permission in the #general channel.
-We will be using the :meth:`~TextChannel.set_permissions` method:
+We will be using the :meth:`TextChannel.overwrites_for` and :meth:`TextChannel.set_permissions` methods:
 
 .. code-block:: python3
 
-    # Let's create a PermissionOverwrite instance that has some explicit permissions set:
-    overwrite = discord.PermissionOverwrite()
-    overwrite.update(send_messages=True, send_messages_in_threads=True)
+    # Let's get the existing permissions for the moderator role in the channel:
+    overwrite = channel.overwrites_for(moderator_role)
 
-    # and now we update that with `manage_messages`:
+    # And now we update that with `manage_messages`:
     overwrite.manage_messages = True
 
-    # we can now set those permissions on the channel:
+    # We can now set those permissions on the channel:
     await channel.set_permissions(moderator_role, overwrite=overwrite)
 
 This short example briefly goes over PermissionOverwrite objects, let's look more into those now:
@@ -152,7 +157,7 @@ We need to construct a mapping of ``Role | Member: PermissionOverwrite``:
 
 .. code-block:: python3
 
-    # We can now create the overwrites mapping necessary for this, you can do it in one dictionary instantiation, or spead it across multiple lines.
+    # We can now create the overwrites mapping necessary for this, you can do it in one dictionary instantiation, or spread it across multiple lines.
 
     overwrites = {
         guild.default_role: discord.PermissionOverwrite(view_channel=False, send_messages=False, read_messages=False, read_message_history=False),
@@ -160,17 +165,17 @@ We need to construct a mapping of ``Role | Member: PermissionOverwrite``:
         member: discord.PermissionOverwrite(view_channel=True, send_messages=True, read_messages=True, read_message_history=True)
     }
 
-    # or alternatively:
+    # Or, alternatively:
     overwrites = {}
     overwrites[guild.default_role] = discord.PermissionOverwrite(view_channel=False, send_messages=False, read_messages=False, read_message_history=False)
-    overwrites[moderator_role] = discord.PermissionOverwrite(manage_messages=True)
+    overwrites[moderator_role] = discord.PermissionOverwrite(view_channel=True, send_messages=True, read_messages=True, read_message_history=True, manage_messages=True)
     overwrites[member] = discord.PermissionOverwrite(view_channel=True, send_messages=True, read_messages=True, read_message_history=True)
 
     # We can now pass these to channel creation:
 
     await guild.create_text_channel(name="Ticket", overwrites=overwrites)
 
-The channel created whose permissions look something like this:
+The permissions of the channel we just created look like this:
 
 .. image:: /images/guide/topics/permissions/ticket_channel.png
 
@@ -188,29 +193,29 @@ Let's create a scenario where you want to "lock down" a channel, denying the ``@
 
     # All we do now, is update it. There are two ways to do this:
     overwrite.send_messages = False
-    # or, if you have bulk permissions to update:
+    # Or, if you have bulk permissions to update:
     overwrite.update(send_messages=False)
 
     # Since we have a singular PermissionOverwrite, we want to use the `set_permissions` method of the channel:
     await channel.set_permissions(guild.default_role, overwrite=overwrite)
 
-Now, that channel has explicitly denied the ``send_messages`` permission to the defalt role of the guild.
+Now, that channel has explicitly denied the ``send_messages`` permission to the default role of the guild.
 
-In an alternate scenario, let's say we want to add multiple overwrites to a channel at the same time, to deny ``add_reactions`` permissions to roles and members:
+In an alternate scenario, let's say we want to add multiple overwrites to a channel at the same time to deny ``add_reactions`` permissions to roles and members:
 
 .. code-block:: python3
 
     # Let's make a shortcut variable to the existing overwrites.
     overwrites = channel.overwrites
 
-    # we'll now grab the specific overwrites relating to that role and member:
+    # We'll now grab the specific overwrites relating to that role and member:
     role_overwrite = channel.overwrites_for(role)
     member_overwrite = channel.overwrites_for(member)
 
-    # edit the attribute for each specific permission
+    # Edit the attribute for each specific permission:
     role_overwrite.add_reactions = False
     member_overwrite.add_reactions = False
-    # alternatively, if you have a bulk of permissions to update, you can use the `.update` method of them:
+    # Alternatively, if you have a bulk of permissions to update, you can use the `.update` method on them:
     role_overwrite.update(add_reaction=False)
     member_overwrite.update(add_reaction=False)
 
@@ -218,5 +223,5 @@ In an alternate scenario, let's say we want to add multiple overwrites to a chan
     overwrites[role] = role_overwrite
     overwrites[member] = member_overwrite
 
-    # and edit the channel with them:
+    # And edit the channel with them:
     await channel.edit(overwrites=overwrites)
