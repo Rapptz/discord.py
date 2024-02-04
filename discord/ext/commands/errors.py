@@ -146,6 +146,25 @@ class ConversionError(CommandError):
         self.original: Exception = original
 
 
+class ConversionCancelled(CommandError):
+    """Exception raised when a Converter class intentionally cancels the conversion.
+
+    This indicates that the conversion was *cancelled* under expected conditions,
+    rather than *failed* due to an invalid input or an error in the conversion logic.
+    This is useful for handling user interventions and timeouts in custom converters.
+
+    This inherits from :exc:`CommandError`.
+
+    Attributes
+    -----------
+    converter: :class:`discord.ext.commands.Converter`
+        The converter that was cancelled.
+    """
+
+    def __init__(self, converter: Converter[Any]) -> None:
+        self.converter: Converter[Any] = converter
+
+
 class UserInputError(CommandError):
     """The base exception type for errors that involve errors
     regarding user input.
