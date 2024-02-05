@@ -114,6 +114,16 @@ webhook is bound to client's internal state, essentially able to access cached i
 ``session`` parameter can be omitted when providing ``client`` such that client's internal
 HTTP session is used which is managed by the library.
 
+.. note::
+
+    ``client`` parameter is only supported by :class:`discord.Webhook` class. :class:`discord.SyncWebhook`
+    does not support this parameter.
+
+Some webhook operations such as changing webhook's channel requires webhook to be authenticated
+using a bot token. Webhooks obtained through HTTP methods are automatically equipped with a bot
+token transparently. However, for partial webhooks, ``bot_token`` parameter can be passed to
+:meth:`Webhook.from_url` and :meth:`Webhook.partial` to manually set a bot token.
+
 Fetching Webhooks
 ~~~~~~~~~~~~~~~~~
 
