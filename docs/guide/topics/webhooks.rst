@@ -160,9 +160,6 @@ other message features. An example of sending embeds is given below.
 .. image:: /images/guide/webhooks/webhook_message_with_embed.png
     :alt: Webhook message with embed.
 
-There are some features that are exclusive to webhook messages like hyperlinks in
-raw message's content.
-
 Webhooks also allow you to set different avatar and username on each message. This
 is done using by passing in ``avatar_url`` and ``username`` parameters in the
 :meth:`~Webhook.send` method.
