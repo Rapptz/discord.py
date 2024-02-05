@@ -10,13 +10,13 @@ Webhooks are used for posting messages in Discord text channels without relying 
 The focus of this section is to provide a basic understanding of webhooks and
 working with them using discord.py.
 
-For detailed information about webhooks, See the documentation for :ref:`webhooks <discord-api-webhooks>`.
+For detailed information about webhooks, see the documentation for :ref:`webhooks <discord-api-webhooks>`.
 
 Introduction to webhooks
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-The difference between sending messages with webhooks and bots is that bots require proper authentication and a bot user
-whereas webhooks don't need either.
+The difference between sending messages with webhooks and bots is that bots require proper
+authentication and a bot user whereas webhooks don't need either.
 
 There are currently three types of webhooks:
 
@@ -42,8 +42,8 @@ Creating a webhook
 In order to create incoming webhooks in a channel, the member needs the
 :attr:`~Permissions.manage_webhooks` permission in the given guild or text channel.
 
-To create a webhook in a server, Navigate to "Server Settings > Integrations" page. Alternatively, webhooks
-can also be created from the "Integrations" page in a channel's settings.
+To create a webhook in a server, navigate to "Server Settings > Integrations" page.
+Alternatively, webhooks can also be created from the "Integrations" page in a channel's settings.
 
 .. image:: /images/guide/webhooks/guild_settings_integrations.png
     :alt: Integrations Settings
@@ -92,11 +92,11 @@ in the :meth:`~Webhook.from_url` method.
         webhook = discord.Webhook.from_url("webhook-url-here", session=session)
 
 The webhooks retrieved through HTTP methods are automatically bound to library's
-internal HTTP session. However in order to initialize partial webhooks, We must
+internal HTTP session. However in order to initialize partial webhooks, we must
 create our own HTTP session and pass it through the ``session`` parameter.
 
-It is worth noting that for asynchronous :class:`Webhook`, The ``session`` parameter
-takes in a :class:`aiohttp.ClientSession` instance. However for synchronous variant, The
+It is worth noting that for asynchronous :class:`Webhook`, the ``session`` parameter
+takes in a :class:`aiohttp.ClientSession` instance. However for synchronous variant, the
 ``session`` parameter takes the :class:`requests.Session` instance.
 
 :meth:`~Webhook.from_url` is a helper that automatically extracts webhook ID and token
@@ -107,6 +107,12 @@ webhooks directly using the ID and token.
 
     async with aiohttp.ClientSession() as session:
         webhook = discord.Webhook.partial(webhook_id, webhook_token, session=session)
+
+Both :meth:`Webhook.from_url` and :meth:`Webhook.partial` methods take an optional ``client``
+parameter that takes a :class:`discord.Client` instance. When ``client`` is provided, the
+webhook is bound to client's internal state, essentially able to access cached information.
+``session`` parameter can be omitted when providing ``client`` such that client's internal
+HTTP session is used which is managed by the library.
 
 Fetching webhooks
 ~~~~~~~~~~~~~~~~~
@@ -122,18 +128,20 @@ information, you can fetch them. Use the :meth:`Webhook.fetch` method to do so.
     webhook = await partial_webhook.fetch()
     print(webhook.is_partial()) # False
 
-When you have a :meth:`Client` instance available, you can use it's :meth:`~Client.fetch_webhook` method to
-fetch the webhook using the ID. It is worth noting that this method does not require you to create a separate 
-HTTP session. The library's internal session is automatically bound to the webhook and is managed by the library.
+When you have a :meth:`Client` instance available, you can use it's :meth:`~Client.fetch_webhook`
+method to fetch the webhook using the ID. It is worth noting that this method does not require you
+to create a separate  HTTP session. The library's internal session is automatically bound to the
+webhook and is managed by the library.
 
-Fetched webhook will include the complete webhook information like username, avatar etc. Fetching the webhook isn't
-necessary when you just want to perform simple HTTP operations such as sending messages, editing or deleting them.
-Only fetch the webhook when you need this information, avoid making unnecessary API calls.
+Fetched webhook will include the complete webhook information like username, avatar etc. Fetching
+the webhook isn't necessary when you just want to perform simple HTTP operations such as sending
+messages, editing or deleting them. Only fetch the webhook when you need this information and avoid
+making unnecessary API calls.
 
 Sending messages
 ~~~~~~~~~~~~~~~~
 
-This is where the fun begins, Let's start posting messages through our webhook.
+This is where the fun begins, let us start posting messages through our webhook.
 We use the :meth:`Webhook.send` method to send the messages.
 
 .. code-block:: py
@@ -147,7 +155,7 @@ This will produce the following output in Discord:
 .. image:: /images/guide/webhooks/webhook_message.png
     :alt: Webhook message
 
-Like normal messages, Webhooks support embeds, file attachments, allowed mentions and
+Like normal messages, webhooks support embeds, file attachments, allowed mentions and
 other message features. An example of sending embeds is given below.
 
 .. code-block:: py
@@ -206,7 +214,7 @@ Example of fetching, editing and deleting webhook messages is given below.
 
 Sometimes you don't want to make an extra API call for fetching the messages. If
 you have the message ID you can directly edit or delete them using :meth:`Webhook.edit_message`
-and :meth:`Webhook.delete_message` methods. This way, you can avoid unnecessary API calls.
+and :meth:`Webhook.delete_message` methods. This saves unnecessary API calls.
 
 .. code-block:: py
 
