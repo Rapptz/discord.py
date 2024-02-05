@@ -12,7 +12,7 @@ working with them using discord.py.
 
 For detailed information about webhooks, see the documentation for :ref:`webhooks <discord-api-webhooks>`.
 
-Introduction to webhooks
+Introduction to Webhooks
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 The difference between sending messages with webhooks and bots is that bots require proper
@@ -36,7 +36,7 @@ this type of webhooks are handled internally by the library and is not in scope 
 
 This guide will primarily focus on the first type, incoming webhooks.
 
-Creating a webhook
+Creating a Webhook
 ~~~~~~~~~~~~~~~~~~
 
 In order to create incoming webhooks in a channel, the member needs the
@@ -62,7 +62,7 @@ so don't store it in a public place.
 
 You can also create webhooks through API using the :meth:`TextChannel.create_webhook` method.
 
-Initializing webhooks
+Initializing Webhooks
 ~~~~~~~~~~~~~~~~~~~~~
 
 We'll now be initializing a webhook instance in our code.
@@ -114,7 +114,7 @@ webhook is bound to client's internal state, essentially able to access cached i
 ``session`` parameter can be omitted when providing ``client`` such that client's internal
 HTTP session is used which is managed by the library.
 
-Fetching webhooks
+Fetching Webhooks
 ~~~~~~~~~~~~~~~~~
 
 Partial webhooks only contain the webhook ID and token as these are the only required
@@ -138,7 +138,7 @@ the webhook isn't necessary when you just want to perform simple HTTP operations
 messages, editing or deleting them. Only fetch the webhook when you need this information and avoid
 making unnecessary API calls.
 
-Sending messages
+Sending Messages
 ~~~~~~~~~~~~~~~~
 
 This is where the fun begins, let us start posting messages through our webhook.
@@ -187,7 +187,7 @@ The message created will have it's author with specified username and avatar set
 .. image:: /images/guide/webhooks/webhook_message_with_username_avatar.png
     :alt: Webhook message with specified avatar and username
 
-Managing messages
+Managing Messages
 ~~~~~~~~~~~~~~~~~
 
 Incoming webhooks can also fetch, edit and delete the messages sent by that webhook.
