@@ -29,9 +29,8 @@ Depending on the action taken, an entry in the audit log may contain additional 
     There are a couple of limitations with audit logs that need to be understood:
 
     1. There is no guarantee on audit logs arriving when expected (if they arrive at all)
-    2. No event is triggered when an audit log entry is created.
-    3. Audit logs are limited to 45 days.
-    4. No entry is created for message deletes if:
+    2. Audit logs are limited to 45 days.
+    3. No entry is created for message deletes if:
 
       - it is a bot deleting a single message, or
       - it is the message author deleting the message
@@ -55,7 +54,13 @@ Getting Audit Logs
 
 Audit logs can be retrieved via :func:`guild.audit_logs`, assuming you have the :attr:`~Permissions.view_audit_log` permission. 
 
-Note that this function returns an :term:`asynchronous iterator` and so to properly go through the audit logs, you will need to iterate over them.
+Note that this function returns an :class:`AsyncIterator` and so to properly go through the audit logs, you will need to iterate over them.
+
+It is also possible to get audit log entries when they are created using the :func:`discord.on_audit_log_entry_create` event.
+
+.. note:: 
+
+    The :func:`discord.on_audit_log_entry_create` event requires `~Intents.moderation` to be enabled.
 
 Examples
 ==========
@@ -132,3 +137,4 @@ You can find more information on the audit logs in the documentation for the fol
 - :class:`AuditLogActionCategory`
 - :class:`AuditLogChanges`
 - :class:`AuditLogDiff`
+- :func:`discord.on_audit_log_entry_create`
