@@ -887,6 +887,18 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
                 return
 
             before_timestamp = update_before(threads[-1])
+    
+    def to_dict(self) -> Dict[str, Any]:
+        payload: Dict[str, Any] = super().to_dict()
+        payload.update(
+            nsfw = self.nsfw,
+            slowmode_delay = self.slowmode_delay,
+            default_auto_archive_duration = self.default_auto_archive_duration,
+            default_thread_slowmode_delay = self.default_thread_slowmode_delay
+        )
+        if self.topic:
+            payload['topic'] = self.topic
+        return payload
 
 
 class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.GuildChannel, Hashable):
@@ -1248,6 +1260,18 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
 
         data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar, reason=reason)
         return Webhook.from_state(data, state=self._state)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        payload: Dict[str, Any] = super().to_dict()
+        payload.update(
+            nsfw = self.nsfw,
+            bitrate = self.bitrate,
+            user_limit = self.user_limit,
+            slowmode_delay = self.slowmode_delay,
+            rtc_region = self.rtc_region,
+            video_quality_mode = self.video_quality_mode.value
+        )
+        return payload
 
 
 class VoiceChannel(VocalGuildChannel):
@@ -1786,6 +1810,12 @@ class StageChannel(VocalGuildChannel):
         if payload is not None:
             # the payload will always be the proper channel payload
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
+        
+    def to_dict(self) -> Dict[str, Any]:
+        payload: Dict[str, Any] = super().to_dict()
+        if self.topic:
+            payload.update(topic = self.topic)
+        return payload
 
 
 class CategoryChannel(discord.abc.GuildChannel, Hashable):
@@ -2047,6 +2077,13 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
             The channel that was just created.
         """
         return await self.guild.create_forum(name, category=self, **options)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        payload: Dict[str, Any] = super().to_dict()
+        payload.update(
+            nsfw = self.nsfw,
+        )
+        return payload
 
 
 class ForumTag(Hashable):
@@ -2887,6 +2924,23 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
                 return
 
             before_timestamp = update_before(threads[-1])
+    
+    def to_dict(self) -> Dict[str, Any]:
+        payload: Dict[str, Any] = super().to_dict()
+        payload.update(
+            nsfw = self.nsfw,
+            slowmode_delay = self.slowmode_delay,
+            default_auto_archive_duration = self.default_auto_archive_duration,
+            default_thread_slowmode_delay = self.default_thread_slowmode_delay,
+            default_reaction_emoji = self.default_reaction_emoji,
+            default_layout = self.default_layout,
+            default_sort_order = self.default_sort_order,
+            available_tags = [i.to_dict() for i in self.available_tags],
+            flags = self.flags.value
+        )
+        if self.topic:
+            payload['topic'] = self.topic
+        return payload
 
 
 class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):

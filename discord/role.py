@@ -125,6 +125,16 @@ class RoleTags:
             f'<RoleTags bot_id={self.bot_id} integration_id={self.integration_id} '
             f'premium_subscriber={self.is_premium_subscriber()}>'
         )
+    
+    def to_dict(self) -> Dict[str, Any]:
+        data = {}
+        if self.bot_id: data['bot_id'] = self.bot_id
+        if self.integration_id: data['integration_id'] = self.integration_id
+        if self._premium_subscriber: data['premium_subscriber'] = None
+        if self.subscription_listing_id: data['subscription_listing_id'] = self.subscription_listing_id
+        if self._available_for_purchase: data['available_for_purchase'] = None
+        if self._guild_connections: data['guild_connections'] = None
+        return data
 
 
 class Role(Hashable):
@@ -543,3 +553,28 @@ class Role(Hashable):
         """
 
         await self._state.http.delete_role(self.guild.id, self.id, reason=reason)
+
+    def to_dict(self) -> Dict[str, Any]:
+        payload = {
+            "id": self.id,
+            "name": self.name,
+            "color": self.color.value,
+            "hoist": self.hoist,
+            "icon": self._icon,
+            "unicode_emoji": self.unicode_emoji,
+            "position": self.position,
+            "permissions": self.permissions.value,
+            "managed": self.managed,
+            "mentionable": self.mentionable
+        }
+        if self.tags is not None:
+            t = self.tags.to_dict()
+            if t: payload["tags"] = t
+        payload['flags'] = self.flags.value
+
+        # cleanup payload data
+        for k, v in payload.copy().items():
+            if v is None:
+                # delete every key where the value is None
+                del payload[k]
+        return payload

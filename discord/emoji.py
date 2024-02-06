@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Collection, Iterator, List, Optional, TYPE_CHECKING, Tuple
+from typing import Any, Collection, Iterator, List, Optional, TYPE_CHECKING, Tuple, Dict
 
 from .asset import Asset, AssetMixin
 from .utils import SnowflakeList, snowflake_time, MISSING
@@ -255,3 +255,14 @@ class Emoji(_EmojiTag, AssetMixin):
 
         data = await self._state.http.edit_custom_emoji(self.guild_id, self.id, payload=payload, reason=reason)
         return Emoji(guild=self.guild, data=data, state=self._state)  # type: ignore # if guild is None, the http request would have failed
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "roles": [i.id for i in self.roles],
+            "require_colons": self.require_colons,
+            "managed": self.managed,
+            "animated": self.animated,
+            "available": self.available
+        }

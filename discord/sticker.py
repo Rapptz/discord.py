@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Literal, TYPE_CHECKING, List, Optional, Tuple, Type, Union
+from typing import Literal, TYPE_CHECKING, List, Optional, Tuple, Type, Union, Dict, Any
 import unicodedata
 
 from .mixins import Hashable
@@ -509,6 +509,17 @@ class GuildSticker(Sticker):
             An error occurred deleting the sticker.
         """
         await self._state.http.delete_guild_sticker(self.guild_id, self.id, reason)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "format": self.format.value,
+            "available": self.available,
+            "guild_id": self.guild_id,
+            "emoji": self.emoji
+        }
 
 
 def _sticker_factory(sticker_type: Literal[1, 2]) -> Tuple[Type[Union[StandardSticker, GuildSticker, Sticker]], StickerType]:

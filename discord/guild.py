@@ -4377,3 +4377,84 @@ class Guild(Hashable):
             return False
 
         return self.dms_paused_until > utils.utcnow()
+    
+    def to_dict(
+        self,
+        *,
+        with_members: bool = False,
+        with_channels: bool = False,
+    ) -> Dict[str, Any]:
+        """Returns the Guild as formatted json.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        with_members: :class:`bool`
+            Whether to add cached members to the Payload.
+        with_channels: :class:`bool`
+            Whether to add cached channels to the Payload.
+        """
+        if self.unavailable:
+            raise ValueError("The Guild Objekt must be marked as available!")
+
+        payload: Dict[str, Any] = {
+            "id": self.id,
+            "name": self.name,
+            "icon": self._icon,
+            "splash": self._splash,
+            "discovery_splash": self._discovery_splash,
+            "owner_id": self.owner_id,
+            "afk_channel_id": self._afk_channel_id,
+            "afk_timeout": self.afk_timeout,
+            "widget_enabled": self.widget_enabled,
+            "widget_channel_id": self._widget_channel_id,
+            "verification_level": self.verification_level.value,
+            "explicit_content_filter": self.explicit_content_filter.value,
+            "roles": [i.to_dict() for i in self.roles],
+            "emojis": [i.to_dict() for i in self.emojis],
+            "features": self.features,
+            "mfa_level": self.mfa_level.value,
+            "system_channel_id": self._system_channel_id,
+            "system_channel_flags": self.system_channel_flags.value,
+            "rules_channel_id": self._rules_channel_id,
+            "max_presences": self.max_presences,
+            "max_members": self.max_members,
+            "vanity_url_code": self.vanity_url_code,
+            "description": self.description,
+            "banner": self._banner,
+            "premium_tier": self.premium_tier,
+            "premium_subscription_count": self.premium_subscription_count,
+            "preferred_locale": self.preferred_locale.value,
+            "public_updates_channel_id": self._public_updates_channel_id,
+            "max_video_channel_users": self.max_video_channel_users,
+            "approximate_member_count": self.approximate_member_count,
+            "approximate_presence_count": self.approximate_presence_count,
+            "nsfw_level": self.nsfw_level.value,
+            "stickers": [i.to_dict() for i in self.stickers],
+            "premium_progress_bar_enabled": self.premium_progress_bar_enabled,
+            "safety_alerts_channel_id": self._safety_alerts_channel_id
+        }
+
+        if with_members and self.members:
+            payload.update(
+                members = [i.to_dict() for i in self.members]
+            )
+
+        if with_channels:
+            payload.update(
+                channels = [i.to_dict() for i in self.channels]
+            )
+
+        # cleanup payload data
+        for k, v in payload.copy().items():
+            if v is None:
+                # delete every key where the value is None
+                del payload[k]
+            elif type(v) == list and not v:
+                # delete every empty list
+                del payload[k]
+            else:
+                continue
+        
+        return payload

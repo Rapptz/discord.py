@@ -1148,3 +1148,21 @@ class Member(discord.abc.Messageable, _UserTag):
         if self.timed_out_until is not None:
             return utils.utcnow() < self.timed_out_until
         return False
+    
+    def to_dict(self) -> Dict[str, Any]:
+        data =  {
+            "user": self._user._to_minimal_user_json(),
+            "nick": self.nick,
+            "avatar": self._avatar,
+            "roles": [i.id for i in self.roles],
+            "joined_at": self.joined_at.isoformat() if self.joined_at else None,
+            "premium_since": self.premium_since.isoformat() if self.premium_since else None,
+            "flags": self._flags
+        }
+        if self.pending:
+            data["pending"] = self.pending
+        if self.guild_permissions != Permissions.none():
+            data["permissions"] = self.guild_permissions.value
+        if self.timed_out_until is not None:
+            data["communication_disabled_until"] = self.timed_out_until.isoformat()
+        return data

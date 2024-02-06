@@ -1308,6 +1308,20 @@ class GuildChannel:
         data = await state.http.invites_from_channel(self.id)
         guild = self.guild
         return [Invite(state=state, data=invite, channel=self, guild=guild) for invite in data]
+    
+    def to_dict(self) -> Dict[str, Any]:
+        payload: Dict[str, Any] = {
+            "id": self.id,
+            "name": self.name,
+            "type": self.type.value,
+            "guild_id": self.guild.id,
+            "position": self.position,
+            "permission_overwrites": [i._asdict() for i in self._overwrites]
+        }
+        if self.category_id:
+            payload["parent_id"] = self.category_id
+
+        return payload
 
 
 class Messageable:
