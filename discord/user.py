@@ -410,7 +410,7 @@ class ClientUser(BaseUser):
             then the file must be opened via ``open('some_filename', 'rb')`` and
             the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
 
-            The only image formats supported for uploading is JPEG and PNG.
+            The only image formats supported for uploading is JPEG, PNG, GIF AND WEBP.
 
         .. versionchanged:: 2.0
             The edit is no longer in-place, instead the newly edited client user is returned.
