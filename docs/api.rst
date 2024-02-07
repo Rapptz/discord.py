@@ -4259,6 +4259,8 @@ AuditLogDiff
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
 
+.. _discord-api-webhooks:
+
 Webhook Support
 ------------------
 
