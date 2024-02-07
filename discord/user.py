@@ -425,8 +425,7 @@ class ClientUser(BaseUser):
         avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.
-
-        The only image formats supported for uploading is JPEG, PNG, GIF, WEBP
+            The only image formats supported for uploading is JPEG, PNG, GIF, WEBP
 
         Raises
         ------
