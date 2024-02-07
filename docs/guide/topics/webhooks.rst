@@ -1,3 +1,4 @@
+:orphan:
 .. currentmodule:: discord
 
 .. _guide_webhooks:
@@ -7,13 +8,13 @@ Webhooks
 
 Webhooks are used for posting messages in Discord text channels without relying on a bot user.
 
-The focus of this section is to provide a basic understanding of webhooks and
+The focus of this guide is to provide a basic understanding of webhooks and
 working with them using discord.py.
 
-For detailed information about webhooks, see the documentation for :ref:`webhooks <discord-api-webhooks>`.
+For more detailed information on specific methods, parameters, or classes, see the :ref:`reference<discord-api-webhooks>`.
 
-Introduction to Webhooks
-~~~~~~~~~~~~~~~~~~~~~~~~
+Introduction
+~~~~~~~~~~~~~
 
 The difference between sending messages with webhooks and bots is that bots require proper
 authentication and a bot user whereas webhooks don't need either.
@@ -21,8 +22,8 @@ authentication and a bot user whereas webhooks don't need either.
 There are currently three types of webhooks:
 
 1. Incoming webhooks
-2. Channel follower webhooks
-3. Application webhooks
+2. Application webhooks
+3. Channel follower webhooks
 
 **Incoming webhooks** are associated to a channel and can post messages in that channel
 using a webhook token.
@@ -62,7 +63,7 @@ so don't store it in a public place.
 
 You can also create webhooks through API using the :meth:`TextChannel.create_webhook` method.
 
-Initializing Webhooks
+Initialising a webhook
 ~~~~~~~~~~~~~~~~~~~~~
 
 We'll now be initializing a webhook instance in our code.
@@ -96,12 +97,11 @@ internal HTTP session. However in order to initialize partial webhooks, we must
 create our own HTTP session and pass it through the ``session`` parameter.
 
 It is worth noting that for asynchronous :class:`Webhook`, the ``session`` parameter
-takes in a :class:`aiohttp.ClientSession` instance. However for synchronous variant, the
-``session`` parameter takes the :class:`requests.Session` instance.
+takes in a :class:`aiohttp.ClientSession` instance, however the synchronous variant instead
+takes a :class:`requests.Session` instance.
 
 :meth:`~Webhook.from_url` is a helper that automatically extracts webhook ID and token
-from the given URL. We also have :meth:`Webhook.partial` method to initialize partial
-webhooks directly using the ID and token.
+from a given URL. Alternatively, the :meth:`Webhook.partial` factory accepts ``token`` and ``id`` keyword-arguments:
 
 .. code-block:: py
 
@@ -124,12 +124,12 @@ using a bot token. Webhooks obtained through HTTP methods are automatically equi
 token transparently. However, for partial webhooks, ``bot_token`` parameter can be passed to
 :meth:`Webhook.from_url` and :meth:`Webhook.partial` to manually set a bot token.
 
-Fetching Webhooks
+Fetching a webhook
 ~~~~~~~~~~~~~~~~~
 
 Partial webhooks only contain the webhook ID and token as these are the only required
 components to perform basic requests. However if you want to retrieve complete webhook
-information, you can fetch them. Use the :meth:`Webhook.fetch` method to do so.
+information, you can fetch them with the :meth:`Webhook.fetch` method.
 
 .. code-block:: py
 
@@ -152,7 +152,7 @@ Sending Messages
 ~~~~~~~~~~~~~~~~
 
 This is where the fun begins, let us start posting messages through our webhook.
-We use the :meth:`Webhook.send` method to send the messages.
+Similarly with text channels and other messageables, we call the :meth:`~Webhook.send` method to send messages:
 
 .. code-block:: py
 
@@ -217,7 +217,7 @@ Example of fetching, editing and deleting webhook messages is given below.
 
     message = await webhook.fetch_message(12345679) # Replace the message ID here.
     await message.edit(content="Deleting in 5 seconds...")
-    await asyncio.sleep(5)
+    await asyncio.sleep(5.0)
     await message.delete()
 
 .. image:: /images/guide/webhooks/webhook_message_management.gif
