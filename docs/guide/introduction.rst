@@ -44,8 +44,8 @@ You need a bot application before being able to run a bot. Creating one is easy:
     .. image:: /images/discord_client_secret_big_nono.png
         :scale: 90 %
 
-A Simple Bot
--------------
+Creating a simple bot
+---------------------
 
 This step-by-step walk-through will show you how to make a bot using the commands framework.
 
@@ -103,13 +103,15 @@ This is the :func:`on_ready` event. It is called when the bot has finished loadi
 We use the :meth:`@bot.listen() <ext.commands.Bot.listen>` decorator as to not override the main event.
 For a list of available events, see :ref:`discord-api-events`.
 
-A warning to consider on this can be found at :ref:`ext_commands_on_message`.
+Since you will likely want to override other events, such as the one that exists for any new message the bot can read, you should consider this warning `here <ext_commands_on_message>`.
 
 .. warning::
 
     :func:`on_ready` can and will be called multiple times throughout your bot's uptime. You should avoid doing any kind of state-management here, such as connecting and loading your database.
 
     Consider using :meth:`~ext.commands.Bot.setup_hook` for this purpose instead.
+
+Moving on further, let's now create a basic command that can take further input from the person sending the message:-
 
 .. code-block:: python
 
@@ -161,7 +163,7 @@ They can be used like so:-
     $ ls CoolBot/
     > bot.py cogs/ config.py .gitignore
 
-Which will create a basic bot project with an assortment of essentials for getting started. This includes:-
+Using these utilities will create a basic bot project with an assortment of essentials for getting started. This includes:-
 
 - A basic ``bot.py`` which is prefilled with a basic :class:`~ext.commands.Bot` subclass and functionality for extending it.
 - A ``cogs/`` directory for creating extension files in with Cog functionality (which is optional).
@@ -238,15 +240,19 @@ This short sub-guide shows a few basic ways to secure your token, so it's not pu
     .. code-block:: python
 
         import config
+
+
         bot = commands.Bot(command_prefix="!", intents=discord.Intents.default())
         bot.run(config.my_token)
 
 4. If you store your bot's code on a public repository (e.g. GitHub), you can create a ``.gitignore`` file to prevent pushing the config file:
 
-    .. code-block:: python
+    .. code-block:: shell
 
         # file: .gitignore
         config.py
+
+And here we commit and add it to the git repository for tracking:
 
     .. code-block:: shell
 
@@ -257,9 +263,7 @@ This short sub-guide shows a few basic ways to secure your token, so it's not pu
         On branch master
         no changes to commit, working tree clean
 
-    .. note::
-
-        By doing this, the config file will not exist on the repository. If you wish to ever move your bot, you should copy the config file from your old system to your new one, or create a new config file.
+By doing this, the config file will not exist on the repository. If you wish to ever move your bot, you should copy the config file from your old system to your new one, or create a new config file.
 
 Common Issues
 --------------
