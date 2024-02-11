@@ -54,7 +54,7 @@ Linux systems may need to install additional dependencies via your package manag
 
     .. code-block:: shell
 
-        $ pacman -Syu libsodium
+        $ pacman -Syu libsodium libffi
 
 For other distributions, please use your package manager to find libraries for ``libffi``, ``libsodium``, and the Python 3 development headers.
 
