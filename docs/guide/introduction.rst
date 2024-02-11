@@ -6,7 +6,7 @@ Introduction
 ============
 
 This page shows how to make a basic bot using the commands extension "ext.commands".
-Before you begin, make sure to install discord.py - see :ref:`guide_intro_installation` for more information.
+Before you begin, make sure to install discord.py - see :ref:`guide_install` for more information.
 
 Obtaining a Bot Token
 ----------------------
