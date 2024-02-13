@@ -615,6 +615,14 @@ class ConnectionState:
             else:
                 status = str(status)
 
+        idle_since = options.get('idle_since', None)
+        if idle_since:
+            if not isinstance(idle_since, datetime.datetime):
+                raise TypeError('idle_since parameter must be a datetime.datetime')
+            since = int(idle_since.timestamp() * 1000)
+        else:
+            since = 0
+
         self._chunk_guilds: bool = options.get('chunk_guilds_at_startup', True)
         self._request_guilds = options.get('request_guilds', True)
 
@@ -628,6 +636,8 @@ class ConnectionState:
         self.member_cache_flags: MemberCacheFlags = cache_flags
         self._activities: List[ActivityPayload] = activities
         self._status: Optional[str] = status
+        self._afk: bool = options.get('afk', False)
+        self._idle_since: int = since
 
         if cache_flags._empty:
             self.store_user = self.create_user

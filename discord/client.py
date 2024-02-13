@@ -186,6 +186,14 @@ class Client:
         A status to start your presence with upon logging on to Discord.
     activity: Optional[:class:`.BaseActivity`]
         An activity to start your presence with upon logging on to Discord.
+    activities: List[:class:`.BaseActivity`]
+        A list of activities to start your presence with upon logging on to Discord. Cannot be sent with ``activity``.
+
+        .. versionadded:: 2.0
+    afk: :class:`bool`
+        Whether to start your session as AFK. Defaults to ``False``.
+
+        .. versionadded:: 2.1
     allowed_mentions: Optional[:class:`AllowedMentions`]
         Control how the client handles mentions by default on every message sent.
 
@@ -324,6 +332,7 @@ class Client:
         if status or activities:
             if status is None:
                 status = getattr(state.settings, 'status', None) or Status.unknown
+            _log.debug('Setting initial presence to %s %s', status, activities)
             self.loop.create_task(self.change_presence(activities=activities, status=status))
 
     @property
@@ -684,11 +693,21 @@ class Client:
         ):
             return  # Nothing changed
 
+        current_activity = None
+        for activity in self.activities:
+            if activity.type != ActivityType.custom:
+                current_activity = activity
+                break
+
+        if new_settings.status == self.client_status and new_settings.custom_activity == current_activity:
+            return  # Nothing changed
+
         status = new_settings.status
-        activities = [a for a in self.activities if a.type != ActivityType.custom]
+        activities = [a for a in self.client_activities if a.type != ActivityType.custom]
         if new_settings.custom_activity is not None:
             activities.append(new_settings.custom_activity)
 
+        _log.debug('Syncing presence to %s %s', status, new_settings.custom_activity)
         await self.change_presence(status=status, activities=activities, edit_settings=False)
 
     # Hooks
@@ -1230,6 +1249,32 @@ class Client:
             activities = (activity,) if activity else activities
         return activities or tuple()
 
+    def is_afk(self) -> bool:
+        """:class:`bool`: Indicates if the client is currently AFK.
+
+        This allows the Discord client to know how to handle push notifications
+        better for you in case you are away from your keyboard.
+
+        .. versionadded:: 2.1
+        """
+        if self.ws:
+            return self.ws.afk
+        return False
+
+    @property
+    def idle_since(self) -> Optional[datetime]:
+        """Optional[:class:`datetime.datetime`]: When the client went idle.
+
+        This indicates that you are truly idle and not just lying.
+
+        .. versionadded:: 2.1
+        """
+        ws = self.ws
+        if ws is None or not ws.idle_since:
+            return None
+
+        return utils.parse_timestamp(ws.idle_since)
+
     @property
     def allowed_mentions(self) -> Optional[AllowedMentions]:
         """Optional[:class:`~discord.AllowedMentions`]: The allowed mention configuration.
@@ -1606,21 +1651,30 @@ class Client:
     async def change_presence(
         self,
         *,
-        activity: Optional[ActivityTypes] = None,
-        activities: Optional[List[ActivityTypes]] = None,
-        status: Optional[Status] = None,
-        afk: bool = False,
+        activity: Optional[ActivityTypes] = MISSING,
+        activities: List[ActivityTypes] = MISSING,
+        status: Status = MISSING,
+        afk: bool = MISSING,
+        idle_since: Optional[datetime] = MISSING,
         edit_settings: bool = True,
     ) -> None:
         """|coro|
 
         Changes the client's presence.
 
+        .. versionchanged:: 2.1
+
+            The default value for parameters is now the current value.
+            ``None`` is no longer a valid value for most; you must explicitly
+            set it to the default value if you want to reset it.
+
         .. versionchanged:: 2.0
+
             Edits are no longer in place.
             Added option to update settings.
 
         .. versionchanged:: 2.0
+
             This function will now raise :exc:`TypeError` instead of
             ``InvalidArgument``.
 
@@ -1636,55 +1690,79 @@ class Client:
         ----------
         activity: Optional[:class:`.BaseActivity`]
             The activity being done. ``None`` if no activity is done.
-        activities: Optional[List[:class:`.BaseActivity`]]
-            A list of the activities being done. ``None`` if no activities
-            are done. Cannot be sent with ``activity``.
-        status: Optional[:class:`.Status`]
-            Indicates what status to change to. If ``None``, then
-            :attr:`.Status.online` is used.
+        activities: List[:class:`.BaseActivity`]
+            A list of the activities being done. Cannot be sent with ``activity``.
+
+            .. versionadded:: 2.0
+        status: :class:`.Status`
+            Indicates what status to change to.
         afk: :class:`bool`
             Indicates if you are going AFK. This allows the Discord
             client to know how to handle push notifications better
-            for you in case you are actually idle and not lying.
+            for you in case you are away from your keyboard.
+        idle_since: Optional[:class:`datetime.datetime`]
+            When the client went idle. This indicates that you are
+            truly idle and not just lying.
         edit_settings: :class:`bool`
-            Whether to update the settings with the new status and/or
+            Whether to update user settings with the new status and/or
             custom activity. This will broadcast the change and cause
             all connected (official) clients to change presence as well.
+
+            This should be set to ``False`` for idle changes.
+
             Required for setting/editing ``expires_at`` for custom activities.
-            It's not recommended to change this, as setting it to ``False`` causes undefined behavior.
+            It's not recommended to change this, as setting it to ``False``
+            can cause undefined behavior.
 
         Raises
         ------
         TypeError
             The ``activity`` parameter is not the proper type.
             Both ``activity`` and ``activities`` were passed.
+        ValueError
+            More than one custom activity was passed.
         """
-        if activity and activities:
+        if activity is not MISSING and activities is not MISSING:
             raise TypeError('Cannot pass both activity and activities')
-        activities = activities or activity and [activity]
-        if activities is None:
-            activities = []
 
-        if status is None:
-            status = Status.online
-        elif status is Status.offline:
+        skip_activities = False
+        if activities is MISSING:
+            if activity is not MISSING:
+                activities = [activity] if activity else []
+            else:
+                activities = list(self.client_activities)
+                skip_activities = True
+        else:
+            activities = activities or []
+
+        skip_status = status is MISSING
+        if status is MISSING:
+            status = self.client_status
+        if status is Status.offline:
             status = Status.invisible
 
-        await self.ws.change_presence(status=status, activities=activities, afk=afk)
+        if idle_since is MISSING:
+            since = self.ws.idle_since if self.ws else 0
+        else:
+            since = int(idle_since.timestamp() * 1000) if idle_since else 0
 
-        if edit_settings:
-            custom_activity = None
-
+        custom_activity = None
+        if not skip_activities:
             for activity in activities:
                 if getattr(activity, 'type', None) is ActivityType.custom:
+                    if custom_activity is not None:
+                        raise ValueError('More than one custom activity was passed')
                     custom_activity = activity
 
+        await self.ws.change_presence(status=status, activities=activities, afk=afk, since=since)
+
+        if edit_settings and self.settings:
             payload: Dict[str, Any] = {}
-            if status != getattr(self.settings, 'status', None):
+            if not skip_status and status != self.settings.status:
                 payload['status'] = status
-            if custom_activity != getattr(self.settings, 'custom_activity', None):
+            if not skip_activities and custom_activity != self.settings.custom_activity:
                 payload['custom_activity'] = custom_activity
-            if payload and self.settings:
+            if payload:
                 await self.settings.edit(**payload)
 
     async def change_voice_state(

@@ -32,7 +32,7 @@ import threading
 import traceback
 import zlib
 
-from typing import Any, Callable, Coroutine, Dict, List, TYPE_CHECKING, NamedTuple, Optional, TypeVar
+from typing import Any, Callable, Coroutine, Dict, List, TYPE_CHECKING, NamedTuple, Optional, Sequence, TypeVar
 
 import aiohttp
 import yarl
@@ -334,6 +334,10 @@ class DiscordWebSocket:
         self._close_code: Optional[int] = None
         self._rate_limiter: GatewayRatelimiter = GatewayRatelimiter()
 
+        # Presence state tracking
+        self.afk: bool = False
+        self.idle_since: int = 0
+
     @property
     def open(self) -> bool:
         return not self.socket.closed
@@ -395,6 +399,8 @@ class DiscordWebSocket:
         ws._user_agent = client.http.user_agent
         ws._super_properties = client.http.super_properties
         ws._zlib_enabled = zlib
+        ws.afk = client._connection._afk
+        ws.idle_since = client._connection._idle_since
 
         if client._enable_debug_events:
             ws.send = ws.debug_send
@@ -456,15 +462,13 @@ class DiscordWebSocket:
         # but that needs more testing...
         presence = {
             'status': 'unknown',
-            'since': 0,
+            'since': self.idle_since,
             'activities': [],
-            'afk': False,
+            'afk': self.afk,
         }
         existing = self._connection.current_session
         if existing is not None:
             presence['status'] = str(existing.status) if existing.status is not Status.offline else 'invisible'
-            if existing.status == Status.idle:
-                presence['since'] = int(time.time() * 1000)
             presence['activities'] = [a.to_dict() for a in existing.activities]
         # else:
         #     presence['status'] = self._connection._status or 'unknown'
@@ -482,11 +486,12 @@ class DiscordWebSocket:
                 'client_state': {
                     'api_code_version': 0,
                     'guild_versions': {},
-                    'highest_last_message_id': '0',
-                    'private_channels_version': '0',
-                    'read_state_version': 0,
-                    'user_guild_settings_version': -1,
-                    'user_settings_version': -1,
+                    # 'highest_last_message_id': '0',
+                    # 'initial_guild_id': None,
+                    # 'private_channels_version': '0',
+                    # 'read_state_version': 0,
+                    # 'user_guild_settings_version': -1,
+                    # 'user_settings_version': -1,
                 },
             },
         }
@@ -700,7 +705,7 @@ class DiscordWebSocket:
     async def change_presence(
         self,
         *,
-        activities: Optional[List[ActivityTypes]] = None,
+        activities: Optional[Sequence[ActivityTypes]] = None,
         status: Optional[Status] = None,
         since: int = 0,
         afk: bool = False,
@@ -712,17 +717,15 @@ class DiscordWebSocket:
         else:
             activities_data = []
 
-        if status == 'idle':
-            since = int(time.time() * 1000)
-
         payload = {
             'op': self.PRESENCE,
-            'd': {'activities': activities_data, 'afk': afk, 'since': since, 'status': str(status or 'online')},
+            'd': {'activities': activities_data, 'afk': afk, 'since': since, 'status': str(status or 'unknown')},
         }
 
-        sent = utils._to_json(payload)
-        _log.debug('Sending "%s" to change presence.', sent)
-        await self.send(sent)
+        _log.debug('Sending %s to change presence.', payload['d'])
+        await self.send_as_json(payload)
+        self.afk = afk
+        self.idle_since = since
 
     async def request_lazy_guild(
         self,
