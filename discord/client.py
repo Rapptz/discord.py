@@ -1741,6 +1741,9 @@ class Client:
         if status is Status.offline:
             status = Status.invisible
 
+        if afk is MISSING:
+            afk = self.ws.afk if self.ws else False
+
         if idle_since is MISSING:
             since = self.ws.idle_since if self.ws else 0
         else:
