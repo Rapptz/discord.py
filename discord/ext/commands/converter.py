@@ -85,6 +85,7 @@ __all__ = (
     'clean_content',
     'Greedy',
     'Range',
+    'Choice',
     'run_converters',
 )
 
@@ -103,6 +104,7 @@ T = TypeVar('T')
 T_co = TypeVar('T_co', covariant=True)
 CT = TypeVar('CT', bound=discord.abc.GuildChannel)
 TT = TypeVar('TT', bound=discord.Thread)
+ChoiceT = TypeVar('ChoiceT', str, int, float, Union[str, int, float])
 
 
 @runtime_checkable
@@ -1173,6 +1175,69 @@ else:
                 min=cast(min) if min is not None else None,
                 max=cast(max) if max is not None else None,
             )
+
+
+class Choice(Converter[ChoiceT]):
+    """Represents an argument choice
+
+    .. versionadded:: 2.1
+
+    Parameters
+    -----------
+    name: :class:`str`
+        The name of the choice.
+        This is the value that will be matched against.
+    value: Union[:class:`int`, :class:`str`, :class:`float`]
+        The value of the choice. This is the value that will be returned.
+    """
+
+    __commands_is_choice__: Literal[True] = True
+    _type: Type[ChoiceT]
+
+    __slots__ = (
+        'name',
+        'value',
+    )
+
+    def __class_getitem__(cls, _type: Type[ChoiceT]) -> Choice[ChoiceT]:
+        message = 'Choice[...] expected one of str, int, or float'
+        if not _type:
+            raise TypeError(f'{message}.')
+
+        if _type not in (str, int, float):
+            raise TypeError(f'{message} not {_type!r}.')
+
+        self = cls(name="", value="")  # type: ignore # required to construct an instance.
+        self._type = _type
+        return self
+
+    def __init__(self, *, name: str, value: ChoiceT):
+        self.name: str = name
+
+        if not isinstance(value, (str, int, float)):
+            raise TypeError(f'Choice value must be of type str, int, or float not {value!r}.')
+
+        self.value: ChoiceT = value
+        self._choices: List[Choice] = []
+
+    async def convert(self, ctx: Context[BotT], argument: str) -> Choice[ChoiceT]:
+        for choice in self._choices:
+            if choice.name == argument:
+                # fill in the actual values
+                self.name = choice.name
+                self.value = choice.value
+                return choice
+
+        raise BadChoice(choices=self._choices, argument=argument)
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, Choice) and self.name == o.name and self.value == o.value
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.value))
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(name={self.name!r}, value={self.value!r})'
 
 
 def _convert_to_bool(argument: str) -> bool:

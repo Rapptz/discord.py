@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
     from ._types import BotT
     from .context import Context
-    from .converter import Converter
+    from .converter import Converter, Choice
     from .cooldowns import BucketType, Cooldown
     from .flags import Flag
     from .parameters import Parameter
@@ -105,6 +105,7 @@ __all__ = (
     'MissingRequiredFlag',
     'HybridCommandError',
     'RangeError',
+    'BadChoice',
 )
 
 
@@ -914,6 +915,15 @@ class BadLiteralArgument(UserInputError):
         to_string = [repr(l) for l in literals]
         fmt = _human_join(to_string)
         super().__init__(f'Could not convert "{param.displayed_name or param.name}" into the literal {fmt}.')
+
+
+class BadChoice(UserInputError):
+    def __init__(self, choices: List[Choice], argument: str) -> None:
+        self.choices: List[Choice] = choices
+        self.argument: str = argument
+        super().__init__(
+            f'"{argument}" is not a valid choice. Valid choices are: {", ".join(choice.name for choice in choices)}'
+        )
 
 
 class ArgumentParsingError(UserInputError):
