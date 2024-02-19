@@ -5,36 +5,45 @@
 Slash commands
 ===============
 
-Slash commands are one of Discord's native ways to let users interact with apps in the Discord client.
-They're a branch of application commands,
-with the other type being context menu commands (right-click / tap-hold menu).
-
-Analogous to their name, slash commands are previewed and invoked in the Discord client
-by beginning your message with a forward-slash:
+Slash commands are those commands you can invoke through Discord's official UI by prefixing your message
+with a forward-slash (``/``):
 
 .. image:: /images/guide/app_commands/meow_command_preview.png
-    :width: 400
+    :width: 300
+
+They're a branch of application commands (app commands for short), with the other type
+being context-menu commands - which you can invoke through the right-click menu, or tap-hold on mobile devices.
+
+By the end of this guide, we hope you'll have a solid foundation for implementing slash commands
+into your discord.py project.
 
 Setting up
 -----------
 
-To work with app commands, bots need the ``applications.commands`` scope.
-You can enable this scope when generating an OAuth2 URL for your bot, the steps to do so outlined :ref:`here <discord_invite_bot>`.
+To start off, ensure your bot has the ``applications.commands`` scope for each guild
+you want your app commands to work in - you can enable this scope when generating
+an OAuth2 URL for your bot, the steps to do so outlined :ref:`here <discord_invite_bot>`.
 
-Both types of app commands are implemented within the :ref:`discord.app_commands <discord_app_commands>` package.
-Any code example in this page will always assume the following two imports, so make sure to import them!
+Whilst you can still create commands normally as described in this page,
+they'll be non-functional (and hidden!) without the scope.
+
+As a side note, both types of app commands are implemented within the
+:ref:`discord.app_commands <discord_app_commands>` subpackage - any code example
+in this page will always assume the following two modules, so make sure to import them!
 
 .. code-block:: python
 
     import discord
     from discord import app_commands
 
-Defining a tree
-++++++++++++++++
+Defining a ``CommandTree``
++++++++++++++++++++++++++++
 
-A :class:`~.app_commands.CommandTree` acts as a container holding all of the bot's app commands.
+A command tree is something that acts as a container holding all of the bot's app commands.
+Whenever you define a command in your code, it always needs to be added to this tree
+to actually be handled by the client.
 
-It contains a few dedicated methods for adding, viewing and removing app commands internally:
+In code, this is a :class:`~.app_commands.CommandTree` - it contains a few dedicated methods for registering commands:
 
 - :meth:`.CommandTree.add_command` to add a command
 - :meth:`.CommandTree.remove_command` to remove a command
@@ -43,10 +52,10 @@ It contains a few dedicated methods for adding, viewing and removing app command
 
 An instance of this (only one!) needs to be created so that we can begin adding commands to it.
 
-Its customary to directly attach the tree to the client instance, since this plays well with
-any type checker if you're using one, and to allow for easy access from anywhere in the code.
+Its customary to directly attach the tree to your client instance, as this allows for easy access from anywhere in your code.
+It'll also play well with a static type-checker if you're using one (discord.py is fully-typed for `pyright<https://github.com/microsoft/pyright>`_!).
 
-To do this, simply attach the tree to the ``self`` instance in a client subclass:
+To attach it, simply bind the tree to ``self`` in a client subclass:
 
 .. code-block:: python
 
@@ -62,26 +71,28 @@ To do this, simply attach the tree to the ``self`` instance in a client subclass
 
 .. note::
 
-    If your project instead uses :class:`.ext.commands.Bot` as the client instance,
+    If your project instead uses :class:`commands.Bot<discord.ext.commands.Bot>` as the client instance,
     a :class:`~discord.app_commands.CommandTree` has already been defined at :attr:`.Bot.tree`,
-    so this step is technically skipped.
+    so this step can be skipped!
 
 Creating a command
 -------------------
 
-Slash commands are created by decorating an async function,
-and that function is then called whenever the slash command is invoked by someone,
-in a "callback" fashion.
+Like with most other things in the library, discord.py uses a callback-based approach for slash commands.
 
-For example, the following code registers a command that responds with "meow" on invocation:
+An async function should be decorated, and that function is then called whenever the slash command is invoked
+by someone on Discord.
+
+For example, the following code defines a command that responds with "meow" on invocation:
 
 .. code-block:: python
 
     @client.tree.command()
     async def meow(interaction: discord.Interaction):
         """Meow meow meow"""
-
         await interaction.response.send_message('meow')
+
+``meow`` now points to an :class:`.app_commands.Command` object instead of a plain async function.
 
 Two main decorators can be used:
 
@@ -89,10 +100,10 @@ Two main decorators can be used:
 2. :func:`.app_commands.command`
 
 Both decorators wrap an async function into a :class:`~.app_commands.Command` instance, however
-the former also adds the command to the tree,
+the former also adds the command to the tree (remember the :meth:`.CommandTree.add_command` method?),
 which skips the step of having to later add it yourself by calling :meth:`.CommandTree.add_command()`.
 
-For example, these two are functionally equivalent:
+For example, these two ultimately do the same thing:
 
 .. code-block:: python
 
@@ -111,12 +122,12 @@ For example, these two are functionally equivalent:
 Since ``tree.command()`` is more concise and easier to understand,
 it'll be the main method used to create slash commands in this guide.
 
-Some information is logically inferred from the async function to populate the slash command's fields:
+Some information is logically inferred from the decorated function to populate the slash command's fields:
 
 - The :attr:`~.app_commands.Command.name` takes after the function name "meow"
 - The :attr:`~.app_commands.Command.description` takes after the docstring "Meow meow meow"
 
-To change them to something else, ``tree.command()`` takes ``name`` and ``description`` keyword-arguments:
+To change them to something else, the decorators take ``name`` and ``description`` keyword-arguments:
 
 .. code-block:: python
 
@@ -124,18 +135,17 @@ To change them to something else, ``tree.command()`` takes ``name`` and ``descri
     async def meow(interaction: discord.Interaction):
         pass
 
-    # or...
-    @client.tree.command(name='list')
-    async def list_(interaction: discord.Interaction):
-        # prevent shadowing the 'list' builtin
+    @client.tree.command(name='class')
+    async def class_(interaction: discord.Interaction):
+        # class is otherwise a syntax error
 
-If a description isn't provided through ``description`` or by the docstring, an ellipsis "..." is used instead.
+If a description isn't provided either through ``description`` or by the docstring, an ellipsis "..." is used instead.
 
-Interaction
-++++++++++++
+A primer on Interactions
++++++++++++++++++++++++++
 
 Shown above, the first parameter is ``interaction`` - app commands always need to have this as the first parameter.
-It represents a :class:`~discord.Interaction`, a Discord model used for both app commands and UI message components.
+It represents an :class:`~discord.Interaction`, a Discord model used for both app commands and UI message components.
 
 When a user invokes an app command, an interaction is created representing that action, hence the name.
 Some information from the surrounding context is given from this model, including but not limited to:
@@ -208,7 +218,8 @@ For example, to send a deferred ephemeral message:
 Syncing
 ++++++++
 
-In order for this command to show up on Discord, the API needs some information to render it, namely:
+In order for any command you define to actually show up on Discord's UI,
+the API needs some information to render it, namely:
 
 - The name and description
 - Any :ref:`parameter names, types and descriptions <guide_slash_commands_parameters>`
@@ -217,13 +228,14 @@ In order for this command to show up on Discord, the API needs some information 
 - Whether this is a :ref:`global or guild command <guide_slash_commands_guild_commands>`
 - Any :ref:`localisations <guide_slash_commands_translating>` for the above
 
-Syncing is the process of sending this information, which is done by
-calling the :meth:`.CommandTree.sync` method.
+**Syncing** is the process of sending this info, which is done by
+calling the :meth:`~.CommandTree.sync` method on your command tree.
 
-Typically, this is called on start-up in :meth:`.Client.setup_hook`, since usually this is a spot
+To start off, you can call this method start-up in :meth:`.Client.setup_hook`, since typically this is a spot
 where all the app commands have been added to the tree:
 
 .. code-block:: python
+    :emphasize-lines: 7
 
     class MyClient(discord.Client):
         def __init__(self):
@@ -256,7 +268,8 @@ blocks invocation with this message in red:
     provided it has the ``applications.commands`` scope for that guild.
 
     To make space for yourself to experiment with app commands safely,
-    create a new testing bot instead or alternatively sync your commands :ref:`locally <guide_slash_commands_guild_commands>`.
+    create a new testing bot instead or alternatively
+    sync your commands :ref:`locally <guide_slash_commands_guild_commands>`.
 
 .. _guide_slash_commands_parameters:
 
