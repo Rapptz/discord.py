@@ -453,7 +453,7 @@ We'll also need some way to send a message with the view, so let's create a comm
 
 .. code-block:: python
     
-    @discord.app_commands.command()
+    @app_commands.command()
     async def counter(interaction: discord.Interaction) -> None:
         """Send a counter view."""
         await interaction.response.send_message(view=CounterView())
