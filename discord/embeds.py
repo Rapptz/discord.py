@@ -511,7 +511,7 @@ class Embed:
         # Lying to the type checker for better developer UX.
         return EmbedProxy(getattr(self, '_author', {}))  # type: ignore
 
-    def set_author(self, *, name: Any, url: Optional[Any] = None, icon_url: Optional[Any] = None) -> Self:
+    def set_author(self, *, name: Optional[Any] = None, url: Optional[Any] = None, icon_url: Optional[Any] = None) -> Self:
         """Sets the author for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -527,7 +527,9 @@ class Embed:
             The URL of the author icon. Only HTTP(S) is supported.
             Inline attachment URLs are also supported, see :ref:`local_image`.
         """
-
+        if name is None:
+            return self
+            
         self._author = {
             'name': str(name),
         }
