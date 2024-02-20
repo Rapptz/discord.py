@@ -160,7 +160,7 @@ Our command might look like this:
 
 .. code-block:: python
 
-    @discord.app_commands.command()
+    @app_commands.command()
     @discord.app_commands.describe(member='The member to report.')
     async def report(interaction: discord.Interaction, member: discord.Member, reason: str | None) -> None:
         """Report a member of the server to the moderators."""
