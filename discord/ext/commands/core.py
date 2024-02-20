@@ -776,7 +776,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         command = self
         # command.parent is type-hinted as GroupMixin some attributes are resolved via MRO
         while command.parent is not None:  # type: ignore
-            command = command.parent
+            command = command.parent  # type: ignore
             entries.append(command.name)  # type: ignore
 
         return ' '.join(reversed(entries))
@@ -794,7 +794,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         entries = []
         command = self
         while command.parent is not None:  # type: ignore
-            command = command.parent
+            command = command.parent  # type: ignore
             entries.append(command)
 
         return entries

@@ -169,7 +169,7 @@ class CogMeta(type):
     __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Any, ..., Any]]]
     __cog_listeners__: List[Tuple[str, str]]
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> Self:
+    def __new__(cls, *args: Any, **kwargs: Any) -> CogMeta:
         name, bases, attrs = args
         if any(issubclass(base, app_commands.Group) for base in bases):
             raise TypeError(
