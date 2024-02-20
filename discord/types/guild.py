@@ -49,6 +49,11 @@ class UnavailableGuild(TypedDict):
     unavailable: NotRequired[bool]
 
 
+class IncidentData(TypedDict):
+    invites_disabled_until: NotRequired[Optional[str]]
+    dms_disabled_until: NotRequired[Optional[str]]
+
+
 DefaultMessageNotificationLevel = Literal[0, 1]
 ExplicitContentFilterLevel = Literal[0, 1, 2]
 MFALevel = Literal[0, 1]
@@ -97,6 +102,7 @@ class _BaseGuildPreview(UnavailableGuild):
     stickers: List[GuildSticker]
     features: List[GuildFeature]
     description: Optional[str]
+    incidents_data: Optional[IncidentData]
 
 
 class _GuildPreviewUnique(TypedDict):

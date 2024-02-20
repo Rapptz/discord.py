@@ -1163,6 +1163,13 @@ class HTTPClient:
         payload = {k: v for k, v in options.items() if k in valid_keys}
         return self.request(r, reason=reason, json=payload)
 
+    def edit_voice_channel_status(
+        self, status: Optional[str], *, channel_id: int, reason: Optional[str] = None
+    ) -> Response[None]:
+        r = Route('PUT', '/channels/{channel_id}/voice-status', channel_id=channel_id)
+        payload = {'status': status}
+        return self.request(r, reason=reason, json=payload)
+
     def bulk_channel_update(
         self,
         guild_id: Snowflake,
@@ -1756,6 +1763,9 @@ class HTTPClient:
         self, guild_id: Snowflake, payload: widget.EditWidgetSettings, reason: Optional[str] = None
     ) -> Response[widget.WidgetSettings]:
         return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload, reason=reason)
+
+    def edit_incident_actions(self, guild_id: Snowflake, payload: guild.IncidentData) -> Response[guild.IncidentData]:
+        return self.request(Route('PUT', '/guilds/{guild_id}/incident-actions', guild_id=guild_id), json=payload)
 
     # Invite management
 

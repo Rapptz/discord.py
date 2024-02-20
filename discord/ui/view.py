@@ -320,7 +320,7 @@ class View:
             or the row the item is trying to be added to is full.
         """
 
-        if len(self._children) > 25:
+        if len(self._children) >= 25:
             raise ValueError('maximum number of children exceeded')
 
         if not isinstance(item, Item):
@@ -613,7 +613,7 @@ class ViewStore:
         if interaction.message is None:
             return
 
-        view = View.from_message(interaction.message)
+        view = View.from_message(interaction.message, timeout=None)
 
         base_item_index: Optional[int] = None
         for index, child in enumerate(view._children):

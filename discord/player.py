@@ -288,6 +288,12 @@ class FFmpegPCMAudio(FFmpegAudio):
         passed to the stdin of ffmpeg.
     executable: :class:`str`
         The executable name (and path) to use. Defaults to ``ffmpeg``.
+
+        .. warning::
+
+            Since this class spawns a subprocess, care should be taken to not
+            pass in an arbitrary executable name when using this parameter.
+
     pipe: :class:`bool`
         If ``True``, denotes that ``source`` parameter will be passed
         to the stdin of ffmpeg. Defaults to ``False``.
@@ -392,6 +398,12 @@ class FFmpegOpusAudio(FFmpegAudio):
 
     executable: :class:`str`
         The executable name (and path) to use. Defaults to ``ffmpeg``.
+
+        .. warning::
+
+            Since this class spawns a subprocess, care should be taken to not
+            pass in an arbitrary executable name when using this parameter.
+
     pipe: :class:`bool`
         If ``True``, denotes that ``source`` parameter will be passed
         to the stdin of ffmpeg. Defaults to ``False``.

@@ -267,26 +267,31 @@ class VoiceConnectionState:
 
             return
 
+        channel_id = int(channel_id)
         self.session_id = data['session_id']
 
         # we got the event while connecting
         if self.state in (ConnectionFlowState.set_guild_voice_state, ConnectionFlowState.got_voice_server_update):
             if self.state is ConnectionFlowState.set_guild_voice_state:
                 self.state = ConnectionFlowState.got_voice_state_update
+
+                # we moved ourselves
+                if channel_id != self.voice_client.channel.id:
+                    self._update_voice_channel(channel_id)
+
             else:
                 self.state = ConnectionFlowState.got_both_voice_updates
             return
 
         if self.state is ConnectionFlowState.connected:
-            self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
+            self._update_voice_channel(channel_id)
 
         elif self.state is not ConnectionFlowState.disconnected:
             if channel_id != self.voice_client.channel.id:
                 # For some unfortunate reason we were moved during the connection flow
                 _log.info('Handling channel move while connecting...')
 
-                self.voice_client.channel = channel_id and self.guild.get_channel(int(channel_id))  # type: ignore
-
+                self._update_voice_channel(channel_id)
                 await self.soft_disconnect(with_state=ConnectionFlowState.got_voice_state_update)
                 await self.connect(
                     reconnect=self.reconnect,
@@ -484,6 +489,9 @@ class VoiceConnectionState:
             await self.disconnect()
             return
 
+        if self.voice_client.channel and channel.id == self.voice_client.channel.id:
+            return
+
         previous_state = self.state
         # this is only an outgoing ws request
         # if it fails, nothing happens and nothing changes (besides self.state)
@@ -637,3 +645,6 @@ class VoiceConnectionState:
     async def _move_to(self, channel: abc.Snowflake) -> None:
         await self.voice_client.channel.guild.change_voice_state(channel=channel)
         self.state = ConnectionFlowState.set_guild_voice_state
+
+    def _update_voice_channel(self, channel_id: Optional[int]) -> None:
+        self.voice_client.channel = channel_id and self.guild.get_channel(channel_id)  # type: ignore
