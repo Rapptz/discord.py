@@ -129,7 +129,7 @@ For example, you can respond with a modal when somebody uses a slash command:
 
 .. code-block:: python
 
-    @discord.app_commands.command()
+    @app_commands.command()
     async def feedback(interaction: discord.Interaction) -> None:
         """Send important feedback."""
         await interaction.response.send_modal(FeedbackForm())
