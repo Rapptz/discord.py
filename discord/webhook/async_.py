@@ -1231,6 +1231,7 @@ class Webhook(BaseWebhook):
         cls,
         url: str,
         *,
+        proxy: Optional[str] = None,
         session: aiohttp.ClientSession = MISSING,
         client: Client = MISSING,
         bot_token: Optional[str] = None,
@@ -1291,7 +1292,7 @@ class Webhook(BaseWebhook):
 
         data: Dict[str, Any] = m.groupdict()
         data['type'] = 1
-        return cls(data, session, token=bot_token, state=state)  # type: ignore  # Casting dict[str, Any] to WebhookPayload
+        return cls(data, session, token=bot_token, state=state, proxy=proxy)  # type: ignore  # Casting dict[str, Any] to WebhookPayload
 
     @classmethod
     def _as_follower(cls, data, *, channel, user) -> Self:
