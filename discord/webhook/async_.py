@@ -1247,6 +1247,10 @@ class Webhook(BaseWebhook):
         ------------
         url: :class:`str`
             The URL of the webhook.
+        proxy: Optional[:class:`str`]
+            Proxy URL.
+        proxy_auth: Optional[:class:`aiohttp.BasicAuth`]
+            An object that represents proxy HTTP Basic Authorization.
         session: :class:`aiohttp.ClientSession`
             The session to use to send requests with. Note
             that the library does not manage the session and
