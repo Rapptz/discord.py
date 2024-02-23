@@ -102,7 +102,7 @@ class Object(Hashable):
         return f'<Object id={self.id!r} type={self.type!r}>'
 
     def __eq__(self, other: object) -> bool:
-        if isinstance(other, self.type):
+        if isinstance(other, (self.type, self.__class__)):
             return self.id == other.id
         return NotImplemented
 
