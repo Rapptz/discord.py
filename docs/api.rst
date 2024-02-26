@@ -979,12 +979,33 @@ Members
 ~~~~~~~~
 
 .. function:: on_member_join(member)
-              on_member_remove(member)
 
-    Called when a :class:`Member` join or leaves a :class:`Guild`.
+    Called when a :class:`Member` joins a :class:`Guild`.
 
-    :param member: The member who joined or left.
+    :param member: The member who joined.
     :type member: :class:`Member`
+
+.. function:: on_member_remove(member)
+
+    Called when a :class:`Member` leaves a :class:`Guild`.
+
+    If the guild or member could not be found in the internal cache this event
+    will not be called, you may use :func:`on_raw_member_remove` instead.
+
+    :param member: The member who left.
+    :type member: :class:`Member`
+
+.. function:: on_raw_member_remove(payload)
+
+    Called when a :class:`Member` leaves a :class:`Guild`.
+
+    Unlike :func:`on_member_remove`
+    this is called regardless of the guild or member being in the internal cache.
+
+    .. versionadded:: 2.1
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawMemberRemoveEvent`
 
 .. function:: on_member_update(before, after)
 
@@ -7909,6 +7930,11 @@ RawEvent
 .. attributetable:: RawThreadDeleteEvent
 
 .. autoclass:: RawThreadDeleteEvent()
+    :members:
+
+.. attributetable:: RawMemberRemoveEvent
+
+.. autoclass:: RawMemberRemoveEvent()
     :members:
 
 .. attributetable:: RawMessageAckEvent

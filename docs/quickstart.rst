@@ -58,7 +58,7 @@ There's a lot going on here, so let's walk you through it step by step.
    then we send a message in the channel it was used in with ``'Hello!'``. This is a basic way of
    handling commands, which can be later automated with the :doc:`./ext/commands/index` framework.
 6. Finally, we run the bot with our login token. If you need help getting your token,
-   look in the :doc:`token` section.
+   look in the :doc:`authenticating` section.
 
 
 Now that we've made a bot, we have to *run* the bot. Luckily, this is simple since this is just a

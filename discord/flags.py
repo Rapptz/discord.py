@@ -301,7 +301,20 @@ class Capabilities(BaseFlags):
     @classmethod
     def default(cls: Type[Self]) -> Self:
         """Returns a :class:`Capabilities` with the current value used by the library."""
-        return cls._from_value(8189)
+        return cls(
+            lazy_user_notes=True,
+            versioned_read_states=True,
+            versioned_user_guild_settings=True,
+            dedupe_user_objects=True,
+            prioritized_ready_payload=True,
+            multiple_guild_experiment_populations=True,
+            non_channel_read_states=True,
+            auth_token_refresh=True,
+            user_settings_proto=True,
+            client_state_v2=True,
+            passive_guild_update=True,
+            auto_call_connect=True,
+        )
 
     @flag_value
     def lazy_user_notes(self):
@@ -365,9 +378,15 @@ class Capabilities(BaseFlags):
         return 1 << 11
 
     @flag_value
-    def unknown_12(self):
-        """:class:`bool`: Unknown."""
+    def auto_call_connect(self):
+        """:class:`bool`: Connect user to all existing calls on connect (deprecates ``CALL_CONNECT`` opcode)."""
         return 1 << 12
+
+    @flag_value
+    def debounce_message_reactions(self):
+        """:class:`bool`: Debounce message reactions (dispatches ``MESSAGE_REACTION_ADD_MANY`` instead of ``MESSAGE_REACTION_ADD`` when a lot of reactions are sent in quick succession)."""
+        # Debounced reactions don't have member information, so this is kinda undesirable :(
+        return 1 << 13
 
 
 @fill_with_flags(inverted=True)
@@ -1171,23 +1190,17 @@ class MemberCacheFlags(BaseFlags):
         return 1
 
     @flag_value
-    def other(self):
-        """:class:`bool`: Whether to cache members that are collected from other means.
+    def joined(self):
+        """:class:`bool`: Whether to cache members that joined the guild
+        or are chunked as part of the initial log in flow.
 
-        This does not apply to members explicitly cached (e.g. :attr:`Guild.chunk`, :attr:`Guild.fetch_members`).
-
-        There is an alias for this called :attr:`joined`.
+        Members that leave the guild are no longer cached.
         """
         return 2
 
     @alias_flag_value
-    def joined(self):
-        """:class:`bool`: Whether to cache members that are collected from other means.
-
-        This does not apply to members explicitly cached (e.g. :attr:`Guild.chunk`, :attr:`Guild.fetch_members`).
-
-        This is an alias for :attr:`other`.
-        """
+    def other(self):
+        """:class:`bool`: Alias for :attr:`joined`."""
         return 2
 
     @property

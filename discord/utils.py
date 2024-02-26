@@ -885,11 +885,16 @@ class SnowflakeList(_SnowflakeListBase):
 
     if TYPE_CHECKING:
 
-        def __init__(self, data: Iterable[int], *, is_sorted: bool = False):
+        def __init__(self, data: Optional[Iterable[int]] = None, *, is_sorted: bool = False):
             ...
 
-    def __new__(cls, data: Iterable[int], *, is_sorted: bool = False) -> Self:
-        return array.array.__new__(cls, 'Q', data if is_sorted else sorted(data))  # type: ignore
+    def __new__(cls, data: Optional[Iterable[int]] = None, *, is_sorted: bool = False) -> Self:
+        if data:
+            return array.array.__new__(cls, 'Q', data if is_sorted else sorted(data))  # type: ignore
+        return array.array.__new__(cls, 'Q')  # type: ignore
+
+    def __contains__(self, element: int) -> bool:
+        return self.has(element)
 
     def add(self, element: int) -> None:
         i = bisect_left(self, element)

@@ -3458,7 +3458,6 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         '_requested_at',
         '_spam',
         '_state',
-        '_accessed',
     )
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: DMChannelPayload):
@@ -3467,7 +3466,6 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         self.me: ClientUser = me
         self.id: int = int(data['id'])
         self._update(data)
-        self._accessed: bool = False
 
     def _update(self, data: DMChannelPayload) -> None:
         self.last_message_id: Optional[int] = utils._get_as_snowflake(data, 'last_message_id')
@@ -3486,9 +3484,6 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         return PrivateCall(**kwargs)
 
     async def _get_channel(self) -> Self:
-        if not self._accessed:
-            await self._state.call_connect(self.id)
-            self._accessed = True
         return self
 
     async def _initial_ring(self) -> None:
@@ -3912,7 +3907,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         'name',
         'me',
         '_state',
-        '_accessed',
     )
 
     def __init__(self, *, me: ClientUser, state: ConnectionState, data: GroupChannelPayload):
@@ -3920,7 +3914,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         self.id: int = int(data['id'])
         self.me: ClientUser = me
         self._update(data)
-        self._accessed: bool = False
 
     def _update(self, data: GroupChannelPayload) -> None:
         self.owner_id: int = int(data['owner_id'])
@@ -3940,9 +3933,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         return self.me.id, self.id
 
     async def _get_channel(self) -> Self:
-        if not self._accessed:
-            await self._state.call_connect(self.id)
-            self._accessed = True
         return self
 
     def _initial_ring(self):

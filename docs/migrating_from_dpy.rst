@@ -13,90 +13,62 @@ Most things bots can do, users can (in some capacity) as well. The biggest diffe
 However, a number of things have been removed.
 For example:
 
-- ``Intents``: While the gateway technically accepts intents for user accounts, it can break things and is a giant waving red flag to Discord.
-- ``Shards``: Again, technically accepted but useless.
+- ``Intents``: While the gateway technically accepts intents for user accounts, they are—for the most part—useless and can break things.
+- ``Shards``: Just like intents, users can utilize sharding but it is not very useful.
 - ``discord.ui``: Users cannot utilize the bot UI kit.
 - ``discord.app_commands``: Users cannot register application commands.
 
-Additionally, existing payloads and headers have been changed to match the Discord client.
+However, even in features that are shared between user and bot accounts, there may be variance in functionality or simply different design choices that better reflect a user account implementation.
+An effort is made to minimize these differences and avoid migration pain, but it is not always the first priority.
 
-Guild members
---------------
-| Since the concept of Intents (mostly) doesn't exist for user accounts; you just get all events, right?
-| Well, yes but actually no.
+Guild Subscriptions
+-------------------
 
-For 80% of things, events are identical to bot events. However, other than the quite large amount of new events, not all events work the same.
+Guild subscriptions are a way for a client to limit the events it receives from a guild. For more information about guild subscriptions, see the :doc:`guild_subscriptions` section.
 
-The biggest example of this are the events ``on_member_add``, ``on_member_update``\/``on_user_update``, ``on_member_remove``, and ``on_presence_update``.
+When compared to a bot account, the most noticeable differences they introduce are in relation to guild members and presence. 
 
-(If you're just looking for the implementation, skip to the bottom of this section.)
+Guild Members
+~~~~~~~~~~~~~~
 
-Bots
-~~~~~
-For bots (with the member intent), it's simple.
+The concept of privileged intents does not exist for user accounts, so guild member access is limited in different ways.
 
-They request all guild members with an OPCode 8 (chunk the guild), and receive respective ``GUILD_MEMBER_*`` events, that are then parsed by the library and dispatched to users.
+By default, the library will subscribe to member updates for all guilds, meaning that events such as :func:`discord.on_member_join` and :func:`discord.on_raw_member_remove` will be dispatched for all guilds the user is in.
+However, events that require the member cache to be populated (such as :func:`discord.on_member_update`) are only dispatched for guilds that are chunked.
 
-If the bot has the presence intent, it even gets an initial member cache in the ``GUILD_CREATE`` event and receives ``PRESENCE_UPDATE``.
+A guild can only be chunked (have the local member cache populated) if the user has the :attr:`~Permissions.manage_roles`, :attr:`~Permissions.kick_members`, or :attr:`~Permissions.ban_members` permissions.
+Additionally, guilds with less than 1,000 members may be chunked if there exists at least one channel that everyone can view.
+By default, the library will attempt to chunk all guilds that are chunkable. This can be disabled by setting the ``chunk_guilds_at_startup`` parameter to ``False`` when creating a :class:`Client`.
 
-Users
-~~~~~~
-| Users, however, do not work like this.
-| If you have one of kick members, ban members, or manage roles, you can request all guild members the same way bots do. The client uses this in various areas of guild settings.
+If a guild is not chunked, the only members that will be cached are members with an active voice state and, if the guild has less than 75,000 members, members that the user is friends, has an implicit relationship, or has an open DM with.
 
-| But, here's the twist: users do not receive ``GUILD_MEMBER_*`` reliably.
-| They receive them in certain circumstances (such as when subscribing to updates for specific users), but they're usually rare and nothing to be relied on.
-
-If the Discord client ever needs member objects for specific users, it sends an OPCode 8 with the specific user IDs/names.
-This is why this is recommended if you want to fetch specific members (implemented as :func:`Guild.query_members` in the library).
-
-However, the maximum amount of members you can get with this method is 100 per request.
-
-But, you may be thinking, how does the member sidebar work? Why can't you just utilize that? This is where it gets complicated.
-First, let's make sure we understand a few things:
-
-- The API doesn't differentiate between offline and invisible members (for a good reason).
-- The concept of a member sidebar is not per-guild, it's per-channel. This makes sense if you think about it, since the member sidebar only shows users that have access to a specific channel. Member lists have IDs that can be calculated from channel permission overwrites to find unique member lists.
-- If a server has >1,000 members, the member sidebar does **not** have offline members.
-
-The member sidebar uses OPCode 14 and the ``GUILD_MEMBER_LIST_UPDATE`` event.
-
-One more thing you need to understand, is that the member sidebar is lazily loaded.
-You usually subscribe to 100 member ranges, and can subscribe to 5 per-channel per-request (up to 5 channels a request).
-If the guild's member count has never been above 75,000 members, you can subscribe to 400 member ranges instead.
-
-So, to subscribe to all available ranges, you need to spam the gateway quite a bit (especially for large guilds).
-Additionally, while you can subscribe to 5 channels/request, the channels need to have the same permissions, or you'll be subscribing to two different lists (not ideal).
-
-| Once you subscribe to a range, you'll receive ``GUILD_MEMBER_LIST_UPDATE`` s for it whenever someone is added to it (i.e. someone joined the guild, changed their nickname so they moved in the member list alphabetically, came online, etc.), removed from it (i.e. someone left the guild, went offline, changed their nickname so they moved in the member sidebar alphabetically), or updated in it (i.e. someone got their roles changed, or changed their nickname but remained in the same position).
-| These can be parsed and dispatched as ``on_member_add``, ``on_member_update``\/``on_user_update``, ``on_member_remove``, and ``on_presence_update``.
-
-You may have already noticed a few problems with this:
-
-1. You'll get spammed with ``member_add/remove`` s whenever someone changes position in the member sidebar.
-2. For guilds with >1,000 members, you don't receive offline members. So, you won't know if an offline member is kicked, or an invisible member joins/leaves. You also won't know if someone came online or joined. Or, if someone went offline or left.
-
-| #1 is mostly solveable with a bit of parsing, but #2 is a huge problem.
-| If you have the permissions to request all guild members, you can combine that with member sidebar scraping and get a *decent* local member cache. However, because of the nature of this (and the fact that you'll have to request all guild membesr again every so often), accurate events are nearly impossible.
-
-Additionally, there are more caveats:
-
-1. ``GUILD_MEMBER_LIST_UPDATE`` removes provide an index, not a user ID. The index starts at 0 from the top of the member sidebar and includes hoisted roles.
-2. You get ratelimited pretty fast, so scraping can take minutes for extremely large guilds.
-3. The scraping has to happen every time the bot starts. This not only slows things down, but *may* make Discord suspicious.
-4. Remember that member sidebars are per-channel? Well, that means you can only subscribe all members that can *see* the channel(s) you're subscribing too.
-
-#1 is again solveable with a bit of parsing. There's not much you can do about #2 and #3. But, to solve #4, you *can* subscribe to multiple channels (which has problems of its own and makes events virtually impossible).
-
-There are a few more pieces of the puzzle:
-
-- There is a ``/guilds/:id/roles/:id/member-ids`` endpoint that provides up to 100 member IDs for any role other than the default role. You can use :func:`Guild.query_members` to fetch all these members in one go.
-- With OPCode 14, you can subscribe to certain member IDs and receive member/presence updates for them. There is no limit to the amount of IDs you can subscribe to (except for the gateway payload size limit).
-- Thread member sidebars do *not* work the same. You just send an OPCode 14 with the thread IDs and receive a ``THREAD_MEMBER_LIST_UPDATE`` with all the members. The cache then stays updated with ``GUILD_MEMBER_UPDATE`` and ``THREAD_MEMBERS_UPDATE`` events.
-
-Implementation
-~~~~~~~~~~~~~~~
 The library offers two avenues to get the "entire" member list of a guild.
 
-- :func:`Guild.chunk`: If a guild has less than 1,000 members, and has at least one channel that everyone can view, you can use this method to fetch the entire member list by scraping the member sidebar. With this method, you also get events.
-- :func:`Guild.fetch_members`: If you have the permissions to request all guild members, you can use this method to fetch the entire member list. Else, this method scrapes the member sidebar (which can become very slow), this only returns online members if the guild has more than 1,000 members. This method does not get events.
+- :func:`Guild.chunk`: If chunking guilds at startup is disabled, you can use this method to chunk a guild manually.
+- :func:`Guild.fetch_members`: If you have the permissions to request all guild members, you can use this method to fetch the entire member list. Else, this method scrapes the member sidebar (which can become very slow), only returning online members if the guild has more than 1,000 members.
+
+Presence
+~~~~~~~~~
+
+User accounts are always synced the overall presence of friends and implicit relationships, tracked in the library via the :class:`Relationship` class. Overall user presence updates will dispatch a :func:`discord.on_presence_update` event with :class:`Relationship` instances.
+Additionally, for guilds with less than 75,000 members, they're synced the per-guild presence of members that the user is friends, has an implicit relationship, or has an open DM with.
+
+Outside of these cases, you will not receive presence updates for any other users. To obtain the presence of an arbitrary user, you can use the :meth:`Guild.query_members` method.
+To stay informed of presence updates for a specific user, you can subscribe to them using the :meth:`Guild.subscribe_to` method. See the :doc:`guild_subscriptions` section for more information.
+
+.. note::
+
+    User updates (i.e. :func:`discord.on_user_update`) require either member updates (for at least one guild) or presence updates to be dispatched for the user as outlined above.
+
+AutoMod
+--------
+
+The following Gateway events are not dispatched to user accounts:
+
+- ``on_automod_rule_create``
+- ``on_automod_rule_update``
+- ``on_automod_rule_delete``
+- ``on_automod_action``
+
+The first three can be replaced by listening to the :func:`discord.on_audit_log_entry_create` event and checking the :attr:`~discord.AuditLogEntry.action` attribute.
+The last one is partially replaceable by listening to the :func:`discord.on_message` event and checking for AutoMod system messages, but this is not a perfect solution.

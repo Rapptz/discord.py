@@ -178,10 +178,38 @@ class Client:
         amounts of guilds. The default is ``True``.
 
         .. versionadded:: 1.5
+    guild_subscriptions: :class:`bool`
+        Whether to subscribe to all guilds at startup.
+        This is required to receive member events and populate the thread cache.
+
+        For larger servers, this is required to receive nearly all events.
+
+        See :doc:`guild_subscriptions` for more information.
+
+        .. versionadded:: 2.1
+
+        .. warning::
+
+            If this is set to ``False``, the following consequences will occur:
+
+            - Large guilds (over 75,000 members) will not dispatch any non-stateful events (e.g. :func:`.on_message`, :func:`.on_reaction_add`, :func:`.on_typing`, etc.)
+            - :attr:`~Guild.threads` will only contain threads the client has joined.
+            - Guilds will not be chunkable and member events (e.g. :func:`.on_member_update`) will not be dispatched.
+                - Most :func:`.on_user_update` occurences will not be dispatched.
+                - The member (:attr:`~Guild.members`) and user (:attr:`~Client.users`) cache will be largely incomplete.
+                - Essentially, only the client user, friends/implicit relationships, voice members, and other subscribed-to users will be cached and dispatched.
+
+            This is useful if you want to control subscriptions manually (see :meth:`Guild.subscribe`) to save bandwidth and memory.
+            Disabling this is not recommended for most use cases.
     request_guilds: :class:`bool`
-        Whether to request guilds at startup. Defaults to True.
+        See ``guild_subscriptions``.
 
         .. versionadded:: 2.0
+
+        .. deprecated:: 2.1
+
+            This is deprecated and will be removed in a future version.
+            Use ``guild_subscriptions`` instead.
     status: Optional[:class:`.Status`]
         A status to start your presence with upon logging on to Discord.
     activity: Optional[:class:`.BaseActivity`]
@@ -972,7 +1000,7 @@ class Client:
         """
         self._closed = False
         self._ready.clear()
-        self._connection.clear()
+        self._connection.clear(full=True)
         self.http.clear()
 
     async def start(self, token: str, *, reconnect: bool = True) -> None:

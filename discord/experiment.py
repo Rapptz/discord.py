@@ -429,7 +429,9 @@ class ExperimentOverride:
         return len(self._ids)
 
     def __contains__(self, item: Union[int, Snowflake], /) -> bool:
-        return getattr(item, 'id', item) in self._ids
+        if isinstance(item, int):
+            return item in self._ids
+        return item.id in self._ids
 
     def __iter__(self) -> Iterator[int]:
         return iter(self._ids)

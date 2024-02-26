@@ -1,13 +1,16 @@
 :orphan:
 
-.. _tokens:
+.. _authenticating:
+
+Authenticating
+==============
 
 Tokens
-=======
+-------
 
-Tokens are how we authenticate with Discord.
+Tokens are how we authenticate with Discord. User accounts use the same token system as bots, received after authenticating with the Discord API.
 
-Regular (and bot) tokens have this format:
+They follow this format:
 
 .. list-table:: Discord Token
     :header-rows: 1
@@ -25,11 +28,10 @@ Regular (and bot) tokens have this format:
       - Unix TS
       - HMAC
 
-
-MFA tokens, however, are just the HMAC prefixed with ``mfa.``.
-
 How do I obtain mine?
 ----------------------
+The library does not yet support authenticating traditionally, so you will have to obtain your token manually.
+
 To obtain your token from the Discord client, the easiest way is pasting this into the developer console (CTRL+SHIFT+I):
 
 .. code:: js

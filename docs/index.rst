@@ -23,7 +23,7 @@ Is this your first time using the library? This is the place to get started!
 
 - **Migrating from discord.py:** :doc:`migrating_from_dpy`
 - **First steps:** :doc:`intro` | :doc:`quickstart` | :doc:`logging`
-- **Working with Discord:** :doc:`token`
+- **Working with Discord:** :doc:`authenticating` | :doc:`guild_subscriptions`
 - **Examples:** Many examples are available in the :resource:`repository <examples>`
 
 | **Obligatory note:**

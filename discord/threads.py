@@ -46,7 +46,9 @@ if TYPE_CHECKING:
     from datetime import date, datetime
     from typing_extensions import Self
 
+    from .types.gateway import ThreadMemberListUpdateEvent
     from .types.threads import (
+        BaseThreadMember as BaseThreadMemberPayload,
         Thread as ThreadPayload,
         ThreadMember as ThreadMemberPayload,
         ThreadMetadata,
@@ -875,18 +877,23 @@ class Thread(Messageable, Hashable):
             All thread members in the thread.
         """
         state = self._state
-        await state.ws.request_lazy_guild(self.parent.guild.id, thread_member_lists=[self.id])  # type: ignore
+        await state.subscriptions.subscribe_to_threads(self.guild, self)
         future = state.ws.wait_for('thread_member_list_update', lambda d: int(d['thread_id']) == self.id)
+
         try:
-            data = await asyncio.wait_for(future, timeout=15)
+            data: ThreadMemberListUpdateEvent = await asyncio.wait_for(future, timeout=15)
         except asyncio.TimeoutError as exc:
             raise InvalidData('Didn\'t receieve a response from Discord') from exc
 
-        members = [ThreadMember(self, {'member': member}) for member in data['members']]  # type: ignore
-        for m in members:
-            self._add_member(m)
-
-        return self.members  # Includes correct self.me
+        # Check if we are in the cache
+        _self = self.guild.get_thread(self.id)
+        if _self is not None:
+            return _self.members  # Includes correct self.me
+        else:
+            members = [ThreadMember(self, member) for member in data['members']]
+            for m in members:
+                self._add_member(m)
+            return self.members  # Includes correct self.me
 
     async def delete(self) -> None:
         """|coro|
@@ -925,7 +932,7 @@ class Thread(Messageable, Hashable):
         return PartialMessage(channel=self, id=message_id)
 
     def _add_member(self, member: ThreadMember, /) -> None:
-        if member.id != self._state.self_id:
+        if member.id != self._state.self_id or self.me is None:
             self._members[member.id] = member
 
     def _pop_member(self, member_id: int, /) -> Optional[ThreadMember]:
@@ -963,10 +970,10 @@ class ThreadMember(Hashable):
         The thread's ID.
     joined_at: Optional[:class:`datetime.datetime`]
         The time the member joined the thread in UTC.
-        Only reliably available for yourself or members joined while the user is connected to the gateway.
+        Only reliably available for yourself or members joined while the client is connected to the Gateway.
     flags: :class:`int`
         The thread member's flags. Will be its own class in the future.
-        Only reliably available for yourself or members joined while the user is connected to the gateway.
+        Only reliably available for yourself or members joined while the client is connected to the Gateway.
     """
 
     __slots__ = (
@@ -978,15 +985,16 @@ class ThreadMember(Hashable):
         'parent',
     )
 
-    def __init__(self, parent: Thread, data: ThreadMemberPayload) -> None:
+    def __init__(self, parent: Thread, data: Union[BaseThreadMemberPayload, ThreadMemberPayload]) -> None:
         self.parent: Thread = parent
+        self.thread_id: int = parent.id
         self._state: ConnectionState = parent._state
         self._from_data(data)
 
     def __repr__(self) -> str:
         return f'<ThreadMember id={self.id} thread_id={self.thread_id} joined_at={self.joined_at!r}>'
 
-    def _from_data(self, data: ThreadMemberPayload) -> None:
+    def _from_data(self, data: Union[BaseThreadMemberPayload, ThreadMemberPayload]) -> None:
         state = self._state
 
         self.id: int
@@ -995,24 +1003,19 @@ class ThreadMember(Hashable):
         except KeyError:
             self.id = state.self_id  # type: ignore
 
-        self.thread_id: int
-        try:
-            self.thread_id = int(data['id'])
-        except KeyError:
-            self.thread_id = self.parent.id
-
         self.joined_at = parse_time(data.get('join_timestamp'))
         self.flags = data.get('flags')
 
-        if (mdata := data.get('member')) is not None:
-            guild = self.parent.guild
-            mdata['guild_id'] = guild.id
-            self.id = user_id = int(data['user_id'])
-            mdata['presence'] = data.get('presence')
-            if guild.get_member(user_id) is not None:
-                state.parse_guild_member_update(mdata)
-            else:
-                state.parse_guild_member_add(mdata)
+        guild = state._get_guild(self.parent.guild.id)
+        if not guild:
+            return
+
+        member_data = data.get('member')
+        if member_data is not None:
+            state._handle_member_update(guild, member_data)
+        presence = data.get('presence')
+        if presence is not None:
+            state._handle_presence_update(guild, presence)
 
     @property
     def thread(self) -> Thread:

@@ -622,6 +622,21 @@ class GuildChannel:
     def _sorting_bucket(self) -> int:
         raise NotImplementedError
 
+    @property
+    def member_list_id(self) -> Union[str, Literal["everyone"]]:
+        if self.permissions_for(self.guild.default_role).read_messages:
+            return "everyone"
+
+        overwrites = []
+        for overwrite in self._overwrites:
+            allow, deny = Permissions(overwrite.allow), Permissions(overwrite.deny)
+            if allow.read_messages:
+                overwrites.append(f"allow:{overwrite.id}")
+            elif deny.read_messages:
+                overwrites.append(f"deny:{overwrite.id}")
+
+        return str(utils.murmurhash32(",".join(sorted(overwrites)), signed=False))
+
     def _update(self, guild: Guild, data: Dict[str, Any]) -> None:
         raise NotImplementedError
 

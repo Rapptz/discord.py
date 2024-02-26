@@ -27,11 +27,19 @@ from __future__ import annotations
 from typing import List, Literal, Optional, TypedDict
 from typing_extensions import NotRequired
 
-from .snowflake import Snowflake
+from .activity import BasePresenceUpdate
+from .member import MemberWithUser
 from .message import Message
+from .snowflake import Snowflake
 
 ThreadType = Literal[10, 11, 12]
 ThreadArchiveDuration = Literal[60, 1440, 4320, 10080]
+
+
+class BaseThreadMember(TypedDict):
+    user_id: Snowflake
+    member: MemberWithUser
+    presence: BasePresenceUpdate
 
 
 class ThreadMember(TypedDict):
@@ -39,6 +47,8 @@ class ThreadMember(TypedDict):
     user_id: Snowflake
     join_timestamp: str
     flags: int
+    member: NotRequired[MemberWithUser]
+    presence: NotRequired[BasePresenceUpdate]
 
 
 class ThreadMetadata(TypedDict):

@@ -37,6 +37,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .threads import Thread
     from .types.gateway import (
+        GuildMemberRemoveEvent,
         IntegrationDeleteEvent,
         MessageAckEvent,
         MessageDeleteBulkEvent as BulkMessageDeleteEvent,
@@ -50,6 +51,7 @@ if TYPE_CHECKING:
         ThreadDeleteEvent,
         ThreadMembersUpdate,
     )
+    from .user import User
 
     ReactionActionEvent = Union[MessageReactionAddEvent, MessageReactionRemoveEvent]
     ReactionActionType = Literal['REACTION_ADD', 'REACTION_REMOVE']
@@ -65,6 +67,7 @@ __all__ = (
     'RawIntegrationDeleteEvent',
     'RawThreadDeleteEvent',
     'RawThreadMembersUpdate',
+    'RawMemberRemoveEvent',
     'RawMessageAckEvent',
     'RawUserFeatureAckEvent',
     'RawGuildFeatureAckEvent',
@@ -355,6 +358,26 @@ class RawThreadMembersUpdate(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
         self.member_count: int = int(data['member_count'])
         self.data: ThreadMembersUpdate = data
+
+
+class RawMemberRemoveEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_member_remove` event.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    ----------
+    user: Union[:class:`discord.User`, :class:`discord.Member`]
+        The user that left the guild.
+    guild_id: :class:`int`
+        The ID of the guild the user left.
+    """
+
+    __slots__ = ('user', 'guild_id')
+
+    def __init__(self, data: GuildMemberRemoveEvent, user: User, /) -> None:
+        self.user: Union[User, Member] = user
+        self.guild_id: int = int(data['guild_id'])
 
 
 class RawMessageAckEvent(_RawReprMixin):
