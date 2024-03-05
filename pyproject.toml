@@ -26,7 +26,7 @@ classifiers = [
     "Topic :: Utilities",
     "Typing :: Typed",
 ]
-dynamic = ["version"]
+dynamic = ["version", "dependencies"]
 
 [project.urls]
 Documentation = "https://discordpy.readthedocs.io/en/latest/"
@@ -112,12 +112,7 @@ include = [
     "discord/ext/commands",
     "discord/ext/tasks",
 ]
-exclude = [
-    "**/__pycache__",
-    "build",
-    "dist",
-    "docs",
-]
+exclude = ["**/__pycache__", "build", "dist", "docs"]
 reportUnnecessaryTypeIgnoreComment = "warning"
 reportUnusedImport = "error"
 pythonVersion = "3.8"
