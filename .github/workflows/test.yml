@@ -31,4 +31,4 @@ jobs:
       - name: Run tests
         shell: bash
         run: |
-          PYTHONPATH="$(pwd)" pytest -vs --cov=discord --cov-report term-missing:skip-covered
+          python -m pytest -vs --cov=discord --cov-report term-missing:skip-covered
