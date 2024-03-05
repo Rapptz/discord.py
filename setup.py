@@ -1,7 +1,5 @@
-import re
-
 from setuptools import setup
-
+import re
 
 def derive_version() -> str:
     version = ''

@@ -112,7 +112,12 @@ include = [
     "discord/ext/commands",
     "discord/ext/tasks",
 ]
-exclude = ["**/__pycache__", "build", "dist", "docs"]
+exclude = [
+    "**/__pycache__",
+    "build",
+    "dist",
+    "docs",
+]
 reportUnnecessaryTypeIgnoreComment = "warning"
 reportUnusedImport = "error"
 pythonVersion = "3.8"
