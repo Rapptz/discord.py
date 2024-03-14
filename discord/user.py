@@ -398,7 +398,9 @@ class ClientUser(BaseUser):
         self._flags = data.get('flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
 
-    async def edit(self, *, username: str = MISSING, avatar: Optional[bytes] = MISSING, banner: Optional[bytes] = MISSING) -> ClientUser:
+    async def edit(
+        self, *, username: str = MISSING, avatar: Optional[bytes] = MISSING, banner: Optional[bytes] = MISSING
+    ) -> ClientUser:
         """|coro|
 
         Edits the current profile of the client.
