@@ -3814,7 +3814,7 @@ class Guild(Hashable):
 
         Parameters
         -----------
-        users: :class:`abc.Snowflake`
+        users: Iterable[:class:`abc.Snowflake`]
             The user to ban from their guild.
         delete_message_seconds: :class:`int`
             The number of seconds worth of messages to delete from the user
