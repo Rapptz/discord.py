@@ -196,3 +196,8 @@ class CommandScopeMigration(TypedDict):
 class SupplementalGuild(UnavailableGuild):
     embedded_activities: list
     voice_states: List[VoiceState]
+
+
+class BulkBanUserResponse(TypedDict):
+    banned_users: Optional[List[Snowflake]]
+    failed_users: Optional[List[Snowflake]]

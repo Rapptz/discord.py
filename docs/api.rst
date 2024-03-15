@@ -7419,6 +7419,26 @@ Guild
 
         :type: :class:`User`
 
+.. class:: BulkBanResult
+
+    A namedtuple which represents the result returned from :meth:`~Guild.bulk_ban`.
+
+    .. versionadded:: 2.1
+
+    .. attribute:: banned
+
+        The list of users that were banned. The type of the list is a :class:`Object`
+        representing the user.
+
+        :type: List[:class:`Object`]
+    .. attribute:: failed
+
+        The list of users that could not be banned. The type of the list is a :class:`Object`
+        representing the user.
+
+        :type: List[:class:`Object`]
+
+
 Role
 ~~~~~
 
