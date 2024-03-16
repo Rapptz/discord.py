@@ -22,17 +22,38 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import List, Literal, Optional, TypedDict, Union
+from typing import List, Literal, Optional, TypedDict, Union, Dict
 from typing_extensions import NotRequired
 
 from .snowflake import Snowflake
 from .user import User
 from .member import Member
 from .channel import PrivacyLevel as PrivacyLevel
-
 EventStatus = Literal[1, 2, 3, 4]
 EntityType = Literal[1, 2, 3]
 
+class _NWeekday(TypedDict):
+    n: int
+    day: Literal[0, 1, 2, 3, 4, 5, 6]
+
+class GuildScheduledEventRecurrence(TypedDict):
+    start: str
+    end: Optional[str]
+    frequency: int
+    interval: int
+    by_weekday: Optional[List[Literal[0, 1, 2, 3, 4, 5, 6]]] # NOTE: 0 = monday; 6 = sunday
+    by_n_weekday: Optional[List[_NWeekday]]
+    by_month: Optional[List[Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]]
+    by_month_day: Optional[List[int]] # NOTE: day range between 1 and 31
+    by_year_day: Optional[List[int]]
+    count: Optional[int] # maybe?
+# NOTE: for this ^ enum, it is recommended to use "calendar" module constants: MONDAY; TUESDAY; WEDNESDAY; etc
+# as they follow these patterns and is a built-in module.
+
+class GuildScheduledEventExceptionCounts(TypedDict):
+    guild_scheduled_event_count: int
+    guild_scheduled_event_exception_counts: Dict[Snowflake, int]
+# NOTE: This class doesn't represent any of the user counts or the 'count' param in recurrence
 
 class _BaseGuildScheduledEvent(TypedDict):
     id: Snowflake
@@ -42,6 +63,10 @@ class _BaseGuildScheduledEvent(TypedDict):
     scheduled_start_time: str
     privacy_level: PrivacyLevel
     status: EventStatus
+    auto_start: bool
+    guild_scheduled_events_exceptions: List # Didn't found items in the list yet
+    recurrence_rule: Optional[GuildScheduledEventRecurrence]
+    sku_ids: List[Snowflake]
     creator_id: NotRequired[Optional[Snowflake]]
     description: NotRequired[Optional[str]]
     creator: NotRequired[User]
