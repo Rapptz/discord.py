@@ -320,7 +320,7 @@ class View:
             or the row the item is trying to be added to is full.
         """
 
-        if len(self._children) > 25:
+        if len(self._children) >= 25:
             raise ValueError('maximum number of children exceeded')
 
         if not isinstance(item, Item):

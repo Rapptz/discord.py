@@ -208,3 +208,9 @@ class DynamicItem(Generic[BaseT], Item['View']):
             from the ``match`` object.
         """
         raise NotImplementedError
+
+    async def callback(self, interaction: Interaction[ClientT]) -> Any:
+        return await self.item.callback(interaction)
+
+    async def interaction_check(self, interaction: Interaction[ClientT], /) -> bool:
+        return await self.item.interaction_check(interaction)

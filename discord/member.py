@@ -69,7 +69,7 @@ if TYPE_CHECKING:
         MemberSearch as MemberSearchPayload,
     )
     from .types.gateway import GuildMemberUpdateEvent
-    from .types.user import User as UserPayload
+    from .types.user import User as UserPayload, AvatarDecorationData
     from .abc import Snowflake
     from .state import ConnectionState
     from .message import Message
@@ -357,6 +357,7 @@ class Member(discord.abc.Messageable, _UserTag):
         '_state',
         '_avatar',
         '_flags',
+        '_avatar_decoration_data',
     )
 
     if TYPE_CHECKING:
@@ -376,6 +377,8 @@ class Member(discord.abc.Messageable, _UserTag):
         banner: Optional[Asset]
         accent_color: Optional[Colour]
         accent_colour: Optional[Colour]
+        avatar_decoration: Optional[Asset]
+        avatar_decoration_sku_id: Optional[int]
 
     def __init__(self, *, data: MemberWithUserPayload, guild: Guild, state: ConnectionState):
         self._state: ConnectionState = state
@@ -391,6 +394,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._avatar: Optional[str] = data.get('avatar')
         self._permissions: Optional[int]
         self._flags: int = data['flags']
+        self._avatar_decoration_data: Optional[AvatarDecorationData] = data.get('avatar_decoration_data')
         try:
             self._permissions = int(data['permissions'])
         except KeyError:
@@ -460,6 +464,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._permissions = member._permissions
         self._state = member._state
         self._avatar = member._avatar
+        self._avatar_decoration_data = member._avatar_decoration_data
 
         # Reference will not be copied unless necessary by PRESENCE_UPDATE
         # See below
@@ -488,6 +493,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._roles = utils.SnowflakeList(map(int, data['roles']))
         self._avatar = data.get('avatar')
         self._flags = data.get('flags', 0)
+        self._avatar_decoration_data = data.get('avatar_decoration_data')
 
     def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
         self.activities = tuple(create_activity(d, self._state) for d in data['activities'])
@@ -499,7 +505,16 @@ class Member(discord.abc.Messageable, _UserTag):
 
     def _update_inner_user(self, user: UserPayload) -> Optional[Tuple[User, User]]:
         u = self._user
-        original = (u.name, u.discriminator, u._avatar, u.global_name, u._public_flags)
+        original = (
+            u.name,
+            u.discriminator,
+            u._avatar,
+            u.global_name,
+            u._public_flags,
+            u._avatar_decoration_data['sku_id'] if u._avatar_decoration_data is not None else None,
+        )
+
+        decoration_payload = user.get('avatar_decoration_data')
         # These keys seem to always be available
         modified = (
             user['username'],
@@ -507,10 +522,18 @@ class Member(discord.abc.Messageable, _UserTag):
             user['avatar'],
             user.get('global_name'),
             user.get('public_flags', 0),
+            decoration_payload['sku_id'] if decoration_payload is not None else None,
         )
         if original != modified:
             to_return = User._copy(self._user)
-            u.name, u.discriminator, u._avatar, u.global_name, u._public_flags = modified
+            u.name, u.discriminator, u._avatar, u.global_name, u._public_flags, u._avatar_decoration_data = (
+                user['username'],
+                user['discriminator'],
+                user['avatar'],
+                user.get('global_name'),
+                user.get('public_flags', 0),
+                decoration_payload,
+            )
             # Signal to dispatch on_user_update
             return to_return, u
 

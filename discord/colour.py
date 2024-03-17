@@ -175,7 +175,7 @@ class Colour:
         return cls.from_rgb(*(int(x * 255) for x in rgb))
 
     @classmethod
-    def from_str(cls, value: str) -> Self:
+    def from_str(cls, value: str) -> Colour:
         """Constructs a :class:`Colour` from a string.
 
         The following formats are accepted:

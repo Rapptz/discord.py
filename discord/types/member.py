@@ -24,7 +24,8 @@ DEALINGS IN THE SOFTWARE.
 
 from typing import Optional, TypedDict, Literal, List
 from .snowflake import SnowflakeList, Snowflake
-from .user import User
+from .user import User, AvatarDecorationData
+from typing_extensions import NotRequired
 
 JoinType = Literal[0, 3, 5]
 
@@ -48,7 +49,6 @@ class Member(PartialMember, total=False):
     pending: bool
     permissions: str
     communication_disabled_until: str
-    unusual_dm_activity_until: Optional[str]
 
 
 class _OptionalMemberWithUser(PartialMember, total=False):
@@ -58,6 +58,7 @@ class _OptionalMemberWithUser(PartialMember, total=False):
     pending: bool
     permissions: str
     communication_disabled_until: str
+    avatar_decoration_data: NotRequired[AvatarDecorationData]
 
 
 class MemberWithUser(_OptionalMemberWithUser):

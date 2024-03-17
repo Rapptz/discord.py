@@ -318,8 +318,8 @@ class SelectOption:
         Can only be up to 100 characters.
     value: :class:`str`
         The value of the option. This is not displayed to users.
-        If not provided when constructed then it defaults to the
-        label. Can only be up to 100 characters.
+        If not provided when constructed then it defaults to the label.
+        Can only be up to 100 characters.
     description: Optional[:class:`str`]
         An additional description of the option, if any.
         Can only be up to 100 characters.
@@ -332,14 +332,12 @@ class SelectOption:
     -----------
     label: :class:`str`
         The label of the option. This is displayed to users.
-        Can only be up to 100 characters.
     value: :class:`str`
         The value of the option. This is not displayed to users.
         If not provided when constructed then it defaults to the
-        label. Can only be up to 100 characters.
+        label.
     description: Optional[:class:`str`]
         An additional description of the option, if any.
-        Can only be up to 100 characters.
     default: :class:`bool`
         Whether this option is selected by default.
     """
