@@ -73,7 +73,7 @@ __all__ = (
     'SKUType',
     'EntitlementType',
     'EntitlementOwnerType',
-    'JoinType',
+    'MemberJoinType',
 )
 
 if TYPE_CHECKING:
@@ -805,10 +805,24 @@ class EntitlementOwnerType(Enum):
     guild = 1
     user = 2
 
-class JoinType(Enum):
+class MemberJoinType(Enum):
     unknown = 0
+    bot = 1
+    integration = 2
     discovery = 3
+    hub = 4
+    invite = 5
+    vanity = 6
+
+    # Aliases
+    app = 1
     user_invite = 5
+
+class MemberSearchSortType(Enum):
+    new_guild_members = 1
+    old_guild_members = 2
+    new_discord_users = 3
+    old_discord_users = 4
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
     value_cls = cls._enum_value_cls_  # type: ignore # This is narrowed below

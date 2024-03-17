@@ -38,7 +38,7 @@ from .utils import MISSING
 from .user import BaseUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
-from .enums import Status, try_enum, JoinType
+from .enums import Status, MemberJoinType, try_enum
 from .errors import ClientException
 from .colour import Colour
 from .object import Object
@@ -280,8 +280,8 @@ class MemberSearch:
     def __init__(self, *, data: MemberSearchPayload, guild: Guild, state: ConnectionState) -> None:
         self.member: Member = Member(data=data.get('member'), guild=guild, state=state)
         self.invite_code: Optional[str] = data.get('source_invite_code')
-        self.join_type: JoinType = try_enum(JoinType, data.get('join_source_type'))
-        self.inviter: Optional[User] = state.get_user(int(data.get('inviter_id'))) if data.get('inviter_id') else None
+        self.join_type: MemberJoinType = try_enum(MemberJoinType, data.get('join_source_type'))
+        self.inviter: Optional[User] = state.get_user(int(data.get('inviter_id'))) if data.get('inviter_id') else None # type: ignore # Checker complains that 'inviter_id' could be None
 
 @flatten_user
 class Member(discord.abc.Messageable, _UserTag):
@@ -1046,7 +1046,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         await self.edit(timed_out_until=timed_out_until, reason=reason)
 
-    async def fetch_safety_information(self) -> Optional[MemberSearch]:
+    async def fetch_safety_information(self, /) -> Optional[MemberSearch]:
         r"""|coro|
         
         Fetches the safety information for this member.
@@ -1078,13 +1078,12 @@ class Member(discord.abc.Messageable, _UserTag):
             isn't.
         """
 
-        data = await self._state.http.get_member_safety_information(self.guild.id, self.id, self._state.self_id)
-        member = data.get('members')[0] if len(data.get('members')) > 0 else None
-
-        if not member:
+        data = await self._state.http.get_member_safety_information(self.guild.id, self.id)
+        
+        if data.get('total_result_count') <= 0:
             return
         
-        return MemberSearch(data=member, guild=self.guild, state=self._state)
+        return MemberSearch(data=data.get('members')[0], guild=self.guild, state=self._state)
 
     async def add_roles(self, *roles: Snowflake, reason: Optional[str] = None, atomic: bool = True) -> None:
         r"""|coro|

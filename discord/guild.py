@@ -62,6 +62,7 @@ from .channel import _guild_channel_factory
 from .channel import _threaded_guild_channel_factory
 from .enums import (
     AuditLogAction,
+    MemberSearchSortType,
     VideoQualityMode,
     ChannelType,
     EntityType,
@@ -155,11 +156,13 @@ class _GuildLimit(NamedTuple):
     filesize: int
 
 
-class MemberSearchQueries(TypedDict, total=False):
-    users_ids: List[Union[Snowflake, int]]
-    roles: List[Union[Snowflake, int]]
-    timed_out_until: datetime.datetime
-    unusual_dms_until: datetime.datetime
+class _MemberSearchQueries(TypedDict, total=False):
+    users: Snowflake
+    roles: Snowflake
+    unusual_activity: bool
+    quarantined: bool
+    timed_out: bool
+    unusual_dms: bool
 
 
 class Guild(Hashable):
@@ -4303,7 +4306,7 @@ class Guild(Hashable):
 
         return AutoModRule(data=data, guild=self, state=self._state)
     
-    async def fetch_members_safety_information(self, *, limit: int = 15, **filters: Unpack[MemberSearchQueries]) -> Optional[Tuple[MemberSearch, ...]]:
+    async def fetch_members_safety_information(self, *, limit: int = 250, sort_type: MemberSearchSortType = MemberSearchSortType.new_guild_members, **filters: Unpack[_MemberSearchQueries]) -> Optional[Tuple[MemberSearch, ...]]:
         r"""|coro|
         
         Fetches all the members safety information with the applied filters.
@@ -4322,21 +4325,25 @@ class Guild(Hashable):
         ----------
         limit: :class:`int`
             The limit of members to fetch safety information.
+        sort_type: :class:`MemberSearchSortType`
+            How to sort the results.
         **filters
             Simple filters to sort members. If you provide
             filters that none of the members satisfy, this
             will return `None`.
 
-            Simple filters table:
-
             +------------------+-----------------------------------------+
             |    Parameter     |                 Sort type               |
             +------------------+-----------------------------------------+
-            | timed_out_until  | Return users timed out until that date  |
+            | timed_out        | Return users timed out until that date  |
             +------------------+-----------------------------------------+
-            | unusual_dms_until| Return users with unusual DM activities |
+            | unusual_dms      | Return users with unusual DM activities |
             +------------------+-----------------------------------------+
-            | users_ids        | Return users that match any of the IDS  |
+            | unusual_activity | Return users with unusual activity      |
+            +------------------+-----------------------------------------+
+            | quarantined      | Returns users quarantined by AutoMod    |
+            +------------------+-----------------------------------------+
+            | users            | Return users that match any of the IDS  |
             +------------------+-----------------------------------------+
             | roles            | Return users that have any of the roles |
             +------------------+-----------------------------------------+
@@ -4356,6 +4363,6 @@ class Guild(Hashable):
             aren't or none of the filters were satisfied.
         """
 
-        data = await self._state.http.get_guild_member_safety(self.id, limit, self._state.self_id, **filters)
+        data = await self._state.http.get_guild_member_safety(self.id, limit, sort_type.value, **filters)
 
-        return tuple([MemberSearch(data=member_data, guild=self, state=self._state) for member_data in data.get('members')]) if len(data.get('members')) > 0 else None
+        return tuple([MemberSearch(data=member_data, guild=self, state=self._state) for member_data in data.get('members')]) if data.get('total_result_count') > 0 else None
