@@ -34,6 +34,7 @@ from typing import (
     Collection,
     Coroutine,
     Dict,
+    Iterable,
     List,
     Mapping,
     NamedTuple,
@@ -109,6 +110,7 @@ if TYPE_CHECKING:
         Guild as GuildPayload,
         RolePositionUpdate as RolePositionUpdatePayload,
         GuildFeature,
+        IncidentData,
     )
     from .types.threads import (
         Thread as ThreadPayload,
@@ -143,6 +145,11 @@ if TYPE_CHECKING:
 class BanEntry(NamedTuple):
     reason: Optional[str]
     user: User
+
+
+class BulkBanResult(NamedTuple):
+    banned: List[Object]
+    failed: List[Object]
 
 
 class _GuildLimit(NamedTuple):
@@ -320,6 +327,7 @@ class Guild(Hashable):
         'premium_progress_bar_enabled',
         '_safety_alerts_channel_id',
         'max_stage_video_users',
+        '_incidents_data',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -509,6 +517,7 @@ class Guild(Hashable):
         self.owner_id: Optional[int] = utils._get_as_snowflake(guild, 'owner_id')
         self._large: Optional[bool] = None if self._member_count is None else self._member_count >= 250
         self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
+        self._incidents_data: Optional[IncidentData] = guild.get('incidents_data')
 
         if 'channels' in guild:
             channels = guild['channels']
@@ -1843,6 +1852,8 @@ class Guild(Hashable):
         mfa_level: MFALevel = MISSING,
         raid_alerts_disabled: bool = MISSING,
         safety_alerts_channel: TextChannel = MISSING,
+        invites_disabled_until: datetime.datetime = MISSING,
+        dms_disabled_until: datetime.datetime = MISSING,
     ) -> Guild:
         r"""|coro|
 
@@ -1968,6 +1979,18 @@ class Guild(Hashable):
             safety alerts channel.
 
             .. versionadded:: 2.3
+
+        invites_disabled_until: Optional[:class:`datetime.datetime`]
+            The time when invites should be enabled again, or ``None`` to disable the action.
+            This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
+
+            .. versionadded:: 2.4
+
+        dms_disabled_until: Optional[:class:`datetime.datetime`]
+            The time when direct messages should be allowed again, or ``None`` to disable the action.
+            This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
+
+            .. versionadded:: 2.4
 
         Raises
         -------
@@ -2156,6 +2179,30 @@ class Guild(Hashable):
                 raise TypeError(f'mfa_level must be of type MFALevel not {mfa_level.__class__.__name__}')
 
             await http.edit_guild_mfa_level(self.id, mfa_level=mfa_level.value)
+
+        incident_actions_payload: IncidentData = {}
+        if invites_disabled_until is not MISSING:
+            if invites_disabled_until is None:
+                incident_actions_payload['invites_disabled_until'] = None
+            else:
+                if invites_disabled_until.tzinfo is None:
+                    raise TypeError(
+                        'invites_disabled_until must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                    )
+                incident_actions_payload['invites_disabled_until'] = invites_disabled_until.isoformat()
+
+        if dms_disabled_until is not MISSING:
+            if dms_disabled_until is None:
+                incident_actions_payload['dms_disabled_until'] = None
+            else:
+                if dms_disabled_until.tzinfo is None:
+                    raise TypeError(
+                        'dms_disabled_until must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                    )
+                incident_actions_payload['dms_disabled_until'] = dms_disabled_until.isoformat()
+
+        if incident_actions_payload:
+            await http.edit_incident_actions(self.id, payload=incident_actions_payload)
 
         data = await http.edit_guild(self.id, reason=reason, **fields)
         return Guild(data=data, state=self._state)
@@ -2524,7 +2571,7 @@ class Guild(Hashable):
         The inactive members are denoted if they have not logged on in
         ``days`` number of days and they have no roles.
 
-        You must have :attr:`~Permissions.kick_members` to do this.
+        You must have both :attr:`~Permissions.kick_members` and :attr:`~Permissions.manage_guild` to do this.
 
         To check how many members you would prune without actually pruning,
         see the :meth:`estimate_pruned_members` function.
@@ -3748,6 +3795,58 @@ class Guild(Hashable):
         """
         await self._state.http.unban(user.id, self.id, reason=reason)
 
+    async def bulk_ban(
+        self,
+        users: Iterable[Snowflake],
+        *,
+        reason: Optional[str] = None,
+        delete_message_seconds: int = 86400,
+    ) -> BulkBanResult:
+        """|coro|
+
+        Bans multiple users from the guild.
+
+        The users must meet the :class:`abc.Snowflake` abc.
+
+        You must have :attr:`~Permissions.ban_members` to do this.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        -----------
+        users: Iterable[:class:`abc.Snowflake`]
+            The user to ban from their guild.
+        delete_message_seconds: :class:`int`
+            The number of seconds worth of messages to delete from the user
+            in the guild. The minimum is 0 and the maximum is 604800 (7 days).
+            Defaults to 1 day.
+        reason: Optional[:class:`str`]
+            The reason the users got banned.
+
+        Raises
+        -------
+        Forbidden
+            You do not have the proper permissions to ban.
+        HTTPException
+            Banning failed.
+
+        Returns
+        --------
+        :class:`BulkBanResult`
+            The result of the bulk ban operation.
+        """
+
+        response = await self._state.http.bulk_ban(
+            self.id,
+            user_ids=[u.id for u in users],
+            delete_message_seconds=delete_message_seconds,
+            reason=reason,
+        )
+        return BulkBanResult(
+            banned=[Object(id=int(user_id), type=User) for user_id in response.get('banned_users', []) or []],
+            failed=[Object(id=int(user_id), type=User) for user_id in response.get('failed_users', []) or []],
+        )
+
     @property
     def vanity_url(self) -> Optional[str]:
         """Optional[:class:`str`]: The Discord vanity invite URL for this guild, if available.
@@ -4292,3 +4391,47 @@ class Guild(Hashable):
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)
+
+    @property
+    def invites_paused_until(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: If invites are paused, returns when
+        invites will get enabled in UTC, otherwise returns None.
+
+        .. versionadded:: 2.4
+        """
+        if not self._incidents_data:
+            return None
+
+        return utils.parse_time(self._incidents_data.get('invites_disabled_until'))
+
+    @property
+    def dms_paused_until(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: If DMs are paused, returns when DMs
+        will get enabled in UTC, otherwise returns None.
+
+        .. versionadded:: 2.4
+        """
+        if not self._incidents_data:
+            return None
+
+        return utils.parse_time(self._incidents_data.get('dms_disabled_until'))
+
+    def invites_paused(self) -> bool:
+        """:class:`bool`: Whether invites are paused in the guild.
+
+        .. versionadded:: 2.4
+        """
+        if not self.invites_paused_until:
+            return False
+
+        return self.invites_paused_until > utils.utcnow()
+
+    def dms_paused(self) -> bool:
+        """:class:`bool`: Whether DMs are paused in the guild.
+
+        .. versionadded:: 2.4
+        """
+        if not self.dms_paused_until:
+            return False
+
+        return self.dms_paused_until > utils.utcnow()

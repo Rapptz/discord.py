@@ -479,3 +479,31 @@ def test_cog_hybrid_group_manual_nested_command():
     assert isinstance(third, app_commands.Command)
     assert third.parent is second
     assert third.binding is cog
+
+
+def test_cog_hybrid_group_wrapped_instance():
+    class MyCog(commands.Cog):
+        @commands.hybrid_group(fallback='fallback')
+        async def first(self, ctx: commands.Context) -> None:
+            pass
+
+        @first.command()
+        async def second(self, ctx: commands.Context) -> None:
+            pass
+
+        @first.group()
+        async def nested(self, ctx: commands.Context) -> None:
+            pass
+
+        @nested.app_command.command()
+        async def child(self, interaction: discord.Interaction) -> None:
+            pass
+
+    cog = MyCog()
+
+    fallback = cog.first.app_command.get_command('fallback')
+    assert fallback is not None
+    assert getattr(fallback, 'wrapped', None) is cog.first
+    assert fallback.parent is cog.first.app_command
+    assert cog.second.app_command is not None
+    assert cog.second.app_command.wrapped is cog.second

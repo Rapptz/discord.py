@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional, Generic, TYPE_CHECKING, Sequence, Tuple, Union
+from typing import Any, Dict, Optional, Generic, TYPE_CHECKING, Sequence, Tuple, Union, List
 import asyncio
 import datetime
 
@@ -37,6 +37,7 @@ from .errors import InteractionResponded, HTTPException, ClientException, Discor
 from .flags import MessageFlags
 from .channel import ChannelType
 from ._types import ClientT
+from .sku import Entitlement
 
 from .user import User
 from .member import Member
@@ -110,6 +111,10 @@ class Interaction(Generic[ClientT]):
         The channel the interaction was sent from.
 
         Note that due to a Discord limitation, if sent from a DM channel :attr:`~DMChannel.recipient` is ``None``.
+    entitlement_sku_ids: List[:class:`int`]
+        The entitlement SKU IDs that the user has.
+    entitlements: List[:class:`Entitlement`]
+        The entitlements that the guild or user has.
     application_id: :class:`int`
         The application ID that the interaction was for.
     user: Union[:class:`User`, :class:`Member`]
@@ -150,6 +155,8 @@ class Interaction(Generic[ClientT]):
         'guild_locale',
         'extras',
         'command_failed',
+        'entitlement_sku_ids',
+        'entitlements',
         '_permissions',
         '_app_permissions',
         '_state',
@@ -185,6 +192,8 @@ class Interaction(Generic[ClientT]):
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.channel: Optional[InteractionChannel] = None
         self.application_id: int = int(data['application_id'])
+        self.entitlement_sku_ids: List[int] = [int(x) for x in data.get('entitlement_skus', []) or []]
+        self.entitlements: List[Entitlement] = [Entitlement(self._state, x) for x in data.get('entitlements', [])]
 
         self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
         self.guild_locale: Optional[Locale]
@@ -842,6 +851,7 @@ class InteractionResponse(Generic[ClientT]):
         view: Optional[View] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
         delete_after: Optional[float] = None,
+        suppress_embeds: bool = MISSING,
     ) -> None:
         """|coro|
 
@@ -877,6 +887,13 @@ class InteractionResponse(Generic[ClientT]):
             then it is silently ignored.
 
             .. versionadded:: 2.2
+        suppress_embeds: :class:`bool`
+            Whether to suppress embeds for the message. This removes
+            all the embeds if set to ``True``. If set to ``False``
+            this brings the embeds back if they were suppressed.
+            Using this parameter requires :attr:`~.Permissions.manage_messages`.
+
+            .. versionadded:: 2.4
 
         Raises
         -------
@@ -908,6 +925,12 @@ class InteractionResponse(Generic[ClientT]):
         if view is not MISSING and message_id is not None:
             state.prevent_view_updates_for(message_id)
 
+        if suppress_embeds is not MISSING:
+            flags = MessageFlags._from_value(0)
+            flags.suppress_embeds = suppress_embeds
+        else:
+            flags = MISSING
+
         adapter = async_context.get()
         params = interaction_message_response_params(
             type=InteractionResponseType.message_update.value,
@@ -918,6 +941,7 @@ class InteractionResponse(Generic[ClientT]):
             attachments=attachments,
             previous_allowed_mentions=parent._state.allowed_mentions,
             allowed_mentions=allowed_mentions,
+            flags=flags,
         )
 
         http = parent._state.http
@@ -983,6 +1007,38 @@ class InteractionResponse(Generic[ClientT]):
         if not modal.is_finished():
             self._parent._state.store_view(modal)
         self._response_type = InteractionResponseType.modal
+
+    async def require_premium(self) -> None:
+        """|coro|
+
+        Sends a message to the user prompting them that a premium purchase is required for this interaction.
+
+        This type of response is only available for applications that have a premium SKU set up.
+
+        Raises
+        -------
+        HTTPException
+            Sending the response failed.
+        InteractionResponded
+            This interaction has already been responded to before.
+        """
+        if self._response_type:
+            raise InteractionResponded(self._parent)
+
+        parent = self._parent
+        adapter = async_context.get()
+        http = parent._state.http
+
+        params = interaction_response_params(InteractionResponseType.premium_required.value)
+        await adapter.create_interaction_response(
+            parent.id,
+            parent.token,
+            session=parent._session,
+            proxy=http.proxy,
+            proxy_auth=http.proxy_auth,
+            params=params,
+        )
+        self._response_type = InteractionResponseType.premium_required
 
     async def autocomplete(self, choices: Sequence[Choice[ChoiceT]]) -> None:
         """|coro|

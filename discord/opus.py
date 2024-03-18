@@ -72,6 +72,8 @@ __all__ = (
 
 _log = logging.getLogger(__name__)
 
+OPUS_SILENCE = b'\xF8\xFF\xFE'
+
 c_int_ptr = ctypes.POINTER(ctypes.c_int)
 c_int16_ptr = ctypes.POINTER(ctypes.c_int16)
 c_float_ptr = ctypes.POINTER(ctypes.c_float)

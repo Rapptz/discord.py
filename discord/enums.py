@@ -69,10 +69,11 @@ __all__ = (
     'AutoModRuleActionType',
     'ForumLayoutType',
     'ForumOrderType',
+    'SelectDefaultValueType',
+    'SKUType',
+    'EntitlementType',
+    'EntitlementOwnerType',
 )
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
 
 
 def _create_value_cls(name: str, comparable: bool):
@@ -100,7 +101,14 @@ class EnumMeta(type):
         _enum_member_map_: ClassVar[Dict[str, Any]]
         _enum_value_map_: ClassVar[Dict[Any, Any]]
 
-    def __new__(cls, name: str, bases: Tuple[type, ...], attrs: Dict[str, Any], *, comparable: bool = False) -> Self:
+    def __new__(
+        cls,
+        name: str,
+        bases: Tuple[type, ...],
+        attrs: Dict[str, Any],
+        *,
+        comparable: bool = False,
+    ) -> EnumMeta:
         value_mapping = {}
         member_mapping = {}
         member_names = []
@@ -243,6 +251,10 @@ class MessageType(Enum):
     stage_raise_hand = 30
     stage_topic = 31
     guild_application_premium_subscription = 32
+    guild_incident_alert_mode_enabled = 36
+    guild_incident_alert_mode_disabled = 37
+    guild_incident_report_raid = 38
+    guild_incident_report_false_alarm = 39
 
 
 class SpeakingState(Enum):
@@ -473,7 +485,7 @@ class AuditLogAction(Enum):
             return 'thread'
         elif v < 122:
             return 'integration_or_app_command'
-        elif v < 143:
+        elif 139 < v < 143:
             return 'auto_moderation'
         elif v < 146:
             return 'user'
@@ -590,6 +602,7 @@ class InteractionResponseType(Enum):
     message_update = 7  # for components
     autocomplete_result = 8
     modal = 9  # for modals
+    premium_required = 10
 
 
 class VideoQualityMode(Enum):
@@ -681,6 +694,7 @@ class Locale(Enum):
     italian = 'it'
     japanese = 'ja'
     korean = 'ko'
+    latin_american_spanish = 'es-419'
     lithuanian = 'lt'
     norwegian = 'no'
     polish = 'pl'
@@ -749,16 +763,19 @@ class AutoModRuleTriggerType(Enum):
     spam = 3
     keyword_preset = 4
     mention_spam = 5
+    member_profile = 6
 
 
 class AutoModRuleEventType(Enum):
     message_send = 1
+    member_update = 2
 
 
 class AutoModRuleActionType(Enum):
     block_message = 1
     send_alert_message = 2
     timeout = 3
+    block_member_interactions = 4
 
 
 class ForumLayoutType(Enum):
@@ -770,6 +787,26 @@ class ForumLayoutType(Enum):
 class ForumOrderType(Enum):
     latest_activity = 0
     creation_date = 1
+
+
+class SelectDefaultValueType(Enum):
+    user = 'user'
+    role = 'role'
+    channel = 'channel'
+
+
+class SKUType(Enum):
+    subscription = 5
+    subscription_group = 6
+
+
+class EntitlementType(Enum):
+    application_subscription = 8
+
+
+class EntitlementOwnerType(Enum):
+    guild = 1
+    user = 2
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

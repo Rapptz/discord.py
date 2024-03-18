@@ -27,6 +27,7 @@ from typing_extensions import NotRequired, Required
 
 from .automod import AutoModerationAction, AutoModerationRuleTriggerType
 from .activity import PartialPresenceUpdate
+from .sku import Entitlement
 from .voice import GuildVoiceState
 from .integration import BaseIntegration, IntegrationApplication
 from .role import Role
@@ -40,7 +41,7 @@ from .message import Message
 from .sticker import GuildSticker
 from .appinfo import GatewayAppInfo, PartialAppInfo
 from .guild import Guild, UnavailableGuild
-from .user import User
+from .user import User, AvatarDecorationData
 from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
 from .audit_log import AuditLogEntry
@@ -101,6 +102,8 @@ class MessageReactionAddEvent(TypedDict):
     member: NotRequired[MemberWithUser]
     guild_id: NotRequired[Snowflake]
     message_author_id: NotRequired[Snowflake]
+    burst: bool
+    burst_colors: NotRequired[List[str]]
 
 
 class MessageReactionRemoveEvent(TypedDict):
@@ -109,6 +112,7 @@ class MessageReactionRemoveEvent(TypedDict):
     message_id: Snowflake
     emoji: PartialEmoji
     guild_id: NotRequired[Snowflake]
+    burst: bool
 
 
 class MessageReactionRemoveAllEvent(TypedDict):
@@ -224,6 +228,7 @@ class GuildMemberUpdateEvent(TypedDict):
     mute: NotRequired[bool]
     pending: NotRequired[bool]
     communication_disabled_until: NotRequired[str]
+    avatar_decoration_data: NotRequired[AvatarDecorationData]
 
 
 class GuildEmojisUpdateEvent(TypedDict):
@@ -344,3 +349,6 @@ class AutoModerationActionExecution(TypedDict):
 
 class GuildAuditLogEntryCreate(AuditLogEntry):
     guild_id: Snowflake
+
+
+EntitlementCreateEvent = EntitlementUpdateEvent = EntitlementDeleteEvent = Entitlement

@@ -297,6 +297,8 @@ def replace_parameters(
 
 
 class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
+    __commands_is_hybrid_app_command__: ClassVar[bool] = True
+
     def __init__(
         self,
         wrapped: Union[HybridCommand[CogT, ..., T], HybridGroup[CogT, ..., T]],
@@ -900,7 +902,7 @@ def hybrid_command(
     def decorator(func: CommandCallback[CogT, ContextT, P, T]) -> HybridCommand[CogT, P, T]:
         if isinstance(func, Command):
             raise TypeError('Callback is already a command.')
-        return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)  # type: ignore  # ???
+        return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)
 
     return decorator
 

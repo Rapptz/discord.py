@@ -249,6 +249,22 @@ class User(Snowflake, Protocol):
         raise NotImplementedError
 
     @property
+    def avatar_decoration(self) -> Optional[Asset]:
+        """Optional[:class:`~discord.Asset`]: Returns an Asset that represents the user's avatar decoration, if present.
+
+        .. versionadded:: 2.4
+        """
+        raise NotImplementedError
+
+    @property
+    def avatar_decoration_sku_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns an integer that represents the user's avatar decoration SKU ID, if present.
+
+        .. versionadded:: 2.4
+        """
+        raise NotImplementedError
+
+    @property
     def default_avatar(self) -> Asset:
         """:class:`~discord.Asset`: Returns the default avatar for a given user."""
         raise NotImplementedError
@@ -499,6 +515,13 @@ class GuildChannel:
             if not isinstance(ch_type, ChannelType):
                 raise TypeError('type field must be of type ChannelType')
             options['type'] = ch_type.value
+
+        try:
+            status = options.pop('status')
+        except KeyError:
+            pass
+        else:
+            await self._state.http.edit_voice_channel_status(status, channel_id=self.id, reason=reason)
 
         if options:
             return await self._state.http.edit_channel(self.id, reason=reason, **options)
@@ -1842,7 +1865,7 @@ class Connectable(Protocol):
     async def connect(
         self,
         *,
-        timeout: float = 60.0,
+        timeout: float = 30.0,
         reconnect: bool = True,
         cls: Callable[[Client, Connectable], T] = VoiceClient,
         self_deaf: bool = False,
@@ -1858,7 +1881,7 @@ class Connectable(Protocol):
         Parameters
         -----------
         timeout: :class:`float`
-            The timeout in seconds to wait for the voice endpoint.
+            The timeout in seconds to wait the connection to complete.
         reconnect: :class:`bool`
             Whether the bot should automatically attempt
             a reconnect if a part of the handshake fails
