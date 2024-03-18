@@ -2974,7 +2974,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
     @property
     def mention(self) -> str:
         """:class:`str`: The string that allows you to mention the channel.
-        
+
         .. versionadded:: 2.3.2
         """
         return f'<#{self.id}>'
