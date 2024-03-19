@@ -397,6 +397,7 @@ class Member(discord.abc.Messageable, _UserTag):
         data = {
             'roles': [],
             'user': user._to_minimal_user_json(),
+            'flags': 0,
         }
         return cls(data=data, guild=guild, state=state)  # type: ignore
 
