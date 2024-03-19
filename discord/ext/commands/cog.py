@@ -169,7 +169,7 @@ class CogMeta(type):
     __cog_app_commands__: List[Union[app_commands.Group, app_commands.Command[Any, ..., Any]]]
     __cog_listeners__: List[Tuple[str, str]]
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> Self:
+    def __new__(cls, *args: Any, **kwargs: Any) -> CogMeta:
         name, bases, attrs = args
         if any(issubclass(base, app_commands.Group) for base in bases):
             raise TypeError(
@@ -366,7 +366,7 @@ class Cog(metaclass=CogMeta):
                                 child.wrapped = lookup[child.qualified_name]  # type: ignore
 
                     if self.__cog_app_commands_group__:
-                        children.append(app_command)  # type: ignore # Somehow it thinks it can be None here
+                        children.append(app_command)
 
         if Cog._get_overridden_method(self.cog_app_command_error) is not None:
             error_handler = self.cog_app_command_error

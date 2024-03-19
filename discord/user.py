@@ -398,7 +398,9 @@ class ClientUser(BaseUser):
         self._flags = data.get('flags', 0)
         self.mfa_enabled = data.get('mfa_enabled', False)
 
-    async def edit(self, *, username: str = MISSING, avatar: Optional[bytes] = MISSING) -> ClientUser:
+    async def edit(
+        self, *, username: str = MISSING, avatar: Optional[bytes] = MISSING, banner: Optional[bytes] = MISSING
+    ) -> ClientUser:
         """|coro|
 
         Edits the current profile of the client.
@@ -410,7 +412,6 @@ class ClientUser(BaseUser):
             then the file must be opened via ``open('some_filename', 'rb')`` and
             the :term:`py:bytes-like object` is given through the use of ``fp.read()``.
 
-            The only image formats supported for uploading is JPEG and PNG.
 
         .. versionchanged:: 2.0
             The edit is no longer in-place, instead the newly edited client user is returned.
@@ -426,6 +427,13 @@ class ClientUser(BaseUser):
         avatar: Optional[:class:`bytes`]
             A :term:`py:bytes-like object` representing the image to upload.
             Could be ``None`` to denote no avatar.
+            Only image formats supported for uploading are JPEG, PNG, GIF, and WEBP.
+        banner: Optional[:class:`bytes`]
+            A :term:`py:bytes-like object` representing the image to upload.
+            Could be ``None`` to denote no banner.
+            Only image formats supported for uploading are JPEG, PNG, GIF and WEBP.
+
+            .. versionadded:: 2.4
 
         Raises
         ------
@@ -448,6 +456,12 @@ class ClientUser(BaseUser):
                 payload['avatar'] = _bytes_to_base64_data(avatar)
             else:
                 payload['avatar'] = None
+
+        if banner is not MISSING:
+            if banner is not None:
+                payload['banner'] = _bytes_to_base64_data(banner)
+            else:
+                payload['banner'] = None
 
         data: UserPayload = await self._state.http.edit_profile(payload)
         return ClientUser(state=self._state, data=data)
