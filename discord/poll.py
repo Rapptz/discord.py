@@ -146,9 +146,6 @@ class Poll:
         'duration',
         'layout_type',
         'question',
-
-        '_state',
-        '_update',
     )
 
     def __init__(
