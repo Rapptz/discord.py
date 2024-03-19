@@ -1818,6 +1818,7 @@ class Webhook(BaseWebhook):
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
             applied_tags=applied_tag_ids,
+            poll=poll
         ) as params:
             adapter = async_context.get()
             thread_id: Optional[int] = None

@@ -76,6 +76,11 @@ class PollAnswer:
         The attachment IDs for this answer.
     """
 
+    __slots__ = (
+        'text',
+        'emoji'
+    )
+
     def __init__(self, text: str, *, emoji: Union[PartialEmoji, Emoji, str] = MISSING) -> None:
         self.text: str = text
         self.emoji: Optional[Union[PartialEmoji, Emoji, str]] = emoji if emoji is not MISSING else None
