@@ -72,6 +72,7 @@ if TYPE_CHECKING:
     from ..channel import VoiceChannel
     from ..abc import Snowflake
     from ..ui.view import View
+    from ..poll import Poll
     import datetime
     from ..types.webhook import (
         Webhook as WebhookPayload,
@@ -1596,6 +1597,7 @@ class Webhook(BaseWebhook):
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        poll: Poll = MISSING
     ) -> WebhookMessage:
         ...
 
@@ -1619,6 +1621,7 @@ class Webhook(BaseWebhook):
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        poll: Poll = MISSING
     ) -> None:
         ...
 
@@ -1642,6 +1645,7 @@ class Webhook(BaseWebhook):
         suppress_embeds: bool = False,
         silent: bool = False,
         applied_tags: List[ForumTag] = MISSING,
+        poll: Poll = MISSING
     ) -> Optional[WebhookMessage]:
         """|coro|
 
@@ -1729,6 +1733,11 @@ class Webhook(BaseWebhook):
             .. versionadded:: 2.2
         applied_tags: List[:class:`ForumTag`]
             Tags to apply to the thread if the webhook belongs to a :class:`~discord.ForumChannel`.
+
+            .. versionadded:: 2.4
+
+        poll: :class:`Poll`
+            The linked poll for this message.
 
             .. versionadded:: 2.4
 

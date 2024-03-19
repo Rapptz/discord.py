@@ -92,6 +92,7 @@ if TYPE_CHECKING:
         VoiceChannel,
         StageChannel,
     )
+    from .poll import Poll
     from .threads import Thread
     from .ui.view import View
     from .types.channel import (
@@ -1350,6 +1351,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1370,6 +1372,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1390,6 +1393,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1410,6 +1414,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1431,6 +1436,7 @@ class Messageable:
         view: Optional[View] = None,
         suppress_embeds: bool = False,
         silent: bool = False,
+        poll: Poll = MISSING,
     ) -> Message:
         """|coro|
 
@@ -1582,6 +1588,7 @@ class Messageable:
             stickers=sticker_ids,
             view=view,
             flags=flags,
+            poll=poll
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 
