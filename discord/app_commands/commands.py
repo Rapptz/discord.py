@@ -2620,7 +2620,7 @@ def allow_contexts(
     .. code-block:: python3
 
         @app_commands.command()
-        @app_commands.allow_contexts(guilds=False, dms=False, private_channels=True)
+        @app_commands.allow_contexts(guilds=True, dms=False, private_channels=True)
         async def my_command(interaction: discord.Interaction) -> None:
             await interaction.response.send_message('I am only available in guilds and private channels!')
     """
