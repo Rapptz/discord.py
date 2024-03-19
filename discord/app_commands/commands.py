@@ -49,6 +49,7 @@ import re
 from copy import copy as shallow_copy
 
 from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale
+from ..flags import AppCommandContext, AppIntegrationType
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
@@ -87,6 +88,12 @@ __all__ = (
     'autocomplete',
     'guilds',
     'guild_only',
+    'dm_only',
+    'private_channel_only',
+    'allow_contexts',
+    'guild_install',
+    'user_install',
+    'install_types',
     'default_permissions',
 )
 
@@ -618,6 +625,16 @@ class Command(Generic[GroupT, P, T]):
         Whether the command should only be usable in guild contexts.
 
         Due to a Discord limitation, this does not work on subcommands.
+    allowed_contexts: Optional[:class:`~discord.AppCommandContext`]
+        The contexts that the command is allowed to be used in.
+        Overrides ``guild_only`` if this is set.
+
+        .. versionadded:: 2.4
+    integration_types: Optional[:class:`~discord.AppIntegrationType`]
+        The installation contexts that the command is allowed to be installed
+        on.
+
+        .. versionadded:: 2.4
     nsfw: :class:`bool`
         Whether the command is NSFW and should only work in NSFW channels.
 
@@ -638,6 +655,8 @@ class Command(Generic[GroupT, P, T]):
         nsfw: bool = False,
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
+        allowed_contexts: Optional[AppCommandContext] = None,
+        integration_types: Optional[AppIntegrationType] = None,
         auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ):
@@ -672,6 +691,13 @@ class Command(Generic[GroupT, P, T]):
             callback, '__discord_app_commands_default_permissions__', None
         )
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
+        self.allowed_contexts: Optional[AppCommandContext] = allowed_contexts or getattr(
+            callback, '__discord_app_commands_contexts__', None
+        )
+        self.integration_types: Optional[AppIntegrationType] = integration_types or getattr(
+            callback, '__discord_app_commands_integration_types__', None
+        )
+
         self.nsfw: bool = nsfw
         self.extras: Dict[Any, Any] = extras or {}
 
@@ -760,6 +786,8 @@ class Command(Generic[GroupT, P, T]):
             base['nsfw'] = self.nsfw
             base['dm_permission'] = not self.guild_only
             base['default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
+            base['contexts'] = self.allowed_contexts.to_array() if self.allowed_contexts is not None else None
+            base['integration_types'] = self.integration_types.to_array() if self.integration_types is not None else None
 
         return base
 
@@ -1167,6 +1195,16 @@ class ContextMenu:
     guild_only: :class:`bool`
         Whether the command should only be usable in guild contexts.
         Defaults to ``False``.
+    allowed_contexts: Optional[:class:`~discord.flags.AppCommandContext`]
+        The contexts that this context menu is allowed to be used in.
+        Overrides ``guild_only`` if set.
+
+        .. versionadded:: 2.4
+    integration_types: Optional[:class:`~discord.AppIntegrationType`]
+        The installation contexts that the command is allowed to be installed
+        on.
+
+        .. versionadded:: 2.4
     nsfw: :class:`bool`
         Whether the command is NSFW and should only work in NSFW channels.
         Defaults to ``False``.
@@ -1189,6 +1227,8 @@ class ContextMenu:
         type: AppCommandType = MISSING,
         nsfw: bool = False,
         guild_ids: Optional[List[int]] = None,
+        allowed_contexts: Optional[AppCommandContext] = None,
+        integration_types: Optional[AppIntegrationType] = None,
         auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ):
@@ -1214,6 +1254,12 @@ class ContextMenu:
         )
         self.nsfw: bool = nsfw
         self.guild_only: bool = getattr(callback, '__discord_app_commands_guild_only__', False)
+        self.allowed_contexts: Optional[AppCommandContext] = allowed_contexts or getattr(
+            callback, '__discord_app_commands_contexts__', None
+        )
+        self.integration_types: Optional[AppIntegrationType] = integration_types or getattr(
+            callback, '__discord_app_commands_integration_types__', None
+        )
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
         self.extras: Dict[Any, Any] = extras or {}
 
@@ -1249,6 +1295,8 @@ class ContextMenu:
             'name': self.name,
             'type': self.type.value,
             'dm_permission': not self.guild_only,
+            'contexts': self.allowed_contexts.to_array() if self.allowed_contexts is not None else None,
+            'integration_types': self.integration_types.to_array() if self.integration_types is not None else None,
             'default_member_permissions': None if self.default_permissions is None else self.default_permissions.value,
             'nsfw': self.nsfw,
         }
@@ -1405,6 +1453,16 @@ class Group:
         Whether the group should only be usable in guild contexts.
 
         Due to a Discord limitation, this does not work on subcommands.
+    allowed_contexts: Optional[:class:`~discord.flags.AppCommandContext`]
+        The contexts that this group is allowed to be used in. Overrides
+        guild_only if set.
+
+        .. versionadded:: 2.4
+    integration_types: Optional[:class:`~discord.AppIntegrationType`]
+        The installation contexts that the command is allowed to be installed
+        on.
+
+        .. versionadded:: 2.4
     nsfw: :class:`bool`
         Whether the command is NSFW and should only work in NSFW channels.
 
@@ -1424,6 +1482,8 @@ class Group:
     __discord_app_commands_group_locale_description__: Optional[locale_str] = None
     __discord_app_commands_group_nsfw__: bool = False
     __discord_app_commands_guild_only__: bool = MISSING
+    __discord_app_commands_contexts__: Optional[AppCommandContext] = MISSING
+    __discord_app_commands_integration_types__: Optional[AppIntegrationType] = MISSING
     __discord_app_commands_default_permissions__: Optional[Permissions] = MISSING
     __discord_app_commands_has_module__: bool = False
     __discord_app_commands_error_handler__: Optional[
@@ -1492,6 +1552,8 @@ class Group:
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
         guild_only: bool = MISSING,
+        allowed_contexts: Optional[AppCommandContext] = MISSING,
+        integration_types: Optional[AppIntegrationType] = MISSING,
         nsfw: bool = MISSING,
         auto_locale_strings: bool = True,
         default_permissions: Optional[Permissions] = MISSING,
@@ -1539,6 +1601,22 @@ class Group:
                 guild_only = cls.__discord_app_commands_guild_only__
 
         self.guild_only: bool = guild_only
+
+        if allowed_contexts is MISSING:
+            if cls.__discord_app_commands_contexts__ is MISSING:
+                allowed_contexts = None
+            else:
+                allowed_contexts = cls.__discord_app_commands_contexts__
+
+        self.allowed_contexts: Optional[AppCommandContext] = allowed_contexts
+
+        if integration_types is MISSING:
+            if cls.__discord_app_commands_integration_types__ is MISSING:
+                integration_types = None
+            else:
+                integration_types = cls.__discord_app_commands_integration_types__
+
+        self.integration_types: Optional[AppIntegrationType] = integration_types
 
         if nsfw is MISSING:
             nsfw = cls.__discord_app_commands_group_nsfw__
@@ -1672,6 +1750,8 @@ class Group:
             base['nsfw'] = self.nsfw
             base['dm_permission'] = not self.guild_only
             base['default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
+            base['contexts'] = self.allowed_contexts.to_array() if self.allowed_contexts is not None else None
+            base['integration_types'] = self.integration_types.to_array() if self.integration_types is not None else None
 
         return base
 
@@ -2421,8 +2501,16 @@ def guild_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     def inner(f: T) -> T:
         if isinstance(f, (Command, Group, ContextMenu)):
             f.guild_only = True
+            allowed_contexts = f.allowed_contexts or AppCommandContext.none()
+            f.allowed_contexts = allowed_contexts
         else:
             f.__discord_app_commands_guild_only__ = True  # type: ignore # Runtime attribute assignment
+
+            allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext.none()
+            f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
+
+        allowed_contexts.guild = True
+
         return f
 
     # Check if called with parentheses or not
@@ -2431,6 +2519,250 @@ def guild_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         return inner
     else:
         return inner(func)
+
+
+def private_channel_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
+    """A decorator that indicates this command can only be used in the context of DMs and group DMs.
+
+    This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
+    Therefore, there is no error handler called when a command is used within a guild.
+
+    This decorator can be called with or without parentheses.
+
+    Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    Examples
+    ---------
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.private_channel_only()
+        async def my_private_channel_only_command(interaction: discord.Interaction) -> None:
+            await interaction.response.send_message('I am only available in DMs and GDMs!')
+    """
+
+    def inner(f: T) -> T:
+        if isinstance(f, (Command, Group, ContextMenu)):
+            f.guild_only = False
+            allowed_contexts = f.allowed_contexts or AppCommandContext.none()
+            f.allowed_contexts = allowed_contexts
+        else:
+            allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext.none()
+            f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
+
+        allowed_contexts.private_channel = True
+
+        return f
+
+    # Check if called with parentheses or not
+    if func is None:
+        # Called with parentheses
+        return inner
+    else:
+        return inner(func)
+
+
+def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
+    """A decorator that indicates this command can only be used in the context of bot DMs.
+
+    This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
+    Therefore, there is no error handler called when a command is used within a guild or group DM.
+
+    This decorator can be called with or without parentheses.
+
+    Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    Examples
+    ---------
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.dm_only()
+        async def my_dm_only_command(interaction: discord.Interaction) -> None:
+            await interaction.response.send_message('I am only available in DMs!')
+    """
+
+    def inner(f: T) -> T:
+        if isinstance(f, (Command, Group, ContextMenu)):
+            f.guild_only = False
+            allowed_contexts = f.allowed_contexts or AppCommandContext.none()
+            f.allowed_contexts = allowed_contexts
+        else:
+            allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext.none()
+            f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
+
+        allowed_contexts.dm_channel = True
+        return f
+
+    # Check if called with parentheses or not
+    if func is None:
+        # Called with parentheses
+        return inner
+    else:
+        return inner(func)
+
+
+def allow_contexts(
+    guilds: bool = MISSING, dms: bool = MISSING, private_channels: bool = MISSING
+) -> Union[T, Callable[[T], T]]:
+    """A decorator that indicates this command can only be used in certain contexts.
+    Valid contexts are guilds, DMs and private channels.
+
+    This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
+
+    Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    Examples
+    ---------
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.allow_contexts(guilds=False, dms=False, private_channels=True)
+        async def my_command(interaction: discord.Interaction) -> None:
+            await interaction.response.send_message('I am only available in guilds and private channels!')
+    """
+
+    def inner(f: T) -> T:
+        if isinstance(f, (Command, Group, ContextMenu)):
+            f.guild_only = False
+            allowed_contexts = f.allowed_contexts or AppCommandContext.none()
+            f.allowed_contexts = allowed_contexts
+        else:
+            allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext.none()
+            f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
+
+        if guilds is not MISSING:
+            allowed_contexts.guild = guilds
+
+        if dms is not MISSING:
+            allowed_contexts.dm_channel = dms
+
+        if private_channels is not MISSING:
+            allowed_contexts.private_channel = private_channels
+
+        return f
+
+    return inner
+
+
+def guild_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
+    """A decorator that indicates this command should be installed in guilds.
+
+    This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
+
+    Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    Examples
+    ---------
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.guild_install()
+        async def my_guild_install_command(interaction: discord.Interaction) -> None:
+            await interaction.response.send_message('I am installed in guilds by default!')
+    """
+
+    def inner(f: T) -> T:
+        if isinstance(f, (Command, Group, ContextMenu)):
+            integration_types = f.integration_types or AppIntegrationType.none()
+            f.integration_types = integration_types
+        else:
+            integration_types = getattr(f, '__discord_app_commands_integration_types__', None) or AppIntegrationType.none()
+            f.__discord_app_commands_integration_types__ = integration_types  # type: ignore # Runtime attribute assignment
+
+        integration_types.guild_install = True
+
+        return f
+
+    # Check if called with parentheses or not
+    if func is None:
+        # Called with parentheses
+        return inner
+    else:
+        return inner(func)
+
+
+def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
+    """A decorator that indicates this command should be installed for users.
+
+    This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
+
+    Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    Examples
+    ---------
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.user_install()
+        async def my_user_install_command(interaction: discord.Interaction) -> None:
+            await interaction.response.send_message('I am installed in users by default!')
+    """
+
+    def inner(f: T) -> T:
+        if isinstance(f, (Command, Group, ContextMenu)):
+            integration_types = f.integration_types or AppIntegrationType.none()
+            f.integration_types = integration_types
+        else:
+            integration_types = getattr(f, '__discord_app_commands_integration_types__', None) or AppIntegrationType.none()
+            f.__discord_app_commands_integration_types__ = integration_types  # type: ignore # Runtime attribute assignment
+
+        integration_types.user_install = True
+
+        return f
+
+    # Check if called with parentheses or not
+    if func is None:
+        # Called with parentheses
+        return inner
+    else:
+        return inner(func)
+
+
+def install_types(
+    guilds: bool = MISSING,
+    users: bool = MISSING,
+) -> Union[T, Callable[[T], T]]:
+    """A decorator that indicates this command should be installed in certain contexts.
+    Valid contexts are guilds and users.
+
+    This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
+
+    Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    Examples
+    ---------
+
+    .. code-block:: python3
+
+        @app_commands.command()
+        @app_commands.install_types(guilds=False, users=True)
+        async def my_command(interaction: discord.Interaction) -> None:
+            await interaction.response.send_message('I am installed in users by default!')
+    """
+
+    def inner(f: T) -> T:
+        if isinstance(f, (Command, Group, ContextMenu)):
+            integration_types = f.integration_types or AppIntegrationType.none()
+            f.integration_types = integration_types
+        else:
+            integration_types = getattr(f, '__discord_app_commands_integration_types__', None) or AppIntegrationType.none()
+            f.__discord_app_commands_integration_types__ = integration_types  # type: ignore # Runtime attribute assignment
+
+        if guilds is not MISSING:
+            integration_types.guild_install = guilds
+
+        if users is not MISSING:
+            integration_types.user_install = users
+
+        return f
+
+    return inner
 
 
 def default_permissions(**perms: bool) -> Callable[[T], T]:

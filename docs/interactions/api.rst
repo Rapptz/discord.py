@@ -129,6 +129,22 @@ AppCommandPermissions
 .. autoclass:: discord.app_commands.AppCommandPermissions()
     :members:
 
+AppCommandContext
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: AppCommandContext
+
+.. autoclass:: AppCommandContext
+    :members:
+
+AppIntegrationType
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: AppIntegrationType
+
+.. autoclass:: AppIntegrationType
+    :members:
+
 GuildAppCommandPermissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -640,6 +656,24 @@ Decorators
     :decorator:
 
 .. autofunction:: discord.app_commands.guild_only
+    :decorator:
+
+.. autofunction:: discord.app_commands.dm_only
+    :decorator:
+
+.. autofunction:: discord.app_commands.private_channel_only
+    :decorator:
+
+.. autofunction:: discord.app_commands.allow_contexts
+    :decorator:
+
+.. autofunction:: discord.app_commands.user_install
+    :decorator:
+
+.. autofunction:: discord.app_commands.guild_install
+    :decorator:
+
+.. autofunction:: discord.app_commands.install_types
     :decorator:
 
 .. autofunction:: discord.app_commands.default_permissions

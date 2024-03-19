@@ -318,6 +318,8 @@ class Cog(metaclass=CogMeta):
                 parent=None,
                 guild_ids=getattr(cls, '__discord_app_commands_default_guilds__', None),
                 guild_only=getattr(cls, '__discord_app_commands_guild_only__', False),
+                allowed_contexts=getattr(cls, '__discord_app_commands_contexts__', None),
+                integration_types=getattr(cls, '__discord_app_commands_integration_types__', None),
                 default_permissions=getattr(cls, '__discord_app_commands_default_permissions__', None),
                 extras=cls.__cog_group_extras__,
             )

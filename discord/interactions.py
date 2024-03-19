@@ -64,6 +64,7 @@ if TYPE_CHECKING:
     from .types.webhook import (
         Webhook as WebhookPayload,
     )
+    from .types.snowflake import Snowflake
     from .guild import Guild
     from .state import ConnectionState
     from .file import File
@@ -157,6 +158,7 @@ class Interaction(Generic[ClientT]):
         'command_failed',
         'entitlement_sku_ids',
         'entitlements',
+        '_integration_owners',
         '_permissions',
         '_app_permissions',
         '_state',
@@ -194,6 +196,10 @@ class Interaction(Generic[ClientT]):
         self.application_id: int = int(data['application_id'])
         self.entitlement_sku_ids: List[int] = [int(x) for x in data.get('entitlement_skus', []) or []]
         self.entitlements: List[Entitlement] = [Entitlement(self._state, x) for x in data.get('entitlements', [])]
+        # This is not entirely useful currently, unsure how to expose it in a way that it is.
+        self._integration_owners: Dict[int, Snowflake] = {
+            int(k): int(v) for k, v in data.get('authorizing_integration_owners', {}).items()
+        }
 
         self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
         self.guild_locale: Optional[Locale]
@@ -205,6 +211,12 @@ class Interaction(Generic[ClientT]):
         guild = None
         if self.guild_id:
             guild = self._state._get_or_create_unavailable_guild(self.guild_id)
+            guild_data = data.get('guild')
+            if guild_data is not None:
+                guild._from_data(guild_data)  # type: ignore  # This is partial data
+
+            if guild.me is None and self._client.user is not None:
+                guild._add_member(Member._from_client_user(user=self._client.user, guild=guild, state=self._state))
 
         raw_channel = data.get('channel', {})
         channel_id = utils._get_as_snowflake(raw_channel, 'id')
