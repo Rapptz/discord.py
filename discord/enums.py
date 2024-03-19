@@ -811,6 +811,10 @@ class EntitlementOwnerType(Enum):
 
 
 class PollLayoutType(Enum):
+    unknown = 0
+    default = 1
+    image_only_answers = 2
+	
     normal = 1
 
 
