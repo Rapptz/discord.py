@@ -49,6 +49,7 @@ if TYPE_CHECKING:
 
 __all__ = (
     'Poll',
+    'PollAnswer',
 )
 
 MISSING = utils.MISSING
@@ -87,12 +88,12 @@ class PollAnswer:
 
     @classmethod
     def _from_data(cls, data: PollAnswerPayload) -> Self:
-        media = data.get('poll_media')
-        text = media.get('text')
+        media = data['poll_media']
+        text = media['text']
         emoji = media.get('emoji', None)
 
         if emoji:
-            partial_emoji = PartialEmoji(name=emoji.get('name'), id=emoji.get('id', None))
+            partial_emoji = PartialEmoji(name=emoji['name'], id=emoji.get('id', None))
 
             return cls(text=text, emoji=partial_emoji)
         
