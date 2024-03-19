@@ -28,7 +28,7 @@ from datetime import datetime
 from .errors import MissingApplicationID
 from .translator import TranslationContextLocation, TranslationContext, locale_str, Translator
 from ..permissions import Permissions
-from ..enums import AppCommandOptionType, AppCommandType, AppCommandPermissionType, ChannelType, Locale, try_enum
+from ..enums import AppCommandOptionType, AppCommandType, AppCommandPermissionType, ChannelType, Locale, try_enum, IntegrationType, AppCommandContext
 from ..mixins import Hashable
 from ..utils import _get_as_snowflake, parse_time, snowflake_time, MISSING
 from ..object import Object
@@ -181,11 +181,15 @@ class AppCommand(Hashable):
         'dm_permission',
         'nsfw',
         '_state',
+        'integration_types',
+        'contexts',        
     )
 
     def __init__(self, *, data: ApplicationCommandPayload, state: ConnectionState) -> None:
         self._state: ConnectionState = state
         self._from_data(data)
+        self.integration_types: List[IntegrationType] = [try_enum(IntegrationType, d) for d in data.get('integration_types', [])]
+        self.contexts: List[AppCommandContext] = [try_enum(AppCommandContext, d) for d in data.get('contexts', [])]        
 
     def _from_data(self, data: ApplicationCommandPayload) -> None:
         self.id: int = int(data['id'])
@@ -224,6 +228,8 @@ class AppCommand(Hashable):
             'name_localizations': {str(k): v for k, v in self.name_localizations.items()},
             'description_localizations': {str(k): v for k, v in self.description_localizations.items()},
             'options': [opt.to_dict() for opt in self.options],
+            'integration_types': [t.value for t in self.integration_types],
+            'contexts': [c.value for c in self.contexts],            
         }  # type: ignore # Type checker does not understand this literal.
 
     def __str__(self) -> str:
