@@ -1767,7 +1767,7 @@ class AutoModPresets(ArrayFlags):
 
 @fill_with_flags()
 class AppCommandContext(ArrayFlags):
-    r"""Wraps up the Discord :class:`AppCommand` execution context.
+    r"""Wraps up the Discord :class:`~discord.app_commands.Command` execution context.
 
     .. versionadded:: 2.4
 
