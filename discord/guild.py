@@ -170,6 +170,7 @@ class _MemberSearchQueries(TypedDict, total=False):
     quarantined: bool
     timed_out: bool
     unusual_dms: bool
+    invite_codes: List[Union[str, Invite]]
 
 
 class Guild(Hashable):
@@ -4404,7 +4405,6 @@ class Guild(Hashable):
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)
-<<<<<<< HEAD
     
     async def fetch_members_safety_information(self, *, limit: int = 250, sort_type: MemberSearchSortType = MemberSearchSortType.new_guild_members, **filters: Unpack[_MemberSearchQueries]) -> Optional[Tuple[MemberSearch, ...]]:
         r"""|coro|
@@ -4466,7 +4466,6 @@ class Guild(Hashable):
         data = await self._state.http.get_guild_member_safety(self.id, limit, sort_type.value, **filters)
 
         return tuple([MemberSearch(data=member_data, guild=self, state=self._state) for member_data in data.get('members')]) if data.get('total_result_count') > 0 else None
-=======
 
     @property
     def invites_paused_until(self) -> Optional[datetime.datetime]:
@@ -4511,4 +4510,3 @@ class Guild(Hashable):
             return False
 
         return self.dms_paused_until > utils.utcnow()
->>>>>>> 0e016be42ca4f34bb89761261a1c7c12f4cc8c48

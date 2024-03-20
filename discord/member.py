@@ -1103,7 +1103,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         data = await self._state.http.get_member_safety_information(self.guild.id, self.id)
         
-        if data.get('total_result_count') <= 0:
+        if data.get('total_result_count') == 0:
             return
         
         return MemberSearch(data=data.get('members')[0], guild=self.guild, state=self._state)

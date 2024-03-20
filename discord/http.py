@@ -2056,6 +2056,13 @@ class HTTPClient:
                     }
                 )
 
+            elif key == 'invite_codes':
+                payload['and_query'].update(
+                    source_invite_code={
+                        'or_query': [invite.code for invite in value if hasattr(invite, 'code') else invite]
+                    }
+                )
+
         return self.request(Route('POST', '/guilds/{guild_id}/members-search', guild_id=guild_id), json=payload)
 
     # Guild scheduled event management
