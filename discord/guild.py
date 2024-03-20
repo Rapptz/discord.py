@@ -4421,6 +4421,8 @@ class Guild(Hashable):
         - :attr:`Permissions.moderate_members`
         - :attr:`Permissions.kick_members`
 
+        .. versionadded:: 2.4
+
         Parameters
         ----------
         limit: :class:`int`
@@ -4446,6 +4448,8 @@ class Guild(Hashable):
             | users            | Return users that match any of the IDS  |
             +------------------+-----------------------------------------+
             | roles            | Return users that have any of the roles |
+            +------------------+-----------------------------------------+
+            | invite_codes     | Return users joined via these invites   |
             +------------------+-----------------------------------------+
         
         Raises
