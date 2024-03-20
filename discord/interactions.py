@@ -210,11 +210,8 @@ class Interaction(Generic[ClientT]):
 
         guild = None
         if self.guild_id:
-            guild = self._state._get_or_create_unavailable_guild(self.guild_id)
-            guild_data = data.get('guild')
-            if guild_data is not None:
-                guild._from_data(guild_data)  # type: ignore  # This is partial data
-
+            # The data type is a TypedDict but it doesn't narrow to Dict[str, Any] properly
+            guild = self._state._get_or_create_unavailable_guild(self.guild_id, data=data.get('guild'))  # type: ignore
             if guild.me is None and self._client.user is not None:
                 guild._add_member(Member._from_client_user(user=self._client.user, guild=guild, state=self._state))
 
