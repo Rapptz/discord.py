@@ -1141,8 +1141,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, TextChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, TextChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1152,8 +1151,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, VoiceChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, VoiceChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1163,8 +1161,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, StageChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, StageChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1174,8 +1171,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, CategoryChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, CategoryChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1185,8 +1181,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, NewsChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, NewsChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1196,8 +1191,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, Union[TextChannelPayload, NewsChannelPayload]]:
-        ...
+    ) -> Coroutine[Any, Any, Union[TextChannelPayload, NewsChannelPayload]]: ...
 
     @overload
     def _create_channel(
@@ -1207,8 +1201,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, ForumChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, ForumChannelPayload]: ...
 
     @overload
     def _create_channel(
@@ -1218,8 +1211,7 @@ class Guild(Hashable):
         overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
-    ) -> Coroutine[Any, Any, GuildChannelPayload]:
-        ...
+    ) -> Coroutine[Any, Any, GuildChannelPayload]: ...
 
     def _create_channel(
         self,
@@ -3050,8 +3042,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def create_scheduled_event(
@@ -3066,8 +3057,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def create_scheduled_event(
@@ -3081,8 +3071,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     @overload
     async def create_scheduled_event(
@@ -3096,8 +3085,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-    ) -> ScheduledEvent:
-        ...
+    ) -> ScheduledEvent: ...
 
     async def create_scheduled_event(
         self,
@@ -3431,8 +3419,7 @@ class Guild(Hashable):
         hoist: bool = ...,
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
-    ) -> Role:
-        ...
+    ) -> Role: ...
 
     @overload
     async def create_role(
@@ -3445,8 +3432,7 @@ class Guild(Hashable):
         hoist: bool = ...,
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
-    ) -> Role:
-        ...
+    ) -> Role: ...
 
     async def create_role(
         self,
@@ -4391,7 +4377,7 @@ class Guild(Hashable):
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)
-    
+
     async def delete_automod_rule(self, automod_rule: AutoModRule, *, reason: Optional[str] = None) -> None:
         """|coro|
 
@@ -4405,7 +4391,7 @@ class Guild(Hashable):
             Target of automod rule.
         reason: :class:`str`
             The reason for deleting this automod rule. Shows up on the audit log.
-        
+
         Raises
         -------
         Forbidden
