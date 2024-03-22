@@ -1586,7 +1586,8 @@ class ConnectionState(Generic[ClientT]):
 
         if channel is not None:
             if isinstance(channel, DMChannel):
-                channel.recipient = raw.user
+                if raw.user is not None and raw.user not in channel.recipients:
+                    channel.recipients.append(raw.user)
             elif guild is not None:
                 raw.user = guild.get_member(raw.user_id)
 
