@@ -87,6 +87,7 @@ class VoiceChannel(_BaseTextChannel):
     user_limit: int
     rtc_region: NotRequired[Optional[str]]
     video_quality_mode: NotRequired[VideoQualityMode]
+    status: NotRequired[Optional[str]]
 
 
 class CategoryChannel(_BaseGuildChannel):

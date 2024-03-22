@@ -384,6 +384,8 @@ class AuditLogAction(Enum):
     automod_timeout_member                            = 145
     creator_monetization_request_created              = 150
     creator_monetization_terms_accepted               = 151
+    voice_channel_status_update                       = 192
+    voice_channel_status_delete                       = 193
     # fmt: on
 
     @property
@@ -446,6 +448,8 @@ class AuditLogAction(Enum):
             AuditLogAction.automod_timeout_member:                   None,
             AuditLogAction.creator_monetization_request_created:     None,
             AuditLogAction.creator_monetization_terms_accepted:      None,
+            AuditLogAction.voice_channel_status_update:              AuditLogActionCategory.update,
+            AuditLogAction.voice_channel_status_delete:              AuditLogActionCategory.delete,
         }
         # fmt: on
         return lookup[self]
@@ -491,6 +495,8 @@ class AuditLogAction(Enum):
             return 'user'
         elif v < 152:
             return 'creator_monetization'
+        elif v < 194:
+            return 'voice_channel_status'
 
 
 class UserFlags(Enum):
