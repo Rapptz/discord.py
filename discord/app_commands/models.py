@@ -26,7 +26,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from .errors import MissingApplicationID
-from ..flags import AppCommandContext, AppIntegrationType
+from ..flags import AppCommandContext, AppInstallationType
 from .translator import TranslationContextLocation, TranslationContext, locale_str, Translator
 from ..permissions import Permissions
 from ..enums import (
@@ -168,8 +168,14 @@ class AppCommand(Hashable):
         The default member permissions that can run this command.
     dm_permission: :class:`bool`
         A boolean that indicates whether this command can be run in direct messages.
-    allowed_contexts: Optional[:class:`~discord.flags.AppCommandContext`]
+    allowed_contexts: Optional[:class:`~discord.AppCommandContext`]
         The contexts that this command is allowed to be used in. Overrides the ``dm_permission`` attribute.
+
+        .. versionadded:: 2.4
+    allowed_installs: Optional[:class:`~discord.AppInstallationType`]
+        The installation contexts that this command is allowed to be installed in.
+
+        .. versionadded:: 2.4
     guild_id: Optional[:class:`int`]
         The ID of the guild this command is registered in. A value of ``None``
         denotes that it is a global command.
@@ -190,7 +196,7 @@ class AppCommand(Hashable):
         'default_member_permissions',
         'dm_permission',
         'allowed_contexts',
-        'integration_types',
+        'allowed_installs',
         'nsfw',
         '_state',
     )
@@ -229,11 +235,11 @@ class AppCommand(Hashable):
         else:
             self.allowed_contexts = AppCommandContext._from_value(allowed_contexts)
 
-        integration_types = data.get('integration_types')
-        if integration_types is None:
-            self.integration_types: Optional[AppIntegrationType] = None
+        allowed_installs = data.get('integration_types')
+        if allowed_installs is None:
+            self.allowed_installs: Optional[AppInstallationType] = None
         else:
-            self.integration_types = AppIntegrationType._from_value(integration_types)
+            self.allowed_installs = AppInstallationType._from_value(allowed_installs)
 
         self.nsfw: bool = data.get('nsfw', False)
         self.name_localizations: Dict[Locale, str] = _to_locale_dict(data.get('name_localizations') or {})
@@ -249,7 +255,7 @@ class AppCommand(Hashable):
             'name_localizations': {str(k): v for k, v in self.name_localizations.items()},
             'description_localizations': {str(k): v for k, v in self.description_localizations.items()},
             'contexts': self.allowed_contexts.to_array() if self.allowed_contexts is not None else None,
-            'integration_types': self.integration_types.to_array() if self.integration_types is not None else None,
+            'integration_types': self.allowed_installs.to_array() if self.allowed_installs is not None else None,
             'options': [opt.to_dict() for opt in self.options],
         }  # type: ignore # Type checker does not understand this literal.
 

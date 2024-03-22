@@ -61,7 +61,7 @@ __all__ = (
     'AppCommandContext',
     'AttachmentFlags',
     'RoleFlags',
-    'AppIntegrationType',
+    'AppInstallationType',
     'SKUFlags',
 )
 
@@ -1839,7 +1839,7 @@ class AppCommandContext(ArrayFlags):
 
 
 @fill_with_flags()
-class AppIntegrationType(ArrayFlags):
+class AppInstallationType(ArrayFlags):
     r"""Represents the installation location of an application command.
 
     .. versionadded:: 2.4
@@ -1848,30 +1848,30 @@ class AppIntegrationType(ArrayFlags):
 
         .. describe:: x == y
 
-            Checks if two AppIntegrationType flags are equal.
+            Checks if two AppInstallationType flags are equal.
 
         .. describe:: x != y
 
-            Checks if two AppIntegrationType flags are not equal.
+            Checks if two AppInstallationType flags are not equal.
 
         .. describe:: x | y, x |= y
 
-            Returns an AppIntegrationType instance with all enabled flags from
+            Returns an AppInstallationType instance with all enabled flags from
             both x and y.
 
         .. describe:: x & y, x &= y
 
-            Returns an AppIntegrationType instance with only flags enabled on
+            Returns an AppInstallationType instance with only flags enabled on
             both x and y.
 
         .. describe:: x ^ y, x ^= y
 
-            Returns an AppIntegrationType instance with only flags enabled on
+            Returns an AppInstallationType instance with only flags enabled on
             only one of x or y, not on both.
 
         .. describe:: ~x
 
-            Returns an AppIntegrationType instance with all flags inverted from x
+            Returns an AppInstallationType instance with all flags inverted from x
 
         .. describe:: hash(x)
 
@@ -1894,12 +1894,12 @@ class AppIntegrationType(ArrayFlags):
     """
 
     @flag_value
-    def guild_install(self):
+    def guild(self):
         """:class:`bool`: Whether the integration is a guild install."""
         return 1 << 0
 
     @flag_value
-    def user_install(self):
+    def user(self):
         """:class:`bool`: Whether the integration is a user install."""
         return 1 << 1
 

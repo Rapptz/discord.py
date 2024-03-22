@@ -137,12 +137,12 @@ AppCommandContext
 .. autoclass:: AppCommandContext
     :members:
 
-AppIntegrationType
-~~~~~~~~~~~~~~~~~~~
+AppInstallationType
+~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: AppIntegrationType
+.. attributetable:: AppInstallationType
 
-.. autoclass:: AppIntegrationType
+.. autoclass:: AppInstallationType
     :members:
 
 GuildAppCommandPermissions
@@ -673,7 +673,7 @@ Decorators
 .. autofunction:: discord.app_commands.guild_install
     :decorator:
 
-.. autofunction:: discord.app_commands.install_types
+.. autofunction:: discord.app_commands.allow_installs
     :decorator:
 
 .. autofunction:: discord.app_commands.default_permissions

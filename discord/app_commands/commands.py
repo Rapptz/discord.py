@@ -49,7 +49,7 @@ import re
 from copy import copy as shallow_copy
 
 from ..enums import AppCommandOptionType, AppCommandType, ChannelType, Locale
-from ..flags import AppCommandContext, AppIntegrationType
+from ..flags import AppCommandContext, AppInstallationType
 from .models import Choice
 from .transformers import annotation_to_parameter, CommandParameter, NoneType
 from .errors import AppCommandError, CheckFailure, CommandInvokeError, CommandSignatureMismatch, CommandAlreadyRegistered
@@ -93,7 +93,7 @@ __all__ = (
     'allow_contexts',
     'guild_install',
     'user_install',
-    'install_types',
+    'allow_installs',
     'default_permissions',
 )
 
@@ -630,7 +630,7 @@ class Command(Generic[GroupT, P, T]):
         Overrides ``guild_only`` if this is set.
 
         .. versionadded:: 2.4
-    integration_types: Optional[:class:`~discord.AppIntegrationType`]
+    allowed_installs: Optional[:class:`~discord.AppInstallationType`]
         The installation contexts that the command is allowed to be installed
         on.
 
@@ -656,7 +656,7 @@ class Command(Generic[GroupT, P, T]):
         parent: Optional[Group] = None,
         guild_ids: Optional[List[int]] = None,
         allowed_contexts: Optional[AppCommandContext] = None,
-        integration_types: Optional[AppIntegrationType] = None,
+        allowed_installs: Optional[AppInstallationType] = None,
         auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ):
@@ -694,8 +694,8 @@ class Command(Generic[GroupT, P, T]):
         self.allowed_contexts: Optional[AppCommandContext] = allowed_contexts or getattr(
             callback, '__discord_app_commands_contexts__', None
         )
-        self.integration_types: Optional[AppIntegrationType] = integration_types or getattr(
-            callback, '__discord_app_commands_integration_types__', None
+        self.allowed_installs: Optional[AppInstallationType] = allowed_installs or getattr(
+            callback, '__discord_app_commands_installation_types__', None
         )
 
         self.nsfw: bool = nsfw
@@ -787,7 +787,7 @@ class Command(Generic[GroupT, P, T]):
             base['dm_permission'] = not self.guild_only
             base['default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
             base['contexts'] = self.allowed_contexts.to_array() if self.allowed_contexts is not None else None
-            base['integration_types'] = self.integration_types.to_array() if self.integration_types is not None else None
+            base['integration_types'] = self.allowed_installs.to_array() if self.allowed_installs is not None else None
 
         return base
 
@@ -1200,7 +1200,7 @@ class ContextMenu:
         Overrides ``guild_only`` if set.
 
         .. versionadded:: 2.4
-    integration_types: Optional[:class:`~discord.AppIntegrationType`]
+    allowed_installs: Optional[:class:`~discord.AppInstallationType`]
         The installation contexts that the command is allowed to be installed
         on.
 
@@ -1228,7 +1228,7 @@ class ContextMenu:
         nsfw: bool = False,
         guild_ids: Optional[List[int]] = None,
         allowed_contexts: Optional[AppCommandContext] = None,
-        integration_types: Optional[AppIntegrationType] = None,
+        allowed_installs: Optional[AppInstallationType] = None,
         auto_locale_strings: bool = True,
         extras: Dict[Any, Any] = MISSING,
     ):
@@ -1257,8 +1257,8 @@ class ContextMenu:
         self.allowed_contexts: Optional[AppCommandContext] = allowed_contexts or getattr(
             callback, '__discord_app_commands_contexts__', None
         )
-        self.integration_types: Optional[AppIntegrationType] = integration_types or getattr(
-            callback, '__discord_app_commands_integration_types__', None
+        self.allowed_installs: Optional[AppInstallationType] = allowed_installs or getattr(
+            callback, '__discord_app_commands_installation_types__', None
         )
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
         self.extras: Dict[Any, Any] = extras or {}
@@ -1296,7 +1296,7 @@ class ContextMenu:
             'type': self.type.value,
             'dm_permission': not self.guild_only,
             'contexts': self.allowed_contexts.to_array() if self.allowed_contexts is not None else None,
-            'integration_types': self.integration_types.to_array() if self.integration_types is not None else None,
+            'integration_types': self.allowed_installs.to_array() if self.allowed_installs is not None else None,
             'default_member_permissions': None if self.default_permissions is None else self.default_permissions.value,
             'nsfw': self.nsfw,
         }
@@ -1458,7 +1458,7 @@ class Group:
         guild_only if set.
 
         .. versionadded:: 2.4
-    integration_types: Optional[:class:`~discord.AppIntegrationType`]
+    allowed_installs: Optional[:class:`~discord.AppInstallationType`]
         The installation contexts that the command is allowed to be installed
         on.
 
@@ -1483,7 +1483,7 @@ class Group:
     __discord_app_commands_group_nsfw__: bool = False
     __discord_app_commands_guild_only__: bool = MISSING
     __discord_app_commands_contexts__: Optional[AppCommandContext] = MISSING
-    __discord_app_commands_integration_types__: Optional[AppIntegrationType] = MISSING
+    __discord_app_commands_installation_types__: Optional[AppInstallationType] = MISSING
     __discord_app_commands_default_permissions__: Optional[Permissions] = MISSING
     __discord_app_commands_has_module__: bool = False
     __discord_app_commands_error_handler__: Optional[
@@ -1553,7 +1553,7 @@ class Group:
         guild_ids: Optional[List[int]] = None,
         guild_only: bool = MISSING,
         allowed_contexts: Optional[AppCommandContext] = MISSING,
-        integration_types: Optional[AppIntegrationType] = MISSING,
+        allowed_installs: Optional[AppInstallationType] = MISSING,
         nsfw: bool = MISSING,
         auto_locale_strings: bool = True,
         default_permissions: Optional[Permissions] = MISSING,
@@ -1610,13 +1610,13 @@ class Group:
 
         self.allowed_contexts: Optional[AppCommandContext] = allowed_contexts
 
-        if integration_types is MISSING:
-            if cls.__discord_app_commands_integration_types__ is MISSING:
-                integration_types = None
+        if allowed_installs is MISSING:
+            if cls.__discord_app_commands_installation_types__ is MISSING:
+                allowed_installs = None
             else:
-                integration_types = cls.__discord_app_commands_integration_types__
+                allowed_installs = cls.__discord_app_commands_installation_types__
 
-        self.integration_types: Optional[AppIntegrationType] = integration_types
+        self.allowed_installs: Optional[AppInstallationType] = allowed_installs
 
         if nsfw is MISSING:
             nsfw = cls.__discord_app_commands_group_nsfw__
@@ -1751,7 +1751,7 @@ class Group:
             base['dm_permission'] = not self.guild_only
             base['default_member_permissions'] = None if self.default_permissions is None else self.default_permissions.value
             base['contexts'] = self.allowed_contexts.to_array() if self.allowed_contexts is not None else None
-            base['integration_types'] = self.integration_types.to_array() if self.integration_types is not None else None
+            base['integration_types'] = self.allowed_installs.to_array() if self.allowed_installs is not None else None
 
         return base
 
@@ -2668,13 +2668,13 @@ def guild_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
 
     def inner(f: T) -> T:
         if isinstance(f, (Command, Group, ContextMenu)):
-            integration_types = f.integration_types or AppIntegrationType.none()
-            f.integration_types = integration_types
+            allowed_installs = f.allowed_installs or AppInstallationType.none()
+            f.allowed_installs = allowed_installs
         else:
-            integration_types = getattr(f, '__discord_app_commands_integration_types__', None) or AppIntegrationType.none()
-            f.__discord_app_commands_integration_types__ = integration_types  # type: ignore # Runtime attribute assignment
+            allowed_installs = getattr(f, '__discord_app_commands_installation_types__', None) or AppInstallationType.none()
+            f.__discord_app_commands_installation_types__ = allowed_installs  # type: ignore # Runtime attribute assignment
 
-        integration_types.guild_install = True
+        allowed_installs.guild = True
 
         return f
 
@@ -2706,13 +2706,13 @@ def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
 
     def inner(f: T) -> T:
         if isinstance(f, (Command, Group, ContextMenu)):
-            integration_types = f.integration_types or AppIntegrationType.none()
-            f.integration_types = integration_types
+            allowed_installs = f.allowed_installs or AppInstallationType.none()
+            f.allowed_installs = allowed_installs
         else:
-            integration_types = getattr(f, '__discord_app_commands_integration_types__', None) or AppIntegrationType.none()
-            f.__discord_app_commands_integration_types__ = integration_types  # type: ignore # Runtime attribute assignment
+            allowed_installs = getattr(f, '__discord_app_commands_installation_types__', None) or AppInstallationType.none()
+            f.__discord_app_commands_installation_types__ = allowed_installs  # type: ignore # Runtime attribute assignment
 
-        integration_types.user_install = True
+        allowed_installs.user = True
 
         return f
 
@@ -2724,7 +2724,7 @@ def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         return inner(func)
 
 
-def install_types(
+def allow_installs(
     guilds: bool = MISSING,
     users: bool = MISSING,
 ) -> Union[T, Callable[[T], T]]:
@@ -2741,24 +2741,24 @@ def install_types(
     .. code-block:: python3
 
         @app_commands.command()
-        @app_commands.install_types(guilds=False, users=True)
+        @app_commands.allow_installs(guilds=False, users=True)
         async def my_command(interaction: discord.Interaction) -> None:
             await interaction.response.send_message('I am installed in users by default!')
     """
 
     def inner(f: T) -> T:
         if isinstance(f, (Command, Group, ContextMenu)):
-            integration_types = f.integration_types or AppIntegrationType.none()
-            f.integration_types = integration_types
+            allowed_installs = f.allowed_installs or AppInstallationType.none()
+            f.allowed_installs = allowed_installs
         else:
-            integration_types = getattr(f, '__discord_app_commands_integration_types__', None) or AppIntegrationType.none()
-            f.__discord_app_commands_integration_types__ = integration_types  # type: ignore # Runtime attribute assignment
+            allowed_installs = getattr(f, '__discord_app_commands_installation_types__', None) or AppInstallationType.none()
+            f.__discord_app_commands_installation_types__ = allowed_installs  # type: ignore # Runtime attribute assignment
 
         if guilds is not MISSING:
-            integration_types.guild_install = guilds
+            allowed_installs.guild = guilds
 
         if users is not MISSING:
-            integration_types.user_install = users
+            allowed_installs.user = users
 
         return f
 
