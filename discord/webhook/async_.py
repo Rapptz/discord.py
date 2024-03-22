@@ -1597,7 +1597,7 @@ class Webhook(BaseWebhook):
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
-        poll: Poll = MISSING
+        poll: Poll = MISSING,
     ) -> WebhookMessage:
         ...
 
@@ -1621,7 +1621,7 @@ class Webhook(BaseWebhook):
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
-        poll: Poll = MISSING
+        poll: Poll = MISSING,
     ) -> None:
         ...
 
@@ -1645,7 +1645,7 @@ class Webhook(BaseWebhook):
         suppress_embeds: bool = False,
         silent: bool = False,
         applied_tags: List[ForumTag] = MISSING,
-        poll: Poll = MISSING
+        poll: Poll = MISSING,
     ) -> Optional[WebhookMessage]:
         """|coro|
 
@@ -1737,7 +1737,7 @@ class Webhook(BaseWebhook):
             .. versionadded:: 2.4
 
         poll: :class:`Poll`
-            The linked poll for this message.
+            The attached poll for this message.
 
             .. versionadded:: 2.4
 

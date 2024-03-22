@@ -157,17 +157,17 @@ class Poll:
     def __init__(
         self,
         question: str,
-        answers: List[PollAnswer],
         duration: PollDuration,
         *,
+        answers: Optional[List[PollAnswer]] = None,
         multiselect: bool = False,
         layout_type: PollLayoutType = PollLayoutType.normal,
     ) -> None:
-        if len(answers) > 10:
+        if answers and len(answers) > 10:
             raise ValueError('max answers for polls are 10')
 
         self.question: str = question
-        self._answers: List[PollAnswer] = answers
+        self._answers: List[PollAnswer] = answers or []
         self.duration: int = duration
         self.multiselect: bool = multiselect
         self.layout_type: PollLayoutType = layout_type
@@ -214,3 +214,11 @@ class Poll:
         ]
 
         return data # type: ignore
+    
+    def add_answer(self, answer: PollAnswer) -> Self:
+        if len(self._answers) >= 10:
+            raise ValueError('max answers for polls are 10')
+
+        self._answers.append(answer)
+
+        return self
