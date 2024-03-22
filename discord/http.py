@@ -92,6 +92,7 @@ if TYPE_CHECKING:
         sticker,
         welcome_screen,
         sku,
+        poll
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -259,7 +260,7 @@ def handle_message_parameters(
         payload.update(channel_payload)
 
     if poll not in (MISSING, None):
-        payload['poll'] = poll._to_dict()
+        payload['poll'] = poll._to_dict() # type: ignore
 
     multipart = []
     if files:
@@ -2507,6 +2508,42 @@ class HTTPClient:
 
         payload = {k: v for k, v in payload.items() if k in valid_keys}
         return self.request(Route('PATCH', '/applications/@me'), json=payload, reason=reason)
+    
+    def get_poll_answer_voters(
+        self,
+        channel_id: Snowflake,
+        message_id: Snowflake,
+        answer_id: Snowflake,
+        after: Snowflake = MISSING,
+        limit: int = 25
+    ) -> Response[poll.PollAnswerVoters]:
+        params = {
+            'limit': limit
+        }
+
+        if after is not MISSING:
+            params['after'] = int(after)
+
+        return self.request(
+            Route(
+                'GET',
+                '/channels/{channel_id}/polls/{message_id}/answers/{answer_id}',
+                channel_id=channel_id,
+                message_id=message_id,
+                answer_id=answer_id,
+            ),
+            params=params
+        )
+    
+    def end_poll(self, channel_id: Snowflake, message_id: Snowflake) -> Response[message.Message]:
+        return self.request(
+            Route(
+                'POST',
+                '/channels/{channel_id}/poll/{message_id}/expire',
+                channel_id=channel_id,
+                message_id=message_id
+            )
+        )
 
     async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
         try:

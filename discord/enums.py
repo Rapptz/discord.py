@@ -811,11 +811,7 @@ class EntitlementOwnerType(Enum):
 
 
 class PollLayoutType(Enum):
-    unknown = 0
     default = 1
-    image_only_answers = 2
-	
-    normal = 1
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

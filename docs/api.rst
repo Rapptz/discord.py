@@ -1442,6 +1442,67 @@ Voice
     :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
 
+Polls
+~~~~~~
+
+.. function:: on_poll_vote_add(user, message, answer)
+
+    Called when a :class:`Message` 's attached :class:`Poll` gets a new vote. If any of ``user`` or ``message``
+    are not cached this event will not be called.
+
+    .. warning::
+
+        If the poll allows multiselect and the user votes for more than one answer,
+        this event will be called as many times as answers the user has voted to.
+
+    .. versionadded:: 2.4
+
+    :param user: The user that voted for the message's poll.
+    :type user: :class:`User`
+    :param message: The message that contains the poll that the user voted.
+    :type message: :class:`Message`
+    :param answer: The answer the user voted to.
+    :type answer: :class:`PollAnswer`
+
+.. function:: on_poll_vote_remove(user, message, answer)
+
+    Called when a :class:`Message` 's attached :class:`Poll` has lost a vote. If any of ``user`` or ``message``
+    are not cached this event will not be called.
+
+    .. warning::
+
+        If the poll allows multiselect and the user removes more than one vote
+        this event will be called as many times as votes removed.
+
+    .. versionadded:: 2.4
+
+    :param user: The user that removed their vote from the message's poll.
+    :type user: :class:`User`
+    :param message: The message that contains the poll that the user removed their vote from.
+    :type message: :class:`Message`
+    :param answer: The answer the user removed their vote from.
+    :type answer: :class:`PollAnswer`
+
+.. function:: on_raw_poll_vote_add(payload)
+
+    Called when a :class:`Message` 's attached :class:`Poll` gets a new vote. Unlike :func:`on_poll_vote_add` this
+    is called regardless of the state of the internal user and message cache.
+
+    This requires :attr:`Intents.message_content` to be enabled.
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawPollVoteAddEvent`
+
+.. function:: on_raw_poll_vote_remove(payload)
+
+    Called when a :class:`Message` 's attached :class:`Poll` has lost a vote. Unlike :func:`on_poll_vote_remove` this
+    is called regardless of the state of the internal user and message cache.
+
+    This requires :attr:`Intents.message_content` to be enabled.
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawPollVoteRemoveEvent`
+
 .. _discord-api-utils:
 
 Utility Functions

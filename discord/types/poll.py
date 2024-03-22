@@ -25,10 +25,14 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 
-from typing import List, TypedDict, Optional, Literal
+from typing import List, TypedDict, Optional, Literal, TYPE_CHECKING
 from typing_extensions import NotRequired
 
-from .snowflake import SnowflakeList
+from .snowflake import Snowflake
+
+if TYPE_CHECKING:
+    from .user import User
+
 
 PollDuration = Literal[
     1, # 1 hour
@@ -48,19 +52,44 @@ class _PollAnswerEmoji(TypedDict):
     id: NotRequired[Optional[int]]
 
 
-class _PollAnswerMedia(TypedDict):
+class PollAnswerMedia(TypedDict):
     text: str
     emoji: NotRequired[Optional[_PollAnswerEmoji]]
 
-class _PollAnswer(TypedDict):
-    poll_media: _PollAnswerMedia
+
+class PollAnswer(TypedDict):
+    poll_media: PollAnswerMedia
+
+
+class PollAnswerWithID(PollAnswer):
+    answer_id: Snowflake
+
+
+class PollAnswerCount(TypedDict):
+    id: Snowflake
+    count: int
+    me_voted: bool
+
+
+class PollAnswerVoters(TypedDict):
+    users: List[User]
+
+
+class PollResult(TypedDict):
+    is_finalized: bool
+    answer_counts: PollAnswerCount
+
 
 class Poll(TypedDict):
     allow_multiselect: bool
-    answers: List[_PollAnswer]
+    answers: List[PollAnswer]
     duration: PollDuration
     layout_type: LayoutType
     question: _PollQuestion
+
+
+class PollWithResults(TypedDict):
+    results: List[PollResult]
 
 
 
