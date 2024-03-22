@@ -607,7 +607,7 @@ class SyncWebhook(BaseWebhook):
         self.session: Session = session
 
     def __repr__(self) -> str:
-        return f'<Webhook id={self.id!r}>'
+        return f'<Webhook id={self.id!r} type={self.type!r} name={self.name!r}>'
 
     @property
     def url(self) -> str:
