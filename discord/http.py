@@ -91,6 +91,7 @@ if TYPE_CHECKING:
         sticker,
         welcome_screen,
         sku,
+        soundboard,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -2480,6 +2481,62 @@ class HTTPClient:
                 application_id=application_id,
                 entitlement_id=entitlement_id,
             ),
+        )
+
+    # Soundboard
+
+    def get_soundboard_default_sounds(self) -> Response[List[soundboard.SoundboardDefaultSound]]:
+        return self.request(Route('GET', '/soundboard-default-sounds'))
+
+    def create_soundboard_sound(
+        self, guild_id: Snowflake, *, reason: Optional[str], **payload: Any
+    ) -> Response[soundboard.SoundboardSound]:
+        valid_keys = (
+            'name',
+            'sound',
+            'volume',
+            'emoji_id',
+            'emoji_name',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys and v is not None}
+
+        return self.request(
+            Route('POST', '/guilds/{guild_id}/soundboard-sounds', guild_id=guild_id), json=payload, reason=reason
+        )
+
+    def edit_soundboard_sound(
+        self, guild_id: Snowflake, sound_id: Snowflake, *, reason: Optional[str], **payload: Any
+    ) -> Response[soundboard.SoundboardSound]:
+        valid_keys = (
+            'name',
+            'volume',
+            'emoji_id',
+            'emoji_name',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+
+        return self.request(
+            Route(
+                'PATCH',
+                '/guilds/{guild_id}/soundboard-sounds/{sound_id}',
+                guild_id=guild_id,
+                sound_id=sound_id,
+            ),
+            json=payload,
+            reason=reason,
+        )
+
+    def delete_soundboard_sound(self, guild_id: Snowflake, sound_id: Snowflake, *, reason: Optional[str]) -> Response[None]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/guilds/{guild_id}/soundboard-sounds/{sound_id}',
+                guild_id=guild_id,
+                sound_id=sound_id,
+            ),
+            reason=reason,
         )
 
     # Misc

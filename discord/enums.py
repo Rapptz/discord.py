@@ -73,6 +73,7 @@ __all__ = (
     'SKUType',
     'EntitlementType',
     'EntitlementOwnerType',
+    'VoiceChannelEffectAnimationType',
 )
 
 
@@ -376,6 +377,9 @@ class AuditLogAction(Enum):
     thread_update                                     = 111
     thread_delete                                     = 112
     app_command_permission_update                     = 121
+    soundboard_sound_create                           = 130
+    soundboard_sound_update                           = 131
+    soundboard_sound_delete                           = 132
     automod_rule_create                               = 140
     automod_rule_update                               = 141
     automod_rule_delete                               = 142
@@ -446,6 +450,9 @@ class AuditLogAction(Enum):
             AuditLogAction.automod_timeout_member:                   None,
             AuditLogAction.creator_monetization_request_created:     None,
             AuditLogAction.creator_monetization_terms_accepted:      None,
+            AuditLogAction.soundboard_sound_create:                  AuditLogActionCategory.create,
+            AuditLogAction.soundboard_sound_update:                  AuditLogActionCategory.update,
+            AuditLogAction.soundboard_sound_delete:                  AuditLogActionCategory.delete,
         }
         # fmt: on
         return lookup[self]
@@ -807,6 +814,11 @@ class EntitlementType(Enum):
 class EntitlementOwnerType(Enum):
     guild = 1
     user = 2
+
+
+class VoiceChannelEffectAnimationType(Enum):
+    premium = 0
+    basic = 1
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
