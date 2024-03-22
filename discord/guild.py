@@ -4391,6 +4391,29 @@ class Guild(Hashable):
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)
+    
+    async def delete_automod_rule(self, automod_rule: AutoModRule, *, reason: Optional[str] = None) -> None:
+        """|coro|
+
+        Delete an automod rule.
+
+        You must have :attr:`Permissions.manage_guild` to do this.
+
+        Parameters
+        ----------
+        automod_rule: :class:`AutoModRule`
+            Target of automod rule.
+        reason: :class:`str`
+            The reason for deleting this automod rule. Shows up on the audit log.
+        
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to delete an automod rule.
+        HTTPException
+            Deleting the automod rule failed.
+        """
+        await self._state.http.delete_auto_moderation_rule(self.id, automod_rule.id, reason=reason)
 
     @property
     def invites_paused_until(self) -> Optional[datetime.datetime]:
