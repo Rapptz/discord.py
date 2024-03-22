@@ -16,5 +16,3 @@ docs/crowdin.py
 *.mo
 /.coverage
 build/*
-.gitignore
-.py
