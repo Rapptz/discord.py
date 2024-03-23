@@ -429,8 +429,8 @@ class ConnectionState(Generic[ClientT]):
         # the keys of self._guilds are ints
         return self._guilds.get(guild_id)  # type: ignore
 
-    def _get_or_create_unavailable_guild(self, guild_id: int) -> Guild:
-        return self._guilds.get(guild_id) or Guild._create_unavailable(state=self, guild_id=guild_id)
+    def _get_or_create_unavailable_guild(self, guild_id: int, *, data: Optional[Dict[str, Any]] = None) -> Guild:
+        return self._guilds.get(guild_id) or Guild._create_unavailable(state=self, guild_id=guild_id, data=data)
 
     def _add_guild(self, guild: Guild) -> None:
         self._guilds[guild.id] = guild
@@ -1586,7 +1586,8 @@ class ConnectionState(Generic[ClientT]):
 
         if channel is not None:
             if isinstance(channel, DMChannel):
-                channel.recipient = raw.user
+                if raw.user is not None and raw.user not in channel.recipients:
+                    channel.recipients.append(raw.user)
             elif guild is not None:
                 raw.user = guild.get_member(raw.user_id)
 

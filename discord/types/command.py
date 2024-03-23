@@ -29,9 +29,11 @@ from typing_extensions import NotRequired, Required
 
 from .channel import ChannelType
 from .snowflake import Snowflake
+from .interactions import InteractionContextType
 
 ApplicationCommandType = Literal[1, 2, 3]
 ApplicationCommandOptionType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+ApplicationIntegrationType = Literal[0, 1]
 
 
 class _BaseApplicationCommandOption(TypedDict):
@@ -141,6 +143,8 @@ class _BaseApplicationCommand(TypedDict):
     id: Snowflake
     application_id: Snowflake
     name: str
+    contexts: List[InteractionContextType]
+    integration_types: List[ApplicationIntegrationType]
     dm_permission: NotRequired[Optional[bool]]
     default_member_permissions: NotRequired[Optional[str]]
     nsfw: NotRequired[bool]
