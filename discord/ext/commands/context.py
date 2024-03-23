@@ -1011,7 +1011,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             .. versionadded:: 2.2
 
         poll: :class:`Poll`
-            The linked poll for this message.
+            The attached poll for this message.
 
             .. versionadded:: 2.4
 
