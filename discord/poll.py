@@ -75,8 +75,8 @@ class PollAnswer:
     text: Optional[:class:`str`]
         The answers display text, or ``None`` if there
         isn't.
-    attachments: Optional[List[:class:`int`]]
-        The attachment IDs for this answer.
+    emoji: Union[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]
+        The emoji to show up with this answer.
     """
 
     __slots__ = ('text', 'emoji')
@@ -263,11 +263,21 @@ class Poll:
 
         return data  # type: ignore
 
-    def add_answer(self, answer: PollAnswer) -> Self:
+    def add_answer(
+        self,
+        *,
+        text: str,
+        emoji: Union[PartialEmoji, Emoji, str] = MISSING
+    ) -> Self:
         if len(self._answers) >= 10:
             raise ValueError('max answers for polls are 10')
 
-        self._answers.append(answer)
+        self._answers.append(
+            PollAnswer(
+                text=text,
+                emoji=emoji
+            )
+        )
 
         return self
     
@@ -292,3 +302,4 @@ class Poll:
             )
         
         await self.message._state.http.end_poll(self.message.channel.id, self.message.id)
+
