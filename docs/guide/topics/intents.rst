@@ -1,11 +1,9 @@
-:orphan:
-
 .. currentmodule:: discord
-.. versionadded:: 1.5
-.. _intents_primer:
 
-A Primer to Gateway Intents
-=============================
+.. _guide_topic_intents:
+
+Gateway Intents
+================
 
 In version 1.5 comes the introduction of :class:`Intents`. This is a radical change in how bots are written. An intent basically allows a bot to subscribe to specific buckets of events. The events that correspond to each intent is documented in the individual attribute of the :class:`Intents` documentation.
 
@@ -64,12 +62,12 @@ A privileged intent is one that requires you to go to the developer portal and m
 3. Click on the bot you want to enable privileged intents for.
 4. Navigate to the bot tab on the left side of the screen.
 
-    .. image:: /images/discord_bot_tab.png
+    .. image:: /images/guide/intents/discord_bot_tab.png
         :alt: The bot tab in the application page.
 
 5. Scroll down to the "Privileged Gateway Intents" section and enable the ones you want.
 
-    .. image:: /images/discord_privileged_intents.png
+    .. image:: /images/guide/intents/discord_privileged_intents.png
         :alt: The privileged gateway intents selector.
 
 .. warning::
