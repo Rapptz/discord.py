@@ -1611,6 +1611,10 @@ class Message(PartialMessage, Hashable):
         .. versionadded:: 2.2
     guild: Optional[:class:`Guild`]
         The guild that the message belongs to, if applicable.
+    poll: Optional[:class:`Poll`]
+        The attached poll of this message, or ``None``.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -1686,7 +1690,7 @@ class Message(PartialMessage, Hashable):
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         poll = data.get('poll')
 
-        self.poll: Optional[Poll] = Poll._from_data(poll, self) if poll else None
+        self.poll: Optional[Poll] = Poll._from_data(poll, self, state) if poll else None
 
         try:
             # if the channel doesn't have a guild attribute, we handle that

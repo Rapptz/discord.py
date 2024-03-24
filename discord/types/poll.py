@@ -43,23 +43,21 @@ PollDuration = Literal[
 
 LayoutType = Literal[1] # 1 = Default
 
-class _PollQuestion(TypedDict):
-    text: str
 
-
-class _PollAnswerEmoji(TypedDict):
+class PollEmoji(TypedDict):
     name: str
     id: NotRequired[Optional[int]]
 
 
-class PollAnswerMedia(TypedDict):
+class PollMedia(TypedDict):
     text: str
-    emoji: NotRequired[Optional[_PollAnswerEmoji]]
+    emoji: NotRequired[Optional[PollEmoji]]
+
 
 
 class PollAnswer(TypedDict):
     answer_id: NotRequired[int]
-    poll_media: PollAnswerMedia
+    poll_media: PollMedia
 
 
 class PollAnswerWithID(PollAnswer):
@@ -86,7 +84,7 @@ class Poll(TypedDict):
     answers: List[PollAnswer]
     duration: PollDuration
     layout_type: LayoutType
-    question: _PollQuestion
+    question: PollMedia
 
 
 # We don't subclass Poll as it will
@@ -99,9 +97,13 @@ class PollWithExpiry(TypedDict):
     answers: List[PollAnswerWithID]
     expiry: str
     layout_type: LayoutType
-    question: _PollQuestion
+    question: PollMedia
     results: PollResult
 
 
 class PollWithResults(Poll):
+    results: PollResult
+
+
+class FullPoll(PollWithExpiry):
     results: PollResult

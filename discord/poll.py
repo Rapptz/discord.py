@@ -45,11 +45,11 @@ if TYPE_CHECKING:
 
     from .message import Message
     from .abc import Snowflake
+    from .state import ConnectionState
 
     from .types.poll import (
         Poll as PollPayload,
-        PollAnswer as PollAnswerPayload,
-        PollAnswerMedia as PollAnswerMediaPayload,
+        PollMedia as PollMediaPayload,
         PollResult as PollResultPayload,
         PollAnswerCount as PollAnswerCountPayload,
         PollWithExpiry as PollWithExpiryPayload,
@@ -67,6 +67,78 @@ MISSING = utils.MISSING
 PollDuration = Literal[1, 24, 72, 168]
 
 
+class PollAnswerCount:
+    """Represents a partial poll answer.
+    
+    This is not meant to be user-constructed and should be
+    obtained in the `on_poll_vote_add` and `on_poll_vote_remove`
+    events.
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The answer ID.
+    me_voted: :class:`bool`
+        Whether the current client has voted for this answer or not.
+    count: :class:`int`
+        The number of votes for this answer.
+    """
+
+    __slots__ = (
+        '_state',
+        '_message',
+
+        'id',
+        'me_voted',
+        'count',
+    )
+
+    def __init__(self, *, state: ConnectionState, message: Message, data: PollAnswerCountPayload) -> None:
+        self._state: ConnectionState = state
+        self._message: Message = message
+
+        self.id: int = int(data.get('id'))
+        self.me_voted: bool = data.get('me_voted')
+        self.count: int = data.get('count')
+
+    async def users(self, *, after: Snowflake = MISSING, limit: int = 25) -> List[User]:
+        """|coro|
+        
+        Retrieves all the voters of this answer.
+
+        .. warning::
+        
+            This can only be called when the poll is accessed via :attr:`Message.poll`.
+
+        Parameters
+        ----------
+        after: :class:`Snowflake`
+            Fetches users after this ID.
+        limit: :class:`int`
+            The max number of users to return. Can be up to 100.
+
+        Raises
+        ------
+        ~discord.HTTPException
+            Retrieving the users failed.
+
+        Returns
+        -------
+        List[:class:`User`]
+            A list containing all the users that voted for this poll.
+        """
+
+        data = await self._state.http.get_poll_answer_voters(
+            self._message.channel.id,
+            self._message.id,
+            self.id,
+            after.id if after is not MISSING else MISSING,
+            limit
+        )
+
+        return [User(state=self._state, data=user_data) for user_data in data.get('users')]
+
+
 class PollAnswer:
     """Represents a poll's answer.
 
@@ -76,52 +148,64 @@ class PollAnswer:
 
             Returns this answer's text, if any.
 
-    Parameters
+    Attributes
     ----------
+    id: :class:`int`
+        The ID of this answer.
     text: :class:`str`
         The answers display text. Can be up to 55 characters.
-    emoji: Union[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]
+    emoji: :class:`PartialEmoji`
         The emoji to show up with this answer.
-    row: Optional[:class:`int`]
-        The row where this answer should be in. `None` to automatically
-        place it.
-
-        .. note::
-
-            This also represents the ID of this answer, and cannot be
-            duplicated.
     """
 
-    __slots__ = ('text', 'emoji', 'row')
+    __slots__ = ('text', 'emoji', 'id', '_state', '_message')
 
     def __init__(
         self,
-        text: str,
         *,
-        emoji: Union[PartialEmoji, Emoji, str] = MISSING,
-        row: Optional[int] = None
+        data: PollAnswerWithIDPayload,
+        message: Optional[Message] = None,
     ) -> None:
-        self.text: str = text
-        self.emoji: Optional[Union[PartialEmoji, Emoji, str]] = emoji if emoji is not MISSING else None
-        self.row: Optional[int] = row
+        self._state: Optional[ConnectionState] = message._state if message else None
+        self._message: Optional[Message] = message
 
-    @classmethod
-    def _from_data(cls, data: Union[PollAnswerPayload, PollAnswerWithIDPayload]) -> Self:
-        row = int(data.get('answer_id')) if data.get('answer_id', None) is not None else None # type: ignore
         media = data['poll_media']
-        text = media['text']
+
+        self.id: int = int(data['answer_id'])
+        self.text: str = media['text']
+
         emoji = media.get('emoji', None)
 
-        # We cannot get a row using the payload.
-
         if emoji:
-            partial_emoji = PartialEmoji(name=emoji['name'], id=emoji.get('id', None))
+            emoji_id = int(emoji.get('id')) if emoji.get('id', None) is not None else None # type: ignore
 
-            return cls(text=text, emoji=partial_emoji, row=row)
+            partial = PartialEmoji(
+                name=emoji['name'],
+                id=emoji_id
+            )
 
-        return cls(text=text, row=row)
+        else:
+            partial = None
 
-    def _to_dict(self) -> PollAnswerMediaPayload:
+        self.emoji: Optional[PartialEmoji] = partial
+
+    @classmethod
+    def from_params(
+        cls,
+        id: int,
+        text: str,
+        emoji: Union[Emoji, PartialEmoji, str] = MISSING,
+        *,
+        message: Optional[Message] = None
+    ) -> Self:
+        
+        poll_media: PollMediaPayload = PollMediaPayload(text=text, emoji={'id': emoji.id if isinstance(emoji, (PartialEmoji, Emoji)) else None, 'name': str(emoji)})
+        payload: PollAnswerWithIDPayload = PollAnswerWithIDPayload(answer_id=id, poll_media=poll_media)
+
+        return cls(data=payload, message=message)
+
+
+    def _to_dict(self) -> PollMediaPayload:
         data: Dict[str, Union[str, Dict[str, Union[str, int]]]] = {}  # Needed to add type hint to make type checker happy
         data['text'] = self.text
 
@@ -136,27 +220,54 @@ class PollAnswer:
                     data['emoji']['id'] = self.emoji.id
 
         return data  # type: ignore # Type Checker complains that this dict's type ain't PollAnswerMediaPayload
-
-
-class PollAnswerCount:
-    """Represents a poll answer count.
     
-    Attributes
-    ----------
-    id: :class:`int`
-        The ID for the answer.
-    count: :class:`int`
-        The amount of votes this answer currently has.
-    me_voted: :class:`bool`
-        Whether the current user voted for this answer or not.
-    """
+    async def users(self, *, after: Snowflake = MISSING, limit: int = 25) -> List[User]:
+        """|coro|
+        
+        Retrieves all the voters of this answer.
 
-    __slots__ = ('id', 'count', 'me_voted')
+        .. warning::
+        
+            This can only be called when the poll is accessed via :attr:`Message.poll`.
 
-    def __init__(self, data: PollAnswerCountPayload) -> None:
-        self.id: int = int(data.get('id'))
-        self.count: int = int(data.get('count'))
-        self.me_voted: bool = data.get('me_voted')
+        Parameters
+        ----------
+        after: :class:`Snowflake`
+            Fetches users after this ID.
+        limit: :class:`int`
+            The max number of users to return. Can be up to 100.
+
+        Raises
+        ------
+        ~discord.HTTPException
+            Retrieving the users failed.
+
+        Returns
+        -------
+        List[:class:`User`]
+            A list containing all the users that voted for this poll.
+        """
+
+        if not self._message or not self._state:
+            raise RuntimeError(
+                'You cannot fetch users in a non-message-attached poll'
+            )
+
+        if 0 > limit or limit > 100:
+            raise ValueError(
+                'limit can only be within 0 and 100'
+            )
+
+
+        data = await self._state.http.get_poll_answer_voters(
+            self._message.channel.id,
+            self._message.id,
+            self.id,
+            after.id if after is not MISSING else MISSING,
+            limit
+        )
+
+        return [User(state=self._state, data=user_data) for user_data in data.get('users')]
 
 
 class PollResults:
@@ -178,9 +289,9 @@ class PollResults:
         'finalized'
     )
 
-    def __init__(self, data: PollResultPayload) -> None:
+    def __init__(self, data: PollResultPayload, state: ConnectionState, message: Message) -> None:
         self._answers: List[PollAnswerCount] = [
-            PollAnswerCount(count) # For some strange reason type checker thinks this is a str
+            PollAnswerCount(state=state, message=message, data=count) # For some strange reason type checker thinks this is a str
             for count in data.get('answer_counts')
         ]
         self.finalized: bool = data.get('is_finalized')
@@ -199,6 +310,8 @@ class Poll:
         .. describe:: str(x)
 
             Returns the Poll's question
+
+    .. versionadded:: 2.4
 
     Parameters
     ----------
@@ -233,16 +346,12 @@ class Poll:
         question: str,
         duration: PollDuration,
         *,
-        answers: Optional[List[PollAnswer]] = None,
         multiselect: bool = False,
         layout_type: PollLayoutType = PollLayoutType.default,
     ) -> None:
-        if answers and len(answers) > 10:
-            raise ValueError('max answers for polls are 10')
-
         self.question: str = question
         # Automatically order the answers
-        self._answers: List[PollAnswer] = sorted(answers, key=lambda a: a.row or float('inf')) if answers is not None else []
+        self._answers: List[PollAnswer] = []
         self.duration: int = duration
         self.multiselect: bool = multiselect
         self.layout_type: PollLayoutType = layout_type
@@ -259,8 +368,8 @@ class Poll:
         self._expiry = now + timedelta(hours=duration)
 
     @classmethod
-    def _from_data(cls, data: PollWithExpiryPayload, message: Message) -> Self:
-        answers = [PollAnswer._from_data(answer) for answer in data.get('answers')]
+    def _from_data(cls, data: PollWithExpiryPayload, message: Message, state: ConnectionState) -> Self:
+        answers = [PollAnswer(data=answer, message=message) for answer in data.get('answers')]
         multiselect = data.get('allow_multiselect', False)
         expiry = data.get('expiry')
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
@@ -268,18 +377,18 @@ class Poll:
         question = question_data.get('text')
 
         self = cls(
-            answers=answers,
             duration=1, # Set to 1 so we can set the expiry manually
             multiselect=multiselect,
             layout_type=layout_type,
             question=question,
         )
+        self._answers = answers
         self._message = message
         self._expiry = datetime.fromisoformat(expiry)
         results = data.get('results', None)
 
         if results:
-            self._results = PollResults(results)
+            self._results = PollResults(data.get('results'), state, message)
         else:
             self._results = None
 
@@ -332,7 +441,6 @@ class Poll:
         *,
         text: str,
         emoji: Union[PartialEmoji, Emoji, str] = MISSING,
-        row: Optional[int] = None,
     ) -> Self:
         """Appends a new answer to this poll.
 
@@ -350,21 +458,14 @@ class Poll:
             This poll with the new answer appended.
         """
 
-        if len(self._answers) >= 10:
-            raise ValueError('max answers for polls are 10')
-        
-        if row and self.get_answer(row):
-            raise ValueError(
-                f'Cannot have another answer in {row} row'
-            )
+        answer = PollAnswer.from_params(
+            id=len(self.answers)+1,
+            text=text,
+            emoji=emoji,
+            message=self._message
+        )
 
-        answer = PollAnswer(text=text, emoji=emoji, row=row)
-
-        if row:
-            self._answers.insert(row, answer)
-        else:
-            self._answers.append(answer)
-
+        self._answers.append(answer)
         return self
     
     def get_answer(
@@ -387,51 +488,10 @@ class Poll:
             return None
         
         try:
-            return self.answers[id]
+            return self.answers[id-1]
         except IndexError: # Though we added a checker we should try to not raise errors.
             return
-        
-    async def fetch_voters_for(self, answer_id: int, *, after: Snowflake = MISSING, limit: int = MISSING) -> List[User]:
-        """|coro|
-        
-        Retrieves all the voters for this poll.
 
-        .. warning::
-        
-            This can only be called when the poll is accessed via :attr:`Message.poll`.
-
-        Parameters
-        ----------
-        after: :class:`Snowlflake`
-            Fetches users after this ID.
-        limit: :class:`int`
-            The max number of users to return. Can be up to 100.
-
-        Raises
-        ------
-        ~discord.HTTPException
-            Retrieving the users failed.
-
-        Returns
-        -------
-        List[:class:`User`]
-            A list containing all the users that voted for this poll.
-        """
-
-        if not self._message:
-            raise RuntimeError(
-                'This method can only be called when a message is present, try using this via Message.poll.fetch_voters_for()'
-            )
-
-        data = await self._message._state.http.get_poll_answer_voters(
-            self._message.channel.id,
-            self._message.id,
-            answer_id,
-            after.id,
-            limit
-        )
-
-        return [User(state=self._message._state, data=user_data) for user_data in data.get('users')]
 
     async def end(self) -> None:
         """|coro|
