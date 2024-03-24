@@ -256,7 +256,7 @@ class Poll:
 
         now = utils.utcnow()
 
-        self._expiry = now + timedelta(days=duration)
+        self._expiry = now + timedelta(hours=duration)
 
     @classmethod
     def _from_data(cls, data: PollWithExpiryPayload, message: Message) -> Self:
