@@ -35,6 +35,7 @@ from .user import PartialUser
 from .appinfo import PartialAppInfo
 
 InviteTargetType = Literal[1, 2]
+InviteType = Literal[0, 1, 2]
 
 
 class _InviteMetadata(TypedDict, total=False):
@@ -63,6 +64,7 @@ class Invite(IncompleteInvite, total=False):
     target_type: InviteTargetType
     target_application: PartialAppInfo
     guild_scheduled_event: GuildScheduledEvent
+    type: InviteType
 
 
 class InviteWithCounts(Invite, _GuildPreviewUnique):
