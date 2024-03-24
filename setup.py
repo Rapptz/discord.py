@@ -35,7 +35,7 @@ with open('README.rst') as f:
 extras_require = {
     'voice': ['PyNaCl>=1.3.0,<1.6'],
     'docs': [
-        'sphinx==4.4.0',
+        'sphinx==7.1.2',
         'sphinxcontrib_trio==1.1.2',
         # TODO: bump these when migrating to a newer Sphinx version
         'sphinxcontrib-websupport==1.2.4',

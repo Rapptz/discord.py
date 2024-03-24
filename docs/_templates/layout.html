@@ -32,14 +32,19 @@
     {{ "}" }}
   </script>
   {%- for js in script_files %}
+  
+  {%- if js!="_static/documentation_options.js" %}
   {{ js_tag(js) }}
+  {%- else %}
+  <!-- Already imported documentation_options-->
+  {%-endif %}
   {%- endfor %}
   {%- endblock %}
   {%- if pageurl %}
   <link rel="canonical" href="{{ pageurl|e }}" />
   {%- endif %}
-  {%- if favicon %}
-  <link rel="shortcut icon" href="{{ pathto('_static/' + favicon, 1)|e }}"/>
+  {%- if favicon_url %}
+  <link rel="shortcut icon" href="{{ pathto(favicon_url, 1)|e }}"/>
   {%- endif %}
   {%- block linktags %}
   {%- if hasdoc('about') %}
