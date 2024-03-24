@@ -1612,7 +1612,7 @@ class ConnectionState(Generic[ClientT]):
         entitlement = Entitlement(data=data, state=self)
         self.dispatch('entitlement_delete', entitlement)
 
-    def parse_poll_vote_add(self, data: gw.PollVoteAddEvent) -> None:
+    def parse_message_poll_vote_add(self, data: gw.PollVoteAddEvent) -> None:
         # NOTE: though the data contains an ``answer_id`` it means nothing.
         # We shouldn't rely on them, as their ID it is just their position
         # in the poll UI.
@@ -1622,14 +1622,12 @@ class ConnectionState(Generic[ClientT]):
         self.dispatch('raw_poll_vote_add', raw)
 
         message = self._get_message(raw.message_id)
+        user = self.get_user(raw.user_id)
 
-        if message:
-            user = self.get_user(raw.user_id)
-            
-            if user:
-                self.dispatch('poll_vote_add', user, message)
+        if message and user:
+            self.dispatch('poll_vote_add', user, message)
 
-    def parse_poll_vote_remove(self, data: gw.PollVoteRemoveEvent) -> None:
+    def parse_message_poll_vote_remove(self, data: gw.PollVoteRemoveEvent) -> None:
         # NOTE: though the data contains an ``answer_id`` it means nothing.
         # We shouldn't rely on them, as their ID it is just their position
         # in the poll UI.
@@ -1639,12 +1637,10 @@ class ConnectionState(Generic[ClientT]):
         self.dispatch('raw_poll_vote_remove', raw)
 
         message = self._get_message(raw.message_id)
+        user = self.get_user(raw.user_id)
 
-        if message:
-            user = self.get_user(raw.user_id)
-
-            if user:
-                self.dispatch('poll_vote_add', user, message)
+        if message and user:
+            self.dispatch('poll_vote_remove', user, message)
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, (TextChannel, Thread, VoiceChannel)):

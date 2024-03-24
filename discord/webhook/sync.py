@@ -856,6 +856,17 @@ class SyncWebhook(BaseWebhook):
     @overload
     def send(
         self,
+        *,
+        poll: Poll,
+        username: str = MISSING,
+        avatar_url: Any = MISSING,
+        wait: bool = ...,
+    ) -> Optional[SyncWebhookMessage]:
+        ...
+
+    @overload
+    def send(
+        self,
         content: str = MISSING,
         *,
         username: str = MISSING,

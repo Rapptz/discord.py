@@ -1580,6 +1580,17 @@ class Webhook(BaseWebhook):
     @overload
     async def send(
         self,
+        *,
+        poll: Poll,
+        username: str = MISSING,
+        avatar_url: Any = MISSING,
+        wait: bool = ...,
+    ) -> Optional[WebhookMessage]:
+        ...
+
+    @overload
+    async def send(
+        self,
         content: str = MISSING,
         *,
         username: str = MISSING,
@@ -1597,7 +1608,6 @@ class Webhook(BaseWebhook):
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
-        poll: Poll = MISSING,
     ) -> WebhookMessage:
         ...
 
@@ -1621,7 +1631,6 @@ class Webhook(BaseWebhook):
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
-        poll: Poll = MISSING,
     ) -> None:
         ...
 

@@ -41,7 +41,7 @@ PollDuration = Literal[
     168, # 1 week
 ]
 
-LayoutType = Literal[1, 2] # 1 = Strings only | 2 = Any field has an attachment
+LayoutType = Literal[1] # 1 = Default
 
 class _PollQuestion(TypedDict):
     text: str
@@ -58,6 +58,7 @@ class PollAnswerMedia(TypedDict):
 
 
 class PollAnswer(TypedDict):
+    answer_id: NotRequired[int]
     poll_media: PollAnswerMedia
 
 
@@ -77,7 +78,7 @@ class PollAnswerVoters(TypedDict):
 
 class PollResult(TypedDict):
     is_finalized: bool
-    answer_counts: PollAnswerCount
+    answer_counts: List[PollAnswerCount]
 
 
 class Poll(TypedDict):
@@ -88,8 +89,19 @@ class Poll(TypedDict):
     question: _PollQuestion
 
 
-class PollWithResults(TypedDict):
-    results: List[PollResult]
+# We don't subclass Poll as it will
+# still have the duration field, which
+# is converted into expiry when poll is
+# fetched from a message or returned
+# by a `send` method in a Messageable
+class PollWithExpiry(TypedDict):
+    allow_multiselect: bool
+    answers: List[PollAnswerWithID]
+    expiry: str
+    layout_type: LayoutType
+    question: _PollQuestion
+    results: PollResult
 
 
-
+class PollWithResults(Poll):
+    results: PollResult

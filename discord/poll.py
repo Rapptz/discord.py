@@ -33,21 +33,27 @@ from typing import (
     Literal,
     Union,
 )
+from datetime import timedelta, datetime
 
 from .enums import PollLayoutType, try_enum
 from . import utils
 from .emoji import PartialEmoji, Emoji
+from .user import User
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .message import Message
+    from .abc import Snowflake
+
     from .types.poll import (
         Poll as PollPayload,
         PollAnswer as PollAnswerPayload,
         PollAnswerMedia as PollAnswerMediaPayload,
         PollResult as PollResultPayload,
         PollAnswerCount as PollAnswerCountPayload,
+        PollWithExpiry as PollWithExpiryPayload,
+        PollAnswerWithID as PollAnswerWithIDPayload,
     )
 
 
@@ -70,33 +76,50 @@ class PollAnswer:
 
             Returns this answer's text, if any.
 
-    Attributes
+    Parameters
     ----------
-    text: Optional[:class:`str`]
-        The answers display text, or ``None`` if there
-        isn't.
+    text: :class:`str`
+        The answers display text. Can be up to 55 characters.
     emoji: Union[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]
         The emoji to show up with this answer.
+    row: Optional[:class:`int`]
+        The row where this answer should be in. `None` to automatically
+        place it.
+
+        .. note::
+
+            This also represents the ID of this answer, and cannot be
+            duplicated.
     """
 
-    __slots__ = ('text', 'emoji')
+    __slots__ = ('text', 'emoji', 'row')
 
-    def __init__(self, text: str, *, emoji: Union[PartialEmoji, Emoji, str] = MISSING) -> None:
+    def __init__(
+        self,
+        text: str,
+        *,
+        emoji: Union[PartialEmoji, Emoji, str] = MISSING,
+        row: Optional[int] = None
+    ) -> None:
         self.text: str = text
         self.emoji: Optional[Union[PartialEmoji, Emoji, str]] = emoji if emoji is not MISSING else None
+        self.row: Optional[int] = row
 
     @classmethod
-    def _from_data(cls, data: PollAnswerPayload) -> Self:
+    def _from_data(cls, data: Union[PollAnswerPayload, PollAnswerWithIDPayload]) -> Self:
+        row = int(data.get('answer_id')) if data.get('answer_id', None) is not None else None # type: ignore
         media = data['poll_media']
         text = media['text']
         emoji = media.get('emoji', None)
 
+        # We cannot get a row using the payload.
+
         if emoji:
             partial_emoji = PartialEmoji(name=emoji['name'], id=emoji.get('id', None))
 
-            return cls(text=text, emoji=partial_emoji)
+            return cls(text=text, emoji=partial_emoji, row=row)
 
-        return cls(text=text)
+        return cls(text=text, row=row)
 
     def _to_dict(self) -> PollAnswerMediaPayload:
         data: Dict[str, Union[str, Dict[str, Union[str, int]]]] = {}  # Needed to add type hint to make type checker happy
@@ -157,7 +180,7 @@ class PollResults:
 
     def __init__(self, data: PollResultPayload) -> None:
         self._answers: List[PollAnswerCount] = [
-            PollAnswerCount(count) # type: ignore # For some strange reason type checker thinks this is a str
+            PollAnswerCount(count) # For some strange reason type checker thinks this is a str
             for count in data.get('answer_counts')
         ]
         self.finalized: bool = data.get('is_finalized')
@@ -201,6 +224,8 @@ class Poll:
         'layout_type',
         'question',
         '_message',
+        '_results',
+        '_expiry',
     )
 
     def __init__(
@@ -216,42 +241,49 @@ class Poll:
             raise ValueError('max answers for polls are 10')
 
         self.question: str = question
-        self._answers: List[PollAnswer] = answers or []
+        # Automatically order the answers
+        self._answers: List[PollAnswer] = sorted(answers, key=lambda a: a.row or float('inf')) if answers is not None else []
         self.duration: int = duration
         self.multiselect: bool = multiselect
         self.layout_type: PollLayoutType = layout_type
-        self._message: Optional[Message] = None
 
-    @property
-    def answers(self) -> List[PollAnswer]:
-        """List[:class:`PollAnswer`]: Returns a read-only copy of the answers"""
-        return self._answers.copy()
+        # NOTE: This attribute is set manually when calling
+        # _from_data, so it should be ``None`` now.
+        self._message: Optional[Message] = None
+        self._results: Optional[PollResults] = None
+
+        # We set the expiry using utils.utcnow()
+
+        now = utils.utcnow()
+
+        self._expiry = now + timedelta(days=duration)
 
     @classmethod
-    def _from_data(cls, data: PollPayload, message: Message) -> Self:
+    def _from_data(cls, data: PollWithExpiryPayload, message: Message) -> Self:
         answers = [PollAnswer._from_data(answer) for answer in data.get('answers')]
         multiselect = data.get('allow_multiselect', False)
-        duration = data.get('duration')
+        expiry = data.get('expiry')
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
         question_data = data.get('question')
         question = question_data.get('text')
 
         self = cls(
             answers=answers,
-            duration=duration,
+            duration=1, # Set to 1 so we can set the expiry manually
             multiselect=multiselect,
             layout_type=layout_type,
             question=question,
         )
         self._message = message
+        self._expiry = datetime.fromisoformat(expiry)
+        results = data.get('results', None)
+
+        if results:
+            self._results = PollResults(results)
+        else:
+            self._results = None
 
         return self
-
-    def __str__(self) -> str:
-        return self.question
-
-    def __repr__(self) -> str:
-        return f"<Poll duration={self.duration} question=\"{self.question}\" answers={self.answers}>"
 
     def _to_dict(self) -> PollPayload:
         data = {}
@@ -262,44 +294,158 @@ class Poll:
         data['answers'] = [{'poll_media': answer._to_dict()} for answer in self.answers]
 
         return data  # type: ignore
+    
+    def __str__(self) -> str:
+        return self.question
+
+    def __repr__(self) -> str:
+        return f"<Poll duration={self.duration} question=\"{self.question}\" answers={self.answers}>"
+
+    @property
+    def answers(self) -> List[PollAnswer]:
+        """List[:class:`PollAnswer`]: Returns a read-only copy of the answers"""
+        return self._answers.copy()
+    
+    @property
+    def expiry(self) -> datetime:
+        """:class:`datetime.datetime`: A datetime object representing the poll expiry"""
+
+        # This is autocalculated when created manually, set with the expiry
+        # returned in the data when created from data.
+        return self._expiry
+    
+    def is_finalized(self) -> bool:
+        """:class:`bool`: Returns whether the poll has finalized.
+        
+        It always returns ``False`` if the poll is not part of a
+        fetched message. You should consider accesing this method
+        via :attr:`Message.poll`
+        """
+
+        if not self._results:
+            return False
+
+        return self._results.finalized
 
     def add_answer(
         self,
         *,
         text: str,
-        emoji: Union[PartialEmoji, Emoji, str] = MISSING
+        emoji: Union[PartialEmoji, Emoji, str] = MISSING,
+        row: Optional[int] = None,
     ) -> Self:
+        """Appends a new answer to this poll.
+
+        Parameters
+        ----------
+        text: :class:`str`
+            The text label for this poll answer. Can be up to 55
+            characters.
+        emoji: Union[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]
+            The emoji to display along the text.
+
+        Returns
+        -------
+        :class:`Poll`
+            This poll with the new answer appended.
+        """
+
         if len(self._answers) >= 10:
             raise ValueError('max answers for polls are 10')
-
-        self._answers.append(
-            PollAnswer(
-                text=text,
-                emoji=emoji
+        
+        if row and self.get_answer(row):
+            raise ValueError(
+                f'Cannot have another answer in {row} row'
             )
-        )
+
+        answer = PollAnswer(text=text, emoji=emoji, row=row)
+
+        if row:
+            self._answers.insert(row, answer)
+        else:
+            self._answers.append(answer)
 
         return self
     
-    @property
-    def message(self) -> Optional[Message]:
-        """Optional[:class:`Message`]: Returns the message this poll is from.
+    def get_answer(
+        self,
+        id: int,
+        /,
+    ) -> Optional[PollAnswer]:
+        """Returns the answer with the provided ID or ``None`` if not found.
         
-        This can only be a value if it is accessed from ``Message.poll``.
+        Note that the ID, as Discord says, it is the index / row where the answer
+        is located in the poll.
+
+        Returns
+        -------
+        Optional[:class:`PollAnswer`]
+            The answer.
         """
 
-        return self._message
-    
-    async def end(self) -> None:
-        """Ends the poll.
+        if id > len(self.answers):
+            return None
         
-        This can only be called when the poll is accessed via ``Message.poll``.
+        try:
+            return self.answers[id]
+        except IndexError: # Though we added a checker we should try to not raise errors.
+            return
+        
+    async def fetch_voters_for(self, answer_id: int, *, after: Snowflake = MISSING, limit: int = MISSING) -> List[User]:
+        """|coro|
+        
+        Retrieves all the voters for this poll.
+
+        .. warning::
+        
+            This can only be called when the poll is accessed via :attr:`Message.poll`.
+
+        Parameters
+        ----------
+        after: :class:`Snowlflake`
+            Fetches users after this ID.
+        limit: :class:`int`
+            The max number of users to return. Can be up to 100.
+
+        Raises
+        ------
+        ~discord.HTTPException
+            Retrieving the users failed.
+
+        Returns
+        -------
+        List[:class:`User`]
+            A list containing all the users that voted for this poll.
         """
 
-        if not self.message:
+        if not self._message:
             raise RuntimeError(
-                'This method can only be called when a message is present try using this via Message.poll.end()'
+                'This method can only be called when a message is present, try using this via Message.poll.fetch_voters_for()'
+            )
+
+        data = await self._message._state.http.get_poll_answer_voters(
+            self._message.channel.id,
+            self._message.id,
+            answer_id,
+            after.id,
+            limit
+        )
+
+        return [User(state=self._message._state, data=user_data) for user_data in data.get('users')]
+
+    async def end(self) -> None:
+        """|coro|
+        
+        Ends the poll.
+        
+        .. warning::
+        
+            This can only be called when the poll is accessed via :attr:`Message.poll`.
+        """
+
+        if not self._message:
+            raise RuntimeError(
+                'This method can only be called when a message is present, try using this via Message.poll.end()'
             )
         
-        await self.message._state.http.end_poll(self.message.channel.id, self.message.id)
-
+        await self._message._state.http.end_poll(self._message.channel.id, self._message.id)
