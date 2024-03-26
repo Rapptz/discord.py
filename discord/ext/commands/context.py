@@ -642,7 +642,6 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
-        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -664,7 +663,6 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
-        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -686,7 +684,6 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
-        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -708,7 +705,6 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
-        poll: Poll = ...,
     ) -> Message:
         ...
 
