@@ -72,6 +72,7 @@ if TYPE_CHECKING:
     from ..channel import VoiceChannel
     from ..abc import Snowflake
     from ..ui.view import View
+    from ..poll import Poll
     import datetime
     from ..types.webhook import (
         Webhook as WebhookPayload,
@@ -541,6 +542,7 @@ def interaction_message_response_params(
     view: Optional[View] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     previous_allowed_mentions: Optional[AllowedMentions] = None,
+    poll: Poll = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -607,6 +609,9 @@ def interaction_message_response_params(
                 attachments_payload.append(attachment.to_dict())
 
         data['attachments'] = attachments_payload
+
+    if poll is not MISSING:
+        data['poll'] = poll._to_dict()
 
     multipart = []
     if files:
@@ -1579,6 +1584,17 @@ class Webhook(BaseWebhook):
     @overload
     async def send(
         self,
+        *,
+        poll: Poll,
+        username: str = MISSING,
+        avatar_url: Any = MISSING,
+        wait: bool = ...,
+    ) -> Optional[WebhookMessage]:
+        ...
+
+    @overload
+    async def send(
+        self,
         content: str = MISSING,
         *,
         username: str = MISSING,
@@ -1642,6 +1658,7 @@ class Webhook(BaseWebhook):
         suppress_embeds: bool = False,
         silent: bool = False,
         applied_tags: List[ForumTag] = MISSING,
+        poll: Poll = MISSING,
     ) -> Optional[WebhookMessage]:
         """|coro|
 
@@ -1732,6 +1749,11 @@ class Webhook(BaseWebhook):
 
             .. versionadded:: 2.4
 
+        poll: :class:`Poll`
+            The attached poll for this message.
+
+            .. versionadded:: 2.4
+
         Raises
         --------
         HTTPException
@@ -1809,6 +1831,7 @@ class Webhook(BaseWebhook):
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
             applied_tags=applied_tag_ids,
+            poll=poll
         ) as params:
             adapter = async_context.get()
             thread_id: Optional[int] = None

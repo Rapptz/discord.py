@@ -61,6 +61,7 @@ if TYPE_CHECKING:
 
     from ..file import File
     from ..embeds import Embed
+    from ..poll import Poll
     from ..mentions import AllowedMentions
     from ..message import Attachment
     from ..abc import Snowflake
@@ -855,6 +856,17 @@ class SyncWebhook(BaseWebhook):
     @overload
     def send(
         self,
+        *,
+        poll: Poll,
+        username: str = MISSING,
+        avatar_url: Any = MISSING,
+        wait: bool = ...,
+    ) -> Optional[SyncWebhookMessage]:
+        ...
+
+    @overload
+    def send(
+        self,
         content: str = MISSING,
         *,
         username: str = MISSING,
@@ -870,6 +882,7 @@ class SyncWebhook(BaseWebhook):
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        poll: Poll = MISSING,
     ) -> SyncWebhookMessage:
         ...
 
@@ -891,6 +904,7 @@ class SyncWebhook(BaseWebhook):
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        poll: Poll = MISSING,
     ) -> None:
         ...
 
@@ -911,6 +925,7 @@ class SyncWebhook(BaseWebhook):
         wait: bool = False,
         suppress_embeds: bool = False,
         silent: bool = False,
+        poll: Poll = MISSING
     ) -> Optional[SyncWebhookMessage]:
         """Sends a message using the webhook.
 
@@ -975,6 +990,10 @@ class SyncWebhook(BaseWebhook):
             in the UI, but will not actually send a notification.
 
             .. versionadded:: 2.2
+        poll: :class:`Poll`
+            The attached poll for this message.
+
+            .. versionadded:: 2.4
 
         Raises
         --------
@@ -1027,6 +1046,7 @@ class SyncWebhook(BaseWebhook):
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
             flags=flags,
+            poll=poll
         ) as params:
             adapter: WebhookAdapter = _get_webhook_adapter()
             thread_id: Optional[int] = None

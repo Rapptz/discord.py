@@ -92,6 +92,7 @@ if TYPE_CHECKING:
         VoiceChannel,
         StageChannel,
     )
+    from .poll import Poll
     from .threads import Thread
     from .ui.view import View
     from .types.channel import (
@@ -1336,6 +1337,15 @@ class Messageable:
     @overload
     async def send(
         self,
+        *,
+        poll: Poll,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
@@ -1431,6 +1441,7 @@ class Messageable:
         view: Optional[View] = None,
         suppress_embeds: bool = False,
         silent: bool = False,
+        poll: Poll = MISSING,
     ) -> Message:
         """|coro|
 
@@ -1516,6 +1527,10 @@ class Messageable:
             in the UI, but will not actually send a notification.
 
             .. versionadded:: 2.2
+        poll: :class:`Poll`
+            The attached poll for this message.
+
+            .. versionadded:: 2.4
 
         Raises
         --------
@@ -1582,6 +1597,7 @@ class Messageable:
             stickers=sticker_ids,
             view=view,
             flags=flags,
+            poll=poll
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 

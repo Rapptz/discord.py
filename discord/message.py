@@ -63,6 +63,7 @@ from .mixins import Hashable
 from .sticker import StickerItem, GuildSticker
 from .threads import Thread
 from .channel import PartialMessageable
+from .poll import Poll
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -1331,6 +1332,14 @@ class PartialMessage(Hashable):
     @overload
     async def reply(
         self,
+        *,
+        poll: Poll,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
@@ -1610,6 +1619,10 @@ class Message(PartialMessage, Hashable):
         .. versionadded:: 2.2
     guild: Optional[:class:`Guild`]
         The guild that the message belongs to, if applicable.
+    poll: Optional[:class:`Poll`]
+        The attached poll of this message, or ``None``.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -1644,6 +1657,7 @@ class Message(PartialMessage, Hashable):
         'role_subscription',
         'application_id',
         'position',
+        'poll',
     )
 
     if TYPE_CHECKING:
@@ -1682,6 +1696,9 @@ class Message(PartialMessage, Hashable):
         self.position: Optional[int] = data.get('position')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
+        poll = data.get('poll')
+
+        self.poll: Optional[Poll] = Poll._from_data(poll, self, state) if poll else None
 
         try:
             # if the channel doesn't have a guild attribute, we handle that
