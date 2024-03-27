@@ -287,7 +287,7 @@ class Client:
         self._enable_debug_events: bool = options.pop('enable_debug_events', False)
         self._connection: ConnectionState[Self] = self._get_state(intents=intents, **options)
         self._connection.shard_count = self.shard_count
-        self._closed: bool = False
+        self._closure: Optional[asyncio.Task[None]] = None
         self._ready: asyncio.Event = MISSING
         self._application: Optional[AppInfo] = None
         self._connection._get_websocket = self._get_websocket
@@ -307,8 +307,8 @@ class Client:
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
-        if not self.is_closed():
-            await self.close()
+        if self._closure is not None:
+            await self._closure
 
     # internals
 
@@ -653,7 +653,7 @@ class Client:
             'initial': True,
             'shard_id': self.shard_id,
         }
-        while not self.is_closed():
+        while not self._closure:
             try:
                 coro = DiscordWebSocket.from_client(self, **ws_params)
                 self.ws = await asyncio.wait_for(coro, timeout=60.0)
@@ -683,7 +683,7 @@ class Client:
                         return
                     raise
 
-                if self.is_closed():
+                if self._closure is not None:
                     return
 
                 # If we get connection reset by peer then try to RESUME
@@ -721,16 +721,7 @@ class Client:
                     session=self.ws.session_id,
                 )
 
-    async def close(self) -> None:
-        """|coro|
-
-        Closes the connection to Discord.
-        """
-        if self._closed:
-            return
-
-        self._closed = True
-
+    async def _close(self) -> None:
         await self._connection.close()
 
         if self.ws is not None and self.ws.open:
@@ -743,6 +734,16 @@ class Client:
 
         self.loop = MISSING
 
+    async def close(self) -> None:
+        """|coro|
+
+        Closes the connection to Discord.
+        """
+        if self._closure is None:
+            self._closure = self.loop.create_task(self._close())
+
+        await self._closure
+
     def clear(self) -> None:
         """Clears the internal state of the bot.
 
@@ -750,7 +751,7 @@ class Client:
         and :meth:`is_ready` both return ``False`` along with the bot's internal
         cache cleared.
         """
-        self._closed = False
+        self._closure = None
         self._ready.clear()
         self._connection.clear()
         self.http.clear()
@@ -870,7 +871,7 @@ class Client:
 
     def is_closed(self) -> bool:
         """:class:`bool`: Indicates if the websocket connection is closed."""
-        return self._closed
+        return self._closure is not None and self._closure.done()
 
     @property
     def activity(self) -> Optional[ActivityTypes]:
