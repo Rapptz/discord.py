@@ -69,7 +69,7 @@ PollDuration = Literal[1, 4, 8, 24, 72, 168]
 
 class PollAnswerCount:
     """Represents a partial poll answer.
-    
+
     This is not meant to be user-constructed and should be
     obtained in the `on_poll_vote_add` and `on_poll_vote_remove`
     events.
@@ -87,7 +87,6 @@ class PollAnswerCount:
     __slots__ = (
         '_state',
         '_message',
-
         'id',
         'me_voted',
         'count',
@@ -103,11 +102,11 @@ class PollAnswerCount:
 
     async def users(self, *, after: Snowflake = MISSING, limit: int = 25) -> List[User]:
         """|coro|
-        
+
         Retrieves all the voters of this answer.
 
         .. warning::
-        
+
             This can only be called when the poll is accessed via :attr:`Message.poll`.
 
         Parameters
@@ -129,11 +128,7 @@ class PollAnswerCount:
         """
 
         data = await self._state.http.get_poll_answer_voters(
-            self._message.channel.id,
-            self._message.id,
-            self.id,
-            after.id if after is not MISSING else MISSING,
-            limit
+            self._message.channel.id, self._message.id, self.id, after.id if after is not MISSING else MISSING, limit
         )
 
         return [User(state=self._state, data=user_data) for user_data in data.get('users')]
@@ -177,12 +172,9 @@ class PollAnswer:
         emoji = media.get('emoji', None)
 
         if emoji:
-            emoji_id = int(emoji.get('id')) if emoji.get('id', None) is not None else None # type: ignore
+            emoji_id = int(emoji.get('id')) if emoji.get('id', None) is not None else None  # type: ignore
 
-            partial = PartialEmoji(
-                name=emoji['name'],
-                id=emoji_id
-            )
+            partial = PartialEmoji(name=emoji['name'], id=emoji_id)
 
         else:
             partial = None
@@ -196,17 +188,17 @@ class PollAnswer:
         text: str,
         emoji: Optional[Union[Emoji, PartialEmoji, str]] = None,
         *,
-        message: Optional[Message] = None
+        message: Optional[Message] = None,
     ) -> Self:
-        
         poll_media: PollMediaPayload = {'text': text}
         if emoji:
-            poll_media.update({'emoji': {'id': emoji.id if isinstance(emoji, (PartialEmoji, Emoji)) else None, 'name': str(emoji)}})
+            poll_media.update(
+                {'emoji': {'id': emoji.id if isinstance(emoji, (PartialEmoji, Emoji)) else None, 'name': str(emoji)}}
+            )
 
         payload: PollAnswerWithIDPayload = {'answer_id': id, 'poll_media': poll_media}
 
         return cls(data=payload, message=message)
-
 
     def _to_dict(self) -> PollMediaPayload:
         data: Dict[str, Union[str, Dict[str, Union[str, int]]]] = {}  # Needed to add type hint to make type checker happy
@@ -223,14 +215,14 @@ class PollAnswer:
                     data['emoji']['id'] = self.emoji.id
 
         return data  # type: ignore # Type Checker complains that this dict's type ain't PollAnswerMediaPayload
-    
+
     async def users(self, *, after: Snowflake = MISSING, limit: int = 25) -> List[User]:
         """|coro|
-        
+
         Retrieves all the voters of this answer.
 
         .. warning::
-        
+
             This method can only be used if it has a message attached.
             That is, only accessible via :attr:`Message.poll`
 
@@ -255,22 +247,13 @@ class PollAnswer:
         """
 
         if not self._message or not self._state:
-            raise RuntimeError(
-                'You cannot fetch users in a non-message-attached poll'
-            )
+            raise RuntimeError('You cannot fetch users in a non-message-attached poll')
 
         if 0 > limit or limit > 100:
-            raise ValueError(
-                'limit can only be within 0 and 100'
-            )
-
+            raise ValueError('limit can only be within 0 and 100')
 
         data = await self._state.http.get_poll_answer_voters(
-            self._message.channel.id,
-            self._message.id,
-            self.id,
-            after.id if after is not MISSING else MISSING,
-            limit
+            self._message.channel.id, self._message.id, self.id, after.id if after is not MISSING else MISSING, limit
         )
 
         return [User(state=self._state, data=user_data) for user_data in data.get('users')]
@@ -356,7 +339,7 @@ class Poll:
         question = question_data.get('text')
 
         self = cls(
-            duration=1, # Set to 1 so we can set the expiry manually
+            duration=1,  # Set to 1 so we can set the expiry manually
             multiselect=multiselect,
             layout_type=layout_type,
             question=question,
@@ -369,7 +352,9 @@ class Poll:
         results = data.get('results', None)
         if results:
             self._finalized = results.get('is_finalized')
-            self._counts = [PollAnswerCount(state=state, message=message, data=count) for count in results.get('answer_counts')]
+            self._counts = [
+                PollAnswerCount(state=state, message=message, data=count) for count in results.get('answer_counts')
+            ]
 
         return self
 
@@ -382,7 +367,7 @@ class Poll:
         data['answers'] = [{'poll_media': answer._to_dict()} for answer in self.answers]
 
         return data  # type: ignore
-    
+
     def __str__(self) -> str:
         return self.question
 
@@ -393,7 +378,7 @@ class Poll:
     def answers(self) -> List[PollAnswer]:
         """List[:class:`PollAnswer`]: Returns a read-only copy of the answers"""
         return self._answers.copy()
-    
+
     @property
     def expiry(self) -> datetime:
         """:class:`datetime.datetime`: A datetime object representing the poll expiry"""
@@ -401,7 +386,7 @@ class Poll:
         # This is autocalculated when created manually, set with the expiry
         # returned in the data when created from data.
         return self._expiry
-    
+
     @property
     def answer_counts(self) -> Optional[List[PollAnswerCount]]:
         """Optional[List[:class:`PollAnswerCount`]]: Returns a read-only copy of the
@@ -413,7 +398,7 @@ class Poll:
 
     def is_finalized(self) -> bool:
         """:class:`bool`: Returns whether the poll has finalized.
-        
+
         It always returns ``False`` if the poll is not part of a
         fetched message. You should consider accesing this method
         via :attr:`Message.poll`
@@ -443,23 +428,18 @@ class Poll:
             This poll with the new answer appended.
         """
 
-        answer = PollAnswer.from_params(
-            id=len(self.answers)+1, # Auto ID
-            text=text,
-            emoji=emoji,
-            message=self._message
-        )
+        answer = PollAnswer.from_params(id=len(self.answers) + 1, text=text, emoji=emoji, message=self._message)  # Auto ID
 
         self._answers.append(answer)
         return self
-    
+
     def get_answer(
         self,
         /,
         id: int,
     ) -> Optional[PollAnswer]:
         """Returns the answer with the provided ID or ``None`` if not found.
-        
+
         Note that the ID, as Discord says, it is the index / row where the answer
         is located in the poll.
 
@@ -471,20 +451,19 @@ class Poll:
 
         if id > len(self.answers):
             return None
-        
-        try:
-            return self.answers[id-1]
-        except IndexError: # Though we added a checker we should try to not raise errors.
-            return
 
+        try:
+            return self.answers[id - 1]
+        except IndexError:  # Though we added a checker we should try to not raise errors.
+            return
 
     async def end(self) -> None:
         """|coro|
-        
+
         Ends the poll.
-        
+
         .. warning::
-        
+
             This can only be called when the poll is accessed via :attr:`Message.poll`.
 
         Raises
@@ -499,5 +478,5 @@ class Poll:
             raise RuntimeError(
                 'This method can only be called when a message is present, try using this via Message.poll.end()'
             )
-        
+
         await self._message._state.http.end_poll(self._message.channel.id, self._message.id)

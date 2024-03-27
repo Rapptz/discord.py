@@ -35,15 +35,15 @@ if TYPE_CHECKING:
 
 
 PollDuration = Literal[
-    1, # 1 hour
-    4, # 4 hours
-    8, # 8 hours
-    24, # 1 day
-    72, # 3 days
-    168, # 1 week
+    1,  # 1 hour
+    4,  # 4 hours
+    8,  # 8 hours
+    24,  # 1 day
+    72,  # 3 days
+    168,  # 1 week
 ]
 
-LayoutType = Literal[1] # 1 = Default
+LayoutType = Literal[1]  # 1 = Default
 
 
 class PollEmoji(TypedDict):
@@ -54,7 +54,6 @@ class PollEmoji(TypedDict):
 class PollMedia(TypedDict):
     text: str
     emoji: NotRequired[Optional[PollEmoji]]
-
 
 
 class PollAnswer(TypedDict):
