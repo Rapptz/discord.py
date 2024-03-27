@@ -50,7 +50,6 @@ if TYPE_CHECKING:
     from .types.poll import (
         Poll as PollPayload,
         PollMedia as PollMediaPayload,
-        PollResult as PollResultPayload,
         PollAnswerCount as PollAnswerCountPayload,
         PollWithExpiry as PollWithExpiryPayload,
         PollAnswerWithID as PollAnswerWithIDPayload,
@@ -60,11 +59,12 @@ if TYPE_CHECKING:
 __all__ = (
     'Poll',
     'PollAnswer',
+    'PollAnswerCount',
 )
 
 MISSING = utils.MISSING
 
-PollDuration = Literal[1, 24, 72, 168]
+PollDuration = Literal[1, 4, 8, 24, 72, 168]
 
 
 class PollAnswerCount:
@@ -228,7 +228,8 @@ class PollAnswer:
 
         .. warning::
         
-            This can only be called when the poll is accessed via :attr:`Message.poll`.
+            This method can only be used if it has a message attached.
+            That is, only accessible via :attr:`Message.poll`
 
         Parameters
         ----------
@@ -239,6 +240,8 @@ class PollAnswer:
 
         Raises
         ------
+        RuntimeError
+            The poll doesn't have an attached message.
         ~discord.HTTPException
             Retrieving the users failed.
 
@@ -268,38 +271,6 @@ class PollAnswer:
         )
 
         return [User(state=self._state, data=user_data) for user_data in data.get('users')]
-
-
-class PollResults:
-    """Represents a poll result.
-    
-    Attributes
-    ----------
-    answers: List[:class:`PollAnswerCount`]
-        The counts for each answer.
-    finalized: :class:`bool`
-        Whether the votes are precise or not.
-
-        If this is ``False`` then the answer counts could be
-        wrongly counted. This is a Discord issue.
-    """
-
-    __slots__ = (
-        '_answers',
-        'finalized'
-    )
-
-    def __init__(self, data: PollResultPayload, state: ConnectionState, message: Message) -> None:
-        self._answers: List[PollAnswerCount] = [
-            PollAnswerCount(state=state, message=message, data=count) # For some strange reason type checker thinks this is a str
-            for count in data.get('answer_counts')
-        ]
-        self.finalized: bool = data.get('is_finalized')
-
-    @property
-    def answers(self) -> List[PollAnswerCount]:
-        """List[:class:`PollAnswerCount`]: The counts for each answer"""
-        return self._answers.copy()
 
 
 class Poll:
@@ -339,6 +310,9 @@ class Poll:
         '_message',
         '_results',
         '_expiry',
+        '_finalized',
+        '_state',
+        '_counts',
     )
 
     def __init__(
@@ -356,10 +330,12 @@ class Poll:
         self.multiselect: bool = multiselect
         self.layout_type: PollLayoutType = layout_type
 
-        # NOTE: This attribute is set manually when calling
+        # NOTE: These attributes are set manually when calling
         # _from_data, so it should be ``None`` now.
         self._message: Optional[Message] = None
-        self._results: Optional[PollResults] = None
+        self._state: Optional[ConnectionState] = None
+        self._finalized: bool = False
+        self._counts: Optional[List[PollAnswerCount]] = None
 
         # We set the expiry using utils.utcnow()
 
@@ -384,13 +360,13 @@ class Poll:
         )
         self._answers = answers
         self._message = message
+        self._state = state
         self._expiry = datetime.fromisoformat(expiry)
-        results = data.get('results', None)
 
+        results = data.get('results', None)
         if results:
-            self._results = PollResults(data.get('results'), state, message)
-        else:
-            self._results = None
+            self._finalized = results.get('is_finalized')
+            self._counts = [PollAnswerCount(state=state, message=message, data=count) for count in results.get('answer_counts')]
 
         return self
 
@@ -423,6 +399,15 @@ class Poll:
         # returned in the data when created from data.
         return self._expiry
     
+    @property
+    def answer_counts(self) -> Optional[List[PollAnswerCount]]:
+        """Optional[List[:class:`PollAnswerCount`]]: Returns a read-only copy of the
+        answer counts, or ``None`` if this is user-constructed."""
+
+        if self._counts:
+            return self._counts.copy()
+        return None
+
     def is_finalized(self) -> bool:
         """:class:`bool`: Returns whether the poll has finalized.
         
@@ -431,10 +416,7 @@ class Poll:
         via :attr:`Message.poll`
         """
 
-        if not self._results:
-            return False
-
-        return self._results.finalized
+        return self._finalized
 
     def add_answer(
         self,
@@ -459,7 +441,7 @@ class Poll:
         """
 
         answer = PollAnswer.from_params(
-            id=len(self.answers)+1,
+            id=len(self.answers)+1, # Auto ID
             text=text,
             emoji=emoji,
             message=self._message
@@ -501,6 +483,13 @@ class Poll:
         .. warning::
         
             This can only be called when the poll is accessed via :attr:`Message.poll`.
+
+        Raises
+        ------
+        RuntimeError
+            This poll has no attached message.
+        HTTPError
+            Ending the poll failed.
         """
 
         if not self._message:

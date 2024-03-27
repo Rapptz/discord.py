@@ -36,6 +36,8 @@ if TYPE_CHECKING:
 
 PollDuration = Literal[
     1, # 1 hour
+    4, # 4 hours
+    8, # 8 hours
     24, # 1 day
     72, # 3 days
     168, # 1 week
@@ -56,7 +58,6 @@ class PollMedia(TypedDict):
 
 
 class PollAnswer(TypedDict):
-    answer_id: NotRequired[int]
     poll_media: PollMedia
 
 
