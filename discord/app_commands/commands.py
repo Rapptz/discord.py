@@ -90,10 +90,10 @@ __all__ = (
     'guild_only',
     'dm_only',
     'private_channel_only',
-    'allow_contexts',
+    'allowed_contexts',
     'guild_install',
     'user_install',
-    'allow_installs',
+    'allowed_installs',
     'default_permissions',
 )
 
@@ -2604,7 +2604,7 @@ def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         return inner(func)
 
 
-def allow_contexts(
+def allowed_contexts(
     guilds: bool = MISSING, dms: bool = MISSING, private_channels: bool = MISSING
 ) -> Union[T, Callable[[T], T]]:
     """A decorator that indicates this command can only be used in certain contexts.
@@ -2620,7 +2620,7 @@ def allow_contexts(
     .. code-block:: python3
 
         @app_commands.command()
-        @app_commands.allow_contexts(guilds=True, dms=False, private_channels=True)
+        @app_commands.allowed_contexts(guilds=True, dms=False, private_channels=True)
         async def my_command(interaction: discord.Interaction) -> None:
             await interaction.response.send_message('I am only available in guilds and private channels!')
     """
@@ -2724,7 +2724,7 @@ def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         return inner(func)
 
 
-def allow_installs(
+def allowed_installs(
     guilds: bool = MISSING,
     users: bool = MISSING,
 ) -> Union[T, Callable[[T], T]]:
@@ -2741,7 +2741,7 @@ def allow_installs(
     .. code-block:: python3
 
         @app_commands.command()
-        @app_commands.allow_installs(guilds=False, users=True)
+        @app_commands.allowed_installs(guilds=False, users=True)
         async def my_command(interaction: discord.Interaction) -> None:
             await interaction.response.send_message('I am installed in users by default!')
     """

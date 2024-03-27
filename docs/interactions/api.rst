@@ -664,7 +664,7 @@ Decorators
 .. autofunction:: discord.app_commands.private_channel_only
     :decorator:
 
-.. autofunction:: discord.app_commands.allow_contexts
+.. autofunction:: discord.app_commands.allowed_contexts
     :decorator:
 
 .. autofunction:: discord.app_commands.user_install
@@ -673,7 +673,7 @@ Decorators
 .. autofunction:: discord.app_commands.guild_install
     :decorator:
 
-.. autofunction:: discord.app_commands.allow_installs
+.. autofunction:: discord.app_commands.allowed_installs
     :decorator:
 
 .. autofunction:: discord.app_commands.default_permissions
