@@ -429,7 +429,7 @@ class AutoShardedClient(Client):
         ret.launch()
 
     async def launch_shards(self) -> None:
-        if self.is_closed():
+        if self._closure is not None:
             return
 
         if self.shard_count is None:
@@ -456,7 +456,7 @@ class AutoShardedClient(Client):
         self._reconnect = reconnect
         await self.launch_shards()
 
-        while not self.is_closed():
+        while not self._closure:
             item = await self.__queue.get()
             if item.type == EventType.close:
                 await self.close()
@@ -476,15 +476,7 @@ class AutoShardedClient(Client):
             elif item.type == EventType.clean_close:
                 return
 
-    async def close(self) -> None:
-        """|coro|
-
-        Closes the connection to Discord.
-        """
-        if self.is_closed():
-            return
-
-        self._closed = True
+    async def _close(self) -> None:
         await self._connection.close()
 
         to_close = [asyncio.ensure_future(shard.close(), loop=self.loop) for shard in self.__shards.values()]
