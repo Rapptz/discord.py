@@ -194,13 +194,16 @@ class PollAnswer:
         cls,
         id: int,
         text: str,
-        emoji: Union[Emoji, PartialEmoji, str] = MISSING,
+        emoji: Optional[Union[Emoji, PartialEmoji, str]] = None,
         *,
         message: Optional[Message] = None
     ) -> Self:
         
-        poll_media: PollMediaPayload = PollMediaPayload(text=text, emoji={'id': emoji.id if isinstance(emoji, (PartialEmoji, Emoji)) else None, 'name': str(emoji)})
-        payload: PollAnswerWithIDPayload = PollAnswerWithIDPayload(answer_id=id, poll_media=poll_media)
+        poll_media: PollMediaPayload = {'text': text}
+        if emoji:
+            poll_media.update({'emoji': {'id': emoji.id if isinstance(emoji, (PartialEmoji, Emoji)) else None, 'name': str(emoji)}})
+
+        payload: PollAnswerWithIDPayload = {'answer_id': id, 'poll_media': poll_media}
 
         return cls(data=payload, message=message)
 
@@ -422,7 +425,7 @@ class Poll:
         self,
         *,
         text: str,
-        emoji: Union[PartialEmoji, Emoji, str] = MISSING,
+        emoji: Optional[Union[PartialEmoji, Emoji, str]] = None,
     ) -> Self:
         """Appends a new answer to this poll.
 
@@ -452,8 +455,8 @@ class Poll:
     
     def get_answer(
         self,
-        id: int,
         /,
+        id: int,
     ) -> Optional[PollAnswer]:
         """Returns the answer with the provided ID or ``None`` if not found.
         
