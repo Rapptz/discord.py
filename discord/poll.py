@@ -118,7 +118,7 @@ class PollAnswerCount:
 
         Raises
         ------
-        ~discord.HTTPException
+        HTTPException
             Retrieving the users failed.
 
         Returns
@@ -237,7 +237,7 @@ class PollAnswer:
         ------
         RuntimeError
             The poll doesn't have an attached message.
-        ~discord.HTTPException
+        HTTPException
             Retrieving the users failed.
 
         Returns
@@ -457,7 +457,7 @@ class Poll:
         except IndexError:  # Though we added a checker we should try to not raise errors.
             return
 
-    async def end(self) -> None:
+    async def end(self) -> Message:
         """|coro|
 
         Ends the poll.
@@ -470,8 +470,13 @@ class Poll:
         ------
         RuntimeError
             This poll has no attached message.
-        HTTPError
+        HTTPException
             Ending the poll failed.
+
+        Returns
+        -------
+        :class:`Message`
+            The updated message with the poll ended and with accurate results.
         """
 
         if not self._message:
@@ -479,4 +484,6 @@ class Poll:
                 'This method can only be called when a message is present, try using this via Message.poll.end()'
             )
 
-        await self._message._state.http.end_poll(self._message.channel.id, self._message.id)
+        message = await self._message._state.http.end_poll(self._message.channel.id, self._message.id)
+
+        return Message(state=self._state, channel=self._message.channel, data=message) # type: ignore
