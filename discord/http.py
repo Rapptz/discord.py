@@ -2539,7 +2539,7 @@ class HTTPClient:
         return self.request(
             Route(
                 'POST',
-                '/channels/{channel_id}/poll/{message_id}/expire',
+                '/channels/{channel_id}/polls/{message_id}/expire',
                 channel_id=channel_id,
                 message_id=message_id
             )
