@@ -1445,7 +1445,7 @@ Voice
 Polls
 ~~~~~~
 
-.. function:: on_poll_vote_add(user, message, answer)
+.. function:: on_poll_vote_add(user, message)
 
     Called when a :class:`Message` 's attached :class:`Poll` gets a new vote. If any of ``user`` or ``message``
     are not cached this event will not be called.
@@ -1461,10 +1461,8 @@ Polls
     :type user: :class:`User`
     :param message: The message that contains the poll that the user voted.
     :type message: :class:`Message`
-    :param answer: The answer the user voted to.
-    :type answer: :class:`PollAnswer`
 
-.. function:: on_poll_vote_remove(user, message, answer)
+.. function:: on_poll_vote_remove(user, message)
 
     Called when a :class:`Message` 's attached :class:`Poll` has lost a vote. If any of ``user`` or ``message``
     are not cached this event will not be called.
@@ -1480,8 +1478,6 @@ Polls
     :type user: :class:`User`
     :param message: The message that contains the poll that the user removed their vote from.
     :type message: :class:`Message`
-    :param answer: The answer the user removed their vote from.
-    :type answer: :class:`PollAnswer`
 
 .. function:: on_raw_poll_vote_add(payload)
 
