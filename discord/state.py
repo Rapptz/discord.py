@@ -1622,10 +1622,15 @@ class ConnectionState(Generic[ClientT]):
         self.dispatch('raw_poll_vote_add', raw)
 
         message = self._get_message(raw.message_id)
-        user = self.get_user(raw.user_id)
+        guild = self._get_guild(raw.guild_id)
+
+        if guild:
+            user = guild.get_member(raw.user_id)
+        else:
+            user = self.get_user(raw.user_id)
 
         if message and user:
-            self.dispatch('poll_vote_add', user, message)
+            self.dispatch('poll_vote_add', user, message, message.poll.get_answer(raw.answer_id)) # type: ignore
 
     def parse_message_poll_vote_remove(self, data: gw.PollVoteRemoveEvent) -> None:
         # NOTE: though the data contains an ``answer_id`` it means nothing.
@@ -1637,10 +1642,15 @@ class ConnectionState(Generic[ClientT]):
         self.dispatch('raw_poll_vote_remove', raw)
 
         message = self._get_message(raw.message_id)
-        user = self.get_user(raw.user_id)
+        guild = self._get_guild(raw.guild_id)
+
+        if guild:
+            user = guild.get_member(raw.user_id)
+        else:
+            user = self.get_user(raw.user_id)
 
         if message and user:
-            self.dispatch('poll_vote_remove', user, message)
+            self.dispatch('poll_vote_remove', user, message, message.poll.get_answer(raw.answer_id)) # type: ignore
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, (TextChannel, Thread, VoiceChannel)):
