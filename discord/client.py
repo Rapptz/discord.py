@@ -307,8 +307,7 @@ class Client:
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
-        if self._closure is not None:
-            await self._closure
+        await self.close()
 
     # internals
 
