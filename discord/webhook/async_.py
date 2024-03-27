@@ -542,6 +542,7 @@ def interaction_message_response_params(
     view: Optional[View] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     previous_allowed_mentions: Optional[AllowedMentions] = None,
+    poll: Poll = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -608,6 +609,9 @@ def interaction_message_response_params(
                 attachments_payload.append(attachment.to_dict())
 
         data['attachments'] = attachments_payload
+
+    if poll is not MISSING:
+        data['poll'] = poll._to_dict()
 
     multipart = []
     if files:

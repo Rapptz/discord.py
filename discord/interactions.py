@@ -76,6 +76,7 @@ if TYPE_CHECKING:
     from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel, DMChannel, GroupChannel
     from .threads import Thread
     from .app_commands.commands import Command, ContextMenu
+    from .poll import Poll
 
     InteractionChannel = Union[
         VoiceChannel,
@@ -727,6 +728,7 @@ class InteractionResponse(Generic[ClientT]):
         suppress_embeds: bool = False,
         silent: bool = False,
         delete_after: Optional[float] = None,
+        poll: Poll = MISSING,
     ) -> None:
         """|coro|
 
@@ -807,6 +809,7 @@ class InteractionResponse(Generic[ClientT]):
             allowed_mentions=allowed_mentions,
             flags=flags,
             view=view,
+            poll=poll
         )
 
         http = parent._state.http

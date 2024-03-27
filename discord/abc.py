@@ -1338,7 +1338,8 @@ class Messageable:
     async def send(
         self,
         *,
-        poll: Poll
+        poll: Poll,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
     ) -> Message:
         ...
 

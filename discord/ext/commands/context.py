@@ -627,6 +627,14 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     @overload
     async def reply(
         self,
+        *,
+        poll: Poll
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
@@ -813,7 +821,8 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     async def send(
         self,
         *,
-        poll: Poll
+        poll: Poll,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
     ) -> Message:
         ...
 
