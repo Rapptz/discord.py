@@ -132,17 +132,17 @@ AppCommandPermissions
 AppCommandContext
 ~~~~~~~~~~~~~~~~~
 
-.. attributetable:: AppCommandContext
+.. attributetable:: discord.app_commands.AppCommandContext
 
-.. autoclass:: AppCommandContext
+.. autoclass:: discord.app_commands.AppCommandContext
     :members:
 
 AppInstallationType
 ~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: AppInstallationType
+.. attributetable:: discord.app_commands.AppInstallationType
 
-.. autoclass:: AppInstallationType
+.. autoclass:: discord.app_commands.AppInstallationType
     :members:
 
 GuildAppCommandPermissions
