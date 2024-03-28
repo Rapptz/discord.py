@@ -1752,6 +1752,10 @@ class Webhook(BaseWebhook):
         poll: :class:`Poll`
             The attached poll for this message.
 
+            .. warning::
+
+                When sending a Poll via webhook, you cannot manually end it.
+
             .. versionadded:: 2.4
 
         Raises
