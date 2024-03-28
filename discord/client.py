@@ -763,8 +763,12 @@ class Client:
         that it only runs once when called directly
         """
         if cls.close is not Client.close:
-            # This is a bound method in __init_subclass__
+            # This is not a bound method in __init_subclass__
+            # assigning it as a classvar at this stage in type creation
+            # results in this properly being a bound method on all instances
             # There's no way to type this properly currently,
+            # pyright sees one as a variable, the other as a method
+            # each with the same callable signature.
             cls._user_close_method = cls.close  # type: ignore
             cls.close = Client.close
 
