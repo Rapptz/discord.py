@@ -49,8 +49,8 @@ class AppInstallationType:
 
     __slots__ = ('_guild', '_user')
 
-    GUILD: ClassVar[int] = 1 << 0
-    USER: ClassVar[int] = 1 << 1
+    GUILD: ClassVar[int] = 0
+    USER: ClassVar[int] = 1
 
     def __init__(self, *, guild: Optional[bool] = None, user: Optional[bool] = None):
         self._guild: Optional[bool] = guild
@@ -124,9 +124,9 @@ class AppCommandContext:
         Whether the context allows usage in a DM or a GDM channel.
     """
 
-    GUILD: ClassVar[int] = 1 << 0
-    DM_CHANNEL: ClassVar[int] = 1 << 1
-    PRIVATE_CHANNEL: ClassVar[int] = 1 << 2
+    GUILD: ClassVar[int] = 0
+    DM_CHANNEL: ClassVar[int] = 1
+    PRIVATE_CHANNEL: ClassVar[int] = 2
 
     __slots__ = ('_guild', '_dm_channel', '_private_channel')
 
