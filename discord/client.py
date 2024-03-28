@@ -79,7 +79,7 @@ from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factor
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from typing_extensions import Self
+    from typing_extensions import Self, ClassVar
 
     from .abc import Messageable, PrivateChannel, Snowflake, SnowflakeTime
     from .app_commands import Command, ContextMenu
@@ -251,6 +251,10 @@ class Client:
         The websocket gateway the client is currently connected to. Could be ``None``.
     """
 
+    # This is used to store user implementations of .close()
+    # It's a bound method if assigned
+    _user_close_method: ClassVar[Optional[Callable[[], Coroutine[Any, Any, None]]]] = None
+
     def __init__(self, *, intents: Intents, **options: Any) -> None:
         self.loop: asyncio.AbstractEventLoop = _loop
         # self.ws is set in the connect method
@@ -284,7 +288,7 @@ class Client:
         self._enable_debug_events: bool = options.pop('enable_debug_events', False)
         self._connection: ConnectionState[Self] = self._get_state(intents=intents, **options)
         self._connection.shard_count = self.shard_count
-        self._closed: bool = False
+        self._closing_task: Optional[asyncio.Task[None]] = None
         self._ready: asyncio.Event = MISSING
         self._application: Optional[AppInfo] = None
         self._connection._get_websocket = self._get_websocket
@@ -304,8 +308,7 @@ class Client:
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
-        if not self.is_closed():
-            await self.close()
+        await self.close()
 
     # internals
 
@@ -719,16 +722,7 @@ class Client:
                     session=self.ws.session_id,
                 )
 
-    async def close(self) -> None:
-        """|coro|
-
-        Closes the connection to Discord.
-        """
-        if self._closed:
-            return
-
-        self._closed = True
-
+    async def _internal_close(self) -> None:
         await self._connection.close()
 
         if self.ws is not None and self.ws.open:
@@ -741,6 +735,39 @@ class Client:
 
         self.loop = MISSING
 
+    async def _wrapped_close(self):
+        """Ensures close is only called once"""
+
+        if self._closing_task:
+            return await self._closing_task
+
+        async def _close():
+            if self._user_close_method:
+                await self._user_close_method()
+            await self._internal_close()
+
+        self._closing_task = task = asyncio.create_task(_close())
+
+        return await task
+
+    async def close(self) -> None:
+        """|coro|
+
+        Closes the connection to Discord.
+        """
+        return await self._wrapped_close()
+
+    def __init_subclass__(cls):
+        """
+        This exists to ensure we retain internal wrapping around close such
+        that it only runs once when called directly
+        """
+        if cls.close is not Client.close:
+            # This is a bound method in __init_subclass__
+            # There's no way to type this properly currently,
+            cls._user_close_method = cls.close  # type: ignore
+            cls.close = Client.close
+
     def clear(self) -> None:
         """Clears the internal state of the bot.
 
@@ -748,7 +775,7 @@ class Client:
         and :meth:`is_ready` both return ``False`` along with the bot's internal
         cache cleared.
         """
-        self._closed = False
+        self._closing_task = None
         self._ready.clear()
         self._connection.clear()
         self.http.clear()
@@ -868,7 +895,7 @@ class Client:
 
     def is_closed(self) -> bool:
         """:class:`bool`: Indicates if the websocket connection is closed."""
-        return self._closed
+        return self._closing_task is not None
 
     @property
     def activity(self) -> Optional[ActivityTypes]:

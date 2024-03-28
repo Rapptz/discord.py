@@ -465,7 +465,7 @@ class AutoShardedClient(Client):
             elif item.type == EventType.clean_close:
                 return
 
-    async def close(self) -> None:
+    async def _internal_close(self) -> None:
         """|coro|
 
         Closes the connection to Discord.
