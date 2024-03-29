@@ -168,11 +168,11 @@ class AppCommand(Hashable):
         The default member permissions that can run this command.
     dm_permission: :class:`bool`
         A boolean that indicates whether this command can be run in direct messages.
-    allowed_contexts: Optional[:class:`~discord.AppCommandContext`]
+    allowed_contexts: Optional[:class:`~discord.app_commands.AppCommandContext`]
         The contexts that this command is allowed to be used in. Overrides the ``dm_permission`` attribute.
 
         .. versionadded:: 2.4
-    allowed_installs: Optional[:class:`~discord.AppInstallationType`]
+    allowed_installs: Optional[:class:`~discord.app_commands.AppInstallationType`]
         The installation contexts that this command is allowed to be installed in.
 
         .. versionadded:: 2.4

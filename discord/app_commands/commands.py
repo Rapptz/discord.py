@@ -627,12 +627,12 @@ class Command(Generic[GroupT, P, T]):
         Whether the command should only be usable in guild contexts.
 
         Due to a Discord limitation, this does not work on subcommands.
-    allowed_contexts: Optional[:class:`~discord.AppCommandContext`]
+    allowed_contexts: Optional[:class:`~discord.app_commands.AppCommandContext`]
         The contexts that the command is allowed to be used in.
         Overrides ``guild_only`` if this is set.
 
         .. versionadded:: 2.4
-    allowed_installs: Optional[:class:`~discord.AppInstallationType`]
+    allowed_installs: Optional[:class:`~discord.app_commands.AppInstallationType`]
         The installation contexts that the command is allowed to be installed
         on.
 
@@ -1197,12 +1197,12 @@ class ContextMenu:
     guild_only: :class:`bool`
         Whether the command should only be usable in guild contexts.
         Defaults to ``False``.
-    allowed_contexts: Optional[:class:`~discord.flags.AppCommandContext`]
+    allowed_contexts: Optional[:class:`~discord.app_commands.AppCommandContext`]
         The contexts that this context menu is allowed to be used in.
         Overrides ``guild_only`` if set.
 
         .. versionadded:: 2.4
-    allowed_installs: Optional[:class:`~discord.AppInstallationType`]
+    allowed_installs: Optional[:class:`~discord.app_commands.AppInstallationType`]
         The installation contexts that the command is allowed to be installed
         on.
 
@@ -1455,12 +1455,12 @@ class Group:
         Whether the group should only be usable in guild contexts.
 
         Due to a Discord limitation, this does not work on subcommands.
-    allowed_contexts: Optional[:class:`~discord.flags.AppCommandContext`]
+    allowed_contexts: Optional[:class:`~discord.app_commands.AppCommandContext`]
         The contexts that this group is allowed to be used in. Overrides
         guild_only if set.
 
         .. versionadded:: 2.4
-    allowed_installs: Optional[:class:`~discord.AppInstallationType`]
+    allowed_installs: Optional[:class:`~discord.app_commands.AppInstallationType`]
         The installation contexts that the command is allowed to be installed
         on.
 
