@@ -231,6 +231,7 @@ class Namespace:
 
             # Type checker doesn't understand this due to failure to narrow
             message = Message(state=state, channel=channel, data=message_data)  # type: ignore
+            message.guild = guild
             key = ResolveKey(id=message_id, type=-1)
             completed[key] = message
 
