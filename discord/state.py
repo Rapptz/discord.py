@@ -1612,12 +1612,12 @@ class ConnectionState(Generic[ClientT]):
         entitlement = Entitlement(data=data, state=self)
         self.dispatch('entitlement_delete', entitlement)
 
-    def parse_message_poll_vote_add(self, data: gw.PollVoteAddEvent) -> None:
+    def parse_message_poll_vote_add(self, data: gw.PollVoteActionEvent) -> None:
         # NOTE: though the data contains an ``answer_id`` it means nothing.
         # We shouldn't rely on them, as their ID it is just their position
         # in the poll UI.
 
-        raw = RawPollVoteAddEvent(data)
+        raw = RawPollVoteActionEvent(data)
 
         self.dispatch('raw_poll_vote_add', raw)
 
@@ -1632,12 +1632,12 @@ class ConnectionState(Generic[ClientT]):
         if message and user:
             self.dispatch('poll_vote_add', user, message, message.poll.get_answer(raw.answer_id)) # type: ignore
 
-    def parse_message_poll_vote_remove(self, data: gw.PollVoteRemoveEvent) -> None:
+    def parse_message_poll_vote_remove(self, data: gw.PollVoteActionEvent) -> None:
         # NOTE: though the data contains an ``answer_id`` it means nothing.
         # We shouldn't rely on them, as their ID it is just their position
         # in the poll UI.
 
-        raw = RawPollVoteRemoveEvent(data)
+        raw = RawPollVoteActionEvent(data)
 
         self.dispatch('raw_poll_vote_remove', raw)
 

@@ -47,8 +47,7 @@ if TYPE_CHECKING:
         ThreadMembersUpdate,
         TypingStartEvent,
         GuildMemberRemoveEvent,
-        PollVoteAddEvent,
-        PollVoteRemoveEvent
+        PollVoteActionEvent
     )
     from .types.command import GuildApplicationCommandPermissions
     from .message import Message
@@ -77,8 +76,7 @@ __all__ = (
     'RawTypingEvent',
     'RawMemberRemoveEvent',
     'RawAppCommandPermissionsUpdateEvent',
-    'RawPollVoteAddEvent',
-    'RawPollVoteRemoveEvent',
+    'RawPollVoteActionEvent',
 )
 
 
@@ -508,8 +506,9 @@ class RawAppCommandPermissionsUpdateEvent(_RawReprMixin):
             AppCommandPermissions(data=perm, guild=self.guild, state=state) for perm in data['permissions']
         ]
 
-class RawPollVoteAddEvent(_RawReprMixin):
-    """Represents the payload for a :func:`on_raw_poll_vote_add` event.
+class RawPollVoteActionEvent(_RawReprMixin):
+    """Represents the payload for a :func:`on_raw_poll_vote_add` or :func:`on_raw_poll_vote_remove`
+    event.
     
     .. versionadded:: 2.4
 
@@ -529,35 +528,7 @@ class RawPollVoteAddEvent(_RawReprMixin):
 
     __slots__ = ('user_id', 'channel_id', 'message_id', 'guild_id', 'answer_id')
 
-    def __init__(self, data: PollVoteAddEvent) -> None:
-        self.user_id: int = int(data.get('user_id'))
-        self.channel_id: int = int(data.get('channel_id'))
-        self.message_id: int = int(data.get('message_id'))
-        self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
-        self.answer_id: int = int(data.get('answer_id'))
-
-class RawPollVoteRemoveEvent(_RawReprMixin):
-    """Represents the payload for a :func:`on_raw_poll_vote_remove` event.
-    
-    .. versionadded:: 2.4
-
-    Attributes
-    ----------
-    user_id: :class:`int`
-        The ID of the user that removed their vote.
-    channel_id: :class:`int`
-        The Channel ID this poll answer was removed.
-    message_id: :class:`int`
-        The Message ID that contains the poll the user removed their vote to.
-    guild_id: Optional[:class:`int`]
-        The Guild ID the poll is in, or ``None`` if in a GDM or DM channel.
-    answer_id: :class:`int`
-        The poll answer's ID the user removed their vote from.
-    """
-
-    __slots__ = ('user_id', 'channel_id', 'message_id', 'guild_id', 'answer_id')
-
-    def __init__(self, data: PollVoteRemoveEvent) -> None:
+    def __init__(self, data: PollVoteActionEvent) -> None:
         self.user_id: int = int(data.get('user_id'))
         self.channel_id: int = int(data.get('channel_id'))
         self.message_id: int = int(data.get('message_id'))
