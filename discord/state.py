@@ -1465,12 +1465,14 @@ class ConnectionState:
                         to_chunk.append(guild.id)
                         states.append((guild, future))
                     elif not guild._offline_members_hidden:
-                        self._scrape_requests[guild.id] = request = MemberSidebar(
+                        request = MemberSidebar(
                             guild, MISSING, chunk=True, cache=True, loop=self.loop, delay=0
                         )
                         if not request.channels:
                             # Not possible to scrape here
                             continue
+
+                        self._scrape_requests[guild.id] = request
                         request.start()
                         states.append((guild, request.get_future()))
 
@@ -2914,6 +2916,7 @@ class ConnectionState:
                     guild, channels, chunk=chunk, cache=cache, loop=self.loop, delay=delay or 0
                 )
                 if not request.channels:
+                    del self._scrape_requests[guild.id]
                     if chunk:
                         raise ClientException('Guild cannot be chunked: no channels viewable by @everyone')
                     raise ClientException('Failed to automatically choose channels; please specify them manually')
