@@ -148,7 +148,8 @@ class SocketReader(threading.Thread):
             # Since this socket is a non blocking socket, select has to be used to wait on it for reading.
             try:
                 readable, _, _ = select.select([self.state.socket], [], [], 30)
-            except (ValueError, TypeError):
+            except (ValueError, TypeError, OSError) as e:
+                _log.debug("Select error handling socket in reader, this should be safe to ignore: %s", e)
                 # The socket is either closed or doesn't exist at the moment
                 continue
 
@@ -305,6 +306,10 @@ class VoiceConnectionState:
                 _log.debug('Ignoring unexpected voice_state_update event')
 
     async def voice_server_update(self, data: VoiceServerUpdatePayload) -> None:
+        previous_token = self.token
+        previous_server_id = self.server_id
+        previous_endpoint = self.endpoint
+
         self.token = data['token']
         self.server_id = int(data['guild_id'])
         endpoint = data.get('endpoint')
@@ -338,6 +343,10 @@ class VoiceConnectionState:
             self.state = ConnectionFlowState.got_voice_server_update
 
         elif self.state is not ConnectionFlowState.disconnected:
+            # eventual consistency
+            if previous_token == self.token and previous_server_id == self.server_id and previous_token == self.token:
+                return
+
             _log.debug('Unexpected server update event, attempting to handle')
 
             await self.soft_disconnect(with_state=ConnectionFlowState.got_voice_server_update)
