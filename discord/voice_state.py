@@ -81,9 +81,10 @@ _log = logging.getLogger(__name__)
 
 
 class SocketReader(threading.Thread):
-    def __init__(self, state: VoiceConnectionState) -> None:
+    def __init__(self, state: VoiceConnectionState, *, start_paused: bool = True) -> None:
         super().__init__(daemon=True, name=f'voice-socket-reader:{id(self):#x}')
         self.state: VoiceConnectionState = state
+        self.start_paused = start_paused
         self._callbacks: List[SocketReaderCallback] = []
         self._running = threading.Event()
         self._end = threading.Event()
@@ -130,6 +131,8 @@ class SocketReader(threading.Thread):
     def run(self) -> None:
         self._end.clear()
         self._running.set()
+        if self.start_paused:
+            self.pause()
         try:
             self._do_run()
         except Exception:
@@ -149,7 +152,9 @@ class SocketReader(threading.Thread):
             try:
                 readable, _, _ = select.select([self.state.socket], [], [], 30)
             except (ValueError, TypeError, OSError) as e:
-                _log.debug("Select error handling socket in reader, this should be safe to ignore: %s", e)
+                _log.debug(
+                    "Select error handling socket in reader, this should be safe to ignore: %s: %s", e.__class__.__name__, e
+                )
                 # The socket is either closed or doesn't exist at the moment
                 continue
 
