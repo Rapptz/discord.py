@@ -32,6 +32,7 @@ from typing import (
     TYPE_CHECKING,
     Literal,
     Union,
+    NamedTuple
 )
 from datetime import timedelta, datetime
 
@@ -53,6 +54,7 @@ if TYPE_CHECKING:
         PollAnswerCount as PollAnswerCountPayload,
         PollWithExpiry as PollWithExpiryPayload,
         PollAnswerWithID as PollAnswerWithIDPayload,
+        PollEmoji as PollEmojiPayload,
     )
 
 
@@ -60,11 +62,17 @@ __all__ = (
     'Poll',
     'PollAnswer',
     'PollAnswerCount',
+    'PollMedia',
 )
 
 MISSING = utils.MISSING
 
 PollDuration = Literal[1, 4, 8, 24, 72, 168]
+
+
+class PollMedia(NamedTuple):
+    text: str
+    emoji: Optional[PollEmojiPayload]
 
 
 class PollAnswerCount:
@@ -99,6 +107,16 @@ class PollAnswerCount:
         self.id: int = int(data.get('id'))
         self.me_voted: bool = data.get('me_voted')
         self.count: int = data.get('count')
+
+    @property
+    def original(self) -> Message:
+        """:class:`Message`: Returns the original message the poll of this answer is in."""
+        return self._message
+
+    @property
+    def poll(self) -> Poll:
+        """:class:`Poll`: Returns the poll that this answer belongs to."""
+        return self._message.poll
 
     async def users(self, *, after: Snowflake = MISSING, limit: int = 25) -> List[User]:
         """|coro|
@@ -147,13 +165,11 @@ class PollAnswer:
     ----------
     id: :class:`int`
         The ID of this answer.
-    text: :class:`str`
-        The answers display text. Can be up to 55 characters.
-    emoji: :class:`PartialEmoji`
-        The emoji to show up with this answer.
+    media: :class:`PollMedia`
+        A :class:`NamedTuple` containing the raw data of this answers media.
     """
 
-    __slots__ = ('text', 'emoji', 'id', '_state', '_message')
+    __slots__ = ('media', 'id', '_state', '_message')
 
     def __init__(
         self,
@@ -166,20 +182,9 @@ class PollAnswer:
 
         media = data['poll_media']
 
+        self.media: PollMedia = PollMedia(media['text'], media.get('emoji', None))
+        # Moved all to 'media' NamedTuple so it is accessed via properties
         self.id: int = int(data['answer_id'])
-        self.text: str = media['text']
-
-        emoji = media.get('emoji', None)
-
-        if emoji:
-            emoji_id = int(emoji.get('id')) if emoji.get('id', None) is not None else None  # type: ignore
-
-            partial = PartialEmoji(name=emoji['name'], id=emoji_id)
-
-        else:
-            partial = None
-
-        self.emoji: Optional[PartialEmoji] = partial
 
     @classmethod
     def from_params(
@@ -200,19 +205,29 @@ class PollAnswer:
 
         return cls(data=payload, message=message)
 
+    @property
+    def text(self) -> str:
+        """:class:`str`: Returns this answer display text."""
+        return self.media.text
+
+    @property
+    def emoji(self) -> Optional[PartialEmoji]:
+        """Optional[:class:`PartialEmoji`]: Returns this answer display emoji, is any."""
+        if self.media.emoji:
+            emoji_id: Optional[int] = int(self.media.emoji['id']) if self.media.emoji.get('id', None) is not None else None
+            return PartialEmoji(name=self.media.emoji['name'], id=emoji_id)
+        return None  # Explicitly return None
+
     def _to_dict(self) -> PollMediaPayload:
-        data: Dict[str, Union[str, Dict[str, Union[str, int]]]] = {}  # Needed to add type hint to make type checker happy
+        data: Dict[str, Union[str, Dict[str, Union[str, int]]]] = dict()  # Type hinted to make type-checker happy
         data['text'] = self.text
 
         if self.emoji is not None:
-            if isinstance(self.emoji, str):
-                data['emoji'] = {'name': self.emoji}
-
-            elif isinstance(self.emoji, (PartialEmoji, Emoji)):
-                data['emoji'] = {'name': self.emoji.name}
-
-                if self.emoji.id:
-                    data['emoji']['id'] = self.emoji.id
+            data['emoji'] = {
+                'name': str(self.emoji)
+            }
+            if self.emoji.id:
+                data['emoji']['id'] = self.emoji.id
 
         return data  # type: ignore # Type Checker complains that this dict's type ain't PollAnswerMediaPayload
 
@@ -276,10 +291,6 @@ class Poll:
         The poll's question. Can be up to 300 characters.
     duration: :class:`int`
         The duration in hours of the poll.
-    answers: Optional[List[:class:`PollAnswer`]]
-        The possible answers for this poll. If ``None``
-        is passed, then this answers must be added through
-        :meth:`add_answer`
     multiselect: :class:`bool`
         Whether users are allowed to select more than
         one answer.
@@ -309,8 +320,7 @@ class Poll:
         multiselect: bool = False,
         layout_type: PollLayoutType = PollLayoutType.default,
     ) -> None:
-        self.question: str = question
-        # Automatically order the answers
+        self.question: str = question # At the moment this only supports text, so no need to add emoji support
         self._answers: List[PollAnswer] = []
         self.duration: int = duration
         self.multiselect: bool = multiselect
