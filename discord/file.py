@@ -93,6 +93,10 @@ class File:
             self.fp: io.BufferedIOBase = fp
             self._original_pos = fp.tell()
             self._owner = False
+        elif isinstance(fp, bytes):
+            self.fp = io.BytesIO(fp)
+            self._original_pos = 0
+            self._owner = True
         else:
             self.fp = open(fp, 'rb')
             self._original_pos = 0

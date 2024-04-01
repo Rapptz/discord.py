@@ -127,3 +127,8 @@ def test_file_not_spoiler_with_overriding_name_double_spoiler():
     f.filename = 'SPOILER_SPOILER_.gitignore'
     assert f.filename == 'SPOILER_.gitignore'
     assert f.spoiler == True
+
+def test_file_from_bytes():
+    f = discord.File(b'file_content', 'test')
+    assert f.filename == 'test'
+    assert f.fp.read() == b'file_content'
