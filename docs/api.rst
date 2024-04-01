@@ -1491,7 +1491,7 @@ Polls
     This requires :attr:`Intents.message_content` to be enabled.
 
     :param payload: The raw event payload data.
-    :type payload: :class:`RawPollVoteAddEvent`
+    :type payload: :class:`RawPollVoteActionEvent`
 
 .. function:: on_raw_poll_vote_remove(payload)
 
@@ -1501,7 +1501,7 @@ Polls
     This requires :attr:`Intents.message_content` to be enabled.
 
     :param payload: The raw event payload data.
-    :type payload: :class:`RawPollVoteRemoveEvent`
+    :type payload: :class:`RawPollVoteActionEvent`
 
 .. _discord-api-utils:
 
@@ -3602,6 +3602,16 @@ of :class:`enum.Enum`.
             The entitlement owner is a user.
 
 
+.. class:: PollLayoutType
+
+    Represents how a poll answers are shown
+
+    .. versionadded:: 2.4
+
+    .. attribute:: default
+
+        The default layout.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -4928,6 +4938,20 @@ Entitlement
 .. autoclass:: Entitlement()
     :members:
 
+Poll
+~~~~~~~~~~~
+
+.. attributeable:: Poll
+
+.. autoclass:: Poll()
+    :members:
+
+.. autoclass:: PollAnswer()
+    :members:
+
+.. autoclass:: PollAnswerCount()
+    :members:
+
 RawMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -5030,6 +5054,14 @@ RawAppCommandPermissionsUpdateEvent
 .. attributetable:: RawAppCommandPermissionsUpdateEvent
 
 .. autoclass:: RawAppCommandPermissionsUpdateEvent()
+    :members:
+
+RawPollVoteActionEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributeable:: RawPollVoteActionEvent
+
+.. autoclass:: RawPollVoteActionEvent()
     :members:
 
 PartialWebhookGuild
