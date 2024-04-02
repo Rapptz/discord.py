@@ -2401,6 +2401,37 @@ class Message(PartialMessage, Hashable):
 
         return message
 
+    async def end_poll(self) -> Message:
+        r"""|coro|
+
+        Ends this message's poll.
+
+        .. note::
+
+            This is a shortcut method for `Message.poll.end()`
+
+        Raises
+        ------
+        Forbidden
+            You do not have permission to end this message's poll.
+        HTTPException
+            Ending the poll failed.
+        RuntimeError
+            This message does not have a poll.
+
+        Returns
+        -------
+        :class:`Message`
+            The new message with the poll ended.
+        """
+
+        if not self.poll:
+            raise RuntimeError('This message does not have a poll')
+
+        data = await self._state.http.end_poll(self.channel.id, self.id)
+
+        return self.__class__(state=self._state, channel=self.channel, data=data)
+
     async def add_files(self, *files: File) -> Message:
         r"""|coro|
 
