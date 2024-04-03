@@ -47,12 +47,14 @@ if TYPE_CHECKING:
     from .message import Message
     from .abc import Snowflake
     from .state import ConnectionState
+    from .member import Member
 
     from .types.poll import (
         Poll as PollPayload,
         PollMedia as PollMediaPayload,
         PollAnswerCount as PollAnswerCountPayload,
         PollWithExpiry as PollWithExpiryPayload,
+        FullPoll as FullPollPayload,
         PollAnswerWithID as PollAnswerWithIDPayload,
         PollEmoji as PollEmojiPayload,
     )
@@ -84,7 +86,7 @@ class PollAnswerBase:
         _message: Optional[Message]
         _state: Optional[ConnectionState]
 
-    async def users(self, *, after: Snowflake = MISSING, limit: int = 25) -> AsyncIterator[User]:
+    async def users(self, *, after: Snowflake = MISSING, limit: int = 25) -> AsyncIterator[Union[User, Member]]:
         r"""|coro|
 
         Retrieves all the voters of this answer.
@@ -107,8 +109,10 @@ class PollAnswerBase:
 
         Yields
         ------
-        :class:`User`
-            The users that voted for this poll answer.
+        Union[:class:`User`, :class:`Member`]
+            The users that voted for this poll answer. This can be a :class:`Member` object if the poll
+            is in a guild-message context, for other contexts it will always return a :class:`User`, or when
+            the member left the guild.
         """
 
         # As this is the same implementation for both PollAnswer objects
@@ -125,8 +129,17 @@ class PollAnswerBase:
             limit
         )
 
-        for user in data.get('users'):
-            yield User(state=self._state, data=user)
+        if not self._message.guild:
+            for user in data.get('users'):
+                yield User(state=self._state, data=user)
+
+        else:
+            guild = self._message.guild
+
+            for user in data.get('users'):
+                member = guild.get_member(int(user['id']))
+
+                yield member or User(state=self._state, data=user)
 
 
 class PollAnswerCount(PollAnswerBase):
@@ -333,7 +346,7 @@ class Poll:
         self._expiry = now + duration
 
     @classmethod
-    def _from_data(cls, data: PollWithExpiryPayload, message: Message, state: ConnectionState) -> Self:
+    def _from_data(cls, data: Union[PollWithExpiryPayload, FullPollPayload], message: Message, state: ConnectionState) -> Self:
         answers = [PollAnswer(data=answer, message=message) for answer in data.get('answers')]
         multiselect = data.get('allow_multiselect', False)
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
