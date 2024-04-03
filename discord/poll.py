@@ -30,11 +30,10 @@ from typing import (
     Optional,
     List,
     TYPE_CHECKING,
-    Literal,
     Union,
     NamedTuple
 )
-from datetime import timedelta, datetime
+import datetime
 
 from .enums import PollLayoutType, try_enum
 from . import utils
@@ -111,9 +110,14 @@ class PollAnswerCount:
         self.count: int = data.get('count')
 
     @property
-    def original(self) -> Message:
+    def original_message(self) -> Message:
         """:class:`Message`: Returns the original message the poll of this answer is in."""
         return self._message
+
+    @property
+    def original_answer(self) -> PollAnswer:
+        """:class:`PollAnswer`: Returns the resolved poll answer of this count."""
+        return self.original_message.poll.get_answer(self.id)  # type: ignore # This will always be a value
 
     @property
     def poll(self) -> Poll:
@@ -318,14 +322,14 @@ class Poll:
     def __init__(
         self,
         question: str,
-        duration: timedelta,
+        duration: datetime.timedelta,
         *,
         multiselect: bool = False,
         layout_type: PollLayoutType = PollLayoutType.default,
     ) -> None:
         self.question: str = question  # At the moment this only supports text, so no need to add emoji support
         self._answers: List[PollAnswer] = []
-        self.duration: timedelta = duration
+        self.duration: datetime.timedelta = duration
         self._hours_duration: float = duration.total_seconds() / 3600
 
         if self._hours_duration < 1:
@@ -357,8 +361,8 @@ class Poll:
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
         question_data = data.get('question')
         question = question_data.get('text')
-        expiry = datetime.fromisoformat(data['expiry'])  # If obtained via API, then expiry is set.
-        duration = expiry - message.created_at
+        expiry = datetime.datetime.fromisoformat(data['expiry'])  # If obtained via API, then expiry is set.
+        duration = expiry - message.created_at  # self.created_at = message.created_at|duration = self.created_at - expiry
 
         self = cls(
             duration=duration,
@@ -415,11 +419,19 @@ class Poll:
             return self._counts.copy()
         return None
 
+    @property
+    def created_at(self) -> Optional[datetime.datetime]:
+        """:class:`datetime.datetime`: Returns the poll's creation time, or ``None`` if user-created."""
+
+        if not self._message:
+            return
+        return self._message.created_at
+
     def is_finalized(self) -> bool:
         """:class:`bool`: Returns whether the poll has finalized.
 
         It always returns ``False`` if the poll is not part of a
-        fetched message. You should consider accesing this method
+        fetched message. You should consider accessing this method
         via :attr:`Message.poll`
         """
 
