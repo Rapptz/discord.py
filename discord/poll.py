@@ -67,7 +67,9 @@ __all__ = (
 
 MISSING = utils.MISSING
 
-PollDuration = Literal[1, 4, 8, 24, 72, 168]
+# PollDuration = Literal[1, 4, 8, 24, 72, 168]
+# So, I discovered that any time is valid, so there is no need for this to be a strict
+# literal.
 
 
 class PollMedia(NamedTuple):
@@ -289,8 +291,8 @@ class Poll:
     ----------
     question: :class:`str`
         The poll's question. Can be up to 300 characters.
-    duration: :class:`int`
-        The duration in hours of the poll.
+    duration: :class:`datetime.timedelta`
+        The duration of the poll.
     multiselect: :class:`bool`
         Whether users are allowed to select more than
         one answer.
@@ -302,6 +304,7 @@ class Poll:
         'multiselect',
         '_answers',
         'duration',
+        '_hours_duration',
         'layout_type',
         'question',
         '_message',
@@ -315,14 +318,22 @@ class Poll:
     def __init__(
         self,
         question: str,
-        duration: PollDuration,
+        duration: timedelta,
         *,
         multiselect: bool = False,
         layout_type: PollLayoutType = PollLayoutType.default,
     ) -> None:
-        self.question: str = question # At the moment this only supports text, so no need to add emoji support
+        self.question: str = question  # At the moment this only supports text, so no need to add emoji support
         self._answers: List[PollAnswer] = []
-        self.duration: int = duration
+        self.duration: timedelta = duration
+        self._hours_duration: float = duration.total_seconds() / 3600
+
+        if self._hours_duration < 1:
+            raise ValueError('Polls duration must be at least 1 hour')
+
+        if self._hours_duration > 168:
+            raise ValueError('Polls duration cannot exceed 7 days')
+
         self.multiselect: bool = multiselect
         self.layout_type: PollLayoutType = layout_type
 
@@ -337,19 +348,20 @@ class Poll:
 
         now = utils.utcnow()
 
-        self._expiry = now + timedelta(hours=duration)
+        self._expiry = now + duration
 
     @classmethod
     def _from_data(cls, data: PollWithExpiryPayload, message: Message, state: ConnectionState) -> Self:
         answers = [PollAnswer(data=answer, message=message) for answer in data.get('answers')]
         multiselect = data.get('allow_multiselect', False)
-        expiry = data.get('expiry')
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
         question_data = data.get('question')
         question = question_data.get('text')
+        expiry = datetime.fromisoformat(data['expiry'])  # If obtained via API, then expiry is set.
+        duration = expiry - message.created_at
 
         self = cls(
-            duration=1,  # Set to 1 so we can set the expiry manually
+            duration=duration,
             multiselect=multiselect,
             layout_type=layout_type,
             question=question,
@@ -357,7 +369,6 @@ class Poll:
         self._answers = answers
         self._message = message
         self._state = state
-        self._expiry = datetime.fromisoformat(expiry)
 
         results = data.get('results', None)
         if results:
@@ -372,7 +383,7 @@ class Poll:
         data = {}
         data['allow_multiselect'] = self.multiselect
         data['question'] = {'text': self.question}
-        data['duration'] = self.duration
+        data['duration'] = (self.duration.total_seconds() / 36000)
         data['layout_type'] = self.layout_type.value
         data['answers'] = [{'poll_media': answer._to_dict()} for answer in self.answers]
 
@@ -392,9 +403,7 @@ class Poll:
     @property
     def expiry(self) -> datetime:
         """:class:`datetime.datetime`: A datetime object representing the poll expiry"""
-
-        # This is autocalculated when created manually, set with the expiry
-        # returned in the data when created from data.
+        # This is auto calculated, always
         return self._expiry
 
     @property
