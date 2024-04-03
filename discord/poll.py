@@ -31,7 +31,8 @@ from typing import (
     List,
     TYPE_CHECKING,
     Union,
-    NamedTuple
+    NamedTuple,
+    AsyncIterator
 )
 import datetime
 
@@ -76,7 +77,59 @@ class PollMedia(NamedTuple):
     emoji: Optional[PollEmojiPayload]
 
 
-class PollAnswerCount:
+class PollAnswerBase:
+
+    if TYPE_CHECKING:
+        id: int
+        _message: Optional[Message]
+        _state: Optional[ConnectionState]
+
+    async def users(self, *, after: Snowflake = MISSING, limit: int = 25) -> AsyncIterator[User]:
+        r"""|coro|
+
+        Retrieves all the voters of this answer.
+
+        .. warning::
+
+            This can only be called when the poll is accessed via :attr:`Message.poll`.
+
+        Parameters
+        ----------
+        after: :class:`Snowflake`
+            Fetches users after this ID.
+        limit: :class:`int`
+            The max number of users to return. Can be up to 100.
+
+        Raises
+        ------
+        HTTPException
+            Retrieving the users failed.
+
+        Yields
+        ------
+        :class:`User`
+            The users that voted for this poll answer.
+        """
+
+        # As this is the same implementation for both PollAnswer objects
+        # we should just recycle this.
+
+        if not self._state:
+            raise RuntimeError('You cannot fetch users in a non-message-attached poll')
+
+        data = await self._state.http.get_poll_answer_voters(
+            self._message.channel.id,
+            self._message.id,
+            self.id,
+            after.id if after is not MISSING else MISSING,
+            limit
+        )
+
+        for user in data.get('users'):
+            yield User(state=self._state, data=user)
+
+
+class PollAnswerCount(PollAnswerBase):
     """Represents a partial poll answer.
 
     This is not meant to be user-constructed and should be
@@ -124,41 +177,8 @@ class PollAnswerCount:
         """:class:`Poll`: Returns the poll that this answer belongs to."""
         return self._message.poll
 
-    async def users(self, *, after: Snowflake = MISSING, limit: int = 25) -> List[User]:
-        """|coro|
 
-        Retrieves all the voters of this answer.
-
-        .. warning::
-
-            This can only be called when the poll is accessed via :attr:`Message.poll`.
-
-        Parameters
-        ----------
-        after: :class:`Snowflake`
-            Fetches users after this ID.
-        limit: :class:`int`
-            The max number of users to return. Can be up to 100.
-
-        Raises
-        ------
-        HTTPException
-            Retrieving the users failed.
-
-        Returns
-        -------
-        List[:class:`User`]
-            A list containing all the users that voted for this poll.
-        """
-
-        data = await self._state.http.get_poll_answer_voters(
-            self._message.channel.id, self._message.id, self.id, after.id if after is not MISSING else MISSING, limit
-        )
-
-        return [User(state=self._state, data=user_data) for user_data in data.get('users')]
-
-
-class PollAnswer:
+class PollAnswer(PollAnswerBase):
     """Represents a poll's answer.
 
     .. container:: operations
@@ -236,48 +256,6 @@ class PollAnswer:
                 data['emoji']['id'] = self.emoji.id
 
         return data  # type: ignore # Type Checker complains that this dict's type ain't PollAnswerMediaPayload
-
-    async def users(self, *, after: Snowflake = MISSING, limit: int = 25) -> List[User]:
-        """|coro|
-
-        Retrieves all the voters of this answer.
-
-        .. warning::
-
-            This method can only be used if it has a message attached.
-            That is, only accessible via :attr:`Message.poll`
-
-        Parameters
-        ----------
-        after: :class:`Snowflake`
-            Fetches users after this ID.
-        limit: :class:`int`
-            The max number of users to return. Can be up to 100.
-
-        Raises
-        ------
-        RuntimeError
-            The poll doesn't have an attached message.
-        HTTPException
-            Retrieving the users failed.
-
-        Returns
-        -------
-        List[:class:`User`]
-            A list containing all the users that voted for this poll.
-        """
-
-        if not self._message or not self._state:
-            raise RuntimeError('You cannot fetch users in a non-message-attached poll')
-
-        if 0 > limit or limit > 100:
-            raise ValueError('limit can only be within 0 and 100')
-
-        data = await self._state.http.get_poll_answer_voters(
-            self._message.channel.id, self._message.id, self.id, after.id if after is not MISSING else MISSING, limit
-        )
-
-        return [User(state=self._state, data=user_data) for user_data in data.get('users')]
 
 
 class Poll:
