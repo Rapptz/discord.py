@@ -98,7 +98,6 @@ class PollWithExpiry(TypedDict):
     expiry: str
     layout_type: LayoutType
     question: PollMedia
-    results: PollResult
 
 
 class PollWithResults(Poll):
