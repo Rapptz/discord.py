@@ -78,6 +78,17 @@ class PollMedia(NamedTuple):
     text: str
     emoji: Optional[PollEmojiPayload]
 
+    def to_dict(self) -> PollMediaPayload:
+        """Returns an API valid payload for this tuple."""
+
+        return PollMediaPayload(text=self.text, emoji=self.emoji)
+
+    @classmethod
+    def from_dict(cls, *, data: PollMediaPayload) -> PollMedia:
+        """Returns a new instance of this class from a payload."""
+
+        return cls(data['text'], data.get('emoji', None))
+
 
 class PollAnswerBase:
 
@@ -181,7 +192,7 @@ class PollAnswerCount(PollAnswerBase):
         return self._message
 
     @property
-    def original_answer(self) -> PollAnswer:
+    def resolved(self) -> PollAnswer:
         """:class:`PollAnswer`: Returns the resolved poll answer of this count."""
         return self.original_message.poll.get_answer(self.id)  # type: ignore # This will always be a value
 
@@ -301,7 +312,7 @@ class Poll:
         'duration',
         '_hours_duration',
         'layout_type',
-        'question',
+        '_question_media',
         '_message',
         '_results',
         '_expiry',
@@ -312,13 +323,16 @@ class Poll:
 
     def __init__(
         self,
-        question: str,
+        question: Union[str, PollMedia],
         duration: datetime.timedelta,
         *,
         multiselect: bool = False,
         layout_type: PollLayoutType = PollLayoutType.default,
     ) -> None:
-        self.question: str = question  # At the moment this only supports text, so no need to add emoji support
+        if isinstance(question, str):
+            self._question_media: PollMedia = PollMedia(question, None)
+        else:
+            self._question_media: PollMedia = question  # At the moment this only supports text, so no need to add emoji support
         self._answers: List[PollAnswer] = []
         self.duration: datetime.timedelta = duration
         self._hours_duration: float = duration.total_seconds() / 3600
@@ -375,9 +389,9 @@ class Poll:
         return self
 
     def _to_dict(self) -> PollPayload:
-        data = {}
+        data = dict()
         data['allow_multiselect'] = self.multiselect
-        data['question'] = {'text': self.question}
+        data['question'] = self._question_media.to_dict()
         data['duration'] = (self.duration.total_seconds() / 36000)
         data['layout_type'] = self.layout_type.value
         data['answers'] = [{'poll_media': answer._to_dict()} for answer in self.answers]
@@ -389,6 +403,17 @@ class Poll:
 
     def __repr__(self) -> str:
         return f"<Poll duration={self.duration} question=\"{self.question}\" answers={self.answers}>"
+
+    @property
+    def question(self) -> str:
+        """:class:`str`: Returns this poll answer question string."""
+        return self._question_media.text
+
+    @property
+    def emoji(self) -> Optional[PartialEmoji]:
+        """Optional[:class:`PartialEmoji`]: Returns the emoji for this poll's question."""
+
+        return None  # As of now, polls questions don't support emojis
 
     @property
     def answers(self) -> List[PollAnswer]:
