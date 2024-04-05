@@ -4938,7 +4938,7 @@ Entitlement
 .. autoclass:: Entitlement()
     :members:
 
-Poll
+Polls
 ~~~~~~~~~~~
 
 .. attributeable:: Poll
@@ -4946,11 +4946,17 @@ Poll
 .. autoclass:: Poll()
     :members:
 
+.. attributeable:: PollAnswer
+
 .. autoclass:: PollAnswer()
     :members:
+    :inherited-members:
+
+.. attributeable:: PollAnswerCount
 
 .. autoclass:: PollAnswerCount()
     :members:
+    :inherited-members:
 
 RawMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
