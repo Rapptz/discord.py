@@ -31,8 +31,8 @@ from typing import (
     List,
     TYPE_CHECKING,
     Union,
-    NamedTuple,
-    AsyncIterator
+    TypeAlias,
+    AsyncIterator,
 )
 import datetime
 
@@ -44,7 +44,7 @@ from .user import User
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .message import Message
+    from .message import Message, PartialMessage
     from .abc import Snowflake
     from .state import ConnectionState
     from .member import Member
@@ -56,7 +56,6 @@ if TYPE_CHECKING:
         PollWithExpiry as PollWithExpiryPayload,
         FullPoll as FullPollPayload,
         PollAnswerWithID as PollAnswerWithIDPayload,
-        PollEmoji as PollEmojiPayload,
     )
 
 
@@ -74,20 +73,56 @@ MISSING = utils.MISSING
 # literal.
 
 
-class PollMedia(NamedTuple):
-    text: str
-    emoji: Optional[PollEmojiPayload]
+PollMediaEmoji: TypeAlias = Union[PartialEmoji, Emoji, str]
+PollMessage: TypeAlias = Union[PartialMessage, Message]
+
+
+class PollMedia:
+    """Represents the poll media for a poll item.
+
+    Attributes
+    ----------
+    text: :class:`str`
+        The displayed text
+    emoji: Optional[Union[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]]
+        The attached emoji for this media.
+    """
+
+    __slots__ = ('text', 'emoji')
+
+    def __init__(self, *, text: str, emoji: Optional[PollMediaEmoji] = None) -> None:
+        self.text: str = text
+        self.emoji: Optional[PollMediaEmoji] = emoji
 
     def to_dict(self) -> PollMediaPayload:
         """Returns an API valid payload for this tuple."""
 
-        return PollMediaPayload(text=self.text, emoji=self.emoji)
+        payload = {'text': self.text}
+
+        if self.emoji:
+            if isinstance(self.emoji, Emoji):
+                payload['emoji'] = {'name': self.emoji.name, 'id': self.emoji.id}  # type: ignore
+
+            elif isinstance(self.emoji, PartialEmoji):
+                payload['emoji'] = self.emoji.to_dict()  # type: ignore
+
+            else:
+                payload['emoji'] = {'name': str(self.emoji)}
+
+        return payload
 
     @classmethod
     def from_dict(cls, *, data: PollMediaPayload) -> PollMedia:
         """Returns a new instance of this class from a payload."""
 
-        return cls(data['text'], data.get('emoji', None))
+        return cls(text=data['text'], emoji=PartialEmoji.from_dict(data.get('emoji', {})))
+
+    def __iter__(self) -> Union[str, Optional[PollMediaEmoji]]:
+        yield self.text
+        yield self.emoji
+
+    def __repr__(self) -> str:
+        return f'<PollMedia text={self.text} emoji={self.emoji}>'
 
 
 class PollAnswerBase:
@@ -154,11 +189,10 @@ class PollAnswerBase:
 
 
 class PollAnswerCount(PollAnswerBase):
-    """Represents a partial poll answer.
+    """Represents a poll answer count.
 
-    This is not meant to be user-constructed and should be
-    obtained in the `on_poll_vote_add` and `on_poll_vote_remove`
-    events.
+    This is not meant to be user-constructed but instead obtained by the results in
+    :attr:`Poll.answer_counts`
 
     Attributes
     ----------
@@ -178,17 +212,20 @@ class PollAnswerCount(PollAnswerBase):
         'count',
     )
 
-    def __init__(self, *, state: ConnectionState, message: Message, data: PollAnswerCountPayload) -> None:
+    def __init__(self, *, state: ConnectionState, message: PollMessage, data: PollAnswerCountPayload) -> None:
         self._state: ConnectionState = state
-        self._message: Message = message
+        self._message: PollMessage = message
 
         self.id: int = int(data.get('id'))
         self.me_voted: bool = data.get('me_voted')
         self.count: int = data.get('count')
 
+    def __repr__(self) -> str:
+        return f'<PollAnswerCount id={self.id} resolved={self.resolved!r}>'
+
     @property
-    def original_message(self) -> Message:
-        """:class:`Message`: Returns the original message the poll of this answer is in."""
+    def original_message(self) -> PollMessage:
+        """Union[:class:`PartialMessage`, :class:`Message`]: Returns the original message the poll of this answer is in."""
         return self._message
 
     @property
@@ -224,36 +261,41 @@ class PollAnswer(PollAnswerBase):
     def __init__(
         self,
         *,
+        poll: Poll,
         data: PollAnswerWithIDPayload,
-        message: Optional[Message] = None,
     ) -> None:
-        self._state: Optional[ConnectionState] = message._state if message else None
-        self._message: Optional[Message] = message
+        self._state: Optional[ConnectionState] = poll._message._state if poll._message else None
+        self._message: Optional[PollMessage] = poll._message
+        self._poll: Poll = poll
 
-        media = data['poll_media']
-
-        self.media: PollMedia = PollMedia(media['text'], media.get('emoji', None))
+        self.media: PollMedia = PollMedia.from_dict(data=data['poll_media'])
         # Moved all to 'media' NamedTuple so it is accessed via properties
         self.id: int = int(data['answer_id'])
+
+    def __repr__(self) -> str:
+        return f'<PollAnswer id={self.id} media={self.media}>'
 
     @classmethod
     def from_params(
         cls,
         id: int,
         text: str,
-        emoji: Optional[Union[Emoji, PartialEmoji, str]] = None,
+        emoji: Optional[PollMediaEmoji] = None,
         *,
-        message: Optional[Message] = None,
+        poll: Poll,
     ) -> Self:
         poll_media: PollMediaPayload = {'text': text}
         if emoji:
-            poll_media.update(
-                {'emoji': {'id': emoji.id if isinstance(emoji, (PartialEmoji, Emoji)) else None, 'name': str(emoji)}}
-            )
+            if isinstance(emoji, Emoji):
+                poll_media['emoji'] = emoji  # type: ignore
+            elif isinstance(emoji, PartialEmoji):
+                poll_media['emoji'] = emoji  # type: ignore
+            else:
+                poll_media['emoji'] = {'name': str(emoji)}
 
         payload: PollAnswerWithIDPayload = {'answer_id': id, 'poll_media': poll_media}
 
-        return cls(data=payload, message=message)
+        return cls(data=payload, poll=poll)
 
     @property
     def text(self) -> str:
@@ -263,21 +305,38 @@ class PollAnswer(PollAnswerBase):
     @property
     def emoji(self) -> Optional[PartialEmoji]:
         """Optional[:class:`PartialEmoji`]: Returns this answer display emoji, is any."""
-        if self.media.emoji:
-            emoji_id: Optional[int] = int(self.media.emoji['id']) if self.media.emoji.get('id', None) is not None else None
-            return PartialEmoji(name=self.media.emoji['name'], id=emoji_id)
-        return None  # Explicitly return None
+        return self.media.emoji
+
+    @utils.cached_property
+    def poll(self) -> Optional[Poll]:
+        """Optional[:class:`Poll`]: The parent poll of this answer."""
+
+        return self._poll
+
+    def get_count(self) -> Optional[PollAnswerCount]:
+        """Returns this answer's count data, if available.
+
+        .. warning::
+
+            This will **always** return ``None`` if it was added to a user-constructed poll object via
+            :meth:`Poll.add_answer`.
+
+        Returns
+        -------
+        Optional[:class:`PollAnswerCount`]
+            This poll's answer count, or ``None`` if not available.
+        """
+
+        if not self._message:
+            return None
+        return self._message.poll.get_answer_count(id=self.id)
 
     def _to_dict(self) -> PollMediaPayload:
         data: Dict[str, Union[str, Dict[str, Union[str, int]]]] = dict()  # Type hinted to make type-checker happy
         data['text'] = self.text
 
         if self.emoji is not None:
-            data['emoji'] = {
-                'name': str(self.emoji)
-            }
-            if self.emoji.id:
-                data['emoji']['id'] = self.emoji.id
+            data['emoji'] = self.emoji.to_dict()
 
         return data  # type: ignore # Type Checker complains that this dict's type ain't PollAnswerMediaPayload
 
@@ -291,12 +350,21 @@ class Poll:
 
             Returns the Poll's question
 
+        .. describe:: len(x)
+
+            Returns the Poll's answer amount.
+
     .. versionadded:: 2.4
 
     Parameters
     ----------
-    question: :class:`str`
-        The poll's question. Can be up to 300 characters.
+    question: Union[:class:`PollMedia`, :class:`str`]
+        The poll's question media. Text can be up to 300 characters.
+
+        .. warning::
+
+            At the moment, this *does not* support emojis.
+
     duration: :class:`datetime.timedelta`
         The duration of the poll.
     multiselect: :class:`bool`
@@ -330,7 +398,7 @@ class Poll:
         layout_type: PollLayoutType = PollLayoutType.default,
     ) -> None:
         if isinstance(question, str):
-            self._question_media: PollMedia = PollMedia(question, None)
+            self._question_media: PollMedia = PollMedia(text=question, emoji=None)
         else:
             self._question_media: PollMedia = question  # At the moment this only supports text, so no need to add emoji support
         self._answers: List[PollAnswer] = []
@@ -361,7 +429,8 @@ class Poll:
 
     @classmethod
     def _from_data(cls, data: Union[PollWithExpiryPayload, FullPollPayload], message: Message, state: ConnectionState) -> Self:
-        answers = [PollAnswer(data=answer, message=message) for answer in data.get('answers')]
+        # In this case, `message` will always be a Message object, not a PartialMessage
+        answers = [PollAnswer(data=answer, poll=message.poll) for answer in data.get('answers')]
         multiselect = data.get('allow_multiselect', False)
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
         question_data = data.get('question')
@@ -392,7 +461,7 @@ class Poll:
         data = dict()
         data['allow_multiselect'] = self.multiselect
         data['question'] = self._question_media.to_dict()
-        data['duration'] = (self.duration.total_seconds() / 36000)
+        data['duration'] = self._hours_duration
         data['layout_type'] = self.layout_type.value
         data['answers'] = [{'poll_media': answer._to_dict()} for answer in self.answers]
 
@@ -403,6 +472,9 @@ class Poll:
 
     def __repr__(self) -> str:
         return f"<Poll duration={self.duration} question=\"{self.question}\" answers={self.answers}>"
+
+    def __len__(self) -> int:
+        return len(self.answers)
 
     @property
     def question(self) -> str:
@@ -426,7 +498,7 @@ class Poll:
         # This is auto calculated, always
         return self._expiry
 
-    @property
+    @utils.cached_property
     def answer_counts(self) -> Optional[List[PollAnswerCount]]:
         """Optional[List[:class:`PollAnswerCount`]]: Returns a read-only copy of the
         answer counts, or ``None`` if this is user-constructed."""
@@ -442,6 +514,11 @@ class Poll:
         if not self._message:
             return
         return self._message.created_at
+
+    @utils.cached_property
+    def message(self) -> Optional[PollMessage]:
+        """Union[:class:`PartialMessage`, :class:`Message`]: The message this poll is from."""
+        return self._message
 
     def is_finalized(self) -> bool:
         """:class:`bool`: Returns whether the poll has finalized.
@@ -475,7 +552,7 @@ class Poll:
             This poll with the new answer appended.
         """
 
-        answer = PollAnswer.from_params(id=len(self.answers) + 1, text=text, emoji=emoji, message=self._message)  # Auto ID
+        answer = PollAnswer.from_params(id=len(self.answers) + 1, text=text, emoji=emoji, poll=self)
 
         self._answers.append(answer)
         return self
@@ -490,19 +567,47 @@ class Poll:
         Note that the ID, as Discord says, it is the index / row where the answer
         is located in the poll.
 
+        Parameters
+        ----------
+        id: :class:`int`
+            The ID of the answer to get.
+
         Returns
         -------
         Optional[:class:`PollAnswer`]
             The answer.
         """
 
-        if id > len(self.answers):
-            return None
+        return utils.get(self.answers, id=id)
 
-        try:
-            return self.answers[id - 1]
-        except IndexError:  # Though we added a checker we should try to not raise errors.
-            return
+    def get_answer_count(
+        self,
+        /,
+        id: int,
+    ) -> Optional[PollAnswerCount]:
+        """Returns the answer count with the provided ID or ``None`` if not found.
+
+        Note that the ID, as Discord says, is the index or row where the answer is
+        located in the poll UI.
+
+        .. warning::
+
+            This will **always** return ``None`` for user-created poll objects.
+
+        Parameters
+        ----------
+        id: :class:`int`
+            The ID of the answer to get the count of.
+
+        Returns
+        -------
+        Optional[:class:`PollAnswerCount`]
+            The answer count.
+        """
+
+        if not self._counts:
+            return None
+        return utils.get(self.answer_counts, id=id)
 
     async def end(self) -> Message:
         """|coro|
@@ -531,6 +636,8 @@ class Poll:
                 'This method can only be called when a message is present, try using this via Message.poll.end()'
             )
 
-        message = await self._message._state.http.end_poll(self._message.channel.id, self._message.id)
+        data = await self._message._state.http.end_poll(self._message.channel.id, self._message.id)
 
-        return Message(state=self._state, channel=self._message.channel, data=message) # type: ignore
+        self._message = Message(state=self._state, channel=self._message.channel, data=data) # type: ignore
+
+        return self._message
