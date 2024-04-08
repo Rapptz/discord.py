@@ -4958,6 +4958,11 @@ Polls
     :members:
     :inherited-members:
 
+.. attributeable:: PollMedia
+
+.. autoclass:: PollMedia()
+    :members:
+
 RawMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
 
