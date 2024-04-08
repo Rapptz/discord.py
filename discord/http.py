@@ -260,6 +260,8 @@ def handle_message_parameters(
         payload.update(channel_payload)
 
     if poll not in (MISSING, None):
+        if len(poll) == 0 or len(poll) > 10:
+            raise ValueError('Poll must contain between 1 and 10 answers')
         payload['poll'] = poll._to_dict() # type: ignore
 
     multipart = []
