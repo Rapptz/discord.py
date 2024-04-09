@@ -29,7 +29,9 @@ class MyClient(discord.Client):
         await self.tree.sync(guild=TEST_GUILD)
 
 
-class Feedback(discord.ui.Modal, title='Feedback'):
+class Feedback(discord.ui.Modal):
+    def __init__(self):
+        super().__init__(title="Feedback")
     # Our modal classes MUST subclass `discord.ui.Modal`,
     # but the title can be whatever you want.
 
