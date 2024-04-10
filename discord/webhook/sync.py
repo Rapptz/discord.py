@@ -1022,7 +1022,7 @@ class SyncWebhook(BaseWebhook):
             applied_tag_ids = MISSING
         else:
             applied_tag_ids: SnowflakeList = [tag.id for tag in applied_tags]
-        
+
         with handle_message_parameters(
             content=content,
             username=username,
