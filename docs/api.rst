@@ -1490,6 +1490,8 @@ Polls
 
     This requires :attr:`Intents.message_content` to be enabled.
 
+    .. versionadded:: 2.4
+
     :param payload: The raw event payload data.
     :type payload: :class:`RawPollVoteActionEvent`
 
@@ -1499,6 +1501,8 @@ Polls
     is called regardless of the state of the internal user and message cache.
 
     This requires :attr:`Intents.message_content` to be enabled.
+
+    .. versionadded:: 2.4
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawPollVoteActionEvent`
