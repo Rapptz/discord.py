@@ -291,7 +291,7 @@ class PollAnswer(PollAnswerBase):
         """:class:`str`: Returns this answer display text."""
         return self.media.text
 
-    @utils.cached_property
+    @property
     def emoji(self) -> Optional[Union[PartialEmoji, Emoji]]:
         """Optional[:class:`PartialEmoji`]: Returns this answer display emoji, is any."""
         if isinstance(self.media.emoji, str):
