@@ -31,7 +31,6 @@ from typing import (
     List,
     TYPE_CHECKING,
     Union,
-    TypeAlias,
     AsyncIterator,
 )
 import datetime
@@ -58,6 +57,7 @@ if TYPE_CHECKING:
         PollAnswerWithID as PollAnswerWithIDPayload,
     )
 
+    PollMessage = Union[PartialMessage, Message]
 
 __all__ = (
     'Poll',
@@ -73,8 +73,8 @@ MISSING = utils.MISSING
 # literal.
 
 
-PollMediaEmoji: TypeAlias = Union[PartialEmoji, Emoji, str]
-PollMessage: TypeAlias = Union[PartialMessage, Message]
+PollMediaEmoji = Union[PartialEmoji, Emoji, str]
+
 
 
 class PollMedia:
