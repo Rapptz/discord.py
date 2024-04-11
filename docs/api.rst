@@ -1447,12 +1447,12 @@ Polls
 
 .. function:: on_poll_vote_add(user, message, answer)
 
-    Called when a :class:`Message` 's attached :class:`Poll` gets a new vote. If any of ``user`` or ``message``
+    Called when a :class:`Message`\'s attached :class:`Poll` gets a new vote. If any of ``user`` or ``message``
     are not cached this event will not be called.
 
     .. warning::
 
-        If the poll allows multiselect and the user votes for more than one answer,
+        If the poll allows multiselect and the user votes for more than one answer
         this event will be called as many times as answers the user has voted to.
 
     .. versionadded:: 2.4
@@ -1466,7 +1466,7 @@ Polls
 
 .. function:: on_poll_vote_remove(user, message, answer)
 
-    Called when a :class:`Message` 's attached :class:`Poll` has lost a vote. If any of ``user`` or ``message``
+    Called when a :class:`Message`\'s attached :class:`Poll` has lost a vote. If any of ``user`` or ``message``
     are not cached this event will not be called.
 
     .. warning::
