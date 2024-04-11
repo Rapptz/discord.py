@@ -32,7 +32,9 @@ from typing import (
     TYPE_CHECKING,
     Union,
     AsyncIterator,
+    NamedTuple
 )
+
 import datetime
 
 from .enums import PollLayoutType, try_enum
@@ -71,7 +73,7 @@ MISSING = utils.MISSING
 PollMediaEmoji = Union[PartialEmoji, Emoji, str]
 
 
-class PollMedia:
+class PollMedia(NamedTuple):
     """Represents the poll media for a poll item.
 
     Attributes
@@ -79,14 +81,14 @@ class PollMedia:
     text: :class:`str`
         The displayed text
     emoji: Optional[Union[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]]
-        The attached emoji for this media.
+        The attached emoji for this media. This will always be ignored for a poll
+        question media.
     """
 
     __slots__ = ('text', 'emoji')
 
-    def __init__(self, *, text: str, emoji: Optional[PollMediaEmoji] = None) -> None:
-        self.text: str = text
-        self.emoji: Optional[PollMediaEmoji] = emoji
+    text: str
+    emoji: Optional[PollMediaEmoji] = None
 
     def to_dict(self) -> PollMediaPayload:
         """Returns an API valid payload for this tuple."""
@@ -101,18 +103,15 @@ class PollMedia:
                 payload['emoji'] = self.emoji.to_dict()  # type: ignore
 
             else:
-                payload['emoji'] = {'name': str(self.emoji)}
+                payload['emoji'] = {'name': str(self.emoji)}  # type: ignore
 
-        return payload
+        return payload  # type: ignore
 
     @classmethod
     def from_dict(cls, *, data: PollMediaPayload) -> PollMedia:
         """Returns a new instance of this class from a payload."""
 
-        return cls(text=data['text'], emoji=PartialEmoji.from_dict(data.get('emoji', {})))
-
-    def __repr__(self) -> str:
-        return f'<PollMedia text={self.text} emoji={self.emoji}>'
+        return cls(text=data['text'], emoji=PartialEmoji.from_dict(data.get('emoji', {})))  # type: ignore
 
 
 class PollAnswerBase:
@@ -154,7 +153,7 @@ class PollAnswerBase:
         # As this is the same implementation for both PollAnswer objects
         # we should just recycle this.
 
-        if not self._state:
+        if not self._message or not self._state:  # Make type checker happy
             raise RuntimeError('You cannot fetch users in a non-message-attached poll')
 
         data = await self._state.http.get_poll_answer_voters(
@@ -188,7 +187,7 @@ class PollAnswerCount(PollAnswerBase):
     ----------
     id: :class:`int`
         The answer ID.
-    me_voted: :class:`bool`
+    self_voted: :class:`bool`
         Whether the current client has voted for this answer or not.
     count: :class:`int`
         The number of votes for this answer.
@@ -198,7 +197,7 @@ class PollAnswerCount(PollAnswerBase):
         '_state',
         '_message',
         'id',
-        'me_voted',
+        'self_voted',
         'count',
     )
 
@@ -207,11 +206,11 @@ class PollAnswerCount(PollAnswerBase):
         self._message: PollMessage = message
 
         self.id: int = int(data.get('id'))
-        self.me_voted: bool = data.get('me_voted')
+        self.self_voted: bool = data.get('me_voted')
         self.count: int = data.get('count')
 
     def __repr__(self) -> str:
-        return f'<PollAnswerCount id={self.id} resolved={self.resolved!r}>'
+        return f'<PollAnswerCount id={self.id} resolved={self.resolved!r}> self_voted={self.self_voted}'
 
     @property
     def original_message(self) -> PollMessage:
@@ -226,7 +225,7 @@ class PollAnswerCount(PollAnswerBase):
     @property
     def poll(self) -> Poll:
         """:class:`Poll`: Returns the poll that this answer belongs to."""
-        return self._message.poll
+        return self._message.poll  # type: ignore
 
 
 class PollAnswer(PollAnswerBase):
@@ -292,9 +291,11 @@ class PollAnswer(PollAnswerBase):
         """:class:`str`: Returns this answer display text."""
         return self.media.text
 
-    @property
-    def emoji(self) -> Optional[PartialEmoji]:
+    @utils.cached_property
+    def emoji(self) -> Optional[Union[PartialEmoji, Emoji]]:
         """Optional[:class:`PartialEmoji`]: Returns this answer display emoji, is any."""
+        if isinstance(self.media.emoji, str):
+            return PartialEmoji.from_str(self.media.emoji)
         return self.media.emoji
 
     @utils.cached_property
@@ -326,7 +327,13 @@ class PollAnswer(PollAnswerBase):
         data['text'] = self.text
 
         if self.emoji is not None:
-            data['emoji'] = self.emoji.to_dict()
+            if isinstance(self.emoji, PartialEmoji):
+                data['emoji'] = self.emoji.to_dict()  # type: ignore
+            else:
+                data['emoji'] = {'name': str(self.emoji)}
+
+                if hasattr(self.emoji, 'id'):
+                    data['emoji']['id'] = int(self.emoji.id)
 
         return data  # type: ignore # Type Checker complains that this dict's type ain't PollAnswerMediaPayload
 
@@ -410,17 +417,12 @@ class Poll:
         self._state: Optional[ConnectionState] = None
         self._finalized: bool = False
         self._counts: Optional[List[PollAnswerCount]] = None
-
-        # We set the expiry using utils.utcnow()
-
-        now = utils.utcnow()
-
-        self._expiry = now + duration
+        self._expiry: Optional[datetime.datetime] = None  # Manually set when constructed via '_from_data'
 
     @classmethod
     def _from_data(cls, data: Union[PollWithExpiryPayload, FullPollPayload], message: Message, state: ConnectionState) -> Self:
         # In this case, `message` will always be a Message object, not a PartialMessage
-        answers = [PollAnswer(data=answer, poll=message.poll) for answer in data.get('answers')]
+        answers = [PollAnswer(data=answer, poll=message.poll) for answer in data.get('answers')]  # type: ignore # 'message' will always have the 'poll' attr
         multiselect = data.get('allow_multiselect', False)
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
         question_data = data.get('question')
@@ -437,6 +439,7 @@ class Poll:
         self._answers = answers
         self._message = message
         self._state = state
+        self._expiry = expiry
 
         results = data.get('results', None)
         if results:
@@ -483,9 +486,14 @@ class Poll:
         return self._answers.copy()
 
     @property
-    def expiry(self) -> datetime:
-        """:class:`datetime.datetime`: A datetime object representing the poll expiry"""
-        # This is auto calculated, always
+    def expiry(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: A datetime object representing the poll expiry, this is autocalculated using a UTC :class:`datetime.datetime` object
+        and adding the poll duration.
+
+        .. note::
+    
+            This will **always** return ``None`` if the poll is not part of a message.
+        """
         return self._expiry
 
     @utils.cached_property
@@ -595,7 +603,7 @@ class Poll:
             The answer count.
         """
 
-        if not self._counts:
+        if not self.answer_counts:
             return None
         return utils.get(self.answer_counts, id=id)
 
@@ -621,13 +629,13 @@ class Poll:
             The updated message with the poll ended and with accurate results.
         """
 
-        if not self._message:
+        if not self._message or not self._state:  # Make type checker happy
             raise RuntimeError(
                 'This method can only be called when a message is present, try using this via Message.poll.end()'
             )
 
         data = await self._state.http.end_poll(self._message.channel.id, self._message.id)
 
-        self._message = Message(state=self._state, channel=self._message.channel, data=data)  # type: ignore
+        self._message = Message(state=self._state, channel=self._message.channel, data=data)
 
         return self._message
