@@ -68,14 +68,7 @@ __all__ = (
 )
 
 MISSING = utils.MISSING
-
-# PollDuration = Literal[1, 4, 8, 24, 72, 168]
-# So, I discovered that any time is valid, so there is no need for this to be a strict
-# literal.
-
-
 PollMediaEmoji = Union[PartialEmoji, Emoji, str]
-
 
 
 class PollMedia:
@@ -117,10 +110,6 @@ class PollMedia:
         """Returns a new instance of this class from a payload."""
 
         return cls(text=data['text'], emoji=PartialEmoji.from_dict(data.get('emoji', {})))
-
-    def __iter__(self) -> Union[str, Optional[PollMediaEmoji]]:
-        yield self.text
-        yield self.emoji
 
     def __repr__(self) -> str:
         return f'<PollMedia text={self.text} emoji={self.emoji}>'
@@ -330,7 +319,7 @@ class PollAnswer(PollAnswerBase):
 
         if not self._message:
             return None
-        return self._message.poll.get_answer_count(id=self.id)
+        return self._message.poll.get_answer_count(id=self.id)  # type: ignore # Message will ALWAYS be a value here
 
     def _to_dict(self) -> PollMediaPayload:
         data: Dict[str, Union[str, Dict[str, Union[str, int]]]] = dict()  # Type hinted to make type-checker happy
@@ -637,8 +626,8 @@ class Poll:
                 'This method can only be called when a message is present, try using this via Message.poll.end()'
             )
 
-        data = await self._message._state.http.end_poll(self._message.channel.id, self._message.id)
+        data = await self._state.http.end_poll(self._message.channel.id, self._message.id)
 
-        self._message = Message(state=self._state, channel=self._message.channel, data=data) # type: ignore
+        self._message = Message(state=self._state, channel=self._message.channel, data=data)  # type: ignore
 
         return self._message
