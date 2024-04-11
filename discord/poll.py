@@ -85,8 +85,6 @@ class PollMedia(NamedTuple):
         question media.
     """
 
-    __slots__ = ('text', 'emoji')
-
     text: str
     emoji: Optional[PollMediaEmoji] = None
 
