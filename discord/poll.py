@@ -59,6 +59,7 @@ if TYPE_CHECKING:
 
     PollMessage = Union[PartialMessage, Message]
 
+
 __all__ = (
     'Poll',
     'PollAnswer',
