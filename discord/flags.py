@@ -1263,6 +1263,8 @@ class Intents(BaseFlags):
 
         - :func:`on_poll_vote_add` (both guilds and DMs)
         - :func:`on_poll_vote_remove` (both guilds and DMs)
+        - :func:`on_raw_poll_vote_add` (both guilds and DMs)
+        - :func:`on_raw_poll_vote_remove` (both guilds and DMs)
 
         .. versionadded:: 2.4
         """
@@ -1278,6 +1280,8 @@ class Intents(BaseFlags):
 
         - :func:`on_poll_vote_add` (only for guilds)
         - :func:`on_poll_vote_remove` (only for guilds)
+        - :func:`on_raw_poll_vote_add` (only for guilds)
+        - :func:`on_raw_poll_vote_remove` (only for guilds)
 
         .. versionadded:: 2.4
         """
@@ -1293,6 +1297,8 @@ class Intents(BaseFlags):
 
         - :func:`on_poll_vote_add` (only for DMs)
         - :func:`on_poll_vote_remove` (only for DMs)
+        - :func:`on_raw_poll_vote_add` (only for DMs)
+        - :func:`on_raw_poll_vote_remove` (only for DMs)
 
         .. versionadded:: 2.4
         """
