@@ -25,15 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 
-from typing import (
-    Dict,
-    Optional,
-    List,
-    TYPE_CHECKING,
-    Union,
-    AsyncIterator,
-    NamedTuple
-)
+from typing import Dict, Optional, List, TYPE_CHECKING, Union, AsyncIterator, NamedTuple
 
 import datetime
 
@@ -111,7 +103,6 @@ class PollMedia(NamedTuple):
 
 
 class PollAnswerBase:
-
     if TYPE_CHECKING:
         id: int
         _message: Optional[Message]
@@ -153,11 +144,7 @@ class PollAnswerBase:
             raise RuntimeError('You cannot fetch users in a non-message-attached poll')
 
         data = await self._state.http.get_poll_answer_voters(
-            self._message.channel.id,
-            self._message.id,
-            self.id,
-            after.id if after is not MISSING else MISSING,
-            limit
+            self._message.channel.id, self._message.id, self.id, after.id if after is not MISSING else MISSING, limit
         )
 
         if not self._message.guild:
@@ -397,7 +384,9 @@ class Poll:
         if isinstance(question, str):
             self._question_media: PollMedia = PollMedia(text=question, emoji=None)
         else:
-            self._question_media: PollMedia = question  # At the moment this only supports text, so no need to add emoji support
+            self._question_media: PollMedia = (
+                question  # At the moment this only supports text, so no need to add emoji support
+            )
         self._answers: List[PollAnswer] = []
         self.duration: datetime.timedelta = duration
         self._hours_duration: float = duration.total_seconds() / 3600
@@ -414,8 +403,12 @@ class Poll:
         self._expiry: Optional[datetime.datetime] = None  # Manually set when constructed via '_from_data'
 
     @classmethod
-    def _from_data(cls, *, data: Union[PollWithExpiryPayload, FullPollPayload], message: Message, state: ConnectionState) -> Self:
-        answers = [PollAnswer(data=answer, poll=message.poll, message=message) for answer in data.get('answers')]  # 'message' will always have the 'poll' attr
+    def _from_data(
+        cls, *, data: Union[PollWithExpiryPayload, FullPollPayload], message: Message, state: ConnectionState
+    ) -> Self:
+        answers = [
+            PollAnswer(data=answer, poll=message.poll, message=message) for answer in data.get('answers')
+        ]  # 'message' will always have the 'poll' attr
         multiselect = data.get('allow_multiselect', False)
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
         question_data = data.get('question')
@@ -487,7 +480,7 @@ class Poll:
         and adding the poll duration.
 
         .. note::
-    
+
             This will **always** return ``None`` if the poll is not part of a message.
         """
         return self._expiry
