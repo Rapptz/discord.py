@@ -1257,7 +1257,9 @@ class Intents(BaseFlags):
 
     @flag_value
     def polls(self):
-        """:class:`bool`: Whether poll related events are enabled.
+        """:class:`bool`: Whether guild and direct messages poll related events are enabled.
+
+        This is a shortcut to set or get both :attr:`guild_polls` and :attr:`dm_polls`.
 
         This corresponds to the following events:
 
@@ -1272,9 +1274,9 @@ class Intents(BaseFlags):
 
     @flag_value
     def guild_polls(self):
-        """:class:`bool`: Whether poll related events are enabled.
+        """:class:`bool`: Whether guild poll related events are enabled.
 
-        See also :attr:`dm_polls` for DMs or :attr:`polls` for both.
+        See also :attr:`dm_polls` and :attr:`polls`.
 
         This corresponds to the following events:
 
@@ -1289,9 +1291,9 @@ class Intents(BaseFlags):
 
     @flag_value
     def dm_polls(self):
-        """:class:`bool`: Whether poll related events are enabled.
+        """:class:`bool`: Whether direct messages poll related events are enabled.
 
-        See also :attr:`guild_polls` for guilds or :attr:`polls` for both.
+        See also :attr:`guild_polls` and :attr:`polls`.
 
         This corresponds to the following events:
 
