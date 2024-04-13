@@ -248,12 +248,13 @@ class PollAnswer(PollAnswerBase):
     def __init__(
         self,
         *,
-        message: Message,
+        message: Optional[PollMessage],
+        poll: Optional[Poll] = None,  # Defaults to message poll
         data: PollAnswerWithIDPayload,
     ) -> None:
         self._state: Optional[ConnectionState] = message._state if message else None
         self._message: Optional[PollMessage] = message
-        self._poll: Poll = message.poll
+        self._poll: Poll = message.poll if message else poll
 
         self.media: PollMedia = PollMedia.from_dict(data=data['poll_media'])
         # Moved all to 'media' NamedTuple so it is accessed via properties
@@ -285,7 +286,7 @@ class PollAnswer(PollAnswerBase):
 
         payload: PollAnswerWithIDPayload = {'answer_id': id, 'poll_media': poll_media}
 
-        return cls(data=payload, poll=poll)
+        return cls(data=payload, message=poll.message, poll=poll)
 
     @property
     def text(self) -> str:
@@ -403,18 +404,12 @@ class Poll:
         self.duration: datetime.timedelta = duration
         self._hours_duration: float = duration.total_seconds() / 3600
 
-        if self._hours_duration < 1:
-            raise ValueError('Polls duration must be at least 1 hour')
-
-        if self._hours_duration > 168:
-            raise ValueError('Polls duration cannot exceed 7 days')
-
         self.multiselect: bool = multiselect
         self.layout_type: PollLayoutType = layout_type
 
         # NOTE: These attributes are set manually when calling
         # _from_data, so it should be ``None`` now.
-        self._message: Optional[Message] = None
+        self._message: Optional[PollMessage] = None
         self._state: Optional[ConnectionState] = None
         self._finalized: bool = False
         self._counts: Optional[List[PollAnswerCount]] = None
@@ -423,7 +418,7 @@ class Poll:
     @classmethod
     def _from_data(cls, *, data: Union[PollWithExpiryPayload, FullPollPayload], message: Message, state: ConnectionState) -> Self:
         # In this case, `message` will always be a Message object, not a PartialMessage
-        answers = [PollAnswer(data=answer, message=message) for answer in data.get('answers')]  # type: ignore # 'message' will always have the 'poll' attr
+        answers = [PollAnswer(data=answer, poll=message.poll, message=message) for answer in data.get('answers')]  # type: ignore # 'message' will always have the 'poll' attr
         multiselect = data.get('allow_multiselect', False)
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
         question_data = data.get('question')
@@ -514,7 +509,7 @@ class Poll:
             return
         return self._message.created_at
 
-    @utils.cached_property
+    @property
     def message(self) -> Optional[PollMessage]:
         """Union[:class:`PartialMessage`, :class:`Message`]: The message this poll is from."""
         return self._message
