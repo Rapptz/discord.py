@@ -426,6 +426,9 @@ class Poll:
         expiry = datetime.datetime.fromisoformat(data['expiry'])  # If obtained via API, then expiry is set.
         duration = expiry - message.created_at  # self.created_at = message.created_at|duration = self.created_at - expiry
 
+        if (duration.total_seconds() / 3600) > 168:  # As the duration may exceed little milliseconds then we fix it
+            duration = datetime.timedelta(days=7)
+
         self = cls(
             duration=duration,
             multiselect=multiselect,
