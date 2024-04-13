@@ -1836,6 +1836,17 @@ class Client:
 
     @overload
     async def wait_for(
+        self: Union[Bot, AutoShardedBot],
+        event: Literal['poll_vote_add', 'poll_vote_remove'],
+        /,
+        *,
+        check: Optional[Callable[[Context[Any]], bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> Context[Any]:
+        ...
+
+    @overload
+    async def wait_for(
         self,
         event: str,
         /,
