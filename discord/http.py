@@ -262,6 +262,8 @@ def handle_message_parameters(
     if poll not in (MISSING, None):
         if len(poll) == 0 or len(poll) > 10:
             raise ValueError('Poll must contain between 1 and 10 answers')
+        if poll._hours_duration < 1 or poll._hours_duration > 168:
+            raise ValueError('Polls duration must be between 1 hour and 7 days')
         payload['poll'] = poll._to_dict() # type: ignore
 
     multipart = []
