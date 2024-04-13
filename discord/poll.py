@@ -45,7 +45,7 @@ from .user import User
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .message import Message, PartialMessage
+    from .message import Message
     from .abc import Snowflake
     from .state import ConnectionState
     from .member import Member
@@ -58,8 +58,6 @@ if TYPE_CHECKING:
         FullPoll as FullPollPayload,
         PollAnswerWithID as PollAnswerWithIDPayload,
     )
-
-    PollMessage = Union[PartialMessage, Message]
 
 
 __all__ = (
@@ -199,9 +197,9 @@ class PollAnswerCount(PollAnswerBase):
         'count',
     )
 
-    def __init__(self, *, state: ConnectionState, message: PollMessage, data: PollAnswerCountPayload) -> None:
+    def __init__(self, *, state: ConnectionState, message: Message, data: PollAnswerCountPayload) -> None:
         self._state: ConnectionState = state
-        self._message: PollMessage = message
+        self._message: Message = message
 
         self.id: int = int(data.get('id'))
         self.self_voted: bool = data.get('me_voted')
@@ -211,8 +209,8 @@ class PollAnswerCount(PollAnswerBase):
         return f'<PollAnswerCount id={self.id} resolved={self.resolved!r}> self_voted={self.self_voted}'
 
     @property
-    def original_message(self) -> PollMessage:
-        """Union[:class:`PartialMessage`, :class:`Message`]: Returns the original message the poll of this answer is in."""
+    def original_message(self) -> Message:
+        """:class:`Message`: Returns the original message the poll of this answer is in."""
         return self._message
 
     @property
@@ -248,13 +246,13 @@ class PollAnswer(PollAnswerBase):
     def __init__(
         self,
         *,
-        message: Optional[PollMessage],
+        message: Optional[Message],
         poll: Optional[Poll] = None,  # Defaults to message poll
         data: PollAnswerWithIDPayload,
     ) -> None:
         self._state: Optional[ConnectionState] = message._state if message else None
-        self._message: Optional[PollMessage] = message
-        self._poll: Poll = message.poll if message else poll
+        self._message: Optional[Message] = message
+        self._poll: Poll = message.poll if message else poll  # type: ignore
 
         self.media: PollMedia = PollMedia.from_dict(data=data['poll_media'])
         # Moved all to 'media' NamedTuple so it is accessed via properties
@@ -275,7 +273,7 @@ class PollAnswer(PollAnswerBase):
         poll_media: PollMediaPayload = {'text': text}
         if emoji:
             if isinstance(emoji, Emoji):
-                poll_media['emoji'] = {'name': emoji.name}  # type: ignore
+                poll_media['emoji'] = {'name': emoji.name}
 
                 if emoji.id:
                     poll_media['emoji']['id'] = emoji.id
@@ -409,7 +407,7 @@ class Poll:
 
         # NOTE: These attributes are set manually when calling
         # _from_data, so it should be ``None`` now.
-        self._message: Optional[PollMessage] = None
+        self._message: Optional[Message] = None
         self._state: Optional[ConnectionState] = None
         self._finalized: bool = False
         self._counts: Optional[List[PollAnswerCount]] = None
@@ -417,8 +415,7 @@ class Poll:
 
     @classmethod
     def _from_data(cls, *, data: Union[PollWithExpiryPayload, FullPollPayload], message: Message, state: ConnectionState) -> Self:
-        # In this case, `message` will always be a Message object, not a PartialMessage
-        answers = [PollAnswer(data=answer, poll=message.poll, message=message) for answer in data.get('answers')]  # type: ignore # 'message' will always have the 'poll' attr
+        answers = [PollAnswer(data=answer, poll=message.poll, message=message) for answer in data.get('answers')]  # 'message' will always have the 'poll' attr
         multiselect = data.get('allow_multiselect', False)
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
         question_data = data.get('question')
@@ -513,8 +510,8 @@ class Poll:
         return self._message.created_at
 
     @property
-    def message(self) -> Optional[PollMessage]:
-        """Union[:class:`PartialMessage`, :class:`Message`]: The message this poll is from."""
+    def message(self) -> Optional[Message]:
+        """:class:`Message`: The message this poll is from."""
         return self._message
 
     def is_finalized(self) -> bool:
