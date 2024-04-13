@@ -1450,6 +1450,8 @@ Polls
     Called when a :class:`Message`\'s attached :class:`Poll` gets a new vote. If any of ``user`` or ``message``
     are not cached this event will not be called.
 
+    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
+
     .. warning::
 
         If the poll allows multiselect and the user votes for more than one answer
@@ -1468,6 +1470,8 @@ Polls
 
     Called when a :class:`Message`\'s attached :class:`Poll` has lost a vote. If any of ``user`` or ``message``
     are not cached this event will not be called.
+
+    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
 
     .. warning::
 
@@ -1488,7 +1492,7 @@ Polls
     Called when a :class:`Message` 's attached :class:`Poll` gets a new vote. Unlike :func:`on_poll_vote_add` this
     is called regardless of the state of the internal user and message cache.
 
-    This requires :attr:`Intents.message_content` to be enabled.
+    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
 
     .. versionadded:: 2.4
 
@@ -1500,7 +1504,7 @@ Polls
     Called when a :class:`Message` 's attached :class:`Poll` has lost a vote. Unlike :func:`on_poll_vote_remove` this
     is called regardless of the state of the internal user and message cache.
 
-    This requires :attr:`Intents.message_content` to be enabled.
+    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
 
     .. versionadded:: 2.4
 
@@ -4942,30 +4946,14 @@ Entitlement
 .. autoclass:: Entitlement()
     :members:
 
-Polls
-~~~~~~~~~~~
-
-.. attributeable:: Poll
-
-.. autoclass:: Poll()
-    :members:
-
-.. attributeable:: PollAnswer
-
-.. autoclass:: PollAnswer()
-    :members:
-    :inherited-members:
+PollAnswerCount
+~~~~~~~~~~~~~~~
 
 .. attributeable:: PollAnswerCount
 
 .. autoclass:: PollAnswerCount()
     :members:
     :inherited-members:
-
-.. attributeable:: PollMedia
-
-.. autoclass:: PollMedia()
-    :members:
 
 RawMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -5359,6 +5347,39 @@ ForumTag
 
 .. autoclass:: ForumTag
     :members:
+
+Poll
+~~~~
+
+.. attributeable:: Poll
+
+.. autoclass:: Poll()
+    :members:
+
+.. attributeable:: PollAnswer
+
+.. autoclass:: PollAnswer()
+    :members:
+    :inherited-members:
+
+.. class:: PollMedia
+
+    A namedtuple which represents the media for a poll object.
+
+    .. attribute:: text
+
+        The text to display in the object.
+
+        :type: :class:`str`
+    .. attribute:: emoji
+
+        The emoji to display alongside the object.
+
+        .. warning::
+
+            For poll questions, emojis are **not** supported.
+
+        :type: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
 
 
 Exceptions
