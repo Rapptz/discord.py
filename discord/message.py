@@ -1696,9 +1696,12 @@ class Message(PartialMessage, Hashable):
         self.position: Optional[int] = data.get('position')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
-        poll = data.get('poll')
+        self.poll: Optional[Poll] = None
 
-        self.poll: Optional[Poll] = Poll._from_data(poll, self, state) if poll else None
+        poll_data = data.get('poll')
+
+        if poll_data:
+            self.poll = Poll._from_data(data=poll_data, message=self, state=self._state)
 
         try:
             # if the channel doesn't have a guild attribute, we handle that
