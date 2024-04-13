@@ -4949,7 +4949,7 @@ Entitlement
 PollAnswerCount
 ~~~~~~~~~~~~~~~
 
-.. attributeable:: PollAnswerCount
+.. attributetable:: PollAnswerCount
 
 .. autoclass:: PollAnswerCount()
     :members:
@@ -5062,7 +5062,7 @@ RawAppCommandPermissionsUpdateEvent
 RawPollVoteActionEvent
 ~~~~~~~~~~~~~~~~~~~~~~
 
-.. attributeable:: RawPollVoteActionEvent
+.. attributetable:: RawPollVoteActionEvent
 
 .. autoclass:: RawPollVoteActionEvent()
     :members:
@@ -5351,12 +5351,12 @@ ForumTag
 Poll
 ~~~~
 
-.. attributeable:: Poll
+.. attributetable:: Poll
 
 .. autoclass:: Poll()
     :members:
 
-.. attributeable:: PollAnswer
+.. attributetable:: PollAnswer
 
 .. autoclass:: PollAnswer()
     :members:
