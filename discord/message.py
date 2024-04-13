@@ -2434,7 +2434,7 @@ class Message(PartialMessage, Hashable):
 
         data = await self._state.http.end_poll(self.channel.id, self.id)
         message = self.__class__(state=self._state, channel=self.channel, data=data)
-        self.poll = message.poll
+        self._poll = message.poll
 
         return message
 
