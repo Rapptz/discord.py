@@ -1619,10 +1619,6 @@ class Message(PartialMessage, Hashable):
         .. versionadded:: 2.2
     guild: Optional[:class:`Guild`]
         The guild that the message belongs to, if applicable.
-    poll: Optional[:class:`Poll`]
-        The attached poll of this message, or ``None``.
-
-        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -1657,7 +1653,7 @@ class Message(PartialMessage, Hashable):
         'role_subscription',
         'application_id',
         'position',
-        'poll',
+        '_poll',
     )
 
     if TYPE_CHECKING:
@@ -1696,12 +1692,12 @@ class Message(PartialMessage, Hashable):
         self.position: Optional[int] = data.get('position')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
-        self.poll: Optional[Poll] = None
 
-        poll_data = data.get('poll')
-
-        if poll_data:
-            self.poll = Poll._from_data(data=poll_data, message=self, state=self._state)
+        poll = data.get('poll')
+        if poll:
+            self._poll = Poll._from_data(data=poll, message=self, state=self._state)
+        else:
+            self._poll = None
 
         try:
             # if the channel doesn't have a guild attribute, we handle that
@@ -2252,6 +2248,11 @@ class Message(PartialMessage, Hashable):
 
         # Fallback for unknown message types
         return ''
+
+    @property
+    def poll(self) -> Optional[Poll]:
+        """Optional[:class:`Poll`]: This message\'s attached poll."""
+        return self._poll
 
     @overload
     async def edit(
