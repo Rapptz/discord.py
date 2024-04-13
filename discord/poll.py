@@ -274,9 +274,12 @@ class PollAnswer(PollAnswerBase):
         poll_media: PollMediaPayload = {'text': text}
         if emoji:
             if isinstance(emoji, Emoji):
-                poll_media['emoji'] = emoji  # type: ignore
+                poll_media['emoji'] = {'name': emoji.name}  # type: ignore
+
+                if emoji.id:
+                    poll_media['emoji']['id'] = emoji.id
             elif isinstance(emoji, PartialEmoji):
-                poll_media['emoji'] = emoji  # type: ignore
+                poll_media['emoji'] = emoji.to_dict()  # type: ignore
             else:
                 poll_media['emoji'] = {'name': str(emoji)}
 
