@@ -248,12 +248,12 @@ class PollAnswer(PollAnswerBase):
     def __init__(
         self,
         *,
-        poll: Poll,
+        message: Message,
         data: PollAnswerWithIDPayload,
     ) -> None:
-        self._state: Optional[ConnectionState] = poll._message._state if poll._message else None
-        self._message: Optional[PollMessage] = poll._message
-        self._poll: Poll = poll
+        self._state: Optional[ConnectionState] = message._state if message else None
+        self._message: Optional[PollMessage] = message
+        self._poll: Poll = message.poll
 
         self.media: PollMedia = PollMedia.from_dict(data=data['poll_media'])
         # Moved all to 'media' NamedTuple so it is accessed via properties
@@ -421,9 +421,9 @@ class Poll:
         self._expiry: Optional[datetime.datetime] = None  # Manually set when constructed via '_from_data'
 
     @classmethod
-    def _from_data(cls, data: Union[PollWithExpiryPayload, FullPollPayload], message: Message, state: ConnectionState) -> Self:
+    def _from_data(cls, *, data: Union[PollWithExpiryPayload, FullPollPayload], message: Message, state: ConnectionState) -> Self:
         # In this case, `message` will always be a Message object, not a PartialMessage
-        answers = [PollAnswer(data=answer, poll=message.poll) for answer in data.get('answers')]  # type: ignore # 'message' will always have the 'poll' attr
+        answers = [PollAnswer(data=answer, message=message) for answer in data.get('answers')]  # type: ignore # 'message' will always have the 'poll' attr
         multiselect = data.get('allow_multiselect', False)
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
         question_data = data.get('question')
