@@ -116,6 +116,7 @@ if TYPE_CHECKING:
     from .ui.item import Item
     from .voice_client import VoiceProtocol
     from .audit_logs import AuditLogEntry
+    from .poll import PollAnswer
 
 
 # fmt: off
@@ -1842,7 +1843,7 @@ class Client:
         *,
         check: Optional[Callable[[Context[Any]], bool]] = None,
         timeout: Optional[float] = None,
-    ) -> Context[Any]:
+    ) -> Tuple[Union[User, Member], Message, PollAnswer]:
         ...
 
     @overload
