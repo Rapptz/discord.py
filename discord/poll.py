@@ -425,9 +425,7 @@ class Poll:
         self._message = message
 
         if not message.poll:
-            # This will never be called because this should only be called
-            # on Messageable.send when poll is not MISSING, so it will
-            # always be a value
+            # Something should go very wrong for this if block to be called
             return
         # These attributes are accessed via message.poll as there
         # is where all the data is stored
