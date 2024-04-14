@@ -1606,8 +1606,7 @@ class Messageable:
             state.store_view(view, ret.id)
 
         if poll is not MISSING:
-            poll._message = ret
-            poll._state = ret._state
+            poll._update(ret)
 
         if delete_after is not None:
             await ret.delete(delay=delete_after)
