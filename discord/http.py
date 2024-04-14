@@ -156,7 +156,7 @@ def handle_message_parameters(
     thread_name: str = MISSING,
     channel_payload: Dict[str, Any] = MISSING,
     applied_tags: Optional[SnowflakeList] = MISSING,
-    poll: Optional[Poll] = MISSING
+    poll: Poll = MISSING
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -259,7 +259,7 @@ def handle_message_parameters(
         }
         payload.update(channel_payload)
 
-    if poll not in (MISSING, None):
+    if poll is not MISSING:
         if len(poll) == 0 or len(poll) > 10:
             raise ValueError('Poll must contain between 1 and 10 answers')
         if poll._hours_duration < 1 or poll._hours_duration > 168:
@@ -2518,15 +2518,16 @@ class HTTPClient:
         channel_id: Snowflake,
         message_id: Snowflake,
         answer_id: Snowflake,
-        after: Snowflake = MISSING,
-        limit: int = 25
+        after: Optional[Snowflake] = None,
+        limit: Optional[int] = None,
     ) -> Response[poll.PollAnswerVoters]:
-        params = {
-            'limit': limit
-        }
+        params = {}
 
-        if after is not MISSING:
+        if after:
             params['after'] = int(after)
+        
+        if limit:
+            params['limit'] = limit
 
         return self.request(
             Route(
