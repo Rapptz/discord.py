@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 
-from typing import Optional, List, TYPE_CHECKING, Union, AsyncIterator, NamedTuple
+from typing import Dict, Optional, List, TYPE_CHECKING, Union, AsyncIterator, NamedTuple
 
 import datetime
 
@@ -111,6 +111,10 @@ class PollAnswerBase:
         self.id: int = id
         self._message: Optional[Message] = message
         self._state: Optional[ConnectionState] = state
+
+    def _update(self, message: Message) -> None:
+        self._message = message
+        self._state = message._state
 
     async def users(
         self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
@@ -315,8 +319,7 @@ class PollAnswer(PollAnswerBase):
 
         .. warning::
 
-            This will **always** return ``None`` if it was added to a user-constructed poll object via
-            :meth:`Poll.add_answer`.
+            This will **always** return ``None`` if the parent poll is user-constructed.
 
         Returns
         -------
@@ -324,9 +327,9 @@ class PollAnswer(PollAnswerBase):
             This poll's answer count, or ``None`` if not available.
         """
 
-        if not self._message:
+        if not self._poll:
             return None
-        return self._message.poll.get_answer_count(id=self.id)  # type: ignore # Message will ALWAYS be a value here
+        return self._poll.get_answer_count(id=self.id)
 
     def _to_dict(self) -> PollMediaPayload:
         data: PollMediaPayload = {'text': self.text}
@@ -417,7 +420,7 @@ class Poll:
         self._message: Optional[Message] = None
         self._state: Optional[ConnectionState] = None
         self._finalized: bool = False
-        self._counts: Optional[List[PollAnswerCount]] = None
+        self._counts: Optional[Dict[int, PollAnswerCount]] = None # {answer_id: answer_count}
         self._expiry: Optional[datetime.datetime] = None
 
     def _update(self, message: Message) -> None:
@@ -432,6 +435,9 @@ class Poll:
         self._expiry = message.poll.expiry
         self._finalized = message.poll._finalized
         self._counts = message.poll._counts
+
+        for answer in self._answers:
+            answer._update(message)
 
     @classmethod
     def _from_data(
@@ -466,9 +472,10 @@ class Poll:
         results = data.get('results', None)
         if results:
             self._finalized = results.get('is_finalized')
-            self._counts = [
-                PollAnswerCount(state=state, message=message, data=count) for count in results.get('answer_counts')
-            ]
+            self._counts = {
+                int(count['id']): PollAnswerCount(state=state, message=message, data=count)
+                for count in results.get('answer_counts')
+            }
 
         return self
 
@@ -521,14 +528,14 @@ class Poll:
         """
         return self._expiry
 
-    @utils.cached_property
+    @property
     def answer_counts(self) -> Optional[List[PollAnswerCount]]:
         """Optional[List[:class:`PollAnswerCount`]]: Returns a read-only copy of the
         answer counts, or ``None`` if this is user-constructed."""
 
-        if self._counts:
-            return self._counts.copy()
-        return None
+        if not self._counts:
+            return
+        return list(self._counts.values())
 
     @property
     def created_at(self) -> Optional[datetime.datetime]:
@@ -542,6 +549,14 @@ class Poll:
     def message(self) -> Optional[Message]:
         """:class:`Message`: The message this poll is from."""
         return self._message
+
+    @property
+    def total_votes(self) -> int:
+        """:class:`int`: Returns the sum of all the answer votes."""
+
+        if not self.answer_counts:
+            return 0
+        return sum([count.count for count in self.answer_counts])
 
     def is_finalized(self) -> bool:
         """:class:`bool`: Returns whether the poll has finalized.
@@ -633,9 +648,9 @@ class Poll:
             The answer count.
         """
 
-        if not self.answer_counts:
+        if not self._counts:
             return None
-        return utils.get(self.answer_counts, id=id)
+        return self._counts.get(id)
 
     async def end(self) -> Message:
         """|coro|
