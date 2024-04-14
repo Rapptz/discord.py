@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 
-from typing import Dict, Optional, List, TYPE_CHECKING, Union, AsyncIterator, NamedTuple
+from typing import Optional, List, TYPE_CHECKING, Union, AsyncIterator, NamedTuple
 
 import datetime
 
@@ -99,30 +99,50 @@ class PollMedia(NamedTuple):
     def from_dict(cls, *, data: PollMediaPayload) -> PollMedia:
         """Returns a new instance of this class from a payload."""
 
-        return cls(text=data['text'], emoji=PartialEmoji.from_dict(data.get('emoji', {})))  # type: ignore
+        emoji = data.get('emoji')
+
+        if emoji:
+            return cls(text=data['text'], emoji=PartialEmoji.from_dict(emoji))
+        return cls(text=data['text'])
 
 
 class PollAnswerBase:
-    if TYPE_CHECKING:
-        id: int
-        _message: Optional[Message]
-        _state: Optional[ConnectionState]
+    def __init__(self, *, id: int, message: Optional[Message], state: Optional[ConnectionState]) -> None:
+        self.id: int = id
+        self._message: Optional[Message] = message
+        self._state: Optional[ConnectionState] = state
 
-    async def users(self, *, after: Snowflake = MISSING, limit: int = 25) -> AsyncIterator[Union[User, Member]]:
-        r"""|coro|
+    async def users(
+        self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
+    ) -> AsyncIterator[Union[User, Member]]:
+        """Returns an :term:`asynchronous iterator` representing the users that have voted to this answer.
 
-        Retrieves all the voters of this answer.
+        The ``after`` parameter must represent a user
+        and meet the :class:`abc.Snowflake` abc.
 
         .. warning::
 
             This can only be called when the poll is accessed via :attr:`Message.poll`.
 
+        Examples
+        --------
+
+        Usage ::
+
+            async for user in poll_answer.users():
+                print(f'{voter} has voted for {poll_answer}!')
+
+        Flattening into a list: ::
+
+            users = [user async for user in poll_answer.users()]
+            # users is now a list of User
+
         Parameters
         ----------
-        after: :class:`Snowflake`
-            Fetches users after this ID.
-        limit: :class:`int`
+        limit: Optional[:class:`int`]
             The max number of users to return. Can be up to 100.
+        after: Optional[:class:`abc.Snowflake`]
+            Fetches users after this ID, or every user if ``None``.
 
         Raises
         ------
@@ -137,14 +157,11 @@ class PollAnswerBase:
             the member left the guild.
         """
 
-        # As this is the same implementation for both PollAnswer objects
-        # we should just recycle this.
-
         if not self._message or not self._state:  # Make type checker happy
             raise RuntimeError('You cannot fetch users in a non-message-attached poll')
 
         data = await self._state.http.get_poll_answer_voters(
-            self._message.channel.id, self._message.id, self.id, after.id if after is not MISSING else MISSING, limit
+            self._message.channel.id, self._message.id, self.id, after.id if after else None, limit
         )
 
         if not self._message.guild:
@@ -185,12 +202,10 @@ class PollAnswerCount(PollAnswerBase):
     )
 
     def __init__(self, *, state: ConnectionState, message: Message, data: PollAnswerCountPayload) -> None:
-        self._state: ConnectionState = state
-        self._message: Message = message
-
-        self.id: int = int(data.get('id'))
         self.self_voted: bool = data.get('me_voted')
         self.count: int = data.get('count')
+
+        super().__init__(id=int(data['id']), message=message, state=state)
 
     def __repr__(self) -> str:
         return f'<PollAnswerCount id={self.id} resolved={self.resolved!r}> self_voted={self.self_voted}'
@@ -198,12 +213,16 @@ class PollAnswerCount(PollAnswerBase):
     @property
     def original_message(self) -> Message:
         """:class:`Message`: Returns the original message the poll of this answer is in."""
-        return self._message
+        return self._message # type: ignore # Here will always be a value
 
     @property
-    def resolved(self) -> PollAnswer:
-        """:class:`PollAnswer`: Returns the resolved poll answer of this count."""
-        return self.original_message.poll.get_answer(self.id)  # type: ignore # This will always be a value
+    def resolved(self) -> Optional[PollAnswer]:
+        """Optional[:class:`PollAnswer`]: Returns the resolved poll answer of this count or ``None``
+        if not found.
+        """
+        if not self.original_message.poll:
+            return
+        return self.original_message.poll.get_answer(self.id)
 
     @property
     def poll(self) -> Poll:
@@ -237,13 +256,13 @@ class PollAnswer(PollAnswerBase):
         poll: Optional[Poll] = None,  # Defaults to message poll
         data: PollAnswerWithIDPayload,
     ) -> None:
-        self._state: Optional[ConnectionState] = message._state if message else None
-        self._message: Optional[Message] = message
         self._poll: Poll = message.poll if message else poll  # type: ignore
-
         self.media: PollMedia = PollMedia.from_dict(data=data['poll_media'])
-        # Moved all to 'media' NamedTuple so it is accessed via properties
-        self.id: int = int(data['answer_id'])
+
+        super().__init__(id=int(data['answer_id']), message=message, state=message._state if message else None)
+
+    def __str__(self) -> str:
+        return self.media.text
 
     def __repr__(self) -> str:
         return f'<PollAnswer id={self.id} media={self.media}>'
@@ -260,14 +279,14 @@ class PollAnswer(PollAnswerBase):
         poll_media: PollMediaPayload = {'text': text}
         if emoji:
             if isinstance(emoji, Emoji):
-                poll_media['emoji'] = {'name': emoji.name}
+                poll_media['emoji'] = {'name': emoji.name} # type: ignore
 
                 if emoji.id:
-                    poll_media['emoji']['id'] = emoji.id
+                    poll_media['emoji']['id'] = emoji.id # type: ignore
             elif isinstance(emoji, PartialEmoji):
-                poll_media['emoji'] = emoji.to_dict()  # type: ignore
+                poll_media['emoji'] = emoji.to_dict()
             else:
-                poll_media['emoji'] = {'name': str(emoji)}
+                poll_media['emoji'] = {'name': str(emoji)} # type: ignore
 
         payload: PollAnswerWithIDPayload = {'answer_id': id, 'poll_media': poll_media}
 
@@ -310,19 +329,18 @@ class PollAnswer(PollAnswerBase):
         return self._message.poll.get_answer_count(id=self.id)  # type: ignore # Message will ALWAYS be a value here
 
     def _to_dict(self) -> PollMediaPayload:
-        data: Dict[str, Union[str, Dict[str, Union[str, int]]]] = dict()  # Type hinted to make type-checker happy
-        data['text'] = self.text
+        data: PollMediaPayload = {'text': self.text}
 
         if self.emoji is not None:
             if isinstance(self.emoji, PartialEmoji):
-                data['emoji'] = self.emoji.to_dict()  # type: ignore
+                data['emoji'] = self.emoji.to_dict()
             else:
-                data['emoji'] = {'name': str(self.emoji)}
+                data['emoji'] = {'name': str(self.emoji)} # type: ignore
 
                 if hasattr(self.emoji, 'id'):
-                    data['emoji']['id'] = int(self.emoji.id)
+                    data['emoji']['id'] = int(self.emoji.id) # type: ignore
 
-        return data  # type: ignore # Type Checker complains that this dict's type ain't PollAnswerMediaPayload
+        return data
 
 
 class Poll:
@@ -347,15 +365,15 @@ class Poll:
 
         .. warning::
 
-            At the moment, this *does not* support emojis.
+            At the moment, this **does not** support emojis.
 
     duration: :class:`datetime.timedelta`
         The duration of the poll.
     multiselect: :class:`bool`
-        Whether users are allowed to select more than
-        one answer.
+        Whether users are allowed to select more than one answer. Defaults
+        to ``True``
     layout_type: :class:`PollLayoutType`
-        The layout type of the poll.
+        The layout type of the poll. Defaults to :attr:`PollLayoutType.default`
     """
 
     __slots__ = (
@@ -375,7 +393,7 @@ class Poll:
 
     def __init__(
         self,
-        question: Union[str, PollMedia],
+        question: Union[PollMedia, str],
         duration: datetime.timedelta,
         *,
         multiselect: bool = False,
@@ -400,7 +418,22 @@ class Poll:
         self._state: Optional[ConnectionState] = None
         self._finalized: bool = False
         self._counts: Optional[List[PollAnswerCount]] = None
-        self._expiry: Optional[datetime.datetime] = None  # Manually set when constructed via '_from_data'
+        self._expiry: Optional[datetime.datetime] = None
+
+    def _update(self, message: Message) -> None:
+        self._state = message._state
+        self._message = message
+
+        if not message.poll:
+            # This will never be called because this should only be called
+            # on Messageable.send when poll is not MISSING, so it will
+            # always be a value
+            return
+        # These attributes are accessed via message.poll as there
+        # is where all the data is stored
+        self._expiry = message.poll.expiry
+        self._finalized = message.poll._finalized
+        self._counts = message.poll._counts
 
     @classmethod
     def _from_data(
@@ -413,8 +446,10 @@ class Poll:
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
         question_data = data.get('question')
         question = question_data.get('text')
-        expiry = datetime.datetime.fromisoformat(data['expiry'])  # If obtained via API, then expiry is set.
-        duration = expiry - message.created_at  # self.created_at = message.created_at|duration = self.created_at - expiry
+        expiry = utils.parse_time(data['expiry'])  # If obtained via API, then expiry is set.
+        duration = expiry - message.created_at 
+        # self.created_at = message.created_at
+        # duration = self.created_at - expiry
 
         if (duration.total_seconds() / 3600) > 168:  # As the duration may exceed little milliseconds then we fix it
             duration = datetime.timedelta(days=7)
@@ -440,17 +475,20 @@ class Poll:
         return self
 
     def _to_dict(self) -> PollPayload:
-        data = dict()
-        data['allow_multiselect'] = self.multiselect
-        data['question'] = self._question_media.to_dict()
-        data['duration'] = self._hours_duration
-        data['layout_type'] = self.layout_type.value
-        data['answers'] = [{'poll_media': answer._to_dict()} for answer in self.answers]
-
-        return data  # type: ignore
+        data: PollPayload = {
+            'allow_multiselect': self.multiselect,
+            'question': self._question_media.to_dict(),
+            'duration': self._hours_duration,
+            'layout_type': self.layout_type.value,
+            'answers': [
+                {'poll_media': answer._to_dict()}
+                for answer in self.answers
+            ]
+        }
+        return data
 
     def __str__(self) -> str:
-        return self.question
+        return self._question_media.text
 
     def __repr__(self) -> str:
         return f"<Poll duration={self.duration} question=\"{self.question}\" answers={self.answers}>"
@@ -538,6 +576,11 @@ class Poll:
         :class:`Poll`
             This poll with the new answer appended.
         """
+
+        if self._message:
+            raise RuntimeError(
+                'Cannot append answers a poll recieved via a message'
+            )
 
         answer = PollAnswer.from_params(id=len(self.answers) + 1, text=text, emoji=emoji, poll=self)
 
