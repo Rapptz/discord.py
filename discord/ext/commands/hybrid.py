@@ -856,12 +856,28 @@ class HybridGroup(Group[CogT, P, T]):
         return decorator
 
 
+if TYPE_CHECKING:
+    # Using a class to emulate a function allows for overloading the inner function in the decorator.
+
+    class _HybridCommandDecorator:
+        @overload
+        def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> HybridCommand[CogT, P, T]:
+            ...
+
+        @overload
+        def __call__(self, func: Callable[Concatenate[ContextT, P], Coro[T]], /) -> HybridCommand[None, P, T]:
+            ...
+
+        def __call__(self, func: Callable[..., Coro[T]], /) -> Any:
+            ...
+
+
 def hybrid_command(
     name: Union[str, app_commands.locale_str] = MISSING,
     *,
     with_app_command: bool = True,
     **attrs: Any,
-) -> Callable[[CommandCallback[CogT, ContextT, P, T]], HybridCommand[CogT, P, T]]:
+) -> _HybridCommandDecorator:
     r"""A decorator that transforms a function into a :class:`.HybridCommand`.
 
     A hybrid command is one that functions both as a regular :class:`.Command`
