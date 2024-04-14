@@ -859,6 +859,8 @@ class HybridGroup(Group[CogT, P, T]):
 if TYPE_CHECKING:
     # Using a class to emulate a function allows for overloading the inner function in the decorator.
 
+    from typing import overload
+
     class _HybridCommandDecorator:
         @overload
         def __call__(self, func: Callable[Concatenate[CogT, ContextT, P], Coro[T]], /) -> HybridCommand[CogT, P, T]:
