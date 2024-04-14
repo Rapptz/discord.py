@@ -1055,6 +1055,20 @@ class HTTPClient:
         r = Route('DELETE', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, reason=reason)
 
+    def bulk_ban(
+        self,
+        guild_id: Snowflake,
+        user_ids: List[Snowflake],
+        delete_message_seconds: int = 86400,
+        reason: Optional[str] = None,
+    ) -> Response[guild.BulkBanUserResponse]:
+        r = Route('POST', '/guilds/{guild_id}/bulk-ban', guild_id=guild_id)
+        payload = {
+            'user_ids': user_ids,
+            'delete_message_seconds': delete_message_seconds,
+        }
+        return self.request(r, json=payload, reason=reason)
+
     def guild_voice_state(
         self,
         user_id: Snowflake,
