@@ -1527,7 +1527,7 @@ class Messageable:
             in the UI, but will not actually send a notification.
 
             .. versionadded:: 2.2
-        poll: :class:`Poll`
+        poll: :class:`~discord.Poll`
             The attached poll for this message.
 
             .. versionadded:: 2.4
