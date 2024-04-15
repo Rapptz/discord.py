@@ -618,12 +618,14 @@ class FlagConverter(metaclass=FlagsMeta):
                 setattr(self, flag.attribute, value)
                 continue
 
-            # Another special case, tuple parsing.
-            # Tuple parsing is basically converting arguments within the flag
+            # Another special case, list and tuple parsing.
+            # List and Tuple parsing is basically converting arguments within the flag
             # So, given flag: hello 20 as the input and Tuple[str, int] as the type hint
             # We would receive ('hello', 20) as the resulting value
+            # Another given flag: hello there as the input and List[str] as the type hint
+            # We would receive ['hello', 'there'] as the resulting value
             # This uses the same whitespace and quoting rules as regular parameters.
-            values = [await convert_flag(ctx, value, flag) for value in values]
+            values = await convert_flag(ctx, values[0], flag)
 
             if flag.cast_to_dict:
                 values = dict(values)
