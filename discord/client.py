@@ -107,6 +107,7 @@ if TYPE_CHECKING:
         RawThreadMembersUpdate,
         RawThreadUpdateEvent,
         RawTypingEvent,
+        RawPollVoteActionEvent,
     )
     from .reaction import Reaction
     from .role import Role
@@ -1844,6 +1845,17 @@ class Client:
         check: Optional[Callable[[Context[Any]], bool]] = None,
         timeout: Optional[float] = None,
     ) -> Tuple[Union[User, Member], Message, PollAnswer]:
+        ...
+
+    @overload
+    async def wait_for(
+        self: Union[Bot, AutoShardedBot],
+        event: Literal['raw_poll_vote_add', 'raw_poll_vote_remove'],
+        /,
+        *,
+        check: Optional[Callable[[Context[Any]], bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> RawPollVoteActionEvent:
         ...
 
     @overload
