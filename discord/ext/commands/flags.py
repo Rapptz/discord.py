@@ -353,7 +353,7 @@ class FlagsMeta(type):
         return type.__new__(cls, name, bases, attrs)
 
 
-async def tuple_convert_all(ctx: Context[BotT], argument: str, flag: Flag, converter: Any) -> Tuple[Any, ...]:
+async def list_convert_flag(ctx: Context[BotT], argument: str, flag: Flag, converter: Any) -> List[Any]:
     view = StringView(argument)
     results = []
     param: Parameter = ctx.current_parameter  # type: ignore
@@ -373,7 +373,7 @@ async def tuple_convert_all(ctx: Context[BotT], argument: str, flag: Flag, conve
         else:
             results.append(converted)
 
-    return tuple(results)
+    return results
 
 
 async def tuple_convert_flag(ctx: Context[BotT], argument: str, flag: Flag, converters: Any) -> Tuple[Any, ...]:
@@ -412,13 +412,13 @@ async def convert_flag(ctx: Context[BotT], argument: str, flag: Flag, annotation
     else:
         if origin is tuple:
             if annotation.__args__[-1] is Ellipsis:
-                return await tuple_convert_all(ctx, argument, flag, annotation.__args__[0])
+                return tuple(await list_convert_flag(ctx, argument, flag, annotation.__args__[0]))
             else:
                 return await tuple_convert_flag(ctx, argument, flag, annotation.__args__)
         elif origin is list:
             # typing.List[x]
             annotation = annotation.__args__[0]
-            return await convert_flag(ctx, argument, flag, annotation)
+            return await list_convert_flag(ctx, argument, flag, annotation)
         elif origin is Union and type(None) in annotation.__args__:
             # typing.Optional[x]
             annotation = Union[tuple(arg for arg in annotation.__args__ if arg is not type(None))]  # type: ignore
