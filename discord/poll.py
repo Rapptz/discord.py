@@ -133,7 +133,7 @@ class PollAnswerBase:
         Usage ::
 
             async for user in poll_answer.users():
-                print(f'{voter} has voted for {poll_answer}!')
+                print(f'{user} has voted for {poll_answer}!')
 
         Flattening into a list: ::
 
