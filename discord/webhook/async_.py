@@ -1863,6 +1863,9 @@ class Webhook(BaseWebhook):
             message_id = None if msg is None else msg.id
             self._state.store_view(view, message_id)
 
+        if poll is not MISSING and msg:
+            poll._update(msg)
+
         return msg
 
     async def fetch_message(self, id: int, /, *, thread: Snowflake = MISSING) -> WebhookMessage:
