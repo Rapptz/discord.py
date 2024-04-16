@@ -1068,8 +1068,15 @@ class SyncWebhook(BaseWebhook):
                 wait=wait,
             )
 
+        msg = None
+
         if wait:
-            return self._create_message(data, thread=thread)
+            msg = self._create_message(data, thread=thread)
+
+        if poll is not MISSING and msg:
+            poll._update(msg)
+
+        return msg
 
     def fetch_message(self, id: int, /, *, thread: Snowflake = MISSING) -> SyncWebhookMessage:
         """Retrieves a single :class:`~discord.SyncWebhookMessage` owned by this webhook.
