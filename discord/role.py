@@ -30,6 +30,7 @@ from .permissions import Permissions
 from .colour import Colour
 from .mixins import Hashable
 from .utils import snowflake_time, _bytes_to_base64_data, _get_as_snowflake, MISSING
+from .flags import RoleFlags
 
 __all__ = (
     'RoleTags',
@@ -219,6 +220,7 @@ class Role(Hashable):
         'hoist',
         'guild',
         'tags',
+        '_flags',
         '_state',
     )
 
@@ -281,6 +283,7 @@ class Role(Hashable):
         self.managed: bool = data.get('managed', False)
         self.mentionable: bool = data.get('mentionable', False)
         self.tags: Optional[RoleTags]
+        self._flags: int = data.get('flags', 0)
 
         try:
             self.tags = RoleTags(data['tags'])
@@ -378,6 +381,14 @@ class Role(Hashable):
 
         role_id = self.id
         return [member for member in all_members if member._roles.has(role_id)]
+
+    @property
+    def flags(self) -> RoleFlags:
+        """:class:`RoleFlags`: Returns the role's flags.
+
+        .. versionadded:: 2.4
+        """
+        return RoleFlags._from_value(self._flags)
 
     async def _move(self, position: int, reason: Optional[str]) -> None:
         if position <= 0:

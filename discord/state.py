@@ -32,6 +32,7 @@ from typing import (
     Dict,
     Optional,
     TYPE_CHECKING,
+    Type,
     Union,
     Callable,
     Any,
@@ -52,6 +53,7 @@ import os
 
 from .guild import Guild
 from .activity import BaseActivity
+from .sku import Entitlement
 from .user import User, ClientUser
 from .emoji import Emoji
 from .mentions import AllowedMentions
@@ -84,6 +86,8 @@ if TYPE_CHECKING:
     from .http import HTTPClient
     from .voice_client import VoiceProtocol
     from .gateway import DiscordWebSocket
+    from .ui.item import Item
+    from .ui.dynamic import DynamicItem
     from .app_commands import CommandTree, Translator
 
     from .types.automod import AutoModerationRule, AutoModerationActionExecution
@@ -106,12 +110,14 @@ class ChunkRequest:
     def __init__(
         self,
         guild_id: int,
+        shard_id: int,
         loop: asyncio.AbstractEventLoop,
         resolver: Callable[[int], Any],
         *,
         cache: bool = True,
     ) -> None:
         self.guild_id: int = guild_id
+        self.shard_id: int = shard_id
         self.resolver: Callable[[int], Any] = resolver
         self.loop: asyncio.AbstractEventLoop = loop
         self.cache: bool = cache
@@ -311,6 +317,16 @@ class ConnectionState(Generic[ClientT]):
         for key in removed:
             del self._chunk_requests[key]
 
+    def clear_chunk_requests(self, shard_id: int | None) -> None:
+        removed = []
+        for key, request in self._chunk_requests.items():
+            if shard_id is None or request.shard_id == shard_id:
+                request.done()
+                removed.append(key)
+
+        for key in removed:
+            del self._chunk_requests[key]
+
     def call_handlers(self, key: str, *args: Any, **kwargs: Any) -> None:
         try:
             func = self.handlers[key]
@@ -394,6 +410,12 @@ class ConnectionState(Generic[ClientT]):
 
     def prevent_view_updates_for(self, message_id: int) -> Optional[View]:
         return self._view_store.remove_message_tracking(message_id)
+
+    def store_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
+        self._view_store.add_dynamic_items(*items)
+
+    def remove_dynamic_items(self, *items: Type[DynamicItem[Item[Any]]]) -> None:
+        self._view_store.remove_dynamic_items(*items)
 
     @property
     def persistent_views(self) -> Sequence[View]:
@@ -525,7 +547,7 @@ class ConnectionState(Generic[ClientT]):
         if ws is None:
             raise RuntimeError('Somehow do not have a websocket for this guild_id')
 
-        request = ChunkRequest(guild.id, self.loop, self._get_guild, cache=cache)
+        request = ChunkRequest(guild.id, guild.shard_id, self.loop, self._get_guild, cache=cache)
         self._chunk_requests[request.nonce] = request
 
         try:
@@ -592,6 +614,7 @@ class ConnectionState(Generic[ClientT]):
 
         self._ready_state: asyncio.Queue[Guild] = asyncio.Queue()
         self.clear(views=False)
+        self.clear_chunk_requests(None)
         self.user = user = ClientUser(state=self, data=data['user'])
         self._users[user.id] = user  # type: ignore
 
@@ -1194,7 +1217,9 @@ class ConnectionState(Generic[ClientT]):
         cache = cache or self.member_cache_flags.joined
         request = self._chunk_requests.get(guild.id)
         if request is None:
-            self._chunk_requests[guild.id] = request = ChunkRequest(guild.id, self.loop, self._get_guild, cache=cache)
+            self._chunk_requests[guild.id] = request = ChunkRequest(
+                guild.id, guild.shard_id, self.loop, self._get_guild, cache=cache
+            )
             await self.chunker(guild.id, nonce=request.nonce)
 
         if wait:
@@ -1575,6 +1600,18 @@ class ConnectionState(Generic[ClientT]):
 
         self.dispatch('raw_typing', raw)
 
+    def parse_entitlement_create(self, data: gw.EntitlementCreateEvent) -> None:
+        entitlement = Entitlement(data=data, state=self)
+        self.dispatch('entitlement_create', entitlement)
+
+    def parse_entitlement_update(self, data: gw.EntitlementUpdateEvent) -> None:
+        entitlement = Entitlement(data=data, state=self)
+        self.dispatch('entitlement_update', entitlement)
+
+    def parse_entitlement_delete(self, data: gw.EntitlementDeleteEvent) -> None:
+        entitlement = Entitlement(data=data, state=self)
+        self.dispatch('entitlement_delete', entitlement)
+
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, (TextChannel, Thread, VoiceChannel)):
             return channel.guild.get_member(user_id)
@@ -1729,6 +1766,7 @@ class AutoShardedConnectionState(ConnectionState[ClientT]):
 
         if shard_id in self._ready_tasks:
             self._ready_tasks[shard_id].cancel()
+            self.clear_chunk_requests(shard_id)
 
         if shard_id not in self._ready_states:
             self._ready_states[shard_id] = asyncio.Queue()

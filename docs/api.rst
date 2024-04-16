@@ -496,6 +496,47 @@ Debug
     :type payload: Union[:class:`bytes`, :class:`str`]
 
 
+Entitlements
+~~~~~~~~~~~~
+
+.. function:: on_entitlement_create(entitlement)
+
+    Called when a user subscribes to a SKU.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was created.
+    :type entitlement: :class:`Entitlement`
+
+.. function:: on_entitlement_update(entitlement)
+
+    Called when a user updates their subscription to a SKU. This is usually called when
+    the user renews or cancels their subscription.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was updated.
+    :type entitlement: :class:`Entitlement`
+
+.. function:: on_entitlement_delete(entitlement)
+
+    Called when a users subscription to a SKU is cancelled. This is typically only called when:
+
+    - Discord issues a refund for the subscription.
+    - Discord removes an entitlement from a user.
+
+    .. warning::
+
+        This event won't be called if the user cancels their subscription manually, instead
+        :func:`on_entitlement_update` will be called with :attr:`Entitlement.ends_at` set to the end of the
+        current billing period.
+
+    .. versionadded:: 2.4
+
+    :param entitlement: The entitlement that was deleted.
+    :type entitlement: :class:`Entitlement`
+
+
 Gateway
 ~~~~~~~~
 
@@ -835,7 +876,7 @@ Members
 
 .. function:: on_member_ban(guild, user)
 
-    Called when user gets banned from a :class:`Guild`.
+    Called when a user gets banned from a :class:`Guild`.
 
     This requires :attr:`Intents.moderation` to be enabled.
 
@@ -1029,6 +1070,12 @@ Reactions
         Consider using :func:`on_raw_reaction_add` if you need this and do not otherwise want
         to enable the members intent.
 
+    .. warning::
+
+        This event does not have a way of differentiating whether a reaction is a
+        burst reaction (also known as "super reaction") or not. If you need this,
+        consider using :func:`on_raw_reaction_add` instead.
+
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
     :param user: The user who added the reaction.
@@ -1050,6 +1097,12 @@ Reactions
 
         Consider using :func:`on_raw_reaction_remove` if you need this and do not want
         to enable the members intent.
+
+    .. warning::
+
+        This event does not have a way of differentiating whether a reaction is a
+        burst reaction (also known as "super reaction") or not. If you need this,
+        consider using :func:`on_raw_reaction_remove` instead.
 
     :param reaction: The current state of the reaction.
     :type reaction: :class:`Reaction`
@@ -1513,6 +1566,12 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
+    .. attribute:: media
+
+        A media channel.
+
+        .. versionadded:: 2.4
+
 .. class:: MessageType
 
     Specifies the type of :class:`Message`. This is used to denote if a message
@@ -1685,6 +1744,30 @@ of :class:`enum.Enum`.
         The system message sent when an application's premium subscription is purchased for the guild.
 
         .. versionadded:: 2.2
+
+    .. attribute:: guild_incident_alert_mode_enabled
+
+        The system message sent when security actions is enabled.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: guild_incident_alert_mode_disabled
+
+        The system message sent when security actions is disabled.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: guild_incident_report_raid
+
+        The system message sent when a raid is reported.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: guild_incident_report_false_alarm
+
+        The system message sent when a false alarm is reported.
+
+        .. versionadded:: 2.4
 
 .. class:: UserFlags
 
@@ -2100,6 +2183,11 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`User` or :class:`Object` who got kicked.
 
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``integration_type``: An optional string that denotes the type of integration that did the action.
+
         When this is the action, :attr:`~AuditLogEntry.changes` is empty.
 
     .. attribute:: member_prune
@@ -2159,6 +2247,11 @@ of :class:`enum.Enum`.
 
         When this is the action, the type of :attr:`~AuditLogEntry.target` is
         the :class:`Member`, :class:`User`, or :class:`Object` who got the role.
+
+        When this is the action, the type of :attr:`~AuditLogEntry.extra` is
+        set to an unspecified proxy object with one attribute:
+
+        - ``integration_type``: An optional string that denotes the type of integration that did the action.
 
         Possible attributes for :class:`AuditLogDiff`:
 
@@ -2756,7 +2849,7 @@ of :class:`enum.Enum`.
         set to an unspecified proxy object with 3 attributes:
 
         - ``automod_rule_name``: The name of the automod rule that was triggered.
-        - ``automod_rule_trigger``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``automod_rule_trigger_type``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
         - ``channel``: The channel in which the automod rule was triggered.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
@@ -2774,7 +2867,7 @@ of :class:`enum.Enum`.
         set to an unspecified proxy object with 3 attributes:
 
         - ``automod_rule_name``: The name of the automod rule that was triggered.
-        - ``automod_rule_trigger``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``automod_rule_trigger_type``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
         - ``channel``: The channel in which the automod rule was triggered.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
@@ -2792,12 +2885,24 @@ of :class:`enum.Enum`.
         set to an unspecified proxy object with 3 attributes:
 
         - ``automod_rule_name``: The name of the automod rule that was triggered.
-        - ``automod_rule_trigger``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
+        - ``automod_rule_trigger_type``: A :class:`AutoModRuleTriggerType` representation of the rule type that was triggered.
         - ``channel``: The channel in which the automod rule was triggered.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
 
         .. versionadded:: 2.1
+
+    .. attribute:: creator_monetization_request_created
+
+        A request to monetize the server was created.
+
+        .. versionadded:: 2.4
+
+    .. attribute:: creator_monetization_terms_accepted
+
+        The terms and conditions for creator monetization were accepted.
+
+        .. versionadded:: 2.4
 
 .. class:: AuditLogActionCategory
 
@@ -2830,6 +2935,27 @@ of :class:`enum.Enum`.
     .. attribute:: accepted
 
         Represents a member currently in the team.
+
+.. class:: TeamMemberRole
+
+    Represents the type of role of a team member retrieved through :func:`Client.application_info`.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: admin
+
+        The team member is an admin. This allows them to invite members to the team, access credentials, edit the application,
+        and do most things the owner can do. However they cannot do destructive actions.
+
+    .. attribute:: developer
+
+        The team member is a developer. This allows them to access information, like the client secret or public key.
+        They can also configure interaction endpoints or reset the bot token. Developers cannot invite anyone to the team
+        nor can they do destructive actions.
+
+    .. attribute:: read_only
+
+        The team member is a read-only member. This allows them to access information, but not edit anything.
 
 .. class:: WebhookType
 
@@ -3110,6 +3236,12 @@ of :class:`enum.Enum`.
 
         The ``ko`` locale.
 
+    .. attribute:: latin_american_spanish
+
+        The ``es-419`` locale.
+
+        .. versionadded:: 2.4
+
     .. attribute:: lithuanian
 
         The ``lt`` locale.
@@ -3269,6 +3401,12 @@ of :class:`enum.Enum`.
         The rule will trigger when combined number of role and user mentions
         is greater than the set limit.
 
+    .. attribute:: member_profile
+
+        The rule will trigger when a user's profile contains a keyword.
+
+        .. versionadded:: 2.4
+
 .. class:: AutoModRuleEventType
 
     Represents the event type of an automod rule.
@@ -3278,6 +3416,12 @@ of :class:`enum.Enum`.
     .. attribute:: message_send
 
         The rule will trigger when a message is sent.
+
+    .. attribute:: member_update
+
+        The rule will trigger when a member's profile is updated.
+
+        .. versionadded:: 2.4
 
 .. class:: AutoModRuleActionType
 
@@ -3297,6 +3441,12 @@ of :class:`enum.Enum`.
 
         The rule will timeout a user.
 
+    .. attribute:: block_member_interactions
+
+        Similar to :attr:`timeout`, except the user will be timed out indefinitely.
+        This will request the user to edit it's profile.
+
+        .. versionadded:: 2.4
 
 .. class:: ForumLayoutType
 
@@ -3330,6 +3480,65 @@ of :class:`enum.Enum`.
     .. attribute:: creation_date
 
         Sort forum posts by creation time (from most recent to oldest).
+
+.. class:: SelectDefaultValueType
+
+    Represents the default value of a select menu.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: user
+
+        The underlying type of the ID is a user.
+
+    .. attribute:: role
+
+        The underlying type of the ID is a role.
+
+    .. attribute:: channel
+
+        The underlying type of the ID is a channel or thread.
+
+
+.. class:: SKUType
+
+    Represents the type of a SKU.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: subscription
+
+        The SKU is a recurring subscription.
+
+    .. attribute:: subscription_group
+
+        The SKU is a system-generated group which is created for each :attr:`SKUType.subscription`.
+
+
+.. class:: EntitlementType
+
+    Represents the type of an entitlement.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: application_subscription
+
+        The entitlement was purchased as an app subscription.
+
+
+.. class:: EntitlementOwnerType
+
+    Represents the type of an entitlement owner.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: guild
+
+        The entitlement owner is a guild.
+
+    .. attribute:: user
+
+            The entitlement owner is a user.
 
 
 .. _discord-api-audit-logs:
@@ -3953,6 +4162,12 @@ AuditLogDiff
 
         The trigger for the automod rule.
 
+        .. note ::
+
+            The :attr:`~AutoModTrigger.type` of the trigger may be incorrect.
+            Some attributes such as :attr:`~AutoModTrigger.keyword_filter`, :attr:`~AutoModTrigger.regex_patterns`,
+            and :attr:`~AutoModTrigger.allow_list` will only have the added or removed values.
+
         :type: :class:`AutoModTrigger`
 
     .. attribute:: actions
@@ -4039,7 +4254,7 @@ AuditLogDiff
 
         See also :attr:`ForumChannel.default_reaction_emoji`
 
-        :type: :class:`default_reaction_emoji`
+        :type: Optional[:class:`PartialEmoji`]
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
@@ -4275,6 +4490,25 @@ Guild
         The :class:`User` that was banned.
 
         :type: :class:`User`
+
+.. class:: BulkBanResult
+
+    A namedtuple which represents the result returned from :meth:`~Guild.bulk_ban`.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: banned
+
+        The list of users that were banned. The inner :class:`Object` of the list
+        has the :attr:`Object.type` set to :class:`User`.
+
+        :type: List[:class:`Object`]
+    .. attribute:: failed
+
+        The list of users that could not be banned. The inner :class:`Object` of the list
+        has the :attr:`Object.type` set to :class:`User`.
+
+        :type: List[:class:`Object`]
 
 
 ScheduledEvent
@@ -4615,6 +4849,22 @@ ShardInfo
 .. attributetable:: ShardInfo
 
 .. autoclass:: ShardInfo()
+    :members:
+
+SKU
+~~~~~~~~~~~
+
+.. attributetable:: SKU
+
+.. autoclass:: SKU()
+    :members:
+
+Entitlement
+~~~~~~~~~~~
+
+.. attributetable:: Entitlement
+
+.. autoclass:: Entitlement()
     :members:
 
 RawMessageDeleteEvent
@@ -4968,6 +5218,30 @@ MemberFlags
 .. attributetable:: MemberFlags
 
 .. autoclass:: MemberFlags
+    :members:
+
+AttachmentFlags
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: AttachmentFlags
+
+.. autoclass:: AttachmentFlags
+    :members:
+
+RoleFlags
+~~~~~~~~~~
+
+.. attributetable:: RoleFlags
+
+.. autoclass:: RoleFlags
+    :members:
+
+SKUFlags
+~~~~~~~~~~~
+
+.. attributetable:: SKUFlags
+
+.. autoclass:: SKUFlags()
     :members:
 
 ForumTag

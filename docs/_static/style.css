@@ -16,6 +16,10 @@ Historically however, thanks to:
   box-sizing: border-box;
 }
 
+section {
+  word-break: break-word;
+}
+
 /* CSS variables would go here */
 :root {
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -109,6 +113,12 @@ Historically however, thanks to:
   --attribute-table-entry-hover-text: var(--blue-2);
   --attribute-table-badge: var(--grey-7);
   --highlighted-text: rgb(252, 233, 103);
+  --tabs--label-text: var(--main-text);
+  --tabs--label-text--hover: var(--main-text);
+  --tabs--label-text--active: var(--blue-1);
+  --tabs--label-text--active--hover: var(--blue-1);
+  --tabs--label-border--active: var(--blue-1);
+  --tabs--label-border--active--hover: var(--blue-1);
 }
 
 :root[data-font="serif"] {
@@ -216,6 +226,7 @@ body {
   display: grid;
   min-height: 100%;
   grid-auto-rows: min-content auto min-content;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
     "s"
     "h"
@@ -1046,6 +1057,7 @@ code.xref, a code {
 
 span.pre {
   padding: 0 2px;
+  white-space: pre-wrap !important;
 }
 
 dl.class {
@@ -1211,12 +1223,13 @@ div.code-block-caption {
 
 /* desktop stuff */
 
-@media screen and (min-width: 600px) {
+@media screen and (min-width: 768px) {
   .grid-item {
     max-width: unset;
   }
 
   .main-grid {
+    grid-template-columns: repeat(6, 1fr);
     grid-template-areas:
       "h h h h h h"
       "n n n n n n"
@@ -1273,6 +1286,7 @@ div.code-block-caption {
     position: sticky;
     top: 1em;
     max-height: calc(100vh - 2em);
+    max-width: 100%;
     overflow-y: auto;
     margin: 1em;
   }
@@ -1320,6 +1334,10 @@ div.code-block-caption {
       "n n n n n n n n n n n n n n n n"
       "s s s . . c c c c c c c c c . ."
       "s s s f f f f f f f f f f f f f"
+  }
+
+  #sidebar {
+    max-width: unset;
   }
 
   header > nav {
