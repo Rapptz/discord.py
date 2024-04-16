@@ -48,7 +48,7 @@ class PollAnswer(TypedDict):
 
 
 class PollAnswerWithID(PollAnswer):
-    answer_id: Snowflake
+    answer_id: int
 
 
 class PollAnswerCount(TypedDict):
@@ -66,7 +66,7 @@ class PollResult(TypedDict):
     answer_counts: List[PollAnswerCount]
 
 
-class Poll(TypedDict):
+class PollCreate(TypedDict):
     allow_multiselect: bool
     answers: List[PollAnswer]
     duration: float
@@ -79,17 +79,10 @@ class Poll(TypedDict):
 # is converted into expiry when poll is
 # fetched from a message or returned
 # by a `send` method in a Messageable
-class PollWithExpiry(TypedDict):
+class Poll(TypedDict):
     allow_multiselect: bool
     answers: List[PollAnswerWithID]
     expiry: str
     layout_type: LayoutType
     question: PollMedia
-
-
-class PollWithResults(Poll):
-    results: PollResult
-
-
-class FullPoll(PollWithExpiry):
     results: PollResult
