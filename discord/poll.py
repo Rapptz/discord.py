@@ -43,11 +43,10 @@ if TYPE_CHECKING:
     from .member import Member
 
     from .types.poll import (
-        Poll as PollPayload,
+        PollCreate as PollCreatePayload,
         PollMedia as PollMediaPayload,
         PollAnswerCount as PollAnswerCountPayload,
-        PollWithExpiry as PollWithExpiryPayload,
-        FullPoll as FullPollPayload,
+        Poll as PollPayload,
         PollAnswerWithID as PollAnswerWithIDPayload,
     )
 
@@ -441,7 +440,7 @@ class Poll:
 
     @classmethod
     def _from_data(
-        cls, *, data: Union[PollWithExpiryPayload, FullPollPayload], message: Message, state: ConnectionState
+        cls, *, data: PollPayload, message: Message, state: ConnectionState
     ) -> Self:
         answers = [
             PollAnswer(data=answer, poll=message.poll, message=message) for answer in data.get('answers')
@@ -479,8 +478,8 @@ class Poll:
 
         return self
 
-    def _to_dict(self) -> PollPayload:
-        data: PollPayload = {
+    def _to_dict(self) -> PollCreatePayload:
+        data: PollCreatePayload = {
             'allow_multiselect': self.multiselect,
             'question': self._question_media.to_dict(),
             'duration': self._hours_duration,
