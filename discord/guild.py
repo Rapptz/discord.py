@@ -3808,7 +3808,7 @@ class Guild(Hashable):
 
         The users must meet the :class:`abc.Snowflake` abc.
 
-        You must have :attr:`~Permissions.ban_members` to do this.
+        You must have :attr:`~Permissions.ban_members` and :attr:`~Permissions.manage_guild` to do this.
 
         .. versionadded:: 2.4
 
