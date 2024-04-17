@@ -382,11 +382,6 @@ class Poll:
     ----------
     question: Union[:class:`PollMedia`, :class:`str`]
         The poll's question media. Text can be up to 300 characters.
-
-        .. warning::
-
-            At the moment, this **does not** support emojis.
-
     duration: :class:`datetime.timedelta`
         The duration of the poll.
     multiselect: :class:`bool`
