@@ -684,6 +684,8 @@ class Poll:
                 'This method can only be called when a message is present, try using this via Message.poll.end()'
             )
 
+        from .message import Message # Prevent circular import
+
         data = await self._state.http.end_poll(self._message.channel.id, self._message.id)
 
         self._message = Message(state=self._state, channel=self._message.channel, data=data)
