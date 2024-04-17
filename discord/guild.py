@@ -3815,7 +3815,7 @@ class Guild(Hashable):
         Parameters
         -----------
         users: Iterable[:class:`abc.Snowflake`]
-            The users to ban from the guild. Up to 200 users.
+            The users to ban from the guild, up to 200 users.
         delete_message_seconds: :class:`int`
             The number of seconds worth of messages to delete from the user
             in the guild. The minimum is 0 and the maximum is 604800 (7 days).
