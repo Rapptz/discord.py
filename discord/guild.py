@@ -3694,7 +3694,7 @@ class Guild(Hashable):
         Parameters
         -----------
         user: :class:`abc.Snowflake`
-            The user to kick from their guild.
+            The user to kick from the guild.
         reason: Optional[:class:`str`]
             The reason the user got kicked.
 
@@ -3726,7 +3726,7 @@ class Guild(Hashable):
         Parameters
         -----------
         user: :class:`abc.Snowflake`
-            The user to ban from their guild.
+            The user to ban from the guild.
         delete_message_days: :class:`int`
             The number of days worth of messages to delete from the user
             in the guild. The minimum is 0 and the maximum is 7.
@@ -3815,7 +3815,7 @@ class Guild(Hashable):
         Parameters
         -----------
         users: Iterable[:class:`abc.Snowflake`]
-            The user to ban from their guild.
+            The users to ban from the guild. Up to 200 users.
         delete_message_seconds: :class:`int`
             The number of seconds worth of messages to delete from the user
             in the guild. The minimum is 0 and the maximum is 604800 (7 days).
