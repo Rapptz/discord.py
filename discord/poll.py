@@ -33,6 +33,7 @@ from .enums import PollLayoutType, try_enum
 from . import utils
 from .emoji import PartialEmoji, Emoji
 from .user import User
+from .object import Object
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -115,7 +116,7 @@ class PollAnswerBase:
         self._message = message
         self._state = message._state
 
-    async def users(
+    async def voters(
         self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
     ) -> AsyncIterator[Union[User, Member]]:
         """Returns an :term:`asynchronous iterator` representing the users that have voted to this answer.
@@ -132,20 +133,22 @@ class PollAnswerBase:
 
         Usage ::
 
-            async for user in poll_answer.users():
-                print(f'{user} has voted for {poll_answer}!')
+            async for voter in poll_answer.voters():
+                print(f'{voter} has voted for {poll_answer}!')
 
         Flattening into a list: ::
 
-            users = [user async for user in poll_answer.users()]
-            # users is now a list of User
+            voters = [voter async for voter in poll_answer.voters()]
+            # voters is now a list of User
 
         Parameters
         ----------
         limit: Optional[:class:`int`]
-            The max number of users to return. Can be up to 100.
+            The maximum number of results to return.
+            If not provided, returns all the users who
+            voted to this poll answer.
         after: Optional[:class:`abc.Snowflake`]
-            Fetches users after this ID, or every user if ``None``.
+            For pagination, voters are sorted by member.
 
         Raises
         ------
@@ -155,29 +158,52 @@ class PollAnswerBase:
         Yields
         ------
         Union[:class:`User`, :class:`Member`]
-            The users that voted for this poll answer. This can be a :class:`Member` object if the poll
-            is in a guild-message context, for other contexts it will always return a :class:`User`, or when
-            the member left the guild.
+            The member (if retrievable) or the user that has voted
+            to this poll answer. The case where it can be a :class:`Member`
+            is in a guild message context. Sometimes it can be a :class:`User`
+            if the member has left the guild.
         """
 
         if not self._message or not self._state:  # Make type checker happy
             raise RuntimeError('You cannot fetch users in a non-message-attached poll')
 
-        data = await self._state.http.get_poll_answer_voters(
-            self._message.channel.id, self._message.id, self.id, after.id if after else None, limit
-        )
+        if limit is None:
+            if not self._message.poll:
+                limit = 100
+            else:
+                answer_count = self._message.poll.get_answer_count(self.id)
 
-        if not self._message.guild:
-            for user in data.get('users'):
-                yield User(state=self._state, data=user)
+                limit = answer_count.count if answer_count else 100
 
-        else:
+        while limit > 0:
+            retrieve = min(limit, 100)
+
+            message = self._message
             guild = self._message.guild
+            state = self._state
+            after_id = after.id if after else None
 
-            for user in data.get('users'):
-                member = guild.get_member(int(user['id']))
+            data = await state.http.get_poll_answer_voters(
+                message.channel.id, message.id, self.id, after=after_id, limit=retrieve
+            )
+            users = data['users']
 
-                yield member or User(state=self._state, data=user)
+            if len(users) == 0:
+                # No more voters to fetch, terminate process
+                break
+
+            after = Object(id=int((users[len(users)-1])['id']))
+
+            if not guild or isinstance(guild, Object):
+                for raw_user in reversed(users):
+                    yield User(state=self._state, data=raw_user)
+                continue
+
+            for raw_member in reversed(users):
+                member_id = int(raw_member['id'])
+                member = guild.get_member(member_id)
+
+                yield member or User(state=self._state, data=raw_member)
 
 
 class PollAnswerCount(PollAnswerBase):
@@ -216,7 +242,7 @@ class PollAnswerCount(PollAnswerBase):
     @property
     def original_message(self) -> Message:
         """:class:`Message`: Returns the original message the poll of this answer is in."""
-        return self._message # type: ignore # Here will always be a value
+        return self._message  # type: ignore # Here will always be a value
 
     @property
     def resolved(self) -> Optional[PollAnswer]:
@@ -256,10 +282,8 @@ class PollAnswer(PollAnswerBase):
         self,
         *,
         message: Optional[Message],
-        poll: Optional[Poll] = None,  # Defaults to message poll
         data: PollAnswerWithIDPayload,
     ) -> None:
-        self._poll: Poll = message.poll if message else poll  # type: ignore
         self.media: PollMedia = PollMedia.from_dict(data=data['poll_media'])
 
         super().__init__(id=int(data['answer_id']), message=message, state=message._state if message else None)
@@ -277,23 +301,23 @@ class PollAnswer(PollAnswerBase):
         text: str,
         emoji: Optional[PollMediaEmoji] = None,
         *,
-        poll: Poll,
+        message: Optional[Message],
     ) -> Self:
         poll_media: PollMediaPayload = {'text': text}
         if emoji:
             if isinstance(emoji, Emoji):
-                poll_media['emoji'] = {'name': emoji.name} # type: ignore
+                poll_media['emoji'] = {'name': emoji.name}  # type: ignore
 
                 if emoji.id:
-                    poll_media['emoji']['id'] = emoji.id # type: ignore
+                    poll_media['emoji']['id'] = emoji.id  # type: ignore
             elif isinstance(emoji, PartialEmoji):
                 poll_media['emoji'] = emoji.to_dict()
             else:
-                poll_media['emoji'] = {'name': str(emoji)} # type: ignore
+                poll_media['emoji'] = {'name': str(emoji)}  # type: ignore
 
         payload: PollAnswerWithIDPayload = {'answer_id': id, 'poll_media': poll_media}
 
-        return cls(data=payload, message=poll.message, poll=poll)
+        return cls(data=payload, message=message)
 
     @property
     def text(self) -> str:
@@ -306,12 +330,6 @@ class PollAnswer(PollAnswerBase):
         if isinstance(self.media.emoji, str):
             return PartialEmoji.from_str(self.media.emoji)
         return self.media.emoji
-
-    @utils.cached_property
-    def poll(self) -> Optional[Poll]:
-        """Optional[:class:`Poll`]: The parent poll of this answer."""
-
-        return self._poll
 
     def get_count(self) -> Optional[PollAnswerCount]:
         """Returns this answer's count data, if available.
@@ -326,9 +344,9 @@ class PollAnswer(PollAnswerBase):
             This poll's answer count, or ``None`` if not available.
         """
 
-        if not self._poll:
+        if not self._message or not self._message.poll:
             return None
-        return self._poll.get_answer_count(id=self.id)
+        return self._message.poll.get_answer_count(id=self.id)
 
     def _to_dict(self) -> PollMediaPayload:
         data: PollMediaPayload = {'text': self.text}
@@ -337,10 +355,10 @@ class PollAnswer(PollAnswerBase):
             if isinstance(self.emoji, PartialEmoji):
                 data['emoji'] = self.emoji.to_dict()
             else:
-                data['emoji'] = {'name': str(self.emoji)} # type: ignore
+                data['emoji'] = {'name': str(self.emoji)}  # type: ignore
 
                 if hasattr(self.emoji, 'id'):
-                    data['emoji']['id'] = int(self.emoji.id) # type: ignore
+                    data['emoji']['id'] = int(self.emoji.id)  # type: ignore
 
         return data
 
@@ -419,7 +437,7 @@ class Poll:
         self._message: Optional[Message] = None
         self._state: Optional[ConnectionState] = None
         self._finalized: bool = False
-        self._counts: Optional[Dict[int, PollAnswerCount]] = None # {answer_id: answer_count}
+        self._counts: Optional[Dict[int, PollAnswerCount]] = None  # {answer_id: answer_count}
         self._expiry: Optional[datetime.datetime] = None
 
     def _update(self, message: Message) -> None:
@@ -439,18 +457,16 @@ class Poll:
             answer._update(message)
 
     @classmethod
-    def _from_data(
-        cls, *, data: PollPayload, message: Message, state: ConnectionState
-    ) -> Self:
+    def _from_data(cls, *, data: PollPayload, message: Message, state: ConnectionState) -> Self:
         answers = [
-            PollAnswer(data=answer, poll=message.poll, message=message) for answer in data.get('answers')
+            PollAnswer(data=answer, message=message) for answer in data.get('answers')
         ]  # 'message' will always have the 'poll' attr
         multiselect = data.get('allow_multiselect', False)
         layout_type = try_enum(PollLayoutType, data.get('layout_type', 1))
         question_data = data.get('question')
         question = question_data.get('text')
         expiry = utils.parse_time(data['expiry'])  # If obtained via API, then expiry is set.
-        duration = expiry - message.created_at 
+        duration = expiry - message.created_at
         # self.created_at = message.created_at
         # duration = self.created_at - expiry
 
@@ -484,10 +500,7 @@ class Poll:
             'question': self._question_media.to_dict(),
             'duration': self._hours_duration,
             'layout_type': self.layout_type.value,
-            'answers': [
-                {'poll_media': answer._to_dict()}
-                for answer in self.answers
-            ]
+            'answers': [{'poll_media': answer._to_dict()} for answer in self.answers],
         }
         return data
 
@@ -590,11 +603,9 @@ class Poll:
         """
 
         if self._message:
-            raise RuntimeError(
-                'Cannot append answers a poll recieved via a message'
-            )
+            raise RuntimeError('Cannot append answers a poll recieved via a message')
 
-        answer = PollAnswer.from_params(id=len(self.answers) + 1, text=text, emoji=emoji, poll=self)
+        answer = PollAnswer.from_params(id=len(self.answers) + 1, text=text, emoji=emoji, message=self._message)
 
         self._answers.append(answer)
         return self
