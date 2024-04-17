@@ -1842,7 +1842,7 @@ class Client:
         event: Literal['poll_vote_add', 'poll_vote_remove'],
         /,
         *,
-        check: Optional[Callable[[Context[Any]], bool]] = None,
+        check: Optional[Callable[[Union[User, Member], Message, PollAnswer], bool]] = None,
         timeout: Optional[float] = None,
     ) -> Tuple[Union[User, Member], Message, PollAnswer]:
         ...
@@ -1853,7 +1853,7 @@ class Client:
         event: Literal['raw_poll_vote_add', 'raw_poll_vote_remove'],
         /,
         *,
-        check: Optional[Callable[[Context[Any]], bool]] = None,
+        check: Optional[Callable[[RawPollVoteActionEvent], bool]] = None,
         timeout: Optional[float] = None,
     ) -> RawPollVoteActionEvent:
         ...
