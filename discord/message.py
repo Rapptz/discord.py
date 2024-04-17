@@ -1448,6 +1448,28 @@ class PartialMessage(Hashable):
 
         return await self.channel.send(content, reference=self, **kwargs)
 
+    async def end_poll(self) -> Message:
+        """|coro|
+
+        Tries to end this message\'s :class:`Poll`.
+
+        If the poll was successfully ended, then it returns the updated :class:`Message`.
+
+        Raises
+        ------
+        ~discord.HTTPException
+            Ending the poll failed.
+
+        Returns
+        -------
+        :class:`.Message`
+            The updated message.
+        """
+
+        data = await self._state.http.end_poll(self.channel.id, self.id)
+
+        return Message(state=self._state, channel=self.channel, data=data)
+
     def to_reference(self, *, fail_if_not_exists: bool = True) -> MessageReference:
         """Creates a :class:`~discord.MessageReference` from the current message.
 
@@ -2402,39 +2424,6 @@ class Message(PartialMessage, Hashable):
 
         if delete_after is not None:
             await self.delete(delay=delete_after)
-
-        return message
-
-    async def end_poll(self) -> Message:
-        r"""|coro|
-
-        Ends this message's poll.
-
-        .. note::
-
-            This is a shortcut method for `Message.poll.end()`
-
-        Raises
-        ------
-        Forbidden
-            You do not have permission to end this message's poll.
-        HTTPException
-            Ending the poll failed.
-        RuntimeError
-            This message does not have a poll.
-
-        Returns
-        -------
-        :class:`Message`
-            The new message with the poll ended.
-        """
-
-        if not self.poll:
-            raise RuntimeError('This message does not have a poll')
-
-        data = await self._state.http.end_poll(self.channel.id, self.id)
-        message = self.__class__(state=self._state, channel=self.channel, data=data)
-        self._poll = message.poll
 
         return message
 
