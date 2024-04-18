@@ -44,7 +44,7 @@ from .. import utils
 from ..errors import HTTPException, Forbidden, NotFound, DiscordServerError
 from ..message import Message, MessageFlags
 from ..http import Route, handle_message_parameters
-from ..channel import PartialMessageable
+from ..channel import PartialMessageable, ForumTag
 
 from .async_ import BaseWebhook, _WebhookState
 
@@ -71,6 +71,7 @@ if TYPE_CHECKING:
     from ..types.message import (
         Message as MessagePayload,
     )
+    from ..types.snowflake import SnowflakeList
 
     BE = TypeVar('BE', bound=BaseException)
 
@@ -869,6 +870,7 @@ class SyncWebhook(BaseWebhook):
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        applied_tags: List[ForumTag] = MISSING,
     ) -> SyncWebhookMessage:
         ...
 
@@ -890,6 +892,7 @@ class SyncWebhook(BaseWebhook):
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        applied_tags: List[ForumTag] = MISSING,
     ) -> None:
         ...
 
@@ -910,6 +913,7 @@ class SyncWebhook(BaseWebhook):
         wait: bool = False,
         suppress_embeds: bool = False,
         silent: bool = False,
+        applied_tags: List[ForumTag] = MISSING,
     ) -> Optional[SyncWebhookMessage]:
         """Sends a message using the webhook.
 
@@ -1013,6 +1017,11 @@ class SyncWebhook(BaseWebhook):
         if thread_name is not MISSING and thread is not MISSING:
             raise TypeError('Cannot mix thread_name and thread keyword arguments.')
 
+        if applied_tags is MISSING:
+            applied_tag_ids = MISSING
+        else:
+            applied_tag_ids: SnowflakeList = [tag.id for tag in applied_tags]
+
         with handle_message_parameters(
             content=content,
             username=username,
@@ -1026,6 +1035,7 @@ class SyncWebhook(BaseWebhook):
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
             flags=flags,
+            applied_tags=applied_tag_ids,
         ) as params:
             adapter: WebhookAdapter = _get_webhook_adapter()
             thread_id: Optional[int] = None
