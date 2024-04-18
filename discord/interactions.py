@@ -809,7 +809,7 @@ class InteractionResponse(Generic[ClientT]):
             allowed_mentions=allowed_mentions,
             flags=flags,
             view=view,
-            poll=poll
+            poll=poll,
         )
 
         http = parent._state.http
