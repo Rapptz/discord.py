@@ -143,6 +143,8 @@ class Interaction(Generic[ClientT]):
         This includes checks and execution.
     context: :class:`.AppCommandContext`
         The context of the interaction.
+
+        .. versionadded:: 2.4
     """
 
     __slots__: Tuple[str, ...] = (
@@ -389,13 +391,18 @@ class Interaction(Generic[ClientT]):
         return utils.utcnow() >= self.expires_at
 
     def is_guild_integration(self) -> bool:
-        """:class:`bool`: Returns ``True`` if the interaction is a guild integration."""
+        """:class:`bool`: Returns ``True`` if the interaction is a guild integration.
+
+        .. versionadded:: 2.4
+        """
         if self.guild_id:
             return self.guild_id == self._integration_owners.get(0)
         return False
 
     def is_user_integration(self) -> bool:
-        """:class:`bool`: Returns ``True`` if the interaction is a user integration."""
+        """:class:`bool`: Returns ``True`` if the interaction is a user integration.
+
+        .. versionadded:: 2.4"""
         return self.user.id == self._integration_owners.get(1)
 
     async def original_response(self) -> InteractionMessage:
