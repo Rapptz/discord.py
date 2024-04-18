@@ -1629,8 +1629,8 @@ class ConnectionState(Generic[ClientT]):
         else:
             user = self.get_user(raw.user_id)
 
-        if message and user:
-            self.dispatch('poll_vote_add', user, message, message.poll.get_answer(raw.answer_id)) # type: ignore
+        if message and message.poll and user:
+            self.dispatch('poll_vote_add', user, message, message.poll.get_answer(raw.answer_id))
 
     def parse_message_poll_vote_remove(self, data: gw.PollVoteActionEvent) -> None:
         # NOTE: though the data contains an ``answer_id`` it means nothing.
@@ -1649,8 +1649,8 @@ class ConnectionState(Generic[ClientT]):
         else:
             user = self.get_user(raw.user_id)
 
-        if message and user:
-            self.dispatch('poll_vote_remove', user, message, message.poll.get_answer(raw.answer_id)) # type: ignore
+        if message and message.poll and user:
+            self.dispatch('poll_vote_remove', user, message, message.poll.get_answer(raw.answer_id))
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, (TextChannel, Thread, VoiceChannel)):
