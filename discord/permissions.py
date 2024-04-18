@@ -730,6 +730,14 @@ class Permissions(BaseFlags):
         """
         return 1 << 46
 
+    @flag_value
+    def send_polls(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can send poll messages.
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 49
+
 
 def _augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
@@ -850,6 +858,7 @@ class PermissionOverwrite:
         send_voice_messages: Optional[bool]
         create_expressions: Optional[bool]
         create_events: Optional[bool]
+        send_polls: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}
