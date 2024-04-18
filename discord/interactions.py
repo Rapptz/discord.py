@@ -402,7 +402,8 @@ class Interaction(Generic[ClientT]):
     def is_user_integration(self) -> bool:
         """:class:`bool`: Returns ``True`` if the interaction is a user integration.
 
-        .. versionadded:: 2.4"""
+        .. versionadded:: 2.4
+        """
         return self.user.id == self._integration_owners.get(1)
 
     async def original_response(self) -> InteractionMessage:
