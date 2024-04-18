@@ -1255,7 +1255,7 @@ class Intents(BaseFlags):
         """
         return 1 << 21
 
-    @flag_value
+    @alias_flag_value
     def polls(self):
         """:class:`bool`: Whether guild and direct messages poll related events are enabled.
 
