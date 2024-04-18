@@ -393,11 +393,11 @@ class Interaction(Generic[ClientT]):
         if self.guild_id:
             return self.guild_id == self._integration_owners.get(0)
         return False
-    
+
     def is_user_integration(self) -> bool:
         """:class:`bool`: Returns ``True`` if the interaction is a user integration."""
         return self.user.id == self._integration_owners.get(1)
-    
+
     async def original_response(self) -> InteractionMessage:
         """|coro|
 
