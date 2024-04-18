@@ -628,7 +628,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     async def reply(
         self,
         *,
-        poll: Poll
+        poll: Poll,
     ) -> Message:
         ...
 
@@ -929,7 +929,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = False,
         ephemeral: bool = False,
         silent: bool = False,
-        poll: Poll = MISSING
+        poll: Poll = MISSING,
     ) -> Message:
         """|coro|
 
