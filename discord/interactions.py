@@ -141,7 +141,7 @@ class Interaction(Generic[ClientT]):
     command_failed: :class:`bool`
         Whether the command associated with this interaction failed to execute.
         This includes checks and execution.
-    context: :class:`AppCommandContext`
+    context: :class:`.AppCommandContext`
         The context of the interaction.
     """
 
