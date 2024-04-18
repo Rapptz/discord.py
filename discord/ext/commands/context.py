@@ -1061,7 +1061,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
                 view=view,
                 suppress_embeds=suppress_embeds,
                 silent=silent,
-                poll=poll
+                poll=poll,
             )  # type: ignore # The overloads don't support Optional but the implementation does
 
         # Convert the kwargs from None to MISSING to appease the remaining implementations
