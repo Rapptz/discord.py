@@ -925,7 +925,7 @@ class SyncWebhook(BaseWebhook):
         wait: bool = False,
         suppress_embeds: bool = False,
         silent: bool = False,
-        poll: Poll = MISSING
+        poll: Poll = MISSING,
     ) -> Optional[SyncWebhookMessage]:
         """Sends a message using the webhook.
 
@@ -1050,7 +1050,7 @@ class SyncWebhook(BaseWebhook):
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
             flags=flags,
-            poll=poll
+            poll=poll,
         ) as params:
             adapter: WebhookAdapter = _get_webhook_adapter()
             thread_id: Optional[int] = None
