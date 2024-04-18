@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, ClassVar, Optional, Sequence
+from typing import TYPE_CHECKING, ClassVar, List, Optional, Sequence
 
 __all__ = (
     'AppInstallationType',
@@ -85,7 +85,7 @@ class AppInstallationType:
     def _is_unset(self) -> bool:
         return all(x is None for x in (self._guild, self._user))
 
-    def _merge_to_array(self, other: Optional[AppInstallationType]) -> Optional[Sequence[InteractionInstallationType]]:
+    def _merge_to_array(self, other: Optional[AppInstallationType]) -> Optional[List[InteractionInstallationType]]:
         result = self.merge(other) if other is not None else self
         if result._is_unset():
             return None
@@ -101,7 +101,7 @@ class AppInstallationType:
                 self._user = True
         return self
 
-    def to_array(self) -> Sequence[InteractionInstallationType]:
+    def to_array(self) -> List[InteractionInstallationType]:
         values = []
         if self._guild:
             values.append(self.GUILD)
@@ -178,7 +178,7 @@ class AppCommandContext:
     def _is_unset(self) -> bool:
         return all(x is None for x in (self._guild, self._dm_channel, self._private_channel))
 
-    def _merge_to_array(self, other: Optional[AppCommandContext]) -> Optional[Sequence[InteractionContextType]]:
+    def _merge_to_array(self, other: Optional[AppCommandContext]) -> Optional[List[InteractionContextType]]:
         result = self.merge(other) if other is not None else self
         if result._is_unset():
             return None
@@ -196,7 +196,7 @@ class AppCommandContext:
                 self._private_channel = True
         return self
 
-    def to_array(self) -> Sequence[InteractionContextType]:
+    def to_array(self) -> List[InteractionContextType]:
         values = []
         if self._guild:
             values.append(self.GUILD)
