@@ -529,8 +529,8 @@ class RawPollVoteActionEvent(_RawReprMixin):
     __slots__ = ('user_id', 'channel_id', 'message_id', 'guild_id', 'answer_id')
 
     def __init__(self, data: PollVoteActionEvent) -> None:
-        self.user_id: int = int(data.get('user_id'))
-        self.channel_id: int = int(data.get('channel_id'))
-        self.message_id: int = int(data.get('message_id'))
+        self.user_id: int = int(data['user_id'])
+        self.channel_id: int = int(data['channel_id'])
+        self.message_id: int = int(data['message_id'])
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
-        self.answer_id: int = int(data.get('answer_id'))
+        self.answer_id: int = int(data['answer_id'])
