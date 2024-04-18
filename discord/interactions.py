@@ -204,7 +204,10 @@ class Interaction(Generic[ClientT]):
         self._integration_owners: Dict[int, Snowflake] = {
             int(k): int(v) for k, v in data.get('authorizing_integration_owners', {}).items()
         }
-        self.context = AppCommandContext._from_value([data.get('context', 0)])
+        if 'context' in data:
+            self.context = AppCommandContext._from_value([data['context']])
+        else:
+            self.context = AppCommandContext()
 
         self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
         self.guild_locale: Optional[Locale]
