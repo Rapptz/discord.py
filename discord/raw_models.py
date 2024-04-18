@@ -158,7 +158,7 @@ class RawMessageUpdateEvent(_RawReprMixin):
         .. versionadded:: 1.7
 
     data: :class:`dict`
-        The raw data given by the :ddocs:`gateway <topics/gateway#message-update>`
+        The raw data given by the :ddocs:`gateway <topics/gateway-events#message-update>`
     cached_message: Optional[:class:`Message`]
         The cached message, if found in the internal message cache. Represents the message before
         it is modified by the data in :attr:`RawMessageUpdateEvent.data`.
@@ -355,7 +355,7 @@ class RawThreadUpdateEvent(_RawReprMixin):
     parent_id: :class:`int`
         The ID of the channel the thread belongs to.
     data: :class:`dict`
-        The raw data given by the :ddocs:`gateway <topics/gateway#thread-update>`
+        The raw data given by the :ddocs:`gateway <topics/gateway-events#thread-update>`
     thread: Optional[:class:`discord.Thread`]
         The thread, if it could be found in the internal cache.
     """
@@ -414,7 +414,7 @@ class RawThreadMembersUpdate(_RawReprMixin):
     member_count: :class:`int`
         The approximate number of members in the thread. This caps at 50.
     data: :class:`dict`
-        The raw data given by the :ddocs:`gateway <topics/gateway#thread-members-update>`.
+        The raw data given by the :ddocs:`gateway <topics/gateway-events#thread-members-update>`.
     """
 
     __slots__ = ('thread_id', 'guild_id', 'member_count', 'data')
