@@ -506,6 +506,7 @@ class RawAppCommandPermissionsUpdateEvent(_RawReprMixin):
             AppCommandPermissions(data=perm, guild=self.guild, state=state) for perm in data['permissions']
         ]
 
+
 class RawPollVoteActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_poll_vote_add` or :func:`on_raw_poll_vote_remove`
     event.
