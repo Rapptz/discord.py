@@ -192,7 +192,7 @@ class PollAnswerBase:
                 # No more voters to fetch, terminate process
                 break
 
-            after = Object(id=int((users[len(users)-1])['id']))
+            after = Object(id=int((users[-1])['id']))
 
             if not guild or isinstance(guild, Object):
                 for raw_user in reversed(users):
