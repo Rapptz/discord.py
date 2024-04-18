@@ -45,6 +45,7 @@ from .message import Message, Attachment
 from .permissions import Permissions
 from .http import handle_message_parameters
 from .webhook.async_ import async_context, Webhook, interaction_response_params, interaction_message_response_params
+from .app_commands.installs import AppCommandContext
 from .app_commands.namespace import Namespace
 from .app_commands.translator import locale_str, TranslationContext, TranslationContextLocation
 from .channel import _threaded_channel_factory
@@ -140,6 +141,8 @@ class Interaction(Generic[ClientT]):
     command_failed: :class:`bool`
         Whether the command associated with this interaction failed to execute.
         This includes checks and execution.
+    context: :class:`AppCommandContext`
+        The context of the interaction.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -158,6 +161,7 @@ class Interaction(Generic[ClientT]):
         'command_failed',
         'entitlement_sku_ids',
         'entitlements',
+        "context",
         '_integration_owners',
         '_permissions',
         '_app_permissions',
@@ -200,6 +204,7 @@ class Interaction(Generic[ClientT]):
         self._integration_owners: Dict[int, Snowflake] = {
             int(k): int(v) for k, v in data.get('authorizing_integration_owners', {}).items()
         }
+        self.context = AppCommandContext._from_value([data.get('context', 0)])
 
         self.locale: Locale = try_enum(Locale, data.get('locale', 'en-US'))
         self.guild_locale: Optional[Locale]
