@@ -124,7 +124,7 @@ class VoiceProtocol:
         Parameters
         ------------
         data: :class:`dict`
-            The raw :ddocs:`voice server update payload <topics/gateway#voice-server-update>`.
+            The raw :ddocs:`voice server update payload <topics/gateway-events#voice-server-update>`.
         """
         raise NotImplementedError
 
