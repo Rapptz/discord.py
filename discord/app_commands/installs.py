@@ -85,7 +85,7 @@ class AppInstallationType:
     def _is_unset(self) -> bool:
         return all(x is None for x in (self._guild, self._user))
 
-    def _merge_to_array(self, other: Optional[AppInstallationType]) -> Optional[list[InteractionInstallationType]]:
+    def _merge_to_array(self, other: Optional[AppInstallationType]) -> Optional[Sequence[InteractionInstallationType]]:
         result = self.merge(other) if other is not None else self
         if result._is_unset():
             return None
@@ -101,7 +101,7 @@ class AppInstallationType:
                 self._user = True
         return self
 
-    def to_array(self) -> list[InteractionInstallationType]:
+    def to_array(self) -> Sequence[InteractionInstallationType]:
         values = []
         if self._guild:
             values.append(self.GUILD)
@@ -178,7 +178,7 @@ class AppCommandContext:
     def _is_unset(self) -> bool:
         return all(x is None for x in (self._guild, self._dm_channel, self._private_channel))
 
-    def _merge_to_array(self, other: Optional[AppCommandContext]) -> Optional[list[InteractionContextType]]:
+    def _merge_to_array(self, other: Optional[AppCommandContext]) -> Optional[Sequence[InteractionContextType]]:
         result = self.merge(other) if other is not None else self
         if result._is_unset():
             return None
@@ -196,7 +196,7 @@ class AppCommandContext:
                 self._private_channel = True
         return self
 
-    def to_array(self) -> list[InteractionContextType]:
+    def to_array(self) -> Sequence[InteractionContextType]:
         values = []
         if self._guild:
             values.append(self.GUILD)
