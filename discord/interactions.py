@@ -390,6 +390,13 @@ class Interaction(Generic[ClientT]):
         """:class:`bool`: Returns ``True`` if the interaction is expired."""
         return utils.utcnow() >= self.expires_at
 
+    def is_integration(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the interaction is an integration.
+
+        .. versionadded:: 2.4
+        """
+        return bool(self._integration_owners)
+
     def is_guild_integration(self) -> bool:
         """:class:`bool`: Returns ``True`` if the interaction is a guild integration.
 
