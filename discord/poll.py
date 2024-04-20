@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 
-from typing import Dict, Optional, List, TYPE_CHECKING, Union, AsyncIterator, NamedTuple
+from typing import Dict, Optional, List, TYPE_CHECKING, Union, AsyncIterator
 
 import datetime
 
@@ -63,7 +63,7 @@ MISSING = utils.MISSING
 PollMediaEmoji = Union[PartialEmoji, Emoji, str]
 
 
-class PollMedia(NamedTuple):
+class PollMedia:
     """Represents the poll media for a poll item.
 
     Attributes
@@ -75,8 +75,11 @@ class PollMedia(NamedTuple):
         question media.
     """
 
-    text: str
-    emoji: Optional[PollMediaEmoji] = None
+    __slots__ = ('text', 'emoji')
+
+    def __init__(self, /, text: str, emoji: Optional[PollMediaEmoji] = None) -> None:
+        self.text: str = text
+        self.emoji: Optional[PollMediaEmoji] = emoji
 
     def to_dict(self) -> PollMediaPayload:
         """Returns an API valid payload for this tuple."""
@@ -96,8 +99,14 @@ class PollMedia(NamedTuple):
         return payload  # type: ignore
 
     @classmethod
-    def from_dict(cls, *, data: PollMediaPayload) -> PollMedia:
-        """Returns a new instance of this class from a payload."""
+    def from_dict(cls, *, data: PollMediaPayload) -> Self:
+        """Returns a new instance of this class from a payload.
+
+        Parameters
+        ----------
+        data: :class:`dict`
+            The dictionary to convert into a poll media.
+        """
 
         emoji = data.get('emoji')
 
@@ -193,8 +202,7 @@ class PollAnswerBase:
                 break
 
             limit -= len(users)
-
-            after = Object(id=int((users[len(users)-1])['id']))
+            after = Object(id=int((users[-1])['id']))
 
             if not guild or isinstance(guild, Object):
                 for raw_user in reversed(users):
@@ -659,7 +667,7 @@ class Poll:
             return None
         return self._counts.get(id)
 
-    async def end(self) -> Message:
+    async def end(self) -> Self:
         """|coro|
 
         Ends the poll.
@@ -677,8 +685,8 @@ class Poll:
 
         Returns
         -------
-        :class:`Message`
-            The updated message with the poll ended and with accurate results.
+        :class:`Poll`
+            The updated poll.
         """
 
         if not self._message or not self._state:  # Make type checker happy
@@ -686,10 +694,8 @@ class Poll:
                 'This method can only be called when a message is present, try using this via Message.poll.end()'
             )
 
-        from .message import Message # Prevent circular import
 
         data = await self._state.http.end_poll(self._message.channel.id, self._message.id)
+        self._message = self._state.create_message(channel=self._message.channel, data=data)
 
-        self._message = Message(state=self._state, channel=self._message.channel, data=data)
-
-        return self._message
+        return self
