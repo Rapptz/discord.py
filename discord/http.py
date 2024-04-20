@@ -92,7 +92,7 @@ if TYPE_CHECKING:
         sticker,
         welcome_screen,
         sku,
-        poll
+        poll,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
