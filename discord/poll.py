@@ -192,6 +192,8 @@ class PollAnswerBase:
                 # No more voters to fetch, terminate process
                 break
 
+            limit -= len(users)
+
             after = Object(id=int((users[len(users)-1])['id']))
 
             if not guild or isinstance(guild, Object):
