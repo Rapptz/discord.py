@@ -47,7 +47,7 @@ if TYPE_CHECKING:
         ThreadMembersUpdate,
         TypingStartEvent,
         GuildMemberRemoveEvent,
-        PollVoteActionEvent
+        PollVoteActionEvent,
     )
     from .types.command import GuildApplicationCommandPermissions
     from .message import Message
