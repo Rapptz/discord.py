@@ -1715,12 +1715,10 @@ class Message(PartialMessage, Hashable):
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
 
-        poll = data.get('poll')
-        if poll:
-            self._poll = Poll._from_data(data=poll, message=self, state=self._state)
-        else:
+        try:
+            self._poll = Poll._from_data(data=data['poll'], message=self, state=self._state)
+        except KeyError:
             self._poll = None
-
         try:
             # if the channel doesn't have a guild attribute, we handle that
             self.guild = channel.guild
