@@ -2546,7 +2546,7 @@ class HTTPClient:
                 'POST',
                 '/channels/{channel_id}/polls/{message_id}/expire',
                 channel_id=channel_id,
-                message_id=message_id
+                message_id=message_id,
             )
         )
 
