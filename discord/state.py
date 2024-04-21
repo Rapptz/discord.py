@@ -1631,16 +1631,16 @@ class ConnectionState(Generic[ClientT]):
 
         if message and user:
             if not message.poll:
-                _log.warning('Cannot dispatch "poll_vote_add" event because the cached message does not contain a poll. This is a caching error.')
+                _log.warning(
+                    'POLL_VOTE_ADD referencing message with ID: %s does not have a poll. Discarding.',
+                    raw.message_id
+                )
                 return
 
+            message.poll._add_vote_count(raw.answer_id)
             self.dispatch('poll_vote_add', user, message, message.poll.get_answer(raw.answer_id))
 
     def parse_message_poll_vote_remove(self, data: gw.PollVoteActionEvent) -> None:
-        # NOTE: though the data contains an ``answer_id`` it means nothing.
-        # We shouldn't rely on them, as their ID it is just their position
-        # in the poll UI.
-
         raw = RawPollVoteActionEvent(data)
 
         self.dispatch('raw_poll_vote_remove', raw)
@@ -1655,9 +1655,13 @@ class ConnectionState(Generic[ClientT]):
 
         if message and user:
             if not message.poll:
-                _log.warning('Cannot dispatch "poll_vote_remove" event because the cached message does not contain a poll. This is a caching error.')
+                _log.warning(
+                    'POLL_VOTE_REMOVE referencing message with ID: %s does not have a poll. Discarding.',
+                    raw.message_id
+                )
                 return
 
+            message.poll._add_vote_count(raw.answer_id)
             self.dispatch('poll_vote_remove', user, message, message.poll.get_answer(raw.answer_id))
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
