@@ -809,6 +809,7 @@ class EntitlementOwnerType(Enum):
     guild = 1
     user = 2
 
+
 class MemberJoinType(Enum):
     unknown = 0
     bot = 1
@@ -821,6 +822,7 @@ class MemberJoinType(Enum):
     # Aliases
     app = 1
     user_invite = 5
+
 
 class MemberSearchSortType(Enum):
     new_guild_members = 1
