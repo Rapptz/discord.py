@@ -510,7 +510,7 @@ class RawAppCommandPermissionsUpdateEvent(_RawReprMixin):
 class RawPollVoteActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_poll_vote_add` or :func:`on_raw_poll_vote_remove`
     event.
-    
+
     .. versionadded:: 2.4
 
     Attributes
