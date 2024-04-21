@@ -68,6 +68,7 @@ if TYPE_CHECKING:
     from .embeds import Embed
     from .message import Attachment
     from .flags import MessageFlags
+    from .invite import Invite
 
     from .types import (
         appinfo,
@@ -1984,7 +1985,21 @@ class HTTPClient:
     def delete_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id), reason=reason)
     
-    def get_guild_member_safety(self, guild_id: Snowflake, limit: int, sort_type: int, **kwargs) -> Response[member.MemberSearchResults]:
+    def get_guild_member_safety(
+        self,
+        guild_id: Snowflake,
+        limit: int,
+        sort_type: int,
+        *,
+        users: Optional[Iterable[Snowflake]] = None,
+        roles: Optional[Iterable[Snowflake]] = None,
+        unusual_activity: Optional[bool] = None,
+        quarantined: Optional[bool] = None,
+        timed_out: Optional[bool] = None,
+        unusual_dms: Optional[bool] = None,
+        invite_codes: Optional[Iterable[Union[str, Invite]]] = None,
+        join_types: Optional[Iterable[int]] = None,
+    ) -> Response[member.MemberSearchResults]:
         gte: int = utils.time_snowflake(datetime.datetime.now(), high=True) + 1
         payload: Dict = {
             'sort': sort_type
@@ -1993,78 +2008,46 @@ class HTTPClient:
         payload['limit'] = limit
         payload['and_query'] = {}
         payload['or_query'] = {}
+        safety_signals = {}
 
-        for key, value in kwargs.items():
-            if value is None or value is False:
-                continue
+        if users:
+            payload['and_query']['user_id'] = {
+                'or_query': [str(user) for user in users]
+            }
 
-            if key == 'timed_out':
-                signals = payload['or_query'].get('safety_signals', None)
-                if not signals:
-                    payload['or_query'].update(safety_signals={})
-                    signals = payload['or_query']['safety_signals']
+        if roles:
+            payload['and_query']['role_ids'] = {
+                'and_query': [str(role) for role in roles]
+            }
 
-                signals.update(
-                    communication_disabled_until={
-                        'range': {'gte': gte}
-                    }
-                )
-            
-            elif key == 'unusual_dms':
-                signals = payload['or_query'].get('safety_signals', None)
-                if not signals:
-                    payload['or_query'].update(safety_signals={})
-                    signals = payload['or_query']['safety_signals']
-                
-                signals.update(
-                    unusual_dm_activity_until={
-                        'range': {'gte': gte}
-                    }
-                )
+        if unusual_activity:
+            safety_signals['unusual_account_activity'] = unusual_activity
 
-            elif key == 'unusual_activity':
-                signals = payload['or_query'].get('safety_signals', None)
-                if not signals:
-                    payload['or_query'].update(safety_signals={})
-                    signals = payload['or_query']['safety_signals']
-                
-                signals.update(
-                    unusual_account_activity=value
-                )
-            
-            elif key == 'quarantined':
-                signals = payload['or_query'].get('safety_signals', None)
-                if not signals:
-                    payload['or_query'].update(safety_signals={})
-                    signals = payload['or_query']['safety_signals']
-                
-                signals.update(
-                    automod_quarantined_username=value
-                )
+        if quarantined:
+            safety_signals['automod_quarantined_username'] = quarantined
 
-            elif key == 'users':
-                payload['and_query'].update(
-                    user_id={
-                        'or_query': [str(user.id) for user in value]
-                    }
-                )
+        if timed_out:
+            safety_signals['communication_disabled_until'] = {
+                'range': {'gte': gte}
+            }
 
-            elif key == 'roles':
-                payload['and_query'].update(
-                    role_ids={
-                        'and_query': [str(role.id) for role in value]
-                    }
-                )
+        if unusual_dms:
+            safety_signals['unusual_dm_activity_until'] = {
+                'range': {'gte': gte}
+            }
 
-            elif key == 'invite_codes':
-                payload['and_query'].update(
-                    source_invite_code={
-                        'or_query': [
-                            invite.code if not isinstance(invite, str)
-                            else invite for invite in value
-                        ]
-                    }
-                )
+        if invite_codes:
+            payload['and_query']['source_invite_code'] = {
+                'or_query': [
+                    getattr(invite, 'code', str(invite))
+                    for invite in invite_codes
+                ]
+            }
+
+        if join_types:
+            payload['and_query']['join_source_type'] = {
+                'or_query': join_types
+            }
 
         return self.request(Route('POST', '/guilds/{guild_id}/members-search', guild_id=guild_id), json=payload)
 
