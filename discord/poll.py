@@ -133,9 +133,9 @@ class PollAnswerBase:
         The ``after`` parameter must represent a user
         and meet the :class:`abc.Snowflake` abc.
 
-        .. warning::
+        .. note::
 
-            This can only be called when the poll is accessed via :attr:`Message.poll`.
+            This can only be called when the parent poll has an attached message.
 
         Examples
         --------
@@ -344,7 +344,7 @@ class PollAnswer(PollAnswerBase):
     def get_count(self) -> Optional[PollAnswerCount]:
         """Returns this answer's count data, if available.
 
-        .. warning::
+        .. note::
 
             This will **always** return ``None`` if the parent poll is user-constructed.
 
