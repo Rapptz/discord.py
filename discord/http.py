@@ -1991,6 +1991,8 @@ class HTTPClient:
         limit: int,
         sort_type: int,
         *,
+        after: Optional[Snowflake] = None,
+        before: Optional[Snowflake] = None,
         users: Optional[Iterable[Snowflake]] = None,
         roles: Optional[Iterable[Snowflake]] = None,
         unusual_activity: Optional[bool] = None,
@@ -1999,9 +2001,12 @@ class HTTPClient:
         unusual_dms: Optional[bool] = None,
         invite_codes: Optional[Iterable[Union[str, Invite]]] = None,
         join_types: Optional[Iterable[int]] = None,
+        usernames: Optional[Iterable[str]] = None,
     ) -> Response[member.MemberSearchResults]:
-        gte: int = utils.time_snowflake(datetime.datetime.now(), high=True) + 1
-        payload: Dict = {
+        gte = utils.time_snowflake(datetime.datetime.now(), high=True) + 1
+        users_gte: Optional[str] = str(after) if after else None
+        users_lte: Optional[str] = str(before) if before else None
+        payload: Dict[Any, Any] = {
             'sort': sort_type
         }
 
@@ -2011,9 +2016,44 @@ class HTTPClient:
         safety_signals = {}
 
         if users:
-            payload['and_query']['user_id'] = {
-                'or_query': [str(user) for user in users]
-            }
+            if 'user_id' in payload['and_query']:
+                payload['and_query']['user_id']['or_query'] = [
+                    str(user) for user in users
+                ]
+            else:
+                payload['and_query']['user_id'] = {
+                    'or_query': [str(user) for user in users]
+                }
+
+        if users_gte:
+            if 'user_id' in payload['and_query']:
+                if 'range' in payload['and_query']['user_id']:
+                    payload['and_query']['user_id']['range']['gte'] = users_gte  # type: ignore
+                else:
+                    payload['and_query']['user_id']['range'] = {  # type: ignore
+                        'gte': users_gte
+                    }
+            else:
+                payload['and_query']['user_id'] = {
+                    'range': {
+                        'gte': users_gte
+                    }
+                }
+
+        if users_lte:
+            if 'user_id' in payload['and_query']:
+                if 'range' in payload['and_query']['user_id']:
+                    payload['and_query']['user_id']['range']['lte'] = users_lte  # type: ignore
+                else:
+                    payload['and_query']['user_id']['range'] = {  # type: ignore
+                        'lte': users_lte
+                    }
+            else:
+                payload['and_query']['user_id'] = {
+                    'range': {
+                        'lte': users_lte
+                    }
+                }
 
         if roles:
             payload['and_query']['role_ids'] = {
@@ -2047,6 +2087,11 @@ class HTTPClient:
         if join_types:
             payload['and_query']['join_source_type'] = {
                 'or_query': join_types
+            }
+
+        if usernames:
+            payload['and_query']['usernames'] = {
+                'or_query': list(usernames)
             }
 
         return self.request(Route('POST', '/guilds/{guild_id}/members-search', guild_id=guild_id), json=payload)
