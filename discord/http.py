@@ -2512,7 +2512,7 @@ class HTTPClient:
 
         payload = {k: v for k, v in payload.items() if k in valid_keys}
         return self.request(Route('PATCH', '/applications/@me'), json=payload, reason=reason)
-    
+
     def get_poll_answer_voters(
         self,
         channel_id: Snowflake,
@@ -2525,7 +2525,7 @@ class HTTPClient:
 
         if after:
             params['after'] = int(after)
-        
+
         if limit:
             params['limit'] = limit
 
@@ -2537,9 +2537,9 @@ class HTTPClient:
                 message_id=message_id,
                 answer_id=answer_id,
             ),
-            params=params
+            params=params,
         )
-    
+
     def end_poll(self, channel_id: Snowflake, message_id: Snowflake) -> Response[message.Message]:
         return self.request(
             Route(

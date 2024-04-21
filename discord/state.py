@@ -1632,8 +1632,7 @@ class ConnectionState(Generic[ClientT]):
         if message and user:
             if not message.poll:
                 _log.warning(
-                    'POLL_VOTE_ADD referencing message with ID: %s does not have a poll. Discarding.',
-                    raw.message_id
+                    'POLL_VOTE_ADD referencing message with ID: %s does not have a poll. Discarding.', raw.message_id
                 )
                 return
 
@@ -1656,8 +1655,7 @@ class ConnectionState(Generic[ClientT]):
         if message and user:
             if not message.poll:
                 _log.warning(
-                    'POLL_VOTE_REMOVE referencing message with ID: %s does not have a poll. Discarding.',
-                    raw.message_id
+                    'POLL_VOTE_REMOVE referencing message with ID: %s does not have a poll. Discarding.', raw.message_id
                 )
                 return
 

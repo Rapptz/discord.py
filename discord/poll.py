@@ -719,10 +719,7 @@ class Poll:
         """
 
         if not self._message or not self._state:  # Make type checker happy
-            raise RuntimeError(
-                'This poll has no attached message.'
-            )
-
+            raise RuntimeError('This poll has no attached message.')
 
         self._message = await self._message.end_poll()
 
