@@ -5362,24 +5362,10 @@ Poll
     :members:
     :inherited-members:
 
-.. class:: PollMedia
+.. attributetable:: PollMedia
 
-    A namedtuple which represents the media for a poll object.
-
-    .. attribute:: text
-
-        The text to display in the object.
-
-        :type: :class:`str`
-    .. attribute:: emoji
-
-        The emoji to display alongside the object.
-
-        .. warning::
-
-            For poll questions, emojis are **not** supported.
-
-        :type: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
+.. autoclass:: PollMedia()
+    :members: from_dict
 
 
 Exceptions
