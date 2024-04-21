@@ -1441,7 +1441,7 @@ class Messageable:
         view: Optional[View] = None,
         suppress_embeds: bool = False,
         silent: bool = False,
-        poll: Poll = MISSING,
+        poll: Optional[Poll] = None,
     ) -> Message:
         """|coro|
 
@@ -1605,7 +1605,7 @@ class Messageable:
         if view and not view.is_finished():
             state.store_view(view, ret.id)
 
-        if poll is not MISSING:
+        if poll:
             poll._update(ret)
 
         if delete_after is not None:
