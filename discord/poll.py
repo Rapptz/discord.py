@@ -536,8 +536,7 @@ class Poll:
 
     @property
     def expiry(self) -> Optional[datetime.datetime]:
-        """Optional[:class:`datetime.datetime`]: A datetime object representing the poll expiry, this is autocalculated using a UTC :class:`datetime.datetime` object
-        and adding the poll duration.
+        """Optional[:class:`datetime.datetime`]: A datetime object representing the poll expiry.
 
         .. note::
 
@@ -585,6 +584,26 @@ class Poll:
 
         return self._finalized
 
+    def copy(self) -> Self:
+        """Returns a stateless copy of this poll.
+
+        This is meant to be used when you want to edit a stateful poll.
+
+        Returns
+        -------
+        :class:`Poll`
+            The copy of the poll.
+        """
+
+        new = self.__class__(question=self.question, duration=self.duration)
+        # We want to return a stateless copy of the poll, so we should not
+        # override new._answers as our answers may contain a state
+
+        for answer in self.answers:
+            new.add_answer(text=answer.text, emoji=answer.emoji)
+
+        return new
+
     def add_answer(
         self,
         *,
@@ -601,6 +620,11 @@ class Poll:
         emoji: Union[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]
             The emoji to display along the text.
 
+        Raises
+        ------
+        RuntimeError
+            Cannot append answers to a poll recieved via message.
+
         Returns
         -------
         :class:`Poll`
@@ -608,7 +632,7 @@ class Poll:
         """
 
         if self._message:
-            raise RuntimeError('Cannot append answers a poll recieved via a message')
+            raise RuntimeError('Cannot append answers to a poll recieved via message.')
 
         answer = PollAnswer.from_params(id=len(self.answers) + 1, text=text, emoji=emoji, message=self._message)
 
@@ -648,7 +672,7 @@ class Poll:
         Note that the ID, as Discord says, is the index or row where the answer is
         located in the poll UI.
 
-        .. warning::
+        .. note::
 
             This will **always** return ``None`` for user-created poll objects.
 
@@ -672,10 +696,6 @@ class Poll:
 
         Ends the poll.
 
-        .. warning::
-
-            This can only be called when the poll is accessed via :attr:`Message.poll`.
-
         Raises
         ------
         RuntimeError
@@ -691,11 +711,10 @@ class Poll:
 
         if not self._message or not self._state:  # Make type checker happy
             raise RuntimeError(
-                'This method can only be called when a message is present, try using this via Message.poll.end()'
+                'This poll has no attached message.'
             )
 
 
-        data = await self._state.http.end_poll(self._message.channel.id, self._message.id)
-        self._message = self._state.create_message(channel=self._message.channel, data=data)
+        self._message = await self._message.end_poll()
 
         return self
