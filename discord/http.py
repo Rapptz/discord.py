@@ -1985,7 +1985,7 @@ class HTTPClient:
         return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id), reason=reason)
     
     def get_guild_member_safety(self, guild_id: Snowflake, limit: int, sort_type: int, **kwargs) -> Response[member.MemberSearchResults]:
-        gte: int = utils.time_snowflake(datetime.datetime.now(), high=False)
+        gte: int = utils.time_snowflake(datetime.datetime.now(), high=True) + 1
         payload: Dict = {
             'sort': sort_type
         }
@@ -2006,7 +2006,7 @@ class HTTPClient:
 
                 signals.update(
                     communication_disabled_until={
-                        'range': {'gte': guild_id}
+                        'range': {'gte': gte}
                     }
                 )
             
@@ -2018,7 +2018,7 @@ class HTTPClient:
                 
                 signals.update(
                     unusual_dm_activity_until={
-                        'range': {'gte': guild_id}
+                        'range': {'gte': gte}
                     }
                 )
 
@@ -2059,7 +2059,10 @@ class HTTPClient:
             elif key == 'invite_codes':
                 payload['and_query'].update(
                     source_invite_code={
-                        'or_query': [invite.code for invite in value if hasattr(invite, 'code') else invite]
+                        'or_query': [
+                            invite.code if not isinstance(invite, str)
+                            else invite for invite in value
+                        ]
                     }
                 )
 
