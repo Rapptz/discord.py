@@ -259,7 +259,7 @@ def handle_message_parameters(
         }
         payload.update(channel_payload)
 
-    if poll is not MISSING:
+    if poll not in (MISSING, None):
         if len(poll) == 0 or len(poll) > 10:
             raise ValueError('Poll must contain between 1 and 10 answers')
         if poll._hours_duration < 1 or poll._hours_duration > 168:
