@@ -173,6 +173,7 @@ class _MemberSearchQueries(TypedDict, total=False):
     unusual_dms: bool
     invite_codes: Iterable[Union[str, Invite]]
     join_types: Iterable[MemberJoinType]
+    usernames: Iterable[str]
 
 
 class Guild(Hashable):
@@ -4412,15 +4413,16 @@ class Guild(Hashable):
         self,
         *,
         limit: int = 250,
+        after: Optional[Snowflake] = None,
+        before: Optional[Snowflake] = None,
         sort_type: MemberSearchSortType = MemberSearchSortType.new_guild_members,
         **filters: Unpack[_MemberSearchQueries]
     ) -> AsyncIterator[MemberSearch]:
         """Returns a :term:`asynchronous iterator` representing the members that were
         obtained after the search.
 
-        The ``limit`` parameter must be a :class:`int`
-        and represents the maxmimum amount of members to return,
-        not the ones that are expected.
+        The ``after`` and ``before`` parameters must represent
+        a member and meet the :class:`abc.Snowflake` abc.
 
         You must have __any__ of the following permissions:
 
@@ -4464,6 +4466,8 @@ class Guild(Hashable):
             +------------------+-----------------------------------------+
             | join_types       | Return users who join these ways        |
             +------------------+-----------------------------------------+
+            | usernames        | Return users with similar names         |
+            +------------------+-----------------------------------------+
         
         Raises
         ------
@@ -4491,15 +4495,39 @@ class Guild(Hashable):
         if join_types:
             filters['join_types'] = [join_type.value for join_type in join_types]  # type: ignore
 
-        data = await self._state.http.get_guild_member_safety(
-            self.id,
-            limit,
-            sort_type.value,
-            **filters,  # type: ignore
-        )
+        while limit > 0:
+            retrieve = min(limit, 250)
 
-        for result in data['members']:
-            yield MemberSearch(data=result, guild=self, state=self._state)
+            state = self._state
+            after_id = after.id if after else None
+            before_id = before.id if before else None
+
+            data = await state.http.get_guild_member_safety(
+                self.id,
+                limit=retrieve,
+                sort_type=sort_type.value,
+                after=after_id,
+                before=before_id,
+                **filters  # type: ignore
+            )
+
+            results = data['members']
+
+            if len(results) == 0:
+                # No more members, break
+                break
+
+            limit -= len(results)
+            after = Object(id=int(results[-1]['member']['user']['id']))
+
+            for result in reversed(results):
+                yield MemberSearch(data=result, guild=self, state=state)
+
+            if before_id:
+                if after.id > before_id:
+                    # We cannot fetch users if the before requirements is less than
+                    # the after requirement.
+                    break
 
     @property
     def invites_paused_until(self) -> Optional[datetime.datetime]:
