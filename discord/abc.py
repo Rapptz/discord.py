@@ -1337,15 +1337,6 @@ class Messageable:
     @overload
     async def send(
         self,
-        *,
-        poll: Poll,
-        reference: Union[Message, MessageReference, PartialMessage] = ...,
-    ) -> Message:
-        ...
-
-    @overload
-    async def send(
-        self,
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
@@ -1360,6 +1351,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1380,6 +1372,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1400,6 +1393,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1420,6 +1414,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 

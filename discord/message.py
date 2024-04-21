@@ -1332,14 +1332,6 @@ class PartialMessage(Hashable):
     @overload
     async def reply(
         self,
-        *,
-        poll: Poll,
-    ) -> Message:
-        ...
-
-    @overload
-    async def reply(
-        self,
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
@@ -1354,6 +1346,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1374,6 +1367,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1394,6 +1388,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1414,6 +1409,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
