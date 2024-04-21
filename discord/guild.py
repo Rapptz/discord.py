@@ -4406,7 +4406,7 @@ class Guild(Hashable):
 
         return AutoModRule(data=data, guild=self, state=self._state)
     
-    async def fetch_members_safety_information(self, *, limit: int = 250, sort_type: MemberSearchSortType = MemberSearchSortType.new_guild_members, **filters: Unpack[_MemberSearchQueries]) -> Optional[Tuple[MemberSearch, ...]]:
+    async def fetch_safety_information(self, *, limit: int = 250, sort_type: MemberSearchSortType = MemberSearchSortType.new_guild_members, **filters: Unpack[_MemberSearchQueries]) -> Optional[Tuple[MemberSearch, ...]]:
         r"""|coro|
         
         Fetches all the members safety information with the applied filters.
