@@ -1452,7 +1452,7 @@ Polls
 
     This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
 
-    .. warning::
+    .. note::
 
         If the poll allows multiselect and the user votes for more than one answer
         this event will be called as many times as answers the user has voted to.
@@ -1473,7 +1473,7 @@ Polls
 
     This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
 
-    .. warning::
+    .. note::
 
         If the poll allows multiselect and the user removes more than one vote
         this event will be called as many times as votes removed.
