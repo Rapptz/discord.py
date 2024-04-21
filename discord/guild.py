@@ -44,9 +44,9 @@ from typing import (
     Optional,
     TYPE_CHECKING,
     Tuple,
+    TypedDict,
     Union,
     overload,
-    TypedDict,
 )
 import warnings
 
@@ -63,7 +63,6 @@ from .channel import _guild_channel_factory
 from .channel import _threaded_guild_channel_factory
 from .enums import (
     AuditLogAction,
-    MemberSearchSortType,
     VideoQualityMode,
     ChannelType,
     EntityType,
@@ -78,6 +77,8 @@ from .enums import (
     AutoModRuleEventType,
     ForumOrderType,
     ForumLayoutType,
+    MemberJoinType,
+    MemberSearchSortType,
 )
 from .mixins import Hashable
 from .user import User
@@ -164,13 +165,14 @@ class _GuildLimit(NamedTuple):
 
 
 class _MemberSearchQueries(TypedDict, total=False):
-    users: Snowflake
-    roles: Snowflake
+    users: Iterable[Snowflake]
+    roles: Iterable[Snowflake]
     unusual_activity: bool
     quarantined: bool
     timed_out: bool
     unusual_dms: bool
-    invite_codes: List[Union[str, Invite]]
+    invite_codes: Iterable[Union[str, Invite]]
+    join_types: Iterable[MemberJoinType]
 
 
 class Guild(Hashable):
@@ -4406,10 +4408,19 @@ class Guild(Hashable):
 
         return AutoModRule(data=data, guild=self, state=self._state)
     
-    async def fetch_safety_information(self, *, limit: int = 250, sort_type: MemberSearchSortType = MemberSearchSortType.new_guild_members, **filters: Unpack[_MemberSearchQueries]) -> Optional[Tuple[MemberSearch, ...]]:
-        r"""|coro|
-        
-        Fetches all the members safety information with the applied filters.
+    async def fetch_safety_information(
+        self,
+        *,
+        limit: int = 250,
+        sort_type: MemberSearchSortType = MemberSearchSortType.new_guild_members,
+        **filters: Unpack[_MemberSearchQueries]
+    ) -> AsyncIterator[MemberSearch]:
+        """Returns a :term:`asynchronous iterator` representing the members that were
+        obtained after the search.
+
+        The ``limit`` parameter must be a :class:`int`
+        and represents the maxmimum amount of members to return,
+        not the ones that are expected.
 
         You must have __any__ of the following permissions:
 
@@ -4451,6 +4462,8 @@ class Guild(Hashable):
             +------------------+-----------------------------------------+
             | invite_codes     | Return users joined via these invites   |
             +------------------+-----------------------------------------+
+            | join_types       | Return users who join these ways        |
+            +------------------+-----------------------------------------+
         
         Raises
         ------
@@ -4467,9 +4480,27 @@ class Guild(Hashable):
             aren't or none of the filters were satisfied.
         """
 
-        data = await self._state.http.get_guild_member_safety(self.id, limit, sort_type.value, **filters)
+        users = filters.get('users')
+        if users:
+            filters['users'] = [user.id for user in users]  # type: ignore
 
-        return tuple([MemberSearch(data=member_data, guild=self, state=self._state) for member_data in data.get('members')]) if data.get('total_result_count') > 0 else None
+        roles = filters.get('roles')
+        if roles:
+            filters['roles'] = [role.id for role in roles]  # type: ignore
+
+        join_types = filters.get('join_types')
+        if join_types:
+            filters['join_types'] = [join_type.value for join_type in join_types]  # type: ignore
+
+        data = await self._state.http.get_guild_member_safety(
+            self.id,
+            limit,
+            sort_type.value,
+            **filters,  # type: ignore
+        )
+
+        for result in data['members']:
+            yield MemberSearch(data=result, guild=self, state=self._state)
 
     @property
     def invites_paused_until(self) -> Optional[datetime.datetime]:
