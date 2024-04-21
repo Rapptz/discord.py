@@ -683,6 +683,14 @@ class Permissions(BaseFlags):
         return 1 << 40
 
     @flag_value
+    def view_creator_monetization_analytics(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can view role subscription insights.
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 41
+
+    @flag_value
     def use_soundboard(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can use the soundboard.
 

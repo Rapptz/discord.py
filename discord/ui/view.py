@@ -615,16 +615,15 @@ class ViewStore:
 
         view = View.from_message(interaction.message, timeout=None)
 
-        base_item_index: Optional[int] = None
-        for index, child in enumerate(view._children):
-            if child.type.value == component_type and getattr(child, 'custom_id', None) == custom_id:
-                base_item_index = index
-                break
-
-        if base_item_index is None:
+        try:
+            base_item_index, base_item = next(
+                (index, child)
+                for index, child in enumerate(view._children)
+                if child.type.value == component_type and getattr(child, 'custom_id', None) == custom_id
+            )
+        except StopIteration:
             return
 
-        base_item = view._children[base_item_index]
         try:
             item = await factory.from_custom_id(interaction, base_item, match)
         except Exception:
@@ -634,6 +633,7 @@ class ViewStore:
         # Swap the item in the view with our new dynamic item
         view._children[base_item_index] = item
         item._view = view
+        item._rendered_row = base_item._rendered_row
         item._refresh_state(interaction, interaction.data)  # type: ignore
 
         try:

@@ -1155,7 +1155,7 @@ class Webhook(BaseWebhook):
         self.proxy_auth: Optional[aiohttp.BasicAuth] = proxy_auth
 
     def __repr__(self) -> str:
-        return f'<Webhook id={self.id!r}>'
+        return f'<Webhook id={self.id!r} type={self.type!r} name={self.name!r}>'
 
     @property
     def url(self) -> str:
@@ -1596,6 +1596,7 @@ class Webhook(BaseWebhook):
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        applied_tags: List[ForumTag] = MISSING,
     ) -> WebhookMessage:
         ...
 
@@ -1619,6 +1620,7 @@ class Webhook(BaseWebhook):
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        applied_tags: List[ForumTag] = MISSING,
     ) -> None:
         ...
 
