@@ -1077,7 +1077,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             'suppress_embeds': suppress_embeds,
             'ephemeral': ephemeral,
             'silent': silent,
-            'poll': poll
+            'poll': poll,
         }
 
         if self.interaction.response.is_done():

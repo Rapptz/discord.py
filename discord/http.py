@@ -92,7 +92,7 @@ if TYPE_CHECKING:
         sticker,
         welcome_screen,
         sku,
-        poll
+        poll,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -156,7 +156,7 @@ def handle_message_parameters(
     thread_name: str = MISSING,
     channel_payload: Dict[str, Any] = MISSING,
     applied_tags: Optional[SnowflakeList] = MISSING,
-    poll: Poll = MISSING
+    poll: Poll = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -264,7 +264,7 @@ def handle_message_parameters(
             raise ValueError('Poll must contain between 1 and 10 answers')
         if poll._hours_duration < 1 or poll._hours_duration > 168:
             raise ValueError('Polls duration must be between 1 hour and 7 days')
-        payload['poll'] = poll._to_dict() # type: ignore
+        payload['poll'] = poll._to_dict()  # type: ignore
 
     multipart = []
     if files:
@@ -2546,7 +2546,7 @@ class HTTPClient:
                 'POST',
                 '/channels/{channel_id}/polls/{message_id}/expire',
                 channel_id=channel_id,
-                message_id=message_id
+                message_id=message_id,
             )
         )
 

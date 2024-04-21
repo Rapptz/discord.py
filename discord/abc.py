@@ -1597,7 +1597,7 @@ class Messageable:
             stickers=sticker_ids,
             view=view,
             flags=flags,
-            poll=poll
+            poll=poll,
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 
