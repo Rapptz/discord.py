@@ -259,29 +259,60 @@ class MemberSearch:
 
     Attributes
     ----------
-    member: :class:`Member`
-        The member this search if of.
     invite_code: Optional[:class:`str`]
         The Invite Code this user joined with.
     join_type: :class:`JoinType`
         The join type.
-    inviter: Optional[:class:`User`]
-        The inviter, or `None` if not cached or
-        not present.
     """
 
     __slots__ = (
-        'member',
+        '_resolved_data',
         'invite_code',
         'join_type',
-        'inviter',
+        '_inviter_id',
+
+        '_guild',
+        '_state',
     )
 
     def __init__(self, *, data: MemberSearchPayload, guild: Guild, state: ConnectionState) -> None:
-        self.member: Member = Member(data=data.get('member'), guild=guild, state=state)
+        self._resolved_data = data['member']
         self.invite_code: Optional[str] = data.get('source_invite_code')
-        self.join_type: MemberJoinType = try_enum(MemberJoinType, data.get('join_source_type'))
-        self.inviter: Optional[User] = state.get_user(int(data.get('inviter_id'))) if data.get('inviter_id') else None # type: ignore # Checker complains that 'inviter_id' could be None
+        self.join_type: MemberJoinType = try_enum(MemberJoinType, data['join_source_type'])
+        try:
+            self._inviter_id = data['inviter_id']
+        except KeyError:
+            self._inviter_id = None
+
+        self._guild = guild
+        self._state = state
+
+    def __repr__(self) -> str:
+        if self.inviter:
+            return f'<MemberSearch member={self.resolved!r} invite_code={self.invite_code!r} join_type={self.join_type!r} inviter={self.inviter!r}>'
+        return f'<MemberSearch member={self.resolved!r} invite_code={self.invite_code!r} join_type={self.join_type!r}>'
+
+    @property
+    def resolved(self) -> Member:
+        """:class:`Member`: Returns the resolved member object this search if of."""
+        return Member(data=self._resolved_data, guild=self._guild, state=self._state)
+
+    @property
+    def inviter(self) -> Optional[Union[Member, User]]:
+        """Optional[Union[:class:`Member`, :class:`User`]]: Returns the resolved inviter, or ``None``
+        if not cached.
+        """
+        if not self.inviter_id:
+            return
+        return self._guild.get_member(self.inviter_id) or self._state.get_user(self.inviter_id)
+
+    @property
+    def inviter_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns this member\'s inviter ID"""
+        if not self._inviter_id:
+            return
+        return int(self._inviter_id)
+
 
 @flatten_user
 class Member(discord.abc.Messageable, _UserTag):
@@ -1102,11 +1133,12 @@ class Member(discord.abc.Messageable, _UserTag):
         """
 
         data = await self._state.http.get_member_safety_information(self.guild.id, self.id)
-        
-        if data.get('total_result_count') == 0:
+
+        if data['total_result_count'] == 0:
             return
-        
-        return MemberSearch(data=data.get('members')[0], guild=self.guild, state=self._state)
+
+        # We use data['members'][0] because there will only be 1 result
+        return MemberSearch(data=data['members'][0], guild=self.guild, state=self._state)
 
     async def add_roles(self, *roles: Snowflake, reason: Optional[str] = None, atomic: bool = True) -> None:
         r"""|coro|
