@@ -4473,11 +4473,10 @@ class Guild(Hashable):
         HTTPException
             Fetching the information failed.
 
-        Returns
-        -------
-        Optional[Tuple[:class:`MemberSafety`, ...]]
-            The members that got fetched, or `None` if there
-            aren't or none of the filters were satisfied.
+        Yields
+        ------
+        :class:`MemberSearch`
+            The safety information of the members.
         """
 
         users = filters.get('users')
