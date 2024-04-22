@@ -82,21 +82,21 @@ class PollMedia:
         self.emoji: Optional[PollMediaEmoji] = emoji
 
     def to_dict(self) -> PollMediaPayload:
-        """Returns an API valid payload for this tuple."""
+        """Returns an API valid payload for this instance."""
 
-        payload = {'text': self.text}
+        payload: PollMediaPayload = {'text': self.text}
 
         if self.emoji:
             if isinstance(self.emoji, Emoji):
-                payload['emoji'] = {'name': self.emoji.name, 'id': self.emoji.id}  # type: ignore
+                payload['emoji'] = {'name': self.emoji.name, 'id': self.emoji.id}
 
             elif isinstance(self.emoji, PartialEmoji):
-                payload['emoji'] = self.emoji.to_dict()  # type: ignore
+                payload['emoji'] = self.emoji.to_dict()
 
             else:
                 payload['emoji'] = {'name': str(self.emoji)}  # type: ignore
 
-        return payload  # type: ignore
+        return payload
 
     @classmethod
     def from_dict(cls, *, data: PollMediaPayload) -> Self:
