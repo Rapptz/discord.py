@@ -125,6 +125,13 @@ class PollAnswerBase:
         self._message = message
         self._state = message._state
 
+    @property
+    def poll(self) -> Optional[Poll]:
+        """Optional[:class:`Poll`]: Returns the poll this answer belongs to."""
+        if not self._message or not self._message.poll:
+            return
+        return self._message.poll
+
     async def voters(
         self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
     ) -> AsyncIterator[Union[User, Member]]:
