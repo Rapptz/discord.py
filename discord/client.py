@@ -1844,7 +1844,7 @@ class Client:
         *,
         check: Optional[Callable[[Union[User, Member], Message, PollAnswer], bool]] = None,
         timeout: Optional[float] = None,
-    ) -> Tuple[Union[User, Member], Message, PollAnswer]:
+    ) -> Tuple[Union[User, Member], PollAnswer]:
         ...
 
     @overload
