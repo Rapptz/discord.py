@@ -256,9 +256,6 @@ class PollAnswerCount(PollAnswerBase):
     def __repr__(self) -> str:
         return f'<PollAnswerCount id={self.id} resolved={self.resolved!r}> self_voted={self.self_voted}'
 
-    def _add_vote_count(self) -> None:
-        self.count += 1
-
     @property
     def original_message(self) -> Message:
         """:class:`Message`: Returns the original message the poll of this answer is in."""
@@ -518,12 +515,6 @@ class Poll:
             'answers': [{'poll_media': answer._to_dict()} for answer in self.answers],
         }
         return data
-
-    def _add_vote_count(self, answer_id: int) -> None:
-        count = self.get_answer_count(answer_id)
-        if not count:
-            return
-        count._add_vote_count()
 
     def __str__(self) -> str:
         return self._question_media.text
