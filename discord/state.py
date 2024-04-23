@@ -1632,6 +1632,7 @@ class ConnectionState(Generic[ClientT]):
                 )
                 return
 
+            message._handle_poll_vote(raw.answer_id, True)
             self.dispatch('poll_vote_add', user, message.poll.get_answer(raw.answer_id))
 
     def parse_message_poll_vote_remove(self, data: gw.PollVoteActionEvent) -> None:
@@ -1654,6 +1655,7 @@ class ConnectionState(Generic[ClientT]):
                 )
                 return
 
+            message._handle_poll_vote(raw.answer_id, False)
             self.dispatch('poll_vote_remove', user, message.poll.get_answer(raw.answer_id))
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
