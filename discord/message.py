@@ -1969,6 +1969,11 @@ class Message(PartialMessage, Hashable):
     def _handle_interaction(self, data: MessageInteractionPayload):
         self.interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
 
+    def _handle_poll_vote(self, answer_id: int, added: bool):
+        if not self.poll:
+            return
+        self.poll._handle_vote(answer_id, added)
+
     def _rebind_cached_references(
         self,
         new_guild: Guild,
