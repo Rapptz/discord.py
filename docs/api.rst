@@ -4942,15 +4942,6 @@ Entitlement
 .. autoclass:: Entitlement()
     :members:
 
-PollAnswerCount
-~~~~~~~~~~~~~~~
-
-.. attributetable:: PollAnswerCount
-
-.. autoclass:: PollAnswerCount()
-    :members:
-    :inherited-members:
-
 RawMessageDeleteEvent
 ~~~~~~~~~~~~~~~~~~~~~~~
 
