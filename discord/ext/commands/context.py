@@ -1078,5 +1078,5 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             msg = await self.interaction.original_response()
 
         if delete_after is not None:
-            await msg.delete(delay=delete_after)  # type: ignore
-        return msg  # type: ignore
+            await msg.delete(delay=delete_after)
+        return msg
