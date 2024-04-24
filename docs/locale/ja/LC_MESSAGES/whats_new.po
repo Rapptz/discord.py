@@ -1279,8 +1279,8 @@ msgid "v1.5.0"
 msgstr "v1.5.0"
 
 #: ../../whats_new.rst:500
-msgid "This version came with forced breaking changes that Discord is requiring all bots to go through on October 7th. It is highly recommended to read the documentation on intents, :ref:`intents_primer`."
-msgstr "このバージョンでは、Discordが10月7日に行う、すべてのBotに要求している強制的な破壊的変更が含まれています。Intentsに関するドキュメント :ref:`intents_primer` を読むことを強くおすすめします。"
+msgid "This version came with forced breaking changes that Discord is requiring all bots to go through on October 7th. It is highly recommended to read the documentation on intents, :ref:`guide_topic_intents`."
+msgstr "このバージョンでは、Discordが10月7日に行う、すべてのBotに要求している強制的な破壊的変更が含まれています。Intentsに関するドキュメント :ref:`guide_topic_intents` を読むことを強くおすすめします。"
 
 #: ../../whats_new.rst:503
 msgid "API Changes"
