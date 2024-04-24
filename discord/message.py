@@ -1711,10 +1711,18 @@ class Message(PartialMessage, Hashable):
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
 
-        try:
-            self._poll = Poll._from_data(data=data['poll'], message=self, state=self._state)
-        except KeyError:
-            self._poll = None
+        # This updates the poll so it has the counts, if the message
+        # was previously cached.
+        self._poll: Optional[Poll]
+        poll = state._get_poll(self.id)
+        if poll:
+            self._poll = poll
+        else:
+            try:
+                self._poll = Poll._from_data(data=data['poll'], message=self, state=state)
+            except KeyError:
+                self._poll = None
+
         try:
             # if the channel doesn't have a guild attribute, we handle that
             self.guild = channel.guild
@@ -1968,11 +1976,6 @@ class Message(PartialMessage, Hashable):
 
     def _handle_interaction(self, data: MessageInteractionPayload):
         self.interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
-
-    def _handle_poll_vote(self, answer_id: int, added: bool):
-        if not self.poll:
-            return
-        self.poll._handle_vote(answer_id, added)
 
     def _rebind_cached_references(
         self,
