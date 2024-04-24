@@ -177,7 +177,7 @@ class PollAnswer:
         return self.media.text
 
     def __repr__(self) -> str:
-        return f'<PollAnswer id={self.id} media={self.media}>'
+        return f'<PollAnswer id={self.id} media={self.media!r}>'
 
     @classmethod
     def from_params(
@@ -423,12 +423,13 @@ class Poll:
                 continue
             answer._update_with_results(count)
 
-    def _handle_vote(self, answer_id: int, added: bool):
+    def _handle_vote(self, answer_id: int, added: bool, self_voted: bool = False):
         answer = self.get_answer(answer_id)
         if not answer:
             return
 
         answer._handle_vote_event(added)
+        answer.self_voted = self_voted
 
     @classmethod
     def _from_data(cls, *, data: PollPayload, message: Message, state: ConnectionState) -> Self:
