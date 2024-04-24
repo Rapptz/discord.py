@@ -89,6 +89,7 @@ if TYPE_CHECKING:
     from .ui.item import Item
     from .ui.dynamic import DynamicItem
     from .app_commands import CommandTree, Translator
+    from .poll import Poll
 
     from .types.automod import AutoModerationRule, AutoModerationActionExecution
     from .types.snowflake import Snowflake
@@ -509,6 +510,12 @@ class ConnectionState(Generic[ClientT]):
     def _get_message(self, msg_id: Optional[int]) -> Optional[Message]:
         return utils.find(lambda m: m.id == msg_id, reversed(self._messages)) if self._messages else None
 
+    def _get_poll(self, msg_id: Optional[int]) -> Optional[Poll]:
+        message = self._get_message(msg_id)
+        if not message:
+            return
+        return message.poll
+
     def _add_guild_from_data(self, data: GuildPayload) -> Guild:
         guild = Guild(data=data, state=self)
         self._add_guild(guild)
@@ -532,6 +539,13 @@ class ConnectionState(Generic[ClientT]):
             channel = guild and guild._resolve_channel(channel_id)
 
         return channel or PartialMessageable(state=self, guild_id=guild_id, id=channel_id), guild
+
+    def _update_poll_counts(self, message: Message, answer_id: int, added: bool, self_voted: bool = False) -> Optional[Poll]:
+        poll = message.poll
+        if not poll:
+            return
+        poll._handle_vote(answer_id, added, self_voted)
+        return poll
 
     async def chunker(
         self, guild_id: int, query: str = '', limit: int = 0, presences: bool = False, *, nonce: Optional[str] = None
@@ -1626,14 +1640,14 @@ class ConnectionState(Generic[ClientT]):
             user = self.get_user(raw.user_id)
 
         if message and user:
-            if not message.poll:
+            poll = self._update_poll_counts(message, raw.answer_id, True, raw.user_id == self.self_id)
+            if not poll:
                 _log.warning(
                     'POLL_VOTE_ADD referencing message with ID: %s does not have a poll. Discarding.', raw.message_id
                 )
                 return
 
-            message._handle_poll_vote(raw.answer_id, True)
-            self.dispatch('poll_vote_add', user, message.poll.get_answer(raw.answer_id))
+            self.dispatch('poll_vote_add', user, poll.get_answer(raw.answer_id))
 
     def parse_message_poll_vote_remove(self, data: gw.PollVoteActionEvent) -> None:
         raw = RawPollVoteActionEvent(data)
@@ -1649,14 +1663,14 @@ class ConnectionState(Generic[ClientT]):
             user = self.get_user(raw.user_id)
 
         if message and user:
-            if not message.poll:
+            poll = self._update_poll_counts(message, raw.answer_id, False, raw.user_id == self.self_id)
+            if not poll:
                 _log.warning(
                     'POLL_VOTE_REMOVE referencing message with ID: %s does not have a poll. Discarding.', raw.message_id
                 )
                 return
 
-            message._handle_poll_vote(raw.answer_id, False)
-            self.dispatch('poll_vote_remove', user, message.poll.get_answer(raw.answer_id))
+            self.dispatch('poll_vote_remove', user, poll.get_answer(raw.answer_id))
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, (TextChannel, Thread, VoiceChannel)):
