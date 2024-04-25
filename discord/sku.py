@@ -126,7 +126,7 @@ class Entitlement:
         A UTC date which entitlement is no longer valid. Not present when using test entitlements.
     guild_id: Optional[:class:`int`]
         The ID of the guild that is granted access to the entitlement
-    consumed:
+    consumed: :class:`bool`
         For consumable items, whether the entitlement has been consumed.
     """
 
@@ -155,7 +155,7 @@ class Entitlement:
         self.starts_at: Optional[datetime] = utils.parse_time(data.get('starts_at', None))
         self.ends_at: Optional[datetime] = utils.parse_time(data.get('ends_at', None))
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
-        self.consumed: Optional[bool] = data.get('consumed', None)
+        self.consumed: bool = data.get('consumed', False)
 
     def __repr__(self) -> str:
         return f'<Entitlement id={self.id} type={self.type!r} user_id={self.user_id}>'
