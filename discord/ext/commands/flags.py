@@ -533,19 +533,22 @@ class FlagConverter(metaclass=FlagsMeta):
             match = cls.__commands_flag_regex__.search(argument)
             if match is not None:
                 begin, end = match.span(0)
-                value = argument[:begin]
-                if value:
-                    name = positional.name
-                    if case_insensitive:
-                        name = name.casefold()
-                    try:
-                        values = result[name]
-                    except KeyError:
-                        result[name] = [value]
-                    else:
-                        values.append(value)
-                last_position = end
-                last_flag = positional
+                value = argument[:begin].strip()
+                last_position = begin - 1
+            else:
+                value = argument.strip()
+                last_position = len(argument)
+
+            if value:
+                name = positional.name
+                if case_insensitive:
+                    name = name.casefold()
+                try:
+                    values = result[name]
+                except KeyError:
+                    result[name] = [value]
+                else:
+                    values.append(value)
 
         for match in cls.__commands_flag_regex__.finditer(argument):
             begin, end = match.span(0)
