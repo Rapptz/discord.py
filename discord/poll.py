@@ -50,6 +50,7 @@ if TYPE_CHECKING:
         Poll as PollPayload,
         PollAnswerWithID as PollAnswerWithIDPayload,
         PollResult as PollResultPayload,
+        PollAnswer as PollAnswerPayload,
     )
 
 
@@ -229,8 +230,6 @@ class PollAnswer:
             'poll_media': self.media.to_dict(),
         }
 
-        return data
-
     async def voters(
         self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
     ) -> AsyncIterator[Union[User, Member]]:
@@ -306,7 +305,7 @@ class PollAnswer:
                 break
 
             limit -= len(users)
-            after = Object(id=int((users[-1])['id']))
+            after = Object(id=int(users[-1]['id']))
 
             if not guild or isinstance(guild, Object):
                 for raw_user in reversed(users):
@@ -355,9 +354,8 @@ class Poll:
         'layout_type',
         '_question_media',
         '_message',
-        '_results',
         '_expiry',
-        '_results',
+        '_finalized',
         '_state',
     )
 
@@ -385,7 +383,7 @@ class Poll:
         # _from_data, so it should be ``None`` now.
         self._message: Optional[Message] = None
         self._state: Optional[ConnectionState] = None
-        self._results: Optional[PollResultPayload] = None
+        self._finalized: bool = False
         self._expiry: Optional[datetime.datetime] = None
 
     def _update(self, message: Message) -> None:
@@ -398,16 +396,7 @@ class Poll:
         # These attributes are accessed via message.poll as there
         # is where all the data is stored
         self._expiry = message.poll.expiry
-        self._results = message.poll._results
-
-        if not self._results:
-            return
-
-        for count in self._results['answer_counts']:
-            answer = self.get_answer(int(count['id']))
-            if not answer:
-                continue
-            answer._update_with_results(count)
+        self._finalized = message.poll._finalized
 
     def _handle_vote(self, answer_id: int, added: bool, self_voted: bool = False):
         answer = self.get_answer(answer_id)
@@ -515,13 +504,13 @@ class Poll:
     def is_finalized(self) -> bool:
         """:class:`bool`: Returns whether the poll has finalized.
 
-        It always returns ``False`` if the poll is not part of a
-        fetched message. You should consider accessing this method
-        via :attr:`Message.poll`
+        It always returns ``False`` for stateless polls.
         """
         if not self._results:
             return False
         return self._results['is_finalized']
+
+    is_finalised = is_finalized
 
     def copy(self) -> Self:
         """Returns a stateless copy of this poll.
