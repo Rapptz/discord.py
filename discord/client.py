@@ -1842,7 +1842,7 @@ class Client:
         event: Literal['poll_vote_add', 'poll_vote_remove'],
         /,
         *,
-        check: Optional[Callable[[Union[User, Member], Message, PollAnswer], bool]] = None,
+        check: Optional[Callable[[Union[User, Member], PollAnswer], bool]] = None,
         timeout: Optional[float] = None,
     ) -> Tuple[Union[User, Member], PollAnswer]:
         ...
