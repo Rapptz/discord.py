@@ -224,17 +224,10 @@ class PollAnswer:
         """:class:`Poll`: Returns the parent poll of this answer"""
         return self._poll
 
-    def _to_dict(self) -> PollMediaPayload:
-        data: PollMediaPayload = {'text': self.text}
-
-        if self.emoji is not None:
-            if isinstance(self.emoji, PartialEmoji):
-                data['emoji'] = self.emoji.to_dict()
-            else:
-                data['emoji'] = {'name': str(self.emoji)}  # type: ignore
-
-                if hasattr(self.emoji, 'id'):
-                    data['emoji']['id'] = int(self.emoji.id)  # type: ignore
+    def _to_dict(self) -> PollAnswerPayload:
+        return {
+            'poll_media': self.media.to_dict(),
+        }
 
         return data
 
