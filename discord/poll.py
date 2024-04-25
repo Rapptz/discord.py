@@ -398,6 +398,16 @@ class Poll:
         self._expiry = message.poll.expiry
         self._finalized = message.poll._finalized
 
+    def _update_results(self, data: PollResultPayload) -> None:
+        self._finalized = data['is_finalized']
+
+        for count in data['answer_counts']:
+            answer = self.get_answer(int(count['id']))
+            if not answer:
+                continue
+
+            answer._update_with_results(count)
+
     def _handle_vote(self, answer_id: int, added: bool, self_voted: bool = False):
         answer = self.get_answer(answer_id)
         if not answer:
@@ -432,9 +442,9 @@ class Poll:
         self._expiry = expiry
 
         try:
-            self._results = data['results']
+            self._update_results(data['results'])
         except KeyError:
-            self._results = None
+            pass
 
         return self
 
