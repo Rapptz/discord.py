@@ -2526,7 +2526,7 @@ class HTTPClient:
         if after:
             params['after'] = int(after)
 
-        if limit:
+        if limit is not None:
             params['limit'] = limit
 
         return self.request(
