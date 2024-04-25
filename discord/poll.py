@@ -98,15 +98,10 @@ class PollMedia:
 
         payload: PollMediaPayload = {'text': self.text}
 
-        if self.emoji:
-            if isinstance(self.emoji, Emoji):
-                payload['emoji'] = {'name': self.emoji.name, 'id': self.emoji.id}
-
-            elif isinstance(self.emoji, PartialEmoji):
-                payload['emoji'] = self.emoji.to_dict()
-
-            else:
-                payload['emoji'] = {'name': str(self.emoji)}  # type: ignore
+        if isinstance(self.emoji, str):
+            payload['emoji'] = {"id": None, "name": self.emoji}
+        elif self.emoji is not None:
+            payload['emoji'] = {"id": self.emoji.id, "name": self.emoji.name}
 
         return payload
 
