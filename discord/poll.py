@@ -352,7 +352,6 @@ class Poll:
         'multiselect',
         '_answers',
         'duration',
-        '_hours_duration',
         'layout_type',
         '_question_media',
         '_message',
@@ -378,7 +377,6 @@ class Poll:
             )
         self._answers: List[PollAnswer] = []
         self.duration: datetime.timedelta = duration
-        self._hours_duration: float = duration.total_seconds() / 3600
 
         self.multiselect: bool = multiselect
         self.layout_type: PollLayoutType = layout_type
@@ -455,9 +453,9 @@ class Poll:
         data: PollCreatePayload = {
             'allow_multiselect': self.multiselect,
             'question': self._question_media.to_dict(),
-            'duration': self._hours_duration,
+            'duration': self.duration.total_seconds() / 3600,
             'layout_type': self.layout_type.value,
-            'answers': [answer.to_dict() for answer in self.answers],
+            'answers': [answer._to_dict() for answer in self.answers],
         }
         return data
 
