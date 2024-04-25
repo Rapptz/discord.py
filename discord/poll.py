@@ -457,7 +457,7 @@ class Poll:
             'question': self._question_media.to_dict(),
             'duration': self._hours_duration,
             'layout_type': self.layout_type.value,
-            'answers': [{'poll_media': answer._to_dict()} for answer in self.answers],
+            'answers': [answer.to_dict() for answer in self.answers],
         }
         return data
 
