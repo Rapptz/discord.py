@@ -58,6 +58,7 @@ class AppInfo(BaseAppInfo):
     owner: User
     bot_public: bool
     bot_require_code_grant: bool
+    bot: NotRequired[User]
     team: NotRequired[Team]
     guild_id: NotRequired[Snowflake]
     primary_sku_id: NotRequired[Snowflake]
