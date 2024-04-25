@@ -534,7 +534,7 @@ class FlagConverter(metaclass=FlagsMeta):
             if match is not None:
                 begin, end = match.span(0)
                 value = argument[:begin].strip()
-                last_position = begin - 1
+                last_position = begin
             else:
                 value = argument.strip()
                 last_position = len(argument)
