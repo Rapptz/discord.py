@@ -540,9 +540,8 @@ class FlagConverter(metaclass=FlagsMeta):
                 last_position = len(argument)
 
             if value:
-                name = positional.name
-                if case_insensitive:
-                    name = name.casefold()
+                name = positional.name.casefold() if case_insensitive else positional.name
+
                 try:
                     values = result[name]
                 except KeyError:
