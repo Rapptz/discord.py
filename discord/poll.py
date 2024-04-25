@@ -484,12 +484,12 @@ class Poll:
         return self._answers.copy()
 
     @property
-    def expiry(self) -> Optional[datetime.datetime]:
+    def expires_at(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: A datetime object representing the poll expiry.
 
         .. note::
 
-            This will **always** return ``None`` if the poll is not part of a message.
+            This will **always** be ``None`` for stateless polls.
         """
         return self._expiry
 
@@ -516,9 +516,7 @@ class Poll:
 
         It always returns ``False`` for stateless polls.
         """
-        if not self._results:
-            return False
-        return self._results['is_finalized']
+        return self._finalized
 
     is_finalised = is_finalized
 
