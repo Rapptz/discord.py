@@ -523,10 +523,32 @@ class FlagConverter(metaclass=FlagsMeta):
         result: Dict[str, List[str]] = {}
         flags = cls.__commands_flags__
         aliases = cls.__commands_flag_aliases__
+        positional_flag = cls.__commands_flag_positional__
         last_position = 0
-        last_flag = cls.__commands_flag_positional__
+        last_flag: Optional[Flag] = None
 
         case_insensitive = cls.__commands_flag_case_insensitive__
+
+        if positional_flag is not None:
+            match = cls.__commands_flag_regex__.search(argument)
+            if match is not None:
+                begin, end = match.span(0)
+                value = argument[:begin].strip()
+                last_position = begin
+            else:
+                value = argument.strip()
+                last_position = len(argument)
+
+            if value:
+                name = positional_flag.name.casefold() if case_insensitive else positional_flag.name
+
+                try:
+                    values = result[name]
+                except KeyError:
+                    result[name] = [value]
+                else:
+                    values.append(value)
+
         for match in cls.__commands_flag_regex__.finditer(argument):
             begin, end = match.span(0)
             key = match.group('flag')
@@ -537,25 +559,19 @@ class FlagConverter(metaclass=FlagsMeta):
                 key = aliases[key]
 
             flag = flags.get(key)
-
-            if last_flag is not None and (last_position or last_flag.positional):
-                if last_position:
-                    value = argument[last_position : begin - 1].lstrip()
-                else:
-                    value = argument[:begin].strip()
-
-                if not value and last_position:
+            if last_position and last_flag is not None:
+                value = argument[last_position : begin - 1].lstrip()
+                if not value:
                     raise MissingFlagArgument(last_flag)
 
-                if last_position or value:
-                    name = last_flag.name.casefold() if case_insensitive else last_flag.name
+                name = last_flag.name.casefold() if case_insensitive else last_flag.name
 
-                    try:
-                        values = result[name]
-                    except KeyError:
-                        result[name] = [value]
-                    else:
-                        values.append(value)
+                try:
+                    values = result[name]
+                except KeyError:
+                    result[name] = [value]
+                else:
+                    values.append(value)
 
             last_position = end
             last_flag = flag
