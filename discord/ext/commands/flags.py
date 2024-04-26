@@ -542,7 +542,7 @@ class FlagConverter(metaclass=FlagsMeta):
                 if last_position:
                     value = argument[last_position : begin - 1].lstrip()
                 else:
-                    value = argument[last_position : begin].strip()
+                    value = argument[last_position:begin].strip()
 
                 if not value and last_position:
                     raise MissingFlagArgument(last_flag)
