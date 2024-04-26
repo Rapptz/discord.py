@@ -523,10 +523,32 @@ class FlagConverter(metaclass=FlagsMeta):
         result: Dict[str, List[str]] = {}
         flags = cls.__commands_flags__
         aliases = cls.__commands_flag_aliases__
+        positional_flag = cls.__commands_flag_positional__
         last_position = 0
-        last_flag = cls.__commands_flag_positional__
+        last_flag: Optional[Flag] = None
 
         case_insensitive = cls.__commands_flag_case_insensitive__
+
+        if positional_flag is not None:
+            match = cls.__commands_flag_regex__.search(argument)
+            if match is not None:
+                begin, end = match.span(0)
+                value = argument[:begin].strip()
+                last_position = begin
+            else:
+                value = argument.strip()
+                last_position = len(argument)
+
+            if value:
+                name = positional_flag.name.casefold() if case_insensitive else positional_flag.name
+
+                try:
+                    values = result[name]
+                except KeyError:
+                    result[name] = [value]
+                else:
+                    values.append(value)
+
         for match in cls.__commands_flag_regex__.finditer(argument):
             begin, end = match.span(0)
             key = match.group('flag')
