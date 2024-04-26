@@ -527,7 +527,6 @@ class FlagConverter(metaclass=FlagsMeta):
         last_flag = cls.__commands_flag_positional__
 
         case_insensitive = cls.__commands_flag_case_insensitive__
-
         for match in cls.__commands_flag_regex__.finditer(argument):
             begin, end = match.span(0)
             key = match.group('flag')
