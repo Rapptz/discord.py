@@ -306,6 +306,11 @@ class Member(discord.abc.Messageable, _UserTag):
         This will be set to ``None`` if the user is not timed out.
 
         .. versionadded:: 2.0
+    unusual_dm_activity_until: Optional[:class:`datetime.datetime`]
+        An aware datetime object that specifies the date and time in UTC that the member's unusual DM activity will expire.
+        This will be set to ``None`` if the user does not have unusual DM activity.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -324,6 +329,7 @@ class Member(discord.abc.Messageable, _UserTag):
         '_avatar',
         '_flags',
         '_avatar_decoration_data',
+        'unusual_dm_activity_until',
     )
 
     if TYPE_CHECKING:
@@ -367,6 +373,7 @@ class Member(discord.abc.Messageable, _UserTag):
             self._permissions = None
 
         self.timed_out_until: Optional[datetime.datetime] = utils.parse_time(data.get('communication_disabled_until'))
+        self.unusual_dm_activity_until: Optional[datetime.datetime] = utils.parse_time(data.get('unusual_dm_activity_until'))
 
     def __str__(self) -> str:
         return str(self._user)
@@ -400,6 +407,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.pending = data.get('pending', False)
         self.timed_out_until = utils.parse_time(data.get('communication_disabled_until'))
         self._flags = data.get('flags', 0)
+        self.unusual_dm_activity_until = utils.parse_time(data.get('unusual_dm_activity_until'))
 
     @classmethod
     def _try_upgrade(cls, *, data: UserWithMemberPayload, guild: Guild, state: ConnectionState) -> Union[User, Self]:
@@ -430,6 +438,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._state = member._state
         self._avatar = member._avatar
         self._avatar_decoration_data = member._avatar_decoration_data
+        self.unusual_dm_activity_until = member.unusual_dm_activity_until
 
         # Reference will not be copied unless necessary by PRESENCE_UPDATE
         # See below
@@ -459,6 +468,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._avatar = data.get('avatar')
         self._flags = data.get('flags', 0)
         self._avatar_decoration_data = data.get('avatar_decoration_data')
+        self.unusual_dm_activity_until = utils.parse_time(data.get('unusual_dm_activity_until'))
 
     def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
         self.activities = tuple(create_activity(d, self._state) for d in data['activities'])
@@ -1147,4 +1157,18 @@ class Member(discord.abc.Messageable, _UserTag):
         """
         if self.timed_out_until is not None:
             return utils.utcnow() < self.timed_out_until
+        return False
+
+    def has_unusual_dm_activity(self) -> bool:
+        """Returns whether this member has unusual DM activity.
+
+        .. versionadded:: 2.4
+
+        Returns
+        --------
+        :class:`bool`
+            ``True`` if the member has unusual DM activity. ``False`` otherwise.
+        """
+        if self.unusual_dm_activity_until is not None:
+            return utils.utcnow() < self.unusual_dm_activity_until
         return False
