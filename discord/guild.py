@@ -4416,6 +4416,22 @@ class Guild(Hashable):
 
         return utils.parse_time(self._incidents_data.get('dms_disabled_until'))
 
+    @property
+    def dm_spam_detected_at(self) -> Optional[datetime.datetime]:
+        """:class:`datetime.datetime`: Returns the time when DM spam was detected in the guild."""
+        if not self._incidents_data:
+            return None
+
+        return self._incidents_data.get('dm_spam_detected_at', None)
+
+    @property
+    def raid_detected_at(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: Returns the time when a raid was detected in the guild"""
+        if not self._incidents_data:
+            return None
+
+        return self._incidents_data.get('raid_detected_at', None)
+
     def invites_paused(self) -> bool:
         """:class:`bool`: Whether invites are paused in the guild.
 
@@ -4435,3 +4451,17 @@ class Guild(Hashable):
             return False
 
         return self.dms_paused_until > utils.utcnow()
+
+    def dm_spam_detected(self) -> bool:
+        """:class:`bool`: Whether DM spam was detected in the guild."""
+        if not self.dm_spam_detected_at:
+            return False
+
+        return self.dm_spam_detected_at > utils.utcnow()
+
+    def raid_detected(self) -> bool:
+        """:class:`bool`: Whether a raid was detected in the guild."""
+        if not self.raid_detected_at:
+            return False
+
+        return self.raid_detected_at > utils.utcnow()
