@@ -4425,7 +4425,7 @@ class Guild(Hashable):
         if not self._incidents_data:
             return None
 
-        return self._incidents_data.get('dm_spam_detected_at', None)
+        return utils.parse_time(self._incidents_data.get('dm_spam_detected_at'))
 
     @property
     def raid_detected_at(self) -> Optional[datetime.datetime]:
@@ -4436,7 +4436,7 @@ class Guild(Hashable):
         if not self._incidents_data:
             return None
 
-        return self._incidents_data.get('raid_detected_at', None)
+        return utils.parse_time(self._incidents_data.get('raid_detected_at'))
 
     def invites_paused(self) -> bool:
         """:class:`bool`: Whether invites are paused in the guild.
