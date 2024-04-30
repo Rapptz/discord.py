@@ -196,10 +196,9 @@ def get_flags(namespace: Dict[str, Any], globals: Dict[str, Any], locals: Dict[s
             flag.name = name
 
         if flag.positional:
-            if positional is None:
-                positional = flag
-            else:
+            if positional is not None:
                 raise TypeError(f"{flag.name!r} positional flag conflicts with {positional.name!r} flag.")
+            positional = flag
 
         annotation = flag.annotation = resolve_annotation(flag.annotation, globals, locals, cache)
 
@@ -540,13 +539,7 @@ class FlagConverter(metaclass=FlagsMeta):
 
             if value:
                 name = positional_flag.name.casefold() if case_insensitive else positional_flag.name
-
-                try:
-                    values = result[name]
-                except KeyError:
-                    result[name] = [value]
-                else:
-                    values.append(value)
+                result[name] = [value]
 
         for match in cls.__commands_flag_regex__.finditer(argument):
             begin, end = match.span(0)
