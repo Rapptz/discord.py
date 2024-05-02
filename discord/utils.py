@@ -168,7 +168,6 @@ T_co = TypeVar('T_co', covariant=True)
 _Iter = Union[Iterable[T], AsyncIterable[T]]
 Coro = Coroutine[Any, Any, T]
 MaybeAwaitable = Union[T, Awaitable[T]]
-NewTypeType = type(NewType('Foo', int))
 
 
 class CachedSlotProperty(Generic[T, T_co]):
@@ -1129,7 +1128,7 @@ def evaluate_annotation(
             annotation = annotation[tp.__args__]
         return annotation
 
-    if isinstance(tp, NewTypeType):
+    if hasattr(tp, '__supertype__'):
         return evaluate_annotation(tp.__supertype__, globals, locals, cache)
 
     if hasattr(tp, '__metadata__'):
