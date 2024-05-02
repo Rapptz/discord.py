@@ -43,7 +43,6 @@ from typing import (
     Literal,
     Mapping,
     NamedTuple,
-    NewType,
     Optional,
     Protocol,
     Set,
