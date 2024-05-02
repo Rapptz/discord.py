@@ -43,6 +43,7 @@ from typing import (
     Literal,
     Mapping,
     NamedTuple,
+    NewType,
     Optional,
     Protocol,
     Set,
@@ -68,6 +69,7 @@ import re
 import os
 import sys
 import types
+import typing
 import warnings
 import logging
 
@@ -166,6 +168,7 @@ T_co = TypeVar('T_co', covariant=True)
 _Iter = Union[Iterable[T], AsyncIterable[T]]
 Coro = Coroutine[Any, Any, T]
 MaybeAwaitable = Union[T, Awaitable[T]]
+NewTypeType = type(NewType('Foo', int))
 
 
 class CachedSlotProperty(Generic[T, T_co]):
@@ -1080,6 +1083,7 @@ def as_chunks(iterator: _Iter[T], max_size: int) -> _Iter[List[T]]:
 
 
 PY_310 = sys.version_info >= (3, 10)
+PY_312 = sys.version_info >= (3, 12)
 
 
 def flatten_literal_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
@@ -1117,6 +1121,16 @@ def evaluate_annotation(
         evaluated = evaluate_annotation(eval(tp, globals, locals), globals, locals, cache)
         cache[tp] = evaluated
         return evaluated
+
+    if PY_312 and getattr(tp.__repr__, '__objclass__', None) is typing.TypeAliasType:  # type: ignore
+        temp_locals = dict(**locals, **{t.__name__: t for t in tp.__type_params__})
+        annotation = evaluate_annotation(tp.__value__, globals, temp_locals, cache.copy())
+        if hasattr(tp, '__args__'):
+            annotation = annotation[tp.__args__]
+        return annotation
+
+    if isinstance(tp, NewTypeType):
+        return evaluate_annotation(tp.__supertype__, globals, locals, cache)
 
     if hasattr(tp, '__metadata__'):
         # Annotated[X, Y] can access Y via __metadata__
