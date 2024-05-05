@@ -715,7 +715,7 @@ class MessageInteractionMetadata(Hashable):
 
     @property
     def original_response_message(self) -> Optional[Message]:
-        """:class:`~discord.Message`: The original response message if the message 
+        """:class:`~discord.Message`: The original response message if the message
         is a follow-up and is found in cache.
         """
         if self.original_response_message_id:
