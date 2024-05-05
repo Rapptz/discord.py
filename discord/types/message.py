@@ -176,7 +176,7 @@ class Message(PartialMessage):
     flags: NotRequired[int]
     sticker_items: NotRequired[List[StickerItem]]
     referenced_message: NotRequired[Optional[Message]]
-    interaction: NotRequired[MessageInteraction] # deprecated, use interaction_metadata
+    interaction: NotRequired[MessageInteraction]  # deprecated, use interaction_metadata
     interaction_metadata: NotRequired[MessageInteractionMetadata]
     components: NotRequired[List[Component]]
     position: NotRequired[int]

@@ -624,10 +624,10 @@ class MessageInteraction(Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: The interaction's creation time in UTC."""
         return utils.snowflake_time(self.id)
-    
+
 
 class MessageInteractionMetadata(Hashable):
-    """Represents the interaction metadata of a :class:`Message` if 
+    """Represents the interaction metadata of a :class:`Message` if
     it was sent in response to an interaction.
 
     .. versionadded:: 2.4
@@ -655,14 +655,14 @@ class MessageInteractionMetadata(Hashable):
     user: :class:`User`
         The user that invoked the interaction.
     original_response_message_id: Optional[:class:`int`]
-        The ID of the original response message if the 
+        The ID of the original response message if the
         message is a follow-up message to an interaction.
     interacted_message_id: Optional[:class:`int`]
         The ID of the message that contained the interactive components, if applicable.
     modal_interaction: Optional[:class:`.MessageInteractionMetadata`]
         The metadata of the modal submit interaction that triggered this interaction, if applicable.
     """
-    
+
     __slots__: Tuple[str, ...] = (
         'id',
         'type',
@@ -683,8 +683,7 @@ class MessageInteractionMetadata(Hashable):
         self.type: InteractionType = try_enum(InteractionType, data['type'])
         self.user = state.create_user(data['user'])
         self._integration_owners: Dict[int, int] = {
-            int(key): int(value) 
-            for key, value in data.get("authorizing_integration_owners", {}).items()
+            int(key): int(value) for key, value in data.get("authorizing_integration_owners", {}).items()
         }
 
         self.original_response_message_id: Optional[int] = None
@@ -714,32 +713,31 @@ class MessageInteractionMetadata(Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: The interaction's creation time in UTC."""
         return utils.snowflake_time(self.id)
-    
+
     @property
     def original_response_message(self) -> Optional[Message]:
-        """:class:`~discord.Message`: The original response message 
-        if the message is a follow-up message to an interaction. 
+        """:class:`~discord.Message`: The original response message
+        if the message is a follow-up message to an interaction.
         If applicable and found in cache.
         """
         if self.original_response_message_id:
             return self.__state._get_message(self.original_response_message_id)
         return None
-    
+
     @property
     def interacted_message(self) -> Optional[Message]:
-        """:class:`~discord.Message`: The message that 
+        """:class:`~discord.Message`: The message that
         contained the interactive components, if applicable and found in cache.
         """
         if self.interacted_message_id:
             return self.__state._get_message(self.interacted_message_id)
         return None
-    
-    
+
     def is_guild_integration(self) -> bool:
         """:class:`bool`: Returns ``True`` if the interaction is a guild integration."""
         if self.__guild:
             return self.__guild.id == self._integration_owners.get(0)
-        
+
         return False
 
     def is_user_integration(self) -> bool:
