@@ -260,6 +260,6 @@ class MessageInteractionMetadata(TypedDict):
     type: InteractionType
     user: User
     authorizing_integration_owners: Dict[Literal['0', '1'], Snowflake]
-    original_response_message_id: Snowflake
-    interacted_message_id: Snowflake
+    original_response_message_id: NotRequired[Snowflake]
+    interacted_message_id: NotRequired[Snowflake]
     triggering_interaction_metadata: NotRequired[MessageInteractionMetadata]
