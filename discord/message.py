@@ -670,19 +670,19 @@ class MessageInteractionMetadata(Hashable):
         'interacted_message_id',
         'modal_interaction',
         '_integration_owners',
-        '__state',
-        '__guild',
+        '_state',
+        '_guild',
     )
 
     def __init__(self, *, state: ConnectionState, guild: Optional[Guild], data: MessageInteractionMetadataPayload) -> None:
-        self.__guild: Optional[Guild] = guild
-        self.__state: ConnectionState = state
+        self._guild: Optional[Guild] = guild
+        self._state: ConnectionState = state
 
         self.id: int = int(data['id'])
         self.type: InteractionType = try_enum(InteractionType, data['type'])
         self.user = state.create_user(data['user'])
         self._integration_owners: Dict[int, int] = {
-            int(key): int(value) for key, value in data.get("authorizing_integration_owners", {}).items()
+            int(key): int(value) for key, value in data.get('authorizing_integration_owners', {}).items()
         }
 
         self.original_response_message_id: Optional[int] = None
@@ -719,7 +719,7 @@ class MessageInteractionMetadata(Hashable):
         is a follow-up and is found in cache.
         """
         if self.original_response_message_id:
-            return self.__state._get_message(self.original_response_message_id)
+            return self._state._get_message(self.original_response_message_id)
         return None
 
     @property
@@ -728,13 +728,13 @@ class MessageInteractionMetadata(Hashable):
         containes the interactive components, if applicable and is found in cache.
         """
         if self.interacted_message_id:
-            return self.__state._get_message(self.interacted_message_id)
+            return self._state._get_message(self.interacted_message_id)
         return None
 
     def is_guild_integration(self) -> bool:
         """:class:`bool`: Returns ``True`` if the interaction is a guild integration."""
-        if self.__guild:
-            return self.__guild.id == self._integration_owners.get(0)
+        if self._guild:
+            return self._guild.id == self._integration_owners.get(0)
 
         return False
 
