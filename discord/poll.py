@@ -407,7 +407,9 @@ class Poll:
             layout_type=layout_type,
             question=question,
         )
-        self._answers = {int(answer['answer_id']): PollAnswer(data=answer, message=message, poll=self) for answer in data['answers']}
+        self._answers = {
+            int(answer['answer_id']): PollAnswer(data=answer, message=message, poll=self) for answer in data['answers']
+        }
         self._message = message
         self._state = state
         self._expiry = expiry
