@@ -72,6 +72,7 @@ import string
 import sys
 from threading import Timer
 import types
+import typing
 import warnings
 import aiohttp
 
@@ -1202,6 +1203,7 @@ def as_chunks(iterator: _Iter[T], max_size: int) -> _Iter[List[T]]:
 
 
 PY_310 = sys.version_info >= (3, 10)
+PY_312 = sys.version_info >= (3, 12)
 
 
 def flatten_literal_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
@@ -1239,6 +1241,16 @@ def evaluate_annotation(
         evaluated = evaluate_annotation(eval(tp, globals, locals), globals, locals, cache)
         cache[tp] = evaluated
         return evaluated
+
+    if PY_312 and getattr(tp.__repr__, '__objclass__', None) is typing.TypeAliasType:  # type: ignore
+        temp_locals = dict(**locals, **{t.__name__: t for t in tp.__type_params__})
+        annotation = evaluate_annotation(tp.__value__, globals, temp_locals, cache.copy())
+        if hasattr(tp, '__args__'):
+            annotation = annotation[tp.__args__]
+        return annotation
+
+    if hasattr(tp, '__supertype__'):
+        return evaluate_annotation(tp.__supertype__, globals, locals, cache)
 
     if hasattr(tp, '__metadata__'):
         # Annotated[X, Y] can access Y via __metadata__
