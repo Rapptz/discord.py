@@ -1419,6 +1419,42 @@ Threads
     :param payload: The raw event payload data.
     :type payload: :class:`RawThreadMembersUpdate`
 
+Polls
+~~~~~~
+
+.. function:: on_poll_vote_add(user, answer)
+              on_poll_vote_remove(user, answer)
+
+    Called when a :class:`Poll` gains or loses a vote. If the ``user`` or ``message``
+    are not cached then this event will not be called.
+
+    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
+
+    .. note::
+
+        If the poll allows multiple answers and the user removes or adds multiple votes, this
+        event will be called as many times as votes that are added or removed.
+
+    .. versionadded:: 2.4
+
+    :param user: The user that performed the action.
+    :type user: Union[:class:`User`, :class:`Member`]
+    :param answer: The answer the user voted or removed their vote from.
+    :type answer: :class:`PollAnswer`
+
+.. function:: on_raw_poll_vote_add(payload)
+              on_raw_poll_vote_remove(payload)
+
+    Called when a :class:`Poll` gains or loses a vote. Unlike :func:`on_poll_vote_add` and :func:`on_poll_vote_remove`
+    this is called regardless of the state of the internal user and message cache.
+
+    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
+
+    .. versionadded:: 2.4
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawPollVoteActionEvent`
+
 Voice
 ~~~~~~
 
@@ -1441,71 +1477,6 @@ Voice
     :type before: :class:`VoiceState`
     :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
-
-Polls
-~~~~~~
-
-.. function:: on_poll_vote_add(user, answer)
-
-    Called when a :class:`Message`\'s attached :class:`Poll` gets a new vote. If any of ``user`` or ``message``
-    are not cached this event will not be called.
-
-    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
-
-    .. note::
-
-        If the poll allows multiselect and the user votes for more than one answer
-        this event will be called as many times as answers the user has voted to.
-
-    .. versionadded:: 2.4
-
-    :param user: The user that voted for the message's poll.
-    :type user: Union[:class:`User`, :class:`Member`]
-    :param answer: The answer the user voted to.
-    :type answer: :class:`PollAnswer`
-
-.. function:: on_poll_vote_remove(user, answer)
-
-    Called when a :class:`Message`\'s attached :class:`Poll` has lost a vote. If any of ``user`` or ``message``
-    are not cached this event will not be called.
-
-    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
-
-    .. note::
-
-        If the poll allows multiselect and the user removes more than one vote
-        this event will be called as many times as votes removed.
-
-    .. versionadded:: 2.4
-
-    :param user: The user that removed their vote from the message's poll.
-    :type user: Union[:class:`User`, :class:`Member`]
-    :param answer: The answer the user removed the vote from.
-    :type answer: :class:`PollAnswer`
-
-.. function:: on_raw_poll_vote_add(payload)
-
-    Called when a :class:`Message` 's attached :class:`Poll` gets a new vote. Unlike :func:`on_poll_vote_add` this
-    is called regardless of the state of the internal user and message cache.
-
-    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
-
-    .. versionadded:: 2.4
-
-    :param payload: The raw event payload data.
-    :type payload: :class:`RawPollVoteActionEvent`
-
-.. function:: on_raw_poll_vote_remove(payload)
-
-    Called when a :class:`Message` 's attached :class:`Poll` has lost a vote. Unlike :func:`on_poll_vote_remove` this
-    is called regardless of the state of the internal user and message cache.
-
-    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
-
-    .. versionadded:: 2.4
-
-    :param payload: The raw event payload data.
-    :type payload: :class:`RawPollVoteActionEvent`
 
 .. _discord-api-utils:
 
@@ -5388,7 +5359,7 @@ Poll
 .. attributetable:: PollMedia
 
 .. autoclass:: PollMedia()
-    :members: from_dict
+    :members:
 
 
 Exceptions
