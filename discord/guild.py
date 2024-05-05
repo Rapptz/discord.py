@@ -549,10 +549,11 @@ class Guild(Hashable):
     def _remove_thread(self, thread: Snowflake, /) -> None:
         self._threads.pop(thread.id, None)
 
-    def _remove_threads_by_channel(self, channel_id: int) -> None:
-        to_remove = [k for k, t in self._threads.items() if t.parent_id == channel_id]
-        for k in to_remove:
-            del self._threads[k]
+    def _remove_threads_by_channel(self, channel_id: int) -> List[Thread]:
+        to_remove = [t for t in self._threads.values() if t.parent_id == channel_id]
+        for thread in to_remove:
+            del self._threads[thread.id]
+        return to_remove
 
     def _filter_threads(self, channel_ids: Set[int]) -> Dict[int, Thread]:
         return {k: t for k, t in self._threads.items() if t.parent_id in channel_ids}

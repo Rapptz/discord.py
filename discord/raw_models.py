@@ -24,10 +24,10 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Optional, Set, List, Tuple, Union
+from typing import TYPE_CHECKING, List, Literal, Optional, Set, Tuple, Union
 
-from .enums import ChannelType, ReadStateType, try_enum
 from .colour import Colour
+from .enums import ChannelType, ReadStateType, try_enum
 from .utils import _get_as_snowflake
 
 if TYPE_CHECKING:
@@ -363,6 +363,20 @@ class RawThreadDeleteEvent(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
         self.parent_id: int = int(data['parent_id'])
         self.thread: Optional[Thread] = None
+
+    @classmethod
+    def _from_thread(cls, thread: Thread) -> Self:
+        data: ThreadDeleteEvent = {
+            'id': thread.id,
+            'type': thread.type.value,
+            'guild_id': thread.guild.id,
+            'parent_id': thread.parent_id,
+        }
+
+        instance = cls(data)
+        instance.thread = thread
+
+        return instance
 
 
 class RawThreadMembersUpdate(_RawReprMixin):
