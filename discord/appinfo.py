@@ -478,7 +478,6 @@ class AppInfo:
         if integration_types_config:
             payload['integration_types_config'] = integration_types_config
 
-        print("payload: ", integration_types_config)
         data = await self._state.http.edit_application_info(reason=reason, payload=payload)
         return AppInfo(data=data, state=self._state)
 
