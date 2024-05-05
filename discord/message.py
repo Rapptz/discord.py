@@ -1447,7 +1447,9 @@ class PartialMessage(Hashable):
     async def end_poll(self) -> Message:
         """|coro|
 
-        Tries to end this message\'s :class:`Poll`.
+        Ends the :class:`Poll` attached to this message.
+
+        This can only be done if you are the message author.
 
         If the poll was successfully ended, then it returns the updated :class:`Message`.
 
@@ -1713,15 +1715,12 @@ class Message(PartialMessage, Hashable):
 
         # This updates the poll so it has the counts, if the message
         # was previously cached.
-        self._poll: Optional[Poll]
-        poll = state._get_poll(self.id)
-        if poll:
-            self._poll = poll
-        else:
+        self._poll: Optional[Poll] = state._get_poll(self.id)
+        if self._poll is None:
             try:
                 self._poll = Poll._from_data(data=data['poll'], message=self, state=state)
             except KeyError:
-                self._poll = None
+                pass
 
         try:
             # if the channel doesn't have a guild attribute, we handle that
@@ -2275,7 +2274,7 @@ class Message(PartialMessage, Hashable):
 
     @property
     def poll(self) -> Optional[Poll]:
-        """Optional[:class:`Poll`]: This message\'s attached poll."""
+        """Optional[:class:`Poll`]: The poll attached to this message."""
         return self._poll
 
     @overload
