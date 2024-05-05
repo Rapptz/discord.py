@@ -738,6 +738,14 @@ class Permissions(BaseFlags):
         """
         return 1 << 49
 
+    @make_permission_alias('send_polls')
+    def create_polls(self) -> int:
+        """:class:`bool`: An alias for :attr:`send_polls`.
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 49
+
 
 def _augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
