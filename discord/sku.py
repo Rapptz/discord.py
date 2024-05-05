@@ -126,6 +126,8 @@ class Entitlement:
         A UTC date which entitlement is no longer valid. Not present when using test entitlements.
     guild_id: Optional[:class:`int`]
         The ID of the guild that is granted access to the entitlement
+    consumed: :class:`bool`
+        For consumable items, whether the entitlement has been consumed.
     """
 
     __slots__ = (
@@ -139,6 +141,7 @@ class Entitlement:
         'starts_at',
         'ends_at',
         'guild_id',
+        'consumed',
     )
 
     def __init__(self, state: ConnectionState, data: EntitlementPayload):
@@ -152,6 +155,7 @@ class Entitlement:
         self.starts_at: Optional[datetime] = utils.parse_time(data.get('starts_at', None))
         self.ends_at: Optional[datetime] = utils.parse_time(data.get('ends_at', None))
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
+        self.consumed: bool = data.get('consumed', False)
 
     def __repr__(self) -> str:
         return f'<Entitlement id={self.id} type={self.type!r} user_id={self.user_id}>'
@@ -178,6 +182,26 @@ class Entitlement:
         if self.ends_at is None:
             return False
         return utils.utcnow() >= self.ends_at
+
+    async def consume(self) -> None:
+        """|coro|
+
+        Marks a one-time purchase entitlement as consumed.
+
+        Raises
+        -------
+        MissingApplicationID
+            The application ID could not be found.
+        NotFound
+            The entitlement could not be found.
+        HTTPException
+            Consuming the entitlement failed.
+        """
+
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        await self._state.http.consume_entitlement(self.application_id, self.id)
 
     async def delete(self) -> None:
         """|coro|

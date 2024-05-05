@@ -430,8 +430,8 @@ class ConnectionState(Generic[ClientT]):
         # the keys of self._guilds are ints
         return self._guilds.get(guild_id)  # type: ignore
 
-    def _get_or_create_unavailable_guild(self, guild_id: int) -> Guild:
-        return self._guilds.get(guild_id) or Guild._create_unavailable(state=self, guild_id=guild_id)
+    def _get_or_create_unavailable_guild(self, guild_id: int, *, data: Optional[Dict[str, Any]] = None) -> Guild:
+        return self._guilds.get(guild_id) or Guild._create_unavailable(state=self, guild_id=guild_id, data=data)
 
     def _add_guild(self, guild: Guild) -> None:
         self._guilds[guild.id] = guild
@@ -844,6 +844,12 @@ class ConnectionState(Generic[ClientT]):
                         if s.channel_id == channel.id:
                             guild._scheduled_events.pop(s.id)
                             self.dispatch('scheduled_event_delete', s)
+
+                threads = guild._remove_threads_by_channel(channel_id)
+
+                for thread in threads:
+                    self.dispatch('thread_delete', thread)
+                    self.dispatch('raw_thread_delete', RawThreadDeleteEvent._from_thread(thread))
 
     def parse_channel_update(self, data: gw.ChannelUpdateEvent) -> None:
         channel_type = try_enum(ChannelType, data.get('type'))
@@ -1600,7 +1606,8 @@ class ConnectionState(Generic[ClientT]):
 
         if channel is not None:
             if isinstance(channel, DMChannel):
-                channel.recipient = raw.user
+                if raw.user is not None and raw.user not in channel.recipients:
+                    channel.recipients.append(raw.user)
             elif guild is not None:
                 raw.user = guild.get_member(raw.user_id)
 

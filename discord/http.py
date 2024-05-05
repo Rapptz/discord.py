@@ -2464,6 +2464,16 @@ class HTTPClient:
             ),
         )
 
+    def consume_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[None]:
+        return self.request(
+            Route(
+                'POST',
+                '/applications/{application_id}/entitlements/{entitlement_id}/consume',
+                application_id=application_id,
+                entitlement_id=entitlement_id,
+            ),
+        )
+
     def create_entitlement(
         self, application_id: Snowflake, sku_id: Snowflake, owner_id: Snowflake, owner_type: sku.EntitlementOwnerType
     ) -> Response[sku.Entitlement]:

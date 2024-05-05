@@ -35,7 +35,7 @@ import discord.abc
 from . import utils
 from .asset import Asset
 from .utils import MISSING
-from .user import BaseUser, User, _UserTag
+from .user import BaseUser, ClientUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
 from .enums import Status, try_enum
@@ -391,6 +391,15 @@ class Member(discord.abc.Messageable, _UserTag):
         author = message.author
         data['user'] = author._to_minimal_user_json()  # type: ignore
         return cls(data=data, guild=message.guild, state=message._state)  # type: ignore
+
+    @classmethod
+    def _from_client_user(cls, *, user: ClientUser, guild: Guild, state: ConnectionState) -> Self:
+        data = {
+            'roles': [],
+            'user': user._to_minimal_user_json(),
+            'flags': 0,
+        }
+        return cls(data=data, guild=guild, state=state)  # type: ignore
 
     def _update_from_message(self, data: MemberPayload) -> None:
         self.joined_at = utils.parse_time(data.get('joined_at'))

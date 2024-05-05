@@ -33,6 +33,8 @@ from .app_commands import AppCommandPermissions
 from .colour import Colour
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .types.gateway import (
         MessageDeleteEvent,
         MessageDeleteBulkEvent as BulkMessageDeleteEvent,
@@ -400,6 +402,20 @@ class RawThreadDeleteEvent(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
         self.parent_id: int = int(data['parent_id'])
         self.thread: Optional[Thread] = None
+
+    @classmethod
+    def _from_thread(cls, thread: Thread) -> Self:
+        data: ThreadDeleteEvent = {
+            'id': thread.id,
+            'type': thread.type.value,
+            'guild_id': thread.guild.id,
+            'parent_id': thread.parent_id,
+        }
+
+        instance = cls(data)
+        instance.thread = thread
+
+        return instance
 
 
 class RawThreadMembersUpdate(_RawReprMixin):
