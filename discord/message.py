@@ -2200,7 +2200,7 @@ class Message(PartialMessage, Hashable):
 
         .. versionadded:: 2.0
         .. deprecated:: 2.4
-            This attribute is deprecated and will be removed in a future version. Use :attr:`interaction_metadata` instead.
+            This attribute is deprecated and will be removed in a future version. Use :attr:`.interaction_metadata` instead.
         """
         return self._interaction
 
