@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 
-from typing import Optional, List, TYPE_CHECKING, Union, AsyncIterator
+from typing import Optional, List, TYPE_CHECKING, Union, AsyncIterator, Dict
 
 import datetime
 
@@ -34,6 +34,7 @@ from . import utils
 from .emoji import PartialEmoji, Emoji
 from .user import User
 from .object import Object
+from .errors import ClientException
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -67,17 +68,13 @@ PollMediaEmoji = Union[PartialEmoji, Emoji, str]
 class PollMedia:
     """Represents the poll media for a poll item.
 
-    .. container:: operations
-
-        .. describe:: str(x)
-
-            Returns this Poll Media\'s text.
+    ..versionadded:: 2.4
 
     Attributes
     ----------
     text: :class:`str`
-        The displayed text
-    emoji: Optional[Union[:class:`PartialEmoji`, :class:`Emoji`, :class:`str`]]
+        The displayed text.
+    emoji: Optional[Union[:class:`PartialEmoji`, :class:`Emoji`]]
         The attached emoji for this media. This will always be ignored for a poll
         question media.
     """
@@ -88,34 +85,21 @@ class PollMedia:
         self.text: str = text
         self.emoji: Optional[PollMediaEmoji] = emoji
 
-    def __str__(self) -> str:
-        return self.text
-
     def __repr__(self) -> str:
         return f'<PollMedia text={self.text!r} emoji={self.emoji!r}>'
 
     def to_dict(self) -> PollMediaPayload:
-        """Returns an API valid payload for this instance."""
-
         payload: PollMediaPayload = {'text': self.text}
 
         if isinstance(self.emoji, str):
-            payload['emoji'] = {"id": None, "name": self.emoji}
+            payload['emoji'] = {'id': None, 'name': self.emoji}
         elif self.emoji is not None:
-            payload['emoji'] = {"id": self.emoji.id, "name": self.emoji.name}
+            payload['emoji'] = {'id': self.emoji.id, 'name': self.emoji.name}
 
         return payload
 
     @classmethod
     def from_dict(cls, *, data: PollMediaPayload) -> Self:
-        """Returns a new instance of this class from a payload.
-
-        Parameters
-        ----------
-        data: :class:`dict`
-            The dictionary to convert into a poll media.
-        """
-
         emoji = data.get('emoji')
 
         if emoji:
@@ -132,12 +116,14 @@ class PollAnswer:
 
             Returns this answer's text, if any.
 
+    ..versionadded:: 2.4
+
     Attributes
     ----------
     id: :class:`int`
         The ID of this answer.
     media: :class:`PollMedia`
-        A :class:`NamedTuple` containing the raw data of this answers media.
+        The display data for this answer.
     self_voted: :class:`bool`
         Whether the current user has voted to this answer or not.
     """
@@ -186,16 +172,11 @@ class PollAnswer:
         message: Optional[Message],
     ) -> Self:
         poll_media: PollMediaPayload = {'text': text}
-        if emoji:
-            if isinstance(emoji, Emoji):
-                poll_media['emoji'] = {'name': emoji.name}  # type: ignore
-
-                if emoji.id:
-                    poll_media['emoji']['id'] = emoji.id  # type: ignore
-            elif isinstance(emoji, PartialEmoji):
-                poll_media['emoji'] = emoji.to_dict()
-            else:
-                poll_media['emoji'] = {'name': str(emoji)}  # type: ignore
+        if emoji is not None:
+            emoji = PartialEmoji.from_str(emoji) if isinstance(emoji, str) else emoji._to_partial()
+            emoji_data = emoji.to_dict()
+            # No need to remove animated key as it will be ignored
+            poll_media['emoji'] = emoji_data
 
         payload: PollAnswerWithIDPayload = {'answer_id': id, 'poll_media': poll_media}
 
@@ -203,20 +184,23 @@ class PollAnswer:
 
     @property
     def text(self) -> str:
-        """:class:`str`: Returns this answer display text."""
+        """:class:`str`: Returns this answer's displayed text."""
         return self.media.text
 
     @property
     def emoji(self) -> Optional[Union[PartialEmoji, Emoji]]:
-        """Optional[:class:`PartialEmoji`]: Returns this answer display emoji, is any."""
+        """Optional[Union[:class:`Emoji`, :class:`PartialEmoji`]]: Returns this answer's displayed
+        emoji, if any.
+        """
         if isinstance(self.media.emoji, str):
             return PartialEmoji.from_str(self.media.emoji)
         return self.media.emoji
 
     @property
     def vote_count(self) -> int:
-        """:class:`int`: Returns an approximate votes of this answer. If the poll
-        has finalized, it returns the exact amount of votes.
+        """:class:`int`: Returns an approximate count of votes for this answer.
+
+        If the poll is finished, the count is exact.
         """
         return self._vote_count
 
@@ -233,14 +217,12 @@ class PollAnswer:
     async def voters(
         self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
     ) -> AsyncIterator[Union[User, Member]]:
-        """Returns an :term:`asynchronous iterator` representing the users that have voted to this answer.
+        """Returns an :term:`asynchronous iterator` representing the users that have voted on this answer.
 
         The ``after`` parameter must represent a user
         and meet the :class:`abc.Snowflake` abc.
 
-        .. note::
-
-            This can only be called when the parent poll has an attached message.
+        This can only be called when the parent poll was sent to a message.
 
         Examples
         --------
@@ -260,7 +242,7 @@ class PollAnswer:
         limit: Optional[:class:`int`]
             The maximum number of results to return.
             If not provided, returns all the users who
-            voted to this poll answer.
+            voted on this poll answer.
         after: Optional[:class:`abc.Snowflake`]
             For pagination, voters are sorted by member.
 
@@ -273,13 +255,13 @@ class PollAnswer:
         ------
         Union[:class:`User`, :class:`Member`]
             The member (if retrievable) or the user that has voted
-            to this poll answer. The case where it can be a :class:`Member`
+            on this poll answer. The case where it can be a :class:`Member`
             is in a guild message context. Sometimes it can be a :class:`User`
-            if the member has left the guild.
+            if the member has left the guild or if the member is not cached.
         """
 
         if not self._message or not self._state:  # Make type checker happy
-            raise RuntimeError('You cannot fetch users in a non-message-attached poll')
+            raise ClientException('You cannot fetch users to a poll not sent with a message')
 
         if limit is None:
             if not self._message.poll:
@@ -301,7 +283,7 @@ class PollAnswer:
             users = data['users']
 
             if len(users) == 0:
-                # No more voters to fetch, terminate process
+                # No more voters to fetch, terminate loop
                 break
 
             limit -= len(users)
@@ -322,33 +304,23 @@ class PollAnswer:
 class Poll:
     """Represents a message's Poll.
 
-    .. container:: operations
-
-        .. describe:: str(x)
-
-            Returns the Poll's question
-
-        .. describe:: len(x)
-
-            Returns the Poll's answer amount.
-
     .. versionadded:: 2.4
 
     Parameters
     ----------
     question: Union[:class:`PollMedia`, :class:`str`]
-        The poll's question media. Text can be up to 300 characters.
+        The poll's displayed question. The text can be up to 300 characters.
     duration: :class:`datetime.timedelta`
         The duration of the poll.
-    multiselect: :class:`bool`
-        Whether users are allowed to select more than one answer. Defaults
-        to ``True``
+    multiple: :class:`bool`
+        Whether users are allowed to select more than one answer.
+        Defaultsto ``False``.
     layout_type: :class:`PollLayoutType`
-        The layout type of the poll. Defaults to :attr:`PollLayoutType.default`
+        The layout type of the poll. Defaults to :attr:`PollLayoutType.default`.
     """
 
     __slots__ = (
-        'multiselect',
+        'multiple',
         '_answers',
         'duration',
         'layout_type',
@@ -364,19 +336,19 @@ class Poll:
         question: Union[PollMedia, str],
         duration: datetime.timedelta,
         *,
-        multiselect: bool = False,
+        multiple: bool = False,
         layout_type: PollLayoutType = PollLayoutType.default,
     ) -> None:
         if isinstance(question, str):
             self._question_media: PollMedia = PollMedia(text=question, emoji=None)
         else:
-            self._question_media: PollMedia = (
-                question  # At the moment this only supports text, so no need to add emoji support
-            )
-        self._answers: List[PollAnswer] = []
+            # At the moment this only supports text, so no need to add emoji support
+            self._question_media: PollMedia = question
+
+        self._answers: Dict[int, PollAnswer] = {}
         self.duration: datetime.timedelta = duration
 
-        self.multiselect: bool = multiselect
+        self.multiple: bool = multiple
         self.layout_type: PollLayoutType = layout_type
 
         # NOTE: These attributes are set manually when calling
@@ -391,11 +363,10 @@ class Poll:
         self._message = message
 
         if not message.poll:
-            # Something should go very wrong for this if block to be called
             return
-        # These attributes are accessed via message.poll as there
-        # is where all the data is stored
-        self._expiry = message.poll.expiry
+
+        # The message's poll contains the more up to date data.
+        self._expiry = message.poll.expires_at
         self._finalized = message.poll._finalized
 
     def _update_results(self, data: PollResultPayload) -> None:
@@ -432,11 +403,11 @@ class Poll:
 
         self = cls(
             duration=duration,
-            multiselect=multiselect,
+            multiple=multiselect,
             layout_type=layout_type,
             question=question,
         )
-        self._answers = [PollAnswer(data=answer, message=message, poll=self) for answer in data['answers']]
+        self._answers = {int(answer['answer_id']): PollAnswer(data=answer, message=message, poll=self) for answer in data['answers']}
         self._message = message
         self._state = state
         self._expiry = expiry
@@ -450,7 +421,7 @@ class Poll:
 
     def _to_dict(self) -> PollCreatePayload:
         data: PollCreatePayload = {
-            'allow_multiselect': self.multiselect,
+            'allow_multiselect': self.multiple,
             'question': self._question_media.to_dict(),
             'duration': self.duration.total_seconds() / 3600,
             'layout_type': self.layout_type.value,
@@ -458,14 +429,8 @@ class Poll:
         }
         return data
 
-    def __str__(self) -> str:
-        return self._question_media.text
-
     def __repr__(self) -> str:
         return f"<Poll duration={self.duration} question=\"{self.question}\" answers={self.answers}>"
-
-    def __len__(self) -> int:
-        return len(self.answers)
 
     @property
     def question(self) -> str:
@@ -481,7 +446,7 @@ class Poll:
     @property
     def answers(self) -> List[PollAnswer]:
         """List[:class:`PollAnswer`]: Returns a read-only copy of the answers"""
-        return self._answers.copy()
+        return list(self._answers.values())
 
     @property
     def expires_at(self) -> Optional[datetime.datetime]:
@@ -511,14 +476,14 @@ class Poll:
         """:class:`int`: Returns the sum of all the answer votes."""
         return sum([answer.vote_count for answer in self.answers])
 
-    def is_finalized(self) -> bool:
-        """:class:`bool`: Returns whether the poll has finalized.
+    def is_finalised(self) -> bool:
+        """:class:`bool`: Returns whether the poll has finalised.
 
-        It always returns ``False`` for stateless polls.
+        This always returns ``False`` for stateless polls.
         """
         return self._finalized
 
-    is_finalised = is_finalized
+    is_finalized = is_finalised
 
     def copy(self) -> Self:
         """Returns a stateless copy of this poll.
@@ -532,6 +497,7 @@ class Poll:
         """
 
         new = self.__class__(question=self.question, duration=self.duration)
+
         # We want to return a stateless copy of the poll, so we should not
         # override new._answers as our answers may contain a state
 
@@ -558,21 +524,20 @@ class Poll:
 
         Raises
         ------
-        RuntimeError
-            Cannot append answers to a poll recieved via message.
+        ClientException
+            Cannot append answers to a poll that is active.
 
         Returns
         -------
         :class:`Poll`
-            This poll with the new answer appended.
+            This poll with the new answer appended. This allow fluent-style chaining.
         """
 
         if self._message:
-            raise RuntimeError('Cannot append answers to a poll recieved via message.')
+            raise ClientException('Cannot append answers to a poll that is active')
 
         answer = PollAnswer.from_params(id=len(self.answers) + 1, text=text, emoji=emoji, message=self._message, poll=self)
-
-        self._answers.append(answer)
+        self._answers[answer.id] = answer
         return self
 
     def get_answer(
@@ -581,9 +546,6 @@ class Poll:
         id: int,
     ) -> Optional[PollAnswer]:
         """Returns the answer with the provided ID or ``None`` if not found.
-
-        Note that the ID, as Discord says, it is the index / row where the answer
-        is located in the poll.
 
         Parameters
         ----------
@@ -596,7 +558,7 @@ class Poll:
             The answer.
         """
 
-        return utils.get(self.answers, id=id)
+        return self._answers.get(id)
 
     async def end(self) -> Self:
         """|coro|
@@ -605,7 +567,7 @@ class Poll:
 
         Raises
         ------
-        RuntimeError
+        ClientException
             This poll has no attached message.
         HTTPException
             Ending the poll failed.
@@ -617,7 +579,7 @@ class Poll:
         """
 
         if not self._message or not self._state:  # Make type checker happy
-            raise RuntimeError('This poll has no attached message.')
+            raise ClientException('This poll has no attached message.')
 
         self._message = await self._message.end_poll()
 
