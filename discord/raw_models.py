@@ -532,15 +532,15 @@ class RawPollVoteActionEvent(_RawReprMixin):
     Attributes
     ----------
     user_id: :class:`int`
-        The ID of the user that added their vote.
+        The ID of the user that added or removed a vote.
     channel_id: :class:`int`
-        The Channel ID this poll answer was added.
+        The channel ID where the poll vote action took place.
     message_id: :class:`int`
-        The Message ID that contains the poll the user added their vote to.
+        The message ID that contains the poll the user added or removed their vote on.
     guild_id: Optional[:class:`int`]
-        The Guild ID the poll is in, or ``None`` if in a GDM or DM channel.
+        The guild ID where the vote got added or removed, if applicable..
     answer_id: :class:`int`
-        The poll answer's ID the user voted to.
+        The poll answer's ID the user voted on.
     """
 
     __slots__ = ('user_id', 'channel_id', 'message_id', 'guild_id', 'answer_id')
