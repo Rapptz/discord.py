@@ -1523,7 +1523,7 @@ class Messageable:
 
             .. versionadded:: 2.2
         poll: :class:`~discord.Poll`
-            The attached poll for this message.
+            The poll to send with this message.
 
             .. versionadded:: 2.4
 
