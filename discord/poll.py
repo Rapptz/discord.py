@@ -68,7 +68,7 @@ PollMediaEmoji = Union[PartialEmoji, Emoji, str]
 class PollMedia:
     """Represents the poll media for a poll item.
 
-    ..versionadded:: 2.4
+    .. versionadded:: 2.4
 
     Attributes
     ----------
@@ -116,7 +116,7 @@ class PollAnswer:
 
             Returns this answer's text, if any.
 
-    ..versionadded:: 2.4
+    .. versionadded:: 2.4
 
     Attributes
     ----------
