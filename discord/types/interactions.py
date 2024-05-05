@@ -43,6 +43,7 @@ if TYPE_CHECKING:
 
 InteractionType = Literal[1, 2, 3, 4, 5]
 InteractionContextType = Literal[0, 1, 2]
+InteractionInstallationType = Literal[0, 1]
 
 
 class _BasePartialChannel(TypedDict):
