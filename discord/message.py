@@ -2192,7 +2192,7 @@ class Message(PartialMessage, Hashable):
         if self.guild is not None:
             # Fall back to guild threads in case one was created after the message
             return self._thread or self.guild.get_thread(self.id)
-        
+
     @property
     @deprecated("interaction_metadata")
     def interaction(self) -> Optional[MessageInteraction]:
