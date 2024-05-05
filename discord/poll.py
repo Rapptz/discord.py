@@ -530,7 +530,7 @@ class Poll:
         Returns
         -------
         :class:`Poll`
-            This poll with the new answer appended. This allow fluent-style chaining.
+            This poll with the new answer appended. This allows fluent-style chaining.
         """
 
         if self._message:
