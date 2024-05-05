@@ -2071,6 +2071,8 @@ class Message(PartialMessage, Hashable):
 
     def _handle_interaction(self, data: MessageInteractionPayload):
         self.interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
+    def _handle_interaction_metadata(self, data: MessageInteractionMetadataPayload):
+        self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
 
     def _rebind_cached_references(
         self,
