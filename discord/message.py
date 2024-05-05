@@ -56,7 +56,7 @@ from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags, AttachmentFlags
 from .file import File
-from .utils import escape_mentions, MISSING
+from .utils import escape_mentions, MISSING, deprecated
 from .http import handle_message_parameters
 from .guild import Guild
 from .mixins import Hashable
@@ -1708,12 +1708,6 @@ class Message(PartialMessage, Hashable):
         unless the bot is mentioned or the message is a direct message.
 
         .. versionadded:: 2.0
-    interaction: Optional[:class:`MessageInteraction`]
-        The interaction that this message is a response to.
-
-        .. versionadded:: 2.0
-        .. deprecated:: 2.4
-            This attribute is deprecated and will be removed in a future version. Use :attr:`interaction_metadata` instead.
     role_subscription: Optional[:class:`RoleSubscriptionInfo`]
         The data of the role subscription purchase or renewal that prompted this
         :attr:`MessageType.role_subscription_purchase` message.
@@ -1765,7 +1759,7 @@ class Message(PartialMessage, Hashable):
         'activity',
         'stickers',
         'components',
-        'interaction',
+        '_interaction',
         'role_subscription',
         'application_id',
         'position',
@@ -1830,7 +1824,7 @@ class Message(PartialMessage, Hashable):
                 else:
                     self._thread = Thread(guild=self.guild, state=state, data=thread)
 
-        self.interaction: Optional[MessageInteraction] = None
+        self._interaction: Optional[MessageInteraction] = None
 
         # deprecated
         try:
@@ -1838,7 +1832,7 @@ class Message(PartialMessage, Hashable):
         except KeyError:
             pass
         else:
-            self.interaction = MessageInteraction(state=state, guild=self.guild, data=interaction)
+            self._interaction = MessageInteraction(state=state, guild=self.guild, data=interaction)
 
         self.interaction_metadata: Optional[MessageInteractionMetadata] = None
         try:
@@ -2070,7 +2064,8 @@ class Message(PartialMessage, Hashable):
                 self.components.append(component)
 
     def _handle_interaction(self, data: MessageInteractionPayload):
-        self.interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
+        self._interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
+
     def _handle_interaction_metadata(self, data: MessageInteractionMetadataPayload):
         self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
 
@@ -2197,6 +2192,17 @@ class Message(PartialMessage, Hashable):
         if self.guild is not None:
             # Fall back to guild threads in case one was created after the message
             return self._thread or self.guild.get_thread(self.id)
+        
+    @property
+    @deprecated("interaction_metadata")
+    def interaction(self) -> Optional[MessageInteraction]:
+        """Optional[:class:`~discord.MessageInteraction`]: The interaction that this message is a response to.
+
+        .. versionadded:: 2.0
+        .. deprecated:: 2.4
+            This attribute is deprecated and will be removed in a future version. Use :attr:`interaction_metadata` instead.
+        """
+        return self._interaction
 
     def is_system(self) -> bool:
         """:class:`bool`: Whether the message is a system message.
