@@ -56,7 +56,7 @@ from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags, AttachmentFlags
 from .file import File
-from .utils import escape_mentions, MISSING
+from .utils import escape_mentions, MISSING, deprecated
 from .http import handle_message_parameters
 from .guild import Guild
 from .mixins import Hashable
@@ -74,6 +74,7 @@ if TYPE_CHECKING:
         MessageApplication as MessageApplicationPayload,
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
+        MessageInteractionMetadata as MessageInteractionMetadataPayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -109,6 +110,7 @@ __all__ = (
     'DeletedReferencedMessage',
     'MessageApplication',
     'RoleSubscriptionInfo',
+    'MessageInteractionMetadata',
 )
 
 
@@ -622,6 +624,123 @@ class MessageInteraction(Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: The interaction's creation time in UTC."""
         return utils.snowflake_time(self.id)
+
+
+class MessageInteractionMetadata(Hashable):
+    """Represents the interaction metadata of a :class:`Message` if
+    it was sent in response to an interaction.
+
+    .. versionadded:: 2.4
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two message interactions are equal.
+
+        .. describe:: x != y
+
+            Checks if two message interactions are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the message interaction's hash.
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The interaction ID.
+    type: :class:`InteractionType`
+        The interaction type.
+    user: :class:`User`
+        The user that invoked the interaction.
+    original_response_message_id: Optional[:class:`int`]
+        The ID of the original response message if the message is a follow-up.
+    interacted_message_id: Optional[:class:`int`]
+        The ID of the message that containes the interactive components, if applicable.
+    modal_interaction: Optional[:class:`.MessageInteractionMetadata`]
+        The metadata of the modal submit interaction that triggered this interaction, if applicable.
+    """
+
+    __slots__: Tuple[str, ...] = (
+        'id',
+        'type',
+        'user',
+        'original_response_message_id',
+        'interacted_message_id',
+        'modal_interaction',
+        '_integration_owners',
+        '_state',
+        '_guild',
+    )
+
+    def __init__(self, *, state: ConnectionState, guild: Optional[Guild], data: MessageInteractionMetadataPayload) -> None:
+        self._guild: Optional[Guild] = guild
+        self._state: ConnectionState = state
+
+        self.id: int = int(data['id'])
+        self.type: InteractionType = try_enum(InteractionType, data['type'])
+        self.user = state.create_user(data['user'])
+        self._integration_owners: Dict[int, int] = {
+            int(key): int(value) for key, value in data.get('authorizing_integration_owners', {}).items()
+        }
+
+        self.original_response_message_id: Optional[int] = None
+        try:
+            self.original_response_message_id = int(data['original_response_message_id'])
+        except KeyError:
+            pass
+
+        self.interacted_message_id: Optional[int] = None
+        try:
+            self.interacted_message_id = int(data['interacted_message_id'])
+        except KeyError:
+            pass
+
+        self.modal_interaction: Optional[MessageInteractionMetadata] = None
+        try:
+            self.modal_interaction = MessageInteractionMetadata(
+                state=state, guild=guild, data=data['triggering_interaction_metadata']
+            )
+        except KeyError:
+            pass
+
+    def __repr__(self) -> str:
+        return f'<MessageInteraction id={self.id} type={self.type!r} user={self.user!r}>'
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: The interaction's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+    @property
+    def original_response_message(self) -> Optional[Message]:
+        """:class:`~discord.Message`: The original response message if the message
+        is a follow-up and is found in cache.
+        """
+        if self.original_response_message_id:
+            return self._state._get_message(self.original_response_message_id)
+        return None
+
+    @property
+    def interacted_message(self) -> Optional[Message]:
+        """:class:`~discord.Message`: The message that
+        containes the interactive components, if applicable and is found in cache.
+        """
+        if self.interacted_message_id:
+            return self._state._get_message(self.interacted_message_id)
+        return None
+
+    def is_guild_integration(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the interaction is a guild integration."""
+        if self._guild:
+            return self._guild.id == self._integration_owners.get(0)
+
+        return False
+
+    def is_user_integration(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the interaction is a user integration."""
+        return self.user.id == self._integration_owners.get(1)
 
 
 def flatten_handlers(cls: Type[Message]) -> Type[Message]:
@@ -1589,10 +1708,6 @@ class Message(PartialMessage, Hashable):
         unless the bot is mentioned or the message is a direct message.
 
         .. versionadded:: 2.0
-    interaction: Optional[:class:`MessageInteraction`]
-        The interaction that this message is a response to.
-
-        .. versionadded:: 2.0
     role_subscription: Optional[:class:`RoleSubscriptionInfo`]
         The data of the role subscription purchase or renewal that prompted this
         :attr:`MessageType.role_subscription_purchase` message.
@@ -1610,6 +1725,10 @@ class Message(PartialMessage, Hashable):
         .. versionadded:: 2.2
     guild: Optional[:class:`Guild`]
         The guild that the message belongs to, if applicable.
+    interaction_metadata: Optional[:class:`.MessageInteractionMetadata`]
+        The metadata of the interaction that this message is a response to.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -1640,10 +1759,11 @@ class Message(PartialMessage, Hashable):
         'activity',
         'stickers',
         'components',
-        'interaction',
+        '_interaction',
         'role_subscription',
         'application_id',
         'position',
+        'interaction_metadata',
     )
 
     if TYPE_CHECKING:
@@ -1704,14 +1824,23 @@ class Message(PartialMessage, Hashable):
                 else:
                     self._thread = Thread(guild=self.guild, state=state, data=thread)
 
-        self.interaction: Optional[MessageInteraction] = None
+        self._interaction: Optional[MessageInteraction] = None
 
+        # deprecated
         try:
             interaction = data['interaction']
         except KeyError:
             pass
         else:
-            self.interaction = MessageInteraction(state=state, guild=self.guild, data=interaction)
+            self._interaction = MessageInteraction(state=state, guild=self.guild, data=interaction)
+
+        self.interaction_metadata: Optional[MessageInteractionMetadata] = None
+        try:
+            interaction_metadata = data['interaction_metadata']
+        except KeyError:
+            pass
+        else:
+            self.interaction_metadata = MessageInteractionMetadata(state=state, guild=self.guild, data=interaction_metadata)
 
         try:
             ref = data['message_reference']
@@ -1935,7 +2064,10 @@ class Message(PartialMessage, Hashable):
                 self.components.append(component)
 
     def _handle_interaction(self, data: MessageInteractionPayload):
-        self.interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
+        self._interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
+
+    def _handle_interaction_metadata(self, data: MessageInteractionMetadataPayload):
+        self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
 
     def _rebind_cached_references(
         self,
@@ -2060,6 +2192,17 @@ class Message(PartialMessage, Hashable):
         if self.guild is not None:
             # Fall back to guild threads in case one was created after the message
             return self._thread or self.guild.get_thread(self.id)
+
+    @property
+    @deprecated("This attribute is deprecated, please use Message.interaction_metadata instead.")
+    def interaction(self) -> Optional[MessageInteraction]:
+        """Optional[:class:`~discord.MessageInteraction`]: The interaction that this message is a response to.
+
+        .. versionadded:: 2.0
+        .. deprecated:: 2.4
+            This attribute is deprecated and will be removed in a future version. Use :attr:`.interaction_metadata` instead.
+        """
+        return self._interaction
 
     def is_system(self) -> bool:
         """:class:`bool`: Whether the message is a system message.
