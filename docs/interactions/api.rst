@@ -45,6 +45,14 @@ MessageInteraction
 .. autoclass:: MessageInteraction()
     :members:
 
+MessageInteractionMetadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MessageInteractionMetadata
+
+.. autoclass:: MessageInteractionMetadata()
+    :members:
+
 Component
 ~~~~~~~~~~
 
