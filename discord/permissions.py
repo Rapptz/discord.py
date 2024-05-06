@@ -867,6 +867,7 @@ class PermissionOverwrite:
         create_expressions: Optional[bool]
         create_events: Optional[bool]
         send_polls: Optional[bool]
+        create_polls: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}
