@@ -715,7 +715,7 @@ class MessageInteractionMetadata(Hashable):
 
     @property
     def original_response_message(self) -> Optional[Message]:
-        """:class:`~discord.Message`: The original response message if the message
+        """Optional[:class:`~discord.Message`]: The original response message if the message
         is a follow-up and is found in cache.
         """
         if self.original_response_message_id:
@@ -724,7 +724,7 @@ class MessageInteractionMetadata(Hashable):
 
     @property
     def interacted_message(self) -> Optional[Message]:
-        """:class:`~discord.Message`: The message that
+        """Optional[:class:`~discord.Message`]: The message that
         containes the interactive components, if applicable and is found in cache.
         """
         if self.interacted_message_id:
@@ -2194,7 +2194,7 @@ class Message(PartialMessage, Hashable):
             return self._thread or self.guild.get_thread(self.id)
 
     @property
-    @deprecated("This attribute is deprecated, please use Message.interaction_metadata instead.")
+    @deprecated('interaction_metadata')
     def interaction(self) -> Optional[MessageInteraction]:
         """Optional[:class:`~discord.MessageInteraction`]: The interaction that this message is a response to.
 
