@@ -2194,7 +2194,7 @@ class Message(PartialMessage, Hashable):
             return self._thread or self.guild.get_thread(self.id)
 
     @property
-    @deprecated("interaction_metadata")
+    @deprecated("This attribute is deprecated, please use Message.interaction_metadata instead.")
     def interaction(self) -> Optional[MessageInteraction]:
         """Optional[:class:`~discord.MessageInteraction`]: The interaction that this message is a response to.
 
