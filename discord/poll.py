@@ -143,11 +143,12 @@ class PollAnswer:
         self.self_voted: bool = False
         self._poll: Poll = poll
 
-    def _handle_vote_event(self, added: bool) -> None:
+    def _handle_vote_event(self, added: bool, self_voted: bool) -> None:
         if added:
             self._vote_count += 1
         else:
             self._vote_count -= 1
+        self.self_voted = self_voted
 
     def _update_with_results(self, payload: PollAnswerCountPayload) -> None:
         self._vote_count = int(payload['count'])
@@ -190,8 +191,6 @@ class PollAnswer:
         """Optional[Union[:class:`Emoji`, :class:`PartialEmoji`]]: Returns this answer's displayed
         emoji, if any.
         """
-        if isinstance(self.media.emoji, str):
-            return PartialEmoji.from_str(self.media.emoji)
         return self.media.emoji
 
     @property
@@ -309,7 +308,7 @@ class Poll:
     question: Union[:class:`PollMedia`, :class:`str`]
         The poll's displayed question. The text can be up to 300 characters.
     duration: :class:`datetime.timedelta`
-        The duration of the poll.
+        The duration of the poll. Duration must be in hours.
     multiple: :class:`bool`
         Whether users are allowed to select more than one answer.
         Defaultsto ``False``.
@@ -337,12 +336,7 @@ class Poll:
         multiple: bool = False,
         layout_type: PollLayoutType = PollLayoutType.default,
     ) -> None:
-        if isinstance(question, str):
-            self._question_media: PollMedia = PollMedia(text=question, emoji=None)
-        else:
-            # At the moment this only supports text, so no need to add emoji support
-            self._question_media: PollMedia = question
-
+        self._question_media: PollMedia = PollMedia(text=question, emoji=None) if isinstance(question, str) else question
         self._answers: Dict[int, PollAnswer] = {}
         self.duration: datetime.timedelta = duration
 
@@ -382,8 +376,7 @@ class Poll:
         if not answer:
             return
 
-        answer._handle_vote_event(added)
-        answer.self_voted = self_voted
+        answer._handle_vote_event(added, self_voted)
 
     @classmethod
     def _from_data(cls, *, data: PollPayload, message: Message, state: ConnectionState) -> Self:
@@ -500,7 +493,6 @@ class Poll:
 
         # We want to return a stateless copy of the poll, so we should not
         # override new._answers as our answers may contain a state
-
         for answer in self.answers:
             new.add_answer(text=answer.text, emoji=answer.emoji)
 
