@@ -1793,7 +1793,7 @@ class Message(PartialMessage, Hashable):
         'application_id',
         'position',
         'interaction_metadata',
-        '_poll',
+        'poll',
     )
 
     if TYPE_CHECKING:
@@ -1835,10 +1835,10 @@ class Message(PartialMessage, Hashable):
 
         # This updates the poll so it has the counts, if the message
         # was previously cached.
-        self._poll: Optional[Poll] = state._get_poll(self.id)
-        if self._poll is None:
+        self.poll: Optional[Poll] = state._get_poll(self.id)
+        if self.poll is None:
             try:
-                self._poll = Poll._from_data(data=data['poll'], message=self, state=state)
+                self.poll = Poll._from_data(data=data['poll'], message=self, state=state)
             except KeyError:
                 pass
 
@@ -2414,11 +2414,6 @@ class Message(PartialMessage, Hashable):
 
         # Fallback for unknown message types
         return ''
-
-    @property
-    def poll(self) -> Optional[Poll]:
-        """Optional[:class:`Poll`]: The poll attached to this message."""
-        return self._poll
 
     @overload
     async def edit(
