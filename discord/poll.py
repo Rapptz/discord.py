@@ -75,8 +75,7 @@ class PollMedia:
     text: :class:`str`
         The displayed text.
     emoji: Optional[Union[:class:`PartialEmoji`, :class:`Emoji`]]
-        The attached emoji for this media. This will always be ignored for a poll
-        question media.
+        The attached emoji for this media. This is only valid for poll answers.
     """
 
     __slots__ = ('text', 'emoji')
