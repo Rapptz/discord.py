@@ -83,7 +83,7 @@ class PollMedia:
 
     def __init__(self, /, text: str, emoji: Optional[PollMediaEmoji] = None) -> None:
         self.text: str = text
-        self.emoji: Optional[PollMediaEmoji] = emoji
+        self.emoji: Optional[Union[PartialEmoji, Emoji]] = PartialEmoji.from_str(emoji) if isinstance(emoji, str) else emoji
 
     def __repr__(self) -> str:
         return f'<PollMedia text={self.text!r} emoji={self.emoji!r}>'
@@ -91,10 +91,8 @@ class PollMedia:
     def to_dict(self) -> PollMediaPayload:
         payload: PollMediaPayload = {'text': self.text}
 
-        if isinstance(self.emoji, str):
-            payload['emoji'] = {'id': None, 'name': self.emoji}
-        elif self.emoji is not None:
-            payload['emoji'] = {'id': self.emoji.id, 'name': self.emoji.name}
+        if self.emoji is not None:
+            payload['emoji'] = self.emoji._to_partial().to_dict()
 
         return payload
 
