@@ -1758,6 +1758,10 @@ class Message(PartialMessage, Hashable):
         The metadata of the interaction that this message is a response to.
 
         .. versionadded:: 2.4
+    poll: Optional[:class:`Poll`]
+        The poll attached to this message.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
