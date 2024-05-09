@@ -1817,6 +1817,30 @@ class Client:
     ) -> Tuple[Member, VoiceState, VoiceState]:
         ...
 
+    # Polls
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['poll_vote_add', 'poll_vote_remove'],
+        /,
+        *,
+        check: Optional[Callable[[Union[User, Member], PollAnswer], bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> Tuple[Union[User, Member], PollAnswer]:
+        ...
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['raw_poll_vote_add', 'raw_poll_vote_remove'],
+        /,
+        *,
+        check: Optional[Callable[[RawPollVoteActionEvent], bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> RawPollVoteActionEvent:
+        ...
+
     # Commands
 
     @overload
@@ -1839,28 +1863,6 @@ class Client:
         check: Optional[Callable[[Context[Any], CommandError], bool]] = None,
         timeout: Optional[float] = None,
     ) -> Tuple[Context[Any], CommandError]:
-        ...
-
-    @overload
-    async def wait_for(
-        self: Union[Bot, AutoShardedBot],
-        event: Literal['poll_vote_add', 'poll_vote_remove'],
-        /,
-        *,
-        check: Optional[Callable[[Union[User, Member], PollAnswer], bool]] = None,
-        timeout: Optional[float] = None,
-    ) -> Tuple[Union[User, Member], PollAnswer]:
-        ...
-
-    @overload
-    async def wait_for(
-        self: Union[Bot, AutoShardedBot],
-        event: Literal['raw_poll_vote_add', 'raw_poll_vote_remove'],
-        /,
-        *,
-        check: Optional[Callable[[RawPollVoteActionEvent], bool]] = None,
-        timeout: Optional[float] = None,
-    ) -> RawPollVoteActionEvent:
         ...
 
     @overload
