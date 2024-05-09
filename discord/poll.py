@@ -430,12 +430,6 @@ class Poll:
         return self._question_media.text
 
     @property
-    def emoji(self) -> Optional[PartialEmoji]:
-        """Optional[:class:`PartialEmoji`]: Returns the emoji for this poll's question."""
-
-        return None  # As of now, polls questions don't support emojis
-
-    @property
     def answers(self) -> List[PollAnswer]:
         """List[:class:`PollAnswer`]: Returns a read-only copy of the answers"""
         return list(self._answers.values())
