@@ -2523,6 +2523,16 @@ def guild_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         return inner(func)
 
 
+@overload
+def private_channel_only(func: None = ...) -> Callable[[T], T]:
+    ...
+
+
+@overload
+def private_channel_only(func: T) -> T:
+    ...
+
+
 def private_channel_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """A decorator that indicates this command can only be used in the context of DMs and group DMs.
 
@@ -2563,6 +2573,16 @@ def private_channel_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]
         return inner
     else:
         return inner(func)
+
+
+@overload
+def dm_only(func: None = ...) -> Callable[[T], T]:
+    ...
+
+
+@overload
+def dm_only(func: T) -> T:
+    ...
 
 
 def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
@@ -2608,7 +2628,7 @@ def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
 
 def allowed_contexts(
     guilds: bool = MISSING, dms: bool = MISSING, private_channels: bool = MISSING
-) -> Union[T, Callable[[T], T]]:
+) -> Callable[[T], T]:
     """A decorator that indicates this command can only be used in certain contexts.
     Valid contexts are guilds, DMs and private channels.
 
@@ -2650,6 +2670,16 @@ def allowed_contexts(
     return inner
 
 
+@overload
+def guild_install(func: None = ...) -> Callable[[T], T]:
+    ...
+
+
+@overload
+def guild_install(func: T) -> T:
+    ...
+
+
 def guild_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """A decorator that indicates this command should be installed in guilds.
 
@@ -2687,6 +2717,15 @@ def guild_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     else:
         return inner(func)
 
+
+@overload
+def user_install(func: None = ...) -> Callable[[T], T]:
+    ...
+
+
+@overload
+def user_install(func: T) -> T:
+    ...
 
 def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """A decorator that indicates this command should be installed for users.
@@ -2729,7 +2768,7 @@ def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
 def allowed_installs(
     guilds: bool = MISSING,
     users: bool = MISSING,
-) -> Union[T, Callable[[T], T]]:
+) -> Callable[[T], T]:
     """A decorator that indicates this command should be installed in certain contexts.
     Valid contexts are guilds and users.
 
