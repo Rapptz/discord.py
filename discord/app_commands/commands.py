@@ -2626,9 +2626,7 @@ def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         return inner(func)
 
 
-def allowed_contexts(
-    guilds: bool = MISSING, dms: bool = MISSING, private_channels: bool = MISSING
-) -> Callable[[T], T]:
+def allowed_contexts(guilds: bool = MISSING, dms: bool = MISSING, private_channels: bool = MISSING) -> Callable[[T], T]:
     """A decorator that indicates this command can only be used in certain contexts.
     Valid contexts are guilds, DMs and private channels.
 
@@ -2726,6 +2724,7 @@ def user_install(func: None = ...) -> Callable[[T], T]:
 @overload
 def user_install(func: T) -> T:
     ...
+
 
 def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """A decorator that indicates this command should be installed for users.
