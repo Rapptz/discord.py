@@ -188,7 +188,7 @@ class Permissions(BaseFlags):
         permissions set to ``True``.
         """
         # Some of these are 0 because we don't want to set unnecessary bits
-        return cls(0b0000_0000_0000_0000_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
+        return cls(0b0000_0000_0000_0010_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
 
     @classmethod
     def _timeout_mask(cls) -> int:
@@ -235,9 +235,10 @@ class Permissions(BaseFlags):
            :attr:`request_to_speak`, and :attr:`use_soundboard` permissions.
 
         .. versionchanged:: 2.1
-           Added :attr:`create_expressions` permission.
+           Added :attr:`create_expressions`, :attr:`use_soundboard`, :attr:`create_expressions`,
+           :attr:`send_polls`, and :attr:`send_voice_messages` permissions.
         """
-        return cls(0b0000_0000_0000_0000_0000_0100_0111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
+        return cls(0b0000_0000_0000_0010_0100_0100_0111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
 
     @classmethod
     def general(cls) -> Self:
@@ -282,8 +283,11 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 2.1
             Added :attr:`send_voice_messages` permission.
+
+        .. versionchanged:: 2.4
+            Added :attr:`send_polls` permission.
         """
-        return cls(0b0000_0000_0000_0000_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
+        return cls(0b0000_0000_0000_0010_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
 
     @classmethod
     def voice(cls) -> Self:
