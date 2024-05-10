@@ -37,6 +37,7 @@ from .components import Component
 from .interactions import MessageInteraction, MessageInteractionMetadata
 from .sticker import StickerItem
 from .threads import Thread
+from .poll import Poll
 
 
 class PartialMessage(TypedDict):
@@ -163,6 +164,7 @@ class Message(PartialMessage):
     attachments: List[Attachment]
     embeds: List[Embed]
     pinned: bool
+    poll: NotRequired[Poll]
     type: MessageType
     member: NotRequired[Member]
     mention_channels: NotRequired[List[ChannelMention]]

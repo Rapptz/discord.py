@@ -50,6 +50,7 @@ if TYPE_CHECKING:
     from discord.message import MessageReference, PartialMessage
     from discord.ui import View
     from discord.types.interactions import ApplicationCommandInteractionData
+    from discord.poll import Poll
 
     from .cog import Cog
     from .core import Command
@@ -641,6 +642,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -662,6 +664,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -683,6 +686,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -704,6 +708,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -826,6 +831,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -847,6 +853,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -868,6 +875,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -889,6 +897,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -911,6 +920,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = False,
         ephemeral: bool = False,
         silent: bool = False,
+        poll: Poll = MISSING,
     ) -> Message:
         """|coro|
 
@@ -1000,6 +1010,11 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
             .. versionadded:: 2.2
 
+        poll: :class:`~discord.Poll`
+            The poll to send with this message.
+
+            .. versionadded:: 2.4
+
         Raises
         --------
         ~discord.HTTPException
@@ -1037,6 +1052,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
                 view=view,
                 suppress_embeds=suppress_embeds,
                 silent=silent,
+                poll=poll,
             )  # type: ignore # The overloads don't support Optional but the implementation does
 
         # Convert the kwargs from None to MISSING to appease the remaining implementations
@@ -1052,6 +1068,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             'suppress_embeds': suppress_embeds,
             'ephemeral': ephemeral,
             'silent': silent,
+            'poll': poll,
         }
 
         if self.interaction.response.is_done():

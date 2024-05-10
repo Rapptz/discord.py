@@ -63,6 +63,7 @@ from .mixins import Hashable
 from .sticker import StickerItem, GuildSticker
 from .threads import Thread
 from .channel import PartialMessageable
+from .poll import Poll
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -1464,6 +1465,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1484,6 +1486,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1504,6 +1507,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1524,6 +1528,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1557,6 +1562,30 @@ class PartialMessage(Hashable):
         """
 
         return await self.channel.send(content, reference=self, **kwargs)
+
+    async def end_poll(self) -> Message:
+        """|coro|
+
+        Ends the :class:`Poll` attached to this message.
+
+        This can only be done if you are the message author.
+
+        If the poll was successfully ended, then it returns the updated :class:`Message`.
+
+        Raises
+        ------
+        ~discord.HTTPException
+            Ending the poll failed.
+
+        Returns
+        -------
+        :class:`.Message`
+            The updated message.
+        """
+
+        data = await self._state.http.end_poll(self.channel.id, self.id)
+
+        return Message(state=self._state, channel=self.channel, data=data)
 
     def to_reference(self, *, fail_if_not_exists: bool = True) -> MessageReference:
         """Creates a :class:`~discord.MessageReference` from the current message.
@@ -1729,6 +1758,10 @@ class Message(PartialMessage, Hashable):
         The metadata of the interaction that this message is a response to.
 
         .. versionadded:: 2.4
+    poll: Optional[:class:`Poll`]
+        The poll attached to this message.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -1764,6 +1797,7 @@ class Message(PartialMessage, Hashable):
         'application_id',
         'position',
         'interaction_metadata',
+        'poll',
     )
 
     if TYPE_CHECKING:
@@ -1802,6 +1836,15 @@ class Message(PartialMessage, Hashable):
         self.position: Optional[int] = data.get('position')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
+
+        # This updates the poll so it has the counts, if the message
+        # was previously cached.
+        self.poll: Optional[Poll] = state._get_poll(self.id)
+        if self.poll is None:
+            try:
+                self.poll = Poll._from_data(data=data['poll'], message=self, state=state)
+            except KeyError:
+                pass
 
         try:
             # if the channel doesn't have a guild attribute, we handle that

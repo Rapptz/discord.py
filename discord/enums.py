@@ -73,6 +73,7 @@ __all__ = (
     'SKUType',
     'EntitlementType',
     'EntitlementOwnerType',
+    'PollLayoutType',
 )
 
 
@@ -816,6 +817,10 @@ class EntitlementType(Enum):
 class EntitlementOwnerType(Enum):
     guild = 1
     user = 2
+
+
+class PollLayoutType(Enum):
+    default = 1
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
