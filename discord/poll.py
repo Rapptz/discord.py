@@ -426,7 +426,7 @@ class Poll:
 
     @property
     def question(self) -> str:
-        """:class:`str`: Returns this poll answer question string."""
+        """:class:`str`: Returns this poll's question string."""
         return self._question_media.text
 
     @property
