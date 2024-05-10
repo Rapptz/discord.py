@@ -225,6 +225,10 @@ class Permissions(BaseFlags):
         - :attr:`ban_members`
         - :attr:`administrator`
         - :attr:`create_expressions`
+        - :attr:`moderate_members`
+        - :attr:`create_events`
+        - :attr:`manage_events`
+        - :attr:`view_creator_monetization_analytics`
 
         .. versionchanged:: 1.7
            Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_application_commands` permissions.
@@ -236,9 +240,10 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 2.1
            Added :attr:`create_expressions`, :attr:`use_soundboard`, :attr:`create_expressions`,
-           :attr:`send_polls`, and :attr:`send_voice_messages` permissions.
+           :attr:`send_polls`, :attr:`send_voice_messages`, attr:`use_external_sounds`, and
+           :attr:`use_embedded_activities` permissions.
         """
-        return cls(0b0000_0000_0000_0010_0100_0100_0111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
+        return cls(0b0000_0000_0000_0010_0110_0100_1111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
 
     @classmethod
     def general(cls) -> Self:
@@ -253,8 +258,11 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 2.1
             Added :attr:`create_expressions` permission.
+
+        .. versionchanged:: 2.4
+            Added :attr:`view_creator_monetization_analytics` permission.
         """
-        return cls(0b0000_0000_0000_0000_0000_1000_0000_0000_0111_0000_0000_1000_0000_0100_1011_0000)
+        return cls(0b0000_0000_0000_0000_0000_1010_0000_0000_0111_0000_0000_1000_0000_0100_1011_0000)
 
     @classmethod
     def membership(cls) -> Self:
