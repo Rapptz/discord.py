@@ -237,9 +237,9 @@ class Permissions(BaseFlags):
            Added :attr:`use_soundboard`, :attr:`create_expressions` permissions.
 
         .. versionchanged:: 2.4
-            Added :attr:`send_polls` permission.
+            Added :attr:`send_polls`, :attr:`send_voice_messages` permissions.
         """
-        return cls(0b0000_0000_0000_0010_0000_0100_0111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
+        return cls(0b0000_0000_0000_0010_0100_0100_0111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
 
     @classmethod
     def general(cls) -> Self:
