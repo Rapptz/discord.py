@@ -81,6 +81,7 @@ if TYPE_CHECKING:
     from .flags import MessageFlags
     from .enums import ChannelType, InteractionType
     from .embeds import Embed
+    from .poll import Poll
 
     from .types import (
         application,
@@ -118,6 +119,7 @@ if TYPE_CHECKING:
         subscriptions,
         sticker,
         welcome_screen,
+        poll,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -242,6 +244,7 @@ def handle_message_parameters(
     network_type: NetworkConnectionType = MISSING,
     channel_payload: Dict[str, Any] = MISSING,
     applied_tags: Optional[SnowflakeList] = MISSING,
+    poll: Optional[Poll] = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -341,6 +344,9 @@ def handle_message_parameters(
             'message': payload,
         }
         payload.update(channel_payload)
+
+    if poll not in (MISSING, None):
+        payload['poll'] = poll._to_dict()  # type: ignore
 
     # Legacy uploading
     multipart = []
@@ -4362,16 +4368,50 @@ class HTTPClient:
 
     # Misc
 
-    async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
+    def get_poll_answer_voters(
+        self,
+        channel_id: Snowflake,
+        message_id: Snowflake,
+        answer_id: Snowflake,
+        after: Optional[Snowflake] = None,
+        limit: Optional[int] = None,
+    ) -> Response[poll.PollAnswerVoters]:
+        params = {}
+        if after:
+            params['after'] = int(after)
+        if limit is not None:
+            params['limit'] = limit
+
+        return self.request(
+            Route(
+                'GET',
+                '/channels/{channel_id}/polls/{message_id}/answers/{answer_id}',
+                channel_id=channel_id,
+                message_id=message_id,
+                answer_id=answer_id,
+            ),
+            params=params,
+        )
+
+    def end_poll(self, channel_id: Snowflake, message_id: Snowflake) -> Response[message.Message]:
+        return self.request(
+            Route(
+                'POST',
+                '/channels/{channel_id}/polls/{message_id}/expire',
+                channel_id=channel_id,
+                message_id=message_id,
+            )
+        )
+
+    async def get_gateway(self, *, encoding: str = 'json', compress: Optional[str] = None) -> str:
         try:
             data = await self.request(Route('GET', '/gateway'))
         except HTTPException as exc:
             raise GatewayNotFound() from exc
-        if zlib:
-            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
+        if compress:
+            return f'{data["url"]}?encoding={encoding}&v={INTERNAL_API_VERSION}&compress={compress}'
         else:
-            value = '{0}?encoding={1}&v={2}'
-        return value.format(data['url'], encoding, INTERNAL_API_VERSION)
+            return f'{data["url"]}?encoding={encoding}&v={INTERNAL_API_VERSION}'
 
     def get_user(self, user_id: Snowflake) -> Response[user.APIUser]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))

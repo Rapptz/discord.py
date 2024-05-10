@@ -115,6 +115,7 @@ if TYPE_CHECKING:
     from .client import Client
     from .gateway import DiscordWebSocket
     from .calls import Call
+    from .poll import Poll
 
     from .types.automod import AutoModerationRule, AutoModerationActionExecution
     from .types.snowflake import Snowflake
@@ -1317,6 +1318,12 @@ class ConnectionState:
             else utils.find(lambda m: m.id == msg_id, reversed(self._call_message_cache.values()))
         )
 
+    def _get_poll(self, msg_id: Optional[int]) -> Optional[Poll]:
+        message = self._get_message(msg_id)
+        if not message:
+            return
+        return message.poll
+
     def _add_guild_from_data(self, data: GuildPayload) -> Guild:
         guild = self.create_guild(data)
         self._add_guild(guild)
@@ -1359,6 +1366,13 @@ class ConnectionState:
                 await delete_message(channel_id, msg.id, reason=reason)
             except NotFound:
                 pass
+
+    def _update_poll_counts(self, message: Message, answer_id: int, added: bool, self_voted: bool = False) -> Optional[Poll]:
+        poll = message.poll
+        if not poll:
+            return
+        poll._handle_vote(answer_id, added, self_voted)
+        return poll
 
     def subscribe_guild(
         self, guild: Guild, typing: bool = True, activities: bool = True, threads: bool = True, member_updates: bool = True
@@ -3475,6 +3489,52 @@ class ConnectionState:
     # Silence "unknown event" warnings for events parsed elsewhere
     parse_nothing = lambda *_: None
     # parse_guild_application_commands_update = parse_nothing  # Grabbed directly in command iterators
+
+    def parse_message_poll_vote_add(self, data: gw.PollVoteActionEvent) -> None:
+        raw = RawPollVoteActionEvent(data)
+
+        self.dispatch('raw_poll_vote_add', raw)
+
+        message = self._get_message(raw.message_id)
+        guild = self._get_guild(raw.guild_id)
+
+        if guild:
+            user = guild.get_member(raw.user_id)
+        else:
+            user = self.get_user(raw.user_id)
+
+        if message and user:
+            poll = self._update_poll_counts(message, raw.answer_id, True, raw.user_id == self.self_id)
+            if not poll:
+                _log.warning(
+                    'POLL_VOTE_ADD referencing message with ID: %s does not have a poll. Discarding.', raw.message_id
+                )
+                return
+
+            self.dispatch('poll_vote_add', user, poll.get_answer(raw.answer_id))
+
+    def parse_message_poll_vote_remove(self, data: gw.PollVoteActionEvent) -> None:
+        raw = RawPollVoteActionEvent(data)
+
+        self.dispatch('raw_poll_vote_remove', raw)
+
+        message = self._get_message(raw.message_id)
+        guild = self._get_guild(raw.guild_id)
+
+        if guild:
+            user = guild.get_member(raw.user_id)
+        else:
+            user = self.get_user(raw.user_id)
+
+        if message and user:
+            poll = self._update_poll_counts(message, raw.answer_id, False, raw.user_id == self.self_id)
+            if not poll:
+                _log.warning(
+                    'POLL_VOTE_REMOVE referencing message with ID: %s does not have a poll. Discarding.', raw.message_id
+                )
+                return
+
+            self.dispatch('poll_vote_remove', user, poll.get_answer(raw.answer_id))
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, (TextChannel, Thread, VoiceChannel, StageChannel)):

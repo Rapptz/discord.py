@@ -127,6 +127,7 @@ __all__ = (
     'HubType',
     'NetworkConnectionType',
     'NetworkConnectionSpeed',
+    'PollLayoutType',
 )
 
 if TYPE_CHECKING:
@@ -1677,6 +1678,11 @@ class NetworkConnectionSpeed(Enum):
 
     def __str__(self) -> str:
         return self.value
+
+
+class PollLayoutType(Enum):
+    default = 1
+    image_only_answers = 2
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

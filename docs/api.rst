@@ -1263,6 +1263,38 @@ Messages
     :param message_id: The ID of the message that was deleted.
     :type message_id: :class:`int`
 
+Polls
+~~~~~~
+
+.. function:: on_poll_vote_add(user, answer)
+              on_poll_vote_remove(user, answer)
+
+    Called when a :class:`Poll` gains or loses a vote. If the ``user`` or ``message``
+    are not cached then this event will not be called.
+
+    .. note::
+
+        If the poll allows multiple answers and the user removes or adds multiple votes, this
+        event will be called as many times as votes that are added or removed.
+
+    .. versionadded:: 2.1
+
+    :param user: The user that performed the action.
+    :type user: Union[:class:`User`, :class:`Member`]
+    :param answer: The answer the user voted or removed their vote from.
+    :type answer: :class:`PollAnswer`
+
+.. function:: on_raw_poll_vote_add(payload)
+              on_raw_poll_vote_remove(payload)
+
+    Called when a :class:`Poll` gains or loses a vote. Unlike :func:`on_poll_vote_add` and :func:`on_poll_vote_remove`
+    this is called regardless of the state of the internal user and message cache.
+
+    .. versionadded:: 2.1
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawPollVoteActionEvent`
+
 Reactions
 ~~~~~~~~~~
 
@@ -6011,6 +6043,16 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`college`.
 
+.. class:: PollLayoutType
+
+    Represents how a poll answers are shown
+
+    .. versionadded:: 2.4
+
+    .. attribute:: default
+
+        The default layout.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -7973,6 +8015,11 @@ RawEvent
 .. autoclass:: RawMessageUpdateEvent()
     :members:
 
+.. attributetable:: RawPollVoteActionEvent
+
+.. autoclass:: RawPollVoteActionEvent()
+    :members:
+
 .. attributetable:: RawReactionActionEvent
 
 .. autoclass:: RawReactionActionEvent()
@@ -8321,6 +8368,25 @@ Flags
 .. attributetable:: SystemChannelFlags
 
 .. autoclass:: SystemChannelFlags()
+    :members:
+
+Poll
+~~~~
+
+.. attributetable:: Poll
+
+.. autoclass:: Poll()
+    :members:
+
+.. attributetable:: PollAnswer
+
+.. autoclass:: PollAnswer()
+    :members:
+    :inherited-members:
+
+.. attributetable:: PollMedia
+
+.. autoclass:: PollMedia()
     :members:
 
 

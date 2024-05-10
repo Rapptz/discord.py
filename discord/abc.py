@@ -96,6 +96,7 @@ if TYPE_CHECKING:
         StageChannel,
         CategoryChannel,
     )
+    from .poll import Poll
     from .threads import Thread
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
@@ -1665,6 +1666,7 @@ class Messageable:
         mention_author: bool = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1683,6 +1685,7 @@ class Messageable:
         mention_author: bool = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1701,6 +1704,7 @@ class Messageable:
         mention_author: bool = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1719,6 +1723,7 @@ class Messageable:
         mention_author: bool = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1737,6 +1742,7 @@ class Messageable:
         mention_author: Optional[bool] = None,
         suppress_embeds: bool = False,
         silent: bool = False,
+        poll: Optional[Poll] = None,
     ) -> Message:
         """|coro|
 
@@ -1806,6 +1812,10 @@ class Messageable:
             in the UI, but will not actually send a notification.
 
             .. versionadded:: 2.0
+        poll: :class:`~discord.Poll`
+            The poll to send with this message.
+
+            .. versionadded:: 2.4
 
         Raises
         --------
@@ -1869,10 +1879,14 @@ class Messageable:
             stickers=sticker_ids,
             flags=flags,
             network_type=NetworkConnectionType.unknown,
+            poll=poll,
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 
         ret = state.create_message(channel=channel, data=data)
+
+        if poll:
+            poll._update(ret)
 
         if delete_after is not None:
             await ret.delete(delay=delete_after)

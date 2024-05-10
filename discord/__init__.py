@@ -60,6 +60,7 @@ from .partial_emoji import *
 from .payments import *
 from .permissions import *
 from .player import *
+from .poll import *
 from .profile import *
 from .promotions import *
 from .raw_models import *

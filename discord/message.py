@@ -69,7 +69,7 @@ from .interactions import Interaction
 from .commands import MessageCommand
 from .abc import _handle_commands
 from .application import IntegrationApplication
-
+from .poll import Poll
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -1266,6 +1266,7 @@ class PartialMessage(Hashable):
         mention_author: bool = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1283,6 +1284,7 @@ class PartialMessage(Hashable):
         mention_author: bool = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1300,6 +1302,7 @@ class PartialMessage(Hashable):
         mention_author: bool = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1317,6 +1320,7 @@ class PartialMessage(Hashable):
         mention_author: bool = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1385,6 +1389,30 @@ class PartialMessage(Hashable):
             The sticker greeting that was sent.
         """
         return await self.channel.greet(sticker, reference=self, **kwargs)
+
+    async def end_poll(self) -> Message:
+        """|coro|
+
+        Ends the :class:`Poll` attached to this message.
+
+        This can only be done if you are the message author.
+
+        If the poll was successfully ended, then it returns the updated :class:`Message`.
+
+        Raises
+        ------
+        ~discord.HTTPException
+            Ending the poll failed.
+
+        Returns
+        -------
+        :class:`.Message`
+            The updated message.
+        """
+
+        data = await self._state.http.end_poll(self.channel.id, self.id)
+
+        return Message(state=self._state, channel=self.channel, data=data)
 
     def to_reference(self, *, fail_if_not_exists: bool = True) -> MessageReference:
         """Creates a :class:`~discord.MessageReference` from the current message.
@@ -1555,6 +1583,10 @@ class Message(PartialMessage, Hashable):
         The interaction that this message is a response to.
 
         .. versionadded:: 2.0
+    poll: Optional[:class:`Poll`]
+        The poll attached to this message.
+
+        .. versionadded:: 2.4
     hit: :class:`bool`
         Whether the message was a hit in a search result. As surrounding messages
         are no longer returned in search results, this is always ``True`` for search results.
@@ -1608,6 +1640,7 @@ class Message(PartialMessage, Hashable):
         'role_subscription',
         'application_id',
         'position',
+        'poll',
         'hit',
         'total_results',
         'analytics_id',
@@ -1651,6 +1684,16 @@ class Message(PartialMessage, Hashable):
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.call: Optional[CallMessage] = None
+        self.interaction: Optional[Interaction] = None
+
+        # This updates the poll so it has the counts, if the message
+        # was previously cached.
+        self.poll: Optional[Poll] = state._get_poll(self.id)
+        if self.poll is None:
+            try:
+                self.poll = Poll._from_data(data=data['poll'], message=self, state=state)
+            except KeyError:
+                pass
 
         try:
             # If the channel doesn't have a guild attribute, we handle that
@@ -1662,10 +1705,9 @@ class Message(PartialMessage, Hashable):
             else:
                 guild_id = channel.guild_id  # type: ignore
 
-<<<<<<< HEAD
             self.guild_id: Optional[int] = guild_id
             self.guild = state._get_guild(guild_id)
-=======
+
         self._thread: Optional[Thread] = None
 
         if self.guild is not None:
@@ -1681,9 +1723,6 @@ class Message(PartialMessage, Hashable):
                 else:
                     self._thread = Thread(guild=self.guild, state=state, data=thread)
 
-        self.interaction: Optional[MessageInteraction] = None
->>>>>>> 29344b9c (Add thread getters to Message)
-
         self.application: Optional[IntegrationApplication] = None
         try:
             application = data['application']
@@ -1691,14 +1730,6 @@ class Message(PartialMessage, Hashable):
             pass
         else:
             self.application = IntegrationApplication(state=self._state, data=application)
-
-        self.interaction: Optional[Interaction] = None
-        try:
-            interaction = data['interaction']
-        except KeyError:
-            pass
-        else:
-            self.interaction = Interaction._from_message(self, **interaction)
 
         try:
             ref = data['message_reference']

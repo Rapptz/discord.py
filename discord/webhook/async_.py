@@ -71,7 +71,7 @@ if TYPE_CHECKING:
     from ..emoji import Emoji
     from ..channel import VoiceChannel
     from ..abc import Snowflake
-    import datetime
+    from ..poll import Poll
     from ..types.webhook import (
         Webhook as WebhookPayload,
         SourceGuild as SourceGuildPayload,
@@ -1373,6 +1373,7 @@ class Webhook(BaseWebhook):
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
+        poll: Poll = MISSING,
     ) -> WebhookMessage:
         ...
 
@@ -1395,6 +1396,7 @@ class Webhook(BaseWebhook):
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
+        poll: Poll = MISSING,
     ) -> None:
         ...
 
@@ -1416,6 +1418,7 @@ class Webhook(BaseWebhook):
         suppress_embeds: bool = False,
         silent: bool = False,
         applied_tags: List[ForumTag] = MISSING,
+        poll: Poll = MISSING,
     ) -> Optional[WebhookMessage]:
         """|coro|
 
@@ -1492,6 +1495,15 @@ class Webhook(BaseWebhook):
 
             .. versionadded:: 2.1
 
+        poll: :class:`Poll`
+            The poll to send with this message.
+
+            .. warning::
+
+                When sending a Poll via webhook, you cannot manually end it.
+
+            .. versionadded:: 2.4
+
         Raises
         --------
         HTTPException
@@ -1551,6 +1563,7 @@ class Webhook(BaseWebhook):
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
             applied_tags=applied_tag_ids,
+            poll=poll,
         ) as params:
             adapter = async_context.get()
             thread_id: Optional[int] = None
@@ -1573,6 +1586,9 @@ class Webhook(BaseWebhook):
         msg = None
         if wait:
             msg = self._create_message(data, thread=thread)
+
+        if poll is not MISSING and msg:
+            poll._update(msg)
 
         return msg
 

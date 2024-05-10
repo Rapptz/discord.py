@@ -701,3 +701,11 @@ class GuildMemberListUpdateEvent(TypedDict):
     online_count: int
     groups: List[GuildMemberListGroup]
     ops: List[GuildMemberListOP]
+
+
+class PollVoteActionEvent(TypedDict):
+    user_id: Snowflake
+    channel_id: Snowflake
+    message_id: Snowflake
+    guild_id: NotRequired[Snowflake]
+    answer_id: int

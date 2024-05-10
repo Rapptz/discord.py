@@ -56,6 +56,7 @@ if TYPE_CHECKING:
     from discord.member import Member
     from discord.mentions import AllowedMentions
     from discord.message import MessageReference, PartialMessage
+    from discord.poll import Poll
     from discord.state import ConnectionState
     from discord.sticker import GuildSticker, StickerItem
     from discord.user import ClientUser, User
@@ -452,6 +453,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -471,6 +473,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -490,6 +493,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -509,6 +513,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 

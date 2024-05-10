@@ -61,6 +61,7 @@ if TYPE_CHECKING:
 
     from ..file import File
     from ..embeds import Embed
+    from ..poll import Poll
     from ..mentions import AllowedMentions
     from ..message import Attachment
     from ..abc import Snowflake
@@ -871,6 +872,7 @@ class SyncWebhook(BaseWebhook):
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
+        poll: Poll = MISSING,
     ) -> SyncWebhookMessage:
         ...
 
@@ -893,6 +895,7 @@ class SyncWebhook(BaseWebhook):
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
+        poll: Poll = MISSING,
     ) -> None:
         ...
 
@@ -914,6 +917,7 @@ class SyncWebhook(BaseWebhook):
         suppress_embeds: bool = False,
         silent: bool = False,
         applied_tags: List[ForumTag] = MISSING,
+        poll: Poll = MISSING,
     ) -> Optional[SyncWebhookMessage]:
         """Sends a message using the webhook.
 
@@ -978,6 +982,14 @@ class SyncWebhook(BaseWebhook):
             in the UI, but will not actually send a notification.
 
             .. versionadded:: 2.0
+        poll: :class:`Poll`
+            The poll to send with this message.
+
+            .. warning::
+
+                When sending a Poll via webhook, you cannot manually end it.
+
+            .. versionadded:: 2.1
 
         Raises
         --------
@@ -1036,6 +1048,7 @@ class SyncWebhook(BaseWebhook):
             previous_allowed_mentions=previous_mentions,
             flags=flags,
             applied_tags=applied_tag_ids,
+            poll=poll,
         ) as params:
             adapter: WebhookAdapter = _get_webhook_adapter()
             thread_id: Optional[int] = None
@@ -1053,8 +1066,15 @@ class SyncWebhook(BaseWebhook):
                 wait=wait,
             )
 
+        msg = None
+
         if wait:
-            return self._create_message(data, thread=thread)
+            msg = self._create_message(data, thread=thread)
+
+        if poll is not MISSING and msg:
+            poll._update(msg)
+
+        return msg
 
     def fetch_message(self, id: int, /, *, thread: Snowflake = MISSING) -> SyncWebhookMessage:
         """Retrieves a single :class:`~discord.SyncWebhookMessage` owned by this webhook.
