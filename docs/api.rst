@@ -5347,7 +5347,7 @@ Poll
 
 .. attributetable:: Poll
 
-.. autoclass:: Poll()
+.. autoclass:: Poll
     :members:
 
 .. attributetable:: PollAnswer
@@ -5358,7 +5358,7 @@ Poll
 
 .. attributetable:: PollMedia
 
-.. autoclass:: PollMedia()
+.. autoclass:: PollMedia
     :members:
 
 
