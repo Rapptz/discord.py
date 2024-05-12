@@ -107,6 +107,7 @@ if TYPE_CHECKING:
         RawThreadMembersUpdate,
         RawThreadUpdateEvent,
         RawTypingEvent,
+        RawPollVoteActionEvent,
     )
     from .reaction import Reaction
     from .role import Role
@@ -116,6 +117,7 @@ if TYPE_CHECKING:
     from .ui.item import Item
     from .voice_client import VoiceProtocol
     from .audit_logs import AuditLogEntry
+    from .poll import PollAnswer
 
 
 # fmt: off
@@ -287,7 +289,7 @@ class Client:
         self._enable_debug_events: bool = options.pop('enable_debug_events', False)
         self._connection: ConnectionState[Self] = self._get_state(intents=intents, **options)
         self._connection.shard_count = self.shard_count
-        self._closed: bool = False
+        self._closing_task: Optional[asyncio.Task[None]] = None
         self._ready: asyncio.Event = MISSING
         self._application: Optional[AppInfo] = None
         self._connection._get_websocket = self._get_websocket
@@ -307,7 +309,10 @@ class Client:
         exc_value: Optional[BaseException],
         traceback: Optional[TracebackType],
     ) -> None:
-        if not self.is_closed():
+        # This avoids double-calling a user-provided .close()
+        if self._closing_task:
+            await self._closing_task
+        else:
             await self.close()
 
     # internals
@@ -726,22 +731,24 @@ class Client:
 
         Closes the connection to Discord.
         """
-        if self._closed:
-            return
+        if self._closing_task:
+            return await self._closing_task
 
-        self._closed = True
+        async def _close():
+            await self._connection.close()
 
-        await self._connection.close()
+            if self.ws is not None and self.ws.open:
+                await self.ws.close(code=1000)
 
-        if self.ws is not None and self.ws.open:
-            await self.ws.close(code=1000)
+            await self.http.close()
 
-        await self.http.close()
+            if self._ready is not MISSING:
+                self._ready.clear()
 
-        if self._ready is not MISSING:
-            self._ready.clear()
+            self.loop = MISSING
 
-        self.loop = MISSING
+        self._closing_task = asyncio.create_task(_close())
+        await self._closing_task
 
     def clear(self) -> None:
         """Clears the internal state of the bot.
@@ -750,7 +757,7 @@ class Client:
         and :meth:`is_ready` both return ``False`` along with the bot's internal
         cache cleared.
         """
-        self._closed = False
+        self._closing_task = None
         self._ready.clear()
         self._connection.clear()
         self.http.clear()
@@ -870,7 +877,7 @@ class Client:
 
     def is_closed(self) -> bool:
         """:class:`bool`: Indicates if the websocket connection is closed."""
-        return self._closed
+        return self._closing_task is not None
 
     @property
     def activity(self) -> Optional[ActivityTypes]:
@@ -1808,6 +1815,30 @@ class Client:
         check: Optional[Callable[[Member, VoiceState, VoiceState], bool]],
         timeout: Optional[float] = None,
     ) -> Tuple[Member, VoiceState, VoiceState]:
+        ...
+
+    # Polls
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['poll_vote_add', 'poll_vote_remove'],
+        /,
+        *,
+        check: Optional[Callable[[Union[User, Member], PollAnswer], bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> Tuple[Union[User, Member], PollAnswer]:
+        ...
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['raw_poll_vote_add', 'raw_poll_vote_remove'],
+        /,
+        *,
+        check: Optional[Callable[[RawPollVoteActionEvent], bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> RawPollVoteActionEvent:
         ...
 
     # Commands

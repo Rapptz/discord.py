@@ -384,10 +384,11 @@ class Guild(Hashable):
     def _clear_threads(self) -> None:
         self._threads.clear()
 
-    def _remove_threads_by_channel(self, channel_id: int) -> None:
-        to_remove = [k for k, t in self._threads.items() if t.parent_id == channel_id]
-        for k in to_remove:
-            del self._threads[k]
+    def _remove_threads_by_channel(self, channel_id: int) -> List[Thread]:
+        to_remove = [t for t in self._threads.values() if t.parent_id == channel_id]
+        for thread in to_remove:
+            del self._threads[thread.id]
+        return to_remove
 
     def _filter_threads(self, channel_ids: Set[int]) -> Dict[int, Thread]:
         to_remove: Dict[int, Thread] = {k: t for k, t in self._threads.items() if t.parent_id in channel_ids}
@@ -460,8 +461,11 @@ class Guild(Hashable):
         return role
 
     @classmethod
-    def _create_unavailable(cls, *, state: ConnectionState, guild_id: int) -> Guild:
-        return cls(state=state, data={'id': guild_id, 'unavailable': True})  # type: ignore
+    def _create_unavailable(cls, *, state: ConnectionState, guild_id: int, data: Optional[Dict[str, Any]]) -> Guild:
+        if data is None:
+            data = {'unavailable': True}
+        data.update(id=guild_id)
+        return cls(state=state, data=data)  # type: ignore
 
     def _from_data(self, guild: GuildPayload) -> None:
         try:
@@ -3870,7 +3874,7 @@ class Guild(Hashable):
 
         The guild must have ``VANITY_URL`` in :attr:`~Guild.features`.
 
-        You must have :attr:`~Permissions.manage_guild` to do this.as well.
+        You must have :attr:`~Permissions.manage_guild` to do this as well.
 
         Raises
         -------

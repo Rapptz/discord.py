@@ -1,6 +1,83 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "discord.py"
+description = "A Python wrapper for the Discord API"
+readme = { file = "README.rst", content-type = "text/x-rst" }
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+authors = [{ name = "Rapptz" }]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+dynamic = ["version", "dependencies"]
+
+[project.urls]
+Documentation = "https://discordpy.readthedocs.io/en/latest/"
+"Issue tracker" = "https://github.com/Rapptz/discord.py/issues"
+
+[tool.setuptools.dynamic]
+dependencies = { file = "requirements.txt" }
+
+[project.optional-dependencies]
+voice = ["PyNaCl>=1.3.0,<1.6"]
+docs = [
+    "sphinx==4.4.0",
+    "sphinxcontrib_trio==1.1.2",
+    # TODO: bump these when migrating to a newer Sphinx version
+    "sphinxcontrib-websupport==1.2.4",
+    "sphinxcontrib-applehelp==1.0.4",
+    "sphinxcontrib-devhelp==1.0.2",
+    "sphinxcontrib-htmlhelp==2.0.1",
+    "sphinxcontrib-jsmath==1.0.1",
+    "sphinxcontrib-qthelp==1.0.3",
+    "sphinxcontrib-serializinghtml==1.1.5",
+    "typing-extensions>=4.3,<5",
+    "sphinx-inline-tabs==2023.4.21",
+]
+speed = [
+    "orjson>=3.5.4",
+    "aiodns>=1.1",
+    "Brotli",
+    "cchardet==2.1.7; python_version < '3.10'",
+]
+test = [
+    "coverage[toml]",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "pytest-mock",
+    "typing-extensions>=4.3,<5",
+    "tzdata; sys_platform == 'win32'",
+]
+
+[tool.setuptools]
+packages = [
+    "discord",
+    "discord.types",
+    "discord.ui",
+    "discord.webhook",
+    "discord.app_commands",
+    "discord.ext.commands",
+    "discord.ext.tasks",
+]
+include-package-data = true
 
 [tool.black]
 line-length = 125
@@ -16,7 +93,7 @@ omit = [
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
-    "@overload"
+    "@overload",
 ]
 
 [tool.isort]

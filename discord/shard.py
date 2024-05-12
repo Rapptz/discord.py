@@ -481,18 +481,21 @@ class AutoShardedClient(Client):
 
         Closes the connection to Discord.
         """
-        if self.is_closed():
-            return
+        if self._closing_task:
+            return await self._closing_task
 
-        self._closed = True
-        await self._connection.close()
+        async def _close():
+            await self._connection.close()
 
-        to_close = [asyncio.ensure_future(shard.close(), loop=self.loop) for shard in self.__shards.values()]
-        if to_close:
-            await asyncio.wait(to_close)
+            to_close = [asyncio.ensure_future(shard.close(), loop=self.loop) for shard in self.__shards.values()]
+            if to_close:
+                await asyncio.wait(to_close)
 
-        await self.http.close()
-        self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
+            await self.http.close()
+            self.__queue.put_nowait(EventItem(EventType.clean_close, None, None))
+
+        self._closing_task = asyncio.create_task(_close())
+        await self._closing_task
 
     async def change_presence(
         self,
