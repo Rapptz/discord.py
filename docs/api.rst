@@ -3615,7 +3615,7 @@ of :class:`enum.Enum`.
 
 .. class:: PollLayoutType
 
-    Represents how a poll answers are shown
+    Represents how a poll answers are shown.
 
     .. versionadded:: 2.4
 
