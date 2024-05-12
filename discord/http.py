@@ -68,8 +68,6 @@ if TYPE_CHECKING:
     from .embeds import Embed
     from .message import Attachment
     from .flags import MessageFlags
-    from .invite import Invite
-
     from .types import (
         appinfo,
         audit_log,
@@ -1991,17 +1989,17 @@ class HTTPClient:
         limit: int,
         sort_type: int,
         *,
-        after: Optional[Snowflake] = None,
-        before: Optional[Snowflake] = None,
-        users: Optional[Iterable[Snowflake]] = None,
-        roles: Optional[Iterable[Snowflake]] = None,
-        unusual_activity: Optional[bool] = None,
-        quarantined: Optional[bool] = None,
-        timed_out: Optional[bool] = None,
-        unusual_dms: Optional[bool] = None,
-        invite_codes: Optional[Iterable[Union[str, Invite]]] = None,
-        join_types: Optional[Iterable[int]] = None,
-        usernames: Optional[Iterable[str]] = None,
+        after: Snowflake = MISSING,
+        before: Snowflake = MISSING,
+        users: Iterable[Snowflake] = MISSING,
+        roles: Iterable[Snowflake] = MISSING,
+        unusual_activity: bool = MISSING,
+        quarantined: bool = MISSING,
+        timed_out: bool = MISSING,
+        unusual_dms: bool = MISSING,
+        invites: Iterable[str] = MISSING,
+        join_types: Iterable[int] = MISSING,
+        usernames: Iterable[str] = MISSING,
     ) -> Response[member.MemberSearchResults]:
         gte = utils.time_snowflake(datetime.datetime.now(), high=True) + 1
         users_gte: Optional[str] = str(after) if after else None
@@ -2015,7 +2013,7 @@ class HTTPClient:
         payload['or_query'] = {}
         safety_signals = {}
 
-        if users:
+        if users is not MISSING:
             if 'user_id' in payload['and_query']:
                 payload['and_query']['user_id']['or_query'] = [
                     str(user) for user in users
@@ -2025,7 +2023,7 @@ class HTTPClient:
                     'or_query': [str(user) for user in users]
                 }
 
-        if users_gte:
+        if users_gte is not None:
             if 'user_id' in payload['and_query']:
                 if 'range' in payload['and_query']['user_id']:
                     payload['and_query']['user_id']['range']['gte'] = users_gte  # type: ignore
@@ -2040,7 +2038,7 @@ class HTTPClient:
                     }
                 }
 
-        if users_lte:
+        if users_lte is not None:
             if 'user_id' in payload['and_query']:
                 if 'range' in payload['and_query']['user_id']:
                     payload['and_query']['user_id']['range']['lte'] = users_lte  # type: ignore
@@ -2055,32 +2053,32 @@ class HTTPClient:
                     }
                 }
 
-        if roles:
+        if roles is not MISSING:
             payload['and_query']['role_ids'] = {
                 'and_query': [str(role) for role in roles]
             }
 
-        if unusual_activity:
+        if unusual_activity is not MISSING:
             safety_signals['unusual_account_activity'] = unusual_activity
 
-        if quarantined:
+        if quarantined is not MISSING:
             safety_signals['automod_quarantined_username'] = quarantined
 
-        if timed_out:
+        if timed_out is not MISSING:
             safety_signals['communication_disabled_until'] = {
                 'range': {'gte': gte}
             }
 
-        if unusual_dms:
+        if unusual_dms is not MISSING:
             safety_signals['unusual_dm_activity_until'] = {
                 'range': {'gte': gte}
             }
 
-        if invite_codes:
+        if invites is not MISSING:
             payload['and_query']['source_invite_code'] = {
                 'or_query': [
                     getattr(invite, 'code', str(invite))
-                    for invite in invite_codes
+                    for invite in invites
                 ]
             }
 

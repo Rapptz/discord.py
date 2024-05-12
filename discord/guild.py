@@ -141,6 +141,7 @@ if TYPE_CHECKING:
     from .types.widget import EditWidgetSettings
     from .types.audit_log import AuditLogEvent
     from .message import EmojiInputType
+    from .invite import Invite
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
     GuildChannel = Union[VocalGuildChannel, ForumChannel, TextChannel, CategoryChannel]
@@ -162,18 +163,6 @@ class _GuildLimit(NamedTuple):
     stickers: int
     bitrate: float
     filesize: int
-
-
-class _MemberSearchQueries(TypedDict, total=False):
-    users: Iterable[Snowflake]
-    roles: Iterable[Snowflake]
-    unusual_activity: bool
-    quarantined: bool
-    timed_out: bool
-    unusual_dms: bool
-    invite_codes: Iterable[Union[str, Invite]]
-    join_types: Iterable[MemberJoinType]
-    usernames: Iterable[str]
 
 
 class Guild(Hashable):
@@ -4412,11 +4401,19 @@ class Guild(Hashable):
     async def fetch_safety_information(
         self,
         *,
-        limit: int = 250,
-        after: Optional[Snowflake] = None,
-        before: Optional[Snowflake] = None,
+        limit: int = MISSING,
+        after: Snowflake = MISSING,
+        before: Snowflake = MISSING,
         sort_type: MemberSearchSortType = MemberSearchSortType.new_guild_members,
-        **filters: Unpack[_MemberSearchQueries]
+        timed_out: bool = MISSING,
+        unusual_dms: bool = MISSING,
+        unusual_activity: bool = MISSING,
+        quarantined: bool = MISSING,
+        users: Iterable[Snowflake] = MISSING,
+        roles: Iterable[Snowflake] = MISSING,
+        invites: Iterable[Union[str, Invite]] = MISSING,
+        join_types: Iterable[MemberJoinType] = MISSING,
+        usernames: Iterable[str] = MISSING,
     ) -> AsyncIterator[MemberSearch]:
         """Returns a :term:`asynchronous iterator` representing the members that were
         obtained after the search.
@@ -4440,35 +4437,31 @@ class Guild(Hashable):
         ----------
         limit: :class:`int`
             The limit of members to fetch safety information.
+        after: :class:`abc.Snowflake`
+            Return members after this ID.
+        before: :class:`abc.Snowflake`
+            Return member before this ID.
         sort_type: :class:`MemberSearchSortType`
-            How to sort the results.
-        **filters
-            Simple filters to sort members. If you provide
-            filters that none of the members satisfy, this
-            will return `None`.
+            The order the members are returned.
+        timed_out: :class:`bool`
+            Whether to return timed out users or not.
+        unusual_dms: :class:`bool`
+            Whether to return members with the unusual DMs flag.
+        unusual_activity: :class:`bool`
+            Whether to return members with the unusual activity flag.
+        quarantined: :class:`bool`
+            Whether to return members that are quarantined by the AutoMod.
+        users: Iterable[:class:`abc.Snowflake`]
+            Returns members that match this ID.
+        roles: Iterable[:Class:`abc.Snowflake`]
+            Returns members with any of these roles.
+        invites: Iterable[Union[:class:`str`, :class:`Invite`]]
+            Returns members joined with these invites.
+        join_types: Iterable[:class:`MemberJoinType`]
+            Returns members that joined using these methods.
+        usernames: Iterable[:class:`str`]
+            Returns members named like any of these usernames.
 
-            +------------------+-----------------------------------------+
-            |    Parameter     |                 Sort type               |
-            +------------------+-----------------------------------------+
-            | timed_out        | Return users timed out until that date  |
-            +------------------+-----------------------------------------+
-            | unusual_dms      | Return users with unusual DM activities |
-            +------------------+-----------------------------------------+
-            | unusual_activity | Return users with unusual activity      |
-            +------------------+-----------------------------------------+
-            | quarantined      | Returns users quarantined by AutoMod    |
-            +------------------+-----------------------------------------+
-            | users            | Return users that match any of the IDS  |
-            +------------------+-----------------------------------------+
-            | roles            | Return users that have any of the roles |
-            +------------------+-----------------------------------------+
-            | invite_codes     | Return users joined via these invites   |
-            +------------------+-----------------------------------------+
-            | join_types       | Return users who join these ways        |
-            +------------------+-----------------------------------------+
-            | usernames        | Return users with similar names         |
-            +------------------+-----------------------------------------+
-        
         Raises
         ------
         Forbidden
@@ -4483,24 +4476,12 @@ class Guild(Hashable):
             The safety information of the members.
         """
 
-        users = filters.get('users')
-        if users:
-            filters['users'] = [user.id for user in users]  # type: ignore
-
-        roles = filters.get('roles')
-        if roles:
-            filters['roles'] = [role.id for role in roles]  # type: ignore
-
-        join_types = filters.get('join_types')
-        if join_types:
-            filters['join_types'] = [join_type.value for join_type in join_types]  # type: ignore
-
         while limit > 0:
             retrieve = min(limit, 250)
 
             state = self._state
-            after_id = after.id if after else None
-            before_id = before.id if before else None
+            after_id = after.id if after is not MISSING else MISSING
+            before_id = before.id if before is not MISSING else MISSING
 
             data = await state.http.get_guild_member_safety(
                 self.id,
@@ -4508,7 +4489,16 @@ class Guild(Hashable):
                 sort_type=sort_type.value,
                 after=after_id,
                 before=before_id,
-                **filters  # type: ignore
+                users=[user.id for user in users] if users is not MISSING else MISSING,
+                roles=[role.id for role in roles] if roles is not MISSING else MISSING,
+                unusual_activity=unusual_activity,
+                quarantined=quarantined,
+                timed_out=timed_out,
+                unusual_dms=unusual_dms,
+                invites=[invite if isinstance(invite, str) else invite.code for invite in invites] \
+                    if invites is not MISSING else MISSING,
+                join_types=[join_type.value for join_type in join_types] if join_types is not MISSING else MISSING,
+                usernames=usernames
             )
 
             results = data['members']
