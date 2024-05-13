@@ -202,7 +202,7 @@ class PollAnswer:
 
     @property
     def poll(self) -> Poll:
-        """:class:`Poll`: Returns the parent poll of this answer"""
+        """:class:`Poll`: Returns the parent poll of this answer."""
         return self._poll
 
     def _to_dict(self) -> PollAnswerPayload:
