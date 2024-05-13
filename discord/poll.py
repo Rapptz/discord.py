@@ -431,7 +431,7 @@ class Poll:
 
     @property
     def answers(self) -> List[PollAnswer]:
-        """List[:class:`PollAnswer`]: Returns a read-only copy of the answers"""
+        """List[:class:`PollAnswer`]: Returns a read-only copy of the answers."""
         return list(self._answers.values())
 
     @property
