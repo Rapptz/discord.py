@@ -310,7 +310,7 @@ class Poll:
         The duration of the poll. Duration must be in hours.
     multiple: :class:`bool`
         Whether users are allowed to select more than one answer.
-        Defaultsto ``False``.
+        Defaults to ``False``.
     layout_type: :class:`PollLayoutType`
         The layout type of the poll. Defaults to :attr:`PollLayoutType.default`.
     """
