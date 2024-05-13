@@ -5084,7 +5084,6 @@ PollAnswer
 
 .. autoclass:: PollAnswer()
     :members:
-    :inherited-members:
 
 .. _discord_api_data:
 
