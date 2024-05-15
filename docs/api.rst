@@ -3615,7 +3615,7 @@ of :class:`enum.Enum`.
 
 .. class:: PollLayoutType
 
-    Represents how a poll answers are shown
+    Represents how a poll answers are shown.
 
     .. versionadded:: 2.4
 
@@ -5077,6 +5077,14 @@ PartialWebhookChannel
 .. autoclass:: PartialWebhookChannel()
     :members:
 
+PollAnswer
+~~~~~~~~~~
+
+.. attributetable:: PollAnswer
+
+.. autoclass:: PollAnswer()
+    :members:
+
 .. _discord_api_data:
 
 Data Classes
@@ -5347,18 +5355,15 @@ Poll
 
 .. attributetable:: Poll
 
-.. autoclass:: Poll()
+.. autoclass:: Poll
     :members:
 
-.. attributetable:: PollAnswer
-
-.. autoclass:: PollAnswer()
-    :members:
-    :inherited-members:
+PollMedia
+~~~~~~~~~
 
 .. attributetable:: PollMedia
 
-.. autoclass:: PollMedia()
+.. autoclass:: PollMedia
     :members:
 
 

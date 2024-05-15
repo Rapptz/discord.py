@@ -807,6 +807,10 @@ class InteractionResponse(Generic[ClientT]):
             then it is silently ignored.
 
             .. versionadded:: 2.1
+        poll: :class:`~discord.Poll`
+            The poll to send with this message.
+
+            .. versionadded:: 2.4
 
         Raises
         -------
