@@ -1446,10 +1446,10 @@ class ExpiringString(collections.UserString):
         self._timer.cancel()
 
 
-FALLBACK_BUILD_NUMBER = 9999  # Used in marketing and dev portal :)
-FALLBACK_BROWSER_VERSION = '120.0.0.1'
-_SENTRY_ASSET_REGEX = re.compile(r'assets/(sentry\.\w+)\.js')
-_BUILD_NUMBER_REGEX = re.compile(r'buildNumber\D+(\d+)"')
+FALLBACK_BUILD_NUMBER = 9999
+FALLBACK_BROWSER_VERSION = '125.0.0.0'
+_CLIENT_ASSET_REGEX = re.compile(r'assets/([a-z0-9.]+)\.js')
+_BUILD_NUMBER_REGEX = re.compile(r'build_number:"(\d+)"')
 
 
 async def _get_info(session: ClientSession) -> Tuple[Dict[str, Any], str]:
@@ -1496,17 +1496,19 @@ async def _get_build_number(session: ClientSession) -> int:
     """Fetches client build number"""
     async with session.get('https://discord.com/login') as resp:
         app = await resp.text()
-        match = _SENTRY_ASSET_REGEX.search(app)
-        if match is None:
-            raise RuntimeError('Could not find sentry asset file')
-        sentry = match.group(1)
+        assets = _CLIENT_ASSET_REGEX.findall(app)
+        if not assets:
+            raise RuntimeError('Could not find client asset files')
 
-    async with session.get(f'https://discord.com/assets/{sentry}.js') as resp:
-        build = await resp.text()
-        match = _BUILD_NUMBER_REGEX.search(build)
-        if match is None:
-            raise RuntimeError('Could not find build number')
-        return int(match.group(1))
+    for asset in assets[::-1]:
+        async with session.get(f'https://discord.com/assets/{asset}.js') as resp:
+            build = await resp.text()
+            match = _BUILD_NUMBER_REGEX.search(build)
+            if match is None:
+                continue
+            return int(match.group(1))
+
+    raise RuntimeError('Could not find client build number')
 
 
 async def _get_browser_version(session: ClientSession) -> str:
