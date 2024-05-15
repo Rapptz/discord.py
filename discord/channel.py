@@ -1824,6 +1824,7 @@ class StageChannel(VocalGuildChannel):
         *,
         name: str = ...,
         nsfw: bool = ...,
+        bitrate: int = ...,
         user_limit: int = ...,
         position: int = ...,
         sync_permissions: int = ...,
@@ -1860,6 +1861,8 @@ class StageChannel(VocalGuildChannel):
         ----------
         name: :class:`str`
             The new channel's name.
+        bitrate: :class:`int`
+            The new channel's bitrate.
         position: :class:`int`
             The new channel's position.
         nsfw: :class:`bool`
