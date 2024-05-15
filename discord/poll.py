@@ -202,7 +202,7 @@ class PollAnswer:
 
     @property
     def poll(self) -> Poll:
-        """:class:`Poll`: Returns the parent poll of this answer"""
+        """:class:`Poll`: Returns the parent poll of this answer."""
         return self._poll
 
     def _to_dict(self) -> PollAnswerPayload:
@@ -310,7 +310,7 @@ class Poll:
         The duration of the poll. Duration must be in hours.
     multiple: :class:`bool`
         Whether users are allowed to select more than one answer.
-        Defaultsto ``False``.
+        Defaults to ``False``.
     layout_type: :class:`PollLayoutType`
         The layout type of the poll. Defaults to :attr:`PollLayoutType.default`.
     """
@@ -431,7 +431,7 @@ class Poll:
 
     @property
     def answers(self) -> List[PollAnswer]:
-        """List[:class:`PollAnswer`]: Returns a read-only copy of the answers"""
+        """List[:class:`PollAnswer`]: Returns a read-only copy of the answers."""
         return list(self._answers.values())
 
     @property
