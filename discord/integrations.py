@@ -25,8 +25,8 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import Any, Dict, Optional, TYPE_CHECKING, Type, Tuple
-from .utils import _get_as_snowflake, parse_time, MISSING
+from typing import Optional, TYPE_CHECKING, Type, Tuple
+from .utils import _get_as_snowflake, parse_time
 from .user import User
 from .enums import try_enum, ExpireBehaviour
 
@@ -129,29 +129,6 @@ class Integration:
         self.user: Optional[User] = User(state=self._state, data=user) if user else None
         self.enabled: bool = data['enabled']
 
-    async def delete(self, *, reason: Optional[str] = None) -> None:
-        """|coro|
-
-        Deletes the integration.
-
-        You must have :attr:`~Permissions.manage_guild` to do this.
-
-        Parameters
-        -----------
-        reason: :class:`str`
-            The reason the integration was deleted. Shows up on the audit log.
-
-            .. versionadded:: 2.0
-
-        Raises
-        -------
-        Forbidden
-            You do not have permission to delete the integration.
-        HTTPException
-            Deleting the integration failed.
-        """
-        await self._state.http.delete_integration(self.guild.id, self.id, reason=reason)
-
 
 class StreamIntegration(Integration):
     """Represents a stream integration for Twitch or YouTube.
@@ -218,75 +195,6 @@ class StreamIntegration(Integration):
         """Optional[:class:`Role`] The role which the integration uses for subscribers."""
         # The key is `int` but `int | None` will return `None` anyway.
         return self.guild.get_role(self._role_id)  # type: ignore
-
-    async def edit(
-        self,
-        *,
-        expire_behaviour: ExpireBehaviour = MISSING,
-        expire_grace_period: int = MISSING,
-        enable_emoticons: bool = MISSING,
-    ) -> None:
-        """|coro|
-
-        Edits the integration.
-
-        You must have :attr:`~Permissions.manage_guild` to do this.
-
-        .. versionchanged:: 2.0
-            This function will now raise :exc:`TypeError` instead of
-            ``InvalidArgument``.
-
-        Parameters
-        -----------
-        expire_behaviour: :class:`ExpireBehaviour`
-            The behaviour when an integration subscription lapses. Aliased to ``expire_behavior`` as well.
-        expire_grace_period: :class:`int`
-            The period (in days) where the integration will ignore lapsed subscriptions.
-        enable_emoticons: :class:`bool`
-            Where emoticons should be synced for this integration (currently twitch only).
-
-        Raises
-        -------
-        Forbidden
-            You do not have permission to edit the integration.
-        HTTPException
-            Editing the guild failed.
-        TypeError
-            ``expire_behaviour`` did not receive a :class:`ExpireBehaviour`.
-        """
-        payload: Dict[str, Any] = {}
-        if expire_behaviour is not MISSING:
-            if not isinstance(expire_behaviour, ExpireBehaviour):
-                raise TypeError('expire_behaviour field must be of type ExpireBehaviour')
-
-            payload['expire_behavior'] = expire_behaviour.value
-
-        if expire_grace_period is not MISSING:
-            payload['expire_grace_period'] = expire_grace_period
-
-        if enable_emoticons is not MISSING:
-            payload['enable_emoticons'] = enable_emoticons
-
-        # This endpoint is undocumented.
-        # Unsure if it returns the data or not as a result
-        await self._state.http.edit_integration(self.guild.id, self.id, **payload)
-
-    async def sync(self) -> None:
-        """|coro|
-
-        Syncs the integration.
-
-        You must have :attr:`~Permissions.manage_guild` to do this.
-
-        Raises
-        -------
-        Forbidden
-            You do not have permission to sync the integration.
-        HTTPException
-            Syncing the integration failed.
-        """
-        await self._state.http.sync_integration(self.guild.id, self.id)
-        self.synced_at = datetime.datetime.now(datetime.timezone.utc)
 
 
 class IntegrationApplication:

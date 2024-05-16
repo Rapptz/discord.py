@@ -131,7 +131,6 @@ if TYPE_CHECKING:
         StageChannel as StageChannelPayload,
         ForumChannel as ForumChannelPayload,
     )
-    from .types.integration import IntegrationType
     from .types.snowflake import SnowflakeList
     from .types.widget import EditWidgetSettings
     from .types.audit_log import AuditLogEvent
@@ -1842,7 +1841,6 @@ class Guild(Hashable):
         default_notifications: NotificationLevel = MISSING,
         verification_level: VerificationLevel = MISSING,
         explicit_content_filter: ContentFilter = MISSING,
-        vanity_code: str = MISSING,
         system_channel: Optional[TextChannel] = MISSING,
         system_channel_flags: SystemChannelFlags = MISSING,
         preferred_locale: Locale = MISSING,
@@ -1920,8 +1918,6 @@ class Guild(Hashable):
             The new default notification level for the guild.
         explicit_content_filter: :class:`ContentFilter`
             The new explicit content filter for the guild.
-        vanity_code: :class:`str`
-            The new vanity code for the guild.
         system_channel: Optional[:class:`TextChannel`]
             The new channel that is used for the system channel. Could be ``None`` for no system channel.
         system_channel_flags: :class:`SystemChannelFlags`
@@ -2019,9 +2015,6 @@ class Guild(Hashable):
         """
 
         http = self._state.http
-
-        if vanity_code is not MISSING:
-            await http.change_vanity_code(self.id, vanity_code, reason=reason)
 
         fields: Dict[str, Any] = {}
         if name is not MISSING:
@@ -2784,31 +2777,6 @@ class Guild(Hashable):
         data = await self._state.http.create_template(self.id, payload)
 
         return Template(state=self._state, data=data)
-
-    async def create_integration(self, *, type: IntegrationType, id: int) -> None:
-        """|coro|
-
-        Attaches an integration to the guild.
-
-        You must have :attr:`~Permissions.manage_guild` to do this.
-
-        .. versionadded:: 1.4
-
-        Parameters
-        -----------
-        type: :class:`str`
-            The integration type (e.g. Twitch).
-        id: :class:`int`
-            The integration ID.
-
-        Raises
-        -------
-        Forbidden
-            You do not have permission to create the integration.
-        HTTPException
-            The account could not be found.
-        """
-        await self._state.http.create_integration(self.id, type, id)
 
     async def integrations(self) -> List[Integration]:
         """|coro|
