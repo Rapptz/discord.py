@@ -45,11 +45,6 @@ import asyncio
 import logging
 import threading
 
-try:
-    from asyncio import timeout as atimeout  # type: ignore
-except ImportError:
-    from async_timeout import timeout as atimeout  # type: ignore
-
 from typing import TYPE_CHECKING, Optional, Dict, List, Callable, Coroutine, Any, Tuple
 
 from .enums import Enum
@@ -400,37 +395,41 @@ class VoiceConnectionState:
             await self.disconnect()
             raise
 
+    async def _inner_connect(self, reconnect: bool, self_deaf: bool, self_mute: bool, resume: bool) -> None:
+        for i in range(5):
+            _log.info('Starting voice handshake... (connection attempt %d)', i + 1)
+
+            await self._voice_connect(self_deaf=self_deaf, self_mute=self_mute)
+            # Setting this unnecessarily will break reconnecting
+            if self.state is ConnectionFlowState.disconnected:
+                self.state = ConnectionFlowState.set_guild_voice_state
+
+            await self._wait_for_state(ConnectionFlowState.got_both_voice_updates)
+
+            _log.info('Voice handshake complete. Endpoint found: %s', self.endpoint)
+
+            try:
+                self.ws = await self._connect_websocket(resume)
+                await self._handshake_websocket()
+                break
+            except ConnectionClosed:
+                if reconnect:
+                    wait = 1 + i * 2.0
+                    _log.exception('Failed to connect to voice... Retrying in %ss...', wait)
+                    await self.disconnect(cleanup=False)
+                    await asyncio.sleep(wait)
+                    continue
+                else:
+                    await self.disconnect()
+                    raise
+
     async def _connect(self, reconnect: bool, timeout: float, self_deaf: bool, self_mute: bool, resume: bool) -> None:
         _log.info('Connecting to voice...')
 
-        async with atimeout(timeout):
-            for i in range(5):
-                _log.info('Starting voice handshake... (connection attempt %d)', i + 1)
-
-                await self._voice_connect(self_deaf=self_deaf, self_mute=self_mute)
-                # Setting this unnecessarily will break reconnecting
-                if self.state is ConnectionFlowState.disconnected:
-                    self.state = ConnectionFlowState.set_guild_voice_state
-
-                await self._wait_for_state(ConnectionFlowState.got_both_voice_updates)
-
-                _log.info('Voice handshake complete. Endpoint found: %s', self.endpoint)
-
-                try:
-                    self.ws = await self._connect_websocket(resume)
-                    await self._handshake_websocket()
-                    break
-                except ConnectionClosed:
-                    if reconnect:
-                        wait = 1 + i * 2.0
-                        _log.exception('Failed to connect to voice... Retrying in %ss...', wait)
-                        await self.disconnect(cleanup=False)
-                        await asyncio.sleep(wait)
-                        continue
-                    else:
-                        await self.disconnect()
-                        raise
-
+        await asyncio.wait_for(
+            self._inner_connect(reconnect=reconnect, self_deaf=self_deaf, self_mute=self_mute, resume=resume),
+            timeout=timeout,
+        )
         _log.info('Voice connection complete.')
 
         if not self._runner:
@@ -472,8 +471,7 @@ class VoiceConnectionState:
                 # The new VoiceConnectionState object receives the voice_state_update event containing channel=None while still
                 # connecting leaving it in a bad state.  Since there's no nice way to transfer state to the new one, we have to do this.
                 try:
-                    async with atimeout(self.timeout):
-                        await self._disconnected.wait()
+                    await asyncio.wait_for(self._disconnected.wait(), timeout=self.timeout)
                 except TimeoutError:
                     _log.debug('Timed out waiting for voice disconnection confirmation')
                 except asyncio.CancelledError:
