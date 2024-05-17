@@ -34,9 +34,10 @@ from .emoji import PartialEmoji
 from .embed import Embed
 from .channel import ChannelType
 from .components import Component
-from .interactions import MessageInteraction
+from .interactions import MessageInteraction, MessageInteractionMetadata
 from .sticker import StickerItem
 from .threads import Thread
+from .poll import Poll
 
 
 class PartialMessage(TypedDict):
@@ -113,7 +114,40 @@ class RoleSubscriptionData(TypedDict):
 
 
 MessageType = Literal[
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    14,
+    15,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    36,
+    37,
+    38,
+    39,
 ]
 
 
@@ -130,6 +164,7 @@ class Message(PartialMessage):
     attachments: List[Attachment]
     embeds: List[Embed]
     pinned: bool
+    poll: NotRequired[Poll]
     type: MessageType
     member: NotRequired[Member]
     mention_channels: NotRequired[List[ChannelMention]]
@@ -143,7 +178,8 @@ class Message(PartialMessage):
     flags: NotRequired[int]
     sticker_items: NotRequired[List[StickerItem]]
     referenced_message: NotRequired[Optional[Message]]
-    interaction: NotRequired[MessageInteraction]
+    interaction: NotRequired[MessageInteraction]  # deprecated, use interaction_metadata
+    interaction_metadata: NotRequired[MessageInteractionMetadata]
     components: NotRequired[List[Component]]
     position: NotRequired[int]
     role_subscription_data: NotRequired[RoleSubscriptionData]

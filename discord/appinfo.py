@@ -143,6 +143,10 @@ class AppInfo:
         A list of authentication redirect URIs.
 
         .. versionadded:: 2.4
+    approximate_guild_count: :class:`int`
+        The approximate count of the guilds the bot was added to.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -170,6 +174,7 @@ class AppInfo:
         'role_connections_verification_url',
         'interactions_endpoint_url',
         'redirect_uris',
+        'approximate_guild_count',
     )
 
     def __init__(self, state: ConnectionState, data: AppInfoPayload):
@@ -206,6 +211,7 @@ class AppInfo:
         self.install_params: Optional[AppInstallParams] = AppInstallParams(params) if params else None
         self.interactions_endpoint_url: Optional[str] = data.get('interactions_endpoint_url')
         self.redirect_uris: List[str] = data.get('redirect_uris', [])
+        self.approximate_guild_count: int = data.get('approximate_guild_count', 0)
 
     def __repr__(self) -> str:
         return (
