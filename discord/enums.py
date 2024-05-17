@@ -823,6 +823,12 @@ class PollLayoutType(Enum):
     default = 1
 
 
+class InviteType(Enum):
+    guild = 0
+    group_dm = 1
+    friend = 2
+
+
 def create_unknown_value(cls: Type[E], val: Any) -> E:
     value_cls = cls._enum_value_cls_  # type: ignore # This is narrowed below
     name = f'unknown_{val}'
