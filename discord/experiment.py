@@ -665,10 +665,6 @@ class GuildExperiment:
         :class:`int`
             The experiment bucket.
         """
-        # a/a mode is always -1
-        if self.aa_mode:
-            return -1
-
         # Holdout must be fulfilled
         if self.holdout and not self.holdout.is_eligible(guild):
             return -1
@@ -686,6 +682,10 @@ class GuildExperiment:
                 pop_bucket = override.bucket_for(guild, hash_result)
                 if pop_bucket != -1:
                     return pop_bucket
+
+        # a/a mode is always -1 without an override
+        if self.aa_mode:
+            return -1
 
         for population in self.populations:
             pop_bucket = population.bucket_for(guild, hash_result)
