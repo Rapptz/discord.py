@@ -3624,6 +3624,25 @@ of :class:`enum.Enum`.
         The default layout.
 
 
+.. class:: InviteType
+
+    Represents the type of an invite.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: guild
+
+        The invite is a guild invite.
+
+    .. attribute:: group_dm
+
+        The invite is a group DM invite.
+
+    .. attribute:: friend
+
+        The invite is a friend invite.
+
+
 .. class:: ReactionType
 
     Represents the type of a reaction.
@@ -3637,6 +3656,7 @@ of :class:`enum.Enum`.
     .. attribute:: burst
 
         A burst reaction, also known as a "super reaction".
+
 
 .. _discord-api-audit-logs:
 
