@@ -3623,6 +3623,21 @@ of :class:`enum.Enum`.
 
         The default layout.
 
+
+.. class:: ReactionType
+
+    Represents the type of a reaction.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: normal
+
+        A normal reaction.
+
+    .. attribute:: burst
+
+        A burst reaction, also known as a "super reaction".
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
