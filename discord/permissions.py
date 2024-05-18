@@ -216,6 +216,8 @@ class Permissions(BaseFlags):
         base.embed_links = True
         base.send_voice_messages = True
         if in_guild:
+            # Logically this is False but if not set to True,
+            # permissions just become 0.
             base.read_messages = True
             base.send_tts_messages = True
             base.send_messages_in_threads = True
