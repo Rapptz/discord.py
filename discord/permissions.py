@@ -209,6 +209,19 @@ class Permissions(BaseFlags):
         return base
 
     @classmethod
+    def _user_installed_permissions(cls) -> Self:
+        base = cls.text()
+        base.read_messages = False
+        base.send_tts_messages = False
+        base.manage_messages = False
+        base.create_private_threads = False
+        base.create_public_threads = False
+        base.manage_threads = False
+        base.send_messages_in_threads = False
+        base.read_message_history = False
+        return base
+
+    @classmethod
     def all_channel(cls) -> Self:
         """A :class:`Permissions` with all channel-specific permissions set to
         ``True`` and the guild-specific ones set to ``False``. The guild-specific

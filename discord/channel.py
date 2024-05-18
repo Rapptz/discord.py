@@ -3008,6 +3008,11 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
         - :attr:`~Permissions.manage_threads`: There are no threads in a DM.
         - :attr:`~Permissions.send_messages_in_threads`: There are no threads in a DM.
 
+        If the ``obj`` parameter is a user installed app, it also sets the following to ``False``:
+        
+        - :attr:`~Permissions.read_messages`: A user installation cannot read your messages.
+        - :attr:`~Permissions.read_channel_history`: A user installation cannot read previously sent messages.
+
         .. versionchanged:: 2.0
 
             ``obj`` parameter is now positional-only.
@@ -3016,18 +3021,29 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
 
             Thread related permissions are now set to ``False``.
 
+        .. versionchanged:: 2.4
+
+            This method now considers if obj is part of the dm for permissions and considers it may be a user installed app.
+
         Parameters
         -----------
         obj: :class:`User`
-            The user to check permissions for. This parameter is ignored
-            but kept for compatibility with other ``permissions_for`` methods.
+            The user to check permissions for.
 
         Returns
         --------
         :class:`Permissions`
             The resolved permissions.
         """
-        return Permissions._dm_permissions()
+        base = Permissions._dm_permissions()
+
+        if not obj in self.recipients:
+            if obj == self.me:
+                base = Permissions._user_installed_permissions()
+            else:
+                base = Permissions.none()
+
+        return base
 
     def get_partial_message(self, message_id: int, /) -> PartialMessage:
         """Creates a :class:`PartialMessage` from the message ID.
@@ -3182,6 +3198,11 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
         - :attr:`~Permissions.manage_threads`: There are no threads in a DM.
         - :attr:`~Permissions.send_messages_in_threads`: There are no threads in a DM.
 
+        If the ``obj`` parameter is a user installed app, it also sets the following to ``False``:
+
+        - :attr:`~Permissions.read_messages`: A user installation cannot read your messages.
+        - :attr:`~Permissions.read_channel_history`: A user installation cannot read previously sent messages.
+
         This also checks the kick_members permission if the user is the owner.
 
         .. versionchanged:: 2.0
@@ -3191,6 +3212,10 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
         .. versionchanged:: 2.1
 
             Thread related permissions are now set to ``False``.
+
+        .. versionchanged:: 2.4
+
+            User installed apps are now accounted for.
 
         Parameters
         -----------
@@ -3208,6 +3233,12 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
 
         if obj.id == self.owner_id:
             base.kick_members = True
+
+        if not obj in self.recipients:
+            if obj == self.me:
+                base = Permissions._user_installed_permissions()
+            else:
+                base = Permissions.none()
 
         return base
 

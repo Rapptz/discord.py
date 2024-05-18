@@ -699,6 +699,7 @@ class GuildChannel:
         - Member overrides
         - Implicit permissions
         - Member timeout
+        - User installed app
 
         If a :class:`~discord.Role` is passed, then it checks the permissions
         someone with that role would have, which is essentially:
@@ -713,6 +714,9 @@ class GuildChannel:
 
         .. versionchanged:: 2.0
             ``obj`` parameter is now positional-only.
+
+        .. versionchanged:: 2.4
+            User installed apps are now taken into account.
 
         Parameters
         ----------
@@ -745,7 +749,10 @@ class GuildChannel:
             return Permissions.all()
 
         default = self.guild.default_role
-        base = Permissions(default.permissions.value)
+        if default:
+            base = Permissions(default.permissions.value)
+        else:
+            base = Permissions._user_installed_permissions()
 
         # Handle the role case first
         if isinstance(obj, Role):
