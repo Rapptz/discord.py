@@ -717,9 +717,9 @@ class GuildChannel:
 
         .. versionchanged:: 2.4
             User installed apps are now taken into account.
-            The permissions returned by a user installed app mirror the
+            The permissions returned for a user installed app mirrors the
             permissions Discord returns in :attr:`~discord.Interaction.app_permissions`,
-            though it is recommended to use that instead.
+            though it is recommended to use that attribute instead.
 
         Parameters
         ----------
