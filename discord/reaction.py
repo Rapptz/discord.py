@@ -223,7 +223,7 @@ class Reaction:
             For pagination, reactions are sorted by member.
         type: Optional[:class:`ReactionType`]
             The type of reaction to return users from.
-            If not provided, returns users of reactions with type ``normal``.
+            If not provided, Discord only returns users of reactions with type ``normal``.
 
             .. versionadded:: 2.4
 
@@ -249,9 +249,6 @@ class Reaction:
         if limit is None:
             limit = self.count
 
-        if type is None:
-            type = ReactionType.normal
-
         while limit > 0:
             retrieve = min(limit, 100)
 
@@ -261,7 +258,12 @@ class Reaction:
             after_id = after.id if after else None
 
             data = await state.http.get_reaction_users(
-                message.channel.id, message.id, emoji, retrieve, after=after_id, type=type.value
+                message.channel.id,
+                message.id,
+                emoji,
+                retrieve,
+                after=after_id,
+                type=type.value if type is not None else None,
             )
 
             if data:

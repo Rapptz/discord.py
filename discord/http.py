@@ -953,10 +953,13 @@ class HTTPClient:
 
         params: Dict[str, Any] = {
             'limit': limit,
-            'type': type,
         }
         if after:
             params['after'] = after
+
+        if type is not None:
+            params['type'] = type
+
         return self.request(r, params=params)
 
     def clear_reactions(self, channel_id: Snowflake, message_id: Snowflake) -> Response[None]:
