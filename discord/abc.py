@@ -752,7 +752,7 @@ class GuildChannel:
         if default:
             base = Permissions(default.permissions.value)
         else:
-            base = Permissions._user_installed_permissions()
+            base = Permissions._user_installed_permissions(in_guild=True)
 
         # Handle the role case first
         if isinstance(obj, Role):

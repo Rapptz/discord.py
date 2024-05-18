@@ -209,16 +209,16 @@ class Permissions(BaseFlags):
         return base
 
     @classmethod
-    def _user_installed_permissions(cls) -> Self:
-        base = cls.text()
-        base.read_messages = False
-        base.send_tts_messages = False
-        base.manage_messages = False
-        base.create_private_threads = False
-        base.create_public_threads = False
-        base.manage_threads = False
-        base.send_messages_in_threads = False
-        base.read_message_history = False
+    def _user_installed_permissions(cls, *, in_guild: bool) -> Self:
+        base = cls.none()
+        base.send_messages = True
+        base.attach_files = True
+        base.embed_links = True
+        base.send_voice_messages = True
+        if in_guild:
+            base.read_messages = True
+            base.send_tts_messages = True
+            base.send_messages_in_threads = True
         return base
 
     @classmethod

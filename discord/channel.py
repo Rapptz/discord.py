@@ -3010,8 +3010,8 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
 
         If the ``obj`` parameter is a user installed app, it also sets the following to ``False``:
         
-        - :attr:`~Permissions.read_messages`: A user installation cannot read your messages.
-        - :attr:`~Permissions.read_channel_history`: A user installation cannot read previously sent messages.
+        - :attr:`~Permissions.read_messages`: A user installated app cannot read your messages.
+        - :attr:`~Permissions.read_channel_history`: A user installed app cannot read previously sent messages.
 
         .. versionchanged:: 2.0
 
@@ -3039,7 +3039,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
 
         if not obj in self.recipients:
             if obj == self.me:
-                base = Permissions._user_installed_permissions()
+                base = Permissions._user_installed_permissions(in_guild=False)
             else:
                 base = Permissions.none()
 
@@ -3236,7 +3236,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
 
         if not obj in self.recipients:
             if obj == self.me:
-                base = Permissions._user_installed_permissions()
+                base = Permissions._user_installed_permissions(in_guild=False)
             else:
                 base = Permissions.none()
 
