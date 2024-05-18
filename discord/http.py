@@ -1318,9 +1318,11 @@ class HTTPClient:
         emoji: str,
         limit: int,
         after: Optional[Snowflake] = None,
+        type: message.ReactionType = 0,
     ) -> Response[List[user.User]]:
         params: Dict[str, Any] = {
             'limit': limit,
+            'type': type,
         }
         if after:
             params['after'] = after
