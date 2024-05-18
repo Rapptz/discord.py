@@ -78,8 +78,8 @@ class AppInstallationType:
     def merge(self, other: AppInstallationType) -> AppInstallationType:
         # Merging is similar to AllowedMentions where `self` is the base
         # and the `other` is the override preference
-        guild = self.guild if other.guild is None else other.guild
-        user = self.user if other.user is None else other.user
+        guild = self._guild if other._guild is None else other._guild
+        user = self._user if other._user is None else other._user
         return AppInstallationType(guild=guild, user=user)
 
     def _is_unset(self) -> bool:
@@ -170,9 +170,9 @@ class AppCommandContext:
         self._private_channel = bool(value)
 
     def merge(self, other: AppCommandContext) -> AppCommandContext:
-        guild = self.guild if other.guild is None else other.guild
-        dm_channel = self.dm_channel if other.dm_channel is None else other.dm_channel
-        private_channel = self.private_channel if other.private_channel is None else other.private_channel
+        guild = self._guild if other._guild is None else other._guild
+        dm_channel = self._dm_channel if other._dm_channel is None else other._dm_channel
+        private_channel = self._private_channel if other._private_channel is None else other._private_channel
         return AppCommandContext(guild=guild, dm_channel=dm_channel, private_channel=private_channel)
 
     def _is_unset(self) -> bool:
