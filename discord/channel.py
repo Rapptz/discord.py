@@ -3011,7 +3011,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
         If the ``obj`` parameter is a user installed app, it also sets the following to ``False``:
         
         - :attr:`~Permissions.read_messages`: A user installated app cannot read your messages.
-        - :attr:`~Permissions.read_channel_history`: A user installed app cannot read previously sent messages.
+        - :attr:`~Permissions.read_message_history`: A user installed app cannot read previously sent messages.
 
         .. versionchanged:: 2.0
 
@@ -3201,7 +3201,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable
         If the ``obj`` parameter is a user installed app, it also sets the following to ``False``:
 
         - :attr:`~Permissions.read_messages`: A user installation cannot read your messages.
-        - :attr:`~Permissions.read_channel_history`: A user installation cannot read previously sent messages.
+        - :attr:`~Permissions.read_message_history`: A user installation cannot read previously sent messages.
 
         This also checks the kick_members permission if the user is the owner.
 

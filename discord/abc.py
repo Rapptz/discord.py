@@ -749,10 +749,10 @@ class GuildChannel:
             return Permissions.all()
 
         default = self.guild.default_role
-        if default:
-            base = Permissions(default.permissions.value)
-        else:
-            base = Permissions._user_installed_permissions(in_guild=True)
+        if default is None:
+            return Permissions._user_installed_permissions(in_guild=True)
+
+        base = Permissions(default.permissions.value)
 
         # Handle the role case first
         if isinstance(obj, Role):
