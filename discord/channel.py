@@ -288,12 +288,10 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         return self._state._get_message(self.last_message_id) if self.last_message_id else None
 
     @overload
-    async def edit(self) -> Optional[TextChannel]:
-        ...
+    async def edit(self) -> Optional[TextChannel]: ...
 
     @overload
-    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
-        ...
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None: ...
 
     @overload
     async def edit(
@@ -311,8 +309,7 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
         default_thread_slowmode_delay: int = ...,
         type: ChannelType = ...,
         overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
-    ) -> TextChannel:
-        ...
+    ) -> TextChannel: ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[TextChannel]:
         """|coro|
@@ -1348,12 +1345,10 @@ class VoiceChannel(VocalGuildChannel):
         return await self._clone_impl({'bitrate': self.bitrate, 'user_limit': self.user_limit}, name=name, reason=reason)
 
     @overload
-    async def edit(self) -> None:
-        ...
+    async def edit(self) -> None: ...
 
     @overload
-    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
-        ...
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None: ...
 
     @overload
     async def edit(
@@ -1372,8 +1367,7 @@ class VoiceChannel(VocalGuildChannel):
         slowmode_delay: int = ...,
         status: Optional[str] = ...,
         reason: Optional[str] = ...,
-    ) -> VoiceChannel:
-        ...
+    ) -> VoiceChannel: ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[VoiceChannel]:
         """|coro|
@@ -1689,12 +1683,10 @@ class StageChannel(VocalGuildChannel):
         return StageInstance(guild=self.guild, state=self._state, data=data)
 
     @overload
-    async def edit(self) -> None:
-        ...
+    async def edit(self) -> None: ...
 
     @overload
-    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
-        ...
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None: ...
 
     @overload
     async def edit(
@@ -1712,8 +1704,7 @@ class StageChannel(VocalGuildChannel):
         video_quality_mode: VideoQualityMode = ...,
         slowmode_delay: int = ...,
         reason: Optional[str] = ...,
-    ) -> StageChannel:
-        ...
+    ) -> StageChannel: ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[StageChannel]:
         """|coro|
@@ -1873,12 +1864,10 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return await self._clone_impl({'nsfw': self.nsfw}, name=name, reason=reason)
 
     @overload
-    async def edit(self) -> None:
-        ...
+    async def edit(self) -> None: ...
 
     @overload
-    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
-        ...
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None: ...
 
     @overload
     async def edit(
@@ -1889,8 +1878,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         nsfw: bool = ...,
         overwrites: Mapping[OverwriteKeyT, PermissionOverwrite] = ...,
         reason: Optional[str] = ...,
-    ) -> CategoryChannel:
-        ...
+    ) -> CategoryChannel: ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[CategoryChannel]:
         """|coro|
@@ -2392,12 +2380,10 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         )
 
     @overload
-    async def edit(self) -> None:
-        ...
+    async def edit(self) -> None: ...
 
     @overload
-    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None:
-        ...
+    async def edit(self, *, position: int, reason: Optional[str] = ...) -> None: ...
 
     @overload
     async def edit(
@@ -2420,8 +2406,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         default_layout: ForumLayoutType = ...,
         default_sort_order: ForumOrderType = ...,
         require_tag: bool = ...,
-    ) -> ForumChannel:
-        ...
+    ) -> ForumChannel: ...
 
     async def edit(self, *, reason: Optional[str] = None, **options: Any) -> Optional[ForumChannel]:
         """|coro|
@@ -3009,7 +2994,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
         - :attr:`~Permissions.send_messages_in_threads`: There are no threads in a DM.
 
         If the ``obj`` parameter is a user installed app, it also sets the following to ``False``:
-        
+
         - :attr:`~Permissions.read_messages`: A user installated app cannot read your messages.
         - :attr:`~Permissions.read_message_history`: A user installed app cannot read previously sent messages.
 
