@@ -3009,7 +3009,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
         - :attr:`~Permissions.send_messages_in_threads`: There are no threads in a DM.
 
         If the ``obj`` parameter is a user installed app, it also sets the following to ``False``:
-        
+
         - :attr:`~Permissions.read_messages`: A user installated app cannot read your messages.
         - :attr:`~Permissions.read_message_history`: A user installed app cannot read previously sent messages.
 
