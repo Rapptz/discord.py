@@ -214,6 +214,7 @@ class Permissions(BaseFlags):
         base.send_messages = True
         base.attach_files = True
         base.embed_links = True
+        base.external_emojis = True
         base.send_voice_messages = True
         if in_guild:
             # Logically this is False but if not set to True,
