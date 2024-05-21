@@ -141,7 +141,7 @@ class Embed:
         This can be set during initialisation.
     timestamp: Optional[:class:`datetime.datetime`]
         The timestamp of the embed content. This is an aware datetime.
-        If a naive datetime is passed, it is converted to an aware
+        If a native datetime is passed, it is converted to an aware
         datetime with the local timezone.
     colour: Optional[Union[:class:`Colour`, :class:`int`]]
         The colour code of the embed. Aliased to ``color`` as well.
