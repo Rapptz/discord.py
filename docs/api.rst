@@ -1053,8 +1053,8 @@ Polls
 .. function:: on_poll_vote_add(user, answer)
               on_poll_vote_remove(user, answer)
 
-    Called when a :class:`Poll` gains or loses a vote. If the ``user`` or ``message``
-    are not cached then this event will not be called.
+    Called when a :class:`Poll` gains or loses a vote. If the ``user`` or ``answer``'s poll
+    parent message are not cached then this event will not be called.
 
     This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
 
@@ -1077,6 +1077,11 @@ Polls
     this is called regardless of the state of the internal user and message cache.
 
     This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
+
+    .. note::
+
+        If the poll allows multiple answers and the user removes or adds multiple votes, this
+        event will be called as many times as votes that are added or removed.
 
     .. versionadded:: 2.4
 
