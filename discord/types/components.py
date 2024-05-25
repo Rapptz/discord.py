@@ -49,6 +49,7 @@ class ButtonComponent(TypedDict):
     disabled: NotRequired[bool]
     emoji: NotRequired[PartialEmoji]
     label: NotRequired[str]
+    sku_id: NotRequired[str]
 
 
 class SelectOption(TypedDict):
