@@ -334,7 +334,10 @@ Enumerations
     .. attribute:: link
 
         Represents a link button.
+    .. attribute:: premium
 
+        Represents a gradient button denoting that buying a SKU is
+        required to perform this action.
     .. attribute:: blurple
 
         An alias for :attr:`primary`.
@@ -353,6 +356,9 @@ Enumerations
     .. attribute:: url
 
         An alias for :attr:`link`.
+    .. attribute:: gradient
+
+        An alias for :attr:`premium`
 
 .. class:: TextStyle
 
