@@ -260,6 +260,7 @@ def button(
     style: ButtonStyle = ButtonStyle.secondary,
     emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
     row: Optional[int] = None,
+    sku_id: Optional[int] = None,
 ) -> Callable[[ItemCallbackType[V, Button[V]]], Button[V]]:
     """A decorator that attaches a button to a component.
 
@@ -269,11 +270,11 @@ def button(
 
     .. note::
 
-        Buttons with a URL or SKU cannot be created with this function.
-        Consider creating a :class:`Button` manually instead. This is
-        because buttons with a URL do not have a callback associated
-        with them since Discord does not do any processing with it, and
-        buttons with a SKU just redirect you to the buying page.
+        Buttons with a URL cannot be created with this function.
+        Consider creating a :class:`Button` manually instead.
+        This is because buttons with a URL do not have a callback
+        associated with them since Discord does not do any processing
+        with it.
 
     Parameters
     ------------
@@ -312,6 +313,7 @@ def button(
             'label': label,
             'emoji': emoji,
             'row': row,
+            'sku_id': sku_id,
         }
         return func
 
