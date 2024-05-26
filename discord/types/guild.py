@@ -125,7 +125,7 @@ class Guild(UnavailableGuild, _GuildMedia):
     max_members: NotRequired[int]
     premium_subscription_count: NotRequired[int]
     max_video_channel_users: NotRequired[int]
-    application_command_counts: ApplicationCommandCounts
+    # application_command_counts: ApplicationCommandCounts
     hub_type: Optional[Literal[0, 1, 2]]
 
 

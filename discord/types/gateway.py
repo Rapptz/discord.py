@@ -572,7 +572,10 @@ class PassiveUpdateEvent(TypedDict):
 
 class GuildApplicationCommandIndexUpdateEvent(TypedDict):
     guild_id: Snowflake
-    application_command_counts: ApplicationCommandCounts
+    # All these fields are dead
+    # application_command_counts: ApplicationCommandCounts
+    # bot_users: List[PartialUser]
+    # version: Snowflake
 
 
 class UserNoteUpdateEvent(TypedDict):

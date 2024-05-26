@@ -54,7 +54,7 @@ from math import ceil
 from discord_protos import UserSettingsType
 
 from .errors import ClientException, InvalidData, NotFound
-from .guild import ApplicationCommandCounts, Guild
+from .guild import Guild
 from .activity import BaseActivity, create_activity, Session
 from .user import User, ClientUser, Note
 from .emoji import Emoji
@@ -2716,12 +2716,7 @@ class ConnectionState:
             )
             return
 
-        counts = data['application_command_counts']
-        old_counts = guild.application_command_counts or ApplicationCommandCounts(0, 0, 0)
-        guild.application_command_counts = new_counts = ApplicationCommandCounts(
-            counts.get(1, 0), counts.get(2, 0), counts.get(3, 0)
-        )
-        self.dispatch('application_command_counts_update', guild, old_counts, new_counts)
+        self.dispatch('application_command_index_update', guild)
 
     def parse_guild_emojis_update(self, data: gw.GuildEmojisUpdateEvent) -> None:
         guild = self._get_guild(int(data['guild_id']))

@@ -154,14 +154,7 @@ __all__ = (
     'Guild',
     'UserGuild',
     'BanEntry',
-    'ApplicationCommandCounts',
 )
-
-
-class ApplicationCommandCounts(NamedTuple):
-    chat_input: int
-    user: int
-    message: int
 
 
 class BanEntry(NamedTuple):
@@ -338,6 +331,10 @@ class Guild(Hashable):
 
             Returns the guild's name.
 
+    .. versionchanged:: 2.1
+
+        Removed ``application_command_counts`` as it is no longer provided by Discord.
+
     Attributes
     ----------
     name: :class:`str`
@@ -408,10 +405,6 @@ class Guild(Hashable):
 
         .. versionchanged:: 2.0
             This field is now an enum instead of an :class:`int`.
-    application_command_counts: Optional[:class:`ApplicationCommandCounts`]
-        A namedtuple representing the number of application commands in the guild, separated by type.
-
-        .. versionadded:: 2.0
     approximate_member_count: Optional[:class:`int`]
         The approximate number of members in the guild. This is ``None`` unless the guild is obtained
         using :meth:`Client.fetch_guild` with ``with_counts=True``.
@@ -489,7 +482,6 @@ class Guild(Hashable):
         '_member_list',
         'keywords',
         'primary_category_id',
-        'application_command_counts',
         'hub_type',
         '_joined_at',
         '_cs_joined',
@@ -514,7 +506,6 @@ class Guild(Hashable):
         self._stage_instances: Dict[int, StageInstance] = {}
         self._scheduled_events: Dict[int, ScheduledEvent] = {}
         self._state: ConnectionState = state
-        self.application_command_counts: Optional[ApplicationCommandCounts] = None
         self._member_count: Optional[int] = None
         self._presence_count: Optional[int] = None
         self._large: Optional[bool] = None
@@ -702,10 +693,6 @@ class Guild(Hashable):
             self._large = guild['large']  # type: ignore
         except KeyError:
             pass
-
-        counts = guild.get('application_command_counts')
-        if counts:
-            self.application_command_counts = ApplicationCommandCounts(counts.get(1, 0), counts.get(2, 0), counts.get(3, 0))
 
         for vs in guild.get('voice_states', []):
             self._update_voice_state(vs, int(vs['channel_id']))

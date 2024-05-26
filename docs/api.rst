@@ -817,18 +817,14 @@ Guilds
     :param after: A list of stickers after the update.
     :type after: Sequence[:class:`GuildSticker`]
 
-.. function:: on_application_command_counts_update(guild, before, after)
+.. function:: on_application_command_index_update(guild)
 
-    Called when a :class:`Guild`\'s application command counts are updated.
+    Called when a :class:`Guild`\'s application command index is updated.
 
-    .. versionadded:: 2.0
+    .. versionadded:: 2.1
 
     :param guild: The guild who got their application command counts updated.
     :type guild: :class:`Guild`
-    :param before: A namedtuple of application command counts before the update.
-    :type before: :class:`ApplicationCommandCounts`
-    :param after: A namedtuple of application command counts after the update.
-    :type after: :class:`ApplicationCommandCounts`
 
 .. function:: on_audit_log_entry_create(entry)
 
@@ -7345,28 +7341,6 @@ Guild
         The :class:`User` that was banned.
 
         :type: :class:`User`
-
-.. class:: ApplicationCommandCounts
-
-    A namedtuple which represents the application command counts for a guild.
-
-    .. attribute:: chat_input
-
-        The number of chat input (slash) commands.
-
-        :type: :class:`int`
-
-    .. attribute:: user
-
-        The number of user commands.
-
-        :type: :class:`int`
-
-    .. attribute:: message
-
-        The number of message commands.
-
-        :type: :class:`int`
 
 Role
 ~~~~~
