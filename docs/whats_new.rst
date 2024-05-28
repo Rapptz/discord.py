@@ -28,14 +28,14 @@ New Features
     - Add :attr:`Role.flags`.
 - Add support for event creation permissions (:issue:`9501`).
     - Add :meth:`Permissions.events`.
-    - Add :attr:`Permissions.create_events`
+    - Add :attr:`Permissions.create_events`.
 - Add shortcut for :attr:`CategoryChannel.forums`.
 - Add fallback to :attr:`Interaction.user`'s guild in :attr:`Interaction.guild`.
 - Add encooder options to :meth:`VoiceClient.play` (:issue:`9527`).
     - ``application``, ``bitrate``, ``fec``, ``expected_packet_loss``, ``bandwidth`` and ``signal_type`` key-word arguments were added.
 - Add support for Team Member Roles.
     - Added :class:`TeamMemberRole`.
-    - Added :attr:`TeamMember.role`
+    - Added :attr:`TeamMember.role`.
     - Updated :attr:`Bot.owner_ids <.ext.commands.Bot.owner_ids>` to account for team roles. Team owners or developers are considered Bot owners.
 - Add support for a given integration type in audit logs.
     - :attr:`AuditLogEntry.extra` will have a ``integration_type`` attribute if the action was a ``kick`` or ``member_role_update``.
@@ -73,7 +73,7 @@ New Features
     - Added :attr:`Interaction.entitlements`.
     - Added :meth:`InteractionResponse.require_premium`.
     - Added :class:`SKU`.
-    - Added :class:`Entitlement`
+    - Added :class:`Entitlement`.
     - Add support for one time purchase (:issue:`9803`).
 - Add support for editing application info (:issue:`9610`).
     - Added :attr:`AppInfo.interactions_endpoint_url`.
@@ -92,7 +92,7 @@ New Features
 - Add support for guild incident message types (:issue:`9686`).
 - Add :attr:`Locale.latin_american_spanish` (:issue:`9689`).
 - Add handling for clearing outstanding chunk requests when receiving a gateway READY event.
-    - See (:issue:`9571`)
+    - See (:issue:`9571`).
 - Add support for setting voice channel status (:issue:`9603`).
 - Add a shard connect timeout parameter to :class:`AutoShardedClient`.
 - Add support for guild incidents (:issue:`9590`).
