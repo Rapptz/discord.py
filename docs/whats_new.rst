@@ -98,7 +98,7 @@ New Features
 - Add support for guild incidents (:issue:`9590`).
     - Updated :meth:`Guild.edit` with ``invites_disabled_until`` and ``dms_disabled_until`` parameters.
     - Added :attr:`Guild.invites_paused_until`.
-    - Added :attr:`Guild.dms_disabled_until`.
+    - Added :attr:`Guild.dms_paused_until`.
     - Added :meth:`Guild.invites_paused`.
     - Added :meth:`Guild.dms_paused`.
 - Add support for avatar decorations (:issue:`9343`).
@@ -110,7 +110,7 @@ New Features
 - Add support for user-installable apps (:issue:`9760`).
     - Added :attr:`app_commands.Command.allowed_contexts`.
     - Added :attr:`app_commands.Command.allowed_installs`.
-    - Added :attr:`app_commands.Command.allowed_mentions`.
+    - Added :attr:`app_commands.AppCommand.allowed_contexts`.
     - Added :attr:`app_commands.AppCommand.allowed_installs`.
     - Added :attr:`app_commands.ContextMenu.allowed_contexts`.
     - Added :attr:`app_commands.ContextMenu.allowed_installs`.
@@ -124,8 +124,8 @@ New Features
     - Added :class:`app_commands.AppCommandContext`.
     - Updated :class:`app_commands.CommandTree` with new allowed installs and contexts parameters.
     - Added :attr:`DMChannel.recipients` and updated :attr:`DMChannel.recipient` to be a property.
-    - Added :class:`AppCommandContext`.
-    - Added :class:`AppInstallationType`.
+    - Added :class:`app_commands.AppCommandContext`.
+    - Added :class:`app_commands.AppInstallationType`.
     - Added :attr:`Interaction.context`.
     - Added :meth:`Interaction.is_guild_integration`.
     - Added :meth:`Interaction.is_user_integration`.
@@ -133,17 +133,17 @@ New Features
 - Add :attr:`AppInfo.approximate_guild_count` (:issue:`9811`).
 - Add support for :attr:`Message.interaction_metadata` (:issue:`9817`).
 - Add support for Polls (:issue:`9759`).
-    - Add :class:`Poll`.
-    - Add :class:`PollAnswer`.
-    - Add :class:`PollMedia`.
+    - Added :class:`Poll`.
+    - Added :class:`PollAnswer`.
+    - Added :class:`PollMedia`.
     - Updated :meth:`abc.Messageable.send` with the ``poll`` keyword-only argument.
     - Updated :meth:`Context.reply <.ext.commands.Context.reply>` and :meth:`Message.reply` with the ``poll`` keyword-only argument.
     - Updated :meth:`InteractionResponse.send_message` with the ``poll`` keyword-only argument.
     - Updated :meth:`SyncWebhook.send` and :meth:`Webhook.send` with the ``poll`` keyword-only argument.
-    - Add :attr:`Intents.polls`, :attr:`Intents.guild_polls` and :attr:`Intents.dm_polls` intents.
-    - Add :attr:`Permssions.send_poll` and :attr:`Permssions.create_polls` permssions.
-    - Add :meth:`Message.end_poll`.
-    - Add :class:`RawPollVoteActionEvent` raw model.
+    - Added :attr:`Intents.polls`, :attr:`Intents.guild_polls` and :attr:`Intents.dm_polls` intents.
+    - Added :attr:`Permissions.send_polls` and :attr:`Permissions.create_polls` permssions.
+    - Added :meth:`Message.end_poll`.
+    - Added :class:`RawPollVoteActionEvent` raw model.
 - Add support for differing :class:`Invite` types (:issue:`9682`).
 - Add support for reaction types to raw and non-raw models (:issue:`9836`).
 
