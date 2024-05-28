@@ -146,8 +146,6 @@ New Features
     - Added :class:`RawPollVoteActionEvent` raw model.
 - Add support for differing :class:`Invite` types (:issue:`9682`).
 - Add support for reaction types to raw and non-raw models (:issue:`9836`).
-
-
 - |tasks| Add ``name`` parameter to :meth:`~ext.tasks.loop` to name the internal :class:`asyncio.Task`.
 - |commands| Add fallback behaviour to :class:`~ext.commands.CurrentGuild`.
 - |commands| Add logging for errors that occur during :meth:`~ext.commands.Cog.cog_unload`.
