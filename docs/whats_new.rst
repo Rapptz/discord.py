@@ -147,6 +147,7 @@ New Features
     - Added :meth:`Message.end_poll`.
     - Added :class:`RawPollVoteActionEvent` raw model.
 - Add support for differing :class:`Invite` types (:issue:`9682`).
+- Improve ``__repr__`` of :class:`SyncWebhook` and :class:`Webhook` (:issue:`9764`).
 - Add support for reaction types to raw and non-raw models (:issue:`9836`).
 - |tasks| Add ``name`` parameter to :meth:`~ext.tasks.loop` to name the internal :class:`asyncio.Task`.
 - |commands| Add fallback behaviour to :class:`~ext.commands.CurrentGuild`.
