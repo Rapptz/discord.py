@@ -23,12 +23,14 @@ New Features
 - Add support for :attr:`RawReactionActionEvent.message_author_id`.
 - Add support for :attr:`AuditLogAction.creator_monetization_request_created` and :attr:`AuditLogAction.creator_monetization_terms_accepted`.
 - Add support for :class:`AttachmentFlags` (:issue:`9486`).
-    - Add :attr:`Attachment.flags`.
+    - Added :attr:`Attachment.flags`.
 - Add support for :class:`RoleFlags` (:issue:`9485`).
-    - Add :attr:`Role.flags`.
+    - Added :attr:`Role.flags`.
+- Add support for media channels.
+    - Added :attr:`ChannelType.media`.
 - Add support for event creation permissions (:issue:`9501`).
-    - Add :meth:`Permissions.events`.
-    - Add :attr:`Permissions.create_events`.
+    - Added :meth:`Permissions.events`.
+    - Added :attr:`Permissions.create_events`.
 - Add shortcut for :attr:`CategoryChannel.forums`.
 - Add fallback to :attr:`Interaction.user`'s guild in :attr:`Interaction.guild`.
 - Add encooder options to :meth:`VoiceClient.play` (:issue:`9527`).
