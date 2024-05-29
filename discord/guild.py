@@ -4480,6 +4480,9 @@ class Guild(Hashable):
             The safety information of the members.
         """
 
+        if limit is MISSING:
+            limit = self.member_count or self.approximate_member_count or 250
+
         while limit > 0:
             retrieve = min(limit, 250)
 

@@ -2070,14 +2070,14 @@ class HTTPClient:
         if quarantined is not MISSING:
             safety_signals['automod_quarantined_username'] = quarantined
 
-        if timed_out is not MISSING:
+        if timed_out is True:
             safety_signals['communication_disabled_until'] = {
-                'range': {'gte': gte}
+                'range': {'gte': int(gte)}
             }
 
-        if unusual_dms is not MISSING:
+        if unusual_dms is True:
             safety_signals['unusual_dm_activity_until'] = {
-                'range': {'gte': gte}
+                'range': {'gte': int(gte)}
             }
 
         if invites is not MISSING:
@@ -2088,15 +2088,18 @@ class HTTPClient:
                 ]
             }
 
-        if join_types:
+        if join_types is not MISSING:
             payload['and_query']['join_source_type'] = {
                 'or_query': join_types
             }
 
-        if usernames:
+        if usernames is not MISSING:
             payload['and_query']['usernames'] = {
                 'or_query': list(usernames)
             }
+
+        if len(safety_signals.values()) > 0:
+            payload['or_query']['safety_signals'] = safety_signals
 
         return self.request(Route('POST', '/guilds/{guild_id}/members-search', guild_id=guild_id), json=payload)
 
