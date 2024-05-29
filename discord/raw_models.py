@@ -27,7 +27,7 @@ from __future__ import annotations
 import datetime
 from typing import TYPE_CHECKING, Literal, Optional, Set, List, Tuple, Union
 
-from .enums import ChannelType, try_enum
+from .enums import ChannelType, try_enum, ReactionType
 from .utils import _get_as_snowflake
 from .app_commands import AppCommandPermissions
 from .colour import Colour
@@ -221,6 +221,10 @@ class RawReactionActionEvent(_RawReprMixin):
         and if ``event_type`` is ``REACTION_ADD``.
 
         .. versionadded:: 2.0
+    type: :class:`ReactionType`
+        The type of the reaction.
+
+        .. versionadded:: 2.4
     """
 
     __slots__ = (
@@ -234,6 +238,7 @@ class RawReactionActionEvent(_RawReprMixin):
         'message_author_id',
         'burst',
         'burst_colours',
+        'type',
     )
 
     def __init__(self, data: ReactionActionEvent, emoji: PartialEmoji, event_type: ReactionActionType) -> None:
@@ -246,6 +251,7 @@ class RawReactionActionEvent(_RawReprMixin):
         self.message_author_id: Optional[int] = _get_as_snowflake(data, 'message_author_id')
         self.burst: bool = data.get('burst', False)
         self.burst_colours: List[Colour] = [Colour.from_str(c) for c in data.get('burst_colours', [])]
+        self.type: ReactionType = try_enum(ReactionType, data['type'])
 
         try:
             self.guild_id: Optional[int] = int(data['guild_id'])

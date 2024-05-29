@@ -824,6 +824,17 @@ class PollLayoutType(Enum):
     default = 1
 
 
+class InviteType(Enum):
+    guild = 0
+    group_dm = 1
+    friend = 2
+
+
+class ReactionType(Enum):
+    normal = 0
+    burst = 1
+
+
 class MemberJoinType(Enum):
     unknown = 0
     bot = 1

@@ -940,6 +940,7 @@ class HTTPClient:
         emoji: str,
         limit: int,
         after: Optional[Snowflake] = None,
+        type: Optional[message.ReactionType] = None,
     ) -> Response[List[user.User]]:
         r = Route(
             'GET',
@@ -954,6 +955,10 @@ class HTTPClient:
         }
         if after:
             params['after'] = after
+
+        if type is not None:
+            params['type'] = type
+
         return self.request(r, params=params)
 
     def clear_reactions(self, channel_id: Snowflake, message_id: Snowflake) -> Response[None]:

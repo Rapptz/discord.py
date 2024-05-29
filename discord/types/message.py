@@ -57,6 +57,9 @@ class ReactionCountDetails(TypedDict):
     normal: int
 
 
+ReactionType = Literal[0, 1]
+
+
 class Reaction(TypedDict):
     count: int
     me: bool
