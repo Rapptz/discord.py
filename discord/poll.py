@@ -446,7 +446,12 @@ class Poll:
 
     @property
     def created_at(self) -> Optional[datetime.datetime]:
-        """:class:`datetime.datetime`: Returns the poll's creation time, or ``None`` if user-created."""
+        """Optional[:class:`datetime.datetime`]: Returns the poll's creation time.
+
+        .. note::
+
+            This will **always** be ``None`` for stateless polls.
+        """
 
         if not self._message:
             return
