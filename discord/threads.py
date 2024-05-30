@@ -123,8 +123,7 @@ class Thread(Messageable, Hashable):
         The user's ID that archived this thread.
 
         .. note::
-            This field has been removed from the :ddocs:`Thread Metadata Object <resources/channel#thread-metadata-object>`.
-            The ``archiver_id``, therefore, will always be ``None`` and can only be obtained via the audit log now.
+            Due to an API change, the ``archiver_id`` will always be ``None`` and can only be obtained via the audit log now.
 
     auto_archive_duration: :class:`int`
         The duration in minutes until the thread is automatically hidden from the channel list.
