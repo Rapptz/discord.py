@@ -185,6 +185,7 @@ Bug Fixes
 - |commands| Fix nested :class:`~ext.commands.HybridGroup`'s inserting manual app commands.
 - |commands| Fix an internal issue with an obscured reference.
 - |commands| Fix an issue where :class:`~ext.commands.HybridGroup` wrapped instances would be out of sync.
+- |commands| Fix :class:`~ext.commands.HelpCommand` defined checks not carrying over during copy (:issue:`9843`).
 
 Miscellaneous
 ~~~~~~~~~~~~~~
