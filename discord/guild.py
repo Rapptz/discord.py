@@ -605,18 +605,11 @@ class Guild(Hashable):
         return member, before, after
 
     def _add_role(self, role: Role, /) -> None:
-        for r in self._roles.values():
-            r.position += not r.is_default()
-
         self._roles[role.id] = role
 
     def _remove_role(self, role_id: int, /) -> Role:
-        role = self._roles.pop(role_id)
-
-        for r in self._roles.values():
-            r.position -= r.position > role.position
-
-        return role
+        # This raises KeyError if it fails..
+        return self._roles.pop(role_id)
 
     @classmethod
     def _create_unavailable(cls, *, state: ConnectionState, guild_id: int) -> Guild:
