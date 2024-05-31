@@ -79,6 +79,8 @@ class Button(Item[V]):
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     sku_id: Optional[:class:`int`]
         The SKU ID this button sends you to. Can't be combined with ``url``.
+
+        .. versionadded:: 2.4
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
@@ -212,7 +214,10 @@ class Button(Item[V]):
 
     @property
     def sku_id(self) -> Optional[int]:
-        """Optional[:class:`int`]: The SKU ID this button sends you to."""
+        """Optional[:class:`int`]: The SKU ID this button sends you to.
+
+        .. versionadded:: 2.4
+        """
         return self._underlying.sku_id
 
     @sku_id.setter
@@ -298,6 +303,10 @@ def button(
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    sku_id: Optional[:class:`int`]
+        The SKU ID this button sends you to. Can't be combined with ``url``.
+
+        .. versionadded:: 2.4
     """
 
     def decorator(func: ItemCallbackType[V, Button[V]]) -> ItemCallbackType[V, Button[V]]:
