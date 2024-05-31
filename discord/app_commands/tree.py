@@ -307,10 +307,24 @@ class CommandTree(Generic[ClientT]):
         guild: Optional[:class:`~discord.abc.Snowflake`]
             The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
+
+            .. note ::
+
+                Due to a Discord limitation, this keyword argument cannot be used in conjunction with
+                contexts (e.g. :func:`.app_commands.allowed_contexts`) or installation types
+                (e.g. :func:`.app_commands.allowed_installs`).
+
         guilds: List[:class:`~discord.abc.Snowflake`]
             The list of guilds to add the command to. This cannot be mixed
             with the ``guild`` parameter. If no guilds are given at all
             then it becomes a global command instead.
+
+            .. note ::
+
+                Due to a Discord limitation, this keyword argument cannot be used in conjunction with
+                contexts (e.g. :func:`.app_commands.allowed_contexts`) or installation types
+                (e.g. :func:`.app_commands.allowed_installs`).
+
         override: :class:`bool`
             Whether to override a command with the same name. If ``False``
             an exception is raised. Default is ``False``.
@@ -877,10 +891,24 @@ class CommandTree(Generic[ClientT]):
         guild: Optional[:class:`~discord.abc.Snowflake`]
             The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
+
+            .. note ::
+
+                Due to a Discord limitation, this keyword argument cannot be used in conjunction with
+                contexts (e.g. :func:`.app_commands.allowed_contexts`) or installation types
+                (e.g. :func:`.app_commands.allowed_installs`).
+
         guilds: List[:class:`~discord.abc.Snowflake`]
             The list of guilds to add the command to. This cannot be mixed
             with the ``guild`` parameter. If no guilds are given at all
             then it becomes a global command instead.
+
+            .. note ::
+
+                Due to a Discord limitation, this keyword argument cannot be used in conjunction with
+                contexts (e.g. :func:`.app_commands.allowed_contexts`) or installation types
+                (e.g. :func:`.app_commands.allowed_installs`).
+
         auto_locale_strings: :class:`bool`
             If this is set to ``True``, then all translatable strings will implicitly
             be wrapped into :class:`locale_str` rather than :class:`str`. This could
@@ -960,10 +988,24 @@ class CommandTree(Generic[ClientT]):
         guild: Optional[:class:`~discord.abc.Snowflake`]
             The guild to add the command to. If not given or ``None`` then it
             becomes a global command instead.
+
+            .. note ::
+
+                Due to a Discord limitation, this keyword argument cannot be used in conjunction with
+                contexts (e.g. :func:`.app_commands.allowed_contexts`) or installation types
+                (e.g. :func:`.app_commands.allowed_installs`).
+
         guilds: List[:class:`~discord.abc.Snowflake`]
             The list of guilds to add the command to. This cannot be mixed
             with the ``guild`` parameter. If no guilds are given at all
             then it becomes a global command instead.
+
+            .. note ::
+
+                Due to a Discord limitation, this keyword argument cannot be used in conjunction with
+                contexts (e.g. :func:`.app_commands.allowed_contexts`) or installation types
+                (e.g. :func:`.app_commands.allowed_installs`).
+
         auto_locale_strings: :class:`bool`
             If this is set to ``True``, then all translatable strings will implicitly
             be wrapped into :class:`locale_str` rather than :class:`str`. This could
