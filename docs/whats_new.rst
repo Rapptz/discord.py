@@ -108,7 +108,7 @@ New Features
 - Add support for updating :class:`ClientUser` banners (:issue:`9752`).
 - Add support for bulk banning members.
     - Added :meth:`Guild.bulk_ban`.
-- Add :attr:`Permissions.view_creator_monetization_analytics` permssion (:issue:`9762`).
+- Add :attr:`Permissions.view_creator_monetization_analytics` permission (:issue:`9762`).
 - Add support for user-installable apps (:issue:`9760`).
     - Added :attr:`app_commands.Command.allowed_contexts`.
     - Added :attr:`app_commands.Command.allowed_installs`.
@@ -143,7 +143,7 @@ New Features
     - Updated :meth:`InteractionResponse.send_message` with the ``poll`` keyword-only argument.
     - Updated :meth:`SyncWebhook.send` and :meth:`Webhook.send` with the ``poll`` keyword-only argument.
     - Added :attr:`Intents.polls`, :attr:`Intents.guild_polls` and :attr:`Intents.dm_polls` intents.
-    - Added :attr:`Permissions.send_polls` and :attr:`Permissions.create_polls` permssions.
+    - Added :attr:`Permissions.send_polls` and :attr:`Permissions.create_polls` permissions.
     - Added :meth:`Message.end_poll`.
     - Added :class:`RawPollVoteActionEvent` raw model.
 - Add support for differing :class:`Invite` types (:issue:`9682`).
