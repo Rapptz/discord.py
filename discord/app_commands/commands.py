@@ -2372,6 +2372,12 @@ def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
         with the :meth:`CommandTree.command` or :meth:`CommandTree.context_menu` decorator
         then this must go below that decorator.
 
+    .. note ::
+
+        Due to a Discord limitation, this decorator cannot be used in conjunction with
+        contexts (e.g. :func:`.app_commands.allowed_contexts`) or installation types
+        (e.g. :func:`.app_commands.allowed_installs`).
+
     Example:
 
     .. code-block:: python3
