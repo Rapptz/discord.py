@@ -338,6 +338,8 @@ Enumerations
 
         Represents a gradient button denoting that buying a SKU is
         required to perform this action.
+
+        .. versionadded:: 2.4
     .. attribute:: blurple
 
         An alias for :attr:`primary`.
@@ -356,9 +358,6 @@ Enumerations
     .. attribute:: url
 
         An alias for :attr:`link`.
-    .. attribute:: gradient
-
-        An alias for :attr:`premium`
 
 .. class:: TextStyle
 
