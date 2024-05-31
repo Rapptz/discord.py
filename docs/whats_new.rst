@@ -181,6 +181,7 @@ Bug Fixes
 - Fix handling of an enum in :meth:`AutoModRule.edit` (:issue:`9798`).
 - Fix handling of :meth:`Client.close` within :meth:`Client.__aexit__` (:issue:`9769`).
 - Fix channel deletion not evicting related threads from cache (:issue:`9796`).
+- Fix bug with cache superfluously incrementing role positions (:issue:`9853`).
 - |commands| Fix localization support for :class:`~ext.commands.HybridGroup` fallback.
 - |commands| Fix nested :class:`~ext.commands.HybridGroup`'s inserting manual app commands.
 - |commands| Fix an internal issue with an obscured reference.
