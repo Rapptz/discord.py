@@ -170,6 +170,10 @@ class Button(Component):
         The label of the button, if any.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji of the button, if available.
+    sku_id: Optional[:class:`int`]
+        The SKU ID this button sends you to, if available.
+
+        .. versionadded:: 2.4
     """
 
     __slots__: Tuple[str, ...] = (
