@@ -3019,13 +3019,13 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
         Parameters
         -----------
         obj: :class:`User`
-            The user to check permissions for.
+            The user to check permissions for. This parameter is ignored
+            but kept for compatibility with other ``permissions_for`` methods.
 
         Returns
         --------
         :class:`Permissions`
-            The user to check permissions for. This parameter is ignored
-            but kept for compatibility with other ``permissions_for`` methods.
+        The resolved permissions.
         """
         return Permissions._dm_permissions()
 
