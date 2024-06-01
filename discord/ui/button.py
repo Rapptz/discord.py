@@ -77,6 +77,10 @@ class Button(Item[V]):
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    sku_id: Optional[:class:`int`]
+        The SKU ID this button sends you to. Can't be combined with ``url``.
+
+        .. versionadded:: 2.4
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
@@ -86,6 +90,7 @@ class Button(Item[V]):
         'label',
         'emoji',
         'row',
+        'sku_id',
     )
 
     def __init__(
@@ -98,6 +103,7 @@ class Button(Item[V]):
         url: Optional[str] = None,
         emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
         row: Optional[int] = None,
+        sku_id: Optional[int] = None,
     ):
         super().__init__()
         if custom_id is not None and url is not None:
@@ -112,6 +118,9 @@ class Button(Item[V]):
 
         if url is not None:
             style = ButtonStyle.link
+
+        if sku_id is not None:
+            style = ButtonStyle.premium
 
         if emoji is not None:
             if isinstance(emoji, str):
@@ -128,6 +137,7 @@ class Button(Item[V]):
             label=label,
             style=style,
             emoji=emoji,
+            sku_id=sku_id,
         )
         self.row = row
 
@@ -202,6 +212,19 @@ class Button(Item[V]):
         else:
             self._underlying.emoji = None
 
+    @property
+    def sku_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The SKU ID this button sends you to.
+
+        .. versionadded:: 2.4
+        """
+        return self._underlying.sku_id
+
+    @sku_id.setter
+    def sku_id(self, value: Optional[int]) -> None:
+        self.style = ButtonStyle.premium
+        self._underlying.sku_id = value
+
     @classmethod
     def from_component(cls, button: ButtonComponent) -> Self:
         return cls(
@@ -212,6 +235,7 @@ class Button(Item[V]):
             url=button.url,
             emoji=button.emoji,
             row=None,
+            sku_id=button.sku_id,
         )
 
     @property
@@ -241,6 +265,7 @@ def button(
     style: ButtonStyle = ButtonStyle.secondary,
     emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
     row: Optional[int] = None,
+    sku_id: Optional[int] = None,
 ) -> Callable[[ItemCallbackType[V, Button[V]]], Button[V]]:
     """A decorator that attaches a button to a component.
 
@@ -278,6 +303,10 @@ def button(
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    sku_id: Optional[:class:`int`]
+        The SKU ID this button sends you to. Can't be combined with ``url``.
+
+        .. versionadded:: 2.4
     """
 
     def decorator(func: ItemCallbackType[V, Button[V]]) -> ItemCallbackType[V, Button[V]]:
@@ -293,6 +322,7 @@ def button(
             'label': label,
             'emoji': emoji,
             'row': row,
+            'sku_id': sku_id,
         }
         return func
 
