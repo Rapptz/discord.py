@@ -155,7 +155,7 @@ New Features
 - |commands| Add support for :class:`typing.NewType` and ``type`` keyword type aliases (:issue:`9815`).
     - Also supports application commands.
 - |commands| Add support for positional-only flag parameters (:issue:`9805`).
-- |commands| Add support for channel URLs in ChannelConverter related classes.
+- |commands| Add support for channel URLs in ChannelConverter related classes (:issue:`9799`).
 
 
 Bug Fixes
