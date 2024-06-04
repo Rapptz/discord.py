@@ -1075,8 +1075,11 @@ class InteractionResponse(Generic[ClientT]):
         translator = self._parent._state._translator
         if translator is not None:
             user_locale = self._parent.locale
+            command: Command[Any, ..., Any] = self._parent.command  # type: ignore # only chat input commands can have autocomplete
             payload: Dict[str, Any] = {
-                'choices': [await option.get_translated_payload_for_locale(translator, user_locale) for option in choices],
+                'choices': [
+                    await option.get_translated_payload_for_locale(translator, user_locale, command) for option in choices
+                ],
             }
         else:
             payload: Dict[str, Any] = {
