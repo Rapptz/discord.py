@@ -474,7 +474,7 @@ class Choice(Generic[ChoiceT]):
         self._locale_name: Optional[locale_str] = locale
         self.value: ChoiceT = value
         self.name_localizations: Dict[Locale, str] = {}
-        self.__command: Optional[Command] = None
+        self.__command: Optional[Command[Any, ..., Any]] = None
 
     @classmethod
     def from_dict(cls, data: ApplicationCommandOptionChoice) -> Choice[ChoiceT]:
@@ -507,12 +507,12 @@ class Choice(Generic[ChoiceT]):
             )
 
     @property
-    def command(self) -> Optional[Command]:
+    def command(self) -> Optional[Command[Any, ..., Any]]:
         """Optional[:class:`Command`]: The command this choice belongs to.
         This is only set when used in a :class:`.app_commands.Translator` context."""
         return self.__command
 
-    async def get_translated_payload(self, translator: Translator, command: Command) -> Dict[str, Any]:
+    async def get_translated_payload(self, translator: Translator, command: Command[Any, ..., Any]) -> Dict[str, Any]:
         base = self.to_dict()
         name_localizations: Dict[str, str] = {}
         context = TranslationContext(location=TranslationContextLocation.choice_name, data=self)
