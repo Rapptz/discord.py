@@ -3025,7 +3025,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.PrivateChannel, Hashable):
         Returns
         --------
         :class:`Permissions`
-        The resolved permissions.
+            The resolved permissions.
         """
         return Permissions._dm_permissions()
 
