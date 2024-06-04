@@ -87,6 +87,7 @@ if TYPE_CHECKING:
     from ..channel import TextChannel
     from ..threads import Thread
     from ..user import User
+    from ..app_commands import Command
 
     ApplicationCommandParent = Union['AppCommand', 'AppCommandGroup']
 
@@ -465,7 +466,7 @@ class Choice(Generic[ChoiceT]):
         up to 100 characters long.
     """
 
-    __slots__ = ('name', 'value', '_locale_name', 'name_localizations')
+    __slots__ = ('name', 'value', '_locale_name', 'name_localizations', '__command')
 
     def __init__(self, *, name: Union[str, locale_str], value: ChoiceT):
         name, locale = (name.message, name) if isinstance(name, locale_str) else (name, None)
@@ -473,6 +474,7 @@ class Choice(Generic[ChoiceT]):
         self._locale_name: Optional[locale_str] = locale
         self.value: ChoiceT = value
         self.name_localizations: Dict[Locale, str] = {}
+        self.__command: Optional[Command] = None
 
     @classmethod
     def from_dict(cls, data: ApplicationCommandOptionChoice) -> Choice[ChoiceT]:
@@ -504,10 +506,17 @@ class Choice(Generic[ChoiceT]):
                 f'invalid Choice value type given, expected int, str, or float but received {self.value.__class__.__name__}'
             )
 
-    async def get_translated_payload(self, translator: Translator) -> Dict[str, Any]:
+    @property
+    def command(self) -> Optional[Command]:
+        """Optional[:class:`Command`]: The command this choice belongs to.
+        This is only set when used in a :class:`.app_commands.Translator` context."""
+        return self.__command
+
+    async def get_translated_payload(self, translator: Translator, command: Command) -> Dict[str, Any]:
         base = self.to_dict()
         name_localizations: Dict[str, str] = {}
         context = TranslationContext(location=TranslationContextLocation.choice_name, data=self)
+        self.__command = command
         if self._locale_name:
             for locale in Locale:
                 translation = await translator._checked_translate(self._locale_name, locale, context)
@@ -517,16 +526,21 @@ class Choice(Generic[ChoiceT]):
         if name_localizations:
             base['name_localizations'] = name_localizations
 
+        self.__command = None
         return base
 
-    async def get_translated_payload_for_locale(self, translator: Translator, locale: Locale) -> Dict[str, Any]:
+    async def get_translated_payload_for_locale(
+        self, translator: Translator, locale: Locale, command: Command
+    ) -> Dict[str, Any]:
         base = self.to_dict()
+        self.__command = command
         if self._locale_name:
             context = TranslationContext(location=TranslationContextLocation.choice_name, data=self)
             translation = await translator._checked_translate(self._locale_name, locale, context)
             if translation is not None:
                 base['name'] = translation
 
+        self.__command = None
         return base
 
     def to_dict(self) -> Dict[str, Any]:

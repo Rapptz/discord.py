@@ -115,7 +115,7 @@ class CommandParameter:
                     description_localizations[locale.value] = translation
 
         if self.choices:
-            base['choices'] = [await choice.get_translated_payload(translator) for choice in self.choices]
+            base['choices'] = [await choice.get_translated_payload(translator, data.command) for choice in self.choices]
 
         if name_localizations:
             base['name_localizations'] = name_localizations
