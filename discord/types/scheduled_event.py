@@ -29,6 +29,7 @@ from .snowflake import Snowflake
 from .user import User
 from .member import Member
 from .channel import PrivacyLevel as PrivacyLevel
+
 EventStatus = Literal[1, 2, 3, 4]
 EntityType = Literal[1, 2, 3]
 
