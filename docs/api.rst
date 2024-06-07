@@ -5407,6 +5407,15 @@ PollMedia
     :members:
 
 
+ScheduledEventRecurrenceRule
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: ScheduledEventRecurrenceRule
+
+.. autoclass:: ScheduledEventRecurrenceRule
+    :members:
+
+
 Exceptions
 ------------
 
