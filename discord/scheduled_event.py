@@ -466,7 +466,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrenceRule] = ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -484,7 +484,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrenceRule] = ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -502,7 +502,7 @@ class ScheduledEvent(Hashable):
         image: bytes = ...,
         location: str,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrenceRule] = ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -519,7 +519,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrenceRule] = ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -536,7 +536,7 @@ class ScheduledEvent(Hashable):
         image: bytes = ...,
         location: str,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrenceRule] = ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
