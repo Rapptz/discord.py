@@ -638,7 +638,7 @@ class BaseChannelTransformer(Transformer):
                 except KeyError:
                     raise TypeError('Union type of channels must be entirely made up of channels') from None
 
-        self._types: Tuple[Type[Any]] = channel_types
+        self._types: Tuple[Type[Any], ...] = channel_types
         self._channel_types: List[ChannelType] = types
         self._display_name = display_name
 
@@ -780,11 +780,11 @@ def get_supported_annotation(
     # Check if there's an origin
     origin = getattr(annotation, '__origin__', None)
     if origin is Literal:
-        args = annotation.__args__  # type: ignore
+        args = annotation.__args__
         return (LiteralTransformer(args), MISSING, True)
 
     if origin is Choice:
-        arg = annotation.__args__[0]  # type: ignore
+        arg = annotation.__args__[0]
         return (ChoiceTransformer(arg), MISSING, True)
 
     if origin is not Union:
@@ -792,7 +792,7 @@ def get_supported_annotation(
         raise TypeError(f'unsupported type annotation {annotation!r}')
 
     default = MISSING
-    args = annotation.__args__  # type: ignore
+    args = annotation.__args__
     if args[-1] is _none:
         if len(args) == 2:
             underlying = args[0]

@@ -68,6 +68,7 @@ if TYPE_CHECKING:
     from .embeds import Embed
     from .message import Attachment
     from .flags import MessageFlags
+    from .poll import Poll
 
     from .types import (
         appinfo,
@@ -91,6 +92,7 @@ if TYPE_CHECKING:
         sticker,
         welcome_screen,
         sku,
+        poll,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -154,6 +156,7 @@ def handle_message_parameters(
     thread_name: str = MISSING,
     channel_payload: Dict[str, Any] = MISSING,
     applied_tags: Optional[SnowflakeList] = MISSING,
+    poll: Optional[Poll] = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -255,6 +258,9 @@ def handle_message_parameters(
             'message': payload,
         }
         payload.update(channel_payload)
+
+    if poll not in (MISSING, None):
+        payload['poll'] = poll._to_dict()  # type: ignore
 
     multipart = []
     if files:
@@ -935,6 +941,7 @@ class HTTPClient:
         emoji: str,
         limit: int,
         after: Optional[Snowflake] = None,
+        type: Optional[message.ReactionType] = None,
     ) -> Response[List[user.User]]:
         r = Route(
             'GET',
@@ -949,6 +956,10 @@ class HTTPClient:
         }
         if after:
             params['after'] = after
+
+        if type is not None:
+            params['type'] = type
+
         return self.request(r, params=params)
 
     def clear_reactions(self, channel_id: Snowflake, message_id: Snowflake) -> Response[None]:
@@ -1054,6 +1065,20 @@ class HTTPClient:
     def unban(self, user_id: Snowflake, guild_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         r = Route('DELETE', '/guilds/{guild_id}/bans/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, reason=reason)
+
+    def bulk_ban(
+        self,
+        guild_id: Snowflake,
+        user_ids: List[Snowflake],
+        delete_message_seconds: int = 86400,
+        reason: Optional[str] = None,
+    ) -> Response[guild.BulkBanUserResponse]:
+        r = Route('POST', '/guilds/{guild_id}/bulk-ban', guild_id=guild_id)
+        payload = {
+            'user_ids': user_ids,
+            'delete_message_seconds': delete_message_seconds,
+        }
+        return self.request(r, json=payload, reason=reason)
 
     def guild_voice_state(
         self,
@@ -1161,6 +1186,13 @@ class HTTPClient:
         )
 
         payload = {k: v for k, v in options.items() if k in valid_keys}
+        return self.request(r, reason=reason, json=payload)
+
+    def edit_voice_channel_status(
+        self, status: Optional[str], *, channel_id: int, reason: Optional[str] = None
+    ) -> Response[None]:
+        r = Route('PUT', '/channels/{channel_id}/voice-status', channel_id=channel_id)
+        payload = {'status': status}
         return self.request(r, reason=reason, json=payload)
 
     def bulk_channel_update(
@@ -1756,6 +1788,9 @@ class HTTPClient:
         self, guild_id: Snowflake, payload: widget.EditWidgetSettings, reason: Optional[str] = None
     ) -> Response[widget.WidgetSettings]:
         return self.request(Route('PATCH', '/guilds/{guild_id}/widget', guild_id=guild_id), json=payload, reason=reason)
+
+    def edit_incident_actions(self, guild_id: Snowflake, payload: guild.IncidentData) -> Response[guild.IncidentData]:
+        return self.request(Route('PUT', '/guilds/{guild_id}/incident-actions', guild_id=guild_id), json=payload)
 
     # Invite management
 
@@ -2453,6 +2488,16 @@ class HTTPClient:
             ),
         )
 
+    def consume_entitlement(self, application_id: Snowflake, entitlement_id: Snowflake) -> Response[None]:
+        return self.request(
+            Route(
+                'POST',
+                '/applications/{application_id}/entitlements/{entitlement_id}/consume',
+                application_id=application_id,
+                entitlement_id=entitlement_id,
+            ),
+        )
+
     def create_entitlement(
         self, application_id: Snowflake, sku_id: Snowflake, owner_id: Snowflake, owner_type: sku.EntitlementOwnerType
     ) -> Response[sku.Entitlement]:
@@ -2501,6 +2546,43 @@ class HTTPClient:
 
         payload = {k: v for k, v in payload.items() if k in valid_keys}
         return self.request(Route('PATCH', '/applications/@me'), json=payload, reason=reason)
+
+    def get_poll_answer_voters(
+        self,
+        channel_id: Snowflake,
+        message_id: Snowflake,
+        answer_id: Snowflake,
+        after: Optional[Snowflake] = None,
+        limit: Optional[int] = None,
+    ) -> Response[poll.PollAnswerVoters]:
+        params = {}
+
+        if after:
+            params['after'] = int(after)
+
+        if limit is not None:
+            params['limit'] = limit
+
+        return self.request(
+            Route(
+                'GET',
+                '/channels/{channel_id}/polls/{message_id}/answers/{answer_id}',
+                channel_id=channel_id,
+                message_id=message_id,
+                answer_id=answer_id,
+            ),
+            params=params,
+        )
+
+    def end_poll(self, channel_id: Snowflake, message_id: Snowflake) -> Response[message.Message]:
+        return self.request(
+            Route(
+                'POST',
+                '/channels/{channel_id}/polls/{message_id}/expire',
+                channel_id=channel_id,
+                message_id=message_id,
+            )
+        )
 
     async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
         try:

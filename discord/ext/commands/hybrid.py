@@ -653,6 +653,8 @@ class HybridGroup(Group[CogT, P, T]):
             guild_only = getattr(self.callback, '__discord_app_commands_guild_only__', False)
             default_permissions = getattr(self.callback, '__discord_app_commands_default_permissions__', None)
             nsfw = getattr(self.callback, '__discord_app_commands_is_nsfw__', False)
+            contexts = getattr(self.callback, '__discord_app_commands_contexts__', MISSING)
+            installs = getattr(self.callback, '__discord_app_commands_installation_types__', MISSING)
             self.app_command = app_commands.Group(
                 name=self._locale_name or self.name,
                 description=self._locale_description or self.description or self.short_doc or '…',
@@ -660,6 +662,8 @@ class HybridGroup(Group[CogT, P, T]):
                 guild_only=guild_only,
                 default_permissions=default_permissions,
                 nsfw=nsfw,
+                allowed_installs=installs,
+                allowed_contexts=contexts,
             )
 
             # This prevents the group from re-adding the command at __init__
@@ -902,7 +906,7 @@ def hybrid_command(
     def decorator(func: CommandCallback[CogT, ContextT, P, T]) -> HybridCommand[CogT, P, T]:
         if isinstance(func, Command):
             raise TypeError('Callback is already a command.')
-        return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)  # type: ignore  # ???
+        return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)
 
     return decorator
 

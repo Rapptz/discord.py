@@ -89,6 +89,7 @@ if TYPE_CHECKING:
     from .ui.item import Item
     from .ui.dynamic import DynamicItem
     from .app_commands import CommandTree, Translator
+    from .poll import Poll
 
     from .types.automod import AutoModerationRule, AutoModerationActionExecution
     from .types.snowflake import Snowflake
@@ -110,12 +111,14 @@ class ChunkRequest:
     def __init__(
         self,
         guild_id: int,
+        shard_id: int,
         loop: asyncio.AbstractEventLoop,
         resolver: Callable[[int], Any],
         *,
         cache: bool = True,
     ) -> None:
         self.guild_id: int = guild_id
+        self.shard_id: int = shard_id
         self.resolver: Callable[[int], Any] = resolver
         self.loop: asyncio.AbstractEventLoop = loop
         self.cache: bool = cache
@@ -315,6 +318,16 @@ class ConnectionState(Generic[ClientT]):
         for key in removed:
             del self._chunk_requests[key]
 
+    def clear_chunk_requests(self, shard_id: int | None) -> None:
+        removed = []
+        for key, request in self._chunk_requests.items():
+            if shard_id is None or request.shard_id == shard_id:
+                request.done()
+                removed.append(key)
+
+        for key in removed:
+            del self._chunk_requests[key]
+
     def call_handlers(self, key: str, *args: Any, **kwargs: Any) -> None:
         try:
             func = self.handlers[key]
@@ -417,8 +430,8 @@ class ConnectionState(Generic[ClientT]):
         # the keys of self._guilds are ints
         return self._guilds.get(guild_id)  # type: ignore
 
-    def _get_or_create_unavailable_guild(self, guild_id: int) -> Guild:
-        return self._guilds.get(guild_id) or Guild._create_unavailable(state=self, guild_id=guild_id)
+    def _get_or_create_unavailable_guild(self, guild_id: int, *, data: Optional[Dict[str, Any]] = None) -> Guild:
+        return self._guilds.get(guild_id) or Guild._create_unavailable(state=self, guild_id=guild_id, data=data)
 
     def _add_guild(self, guild: Guild) -> None:
         self._guilds[guild.id] = guild
@@ -497,6 +510,12 @@ class ConnectionState(Generic[ClientT]):
     def _get_message(self, msg_id: Optional[int]) -> Optional[Message]:
         return utils.find(lambda m: m.id == msg_id, reversed(self._messages)) if self._messages else None
 
+    def _get_poll(self, msg_id: Optional[int]) -> Optional[Poll]:
+        message = self._get_message(msg_id)
+        if not message:
+            return
+        return message.poll
+
     def _add_guild_from_data(self, data: GuildPayload) -> Guild:
         guild = Guild(data=data, state=self)
         self._add_guild(guild)
@@ -521,6 +540,13 @@ class ConnectionState(Generic[ClientT]):
 
         return channel or PartialMessageable(state=self, guild_id=guild_id, id=channel_id), guild
 
+    def _update_poll_counts(self, message: Message, answer_id: int, added: bool, self_voted: bool = False) -> Optional[Poll]:
+        poll = message.poll
+        if not poll:
+            return
+        poll._handle_vote(answer_id, added, self_voted)
+        return poll
+
     async def chunker(
         self, guild_id: int, query: str = '', limit: int = 0, presences: bool = False, *, nonce: Optional[str] = None
     ) -> None:
@@ -535,7 +561,7 @@ class ConnectionState(Generic[ClientT]):
         if ws is None:
             raise RuntimeError('Somehow do not have a websocket for this guild_id')
 
-        request = ChunkRequest(guild.id, self.loop, self._get_guild, cache=cache)
+        request = ChunkRequest(guild.id, guild.shard_id, self.loop, self._get_guild, cache=cache)
         self._chunk_requests[request.nonce] = request
 
         try:
@@ -602,6 +628,7 @@ class ConnectionState(Generic[ClientT]):
 
         self._ready_state: asyncio.Queue[Guild] = asyncio.Queue()
         self.clear(views=False)
+        self.clear_chunk_requests(None)
         self.user = user = ClientUser(state=self, data=data['user'])
         self._users[user.id] = user  # type: ignore
 
@@ -817,6 +844,12 @@ class ConnectionState(Generic[ClientT]):
                         if s.channel_id == channel.id:
                             guild._scheduled_events.pop(s.id)
                             self.dispatch('scheduled_event_delete', s)
+
+                threads = guild._remove_threads_by_channel(channel_id)
+
+                for thread in threads:
+                    self.dispatch('thread_delete', thread)
+                    self.dispatch('raw_thread_delete', RawThreadDeleteEvent._from_thread(thread))
 
     def parse_channel_update(self, data: gw.ChannelUpdateEvent) -> None:
         channel_type = try_enum(ChannelType, data.get('type'))
@@ -1204,7 +1237,9 @@ class ConnectionState(Generic[ClientT]):
         cache = cache or self.member_cache_flags.joined
         request = self._chunk_requests.get(guild.id)
         if request is None:
-            self._chunk_requests[guild.id] = request = ChunkRequest(guild.id, self.loop, self._get_guild, cache=cache)
+            self._chunk_requests[guild.id] = request = ChunkRequest(
+                guild.id, guild.shard_id, self.loop, self._get_guild, cache=cache
+            )
             await self.chunker(guild.id, nonce=request.nonce)
 
         if wait:
@@ -1571,7 +1606,8 @@ class ConnectionState(Generic[ClientT]):
 
         if channel is not None:
             if isinstance(channel, DMChannel):
-                channel.recipient = raw.user
+                if raw.user is not None and raw.user not in channel.recipients:
+                    channel.recipients.append(raw.user)
             elif guild is not None:
                 raw.user = guild.get_member(raw.user_id)
 
@@ -1596,6 +1632,52 @@ class ConnectionState(Generic[ClientT]):
     def parse_entitlement_delete(self, data: gw.EntitlementDeleteEvent) -> None:
         entitlement = Entitlement(data=data, state=self)
         self.dispatch('entitlement_delete', entitlement)
+
+    def parse_message_poll_vote_add(self, data: gw.PollVoteActionEvent) -> None:
+        raw = RawPollVoteActionEvent(data)
+
+        self.dispatch('raw_poll_vote_add', raw)
+
+        message = self._get_message(raw.message_id)
+        guild = self._get_guild(raw.guild_id)
+
+        if guild:
+            user = guild.get_member(raw.user_id)
+        else:
+            user = self.get_user(raw.user_id)
+
+        if message and user:
+            poll = self._update_poll_counts(message, raw.answer_id, True, raw.user_id == self.self_id)
+            if not poll:
+                _log.warning(
+                    'POLL_VOTE_ADD referencing message with ID: %s does not have a poll. Discarding.', raw.message_id
+                )
+                return
+
+            self.dispatch('poll_vote_add', user, poll.get_answer(raw.answer_id))
+
+    def parse_message_poll_vote_remove(self, data: gw.PollVoteActionEvent) -> None:
+        raw = RawPollVoteActionEvent(data)
+
+        self.dispatch('raw_poll_vote_remove', raw)
+
+        message = self._get_message(raw.message_id)
+        guild = self._get_guild(raw.guild_id)
+
+        if guild:
+            user = guild.get_member(raw.user_id)
+        else:
+            user = self.get_user(raw.user_id)
+
+        if message and user:
+            poll = self._update_poll_counts(message, raw.answer_id, False, raw.user_id == self.self_id)
+            if not poll:
+                _log.warning(
+                    'POLL_VOTE_REMOVE referencing message with ID: %s does not have a poll. Discarding.', raw.message_id
+                )
+                return
+
+            self.dispatch('poll_vote_remove', user, poll.get_answer(raw.answer_id))
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, (TextChannel, Thread, VoiceChannel)):
@@ -1751,6 +1833,7 @@ class AutoShardedConnectionState(ConnectionState[ClientT]):
 
         if shard_id in self._ready_tasks:
             self._ready_tasks[shard_id].cancel()
+            self.clear_chunk_requests(shard_id)
 
         if shard_id not in self._ready_states:
             self._ready_states[shard_id] = asyncio.Queue()

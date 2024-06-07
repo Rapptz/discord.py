@@ -170,6 +170,10 @@ class Button(Component):
         The label of the button, if any.
     emoji: Optional[:class:`PartialEmoji`]
         The emoji of the button, if available.
+    sku_id: Optional[:class:`int`]
+        The SKU ID this button sends you to, if available.
+
+        .. versionadded:: 2.4
     """
 
     __slots__: Tuple[str, ...] = (
@@ -179,6 +183,7 @@ class Button(Component):
         'disabled',
         'label',
         'emoji',
+        'sku_id',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
@@ -195,6 +200,11 @@ class Button(Component):
         except KeyError:
             self.emoji = None
 
+        try:
+            self.sku_id: Optional[int] = int(data['sku_id'])
+        except KeyError:
+            self.sku_id = None
+
     @property
     def type(self) -> Literal[ComponentType.button]:
         """:class:`ComponentType`: The type of component."""
@@ -206,6 +216,9 @@ class Button(Component):
             'style': self.style.value,
             'disabled': self.disabled,
         }
+
+        if self.sku_id:
+            payload['sku_id'] = str(self.sku_id)
 
         if self.label:
             payload['label'] = self.label
@@ -318,8 +331,8 @@ class SelectOption:
         Can only be up to 100 characters.
     value: :class:`str`
         The value of the option. This is not displayed to users.
-        If not provided when constructed then it defaults to the
-        label. Can only be up to 100 characters.
+        If not provided when constructed then it defaults to the label.
+        Can only be up to 100 characters.
     description: Optional[:class:`str`]
         An additional description of the option, if any.
         Can only be up to 100 characters.
@@ -332,14 +345,12 @@ class SelectOption:
     -----------
     label: :class:`str`
         The label of the option. This is displayed to users.
-        Can only be up to 100 characters.
     value: :class:`str`
         The value of the option. This is not displayed to users.
         If not provided when constructed then it defaults to the
-        label. Can only be up to 100 characters.
+        label.
     description: Optional[:class:`str`]
         An additional description of the option, if any.
-        Can only be up to 100 characters.
     default: :class:`bool`
         Whether this option is selected by default.
     """

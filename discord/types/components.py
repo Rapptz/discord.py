@@ -31,7 +31,7 @@ from .emoji import PartialEmoji
 from .channel import ChannelType
 
 ComponentType = Literal[1, 2, 3, 4]
-ButtonStyle = Literal[1, 2, 3, 4, 5]
+ButtonStyle = Literal[1, 2, 3, 4, 5, 6]
 TextStyle = Literal[1, 2]
 DefaultValueType = Literal['user', 'role', 'channel']
 
@@ -49,6 +49,7 @@ class ButtonComponent(TypedDict):
     disabled: NotRequired[bool]
     emoji: NotRequired[PartialEmoji]
     label: NotRequired[str]
+    sku_id: NotRequired[str]
 
 
 class SelectOption(TypedDict):
