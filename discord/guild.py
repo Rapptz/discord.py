@@ -3038,7 +3038,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrenceRule] =  ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] =  ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3055,7 +3055,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrenceRule] =  ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] =  ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3071,7 +3071,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrenceRule] =  ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] =  ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3087,7 +3087,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrenceRule] =  ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] =  ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3104,7 +3104,7 @@ class Guild(Hashable):
         description: str = MISSING,
         image: bytes = MISSING,
         reason: Optional[str] = None,
-        recurrence: Optional[ScheduledEventRecurrenceRule] =  MISSING,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] =  MISSING,
     ) -> ScheduledEvent:
         r"""|coro|
 
@@ -3151,7 +3151,7 @@ class Guild(Hashable):
             Required if the ``entity_type`` is :attr:`EntityType.external`.
         reason: Optional[:class:`str`]
             The reason for creating this scheduled event. Shows up on the audit log.
-        recurrence: Optional[:class:`ScheduledEventRecurrence`]
+        recurrence_rule: Optional[:class:`ScheduledEventRecurrenceRule`]
             The recurrence rule this event will follow. If this is `None` then this is
             a one-time event.
 
@@ -3248,8 +3248,8 @@ class Guild(Hashable):
                 )
             payload['scheduled_end_time'] = end_time.isoformat()
 
-        if recurrence not in (MISSING, None):
-            payload['recurrence_rule'] = recurrence.to_dict()
+        if recurrence_rule not in (MISSING, None):
+            payload['recurrence_rule'] = recurrence_rule.to_dict()
 
         if metadata:
             payload['entity_metadata'] = metadata
