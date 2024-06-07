@@ -3248,8 +3248,11 @@ class Guild(Hashable):
                 )
             payload['scheduled_end_time'] = end_time.isoformat()
 
-        if recurrence_rule not in (MISSING, None):
-            payload['recurrence_rule'] = recurrence_rule.to_dict()
+        if recurrence_rule is not MISSING:
+            if recurrence_rule is not None:
+                payload['recurrence_rule'] = recurrence_rule.to_dict()
+            else:
+                payload['recurrence_rule'] = None
 
         if metadata:
             payload['entity_metadata'] = metadata
