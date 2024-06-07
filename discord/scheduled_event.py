@@ -193,6 +193,13 @@ class ScheduledEventRecurrenceRule:
     def edit(self):
         ...  # TODO: finish this thingy
 
+    @classmethod
+    def from_dict(cls, data: GuildScheduledEventRecurrencePayload, /) -> ScheduledEventRecurrenceRule:
+        ...  # TODO: finish this ALSO
+
+    def to_dict(self) -> GuildScheduledEventRecurrencePayload:
+        ...  # TODO: guessed it, finish this also
+
 
 class ScheduledEvent(Hashable):
     """Represents a scheduled event in a guild.
@@ -289,7 +296,11 @@ class ScheduledEvent(Hashable):
         self._cover_image: Optional[str] = data.get('image', None)
         self.user_count: int = data.get('user_count', 0)
         self.creator_id: Optional[int] = _get_as_snowflake(data, 'creator_id')
-        self.recurrence: Optional[ScheduledEventRecurrence] = ScheduledEventRecurrence.from_dict(data.get('recurrence_rule')) if data.get('recurrence_rule', None) is not None else None
+
+        try:
+            self.recurrence: Optional[ScheduledEventRecurrenceRule] = ScheduledEventRecurrenceRule.from_dict(data['recurrence_rule'])
+        except KeyError:
+            self.recurrence = None
 
         creator = data.get('creator')
         self.creator: Optional[User] = self._state.store_user(creator) if creator else None
@@ -455,7 +466,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrence] = ...,
+        recurrence: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -473,7 +484,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrence] = ...,
+        recurrence: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -491,7 +502,7 @@ class ScheduledEvent(Hashable):
         image: bytes = ...,
         location: str,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrence] = ...,
+        recurrence: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -508,7 +519,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrence] = ...,
+        recurrence: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -525,7 +536,7 @@ class ScheduledEvent(Hashable):
         image: bytes = ...,
         location: str,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrence] = ...,
+        recurrence: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -543,7 +554,7 @@ class ScheduledEvent(Hashable):
         image: bytes = MISSING,
         location: str = MISSING,
         reason: Optional[str] = None,
-        recurrence_rule: Optional[ScheduledEventRecurrence] = MISSING,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = MISSING,
     ) -> ScheduledEvent:
         r"""|coro|
 
