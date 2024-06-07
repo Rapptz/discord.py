@@ -84,7 +84,7 @@ from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration, PartialIntegration, _integration_factory
-from .scheduled_event import ScheduledEvent, ScheduledEventRecurrence
+from .scheduled_event import ScheduledEvent, ScheduledEventRecurrenceRule
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
@@ -3038,7 +3038,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrence] =  ...,
+        recurrence: Optional[ScheduledEventRecurrenceRule] =  ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3055,7 +3055,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrence] =  ...,
+        recurrence: Optional[ScheduledEventRecurrenceRule] =  ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3071,7 +3071,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrence] =  ...,
+        recurrence: Optional[ScheduledEventRecurrenceRule] =  ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3087,7 +3087,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence: Optional[ScheduledEventRecurrence] =  ...,
+        recurrence: Optional[ScheduledEventRecurrenceRule] =  ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3104,7 +3104,7 @@ class Guild(Hashable):
         description: str = MISSING,
         image: bytes = MISSING,
         reason: Optional[str] = None,
-        recurrence: Optional[ScheduledEventRecurrence] =  MISSING,
+        recurrence: Optional[ScheduledEventRecurrenceRule] =  MISSING,
     ) -> ScheduledEvent:
         r"""|coro|
 
