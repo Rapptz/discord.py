@@ -4374,7 +4374,7 @@ class Guild(Hashable):
             actions=[a.to_dict() for a in actions],
             enabled=enabled,
             exempt_roles=[str(r.id) for r in exempt_roles] if exempt_roles else None,
-            exempt_channel=[str(c.id) for c in exempt_channels] if exempt_channels else None,
+            exempt_channels=[str(c.id) for c in exempt_channels] if exempt_channels else None,
             reason=reason,
         )
 
