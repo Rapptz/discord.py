@@ -334,3 +334,11 @@ def test_is_inside_class():
 )
 def test_format_dt(dt: datetime.datetime, style: typing.Optional[utils.TimestampStyle], formatted: str):
     assert utils.format_dt(dt, style=style) == formatted
+
+
+def test__human_join() -> None:
+    assert utils._human_join([]) == ""
+    assert utils._human_join(["cat"]) == "cat"
+    assert utils._human_join(["cat", "dog"]) == "cat or dog"
+    assert utils._human_join(["cat", "dog", "fish"]) == "cat, dog or fish"
+    assert utils._human_join(["cat", "dog", "fish", "bird"], delimiter="; ", final="and") == "cat; dog; fish and bird"

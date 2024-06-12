@@ -16,3 +16,4 @@ docs/crowdin.py
 *.mo
 /.coverage
 build/*
+!assets/*
