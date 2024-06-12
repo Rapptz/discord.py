@@ -40,6 +40,12 @@ Running `coverage html` and opening the document in the browser gives the follow
 
 Thijmen
 
+flatten_literal_params
+
+[commit](https://github.com/tthijm/sep/commit/2afde74ee94eb7e6cdc476356aa41f1ca09d87cf)
+
+![](./assets/flatten_literal_params_custom.png)
+
 \_human_join
 
 [commit](https://github.com/tthijm/sep/commit/88c98ebc05c4d67bcdce7d3046ffa786f79b9284)
@@ -69,6 +75,17 @@ Thijmen
 <Provide the same kind of information provided for Test 1>
 
 Thijmen
+
+test_flatten_literal_params
+
+[commit](https://github.com/tthijm/sep/commit/18e8104041610c32f9dedff6740688c4d1934550) + [commit](https://github.com/tthijm/sep/commit/138ca9a4c4b0a5f8fba254271f6b913b80d20b95)
+
+![](./assets/flatten_literal_params_before.png)
+
+![](./assets/flatten_literal_params_after.png)
+
+The coverage improvement is +100%.
+The coverage has been improved, because `flatten_literal_params` used to not be tested, while the new `test_flatten_literal_params` considers every branch to be taken.
 
 test\_\_human_join
 

@@ -336,6 +336,21 @@ def test_format_dt(dt: datetime.datetime, style: typing.Optional[utils.Timestamp
     assert utils.format_dt(dt, style=style) == formatted
 
 
+@pytest.mark.parametrize(
+    ("parameters", "flattened"),
+    [
+        # Python 3.8: Literal[Literal[0]].__args__ == (Literal[0],)
+        # Python 3.x: Literal[Literal[0]].__args__ == (0,)
+        ([], ()),
+        ([0, 1, 2], (0, 1, 2)),
+        ([0, typing.Literal["a", 1], "b"], (0, "a", 1, "b")),
+        ([0, "a", typing.Literal[1, "b", 2], typing.Literal["c"]], (0, "a", 1, "b", 2, "c")),
+    ],
+)
+def test_flatten_literal_params(parameters: typing.Iterable[typing.Any], flattened: typing.Tuple[typing.Any, ...]) -> None:
+    assert utils.flatten_literal_params(parameters) == flattened
+
+
 def test__human_join() -> None:
     assert utils._human_join([]) == ""
     assert utils._human_join(["cat"]) == "cat"
