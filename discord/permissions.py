@@ -209,6 +209,22 @@ class Permissions(BaseFlags):
         return base
 
     @classmethod
+    def _user_installed_permissions(cls, *, in_guild: bool) -> Self:
+        base = cls.none()
+        base.send_messages = True
+        base.attach_files = True
+        base.embed_links = True
+        base.external_emojis = True
+        base.send_voice_messages = True
+        if in_guild:
+            # Logically this is False but if not set to True,
+            # permissions just become 0.
+            base.read_messages = True
+            base.send_tts_messages = True
+            base.send_messages_in_threads = True
+        return base
+
+    @classmethod
     def all_channel(cls) -> Self:
         """A :class:`Permissions` with all channel-specific permissions set to
         ``True`` and the guild-specific ones set to ``False``. The guild-specific
