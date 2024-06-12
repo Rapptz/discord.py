@@ -13,10 +13,14 @@ Programming language: <TODO>
 ## Coverage measurement
 
 ### Existing tool
+The coverage tool [coverage.py](https://coverage.readthedocs.io/en/7.5.3/) was used for this project. 
+After installing the dependencies and executing `coverage run -m pytest` we get the following output:
+![63781](https://github.com/tthijm/sep/assets/74216566/0962f4e0-a7f4-45c0-ab12-59110c55d6c2)
 
-<Inform the name of the existing tool that was executed and how it was executed>
+Running `coverage html` and opening the document in the browser gives the following:
+![23724](https://github.com/tthijm/sep/assets/74216566/5991a9ef-81a1-494f-8016-700ee72d375e)
+![4629](https://github.com/tthijm/sep/assets/74216566/83bdba3d-9217-4be0-a67c-9ae2f0db3ad9)
 
-<Show the coverage results provided by the existing tool with a screenshot>
 
 ### Your own coverage tool
 
