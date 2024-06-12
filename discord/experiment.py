@@ -353,7 +353,7 @@ class ExperimentPopulation:
 
     def bucket_for(self, guild: Guild, _result: Optional[int] = None, /) -> int:
         """Returns the assigned experiment bucket within a population for a guild.
-        Defaults to none (-1) if the guild is not in the population.
+        Defaults to None (-1) if the guild is not in the population.
 
         .. note::
 
@@ -648,7 +648,7 @@ class GuildExperiment:
 
     def bucket_for(self, guild: Guild, /) -> int:
         """Returns the assigned experiment bucket for a guild.
-        Defaults to none (-1) if the guild is not in the experiment.
+        Defaults to None (-1) if the guild is not in the experiment.
 
         Parameters
         -----------
@@ -747,10 +747,10 @@ class UserExperiment:
         The current revision of the experiment rollout.
     assignment: :class:`int`
         The assigned bucket for the user.
-    override: :class:`int`
-        The overriden bucket for the user, takes precedence over :attr:`assignment`.
+    override: :class:`bool`
+        Whether the user has an explicit bucket override.
     population: :class:`int`
-        The internal population group for the user.
+        The internal population group for the user, or None (-1) if manually overridden.
     aa_mode: :class:`bool`
         Whether the experiment is in A/A mode.
     trigger_debugging:
@@ -778,7 +778,7 @@ class UserExperiment:
         self.hash: int = hash
         self.revision: int = revision
         self.assignment: int = bucket
-        self.override: int = override
+        self.override: bool = override == 0  # this is fucking weird
         self.population: int = population
         self._result: int = hash_result
         self.aa_mode: bool = aa_mode == 1
@@ -817,7 +817,7 @@ class UserExperiment:
         """:class:`int`: The assigned bucket for the user."""
         if self.aa_mode:
             return -1
-        return self.override if self.override != -1 else self.population
+        return self.assignment
 
     @property
     def result(self) -> int:

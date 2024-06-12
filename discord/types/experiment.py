@@ -58,7 +58,9 @@ Filters = List[
         Tuple[Literal[3013771838], Tuple[Tuple[Literal[3013771838], List[int]]]],  # IDs
         Tuple[Literal[4148745523], Tuple[Tuple[Literal[4148745523], List[int]]]],  # HUB_TYPE
         Tuple[Literal[188952590], Tuple[Tuple[Literal[188952590], bool]]],  # VANITY_URL
-        Tuple[Literal[2294888943], Tuple[Tuple[Literal[2690752156], int], Tuple[Literal[1982804121], int]]],  # RANGE_BY_HASH
+        Tuple[
+            Literal[2294888943], Tuple[Tuple[Literal[2690752156], int], Tuple[Literal[1982804121], int]]
+        ],  # RANGE_BY_HASH
     ]
 ]
 
@@ -84,7 +86,7 @@ UserExperiment = Tuple[
     int,  # hash
     int,  # revision
     int,  # bucket
-    int,  # override
+    Literal[-1, 0],  # override
     int,  # population
     int,  # hash_result
     Literal[0, 1],  # aa_mode
