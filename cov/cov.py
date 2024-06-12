@@ -29,8 +29,10 @@ def test(n_branches: int) -> Callable:
     return decorator
 
 
-def mark(branch_id: int) -> None:
-    func_name = inspect.stack()[1].function
+def mark(branch_id: int, func_name = None) -> None:
+    if func_name is None:
+        func_name = inspect.stack()[1].function
+
     coverage = coverages[func_name]
 
     coverage.covered_branches[branch_id] = True
