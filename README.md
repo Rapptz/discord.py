@@ -52,6 +52,14 @@ flatten_literal_params
 
 ![](./assets/_human_join_custom.png)
 
+Yasin
+
+_get and _aget
+
+[commit](https://github.com/tthijm/sep/commit/017ddcd6bcf0fb838a9e5b3fc427ab7a746ddce6)
+
+![](./assets/_get_custom.png)
+
 ## Coverage improvement
 
 ### Individual tests
@@ -97,6 +105,19 @@ test\_\_human_join
 
 The coverage improvement is +100%.
 The coverage has been improved, because `_human_join` used to not be tested, while the new `test__human_join` considers every branch to be taken.
+
+Yasin
+
+test_get_find
+
+[commit](https://github.com/tthijm/sep/commit/02cb0d7aebe7c96c9dc6d734c5a6056f08761565)
+
+![](./assets/_get_before.png)
+
+![](./assets/_get_after.png)
+
+The coverage improvement is +58%.
+The coverage has been improved, because the previous test_get_find only considered the sync and asyn get with single values. I extended the test so that it tests these functions with multiple attributes as well, this way it currently reaches more branches and therefore the coverage improved.
 
 ### Overall
 
