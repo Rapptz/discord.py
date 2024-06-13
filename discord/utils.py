@@ -421,7 +421,7 @@ def time_snowflake(dt: datetime.datetime, /, *, high: bool = False) -> int:
         The snowflake representing the time given.
     """
     discord_millis = int(dt.timestamp() * 1000 - DISCORD_EPOCH)
-    return (discord_millis << 22) + (2**22 - 1 if high else 0)
+    return (discord_millis << 22) + (2 ** 22 - 1 if high else 0)
 
 
 def _find(predicate: Callable[[T], Any], iterable: Iterable[T], /) -> Optional[T]:
@@ -481,6 +481,7 @@ def find(predicate: Callable[[T], Any], iterable: _Iter[T], /) -> Union[Optional
         else _find(predicate, iterable)  # type: ignore
     )
 
+
 @test(3)
 def _get(iterable: Iterable[T], /, **attrs: Any) -> Optional[T]:
     # global -> local
@@ -501,6 +502,7 @@ def _get(iterable: Iterable[T], /, **attrs: Any) -> Optional[T]:
             return elem
     mark(2)
     return None
+
 
 @test(4)
 async def _aget(iterable: AsyncIterable[T], /, **attrs: Any) -> Optional[T]:
