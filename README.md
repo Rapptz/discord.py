@@ -2,13 +2,13 @@
 
 ## Project chosen
 
-Name: <TODO>
+Name: discord.py
 
-URL: <TODO>
+URL: https://github.com/Rapptz/discord.py
 
-Number of lines of code and the tool used to count it: <TODO>
+Number of lines of code and the tool used to count it: 68275 using `lizard discord tests setup.py`
 
-Programming language: <TODO>
+Programming language: Python
 
 ## Coverage measurement
 
