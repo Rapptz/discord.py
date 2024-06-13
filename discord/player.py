@@ -718,7 +718,7 @@ class AudioPlayer(threading.Thread):
         self._current_error: Optional[Exception] = None
         self._lock: threading.Lock = threading.Lock()
 
-        self._end_async: asyncio.Event = asyncio.Event(loop=client.loop)
+        self._end_future = client.loop.create_future()
 
         if after is not None and not callable(after):
             raise TypeError('Expected a callable for the "after" parameter.')
@@ -778,7 +778,7 @@ class AudioPlayer(threading.Thread):
         finally:
             self._call_after()
             self._cleanup()
-            self.client.loop.call_soon_threadsafe(self._end_async.set)
+            self.client.loop.call_soon_threadsafe(self._end_future.set_result, self._current_error)
 
     def _call_after(self) -> None:
         error = self._current_error
@@ -828,8 +828,7 @@ class AudioPlayer(threading.Thread):
             self.resume(update_speaking=False)
 
     async def wait_async(self) -> Optional[Exception]:
-        await self._end_async.wait()
-        return self._current_error
+        return await self._end_future
 
     def _speak(self, speaking: SpeakingState) -> None:
         try:

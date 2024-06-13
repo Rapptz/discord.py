@@ -543,6 +543,8 @@ class VoiceClient(VoiceProtocol):
 
         Waits for the audio player to finish playback and returns any encountered error.
 
+        .. versionadded:: 2.4
+
         Returns
         --------
         Optional[:class:`Exception`]
