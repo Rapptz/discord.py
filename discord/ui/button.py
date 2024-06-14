@@ -319,7 +319,7 @@ def button(
             'label': label,
             'emoji': emoji,
             'row': row,
-            'sku_id': sku_id,
+            'sku_id': None,
         }
         return func
 
