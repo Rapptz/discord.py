@@ -3153,10 +3153,13 @@ class Client:
         -----------
         \*recipients: :class:`~discord.abc.Snowflake`
             An argument :class:`list` of :class:`discord.User` to have in
-            your group.
+            your group. Groups cannot be created with only one person,
+            but they can be created with zero people.
 
         Raises
         -------
+        TypeError
+            Only one recipient was given.
         HTTPException
             Failed to create the group direct message.
 
@@ -3165,6 +3168,9 @@ class Client:
         :class:`.GroupChannel`
             The new group channel.
         """
+        if len(recipients) == 1:
+            raise TypeError('Cannot create a group with only one recipient')
+
         users: List[_Snowflake] = [u.id for u in recipients]
         state = self._connection
         data = await state.http.start_group(users)
