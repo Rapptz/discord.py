@@ -276,11 +276,11 @@ def button(
 
     .. note::
 
-        Buttons with a URL or SKU cannot be created with this function.
+        Buttons with a URL or an SKU cannot be created with this function.
         Consider creating a :class:`Button` manually instead.
-        This is because buttons with a URL do not have a callback
+        This is because these buttons cannot have a callback
         associated with them since Discord does not do any processing
-        with it, and buttons with a SKU are handled by Discord.
+        with them.
 
     Parameters
     ------------
