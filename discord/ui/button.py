@@ -107,11 +107,15 @@ class Button(Item[V]):
         sku_id: Optional[int] = None,
     ):
         super().__init__()
-        if custom_id is not None and url is not None:
-            raise TypeError('cannot mix both url and custom_id with Button')
+        if custom_id is not None and (url is not None or sku_id is not None):
+            raise TypeError('cannot mix both url or sku_id and custom_id with Button')
 
+        if url is not None and sku_id is not None:
+            raise TypeError('cannot mix both url and sku_id')
+
+        requires_custom_id = url is None and sku_id is None
         self._provided_custom_id = custom_id is not None
-        if url is None and custom_id is None:
+        if requires_custom_id and custom_id is None:
             custom_id = os.urandom(16).hex()
 
         if custom_id is not None and not isinstance(custom_id, str):
