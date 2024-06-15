@@ -78,7 +78,8 @@ class Button(Item[V]):
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     sku_id: Optional[:class:`int`]
-        The SKU ID this button sends you to. Can't be combined with ``url``.
+        The SKU ID this button sends you to. Can't be combined with ``url``, ``label``, ``emoji``
+        nor ``custom_id``.
 
         .. versionadded:: 2.4
     """
@@ -222,7 +223,8 @@ class Button(Item[V]):
 
     @sku_id.setter
     def sku_id(self, value: Optional[int]) -> None:
-        self.style = ButtonStyle.premium
+        if value is not None:
+            self.style = ButtonStyle.premium
         self._underlying.sku_id = value
 
     @classmethod
@@ -265,7 +267,6 @@ def button(
     style: ButtonStyle = ButtonStyle.secondary,
     emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
     row: Optional[int] = None,
-    sku_id: Optional[int] = None,
 ) -> Callable[[ItemCallbackType[V, Button[V]]], Button[V]]:
     """A decorator that attaches a button to a component.
 
@@ -275,11 +276,11 @@ def button(
 
     .. note::
 
-        Buttons with a URL cannot be created with this function.
+        Buttons with a URL or an SKU cannot be created with this function.
         Consider creating a :class:`Button` manually instead.
-        This is because buttons with a URL do not have a callback
+        This is because these buttons cannot have a callback
         associated with them since Discord does not do any processing
-        with it.
+        with them.
 
     Parameters
     ------------
@@ -303,10 +304,6 @@ def button(
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
-    sku_id: Optional[:class:`int`]
-        The SKU ID this button sends you to. Can't be combined with ``url``.
-
-        .. versionadded:: 2.4
     """
 
     def decorator(func: ItemCallbackType[V, Button[V]]) -> ItemCallbackType[V, Button[V]]:
@@ -322,7 +319,7 @@ def button(
             'label': label,
             'emoji': emoji,
             'row': row,
-            'sku_id': sku_id,
+            'sku_id': None,
         }
         return func
 
