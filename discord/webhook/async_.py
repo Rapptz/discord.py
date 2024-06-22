@@ -1241,6 +1241,8 @@ class Webhook(BaseWebhook):
         cls,
         url: str,
         *,
+        proxy: Optional[str] = None,
+        proxy_auth: Optional[aiohttp.BasicAuth] = None,
         session: aiohttp.ClientSession = MISSING,
         client: Client = MISSING,
         bot_token: Optional[str] = None,
@@ -1255,6 +1257,10 @@ class Webhook(BaseWebhook):
         ------------
         url: :class:`str`
             The URL of the webhook.
+        proxy: Optional[:class:`str`]
+            Proxy URL.
+        proxy_auth: Optional[:class:`aiohttp.BasicAuth`]
+            An object that represents proxy HTTP Basic Authorization.
         session: :class:`aiohttp.ClientSession`
             The session to use to send requests with. Note
             that the library does not manage the session and
@@ -1301,7 +1307,7 @@ class Webhook(BaseWebhook):
 
         data: Dict[str, Any] = m.groupdict()
         data['type'] = 1
-        return cls(data, session, token=bot_token, state=state)  # type: ignore  # Casting dict[str, Any] to WebhookPayload
+        return cls(data, session, token=bot_token, state=state, proxy=proxy, proxy_auth=proxy_auth)  # type: ignore  # Casting dict[str, Any] to WebhookPayload
 
     @classmethod
     def _as_follower(cls, data, *, channel, user) -> Self:
