@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-03-26 03:41+0000\n"
-"PO-Revision-Date: 2024-04-17 02:43\n"
+"PO-Revision-Date: 2024-06-30 15:24\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -932,7 +932,7 @@ msgstr "ギルドにカウント情報を含めるかどうか。これを使う
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_guild:28
 msgid "The guild doesn't exist or you got no access to it."
-msgstr ""
+msgstr "ギルドが存在しないか、アクセスすることができません"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_guild:29
 msgid "Getting the guild failed."
@@ -1283,7 +1283,7 @@ msgstr "Union[:class:`.StandardSticker`, :class:`.GuildSticker`]"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_skus:3
 msgid "Retrieves the bot's available SKUs."
-msgstr ""
+msgstr "ボットの利用可能なSKUを取得します。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_skus:7
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_entitlement:11
@@ -1291,23 +1291,23 @@ msgstr ""
 #: ../../../discord/client.py:docstring of discord.client.Client.create_entitlement:14
 #: ../../../discord/sku.py:docstring of discord.sku.Entitlement.delete:5
 msgid "The application ID could not be found."
-msgstr ""
+msgstr "アプリケーションコマンドが見つからなかった場合。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_skus:8
 msgid "Retrieving the SKUs failed."
-msgstr ""
+msgstr "SKUの取得に失敗した場合。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_skus:10
 msgid "The bot's available SKUs."
-msgstr ""
+msgstr "ボットが利用できるSKU"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_skus:11
 msgid "List[:class:`.SKU`]"
-msgstr ""
+msgstr "List[:class:`.SKU`]"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_entitlement:3
 msgid "Retrieves a :class:`.Entitlement` with the specified ID."
-msgstr ""
+msgstr "特定のIDの :class:`.Entitlement` を取得します。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_entitlement:7
 msgid "The entitlement's ID to fetch from."
@@ -1449,7 +1449,7 @@ msgstr ""
 #: ../../../discord/client.py:docstring of discord.client.Client.add_dynamic_items:3
 #: ../../../discord/client.py:docstring of discord.client.Client.remove_dynamic_items:3
 msgid "This method accepts *class types* rather than instances."
-msgstr ""
+msgstr "この関数はインスタンスではなく、クラスのタイプを返します。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.add_dynamic_items:7
 msgid "The classes of dynamic items to add."
@@ -2022,7 +2022,7 @@ msgstr ":class:`TeamMembershipState`"
 
 #: ../../../discord/team.py:docstring of discord.team.TeamMember:69
 msgid "The role of the member within the team."
-msgstr ""
+msgstr "チーム内でのメンバーの役割。"
 
 #: ../../../discord/team.py:docstring of discord.team.TeamMember:73
 msgid ":class:`TeamMemberRole`"

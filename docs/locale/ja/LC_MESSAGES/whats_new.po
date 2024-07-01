@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-03-26 03:41+0000\n"
-"PO-Revision-Date: 2024-04-17 02:43\n"
+"PO-Revision-Date: 2024-06-30 15:24\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -27,7 +27,7 @@ msgstr "このページでは、特定のバージョンの新機能や変更さ
 
 #: ../../whats_new.rst:17
 msgid "v2.3.2"
-msgstr ""
+msgstr "v2.3.2"
 
 #: ../../whats_new.rst:20
 #: ../../whats_new.rst:37
@@ -39,7 +39,7 @@ msgstr "バグ修正"
 
 #: ../../whats_new.rst:22
 msgid "Fix the ``name`` parameter not being respected when sending a :class:`CustomActivity`."
-msgstr ""
+msgstr ":class:`CustomActivity`クラスを送信したときに、`name`パラメーターが参照されない問題を修正しました。"
 
 #: ../../whats_new.rst:23
 msgid "Fix :attr:`Intents.emoji` and :attr:`Intents.emojis_and_stickers` having swapped alias values (:issue:`9471`)."
@@ -59,19 +59,19 @@ msgstr ""
 
 #: ../../whats_new.rst:27
 msgid "Fix voice websocket not being closed before being replaced by a new one (:issue:`9518`)."
-msgstr ""
+msgstr "新しいものに置き換えられる前に音声のウェブソケットが閉じない問題を修正しました。(:issue:`9518`)"
 
 #: ../../whats_new.rst:28
 msgid "|commands| Fix the wrong :meth:`~ext.commands.HelpCommand.on_help_command_error` being called when ejected from a cog."
-msgstr ""
+msgstr "|commands| Cogから:meth:`~ext.commands.HelpCommand.on_help_command_error`を取り出した時に呼び出される問題を修正しました。"
 
 #: ../../whats_new.rst:29
 msgid "|commands| Fix ``=None`` being displayed in :attr:`~ext.commands.Command.signature`."
-msgstr ""
+msgstr "|commands| :attr:`~ext.commands.Command.signature`で``=None``が表示されるように修正しました。"
 
 #: ../../whats_new.rst:34
 msgid "v2.3.1"
-msgstr ""
+msgstr "v2.3.1"
 
 #: ../../whats_new.rst:39
 msgid "Fix username lookup in :meth:`Guild.get_member_named` (:issue:`9451`)."
@@ -79,7 +79,7 @@ msgstr ""
 
 #: ../../whats_new.rst:41
 msgid "Use cache data first for :attr:`Interaction.channel` instead of API data."
-msgstr ""
+msgstr "APIのデータの代わりに:attr:`Interaction.channel`のキャッシュのデータをはじめに利用します。"
 
 #: ../../whats_new.rst:41
 msgid "This bug usually manifested in incomplete channel objects (e.g. no ``overwrites``) because Discord does not provide this data."
