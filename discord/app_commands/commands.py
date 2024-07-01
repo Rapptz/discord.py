@@ -2549,6 +2549,8 @@ def private_channel_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]
 
     Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
 
+    .. versionadded:: 2.4
+
     Examples
     ---------
 
@@ -2640,6 +2642,8 @@ def allowed_contexts(guilds: bool = MISSING, dms: bool = MISSING, private_channe
 
     Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
 
+    .. versionadded:: 2.4
+
     Examples
     ---------
 
@@ -2691,6 +2695,8 @@ def guild_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
 
     Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
 
+    .. versionadded:: 2.4
+
     Examples
     ---------
 
@@ -2739,6 +2745,8 @@ def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
 
     Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
 
+    .. versionadded:: 2.4
+
     Examples
     ---------
 
@@ -2780,6 +2788,8 @@ def allowed_installs(
     This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
 
     Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    .. versionadded:: 2.4
 
     Examples
     ---------

@@ -336,7 +336,7 @@ Enumerations
         Represents a link button.
     .. attribute:: premium
 
-        Represents a gradient button denoting that buying a SKU is
+        Represents a button denoting that buying a SKU is
         required to perform this action.
 
         .. versionadded:: 2.4

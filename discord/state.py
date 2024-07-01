@@ -1648,13 +1648,8 @@ class ConnectionState(Generic[ClientT]):
 
         if message and user:
             poll = self._update_poll_counts(message, raw.answer_id, True, raw.user_id == self.self_id)
-            if not poll:
-                _log.warning(
-                    'POLL_VOTE_ADD referencing message with ID: %s does not have a poll. Discarding.', raw.message_id
-                )
-                return
-
-            self.dispatch('poll_vote_add', user, poll.get_answer(raw.answer_id))
+            if poll:
+                self.dispatch('poll_vote_add', user, poll.get_answer(raw.answer_id))
 
     def parse_message_poll_vote_remove(self, data: gw.PollVoteActionEvent) -> None:
         raw = RawPollVoteActionEvent(data)
@@ -1671,13 +1666,8 @@ class ConnectionState(Generic[ClientT]):
 
         if message and user:
             poll = self._update_poll_counts(message, raw.answer_id, False, raw.user_id == self.self_id)
-            if not poll:
-                _log.warning(
-                    'POLL_VOTE_REMOVE referencing message with ID: %s does not have a poll. Discarding.', raw.message_id
-                )
-                return
-
-            self.dispatch('poll_vote_remove', user, poll.get_answer(raw.answer_id))
+            if poll:
+                self.dispatch('poll_vote_remove', user, poll.get_answer(raw.answer_id))
 
     def _get_reaction_user(self, channel: MessageableChannel, user_id: int) -> Optional[Union[User, Member]]:
         if isinstance(channel, (TextChannel, Thread, VoiceChannel)):
