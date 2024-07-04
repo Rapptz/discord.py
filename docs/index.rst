@@ -6,8 +6,8 @@
 Welcome to discord.py
 ===========================
 
-.. image:: /images/snake.svg
-.. image:: /images/snake_dark.svg
+.. image:: /docs/images/snake.svg
+.. image:: /docs/images/snake_dark.svg
 
 discord.py is a modern, easy to use, feature-rich, and async ready API wrapper
 for Discord.
