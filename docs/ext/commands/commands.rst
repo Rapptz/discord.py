@@ -94,15 +94,15 @@ The most basic form of parameter passing is the positional parameter. This is wh
 
 On the bot using side, you can provide positional arguments by just passing a regular string:
 
-.. image:: /images/commands/positional1.png
+.. image:: /docs/images/commands/positional1.png
 
 To make use of a word with spaces in between, you should quote it:
 
-.. image:: /images/commands/positional2.png
+.. image:: /docs/images/commands/positional2.png
 
 As a note of warning, if you omit the quotes, you will only get the first word:
 
-.. image:: /images/commands/positional3.png
+.. image:: /docs/images/commands/positional3.png
 
 Since positional arguments are just regular Python arguments, you can have as many as you want:
 
@@ -130,16 +130,16 @@ so multi-word parameters should be quoted.
 
 For example, on the bot side:
 
-.. image:: /images/commands/variable1.png
+.. image:: /docs/images/commands/variable1.png
 
 If the user wants to input a multi-word argument, they have to quote it like earlier:
 
-.. image:: /images/commands/variable2.png
+.. image:: /docs/images/commands/variable2.png
 
 Do note that similar to the Python function behaviour, a user can technically pass no arguments
 at all:
 
-.. image:: /images/commands/variable3.png
+.. image:: /docs/images/commands/variable3.png
 
 Since the ``args`` variable is a :class:`py:tuple`,
 you can do anything you would usually do with one.
@@ -163,11 +163,11 @@ seen below:
 
 On the bot side, we do not need to quote input with spaces:
 
-.. image:: /images/commands/keyword1.png
+.. image:: /docs/images/commands/keyword1.png
 
 Do keep in mind that wrapping it in quotes leaves it as-is:
 
-.. image:: /images/commands/keyword2.png
+.. image:: /docs/images/commands/keyword2.png
 
 By default, the keyword-only arguments are stripped of white space to make it easier to work with. This behaviour can be
 toggled by the :attr:`.Command.rest_is_raw` argument in the decorator.
@@ -522,7 +522,7 @@ Consider the following example:
         await ctx.send(f'{amount} bottles of {liquid} on the wall!')
 
 
-.. image:: /images/commands/optional1.png
+.. image:: /docs/images/commands/optional1.png
 
 In this example, since the argument could not be converted into an ``int``, the default of ``99`` is passed and the parser
 resumes handling, which in this case would be to pass it into the ``liquid`` parameter.
@@ -596,7 +596,7 @@ Consider the following example:
 
 When invoked, it allows for any number of members to be passed in:
 
-.. image:: /images/commands/greedy1.png
+.. image:: /docs/images/commands/greedy1.png
 
 The type passed when using this converter depends on the parameter type that it is being attached to:
 
@@ -752,7 +752,7 @@ For example, the following code:
 
 Allows the user to invoke the command using a simple flag-like syntax:
 
-.. image:: /images/commands/flags1.png
+.. image:: /docs/images/commands/flags1.png
 
 Flags use a syntax that allows the user to not require quotes when passing in values to the flag. The goal of the
 flag syntax is to be as user-friendly as possible. This makes flags a good choice for complicated commands that can have
@@ -858,7 +858,7 @@ For example, augmenting the example above:
 
 This is called by repeatedly specifying the flag:
 
-.. image:: /images/commands/flags2.png
+.. image:: /docs/images/commands/flags2.png
 
 typing.Tuple
 ^^^^^^^^^^^^^
@@ -879,7 +879,7 @@ allows for "greedy-like" semantics using a variadic tuple:
 
 This allows the previous ``ban`` command to be called like this:
 
-.. image:: /images/commands/flags3.png
+.. image:: /docs/images/commands/flags3.png
 
 The :class:`py:tuple` annotation also allows for parsing of pairs. For example, given the following code:
 
@@ -1225,8 +1225,8 @@ The above command can be invoked as both text and slash command. Note that you h
 sync your :class:`~app_commands.CommandTree` by calling :class:`~app_commands.CommandTree.sync` in order
 for slash commands to appear.
 
-.. image:: /images/commands/hybrid1.png
-.. image:: /images/commands/hybrid2.png
+.. image:: /docs/images/commands/hybrid1.png
+.. image:: /docs/images/commands/hybrid2.png
 
 You can create hybrid command groups and sub-commands using the :meth:`.Bot.hybrid_group`
 decorator.
@@ -1244,8 +1244,8 @@ decorator.
 Due to a Discord limitation, slash command groups cannot be invoked directly so the ``fallback``
 parameter allows you to create a sub-command that will be bound to callback of parent group.
 
-.. image:: /images/commands/hybrid3.png
-.. image:: /images/commands/hybrid4.png
+.. image:: /docs/images/commands/hybrid3.png
+.. image:: /docs/images/commands/hybrid4.png
 
 Due to certain limitations on slash commands, some features of text commands are not supported
 on hybrid commands. You can define a hybrid command as long as it meets the same subset that is
