@@ -48,6 +48,7 @@ class Member(PartialMember, total=False):
     pending: bool
     permissions: str
     communication_disabled_until: str
+    banner: NotRequired[Optional[str]]
     avatar_decoration_data: NotRequired[AvatarDecorationData]
 
 
