@@ -440,6 +440,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._permissions = member._permissions
         self._state = member._state
         self._avatar = member._avatar
+        self._banner = member._banner
         self._avatar_decoration_data = member._avatar_decoration_data
 
         # Reference will not be copied unless necessary by PRESENCE_UPDATE
@@ -468,6 +469,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.timed_out_until = utils.parse_time(data.get('communication_disabled_until'))
         self._roles = utils.SnowflakeList(map(int, data['roles']))
         self._avatar = data.get('avatar')
+        self._banner = data.get('banner')
         self._flags = data.get('flags', 0)
         self._avatar_decoration_data = data.get('avatar_decoration_data')
 
