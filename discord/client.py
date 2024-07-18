@@ -71,7 +71,7 @@ from .utils import MISSING, time_snowflake
 from .object import Object
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
-from .appinfo import AppInfo
+from .appinfo import AppInfo, AppEmoji
 from .ui.view import View
 from .ui.dynamic import DynamicItem
 from .stage_instance import StageInstance
@@ -359,7 +359,12 @@ class Client:
 
     @property
     def emojis(self) -> Sequence[Emoji]:
-        """Sequence[:class:`.Emoji`]: The emojis that the connected client has."""
+        """Sequence[:class:`.Emoji`]: The emojis that the connected client has.
+
+        .. note::
+
+            These are not the emojis owned by the application. To get those, use :meth:`fetch_emojis`.
+        """
         return self._connection.emojis
 
     @property
@@ -433,6 +438,84 @@ class Client:
         .. versionadded:: 2.0
         """
         return self._application
+
+    async def create_emoji(
+        self,
+        *,
+        name: str,
+        image: bytes,
+    ) -> AppEmoji:
+        """Create an emoji for the current application.
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The emoji name. Must be at least 2 characters.
+        image: :class:`bytes`
+            The :term:`py:bytes-like object` representing the image data to use.
+            Only JPG, PNG and GIF images are supported.
+        """
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        img = utils._bytes_to_base64_data(image)
+        data = await self.http.create_application_emoji(self.application_id, name, img)
+        return AppEmoji(application_id=self.application_id, state=self._connection, data=data)
+
+    async def fetch_emoji(self, emoji_id: int) -> AppEmoji:
+        """|coro|
+
+        Retrieves an emoji for the current application.
+
+        .. versionadded:: 2.4
+
+        Parameters
+        ----------
+        emoji_id: :class:`int`
+            The emoji ID to fetch.
+
+        Raises
+        ------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Retrieving the emoji failed.
+
+        Returns
+        -------
+        :class:`~discord.AppEmoji`
+            The emoji requested.
+        """
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        data = await self.http.get_application_emoji(self.application_id, emoji_id)
+        return AppEmoji(application_id=self.application_id, state=self._connection, data=data)
+
+    async def fetch_emojis(self) -> List[AppEmoji]:
+        """|coro|
+
+        Retrieves all emojis for the current application.
+
+        .. versionadded:: 2.4
+
+        Raises
+        -------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Retrieving the emojis failed.
+
+        Returns
+        -------
+        List[:class:`~discord.AppEmoji`]
+            The list of emojis for the current application.
+        """
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        data = await self.http.get_application_emojis(self.application_id)
+        return [AppEmoji(application_id=self.application_id, state=self._connection, data=emoji) for emoji in data['items']]
 
     def is_ready(self) -> bool:
         """:class:`bool`: Specifies if the client's internal cache is ready for use."""

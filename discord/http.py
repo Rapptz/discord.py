@@ -2503,7 +2503,7 @@ class HTTPClient:
             ),
         )
 
-    # Misc
+    # Application
 
     def application_info(self) -> Response[appinfo.AppInfo]:
         return self.request(Route('GET', '/oauth2/applications/@me'))
@@ -2523,6 +2523,59 @@ class HTTPClient:
 
         payload = {k: v for k, v in payload.items() if k in valid_keys}
         return self.request(Route('PATCH', '/applications/@me'), json=payload, reason=reason)
+
+    def get_application_emojis(self, application_id: Snowflake) -> Response[appinfo.AppEmoji]:
+        return self.request(Route('GET', '/applications/{application_id}/emojis', application_id=application_id))
+
+    def get_application_emoji(self, application_id: Snowflake, emoji_id: Snowflake) -> Response[emoji.Emoji]:
+        return self.request(
+            Route(
+                'GET', '/applications/{application_id}/emojis/{emoji_id}', application_id=application_id, emoji_id=emoji_id
+            )
+        )
+
+    def create_application_emoji(
+        self,
+        application_id: Snowflake,
+        name: str,
+        image: str,
+    ) -> Response[emoji.Emoji]:
+        payload = {
+            'name': name,
+            'image': image,
+        }
+
+        return self.request(
+            Route('POST', '/applications/{application_id}/emojis', application_id=application_id), json=payload
+        )
+
+    def edit_application_emoji(
+        self,
+        application_id: Snowflake,
+        emoji_id: Snowflake,
+        *,
+        payload: Dict[str, Any],
+    ) -> Response[emoji.Emoji]:
+        r = Route(
+            'PATCH', '/applications/{application_id}/emojis/{emoji_id}', application_id=application_id, emoji_id=emoji_id
+        )
+        return self.request(r, json=payload)
+
+    def delete_application_emoji(
+        self,
+        application_id: Snowflake,
+        emoji_id: Snowflake,
+    ) -> Response[None]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/applications/{application_id}/emojis/{emoji_id}',
+                application_id=application_id,
+                emoji_id=emoji_id,
+            )
+        )
+
+    # Poll
 
     def get_poll_answer_voters(
         self,
@@ -2560,6 +2613,8 @@ class HTTPClient:
                 message_id=message_id,
             )
         )
+
+    # Misc
 
     async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
         try:

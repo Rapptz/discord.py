@@ -30,6 +30,7 @@ from typing_extensions import NotRequired
 from .user import User
 from .team import Team
 from .snowflake import Snowflake
+from .emoji import Emoji
 
 
 class InstallParams(TypedDict):
@@ -78,3 +79,7 @@ class PartialAppInfo(BaseAppInfo, total=False):
 class GatewayAppInfo(TypedDict):
     id: Snowflake
     flags: int
+
+
+class AppEmoji(TypedDict):
+    items: list[Emoji]
