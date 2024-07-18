@@ -447,6 +447,8 @@ class Client:
     ) -> AppEmoji:
         """Create an emoji for the current application.
 
+        .. versionadded:: 2.4
+
         Parameters
         ----------
         name: :class:`str`
