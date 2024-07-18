@@ -54,6 +54,7 @@ __all__ = (
     'AppInfo',
     'PartialAppInfo',
     'AppInstallParams',
+    'AppEmoji',
 )
 
 
