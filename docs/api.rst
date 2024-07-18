@@ -80,6 +80,14 @@ AppInstallParams
 .. autoclass:: AppInstallParams()
     :members:
 
+AppEmoji
+~~~~~~~~
+
+.. attributetable:: AppEmoji
+
+.. autoclass:: AppEmoji()
+    :members:
+
 Team
 ~~~~~
 
