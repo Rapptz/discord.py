@@ -619,7 +619,7 @@ class AppEmoji(_EmojiTag, AssetMixin):
         return f'<:{self.name}:{self.id}>'
 
     def __repr__(self) -> str:
-        return f'<Emoji id={self.id} name={self.name!r} animated={self.animated} managed={self.managed}>'
+        return f'<{self.__class__.__name__} id={self.id} name={self.name!r} animated={self.animated}>'
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, _EmojiTag) and self.id == other.id
