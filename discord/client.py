@@ -363,7 +363,7 @@ class Client:
 
         .. note::
 
-            These are not the emojis owned by the application. To get those, use :meth:`fetch_emojis`.
+            These does not include the emojis owned by the application. To get those, use :meth:`fetch_emojis`.
         """
         return self._connection.emojis
 
@@ -445,7 +445,9 @@ class Client:
         name: str,
         image: bytes,
     ) -> AppEmoji:
-        """Create an emoji for the current application.
+        """|coro|
+        
+        Create an emoji for the current application.
 
         .. versionadded:: 2.5
 
@@ -456,6 +458,18 @@ class Client:
         image: :class:`bytes`
             The :term:`py:bytes-like object` representing the image data to use.
             Only JPG, PNG and GIF images are supported.
+
+        Raises
+        ------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Creating the emoji failed.
+
+        Returns
+        -------
+        :class:`.AppEmoji`
+            The emoji that was created.
         """
         if self.application_id is None:
             raise MissingApplicationID
@@ -485,7 +499,7 @@ class Client:
 
         Returns
         -------
-        :class:`~discord.AppEmoji`
+        :class:`.AppEmoji`
             The emoji requested.
         """
         if self.application_id is None:
@@ -510,7 +524,7 @@ class Client:
 
         Returns
         -------
-        List[:class:`~discord.AppEmoji`]
+        List[:class:`.AppEmoji`]
             The list of emojis for the current application.
         """
         if self.application_id is None:
