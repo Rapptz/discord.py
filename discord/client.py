@@ -447,7 +447,7 @@ class Client:
     ) -> AppEmoji:
         """Create an emoji for the current application.
 
-        .. versionadded:: 2.5.1
+        .. versionadded:: 2.5
 
         Parameters
         ----------
@@ -469,7 +469,7 @@ class Client:
 
         Retrieves an emoji for the current application.
 
-        .. versionadded:: 2.5.1
+        .. versionadded:: 2.5
 
         Parameters
         ----------
@@ -499,7 +499,7 @@ class Client:
 
         Retrieves all emojis for the current application.
 
-        .. versionadded:: 2.5.1
+        .. versionadded:: 2.5
 
         Raises
         -------
