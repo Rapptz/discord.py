@@ -524,7 +524,7 @@ class AppInstallParams:
 class AppEmoji(_EmojiTag, AssetMixin):
     """Represents an emoji from an application.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5.1
 
     .. container:: operations
 
