@@ -446,7 +446,7 @@ class Client:
         image: bytes,
     ) -> AppEmoji:
         """|coro|
-        
+
         Create an emoji for the current application.
 
         .. versionadded:: 2.5
