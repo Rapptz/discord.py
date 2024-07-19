@@ -110,6 +110,7 @@ __all__ = (
     'PartialMessage',
     'MessageInteraction',
     'MessageReference',
+    'MessageSnapshot',
     'DeletedReferencedMessage',
     'MessageApplication',
     'RoleSubscriptionInfo',
