@@ -81,5 +81,5 @@ class GatewayAppInfo(TypedDict):
     flags: int
 
 
-class AppEmoji(TypedDict):
+class ListAppEmojis(TypedDict):
     items: list[Emoji]

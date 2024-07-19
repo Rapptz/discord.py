@@ -2524,7 +2524,7 @@ class HTTPClient:
         payload = {k: v for k, v in payload.items() if k in valid_keys}
         return self.request(Route('PATCH', '/applications/@me'), json=payload, reason=reason)
 
-    def get_application_emojis(self, application_id: Snowflake) -> Response[appinfo.AppEmoji]:
+    def get_application_emojis(self, application_id: Snowflake) -> Response[appinfo.ListAppEmojis]:
         return self.request(Route('GET', '/applications/{application_id}/emojis', application_id=application_id))
 
     def get_application_emoji(self, application_id: Snowflake, emoji_id: Snowflake) -> Response[emoji.Emoji]:
