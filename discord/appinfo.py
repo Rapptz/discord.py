@@ -24,18 +24,16 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING, Optional, Tuple, Iterator
+from typing import List, TYPE_CHECKING, Optional
 
 from . import utils
-from .asset import Asset, AssetMixin
+from .asset import Asset
 from .flags import ApplicationFlags
 from .permissions import Permissions
 from .utils import MISSING
-from .partial_emoji import _EmojiTag, PartialEmoji
 
 if TYPE_CHECKING:
     from typing import Dict, Any
-    from typing_extensions import Self
 
     from .guild import Guild
     from .types.appinfo import (
@@ -46,9 +44,6 @@ if TYPE_CHECKING:
     )
     from .user import User
     from .state import ConnectionState
-    from .role import Role
-    from .types.emoji import Emoji as EmojiPayload
-    from datetime import datetime
 
 __all__ = (
     'AppInfo',
