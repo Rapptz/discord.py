@@ -223,7 +223,7 @@ class Emoji(_EmojiTag, AssetMixin):
         if self.is_application_owned():
             application_id = self._state.application_id
             if application_id is None:
-                raise MissingApplicationID()
+                raise MissingApplicationID
 
             await self._state.http.delete_application_emoji(application_id, self.id)
             return
@@ -280,7 +280,7 @@ class Emoji(_EmojiTag, AssetMixin):
         if self.is_application_owned():
             application_id = self._state.application_id
             if application_id is None:
-                raise MissingApplicationID()
+                raise MissingApplicationID
 
             payload.pop('roles', None)
             data = await self._state.http.edit_application_emoji(
