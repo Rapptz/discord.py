@@ -49,7 +49,7 @@ from .asset import Asset
 from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
-from .enums import InteractionType, MessageType, ChannelType, try_enum
+from .enums import InteractionType, MessageReferenceType, MessageType, ChannelType, try_enum
 from .errors import HTTPException
 from .components import _component_factory
 from .embeds import Embed
@@ -462,6 +462,8 @@ class MessageReference:
 
     Attributes
     -----------
+    type: :class:`MessageReferenceType`
+        The type of message reference.
     message_id: Optional[:class:`int`]
         The id of the message referenced.
     channel_id: :class:`int`
@@ -486,10 +488,19 @@ class MessageReference:
         .. versionadded:: 1.6
     """
 
-    __slots__ = ('message_id', 'channel_id', 'guild_id', 'fail_if_not_exists', 'resolved', '_state')
+    __slots__ = ('type', 'message_id', 'channel_id', 'guild_id', 'fail_if_not_exists', 'resolved', '_state')
 
-    def __init__(self, *, message_id: int, channel_id: int, guild_id: Optional[int] = None, fail_if_not_exists: bool = True):
+    def __init__(
+        self,
+        *,
+        type: int,
+        message_id: int,
+        channel_id: int,
+        guild_id: Optional[int] = None,
+        fail_if_not_exists: bool = True,
+    ):
         self._state: Optional[ConnectionState] = None
+        self.type: MessageReferenceType = try_enum(MessageReferenceType, type)
         self.resolved: Optional[Union[Message, DeletedReferencedMessage]] = None
         self.message_id: Optional[int] = message_id
         self.channel_id: int = channel_id
@@ -499,6 +510,7 @@ class MessageReference:
     @classmethod
     def with_state(cls, state: ConnectionState, data: MessageReferencePayload) -> Self:
         self = cls.__new__(cls)
+        self.type = try_enum(MessageReferenceType, data.get('type', MessageReferenceType.default))
         self.message_id = utils._get_as_snowflake(data, 'message_id')
         self.channel_id = int(data['channel_id'])
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
@@ -529,6 +541,7 @@ class MessageReference:
             A reference to the message.
         """
         self = cls(
+            type=0,
             message_id=message.id,
             channel_id=message.channel.id,
             guild_id=getattr(message.guild, 'id', None),

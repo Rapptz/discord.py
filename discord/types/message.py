@@ -103,6 +103,7 @@ class MessageApplication(TypedDict):
 
 
 class MessageReference(TypedDict, total=False):
+    type: MessageReferenceType
     message_id: Snowflake
     channel_id: Required[Snowflake]
     guild_id: Snowflake
@@ -115,6 +116,8 @@ class RoleSubscriptionData(TypedDict):
     total_months_subscribed: int
     is_renewal: bool
 
+
+MessageReferenceType = Literal[0, 1]
 
 MessageType = Literal[
     0,
