@@ -1864,6 +1864,8 @@ class Message(PartialMessage, Hashable):
         The poll attached to this message.
 
         .. versionadded:: 2.4
+    message_snapshots: Optional[List[:class:`MessageSnapshot`]]
+        The message snapshots attached to this message.
     """
 
     __slots__ = (
@@ -1900,6 +1902,7 @@ class Message(PartialMessage, Hashable):
         'position',
         'interaction_metadata',
         'poll',
+        'message_snapshots'
     )
 
     if TYPE_CHECKING:
@@ -1938,6 +1941,7 @@ class Message(PartialMessage, Hashable):
         self.position: Optional[int] = data.get('position')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
+        self.message_snapshots: Optional[List[MessageSnapshot]] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
 
         # This updates the poll so it has the counts, if the message
         # was previously cached.
