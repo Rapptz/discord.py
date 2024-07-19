@@ -62,6 +62,9 @@ from .channel import _guild_channel_factory
 from .channel import _threaded_guild_channel_factory
 from .enums import (
     AuditLogAction,
+    ClanBadgeType,
+    ClanBannerStyle,
+    ClanPlayStyle,
     VideoQualityMode,
     ChannelType,
     EntityType,
@@ -94,6 +97,8 @@ from .object import OLDEST_OBJECT, Object
 from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 from .partial_emoji import _EmojiTag, PartialEmoji
+from .clan import Clan
+from .member_verification import MemberVerification
 
 
 __all__ = (
@@ -4423,3 +4428,93 @@ class Guild(Hashable):
             return False
 
         return self.dms_paused_until > utils.utcnow()
+
+    def has_clan(self) -> bool:
+        """:class:`bool`: Whether there is a clan available for this guild.
+
+        .. versionadded:: 2.5
+        """
+        return 'CLAN' in self.features
+
+    async def fetch_clan(self) -> Clan:
+        """|coro|
+
+        Fetches this guild's clan.
+
+        Raises
+        ------
+        ClientException
+            Guild does not have a clan.
+        HTTPException
+            An error occurred while fetching the clan info.
+
+        Returns
+        -------
+        :class:`Clan`
+            This guild's clan.
+        """
+
+        if not self.has_clan():
+            raise ClientException(
+                'Guild does not have a clan'
+            )
+
+        data = await self._state.http.get_clan(self.id)
+
+        return Clan(data=data, state=self._state)
+
+    async def create_clan(
+        self,
+        *,
+        tag: str,
+        games: Sequence[Snowflake],
+        search_terms: List[str],
+        play_style: ClanPlayStyle,
+        description: str,
+        wildcard_descriptors: List[str],
+        badge_type: ClanBadgeType,
+        badge_primary_colour: Colour = MISSING,
+        badge_primary_color: Colour = MISSING,
+        badge_secondary_colour: Colour = MISSING,
+        badge_secondary_color: Colour = MISSING,
+        banner_style: ClanBannerStyle,
+        banner_primary_colour: Colour = MISSING,
+        banner_primary_color: Colour = MISSING,
+        banner_secondary_colour: Colour = MISSING,
+        banner_secondary_color: Colour = MISSING,
+        verification_form: MemberVerification,
+    ) -> None:
+        """|coro|
+        
+        Creates a new clan from this guild.
+
+        Raises
+        ------
+        Forbidden
+            You donnot have enough permissions to create a clan for this
+            guild.
+        HTTPException
+            An error occurred while creating the guild clan.
+        """
+
+        actual_badge_prim_col = badge_primary_colour or badge_primary_color
+        actual_badge_sec_col = badge_secondary_colour or badge_secondary_color
+        actual_banner_prim_col = banner_primary_colour or banner_primary_color
+        actual_banner_sec_col = banner_secondary_colour or banner_secondary_color
+
+        await self._state.http.create_clan(
+            self.id,
+            tag=tag,
+            game_application_ids=[str(g.id) for g in games],
+            search_terms=search_terms,
+            description=description,
+            play_style=play_style.value,
+            wildcard_descriptors=wildcard_descriptors,
+            badge=badge_type.value,
+            banner=banner_style.value,
+            badge_color_primary=actual_badge_prim_col,
+            badge_color_secondary=actual_badge_sec_col,
+            brand_color_primary=actual_banner_prim_col,
+            brand_color_secondary=actual_banner_sec_col,
+            verification_form=verification_form._to_dict()
+        )

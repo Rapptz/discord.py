@@ -93,6 +93,7 @@ if TYPE_CHECKING:
         welcome_screen,
         sku,
         poll,
+        clan,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -2500,6 +2501,62 @@ class HTTPClient:
                 '/applications/{application_id}/entitlements/{entitlement_id}',
                 application_id=application_id,
                 entitlement_id=entitlement_id,
+            ),
+        )
+
+    # Clan
+
+    def get_clans(self, game_type: Literal['all', 'genshin', 'valorant']) -> Response[List[clan.Clan]]:
+        return self.request(
+            Route(
+                'GET',
+                '/discovery/games/{game_type}',
+                game_type=game_type,
+            ),
+        )
+
+    def get_clan(self, guild_id: int) -> Response[clan.Clan]:
+        return self.request(
+            Route(
+                'GET',
+                '/discovery/{guild_id}/clan',
+                guild_id=guild_id,
+            ),
+        )
+
+    def create_clan(self, guild_id: int, **params: Any) -> Response[None]:
+        valid_keys = (
+            'tag',
+            'game_application_ids',
+            'search_terms',
+            'play_style',
+            'description',
+            'wildcard_descriptors',
+            'badge',
+            'badge_color_primary',
+            'badge_color_secondary',
+            'banner',
+            'brand_color_primary',
+            'brand_color_secondary',
+            'verification_form',
+        )
+        payload = {k: v for k, v in params.items() if k in valid_keys}
+
+        return self.request(
+            Route(
+                'POST',
+                '/clan/{guild_id}',
+                guild_id=guild_id,
+            ),
+            json=payload,
+        )
+
+    def get_clan_settings(self, guild_id: int) -> Response[clan.ClanSettings]:
+        return self.request(
+            Route(
+                'GET',
+                '/clan/{guild_id}/settings',
+                guild_id=guild_id,
             ),
         )
 
