@@ -157,6 +157,18 @@ MessageType = Literal[
 ]
 
 
+class MessageSnapshot(TypedDict):
+    type: MessageType
+    content: str
+    embeds: List[Embed]
+    attachments: List[Attachment]
+    timestamp: str
+    edited_timestamp: Optional[str]
+    flags: NotRequired[int]
+    mentions: List[UserWithMember]
+    mention_roles: SnowflakeList
+
+
 class Message(PartialMessage):
     id: Snowflake
     author: User

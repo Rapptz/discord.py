@@ -32,6 +32,7 @@ from os import PathLike
 from typing import (
     Dict,
     TYPE_CHECKING,
+    Literal,
     Sequence,
     Union,
     List,
@@ -72,6 +73,7 @@ if TYPE_CHECKING:
         Message as MessagePayload,
         Attachment as AttachmentPayload,
         MessageReference as MessageReferencePayload,
+        MessageSnapshot as MessageSnapshotPayload,
         MessageApplication as MessageApplicationPayload,
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
@@ -450,6 +452,93 @@ class DeletedReferencedMessage:
     def guild_id(self) -> Optional[int]:
         """Optional[:class:`int`]: The guild ID of the deleted referenced message."""
         return self._parent.guild_id
+
+
+class MessageSnapshot:
+    """Represents a message snapshot attached to a forwarded message.
+
+    Attributes
+    -----------
+    type: :class:`MessageType`
+        The type of message of the snapshotted message.
+    content: :class:`str`
+        The actual contents of the snapshotted message.
+        If :attr:`Intents.message_content` is not enabled this will always be an empty string
+        unless the bot is mentioned or the message is a direct message.
+    embeds: List[:class:`Embed`]
+        A list of embeds the snapshotted message has.
+        If :attr:`Intents.message_content` is not enabled this will always be an empty list
+        unless the bot is mentioned or the message is a direct message.
+    attachments: List[:class:`Attachment`]
+        A list of attachments given to the snapshotted message.
+        If :attr:`Intents.message_content` is not enabled this will always be an empty list
+        unless the bot is mentioned or the message is a direct message.
+    timestamp: :class:`datetime.datetime`
+        The snapshotted message's timestamp.
+    flags: :class:`MessageFlags`
+        Extra features of the the message snapshot.
+    """
+
+    __slots__ = (
+        '_cs_raw_channel_mentions',
+        '_cs_raw_mentions',
+        '_cs_raw_role_mentions',
+        '_edited_timestamp',
+        'attachments',
+        'content',
+        'embeds',
+        'flags',
+        'timestamp',
+        'type',
+    )
+
+    @classmethod
+    def _from_value(
+        cls,
+        state: ConnectionState,
+        message_snapshots: Optional[List[Dict[Literal['message'], MessageSnapshotPayload]]],
+    ):
+        if not message_snapshots:
+            return None
+
+        return [MessageSnapshot(state, snapshot['message']) for snapshot in message_snapshots]
+
+    def __init__(self, state: ConnectionState, data: MessageSnapshotPayload):
+        self.type: MessageType = try_enum(MessageType, data['type'])
+        self.content: str = data['content']
+        self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
+        self.attachments: List[Attachment] = [Attachment(data=a, state=state) for a in data['attachments']]
+        self.timestamp: datetime.datetime = utils.parse_time(data['timestamp'])
+        self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
+        self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
+
+    def __repr__(self) -> str:
+        name = self.__class__.__name__
+        return f'<{name} type={self.type!r} timestamp={self.timestamp!r} flags={self.flags!r}>'
+    
+    @utils.cached_slot_property('_cs_raw_mentions')
+    def raw_mentions(self) -> List[int]:
+        """List[:class:`int`]: A property that returns an array of user IDs matched with
+        the syntax of ``<@user_id>`` in the message content.
+
+        This allows you to receive the user IDs of mentioned users
+        even in a private message context.
+        """
+        return [int(x) for x in re.findall(r'<@!?([0-9]{15,20})>', self.content)]
+
+    @utils.cached_slot_property('_cs_raw_channel_mentions')
+    def raw_channel_mentions(self) -> List[int]:
+        """List[:class:`int`]: A property that returns an array of channel IDs matched with
+        the syntax of ``<#channel_id>`` in the message content.
+        """
+        return [int(x) for x in re.findall(r'<#([0-9]{15,20})>', self.content)]
+
+    @utils.cached_slot_property('_cs_raw_role_mentions')
+    def raw_role_mentions(self) -> List[int]:
+        """List[:class:`int`]: A property that returns an array of role IDs matched with
+        the syntax of ``<@&role_id>`` in the message content.
+        """
+        return [int(x) for x in re.findall(r'<@&([0-9]{15,20})>', self.content)]
 
 
 class MessageReference:
