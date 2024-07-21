@@ -388,9 +388,6 @@ class Poll:
         # self.created_at = message.created_at
         # duration = self.created_at - expiry
 
-        if (duration.total_seconds() / 3600) > 168:  # As the duration may exceed little milliseconds then we fix it
-            duration = datetime.timedelta(days=7)
-
         self = cls(
             duration=duration,
             multiple=multiselect,
