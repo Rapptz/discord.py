@@ -577,7 +577,7 @@ class MessageReference:
     def __init__(
         self,
         *,
-        type: int,
+        type: MessageReferenceType,
         message_id: int,
         channel_id: int,
         guild_id: Optional[int] = None,
@@ -625,7 +625,7 @@ class MessageReference:
             A reference to the message.
         """
         self = cls(
-            type=0,
+            type=MessageReferenceType.default,
             message_id=message.id,
             channel_id=message.channel.id,
             guild_id=getattr(message.guild, 'id', None),
