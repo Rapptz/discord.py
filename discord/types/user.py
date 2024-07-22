@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from .snowflake import Snowflake
+from .clan import UserClan
 from typing import Literal, Optional, TypedDict
 from typing_extensions import NotRequired
 
@@ -54,3 +55,4 @@ class User(PartialUser, total=False):
     flags: int
     premium_type: PremiumType
     public_flags: int
+    clan: UserClan

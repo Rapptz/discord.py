@@ -82,3 +82,14 @@ class Clan(ClanSettings):
     brand_color_secondary: NotRequired[str]
     wildcard_descriptors: NotRequired[List[str]]
     verification_form: NotRequired[MemberVerification]
+
+
+# This is not the same as a partial clan as
+# the badge the PartialClan provides is one
+# of the enum members, but here is the hash
+# pretty weird though lol
+class UserClan(TypedDict):
+    tag: str
+    badge: str
+    identity_guild_id: Snowflake
+    identity_enabled: bool
