@@ -535,6 +535,10 @@ class MessageSnapshot:
         """
         return [int(x) for x in re.findall(r'<@&([0-9]{15,20})>', self.content)]
 
+    @property
+    def edited_at(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the snapshotted message."""
+        return self._edited_timestamp
 
 class MessageReference:
     """Represents a reference to a :class:`~discord.Message`.
