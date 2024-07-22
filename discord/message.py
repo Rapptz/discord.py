@@ -589,7 +589,7 @@ class MessageReference:
         fail_if_not_exists: bool = True,
     ):
         self._state: Optional[ConnectionState] = None
-        self.type: MessageReferenceType = try_enum(MessageReferenceType, type)
+        self.type: MessageReferenceType = type
         self.resolved: Optional[Union[Message, DeletedReferencedMessage]] = None
         self.message_id: Optional[int] = message_id
         self.channel_id: int = channel_id
