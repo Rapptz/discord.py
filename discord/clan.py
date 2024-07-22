@@ -44,13 +44,76 @@ if TYPE_CHECKING:
         PartialClan as PartialClanPayload,
         Clan as ClanPayload,
         ClanSettings as ClanSettingsPayload,
+        UserClan as UserClanPayload,
     )
 
 __all__ = ('PartialClan', 'Clan')
 
 
+class UserClan:
+    """Represents a partial clan accessible via a user.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two user clans are equal.
+
+        .. describe:: x != y
+
+            Checks if two user clans are not equal.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    ----------
+    guild_id: :class:`int`
+        The guild ID the clan is from.
+    enabled: :class:`bool`
+        Whether the user is displaying their clan tag.
+    tag: :class:`str`
+        The clan tag.
+    """
+
+    __slots__ = (
+        '_state',
+        'guild_id',
+        'enabled',
+        'tag',
+        '_badge_hash',
+    )
+
+    def __init__(self, *, data: UserClanPayload, state: ConnectionState) -> None:
+        self._state: ConnectionState = state
+        self.guild_id: int = int(data['identity_guild_id'])
+        self.enabled: bool = data['identity_enabled']
+        self.tag: str = data['tag']
+        self._badge_hash: str = data['badge']
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, self.__class__) and self.tag == other.tag and self.guild_id == other.guild_id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __repr__(self) -> str:
+        return f'<UserClan guild_id={self.guild_id} tag={self.tag!r}>'
+
+    @property
+    def guild(self) -> Optional[Guild]:
+        """Optional[:class:`Guild`]: Returns the cached guild this clan is from."""
+        return self._state._get_guild(self.guild_id)
+
+    @property
+    def badge(self) -> Asset:
+        """:class:`Asset`: Returns the clan badge asset."""
+        return Asset._from_clan_badge(self._state, self.guild_id, self._badge_hash)
+
+
 class PartialClan:
     """Represents a partial clan.
+
+    .. versionadded:: 2.5
 
     Attributes
     ----------
@@ -77,6 +140,26 @@ class PartialClan:
 
 class Clan(Hashable, PartialClan):
     """Represents a clan.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two clans are equal.
+
+        .. describe:: x != y
+
+            Checks if two clans are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the clan's hash.
+
+        .. describe:: str(x)
+
+            Returns the clan's name.
+
+    .. versionadded:: 2.5
 
     Attributes
     ----------
@@ -195,6 +278,18 @@ class Clan(Hashable, PartialClan):
             state=self._state,
             guild=self.guild,
         )
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, self.__class__) and self.id == other.id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return f'<Clan id={self.id} tag={self.tag!r}>'
 
     @property
     def guild(self) -> Optional[Guild]:
