@@ -47,7 +47,7 @@ if TYPE_CHECKING:
         UserClan as UserClanPayload,
     )
 
-__all__ = ('PartialClan', 'Clan')
+__all__ = ('UserClan', 'PartialClan', 'Clan')
 
 
 class UserClan:
