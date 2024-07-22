@@ -461,7 +461,7 @@ class MessageSnapshot:
     Attributes
     -----------
     type: :class:`MessageType`
-        The type of message of the snapshotted message.
+        The type of the snapshotted message.
     content: :class:`str`
         The actual contents of the snapshotted message.
         If :attr:`Intents.message_content` is not enabled this will always be an empty string
