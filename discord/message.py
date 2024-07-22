@@ -464,16 +464,10 @@ class MessageSnapshot:
         The type of the snapshotted message.
     content: :class:`str`
         The actual contents of the snapshotted message.
-        If :attr:`Intents.message_content` is not enabled this will always be an empty string
-        unless the bot is mentioned or the message is a direct message.
     embeds: List[:class:`Embed`]
         A list of embeds the snapshotted message has.
-        If :attr:`Intents.message_content` is not enabled this will always be an empty list
-        unless the bot is mentioned or the message is a direct message.
     attachments: List[:class:`Attachment`]
         A list of attachments given to the snapshotted message.
-        If :attr:`Intents.message_content` is not enabled this will always be an empty list
-        unless the bot is mentioned or the message is a direct message.
     timestamp: :class:`datetime.datetime`
         The snapshotted message's timestamp.
     flags: :class:`MessageFlags`
