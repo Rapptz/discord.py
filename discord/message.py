@@ -540,6 +540,7 @@ class MessageSnapshot:
         """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the snapshotted message."""
         return self._edited_timestamp
 
+
 class MessageReference:
     """Represents a reference to a :class:`~discord.Message`.
 
