@@ -599,7 +599,7 @@ class MessageReference:
     @classmethod
     def with_state(cls, state: ConnectionState, data: MessageReferencePayload) -> Self:
         self = cls.__new__(cls)
-        self.type = try_enum(MessageReferenceType, data.get('type', MessageReferenceType.default))
+        self.type = try_enum(MessageReferenceType, data.get('type', 0))
         self.message_id = utils._get_as_snowflake(data, 'message_id')
         self.channel_id = int(data['channel_id'])
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
