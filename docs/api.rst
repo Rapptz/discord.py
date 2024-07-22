@@ -5166,6 +5166,14 @@ AllowedMentions
 .. autoclass:: AllowedMentions
     :members:
 
+MessageSnapshot
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MessageSnapshot
+
+.. autoclass:: MessageSnapshot
+    :members:
+
 MessageReference
 ~~~~~~~~~~~~~~~~~
 
