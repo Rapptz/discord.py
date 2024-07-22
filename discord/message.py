@@ -516,7 +516,7 @@ class MessageSnapshot:
     def __repr__(self) -> str:
         name = self.__class__.__name__
         return f'<{name} type={self.type!r} timestamp={self.timestamp!r} flags={self.flags!r}>'
-    
+
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self) -> List[int]:
         """List[:class:`int`]: A property that returns an array of user IDs matched with
