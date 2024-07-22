@@ -468,8 +468,8 @@ class MessageSnapshot:
         A list of embeds the snapshotted message has.
     attachments: List[:class:`Attachment`]
         A list of attachments given to the snapshotted message.
-    timestamp: :class:`datetime.datetime`
-        The snapshotted message's timestamp.
+    created_at: :class:`datetime.datetime`
+        The snapshotted message's time of creation.
     flags: :class:`MessageFlags`
         Extra features of the the message snapshot.
     """
@@ -483,7 +483,7 @@ class MessageSnapshot:
         'content',
         'embeds',
         'flags',
-        'timestamp',
+        'created_at',
         'type',
     )
 
@@ -503,13 +503,13 @@ class MessageSnapshot:
         self.content: str = data['content']
         self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
         self.attachments: List[Attachment] = [Attachment(data=a, state=state) for a in data['attachments']]
-        self.timestamp: datetime.datetime = utils.parse_time(data['timestamp'])
+        self.created_at: datetime.datetime = utils.parse_time(data['timestamp'])
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
         self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
 
     def __repr__(self) -> str:
         name = self.__class__.__name__
-        return f'<{name} type={self.type!r} timestamp={self.timestamp!r} flags={self.flags!r}>'
+        return f'<{name} type={self.type!r} created_at={self.created_at!r} flags={self.flags!r}>'
 
     @utils.cached_slot_property('_cs_raw_mentions')
     def raw_mentions(self) -> List[int]:
