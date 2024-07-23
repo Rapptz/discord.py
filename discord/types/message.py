@@ -102,6 +102,9 @@ class MessageApplication(TypedDict):
     cover_image: NotRequired[str]
 
 
+MessageReferenceType = Literal[0, 1]
+
+
 class MessageReference(TypedDict, total=False):
     type: MessageReferenceType
     message_id: Snowflake
@@ -116,8 +119,6 @@ class RoleSubscriptionData(TypedDict):
     total_months_subscribed: int
     is_renewal: bool
 
-
-MessageReferenceType = Literal[0, 1]
 
 MessageType = Literal[
     0,
