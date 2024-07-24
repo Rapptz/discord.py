@@ -461,15 +461,15 @@ class MessageSnapshot:
     Attributes
     -----------
     type: :class:`MessageType`
-        The type of the snapshotted message.
+        The type of the forwarded message.
     content: :class:`str`
-        The actual contents of the snapshotted message.
+        The actual contents of the forwarded message.
     embeds: List[:class:`Embed`]
-        A list of embeds the snapshotted message has.
+        A list of embeds the forwarded message has.
     attachments: List[:class:`Attachment`]
-        A list of attachments given to the snapshotted message.
+        A list of attachments given to the forwarded message.
     created_at: :class:`datetime.datetime`
-        The snapshotted message's time of creation.
+        The forwarded message's time of creation.
     flags: :class:`MessageFlags`
         Extra features of the the message snapshot.
     """
@@ -537,7 +537,7 @@ class MessageSnapshot:
 
     @property
     def edited_at(self) -> Optional[datetime.datetime]:
-        """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the snapshotted message."""
+        """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the forwarded message."""
         return self._edited_timestamp
 
 
