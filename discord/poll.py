@@ -29,7 +29,7 @@ from typing import Optional, List, TYPE_CHECKING, Union, AsyncIterator, Dict
 
 import datetime
 
-from .enums import PollLayoutType, try_enum
+from .enums import PollLayoutType, try_enum, MessageType
 from . import utils
 from .emoji import PartialEmoji, Emoji
 from .user import User
@@ -125,7 +125,16 @@ class PollAnswer:
         Whether the current user has voted to this answer or not.
     """
 
-    __slots__ = ('media', 'id', '_state', '_message', '_vote_count', 'self_voted', '_poll')
+    __slots__ = (
+        'media',
+        'id',
+        '_state',
+        '_message',
+        '_vote_count',
+        'self_voted',
+        '_poll',
+        '_victor',
+    )
 
     def __init__(
         self,
@@ -141,6 +150,7 @@ class PollAnswer:
         self._vote_count: int = 0
         self.self_voted: bool = False
         self._poll: Poll = poll
+        self._victor: bool = False
 
     def _handle_vote_event(self, added: bool, self_voted: bool) -> None:
         if added:
@@ -209,6 +219,17 @@ class PollAnswer:
         return {
             'poll_media': self.media.to_dict(),
         }
+
+    @property
+    def victor(self) -> bool:
+        """:class:`bool`: Whether the answer is the one that had the most
+        votes when the poll ended.
+
+        .. note::
+
+            If the poll has not ended, this will always return ``False``.
+        """
+        return self._victor
 
     async def voters(
         self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
@@ -325,6 +346,7 @@ class Poll:
         '_expiry',
         '_finalized',
         '_state',
+        '_total_votes',
     )
 
     def __init__(
@@ -348,6 +370,7 @@ class Poll:
         self._state: Optional[ConnectionState] = None
         self._finalized: bool = False
         self._expiry: Optional[datetime.datetime] = None
+        self._total_votes: Optional[int] = None
 
     def _update(self, message: Message) -> None:
         self._state = message._state
@@ -359,6 +382,39 @@ class Poll:
         # The message's poll contains the more up to date data.
         self._expiry = message.poll.expires_at
         self._finalized = message.poll._finalized
+        self._update_results_from_message(message)
+
+    def _update_results_from_message(self, message: Message) -> None:
+        if message.type != MessageType.poll_result:
+            return  # Ignore non poll_result message types
+        result_embed = message.embeds[0]  # Will always have 1 embed
+
+        total_votes_field = utils.get(
+            result_embed.fields,
+            name='total_votes',
+        )
+        if total_votes_field is not None:
+            self._total_votes = int(total_votes_field.value)
+
+        victor_answer_id = utils.get(
+            result_embed.fields,
+            name='victor_answer_id',
+        )
+        # If this is None then the poll did not have a winning
+        # answer.
+
+        if victor_answer_id is None:
+            return  # Just return because the rest is based of the victor answer
+
+        victor_answer_votes = utils.get(
+            result_embed.fields,
+            name='victor_answer_votes',
+        )
+
+        answer = self._answers[int(victor_answer_id.value)]
+        answer._victor = True
+        answer._vote_count = int(victor_answer_votes.value)
+        self._answers[int(victor_answer_id.value)] = answer
 
     def _update_results(self, data: PollResultPayload) -> None:
         self._finalized = data['is_finalized']
@@ -461,7 +517,12 @@ class Poll:
 
     @property
     def total_votes(self) -> int:
-        """:class:`int`: Returns the sum of all the answer votes."""
+        """:class:`int`: Returns the sum of all the answer votes.
+
+        If the poll has not yet finished, this is an approximate vote count.
+        """
+        if self._total_votes is not None:
+            return self._total_votes
         return sum([answer.vote_count for answer in self.answers])
 
     def is_finalised(self) -> bool:
