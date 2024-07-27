@@ -1844,7 +1844,6 @@ class Message(PartialMessage, Hashable):
             self.poll = Poll._from_data(data=data['poll'], message=self, state=state)
         except KeyError:
             self.poll = state._get_poll(self.id)
-            self.poll._update_results_from_message(self)
 
         try:
             # if the channel doesn't have a guild attribute, we handle that
@@ -1909,6 +1908,9 @@ class Message(PartialMessage, Hashable):
 
                     # the channel will be the correct type here
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
+
+                    if self.type is MessageType.poll_result and ref.resolved.poll:
+                        ref.resolved.poll._update_results_from_message(self)
 
         self.application: Optional[MessageApplication] = None
         try:
