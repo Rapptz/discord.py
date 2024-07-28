@@ -52,6 +52,8 @@ body:
       description: >
         Let's make sure this issue is valid!
       options:
+        - label: I have confirmed I am using unmodified discord.py-self and not the upstream discord.py.
+          required: true
         - label: I have searched the open issues for duplicates.
           required: true
         - label: I have shared the entire traceback.
