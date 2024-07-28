@@ -488,6 +488,15 @@ class Poll:
         return list(self._answers.values())
 
     @property
+    def victor_answer(self) -> Optional[PollAnswer]:
+        """Optional[:class:`PollAnswer`]: The victor answer if the poll has finished.
+        If the poll has not yet ended or didn't have a winner this will always be ``None``.
+        """
+        if not self.is_finalised():
+            return None
+        return utils.get(self.answers, _victor=True)
+
+    @property
     def expires_at(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: A datetime object representing the poll expiry.
 
