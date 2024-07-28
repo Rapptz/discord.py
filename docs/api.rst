@@ -5120,6 +5120,14 @@ PollAnswer
 .. autoclass:: PollAnswer()
     :members:
 
+MemberSearch
+~~~~~~~~~~~~
+
+.. attributetable:: MemberSearch
+
+.. autoclass:: MemberSearch()
+    :members:
+
 .. _discord_api_data:
 
 Data Classes
