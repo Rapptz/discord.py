@@ -4502,7 +4502,7 @@ class Guild(Hashable):
                 quarantined=quarantined,
                 timed_out=timed_out,
                 unusual_dms=unusual_dms,
-                invites=[invite if isinstance(invite, str) else invite.code for invite in invites] \
+                invites=[invite if isinstance(invite, str) else invite.code for invite in invites]
                     if invites is not MISSING else MISSING,
                 join_types=[join_type.value for join_type in join_types] if join_types is not MISSING else MISSING,
                 usernames=usernames

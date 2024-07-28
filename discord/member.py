@@ -1109,7 +1109,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         await self.edit(timed_out_until=timed_out_until, reason=reason)
 
-    async def fetch_safety_information(self, /) -> Optional[MemberSearch]:
+    async def fetch_safety_information(self) -> Optional[MemberSearch]:
         r"""|coro|
         
         Fetches the safety information for this member.

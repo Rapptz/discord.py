@@ -1576,7 +1576,7 @@ class HTTPClient:
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
     
     def get_member_safety_information(self, guild_id: Snowflake, member_id: Snowflake) -> Response[member.MemberSearchResults]:
-        payload: Dict[str, Union[int, Dict[str, Union[str, int, Dict]]]] = {
+        payload = {
             'sort': 1, # This is the default value (Newest Guild Members First), and as it will only return 1 value it doesn't matter
             'limit': 250, # This value can't be changed
         }
