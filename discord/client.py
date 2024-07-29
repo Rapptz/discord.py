@@ -3086,7 +3086,7 @@ class Client:
         guild = self._connection._get_or_create_unavailable_guild(0)
         return Emoji(guild=guild, state=self._connection, data=data)
 
-    async def fetch_emoji(self, emoji_id: int) -> Emoji:
+    async def fetch_emoji(self, emoji_id: int, /) -> Emoji:
         """|coro|
 
         Retrieves an emoji for the current application.
