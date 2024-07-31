@@ -3516,7 +3516,7 @@ class HTTPClient:
         if not localize:
             params['localize'] = 'false'
 
-        return self.request(Route('GET', '/store/listings/{listing_id}', app_id=listing_id), params=params)
+        return self.request(Route('GET', '/store/listings/{listing_id}', listing_id=listing_id), params=params)
 
     def get_store_listing_by_sku(
         self,
