@@ -784,6 +784,18 @@ class Client:
         TypeError
             An unexpected keyword argument was received.
         """
+
+        if sys.platform == "win32":
+            # see discussion https://discord.com/channels/336642139381301249/1268727114568564847
+            # and https://github.com/saghul/aiodns/issues/86
+            try:
+                import aiodns
+            except ImportError:
+                pass
+            else:
+                if isinstance(asyncio.get_running_loop(), asyncio.ProactorEventLoop):
+                    _log.warning("aiodns may not work properly with the windows proactor event loop.")
+
         await self.login(token)
         await self.connect(reconnect=reconnect)
 
