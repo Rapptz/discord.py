@@ -854,6 +854,21 @@ class Client:
             .. versionadded:: 2.0
         """
 
+        if sys.platform == "win32":
+            # see discussion https://discord.com/channels/336642139381301249/1268727114568564847
+            # and https://github.com/saghul/aiodns/issues/86
+            try:
+                import aiodns
+            except ImportError:
+                pass
+            else:
+                if isinstance(asyncio.get_event_loop_policy(), asyncio.WindowsProactorEventLoopPolicy):
+                    # don't unconditionally swap, this is the only builtin event loop policy that is
+                    # incompatible, and other event loops not included in the standard library exist
+                    # which may be compatible.
+                    _log.debug("Switching event loop policy due to aiodns usage")
+                    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
         async def runner():
             async with self:
                 await self.start(token, reconnect=reconnect)
