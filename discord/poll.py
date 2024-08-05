@@ -385,7 +385,7 @@ class Poll:
         question = question_data.get('text')
         expiry = utils.parse_time(data['expiry'])  # If obtained via API, then expiry is set.
         # expiry - message.created_at may be a few nanos away from the actual duration
-        duration = datetime.timedelta(hours = round((expiry - message.created_at).total_seconds() / 3600))
+        duration = datetime.timedelta(hours=round((expiry - message.created_at).total_seconds() / 3600))
         # self.created_at = message.created_at
 
         self = cls(
