@@ -222,7 +222,7 @@ class ScheduledEventRecurrenceRule:
     def replace(
         self,
         *,
-        weekdays: Optional[List[date]] = MISSING,
+        weekdays: Optional[List[int]] = MISSING,
         n_weekdays: Optional[List[_NWeekday]] = MISSING,
         month_days: Optional[List[date]] = MISSING,
     ) -> Self:
@@ -231,7 +231,7 @@ class ScheduledEventRecurrenceRule:
 
         Parameters
         ----------
-        weekdays: Optional[List[:class:`datetime.date`]]
+        weekdays: Optional[List[:class:`int`]]
             The new weekdays for the event to recur on.
         n_weekdays: Optional[List[Tuple[:class:`int`, :class:`int`]]]
             The new set of specific days within a week for the event to recur on.
