@@ -72,6 +72,7 @@ if TYPE_CHECKING:
     from ..channel import VoiceChannel
     from ..abc import Snowflake
     from ..ui.view import View
+    from ..poll import Poll
     import datetime
     from ..types.webhook import (
         Webhook as WebhookPayload,
@@ -541,6 +542,7 @@ def interaction_message_response_params(
     view: Optional[View] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     previous_allowed_mentions: Optional[AllowedMentions] = None,
+    poll: Poll = MISSING,
 ) -> MultipartParameters:
     if files is not MISSING and file is not MISSING:
         raise TypeError('Cannot mix file and files keyword arguments.')
@@ -607,6 +609,9 @@ def interaction_message_response_params(
                 attachments_payload.append(attachment.to_dict())
 
         data['attachments'] = attachments_payload
+
+    if poll is not MISSING:
+        data['poll'] = poll._to_dict()
 
     multipart = []
     if files:
@@ -714,6 +719,11 @@ class _WebhookState:
     def _get_guild(self, guild_id: Optional[int]) -> Optional[Guild]:
         if self._parent is not None:
             return self._parent._get_guild(guild_id)
+        return None
+
+    def _get_poll(self, msg_id: Optional[int]) -> Optional[Poll]:
+        if self._parent is not None:
+            return self._parent._get_poll(msg_id)
         return None
 
     def store_user(self, data: Union[UserPayload, PartialUserPayload], *, cache: bool = True) -> BaseUser:
@@ -1155,7 +1165,7 @@ class Webhook(BaseWebhook):
         self.proxy_auth: Optional[aiohttp.BasicAuth] = proxy_auth
 
     def __repr__(self) -> str:
-        return f'<Webhook id={self.id!r}>'
+        return f'<Webhook id={self.id!r} type={self.type!r} name={self.name!r}>'
 
     @property
     def url(self) -> str:
@@ -1596,6 +1606,8 @@ class Webhook(BaseWebhook):
         wait: Literal[True],
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        applied_tags: List[ForumTag] = MISSING,
+        poll: Poll = MISSING,
     ) -> WebhookMessage:
         ...
 
@@ -1619,6 +1631,8 @@ class Webhook(BaseWebhook):
         wait: Literal[False] = ...,
         suppress_embeds: bool = MISSING,
         silent: bool = MISSING,
+        applied_tags: List[ForumTag] = MISSING,
+        poll: Poll = MISSING,
     ) -> None:
         ...
 
@@ -1642,6 +1656,7 @@ class Webhook(BaseWebhook):
         suppress_embeds: bool = False,
         silent: bool = False,
         applied_tags: List[ForumTag] = MISSING,
+        poll: Poll = MISSING,
     ) -> Optional[WebhookMessage]:
         """|coro|
 
@@ -1732,6 +1747,15 @@ class Webhook(BaseWebhook):
 
             .. versionadded:: 2.4
 
+        poll: :class:`Poll`
+            The poll to send with this message.
+
+            .. warning::
+
+                When sending a Poll via webhook, you cannot manually end it.
+
+            .. versionadded:: 2.4
+
         Raises
         --------
         HTTPException
@@ -1809,6 +1833,7 @@ class Webhook(BaseWebhook):
             allowed_mentions=allowed_mentions,
             previous_allowed_mentions=previous_mentions,
             applied_tags=applied_tag_ids,
+            poll=poll,
         ) as params:
             adapter = async_context.get()
             thread_id: Optional[int] = None
@@ -1835,6 +1860,9 @@ class Webhook(BaseWebhook):
         if view is not MISSING and not view.is_finished():
             message_id = None if msg is None else msg.id
             self._state.store_view(view, message_id)
+
+        if poll is not MISSING and msg:
+            poll._update(msg)
 
         return msg
 

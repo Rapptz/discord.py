@@ -188,3 +188,8 @@ class _RolePositionRequired(TypedDict):
 
 class RolePositionUpdate(_RolePositionRequired, total=False):
     position: Optional[Snowflake]
+
+
+class BulkBanUserResponse(TypedDict):
+    banned_users: Optional[List[Snowflake]]
+    failed_users: Optional[List[Snowflake]]

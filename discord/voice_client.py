@@ -125,7 +125,7 @@ class VoiceProtocol:
         Parameters
         ------------
         data: :class:`dict`
-            The raw :ddocs:`voice server update payload <topics/gateway#voice-server-update>`.
+            The raw :ddocs:`voice server update payload <topics/gateway-events#voice-server-update>`.
         """
         raise NotImplementedError
 
@@ -337,7 +337,7 @@ class VoiceClient(VoiceProtocol):
         Disconnects this voice client from voice.
         """
         self.stop()
-        await self._connection.disconnect(force=force)
+        await self._connection.disconnect(force=force, wait=True)
         self.cleanup()
 
     async def move_to(self, channel: Optional[abc.Snowflake], *, timeout: Optional[float] = 30.0) -> None:
@@ -567,6 +567,6 @@ class VoiceClient(VoiceProtocol):
         try:
             self._connection.send_packet(packet)
         except OSError:
-            _log.info('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
+            _log.debug('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)

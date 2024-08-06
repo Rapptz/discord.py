@@ -22,49 +22,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
-from .snowflake import SnowflakeList
-from .user import User, AvatarDecorationData
-from typing_extensions import NotRequired
+from __future__ import annotations
+
+import discord
+import pytest
 
 
-class Nickname(TypedDict):
-    nick: str
+@pytest.mark.asyncio
+async def test_add_option():
+    select = discord.ui.Select()
 
+    for i in range(1, 25 + 1):
+        select.add_option(label=str(i), value=str(i))
 
-class PartialMember(TypedDict):
-    roles: SnowflakeList
-    joined_at: str
-    deaf: bool
-    mute: bool
-    flags: int
-
-
-class Member(PartialMember, total=False):
-    avatar: str
-    user: User
-    nick: str
-    premium_since: Optional[str]
-    pending: bool
-    permissions: str
-    communication_disabled_until: str
-    banner: NotRequired[Optional[str]]
-    avatar_decoration_data: NotRequired[AvatarDecorationData]
-
-
-class _OptionalMemberWithUser(PartialMember, total=False):
-    avatar: str
-    nick: str
-    premium_since: Optional[str]
-    pending: bool
-    permissions: str
-    communication_disabled_until: str
-    avatar_decoration_data: NotRequired[AvatarDecorationData]
-
-
-class MemberWithUser(_OptionalMemberWithUser):
-    user: User
-
-
-class UserWithMember(User, total=False):
-    member: _OptionalMemberWithUser
+    with pytest.raises(ValueError):
+        select.add_option(label="26", value="26")

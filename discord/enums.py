@@ -73,11 +73,9 @@ __all__ = (
     'SKUType',
     'EntitlementType',
     'EntitlementOwnerType',
+    'PollLayoutType',
     'VoiceChannelEffectAnimationType',
 )
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
 
 
 def _create_value_cls(name: str, comparable: bool):
@@ -105,7 +103,14 @@ class EnumMeta(type):
         _enum_member_map_: ClassVar[Dict[str, Any]]
         _enum_value_map_: ClassVar[Dict[Any, Any]]
 
-    def __new__(cls, name: str, bases: Tuple[type, ...], attrs: Dict[str, Any], *, comparable: bool = False) -> Self:
+    def __new__(
+        cls,
+        name: str,
+        bases: Tuple[type, ...],
+        attrs: Dict[str, Any],
+        *,
+        comparable: bool = False,
+    ) -> EnumMeta:
         value_mapping = {}
         member_mapping = {}
         member_names = []
@@ -605,7 +610,7 @@ class InteractionResponseType(Enum):
     message_update = 7  # for components
     autocomplete_result = 8
     modal = 9  # for modals
-    premium_required = 10
+    # premium_required = 10 (deprecated)
 
 
 class VideoQualityMode(Enum):
@@ -637,6 +642,7 @@ class ButtonStyle(Enum):
     success = 3
     danger = 4
     link = 5
+    premium = 6
 
     # Aliases
     blurple = 1
@@ -799,11 +805,20 @@ class SelectDefaultValueType(Enum):
 
 
 class SKUType(Enum):
+    durable = 2
+    consumable = 3
     subscription = 5
     subscription_group = 6
 
 
 class EntitlementType(Enum):
+    purchase = 1
+    premium_subscription = 2
+    developer_gift = 3
+    test_mode_purchase = 4
+    free_purchase = 5
+    user_gift = 6
+    premium_purchase = 7
     application_subscription = 8
 
 
@@ -812,6 +827,21 @@ class EntitlementOwnerType(Enum):
     user = 2
 
 
+class PollLayoutType(Enum):
+    default = 1
+
+
+class InviteType(Enum):
+    guild = 0
+    group_dm = 1
+    friend = 2
+
+
+class ReactionType(Enum):
+    normal = 0
+    burst = 1
+
+    
 class VoiceChannelEffectAnimationType(Enum):
     premium = 0
     basic = 1
