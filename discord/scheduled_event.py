@@ -959,40 +959,6 @@ class ScheduledEvent(Hashable):
                 # There's no data left after this
                 break
 
-    async def fetch_counts(self, *children: Snowflake) -> ScheduledEventExceptionCount:
-        """|coro|
-        
-        Retrieves all the counts for this Event children, if this event isn't
-        recurrent, then this will return `None`.
-
-        This also contains the exceptions of this Scheduled event.
-
-        .. versionadded:: 2.4
-
-        Parameters
-        ----------
-        *children: :class:`Snowflake`
-            The snowflakes of the children to fetcht the counts of.
-
-        Raises
-        ------
-        HTTPException
-            Fetching the counts failed.
-
-        Returns
-        -------
-        Optional[:class:`ScheduledEventExceptionCount`]
-            The counts of this event, or `None` if this event isn't recurrent or
-            there isn't any exception.
-        """
-
-        if not self.recurrence:
-            return None
-        
-        data = await self._state.http.get_scheduled_event_counts(self.guild_id, self.id, tuple([child.id for child in children]))
-
-        return ScheduledEventExceptionCount(data)
-
     def _add_user(self, user: User) -> None:
         self._users[user.id] = user
 
