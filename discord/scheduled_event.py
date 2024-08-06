@@ -408,12 +408,11 @@ class ScheduledEvent(Hashable):
         self.user_count: int = data.get('user_count', 0)
         self.creator_id: Optional[int] = _get_as_snowflake(data, 'creator_id')
 
-        self.recurrence_rule: Optional[ScheduledEventRecurrenceRule]
+        self.recurrence_rule: Optional[ScheduledEventRecurrenceRule] = None
+        recurrence_rule_data = data.get('recurrence_rule')
 
-        try:
-            self.recurrence_rule = ScheduledEventRecurrenceRule._from_data(data['recurrence_rule'])
-        except KeyError:
-            self.recurrence_rule = None
+        if recurrence_rule_data is not None:
+            self.recurrence_rule = ScheduledEventRecurrenceRule._from_data(recurrence_rule_data)
 
         creator = data.get('creator')
         self.creator: Optional[User] = self._state.store_user(creator) if creator else None
