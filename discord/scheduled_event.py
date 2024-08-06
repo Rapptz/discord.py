@@ -137,7 +137,7 @@ class ScheduledEventRecurrenceRule:
 
     @property
     def weekdays(self) -> Optional[List[date]]:
-        """Optional[List[:class:`dateutil.rrule.weekday`]]: Returns a read-only list of the weekdays
+        """Optional[List[:class:`datetime.date`]]: Returns a read-only list of the weekdays
         this event recurs on, or ``None``.
         """
         if self._weekdays in (MISSING, None):
@@ -150,7 +150,7 @@ class ScheduledEventRecurrenceRule:
 
     @property
     def n_weekdays(self) -> Optional[List[_NWeekday]]:
-        """Optional[List[Tuple[:class:`int`, :class:`dateutil.rrule.weekday`]]]: Returns a read-only
+        """Optional[List[Tuple[:class:`int`, :class:`int`]]]: Returns a read-only
         list of the N weekdays this event recurs on, or ``None``.
         """
         if self._n_weekdays in (MISSING, None):
@@ -186,9 +186,9 @@ class ScheduledEventRecurrenceRule:
 
         Parameters
         ----------
-        weekdays: Optional[List[:class:`dateutil.rrule.weekday`]]
+        weekdays: Optional[List[:class:`datetime.date`]]
             The new weekdays for the event to recur on.
-        n_weekdays: Optional[List[Tuple[:class:`int`, :class:`dateutil.rrule.weekday`]]]
+        n_weekdays: Optional[List[Tuple[:class:`int`, :class:`int`]]]
             The new set of specific days within a week for the event to recur on.
         month_days: Optional[List[:class:`datetime.date`]]
             The new set of month and month days for the event to recur on.
