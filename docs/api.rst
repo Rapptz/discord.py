@@ -1810,6 +1810,12 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.4
 
+    .. attribute:: purchase_notification
+
+        The system message sent when a purchase is made in the guild.
+
+        .. versionadded:: 2.5
+
 .. class:: UserFlags
 
     Represents Discord User flags.
@@ -5196,6 +5202,22 @@ RoleSubscriptionInfo
 .. attributetable:: RoleSubscriptionInfo
 
 .. autoclass:: RoleSubscriptionInfo
+    :members:
+
+PurchaseNotification
+~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PurchaseNotification
+
+.. autoclass:: PurchaseNotification
+    :members:
+
+GuildProductPurchase
++++++++++++++++++++++
+
+.. attributetable:: GuildProductPurchase()
+
+.. autoclass:: GuildProductPurchase()
     :members:
 
 Intents

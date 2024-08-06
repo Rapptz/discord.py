@@ -42,6 +42,7 @@ from typing import (
     ClassVar,
     Type,
     overload,
+    NamedTuple,
 )
 
 from . import utils
@@ -76,6 +77,7 @@ if TYPE_CHECKING:
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
         MessageInteractionMetadata as MessageInteractionMetadataPayload,
+        PurchaseNotificationResponse as PurchaseNotificationResponsePayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -112,6 +114,8 @@ __all__ = (
     'MessageApplication',
     'RoleSubscriptionInfo',
     'MessageInteractionMetadata',
+    'GuildProductPurchase',
+    'PurchaseNotification',
 )
 
 
@@ -835,6 +839,43 @@ class RoleSubscriptionInfo:
         self.tier_name: str = data['tier_name']
         self.total_months_subscribed: int = data['total_months_subscribed']
         self.is_renewal: bool = data['is_renewal']
+
+
+class GuildProductPurchase(NamedTuple):
+    """Represents a message's guild product that the user has purchased.
+
+    .. versionadded:: 2.5
+    """
+
+    listing_id: int
+    """The ID of the listing that the user has purchased."""
+    product_name: str
+    """The name of the product that the user has purchased."""
+
+
+class PurchaseNotification:
+    """Represents a message's purchase notification data.
+
+    This is currently only attached to messages of type :attr:`MessageType.purchase_notification`.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    guild_product_purchase: Optional[:class:`GuildProductPurchase`]
+        The guild product purchase that prompted the message.
+    """
+
+    def __init__(self, data: PurchaseNotificationResponsePayload) -> None:
+        self._type: int = data['type']
+
+        self.guild_product_purchase: Optional[GuildProductPurchase] = None
+        guild_product_purchase = data.get('guild_product_purchase')
+        if guild_product_purchase is not None:
+            self.guild_product_purchase = GuildProductPurchase(
+                listing_id=int(guild_product_purchase['listing_id']),
+                product_name=guild_product_purchase['product_name'],
+            )
 
 
 class PartialMessage(Hashable):
@@ -1762,6 +1803,10 @@ class Message(PartialMessage, Hashable):
         The poll attached to this message.
 
         .. versionadded:: 2.4
+    purchase_notification: Optional[:class:`PurchaseNotification`]
+        The data of the purchase notification that prompted this :attr:`MessageType.purchase_notification` message.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -1798,6 +1843,7 @@ class Message(PartialMessage, Hashable):
         'position',
         'interaction_metadata',
         'poll',
+        'purchase_notification',
     )
 
     if TYPE_CHECKING:
@@ -1924,6 +1970,14 @@ class Message(PartialMessage, Hashable):
             pass
         else:
             self.role_subscription = RoleSubscriptionInfo(role_subscription)
+
+        self.purchase_notification: Optional[PurchaseNotification] = None
+        try:
+            purchase_notification = data['purchase_notification']
+        except KeyError:
+            pass
+        else:
+            self.purchase_notification = PurchaseNotification(purchase_notification)
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'components'):
             try:
@@ -2414,6 +2468,11 @@ class Message(PartialMessage, Hashable):
 
         if self.type is MessageType.guild_incident_report_false_alarm:
             return f'{self.author.name} reported a false alarm in {self.guild}.'
+
+        if self.type is MessageType.purchase_notification and self.purchase_notification is not None:
+            guild_product_purchase = self.purchase_notification.guild_product_purchase
+            if guild_product_purchase is not None:
+                return f'{self.author.name} has purchased {guild_product_purchase.product_name}!'
 
         # Fallback for unknown message types
         return ''

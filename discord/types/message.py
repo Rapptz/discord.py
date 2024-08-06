@@ -116,6 +116,19 @@ class RoleSubscriptionData(TypedDict):
     is_renewal: bool
 
 
+PurchaseNotificationResponseType = Literal[0]
+
+
+class GuildProductPurchase(TypedDict):
+    listing_id: Snowflake
+    product_name: str
+
+
+class PurchaseNotificationResponse(TypedDict):
+    type: int
+    guild_product_purchase: GuildProductPurchase
+
+
 MessageType = Literal[
     0,
     1,
@@ -151,6 +164,7 @@ MessageType = Literal[
     37,
     38,
     39,
+    44,
 ]
 
 
