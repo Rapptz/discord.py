@@ -32,22 +32,24 @@ from .channel import PrivacyLevel as PrivacyLevel
 
 EventStatus = Literal[1, 2, 3, 4]
 EntityType = Literal[1, 2, 3]
+ScheduledEventRecurrenceRuleFrequency = Literal[0, 1, 2, 3]
 
 class _NWeekday(TypedDict):
     n: int
-    day: Literal[0, 1, 2, 3, 4, 5, 6]
+    day: int
 
 
-class GuildScheduledEventRecurrenceRule(TypedDict):
+class ScheduledEventRecurrenceRule(TypedDict):
     start: str
+    end: Optional[str]
+    frequency: ScheduledEventRecurrenceRuleFrequency
     interval: int
-    frequency: int
-    count: None  # no values for this, yet
-    by_year_day: Optional[List[int]]
     by_weekday: Optional[List[int]]
-    by_month_day: Optional[List[int]]
+    by_n_weekday: Optional[List[_NWeekday]]
     by_month: Optional[List[int]]
-    by_n_weekday: NotRequired[List[_NWeekday]]
+    by_month_day: Optional[List[int]]
+    by_year_day: Optional[List[int]]
+    count: Optional[int]
 
 
 class _BaseGuildScheduledEvent(TypedDict):

@@ -3250,7 +3250,7 @@ class Guild(Hashable):
 
         if recurrence_rule is not MISSING:
             if recurrence_rule is not None:
-                payload['recurrence_rule'] = recurrence_rule.to_dict()
+                payload['recurrence_rule'] = recurrence_rule._to_dict()
             else:
                 payload['recurrence_rule'] = None
 

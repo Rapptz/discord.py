@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import calendar
 from datetime import datetime, date
 from typing import (
     TYPE_CHECKING,
@@ -55,6 +54,8 @@ if TYPE_CHECKING:
     from .types.scheduled_event import (
         GuildScheduledEvent as BaseGuildScheduledEventPayload,
         GuildScheduledEventWithUserCount as GuildScheduledEventWithUserCountPayload,
+        ScheduledEventRecurrenceRule as ScheduledEventRecurrenceRulePayload,
+        _NWeekday as NWeekdayPayload,
         EntityMetadata,
     )
 
@@ -109,13 +110,32 @@ class ScheduledEventRecurrenceRule:
 
         For example, a ``frequency`` of ``2`` (weekly) and an ``interval`` of ``2`` will result in
         a "Every other week" recurrence rule.
-    weekdays: Optional[List[:class:`datetime.date`]]
+    weekdays: Optional[List[:class:`int`]]
         The weekdays the event will recur on.
+
+        To prevent value errors use the ``calendar`` module with the available weekdays constants:
+        :attr:`calendar.MONDAY`, :attr:`calendar.TUESDAY`, :attr:`calendar.WEDNESDAY`, :attr:`calendar.THURSDAY`,
+        :attr:`calendar.FRIDAY`, :attr:`calendar.SATURDAY`, and :attr:`calendar.SUNDAY`.
     n_weekdays: Optional[List[Tuple[:class:`int`, :class:`int`]]]
         A (week, weekday) tuple list of the N weekdays the event will recur on.
     month_days: Optional[List[:class:`datetime.date`]]
         The months and month days the scheduled event will recur on.
     """
+
+    __slots__ = (
+        # Attributes user can set:
+        'start',
+        'frequency',
+        'interval',
+        '_weekdays',
+        '_n_weekdays',
+        '_month_days',
+
+        # Attributes that are returned by API only:
+        '_count',
+        '_end',
+        '_year_days',
+    )
 
     def __init__(
         self,
@@ -124,28 +144,31 @@ class ScheduledEventRecurrenceRule:
         frequency: Literal[0, 1, 2, 3,],
         interval: int,
         *,
-        weekdays: Optional[List[date]] = MISSING,
+        weekdays: Optional[List[int]] = MISSING,
         n_weekdays: Optional[List[_NWeekday]] = MISSING,
         month_days: Optional[List[date]] = MISSING,
     ) -> None:
         self.start: datetime = start
         self.frequency: Literal[0, 1, 2, 3,] = frequency
         self.interval: int = interval
-        self._weekdays: Optional[List[date]] = weekdays
+        self._count: Optional[int] = None
+        self._end: Optional[datetime] = None
+        self._year_days: Optional[List[int]] = None
+        self._weekdays: Optional[List[int]] = weekdays
         self._n_weekdays: Optional[List[_NWeekday]] = n_weekdays
         self._month_days: Optional[List[date]] = month_days
 
     @property
-    def weekdays(self) -> Optional[List[date]]:
-        """Optional[List[:class:`datetime.date`]]: Returns a read-only list of the weekdays
-        this event recurs on, or ``None``.
+    def weekdays(self) -> Optional[List[int]]:
+        """Optional[List[:class:`int`]]: Returns a read-only list of the weekdays this event
+        recurs on, or ``None``.
         """
         if self._weekdays in (MISSING, None):
             return None
         return self._weekdays.copy()
 
     @weekdays.setter
-    def weekdays(self, new: Optional[List[date]]) -> None:
+    def weekdays(self, new: Optional[List[int]]) -> None:
         self._weekdays = new
 
     @property
@@ -173,6 +196,28 @@ class ScheduledEventRecurrenceRule:
     @month_days.setter
     def month_days(self, new: Optional[List[date]]) -> None:
         self._month_days = new
+
+    @property
+    def end(self) -> Optional[datetime]:
+        """Optional[:class:`datetime.datetime`]: The ending time of the recurrence interval,
+        or ``None``.
+        """
+        return self._end
+
+    @property
+    def count(self) -> Optional[int]:
+        """Optional[:class:`int`]: The amount of times the event will recur before stopping,
+        or ``None`` if it recurs forever.
+        """
+
+    @property
+    def year_days(self) -> Optional[List[int]]:
+        """Optional[List[:class:`int`]]: Returns a read-only list of the year days this
+        event recurs on, or ``None``.
+        """
+        if self._year_days is None:
+            return None
+        return self._year_days.copy()
 
     def replace(
         self,
@@ -208,6 +253,62 @@ class ScheduledEventRecurrenceRule:
         if month_days is not MISSING:
             self._month_days = month_days
 
+        return self
+
+    def _to_dict(self) -> ScheduledEventRecurrenceRulePayload:
+
+        by_weekday: Optional[List[int]] = None
+        by_n_weekday: Optional[List[NWeekdayPayload]] = None
+        by_month: Optional[List[int]] = None
+        by_month_day: Optional[List[int]] = None
+        by_year_day: Optional[List[int]] = None
+
+        if self._weekdays not in (MISSING, None):
+            by_weekday = self._weekdays
+
+        if self._n_weekdays not in (MISSING, None):
+            by_n_weekday = [
+                {'n': n, 'day': day} for n, day in self._n_weekdays
+            ]
+
+        if self._month_days not in (MISSING, None):
+            by_month = []
+            by_month_day = []
+
+            for dt in self._month_days:
+                by_month.append(dt.month)
+                by_month_day.append(dt.day)
+
+        if self.year_days is not None:
+            by_year_day = self.year_days
+
+        return {
+            'start': self.start.isoformat(),
+            'end': self._end.isoformat() if self._end is not None else None,
+            'frequency': self.frequency,
+            'interval': self.interval,
+            'by_weekday': by_weekday,
+            'by_n_weekday': by_n_weekday,
+            'by_month': by_month,
+            'by_month_day': by_month_day,
+            'by_year_day': by_year_day,
+            'count': self.count,
+        }
+
+    @classmethod
+    def _from_data(cls, data: ScheduledEventRecurrenceRulePayload, /) -> Self:
+        self = cls(
+            start=parse_time(data['start']),
+            frequency=data['frequency'],
+            interval=data['interval'],
+        )
+        self._count = data.get('count')
+        self._year_days = data.get('by_year_day')
+
+        end = data.get('end')
+        if end is not None:
+            self._end = parse_time(end)
+        # TODO: finish this impl
         return self
 
 
