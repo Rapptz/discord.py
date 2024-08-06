@@ -841,7 +841,7 @@ class ReactionType(Enum):
     normal = 0
     burst = 1
 
-    
+
 class VoiceChannelEffectAnimationType(Enum):
     premium = 0
     basic = 1
