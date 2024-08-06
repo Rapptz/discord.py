@@ -80,9 +80,7 @@ class _NWeekday(NamedTuple):
 
 
 class ScheduledEventRecurrenceRule:
-    """The recurrence rule for a scheduled event.
-
-    This follows :class:`dateutil.rrule.rrule` structure.
+    r"""The recurrence rule for a scheduled event.
 
     .. versionadded:: 2.5
 
@@ -93,8 +91,19 @@ class ScheduledEventRecurrenceRule:
     frequency: :class:`int`
         How often the event occurs.
 
-        This can be one of :attr:`dateutil.rrule.YEARLY`, :attr:`dateutil.rrule.MONTHLY`,
-        :attr:`dateutil.rrule.WEEKLY`, or :attr:`dateutil.rrule.DAILY`.
+        The following table represents the available frequency values:
+
+        +---------------+---------------+
+        |     Value     |      Type     |
+        +===============+===============+
+        | ``0``         | yearly        |
+        +---------------+---------------+
+        | ``1``         | monthly       |
+        +---------------+---------------+
+        | ``2``         | weekly        |
+        +---------------+---------------+
+        | ``3``         | daily         |
+        +---------------+---------------+
     interval: :class:`int`
         The spacing between the events, defined by ``frequency``.
 
@@ -174,8 +183,6 @@ class ScheduledEventRecurrenceRule:
     ) -> Self:
         """Replaces and returns the recurrence rule with the same values except for the
         ones that are changed.
-
-        This is similar to :meth:`dateutil.rrule.rrule.replace`.
 
         Parameters
         ----------
