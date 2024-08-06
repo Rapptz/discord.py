@@ -194,6 +194,10 @@ class Attachment(Hashable):
         The waveform (amplitudes) of the audio in bytes. Returns ``None`` if it's not a voice message.
 
         .. versionadded:: 2.3
+    title: Optional[:class:`str`]
+        The normalised version of the attachment's filename.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -211,6 +215,7 @@ class Attachment(Hashable):
         'duration',
         'waveform',
         '_flags',
+        'title',
     )
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
@@ -226,6 +231,7 @@ class Attachment(Hashable):
         self.description: Optional[str] = data.get('description')
         self.ephemeral: bool = data.get('ephemeral', False)
         self.duration: Optional[float] = data.get('duration_secs')
+        self.title: Optional[str] = data.get('title')
 
         waveform = data.get('waveform')
         self.waveform: Optional[bytes] = utils._base64_to_bytes(waveform) if waveform is not None else None
