@@ -135,7 +135,7 @@ class SoundboardDefaultSound(BaseSoundboardSound):
 
     def __init__(self, *, state: ConnectionState, data: SoundboardDefaultSoundPayload):
         self.name: str = data['name']
-        self.emoji: PartialEmoji = PartialEmoji(name=data['emoji_name'], id=utils._get_as_snowflake(data, 'emoji_id'))
+        self.emoji: PartialEmoji = PartialEmoji(name=data['emoji_name'])
         super().__init__(state=state, data=data)
 
     def __repr__(self) -> str:
