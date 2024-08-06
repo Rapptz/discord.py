@@ -1130,10 +1130,10 @@ class GuildChannel:
             channel list (or category if given).
             This is mutually exclusive with ``beginning``, ``before``, and ``after``.
         before: :class:`~discord.abc.Snowflake`
-            The channel that should be before our current channel.
+            Whether to move the channel before the given channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``after``.
         after: :class:`~discord.abc.Snowflake`
-            The channel that should be after our current channel.
+            Whether to move the channel after the given channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``before``.
         offset: :class:`int`
             The number of channels to offset the move by. For example,

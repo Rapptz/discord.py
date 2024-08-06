@@ -126,6 +126,10 @@ class Converter(Protocol[T_co]):
         raise a :exc:`.CommandError` derived exception as it will
         properly propagate to the error handlers.
 
+        Note that if this method is called manually, :exc:`Exception`
+        should be caught to handle the cases where a subclass does
+        not explicitly inherit from :exc:`.CommandError`.
+
         Parameters
         -----------
         ctx: :class:`.Context`
