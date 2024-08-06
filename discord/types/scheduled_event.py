@@ -38,7 +38,7 @@ class _NWeekday(TypedDict):
     day: Literal[0, 1, 2, 3, 4, 5, 6]
 
 
-class ScheduledEventRecurrenceRule(TypedDict):
+class GuildScheduledEventRecurrenceRule(TypedDict):
     start: str
     interval: int
     frequency: int
