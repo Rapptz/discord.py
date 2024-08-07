@@ -2509,6 +2509,14 @@ class HTTPClient:
     def get_soundboard_default_sounds(self) -> Response[List[soundboard.SoundboardDefaultSound]]:
         return self.request(Route('GET', '/soundboard-default-sounds'))
 
+    def get_soundboard_sound(self, guild_id: Snowflake, sound_id: Snowflake) -> Response[soundboard.SoundboardSound]:
+        return self.request(
+            Route('GET', '/guilds/{guild_id}/soundboard-sounds/{sound_id}', guild_id=guild_id, sound_id=sound_id)
+        )
+
+    def get_soundboard_sounds(self, guild_id: Snowflake) -> Response[Dict[str, List[soundboard.SoundboardSound]]]:
+        return self.request(Route('GET', '/guilds/{guild_id}/soundboard-sounds', guild_id=guild_id))
+
     def create_soundboard_sound(
         self, guild_id: Snowflake, *, reason: Optional[str], **payload: Any
     ) -> Response[soundboard.SoundboardSound]:
