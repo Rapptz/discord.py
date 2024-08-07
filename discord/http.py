@@ -1611,6 +1611,9 @@ class HTTPClient:
     def get_sticker(self, sticker_id: Snowflake) -> Response[sticker.Sticker]:
         return self.request(Route('GET', '/stickers/{sticker_id}', sticker_id=sticker_id))
 
+    def get_sticker_pack(self, sticker_pack_id: Snowflake) -> Response[sticker.StickerPack]:
+        return self.request(Route('GET', '/sticker-packs/{sticker_pack_id}', sticker_pack_id=sticker_pack_id))
+
     def list_premium_sticker_packs(self) -> Response[sticker.ListPremiumStickerPacks]:
         return self.request(Route('GET', '/sticker-packs'))
 
