@@ -2919,6 +2919,33 @@ class Client:
         data = await self.http.list_premium_sticker_packs()
         return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
 
+    async def fetch_premium_sticker_pack(self, sticker_pack_id: int, /) -> StickerPack:
+        """|coro|
+
+        Retrieves a premium sticker pack with the specified ID.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        sticker_pack_id: :class:`int`
+            The sticker pack's ID to fetch from.
+
+        Raises
+        -------
+        NotFound
+            A sticker pack with this ID does not exist.
+        HTTPException
+            Retrieving the sticker pack failed.
+
+        Returns
+        -------
+        :class:`StickerPack`
+            The retrieved premium sticker pack.
+        """
+        data = await self.http.get_sticker_pack(sticker_pack_id)
+        return StickerPack(state=self._connection, data=data)
+
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|
 
