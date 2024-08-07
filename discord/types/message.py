@@ -201,6 +201,7 @@ class Message(PartialMessage):
     position: NotRequired[int]
     role_subscription_data: NotRequired[RoleSubscriptionData]
     thread: NotRequired[Thread]
+    purchase_notification: NotRequired[PurchaseNotificationResponse]
 
 
 AllowedMentionType = Literal['roles', 'users', 'everyone']
