@@ -623,9 +623,19 @@ def _get_mime_type_for_image(data: bytes):
         raise ValueError('Unsupported image type given')
 
 
-def _bytes_to_base64_data(data: bytes) -> str:
+def _get_mime_type_for_audio(data: bytes):
+    if data.startswith(b'\x49\x44\x33') or data.startswith(b'\xff\xfb'):
+        return 'audio/mpeg'
+    else:
+        raise ValueError('Unsupported audio type given')
+
+
+def _bytes_to_base64_data(data: bytes, *, audio: bool = False) -> str:
     fmt = 'data:{mime};base64,{data}'
-    mime = _get_mime_type_for_image(data)
+    if audio:
+        mime = _get_mime_type_for_audio(data)
+    else:
+        mime = _get_mime_type_for_image(data)
     b64 = b64encode(data).decode('ascii')
     return fmt.format(mime=mime, data=b64)
 
