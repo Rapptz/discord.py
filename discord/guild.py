@@ -1014,14 +1014,14 @@ class Guild(Hashable):
     def soundboard_sounds(self) -> Sequence[SoundboardSound]:
         """Sequence[:class:`SoundboardSound`]: Returns a sequence of the guild's soundboard sounds.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
         """
         return utils.SequenceProxy(self._soundboard_sounds.values())
 
     def get_soundboard_sound(self, sound_id: int, /) -> Optional[SoundboardSound]:
         """Returns a soundboard sound with the given ID.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
 
         Parameters
         -----------
@@ -4483,7 +4483,7 @@ class Guild(Hashable):
         Creates a :class:`SoundboardSound` for the guild.
         You must have :attr:`Permissions.manage_expressions` to do this.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
 
         Parameters
         ----------
@@ -4543,7 +4543,7 @@ class Guild(Hashable):
 
         This is a websocket operation and can be slow.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
 
         Parameters
         ----------

@@ -133,7 +133,7 @@ class VoiceChannelEffectAnimation(NamedTuple):
 class VoiceChannelSoundEffect(BaseSoundboardSound):
     """Represents a Discord voice channel sound effect.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5
 
     .. container:: operations
 
@@ -187,7 +187,7 @@ class VoiceChannelSoundEffect(BaseSoundboardSound):
 class VoiceChannelEffect:
     """Represents a Discord voice channel effect.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5
 
     Attributes
     ------------

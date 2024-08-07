@@ -1306,7 +1306,7 @@ Soundboard
 
     Called when a :class:`SoundboardSound` is created or deleted.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5
 
     :param sound: The soundboard sound that was created or deleted.
     :type sound: :class:`SoundboardSound`
@@ -1321,7 +1321,7 @@ Soundboard
     - The emoji is changed.
     - The volume is changed.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5
 
     :param sound: The soundboard sound that was updated.
     :type sound: :class:`SoundboardSound`
@@ -1518,7 +1518,7 @@ Voice
 
     This requires :attr:`Intents.voice_states` to be enabled.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5
 
     :param effect: The effect that is sent.
     :type effect: :class:`VoiceChannelEffect`
@@ -2995,7 +2995,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.emoji`
         - :attr:`~AuditLogDiff.volume`
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
 
     .. attribute:: soundboard_sound_update
 
@@ -3007,7 +3007,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.emoji`
         - :attr:`~AuditLogDiff.volume`
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
 
     .. attribute:: soundboard_sound_delete
 
@@ -3019,7 +3019,7 @@ of :class:`enum.Enum`.
         - :attr:`~AuditLogDiff.emoji`
         - :attr:`~AuditLogDiff.volume`
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
 
 .. class:: AuditLogActionCategory
 
@@ -3743,7 +3743,7 @@ of :class:`enum.Enum`.
 
     Represents the animation type of a voice channel effect.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5
 
     .. attribute:: premium
 
@@ -4918,7 +4918,7 @@ VoiceChannel
 
     A namedtuple which represents a voice channel effect animation.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5
 
     .. attribute:: id
 
