@@ -360,7 +360,7 @@ class AsyncWebhookAdapter:
         multipart: Optional[List[Dict[str, Any]]] = None,
         files: Optional[Sequence[File]] = None,
         thread_id: Optional[int] = None,
-    ) -> Response[Message]:
+    ) -> Response[MessagePayload]:
         route = Route(
             'PATCH',
             '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
@@ -1049,12 +1049,11 @@ class BaseWebhook(Hashable):
     @property
     def default_avatar(self) -> Asset:
         """
-        :class:`Asset`: Returns the default avatar. This is always the blurple avatar.
+        :class:`Asset`: Returns the default avatar.
 
         .. versionadded:: 2.0
         """
-        # Default is always blurple apparently
-        return Asset._from_default_avatar(self._state, 0)
+        return Asset._from_default_avatar(self._state, (self.id >> 22) % len(DefaultAvatar))
 
     @property
     def display_avatar(self) -> Asset:
