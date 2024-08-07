@@ -2940,7 +2940,7 @@ class Client:
 
         Returns
         -------
-        :class:`StickerPack`
+        :class:`.StickerPack`
             The retrieved premium sticker pack.
         """
         data = await self.http.get_sticker_pack(sticker_pack_id)
