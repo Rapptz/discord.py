@@ -182,19 +182,17 @@ class SoundboardSound(BaseSoundboardSound):
         The guild in which the sound is uploaded.
     guild_id: :class:`int`
         The ID of the guild in which the sound is uploaded.
-    user_id: :class:`int`
-        The ID of the user who uploaded the sound.
     available: :class:`bool`
         Whether this sound is available for use.
     """
 
-    __slots__ = ('_state', 'guild_id', 'name', 'emoji', '_user', 'available', 'user_id', 'guild')
+    __slots__ = ('_state', 'guild_id', 'name', 'emoji', '_user', 'available', '_user_id', 'guild')
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: SoundboardSoundPayload):
         super().__init__(state=state, data=data)
         self.guild = guild
         self.guild_id: int = guild.id
-        self.user_id: int = int(data['user_id'])
+        self._user_id = utils._get_as_snowflake(data, 'user_id')
         self._user = data.get('user')
 
         self._update(data)
@@ -232,8 +230,9 @@ class SoundboardSound(BaseSoundboardSound):
     def user(self) -> Optional[User]:
         """Optional[:class:`User`]: The user who uploaded the sound."""
         if self._user is None:
-            return self._state.get_user(self.user_id)
-
+            if self._user_id is None:
+                return None
+            return self._state.get_user(self._user_id)
         return User(state=self._state, data=self._user)
 
     async def edit(
