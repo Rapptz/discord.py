@@ -93,6 +93,7 @@ if TYPE_CHECKING:
         welcome_screen,
         sku,
         poll,
+        voice,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -1147,6 +1148,12 @@ class HTTPClient:
     ) -> Response[member.MemberWithUser]:
         r = Route('PATCH', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, json=fields, reason=reason)
+
+    def get_my_voice_state(self, guild_id: Snowflake) -> Response[voice.GuildVoiceState]:
+        return self.request(Route('GET', '/guilds/{guild_id}/voice-states/@me', guild_id=guild_id))
+
+    def get_voice_state(self, guild_id: Snowflake, user_id: Snowflake) -> Response[voice.GuildVoiceState]:
+        return self.request(Route('GET', '/guilds/{guild_id}/voice-states/{user_id}', guild_id=guild_id, user_id=user_id))
 
     # Channel management
 
