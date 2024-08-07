@@ -866,6 +866,8 @@ class PurchaseNotification:
         The guild product purchase that prompted the message.
     """
 
+    __slots__ = ('_type', 'guild_product_purchase')
+
     def __init__(self, data: PurchaseNotificationResponsePayload) -> None:
         self._type: int = data['type']
 

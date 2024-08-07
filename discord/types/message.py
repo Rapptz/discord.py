@@ -125,8 +125,8 @@ class GuildProductPurchase(TypedDict):
 
 
 class PurchaseNotificationResponse(TypedDict):
-    type: int
-    guild_product_purchase: GuildProductPurchase
+    type: PurchaseNotificationResponseType
+    guild_product_purchase: Optional[GuildProductPurchase]
 
 
 MessageType = Literal[
