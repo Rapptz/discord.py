@@ -836,6 +836,18 @@ class MessageCall:
             else:
                 self.participants.append(state.get_user(user_id))
 
+    @property
+    def duration(self) -> datetime.timedelta:
+        """:class:`datetime.timedelta`: The duration the call has lasted or is already ongoing."""
+        if self.ended_timestamp is None:
+            return utils.utcnow() - self._message.created_at
+        else:
+            return self.ended_timestamp - self._message.created_at
+
+    def is_ended(self) -> bool:
+        """:class:`bool`: Whether the call is ended or not."""
+        return self.ended_timestamp is not None
+
 
 class RoleSubscriptionInfo:
     """Represents a message's role subscription information.
