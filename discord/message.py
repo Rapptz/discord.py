@@ -76,6 +76,7 @@ if TYPE_CHECKING:
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
         MessageInteractionMetadata as MessageInteractionMetadataPayload,
+        MessageCall as MessageCallPayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -112,6 +113,7 @@ __all__ = (
     'MessageApplication',
     'RoleSubscriptionInfo',
     'MessageInteractionMetadata',
+    'MessageCall',
 )
 
 
@@ -802,6 +804,49 @@ class MessageApplication:
                 state=self._state, object_id=self.id, icon_hash=self._cover_image, asset_type='cover_image'
             )
         return None
+
+
+class MessageCall:
+    """Represents a message's call data in a private channel from a :class:`~discord.Message`.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    ended_timestamp: Optional[:class:`datetime.datetime`]
+        The timestamp the call has ended.
+    participants: List[Optional[:class:`User`]]
+        A list of users that participated in the call.
+    """
+
+    __slots__ = ('_message', 'ended_timestamp', 'participants')
+
+    def __repr__(self) -> str:
+        return f'<MessageCall participants={self.participants!r}>'
+
+    def __init__(self, *, state: ConnectionState, message: Message, data: MessageCallPayload):
+        self._message: Message = message
+        self.ended_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('ended_timestamp'))
+        self.participants: List[Optional[User]] = []
+
+        for user_id in data['participants']:
+            user_id = int(user_id)
+            if user_id == self._message.author.id:
+                self.participants.append(self._message.author)  # type: ignore # can't be a Member here
+            else:
+                self.participants.append(state.get_user(user_id))
+
+    @property
+    def duration(self) -> datetime.timedelta:
+        """:class:`datetime.timedelta`: The duration the call has lasted or is already ongoing."""
+        if self.ended_timestamp is None:
+            return utils.utcnow() - self._message.created_at
+        else:
+            return self.ended_timestamp - self._message.created_at
+
+    def is_ended(self) -> bool:
+        """:class:`bool`: Whether the call is ended or not."""
+        return self.ended_timestamp is not None
 
 
 class RoleSubscriptionInfo:
@@ -1762,6 +1807,10 @@ class Message(PartialMessage, Hashable):
         The poll attached to this message.
 
         .. versionadded:: 2.4
+    call: Optional[:class:`MessageCall`]
+        The call associated with this message.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -1798,6 +1847,7 @@ class Message(PartialMessage, Hashable):
         'position',
         'interaction_metadata',
         'poll',
+        'call',
     )
 
     if TYPE_CHECKING:
@@ -1925,7 +1975,7 @@ class Message(PartialMessage, Hashable):
         else:
             self.role_subscription = RoleSubscriptionInfo(role_subscription)
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components', 'call'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
@@ -2110,6 +2160,13 @@ class Message(PartialMessage, Hashable):
 
     def _handle_interaction_metadata(self, data: MessageInteractionMetadataPayload):
         self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
+
+    def _handle_call(self, data: MessageCallPayload):
+        self.call: Optional[MessageCall]
+        if data is not None:
+            self.call = MessageCall(state=self._state, message=self, data=data)
+        else:
+            self.call = None
 
     def _rebind_cached_references(
         self,
