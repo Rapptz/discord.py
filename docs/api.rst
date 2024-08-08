@@ -5406,6 +5406,14 @@ PollMedia
 .. autoclass:: PollMedia
     :members:
 
+MessageCall
+~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MessageCall
+
+.. autoclass:: MessageCall()
+    :members:
+
 
 Exceptions
 ------------

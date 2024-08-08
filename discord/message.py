@@ -76,6 +76,7 @@ if TYPE_CHECKING:
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
         MessageInteractionMetadata as MessageInteractionMetadataPayload,
+        MessageCall as MessageCallPayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -112,6 +113,7 @@ __all__ = (
     'MessageApplication',
     'RoleSubscriptionInfo',
     'MessageInteractionMetadata',
+    'MessageCall',
 )
 
 
@@ -802,6 +804,32 @@ class MessageApplication:
                 state=self._state, object_id=self.id, icon_hash=self._cover_image, asset_type='cover_image'
             )
         return None
+
+
+class MessageCall:
+    """Represents a message's call data in a private channel from a :class:`~discord.Message`.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    ended_timestamp: Optional[:class:`datetime.datetime`]
+        The timestamp the call has ended.
+    participants: List[Optional[:class:`User`]]
+        A list of users that participated in the call.
+    """
+
+    __slots__ = ('ended_timestamp', 'participants')
+
+    def __repr__(self) -> str:
+        return f'<MessageCall participants={self.participants!r}>'
+
+    def __init__(self, *, state: ConnectionState, data: MessageCallPayload):
+        self.ended_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('ended_timestamp'))
+        self.participants: List[Optional[User]] = []
+
+        for user_id in data['participants']:
+            self.participants.append(state.get_user(int(user_id)))
 
 
 class RoleSubscriptionInfo:
@@ -1762,6 +1790,10 @@ class Message(PartialMessage, Hashable):
         The poll attached to this message.
 
         .. versionadded:: 2.4
+    call: Optional[:class:`MessageCall`]
+        The call associated with this message.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -1798,6 +1830,7 @@ class Message(PartialMessage, Hashable):
         'position',
         'interaction_metadata',
         'poll',
+        'call',
     )
 
     if TYPE_CHECKING:
@@ -1836,8 +1869,13 @@ class Message(PartialMessage, Hashable):
         self.position: Optional[int] = data.get('position')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
+        self.call: Optional[MessageCall] = None
 
-        # This updates the poll so it has the counts, if the message
+        call = data.get('call')
+        if call is not None:
+            self.call = MessageCall(state=state, data=call)
+
+            # This updates the poll so it has the counts, if the message
         # was previously cached.
         self.poll: Optional[Poll] = None
         try:
