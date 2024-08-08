@@ -819,17 +819,22 @@ class MessageCall:
         A list of users that participated in the call.
     """
 
-    __slots__ = ('ended_timestamp', 'participants')
+    __slots__ = ('_message', 'ended_timestamp', 'participants')
 
     def __repr__(self) -> str:
         return f'<MessageCall participants={self.participants!r}>'
 
-    def __init__(self, *, state: ConnectionState, data: MessageCallPayload):
+    def __init__(self, *, state: ConnectionState, message: Message, data: MessageCallPayload):
+        self._message: Message = message
         self.ended_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('ended_timestamp'))
         self.participants: List[Optional[User]] = []
 
         for user_id in data['participants']:
-            self.participants.append(state.get_user(int(user_id)))
+            user_id = int(user_id)
+            if user_id == self._message.author.id:
+                self.participants.append(self._message.author)  # type: ignore # can't be a Member here
+            else:
+                self.participants.append(state.get_user(user_id))
 
 
 class RoleSubscriptionInfo:
@@ -1869,13 +1874,8 @@ class Message(PartialMessage, Hashable):
         self.position: Optional[int] = data.get('position')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
-        self.call: Optional[MessageCall] = None
 
-        call = data.get('call')
-        if call is not None:
-            self.call = MessageCall(state=state, data=call)
-
-            # This updates the poll so it has the counts, if the message
+        # This updates the poll so it has the counts, if the message
         # was previously cached.
         self.poll: Optional[Poll] = None
         try:
@@ -1963,7 +1963,7 @@ class Message(PartialMessage, Hashable):
         else:
             self.role_subscription = RoleSubscriptionInfo(role_subscription)
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components', 'call'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
@@ -2148,6 +2148,13 @@ class Message(PartialMessage, Hashable):
 
     def _handle_interaction_metadata(self, data: MessageInteractionMetadataPayload):
         self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
+
+    def _handle_call(self, data: MessageCallPayload):
+        self.call: Optional[MessageCall]
+        if data is not None:
+            self.call = MessageCall(state=self._state, message=self, data=data)
+        else:
+            self.call = None
 
     def _rebind_cached_references(
         self,
