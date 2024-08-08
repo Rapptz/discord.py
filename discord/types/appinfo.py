@@ -82,4 +82,4 @@ class GatewayAppInfo(TypedDict):
 
 
 class ListAppEmojis(TypedDict):
-    items: list[Emoji]
+    items: List[Emoji]
