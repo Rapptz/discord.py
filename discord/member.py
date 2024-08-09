@@ -284,7 +284,7 @@ class MemberSearch:
         self.invite_code: Optional[str] = data.get('source_invite_code')
         self.join_type: MemberJoinType = try_enum(MemberJoinType, data['join_source_type'])
         try:
-            self.inviter_id = int(data['inviter_id'])
+            self.inviter_id = int(data['inviter_id'])  # type: ignore
         except KeyError:
             self.inviter_id = None
 

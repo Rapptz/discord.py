@@ -44,7 +44,6 @@ from typing import (
     Optional,
     TYPE_CHECKING,
     Tuple,
-    TypedDict,
     Union,
     overload,
 )
@@ -107,8 +106,6 @@ __all__ = (
 MISSING = utils.MISSING
 
 if TYPE_CHECKING:
-    from typing_extensions import Unpack
-
     from .abc import Snowflake, SnowflakeTime
     from .types.guild import (
         Ban as BanPayload,
