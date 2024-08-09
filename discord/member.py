@@ -255,14 +255,18 @@ def flatten_user(cls: T) -> T:
 class MemberSearch:
     """Represents a fetched member from member search.
     
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5
 
     Attributes
     ----------
+    resolved: :class:`Member`
+        The resolved member of this search result.
     invite_code: Optional[:class:`str`]
         The Invite Code this user joined with.
     join_type: :class:`JoinType`
         The join type.
+    inviter_id: Optional[:class:`int`]
+        The ID of the user that invited this member to the guild, if available.
     """
 
     __slots__ = (
@@ -1131,7 +1135,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         You must have :attr:`Permissions.manage_guild` to do this.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
 
         Raises
         ------

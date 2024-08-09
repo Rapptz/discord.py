@@ -4417,7 +4417,7 @@ class Guild(Hashable):
 
         You must have :attr:`Permissions.manage_guild` to do this.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
 
         Parameters
         ----------
