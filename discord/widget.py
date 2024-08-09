@@ -28,7 +28,7 @@ from typing import List, Optional, TYPE_CHECKING, Union
 
 from .utils import snowflake_time, _get_as_snowflake, resolve_invite
 from .user import BaseUser
-from .activity import BaseActivity, Spotify, create_activity
+from .activity import BaseActivity, Spotify, HangStatus, create_activity
 from .invite import Invite
 from .enums import Status, try_enum
 
@@ -167,7 +167,7 @@ class WidgetMember(BaseUser):
     )
 
     if TYPE_CHECKING:
-        activity: Optional[Union[BaseActivity, Spotify]]
+        activity: Optional[Union[BaseActivity, Spotify, HangStatus]]
 
     def __init__(
         self,
@@ -190,7 +190,7 @@ class WidgetMember(BaseUser):
         else:
             activity = create_activity(game, state)
 
-        self.activity: Optional[Union[BaseActivity, Spotify]] = activity
+        self.activity: Optional[Union[BaseActivity, Spotify, HangStatus]] = activity
 
         self.connected_channel: Optional[WidgetChannel] = connected_channel
 
