@@ -22,10 +22,13 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
-from .snowflake import SnowflakeList
+from typing import Optional, TypedDict, Literal, List
+
+from .snowflake import SnowflakeList, Snowflake
 from .user import User, AvatarDecorationData
 from typing_extensions import NotRequired
+
+JoinType = Literal[0, 1, 2, 3, 4, 5, 6, 7]
 
 
 class Nickname(TypedDict):
@@ -49,7 +52,6 @@ class Member(PartialMember, total=False):
     permissions: str
     communication_disabled_until: str
     banner: NotRequired[Optional[str]]
-    avatar_decoration_data: NotRequired[AvatarDecorationData]
 
 
 class _OptionalMemberWithUser(PartialMember, total=False):
@@ -68,3 +70,18 @@ class MemberWithUser(_OptionalMemberWithUser):
 
 class UserWithMember(User, total=False):
     member: _OptionalMemberWithUser
+
+
+class MemberSearch(TypedDict):
+    member: MemberWithUser
+    join_source_type: JoinType
+    source_invite_code: Optional[str]
+    inviter_id: Optional[Snowflake]
+    integration_type: Optional[int]
+
+
+class MemberSearchResults(TypedDict):
+    guild_id: Snowflake
+    members: List[MemberSearch]
+    page_result_count: int
+    total_result_count: int

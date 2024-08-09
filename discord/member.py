@@ -38,7 +38,7 @@ from .utils import MISSING
 from .user import BaseUser, ClientUser, User, _UserTag
 from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
-from .enums import Status, try_enum
+from .enums import Status, MemberJoinType, try_enum
 from .errors import ClientException
 from .colour import Colour
 from .object import Object
@@ -47,6 +47,7 @@ from .flags import MemberFlags
 __all__ = (
     'VoiceState',
     'Member',
+    'MemberSearch',
 )
 
 T = TypeVar('T', bound=type)
@@ -65,6 +66,7 @@ if TYPE_CHECKING:
         MemberWithUser as MemberWithUserPayload,
         Member as MemberPayload,
         UserWithMember as UserWithMemberPayload,
+        MemberSearch as MemberSearchPayload,
     )
     from .types.gateway import GuildMemberUpdateEvent
     from .types.user import User as UserPayload, AvatarDecorationData
@@ -250,6 +252,60 @@ def flatten_user(cls: T) -> T:
     return cls
 
 
+class MemberSearch:
+    """Represents a fetched member from member search.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    ----------
+    resolved: :class:`Member`
+        The resolved member of this search result.
+    invite_code: Optional[:class:`str`]
+        The Invite Code this user joined with.
+    join_type: :class:`MemberJoinType`
+        The join type.
+    inviter_id: Optional[:class:`int`]
+        The ID of the user that invited this member to the guild, if available.
+    """
+
+    __slots__ = (
+        'resolved',
+        'invite_code',
+        'join_type',
+        'inviter_id',
+        '_guild',
+        '_state',
+    )
+
+    def __init__(self, *, data: MemberSearchPayload, guild: Guild, state: ConnectionState) -> None:
+        self.resolved: Member = Member(data=data['member'], guild=guild, state=state)
+        self.invite_code: Optional[str] = data.get('source_invite_code')
+        self.join_type: MemberJoinType = try_enum(MemberJoinType, data['join_source_type'])
+        try:
+            self.inviter_id = int(data['inviter_id'])  # type: ignore
+        except KeyError:
+            self.inviter_id = None
+
+        self._guild = guild
+        self._state = state
+
+    def __repr__(self) -> str:
+        return (
+            f'<MemberSearch member={self.resolved!r} invite_code={self.invite_code!r}'
+            f'join_type={self.join_type!r} inviter_id={self.inviter_id}>'
+        )
+
+    @property
+    def inviter(self) -> Optional[Union[Member, User]]:
+        """Optional[Union[:class:`Member`, :class:`User`]]: Returns the resolved inviter, or ``None``
+        if not cached.
+        """
+        if not self.inviter_id:
+            return
+        return self._guild.get_member(self.inviter_id) or self._state.get_user(self.inviter_id)
+
+
 @flatten_user
 class Member(discord.abc.Messageable, _UserTag):
     """Represents a Discord member to a :class:`Guild`.
@@ -317,6 +373,7 @@ class Member(discord.abc.Messageable, _UserTag):
         'pending',
         'nick',
         'timed_out_until',
+        'unusual_dms_until',
         '_permissions',
         '_client_status',
         '_user',
@@ -369,6 +426,7 @@ class Member(discord.abc.Messageable, _UserTag):
             self._permissions = None
 
         self.timed_out_until: Optional[datetime.datetime] = utils.parse_time(data.get('communication_disabled_until'))
+        self.unusual_dms_until: Optional[datetime.datetime] = utils.parse_time(data.get('unusual_dm_activity_until'))
 
     def __str__(self) -> str:
         return str(self._user)
@@ -1068,6 +1126,42 @@ class Member(discord.abc.Messageable, _UserTag):
             raise TypeError(f'expected None, datetime.datetime, or datetime.timedelta not {until.__class__.__name__}')
 
         await self.edit(timed_out_until=timed_out_until, reason=reason)
+
+    async def fetch_safety_information(self) -> Optional[MemberSearch]:
+        r"""|coro|
+
+        Fetches the safety information for this member.
+
+        You must have :attr:`Permissions.manage_guild` to do this.
+
+        .. versionadded:: 2.5
+
+        Raises
+        ------
+        Forbidden
+            You do not have permission to view member safety
+            information.
+        HTTPException
+            Fetching the information failed.
+
+        Returns
+        -------
+        Optional[:class:`MemberSearch`]
+            The member safety information, or `None` if there
+            isn't.
+        """
+
+        results = [
+            m
+            async for m in self.guild.fetch_safety_information(
+                limit=1,
+                user_ids=[self],
+            )
+        ]
+
+        if not results:
+            return None
+        return results[0]
 
     async def add_roles(self, *roles: Snowflake, reason: Optional[str] = None, atomic: bool = True) -> None:
         r"""|coro|
