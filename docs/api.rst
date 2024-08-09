@@ -1911,6 +1911,12 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 1.5
 
+    .. attribute:: hang
+
+        A hang status activity type.
+
+        .. versionadded:: 2.5
+
 .. class:: VerificationLevel
 
     Specifies a :class:`Guild`\'s verification level, which is the criteria in
@@ -3663,6 +3669,45 @@ of :class:`enum.Enum`.
         A burst reaction, also known as a "super reaction".
 
 
+.. class:: HangStatusType
+
+    Represents the type of an hang status.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: chilling
+
+        The default hang status "Chilling".
+
+    .. attribute:: gaming
+
+        The default hang status "GAMING".
+
+    .. attribute:: focusing
+
+        The default hang status "In the zone".
+
+    .. attribute:: brb
+
+        The default hang status "Gonna BRB".
+
+    .. attribute:: eating
+
+        The default hang status "Grubbin".
+
+    .. attribute:: in_transit
+
+        The default hang status "Wandering IRL".
+
+    .. attribute:: watching
+
+        The default hang status "Watchin' stuff".
+
+    .. attribute:: custom
+
+        A custom hang status set by the user.
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -5308,6 +5353,14 @@ CustomActivity
 .. attributetable:: CustomActivity
 
 .. autoclass:: CustomActivity
+    :members:
+
+HangStatus
+~~~~~~~~~~~
+
+.. attributetable:: HangStatus
+
+.. autoclass:: HangStatus
     :members:
 
 Permissions
