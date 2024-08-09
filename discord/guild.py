@@ -4382,7 +4382,7 @@ class Guild(Hashable):
         )
 
         return AutoModRule(data=data, guild=self, state=self._state)
-    
+
     async def fetch_safety_information(
         self,
         *,
@@ -4478,7 +4478,8 @@ class Guild(Hashable):
         """
 
         def construct_range(
-            gte: Union[Snowflake, datetime.datetime], lte: Union[Snowflake, datetime.datetime],
+            gte: Union[Snowflake, datetime.datetime],
+            lte: Union[Snowflake, datetime.datetime],
         ) -> Dict[str, Any]:
             r = {}
             if gte is not MISSING:
@@ -4500,7 +4501,8 @@ class Guild(Hashable):
                 r['unusual_dm_activity_until'] = construct_range(unusual_dm_activity_until, MISSING)
             if communication_disabled_until is not MISSING:
                 r['communication_disabled_until'] = construct_range(
-                    communication_disabled_until, MISSING,
+                    communication_disabled_until,
+                    MISSING,
                 )
             if unusual_account_activity is not MISSING:
                 r['unusual_account_activity'] = unusual_account_activity
@@ -4563,7 +4565,8 @@ class Guild(Hashable):
             if before_id is not MISSING:
                 payload['before'] = before_id
             if any(
-                signal is not MISSING for signal in (
+                signal is not MISSING
+                for signal in (
                     timed_out_until,
                     unusual_activity,
                     unusual_dms_until,

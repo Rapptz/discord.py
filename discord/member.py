@@ -254,7 +254,7 @@ def flatten_user(cls: T) -> T:
 
 class MemberSearch:
     """Represents a fetched member from member search.
-    
+
     .. versionadded:: 2.5
 
     Attributes
@@ -274,7 +274,6 @@ class MemberSearch:
         'invite_code',
         'join_type',
         'inviter_id',
-
         '_guild',
         '_state',
     )
@@ -1130,7 +1129,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
     async def fetch_safety_information(self) -> Optional[MemberSearch]:
         r"""|coro|
-        
+
         Fetches the safety information for this member.
 
         You must have :attr:`Permissions.manage_guild` to do this.
@@ -1144,7 +1143,7 @@ class Member(discord.abc.Messageable, _UserTag):
             information.
         HTTPException
             Fetching the information failed.
-        
+
         Returns
         -------
         Optional[:class:`MemberSafety`]
@@ -1153,7 +1152,8 @@ class Member(discord.abc.Messageable, _UserTag):
         """
 
         results = [
-            m async for m in self.guild.fetch_safety_information(
+            m
+            async for m in self.guild.fetch_safety_information(
                 limit=1,
                 user_ids=[self],
             )

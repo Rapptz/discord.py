@@ -1979,7 +1979,7 @@ class HTTPClient:
 
     def delete_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id), reason=reason)
-    
+
     def get_guild_members_safety_information(
         self,
         guild_id: Snowflake,

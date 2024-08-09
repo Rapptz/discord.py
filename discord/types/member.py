@@ -30,6 +30,7 @@ from typing_extensions import NotRequired
 
 JoinType = Literal[0, 1, 2, 3, 4, 5, 6, 7]
 
+
 class Nickname(TypedDict):
     nick: str
 
