@@ -263,7 +263,7 @@ class MemberSearch:
         The resolved member of this search result.
     invite_code: Optional[:class:`str`]
         The Invite Code this user joined with.
-    join_type: :class:`JoinType`
+    join_type: :class:`MemberJoinType`
         The join type.
     inviter_id: Optional[:class:`int`]
         The ID of the user that invited this member to the guild, if available.
@@ -1146,7 +1146,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Returns
         -------
-        Optional[:class:`MemberSafety`]
+        Optional[:class:`MemberSearch`]
             The member safety information, or `None` if there
             isn't.
         """
