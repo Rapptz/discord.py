@@ -23,11 +23,12 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import Optional, TypedDict, Literal, List
+
 from .snowflake import SnowflakeList, Snowflake
 from .user import User, AvatarDecorationData
 from typing_extensions import NotRequired
 
-JoinType = Literal[0, 3, 5]
+JoinType = Literal[0, 1, 2, 3, 4, 5, 6, 7]
 
 class Nickname(TypedDict):
     nick: str
@@ -72,9 +73,10 @@ class UserWithMember(User, total=False):
 
 class MemberSearch(TypedDict):
     member: MemberWithUser
-    source_invite_code: Optional[str]
     join_source_type: JoinType
+    source_invite_code: Optional[str]
     inviter_id: Optional[Snowflake]
+    integration_type: Optional[int]
 
 
 class MemberSearchResults(TypedDict):

@@ -75,6 +75,7 @@ __all__ = (
     'EntitlementOwnerType',
     'PollLayoutType',
     'MemberJoinType',
+    'MemberSearchSortType',
 )
 
 
@@ -844,9 +845,11 @@ class MemberJoinType(Enum):
     hub = 4
     invite = 5
     vanity = 6
+    manual_verification = 7
 
     # Aliases
     app = 1
+    student_hub = 4
     user_invite = 5
 
 

@@ -1574,20 +1574,6 @@ class HTTPClient:
 
     def get_member(self, guild_id: Snowflake, member_id: Snowflake) -> Response[member.MemberWithUser]:
         return self.request(Route('GET', '/guilds/{guild_id}/members/{member_id}', guild_id=guild_id, member_id=member_id))
-    
-    def get_member_safety_information(self, guild_id: Snowflake, member_id: Snowflake) -> Response[member.MemberSearchResults]:
-        payload = {
-            'sort': 1, # This is the default value (Newest Guild Members First), and as it will only return 1 value it doesn't matter
-            'limit': 250, # This value can't be changed
-        }
-        payload['and_query'] = {
-            'user_id': {
-                'or_query': [str(member_id)]
-            }
-        }
-        payload['or_query'] = {}
-
-        return self.request(Route('POST', '/guilds/{guild_id}/members-search', guild_id=guild_id), json=payload)
 
     def prune_members(
         self,
@@ -1994,119 +1980,32 @@ class HTTPClient:
     def delete_stage_instance(self, channel_id: Snowflake, *, reason: Optional[str] = None) -> Response[None]:
         return self.request(Route('DELETE', '/stage-instances/{channel_id}', channel_id=channel_id), reason=reason)
     
-    def get_guild_member_safety(
+    def get_guild_members_safety_information(
         self,
         guild_id: Snowflake,
         limit: int,
-        sort_type: int,
-        *,
-        after: Snowflake = MISSING,
-        before: Snowflake = MISSING,
-        users: Iterable[Snowflake] = MISSING,
-        roles: Iterable[Snowflake] = MISSING,
-        unusual_activity: bool = MISSING,
-        quarantined: bool = MISSING,
-        timed_out: bool = MISSING,
-        unusual_dms: bool = MISSING,
-        invites: Iterable[str] = MISSING,
-        join_types: Iterable[int] = MISSING,
-        usernames: Iterable[str] = MISSING,
+        sort: int,
+        **kwargs: Any,
     ) -> Response[member.MemberSearchResults]:
-        gte = utils.time_snowflake(datetime.datetime.now(), high=True) + 1
-        users_gte: Optional[str] = str(after) if after else None
-        users_lte: Optional[str] = str(before) if before else None
-        payload: Dict[Any, Any] = {
-            'sort': sort_type
+        # These are just the base keys, other "subqueries" as "safety_signals" are constructed
+        # in `Guild.fetch_safety_information`
+        valid_keys = (
+            'limit',
+            'sort',
+            'or_query',
+            'and_query',
+            'before',
+            'after',
+        )
+        payload = {
+            'limit': limit,
+            'sort': sort,
         }
-
-        payload['limit'] = limit
-        payload['and_query'] = {}
-        payload['or_query'] = {}
-        safety_signals = {}
-
-        if users is not MISSING:
-            if 'user_id' in payload['and_query']:
-                payload['and_query']['user_id']['or_query'] = [
-                    str(user) for user in users
-                ]
-            else:
-                payload['and_query']['user_id'] = {
-                    'or_query': [str(user) for user in users]
-                }
-
-        if users_gte is not None:
-            if 'user_id' in payload['and_query']:
-                if 'range' in payload['and_query']['user_id']:
-                    payload['and_query']['user_id']['range']['gte'] = users_gte  # type: ignore
-                else:
-                    payload['and_query']['user_id']['range'] = {  # type: ignore
-                        'gte': users_gte
-                    }
-            else:
-                payload['and_query']['user_id'] = {
-                    'range': {
-                        'gte': users_gte
-                    }
-                }
-
-        if users_lte is not None:
-            if 'user_id' in payload['and_query']:
-                if 'range' in payload['and_query']['user_id']:
-                    payload['and_query']['user_id']['range']['lte'] = users_lte  # type: ignore
-                else:
-                    payload['and_query']['user_id']['range'] = {  # type: ignore
-                        'lte': users_lte
-                    }
-            else:
-                payload['and_query']['user_id'] = {
-                    'range': {
-                        'lte': users_lte
-                    }
-                }
-
-        if roles is not MISSING:
-            payload['and_query']['role_ids'] = {
-                'and_query': [str(role) for role in roles]
-            }
-
-        if unusual_activity is not MISSING:
-            safety_signals['unusual_account_activity'] = unusual_activity
-
-        if quarantined is not MISSING:
-            safety_signals['automod_quarantined_username'] = quarantined
-
-        if timed_out is True:
-            safety_signals['communication_disabled_until'] = {
-                'range': {'gte': int(gte)}
-            }
-
-        if unusual_dms is True:
-            safety_signals['unusual_dm_activity_until'] = {
-                'range': {'gte': int(gte)}
-            }
-
-        if invites is not MISSING:
-            payload['and_query']['source_invite_code'] = {
-                'or_query': [
-                    getattr(invite, 'code', str(invite))
-                    for invite in invites
-                ]
-            }
-
-        if join_types is not MISSING:
-            payload['and_query']['join_source_type'] = {
-                'or_query': join_types
-            }
-
-        if usernames is not MISSING:
-            payload['and_query']['usernames'] = {
-                'or_query': list(usernames)
-            }
-
-        if len(safety_signals.values()) > 0:
-            payload['or_query']['safety_signals'] = safety_signals
-
-        return self.request(Route('POST', '/guilds/{guild_id}/members-search', guild_id=guild_id), json=payload)
+        payload.update({k: v for k, v in kwargs.items() if k in valid_keys})
+        return self.request(
+            Route('POST', '/guilds/{guild_id}/members-search', guild_id=guild_id),
+            json=payload,
+        )
 
     # Guild scheduled event management
 

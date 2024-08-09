@@ -266,36 +266,32 @@ class MemberSearch:
     """
 
     __slots__ = (
-        '_resolved_data',
+        'resolved',
         'invite_code',
         'join_type',
-        '_inviter_id',
+        'inviter_id',
 
         '_guild',
         '_state',
     )
 
     def __init__(self, *, data: MemberSearchPayload, guild: Guild, state: ConnectionState) -> None:
-        self._resolved_data = data['member']
+        self.resolved: Member = Member(data=data['member'], guild=guild, state=state)
         self.invite_code: Optional[str] = data.get('source_invite_code')
         self.join_type: MemberJoinType = try_enum(MemberJoinType, data['join_source_type'])
         try:
-            self._inviter_id = data['inviter_id']
+            self.inviter_id = int(data['inviter_id'])
         except KeyError:
-            self._inviter_id = None
+            self.inviter_id = None
 
         self._guild = guild
         self._state = state
 
     def __repr__(self) -> str:
-        if self.inviter:
-            return f'<MemberSearch member={self.resolved!r} invite_code={self.invite_code!r} join_type={self.join_type!r} inviter={self.inviter!r}>'
-        return f'<MemberSearch member={self.resolved!r} invite_code={self.invite_code!r} join_type={self.join_type!r}>'
-
-    @property
-    def resolved(self) -> Member:
-        """:class:`Member`: Returns the resolved member object this search if of."""
-        return Member(data=self._resolved_data, guild=self._guild, state=self._state)
+        return (
+            f'<MemberSearch member={self.resolved!r} invite_code={self.invite_code!r}'
+            f'join_type={self.join_type!r} inviter_id={self.inviter_id}>'
+        )
 
     @property
     def inviter(self) -> Optional[Union[Member, User]]:
@@ -305,13 +301,6 @@ class MemberSearch:
         if not self.inviter_id:
             return
         return self._guild.get_member(self.inviter_id) or self._state.get_user(self.inviter_id)
-
-    @property
-    def inviter_id(self) -> Optional[int]:
-        """Optional[:class:`int`]: Returns this member\'s inviter ID"""
-        if not self._inviter_id:
-            return
-        return int(self._inviter_id)
 
 
 @flatten_user
@@ -1140,15 +1129,7 @@ class Member(discord.abc.Messageable, _UserTag):
         
         Fetches the safety information for this member.
 
-        You must have __any__ of the following permissions:
-
-        - :attr:`Permissions.administrator`
-        - :attr:`Permissions.manage_guild`
-        - :attr:`Permissions.manage_roles`
-        - :attr:`Permissions.manage_nicknames`
-        - :attr:`Permissions.ban_members`
-        - :attr:`Permissions.moderate_members`
-        - :attr:`Permissions.kick_members`
+        You must have :attr:`Permissions.manage_guild` to do this.
 
         .. versionadded:: 2.4
 
@@ -1167,13 +1148,16 @@ class Member(discord.abc.Messageable, _UserTag):
             isn't.
         """
 
-        data = await self._state.http.get_member_safety_information(self.guild.id, self.id)
+        results = [
+            m async for m in self.guild.fetch_safety_information(
+                limit=1,
+                user_ids=[self],
+            )
+        ]
 
-        if data['total_result_count'] == 0:
-            return
-
-        # We use data['members'][0] because there will only be 1 result
-        return MemberSearch(data=data['members'][0], guild=self.guild, state=self._state)
+        if not results:
+            return None
+        return results[0]
 
     async def add_roles(self, *roles: Snowflake, reason: Optional[str] = None, atomic: bool = True) -> None:
         r"""|coro|

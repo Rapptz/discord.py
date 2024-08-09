@@ -3663,6 +3663,67 @@ of :class:`enum.Enum`.
         A burst reaction, also known as a "super reaction".
 
 
+.. class:: MemberJoinType
+
+    Represents how a member joined a guild.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: unknown
+
+        Member joined the guild by an unknown source.
+
+    .. attribute:: bot
+    .. attribute:: app
+
+        Member joined by a bot invite.
+
+    .. attribute:: integration
+
+        Member joined by an integration.
+
+    .. attribute:: discovery
+
+        Member joined by guild discovery.
+
+    .. attribute:: hub
+    .. attribute:: student_hub
+
+        Member joined by the Student Hub.
+
+    .. attribute:: invite
+    .. attribute:: user_invite
+
+        Member joined by a user invite.
+
+    .. attribute:: manual_verification
+
+        Member joined by manual verification.
+
+
+.. class:: MemberSearchSortType
+
+    How to sort the results of :meth:`Guild.fetch_safety_information`.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: new_guild_members
+
+        Sort by guild join date in descending order (newest first).
+
+    .. attribute:: old_guild_members
+
+        Sort by guild join date in ascending order (oldest first).
+
+    .. attribute:: new_discord_users
+
+        Sort by account creation date in descending order (newest first).
+
+    .. attribute:: old_discord_users
+
+        Sort by account creation date in ascending order (oldest first).
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -5132,6 +5193,7 @@ MemberSearch
 
 .. autoclass:: MemberSearch()
     :members:
+
 
 .. _discord_api_data:
 

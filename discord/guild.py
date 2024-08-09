@@ -4390,65 +4390,81 @@ class Guild(Hashable):
         self,
         *,
         limit: int = MISSING,
-        after: Snowflake = MISSING,
+        sort_type: MemberSearchSortType = MISSING,
         before: Snowflake = MISSING,
-        sort_type: MemberSearchSortType = MemberSearchSortType.new_guild_members,
-        timed_out: bool = MISSING,
-        unusual_dms: bool = MISSING,
+        after: Snowflake = MISSING,
+        user_ids: List[Snowflake] = MISSING,
+        usernames: List[str] = MISSING,
+        roles: List[Snowflake] = MISSING,
+        joined_guild_before: Union[Snowflake, datetime.datetime] = MISSING,
+        joined_guild_after: Union[Snowflake, datetime.datetime] = MISSING,
+        unusual_dms_until: datetime.datetime = MISSING,
+        timed_out_until: datetime.datetime = MISSING,
         unusual_activity: bool = MISSING,
-        quarantined: bool = MISSING,
-        users: Iterable[Snowflake] = MISSING,
-        roles: Iterable[Snowflake] = MISSING,
-        invites: Iterable[Union[str, Invite]] = MISSING,
-        join_types: Iterable[MemberJoinType] = MISSING,
-        usernames: Iterable[str] = MISSING,
+        automod_quarantined: bool = MISSING,
+        joined_discord_before: Union[Snowflake, datetime.datetime] = MISSING,
+        joined_discord_after: Union[Snowflake, datetime.datetime] = MISSING,
+        is_pending: bool = MISSING,
+        did_rejoin: bool = MISSING,
+        join_type: MemberJoinType = MISSING,
+        invite_code: str = MISSING,
     ) -> AsyncIterator[MemberSearch]:
-        """Returns a :term:`asynchronous iterator` representing the members that were
-        obtained after the search.
+        """Returns a :term:`asynchronous iterator` representing the members that were obtained after
+        the search.
 
-        The ``after`` and ``before`` parameters must represent
-        a member and meet the :class:`abc.Snowflake` abc.
+        The ``after`` and ``before`` parameters must represent a member and meet the
+        :class:`abc.Snowflake` abc.
 
-        You must have __any__ of the following permissions:
-
-        - :attr:`Permissions.administrator`
-        - :attr:`Permissions.manage_guild`
-        - :attr:`Permissions.manage_roles`
-        - :attr:`Permissions.manage_nicknames`
-        - :attr:`Permissions.ban_members`
-        - :attr:`Permissions.moderate_members`
-        - :attr:`Permissions.kick_members`
+        You must have :attr:`Permissions.manage_guild` to do this.
 
         .. versionadded:: 2.4
 
         Parameters
         ----------
         limit: :class:`int`
-            The limit of members to fetch safety information.
-        after: :class:`abc.Snowflake`
-            Return members after this ID.
+            The maximum amount of :class:`MemberSearch` objects to return. Can be up to ``1000``.
+            Defaults to ``250``.
+        sort_type: :class:`.MemberSearchSortType`
+            How the results will be sorted. Defaults to :attr:`MemberSearchSortType.new_guild_members`.
         before: :class:`abc.Snowflake`
-            Return member before this ID.
-        sort_type: :class:`MemberSearchSortType`
-            The order the members are returned.
-        timed_out: :class:`bool`
-            Whether to return timed out users or not.
-        unusual_dms: :class:`bool`
-            Whether to return members with the unusual DMs flag.
-        unusual_activity: :class:`bool`
-            Whether to return members with the unusual activity flag.
-        quarantined: :class:`bool`
-            Whether to return members that are quarantined by the AutoMod.
-        users: Iterable[:class:`abc.Snowflake`]
-            Returns members that match this ID.
-        roles: Iterable[:Class:`abc.Snowflake`]
+            Return members before this object.
+        after: :class:`abc.Snowflake`
+            Return members after this object.
+        user_ids: List[:class:`abc.Snowflake`]
+            Returns members which IDs match with the ones provided.
+        usernames: List[:class:`str`]
+            Returns members which :attr:`Member.display_name`, :attr:`Member.name`, or
+            :attr:`Member.global_name` match with any of the items.
+        roles: List[:class:`abc.Snowflake`]
             Returns members with any of these roles.
-        invites: Iterable[Union[:class:`str`, :class:`Invite`]]
-            Returns members joined with these invites.
-        join_types: Iterable[:class:`MemberJoinType`]
-            Returns members that joined using these methods.
-        usernames: Iterable[:class:`str`]
-            Returns members named like any of these usernames.
+        joined_guild_before: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
+            Returns members that joined this guild before this object. If a `datetime.datetime` object is provided
+            it returns members that joined before that date.
+        joined_guild_after: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
+            Returns members that joined this guild after this object. If a `datetime.datetime` object is provided
+            it returns member that joined after that date.
+        unusual_dms_until: :class:`datetime.datetime`
+            Returns members which `Member.unusual_dms_until` attribute is less or equal to this.
+        timed_out_until: :class:`datetime.datetime`
+            Returns members which `Member.timed_out_until` attribute is less or equal to this.
+        unusual_activity: :class:`bool`
+            Returns members flagged with unusual account activity.
+        automod_quarantined: :class:`bool`
+            Returns members that have been indefinitely quarantined by an AutoMod Rule because of their name.
+        joined_discord_before: Union[:class.`abc.Snowflake`, :class:`datetime.datetime`]
+            Returns members that joined Discord before this object. If a `datetime.datetime` object is provided
+            it returns members that joined before that date.
+        joined_discord_after: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
+            Returns members that joined Discord after this object. If a `datetime.datetime` object is provided
+            it returns members that joined after that date.
+        is_pending: :class:`bool`
+            Returns members that have not yet passed the guild member verification.
+        did_rejoin: :class:`bool`
+            Returns members that have rejoined the guild.
+        join_type: :class:`MemberJoinType`
+            Returns members that have joined like the value provided.
+        invite_code: :class:`str`
+            Returns members that have joined using this invite code, or vanity code.
 
         Raises
         ------
@@ -4464,51 +4480,185 @@ class Guild(Hashable):
             The safety information of the members.
         """
 
+        def construct_range(
+            gte: Union[Snowflake, datetime.datetime], lte: Union[Snowflake, datetime.datetime],
+        ) -> Dict[str, Any]:
+            r = {}
+            if gte is not MISSING:
+                rgte = int(gte.timestamp()) if isinstance(gte, datetime.datetime) else gte.id
+                r['gte'] = rgte
+            if lte is not MISSING:
+                rlte = int(lte.timestamp()) if isinstance(lte, datetime.datetime) else lte.id
+                r['lte'] = rlte
+            return r
+
+        def construct_safety_signals(
+            unusual_dm_activity_until: datetime.datetime,
+            communication_disabled_until: datetime.datetime,
+            unusual_account_activity: bool,
+            automod_quarantined_username: bool,
+        ) -> Dict[str, Any]:
+            r = {}
+            if unusual_dm_activity_until is not MISSING:
+                r['unusual_dm_activity_until'] = construct_range(unusual_dm_activity_until, MISSING)
+            if communication_disabled_until is not MISSING:
+                r['communication_disabled_until'] = construct_range(
+                    communication_disabled_until, MISSING,
+                )
+            if unusual_account_activity is not MISSING:
+                r['unusual_account_activity'] = unusual_account_activity
+            if automod_quarantined_username is not MISSING:
+                r['automod_quarantined_username'] = automod_quarantined_username
+            return r
+
+        def construct_or_query(
+            value: List[Any],
+        ) -> Dict[str, List[Any]]:
+            return {'or_query': value}
+
+        def construct_and_query(
+            value: List[Any],
+        ) -> Dict[str, List[Any]]:
+            return {'and_query': value}
+
+        def set_or_update_query(
+            payload: Dict[str, Any],
+            query: Literal['or_query', 'and_query'],
+            key: str,
+            value: Any,
+        ) -> Dict[str, Any]:
+            query_data = payload[query]
+            if key in query_data:
+                query_value = query_data[key]
+
+                if isinstance(query_value, list):
+                    query_value.append(value)
+                elif isinstance(query_value, dict):
+                    query_value.update(value)
+                else:
+                    query_value += value
+
+                query_data[key] = query_value
+                payload[query] = query_data
+            else:
+                payload[query][key] = value
+            return payload
+
         if limit is MISSING:
             limit = self.member_count or self.approximate_member_count or 250
 
         while limit > 0:
-            retrieve = min(limit, 250)
+            retrieve = min(limit, 1000)
 
             state = self._state
             after_id = after.id if after is not MISSING else MISSING
             before_id = before.id if before is not MISSING else MISSING
 
-            data = await state.http.get_guild_member_safety(
+            payload = {
+                'limit': retrieve,
+                'sort': sort_type.value,
+                'and_query': {},
+                'or_query': {},
+            }
+
+            if after_id is not MISSING:
+                payload['after'] = after_id
+            if before_id is not MISSING:
+                payload['before'] = before_id
+            if any(
+                signal is not MISSING for signal in (
+                    timed_out_until,
+                    unusual_activity,
+                    unusual_dms_until,
+                    automod_quarantined,
+                )
+            ):
+                safety_signals_payload = construct_safety_signals(
+                    unusual_dms_until,
+                    timed_out_until,
+                    unusual_activity,
+                    automod_quarantined,
+                )
+                set_or_update_query(payload, 'or_query', 'safety_signals', safety_signals_payload)
+            if user_ids is not MISSING:
+                user_ids_payload = construct_or_query([u.id for u in user_ids])
+                set_or_update_query(payload, 'and_query', 'user_id', user_ids_payload)
+            if usernames is not MISSING:
+                usernames_payload = construct_or_query(usernames)
+                set_or_update_query(payload, 'and_query', 'usernames', usernames_payload)
+            if roles is not MISSING:
+                roles_payload = construct_and_query([r.id for r in roles])
+                set_or_update_query(payload, 'and_query', 'role_ids', roles_payload)
+            if joined_guild_after is not MISSING:
+                set_or_update_query(
+                    payload,
+                    'and_query',
+                    'guild_joined_at',
+                    construct_range(
+                        joined_guild_after,
+                        MISSING,
+                    ),
+                )
+            if joined_guild_before is not MISSING:
+                set_or_update_query(
+                    payload,
+                    'and_query',
+                    'guild_joined_at',
+                    construct_range(
+                        MISSING,
+                        joined_guild_before,
+                    ),
+                )
+            if is_pending is not MISSING:
+                set_or_update_query(
+                    payload,
+                    'and_query',
+                    'is_pending',
+                    is_pending,
+                )
+            if did_rejoin is not MISSING:
+                set_or_update_query(
+                    payload,
+                    'and_query',
+                    'did_rejoin',
+                    did_rejoin,
+                )
+            if join_type is not MISSING:
+                set_or_update_query(
+                    payload,
+                    'and_query',
+                    'join_source_type',
+                    construct_or_query([join_type.value]),
+                )
+            if invite_code is not MISSING:
+                set_or_update_query(
+                    payload,
+                    'and_query',
+                    'source_invite_code',
+                    construct_or_query([invite_code]),
+                )
+
+            data = await state.http.get_guild_members_safety_information(
                 self.id,
-                limit=retrieve,
-                sort_type=sort_type.value,
-                after=after_id,
-                before=before_id,
-                users=[user.id for user in users] if users is not MISSING else MISSING,
-                roles=[role.id for role in roles] if roles is not MISSING else MISSING,
-                unusual_activity=unusual_activity,
-                quarantined=quarantined,
-                timed_out=timed_out,
-                unusual_dms=unusual_dms,
-                invites=[invite if isinstance(invite, str) else invite.code for invite in invites]
-                    if invites is not MISSING else MISSING,
-                join_types=[join_type.value for join_type in join_types] if join_types is not MISSING else MISSING,
-                usernames=usernames
+                limit,
+                sort_type.value,
+                **payload,
             )
 
             results = data['members']
 
-            if len(results) == 0:
+            if not results:
                 # No more members, break
                 break
 
             limit -= len(results)
             after = Object(id=int(results[-1]['member']['user']['id']))
 
-            for result in reversed(results):
+            for result in results:
                 yield MemberSearch(data=result, guild=self, state=state)
 
-            if before_id:
-                if after.id > before_id:
-                    # We cannot fetch users if the before requirements is less than
-                    # the after requirement.
-                    break
+            if before_id is not MISSING and after.id > before_id:
+                break
 
     @property
     def invites_paused_until(self) -> Optional[datetime.datetime]:
