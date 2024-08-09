@@ -76,7 +76,7 @@ class ActivityEmoji(TypedDict):
     animated: NotRequired[bool]
 
 
-ActivityType = Literal[0, 1, 2, 4, 5]
+ActivityType = Literal[0, 1, 2, 4, 5, 6]
 
 
 class SendableActivity(TypedDict):

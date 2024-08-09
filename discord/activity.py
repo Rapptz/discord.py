@@ -28,7 +28,7 @@ import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING, Union, overload
 
 from .asset import Asset
-from .enums import ActivityType, try_enum
+from .enums import ActivityType, try_enum, HangStatusType
 from .colour import Colour
 from .partial_emoji import PartialEmoji
 from .utils import _get_as_snowflake
@@ -40,6 +40,7 @@ __all__ = (
     'Game',
     'Spotify',
     'CustomActivity',
+    'HangStatus',
 )
 
 """If curious, this is the current schema for an activity.
@@ -109,6 +110,7 @@ class BaseActivity:
     - :class:`Game`
     - :class:`Streaming`
     - :class:`CustomActivity`
+    - :class:`HangStatus`
 
     Note that although these types are considered user-settable by the library,
     Discord typically ignores certain combinations of activity depending on
@@ -147,6 +149,7 @@ class Activity(BaseActivity):
 
     - :class:`Game`
     - :class:`Streaming`
+    - :class:`HangStatus`
 
     Attributes
     ------------
@@ -825,7 +828,109 @@ class CustomActivity(BaseActivity):
         return f'<CustomActivity name={self.name!r} emoji={self.emoji!r}>'
 
 
-ActivityTypes = Union[Activity, Game, CustomActivity, Streaming, Spotify]
+class HangStatus(BaseActivity):
+    """A slimmed down version of :class:`Activity` that represents a Discord hang status.
+
+    This is typically displayed via **Right now, I'm -** on the official Discord client.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two hang statuses are equal.
+
+        .. describe:: x != y
+
+            Checks if two hang statuses are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the hang status' hash.
+
+        .. describe:: str(x)
+
+            Returns the hang status' name.
+
+    .. versionadded: 2.5
+
+    Attributes
+    -----------
+    state: :class:`HangStatusType`
+        The state of hang status.
+    name: :class:`str`
+        The name of the hang status.
+    emoji: Optional[:class:`PartialEmoji`]
+        The emoji of the hang status if any.
+    """
+
+    __slots__ = ('state', 'name', 'emoji')
+
+    def __init__(self, state: str, emoji: Optional[Union[PartialEmoji, Dict[str, Any], str]] = None, **extra: Any) -> None:
+        super().__init__(**extra)
+        self.state: HangStatusType = try_enum(HangStatusType, state)
+
+        self.name: str
+        if self.state == HangStatusType.custom:
+            self.name = extra['details']
+        else:
+            self.name = self.state.value
+
+        self.emoji: Optional[PartialEmoji]
+        if emoji is None:
+            self.emoji = emoji
+        elif isinstance(emoji, dict):
+            self.emoji = PartialEmoji.from_dict(emoji)
+        elif isinstance(emoji, str):
+            self.emoji = PartialEmoji(name=emoji)
+        elif isinstance(emoji, PartialEmoji):
+            self.emoji = emoji
+        else:
+            raise TypeError(f'Expected str, PartialEmoji, or None, received {type(emoji)!r} instead.')
+
+    @property
+    def type(self) -> ActivityType:
+        """:class:`ActivityType`: Returns the activity's type. This is for compatibility with :class:`Activity`.
+
+        It always returns :attr:`ActivityType.hang`.
+        """
+        return ActivityType.hang
+
+    def to_dict(self) -> Dict[str, Any]:
+        if self.state == HangStatusType.custom:
+            ret = {
+                'type': ActivityType.hang.value,
+                'name': 'Hang Status',
+                'state': self.state.value,
+                'details': self.name,
+            }
+        else:
+            ret = {
+                'type': ActivityType.hang.value,
+                'name': 'Hang Status',
+                'state': self.state.value,
+            }
+
+        if self.emoji:
+            ret['emoji'] = self.emoji.to_dict()
+        return ret
+
+    def __str__(self) -> str:
+        return str(self.name)
+
+    def __repr__(self) -> str:
+        return f'<HangStatus state={self.state!r} name={self.name!r}>'
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, HangStatus) and other.name == self.name and other.emoji == self.emoji
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+    def __hash__(self) -> int:
+        return hash((self.name, str(self.emoji)))
+
+
+ActivityTypes = Union[Activity, Game, CustomActivity, Streaming, Spotify, HangStatus]
 
 
 @overload
@@ -862,6 +967,8 @@ def create_activity(data: Optional[ActivityPayload], state: ConnectionState) -> 
         return Activity(**data)
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)
+    elif game_type is ActivityType.hang:
+        return HangStatus(**data)  # type: ignore
     else:
         ret = Activity(**data)
 
