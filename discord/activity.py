@@ -110,7 +110,6 @@ class BaseActivity:
     - :class:`Game`
     - :class:`Streaming`
     - :class:`CustomActivity`
-    - :class:`HangStatus`
 
     Note that although these types are considered user-settable by the library,
     Discord typically ignores certain combinations of activity depending on
