@@ -871,7 +871,6 @@ class HangStatus(BaseActivity):
 
         self.name: str
         if self.state == HangStatusType.custom:
-            print(state, extra)
             details = extra.get('details')
             if details is None:
                 raise ValueError('hang status state cannot be custom')
