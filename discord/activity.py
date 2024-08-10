@@ -110,6 +110,7 @@ class BaseActivity:
     - :class:`Game`
     - :class:`Streaming`
     - :class:`CustomActivity`
+    - :class:`HangStatus`
 
     Note that although these types are considered user-settable by the library,
     Discord typically ignores certain combinations of activity depending on
@@ -864,17 +865,22 @@ class HangStatus(BaseActivity):
 
     __slots__ = ('state', 'name', 'emoji')
 
-    def __init__(self, state: str, emoji: Optional[Union[PartialEmoji, Dict[str, Any], str]] = None, **extra: Any) -> None:
+    def __init__(self, state: HangStatusType, **extra: Any) -> None:
         super().__init__(**extra)
-        self.state: HangStatusType = try_enum(HangStatusType, state)
+        self.state: HangStatusType = state
 
         self.name: str
         if self.state == HangStatusType.custom:
-            self.name = extra['details']
+            print(state, extra)
+            details = extra.get('details')
+            if details is None:
+                raise ValueError('hang status state cannot be custom')
+            self.name = details
         else:
             self.name = self.state.value
 
         self.emoji: Optional[PartialEmoji]
+        emoji = extra.get('emoji')
         if emoji is None:
             self.emoji = emoji
         elif isinstance(emoji, dict):
@@ -895,22 +901,16 @@ class HangStatus(BaseActivity):
         return ActivityType.hang
 
     def to_dict(self) -> Dict[str, Any]:
+        ret = {
+            'type': ActivityType.hang.value,
+            'name': 'Hang Status',
+            'state': self.state.value,
+        }
         if self.state == HangStatusType.custom:
-            ret = {
-                'type': ActivityType.hang.value,
-                'name': 'Hang Status',
-                'state': self.state.value,
-                'details': self.name,
-            }
-        else:
-            ret = {
-                'type': ActivityType.hang.value,
-                'name': 'Hang Status',
-                'state': self.state.value,
-            }
-
+            ret['details'] = self.name
         if self.emoji:
             ret['emoji'] = self.emoji.to_dict()
+
         return ret
 
     def __str__(self) -> str:
@@ -967,7 +967,8 @@ def create_activity(data: Optional[ActivityPayload], state: ConnectionState) -> 
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)
     elif game_type is ActivityType.hang:
-        return HangStatus(**data)  # type: ignore
+        hang_state = try_enum(HangStatusType, data.pop('state'))
+        return HangStatus(state=hang_state, **data)  # type: ignore
     else:
         ret = Activity(**data)
 
