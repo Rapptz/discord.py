@@ -827,7 +827,7 @@ class CustomActivity(BaseActivity):
         return f'<CustomActivity name={self.name!r} emoji={self.emoji!r}>'
 
 
-class HangStatus:
+class HangStatus(BaseActivity):
     """A slimmed down version of :class:`Activity` that represents a Discord hang status.
 
     This is typically displayed via **Right now, I'm -** on the official Discord client.
@@ -864,17 +864,17 @@ class HangStatus:
 
     __slots__ = ('state', 'name', 'emoji')
 
-    def __init__(self, **data: Any) -> None:
-        self.state: HangStatusType = try_enum(HangStatusType, data['state'])
+    def __init__(self, state: str, emoji: Optional[Union[PartialEmoji, Dict[str, Any], str]] = None, **extra: Any) -> None:
+        super().__init__(**extra)
+        self.state: HangStatusType = try_enum(HangStatusType, state)
 
         self.name: str
         if self.state == HangStatusType.custom:
-            self.name = data['details']
+            self.name = extra['details']
         else:
             self.name = self.state.value
 
         self.emoji: Optional[PartialEmoji]
-        emoji = data.get('emoji')
         if emoji is None:
             self.emoji = emoji
         elif isinstance(emoji, dict):
@@ -893,6 +893,25 @@ class HangStatus:
         It always returns :attr:`ActivityType.hang`.
         """
         return ActivityType.hang
+
+    def to_dict(self) -> Dict[str, Any]:
+        if self.state == HangStatusType.custom:
+            ret = {
+                'type': ActivityType.hang.value,
+                'name': 'Hang Status',
+                'state': self.state.value,
+                'details': self.name,
+            }
+        else:
+            ret = {
+                'type': ActivityType.hang.value,
+                'name': 'Hang Status',
+                'state': self.state.value,
+            }
+
+        if self.emoji:
+            ret['emoji'] = self.emoji.to_dict()
+        return ret
 
     def __str__(self) -> str:
         return str(self.name)
@@ -948,7 +967,7 @@ def create_activity(data: Optional[ActivityPayload], state: ConnectionState) -> 
     elif game_type is ActivityType.listening and 'sync_id' in data and 'session_id' in data:
         return Spotify(**data)
     elif game_type is ActivityType.hang:
-        return HangStatus(**data)
+        return HangStatus(**data)  # type: ignore
     else:
         ret = Activity(**data)
 
