@@ -805,6 +805,7 @@ class HTTPClient:
             connector=self.connector,
             ws_response_class=DiscordClientWebSocketResponse,
             trace_configs=None if self.http_trace is None else [self.http_trace],
+            cookie_jar=aiohttp.DummyCookieJar(),
         )
         self._global_over = asyncio.Event()
         self._global_over.set()
