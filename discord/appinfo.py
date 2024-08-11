@@ -179,7 +179,7 @@ class AppInfo:
         'interactions_endpoint_url',
         'redirect_uris',
         'approximate_guild_count',
-        'approximate_user_install_count'
+        'approximate_user_install_count',
     )
 
     def __init__(self, state: ConnectionState, data: AppInfoPayload):
