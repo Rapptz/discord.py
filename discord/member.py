@@ -1056,13 +1056,21 @@ class Member(discord.abc.Messageable, _UserTag):
         -------
         TypeError
             The ``until`` parameter was the wrong type or the datetime was not timezone-aware.
+        ValueError
+            The timeout exceeds the maximum allowed duration of 28 days.
         """
+
+        timeout_error_message = 'The timeout end date exceeds the maximum allowed duration of 28 days.'
 
         if until is None:
             timed_out_until = None
         elif isinstance(until, datetime.timedelta):
+            if until > datetime.timedelta(days=28):
+                raise ValueError(timeout_error_message)
             timed_out_until = utils.utcnow() + until
         elif isinstance(until, datetime.datetime):
+            if until > utils.utcnow() + datetime.timedelta(days=28):
+                raise ValueError(timeout_error_message)
             timed_out_until = until
         else:
             raise TypeError(f'expected None, datetime.datetime, or datetime.timedelta not {until.__class__.__name__}')
