@@ -322,7 +322,8 @@ GuildScheduledEventUserAdd = GuildScheduledEventUserRemove = _GuildScheduledEven
 VoiceStateUpdateEvent = GuildVoiceState
 VoiceChannelEffectSendEvent = VoiceChannelEffect
 
-GuildSoundBoardSoundCreateEvent = SoundboardSound
+GuildSoundBoardSoundCreateEvent = GuildSoundBoardSoundUpdateEvent = SoundboardSound
+GuildSoundBoardSoundsUpdateEvent = List[SoundboardSound]
 
 
 class GuildSoundBoardSoundDeleteEvent(TypedDict):
