@@ -4541,7 +4541,7 @@ class Guild(Hashable):
         """|coro|
 
         Creates a :class:`SoundboardSound` for the guild.
-        You must have :attr:`Permissions.manage_expressions` to do this.
+        You must have :attr:`Permissions.create_expressions` to do this.
 
         .. versionadded:: 2.5
 
@@ -4551,7 +4551,7 @@ class Guild(Hashable):
             The name of the sound. Must be between 2 and 32 characters.
         sound: :class:`bytes`
             The :term:`py:bytes-like object` representing the sound data.
-            Only MP3 sound files that don't exceed the duration of 5.2s are supported.
+            Only MP3 and OGG sound files that don't exceed the duration of 5.2s are supported.
         volume: :class:`float`
             The volume of the sound. Must be between 0 and 1. Defaults to ``1``.
         emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
