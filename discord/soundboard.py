@@ -234,6 +234,7 @@ class SoundboardSound(BaseSoundboardSound):
 
     async def edit(
         self,
+        *,
         name: str = MISSING,
         volume: Optional[float] = MISSING,
         emoji: Optional[EmojiInputType] = MISSING,
