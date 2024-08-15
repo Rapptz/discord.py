@@ -180,18 +180,15 @@ class SoundboardSound(BaseSoundboardSound):
         The emoji of the sound. ``None`` if no emoji is set.
     guild: :class:`Guild`
         The guild in which the sound is uploaded.
-    guild_id: :class:`int`
-        The ID of the guild in which the sound is uploaded.
     available: :class:`bool`
         Whether this sound is available for use.
     """
 
-    __slots__ = ('_state', 'guild_id', 'name', 'emoji', '_user', 'available', '_user_id', 'guild')
+    __slots__ = ('_state', 'name', 'emoji', '_user', 'available', '_user_id', 'guild')
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: SoundboardSoundPayload):
         super().__init__(state=state, data=data)
         self.guild = guild
-        self.guild_id: int = guild.id
         self._user_id = utils._get_as_snowflake(data, 'user_id')
         self._user = data.get('user')
 
@@ -298,7 +295,7 @@ class SoundboardSound(BaseSoundboardSound):
                     else:
                         payload['emoji_id'] = partial_emoji.id
 
-        data = await self._state.http.edit_soundboard_sound(self.guild_id, self.id, reason=reason, **payload)
+        data = await self._state.http.edit_soundboard_sound(self.guild.id, self.id, reason=reason, **payload)
         return SoundboardSound(guild=self.guild, state=self._state, data=data)
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
@@ -320,4 +317,4 @@ class SoundboardSound(BaseSoundboardSound):
         HTTPException
             Deleting the soundboard sound failed.
         """
-        await self._state.http.delete_soundboard_sound(self.guild_id, self.id, reason=reason)
+        await self._state.http.delete_soundboard_sound(self.guild.id, self.id, reason=reason)
