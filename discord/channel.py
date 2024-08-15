@@ -68,7 +68,7 @@ from .partial_emoji import _EmojiTag, PartialEmoji
 from .flags import ChannelFlags
 from .http import handle_message_parameters
 from .object import Object
-from .soundboard import BaseSoundboardSound
+from .soundboard import BaseSoundboardSound, SoundboardDefaultSound
 
 __all__ = (
     'TextChannel',
@@ -116,6 +116,7 @@ if TYPE_CHECKING:
     )
     from .types.snowflake import SnowflakeList
     from .types.soundboard import BaseSoundboardSound as BaseSoundboardSoundPayload
+    from .soundboard import SoundboardSound
 
     OverwriteKeyT = TypeVar('OverwriteKeyT', Role, BaseUser, Object, Union[Role, Member, Object])
 
@@ -1584,6 +1585,35 @@ class VoiceChannel(VocalGuildChannel):
         if payload is not None:
             # the payload will always be the proper channel payload
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
+
+    async def send_sound(self, sound: Union[SoundboardSound, SoundboardDefaultSound], /) -> None:
+        """|coro|
+
+        Sends a soundboard sound for this channel.
+
+        You must have :attr:`~Permissions.speak` and :attr:`~Permissions.use_soundboard` to do this.
+        Additionally, you must have :attr:`~Permissions.use_external_sounds` if the sound is from
+        a different guild.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        -----------
+        sound: Union[:class:`SoundboardSound`, :class:`SoundboardDefaultSound`]
+            The sound to send for this channel.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to send a sound for this channel.
+        HTTPException
+            Sending the sound failed.
+        """
+        payload = {'sound_id': sound.id}
+        if not isinstance(sound, SoundboardDefaultSound) and self.guild.id != sound.guild.id:
+            payload['source_guild_id'] = sound.guild.id
+
+        await self._state.http.send_soundboard_sound(self.id, **payload)
 
 
 class StageChannel(VocalGuildChannel):
