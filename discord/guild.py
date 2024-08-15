@@ -4476,6 +4476,15 @@ class Guild(Hashable):
 
         .. versionadded:: 2.5
 
+        .. note::
+
+            Using this, in order to receive :attr:`SoundboardSound.user`, you must have :attr:`~Permissions.create_expressions`
+            or :attr:`~Permissions.manage_expressions`.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`get_soundboard_sound` instead.
+
         Raises
         -------
         NotFound
@@ -4497,6 +4506,15 @@ class Guild(Hashable):
         Retrieves a list of all soundboard sounds for the guild.
 
         .. versionadded:: 2.5
+
+        .. note::
+
+            Using this, in order to receive :attr:`SoundboardSound.user`, you must have :attr:`~Permissions.create_expressions`
+            or :attr:`~Permissions.manage_expressions`.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`soundboard_sounds` instead.
 
         Raises
         -------
