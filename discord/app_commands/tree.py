@@ -68,6 +68,7 @@ from .._types import ClientT
 
 if TYPE_CHECKING:
     from ..types.interactions import ApplicationCommandInteractionData, ApplicationCommandInteractionDataOption
+    from ..types.command import ApplicationCommand
     from ..interactions import Interaction
     from ..abc import Snowflake
     from .commands import ContextMenuCallback, CommandCallback, P, T
@@ -202,7 +203,8 @@ class CommandTree(Generic[ClientT]):
             command = await self._http.get_guild_command(self.client.application_id, guild.id, command_id)
 
         res = AppCommand(data=command, state=self._state)
-        self._store_command_id((res, res.id))
+        # self._store_command_id((res, res.id))
+        self._store_command_from_data(command)
         return res
 
     async def fetch_commands(self, *, guild: Optional[Snowflake] = None) -> List[AppCommand]:
@@ -244,7 +246,8 @@ class CommandTree(Generic[ClientT]):
             commands = await self._http.get_guild_commands(self.client.application_id, guild.id)
 
         res = [AppCommand(data=command, state=self._state) for command in commands]
-        self._store_command_id(*((cmd, cmd.id) for cmd in res))
+        # self._store_command_id(*((cmd, cmd.id) for cmd in res))
+        self._store_command_from_data(*commands)
         return res
 
     def get_command_id(
@@ -1212,7 +1215,8 @@ class CommandTree(Generic[ClientT]):
             raise
 
         res = [AppCommand(data=d, state=self._state) for d in data]
-        self._store_command_id(*((cmd, cmd.id) for cmd in res))
+        # self._store_command_id(*((cmd, cmd.id) for cmd in res))
+        self._store_command_from_data(*data)
         return res
 
     def _store_command_id(self, *commands: Tuple[AppCommand | ContextMenu | Command[Any, ..., Any] | Group, int]) -> None:
@@ -1234,6 +1238,16 @@ class CommandTree(Generic[ClientT]):
                     for guild_id in guild_ids:
                         key = (name, guild_id)
                         self._guild_command_ids[key] = command_id
+
+    def _store_command_from_data(self, *data: ApplicationCommandInteractionData | ApplicationCommand) -> None:
+        for d in data:
+            command_id = int(d['id'])
+            name = d['name']
+            guild_id = _get_as_snowflake(d, 'guild_id')
+            if guild_id is None:
+                self._global_command_ids[name] = command_id
+            else:
+                self._guild_command_ids[(name, guild_id)] = command_id
 
     async def _dispatch_error(self, interaction: Interaction[ClientT], error: AppCommandError, /) -> None:
         command = interaction.command
@@ -1330,7 +1344,8 @@ class CommandTree(Generic[ClientT]):
         if ctx_menu is None:
             raise CommandNotFound(name, [], AppCommandType(type))
 
-        self._store_command_id((ctx_menu, int(data['id'])))
+        # self._store_command_id((ctx_menu, int(data['id'])))
+        self._store_command_from_data(data)
 
         resolved = Namespace._get_resolved_items(interaction, data.get('resolved', {}))
 
@@ -1382,7 +1397,8 @@ class CommandTree(Generic[ClientT]):
             return
 
         command, options = self._get_app_command_options(data)
-        self._store_command_id((command, int(data['id'])))
+        # self._store_command_id((command, int(data['id'])))
+        self._store_command_from_data(data)
 
         # Pre-fill the cached slot to prevent re-computation
         interaction._cs_command = command
