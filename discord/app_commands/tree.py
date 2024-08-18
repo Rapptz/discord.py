@@ -276,10 +276,9 @@ class CommandTree(Generic[ClientT]):
 
         if isinstance(command, AppCommand):
             return command.id
-        elif isinstance(command, (Command, Group)):
-            name = (command.root_parent or command).name
-        elif isinstance(command, ContextMenu):
-            name = command.name
+        
+        if isinstance(command, (Command, Group, ContextMenu)):
+            name = (command.root_parent or command).name if not isinstance(command, ContextMenu) else command.name
         elif isinstance(command, str):
             name = command.split()[0]
 
@@ -311,10 +310,8 @@ class CommandTree(Generic[ClientT]):
         if command_id is None:
             return None
 
-        if isinstance(command, (Command, Group)):
+        if isinstance(command, (Command, Group, ContextMenu)):
             full_name = command.qualified_name
-        elif isinstance(command, ContextMenu):
-            full_name = command.name
         elif isinstance(command, str):
             full_name = command
 
