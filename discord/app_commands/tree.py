@@ -1343,8 +1343,6 @@ class CommandTree(Generic[ClientT]):
         if ctx_menu is None:
             raise CommandNotFound(name, [], AppCommandType(type))
 
-        self._update_command_ids(data)
-
         resolved = Namespace._get_resolved_items(interaction, data.get('resolved', {}))
 
         # This is annotated as str | int but realistically this will always be str
@@ -1388,6 +1386,7 @@ class CommandTree(Generic[ClientT]):
             return
 
         data: ApplicationCommandInteractionData = interaction.data  # type: ignore
+        self._update_command_ids(data)
         type = data.get('type', 1)
         if type != 1:
             # Context menu command...
@@ -1395,8 +1394,6 @@ class CommandTree(Generic[ClientT]):
             return
 
         command, options = self._get_app_command_options(data)
-        # self._store_command_id((command, int(data['id'])))
-        self._update_command_ids(data)
 
         # Pre-fill the cached slot to prevent re-computation
         interaction._cs_command = command
