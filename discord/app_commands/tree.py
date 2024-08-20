@@ -1231,9 +1231,8 @@ class CommandTree(Generic[ClientT]):
                 raise CommandSyncFailure(e, commands) from None
             raise
 
-        res = [AppCommand(data=d, state=self._state) for d in data]
         self._update_command_ids(*data)
-        return res
+        return [AppCommand(data=d, state=self._state) for d in data]
 
     def _update_command_ids(self, *data: Union[ApplicationCommandInteractionData, ApplicationCommand]) -> None:
         if not self.store_app_command_ids:
