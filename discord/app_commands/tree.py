@@ -133,6 +133,13 @@ class CommandTree(Generic[ClientT]):
         Note that you can override this on a per command basis.
 
         .. versionadded:: 2.4
+    store_app_command_ids: :class:`bool`
+        Whether to store the application command IDs on the tree. These can be used to mention a command.
+        Defaults to ``False``.
+
+        This must be enabled if you want to use :meth:`get_command_mention` or :meth:`get_command_id`.
+
+        .. versionadded:: 2.5
     """
 
     def __init__(
@@ -142,6 +149,7 @@ class CommandTree(Generic[ClientT]):
         fallback_to_global: bool = True,
         allowed_contexts: AppCommandContext = MISSING,
         allowed_installs: AppInstallationType = MISSING,
+        store_app_command_ids: bool = False,
     ):
         self.client: ClientT = client
         self._http = client.http
@@ -162,8 +170,8 @@ class CommandTree(Generic[ClientT]):
         # it's uncommon and N=5 anyway.
         self._context_menus: Dict[Tuple[str, Optional[int], int], ContextMenu] = {}
 
-        self._global_command_ids: Dict[str, int] = {}
-        self._guild_command_ids: Dict[Tuple[str, int], int] = {}
+        self.store_app_command_ids: bool = store_app_command_ids
+        self._command_ids: Dict[Optional[int], Dict[str, int]] = {}
 
     async def fetch_command(self, command_id: int, /, *, guild: Optional[Snowflake] = None) -> AppCommand:
         """|coro|
@@ -202,10 +210,8 @@ class CommandTree(Generic[ClientT]):
         else:
             command = await self._http.get_guild_command(self.client.application_id, guild.id, command_id)
 
-        res = AppCommand(data=command, state=self._state)
-        # self._store_command_id((res, res.id))
-        self._store_command_from_data(command)
-        return res
+        self._update_command_ids(command)
+        return AppCommand(data=command, state=self._state)
 
     async def fetch_commands(self, *, guild: Optional[Snowflake] = None) -> List[AppCommand]:
         """|coro|
@@ -245,10 +251,8 @@ class CommandTree(Generic[ClientT]):
         else:
             commands = await self._http.get_guild_commands(self.client.application_id, guild.id)
 
-        res = [AppCommand(data=command, state=self._state) for command in commands]
-        # self._store_command_id(*((cmd, cmd.id) for cmd in res))
-        self._store_command_from_data(*commands)
-        return res
+        self._update_command_ids(*commands)
+        return [AppCommand(data=command, state=self._state) for command in commands]
 
     def get_command_id(
         self, command: Union[AppCommand, Command, ContextMenu, Group, str], /, *, guild: Optional[Snowflake] = None
@@ -265,7 +269,7 @@ class CommandTree(Generic[ClientT]):
 
         Returns
         --------
-        Optional[:class:`~discord.app_commands.CommandID`]
+        Optional[:class:`int`]
             The command ID if found, otherwise ``None``.
 
             .. note::
@@ -276,17 +280,17 @@ class CommandTree(Generic[ClientT]):
 
         if isinstance(command, AppCommand):
             return command.id
-        
+
         if isinstance(command, (Command, Group, ContextMenu)):
             name = (command.root_parent or command).name if not isinstance(command, ContextMenu) else command.name
         elif isinstance(command, str):
             name = command.split()[0]
 
-        return self._global_command_ids.get(name) if guild is None else self._guild_command_ids.get((name, guild.id))
+        return self._command_ids.get(guild.id if guild else None, {}).get(name)
 
     def get_command_mention(
         self, command: Union[AppCommand, Command, ContextMenu, Group, str], /, *, guild: Optional[Snowflake] = None
-    ) -> str | None:
+    ) -> Optional[str]:
         """Gets the mention string for a command.
 
         Parameters
@@ -316,6 +320,22 @@ class CommandTree(Generic[ClientT]):
             full_name = command
 
         return f'</{full_name}:{command_id}>'
+
+    def get_command_ids(self, guild: Optional[Snowflake] = None) -> Dict[str, int]:
+        """Gets all command IDs for the given guild.
+
+        Parameters
+        -----------
+        guild: Optional[:class:`~discord.abc.Snowflake`]
+            The guild to get the command IDs for. If not passed then the global command
+            IDs are returned instead.
+
+        Returns
+        --------
+        Dict[:class:`str`, :class:`int`]
+            A dictionary of command names and their IDs.
+        """
+        return self._command_ids.get(guild.id if guild else None, {})
 
     def copy_global_to(self, *, guild: Snowflake) -> None:
         """Copies all global commands to the specified guild.
@@ -1212,39 +1232,21 @@ class CommandTree(Generic[ClientT]):
             raise
 
         res = [AppCommand(data=d, state=self._state) for d in data]
-        # self._store_command_id(*((cmd, cmd.id) for cmd in res))
-        self._store_command_from_data(*data)
+        self._update_command_ids(*data)
         return res
 
-    def _store_command_id(self, *commands: Tuple[AppCommand | ContextMenu | Command[Any, ..., Any] | Group, int]) -> None:
-        for command, command_id in commands:
-            if isinstance(command, AppCommand):
-                guild_id = command.guild_id
-                if guild_id is None:
-                    self._global_command_ids[command.name] = command_id
-                else:
-                    key = (command.name, guild_id)
-                    self._guild_command_ids[key] = command_id
-            else:
-                guild_ids = command._guild_ids
-                name = (command.root_parent or command).name if not isinstance(command, ContextMenu) else command.name
+    def _update_command_ids(self, *data: Union[ApplicationCommandInteractionData, ApplicationCommand]) -> None:
+        if not self.store_app_command_ids:
+            return
 
-                if not guild_ids:
-                    self._global_command_ids[name] = command_id
-                else:
-                    for guild_id in guild_ids:
-                        key = (name, guild_id)
-                        self._guild_command_ids[key] = command_id
-
-    def _store_command_from_data(self, *data: ApplicationCommandInteractionData | ApplicationCommand) -> None:
         for d in data:
-            command_id = int(d['id'])
-            name = d['name']
-            guild_id = _get_as_snowflake(d, 'guild_id')
-            if guild_id is None:
-                self._global_command_ids[name] = command_id
-            else:
-                self._guild_command_ids[(name, guild_id)] = command_id
+            command_id: int = int(d['id'])
+            name: str = d['name']
+            guild_id: Optional[int] = _get_as_snowflake(d, 'guild_id')
+            try:
+                self._command_ids[guild_id][name] = command_id
+            except KeyError:
+                self._command_ids[guild_id] = {name: command_id}
 
     async def _dispatch_error(self, interaction: Interaction[ClientT], error: AppCommandError, /) -> None:
         command = interaction.command
@@ -1341,8 +1343,7 @@ class CommandTree(Generic[ClientT]):
         if ctx_menu is None:
             raise CommandNotFound(name, [], AppCommandType(type))
 
-        # self._store_command_id((ctx_menu, int(data['id'])))
-        self._store_command_from_data(data)
+        self._update_command_ids(data)
 
         resolved = Namespace._get_resolved_items(interaction, data.get('resolved', {}))
 
@@ -1395,7 +1396,7 @@ class CommandTree(Generic[ClientT]):
 
         command, options = self._get_app_command_options(data)
         # self._store_command_id((command, int(data['id'])))
-        self._store_command_from_data(data)
+        self._update_command_ids(data)
 
         # Pre-fill the cached slot to prevent re-computation
         interaction._cs_command = command
