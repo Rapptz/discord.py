@@ -713,14 +713,20 @@ Notes
 OAuth2
 ~~~~~~~
 
-.. function:: on_oauth2_token_revoke(token)
+.. function:: on_oauth2_token_revoke(token, application_id)
 
     Called when an authorized application is revoked.
 
     .. versionadded:: 2.0
 
+    .. versionchanged:: 2.1
+
+        The ``application_id`` parameter was added.
+
     :param token: The token that was revoked.
     :type token: :class:`str`
+    :param application_id: The application ID that was revoked.
+    :type application_id: :class:`int`
 
 Calls
 ~~~~~

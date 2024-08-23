@@ -468,6 +468,7 @@ class ConnectionsLinkCallbackEvent(TypedDict):
 
 class OAuth2TokenRevokeEvent(TypedDict):
     access_token: str
+    application_id: Snowflake
 
 
 class AuthSessionChangeEvent(TypedDict):
