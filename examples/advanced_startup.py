@@ -86,7 +86,14 @@ async def main():
     # Here we have a web client and a database pool, both of which do cleanup at exit.
     # We also have our bot, which depends on both of these.
 
-    async with ClientSession() as our_client, asyncpg.create_pool(user='postgres', command_timeout=30) as pool:
+    async with ClientSession() as our_client, asyncpg.create_pool(
+        user='postgres',
+        password='your_password',
+        host='your_host',
+        database='your_database',
+        port='your_port',
+        command_timeout=30,
+    ) as pool:
         # 2. We become responsible for starting the bot.
 
         exts = ['general', 'mod', 'dice']
