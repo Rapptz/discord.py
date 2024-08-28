@@ -508,7 +508,9 @@ class Poll:
 
             This will **always** be ``None`` for polls that have not yet finished.
         """
-        return self.victor_answer_id and self.get_answer(self.victor_answer_id)
+        if self.victor_answer_id is None:
+            return None
+        return self.get_answer(self.victor_answer_id)
 
     @property
     def expires_at(self) -> Optional[datetime.datetime]:
