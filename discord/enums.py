@@ -837,9 +837,9 @@ class ReactionType(Enum):
 
 
 class SubscriptionStatus(Enum):
-    active = 1
-    ending = 2
-    inactive = 3
+    active = 0
+    ending = 1
+    inactive = 2
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

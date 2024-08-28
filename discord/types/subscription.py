@@ -25,11 +25,10 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import List, Literal, Optional, TypedDict
-from typing_extensions import NotRequired
 
 from .snowflake import Snowflake
 
-SubscriptionStatus = Literal[1, 2, 3]
+SubscriptionStatus = Literal[0, 1, 2]
 
 
 class Subscription(TypedDict):

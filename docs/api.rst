@@ -1333,7 +1333,7 @@ Subscriptions
 
 .. function:: on_subscription_create(subscription)
 
-    Called when a user subscribes to a SKU.
+    Called when a subscription is created.
 
     .. versionadded:: 2.5
 
@@ -1342,8 +1342,7 @@ Subscriptions
 
 .. function:: on_subscription_update(subscription)
 
-    Called when a user updates their subscription to a SKU. This is usually called when
-    the user renews or cancels their subscription.
+    Called when a subscription is updated.
 
     .. versionadded:: 2.5
 
@@ -1352,17 +1351,8 @@ Subscriptions
 
 .. function:: on_subscription_delete(subscription)
 
-    Called when a users subscription to a SKU is cancelled. This is typically only called when:
-
-    - Discord issues a refund for the subscription.
-    - Discord removes an entitlement from a user.
-
-    .. warning::
-
-        This event won't be called if the user cancels their subscription manually, instead
-        :func:`on_entitlement_update` will be called with :attr:`Entitlement.ends_at` set to the end of the
-        current billing period.
-
+    Called when a subscription is deleted.
+    
     .. versionadded:: 2.5
 
     :param subscription: The subscription that was deleted.
