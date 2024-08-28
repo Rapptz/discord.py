@@ -366,7 +366,13 @@ class Client:
 
     @property
     def emojis(self) -> Sequence[Emoji]:
-        """Sequence[:class:`.Emoji`]: The emojis that the connected client has."""
+        """Sequence[:class:`.Emoji`]: The emojis that the connected client has.
+
+        .. note::
+
+            This not include the emojis that are owned by the application.
+            Use :meth:`.fetch_application_emoji` to get those.
+        """
         return self._connection.emojis
 
     @property
@@ -3073,3 +3079,97 @@ class Client:
         .. versionadded:: 2.0
         """
         return self._connection.persistent_views
+
+    async def create_application_emoji(
+        self,
+        *,
+        name: str,
+        image: bytes,
+    ) -> Emoji:
+        """|coro|
+
+        Create an emoji for the current application.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The emoji name. Must be at least 2 characters.
+        image: :class:`bytes`
+            The :term:`py:bytes-like object` representing the image data to use.
+            Only JPG, PNG and GIF images are supported.
+
+        Raises
+        ------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Creating the emoji failed.
+
+        Returns
+        -------
+        :class:`.Emoji`
+            The emoji that was created.
+        """
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        img = utils._bytes_to_base64_data(image)
+        data = await self.http.create_application_emoji(self.application_id, name, img)
+        return Emoji(guild=Object(0), state=self._connection, data=data)
+
+    async def fetch_application_emoji(self, emoji_id: int, /) -> Emoji:
+        """|coro|
+
+        Retrieves an emoji for the current application.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        emoji_id: :class:`int`
+            The emoji ID to retrieve.
+
+        Raises
+        ------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Retrieving the emoji failed.
+
+        Returns
+        -------
+        :class:`.Emoji`
+            The emoji requested.
+        """
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        data = await self.http.get_application_emoji(self.application_id, emoji_id)
+        return Emoji(guild=Object(0), state=self._connection, data=data)
+
+    async def fetch_application_emojis(self) -> List[Emoji]:
+        """|coro|
+
+        Retrieves all emojis for the current application.
+
+        .. versionadded:: 2.5
+
+        Raises
+        -------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Retrieving the emojis failed.
+
+        Returns
+        -------
+        List[:class:`.Emoji`]
+            The list of emojis for the current application.
+        """
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        data = await self.http.get_application_emojis(self.application_id)
+        return [Emoji(guild=Object(0), state=self._connection, data=emoji) for emoji in data['items']]
