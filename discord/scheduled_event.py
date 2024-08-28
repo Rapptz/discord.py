@@ -391,7 +391,7 @@ class ScheduledEvent(Hashable):
         .. versionadded:: 2.2
     location: Optional[:class:`str`]
         The location of the scheduled event.
-    recurrence_rule: Optional[:class:`.ScheduledEventRecurrence`]
+    recurrence_rule: Optional[:class:`.ScheduledEventRecurrenceRule`]
         The recurrence rule for this event, or ``None``.
 
         .. versionadded:: 2.5
@@ -742,7 +742,7 @@ class ScheduledEvent(Hashable):
             Required if the entity type is :attr:`EntityType.external`.
         reason: Optional[:class:`str`]
             The reason for editing the scheduled event. Shows up on the audit log.
-        recurrence_rule: Optional[:class:`.ScheduledEventRecurrence`]
+        recurrence_rule: Optional[:class:`.ScheduledEventRecurrenceRule`]
             The recurrence rule this event will follow, or `None` to set it to a
             one-time event.
 
