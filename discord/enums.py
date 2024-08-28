@@ -74,6 +74,7 @@ __all__ = (
     'EntitlementType',
     'EntitlementOwnerType',
     'PollLayoutType',
+    'SubscriptionStatus',
 )
 
 
@@ -834,6 +835,10 @@ class ReactionType(Enum):
     normal = 0
     burst = 1
 
+class SubscriptionStatus(Enum):
+    active = 1
+    ending = 2
+    inactive = 3
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
     value_cls = cls._enum_value_cls_  # type: ignore # This is narrowed below
