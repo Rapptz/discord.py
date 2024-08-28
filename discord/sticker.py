@@ -280,8 +280,6 @@ class Sticker(_StickerTag):
         The id of the sticker.
     description: :class:`str`
         The description of the sticker.
-    pack_id: :class:`int`
-        The id of the sticker's pack.
     format: :class:`StickerFormatType`
         The format for the sticker's image.
     url: :class:`str`
