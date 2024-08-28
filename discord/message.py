@@ -2426,12 +2426,12 @@ class Message(PartialMessage, Hashable):
             return f'{self.author.name} reported a false alarm in {self.guild}.'
 
         if self.type is MessageType.poll_result:
-            embed = self.embeds[0]  # Will always have 1
-            poll_title = utils.find(
-                lambda f: f.name == 'poll_question_text',
+            embed = self.embeds[0]  # Will always have 1 embed
+            poll_title = utils.get(
                 embed.fields,
+                name='poll_question_text',
             )
-            return f'The poll {poll_title} has closed.'
+            return f'{self.author.display_name}\'s poll {poll_title.value} has closed.'
 
         # Fallback for unknown message types
         return ''
