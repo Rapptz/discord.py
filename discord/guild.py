@@ -4480,7 +4480,7 @@ class Guild(Hashable):
     def is_dm_spam_detected(self) -> bool:
         """:class:`bool`: Whether DM spam was detected in the guild.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
         """
         if not self.dm_spam_detected_at:
             return False
@@ -4490,7 +4490,7 @@ class Guild(Hashable):
     def is_raid_detected(self) -> bool:
         """:class:`bool`: Whether a raid was detected in the guild.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
         """
         if not self.raid_detected_at:
             return False
