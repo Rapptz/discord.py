@@ -35,9 +35,7 @@ if TYPE_CHECKING:
     from .state import ConnectionState
     from .types.subscription import Subscription as SubscriptionPayload
 
-__all__ = (
-    'Subscription',
-)
+__all__ = ('Subscription',)
 
 
 class Subscription(Hashable):
@@ -80,7 +78,7 @@ class Subscription(Hashable):
 
     def __init__(self, *, state: ConnectionState, data: SubscriptionPayload):
         self._state = state
-        
+
         self.id: int = int(data['id'])
         self.user_id: int = int(data['user_id'])
         self.sku_ids: List[int] = list(map(int, data['sku_ids']))

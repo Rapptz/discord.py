@@ -835,6 +835,7 @@ class ReactionType(Enum):
     normal = 0
     burst = 1
 
+
 class SubscriptionStatus(Enum):
     active = 1
     ending = 2

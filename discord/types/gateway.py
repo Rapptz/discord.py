@@ -364,4 +364,5 @@ class PollVoteActionEvent(TypedDict):
     guild_id: NotRequired[Snowflake]
     answer_id: int
 
+
 SubscriptionCreateEvent = SubscriptionUpdateEvent = SubscriptionDeleteEvent = Subscription

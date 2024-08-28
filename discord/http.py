@@ -2562,21 +2562,28 @@ class HTTPClient:
             )
         )
 
-    def list_sku_subscriptions(self, sku_id: Snowflake, before: Optional[Snowflake] = None, after: Optional[Snowflake] = None, limit: Optional[int] = None, user_id: Optional[Snowflake] = None) -> Response[List[subscription.Subscription]]:
+    def list_sku_subscriptions(
+        self,
+        sku_id: Snowflake,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+        limit: Optional[int] = None,
+        user_id: Optional[Snowflake] = None,
+    ) -> Response[List[subscription.Subscription]]:
         params = {}
 
         if before is not None:
             params['before'] = before
-        
+
         if after is not None:
             params['after'] = after
-        
+
         if limit is not None:
             params['limit'] = limit
-        
+
         if user_id is not None:
             params['user_id'] = user_id
-        
+
         return self.request(
             Route(
                 'GET',

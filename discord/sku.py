@@ -100,7 +100,7 @@ class SKU:
     def created_at(self) -> datetime:
         """:class:`datetime.datetime`: Returns the sku's creation time in UTC."""
         return utils.snowflake_time(self.id)
-    
+
     async def fetch_subscription(self, subscription_id: int, /) -> Subscription:
         """|coro|
 
@@ -127,6 +127,7 @@ class SKU:
         """
         data = await self._state.http.get_sku_subscription(self.id, subscription_id)
         return Subscription(data=data, state=self._state)
+
 
 class Entitlement:
     """Represents an entitlement from user or guild which has been granted access to a premium offering.

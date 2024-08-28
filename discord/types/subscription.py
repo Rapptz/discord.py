@@ -31,6 +31,7 @@ from .snowflake import Snowflake
 
 SubscriptionStatus = Literal[1, 2, 3]
 
+
 class Subscription(TypedDict):
     id: Snowflake
     user_id: Snowflake
@@ -40,4 +41,3 @@ class Subscription(TypedDict):
     current_period_end: str
     status: SubscriptionStatus
     canceled_at: Optional[str]
-    
