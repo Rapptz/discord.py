@@ -102,7 +102,7 @@ class ScheduledEventRecurrenceRule:
         other week recurrence rule.
     weekdays: Optional[List[:class:`ScheduledEventRecurrenceWeekday`]]
         The weekdays the event will recur on.
-    n_weekdays: Optional[List[Tuple[:class:`int`, :class:`ScheduledEVentRecurrenceWeekday`]]]
+    n_weekdays: Optional[List[Tuple[:class:`int`, :class:`ScheduledEventRecurrenceWeekday`]]]
         A (week, weekday) tuple list of the N weekdays the event will recur on.
     month_days: Optional[List[:class:`datetime.date`]]
         The months and month days the scheduled event will recur on.
