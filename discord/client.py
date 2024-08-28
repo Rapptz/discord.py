@@ -249,6 +249,11 @@ class Client:
         set to is ``30.0`` seconds.
 
         .. versionadded:: 2.0
+    connector: Optional[:class:`aiohttp.BaseConnector`]
+        The aiohhtp connector to use for this client. This can be used to control underlying aiohttp
+        behavior, such as setting a dns resolver or sslcontext.
+
+        .. versionadded:: 2.5
 
     Attributes
     -----------
@@ -264,6 +269,7 @@ class Client:
         self.shard_id: Optional[int] = options.get('shard_id')
         self.shard_count: Optional[int] = options.get('shard_count')
 
+        connector: Optional[aiohttp.BaseConnector] = options.get('connector', None)
         proxy: Optional[str] = options.pop('proxy', None)
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
@@ -271,6 +277,7 @@ class Client:
         max_ratelimit_timeout: Optional[float] = options.pop('max_ratelimit_timeout', None)
         self.http: HTTPClient = HTTPClient(
             self.loop,
+            connector,
             proxy=proxy,
             proxy_auth=proxy_auth,
             unsync_clock=unsync_clock,
@@ -2924,6 +2931,33 @@ class Client:
         """
         data = await self.http.list_premium_sticker_packs()
         return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
+
+    async def fetch_premium_sticker_pack(self, sticker_pack_id: int, /) -> StickerPack:
+        """|coro|
+
+        Retrieves a premium sticker pack with the specified ID.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        sticker_pack_id: :class:`int`
+            The sticker pack's ID to fetch from.
+
+        Raises
+        -------
+        NotFound
+            A sticker pack with this ID does not exist.
+        HTTPException
+            Retrieving the sticker pack failed.
+
+        Returns
+        -------
+        :class:`.StickerPack`
+            The retrieved premium sticker pack.
+        """
+        data = await self.http.get_sticker_pack(sticker_pack_id)
+        return StickerPack(state=self._connection, data=data)
 
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|
