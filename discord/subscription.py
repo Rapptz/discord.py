@@ -48,11 +48,11 @@ class Subscription(Hashable):
     id: :class:`int`
         The subscription's ID.
     user_id: :class:`int`
-        The ID of the user that is granted access to the entitlement.
+        The ID of the user that is subscribed.
     sku_ids: List[:class:`int`]
-        The IDs of the SKUs that the subscription belong to.
+        The IDs of the SKUs that the user subscribed to.
     entitlement_ids: List[:class:`int`]
-        The IDs of the entitlements that the subscription belong to.
+        The IDs of the entitlements granted for this subscription.
     current_period_start: :class:`datetime.datetime`
         When the current billing period started.
     current_period_end: :class:`datetime.datetime`

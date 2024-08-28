@@ -1327,6 +1327,47 @@ Stages
     :param after: The stage instance after the update.
     :type after: :class:`StageInstance`
 
+
+Subscriptions
+~~~~~~~~~~~~~
+
+.. function:: on_subscription_create(subscription)
+
+    Called when a user subscribes to a SKU.
+
+    .. versionadded:: 2.5
+
+    :param subscription: The subscription that was created.
+    :type subscription: :class:`Subscription`
+
+.. function:: on_subscription_update(subscription)
+
+    Called when a user updates their subscription to a SKU. This is usually called when
+    the user renews or cancels their subscription.
+
+    .. versionadded:: 2.5
+
+    :param subscription: The subscription that was updated.
+    :type subscription: :class:`Subscription`
+
+.. function:: on_subscription_delete(subscription)
+
+    Called when a users subscription to a SKU is cancelled. This is typically only called when:
+
+    - Discord issues a refund for the subscription.
+    - Discord removes an entitlement from a user.
+
+    .. warning::
+
+        This event won't be called if the user cancels their subscription manually, instead
+        :func:`on_entitlement_update` will be called with :attr:`Entitlement.ends_at` set to the end of the
+        current billing period.
+
+    .. versionadded:: 2.5
+
+    :param subscription: The subscription that was deleted.
+    :type subscription: :class:`Subscription`
+
 Threads
 ~~~~~~~~
 
