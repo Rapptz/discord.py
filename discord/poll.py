@@ -347,6 +347,7 @@ class Poll:
         '_finalized',
         '_state',
         '_total_votes',
+        '_victor_answer_id',
     )
 
     def __init__(
@@ -371,6 +372,7 @@ class Poll:
         self._finalized: bool = False
         self._expiry: Optional[datetime.datetime] = None
         self._total_votes: Optional[int] = None
+        self._victor_answer_id: Optional[int] = None
 
     def _update(self, message: Message) -> None:
         self._state = message._state
@@ -406,15 +408,16 @@ class Poll:
         if victor_answer_id is None:
             return  # Just return because the rest is based of the victor answer
 
+        self._victor_answer_id = int(victor_answer_id.value)
         victor_answer_votes = utils.get(
             result_embed.fields,
             name='victor_answer_votes',
         )
 
-        answer = self._answers[int(victor_answer_id.value)]
+        answer = self._answers[self._victor_answer_id]
         answer._victor = True
         answer._vote_count = int(victor_answer_votes.value)
-        self._answers[int(victor_answer_id.value)] = answer
+        self._answers[self._victor_answer_id] = answer
 
     def _update_results(self, data: PollResultPayload) -> None:
         self._finalized = data['is_finalized']
@@ -488,13 +491,24 @@ class Poll:
         return list(self._answers.values())
 
     @property
-    def victor_answer(self) -> Optional[PollAnswer]:
-        """Optional[:class:`PollAnswer`]: The victor answer if the poll has finished.
-        If the poll has not yet ended or didn't have a winner this will always be ``None``.
+    def victor_answer_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The victor answer ID.
+
+        .. note::
+
+            This will **always** be ``None`` for polls that have not yet finished.
         """
-        if not self.is_finalised():
-            return None
-        return utils.get(self.answers, _victor=True)
+        return self._victor_answer_id
+
+    @property
+    def victor_answer(self) -> Optional[PollAnswer]:
+        """Optional[:class:`PollAnswer`]: The victor answer.
+
+        .. note::
+
+            This will **always** be ``None`` for polls that have not yet finished.
+        """
+        return self.victor_answer_id and self.get_answer(self.victor_answer_id)
 
     @property
     def expires_at(self) -> Optional[datetime.datetime]:
