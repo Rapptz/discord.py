@@ -147,6 +147,10 @@ class AppInfo:
         The approximate count of the guilds the bot was added to.
 
         .. versionadded:: 2.4
+    approximate_user_install_count: Optional[:class:`int`]
+        The approximate count of the user-level installations the bot has.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -175,6 +179,7 @@ class AppInfo:
         'interactions_endpoint_url',
         'redirect_uris',
         'approximate_guild_count',
+        'approximate_user_install_count',
     )
 
     def __init__(self, state: ConnectionState, data: AppInfoPayload):
@@ -212,6 +217,7 @@ class AppInfo:
         self.interactions_endpoint_url: Optional[str] = data.get('interactions_endpoint_url')
         self.redirect_uris: List[str] = data.get('redirect_uris', [])
         self.approximate_guild_count: int = data.get('approximate_guild_count', 0)
+        self.approximate_user_install_count: Optional[int] = data.get('approximate_user_install_count')
 
     def __repr__(self) -> str:
         return (
