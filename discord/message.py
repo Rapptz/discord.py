@@ -42,7 +42,6 @@ from typing import (
     ClassVar,
     Type,
     overload,
-    NamedTuple,
 )
 
 from . import utils
