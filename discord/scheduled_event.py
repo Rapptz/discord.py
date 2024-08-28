@@ -45,7 +45,7 @@ from .enums import (
     PrivacyLevel,
     ScheduledEventRecurrenceFrequency,
     ScheduledEventRecurrenceWeekday,
-    try_enum
+    try_enum,
 )
 from .mixins import Hashable
 from .object import Object, OLDEST_OBJECT
@@ -116,7 +116,6 @@ class ScheduledEventRecurrenceRule:
         '_weekdays',
         '_n_weekdays',
         '_month_days',
-
         # Attributes that are returned by API only:
         '_count',
         '_end',
@@ -294,9 +293,7 @@ class ScheduledEventRecurrenceRule:
             by_weekday = [w.value for w in self._weekdays]
 
         if self._n_weekdays not in (MISSING, None):
-            by_n_weekday = [
-                {'n': n, 'day': day} for n, day in self._n_weekdays
-            ]  # type: ignore
+            by_n_weekday = [{'n': n, 'day': day} for n, day in self._n_weekdays]  # type: ignore
 
         if self._month_days not in (MISSING, None):
             by_month = []
@@ -344,7 +341,7 @@ class ScheduledEventRecurrenceRule:
 
         raw_n_weekdays = data.get('by_n_weekday')
         if raw_n_weekdays is not None:
-            self._n_weekdays = [_NWeekday(n['n'], wd_conv(n['day'])) for n in raw_n_weekdays]
+            self._n_weekdays = [(n['n'], wd_conv(n['day'])) for n in raw_n_weekdays]  # type: ignore
 
         raw_months = data.get('by_month')
         raw_month_days = data.get('by_month_day')
