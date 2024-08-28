@@ -1047,6 +1047,47 @@ Messages
     :param payload: The raw event payload data.
     :type payload: :class:`RawBulkMessageDeleteEvent`
 
+Polls
+~~~~~~
+
+.. function:: on_poll_vote_add(user, answer)
+              on_poll_vote_remove(user, answer)
+
+    Called when a :class:`Poll` gains or loses a vote. If the ``user`` or ``answer``'s poll
+    parent message are not cached then this event will not be called.
+
+    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
+
+    .. note::
+
+        If the poll allows multiple answers and the user removes or adds multiple votes, this
+        event will be called as many times as votes that are added or removed.
+
+    .. versionadded:: 2.4
+
+    :param user: The user that performed the action.
+    :type user: Union[:class:`User`, :class:`Member`]
+    :param answer: The answer the user voted or removed their vote from.
+    :type answer: :class:`PollAnswer`
+
+.. function:: on_raw_poll_vote_add(payload)
+              on_raw_poll_vote_remove(payload)
+
+    Called when a :class:`Poll` gains or loses a vote. Unlike :func:`on_poll_vote_add` and :func:`on_poll_vote_remove`
+    this is called regardless of the state of the internal user and message cache.
+
+    This requires :attr:`Intents.message_content` and :attr:`Intents.polls` to be enabled.
+
+    .. note::
+
+        If the poll allows multiple answers and the user removes or adds multiple votes, this
+        event will be called as many times as votes that are added or removed.
+
+    .. versionadded:: 2.4
+
+    :param payload: The raw event payload data.
+    :type payload: :class:`RawPollVoteActionEvent`
+
 Reactions
 ~~~~~~~~~~
 
@@ -3506,6 +3547,14 @@ of :class:`enum.Enum`.
 
     .. versionadded:: 2.4
 
+    .. attribute:: durable
+
+        The SKU is a durable one-time purchase.
+
+    .. attribute:: consumable
+
+        The SKU is a consumable one-time purchase.
+
     .. attribute:: subscription
 
         The SKU is a recurring subscription.
@@ -3520,6 +3569,34 @@ of :class:`enum.Enum`.
     Represents the type of an entitlement.
 
     .. versionadded:: 2.4
+
+    .. attribute:: purchase
+
+        The entitlement was purchased by the user.
+
+    .. attribute:: premium_subscription
+
+        The entitlement is for a nitro subscription.
+
+    .. attribute:: developer_gift
+
+        The entitlement was gifted by the developer.
+
+    .. attribute:: test_mode_purchase
+
+        The entitlement was purchased by a developer in application test mode.
+
+    .. attribute:: free_purchase
+
+        The entitlement was granted, when the SKU was free.
+
+    .. attribute:: user_gift
+
+        The entitlement was gifted by a another user.
+
+    .. attribute:: premium_purchase
+
+        The entitlement was claimed for free by a nitro subscriber.
 
     .. attribute:: application_subscription
 
@@ -3539,6 +3616,51 @@ of :class:`enum.Enum`.
     .. attribute:: user
 
             The entitlement owner is a user.
+
+
+.. class:: PollLayoutType
+
+    Represents how a poll answers are shown.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: default
+
+        The default layout.
+
+
+.. class:: InviteType
+
+    Represents the type of an invite.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: guild
+
+        The invite is a guild invite.
+
+    .. attribute:: group_dm
+
+        The invite is a group DM invite.
+
+    .. attribute:: friend
+
+        The invite is a friend invite.
+
+
+.. class:: ReactionType
+
+    Represents the type of a reaction.
+
+    .. versionadded:: 2.4
+
+    .. attribute:: normal
+
+        A normal reaction.
+
+    .. attribute:: burst
+
+        A burst reaction, also known as a "super reaction".
 
 
 .. _discord-api-audit-logs:
@@ -4971,6 +5093,14 @@ RawAppCommandPermissionsUpdateEvent
 .. autoclass:: RawAppCommandPermissionsUpdateEvent()
     :members:
 
+RawPollVoteActionEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawPollVoteActionEvent
+
+.. autoclass:: RawPollVoteActionEvent()
+    :members:
+
 PartialWebhookGuild
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -4985,6 +5115,14 @@ PartialWebhookChannel
 .. attributetable:: PartialWebhookChannel
 
 .. autoclass:: PartialWebhookChannel()
+    :members:
+
+PollAnswer
+~~~~~~~~~~
+
+.. attributetable:: PollAnswer
+
+.. autoclass:: PollAnswer()
     :members:
 
 .. _discord_api_data:
@@ -5250,6 +5388,22 @@ ForumTag
 .. attributetable:: ForumTag
 
 .. autoclass:: ForumTag
+    :members:
+
+Poll
+~~~~
+
+.. attributetable:: Poll
+
+.. autoclass:: Poll
+    :members:
+
+PollMedia
+~~~~~~~~~
+
+.. attributetable:: PollMedia
+
+.. autoclass:: PollMedia
     :members:
 
 

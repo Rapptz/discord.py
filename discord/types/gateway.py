@@ -37,7 +37,7 @@ from .invite import InviteTargetType
 from .emoji import Emoji, PartialEmoji
 from .member import MemberWithUser
 from .snowflake import Snowflake
-from .message import Message
+from .message import Message, ReactionType
 from .sticker import GuildSticker
 from .appinfo import GatewayAppInfo, PartialAppInfo
 from .guild import Guild, UnavailableGuild
@@ -104,6 +104,7 @@ class MessageReactionAddEvent(TypedDict):
     message_author_id: NotRequired[Snowflake]
     burst: bool
     burst_colors: NotRequired[List[str]]
+    type: ReactionType
 
 
 class MessageReactionRemoveEvent(TypedDict):
@@ -113,6 +114,7 @@ class MessageReactionRemoveEvent(TypedDict):
     emoji: PartialEmoji
     guild_id: NotRequired[Snowflake]
     burst: bool
+    type: ReactionType
 
 
 class MessageReactionRemoveAllEvent(TypedDict):
@@ -352,3 +354,11 @@ class GuildAuditLogEntryCreate(AuditLogEntry):
 
 
 EntitlementCreateEvent = EntitlementUpdateEvent = EntitlementDeleteEvent = Entitlement
+
+
+class PollVoteActionEvent(TypedDict):
+    user_id: Snowflake
+    channel_id: Snowflake
+    message_id: Snowflake
+    guild_id: NotRequired[Snowflake]
+    answer_id: int

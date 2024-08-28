@@ -667,8 +667,8 @@ class ViewStore:
         msg = interaction.message
         if msg is not None:
             message_id = msg.id
-            if msg.interaction:
-                interaction_id = msg.interaction.id
+            if msg.interaction_metadata:
+                interaction_id = msg.interaction_metadata.id
 
         key = (component_type, custom_id)
 

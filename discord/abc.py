@@ -49,7 +49,7 @@ from typing import (
 from .object import OLDEST_OBJECT, Object
 from .context_managers import Typing
 from .enums import ChannelType, InviteTarget
-from .errors import ClientException
+from .errors import ClientException, NotFound
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
@@ -92,6 +92,7 @@ if TYPE_CHECKING:
         VoiceChannel,
         StageChannel,
     )
+    from .poll import Poll
     from .threads import Thread
     from .ui.view import View
     from .types.channel import (
@@ -121,7 +122,14 @@ _undefined: Any = _Undefined()
 
 async def _single_delete_strategy(messages: Iterable[Message], *, reason: Optional[str] = None):
     for m in messages:
-        await m.delete()
+        try:
+            await m.delete()
+        except NotFound as exc:
+            if exc.code == 10008:
+                continue  # bulk deletion ignores not found messages, single deletion does not.
+            # several other race conditions with deletion should fail without continuing,
+            # such as the channel being deleted and not found.
+            raise
 
 
 async def _purge_helper(
@@ -698,6 +706,7 @@ class GuildChannel:
         - Member overrides
         - Implicit permissions
         - Member timeout
+        - User installed app
 
         If a :class:`~discord.Role` is passed, then it checks the permissions
         someone with that role would have, which is essentially:
@@ -712,6 +721,12 @@ class GuildChannel:
 
         .. versionchanged:: 2.0
             ``obj`` parameter is now positional-only.
+
+        .. versionchanged:: 2.4
+            User installed apps are now taken into account.
+            The permissions returned for a user installed app mirrors the
+            permissions Discord returns in :attr:`~discord.Interaction.app_permissions`,
+            though it is recommended to use that attribute instead.
 
         Parameters
         ----------
@@ -744,6 +759,13 @@ class GuildChannel:
             return Permissions.all()
 
         default = self.guild.default_role
+        if default is None:
+
+            if self._state.self_id == obj.id:
+                return Permissions._user_installed_permissions(in_guild=True)
+            else:
+                return Permissions.none()
+
         base = Permissions(default.permissions.value)
 
         # Handle the role case first
@@ -1108,10 +1130,10 @@ class GuildChannel:
             channel list (or category if given).
             This is mutually exclusive with ``beginning``, ``before``, and ``after``.
         before: :class:`~discord.abc.Snowflake`
-            The channel that should be before our current channel.
+            Whether to move the channel before the given channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``after``.
         after: :class:`~discord.abc.Snowflake`
-            The channel that should be after our current channel.
+            Whether to move the channel after the given channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``before``.
         offset: :class:`int`
             The number of channels to offset the move by. For example,
@@ -1350,6 +1372,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1370,6 +1393,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1390,6 +1414,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1410,6 +1435,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1431,6 +1457,7 @@ class Messageable:
         view: Optional[View] = None,
         suppress_embeds: bool = False,
         silent: bool = False,
+        poll: Optional[Poll] = None,
     ) -> Message:
         """|coro|
 
@@ -1516,6 +1543,10 @@ class Messageable:
             in the UI, but will not actually send a notification.
 
             .. versionadded:: 2.2
+        poll: :class:`~discord.Poll`
+            The poll to send with this message.
+
+            .. versionadded:: 2.4
 
         Raises
         --------
@@ -1582,12 +1613,16 @@ class Messageable:
             stickers=sticker_ids,
             view=view,
             flags=flags,
+            poll=poll,
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 
         ret = state.create_message(channel=channel, data=data)
         if view and not view.is_finished():
             state.store_view(view, ret.id)
+
+        if poll:
+            poll._update(ret)
 
         if delete_after is not None:
             await ret.delete(delay=delete_after)
