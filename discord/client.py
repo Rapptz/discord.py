@@ -371,7 +371,7 @@ class Client:
         .. note::
 
             This not include the emojis that are owned by the application.
-            Use :meth:`.fetch_emojis` to get those.
+            Use :meth:`.fetch_application_emoji` to get those.
         """
         return self._connection.emojis
 
@@ -3080,7 +3080,7 @@ class Client:
         """
         return self._connection.persistent_views
 
-    async def create_emoji(
+    async def create_application_emoji(
         self,
         *,
         name: str,
@@ -3120,7 +3120,7 @@ class Client:
         guild = self._connection._get_or_create_unavailable_guild(0)
         return Emoji(guild=guild, state=self._connection, data=data)
 
-    async def fetch_emoji(self, emoji_id: int, /) -> Emoji:
+    async def fetch_application_emoji(self, emoji_id: int, /) -> Emoji:
         """|coro|
 
         Retrieves an emoji for the current application.
@@ -3151,7 +3151,7 @@ class Client:
         guild = self._connection._get_or_create_unavailable_guild(0)
         return Emoji(guild=guild, state=self._connection, data=data)
 
-    async def fetch_emojis(self) -> List[Emoji]:
+    async def fetch_application_emojis(self) -> List[Emoji]:
         """|coro|
 
         Retrieves all emojis for the current application.
