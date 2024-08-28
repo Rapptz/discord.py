@@ -30,6 +30,7 @@ from .utils import SnowflakeList, snowflake_time, MISSING
 from .partial_emoji import _EmojiTag, PartialEmoji
 from .user import User
 from .app_commands.errors import MissingApplicationID
+from .object import Object
 
 # fmt: off
 __all__ = (
@@ -113,7 +114,7 @@ class Emoji(_EmojiTag, AssetMixin):
         'available',
     )
 
-    def __init__(self, *, guild: Guild, state: ConnectionState, data: EmojiPayload) -> None:
+    def __init__(self, *, guild: Snowflake, state: ConnectionState, data: EmojiPayload) -> None:
         self.guild_id: int = guild.id
         self._state: ConnectionState = state
         self._from_data(data)
@@ -288,8 +289,7 @@ class Emoji(_EmojiTag, AssetMixin):
                 self.id,
                 payload=payload,
             )
-            guild = self._state._get_or_create_unavailable_guild(0)
-            return Emoji(guild=guild, data=data, state=self._state)
+            return Emoji(guild=Object(0), data=data, state=self._state)
 
         data = await self._state.http.edit_custom_emoji(self.guild_id, self.id, payload=payload, reason=reason)
         return Emoji(guild=self.guild, data=data, state=self._state)  # type: ignore # if guild is None, the http request would have failed

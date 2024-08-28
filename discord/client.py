@@ -3117,8 +3117,7 @@ class Client:
 
         img = utils._bytes_to_base64_data(image)
         data = await self.http.create_application_emoji(self.application_id, name, img)
-        guild = self._connection._get_or_create_unavailable_guild(0)
-        return Emoji(guild=guild, state=self._connection, data=data)
+        return Emoji(guild=Object(0), state=self._connection, data=data)
 
     async def fetch_application_emoji(self, emoji_id: int, /) -> Emoji:
         """|coro|
@@ -3148,8 +3147,7 @@ class Client:
             raise MissingApplicationID
 
         data = await self.http.get_application_emoji(self.application_id, emoji_id)
-        guild = self._connection._get_or_create_unavailable_guild(0)
-        return Emoji(guild=guild, state=self._connection, data=data)
+        return Emoji(guild=Object(0), state=self._connection, data=data)
 
     async def fetch_application_emojis(self) -> List[Emoji]:
         """|coro|
@@ -3174,5 +3172,4 @@ class Client:
             raise MissingApplicationID
 
         data = await self.http.get_application_emojis(self.application_id)
-        guild = self._connection._get_or_create_unavailable_guild(0)
-        return [Emoji(guild=guild, state=self._connection, data=emoji) for emoji in data['items']]
+        return [Emoji(guild=Object(0), state=self._connection, data=emoji) for emoji in data['items']]
