@@ -5209,13 +5209,13 @@ PurchaseNotification
 
 .. attributetable:: PurchaseNotification
 
-.. autoclass:: PurchaseNotification
+.. autoclass:: PurchaseNotification()
     :members:
 
 GuildProductPurchase
 +++++++++++++++++++++
 
-.. attributetable:: GuildProductPurchase()
+.. attributetable:: GuildProductPurchase
 
 .. autoclass:: GuildProductPurchase()
     :members:

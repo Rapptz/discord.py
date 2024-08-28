@@ -78,6 +78,7 @@ if TYPE_CHECKING:
         RoleSubscriptionData as RoleSubscriptionDataPayload,
         MessageInteractionMetadata as MessageInteractionMetadataPayload,
         PurchaseNotificationResponse as PurchaseNotificationResponsePayload,
+        GuildProductPurchase as GuildProductPurchasePayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -847,16 +848,25 @@ class RoleSubscriptionInfo:
         self.is_renewal: bool = data['is_renewal']
 
 
-class GuildProductPurchase(NamedTuple):
+class GuildProductPurchase:
     """Represents a message's guild product that the user has purchased.
 
     .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    listing_id: :class:`int`
+        The ID of the listing that the user has purchased.
+    product_name: :class:`str`
+        The name of the product that the user has purchased.
     """
 
-    listing_id: int
-    """The ID of the listing that the user has purchased."""
-    product_name: str
-    """The name of the product that the user has purchased."""
+    def __init__(self, data: GuildProductPurchasePayload) -> None:
+        self.listing_id: int = int(data['listing_id'])
+        self.product_name: str = data['product_name']
+
+    def __hash__(self) -> int:
+        return self.listing_id >> 22
 
 
 class PurchaseNotification:
@@ -880,10 +890,7 @@ class PurchaseNotification:
         self.guild_product_purchase: Optional[GuildProductPurchase] = None
         guild_product_purchase = data.get('guild_product_purchase')
         if guild_product_purchase is not None:
-            self.guild_product_purchase = GuildProductPurchase(
-                listing_id=int(guild_product_purchase['listing_id']),
-                product_name=guild_product_purchase['product_name'],
-            )
+            self.guild_product_purchase = GuildProductPurchase(guild_product_purchase)
 
 
 class PartialMessage(Hashable):
