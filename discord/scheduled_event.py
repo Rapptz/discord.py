@@ -96,8 +96,9 @@ class ScheduledEventRecurrenceRule:
     interval: :class:`int`
         The spacing between the events, defined by ``frequency``.
 
-        For example, a ``frequency`` of :attr:`ScheduledEventRecurrenceFrequency.weekly` and an ``interval`` of ``2``
-        will result in an "Every other week" recurrence rule.
+        For example, a ``frequency`` of :attr:`ScheduledEventRecurrenceFrequency.weekly` and an
+        ``interval`` of :attr:`ScheduledEventRecurrenceFrequency.weekly` will result in an "Every
+        other week recurrence rule.
     weekdays: Optional[List[:class:`ScheduledEventRecurrenceWeekday`]]
         The weekdays the event will recur on.
     n_weekdays: Optional[List[Tuple[:class:`int`, :class:`ScheduledEVentRecurrenceWeekday`]]]
@@ -174,6 +175,7 @@ class ScheduledEventRecurrenceRule:
         self._count: Optional[int] = None
         self._end: Optional[datetime] = None
         self._year_days: Optional[List[int]] = None
+        # We will be keeping the MISSING values for future use in _to_dict()
         self._weekdays: Optional[List[ScheduledEventRecurrenceWeekday]] = weekdays
         self._n_weekdays: Optional[List[_NWeekday]] = n_weekdays
         self._month_days: Optional[List[date]] = month_days
@@ -288,12 +290,12 @@ class ScheduledEventRecurrenceRule:
         by_year_day: Optional[List[int]] = None
 
         if self._weekdays not in (MISSING, None):
-            by_weekday = self._weekdays
+            by_weekday = [w.value for w in self._weekdays]
 
         if self._n_weekdays not in (MISSING, None):
             by_n_weekday = [
                 {'n': n, 'day': day} for n, day in self._n_weekdays
-            ]
+            ]  # type: ignore
 
         if self._month_days not in (MISSING, None):
             by_month = []
@@ -309,7 +311,7 @@ class ScheduledEventRecurrenceRule:
         return {
             'start': self.start.isoformat(),
             'end': self._end.isoformat() if self._end is not None else None,
-            'frequency': self.frequency,
+            'frequency': self.frequency.value,
             'interval': self.interval,
             'by_weekday': by_weekday,
             'by_n_weekday': by_n_weekday,
@@ -325,7 +327,7 @@ class ScheduledEventRecurrenceRule:
             start=parse_time(data['start']),
             frequency=data['frequency'],
             interval=data['interval'],
-        )
+        )  # type: ignore
         self._count = data.get('count')
         self._year_days = data.get('by_year_day')
 

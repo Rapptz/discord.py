@@ -3686,6 +3686,42 @@ of :class:`enum.Enum`.
         The event repeats daily.
 
 
+.. class:: ScheduledEventRecurrenceWeekday
+
+    Represents the weekdays a scheduled event recurrence rule accepts.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: monday
+
+        The ``0`` day of the week.
+
+    .. attribute:: tuesday
+
+        The ``1`` day of the week.
+
+    .. attribute:: wednesday
+
+        The ``2`` day of the week.
+
+    .. attribute:: thursday
+
+        The ``3`` day of the week.
+
+    .. attribute:: friday
+
+        The ``4`` day of the week.
+
+    .. attribute:: saturday
+
+        The ``5`` day of the week.
+
+    .. attribute:: sunday
+
+
+        The ``6`` day of the week.
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
