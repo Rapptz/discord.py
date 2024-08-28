@@ -396,7 +396,7 @@ class Poll:
             name='total_votes',
         )
         if total_votes_field is not None:
-            self._total_votes = int(total_votes_field.value)
+            self._total_votes = int(total_votes_field.value)  # type: ignore
 
         victor_answer_id = utils.get(
             result_embed.fields,
@@ -408,7 +408,7 @@ class Poll:
         if victor_answer_id is None:
             return  # Just return because the rest is based of the victor answer
 
-        self._victor_answer_id = int(victor_answer_id.value)
+        self._victor_answer_id = int(victor_answer_id.value)  # type: ignore
         victor_answer_votes = utils.get(
             result_embed.fields,
             name='victor_answer_votes',
@@ -416,7 +416,7 @@ class Poll:
 
         answer = self._answers[self._victor_answer_id]
         answer._victor = True
-        answer._vote_count = int(victor_answer_votes.value)
+        answer._vote_count = int(victor_answer_votes.value)  # type: ignore
         self._answers[self._victor_answer_id] = answer
 
     def _update_results(self, data: PollResultPayload) -> None:
