@@ -498,7 +498,8 @@ def _get_command_error(
                 else:
                     errors = {key: ' '.join(x.get('message', '') for x in inner_errors)}
 
-            messages.extend(f'{indentation}  {k}: {v}' for k, v in errors.items())
+            if isinstance(errors, dict):
+                messages.extend(f'{indentation}  {k}: {v}' for k, v in errors.items())
 
 
 class CommandSyncFailure(AppCommandError, HTTPException):
