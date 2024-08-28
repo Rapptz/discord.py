@@ -34,9 +34,10 @@ EventStatus = Literal[1, 2, 3, 4]
 EntityType = Literal[1, 2, 3]
 ScheduledEventRecurrenceRuleFrequency = Literal[0, 1, 2, 3]
 
+
 class _NWeekday(TypedDict):
-    n: int
-    day: int
+    n: Literal[1, 2, 3, 4, 5]
+    day: Literal[0, 1, 2, 3, 4, 5, 6]
 
 
 class ScheduledEventRecurrenceRule(TypedDict):

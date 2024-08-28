@@ -3038,7 +3038,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence_rule: Optional[ScheduledEventRecurrenceRule] =  ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3055,7 +3055,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence_rule: Optional[ScheduledEventRecurrenceRule] =  ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3071,7 +3071,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence_rule: Optional[ScheduledEventRecurrenceRule] =  ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3087,7 +3087,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
-        recurrence_rule: Optional[ScheduledEventRecurrenceRule] =  ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3104,7 +3104,7 @@ class Guild(Hashable):
         description: str = MISSING,
         image: bytes = MISSING,
         reason: Optional[str] = None,
-        recurrence_rule: Optional[ScheduledEventRecurrenceRule] =  MISSING,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = MISSING,
     ) -> ScheduledEvent:
         r"""|coro|
 
