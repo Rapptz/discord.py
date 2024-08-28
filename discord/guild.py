@@ -4477,7 +4477,7 @@ class Guild(Hashable):
 
         return self.dms_paused_until > utils.utcnow()
 
-    def dm_spam_detected(self) -> bool:
+    def is_dm_spam_detected(self) -> bool:
         """:class:`bool`: Whether DM spam was detected in the guild.
 
         .. versionadded:: 2.4
@@ -4487,7 +4487,7 @@ class Guild(Hashable):
 
         return self.dm_spam_detected_at > utils.utcnow()
 
-    def raid_detected(self) -> bool:
+    def is_raid_detected(self) -> bool:
         """:class:`bool`: Whether a raid was detected in the guild.
 
         .. versionadded:: 2.4
