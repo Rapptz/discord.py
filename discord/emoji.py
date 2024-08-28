@@ -98,7 +98,7 @@ class Emoji(_EmojiTag, AssetMixin):
 
         Or if :meth:`.is_application_owned` is ``True``, this is the team member that uploaded
         the emoji, or the bot user if it was uploaded using the API and this can
-        only be retrieved using :meth:`~discord.Client.fetch_emoji` or :meth:`~discord.Client.fetch_emojis`.
+        only be retrieved using :meth:`~discord.Client.fetch_application_emoji` or :meth:`~discord.Client.fetch_application_emojis`.
     """
 
     __slots__: Tuple[str, ...] = (
