@@ -3663,6 +3663,25 @@ of :class:`enum.Enum`.
         A burst reaction, also known as a "super reaction".
 
 
+.. class:: SubscriptionStatus
+
+    Represents the status of an subscription.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: active
+
+        The subscription is active.
+
+    .. attribute:: ending
+
+        The subscription is active but will not renew.
+
+    .. attribute:: inactive
+
+        The subscription is inactive and not being charged.
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -4987,6 +5006,14 @@ Entitlement
 .. attributetable:: Entitlement
 
 .. autoclass:: Entitlement()
+    :members:
+
+Subscription
+~~~~~~~~~~~~
+
+.. attributetable:: Subscription
+
+.. autoclass:: Subscription()
     :members:
 
 RawMessageDeleteEvent
