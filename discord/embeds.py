@@ -413,8 +413,9 @@ class Embed:
 
         Parameters
         -----------
-        url: :class:`str`
+        url: Optional[:class:`str`]
             The source URL for the image. Only HTTP(S) is supported.
+            If ``None`` is passed, any existing image is removed.
             Inline attachment URLs are also supported, see :ref:`local_image`.
         """
 
@@ -457,8 +458,9 @@ class Embed:
 
         Parameters
         -----------
-        url: :class:`str`
+        url: Optional[:class:`str`]
             The source URL for the thumbnail. Only HTTP(S) is supported.
+            If ``None`` is passed, any existing thumbnail is removed.
             Inline attachment URLs are also supported, see :ref:`local_image`.
         """
 
