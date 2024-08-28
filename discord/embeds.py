@@ -451,9 +451,6 @@ class Embed:
         This function returns the class instance to allow for fluent-style
         chaining.
 
-        .. versionchanged:: 1.4
-            Passing ``None`` removes the thumbnail.
-
         Parameters
         -----------
         url: :class:`str`
