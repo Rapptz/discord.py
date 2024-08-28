@@ -36,6 +36,7 @@ from typing import (
     Literal,
     List,
 )
+from functools import partial
 
 from .asset import Asset
 from .enums import (
@@ -335,10 +336,29 @@ class ScheduledEventRecurrenceRule:
         if end is not None:
             self._end = parse_time(end)
 
-        end = data.get('end')
-        if end is not None:
-            self._end = parse_time(end)
-        # TODO: finish this impl
+        wd_conv = partial(try_enum, ScheduledEventRecurrenceWeekday)
+
+        raw_weekdays = data.get('by_weekday')
+        if raw_weekdays is not None:
+            self._weekdays = list(map(wd_conv, raw_weekdays))
+
+        raw_n_weekdays = data.get('by_n_weekday')
+        if raw_n_weekdays is not None:
+            self._n_weekdays = [_NWeekday(n['n'], wd_conv(n['day'])) for n in raw_n_weekdays]
+
+        raw_months = data.get('by_month')
+        raw_month_days = data.get('by_month_day')
+
+        if raw_months is not None and raw_month_days is not None:
+            self._month_days = [
+                date(
+                    1900,  # Using this as a placeholder year, ignored anyways
+                    month,
+                    day,
+                )
+                for month, day in zip(raw_months, raw_month_days)
+            ]
+
         return self
 
 
