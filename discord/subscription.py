@@ -28,6 +28,7 @@ import datetime
 from typing import List, Optional, TYPE_CHECKING
 
 from . import utils
+from .mixins import Hashable
 from .enums import try_enum, SubscriptionStatus
 
 if TYPE_CHECKING:
@@ -39,8 +40,8 @@ __all__ = (
 )
 
 
-class Subscription:
-    """Represents a premium offering as a stock-keeping unit (SKU).
+class Subscription(Hashable):
+    """Represents a Discord subscription.
 
     .. versionadded:: 2.5
 
@@ -48,14 +49,21 @@ class Subscription:
     -----------
     id: :class:`int`
         The subscription's ID.
+    user_id: :class:`int`
+        The ID of the user that is granted access to the entitlement.
+    sku_ids: List[:class:`int`]
+        The IDs of the SKUs that the subscription belong to.
+    entitlement_ids: List[:class:`int`]
+        The IDs of the entitlements that the subscription belong to.
+    current_period_start: :class:`datetime.datetime`
+        When the current billing period started.
+    current_period_end: :class:`datetime.datetime`
+        When the current billing period ends.
     status: :class:`SubscriptionStatus`
         The status of the subscription.
-    application_id: :class:`int`
-        The ID of the application that the SKU belongs to.
-    name: :class:`str`
-        The consumer-facing name of the premium offering.
-    slug: :class:`str`
-        A system-generated URL slug based on the SKU name.
+    canceled_at: Optional[:class:`datetime.datetime`]
+        When the subscription was canceled.
+        This is only available for subscriptions with a :attr:`status` of :attr:`SubscriptionStatus.inactive`.
     """
 
     __slots__ = (
@@ -81,3 +89,11 @@ class Subscription:
         self.current_period_end: datetime.datetime = utils.parse_time(data['current_period_end'])
         self.status: SubscriptionStatus = try_enum(SubscriptionStatus, data['status'])
         self.canceled_at: Optional[datetime.datetime] = utils.parse_time(data['canceled_at'])
+
+    def __repr__(self) -> str:
+        return f'<Subscription id={self.id} user_id={self.user_id} status={self.status!r}>'
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: Returns the subscription's creation time in UTC."""
+        return utils.snowflake_time(self.id)
