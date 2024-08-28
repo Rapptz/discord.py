@@ -45,6 +45,7 @@ class BaseAppInfo(TypedDict):
     summary: str
     description: str
     flags: int
+    approximate_user_install_count: NotRequired[int]
     cover_image: NotRequired[str]
     terms_of_service_url: NotRequired[str]
     privacy_policy_url: NotRequired[str]
