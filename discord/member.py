@@ -1162,6 +1162,8 @@ class Member(discord.abc.Messageable, _UserTag):
 
         Raises
         -------
+        NotFound
+            The member is not in a voice channel.
         Forbidden
             You do not have permissions to get a voice state.
         HTTPException
