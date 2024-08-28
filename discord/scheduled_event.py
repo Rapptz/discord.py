@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-import re
 from datetime import datetime, date
 from typing import (
     TYPE_CHECKING,
@@ -77,15 +76,6 @@ __all__ = (
 )
 # fmt: on
 
-_RFC5545_PATTERN = re.compile(
-    r"""^DTSTART:(?P<start>(?P<start_date>\d{8)(T(?P<start_time>\d{6}Z)?)?)(;TZID=(?P<tzid>[A-Za-z0-9/_-]+))?;RRULE:
-FREQ=(?P<frequency>DAILY|WEEKLY|MONTHLY|YEARLY)(;INTERVAL=(?P<interval>\d+))?(;COUNT=(?P<count>\d+)|;UNTIL=(?P<until>
-\d{8}T\d{6}Z))?(;BYDAY=(?P<byday>(MO|TU|WE|TH|FR|SA|SU)(,(MO|TU|WE|TH|FR|SA|SU))*))?(;BYMONTHDAY(?P<bymonthday>(-?\d{1,2
-})(,-?\d{1,2})*))?(;BYYEARDAY=(?P<byyearday>(-?\d{1,3})(,-?\d{1,3})*))?(;BYWEEKNO=(?P<byweekno>(-?\d{1,2})(,-?\d{1,2})*)
-)?(;BYMONTH=(?P<bymonth>\d{1,2}(,\d{1,2})*))?(;BYSETPOS=(?P<bysetpos>(-?\d+)(,-?\d+)*))?(;WKST=(?P<wkst>(SU|MO|TU|WE|TH|
-FR|SA)))?$
-"""
-)
 
 class _NWeekday(NamedTuple):
     week: Literal[1, 2, 3, 4, 5]
@@ -348,25 +338,6 @@ class ScheduledEventRecurrenceRule:
             self._end = parse_time(end)
         # TODO: finish this impl
         return self
-
-    @classmethod
-    def from_str(cls, string: str, /) -> Self:
-        """Constructs a recurrence rule from a RFC5545 rrule string,
-
-        Parameters
-        ----------
-        string: :class:`str`
-            The string to construct the recurrence rule from.
-
-        Returns
-        -------
-        :class:`.ScheduledEventRecurrenceRule`
-            The recurrence rule.
-        """
-
-        match = _RFC5545_PATTERN.match(string)
-
-        # TODO: finish this impl
 
 
 class ScheduledEvent(Hashable):
