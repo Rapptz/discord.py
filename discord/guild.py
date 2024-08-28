@@ -4439,7 +4439,7 @@ class Guild(Hashable):
     def dm_spam_detected_at(self) -> Optional[datetime.datetime]:
         """:class:`datetime.datetime`: Returns the time when DM spam was detected in the guild.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
         """
         if not self._incidents_data:
             return None
@@ -4450,7 +4450,7 @@ class Guild(Hashable):
     def raid_detected_at(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: Returns the time when a raid was detected in the guild.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
         """
         if not self._incidents_data:
             return None
