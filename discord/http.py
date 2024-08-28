@@ -48,7 +48,6 @@ from typing import (
 from urllib.parse import quote as _uriquote
 from collections import deque
 import datetime
-import socket
 
 import aiohttp
 
@@ -798,8 +797,7 @@ class HTTPClient:
     async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
-            # discord does not support ipv6
-            self.connector = aiohttp.TCPConnector(limit=0, family=socket.AF_INET)
+            self.connector = aiohttp.TCPConnector(limit=0)
 
         self.__session = aiohttp.ClientSession(
             connector=self.connector,
