@@ -302,7 +302,7 @@ def deprecated(instead: Optional[str] = None) -> Callable[[Callable[P, T]], Call
             else:
                 fmt = '{0.__name__} is deprecated.'
 
-            warnings.warn(fmt.format(func, instead), stacklevel=3, category=DeprecationWarning)
+            warnings.warn(fmt.format(func, instead), stacklevel=2, category=DeprecationWarning)
             warnings.simplefilter('default', DeprecationWarning)  # reset filter
             return func(*args, **kwargs)
 
