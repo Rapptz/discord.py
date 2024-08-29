@@ -62,7 +62,7 @@ class _BaseGuildScheduledEvent(TypedDict):
     privacy_level: PrivacyLevel
     status: EventStatus
     auto_start: bool
-    guild_scheduled_events_exceptions: List[int]
+    guild_scheduled_events_exceptions: List[Snowflake]
     recurrence_rule: Optional[ScheduledEventRecurrenceRule]
     sku_ids: List[Snowflake]
     creator_id: NotRequired[Optional[Snowflake]]
