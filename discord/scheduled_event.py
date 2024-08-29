@@ -993,9 +993,8 @@ class ScheduledEvent(Hashable):
         after: Optional[Snowflake] = None,
         oldest_first: bool = MISSING,
     ) -> AsyncIterator[User]:
-        """|coro|
-
-        Retrieves all :class:`User` that are subscribed to this event.
+        """Returns an :term:`asynchronous iterator` representing the users that have subscribed to
+        this event.
 
         This requires :attr:`Intents.members` to get information about members
         other than yourself.
@@ -1005,9 +1004,9 @@ class ScheduledEvent(Hashable):
         HTTPException
             Retrieving the members failed.
 
-        Returns
-        --------
-        List[:class:`User`]
+        Yields
+        ------
+        :class:`User`
             All subscribed users of this event.
         """
 
