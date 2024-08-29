@@ -4463,7 +4463,7 @@ class Guild(Hashable):
         .. versionadded:: 2.4
         """
         if not self.invites_paused_until:
-            return False
+            return 'INVITES_DISABLED' in self.features
 
         return self.invites_paused_until > utils.utcnow()
 
@@ -4473,7 +4473,7 @@ class Guild(Hashable):
         .. versionadded:: 2.4
         """
         if not self.dms_paused_until:
-            return 'INVITES_DISABLED' in self.features
+            return False
 
         return self.dms_paused_until > utils.utcnow()
 
