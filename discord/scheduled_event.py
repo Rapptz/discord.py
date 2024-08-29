@@ -137,7 +137,7 @@ class ScheduledEventRecurrenceRule:
             frequency=discord.ScheduledEventRecurrenceFrequency.weekly,
             interval=...,  # Here you can either pass 1 or 2, if you pass 1
             # then the recurrence rule is "Every Wednesday", if you pass 2
-            # then the recurrence rule is "Every other Wednesday,
+            # then the recurrence rule is "Every other Wednesday"
             weekdays=[...],  # Only 1 item is allowed as frequency is weekly
         )
 
