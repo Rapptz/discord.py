@@ -815,7 +815,7 @@ class CallMessage:
     -----------
     ended_timestamp: Optional[:class:`datetime.datetime`]
         The timestamp the call has ended.
-    participants: List[Optional[:class:`User`]]
+    participants: List[:class:`User`]
         A list of users that participated in the call.
     """
 
@@ -824,17 +824,19 @@ class CallMessage:
     def __repr__(self) -> str:
         return f'<CallMessage participants={self.participants!r}>'
 
-    def __init__(self, *, state: ConnectionState, message: Message, data: CallMessagePayload):
+    def __init__(self, *, message: Message, data: CallMessagePayload):
         self._message: Message = message
         self.ended_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('ended_timestamp'))
-        self.participants: List[Optional[User]] = []
+        self.participants: List[User] = []
 
         for user_id in data['participants']:
             user_id = int(user_id)
             if user_id == self._message.author.id:
                 self.participants.append(self._message.author)  # type: ignore # can't be a Member here
             else:
-                self.participants.append(state.get_user(user_id))
+                user = utils.find(lambda u: u.id == user_id, self._message.mentions)
+                if user is not None:
+                    self.participants.append(user)  # type: ignore # can't be a Member here
 
     @property
     def duration(self) -> datetime.timedelta:
@@ -2164,7 +2166,7 @@ class Message(PartialMessage, Hashable):
     def _handle_call(self, data: CallMessagePayload):
         self.call: Optional[CallMessage]
         if data is not None:
-            self.call = CallMessage(state=self._state, message=self, data=data)
+            self.call = CallMessage(message=self, data=data)
         else:
             self.call = None
 
