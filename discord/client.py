@@ -636,6 +636,11 @@ class Client:
         if self._connection.application_id is None:
             self._connection.application_id = self._application.id
 
+        if self._application.interactions_endpoint_url is not None:
+            _log.warning(
+                'Application has an interaction endpoint URL set, this means registered components and app commands will not be received by the library.'
+            )
+
         if not self._connection.application_flags:
             self._connection.application_flags = self._application.flags
 
