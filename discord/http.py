@@ -2628,7 +2628,7 @@ class HTTPClient:
         )
 
     # Subscriptions
-    
+
     def list_sku_subscriptions(
         self,
         sku_id: Snowflake,
