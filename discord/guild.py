@@ -3152,7 +3152,7 @@ class Guild(Hashable):
         reason: Optional[:class:`str`]
             The reason for creating this scheduled event. Shows up on the audit log.
         recurrence_rule: Optional[:class:`ScheduledEventRecurrenceRule`]
-            The recurrence rule this event will follow. If this is `None` then this is
+            The recurrence rule this event will follow. If this is ``None`` then this is
             a one-time event.
 
         Raises

@@ -838,7 +838,7 @@ class ScheduledEvent(Hashable):
         reason: Optional[:class:`str`]
             The reason for editing the scheduled event. Shows up on the audit log.
         recurrence_rule: Optional[:class:`.ScheduledEventRecurrenceRule`]
-            The recurrence rule this event will follow, or `None` to set it to a
+            The recurrence rule this event will follow, or ``None`` to set it to a
             one-time event.
 
         Raises
