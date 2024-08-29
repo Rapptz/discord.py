@@ -76,7 +76,7 @@ if TYPE_CHECKING:
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
         MessageInteractionMetadata as MessageInteractionMetadataPayload,
-        MessageCall as MessageCallPayload,
+        CallMessage as CallMessagePayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -113,7 +113,7 @@ __all__ = (
     'MessageApplication',
     'RoleSubscriptionInfo',
     'MessageInteractionMetadata',
-    'MessageCall',
+    'CallMessage',
 )
 
 
@@ -806,7 +806,7 @@ class MessageApplication:
         return None
 
 
-class MessageCall:
+class CallMessage:
     """Represents a message's call data in a private channel from a :class:`~discord.Message`.
 
     .. versionadded:: 2.5
@@ -822,9 +822,9 @@ class MessageCall:
     __slots__ = ('_message', 'ended_timestamp', 'participants')
 
     def __repr__(self) -> str:
-        return f'<MessageCall participants={self.participants!r}>'
+        return f'<CallMessage participants={self.participants!r}>'
 
-    def __init__(self, *, state: ConnectionState, message: Message, data: MessageCallPayload):
+    def __init__(self, *, state: ConnectionState, message: Message, data: CallMessagePayload):
         self._message: Message = message
         self.ended_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('ended_timestamp'))
         self.participants: List[Optional[User]] = []
@@ -1807,7 +1807,7 @@ class Message(PartialMessage, Hashable):
         The poll attached to this message.
 
         .. versionadded:: 2.4
-    call: Optional[:class:`MessageCall`]
+    call: Optional[:class:`CallMessage`]
         The call associated with this message.
 
         .. versionadded:: 2.5
@@ -2161,10 +2161,10 @@ class Message(PartialMessage, Hashable):
     def _handle_interaction_metadata(self, data: MessageInteractionMetadataPayload):
         self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
 
-    def _handle_call(self, data: MessageCallPayload):
-        self.call: Optional[MessageCall]
+    def _handle_call(self, data: CallMessagePayload):
+        self.call: Optional[CallMessage]
         if data is not None:
-            self.call = MessageCall(state=self._state, message=self, data=data)
+            self.call = CallMessage(state=self._state, message=self, data=data)
         else:
             self.call = None
 
