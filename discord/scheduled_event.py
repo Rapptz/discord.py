@@ -84,7 +84,7 @@ class _NWeekday(NamedTuple):
 
 
 class ScheduledEventRecurrenceRule:
-    r"""The recurrence rule for a scheduled event.
+    """The recurrence rule for a scheduled event.
 
     .. versionadded:: 2.5
 
@@ -98,7 +98,7 @@ class ScheduledEventRecurrenceRule:
         The spacing between the events, defined by ``frequency``.
 
         For example, a ``frequency`` of :attr:`ScheduledEventRecurrenceFrequency.weekly` and an
-        ``interval`` of :attr:`ScheduledEventRecurrenceFrequency.weekly` will result in an "Every
+        ``interval`` of ``2`` will result in an "Every
         other week recurrence rule.
     weekdays: Optional[List[:class:`ScheduledEventRecurrenceWeekday`]]
         The weekdays the event will recur on.
