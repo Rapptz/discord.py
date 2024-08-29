@@ -1153,6 +1153,40 @@ class Member(discord.abc.Messageable, _UserTag):
             for role in roles:
                 await req(guild_id, user_id, role.id, reason=reason)
 
+    async def fetch_voice(self) -> VoiceState:
+        """|coro|
+
+        Retrieves the current voice state from this member.
+
+        .. versionadded:: 2.5
+
+        Raises
+        -------
+        NotFound
+            The member is not in a voice channel.
+        Forbidden
+            You do not have permissions to get a voice state.
+        HTTPException
+            Retrieving the voice state failed.
+
+        Returns
+        -------
+        :class:`VoiceState`
+            The current voice state of the member.
+        """
+        guild_id = self.guild.id
+        if self._state.self_id == self.id:
+            data = await self._state.http.get_my_voice_state(guild_id)
+        else:
+            data = await self._state.http.get_voice_state(guild_id, self.id)
+
+        channel_id = data.get('channel_id')
+        channel: Optional[VocalGuildChannel] = None
+        if channel_id is not None:
+            channel = self.guild.get_channel(int(channel_id))  # type: ignore # must be voice channel here
+
+        return VoiceState(data=data, channel=channel)
+
     def get_role(self, role_id: int, /) -> Optional[Role]:
         """Returns a role with the given ID from roles which the member has.
 
