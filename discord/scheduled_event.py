@@ -29,8 +29,8 @@ from typing import (
     TYPE_CHECKING,
     AsyncIterator,
     Dict,
-    NamedTuple,
     Optional,
+    Tuple,
     Union,
     overload,
     Literal,
@@ -69,6 +69,8 @@ if TYPE_CHECKING:
     from .user import User
 
     GuildScheduledEventPayload = Union[BaseGuildScheduledEventPayload, GuildScheduledEventWithUserCountPayload]
+    Week = Literal[1, 2, 3, 4, 5]
+    NWeekday = Tuple[Week, ScheduledEventRecurrenceWeekday]
 
 # fmt: off
 __all__ = (
@@ -77,10 +79,6 @@ __all__ = (
 )
 # fmt: on
 
-
-class _NWeekday(NamedTuple):
-    week: Literal[1, 2, 3, 4, 5]
-    day: ScheduledEventRecurrenceWeekday
 
 
 class ScheduledEventRecurrenceRule:
@@ -142,7 +140,7 @@ class ScheduledEventRecurrenceRule:
         frequency: ScheduledEventRecurrenceFrequency,
         interval: int,
         *,
-        n_weekdays: Optional[List[_NWeekday]],
+        n_weekdays: Optional[List[NWeekday]],
     ) -> None:
         ...
 
@@ -166,7 +164,7 @@ class ScheduledEventRecurrenceRule:
         interval: int,
         *,
         weekdays: Optional[List[ScheduledEventRecurrenceWeekday]] = MISSING,
-        n_weekdays: Optional[List[_NWeekday]] = MISSING,
+        n_weekdays: Optional[List[NWeekday]] = MISSING,
         month_days: Optional[List[date]] = MISSING,
     ) -> None:
         self.start: datetime = start
@@ -177,7 +175,7 @@ class ScheduledEventRecurrenceRule:
         self._year_days: Optional[List[int]] = None
         # We will be keeping the MISSING values for future use in _to_dict()
         self._weekdays: Optional[List[ScheduledEventRecurrenceWeekday]] = weekdays
-        self._n_weekdays: Optional[List[_NWeekday]] = n_weekdays
+        self._n_weekdays: Optional[List[NWeekday]] = n_weekdays
         self._month_days: Optional[List[date]] = month_days
 
     def __repr__(self) -> str:
@@ -197,7 +195,7 @@ class ScheduledEventRecurrenceRule:
         self._weekdays = new
 
     @property
-    def n_weekdays(self) -> Optional[List[_NWeekday]]:
+    def n_weekdays(self) -> Optional[List[NWeekday]]:
         """Optional[List[Tuple[:class:`int`, :class:`ScheduledEventRecurrenceWeekday`]]]: Returns a read-only
         list of the N weekdays this event recurs on, or ``None``.
         """
@@ -206,7 +204,7 @@ class ScheduledEventRecurrenceRule:
         return self._n_weekdays.copy()
 
     @n_weekdays.setter
-    def n_weekdays(self, new: Optional[List[_NWeekday]]) -> None:
+    def n_weekdays(self, new: Optional[List[NWeekday]]) -> None:
         self._n_weekdays = new
 
     @property
@@ -249,7 +247,7 @@ class ScheduledEventRecurrenceRule:
         self,
         *,
         weekdays: Optional[List[ScheduledEventRecurrenceWeekday]] = MISSING,
-        n_weekdays: Optional[List[_NWeekday]] = MISSING,
+        n_weekdays: Optional[List[NWeekday]] = MISSING,
         month_days: Optional[List[date]] = MISSING,
     ) -> Self:
         """Replaces and returns the recurrence rule with the same values except for the
@@ -323,7 +321,7 @@ class ScheduledEventRecurrenceRule:
     def _from_data(cls, data: ScheduledEventRecurrenceRulePayload, /) -> Self:
         self = cls(
             start=parse_time(data['start']),
-            frequency=data['frequency'],
+            frequency=try_enum(ScheduledEventRecurrenceFrequency, data['frequency']),
             interval=data['interval'],
         )  # type: ignore
         self._count = data.get('count')
