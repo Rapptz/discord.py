@@ -80,7 +80,6 @@ __all__ = (
 # fmt: on
 
 
-
 class ScheduledEventRecurrenceRule:
     """The recurrence rule for a scheduled event.
 
@@ -101,7 +100,7 @@ class ScheduledEventRecurrenceRule:
         The weekdays the event will recur on.
 
         Currently this only allows the following sets:
-        
+
         If ``frequency`` is :attr`ScheduledEventRecurrenceFrequency.daily`:
 
         - Monday to Friday
