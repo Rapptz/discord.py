@@ -824,7 +824,7 @@ class CallMessage:
     def __repr__(self) -> str:
         return f'<CallMessage participants={self.participants!r}>'
 
-    def __init__(self, *, message: Message, data: CallMessagePayload):
+    def __init__(self, *, state: ConnectionState, message: Message, data: CallMessagePayload):
         self._message: Message = message
         self.ended_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('ended_timestamp'))
         self.participants: List[User] = []
@@ -834,7 +834,7 @@ class CallMessage:
             if user_id == self._message.author.id:
                 self.participants.append(self._message.author)  # type: ignore # can't be a Member here
             else:
-                user = utils.find(lambda u: u.id == user_id, self._message.mentions)
+                user = state.get_user(user_id)
                 if user is not None:
                     self.participants.append(user)  # type: ignore # can't be a Member here
 
@@ -2166,7 +2166,7 @@ class Message(PartialMessage, Hashable):
     def _handle_call(self, data: CallMessagePayload):
         self.call: Optional[CallMessage]
         if data is not None:
-            self.call = CallMessage(message=self, data=data)
+            self.call = CallMessage(state=self._state, message=self, data=data)
         else:
             self.call = None
 
