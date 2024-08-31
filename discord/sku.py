@@ -28,7 +28,6 @@ from __future__ import annotations
 from typing import AsyncIterator, Optional, TYPE_CHECKING
 
 from . import utils
-from .errors import MissingApplicationID
 from .enums import try_enum, SKUType, EntitlementType
 from .flags import SKUFlags
 from .object import Object
@@ -336,16 +335,11 @@ class Entitlement:
 
         Raises
         -------
-        MissingApplicationID
-            The application ID could not be found.
         NotFound
             The entitlement could not be found.
         HTTPException
             Consuming the entitlement failed.
         """
-
-        if self.application_id is None:
-            raise MissingApplicationID
 
         await self._state.http.consume_entitlement(self.application_id, self.id)
 
@@ -356,15 +350,10 @@ class Entitlement:
 
         Raises
         -------
-        MissingApplicationID
-            The application ID could not be found.
         NotFound
             The entitlement could not be found.
         HTTPException
             Deleting the entitlement failed.
         """
-
-        if self.application_id is None:
-            raise MissingApplicationID
 
         await self._state.http.delete_entitlement(self.application_id, self.id)
