@@ -84,7 +84,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .abc import Messageable, PrivateChannel, Snowflake, SnowflakeTime
-    from .app_commands import Command, ContextMenu, MissingApplicationID
+    from .app_commands import Command, ContextMenu
     from .automod import AutoModAction, AutoModRule
     from .channel import DMChannel, GroupChannel
     from .ext.commands import AutoShardedBot, Bot, Context, CommandError

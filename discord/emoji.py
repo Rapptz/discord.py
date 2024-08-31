@@ -29,7 +29,7 @@ from .asset import Asset, AssetMixin
 from .utils import SnowflakeList, snowflake_time, MISSING
 from .partial_emoji import _EmojiTag, PartialEmoji
 from .user import User
-from .app_commands.errors import MissingApplicationID
+from .errors import MissingApplicationID
 from .object import Object
 
 # fmt: off

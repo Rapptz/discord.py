@@ -28,7 +28,7 @@ from __future__ import annotations
 from typing import AsyncIterator, Optional, TYPE_CHECKING
 
 from . import utils
-from .app_commands import MissingApplicationID
+from .errors import MissingApplicationID
 from .enums import try_enum, SKUType, EntitlementType
 from .flags import SKUFlags
 from .object import Object
