@@ -5440,6 +5440,8 @@ The following exceptions are thrown by the library.
 
 .. autoexception:: InteractionResponded
 
+.. autoexception:: MissingApplicationID
+
 .. autoexception:: discord.opus.OpusError
 
 .. autoexception:: discord.opus.OpusNotLoaded
@@ -5457,6 +5459,7 @@ Exception Hierarchy
                 - :exc:`ConnectionClosed`
                 - :exc:`PrivilegedIntentsRequired`
                 - :exc:`InteractionResponded`
+                - :exc:`MissingApplicationID`
             - :exc:`GatewayNotFound`
             - :exc:`HTTPException`
                 - :exc:`Forbidden`
