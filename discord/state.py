@@ -1318,12 +1318,6 @@ class ConnectionState:
             else utils.find(lambda m: m.id == msg_id, reversed(self._call_message_cache.values()))
         )
 
-    def _get_poll(self, msg_id: Optional[int]) -> Optional[Poll]:
-        message = self._get_message(msg_id)
-        if not message:
-            return
-        return message.poll
-
     def _add_guild_from_data(self, data: GuildPayload) -> Guild:
         guild = self.create_guild(data)
         self._add_guild(guild)

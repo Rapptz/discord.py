@@ -1698,7 +1698,7 @@ class Message(PartialMessage, Hashable):
         try:
             self.poll = Poll._from_data(data=data['poll'], message=self, state=state)
         except KeyError:
-            self.poll = state._get_poll(self.id)
+            pass
 
         try:
             # If the channel doesn't have a guild attribute, we handle that
