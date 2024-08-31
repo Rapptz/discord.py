@@ -1692,8 +1692,6 @@ class Message(PartialMessage, Hashable):
         self.call: Optional[CallMessage] = None
         self.interaction: Optional[Interaction] = None
 
-        # This updates the poll so it has the counts, if the message
-        # was previously cached.
         self.poll: Optional[Poll] = None
         try:
             self.poll = Poll._from_data(data=data['poll'], message=self, state=state)
