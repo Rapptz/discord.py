@@ -74,6 +74,7 @@ __all__ = (
     'EntitlementType',
     'EntitlementOwnerType',
     'PollLayoutType',
+    'HangStatusType',
 )
 
 
@@ -525,9 +526,21 @@ class ActivityType(Enum):
     watching = 3
     custom = 4
     competing = 5
+    hang = 6
 
     def __int__(self) -> int:
         return self.value
+
+
+class HangStatusType(Enum):
+    chilling = 'chilling'
+    gaming = 'gaming'
+    focusing = 'focusing'
+    brb = 'brb'
+    eating = 'eating'
+    in_transit = 'in-transit'
+    watching = 'watching'
+    custom = 'custom'
 
 
 class TeamMembershipState(Enum):
