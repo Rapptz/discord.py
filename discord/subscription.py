@@ -34,6 +34,7 @@ from .enums import try_enum, SubscriptionStatus
 if TYPE_CHECKING:
     from .state import ConnectionState
     from .types.subscription import Subscription as SubscriptionPayload
+    from .user import User
 
 __all__ = ('Subscription',)
 
@@ -95,3 +96,8 @@ class Subscription(Hashable):
     def created_at(self) -> datetime.datetime:
         """:class:`datetime.datetime`: Returns the subscription's creation time in UTC."""
         return utils.snowflake_time(self.id)
+
+    @property
+    def user(self) -> Optional[User]:
+        """Optional[:class:`User`]: The user that is subscribed."""
+        return self._state.get_user(self.user_id)
