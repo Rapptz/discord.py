@@ -74,6 +74,8 @@ __all__ = (
     'EntitlementType',
     'EntitlementOwnerType',
     'PollLayoutType',
+    'MemberJoinType',
+    'MemberSearchSortType',
 )
 
 
@@ -833,6 +835,29 @@ class InviteType(Enum):
 class ReactionType(Enum):
     normal = 0
     burst = 1
+
+
+class MemberJoinType(Enum):
+    unknown = 0
+    bot = 1
+    integration = 2
+    discovery = 3
+    hub = 4
+    invite = 5
+    vanity = 6
+    manual_verification = 7
+
+    # Aliases
+    app = 1
+    student_hub = 4
+    user_invite = 5
+
+
+class MemberSearchSortType(Enum):
+    new_guild_members = 1
+    old_guild_members = 2
+    new_discord_users = 3
+    old_discord_users = 4
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:
