@@ -2413,10 +2413,12 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             'available_tags': [tag.to_dict() for tag in self.available_tags],
             'default_thread_rate_limit_per_user': self.default_thread_slowmode_delay,
         }
+        if self.default_sort_order:
+            base['default_sort_order'] = self.default_sort_order.value
         if self.default_reaction_emoji:
             base['default_reaction_emoji'] = self.default_reaction_emoji._to_forum_tag_payload()
         if not self.is_media() and self.default_layout:
-            base['default_sort_order'] = self.default_sort_order
+            base['default_forum_layout'] = self.default_layout.value
 
         return await self._clone_impl(
             base,
