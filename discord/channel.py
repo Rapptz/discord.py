@@ -1366,7 +1366,6 @@ class VoiceChannel(VocalGuildChannel):
         """:class:`ChannelType`: The channel's Discord type."""
         return ChannelType.voice
 
-
     @overload
     async def edit(self) -> None:
         ...
@@ -2404,14 +2403,16 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> ForumChannel:
         base = {
-                'topic': self.topic,
-                'rate_limit_per_user': self.slowmode_delay,
-                'nsfw': self.nsfw,
-                'default_auto_archive_duration': self.default_auto_archive_duration,
-                'default_reaction_emoji': self.default_reaction_emoji._to_forum_tag_payload() if self.default_reaction_emoji else None,
-                'available_tags': [tag.to_dict() for tag in self.available_tags],
-                'default_sort_order': self.default_sort_order,
-                'default_thread_rate_limit_per_user': self.default_thread_slowmode_delay,
+            'topic': self.topic,
+            'rate_limit_per_user': self.slowmode_delay,
+            'nsfw': self.nsfw,
+            'default_auto_archive_duration': self.default_auto_archive_duration,
+            'default_reaction_emoji': self.default_reaction_emoji._to_forum_tag_payload()
+            if self.default_reaction_emoji
+            else None,
+            'available_tags': [tag.to_dict() for tag in self.available_tags],
+            'default_sort_order': self.default_sort_order,
+            'default_thread_rate_limit_per_user': self.default_thread_slowmode_delay,
         }
         if not self.is_media():
             base['default_sort_order'] = self.default_sort_order
