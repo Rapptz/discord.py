@@ -1259,15 +1259,18 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> Self:
+        base = {
+            'bitrate': self.bitrate,
+            'user_limit': self.user_limit,
+            'rate_limit_per_user': self.slowmode_delay,
+            'nsfw': self.nsfw,
+            'video_quality_mode': self.video_quality_mode.value,
+        }
+        if self.rtc_region:
+            base['rtc_region'] = self.rtc_region
+
         return await self._clone_impl(
-            {
-                'bitrate': self.bitrate,
-                'user_limit': self.user_limit,
-                'rate_limit_per_user': self.slowmode_delay,
-                'nsfw': self.nsfw,
-                'rtc_region': self.rtc_region,
-                'video_quality_mode': self.video_quality_mode.value,
-            },
+            base,
             name=name,
             reason=reason,
         )
@@ -2407,14 +2410,12 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             'rate_limit_per_user': self.slowmode_delay,
             'nsfw': self.nsfw,
             'default_auto_archive_duration': self.default_auto_archive_duration,
-            'default_reaction_emoji': self.default_reaction_emoji._to_forum_tag_payload()
-            if self.default_reaction_emoji
-            else None,
             'available_tags': [tag.to_dict() for tag in self.available_tags],
-            'default_sort_order': self.default_sort_order,
             'default_thread_rate_limit_per_user': self.default_thread_slowmode_delay,
         }
-        if not self.is_media():
+        if self.default_reaction_emoji:
+            base['default_reaction_emoji'] = self.default_reaction_emoji._to_forum_tag_payload()
+        if not self.is_media() and self.default_layout:
             base['default_sort_order'] = self.default_sort_order
 
         return await self._clone_impl(
