@@ -395,9 +395,18 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> TextChannel:
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        reason: Optional[str] = None,
+    ) -> TextChannel:
         return await self._clone_impl(
-            {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay}, name=name, reason=reason
+            {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay},
+            name=name,
+            category=category,
+            reason=reason,
         )
 
     async def delete_messages(self, messages: Iterable[Snowflake], *, reason: Optional[str] = None) -> None:
@@ -1344,8 +1353,16 @@ class VoiceChannel(VocalGuildChannel):
         return ChannelType.voice
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> VoiceChannel:
-        return await self._clone_impl({'bitrate': self.bitrate, 'user_limit': self.user_limit}, name=name, reason=reason)
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        reason: Optional[str] = None,
+    ) -> VoiceChannel:
+        return await self._clone_impl(
+            {'bitrate': self.bitrate, 'user_limit': self.user_limit}, name=name, category=category, reason=reason
+        )
 
     @overload
     async def edit(self) -> None:
@@ -1589,8 +1606,14 @@ class StageChannel(VocalGuildChannel):
         return ChannelType.stage_voice
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> StageChannel:
-        return await self._clone_impl({}, name=name, reason=reason)
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        reason: Optional[str] = None,
+    ) -> StageChannel:
+        return await self._clone_impl({}, name=name, category=category, reason=reason)
 
     @property
     def instance(self) -> Optional[StageInstance]:
@@ -1869,7 +1892,13 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return self.nsfw
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> CategoryChannel:
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        reason: Optional[str] = None,
+    ) -> CategoryChannel:
         return await self._clone_impl({'nsfw': self.nsfw}, name=name, reason=reason)
 
     @overload
@@ -2386,9 +2415,18 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         return self._type == ChannelType.media.value
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> ForumChannel:
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel],
+        reason: Optional[str] = None,
+    ) -> ForumChannel:
         return await self._clone_impl(
-            {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay}, name=name, reason=reason
+            {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay},
+            name=name,
+            category=category,
+            reason=reason,
         )
 
     @overload
