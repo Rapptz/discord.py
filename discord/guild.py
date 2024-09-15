@@ -4595,30 +4595,3 @@ class Guild(Hashable):
 
         data = await self._state.http.create_soundboard_sound(self.id, reason=reason, **payload)
         return SoundboardSound(guild=self, state=self._state, data=data)
-
-    async def request_soundboard_sounds(self, *, cache: bool = True) -> List[SoundboardSound]:
-        """|coro|
-
-        Requests the soundboard sounds of the guild.
-
-        This is a websocket operation and can be slow.
-
-        .. versionadded:: 2.5
-
-        Parameters
-        ----------
-        cache: :class:`bool`
-            Whether to cache the soundboard sounds internally. Defaults to ``True``.
-
-        Raises
-        -------
-        asyncio.TimeoutError
-            The query timed out waiting for the sounds.
-
-        Returns
-        --------
-        List[:class:`SoundboardSound`]
-            A list of guilds with it's requested soundboard sounds.
-        """
-
-        return await self._state.request_soundboard_sounds(self, cache=cache)

@@ -276,8 +276,6 @@ class DiscordWebSocket:
         a connection issue.
     GUILD_SYNC
         Send only. Requests a guild sync.
-    REQUEST_SOUNDBOARD_SOUNDS
-        Send only. Requests the soundboard sounds for a list of guilds.
     gateway
         The gateway we are currently connected to.
     token
@@ -310,7 +308,6 @@ class DiscordWebSocket:
     HELLO                       = 10
     HEARTBEAT_ACK               = 11
     GUILD_SYNC                  = 12
-    REQUEST_SOUNDBOARD_SOUNDS   = 31
     # fmt: on
 
     def __init__(self, socket: aiohttp.ClientWebSocketResponse, *, loop: asyncio.AbstractEventLoop) -> None:
@@ -753,17 +750,6 @@ class DiscordWebSocket:
         }
 
         _log.debug('Updating our voice state to %s.', payload)
-        await self.send_as_json(payload)
-
-    async def request_soundboard_sounds(self, guild_ids: List[int]) -> None:
-        payload = {
-            'op': self.REQUEST_SOUNDBOARD_SOUNDS,
-            'd': {
-                'guild_ids': guild_ids,
-            },
-        }
-
-        _log.debug('Sending "%s" to request soundboard sounds', payload)
         await self.send_as_json(payload)
 
     async def close(self, code: int = 4000) -> None:

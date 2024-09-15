@@ -372,8 +372,3 @@ class PollVoteActionEvent(TypedDict):
     message_id: Snowflake
     guild_id: NotRequired[Snowflake]
     answer_id: int
-
-
-class SoundboardSoundsRequestEvent(TypedDict):
-    guild_id: Snowflake
-    soundboard_sounds: List[SoundboardSound]
