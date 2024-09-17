@@ -153,7 +153,7 @@ class _ProtoSettings:
     def to_dict(self, *, with_defaults: bool = False) -> Dict[str, Any]:
         return MessageToDict(
             self.settings,
-            including_default_value_fields=with_defaults,
+            always_print_fields_with_no_presence=with_defaults,
             preserving_proto_field_name=True,
             use_integers_for_enums=True,
         )
@@ -1825,10 +1825,6 @@ class LegacyUserSettings:
             The overall theme of the Discord UI.
         timezone_offset: :class:`int`
             The timezone offset to use.
-        view_nsfw_commands: :class:`bool`
-            Whether to show NSFW application commands in DMs.
-
-            .. versionadded:: 2.0
         view_nsfw_guilds: :class:`bool`
             Whether to show NSFW guilds on iOS.
 
