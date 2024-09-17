@@ -92,6 +92,7 @@ GuildFeature = Literal[
     'WELCOME_SCREEN_ENABLED',
     'RAID_ALERTS_DISABLED',
     'SOUNDBOARD',
+    'MORE_SOUNDBOARD',
 ]
 
 
