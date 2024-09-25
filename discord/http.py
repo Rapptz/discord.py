@@ -2628,28 +2628,13 @@ class HTTPClient:
 
     # Misc
 
-    async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
-        try:
-            data = await self.request(Route('GET', '/gateway'))
-        except HTTPException as exc:
-            raise GatewayNotFound() from exc
-        if zlib:
-            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
-        else:
-            value = '{0}?encoding={1}&v={2}'
-        return value.format(data['url'], encoding, INTERNAL_API_VERSION)
-
-    async def get_bot_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> Tuple[int, str]:
+    async def get_bot_gateway(self) -> Tuple[int, str]:
         try:
             data = await self.request(Route('GET', '/gateway/bot'))
         except HTTPException as exc:
             raise GatewayNotFound() from exc
 
-        if zlib:
-            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
-        else:
-            value = '{0}?encoding={1}&v={2}'
-        return data['shards'], value.format(data['url'], encoding, INTERNAL_API_VERSION)
+        return data['shards'], data['url']
 
     def get_user(self, user_id: Snowflake) -> Response[user.User]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
