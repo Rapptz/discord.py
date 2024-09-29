@@ -1767,7 +1767,7 @@ class PartialMessage(Hashable):
         fail_if_not_exists: :class:`bool`
             Whether replying using the message reference should raise :class:`HTTPException`
             if the message no longer exists or Discord could not fetch the message.
-        \*\*kwargs
+        **kwargs
             Other kwargs to provide to :meth:`~discord.abc.Messageable.send`.
 
         Raises
@@ -1781,7 +1781,8 @@ class PartialMessage(Hashable):
             The message sent to the channel.
         """
         reference = self.to_reference(
-            fail_if_not_exists=fail_if_not_exists, type=MessageReferenceType.forward,
+            fail_if_not_exists=fail_if_not_exists,
+            type=MessageReferenceType.forward,
         )
         ret = await channel.send(content=content, reference=reference, **kwargs)
         return ret
