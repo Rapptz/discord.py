@@ -488,6 +488,7 @@ class MessageSnapshot:
 
     __slots__ = (
         '_cs_raw_channel_mentions',
+        '_cs_cached_message',
         '_cs_raw_mentions',
         '_cs_raw_role_mentions',
         '_edited_timestamp',
@@ -559,19 +560,28 @@ class MessageSnapshot:
         """
         return [int(x) for x in re.findall(r'<@&([0-9]{15,20})>', self.content)]
 
+    @utils.cached_slot_property('_cs_cached_message')
+    def cached_message(self) -> Optional[Message]:
+        """Optional[:class:`Message`]: Returns the cached message this snapshot points to, if any."""
+        state = self._state
+        return utils.find(
+            lambda m: (
+                m.created_at == self.created_at and
+                m.edited_at == self.edited_at and
+                m.content == self.content and
+                m.embeds == self.embeds and
+                m.components == self.components and
+                m.stickers == self.stickers and
+                m.attachments == self.attachments and
+                m.flags == self.flags
+            ),
+            reversed(state._messages)
+        ) if state._messages else None
+
     @property
     def edited_at(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the forwarded message."""
         return self._edited_timestamp
-
-    @property
-    def cached_message(self) -> Optional[Message]:
-        """Optional[:class:`Message`]: The resolved message object this snapshot points to,
-        if cached.
-        """
-        # We do this trick as ID is not provided.
-        id = int(self.created_at.timestamp()) - utils.DISCORD_EPOCH
-        return self._state._get_message(id)
 
 
 class MessageReference:
@@ -586,6 +596,8 @@ class MessageReference:
     -----------
     type: :class:`MessageReferenceType`
         The type of message reference.
+
+        .. versionadded:: 2.5
     message_id: Optional[:class:`int`]
         The id of the message referenced.
     channel_id: :class:`int`
@@ -700,7 +712,7 @@ class MessageReference:
         return f'<MessageReference message_id={self.message_id!r} channel_id={self.channel_id!r} guild_id={self.guild_id!r}>'
 
     def to_dict(self) -> MessageReferencePayload:
-        result: Dict[str, Any] = {'message_id': self.message_id} if self.message_id is not None else {}
+        result: Dict[str, Any] = {'type': self.type.value, 'message_id': self.message_id} if self.message_id is not None else {}
         result['channel_id'] = self.channel_id
         if self.guild_id is not None:
             result['guild_id'] = self.guild_id
@@ -1749,6 +1761,10 @@ class PartialMessage(Hashable):
             if the message no longer exists or Discord could not fetch the message.
 
             .. versionadded:: 1.7
+        type: :class:`MessageReferenceType`
+            The type of message reference.
+
+            .. versionadded:: 2.5
 
         Returns
         ---------
