@@ -630,7 +630,7 @@ class MessageReference:
     @classmethod
     def from_message(
         cls,
-        message: PartialMessage, 
+        message: PartialMessage,
         *,
         fail_if_not_exists: bool = True,
         type: MessageReferenceType = MessageReferenceType.reply,
