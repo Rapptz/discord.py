@@ -458,6 +458,8 @@ class DeletedReferencedMessage:
 class MessageSnapshot:
     """Represents a message snapshot attached to a forwarded message.
 
+    .. versionadded:: 2.5
+
     Attributes
     -----------
     type: :class:`MessageType`
@@ -485,6 +487,7 @@ class MessageSnapshot:
         'flags',
         'created_at',
         'type',
+        '_state',
     )
 
     @classmethod
@@ -506,6 +509,7 @@ class MessageSnapshot:
         self.created_at: datetime.datetime = utils.parse_time(data['timestamp'])
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
         self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
+        self._state: ConnectionState = state
 
     def __repr__(self) -> str:
         name = self.__class__.__name__
@@ -539,6 +543,15 @@ class MessageSnapshot:
     def edited_at(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the forwarded message."""
         return self._edited_timestamp
+
+    @property
+    def cached_message(self) -> Optional[Message]:
+        """Optional[:class:`Message`]: The resolved message object this snapshot points to,
+        if cached.
+        """
+        # We do this trick as ID is not provided.
+        id = int(self.created_at.timestamp()) - utils.DISCORD_EPOCH
+        return self._state._get_message(id)
 
 
 class MessageReference:
@@ -582,11 +595,11 @@ class MessageReference:
     def __init__(
         self,
         *,
-        type: MessageReferenceType,
         message_id: int,
         channel_id: int,
         guild_id: Optional[int] = None,
         fail_if_not_exists: bool = True,
+        type: MessageReferenceType = MessageReferenceType.reply,
     ):
         self._state: Optional[ConnectionState] = None
         self.type: MessageReferenceType = type
@@ -609,7 +622,13 @@ class MessageReference:
         return self
 
     @classmethod
-    def from_message(cls, message: PartialMessage, *, fail_if_not_exists: bool = True) -> Self:
+    def from_message(
+        cls,
+        message: PartialMessage, 
+        *,
+        fail_if_not_exists: bool = True,
+        type: MessageReferenceType = MessageReferenceType.reply,
+    ) -> Self:
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6
@@ -623,6 +642,10 @@ class MessageReference:
             if the message no longer exists or Discord could not fetch the message.
 
             .. versionadded:: 1.7
+        type: :class:`~discord.MessageReferenceType`
+            The type of message reference this is.
+
+            .. versionadded:: 2.5
 
         Returns
         -------
@@ -630,11 +653,11 @@ class MessageReference:
             A reference to the message.
         """
         self = cls(
-            type=MessageReferenceType.default,
             message_id=message.id,
             channel_id=message.channel.id,
             guild_id=getattr(message.guild, 'id', None),
             fail_if_not_exists=fail_if_not_exists,
+            type=type,
         )
         self._state = message._state
         return self
@@ -1689,7 +1712,12 @@ class PartialMessage(Hashable):
 
         return Message(state=self._state, channel=self.channel, data=data)
 
-    def to_reference(self, *, fail_if_not_exists: bool = True) -> MessageReference:
+    def to_reference(
+        self,
+        *,
+        fail_if_not_exists: bool = True,
+        type: MessageReferenceType = MessageReferenceType.reply,
+    ) -> MessageReference:
         """Creates a :class:`~discord.MessageReference` from the current message.
 
         .. versionadded:: 1.6
@@ -1708,7 +1736,49 @@ class PartialMessage(Hashable):
             The reference to this message.
         """
 
-        return MessageReference.from_message(self, fail_if_not_exists=fail_if_not_exists)
+        return MessageReference.from_message(self, fail_if_not_exists=fail_if_not_exists, type=type)
+
+    async def forward(
+        self,
+        channel: MessageableChannel,
+        content: Optional[str] = None,
+        *,
+        fail_if_not_exists: bool = True,
+        **kwargs: Any,
+    ) -> Message:
+        """|coro|
+
+        Forwards this message to a channel.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        channel: :class:`~discord.abc.Messageable`
+            The channel to forward this message to.
+        content: Optional[:class:`str`]
+            The content of the message to send.
+        fail_if_not_exists: :class:`bool`
+            Whether replying using the message reference should raise :class:`HTTPException`
+            if the message no longer exists or Discord could not fetch the message.
+        \*\*kwargs
+            Other kwargs to provide to :meth:`~discord.abc.Messageable.send`.
+
+        Raises
+        ------
+        ~discord.HTTPException
+            Forwarding the message failed.
+
+        Returns
+        -------
+        :class:`.Message`
+            The message sent to the channel.
+        """
+        reference = self.to_reference(
+            fail_if_not_exists=fail_if_not_exists, type=MessageReferenceType.forward,
+        )
+        ret = await channel.send(content=content, reference=reference, **kwargs)
+        return ret
 
     def to_message_reference_dict(self) -> MessageReferencePayload:
         data: MessageReferencePayload = {
