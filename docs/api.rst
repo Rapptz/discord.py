@@ -5127,6 +5127,14 @@ PollAnswer
 
 .. _discord_api_data:
 
+MessageSnapshot
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MessageSnapshot
+
+.. autoclass:: MessageSnapshot
+    :members:
+
 Data Classes
 --------------
 
@@ -5164,14 +5172,6 @@ AllowedMentions
 .. attributetable:: AllowedMentions
 
 .. autoclass:: AllowedMentions
-    :members:
-
-MessageSnapshot
-~~~~~~~~~~~~~~~~~
-
-.. attributetable:: MessageSnapshot
-
-.. autoclass:: MessageSnapshot
     :members:
 
 MessageReference
