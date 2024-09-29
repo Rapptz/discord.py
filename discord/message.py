@@ -564,19 +564,23 @@ class MessageSnapshot:
     def cached_message(self) -> Optional[Message]:
         """Optional[:class:`Message`]: Returns the cached message this snapshot points to, if any."""
         state = self._state
-        return utils.find(
-            lambda m: (
-                m.created_at == self.created_at and
-                m.edited_at == self.edited_at and
-                m.content == self.content and
-                m.embeds == self.embeds and
-                m.components == self.components and
-                m.stickers == self.stickers and
-                m.attachments == self.attachments and
-                m.flags == self.flags
-            ),
-            reversed(state._messages)
-        ) if state._messages else None
+        return (
+            utils.find(
+                lambda m: (
+                    m.created_at == self.created_at
+                    and m.edited_at == self.edited_at
+                    and m.content == self.content
+                    and m.embeds == self.embeds
+                    and m.components == self.components
+                    and m.stickers == self.stickers
+                    and m.attachments == self.attachments
+                    and m.flags == self.flags
+                ),
+                reversed(state._messages),
+            )
+            if state._messages
+            else None
+        )
 
     @property
     def edited_at(self) -> Optional[datetime.datetime]:
@@ -712,7 +716,9 @@ class MessageReference:
         return f'<MessageReference message_id={self.message_id!r} channel_id={self.channel_id!r} guild_id={self.guild_id!r}>'
 
     def to_dict(self) -> MessageReferencePayload:
-        result: Dict[str, Any] = {'type': self.type.value, 'message_id': self.message_id} if self.message_id is not None else {}
+        result: Dict[str, Any] = (
+            {'type': self.type.value, 'message_id': self.message_id} if self.message_id is not None else {}
+        )
         result['channel_id'] = self.channel_id
         if self.guild_id is not None:
             result['guild_id'] = self.guild_id
