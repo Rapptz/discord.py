@@ -1782,11 +1782,9 @@ class PartialMessage(Hashable):
 
     async def forward(
         self,
-        channel: MessageableChannel,
-        content: Optional[str] = None,
+        destination: MessageableChannel,
         *,
         fail_if_not_exists: bool = True,
-        **kwargs: Any,
     ) -> Message:
         """|coro|
 
@@ -1796,15 +1794,11 @@ class PartialMessage(Hashable):
 
         Parameters
         ----------
-        channel: :class:`~discord.abc.Messageable`
+        destination: :class:`~discord.abc.Messageable`
             The channel to forward this message to.
-        content: Optional[:class:`str`]
-            The content of the message to send.
         fail_if_not_exists: :class:`bool`
             Whether replying using the message reference should raise :class:`HTTPException`
             if the message no longer exists or Discord could not fetch the message.
-        **kwargs
-            Other kwargs to provide to :meth:`~discord.abc.Messageable.send`.
 
         Raises
         ------
@@ -1820,7 +1814,7 @@ class PartialMessage(Hashable):
             fail_if_not_exists=fail_if_not_exists,
             type=MessageReferenceType.forward,
         )
-        ret = await channel.send(content=content, reference=reference, **kwargs)
+        ret = await destination.send(reference=reference)
         return ret
 
     def to_message_reference_dict(self) -> MessageReferencePayload:
