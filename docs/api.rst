@@ -3663,6 +3663,24 @@ of :class:`enum.Enum`.
         A burst reaction, also known as a "super reaction".
 
 
+.. class:: MessageReferenceType
+
+    Represents the type of a message reference.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: reply
+
+        A message reply.
+
+    .. attribute:: forward
+
+        A forwarded message.
+
+    .. attribute:: default
+
+        An alias for :attr:`.reply`.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
