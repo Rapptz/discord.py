@@ -168,6 +168,8 @@ class MessageSnapshot(TypedDict):
     flags: NotRequired[int]
     mentions: List[UserWithMember]
     mention_roles: SnowflakeList
+    stickers_items: NotRequired[List[StickerItem]]
+    components: NotRequired[List[Component]]
 
 
 class Message(PartialMessage):

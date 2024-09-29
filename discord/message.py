@@ -493,6 +493,8 @@ class MessageSnapshot:
         'flags',
         'created_at',
         'type',
+        'stickers',
+        'components',
         '_state',
     )
 
@@ -515,6 +517,14 @@ class MessageSnapshot:
         self.created_at: datetime.datetime = utils.parse_time(data['timestamp'])
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
         self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('stickers_items', [])]
+
+        self.components: List[MessageComponentType] = []
+        for component_data in data.get('components', []):
+            component = _component_factory(component_data)
+            if component is not None:
+                self.components.append(component)
+
         self._state: ConnectionState = state
 
     def __repr__(self) -> str:
