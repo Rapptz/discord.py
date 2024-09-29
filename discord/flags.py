@@ -2032,6 +2032,48 @@ class MemberFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the member has started onboarding."""
         return 1 << 3
 
+    @flag_value
+    def guest(self):
+        """:class:`bool`: Returns ``True`` if the member is a guest and can only access
+        the voice channel they were invited to.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 4
+
+    @flag_value
+    def started_home_actions(self):
+        """:class:`bool`: Returns ``True`` if the member has started Server Guide new member actions.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 5
+
+    @flag_value
+    def completed_home_actions(self):
+        """:class:`bool`: Returns ``True`` if the member has completed Server Guide new member actions.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 6
+
+    @flag_value
+    def automod_quarantined_username(self):
+        """:class:`bool`: Returns ``True`` if the member's username, nickname, or global name has been
+        blocked by AutoMod.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 7
+
+    @flag_value
+    def dm_settings_upsell_acknowledged(self):
+        """:class:`bool`: Returns ``True`` if the member has dismissed the DM settings upsell.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 9
+
 
 @fill_with_flags()
 class AttachmentFlags(BaseFlags):

@@ -48,7 +48,6 @@ from typing import (
 from urllib.parse import quote as _uriquote
 from collections import deque
 import datetime
-import socket
 
 import aiohttp
 
@@ -93,6 +92,7 @@ if TYPE_CHECKING:
         welcome_screen,
         sku,
         poll,
+        voice,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -798,13 +798,13 @@ class HTTPClient:
     async def static_login(self, token: str) -> user.User:
         # Necessary to get aiohttp to stop complaining about session creation
         if self.connector is MISSING:
-            # discord does not support ipv6
-            self.connector = aiohttp.TCPConnector(limit=0, family=socket.AF_INET)
+            self.connector = aiohttp.TCPConnector(limit=0)
 
         self.__session = aiohttp.ClientSession(
             connector=self.connector,
             ws_response_class=DiscordClientWebSocketResponse,
             trace_configs=None if self.http_trace is None else [self.http_trace],
+            cookie_jar=aiohttp.DummyCookieJar(),
         )
         self._global_over = asyncio.Event()
         self._global_over.set()
@@ -1147,6 +1147,12 @@ class HTTPClient:
     ) -> Response[member.MemberWithUser]:
         r = Route('PATCH', '/guilds/{guild_id}/members/{user_id}', guild_id=guild_id, user_id=user_id)
         return self.request(r, json=fields, reason=reason)
+
+    def get_my_voice_state(self, guild_id: Snowflake) -> Response[voice.GuildVoiceState]:
+        return self.request(Route('GET', '/guilds/{guild_id}/voice-states/@me', guild_id=guild_id))
+
+    def get_voice_state(self, guild_id: Snowflake, user_id: Snowflake) -> Response[voice.GuildVoiceState]:
+        return self.request(Route('GET', '/guilds/{guild_id}/voice-states/{user_id}', guild_id=guild_id, user_id=user_id))
 
     # Channel management
 
@@ -1611,6 +1617,9 @@ class HTTPClient:
     def get_sticker(self, sticker_id: Snowflake) -> Response[sticker.Sticker]:
         return self.request(Route('GET', '/stickers/{sticker_id}', sticker_id=sticker_id))
 
+    def get_sticker_pack(self, sticker_pack_id: Snowflake) -> Response[sticker.StickerPack]:
+        return self.request(Route('GET', '/sticker-packs/{sticker_pack_id}', sticker_pack_id=sticker_pack_id))
+
     def list_premium_sticker_packs(self) -> Response[sticker.ListPremiumStickerPacks]:
         return self.request(Route('GET', '/sticker-packs'))
 
@@ -1857,6 +1866,9 @@ class HTTPClient:
 
     def get_roles(self, guild_id: Snowflake) -> Response[List[role.Role]]:
         return self.request(Route('GET', '/guilds/{guild_id}/roles', guild_id=guild_id))
+
+    def get_role(self, guild_id: Snowflake, role_id: Snowflake) -> Response[role.Role]:
+        return self.request(Route('GET', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id))
 
     def edit_role(
         self, guild_id: Snowflake, role_id: Snowflake, *, reason: Optional[str] = None, **fields: Any
@@ -2503,7 +2515,7 @@ class HTTPClient:
             ),
         )
 
-    # Misc
+    # Application
 
     def application_info(self) -> Response[appinfo.AppInfo]:
         return self.request(Route('GET', '/oauth2/applications/@me'))
@@ -2523,6 +2535,59 @@ class HTTPClient:
 
         payload = {k: v for k, v in payload.items() if k in valid_keys}
         return self.request(Route('PATCH', '/applications/@me'), json=payload, reason=reason)
+
+    def get_application_emojis(self, application_id: Snowflake) -> Response[appinfo.ListAppEmojis]:
+        return self.request(Route('GET', '/applications/{application_id}/emojis', application_id=application_id))
+
+    def get_application_emoji(self, application_id: Snowflake, emoji_id: Snowflake) -> Response[emoji.Emoji]:
+        return self.request(
+            Route(
+                'GET', '/applications/{application_id}/emojis/{emoji_id}', application_id=application_id, emoji_id=emoji_id
+            )
+        )
+
+    def create_application_emoji(
+        self,
+        application_id: Snowflake,
+        name: str,
+        image: str,
+    ) -> Response[emoji.Emoji]:
+        payload = {
+            'name': name,
+            'image': image,
+        }
+
+        return self.request(
+            Route('POST', '/applications/{application_id}/emojis', application_id=application_id), json=payload
+        )
+
+    def edit_application_emoji(
+        self,
+        application_id: Snowflake,
+        emoji_id: Snowflake,
+        *,
+        payload: Dict[str, Any],
+    ) -> Response[emoji.Emoji]:
+        r = Route(
+            'PATCH', '/applications/{application_id}/emojis/{emoji_id}', application_id=application_id, emoji_id=emoji_id
+        )
+        return self.request(r, json=payload)
+
+    def delete_application_emoji(
+        self,
+        application_id: Snowflake,
+        emoji_id: Snowflake,
+    ) -> Response[None]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/applications/{application_id}/emojis/{emoji_id}',
+                application_id=application_id,
+                emoji_id=emoji_id,
+            )
+        )
+
+    # Poll
 
     def get_poll_answer_voters(
         self,
@@ -2560,6 +2625,8 @@ class HTTPClient:
                 message_id=message_id,
             )
         )
+
+    # Misc
 
     async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
         try:

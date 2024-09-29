@@ -384,12 +384,9 @@ class Poll:
         question_data = data.get('question')
         question = question_data.get('text')
         expiry = utils.parse_time(data['expiry'])  # If obtained via API, then expiry is set.
-        duration = expiry - message.created_at
+        # expiry - message.created_at may be a few nanos away from the actual duration
+        duration = datetime.timedelta(hours=round((expiry - message.created_at).total_seconds() / 3600))
         # self.created_at = message.created_at
-        # duration = self.created_at - expiry
-
-        if (duration.total_seconds() / 3600) > 168:  # As the duration may exceed little milliseconds then we fix it
-            duration = datetime.timedelta(days=7)
 
         self = cls(
             duration=duration,

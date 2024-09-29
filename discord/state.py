@@ -510,12 +510,6 @@ class ConnectionState(Generic[ClientT]):
     def _get_message(self, msg_id: Optional[int]) -> Optional[Message]:
         return utils.find(lambda m: m.id == msg_id, reversed(self._messages)) if self._messages else None
 
-    def _get_poll(self, msg_id: Optional[int]) -> Optional[Poll]:
-        message = self._get_message(msg_id)
-        if not message:
-            return
-        return message.poll
-
     def _add_guild_from_data(self, data: GuildPayload) -> Guild:
         guild = Guild(data=data, state=self)
         self._add_guild(guild)
