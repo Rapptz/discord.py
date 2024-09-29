@@ -480,6 +480,10 @@ class MessageSnapshot:
         The forwarded message's time of creation.
     flags: :class:`MessageFlags`
         Extra features of the the message snapshot.
+    stickers: List[:class:`StickerItem`]
+        A list of sticker items given to the message.
+    components: List[Union[:class:`ActionRow`, :class:`Button`, :class:`SelectMenu`]]
+        A list of components in the message.
     """
 
     __slots__ = (
