@@ -1973,6 +1973,8 @@ class Message(PartialMessage, Hashable):
         .. versionadded:: 2.4
     message_snapshots: Optional[List[:class:`MessageSnapshot`]]
         The message snapshots attached to this message.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
