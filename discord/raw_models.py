@@ -154,6 +154,8 @@ class RawMessageUpdateEvent(_RawReprMixin):
         The message ID that got updated.
     channel_id: :class:`int`
         The channel ID where the update took place.
+    author_id: :class:`int`
+        The ID of the user who initiated this action.
 
         .. versionadded:: 1.3
     guild_id: Optional[:class:`int`]
@@ -173,6 +175,7 @@ class RawMessageUpdateEvent(_RawReprMixin):
     def __init__(self, data: MessageUpdateEvent) -> None:
         self.message_id: int = int(data['id'])
         self.channel_id: int = int(data['channel_id'])
+        self.author_id: int = int(data['author']['id'])
         self.data: MessageUpdateEvent = data
         self.cached_message: Optional[Message] = None
 
