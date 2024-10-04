@@ -84,4 +84,10 @@ version_info: VersionInfo = VersionInfo(major=2, minor=5, micro=0, releaselevel=
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
+# This is a backwards compatibility hack and should be removed in v3
+# Essentially forcing the exception to have different base classes
+# In the future, this should only inherit from ClientException
+if len(MissingApplicationID.__bases__) == 1:
+    MissingApplicationID.__bases__ = (app_commands.AppCommandError, ClientException)
+
 del logging, NamedTuple, Literal, VersionInfo

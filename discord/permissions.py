@@ -187,7 +187,7 @@ class Permissions(BaseFlags):
         permissions set to ``True``.
         """
         # Some of these are 0 because we don't want to set unnecessary bits
-        return cls(0b0000_0000_0000_0010_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
+        return cls(0b0000_0000_0000_0110_0111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
 
     @classmethod
     def _timeout_mask(cls) -> int:

@@ -38,7 +38,7 @@ import aiohttp
 from .. import utils
 from ..errors import HTTPException, Forbidden, NotFound, DiscordServerError
 from ..message import Message
-from ..enums import try_enum, WebhookType, ChannelType
+from ..enums import try_enum, WebhookType, ChannelType, DefaultAvatar
 from ..user import BaseUser, User
 from ..flags import MessageFlags
 from ..asset import Asset
@@ -363,7 +363,7 @@ class AsyncWebhookAdapter:
         multipart: Optional[List[Dict[str, Any]]] = None,
         files: Optional[Sequence[File]] = None,
         thread_id: Optional[int] = None,
-    ) -> Response[Message]:
+    ) -> Response[MessagePayload]:
         route = Route(
             'PATCH',
             '/webhooks/{webhook_id}/{webhook_token}/messages/{message_id}',
@@ -736,11 +736,6 @@ class _WebhookState:
             return self._parent._get_guild(guild_id)
         return None
 
-    def _get_poll(self, msg_id: Optional[int]) -> Optional[Poll]:
-        if self._parent is not None:
-            return self._parent._get_poll(msg_id)
-        return None
-
     def store_user(self, data: Union[UserPayload, PartialUserPayload], *, cache: bool = True) -> BaseUser:
         if self._parent is not None:
             return self._parent.store_user(data, cache=cache)
@@ -1064,12 +1059,11 @@ class BaseWebhook(Hashable):
     @property
     def default_avatar(self) -> Asset:
         """
-        :class:`Asset`: Returns the default avatar. This is always the blurple avatar.
+        :class:`Asset`: Returns the default avatar.
 
         .. versionadded:: 2.0
         """
-        # Default is always blurple apparently
-        return Asset._from_default_avatar(self._state, 0)
+        return Asset._from_default_avatar(self._state, (self.id >> 22) % len(DefaultAvatar))
 
     @property
     def display_avatar(self) -> Asset:
