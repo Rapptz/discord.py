@@ -27,7 +27,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional, Generic, TYPE_CHECKING, Sequence, Tuple, Union, List
+from typing import Any, Dict, Literal, Optional, Generic, TYPE_CHECKING, Sequence, Tuple, Union, List, overload
 import asyncio
 import datetime
 
@@ -659,6 +659,29 @@ class InteractionCallback(Generic[ClientT]):
     """Represents a Discord response to an interaction.
 
     .. versionadded:: 2.5
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The interaction ID this callback responds to.
+    interaction_type: :class:`InteractionType`
+        The interaction type.
+    callback_type: Optional[:class:`InteractionResponseType`]
+        The interaction response type.
+    activity_instance_id: Optional[:class:`str`]
+        The activity instance ID this interaction was invoked from.
+    activity_instance: Optional[:class:`InteractionCallbackActivity`]
+        The resolved activity instance this interaction was invoked from.
+    response_message_id: Optional[:class:`int`]
+        The message ID of the interaction response.
+    response_message_loading: :class:`bool`
+        Whether the response message showed the application was thinking.
+    response_message_ephemeral: :class:`bool`
+        Whether the response message was ephemeral.
+    response_message: :class:`InteractionMessage`
+        The resolved response message.
+    response_channel: Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]
+        The channel this interaction was invoked from.
     """
 
     __slots__ = (
@@ -763,13 +786,33 @@ class InteractionResponse(Generic[ClientT]):
         """:class:`InteractionResponseType`: The type of response that was sent, ``None`` if response is not done."""
         return self._response_type
 
+    @overload
+    async def defer(
+        self,
+        *,
+        ephemeral: bool = ...,
+        thinking: bool = ...,
+        with_response: Literal[True] = True,
+    ) -> InteractionCallback[ClientT]:
+        ...
+
+    @overload
+    async def defer(
+        self,
+        *,
+        ephemeral: bool = ...,
+        thinking: bool = ...,
+        with_response: Literal[False] = ...,
+    ) -> None:
+        ...
+
     async def defer(
         self,
         *,
         ephemeral: bool = False,
         thinking: bool = False,
         with_response: bool = True,
-    ) -> Optional[InteractionCallback]:
+    ) -> Optional[InteractionCallback[ClientT]]:
         """|coro|
 
         Defers the interaction response.
@@ -883,6 +926,48 @@ class InteractionResponse(Generic[ClientT]):
             )
             self._response_type = InteractionResponseType.pong
 
+    @overload
+    async def send_message(
+        self,
+        content: Optional[Any] = ...,
+        *,
+        embed: Embed = ...,
+        embeds: Sequence[Embed] = ...,
+        file: File = ...,
+        files: Sequence[File] = ...,
+        view: View = ...,
+        tts: bool = ...,
+        ephemeral: bool = ...,
+        allowed_mentions: AllowedMentions = ...,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+        delete_after: Optional[float] = ...,
+        poll: Poll = ...,
+        with_response: Literal[True] = True,
+    ) -> InteractionCallback[ClientT]:
+        ...
+
+    @overload
+    async def send_message(
+        self,
+        content: Optional[Any] = ...,
+        *,
+        embed: Embed = ...,
+        embeds: Sequence[Embed] = ...,
+        file: File = ...,
+        files: Sequence[File] = ...,
+        view: View = ...,
+        tts: bool = ...,
+        ephemeral: bool = ...,
+        allowed_mentions: AllowedMentions = ...,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+        delete_after: Optional[float] = ...,
+        poll: Poll = ...,
+        with_response: Literal[False] = ...,
+    ) -> None:
+        ...
+
     async def send_message(
         self,
         content: Optional[Any] = None,
@@ -900,7 +985,7 @@ class InteractionResponse(Generic[ClientT]):
         delete_after: Optional[float] = None,
         poll: Poll = MISSING,
         with_response: bool = True,
-    ) -> Optional[InteractionCallback]:
+    ) -> Optional[InteractionCallback[ClientT]]:
         """|coro|
 
         Responds to this interaction by sending a message.
@@ -1035,6 +1120,38 @@ class InteractionResponse(Generic[ClientT]):
                 data=response,
             )
 
+    @overload
+    async def edit_message(
+        self,
+        *,
+        content: Optional[Any] = ...,
+        embed: Optional[Embed] = ...,
+        embeds: Sequence[Embed] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
+        view: Optional[View] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+        delete_after: Optional[float] = ...,
+        suppress_embeds: bool = ...,
+        with_response: Literal[True] = True,
+    ) -> InteractionCallback[ClientT]:
+        ...
+
+    @overload
+    async def edit_message(
+        self,
+        *,
+        content: Optional[Any] = ...,
+        embed: Optional[Embed] = ...,
+        embeds: Sequence[Embed] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
+        view: Optional[View] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+        delete_after: Optional[float] = ...,
+        suppress_embeds: bool = ...,
+        with_response: Literal[False] = ...,
+    ) -> None:
+        ...
+
     async def edit_message(
         self,
         *,
@@ -1047,7 +1164,7 @@ class InteractionResponse(Generic[ClientT]):
         delete_after: Optional[float] = None,
         suppress_embeds: bool = MISSING,
         with_response: bool = True,
-    ) -> Optional[InteractionCallback]:
+    ) -> Optional[InteractionCallback[ClientT]]:
         """|coro|
 
         Responds to this interaction by editing the original message of
@@ -1182,7 +1299,15 @@ class InteractionResponse(Generic[ClientT]):
                 data=response,
             )
 
-    async def send_modal(self, modal: Modal, /, *, with_response: bool = True) -> Optional[InteractionCallback]:
+    @overload
+    async def send_modal(self, modal: Modal, /, *, with_response: Literal[True] = True) -> InteractionCallback[ClientT]:
+        ...
+
+    @overload
+    async def send_modal(self, modal: Modal, /, *, with_response: Literal[False] = ...) -> None:
+        ...
+
+    async def send_modal(self, modal: Modal, /, *, with_response: bool = True) -> Optional[InteractionCallback[ClientT]]:
         """|coro|
 
         Responds to this interaction by sending a modal.
