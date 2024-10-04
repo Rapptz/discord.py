@@ -688,6 +688,9 @@ class InteractionCallback(Generic[ClientT]):
         self.response_channel: InteractionChannel = channel
         self._update(data)
 
+    def __repr__(self) -> str:
+        return f'<InteractionCallback id={self.id} interaction_type={self.interaction_type!r} callback_type={self.callback_type!r}>'
+
     def _update(self, data: InteractionCallbackResponsePayload) -> None:
         interaction = data['interaction']
         self.id: int = int(interaction['id'])
