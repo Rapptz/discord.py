@@ -42,6 +42,7 @@ if TYPE_CHECKING:
 
 
 InteractionType = Literal[1, 2, 3, 4, 5]
+InteractionResponseType = Literal[1, 4, 5, 6, 7, 8, 9, 10,]
 InteractionContextType = Literal[0, 1, 2]
 InteractionInstallationType = Literal[0, 1]
 
@@ -263,3 +264,27 @@ class MessageInteractionMetadata(TypedDict):
     original_response_message_id: NotRequired[Snowflake]
     interacted_message_id: NotRequired[Snowflake]
     triggering_interaction_metadata: NotRequired[MessageInteractionMetadata]
+
+
+class InteractionCallback(TypedDict):
+    id: Snowflake
+    type: InteractionType
+    activity_instance_id: NotRequired[str]
+    response_message_id: NotRequired[Snowflake]
+    response_message_loading: NotRequired[bool]
+    response_message_ephemeral: NotRequired[bool]
+
+
+class InteractionCallbackActivity(TypedDict):
+    id: str
+
+
+class InteractionCallbackResource(TypedDict):
+    type: InteractionResponseType
+    activity_instance: NotRequired[InteractionCallbackActivity]
+    message: NotRequired[Message]
+
+
+class InteractionCallbackResponse(TypedDict):
+    interaction: InteractionCallback
+    resource: NotRequired[InteractionCallbackResource]
