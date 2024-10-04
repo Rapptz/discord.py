@@ -694,9 +694,13 @@ class InteractionCallback(Generic[ClientT]):
         self.interaction_type: InteractionType = try_enum(InteractionType, interaction['type'])
         self.activity_instance_id: Optional[str] = interaction.get('activity_instance_id')
         response_id = interaction.get('response_message_id')
-        self.response_message_id: Optional[int] = int(
-            response_id,
-        ) if response_id is not None else None
+        self.response_message_id: Optional[int] = (
+            int(
+                response_id,
+            )
+            if response_id is not None
+            else None
+        )
         self.response_message_loading: Optional[bool] = interaction.get('response_message_loading')
         self.response_message_ephemeral: Optional[bool] = interaction.get('response_message_ephemeral')
 
