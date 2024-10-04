@@ -54,6 +54,8 @@ __all__ = (
     'Interaction',
     'InteractionMessage',
     'InteractionResponse',
+    'InteractionCallback',
+    'InteractionCallbackActivity',
 )
 
 if TYPE_CHECKING:
