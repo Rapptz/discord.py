@@ -683,8 +683,8 @@ class InteractionCallback(Generic[ClientT]):
 
         .. note::
 
-            The has a value only when the interaction response is of type
-            :attr:`InteractionResponseType.channel_message` or :attr:`InteractionResponseType.message_update`.
+            This is ``None`` if the interaction response type is not :attr:`InteractionResponseType.channel_message`
+            or :attr:`InteractionResponseType.message_update`.
     response_channel: Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]
         The channel this interaction was invoked from.
     """
