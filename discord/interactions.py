@@ -674,12 +674,17 @@ class InteractionCallback(Generic[ClientT]):
         The resolved activity instance this interaction was invoked from.
     response_message_id: Optional[:class:`int`]
         The message ID of the interaction response.
-    response_message_loading: :class:`bool`
+    response_message_loading: Optional[:class:`bool`]
         Whether the response message showed the application was thinking.
-    response_message_ephemeral: :class:`bool`
+    response_message_ephemeral: Optional[:class:`bool`]
         Whether the response message was ephemeral.
-    response_message: :class:`InteractionMessage`
+    response_message: Optional[:class:`InteractionMessage`]
         The resolved response message.
+
+        .. note::
+
+            The has a value only when the interaction response is of type
+            :attr:`InteractionResponseType.channel_message` or :attr:`InteractionResponseType.message_update`.
     response_channel: Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]
         The channel this interaction was invoked from.
     """
@@ -720,13 +725,7 @@ class InteractionCallback(Generic[ClientT]):
         self.interaction_type: InteractionType = try_enum(InteractionType, interaction['type'])
         self.activity_instance_id: Optional[str] = interaction.get('activity_instance_id')
         response_id = interaction.get('response_message_id')
-        self.response_message_id: Optional[int] = (
-            int(
-                response_id,
-            )
-            if response_id is not None
-            else None
-        )
+        self.response_message_id: Optional[int] = int(response_id) if response_id is not None else None
         self.response_message_loading: Optional[bool] = interaction.get('response_message_loading')
         self.response_message_ephemeral: Optional[bool] = interaction.get('response_message_ephemeral')
 
@@ -792,7 +791,7 @@ class InteractionResponse(Generic[ClientT]):
         *,
         ephemeral: bool = ...,
         thinking: bool = ...,
-        with_response: Literal[True] = True,
+        with_response: Literal[True] = ...,
     ) -> InteractionCallback[ClientT]:
         ...
 
@@ -802,7 +801,7 @@ class InteractionResponse(Generic[ClientT]):
         *,
         ephemeral: bool = ...,
         thinking: bool = ...,
-        with_response: Literal[False] = ...,
+        with_response: Literal[False] = False,
     ) -> None:
         ...
 
@@ -943,7 +942,7 @@ class InteractionResponse(Generic[ClientT]):
         silent: bool = ...,
         delete_after: Optional[float] = ...,
         poll: Poll = ...,
-        with_response: Literal[True] = True,
+        with_response: Literal[True] = ...,
     ) -> InteractionCallback[ClientT]:
         ...
 
@@ -964,7 +963,7 @@ class InteractionResponse(Generic[ClientT]):
         silent: bool = ...,
         delete_after: Optional[float] = ...,
         poll: Poll = ...,
-        with_response: Literal[False] = ...,
+        with_response: Literal[False] = False,
     ) -> None:
         ...
 
@@ -1132,7 +1131,7 @@ class InteractionResponse(Generic[ClientT]):
         allowed_mentions: Optional[AllowedMentions] = ...,
         delete_after: Optional[float] = ...,
         suppress_embeds: bool = ...,
-        with_response: Literal[True] = True,
+        with_response: Literal[True] = ...,
     ) -> InteractionCallback[ClientT]:
         ...
 
@@ -1148,7 +1147,7 @@ class InteractionResponse(Generic[ClientT]):
         allowed_mentions: Optional[AllowedMentions] = ...,
         delete_after: Optional[float] = ...,
         suppress_embeds: bool = ...,
-        with_response: Literal[False] = ...,
+        with_response: Literal[False] = False,
     ) -> None:
         ...
 
@@ -1300,11 +1299,11 @@ class InteractionResponse(Generic[ClientT]):
             )
 
     @overload
-    async def send_modal(self, modal: Modal, /, *, with_response: Literal[True] = True) -> InteractionCallback[ClientT]:
+    async def send_modal(self, modal: Modal, /, *, with_response: Literal[True] = ...) -> InteractionCallback[ClientT]:
         ...
 
     @overload
-    async def send_modal(self, modal: Modal, /, *, with_response: Literal[False] = ...) -> None:
+    async def send_modal(self, modal: Modal, /, *, with_response: Literal[False] = False) -> None:
         ...
 
     async def send_modal(self, modal: Modal, /, *, with_response: bool = True) -> Optional[InteractionCallback[ClientT]]:
