@@ -4308,6 +4308,8 @@ class Guild(Hashable):
         -------
         Forbidden
             You do not have permission to view the automod rule.
+        NotFound
+            The automod rule does not exist within this guild.
 
         Returns
         --------
