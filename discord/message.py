@@ -1104,6 +1104,8 @@ class PartialMessage(Hashable):
             edited a message's content or embed that isn't yours.
         TypeError
             You specified both ``embed`` and ``embeds``
+        NotFound
+            This message does not exist.
 
         Returns
         --------
