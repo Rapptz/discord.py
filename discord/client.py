@@ -251,7 +251,7 @@ class Client:
 
         .. versionadded:: 2.0
     connector: Optional[:class:`aiohttp.BaseConnector`]
-        The aiohhtp connector to use for this client. This can be used to control underlying aiohttp
+        The aiohttp connector to use for this client. This can be used to control underlying aiohttp
         behavior, such as setting a dns resolver or sslcontext.
 
         .. versionadded:: 2.5
