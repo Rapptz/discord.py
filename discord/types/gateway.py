@@ -46,6 +46,7 @@ from .threads import Thread, ThreadMember
 from .scheduled_event import GuildScheduledEvent
 from .audit_log import AuditLogEntry
 from .soundboard import SoundboardSound
+from .subscription import Subscription
 
 
 class SessionStartLimit(TypedDict):
@@ -372,3 +373,6 @@ class PollVoteActionEvent(TypedDict):
     message_id: Snowflake
     guild_id: NotRequired[Snowflake]
     answer_id: int
+
+
+SubscriptionCreateEvent = SubscriptionUpdateEvent = SubscriptionDeleteEvent = Subscription

@@ -71,6 +71,7 @@ from .threads import *
 from .automod import *
 from .poll import *
 from .soundboard import *
+from .subscription import *
 
 
 class VersionInfo(NamedTuple):

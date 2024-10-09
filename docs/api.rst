@@ -1356,6 +1356,37 @@ Stages
     :param after: The stage instance after the update.
     :type after: :class:`StageInstance`
 
+
+Subscriptions
+~~~~~~~~~~~~~
+
+.. function:: on_subscription_create(subscription)
+
+    Called when a subscription is created.
+
+    .. versionadded:: 2.5
+
+    :param subscription: The subscription that was created.
+    :type subscription: :class:`Subscription`
+
+.. function:: on_subscription_update(subscription)
+
+    Called when a subscription is updated.
+
+    .. versionadded:: 2.5
+
+    :param subscription: The subscription that was updated.
+    :type subscription: :class:`Subscription`
+
+.. function:: on_subscription_delete(subscription)
+
+    Called when a subscription is deleted.
+    
+    .. versionadded:: 2.5
+
+    :param subscription: The subscription that was deleted.
+    :type subscription: :class:`Subscription`
+
 Threads
 ~~~~~~~~
 
@@ -3754,6 +3785,25 @@ of :class:`enum.Enum`.
         The standard animation.
 
 
+.. class:: SubscriptionStatus
+
+    Represents the status of an subscription.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: active
+
+        The subscription is active.
+
+    .. attribute:: ending
+
+        The subscription is active but will not renew.
+
+    .. attribute:: inactive
+
+        The subscription is inactive and not being charged.
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -5149,6 +5199,14 @@ Entitlement
 .. attributetable:: Entitlement
 
 .. autoclass:: Entitlement()
+    :members:
+
+Subscription
+~~~~~~~~~~~~
+
+.. attributetable:: Subscription
+
+.. autoclass:: Subscription()
     :members:
 
 RawMessageDeleteEvent

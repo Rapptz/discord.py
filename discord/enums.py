@@ -75,6 +75,7 @@ __all__ = (
     'EntitlementOwnerType',
     'PollLayoutType',
     'VoiceChannelEffectAnimationType',
+    'SubscriptionStatus',
 )
 
 
@@ -845,6 +846,12 @@ class ReactionType(Enum):
 class VoiceChannelEffectAnimationType(Enum):
     premium = 0
     basic = 1
+
+
+class SubscriptionStatus(Enum):
+    active = 0
+    ending = 1
+    inactive = 2
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

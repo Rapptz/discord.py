@@ -119,6 +119,7 @@ if TYPE_CHECKING:
     from .voice_client import VoiceProtocol
     from .audit_logs import AuditLogEntry
     from .poll import PollAnswer
+    from .subscription import Subscription
 
 
 # fmt: off
@@ -1373,6 +1374,18 @@ class Client:
     ) -> Union[str, bytes]:
         ...
 
+    # Entitlements
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['entitlement_create', 'entitlement_update', 'entitlement_delete'],
+        /,
+        *,
+        check: Optional[Callable[[Entitlement], bool]],
+        timeout: Optional[float] = None,
+    ) -> Entitlement:
+        ...
+
     # Guilds
 
     @overload
@@ -1779,6 +1792,18 @@ class Client:
         check: Optional[Callable[[StageInstance, StageInstance], bool]],
         timeout: Optional[float] = None,
     ) -> Coroutine[Any, Any, Tuple[StageInstance, StageInstance]]:
+        ...
+
+    # Subscriptions
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['subscription_create', 'subscription_update', 'subscription_delete'],
+        /,
+        *,
+        check: Optional[Callable[[Subscription], bool]],
+        timeout: Optional[float] = None,
+    ) -> Subscription:
         ...
 
     # Threads
