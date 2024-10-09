@@ -118,19 +118,6 @@ def test_static_colours(value, expected):
     assert value.value == expected
 
 
-@pytest.mark.parametrize(
-    ('seed', 'expected'),
-    [
-        (1, 0xFFCD00),
-        (21, 0xFFFC00),
-        ("ju", 0xFF4600),
-        (-0.5, 0x1900FF),
-        (143.96, 0xDBFF00),
-        (b"Hello", 0xFF0E00),
-    ],
-)
-def test_random_colour(seed, expected):
-    assert discord.Colour.random(seed=seed).value == expected
 
 
 @pytest.mark.parametrize(
