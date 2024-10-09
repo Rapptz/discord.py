@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import array
@@ -40,7 +41,6 @@ from typing import (
     Iterator,
     List,
     Literal,
-    Mapping,
     NamedTuple,
     Optional,
     Protocol,
@@ -75,6 +75,8 @@ import types
 import typing
 import warnings
 import aiohttp
+import logging
+import zlib
 
 import yarl
 
@@ -85,8 +87,15 @@ except ModuleNotFoundError:
 else:
     HAS_ORJSON = True
 
-from .enums import Locale, try_enum
 
+try:
+    import zstandard  # type: ignore
+except ImportError:
+    HAS_ZSTD = False
+else:
+    HAS_ZSTD = True
+
+from .enums import Locale, try_enum
 
 __all__ = (
     'oauth_url',
@@ -161,8 +170,11 @@ if TYPE_CHECKING:
     from .commands import ApplicationCommand
     from .entitlements import Gift
 
-    class _RequestLike(Protocol):
-        headers: Mapping[str, Any]
+    class _DecompressionContext(Protocol):
+        COMPRESSION_TYPE: str
+
+        def decompress(self, data: bytes, /) -> str | None:
+            ...
 
     P = ParamSpec('P')
 
@@ -1735,3 +1747,45 @@ else:
                 return unsigned_val
             else:
                 return -((unsigned_val ^ 0xFFFFFFFF) + 1)
+
+
+if HAS_ZSTD:
+
+    class _ZstdDecompressionContext:
+        __slots__ = ('context',)
+
+        COMPRESSION_TYPE: str = 'zstd-stream'
+
+        def __init__(self) -> None:
+            decompressor = zstandard.ZstdDecompressor()
+            self.context = decompressor.decompressobj()
+
+        def decompress(self, data: bytes, /) -> str | None:
+            # Each WS message is a complete gateway message
+            return self.context.decompress(data).decode('utf-8')
+
+    _ActiveDecompressionContext: Type[_DecompressionContext] = _ZstdDecompressionContext
+else:
+
+    class _ZlibDecompressionContext:
+        __slots__ = ('context', 'buffer')
+
+        COMPRESSION_TYPE: str = 'zlib-stream'
+
+        def __init__(self) -> None:
+            self.buffer: bytearray = bytearray()
+            self.context = zlib.decompressobj()
+
+        def decompress(self, data: bytes, /) -> str | None:
+            self.buffer.extend(data)
+
+            # Check whether ending is Z_SYNC_FLUSH
+            if len(data) < 4 or data[-4:] != b'\x00\x00\xff\xff':
+                return
+
+            msg = self.context.decompress(self.buffer)
+            self.buffer = bytearray()
+
+            return msg.decode('utf-8')
+
+    _ActiveDecompressionContext: Type[_DecompressionContext] = _ZlibDecompressionContext

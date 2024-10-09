@@ -56,6 +56,7 @@ extras_require = {
         'Brotli',
         'cchardet==2.1.7; python_version < "3.10"',
         'mmh3>=2.5',
+        'zstandard>=0.23.0',
     ],
     'test': [
         'coverage[toml]',
