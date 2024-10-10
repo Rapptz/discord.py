@@ -2479,54 +2479,7 @@ class Message(PartialMessage, Hashable):
             missed = self._state.user not in self.call.participants  # type: ignore # call can't be None here
 
             if call_ended:
-                seconds = self.call.duration.total_seconds()  # type: ignore # call can't be None here
-
-                minutes_s = 60
-                hours_s = minutes_s * 60
-                days_s = hours_s * 24
-                # Discord uses approx. 1/12 of 365.25 days (avg. days per year)
-                months_s = days_s * 30.4375
-                years_s = months_s * 12
-
-                threshold_s = 45
-                threshold_m = 45
-                threshold_h = 21.5
-                threshold_d = 25.5
-                threshold_M = 10.5
-
-                if seconds < threshold_s:
-                    duration = "a few seconds"
-                elif seconds < (threshold_m * minutes_s):
-                    minutes = round(seconds / minutes_s)
-                    if minutes == 1:
-                        duration = "a minute"
-                    else:
-                        duration = f"{minutes} minutes"
-                elif seconds < (threshold_h * hours_s):
-                    hours = round(seconds / hours_s)
-                    if hours == 1:
-                        duration = "an hour"
-                    else:
-                        duration = f"{hours} hours"
-                elif seconds < (threshold_d * days_s):
-                    days = round(seconds / days_s)
-                    if days == 1:
-                        duration = "a day"
-                    else:
-                        duration = f"{days} days"
-                elif seconds < (threshold_M * months_s):
-                    months = round(seconds / months_s)
-                    if months == 1:
-                        duration = "a month"
-                    else:
-                        duration = f"{months} months"
-                else:
-                    years = round(seconds / years_s)
-                    if years == 1:
-                        duration = "a year"
-                    else:
-                        duration = f"{years} years"
-
+                duration = utils._format_call_duration(self.call.duration)  # type: ignore # call can't be None here
                 if missed:
                     return 'You missed a call from {0.author.name} that lasted {1}.'.format(self, duration)
                 else:
