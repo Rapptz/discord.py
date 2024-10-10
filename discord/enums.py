@@ -314,6 +314,7 @@ class MessageType(Enum):
     guild_incident_alert_mode_disabled = 37
     guild_incident_report_raid = 38
     guild_incident_report_false_alarm = 39
+    purchase_notification = 44
 
 
 class SpeakingState(Enum):
@@ -1683,6 +1684,10 @@ class NetworkConnectionSpeed(Enum):
 class PollLayoutType(Enum):
     default = 1
     image_only_answers = 2
+
+
+class PurchaseNotificationType(Enum):
+    guild_product = 0
 
 
 class ReactionType(Enum):

@@ -2017,6 +2017,12 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.4
 
+    .. attribute:: purchase_notification
+
+        The system message sent when a purchase is made in the guild.
+
+        .. versionadded:: 2.5
+
 .. class:: UserFlags
 
     Represents Discord User flags.
@@ -6052,7 +6058,7 @@ of :class:`enum.Enum`.
 
     Represents how a poll answers are shown
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.1
 
     .. attribute:: default
 
@@ -6062,7 +6068,7 @@ of :class:`enum.Enum`.
 
     Represents the type of a reaction.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.1
 
     .. attribute:: normal
 
@@ -6071,6 +6077,16 @@ of :class:`enum.Enum`.
     .. attribute:: burst
 
         A burst reaction, also known as a "super reaction".
+
+.. class:: PurchaseNotificationType
+
+    Represents the type of a purchase notification.
+
+    .. versionadded:: 2.1
+
+    .. attribute:: guild_product
+
+        A guild product was purchased.
 
 
 .. _discord-api-audit-logs:
@@ -7844,6 +7860,16 @@ Message
 .. attributetable:: RoleSubscriptionInfo
 
 .. autoclass:: RoleSubscriptionInfo()
+    :members:
+
+.. attributetable:: PurchaseNotification
+
+.. autoclass:: PurchaseNotification()
+    :members:
+
+.. attributetable:: GuildProductPurchase
+
+.. autoclass:: GuildProductPurchase()
     :members:
 
 Reaction
