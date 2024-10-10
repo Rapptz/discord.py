@@ -3804,6 +3804,24 @@ of :class:`enum.Enum`.
         The subscription is inactive and not being charged.
 
 
+.. class:: MessageReferenceType
+
+    Represents the type of a message reference.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: reply
+
+        A message reply.
+
+    .. attribute:: forward
+
+        A forwarded message.
+
+    .. attribute:: default
+
+        An alias for :attr:`.reply`.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -5346,6 +5364,14 @@ PollAnswer
     :members:
 
 .. _discord_api_data:
+
+MessageSnapshot
+~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MessageSnapshot
+
+.. autoclass:: MessageSnapshot
+    :members:
 
 Data Classes
 --------------
