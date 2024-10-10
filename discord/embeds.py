@@ -199,7 +199,7 @@ class Embed:
         """Converts a :class:`dict` to a :class:`Embed` provided it is in the
         format that Discord expects it to be in.
 
-        You can find out about this format in the :ddocs:`official Discord documentation <resources/channel#embed-object>`.
+        You can find out about this format in the :ddocs:`official Discord documentation <resources/message#embed-object>`.
 
         Parameters
         -----------
@@ -413,8 +413,9 @@ class Embed:
 
         Parameters
         -----------
-        url: :class:`str`
+        url: Optional[:class:`str`]
             The source URL for the image. Only HTTP(S) is supported.
+            If ``None`` is passed, any existing image is removed.
             Inline attachment URLs are also supported, see :ref:`local_image`.
         """
 
@@ -452,13 +453,11 @@ class Embed:
         This function returns the class instance to allow for fluent-style
         chaining.
 
-        .. versionchanged:: 1.4
-            Passing ``None`` removes the thumbnail.
-
         Parameters
         -----------
-        url: :class:`str`
+        url: Optional[:class:`str`]
             The source URL for the thumbnail. Only HTTP(S) is supported.
+            If ``None`` is passed, any existing thumbnail is removed.
             Inline attachment URLs are also supported, see :ref:`local_image`.
         """
 
