@@ -2045,7 +2045,7 @@ class Message(PartialMessage, Hashable):
         else:
             self.purchase_notification = PurchaseNotification(purchase_notification)
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components', 'call'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
