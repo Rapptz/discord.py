@@ -778,6 +778,19 @@ This tells the parser that the ``members`` attribute is mapped to a flag named `
 the default value is an empty list. For greater customisability, the default can either be a value or a callable
 that takes the :class:`~ext.commands.Context` as a sole parameter. This callable can either be a function or a coroutine.
 
+A positional flag can be defined by setting the :attr:`~ext.commands.Flag.positional` attribute to ``True``. This
+tells the parser that the content provided before the parsing occurs is part of the flag. This is useful for commands that
+require a parameter to be used first and the flags are optional, such as the following:
+
+.. code-block:: python3
+
+    class BanFlags(commands.FlagConverter):
+        members: List[discord.Member] = commands.flag(name='member', positional=True, default=lambda ctx: [])
+        reason: Optional[str] = None
+
+.. note::
+    Only one positional flag is allowed in a flag converter.
+
 In order to customise the flag syntax we also have a few options that can be passed to the class parameter list:
 
 .. code-block:: python3
@@ -796,12 +809,17 @@ In order to customise the flag syntax we also have a few options that can be pas
         topic: Optional[str]
         nsfw: Optional[bool]
         slowmode: Optional[int]
+    
+    # Hello there --bold True
+    class Greeting(commands.FlagConverter):
+        text: str = commands.flag(positional=True)
+        bold: bool = False
 
 .. note::
 
     Despite the similarities in these examples to command like arguments, the syntax and parser is not
     a command line parser. The syntax is mainly inspired by Discord's search bar input and as a result
-    all flags need a corresponding value.
+    all flags need a corresponding value unless part of a positional flag.
 
 Flag converters will only raise :exc:`~ext.commands.FlagError` derived exceptions. If an error is raised while
 converting a flag, :exc:`~ext.commands.BadFlagArgument` is raised instead and the original exception

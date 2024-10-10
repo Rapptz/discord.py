@@ -247,6 +247,26 @@ class Asset(AssetMixin):
         )
 
     @classmethod
+    def _from_guild_banner(cls, state: _State, guild_id: int, member_id: int, banner: str) -> Self:
+        animated = banner.startswith('a_')
+        format = 'gif' if animated else 'png'
+        return cls(
+            state,
+            url=f"{cls.BASE}/guilds/{guild_id}/users/{member_id}/banners/{banner}.{format}?size=1024",
+            key=banner,
+            animated=animated,
+        )
+
+    @classmethod
+    def _from_avatar_decoration(cls, state: _State, avatar_decoration: str) -> Self:
+        return cls(
+            state,
+            url=f'{cls.BASE}/avatar-decoration-presets/{avatar_decoration}.png?size=96',
+            key=avatar_decoration,
+            animated=True,
+        )
+
+    @classmethod
     def _from_icon(cls, state: _State, object_id: int, icon_hash: str, path: str) -> Self:
         return cls(
             state,
@@ -420,7 +440,7 @@ class Asset(AssetMixin):
             url = url.with_query(url.raw_query_string)
 
         url = str(url)
-        return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
+        return self.__class__(state=self._state, url=url, key=self._key, animated=self._animated)
 
     def with_size(self, size: int, /) -> Self:
         """Returns a new asset with the specified size.
@@ -448,7 +468,7 @@ class Asset(AssetMixin):
             raise ValueError('size must be a power of 2 between 16 and 4096')
 
         url = str(yarl.URL(self._url).with_query(size=size))
-        return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
+        return self.__class__(state=self._state, url=url, key=self._key, animated=self._animated)
 
     def with_format(self, format: ValidAssetFormatTypes, /) -> Self:
         """Returns a new asset with the specified format.
@@ -483,7 +503,7 @@ class Asset(AssetMixin):
         url = yarl.URL(self._url)
         path, _ = os.path.splitext(url.path)
         url = str(url.with_path(f'{path}.{format}').with_query(url.raw_query_string))
-        return Asset(state=self._state, url=url, key=self._key, animated=self._animated)
+        return self.__class__(state=self._state, url=url, key=self._key, animated=self._animated)
 
     def with_static_format(self, format: ValidStaticFormatTypes, /) -> Self:
         """Returns a new asset with the specified static format.

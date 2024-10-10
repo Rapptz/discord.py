@@ -30,6 +30,7 @@ from typing_extensions import NotRequired
 from .user import User
 from .team import Team
 from .snowflake import Snowflake
+from .emoji import Emoji
 
 
 class InstallParams(TypedDict):
@@ -45,10 +46,14 @@ class BaseAppInfo(TypedDict):
     summary: str
     description: str
     flags: int
+    approximate_user_install_count: NotRequired[int]
     cover_image: NotRequired[str]
     terms_of_service_url: NotRequired[str]
     privacy_policy_url: NotRequired[str]
     rpc_origins: NotRequired[List[str]]
+    interactions_endpoint_url: NotRequired[Optional[str]]
+    redirect_uris: NotRequired[List[str]]
+    role_connections_verification_url: NotRequired[Optional[str]]
 
 
 class AppInfo(BaseAppInfo):
@@ -64,18 +69,18 @@ class AppInfo(BaseAppInfo):
     tags: NotRequired[List[str]]
     install_params: NotRequired[InstallParams]
     custom_install_url: NotRequired[str]
-    role_connections_verification_url: NotRequired[str]
 
 
 class PartialAppInfo(BaseAppInfo, total=False):
     hook: bool
     max_participants: int
     approximate_guild_count: int
-    redirect_uris: List[str]
-    interactions_endpoint_url: Optional[str]
-    role_connections_verification_url: Optional[str]
 
 
 class GatewayAppInfo(TypedDict):
     id: Snowflake
     flags: int
+
+
+class ListAppEmojis(TypedDict):
+    items: List[Emoji]

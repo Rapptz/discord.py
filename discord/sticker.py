@@ -28,8 +28,7 @@ import unicodedata
 
 from .mixins import Hashable
 from .asset import Asset, AssetMixin
-from .utils import cached_slot_property, find, snowflake_time, get, MISSING, _get_as_snowflake
-from .errors import InvalidData
+from .utils import cached_slot_property, snowflake_time, get, MISSING, _get_as_snowflake
 from .enums import StickerType, StickerFormatType, try_enum
 
 __all__ = (
@@ -51,7 +50,6 @@ if TYPE_CHECKING:
         Sticker as StickerPayload,
         StandardSticker as StandardStickerPayload,
         GuildSticker as GuildStickerPayload,
-        ListPremiumStickerPacks as ListPremiumStickerPacksPayload,
     )
 
 
@@ -203,7 +201,10 @@ class StickerItem(_StickerTag):
         self.name: str = data['name']
         self.id: int = int(data['id'])
         self.format: StickerFormatType = try_enum(StickerFormatType, data['format_type'])
-        self.url: str = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension}'
+        if self.format is StickerFormatType.gif:
+            self.url: str = f'https://media.discordapp.net/stickers/{self.id}.gif'
+        else:
+            self.url: str = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension}'
 
     def __repr__(self) -> str:
         return f'<StickerItem id={self.id} name={self.name!r} format={self.format}>'
@@ -258,8 +259,6 @@ class Sticker(_StickerTag):
         The id of the sticker.
     description: :class:`str`
         The description of the sticker.
-    pack_id: :class:`int`
-        The id of the sticker's pack.
     format: :class:`StickerFormatType`
         The format for the sticker's image.
     url: :class:`str`
@@ -277,7 +276,10 @@ class Sticker(_StickerTag):
         self.name: str = data['name']
         self.description: str = data['description']
         self.format: StickerFormatType = try_enum(StickerFormatType, data['format_type'])
-        self.url: str = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension}'
+        if self.format is StickerFormatType.gif:
+            self.url: str = f'https://media.discordapp.net/stickers/{self.id}.gif'
+        else:
+            self.url: str = f'{Asset.BASE}/stickers/{self.id}.{self.format.file_extension}'
 
     def __repr__(self) -> str:
         return f'<Sticker id={self.id} name={self.name!r}>'
@@ -349,9 +351,12 @@ class StandardSticker(Sticker):
 
         Retrieves the sticker pack that this sticker belongs to.
 
+        .. versionchanged:: 2.5
+            Now raises ``NotFound`` instead of ``InvalidData``.
+
         Raises
         --------
-        InvalidData
+        NotFound
             The corresponding sticker pack was not found.
         HTTPException
             Retrieving the sticker pack failed.
@@ -361,13 +366,8 @@ class StandardSticker(Sticker):
         :class:`StickerPack`
             The retrieved sticker pack.
         """
-        data: ListPremiumStickerPacksPayload = await self._state.http.list_premium_sticker_packs()
-        packs = data['sticker_packs']
-        pack = find(lambda d: int(d['id']) == self.pack_id, packs)
-
-        if pack:
-            return StickerPack(state=self._state, data=pack)
-        raise InvalidData(f'Could not find corresponding sticker pack for {self!r}')
+        data = await self._state.http.get_sticker_pack(self.pack_id)
+        return StickerPack(state=self._state, data=data)
 
 
 class GuildSticker(Sticker):

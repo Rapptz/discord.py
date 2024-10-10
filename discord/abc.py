@@ -49,7 +49,7 @@ from typing import (
 from .object import OLDEST_OBJECT, Object
 from .context_managers import Typing
 from .enums import ChannelType, InviteTarget
-from .errors import ClientException
+from .errors import ClientException, NotFound
 from .mentions import AllowedMentions
 from .permissions import PermissionOverwrite, Permissions
 from .role import Role
@@ -92,6 +92,7 @@ if TYPE_CHECKING:
         VoiceChannel,
         StageChannel,
     )
+    from .poll import Poll
     from .threads import Thread
     from .ui.view import View
     from .types.channel import (
@@ -121,7 +122,14 @@ _undefined: Any = _Undefined()
 
 async def _single_delete_strategy(messages: Iterable[Message], *, reason: Optional[str] = None):
     for m in messages:
-        await m.delete()
+        try:
+            await m.delete()
+        except NotFound as exc:
+            if exc.code == 10008:
+                continue  # bulk deletion ignores not found messages, single deletion does not.
+            # several other race conditions with deletion should fail without continuing,
+            # such as the channel being deleted and not found.
+            raise
 
 
 async def _purge_helper(
@@ -246,6 +254,22 @@ class User(Snowflake, Protocol):
     @property
     def avatar(self) -> Optional[Asset]:
         """Optional[:class:`~discord.Asset`]: Returns an Asset that represents the user's avatar, if present."""
+        raise NotImplementedError
+
+    @property
+    def avatar_decoration(self) -> Optional[Asset]:
+        """Optional[:class:`~discord.Asset`]: Returns an Asset that represents the user's avatar decoration, if present.
+
+        .. versionadded:: 2.4
+        """
+        raise NotImplementedError
+
+    @property
+    def avatar_decoration_sku_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns an integer that represents the user's avatar decoration SKU ID, if present.
+
+        .. versionadded:: 2.4
+        """
         raise NotImplementedError
 
     @property
@@ -500,6 +524,13 @@ class GuildChannel:
                 raise TypeError('type field must be of type ChannelType')
             options['type'] = ch_type.value
 
+        try:
+            status = options.pop('status')
+        except KeyError:
+            pass
+        else:
+            await self._state.http.edit_voice_channel_status(status, channel_id=self.id, reason=reason)
+
         if options:
             return await self._state.http.edit_channel(self.id, reason=reason, **options)
 
@@ -675,6 +706,7 @@ class GuildChannel:
         - Member overrides
         - Implicit permissions
         - Member timeout
+        - User installed app
 
         If a :class:`~discord.Role` is passed, then it checks the permissions
         someone with that role would have, which is essentially:
@@ -689,6 +721,12 @@ class GuildChannel:
 
         .. versionchanged:: 2.0
             ``obj`` parameter is now positional-only.
+
+        .. versionchanged:: 2.4
+            User installed apps are now taken into account.
+            The permissions returned for a user installed app mirrors the
+            permissions Discord returns in :attr:`~discord.Interaction.app_permissions`,
+            though it is recommended to use that attribute instead.
 
         Parameters
         ----------
@@ -721,6 +759,13 @@ class GuildChannel:
             return Permissions.all()
 
         default = self.guild.default_role
+        if default is None:
+
+            if self._state.self_id == obj.id:
+                return Permissions._user_installed_permissions(in_guild=True)
+            else:
+                return Permissions.none()
+
         base = Permissions(default.permissions.value)
 
         # Handle the role case first
@@ -960,11 +1005,15 @@ class GuildChannel:
         base_attrs: Dict[str, Any],
         *,
         name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
         reason: Optional[str] = None,
     ) -> Self:
         base_attrs['permission_overwrites'] = [x._asdict() for x in self._overwrites]
         base_attrs['parent_id'] = self.category_id
         base_attrs['name'] = name or self.name
+        if category is not None:
+            base_attrs['parent_id'] = category.id
+
         guild_id = self.guild.id
         cls = self.__class__
         data = await self._state.http.create_channel(guild_id, self.type.value, reason=reason, **base_attrs)
@@ -974,7 +1023,13 @@ class GuildChannel:
         self.guild._channels[obj.id] = obj  # type: ignore # obj is a GuildChannel
         return obj
 
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> Self:
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        reason: Optional[str] = None,
+    ) -> Self:
         """|coro|
 
         Clones this channel. This creates a channel with the same properties
@@ -984,11 +1039,18 @@ class GuildChannel:
 
         .. versionadded:: 1.1
 
+        .. versionchanged:: 2.5
+
+            The ``category`` keyword-only parameter was added.
+
         Parameters
         ------------
         name: Optional[:class:`str`]
             The name of the new channel. If not provided, defaults to this
             channel name.
+        category: Optional[:class:`~discord.CategoryChannel`]
+            The category the new channel belongs to.
+            This parameter is ignored if cloning a category channel.
         reason: Optional[:class:`str`]
             The reason for cloning this channel. Shows up on the audit log.
 
@@ -1085,10 +1147,10 @@ class GuildChannel:
             channel list (or category if given).
             This is mutually exclusive with ``beginning``, ``before``, and ``after``.
         before: :class:`~discord.abc.Snowflake`
-            The channel that should be before our current channel.
+            Whether to move the channel before the given channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``after``.
         after: :class:`~discord.abc.Snowflake`
-            The channel that should be after our current channel.
+            Whether to move the channel after the given channel.
             This is mutually exclusive with ``beginning``, ``end``, and ``before``.
         offset: :class:`int`
             The number of channels to offset the move by. For example,
@@ -1327,6 +1389,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1347,6 +1410,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1367,6 +1431,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1387,6 +1452,7 @@ class Messageable:
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1408,6 +1474,7 @@ class Messageable:
         view: Optional[View] = None,
         suppress_embeds: bool = False,
         silent: bool = False,
+        poll: Optional[Poll] = None,
     ) -> Message:
         """|coro|
 
@@ -1493,6 +1560,10 @@ class Messageable:
             in the UI, but will not actually send a notification.
 
             .. versionadded:: 2.2
+        poll: :class:`~discord.Poll`
+            The poll to send with this message.
+
+            .. versionadded:: 2.4
 
         Raises
         --------
@@ -1559,12 +1630,16 @@ class Messageable:
             stickers=sticker_ids,
             view=view,
             flags=flags,
+            poll=poll,
         ) as params:
             data = await state.http.send_message(channel.id, params=params)
 
         ret = state.create_message(channel=channel, data=data)
         if view and not view.is_finished():
             state.store_view(view, ret.id)
+
+        if poll:
+            poll._update(ret)
 
         if delete_after is not None:
             await ret.delete(delay=delete_after)

@@ -77,7 +77,8 @@ class Modal(View):
     Parameters
     -----------
     title: :class:`str`
-        The title of the modal. Can only be up to 45 characters.
+        The title of the modal.
+        Can only be up to 45 characters.
     timeout: Optional[:class:`float`]
         Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.

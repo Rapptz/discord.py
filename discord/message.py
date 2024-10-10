@@ -56,13 +56,14 @@ from .embeds import Embed
 from .member import Member
 from .flags import MessageFlags, AttachmentFlags
 from .file import File
-from .utils import escape_mentions, MISSING
+from .utils import escape_mentions, MISSING, deprecated
 from .http import handle_message_parameters
 from .guild import Guild
 from .mixins import Hashable
 from .sticker import StickerItem, GuildSticker
 from .threads import Thread
 from .channel import PartialMessageable
+from .poll import Poll
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -74,6 +75,8 @@ if TYPE_CHECKING:
         MessageApplication as MessageApplicationPayload,
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
+        MessageInteractionMetadata as MessageInteractionMetadataPayload,
+        CallMessage as CallMessagePayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -109,6 +112,8 @@ __all__ = (
     'DeletedReferencedMessage',
     'MessageApplication',
     'RoleSubscriptionInfo',
+    'MessageInteractionMetadata',
+    'CallMessage',
 )
 
 
@@ -191,6 +196,10 @@ class Attachment(Hashable):
         The waveform (amplitudes) of the audio in bytes. Returns ``None`` if it's not a voice message.
 
         .. versionadded:: 2.3
+    title: Optional[:class:`str`]
+        The normalised version of the attachment's filename.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -208,6 +217,7 @@ class Attachment(Hashable):
         'duration',
         'waveform',
         '_flags',
+        'title',
     )
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
@@ -223,6 +233,7 @@ class Attachment(Hashable):
         self.description: Optional[str] = data.get('description')
         self.ephemeral: bool = data.get('ephemeral', False)
         self.duration: Optional[float] = data.get('duration_secs')
+        self.title: Optional[str] = data.get('title')
 
         waveform = data.get('waveform')
         self.waveform: Optional[bytes] = utils._base64_to_bytes(waveform) if waveform is not None else None
@@ -624,6 +635,123 @@ class MessageInteraction(Hashable):
         return utils.snowflake_time(self.id)
 
 
+class MessageInteractionMetadata(Hashable):
+    """Represents the interaction metadata of a :class:`Message` if
+    it was sent in response to an interaction.
+
+    .. versionadded:: 2.4
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two message interactions are equal.
+
+        .. describe:: x != y
+
+            Checks if two message interactions are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the message interaction's hash.
+
+    Attributes
+    -----------
+    id: :class:`int`
+        The interaction ID.
+    type: :class:`InteractionType`
+        The interaction type.
+    user: :class:`User`
+        The user that invoked the interaction.
+    original_response_message_id: Optional[:class:`int`]
+        The ID of the original response message if the message is a follow-up.
+    interacted_message_id: Optional[:class:`int`]
+        The ID of the message that containes the interactive components, if applicable.
+    modal_interaction: Optional[:class:`.MessageInteractionMetadata`]
+        The metadata of the modal submit interaction that triggered this interaction, if applicable.
+    """
+
+    __slots__: Tuple[str, ...] = (
+        'id',
+        'type',
+        'user',
+        'original_response_message_id',
+        'interacted_message_id',
+        'modal_interaction',
+        '_integration_owners',
+        '_state',
+        '_guild',
+    )
+
+    def __init__(self, *, state: ConnectionState, guild: Optional[Guild], data: MessageInteractionMetadataPayload) -> None:
+        self._guild: Optional[Guild] = guild
+        self._state: ConnectionState = state
+
+        self.id: int = int(data['id'])
+        self.type: InteractionType = try_enum(InteractionType, data['type'])
+        self.user = state.create_user(data['user'])
+        self._integration_owners: Dict[int, int] = {
+            int(key): int(value) for key, value in data.get('authorizing_integration_owners', {}).items()
+        }
+
+        self.original_response_message_id: Optional[int] = None
+        try:
+            self.original_response_message_id = int(data['original_response_message_id'])
+        except KeyError:
+            pass
+
+        self.interacted_message_id: Optional[int] = None
+        try:
+            self.interacted_message_id = int(data['interacted_message_id'])
+        except KeyError:
+            pass
+
+        self.modal_interaction: Optional[MessageInteractionMetadata] = None
+        try:
+            self.modal_interaction = MessageInteractionMetadata(
+                state=state, guild=guild, data=data['triggering_interaction_metadata']
+            )
+        except KeyError:
+            pass
+
+    def __repr__(self) -> str:
+        return f'<MessageInteraction id={self.id} type={self.type!r} user={self.user!r}>'
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: The interaction's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+    @property
+    def original_response_message(self) -> Optional[Message]:
+        """Optional[:class:`~discord.Message`]: The original response message if the message
+        is a follow-up and is found in cache.
+        """
+        if self.original_response_message_id:
+            return self._state._get_message(self.original_response_message_id)
+        return None
+
+    @property
+    def interacted_message(self) -> Optional[Message]:
+        """Optional[:class:`~discord.Message`]: The message that
+        containes the interactive components, if applicable and is found in cache.
+        """
+        if self.interacted_message_id:
+            return self._state._get_message(self.interacted_message_id)
+        return None
+
+    def is_guild_integration(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the interaction is a guild integration."""
+        if self._guild:
+            return self._guild.id == self._integration_owners.get(0)
+
+        return False
+
+    def is_user_integration(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the interaction is a user integration."""
+        return self.user.id == self._integration_owners.get(1)
+
+
 def flatten_handlers(cls: Type[Message]) -> Type[Message]:
     prefix = len('_handle_')
     handlers = [
@@ -682,6 +810,51 @@ class MessageApplication:
                 state=self._state, object_id=self.id, icon_hash=self._cover_image, asset_type='cover_image'
             )
         return None
+
+
+class CallMessage:
+    """Represents a message's call data in a private channel from a :class:`~discord.Message`.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    ended_timestamp: Optional[:class:`datetime.datetime`]
+        The timestamp the call has ended.
+    participants: List[:class:`User`]
+        A list of users that participated in the call.
+    """
+
+    __slots__ = ('_message', 'ended_timestamp', 'participants')
+
+    def __repr__(self) -> str:
+        return f'<CallMessage participants={self.participants!r}>'
+
+    def __init__(self, *, state: ConnectionState, message: Message, data: CallMessagePayload):
+        self._message: Message = message
+        self.ended_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('ended_timestamp'))
+        self.participants: List[User] = []
+
+        for user_id in data['participants']:
+            user_id = int(user_id)
+            if user_id == self._message.author.id:
+                self.participants.append(self._message.author)  # type: ignore # can't be a Member here
+            else:
+                user = state.get_user(user_id)
+                if user is not None:
+                    self.participants.append(user)
+
+    @property
+    def duration(self) -> datetime.timedelta:
+        """:class:`datetime.timedelta`: The duration the call has lasted or is already ongoing."""
+        if self.ended_timestamp is None:
+            return utils.utcnow() - self._message.created_at
+        else:
+            return self.ended_timestamp - self._message.created_at
+
+    def is_ended(self) -> bool:
+        """:class:`bool`: Whether the call is ended or not."""
+        return self.ended_timestamp is not None
 
 
 class RoleSubscriptionInfo:
@@ -803,6 +976,20 @@ class PartialMessage(Hashable):
         """:class:`str`: Returns a URL that allows the client to jump to this message."""
         guild_id = getattr(self.guild, 'id', '@me')
         return f'https://discord.com/channels/{guild_id}/{self.channel.id}/{self.id}'
+
+    @property
+    def thread(self) -> Optional[Thread]:
+        """Optional[:class:`Thread`]: The public thread created from this message, if it exists.
+
+        .. note::
+
+            This does not retrieve archived threads, as they are not retained in the internal
+            cache. Use :meth:`fetch_thread` instead.
+
+        .. versionadded:: 2.4
+        """
+        if self.guild is not None:
+            return self.guild.get_thread(self.id)
 
     async def fetch(self) -> Message:
         """|coro|
@@ -962,6 +1149,8 @@ class PartialMessage(Hashable):
         Forbidden
             Tried to suppress a message without permissions or
             edited a message's content or embed that isn't yours.
+        NotFound
+            This message does not exist.
         TypeError
             You specified both ``embed`` and ``embeds``
 
@@ -1280,6 +1469,40 @@ class PartialMessage(Hashable):
         )
         return Thread(guild=self.guild, state=self._state, data=data)
 
+    async def fetch_thread(self) -> Thread:
+        """|coro|
+
+        Retrieves the public thread attached to this message.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`thread` instead.
+
+        .. versionadded:: 2.4
+
+        Raises
+        -------
+        InvalidData
+            An unknown channel type was received from Discord
+            or the guild the thread belongs to is not the same
+            as the one in this object points to.
+        HTTPException
+            Retrieving the thread failed.
+        NotFound
+            There is no thread attached to this message.
+        Forbidden
+            You do not have permission to fetch this channel.
+
+        Returns
+        --------
+        :class:`.Thread`
+            The public thread attached to this message.
+        """
+        if self.guild is None:
+            raise ValueError('This message does not have guild info attached.')
+
+        return await self.guild.fetch_channel(self.id)  # type: ignore  # Can only be Thread in this case
+
     @overload
     async def reply(
         self,
@@ -1297,6 +1520,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1317,6 +1541,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1337,6 +1562,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1357,6 +1583,7 @@ class PartialMessage(Hashable):
         view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
+        poll: Poll = ...,
     ) -> Message:
         ...
 
@@ -1390,6 +1617,30 @@ class PartialMessage(Hashable):
         """
 
         return await self.channel.send(content, reference=self, **kwargs)
+
+    async def end_poll(self) -> Message:
+        """|coro|
+
+        Ends the :class:`Poll` attached to this message.
+
+        This can only be done if you are the message author.
+
+        If the poll was successfully ended, then it returns the updated :class:`Message`.
+
+        Raises
+        ------
+        ~discord.HTTPException
+            Ending the poll failed.
+
+        Returns
+        -------
+        :class:`.Message`
+            The updated message.
+        """
+
+        data = await self._state.http.end_poll(self.channel.id, self.id)
+
+        return Message(state=self._state, channel=self.channel, data=data)
 
     def to_reference(self, *, fail_if_not_exists: bool = True) -> MessageReference:
         """Creates a :class:`~discord.MessageReference` from the current message.
@@ -1541,10 +1792,6 @@ class Message(PartialMessage, Hashable):
         unless the bot is mentioned or the message is a direct message.
 
         .. versionadded:: 2.0
-    interaction: Optional[:class:`MessageInteraction`]
-        The interaction that this message is a response to.
-
-        .. versionadded:: 2.0
     role_subscription: Optional[:class:`RoleSubscriptionInfo`]
         The data of the role subscription purchase or renewal that prompted this
         :attr:`MessageType.role_subscription_purchase` message.
@@ -1562,6 +1809,18 @@ class Message(PartialMessage, Hashable):
         .. versionadded:: 2.2
     guild: Optional[:class:`Guild`]
         The guild that the message belongs to, if applicable.
+    interaction_metadata: Optional[:class:`.MessageInteractionMetadata`]
+        The metadata of the interaction that this message is a response to.
+
+        .. versionadded:: 2.4
+    poll: Optional[:class:`Poll`]
+        The poll attached to this message.
+
+        .. versionadded:: 2.4
+    call: Optional[:class:`CallMessage`]
+        The call associated with this message.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -1572,6 +1831,7 @@ class Message(PartialMessage, Hashable):
         '_cs_raw_channel_mentions',
         '_cs_raw_role_mentions',
         '_cs_system_content',
+        '_thread',
         'tts',
         'content',
         'webhook_id',
@@ -1591,10 +1851,13 @@ class Message(PartialMessage, Hashable):
         'activity',
         'stickers',
         'components',
-        'interaction',
+        '_interaction',
         'role_subscription',
         'application_id',
         'position',
+        'interaction_metadata',
+        'poll',
+        'call',
     )
 
     if TYPE_CHECKING:
@@ -1634,20 +1897,50 @@ class Message(PartialMessage, Hashable):
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
 
+        self.poll: Optional[Poll] = None
+        try:
+            self.poll = Poll._from_data(data=data['poll'], message=self, state=state)
+        except KeyError:
+            pass
+
         try:
             # if the channel doesn't have a guild attribute, we handle that
             self.guild = channel.guild
         except AttributeError:
             self.guild = state._get_guild(utils._get_as_snowflake(data, 'guild_id'))
 
-        self.interaction: Optional[MessageInteraction] = None
+        self._thread: Optional[Thread] = None
 
+        if self.guild is not None:
+            try:
+                thread = data['thread']
+            except KeyError:
+                pass
+            else:
+                self._thread = self.guild.get_thread(int(thread['id']))
+
+                if self._thread is not None:
+                    self._thread._update(thread)
+                else:
+                    self._thread = Thread(guild=self.guild, state=state, data=thread)
+
+        self._interaction: Optional[MessageInteraction] = None
+
+        # deprecated
         try:
             interaction = data['interaction']
         except KeyError:
             pass
         else:
-            self.interaction = MessageInteraction(state=state, guild=self.guild, data=interaction)
+            self._interaction = MessageInteraction(state=state, guild=self.guild, data=interaction)
+
+        self.interaction_metadata: Optional[MessageInteractionMetadata] = None
+        try:
+            interaction_metadata = data['interaction_metadata']
+        except KeyError:
+            pass
+        else:
+            self.interaction_metadata = MessageInteractionMetadata(state=state, guild=self.guild, data=interaction_metadata)
 
         try:
             ref = data['message_reference']
@@ -1690,7 +1983,7 @@ class Message(PartialMessage, Hashable):
         else:
             self.role_subscription = RoleSubscriptionInfo(role_subscription)
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components', 'call'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
@@ -1871,7 +2164,17 @@ class Message(PartialMessage, Hashable):
                 self.components.append(component)
 
     def _handle_interaction(self, data: MessageInteractionPayload):
-        self.interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
+        self._interaction = MessageInteraction(state=self._state, guild=self.guild, data=data)
+
+    def _handle_interaction_metadata(self, data: MessageInteractionMetadataPayload):
+        self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
+
+    def _handle_call(self, data: CallMessagePayload):
+        self.call: Optional[CallMessage]
+        if data is not None:
+            self.call = CallMessage(state=self._state, message=self, data=data)
+        else:
+            self.call = None
 
     def _rebind_cached_references(
         self,
@@ -1981,6 +2284,32 @@ class Message(PartialMessage, Hashable):
     def edited_at(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the message."""
         return self._edited_timestamp
+
+    @property
+    def thread(self) -> Optional[Thread]:
+        """Optional[:class:`Thread`]: The public thread created from this message, if it exists.
+
+        .. note::
+
+            For messages received via the gateway this does not retrieve archived threads, as they
+            are not retained in the internal cache. Use :meth:`fetch_thread` instead.
+
+        .. versionadded:: 2.4
+        """
+        if self.guild is not None:
+            # Fall back to guild threads in case one was created after the message
+            return self._thread or self.guild.get_thread(self.id)
+
+    @property
+    @deprecated('interaction_metadata')
+    def interaction(self) -> Optional[MessageInteraction]:
+        """Optional[:class:`~discord.MessageInteraction`]: The interaction that this message is a response to.
+
+        .. versionadded:: 2.0
+        .. deprecated:: 2.4
+            This attribute is deprecated and will be removed in a future version. Use :attr:`.interaction_metadata` instead.
+        """
+        return self._interaction
 
     def is_system(self) -> bool:
         """:class:`bool`: Whether the message is a system message.
@@ -2137,6 +2466,36 @@ class Message(PartialMessage, Hashable):
         if self.type is MessageType.stage_topic:
             return f'{self.author.name} changed Stage topic: **{self.content}**.'
 
+        if self.type is MessageType.guild_incident_alert_mode_enabled:
+            dt = utils.parse_time(self.content)
+            dt_content = utils.format_dt(dt)
+            return f'{self.author.name} enabled security actions until {dt_content}.'
+
+        if self.type is MessageType.guild_incident_alert_mode_disabled:
+            return f'{self.author.name} disabled security actions.'
+
+        if self.type is MessageType.guild_incident_report_raid:
+            return f'{self.author.name} reported a raid in {self.guild}.'
+
+        if self.type is MessageType.guild_incident_report_false_alarm:
+            return f'{self.author.name} reported a false alarm in {self.guild}.'
+
+        if self.type is MessageType.call:
+            call_ended = self.call.ended_timestamp is not None  # type: ignore # call can't be None here
+            missed = self._state.user not in self.call.participants  # type: ignore # call can't be None here
+
+            if call_ended:
+                duration = utils._format_call_duration(self.call.duration)  # type: ignore # call can't be None here
+                if missed:
+                    return 'You missed a call from {0.author.name} that lasted {1}.'.format(self, duration)
+                else:
+                    return '{0.author.name} started a call that lasted {1}.'.format(self, duration)
+            else:
+                if missed:
+                    return '{0.author.name} started a call. \N{EM DASH} Join the call'.format(self)
+                else:
+                    return '{0.author.name} started a call.'.format(self)
+
         # Fallback for unknown message types
         return ''
 
@@ -2247,6 +2606,8 @@ class Message(PartialMessage, Hashable):
         Forbidden
             Tried to suppress a message without permissions or
             edited a message's content or embed that isn't yours.
+        NotFound
+            This message does not exist.
         TypeError
             You specified both ``embed`` and ``embeds``
 

@@ -58,8 +58,10 @@ __all__ = (
     'ChannelFlags',
     'AutoModPresets',
     'MemberFlags',
+    'AppCommandContext',
     'AttachmentFlags',
     'RoleFlags',
+    'AppInstallationType',
     'SKUFlags',
 )
 
@@ -869,34 +871,52 @@ class Intents(BaseFlags):
 
     @alias_flag_value
     def emojis(self):
-        """:class:`bool`: Alias of :attr:`.emojis_and_stickers`.
+        """:class:`bool`: Alias of :attr:`.expressions`.
 
         .. versionchanged:: 2.0
             Changed to an alias.
         """
         return 1 << 3
 
-    @flag_value
+    @alias_flag_value
     def emojis_and_stickers(self):
-        """:class:`bool`: Whether guild emoji and sticker related events are enabled.
+        """:class:`bool`: Alias of :attr:`.expressions`.
 
         .. versionadded:: 2.0
+
+        .. versionchanged:: 2.5
+            Changed to an alias.
+        """
+        return 1 << 3
+
+    @flag_value
+    def expressions(self):
+        """:class:`bool`: Whether guild emoji, sticker, and soundboard sound related events are enabled.
+
+        .. versionadded:: 2.5
 
         This corresponds to the following events:
 
         - :func:`on_guild_emojis_update`
         - :func:`on_guild_stickers_update`
+        - :func:`on_soundboard_sound_create`
+        - :func:`on_soundboard_sound_update`
+        - :func:`on_soundboard_sound_delete`
 
         This also corresponds to the following attributes and classes in terms of cache:
 
         - :class:`Emoji`
         - :class:`GuildSticker`
+        - :class:`SoundboardSound`
         - :meth:`Client.get_emoji`
         - :meth:`Client.get_sticker`
+        - :meth:`Client.get_soundboard_sound`
         - :meth:`Client.emojis`
         - :meth:`Client.stickers`
+        - :meth:`Client.soundboard_sounds`
         - :attr:`Guild.emojis`
         - :attr:`Guild.stickers`
+        - :attr:`Guild.soundboard_sounds`
         """
         return 1 << 3
 
@@ -1254,6 +1274,57 @@ class Intents(BaseFlags):
         .. versionadded:: 2.0
         """
         return 1 << 21
+
+    @alias_flag_value
+    def polls(self):
+        """:class:`bool`: Whether guild and direct messages poll related events are enabled.
+
+        This is a shortcut to set or get both :attr:`guild_polls` and :attr:`dm_polls`.
+
+        This corresponds to the following events:
+
+        - :func:`on_poll_vote_add` (both guilds and DMs)
+        - :func:`on_poll_vote_remove` (both guilds and DMs)
+        - :func:`on_raw_poll_vote_add` (both guilds and DMs)
+        - :func:`on_raw_poll_vote_remove` (both guilds and DMs)
+
+        .. versionadded:: 2.4
+        """
+        return (1 << 24) | (1 << 25)
+
+    @flag_value
+    def guild_polls(self):
+        """:class:`bool`: Whether guild poll related events are enabled.
+
+        See also :attr:`dm_polls` and :attr:`polls`.
+
+        This corresponds to the following events:
+
+        - :func:`on_poll_vote_add` (only for guilds)
+        - :func:`on_poll_vote_remove` (only for guilds)
+        - :func:`on_raw_poll_vote_add` (only for guilds)
+        - :func:`on_raw_poll_vote_remove` (only for guilds)
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 24
+
+    @flag_value
+    def dm_polls(self):
+        """:class:`bool`: Whether direct messages poll related events are enabled.
+
+        See also :attr:`guild_polls` and :attr:`polls`.
+
+        This corresponds to the following events:
+
+        - :func:`on_poll_vote_add` (only for DMs)
+        - :func:`on_poll_vote_remove` (only for DMs)
+        - :func:`on_raw_poll_vote_add` (only for DMs)
+        - :func:`on_raw_poll_vote_remove` (only for DMs)
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 25
 
 
 @fill_with_flags()
@@ -1660,8 +1731,24 @@ class ArrayFlags(BaseFlags):
         self.value = reduce(or_, map((1).__lshift__, value), 0) >> 1
         return self
 
-    def to_array(self) -> List[int]:
-        return [i + 1 for i in range(self.value.bit_length()) if self.value & (1 << i)]
+    def to_array(self, *, offset: int = 0) -> List[int]:
+        return [i + offset for i in range(self.value.bit_length()) if self.value & (1 << i)]
+
+    @classmethod
+    def all(cls: Type[Self]) -> Self:
+        """A factory method that creates an instance of ArrayFlags with everything enabled."""
+        bits = max(cls.VALID_FLAGS.values()).bit_length()
+        value = (1 << bits) - 1
+        self = cls.__new__(cls)
+        self.value = value
+        return self
+
+    @classmethod
+    def none(cls: Type[Self]) -> Self:
+        """A factory method that creates an instance of ArrayFlags with everything disabled."""
+        self = cls.__new__(cls)
+        self.value = self.DEFAULT_VALUE
+        return self
 
 
 @fill_with_flags()
@@ -1728,6 +1815,9 @@ class AutoModPresets(ArrayFlags):
         rather than using this raw value.
     """
 
+    def to_array(self) -> List[int]:
+        return super().to_array(offset=1)
+
     @flag_value
     def profanity(self):
         """:class:`bool`: Whether to use the preset profanity filter."""
@@ -1743,21 +1833,144 @@ class AutoModPresets(ArrayFlags):
         """:class:`bool`: Whether to use the preset slurs filter."""
         return 1 << 2
 
-    @classmethod
-    def all(cls: Type[Self]) -> Self:
-        """A factory method that creates a :class:`AutoModPresets` with everything enabled."""
-        bits = max(cls.VALID_FLAGS.values()).bit_length()
-        value = (1 << bits) - 1
-        self = cls.__new__(cls)
-        self.value = value
-        return self
 
-    @classmethod
-    def none(cls: Type[Self]) -> Self:
-        """A factory method that creates a :class:`AutoModPresets` with everything disabled."""
-        self = cls.__new__(cls)
-        self.value = self.DEFAULT_VALUE
-        return self
+@fill_with_flags()
+class AppCommandContext(ArrayFlags):
+    r"""Wraps up the Discord :class:`~discord.app_commands.Command` execution context.
+
+    .. versionadded:: 2.4
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two AppCommandContext flags are equal.
+
+        .. describe:: x != y
+
+            Checks if two AppCommandContext flags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns an AppCommandContext instance with all enabled flags from
+            both x and y.
+
+        .. describe:: x & y, x &= y
+
+            Returns an AppCommandContext instance with only flags enabled on
+            both x and y.
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns an AppCommandContext instance with only flags enabled on
+            only one of x or y, not on both.
+
+        .. describe:: ~x
+
+            Returns an AppCommandContext instance with all flags inverted from x
+
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    DEFAULT_VALUE = 3
+
+    @flag_value
+    def guild(self):
+        """:class:`bool`: Whether the context allows usage in a guild."""
+        return 1 << 0
+
+    @flag_value
+    def dm_channel(self):
+        """:class:`bool`: Whether the context allows usage in a DM channel."""
+        return 1 << 1
+
+    @flag_value
+    def private_channel(self):
+        """:class:`bool`: Whether the context allows usage in a DM or a GDM channel."""
+        return 1 << 2
+
+
+@fill_with_flags()
+class AppInstallationType(ArrayFlags):
+    r"""Represents the installation location of an application command.
+
+    .. versionadded:: 2.4
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two AppInstallationType flags are equal.
+
+        .. describe:: x != y
+
+            Checks if two AppInstallationType flags are not equal.
+
+        .. describe:: x | y, x |= y
+
+            Returns an AppInstallationType instance with all enabled flags from
+            both x and y.
+
+        .. describe:: x & y, x &= y
+
+            Returns an AppInstallationType instance with only flags enabled on
+            both x and y.
+
+        .. describe:: x ^ y, x ^= y
+
+            Returns an AppInstallationType instance with only flags enabled on
+            only one of x or y, not on both.
+
+        .. describe:: ~x
+
+            Returns an AppInstallationType instance with all flags inverted from x
+
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. You should query flags via the properties
+        rather than using this raw value.
+    """
+
+    @flag_value
+    def guild(self):
+        """:class:`bool`: Whether the integration is a guild install."""
+        return 1 << 0
+
+    @flag_value
+    def user(self):
+        """:class:`bool`: Whether the integration is a user install."""
+        return 1 << 1
 
 
 @fill_with_flags()
@@ -1836,6 +2049,48 @@ class MemberFlags(BaseFlags):
     def started_onboarding(self):
         """:class:`bool`: Returns ``True`` if the member has started onboarding."""
         return 1 << 3
+
+    @flag_value
+    def guest(self):
+        """:class:`bool`: Returns ``True`` if the member is a guest and can only access
+        the voice channel they were invited to.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 4
+
+    @flag_value
+    def started_home_actions(self):
+        """:class:`bool`: Returns ``True`` if the member has started Server Guide new member actions.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 5
+
+    @flag_value
+    def completed_home_actions(self):
+        """:class:`bool`: Returns ``True`` if the member has completed Server Guide new member actions.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 6
+
+    @flag_value
+    def automod_quarantined_username(self):
+        """:class:`bool`: Returns ``True`` if the member's username, nickname, or global name has been
+        blocked by AutoMod.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 7
+
+    @flag_value
+    def dm_settings_upsell_acknowledged(self):
+        """:class:`bool`: Returns ``True`` if the member has dismissed the DM settings upsell.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 9
 
 
 @fill_with_flags()

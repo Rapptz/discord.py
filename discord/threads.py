@@ -121,6 +121,10 @@ class Thread(Messageable, Hashable):
         This is always ``True`` for public threads.
     archiver_id: Optional[:class:`int`]
         The user's ID that archived this thread.
+
+        .. note::
+            Due to an API change, the ``archiver_id`` will always be ``None`` and can only be obtained via the audit log.
+
     auto_archive_duration: :class:`int`
         The duration in minutes until the thread is automatically hidden from the channel list.
         Usually a value of 60, 1440, 4320 and 10080.
@@ -846,12 +850,20 @@ class Thread(Messageable, Hashable):
         members = await self._state.http.get_thread_members(self.id)
         return [ThreadMember(parent=self, data=data) for data in members]
 
-    async def delete(self) -> None:
+    async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
 
         Deletes this thread.
 
         You must have :attr:`~Permissions.manage_threads` to delete threads.
+
+        Parameters
+        -----------
+        reason: Optional[:class:`str`]
+            The reason for deleting this thread.
+            Shows up on the audit log.
+
+            .. versionadded:: 2.4
 
         Raises
         -------
@@ -860,7 +872,7 @@ class Thread(Messageable, Hashable):
         HTTPException
             Deleting the thread failed.
         """
-        await self._state.http.delete_channel(self.id)
+        await self._state.http.delete_channel(self.id, reason=reason)
 
     def get_partial_message(self, message_id: int, /) -> PartialMessage:
         """Creates a :class:`PartialMessage` from the message ID.

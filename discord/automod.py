@@ -518,7 +518,7 @@ class AutoModRule:
             payload['name'] = name
 
         if event_type is not MISSING:
-            payload['event_type'] = event_type
+            payload['event_type'] = event_type.value
 
         if trigger is not MISSING:
             trigger_metadata = trigger.to_metadata_dict()
@@ -541,7 +541,7 @@ class AutoModRule:
             **payload,
         )
 
-        return AutoModRule(data=data, guild=self.guild, state=self._state)
+        return self.__class__(data=data, guild=self.guild, state=self._state)
 
     async def delete(self, *, reason: str = MISSING) -> None:
         """|coro|

@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-06-21 01:17+0000\n"
-"PO-Revision-Date: 2023-06-21 01:20\n"
+"PO-Revision-Date: 2024-04-17 02:43\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -1827,39 +1827,39 @@ msgstr "Discord APIの破壊的変更のため、 :meth:`Guild.bans` はギル�
 
 #: ../../migrating.rst:1010
 msgid "Flag classes now have a custom ``bool()`` implementation"
-msgstr ""
+msgstr "フラグのクラスにカスタムの ``bool()`` 実装を追加"
 
 #: ../../migrating.rst:1012
 msgid "To allow library users to easily check whether an instance of a flag class has any flags enabled, using `bool` on them will now only return ``True`` if at least one flag is enabled."
-msgstr ""
+msgstr "ライブラリユーザーがフラグクラスのインスタンスに何らかのフラグが立っているかどうかを確認しやすくするために、 ``bool`` を使用するとフラグが最低一個有効の場合に ``True`` を返すようにしました。"
 
 #: ../../migrating.rst:1015
 msgid "This means that evaluating instances of the following classes in a bool context (such as ``if obj:``) may no longer return ``True``:"
-msgstr ""
+msgstr "つまり、 真偽値の文脈 (例えば ``if obj:``) で次のクラスのインスタンスを評価するとき、 ``True`` が返されない可能性があります:"
 
 #: ../../migrating.rst:1017
 msgid ":class:`Intents`"
-msgstr ""
+msgstr ":class:`Intents`"
 
 #: ../../migrating.rst:1018
 msgid ":class:`MemberCacheFlags`"
-msgstr ""
+msgstr ":class:`MemberCacheFlags`"
 
 #: ../../migrating.rst:1019
 msgid ":class:`MessageFlags`"
-msgstr ""
+msgstr ":class:`MessageFlags`"
 
 #: ../../migrating.rst:1020
 msgid ":class:`Permissions`"
-msgstr ""
+msgstr ":class:`Permissions`"
 
 #: ../../migrating.rst:1021
 msgid ":class:`PublicUserFlags`"
-msgstr ""
+msgstr ":class:`PublicUserFlags`"
 
 #: ../../migrating.rst:1022
 msgid ":class:`SystemChannelFlags`"
-msgstr ""
+msgstr ":class:`SystemChannelFlags`"
 
 #: ../../migrating.rst:1025
 #: ../../migrating.rst:1378
