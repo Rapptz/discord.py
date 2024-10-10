@@ -78,6 +78,7 @@ if TYPE_CHECKING:
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
         MessageInteractionMetadata as MessageInteractionMetadataPayload,
+        CallMessage as CallMessagePayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -115,6 +116,7 @@ __all__ = (
     'MessageApplication',
     'RoleSubscriptionInfo',
     'MessageInteractionMetadata',
+    'CallMessage',
 )
 
 
@@ -967,6 +969,51 @@ class MessageApplication:
         return None
 
 
+class CallMessage:
+    """Represents a message's call data in a private channel from a :class:`~discord.Message`.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    ended_timestamp: Optional[:class:`datetime.datetime`]
+        The timestamp the call has ended.
+    participants: List[:class:`User`]
+        A list of users that participated in the call.
+    """
+
+    __slots__ = ('_message', 'ended_timestamp', 'participants')
+
+    def __repr__(self) -> str:
+        return f'<CallMessage participants={self.participants!r}>'
+
+    def __init__(self, *, state: ConnectionState, message: Message, data: CallMessagePayload):
+        self._message: Message = message
+        self.ended_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('ended_timestamp'))
+        self.participants: List[User] = []
+
+        for user_id in data['participants']:
+            user_id = int(user_id)
+            if user_id == self._message.author.id:
+                self.participants.append(self._message.author)  # type: ignore # can't be a Member here
+            else:
+                user = state.get_user(user_id)
+                if user is not None:
+                    self.participants.append(user)
+
+    @property
+    def duration(self) -> datetime.timedelta:
+        """:class:`datetime.timedelta`: The duration the call has lasted or is already ongoing."""
+        if self.ended_timestamp is None:
+            return utils.utcnow() - self._message.created_at
+        else:
+            return self.ended_timestamp - self._message.created_at
+
+    def is_ended(self) -> bool:
+        """:class:`bool`: Whether the call is ended or not."""
+        return self.ended_timestamp is not None
+
+
 class RoleSubscriptionInfo:
     """Represents a message's role subscription information.
 
@@ -1259,6 +1306,8 @@ class PartialMessage(Hashable):
         Forbidden
             Tried to suppress a message without permissions or
             edited a message's content or embed that isn't yours.
+        NotFound
+            This message does not exist.
         TypeError
             You specified both ``embed`` and ``embeds``
 
@@ -1971,6 +2020,10 @@ class Message(PartialMessage, Hashable):
         The poll attached to this message.
 
         .. versionadded:: 2.4
+    call: Optional[:class:`CallMessage`]
+        The call associated with this message.
+
+        .. versionadded:: 2.5
     message_snapshots: List[:class:`MessageSnapshot`]
         The message snapshots attached to this message.
 
@@ -2011,6 +2064,7 @@ class Message(PartialMessage, Hashable):
         'position',
         'interaction_metadata',
         'poll',
+        'call',
         'message_snapshots',
     )
 
@@ -2140,7 +2194,7 @@ class Message(PartialMessage, Hashable):
         else:
             self.role_subscription = RoleSubscriptionInfo(role_subscription)
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components', 'call'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])
             except KeyError:
@@ -2325,6 +2379,13 @@ class Message(PartialMessage, Hashable):
 
     def _handle_interaction_metadata(self, data: MessageInteractionMetadataPayload):
         self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
+
+    def _handle_call(self, data: CallMessagePayload):
+        self.call: Optional[CallMessage]
+        if data is not None:
+            self.call = CallMessage(state=self._state, message=self, data=data)
+        else:
+            self.call = None
 
     def _rebind_cached_references(
         self,
@@ -2630,6 +2691,22 @@ class Message(PartialMessage, Hashable):
         if self.type is MessageType.guild_incident_report_false_alarm:
             return f'{self.author.name} reported a false alarm in {self.guild}.'
 
+        if self.type is MessageType.call:
+            call_ended = self.call.ended_timestamp is not None  # type: ignore # call can't be None here
+            missed = self._state.user not in self.call.participants  # type: ignore # call can't be None here
+
+            if call_ended:
+                duration = utils._format_call_duration(self.call.duration)  # type: ignore # call can't be None here
+                if missed:
+                    return 'You missed a call from {0.author.name} that lasted {1}.'.format(self, duration)
+                else:
+                    return '{0.author.name} started a call that lasted {1}.'.format(self, duration)
+            else:
+                if missed:
+                    return '{0.author.name} started a call. \N{EM DASH} Join the call'.format(self)
+                else:
+                    return '{0.author.name} started a call.'.format(self)
+
         # Fallback for unknown message types
         return ''
 
@@ -2740,6 +2817,8 @@ class Message(PartialMessage, Hashable):
         Forbidden
             Tried to suppress a message without permissions or
             edited a message's content or embed that isn't yours.
+        NotFound
+            This message does not exist.
         TypeError
             You specified both ``embed`` and ``embeds``
 

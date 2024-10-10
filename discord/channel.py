@@ -47,7 +47,16 @@ import datetime
 import discord.abc
 from .scheduled_event import ScheduledEvent
 from .permissions import PermissionOverwrite, Permissions
-from .enums import ChannelType, ForumLayoutType, ForumOrderType, PrivacyLevel, try_enum, VideoQualityMode, EntityType
+from .enums import (
+    ChannelType,
+    ForumLayoutType,
+    ForumOrderType,
+    PrivacyLevel,
+    try_enum,
+    VideoQualityMode,
+    EntityType,
+    VoiceChannelEffectAnimationType,
+)
 from .mixins import Hashable
 from . import utils
 from .utils import MISSING
@@ -58,6 +67,8 @@ from .threads import Thread
 from .partial_emoji import _EmojiTag, PartialEmoji
 from .flags import ChannelFlags
 from .http import handle_message_parameters
+from .object import Object
+from .soundboard import BaseSoundboardSound, SoundboardDefaultSound
 
 __all__ = (
     'TextChannel',
@@ -69,6 +80,8 @@ __all__ = (
     'ForumChannel',
     'GroupChannel',
     'PartialMessageable',
+    'VoiceChannelEffect',
+    'VoiceChannelSoundEffect',
 )
 
 if TYPE_CHECKING:
@@ -76,7 +89,6 @@ if TYPE_CHECKING:
 
     from .types.threads import ThreadArchiveDuration
     from .role import Role
-    from .object import Object
     from .member import Member, VoiceState
     from .abc import Snowflake, SnowflakeTime
     from .embeds import Embed
@@ -100,8 +112,11 @@ if TYPE_CHECKING:
         ForumChannel as ForumChannelPayload,
         MediaChannel as MediaChannelPayload,
         ForumTag as ForumTagPayload,
+        VoiceChannelEffect as VoiceChannelEffectPayload,
     )
     from .types.snowflake import SnowflakeList
+    from .types.soundboard import BaseSoundboardSound as BaseSoundboardSoundPayload
+    from .soundboard import SoundboardSound
 
     OverwriteKeyT = TypeVar('OverwriteKeyT', Role, BaseUser, Object, Union[Role, Member, Object])
 
@@ -109,6 +124,121 @@ if TYPE_CHECKING:
 class ThreadWithMessage(NamedTuple):
     thread: Thread
     message: Message
+
+
+class VoiceChannelEffectAnimation(NamedTuple):
+    id: int
+    type: VoiceChannelEffectAnimationType
+
+
+class VoiceChannelSoundEffect(BaseSoundboardSound):
+    """Represents a Discord voice channel sound effect.
+
+    .. versionadded:: 2.5
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two sound effects are equal.
+
+        .. describe:: x != y
+
+            Checks if two sound effects are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the sound effect's hash.
+
+    Attributes
+    ------------
+    id: :class:`int`
+        The ID of the sound.
+    volume: :class:`float`
+        The volume of the sound as floating point percentage (e.g. ``1.0`` for 100%).
+    """
+
+    __slots__ = ('_state',)
+
+    def __init__(self, *, state: ConnectionState, id: int, volume: float):
+        data: BaseSoundboardSoundPayload = {
+            'sound_id': id,
+            'volume': volume,
+        }
+        super().__init__(state=state, data=data)
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} id={self.id} volume={self.volume}>"
+
+    @property
+    def created_at(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: Returns the snowflake's creation time in UTC.
+        Returns ``None`` if it's a default sound."""
+        if self.is_default():
+            return None
+        else:
+            return utils.snowflake_time(self.id)
+
+    def is_default(self) -> bool:
+        """:class:`bool`: Whether it's a default sound or not."""
+        # if it's smaller than the Discord Epoch it cannot be a snowflake
+        return self.id < utils.DISCORD_EPOCH
+
+
+class VoiceChannelEffect:
+    """Represents a Discord voice channel effect.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    ------------
+    channel: :class:`VoiceChannel`
+        The channel in which the effect is sent.
+    user: Optional[:class:`Member`]
+        The user who sent the effect. ``None`` if not found in cache.
+    animation: Optional[:class:`VoiceChannelEffectAnimation`]
+        The animation the effect has. Returns ``None`` if the effect has no animation.
+    emoji: Optional[:class:`PartialEmoji`]
+        The emoji of the effect.
+    sound: Optional[:class:`VoiceChannelSoundEffect`]
+        The sound of the effect. Returns ``None`` if it's an emoji effect.
+    """
+
+    __slots__ = ('channel', 'user', 'animation', 'emoji', 'sound')
+
+    def __init__(self, *, state: ConnectionState, data: VoiceChannelEffectPayload, guild: Guild):
+        self.channel: VoiceChannel = guild.get_channel(int(data['channel_id']))  # type: ignore # will always be a VoiceChannel
+        self.user: Optional[Member] = guild.get_member(int(data['user_id']))
+        self.animation: Optional[VoiceChannelEffectAnimation] = None
+
+        animation_id = data.get('animation_id')
+        if animation_id is not None:
+            animation_type = try_enum(VoiceChannelEffectAnimationType, data['animation_type'])  # type: ignore # cannot be None here
+            self.animation = VoiceChannelEffectAnimation(id=animation_id, type=animation_type)
+
+        emoji = data.get('emoji')
+        self.emoji: Optional[PartialEmoji] = PartialEmoji.from_dict(emoji) if emoji is not None else None
+        self.sound: Optional[VoiceChannelSoundEffect] = None
+
+        sound_id: Optional[int] = utils._get_as_snowflake(data, 'sound_id')
+        if sound_id is not None:
+            sound_volume = data.get('sound_volume') or 0.0
+            self.sound = VoiceChannelSoundEffect(state=state, id=sound_id, volume=sound_volume)
+
+    def __repr__(self) -> str:
+        attrs = [
+            ('channel', self.channel),
+            ('user', self.user),
+            ('animation', self.animation),
+            ('emoji', self.emoji),
+            ('sound', self.sound),
+        ]
+        inner = ' '.join('%s=%r' % t for t in attrs)
+        return f"<{self.__class__.__name__} {inner}>"
+
+    def is_sound(self) -> bool:
+        """:class:`bool`: Whether the effect is a sound or not."""
+        return self.sound is not None
 
 
 class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
@@ -395,9 +525,24 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> TextChannel:
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        reason: Optional[str] = None,
+    ) -> TextChannel:
         return await self._clone_impl(
-            {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay}, name=name, reason=reason
+            {
+                'topic': self.topic,
+                'rate_limit_per_user': self.slowmode_delay,
+                'nsfw': self.nsfw,
+                'default_auto_archive_duration': self.default_auto_archive_duration,
+                'default_thread_rate_limit_per_user': self.default_thread_slowmode_delay,
+            },
+            name=name,
+            category=category,
+            reason=reason,
         )
 
     async def delete_messages(self, messages: Iterable[Snowflake], *, reason: Optional[str] = None) -> None:
@@ -1249,6 +1394,24 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
         data = await self._state.http.create_webhook(self.id, name=str(name), avatar=avatar, reason=reason)
         return Webhook.from_state(data, state=self._state)
 
+    @utils.copy_doc(discord.abc.GuildChannel.clone)
+    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> Self:
+        base = {
+            'bitrate': self.bitrate,
+            'user_limit': self.user_limit,
+            'rate_limit_per_user': self.slowmode_delay,
+            'nsfw': self.nsfw,
+            'video_quality_mode': self.video_quality_mode.value,
+        }
+        if self.rtc_region:
+            base['rtc_region'] = self.rtc_region
+
+        return await self._clone_impl(
+            base,
+            name=name,
+            reason=reason,
+        )
+
 
 class VoiceChannel(VocalGuildChannel):
     """Represents a Discord guild voice channel.
@@ -1344,8 +1507,16 @@ class VoiceChannel(VocalGuildChannel):
         return ChannelType.voice
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> VoiceChannel:
-        return await self._clone_impl({'bitrate': self.bitrate, 'user_limit': self.user_limit}, name=name, reason=reason)
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        reason: Optional[str] = None,
+    ) -> VoiceChannel:
+        return await self._clone_impl(
+            {'bitrate': self.bitrate, 'user_limit': self.user_limit}, name=name, category=category, reason=reason
+        )
 
     @overload
     async def edit(self) -> None:
@@ -1455,6 +1626,35 @@ class VoiceChannel(VocalGuildChannel):
         if payload is not None:
             # the payload will always be the proper channel payload
             return self.__class__(state=self._state, guild=self.guild, data=payload)  # type: ignore
+
+    async def send_sound(self, sound: Union[SoundboardSound, SoundboardDefaultSound], /) -> None:
+        """|coro|
+
+        Sends a soundboard sound for this channel.
+
+        You must have :attr:`~Permissions.speak` and :attr:`~Permissions.use_soundboard` to do this.
+        Additionally, you must have :attr:`~Permissions.use_external_sounds` if the sound is from
+        a different guild.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        -----------
+        sound: Union[:class:`SoundboardSound`, :class:`SoundboardDefaultSound`]
+            The sound to send for this channel.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to send a sound for this channel.
+        HTTPException
+            Sending the sound failed.
+        """
+        payload = {'sound_id': sound.id}
+        if not isinstance(sound, SoundboardDefaultSound) and self.guild.id != sound.guild.id:
+            payload['source_guild_id'] = sound.guild.id
+
+        await self._state.http.send_soundboard_sound(self.id, **payload)
 
 
 class StageChannel(VocalGuildChannel):
@@ -1589,8 +1789,14 @@ class StageChannel(VocalGuildChannel):
         return ChannelType.stage_voice
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> StageChannel:
-        return await self._clone_impl({}, name=name, reason=reason)
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        reason: Optional[str] = None,
+    ) -> StageChannel:
+        return await self._clone_impl({}, name=name, category=category, reason=reason)
 
     @property
     def instance(self) -> Optional[StageInstance]:
@@ -1869,7 +2075,13 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         return self.nsfw
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> CategoryChannel:
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
+        reason: Optional[str] = None,
+    ) -> CategoryChannel:
         return await self._clone_impl({'nsfw': self.nsfw}, name=name, reason=reason)
 
     @overload
@@ -2386,9 +2598,33 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         return self._type == ChannelType.media.value
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
-    async def clone(self, *, name: Optional[str] = None, reason: Optional[str] = None) -> ForumChannel:
+    async def clone(
+        self,
+        *,
+        name: Optional[str] = None,
+        category: Optional[CategoryChannel],
+        reason: Optional[str] = None,
+    ) -> ForumChannel:
+        base = {
+            'topic': self.topic,
+            'rate_limit_per_user': self.slowmode_delay,
+            'nsfw': self.nsfw,
+            'default_auto_archive_duration': self.default_auto_archive_duration,
+            'available_tags': [tag.to_dict() for tag in self.available_tags],
+            'default_thread_rate_limit_per_user': self.default_thread_slowmode_delay,
+        }
+        if self.default_sort_order:
+            base['default_sort_order'] = self.default_sort_order.value
+        if self.default_reaction_emoji:
+            base['default_reaction_emoji'] = self.default_reaction_emoji._to_forum_tag_payload()
+        if not self.is_media() and self.default_layout:
+            base['default_forum_layout'] = self.default_layout.value
+
         return await self._clone_impl(
-            {'topic': self.topic, 'nsfw': self.nsfw, 'rate_limit_per_user': self.slowmode_delay}, name=name, reason=reason
+            base,
+            name=name,
+            category=category,
+            reason=reason,
         )
 
     @overload
