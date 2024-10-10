@@ -508,11 +508,11 @@ class MessageSnapshot:
         cls,
         state: ConnectionState,
         message_snapshots: Optional[List[Dict[Literal['message'], MessageSnapshotPayload]]],
-    ):
+    ) -> List[Self]:
         if not message_snapshots:
-            return None
+            return []
 
-        return [MessageSnapshot(state, snapshot['message']) for snapshot in message_snapshots]
+        return [cls(state, snapshot['message']) for snapshot in message_snapshots]
 
     def __init__(self, state: ConnectionState, data: MessageSnapshotPayload):
         self.type: MessageType = try_enum(MessageType, data['type'])
@@ -1971,7 +1971,7 @@ class Message(PartialMessage, Hashable):
         The poll attached to this message.
 
         .. versionadded:: 2.4
-    message_snapshots: Optional[List[:class:`MessageSnapshot`]]
+    message_snapshots: List[:class:`MessageSnapshot`]
         The message snapshots attached to this message.
 
         .. versionadded:: 2.5
@@ -2050,7 +2050,7 @@ class Message(PartialMessage, Hashable):
         self.position: Optional[int] = data.get('position')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
-        self.message_snapshots: Optional[List[MessageSnapshot]] = MessageSnapshot._from_value(
+        self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(
             state, data.get('message_snapshots')
         )
 
