@@ -836,7 +836,7 @@ class CallMessage:
             else:
                 user = state.get_user(user_id)
                 if user is not None:
-                    self.participants.append(user)  # type: ignore # can't be a Member here
+                    self.participants.append(user)
 
     @property
     def duration(self) -> datetime.timedelta:
