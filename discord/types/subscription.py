@@ -22,27 +22,21 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
-from typing_extensions import NotRequired
-from .snowflake import Snowflake, SnowflakeList
-from .user import User
+from __future__ import annotations
+
+from typing import List, Literal, Optional, TypedDict
+
+from .snowflake import Snowflake
+
+SubscriptionStatus = Literal[0, 1, 2]
 
 
-class PartialEmoji(TypedDict):
-    id: Optional[Snowflake]
-    name: Optional[str]
-    animated: NotRequired[bool]
-
-
-class Emoji(PartialEmoji, total=False):
-    roles: SnowflakeList
-    user: User
-    require_colons: bool
-    managed: bool
-    animated: bool
-    available: bool
-
-
-class EditEmoji(TypedDict):
-    name: str
-    roles: Optional[SnowflakeList]
+class Subscription(TypedDict):
+    id: Snowflake
+    user_id: Snowflake
+    sku_ids: List[Snowflake]
+    entitlement_ids: List[Snowflake]
+    current_period_start: str
+    current_period_end: str
+    status: SubscriptionStatus
+    canceled_at: Optional[str]

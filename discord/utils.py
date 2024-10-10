@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 import array
@@ -41,7 +42,6 @@ from typing import (
     Iterator,
     List,
     Literal,
-    Mapping,
     NamedTuple,
     Optional,
     Protocol,
@@ -71,6 +71,7 @@ import types
 import typing
 import warnings
 import logging
+import zlib
 
 import yarl
 
@@ -81,6 +82,12 @@ except ModuleNotFoundError:
 else:
     HAS_ORJSON = True
 
+try:
+    import zstandard  # type: ignore
+except ImportError:
+    _HAS_ZSTD = False
+else:
+    _HAS_ZSTD = True
 
 __all__ = (
     'oauth_url',
@@ -148,8 +155,11 @@ if TYPE_CHECKING:
     from .invite import Invite
     from .template import Template
 
-    class _RequestLike(Protocol):
-        headers: Mapping[str, Any]
+    class _DecompressionContext(Protocol):
+        COMPRESSION_TYPE: str
+
+        def decompress(self, data: bytes, /) -> str | None:
+            ...
 
     P = ParamSpec('P')
 
@@ -623,9 +633,19 @@ def _get_mime_type_for_image(data: bytes):
         raise ValueError('Unsupported image type given')
 
 
-def _bytes_to_base64_data(data: bytes) -> str:
+def _get_mime_type_for_audio(data: bytes):
+    if data.startswith(b'\x49\x44\x33') or data.startswith(b'\xff\xfb'):
+        return 'audio/mpeg'
+    else:
+        raise ValueError('Unsupported audio type given')
+
+
+def _bytes_to_base64_data(data: bytes, *, audio: bool = False) -> str:
     fmt = 'data:{mime};base64,{data}'
-    mime = _get_mime_type_for_image(data)
+    if audio:
+        mime = _get_mime_type_for_audio(data)
+    else:
+        mime = _get_mime_type_for_image(data)
     b64 = b64encode(data).decode('ascii')
     return fmt.format(mime=mime, data=b64)
 
@@ -1406,3 +1426,97 @@ def _human_join(seq: Sequence[str], /, *, delimiter: str = ', ', final: str = 'o
         return f'{seq[0]} {final} {seq[1]}'
 
     return delimiter.join(seq[:-1]) + f' {final} {seq[-1]}'
+
+
+if _HAS_ZSTD:
+
+    class _ZstdDecompressionContext:
+        __slots__ = ('context',)
+
+        COMPRESSION_TYPE: str = 'zstd-stream'
+
+        def __init__(self) -> None:
+            decompressor = zstandard.ZstdDecompressor()
+            self.context = decompressor.decompressobj()
+
+        def decompress(self, data: bytes, /) -> str | None:
+            # Each WS message is a complete gateway message
+            return self.context.decompress(data).decode('utf-8')
+
+    _ActiveDecompressionContext: Type[_DecompressionContext] = _ZstdDecompressionContext
+else:
+
+    class _ZlibDecompressionContext:
+        __slots__ = ('context', 'buffer')
+
+        COMPRESSION_TYPE: str = 'zlib-stream'
+
+        def __init__(self) -> None:
+            self.buffer: bytearray = bytearray()
+            self.context = zlib.decompressobj()
+
+        def decompress(self, data: bytes, /) -> str | None:
+            self.buffer.extend(data)
+
+            # Check whether ending is Z_SYNC_FLUSH
+            if len(data) < 4 or data[-4:] != b'\x00\x00\xff\xff':
+                return
+
+            msg = self.context.decompress(self.buffer)
+            self.buffer = bytearray()
+
+            return msg.decode('utf-8')
+
+    _ActiveDecompressionContext: Type[_DecompressionContext] = _ZlibDecompressionContext
+
+
+def _format_call_duration(duration: datetime.timedelta) -> str:
+    seconds = duration.total_seconds()
+
+    minutes_s = 60
+    hours_s = minutes_s * 60
+    days_s = hours_s * 24
+    # Discord uses approx. 1/12 of 365.25 days (avg. days per year)
+    months_s = days_s * 30.4375
+    years_s = months_s * 12
+
+    threshold_s = 45
+    threshold_m = 45
+    threshold_h = 21.5
+    threshold_d = 25.5
+    threshold_M = 10.5
+
+    if seconds < threshold_s:
+        formatted = "a few seconds"
+    elif seconds < (threshold_m * minutes_s):
+        minutes = round(seconds / minutes_s)
+        if minutes == 1:
+            formatted = "a minute"
+        else:
+            formatted = f"{minutes} minutes"
+    elif seconds < (threshold_h * hours_s):
+        hours = round(seconds / hours_s)
+        if hours == 1:
+            formatted = "an hour"
+        else:
+            formatted = f"{hours} hours"
+    elif seconds < (threshold_d * days_s):
+        days = round(seconds / days_s)
+        if days == 1:
+            formatted = "a day"
+        else:
+            formatted = f"{days} days"
+    elif seconds < (threshold_M * months_s):
+        months = round(seconds / months_s)
+        if months == 1:
+            formatted = "a month"
+        else:
+            formatted = f"{months} months"
+    else:
+        years = round(seconds / years_s)
+        if years == 1:
+            formatted = "a year"
+        else:
+            formatted = f"{years} years"
+
+    return formatted

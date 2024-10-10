@@ -76,6 +76,7 @@ if TYPE_CHECKING:
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
         MessageInteractionMetadata as MessageInteractionMetadataPayload,
+        CallMessage as CallMessagePayload,
         PurchaseNotificationResponse as PurchaseNotificationResponsePayload,
         GuildProductPurchase as GuildProductPurchasePayload,
     )
@@ -114,6 +115,7 @@ __all__ = (
     'MessageApplication',
     'RoleSubscriptionInfo',
     'MessageInteractionMetadata',
+    'CallMessage',
     'GuildProductPurchase',
     'PurchaseNotification',
 )
@@ -814,6 +816,51 @@ class MessageApplication:
         return None
 
 
+class CallMessage:
+    """Represents a message's call data in a private channel from a :class:`~discord.Message`.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    ended_timestamp: Optional[:class:`datetime.datetime`]
+        The timestamp the call has ended.
+    participants: List[:class:`User`]
+        A list of users that participated in the call.
+    """
+
+    __slots__ = ('_message', 'ended_timestamp', 'participants')
+
+    def __repr__(self) -> str:
+        return f'<CallMessage participants={self.participants!r}>'
+
+    def __init__(self, *, state: ConnectionState, message: Message, data: CallMessagePayload):
+        self._message: Message = message
+        self.ended_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('ended_timestamp'))
+        self.participants: List[User] = []
+
+        for user_id in data['participants']:
+            user_id = int(user_id)
+            if user_id == self._message.author.id:
+                self.participants.append(self._message.author)  # type: ignore # can't be a Member here
+            else:
+                user = state.get_user(user_id)
+                if user is not None:
+                    self.participants.append(user)
+
+    @property
+    def duration(self) -> datetime.timedelta:
+        """:class:`datetime.timedelta`: The duration the call has lasted or is already ongoing."""
+        if self.ended_timestamp is None:
+            return utils.utcnow() - self._message.created_at
+        else:
+            return self.ended_timestamp - self._message.created_at
+
+    def is_ended(self) -> bool:
+        """:class:`bool`: Whether the call is ended or not."""
+        return self.ended_timestamp is not None
+
+
 class RoleSubscriptionInfo:
     """Represents a message's role subscription information.
 
@@ -1151,6 +1198,8 @@ class PartialMessage(Hashable):
         Forbidden
             Tried to suppress a message without permissions or
             edited a message's content or embed that isn't yours.
+        NotFound
+            This message does not exist.
         TypeError
             You specified both ``embed`` and ``embeds``
 
@@ -1817,6 +1866,10 @@ class Message(PartialMessage, Hashable):
         The poll attached to this message.
 
         .. versionadded:: 2.4
+    call: Optional[:class:`CallMessage`]
+        The call associated with this message.
+
+        .. versionadded:: 2.5
     purchase_notification: Optional[:class:`PurchaseNotification`]
         The data of the purchase notification that prompted this :attr:`MessageType.purchase_notification` message.
 
@@ -1857,6 +1910,7 @@ class Message(PartialMessage, Hashable):
         'position',
         'interaction_metadata',
         'poll',
+        'call',
         'purchase_notification',
     )
 
@@ -1897,13 +1951,11 @@ class Message(PartialMessage, Hashable):
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
 
-        # This updates the poll so it has the counts, if the message
-        # was previously cached.
         self.poll: Optional[Poll] = None
         try:
             self.poll = Poll._from_data(data=data['poll'], message=self, state=state)
         except KeyError:
-            self.poll = state._get_poll(self.id)
+            pass
 
         try:
             # if the channel doesn't have a guild attribute, we handle that
@@ -2178,6 +2230,13 @@ class Message(PartialMessage, Hashable):
 
     def _handle_interaction_metadata(self, data: MessageInteractionMetadataPayload):
         self.interaction_metadata = MessageInteractionMetadata(state=self._state, guild=self.guild, data=data)
+
+    def _handle_call(self, data: CallMessagePayload):
+        self.call: Optional[CallMessage]
+        if data is not None:
+            self.call = CallMessage(state=self._state, message=self, data=data)
+        else:
+            self.call = None
 
     def _rebind_cached_references(
         self,
@@ -2483,6 +2542,22 @@ class Message(PartialMessage, Hashable):
         if self.type is MessageType.guild_incident_report_false_alarm:
             return f'{self.author.name} reported a false alarm in {self.guild}.'
 
+        if self.type is MessageType.call:
+            call_ended = self.call.ended_timestamp is not None  # type: ignore # call can't be None here
+            missed = self._state.user not in self.call.participants  # type: ignore # call can't be None here
+
+            if call_ended:
+                duration = utils._format_call_duration(self.call.duration)  # type: ignore # call can't be None here
+                if missed:
+                    return 'You missed a call from {0.author.name} that lasted {1}.'.format(self, duration)
+                else:
+                    return '{0.author.name} started a call that lasted {1}.'.format(self, duration)
+            else:
+                if missed:
+                    return '{0.author.name} started a call. \N{EM DASH} Join the call'.format(self)
+                else:
+                    return '{0.author.name} started a call.'.format(self)
+
         if self.type is MessageType.purchase_notification and self.purchase_notification is not None:
             guild_product_purchase = self.purchase_notification.guild_product_purchase
             if guild_product_purchase is not None:
@@ -2598,6 +2673,8 @@ class Message(PartialMessage, Hashable):
         Forbidden
             Tried to suppress a message without permissions or
             edited a message's content or embed that isn't yours.
+        NotFound
+            This message does not exist.
         TypeError
             You specified both ``embed`` and ``embeds``
 

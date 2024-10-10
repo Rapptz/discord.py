@@ -123,10 +123,14 @@ class GuildProductPurchase(TypedDict):
     listing_id: Snowflake
     product_name: str
 
-
 class PurchaseNotificationResponse(TypedDict):
     type: PurchaseNotificationResponseType
     guild_product_purchase: Optional[GuildProductPurchase]
+
+
+class CallMessage(TypedDict):
+    participants: SnowflakeList
+    ended_timestamp: NotRequired[Optional[str]]
 
 
 MessageType = Literal[
@@ -201,6 +205,7 @@ class Message(PartialMessage):
     position: NotRequired[int]
     role_subscription_data: NotRequired[RoleSubscriptionData]
     thread: NotRequired[Thread]
+    call: NotRequired[CallMessage]
     purchase_notification: NotRequired[PurchaseNotificationResponse]
 
 
