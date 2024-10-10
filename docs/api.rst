@@ -1298,6 +1298,35 @@ Scheduled Events
     :type user: :class:`User`
 
 
+Soundboard
+~~~~~~~~~~~
+
+.. function:: on_soundboard_sound_create(sound)
+              on_soundboard_sound_delete(sound)
+
+    Called when a :class:`SoundboardSound` is created or deleted.
+
+    .. versionadded:: 2.5
+
+    :param sound: The soundboard sound that was created or deleted.
+    :type sound: :class:`SoundboardSound`
+
+.. function:: on_soundboard_sound_update(before, after)
+
+    Called when a :class:`SoundboardSound` is updated.
+
+    The following examples illustrate when this event is called:
+
+    - The name is changed.
+    - The emoji is changed.
+    - The volume is changed.
+
+    .. versionadded:: 2.5
+
+    :param sound: The soundboard sound that was updated.
+    :type sound: :class:`SoundboardSound`
+
+
 Stages
 ~~~~~~~
 
@@ -1326,6 +1355,37 @@ Stages
     :type before: :class:`StageInstance`
     :param after: The stage instance after the update.
     :type after: :class:`StageInstance`
+
+
+Subscriptions
+~~~~~~~~~~~~~
+
+.. function:: on_subscription_create(subscription)
+
+    Called when a subscription is created.
+
+    .. versionadded:: 2.5
+
+    :param subscription: The subscription that was created.
+    :type subscription: :class:`Subscription`
+
+.. function:: on_subscription_update(subscription)
+
+    Called when a subscription is updated.
+
+    .. versionadded:: 2.5
+
+    :param subscription: The subscription that was updated.
+    :type subscription: :class:`Subscription`
+
+.. function:: on_subscription_delete(subscription)
+
+    Called when a subscription is deleted.
+    
+    .. versionadded:: 2.5
+
+    :param subscription: The subscription that was deleted.
+    :type subscription: :class:`Subscription`
 
 Threads
 ~~~~~~~~
@@ -1482,6 +1542,17 @@ Voice
     :type before: :class:`VoiceState`
     :param after: The voice state after the changes.
     :type after: :class:`VoiceState`
+
+.. function:: on_voice_channel_effect(effect)
+
+    Called when a :class:`Member` sends a :class:`VoiceChannelEffect` in a voice channel the bot is in.
+
+    This requires :attr:`Intents.voice_states` to be enabled.
+
+    .. versionadded:: 2.5
+
+    :param effect: The effect that is sent.
+    :type effect: :class:`VoiceChannelEffect`
 
 .. _discord-api-utils:
 
@@ -2945,6 +3016,42 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.4
 
+    .. attribute:: soundboard_sound_create
+
+        A soundboard sound was created.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.emoji`
+        - :attr:`~AuditLogDiff.volume`
+
+        .. versionadded:: 2.5
+
+    .. attribute:: soundboard_sound_update
+
+        A soundboard sound was updated.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.emoji`
+        - :attr:`~AuditLogDiff.volume`
+
+        .. versionadded:: 2.5
+
+    .. attribute:: soundboard_sound_delete
+
+        A soundboard sound was deleted.
+
+        Possible attributes for :class:`AuditLogDiff`:
+
+        - :attr:`~AuditLogDiff.name`
+        - :attr:`~AuditLogDiff.emoji`
+        - :attr:`~AuditLogDiff.volume`
+
+        .. versionadded:: 2.5
+
 .. class:: AuditLogActionCategory
 
     Represents the category that the :class:`AuditLogAction` belongs to.
@@ -3663,6 +3770,40 @@ of :class:`enum.Enum`.
         A burst reaction, also known as a "super reaction".
 
 
+.. class:: VoiceChannelEffectAnimationType
+
+    Represents the animation type of a voice channel effect.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: premium
+
+        A fun animation, sent by a Nitro subscriber.
+
+    .. attribute:: basic
+
+        The standard animation.
+
+
+.. class:: SubscriptionStatus
+
+    Represents the status of an subscription.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: active
+
+        The subscription is active.
+
+    .. attribute:: ending
+
+        The subscription is active but will not renew.
+
+    .. attribute:: inactive
+
+        The subscription is inactive and not being charged.
+
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -4128,11 +4269,12 @@ AuditLogDiff
 
     .. attribute:: emoji
 
-        The name of the emoji that represents a sticker being changed.
+        The emoji which represents one of the following:
 
-        See also :attr:`GuildSticker.emoji`.
+        * :attr:`GuildSticker.emoji`
+        * :attr:`SoundboardSound.emoji`
 
-        :type: :class:`str`
+        :type: Union[:class:`str`, :class:`PartialEmoji`]
 
     .. attribute:: unicode_emoji
 
@@ -4153,9 +4295,10 @@ AuditLogDiff
 
     .. attribute:: available
 
-        The availability of a sticker being changed.
+        The availability of one of the following being changed:
 
-        See also :attr:`GuildSticker.available`
+        * :attr:`GuildSticker.available`
+        * :attr:`SoundboardSound.available`
 
         :type: :class:`bool`
 
@@ -4377,6 +4520,22 @@ AuditLogDiff
         See also :attr:`ForumChannel.default_reaction_emoji`
 
         :type: Optional[:class:`PartialEmoji`]
+
+    .. attribute:: user
+
+        The user that represents the uploader of a soundboard sound.
+
+        See also :attr:`SoundboardSound.user`
+
+        :type: Union[:class:`Member`, :class:`User`]
+
+    .. attribute:: volume
+
+        The volume of a soundboard sound.
+
+        See also :attr:`SoundboardSound.volume`
+
+        :type: :class:`float`
 
 .. this is currently missing the following keys: reason and application_id
    I'm not sure how to port these
@@ -4799,6 +4958,35 @@ VoiceChannel
     :members:
     :inherited-members:
 
+.. attributetable:: VoiceChannelEffect
+
+.. autoclass:: VoiceChannelEffect()
+    :members:
+    :inherited-members:
+
+.. class:: VoiceChannelEffectAnimation
+
+    A namedtuple which represents a voice channel effect animation.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: id
+
+        The ID of the animation.
+
+        :type: :class:`int`
+    .. attribute:: type
+
+        The type of the animation.
+
+        :type: :class:`VoiceChannelEffectAnimationType`
+
+.. attributetable:: VoiceChannelSoundEffect
+
+.. autoclass:: VoiceChannelSoundEffect()
+    :members:
+    :inherited-members:
+
 StageChannel
 ~~~~~~~~~~~~~
 
@@ -4965,6 +5153,30 @@ GuildSticker
 .. autoclass:: GuildSticker()
     :members:
 
+BaseSoundboardSound
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: BaseSoundboardSound
+
+.. autoclass:: BaseSoundboardSound()
+    :members:
+
+SoundboardDefaultSound
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SoundboardDefaultSound
+
+.. autoclass:: SoundboardDefaultSound()
+    :members:
+
+SoundboardSound
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SoundboardSound
+
+.. autoclass:: SoundboardSound()
+    :members:
+
 ShardInfo
 ~~~~~~~~~~~
 
@@ -4987,6 +5199,14 @@ Entitlement
 .. attributetable:: Entitlement
 
 .. autoclass:: Entitlement()
+    :members:
+
+Subscription
+~~~~~~~~~~~~
+
+.. attributetable:: Subscription
+
+.. autoclass:: Subscription()
     :members:
 
 RawMessageDeleteEvent
