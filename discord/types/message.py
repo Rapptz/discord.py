@@ -123,6 +123,7 @@ class GuildProductPurchase(TypedDict):
     listing_id: Snowflake
     product_name: str
 
+
 class PurchaseNotificationResponse(TypedDict):
     type: PurchaseNotificationResponseType
     guild_product_purchase: Optional[GuildProductPurchase]
