@@ -907,12 +907,20 @@ class GuildProductPurchase:
         The name of the product that the user has purchased.
     """
 
+    __slots__ = ('listing_id', 'product_name')
+
     def __init__(self, data: GuildProductPurchasePayload) -> None:
         self.listing_id: int = int(data['listing_id'])
         self.product_name: str = data['product_name']
 
     def __hash__(self) -> int:
         return self.listing_id >> 22
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, GuildProductPurchase) and other.listing_id == self.listing_id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
 
 
 class PurchaseNotification:
