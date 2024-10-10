@@ -2584,7 +2584,6 @@ class HTTPClient:
     def send_soundboard_sound(self, channel_id: Snowflake, **payload: Any) -> Response[None]:
         valid_keys = ('sound_id', 'source_guild_id')
         payload = {k: v for k, v in payload.items() if k in valid_keys}
-        print(payload)
         return self.request(
             (Route('POST', '/channels/{channel_id}/send-soundboard-sound', channel_id=channel_id)), json=payload
         )
