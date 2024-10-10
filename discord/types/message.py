@@ -116,6 +116,19 @@ class RoleSubscriptionData(TypedDict):
     is_renewal: bool
 
 
+PurchaseNotificationResponseType = Literal[0]
+
+
+class GuildProductPurchase(TypedDict):
+    listing_id: Snowflake
+    product_name: str
+
+
+class PurchaseNotificationResponse(TypedDict):
+    type: PurchaseNotificationResponseType
+    guild_product_purchase: Optional[GuildProductPurchase]
+
+
 class CallMessage(TypedDict):
     participants: SnowflakeList
     ended_timestamp: NotRequired[Optional[str]]
@@ -156,6 +169,7 @@ MessageType = Literal[
     37,
     38,
     39,
+    44,
 ]
 
 
@@ -193,6 +207,7 @@ class Message(PartialMessage):
     role_subscription_data: NotRequired[RoleSubscriptionData]
     thread: NotRequired[Thread]
     call: NotRequired[CallMessage]
+    purchase_notification: NotRequired[PurchaseNotificationResponse]
 
 
 AllowedMentionType = Literal['roles', 'users', 'everyone']
