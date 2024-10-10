@@ -219,10 +219,9 @@ class ChannelType(Enum):
 
 
 class MessageReferenceType(Enum):
+    default = 0
     reply = 0
     forward = 1
-
-    default = 0
 
 
 class MessageType(Enum):
