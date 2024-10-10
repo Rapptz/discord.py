@@ -1468,3 +1468,55 @@ else:
             return msg.decode('utf-8')
 
     _ActiveDecompressionContext: Type[_DecompressionContext] = _ZlibDecompressionContext
+
+
+def _format_call_duration(duration: datetime.timedelta) -> str:
+    seconds = duration.total_seconds()
+
+    minutes_s = 60
+    hours_s = minutes_s * 60
+    days_s = hours_s * 24
+    # Discord uses approx. 1/12 of 365.25 days (avg. days per year)
+    months_s = days_s * 30.4375
+    years_s = months_s * 12
+
+    threshold_s = 45
+    threshold_m = 45
+    threshold_h = 21.5
+    threshold_d = 25.5
+    threshold_M = 10.5
+
+    if seconds < threshold_s:
+        formatted = "a few seconds"
+    elif seconds < (threshold_m * minutes_s):
+        minutes = round(seconds / minutes_s)
+        if minutes == 1:
+            formatted = "a minute"
+        else:
+            formatted = f"{minutes} minutes"
+    elif seconds < (threshold_h * hours_s):
+        hours = round(seconds / hours_s)
+        if hours == 1:
+            formatted = "an hour"
+        else:
+            formatted = f"{hours} hours"
+    elif seconds < (threshold_d * days_s):
+        days = round(seconds / days_s)
+        if days == 1:
+            formatted = "a day"
+        else:
+            formatted = f"{days} days"
+    elif seconds < (threshold_M * months_s):
+        months = round(seconds / months_s)
+        if months == 1:
+            formatted = "a month"
+        else:
+            formatted = f"{months} months"
+    else:
+        years = round(seconds / years_s)
+        if years == 1:
+            formatted = "a year"
+        else:
+            formatted = f"{years} years"
+
+    return formatted

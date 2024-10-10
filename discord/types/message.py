@@ -116,6 +116,11 @@ class RoleSubscriptionData(TypedDict):
     is_renewal: bool
 
 
+class CallMessage(TypedDict):
+    participants: SnowflakeList
+    ended_timestamp: NotRequired[Optional[str]]
+
+
 MessageType = Literal[
     0,
     1,
@@ -187,6 +192,7 @@ class Message(PartialMessage):
     position: NotRequired[int]
     role_subscription_data: NotRequired[RoleSubscriptionData]
     thread: NotRequired[Thread]
+    call: NotRequired[CallMessage]
 
 
 AllowedMentionType = Literal['roles', 'users', 'everyone']
