@@ -2104,9 +2104,7 @@ class Message(PartialMessage, Hashable):
         self.position: Optional[int] = data.get('position')
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
-        self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(
-            state, data.get('message_snapshots')
-        )
+        self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
 
         self.poll: Optional[Poll] = None
         try:
