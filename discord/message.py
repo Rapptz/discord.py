@@ -1915,6 +1915,9 @@ class Message(PartialMessage, Hashable):
                     # the channel will be the correct type here
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
 
+                    if self.type is MessageType.poll_result and ref.resolved.poll:
+                        ref.resolved.poll._update_results_from_message(self)
+
         self.application: Optional[MessageApplication] = None
         try:
             application = data['application']
@@ -2266,6 +2269,7 @@ class Message(PartialMessage, Hashable):
             MessageType.chat_input_command,
             MessageType.context_menu_command,
             MessageType.thread_starter_message,
+            MessageType.poll_result,
         )
 
     @utils.cached_slot_property('_cs_system_content')
@@ -2420,6 +2424,14 @@ class Message(PartialMessage, Hashable):
 
         if self.type is MessageType.guild_incident_report_false_alarm:
             return f'{self.author.name} reported a false alarm in {self.guild}.'
+
+        if self.type is MessageType.poll_result:
+            embed = self.embeds[0]  # Will always have 1 embed
+            poll_title = utils.get(
+                embed.fields,
+                name='poll_question_text',
+            )
+            return f'{self.author.display_name}\'s poll {poll_title.value} has closed.'  # type: ignore
 
         # Fallback for unknown message types
         return ''
