@@ -536,6 +536,8 @@ class TextChannel(discord.abc.Messageable, discord.abc.GuildChannel, Hashable):
             'topic': self.topic,
             'nsfw': self.nsfw,
             'default_auto_archive_duration': self.default_auto_archive_duration,
+            'default_thread_rate_limit_per_user': self.default_thread_slowmode_delay,
+        }
         if not self.is_news():
             base['rate_limit_per_user'] = self.slowmode_delay
         return await self._clone_impl(
