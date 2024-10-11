@@ -564,7 +564,7 @@ class RawPollVoteActionEvent(_RawReprMixin):
 class RawVoiceChannelStatusUpdateEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_voice_channel_status_update` event.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5
 
     Attributes
     ----------

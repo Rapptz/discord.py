@@ -1484,7 +1484,7 @@ class VoiceChannel(VocalGuildChannel):
         This is not available for the fetch methods such as :func:`Guild.fetch_channel`
         or :func:`Client.fetch_channel`
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
     """
 
     __slots__ = ('status',)

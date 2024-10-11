@@ -375,7 +375,7 @@ Channels
     Called whenever the status of a voice channel has changed.
     This is called regardless of the voice channel being in the internal cache.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.5
 
     :param payload: The raw event payload data.
     :type payload: :class:`RawVoiceChannelStatusUpdateEvent`
@@ -3077,7 +3077,7 @@ of :class:`enum.Enum`.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
 
     .. attribute:: voice_channel_status_delete
 
@@ -3094,7 +3094,7 @@ of :class:`enum.Enum`.
 
         When this is the action, :attr:`AuditLogEntry.changes` is empty.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5
 
 .. class:: AuditLogActionCategory
 
