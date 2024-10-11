@@ -2066,6 +2066,7 @@ class CategoryChannel(discord.abc.GuildChannel, Hashable):
         self,
         *,
         name: Optional[str] = None,
+        category: Optional[CategoryChannel] = None,
         reason: Optional[str] = None,
     ) -> CategoryChannel:
         return await self._clone_impl({'nsfw': self.nsfw}, name=name, reason=reason)
