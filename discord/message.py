@@ -2335,7 +2335,7 @@ class Message(PartialMessage, Hashable):
         if self.type is MessageType.role_subscription_purchase and self.role_subscription is not None:
             total_months = self.role_subscription.total_months_subscribed
             months = '1 month' if total_months == 1 else f'{total_months} months'
-            action = 'renewed' if self.role_subscription.is_renewal else 'subscribed'
+            action = 'renewed' if self.role_subscription.is_renewal else 'joined'
             return f'{self.author.name} {action} **{self.role_subscription.tier_name}** and has been a subscriber of {self.guild} for {months}!'
 
         if self.type is MessageType.stage_start:
