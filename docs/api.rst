@@ -6089,6 +6089,24 @@ of :class:`enum.Enum`.
         A guild product was purchased.
 
 
+.. class:: MessageReferenceType
+
+    Represents the type of a message reference.
+
+    .. versionadded:: 2.5
+
+    .. attribute:: reply
+
+        A message reply.
+
+    .. attribute:: forward
+
+        A forwarded message.
+
+    .. attribute:: default
+
+        An alias for :attr:`.reply`.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data
@@ -7855,6 +7873,11 @@ Message
 .. attributetable:: DeletedReferencedMessage
 
 .. autoclass:: DeletedReferencedMessage()
+    :members:
+
+.. attributetable:: MessageSnapshot
+
+.. autoclass:: MessageSnapshot()
     :members:
 
 .. attributetable:: RoleSubscriptionInfo

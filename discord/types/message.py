@@ -95,7 +95,11 @@ class MessageActivity(TypedDict):
     party_id: str
 
 
+MessageReferenceType = Literal[0, 1]
+
+
 class MessageReference(TypedDict, total=False):
+    type: MessageReferenceType
     message_id: Snowflake
     channel_id: Required[Snowflake]
     guild_id: Snowflake
@@ -164,6 +168,20 @@ MessageType = Literal[
     39,
     44,
 ]
+
+
+class MessageSnapshot(TypedDict):
+    type: MessageType
+    content: str
+    embeds: List[Embed]
+    attachments: List[Attachment]
+    timestamp: str
+    edited_timestamp: Optional[str]
+    flags: NotRequired[int]
+    mentions: List[UserWithMember]
+    mention_roles: SnowflakeList
+    stickers_items: NotRequired[List[StickerItem]]
+    components: NotRequired[List[Component]]
 
 
 class Message(PartialMessage):

@@ -34,6 +34,7 @@ from typing import (
     Dict,
     Collection,
     TYPE_CHECKING,
+    Literal,
     Sequence,
     Union,
     List,
@@ -51,7 +52,7 @@ from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .calls import CallMessage
-from .enums import MessageType, ChannelType, ApplicationCommandType, PurchaseNotificationType, try_enum
+from .enums import MessageType, ChannelType, ApplicationCommandType, PurchaseNotificationType, MessageReferenceType, try_enum
 from .errors import HTTPException
 from .components import _component_factory
 from .embeds import Embed
@@ -80,6 +81,7 @@ if TYPE_CHECKING:
         BaseApplication as MessageApplicationPayload,
         Call as CallPayload,
         MessageReference as MessageReferencePayload,
+        MessageSnapshot as MessageSnapshotPayload,
         MessageActivity as MessageActivityPayload,
         RoleSubscriptionData as RoleSubscriptionDataPayload,
         MessageSearchResult as MessageSearchResultPayload,
@@ -116,6 +118,7 @@ __all__ = (
     'Message',
     'PartialMessage',
     'MessageReference',
+    'MessageSnapshot',
     'DeletedReferencedMessage',
     'RoleSubscriptionInfo',
     'GuildProductPurchase',
@@ -469,6 +472,133 @@ class DeletedReferencedMessage:
         return self._parent.guild_id
 
 
+class MessageSnapshot:
+    """Represents a message snapshot attached to a forwarded message.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    type: :class:`MessageType`
+        The type of the forwarded message.
+    content: :class:`str`
+        The actual contents of the forwarded message.
+    embeds: List[:class:`Embed`]
+        A list of embeds the forwarded message has.
+    attachments: List[:class:`Attachment`]
+        A list of attachments given to the forwarded message.
+    created_at: :class:`datetime.datetime`
+        The forwarded message's time of creation.
+    flags: :class:`MessageFlags`
+        Extra features of the the message snapshot.
+    stickers: List[:class:`StickerItem`]
+        A list of sticker items given to the message.
+    components: List[Union[:class:`ActionRow`, :class:`Button`, :class:`SelectMenu`]]
+        A list of components in the message.
+    """
+
+    __slots__ = (
+        '_cs_raw_channel_mentions',
+        '_cs_cached_message',
+        '_cs_raw_mentions',
+        '_cs_raw_role_mentions',
+        '_edited_timestamp',
+        'attachments',
+        'content',
+        'embeds',
+        'flags',
+        'created_at',
+        'type',
+        'stickers',
+        'components',
+        '_state',
+    )
+
+    @classmethod
+    def _from_value(
+        cls,
+        state: ConnectionState,
+        message_snapshots: Optional[List[Dict[Literal['message'], MessageSnapshotPayload]]],
+    ) -> List[Self]:
+        if not message_snapshots:
+            return []
+
+        return [cls(state, snapshot['message']) for snapshot in message_snapshots]
+
+    def __init__(self, state: ConnectionState, data: MessageSnapshotPayload):
+        self.type: MessageType = try_enum(MessageType, data['type'])
+        self.content: str = data['content']
+        self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
+        self.attachments: List[Attachment] = [Attachment(data=a, state=state) for a in data['attachments']]
+        self.created_at: datetime.datetime = utils.parse_time(data['timestamp'])
+        self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
+        self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('stickers_items', [])]
+
+        self.components: List[MessageComponentType] = []
+        for component_data in data.get('components', []):
+            component = _component_factory(component_data)
+            if component is not None:
+                self.components.append(component)
+
+        self._state: ConnectionState = state
+
+    def __repr__(self) -> str:
+        name = self.__class__.__name__
+        return f'<{name} type={self.type!r} created_at={self.created_at!r} flags={self.flags!r}>'
+
+    @utils.cached_slot_property('_cs_raw_mentions')
+    def raw_mentions(self) -> List[int]:
+        """List[:class:`int`]: A property that returns an array of user IDs matched with
+        the syntax of ``<@user_id>`` in the message content.
+
+        This allows you to receive the user IDs of mentioned users
+        even in a private message context.
+        """
+        return [int(x) for x in re.findall(r'<@!?([0-9]{15,20})>', self.content)]
+
+    @utils.cached_slot_property('_cs_raw_channel_mentions')
+    def raw_channel_mentions(self) -> List[int]:
+        """List[:class:`int`]: A property that returns an array of channel IDs matched with
+        the syntax of ``<#channel_id>`` in the message content.
+        """
+        return [int(x) for x in re.findall(r'<#([0-9]{15,20})>', self.content)]
+
+    @utils.cached_slot_property('_cs_raw_role_mentions')
+    def raw_role_mentions(self) -> List[int]:
+        """List[:class:`int`]: A property that returns an array of role IDs matched with
+        the syntax of ``<@&role_id>`` in the message content.
+        """
+        return [int(x) for x in re.findall(r'<@&([0-9]{15,20})>', self.content)]
+
+    @utils.cached_slot_property('_cs_cached_message')
+    def cached_message(self) -> Optional[Message]:
+        """Optional[:class:`Message`]: Returns the cached message this snapshot points to, if any."""
+        state = self._state
+        return (
+            utils.find(
+                lambda m: (
+                    m.created_at == self.created_at
+                    and m.edited_at == self.edited_at
+                    and m.content == self.content
+                    and m.embeds == self.embeds
+                    and m.components == self.components
+                    and m.stickers == self.stickers
+                    and m.attachments == self.attachments
+                    and m.flags == self.flags
+                ),
+                reversed(state._messages),
+            )
+            if state._messages
+            else None
+        )
+
+    @property
+    def edited_at(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the edited time of the forwarded message."""
+        return self._edited_timestamp
+
+
 class MessageReference:
     """Represents a reference to a :class:`~discord.Message`.
 
@@ -479,6 +609,10 @@ class MessageReference:
 
     Attributes
     -----------
+    type: :class:`MessageReferenceType`
+        The type of message reference.
+
+        .. versionadded:: 2.5
     message_id: Optional[:class:`int`]
         The id of the message referenced.
     channel_id: :class:`int`
@@ -503,10 +637,19 @@ class MessageReference:
         .. versionadded:: 1.6
     """
 
-    __slots__ = ('message_id', 'channel_id', 'guild_id', 'fail_if_not_exists', 'resolved', '_state')
+    __slots__ = ('type', 'message_id', 'channel_id', 'guild_id', 'fail_if_not_exists', 'resolved', '_state')
 
-    def __init__(self, *, message_id: int, channel_id: int, guild_id: Optional[int] = None, fail_if_not_exists: bool = True):
+    def __init__(
+        self,
+        *,
+        message_id: int,
+        channel_id: int,
+        guild_id: Optional[int] = None,
+        fail_if_not_exists: bool = True,
+        type: MessageReferenceType = MessageReferenceType.reply,
+    ):
         self._state: Optional[ConnectionState] = None
+        self.type: MessageReferenceType = type
         self.resolved: Optional[Union[Message, DeletedReferencedMessage]] = None
         self.message_id: Optional[int] = message_id
         self.channel_id: int = channel_id
@@ -516,6 +659,7 @@ class MessageReference:
     @classmethod
     def with_state(cls, state: ConnectionState, data: MessageReferencePayload) -> Self:
         self = cls.__new__(cls)
+        self.type = try_enum(MessageReferenceType, data.get('type', 0))
         self.message_id = utils._get_as_snowflake(data, 'message_id')
         self.channel_id = int(data['channel_id'])
         self.guild_id = utils._get_as_snowflake(data, 'guild_id')
@@ -525,7 +669,13 @@ class MessageReference:
         return self
 
     @classmethod
-    def from_message(cls, message: PartialMessage, *, fail_if_not_exists: bool = True) -> Self:
+    def from_message(
+        cls,
+        message: PartialMessage,
+        *,
+        fail_if_not_exists: bool = True,
+        type: MessageReferenceType = MessageReferenceType.reply,
+    ) -> Self:
         """Creates a :class:`MessageReference` from an existing :class:`~discord.Message`.
 
         .. versionadded:: 1.6
@@ -539,6 +689,10 @@ class MessageReference:
             if the message no longer exists or Discord could not fetch the message.
 
             .. versionadded:: 1.7
+        type: :class:`~discord.MessageReferenceType`
+            The type of message reference this is.
+
+            .. versionadded:: 2.5
 
         Returns
         -------
@@ -550,6 +704,7 @@ class MessageReference:
             channel_id=message.channel.id,
             guild_id=getattr(message.guild, 'id', None),
             fail_if_not_exists=fail_if_not_exists,
+            type=type,
         )
         self._state = message._state
         return self
@@ -572,7 +727,9 @@ class MessageReference:
         return f'<MessageReference message_id={self.message_id!r} channel_id={self.channel_id!r} guild_id={self.guild_id!r}>'
 
     def to_dict(self) -> MessageReferencePayload:
-        result: Dict[str, Any] = {'message_id': self.message_id} if self.message_id is not None else {}
+        result: Dict[str, Any] = (
+            {'type': self.type.value, 'message_id': self.message_id} if self.message_id is not None else {}
+        )
         result['channel_id'] = self.channel_id
         if self.guild_id is not None:
             result['guild_id'] = self.guild_id
@@ -1484,7 +1641,12 @@ class PartialMessage(Hashable):
 
         return Message(state=self._state, channel=self.channel, data=data)
 
-    def to_reference(self, *, fail_if_not_exists: bool = True) -> MessageReference:
+    def to_reference(
+        self,
+        *,
+        fail_if_not_exists: bool = True,
+        type: MessageReferenceType = MessageReferenceType.reply,
+    ) -> MessageReference:
         """Creates a :class:`~discord.MessageReference` from the current message.
 
         .. versionadded:: 1.6
@@ -1496,13 +1658,55 @@ class PartialMessage(Hashable):
             if the message no longer exists or Discord could not fetch the message.
 
             .. versionadded:: 1.7
+        type: :class:`MessageReferenceType`
+            The type of message reference.
+
+            .. versionadded:: 2.5
 
         Returns
         ---------
         :class:`~discord.MessageReference`
             The reference to this message.
         """
-        return MessageReference.from_message(self, fail_if_not_exists=fail_if_not_exists)
+
+        return MessageReference.from_message(self, fail_if_not_exists=fail_if_not_exists, type=type)
+
+    async def forward(
+        self,
+        destination: MessageableChannel,
+        *,
+        fail_if_not_exists: bool = True,
+    ) -> Message:
+        """|coro|
+
+        Forwards this message to a channel.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        destination: :class:`~discord.abc.Messageable`
+            The channel to forward this message to.
+        fail_if_not_exists: :class:`bool`
+            Whether replying using the message reference should raise :class:`HTTPException`
+            if the message no longer exists or Discord could not fetch the message.
+
+        Raises
+        ------
+        ~discord.HTTPException
+            Forwarding the message failed.
+
+        Returns
+        -------
+        :class:`.Message`
+            The message sent to the channel.
+        """
+        reference = self.to_reference(
+            fail_if_not_exists=fail_if_not_exists,
+            type=MessageReferenceType.forward,
+        )
+        ret = await destination.send(reference=reference)
+        return ret
 
     def to_message_reference_dict(self) -> MessageReferencePayload:
         data: MessageReferencePayload = {
@@ -1661,6 +1865,10 @@ class Message(PartialMessage, Hashable):
         The data of the purchase notification that prompted this :attr:`MessageType.purchase_notification` message.
 
         .. versionadded:: 2.5
+    message_snapshots: List[:class:`MessageSnapshot`]
+        The message snapshots attached to this message.
+
+        .. versionadded:: 2.5
     hit: :class:`bool`
         Whether the message was a hit in a search result. As surrounding messages
         are no longer returned in search results, this is always ``True`` for search results.
@@ -1716,6 +1924,7 @@ class Message(PartialMessage, Hashable):
         'position',
         'poll',
         'purchase_notification',
+        'message_snapshots',
         'hit',
         'total_results',
         'analytics_id',
@@ -1760,6 +1969,7 @@ class Message(PartialMessage, Hashable):
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.call: Optional[CallMessage] = None
         self.interaction: Optional[Interaction] = None
+        self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
 
         self.poll: Optional[Poll] = None
         try:

@@ -273,6 +273,12 @@ class ChannelType(Enum):
         return self.value
 
 
+class MessageReferenceType(Enum):
+    default = 0
+    reply = 0
+    forward = 1
+
+
 class MessageType(Enum):
     default = 0
     recipient_add = 1
