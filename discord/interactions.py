@@ -430,7 +430,7 @@ class Interaction(Generic[ClientT]):
 
         Returns
         --------
-        InteractionMessage
+        :class:`InteractionMessage`
             The original interaction response message.
         """
 
