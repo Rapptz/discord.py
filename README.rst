@@ -11,9 +11,6 @@ discord.py
    :target: https://pypi.python.org/pypi/discord.py
    :alt: PyPI supported Python versions
 
-Please, donnot use this fork's master branch, it is... not for usage, use the different branches that implement other functions, such as recurrent events or member safety information.
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 A modern, easy to use, feature-rich, and async ready API wrapper for Discord written in Python.
 
 Key Features
