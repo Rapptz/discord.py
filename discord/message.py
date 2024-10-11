@@ -79,6 +79,8 @@ if TYPE_CHECKING:
         RoleSubscriptionData as RoleSubscriptionDataPayload,
         MessageInteractionMetadata as MessageInteractionMetadataPayload,
         CallMessage as CallMessagePayload,
+        PurchaseNotificationResponse as PurchaseNotificationResponsePayload,
+        GuildProductPurchase as GuildProductPurchasePayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -117,6 +119,8 @@ __all__ = (
     'RoleSubscriptionInfo',
     'MessageInteractionMetadata',
     'CallMessage',
+    'GuildProductPurchase',
+    'PurchaseNotification',
 )
 
 
@@ -1045,6 +1049,59 @@ class RoleSubscriptionInfo:
         self.tier_name: str = data['tier_name']
         self.total_months_subscribed: int = data['total_months_subscribed']
         self.is_renewal: bool = data['is_renewal']
+
+
+class GuildProductPurchase:
+    """Represents a message's guild product that the user has purchased.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    listing_id: :class:`int`
+        The ID of the listing that the user has purchased.
+    product_name: :class:`str`
+        The name of the product that the user has purchased.
+    """
+
+    __slots__ = ('listing_id', 'product_name')
+
+    def __init__(self, data: GuildProductPurchasePayload) -> None:
+        self.listing_id: int = int(data['listing_id'])
+        self.product_name: str = data['product_name']
+
+    def __hash__(self) -> int:
+        return self.listing_id >> 22
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, GuildProductPurchase) and other.listing_id == self.listing_id
+
+    def __ne__(self, other: object) -> bool:
+        return not self.__eq__(other)
+
+
+class PurchaseNotification:
+    """Represents a message's purchase notification data.
+
+    This is currently only attached to messages of type :attr:`MessageType.purchase_notification`.
+
+    .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    guild_product_purchase: Optional[:class:`GuildProductPurchase`]
+        The guild product purchase that prompted the message.
+    """
+
+    __slots__ = ('_type', 'guild_product_purchase')
+
+    def __init__(self, data: PurchaseNotificationResponsePayload) -> None:
+        self._type: int = data['type']
+
+        self.guild_product_purchase: Optional[GuildProductPurchase] = None
+        guild_product_purchase = data.get('guild_product_purchase')
+        if guild_product_purchase is not None:
+            self.guild_product_purchase = GuildProductPurchase(guild_product_purchase)
 
 
 class PartialMessage(Hashable):
@@ -2024,6 +2081,10 @@ class Message(PartialMessage, Hashable):
         The call associated with this message.
 
         .. versionadded:: 2.5
+    purchase_notification: Optional[:class:`PurchaseNotification`]
+        The data of the purchase notification that prompted this :attr:`MessageType.purchase_notification` message.
+
+        .. versionadded:: 2.5
     message_snapshots: List[:class:`MessageSnapshot`]
         The message snapshots attached to this message.
 
@@ -2065,6 +2126,7 @@ class Message(PartialMessage, Hashable):
         'interaction_metadata',
         'poll',
         'call',
+        'purchase_notification',
         'message_snapshots',
     )
 
@@ -2191,6 +2253,14 @@ class Message(PartialMessage, Hashable):
             pass
         else:
             self.role_subscription = RoleSubscriptionInfo(role_subscription)
+
+        self.purchase_notification: Optional[PurchaseNotification] = None
+        try:
+            purchase_notification = data['purchase_notification']
+        except KeyError:
+            pass
+        else:
+            self.purchase_notification = PurchaseNotification(purchase_notification)
 
         for handler in ('author', 'member', 'mentions', 'mention_roles', 'components', 'call'):
             try:
@@ -2655,10 +2725,10 @@ class Message(PartialMessage, Hashable):
             return 'Wondering who to invite?\nStart by inviting anyone who can help you build the server!'
 
         if self.type is MessageType.role_subscription_purchase and self.role_subscription is not None:
-            # TODO: figure out how the message looks like for is_renewal: true
             total_months = self.role_subscription.total_months_subscribed
             months = '1 month' if total_months == 1 else f'{total_months} months'
-            return f'{self.author.name} joined {self.role_subscription.tier_name} and has been a subscriber of {self.guild} for {months}!'
+            action = 'renewed' if self.role_subscription.is_renewal else 'joined'
+            return f'{self.author.name} {action} **{self.role_subscription.tier_name}** and has been a subscriber of {self.guild} for {months}!'
 
         if self.type is MessageType.stage_start:
             return f'{self.author.name} started **{self.content}**.'
@@ -2704,6 +2774,11 @@ class Message(PartialMessage, Hashable):
                     return '{0.author.name} started a call. \N{EM DASH} Join the call'.format(self)
                 else:
                     return '{0.author.name} started a call.'.format(self)
+
+        if self.type is MessageType.purchase_notification and self.purchase_notification is not None:
+            guild_product_purchase = self.purchase_notification.guild_product_purchase
+            if guild_product_purchase is not None:
+                return f'{self.author.name} has purchased {guild_product_purchase.product_name}!'
 
         # Fallback for unknown message types
         return ''
