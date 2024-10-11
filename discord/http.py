@@ -785,7 +785,7 @@ class HTTPClient:
         if self.proxy_auth is not None:
             kwargs['proxy_auth'] = self.proxy_auth
 
-        async with self.__session.get(url) as resp:
+        async with self.__session.get(url, **kwargs) as resp:
             if resp.status == 200:
                 return await resp.read()
             elif resp.status == 404:
