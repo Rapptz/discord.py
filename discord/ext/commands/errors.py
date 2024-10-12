@@ -580,7 +580,7 @@ class SoundboardSoundNotFound(BadArgument):
 
     def __init__(self, argument: str) -> None:
         self.argument: str = argument
-        super().__init__(f'ScheduledEvent "{argument}" not found.')
+        super().__init__(f'SoundboardSound "{argument}" not found.')
 
 
 class BadBoolArgument(BadArgument):
