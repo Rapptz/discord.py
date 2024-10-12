@@ -128,6 +128,7 @@ __all__ = (
     'NetworkConnectionType',
     'NetworkConnectionSpeed',
     'PollLayoutType',
+    'MessageReferenceType',
 )
 
 if TYPE_CHECKING:
