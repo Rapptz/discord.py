@@ -965,6 +965,7 @@ class SoundboardSoundConverter(IDConverter[discord.SoundboardSound]):
 
     .. versionadded:: 2.5
     """
+
     async def convert(self, ctx: Context[BotT], argument: str) -> discord.SoundboardSound:
         guild = ctx.guild
         match = self._get_id_match(argument)
