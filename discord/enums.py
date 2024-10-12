@@ -76,6 +76,7 @@ __all__ = (
     'PollLayoutType',
     'VoiceChannelEffectAnimationType',
     'SubscriptionStatus',
+    'MessageReferenceType',
 )
 
 
