@@ -324,7 +324,11 @@ VoiceStateUpdateEvent = GuildVoiceState
 VoiceChannelEffectSendEvent = VoiceChannelEffect
 
 GuildSoundBoardSoundCreateEvent = GuildSoundBoardSoundUpdateEvent = SoundboardSound
-GuildSoundBoardSoundsUpdateEvent = List[SoundboardSound]
+
+
+class GuildSoundBoardSoundsUpdateEvent(TypedDict):
+    guild_id: Snowflake
+    soundboard_sounds: List[SoundboardSound]
 
 
 class GuildSoundBoardSoundDeleteEvent(TypedDict):
