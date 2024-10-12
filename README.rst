@@ -29,20 +29,32 @@ To install the library without full voice support, you can just run the followin
 
 .. code:: sh
 
-    # Linux/macOS
+    # Linux/macOS (Python 3.13 or higher)
+    python3 -m pip install -U discord.py audioop-lts
+
+    # Linux/macOS (Python 3.12 or lower)
     python3 -m pip install -U discord.py
 
-    # Windows
+    # Windows (Python 3.13 or higher)
+    py -3 -m pip install -U discord.py audioop-lts
+
+    # Windows (Python 3.12 or lower)
     py -3 -m pip install -U discord.py
 
 Otherwise to get voice support you should run the following command:
 
 .. code:: sh
 
-    # Linux/macOS
+    # Linux/macOS (Python 3.13 or higher)
+    python3 -m pip install -U "discord.py[voice]" audioop-lts
+
+    # Linux/macOS (Python 3.12 or lower)
     python3 -m pip install -U "discord.py[voice]"
 
-    # Windows
+    # Windows (Python 3.13 or higher)
+    py -3 -m pip install -U discord.py[voice]
+
+    # Windows (Python 3.12 or lower)
     py -3 -m pip install -U discord.py[voice]
 
 

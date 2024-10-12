@@ -29,20 +29,32 @@ discord.py は機能豊富かつモダンで使いやすい、非同期処理に
 
 .. code:: sh
 
-    # Linux/macOS
+    # Linux/macOS (Python 3.13 以降)
+    python3 -m pip install -U discord.py audioop-lts
+
+    # Linux/macOS (Python 3.12 以前)
     python3 -m pip install -U discord.py
 
-    # Windows
+    # Windows (Python 3.13 以降)
+    py -3 -m pip install -U discord.py audioop-lts
+
+    # Windows (Python 3.12 以前)
     py -3 -m pip install -U discord.py
 
 音声サポートが必要なら、次のコマンドを実行しましょう:
 
 .. code:: sh
 
-    # Linux/macOS
-    python3 -m pip install -U discord.py[voice]
+    # Linux/macOS (Python 3.13 以降)
+    python3 -m pip install -U "discord.py[voice]" audioop-lts
 
-    # Windows
+    # Linux/macOS (Python 3.12 以前)
+    python3 -m pip install -U "discord.py[voice]"
+
+    # Windows (Python 3.13 以降)
+    py -3 -m pip install -U discord.py[voice]
+
+    # Windows (Python 3.12 以前)
     py -3 -m pip install -U discord.py[voice]
 
 
