@@ -976,7 +976,7 @@ class SoundboardSoundConverter(IDConverter[discord.SoundboardSound]):
             if guild:
                 result = guild.get_soundboard_sound(sound_id)
             else:
-                ctx.bot.get_soundboard_sound(sound_id)
+                result = ctx.bot.get_soundboard_sound(sound_id)
         else:
             # lookup by name
             if guild:
