@@ -2871,9 +2871,7 @@ def default_permissions(perms_obj: Optional[Permissions] = None, /, **perms: boo
     """
 
     if perms_obj is not None:
-        permissions = perms_obj
-        if perms:
-            permissions |= Permissions(**perms)
+        permissions = perms_obj | Permissions(**perms)
     else:
         permissions = Permissions(**perms)
 
