@@ -697,7 +697,7 @@ class InteractionCallback(Generic[ClientT]):
         'activity_instance_id',
         'activity_instance',
         'response_message_id',
-        'response_message_loading',
+        'response_message_thinking',
         'response_message_ephemeral',
         'response_message',
         'response_channel',
@@ -715,6 +715,7 @@ class InteractionCallback(Generic[ClientT]):
         self._state: ConnectionState = parent._state
         self.response_channel: InteractionChannel = channel
         self._update(data)
+        parent._original_response = self.response_message
 
     def __repr__(self) -> str:
         return f'<InteractionCallback id={self.id} interaction_type={self.interaction_type!r} callback_type={self.callback_type!r}>'
@@ -726,7 +727,7 @@ class InteractionCallback(Generic[ClientT]):
         self.activity_instance_id: Optional[str] = interaction.get('activity_instance_id')
         response_id = interaction.get('response_message_id')
         self.response_message_id: Optional[int] = int(response_id) if response_id is not None else None
-        self.response_message_loading: Optional[bool] = interaction.get('response_message_loading')
+        self.response_message_thinking: Optional[bool] = interaction.get('response_message_loading')
         self.response_message_ephemeral: Optional[bool] = interaction.get('response_message_ephemeral')
 
         resource = data.get('resource', {})
