@@ -27,6 +27,8 @@ from __future__ import annotations
 
 from typing import AsyncIterator, Optional, TYPE_CHECKING
 
+from datetime import datetime
+
 from . import utils
 from .enums import try_enum, SKUType, EntitlementType
 from .flags import SKUFlags
@@ -34,8 +36,6 @@ from .object import Object
 from .subscription import Subscription
 
 if TYPE_CHECKING:
-    from datetime import datetime
-
     from .abc import SnowflakeTime, Snowflake
     from .guild import Guild
     from .state import ConnectionState
