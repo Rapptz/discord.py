@@ -1398,11 +1398,7 @@ class VocalGuildChannel(discord.abc.Messageable, discord.abc.Connectable, discor
 
     @utils.copy_doc(discord.abc.GuildChannel.clone)
     async def clone(
-        self,
-        *,
-        name: Optional[str] = None,
-        category: Optional[CategoryChannel] = None,
-        reason: Optional[str] = None
+        self, *, name: Optional[str] = None, category: Optional[CategoryChannel] = None, reason: Optional[str] = None
     ) -> Self:
         base = {
             'bitrate': self.bitrate,
