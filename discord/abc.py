@@ -1039,10 +1039,6 @@ class GuildChannel:
 
         .. versionadded:: 1.1
 
-        .. versionchanged:: 2.5
-
-            The ``category`` keyword-only parameter was added.
-
         Parameters
         ------------
         name: Optional[:class:`str`]
@@ -1051,6 +1047,8 @@ class GuildChannel:
         category: Optional[:class:`~discord.CategoryChannel`]
             The category the new channel belongs to.
             This parameter is ignored if cloning a category channel.
+
+            .. versionadded:: 2.5
         reason: Optional[:class:`str`]
             The reason for cloning this channel. Shows up on the audit log.
 
