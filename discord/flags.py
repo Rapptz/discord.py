@@ -135,7 +135,7 @@ class BaseFlags:
             setattr(self, key, value)
 
     @classmethod
-    def _from_value(cls, value):
+    def _from_value(cls, value: int) -> Self:
         self = cls.__new__(cls)
         self.value = value
         return self
@@ -489,6 +489,14 @@ class MessageFlags(BaseFlags):
         .. versionadded:: 2.3
         """
         return 8192
+
+    @flag_value
+    def forwarded(self):
+        """:class:`bool`: Returns ``True`` if the message is a forwarded message.
+
+        .. versionadded:: 2.5
+        """
+        return 16384
 
 
 @fill_with_flags()
