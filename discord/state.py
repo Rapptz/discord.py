@@ -690,17 +690,21 @@ class ConnectionState(Generic[ClientT]):
                 self._messages.remove(msg)  # type: ignore
 
     def parse_message_update(self, data: gw.MessageUpdateEvent) -> None:
-        raw = RawMessageUpdateEvent(data)
-        message = self._get_message(raw.message_id)
-        if message is not None:
-            older_message = copy.copy(message)
+        channel, _ = self._get_guild_channel(data)
+        # channel would be the correct type here
+        updated_message = Message(channel=channel, data=data, state=self)  # type: ignore
+
+        raw = RawMessageUpdateEvent(data=data, message=updated_message)
+        cached_message = self._get_message(updated_message.id)
+        if cached_message is not None:
+            older_message = copy.copy(cached_message)
             raw.cached_message = older_message
             self.dispatch('raw_message_edit', raw)
-            message._update(data)
+            cached_message._update(data)
             # Coerce the `after` parameter to take the new updated Member
             # ref: #5999
-            older_message.author = message.author
-            self.dispatch('message_edit', older_message, message)
+            older_message.author = updated_message.author
+            self.dispatch('message_edit', older_message, updated_message)
         else:
             self.dispatch('raw_message_edit', raw)
 
