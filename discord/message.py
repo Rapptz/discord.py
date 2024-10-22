@@ -615,7 +615,7 @@ class MessageReference:
     guild_id: Optional[:class:`int`]
         The guild id of the message referenced.
     fail_if_not_exists: :class:`bool`
-        Whether replying to the referenced message should raise :class:`HTTPException`
+        Whether the referenced message should raise :class:`HTTPException`
         if the message no longer exists or Discord could not fetch the message.
 
         .. versionadded:: 1.7
@@ -626,8 +626,6 @@ class MessageReference:
         not attempting to resolve it or it not being available at the time of creation.
         If the message was resolved at a prior point but has since been deleted then
         this will be of type :class:`DeletedReferencedMessage`.
-
-        Currently, this is mainly the replied to message when a user replies to a message.
 
         .. versionadded:: 1.6
     """
@@ -680,7 +678,7 @@ class MessageReference:
         message: :class:`~discord.Message`
             The message to be converted into a reference.
         fail_if_not_exists: :class:`bool`
-            Whether replying to the referenced message should raise :class:`HTTPException`
+            Whether the referenced message should raise :class:`HTTPException`
             if the message no longer exists or Discord could not fetch the message.
 
             .. versionadded:: 1.7
@@ -1869,7 +1867,7 @@ class PartialMessage(Hashable):
         Parameters
         ----------
         fail_if_not_exists: :class:`bool`
-            Whether replying using the message reference should raise :class:`HTTPException`
+            Whether the referenced message should raise :class:`HTTPException`
             if the message no longer exists or Discord could not fetch the message.
 
             .. versionadded:: 1.7
