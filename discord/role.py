@@ -286,7 +286,7 @@ class Role(Hashable):
         self._flags: int = data.get('flags', 0)
 
         try:
-            self.tags = RoleTags(data['tags'])
+           tags_data = data.get("tags")
         except KeyError:
             self.tags = None
 
