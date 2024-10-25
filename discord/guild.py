@@ -161,9 +161,10 @@ class _GuildLimit(NamedTuple):
     bitrate: float
     filesize: int
 
+
 class GuildPreview(Hashable):
     """Represents a preview of a Discord guild.
-    
+
     .. container:: operations
 
         .. describe:: x == y
@@ -181,7 +182,7 @@ class GuildPreview(Hashable):
         .. describe:: str(x)
 
             Returns the guild's name.
-    
+
     Attributes
     ----------
     name: :class:`str`
@@ -198,7 +199,7 @@ class GuildPreview(Hashable):
         All stickers that the guild owns.
     approximate_member_count: :class:`int`
         The approximate number of members in the guild.
-    approximate_member_count: :class:`int`
+    approximate_presence_count: :class:`int`
         The approximate number of members currently active in in the guild. Offline members are excluded.
     """
 
@@ -224,15 +225,14 @@ class GuildPreview(Hashable):
         self._icon: Optional[str] = data.get('icon')
         self._splash: Optional[str] = data.get('splash')
         self._discovery_splash: Optional[str] = data.get('discovery_splash')
-        self.emojis: Tuple[Emoji, ...] = (
-            tuple(map(lambda d: state.store_emoji(self, d), data.get('emojis', [])))
-            if state.cache_guild_expressions
-            else ()
+        self.emojis: Tuple[Emoji, ...] = tuple(
+            map(
+                lambda d: Emoji(guild=state._get_or_create_unavailable_guild(self.id), state=state, data=d),
+                data.get('emojis', []),
+            )
         )
-        self.stickers: Tuple[GuildSticker, ...] = (
-            tuple(map(lambda d: state.store_sticker(self, d), data.get('stickers', [])))
-            if state.cache_guild_expressions
-            else ()
+        self.stickers: Tuple[GuildSticker, ...] = tuple(
+            map(lambda d: GuildSticker(state=state, data=d), data.get('stickers', []))
         )
         self.features: List[GuildFeature] = data.get('features', [])
         self.description: Optional[str] = data.get('description')
@@ -273,7 +273,7 @@ class GuildPreview(Hashable):
         if self._discovery_splash is None:
             return None
         return Asset._from_guild_image(self._state, self.id, self._discovery_splash, path='discovery-splashes')
-    
+
 
 class Guild(Hashable):
     """Represents a Discord guild.

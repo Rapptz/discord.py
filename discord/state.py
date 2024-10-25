@@ -396,13 +396,13 @@ class ConnectionState(Generic[ClientT]):
     def get_user(self, id: int) -> Optional[User]:
         return self._users.get(id)
 
-    def store_emoji(self, guild: Guild | GuildPreview, data: EmojiPayload) -> Emoji:
+    def store_emoji(self, guild: Guild, data: EmojiPayload) -> Emoji:
         # the id will be present here
         emoji_id = int(data['id'])  # type: ignore
         self._emojis[emoji_id] = emoji = Emoji(guild=guild, state=self, data=data)
         return emoji
 
-    def store_sticker(self, guild: Guild | GuildPreview, data: GuildStickerPayload) -> GuildSticker:
+    def store_sticker(self, guild: Guild, data: GuildStickerPayload) -> GuildSticker:
         sticker_id = int(data['id'])
         self._stickers[sticker_id] = sticker = GuildSticker(state=self, data=data)
         return sticker

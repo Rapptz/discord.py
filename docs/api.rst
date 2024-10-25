@@ -4815,6 +4815,13 @@ Guild
 
         :type: List[:class:`Object`]
 
+GuildPreview
+~~~~~~~~~~~~
+
+.. attributetable:: GuildPreview
+
+.. autoclass:: GuildPreview
+    :members:
 
 ScheduledEvent
 ~~~~~~~~~~~~~~
@@ -5680,14 +5687,6 @@ CallMessage
 .. attributetable:: CallMessage
 
 .. autoclass:: CallMessage()
-    :members:
-
-GuildPreview
-~~~~~~~~~~~~
-
-.. attributetable:: GuildPreview
-
-.. autoclass:: GuildPreview
     :members:
 
 
