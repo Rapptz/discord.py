@@ -5682,6 +5682,14 @@ CallMessage
 .. autoclass:: CallMessage()
     :members:
 
+GuildPreview
+~~~~~~~~~~~~
+
+.. attributetable:: GuildPreview
+
+.. autoclass:: GuildPreview
+    :members:
+
 
 Exceptions
 ------------
