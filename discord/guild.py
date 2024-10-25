@@ -99,6 +99,7 @@ from .soundboard import SoundboardSound
 
 __all__ = (
     'Guild',
+    'GuildPreview',
     'BanEntry',
 )
 
