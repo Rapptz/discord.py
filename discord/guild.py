@@ -244,8 +244,8 @@ class GuildPreview(Hashable):
 
     def __repr__(self) -> str:
         return (
-            f'<{self.__class__.__name__} id={self.id} name={self.name!r} features={self.features} '
-            f'description={self.description!r}>'
+            f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r} '
+            f'features={self.features}>'
         )
 
     @property
