@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import copy
 import time
+import secrets
 import asyncio
 from datetime import datetime
 from typing import (
@@ -1613,6 +1614,9 @@ class Messageable:
             flags.suppress_notifications = silent
         else:
             flags = MISSING
+
+        if nonce is None:
+            nonce = secrets.randbits(64)
 
         with handle_message_parameters(
             content=content,

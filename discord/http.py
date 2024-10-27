@@ -197,6 +197,7 @@ def handle_message_parameters(
 
     if nonce is not None:
         payload['nonce'] = str(nonce)
+        payload['enforce_nonce'] = True
 
     if message_reference is not MISSING:
         payload['message_reference'] = message_reference
