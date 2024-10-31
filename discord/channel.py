@@ -65,7 +65,7 @@ from .errors import ClientException
 from .stage_instance import StageInstance
 from .threads import Thread
 from .partial_emoji import _EmojiTag, PartialEmoji
-from .flags import ChannelFlags
+from .flags import ChannelFlags, MessageFlags
 from .http import handle_message_parameters
 from .object import Object
 from .soundboard import BaseSoundboardSound, SoundboardDefaultSound
@@ -2938,8 +2938,6 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             raise TypeError(f'view parameter must be View not {view.__class__.__name__}')
 
         if suppress_embeds:
-            from .message import MessageFlags  # circular import
-
             flags = MessageFlags._from_value(4)
         else:
             flags = MISSING
