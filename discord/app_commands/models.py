@@ -35,6 +35,7 @@ from ..enums import (
     AppCommandPermissionType,
     ChannelType,
     Locale,
+    EntryPointCommandHandlerType,
     try_enum,
 )
 from ..mixins import Hashable
@@ -181,6 +182,10 @@ class AppCommand(Hashable):
         denotes that it is a global command.
     nsfw: :class:`bool`
         Whether the command is NSFW and should only work in NSFW channels.
+    handler: Optional[:class:`~discord.EntryPointCommandHandlerType`]
+        Determines whether the interaction is handled by the app's interactions handler or by Discord.
+
+        This is only available for commands with type :attr:`~discord.AppCommandType.primary_entry_point`.
     """
 
     __slots__ = (
@@ -198,6 +203,7 @@ class AppCommand(Hashable):
         'allowed_contexts',
         'allowed_installs',
         'nsfw',
+        'handler',
         '_state',
     )
 
@@ -244,6 +250,11 @@ class AppCommand(Hashable):
         self.nsfw: bool = data.get('nsfw', False)
         self.name_localizations: Dict[Locale, str] = _to_locale_dict(data.get('name_localizations') or {})
         self.description_localizations: Dict[Locale, str] = _to_locale_dict(data.get('description_localizations') or {})
+
+        handler = data.get('handler')
+        self.handler: Optional[EntryPointCommandHandlerType] = None  # type: ignore
+        if handler is not None:
+            self.handler: EntryPointCommandHandlerType = try_enum(EntryPointCommandHandlerType, handler)
 
     def to_dict(self) -> ApplicationCommandPayload:
         return {
@@ -432,6 +443,19 @@ class AppCommand(Hashable):
             self.id,
         )
         return GuildAppCommandPermissions(data=data, state=state, command=self)
+
+    def is_default_entry_point_command(self) -> bool:
+        """:class:`bool`: Returns ``True`` if the command is the default entry point command.
+
+        This is determined by the command's name and handler type.
+        More information can be found in the :ddocs:`official Discord
+        documentation <interactions/application-commands#default-entry-point-command>`.
+        """
+        return (
+            self.type is AppCommandType.primary_entry_point
+            and self.name.casefold() == 'launch'
+            and self.handler is EntryPointCommandHandlerType.discord_launch_activity
+        )
 
 
 class Choice(Generic[ChoiceT]):
