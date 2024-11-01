@@ -445,7 +445,7 @@ class AppCommand(Hashable):
         return GuildAppCommandPermissions(data=data, state=state, command=self)
 
     def is_default_entry_point_command(self) -> bool:
-        """:class:`bool`: Returns ``True`` if the command is the default entry point command.
+        """:class:`bool`: Returns ``True`` if this is the default entry point command.
 
         This is determined by the command's name and handler type.
         More information can be found in the :ddocs:`official Discord
