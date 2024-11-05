@@ -525,6 +525,8 @@ class User(BaseUser, discord.abc.Messageable):
         Specifies if the user is a bot account.
     system: :class:`bool`
         Specifies if the user is a system user (i.e. represents Discord officially).
+    clan: Optional[:class:`UserClan`]
+        The clan the user belongs to.
     """
 
     __slots__ = ('__weakref__',)

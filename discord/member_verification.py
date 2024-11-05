@@ -66,7 +66,7 @@ class PartialMemberVerificationField:
         The rules that the user must agree to. Can have up to 16 items, and each one
         can be up to 300 characters.
 
-        Must be passed if ``type`` is :attr:`MemberverificationFieldType.terms`.
+        Must be passed if ``type`` is :attr:`MemberVerificationFieldType.terms`.
     required: :class:`bool`
         Whether this field is required.
     description: Optional[:class:`str`]
@@ -183,21 +183,13 @@ class MemberVerificationField(PartialMemberVerificationField):
         The type of field.
     label: :class:`str`
         The field label. Can be up to 300 characters.
-    choices: List[:class:`str`]
-        The choices the user has available.
-
-        Filled when ``type`` is :attr:`MemberVerificationFieldType.multiple_choice`.
-    values: Optional[List[:class:`str`]]
-        The rules that the user must agree to.
-
-        Filled when ``type`` is :attr:`MemberVerificationFieldType.terms`
     response: Union[:class:`str`, :class:`int`, :class:`bool`]
         The user input on the field.
 
         If ``type`` is :attr:`MemberVerificationFieldType.terms` then this should
         be ``True``.
 
-        If ``type`` is :attr:`MemberverificationFieldType.multiple_choice` then this
+        If ``type`` is :attr:`MemberVerificationFieldType.multiple_choice` then this
         represents the index of the selected choice.
     required: :class:`bool`
         Whether this field is required for a successful application.
@@ -205,8 +197,6 @@ class MemberVerificationField(PartialMemberVerificationField):
         The field description.
     automations: List[:class:`str`]
         ...
-    placeholder: Optional[:class:`str`]
-        The placeholder text of the field.
     """
 
     __slots__ = (
