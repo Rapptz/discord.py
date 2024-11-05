@@ -94,6 +94,7 @@ if TYPE_CHECKING:
         sku,
         poll,
         clan,
+        member_verification,
     )
     from .types.snowflake import Snowflake, SnowflakeList
 
@@ -1793,6 +1794,16 @@ class HTTPClient:
     def edit_incident_actions(self, guild_id: Snowflake, payload: guild.IncidentData) -> Response[guild.IncidentData]:
         return self.request(Route('PUT', '/guilds/{guild_id}/incident-actions', guild_id=guild_id), json=payload)
 
+    def get_guild_member_verification(self, guild_id: Snowflake, *, with_guild: bool = MISSING, invite_code: str = MISSING) -> Response[member_verification.MemberVerificationForm]:
+        params = {}
+
+        if with_guild is not MISSING:
+            params['with_guild'] = with_guild
+        if invite_code is not MISSING:
+            params['invite_code'] = invite_code
+
+        return self.request(Route('GET', '/guilds/{guild_id}/member-verification', guild_id=guild_id), params=params)
+
     # Invite management
 
     def create_invite(
@@ -2504,58 +2515,13 @@ class HTTPClient:
             ),
         )
 
-    # Clan
-
-    def get_clans(self, game_type: Literal['all', 'genshin', 'valorant']) -> Response[List[clan.Clan]]:
-        return self.request(
-            Route(
-                'GET',
-                '/discovery/games/{game_type}',
-                game_type=game_type,
-            ),
-        )
+    # Clans
 
     def get_clan(self, guild_id: int) -> Response[clan.Clan]:
         return self.request(
             Route(
                 'GET',
                 '/discovery/{guild_id}/clan',
-                guild_id=guild_id,
-            ),
-        )
-
-    def create_clan(self, guild_id: int, **params: Any) -> Response[None]:
-        valid_keys = (
-            'tag',
-            'game_application_ids',
-            'search_terms',
-            'play_style',
-            'description',
-            'wildcard_descriptors',
-            'badge',
-            'badge_color_primary',
-            'badge_color_secondary',
-            'banner',
-            'brand_color_primary',
-            'brand_color_secondary',
-            'verification_form',
-        )
-        payload = {k: v for k, v in params.items() if k in valid_keys}
-
-        return self.request(
-            Route(
-                'POST',
-                '/clan/{guild_id}',
-                guild_id=guild_id,
-            ),
-            json=payload,
-        )
-
-    def get_clan_settings(self, guild_id: int) -> Response[clan.ClanSettings]:
-        return self.request(
-            Route(
-                'GET',
-                '/clan/{guild_id}/settings',
                 guild_id=guild_id,
             ),
         )

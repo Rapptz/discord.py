@@ -40,7 +40,7 @@ MemberVerificationFieldType = Literal[
 
 
 class MemberVerificationField(TypedDict):
-    field_type: [MemberVerificationFieldType]
+    field_type: MemberVerificationFieldType
     label: str
     choices: NotRequired[List[str]]
     values: NotRequired[Optional[List[str]]]
@@ -51,7 +51,7 @@ class MemberVerificationField(TypedDict):
     placeholder: NotRequired[Optional[str]]
 
 
-class MemberVerification(TypedDict):
+class MemberVerificationForm(TypedDict):
     version: str
     form_fields: List[MemberVerificationField]
     description: Optional[str]

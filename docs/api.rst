@@ -4688,6 +4688,24 @@ Member
     .. automethod:: typing
         :async-with:
 
+MemberVerificationField
+~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MemberVerificationField
+
+.. autoclass:: MemberVerificationField()
+    :members:
+    :inherited-members:
+
+
+MemberVerificationForm
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MemberVerificationForm
+
+.. autoclass:: MemberVerificationForm()
+    :members:
+
 Spotify
 ~~~~~~~~
 
@@ -4826,6 +4844,15 @@ CategoryChannel
     :members:
     :inherited-members:
 
+Clan
+~~~~
+
+.. attributetable:: Clan
+
+.. autoclass:: Clan()
+    :members:
+    :inherited-members:
+
 DMChannel
 ~~~~~~~~~
 
@@ -4851,6 +4878,14 @@ GroupChannel
 
     .. automethod:: typing
         :async-with:
+
+PartialClan
+~~~~~~~~~~~
+
+.. attributetable:: PartialClan
+
+.. autoclass:: PartialClan()
+    :members:
 
 PartialInviteGuild
 ~~~~~~~~~~~~~~~~~~~
@@ -5404,6 +5439,15 @@ PollMedia
 .. attributetable:: PollMedia
 
 .. autoclass:: PollMedia
+    :members:
+
+
+PartialMemberVerificationField
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: PartialMemberVerificationField
+
+.. autoclass:: PartialMemberVerificationField
     :members:
 
 

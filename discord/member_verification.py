@@ -38,11 +38,11 @@ if TYPE_CHECKING:
 
     from .types.member_verification import (
         MemberVerificationField as MemberVerificationFieldPayload,
-        MemberVerification as MemberVerificationPayload,
+        MemberVerificationForm as MemberVerificationFormPayload,
     )
 
 __all__ = (
-    'MemberVerification',
+    'MemberVerificationForm',
     'MemberVerificationField',
     'PartialMemberVerificationField',
 )
@@ -220,7 +220,6 @@ class MemberVerificationField(PartialMemberVerificationField):
 
     def __init__(self, *, data: MemberVerificationFieldPayload, state: ConnectionState) -> None:
         self._state: ConnectionState = state
-
         self._update(data)
 
     def _update(self, data: MemberVerificationFieldPayload) -> None:
@@ -240,7 +239,7 @@ class MemberVerificationField(PartialMemberVerificationField):
             self.response = None
 
 
-class MemberVerification:
+class MemberVerificationForm:
     """Represents a member verification form.
 
     Parameters
@@ -273,7 +272,7 @@ class MemberVerification:
         self._last_modified: Optional[datetime] = None
 
     @classmethod
-    def _from_data(cls, *, data: MemberVerificationPayload, state: ConnectionState, guild: Optional[Guild]) -> Self:
+    def _from_data(cls, *, data: MemberVerificationFormPayload, state: ConnectionState, guild: Optional[Guild]) -> Self:
         self = cls(
             fields=[MemberVerificationField(data=f, state=state) for f in data['form_fields']],
             description=data.get('description'),
@@ -287,6 +286,7 @@ class MemberVerification:
 
             if guild_data is not None:
                 from .guild import Guild  # circular import
+
                 self._guild = Guild(data=guild_data, state=state)  # type: ignore
 
         self._last_modified = parse_time(data.get('version'))
@@ -295,8 +295,7 @@ class MemberVerification:
 
     @property
     def guild(self) -> Optional[Guild]:
-        """Optional[:class:`Guild`]: The guild this member verification is for.
-        """
+        """Optional[:class:`Guild`]: The guild this member verification is for."""
         return self._guild
 
     @property

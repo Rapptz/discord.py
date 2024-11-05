@@ -26,20 +26,51 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List, Literal, Optional, TypedDict
 
 from .snowflake import Snowflake, SnowflakeList
-from .member_verification import MemberVerification
 
 if TYPE_CHECKING:
     from typing_extensions import NotRequired
 
 ClanBadge = Literal[
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-    11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
 ]
 ClanBanner = Literal[
-    0, 1, 2, 3, 4, 5, 6, 7, 8,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
 ]
 ClanPlayStyle = Literal[
-    0, 1, 2, 3, 4, 5,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
 ]
 
 
@@ -48,23 +79,9 @@ class PartialClan(TypedDict):
     badge: ClanBadge
 
 
-class ClanSettings(PartialClan):
-    game_application_ids: SnowflakeList
-    search_terms: List[str]
-    play_style: ClanPlayStyle
-    description: str
-    wildcard_descriptors: List[str]
-    badge_color_primary: str
-    badge_color_secondary: str
-    banner: ClanBanner
-    brand_color_primary: str
-    brand_color_secondary: str
-    verification_form: MemberVerification
-
-
 # We override almost everything because some may be missing on
 # full clan objects.
-class Clan(ClanSettings):
+class Clan(PartialClan):
     id: Snowflake
     name: str
     icon_hash: Optional[str]
@@ -73,15 +90,15 @@ class Clan(ClanSettings):
     play_style: NotRequired[ClanPlayStyle]
     search_terms: NotRequired[List[str]]
     game_application_ids: NotRequired[SnowflakeList]
+    badge: NotRequired[ClanBadge]
     badge_hash: NotRequired[str]
     badge_color_primary: NotRequired[str]
     badge_color_secondary: NotRequired[str]
     banner: NotRequired[ClanBanner]
     banner_hash: NotRequired[str]
     brand_color_primary: NotRequired[str]
-    brand_color_secondary: NotRequired[str]
+    brand_color_seconday: NotRequired[str]
     wildcard_descriptors: NotRequired[List[str]]
-    verification_form: NotRequired[MemberVerification]
 
 
 # This is not the same as a partial clan as
@@ -89,7 +106,7 @@ class Clan(ClanSettings):
 # of the enum members, but here is the hash
 # pretty weird though lol
 class UserClan(TypedDict):
-    tag: str
-    badge: str
-    identity_guild_id: Snowflake
+    tag: Optional[str]
+    badge: Optional[str]
+    identity_guild_id: Optional[Snowflake]
     identity_enabled: bool

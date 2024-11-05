@@ -70,6 +70,8 @@ from .components import *
 from .threads import *
 from .automod import *
 from .poll import *
+from .clan import *
+from .member_verification import *
 
 
 class VersionInfo(NamedTuple):

@@ -62,9 +62,6 @@ from .channel import _guild_channel_factory
 from .channel import _threaded_guild_channel_factory
 from .enums import (
     AuditLogAction,
-    ClanBadgeType,
-    ClanBannerStyle,
-    ClanPlayStyle,
     VideoQualityMode,
     ChannelType,
     EntityType,
@@ -98,7 +95,7 @@ from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 from .partial_emoji import _EmojiTag, PartialEmoji
 from .clan import Clan
-from .member_verification import MemberVerification
+from .member_verification import MemberVerificationForm
 
 
 __all__ = (
@@ -4441,6 +4438,8 @@ class Guild(Hashable):
 
         Fetches this guild's clan.
 
+        .. versionadded:: 2.5
+
         Raises
         ------
         ClientException
@@ -4455,66 +4454,43 @@ class Guild(Hashable):
         """
 
         if not self.has_clan():
-            raise ClientException(
-                'Guild does not have a clan'
-            )
+            raise ClientException('Guild does not have a clan')
 
         data = await self._state.http.get_clan(self.id)
 
         return Clan(data=data, state=self._state)
 
-    async def create_clan(
-        self,
-        *,
-        tag: str,
-        games: Sequence[Snowflake],
-        search_terms: List[str],
-        play_style: ClanPlayStyle,
-        description: str,
-        wildcard_descriptors: List[str],
-        badge_type: ClanBadgeType,
-        badge_primary_colour: Colour = MISSING,
-        badge_primary_color: Colour = MISSING,
-        badge_secondary_colour: Colour = MISSING,
-        badge_secondary_color: Colour = MISSING,
-        banner_style: ClanBannerStyle,
-        banner_primary_colour: Colour = MISSING,
-        banner_primary_color: Colour = MISSING,
-        banner_secondary_colour: Colour = MISSING,
-        banner_secondary_color: Colour = MISSING,
-        verification_form: MemberVerification,
-    ) -> None:
+    async def fetch_member_verification_form(
+        self, *, with_guild: bool = MISSING, invite: Union[str, Invite] = MISSING
+    ) -> Optional[MemberVerificationForm]:
         """|coro|
-        
-        Creates a new clan from this guild.
+
+        Fetches the current guild member verification form.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        with_guild: :class:`bool`
+            Whether to include a guild snapshot on the member verification form.
+        invite: Union[:class:`str`, :class:`Invite`]
+            The invite code the member verification form is fetched from.
 
         Raises
         ------
-        Forbidden
-            You donnot have enough permissions to create a clan for this
-            guild.
         HTTPException
-            An error occurred while creating the guild clan.
+            Fetching the member verification form failed.
+
+        Returns
+        -------
+        Optional[:class:`MemberVerificationForm`]
+            The member verification form, or ``None``.
         """
 
-        actual_badge_prim_col = badge_primary_colour or badge_primary_color
-        actual_badge_sec_col = badge_secondary_colour or badge_secondary_color
-        actual_banner_prim_col = banner_primary_colour or banner_primary_color
-        actual_banner_sec_col = banner_secondary_colour or banner_secondary_color
+        invite_code = MISSING
 
-        await self._state.http.create_clan(
-            self.id,
-            tag=tag,
-            game_application_ids=[str(g.id) for g in games],
-            search_terms=search_terms,
-            description=description,
-            play_style=play_style.value,
-            wildcard_descriptors=wildcard_descriptors,
-            badge=badge_type.value,
-            banner=banner_style.value,
-            badge_color_primary=actual_badge_prim_col,
-            badge_color_secondary=actual_badge_sec_col,
-            brand_color_primary=actual_banner_prim_col,
-            brand_color_secondary=actual_banner_sec_col,
-            verification_form=verification_form._to_dict()
-        )
+        if invite is not MISSING:
+            invite_code = invite.code if isinstance(invite, Invite) else invite
+
+        form = await self._state.http.get_guild_member_verification(self.id, with_guild=with_guild, invite_code=invite_code)
+        return MemberVerificationForm._from_data(data=form, state=self._state, guild=self)
