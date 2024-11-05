@@ -28,13 +28,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from .enums import try_enum, MemberVerificationFieldType
-from .state import ConnectionState
 from .utils import MISSING, parse_time
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .guild import Guild
+    from .state import ConnectionState
 
     from .types.member_verification import (
         MemberVerificationField as MemberVerificationFieldPayload,
