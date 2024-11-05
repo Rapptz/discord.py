@@ -28,17 +28,14 @@ from typing import TYPE_CHECKING, Dict, List, Optional
 from . import utils
 from .enums import ClanBannerStyle, ClanPlayStyle, try_enum, ClanBadgeType
 from .mixins import Hashable
-from .state import ConnectionState
 from .object import Object
 from .colour import Colour
 from .asset import Asset
-from .member_verification import MemberVerificationForm
-from .utils import MISSING
-from .abc import Snowflake
 
 if TYPE_CHECKING:
 
     from .guild import Guild
+    from .state import ConnectionState
 
     from .types.clan import (
         PartialClan as PartialClanPayload,
