@@ -5592,15 +5592,23 @@ PollAnswer
 .. autoclass:: PollAnswer()
     :members:
 
-.. _discord_api_data:
-
 MessageSnapshot
 ~~~~~~~~~~~~~~~~~
 
 .. attributetable:: MessageSnapshot
 
-.. autoclass:: MessageSnapshot
+.. autoclass:: MessageSnapshot()
     :members:
+
+UserClan
+~~~~~~~~
+
+.. attributetable:: UserClan
+
+.. autoclass:: UserClan()
+    :members:
+
+.. _discord_api_data:
 
 Data Classes
 --------------
