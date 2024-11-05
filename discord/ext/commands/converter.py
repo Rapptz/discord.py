@@ -82,6 +82,7 @@ __all__ = (
     'GuildChannelConverter',
     'GuildStickerConverter',
     'ScheduledEventConverter',
+    'SoundboardSoundConverter',
     'clean_content',
     'Greedy',
     'Range',
@@ -951,6 +952,44 @@ class ScheduledEventConverter(IDConverter[discord.ScheduledEvent]):
         return result
 
 
+class SoundboardSoundConverter(IDConverter[discord.SoundboardSound]):
+    """Converts to a :class:`~discord.SoundboardSound`.
+
+    Lookups are done for the local guild if available. Otherwise, for a DM context,
+    lookup is done by the global cache.
+
+    The lookup strategy is as follows (in order):
+
+    1. Lookup by ID.
+    2. Lookup by name.
+
+    .. versionadded:: 2.5
+    """
+
+    async def convert(self, ctx: Context[BotT], argument: str) -> discord.SoundboardSound:
+        guild = ctx.guild
+        match = self._get_id_match(argument)
+        result = None
+
+        if match:
+            # ID match
+            sound_id = int(match.group(1))
+            if guild:
+                result = guild.get_soundboard_sound(sound_id)
+            else:
+                result = ctx.bot.get_soundboard_sound(sound_id)
+        else:
+            # lookup by name
+            if guild:
+                result = discord.utils.get(guild.soundboard_sounds, name=argument)
+            else:
+                result = discord.utils.get(ctx.bot.soundboard_sounds, name=argument)
+        if result is None:
+            raise SoundboardSoundNotFound(argument)
+
+        return result
+
+
 class clean_content(Converter[str]):
     """Converts the argument to mention scrubbed version of
     said content.
@@ -1263,6 +1302,7 @@ CONVERTER_MAPPING: Dict[type, Any] = {
     discord.GuildSticker: GuildStickerConverter,
     discord.ScheduledEvent: ScheduledEventConverter,
     discord.ForumChannel: ForumChannelConverter,
+    discord.SoundboardSound: SoundboardSoundConverter,
 }
 
 

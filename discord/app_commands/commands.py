@@ -2821,7 +2821,7 @@ def allowed_installs(
     return inner
 
 
-def default_permissions(**perms: bool) -> Callable[[T], T]:
+def default_permissions(perms_obj: Optional[Permissions] = None, /, **perms: bool) -> Callable[[T], T]:
     r"""A decorator that sets the default permissions needed to execute this command.
 
     When this decorator is used, by default users must have these permissions to execute the command.
@@ -2845,8 +2845,12 @@ def default_permissions(**perms: bool) -> Callable[[T], T]:
     -----------
     \*\*perms: :class:`bool`
         Keyword arguments denoting the permissions to set as the default.
+    perms_obj: :class:`~discord.Permissions`
+        A permissions object as positional argument. This can be used in combination with ``**perms``.
 
-    Example
+        .. versionadded:: 2.5
+
+    Examples
     ---------
 
     .. code-block:: python3
@@ -2855,9 +2859,21 @@ def default_permissions(**perms: bool) -> Callable[[T], T]:
         @app_commands.default_permissions(manage_messages=True)
         async def test(interaction: discord.Interaction):
             await interaction.response.send_message('You may or may not have manage messages.')
+
+    .. code-block:: python3
+
+        ADMIN_PERMS = discord.Permissions(administrator=True)
+
+        @app_commands.command()
+        @app_commands.default_permissions(ADMIN_PERMS, manage_messages=True)
+        async def test(interaction: discord.Interaction):
+            await interaction.response.send_message('You may or may not have manage messages.')
     """
 
-    permissions = Permissions(**perms)
+    if perms_obj is not None:
+        permissions = perms_obj | Permissions(**perms)
+    else:
+        permissions = Permissions(**perms)
 
     def decorator(func: T) -> T:
         if isinstance(func, (Command, Group, ContextMenu)):

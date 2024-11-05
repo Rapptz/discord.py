@@ -22,68 +22,28 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict, List, Literal
+from typing import TypedDict, Optional, Union
 from typing_extensions import NotRequired
 
 from .snowflake import Snowflake
-from .member import MemberWithUser
+from .user import User
 
 
-SupportedModes = Literal[
-    'aead_xchacha20_poly1305_rtpsize',
-    'xsalsa20_poly1305_lite',
-    'xsalsa20_poly1305_suffix',
-    'xsalsa20_poly1305',
-]
+class BaseSoundboardSound(TypedDict):
+    sound_id: Union[Snowflake, str]  # basic string number when it's a default sound
+    volume: float
 
 
-class _VoiceState(TypedDict):
-    user_id: Snowflake
-    session_id: str
-    deaf: bool
-    mute: bool
-    self_deaf: bool
-    self_mute: bool
-    self_video: bool
-    suppress: bool
-    member: NotRequired[MemberWithUser]
-    self_stream: NotRequired[bool]
-
-
-class GuildVoiceState(_VoiceState):
-    channel_id: Snowflake
-
-
-class VoiceState(_VoiceState, total=False):
-    channel_id: Optional[Snowflake]
-    guild_id: Snowflake
-
-
-class VoiceRegion(TypedDict):
-    id: str
+class SoundboardSound(BaseSoundboardSound):
     name: str
-    vip: bool
-    optimal: bool
-    deprecated: bool
-    custom: bool
+    emoji_name: Optional[str]
+    emoji_id: Optional[Snowflake]
+    user_id: NotRequired[Snowflake]
+    available: bool
+    guild_id: NotRequired[Snowflake]
+    user: NotRequired[User]
 
 
-class VoiceServerUpdate(TypedDict):
-    token: str
-    guild_id: Snowflake
-    endpoint: Optional[str]
-
-
-class VoiceIdentify(TypedDict):
-    server_id: Snowflake
-    user_id: Snowflake
-    session_id: str
-    token: str
-
-
-class VoiceReady(TypedDict):
-    ssrc: int
-    ip: str
-    port: int
-    modes: List[SupportedModes]
-    heartbeat_interval: int
+class SoundboardDefaultSound(BaseSoundboardSound):
+    name: str
+    emoji_name: str

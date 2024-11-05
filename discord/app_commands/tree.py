@@ -73,7 +73,7 @@ if TYPE_CHECKING:
     from .commands import ContextMenuCallback, CommandCallback, P, T
 
     ErrorFunc = Callable[
-        [Interaction, AppCommandError],
+        [Interaction[ClientT], AppCommandError],
         Coroutine[Any, Any, Any],
     ]
 
@@ -833,7 +833,7 @@ class CommandTree(Generic[ClientT]):
         else:
             _log.error('Ignoring exception in command tree', exc_info=error)
 
-    def error(self, coro: ErrorFunc) -> ErrorFunc:
+    def error(self, coro: ErrorFunc[ClientT]) -> ErrorFunc[ClientT]:
         """A decorator that registers a coroutine as a local error handler.
 
         This must match the signature of the :meth:`on_error` callback.

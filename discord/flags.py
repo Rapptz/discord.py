@@ -135,7 +135,7 @@ class BaseFlags:
             setattr(self, key, value)
 
     @classmethod
-    def _from_value(cls, value):
+    def _from_value(cls, value: int) -> Self:
         self = cls.__new__(cls)
         self.value = value
         return self
@@ -489,6 +489,14 @@ class MessageFlags(BaseFlags):
         .. versionadded:: 2.3
         """
         return 8192
+
+    @flag_value
+    def forwarded(self):
+        """:class:`bool`: Returns ``True`` if the message is a forwarded message.
+
+        .. versionadded:: 2.5
+        """
+        return 16384
 
 
 @fill_with_flags()
@@ -871,34 +879,52 @@ class Intents(BaseFlags):
 
     @alias_flag_value
     def emojis(self):
-        """:class:`bool`: Alias of :attr:`.emojis_and_stickers`.
+        """:class:`bool`: Alias of :attr:`.expressions`.
 
         .. versionchanged:: 2.0
             Changed to an alias.
         """
         return 1 << 3
 
-    @flag_value
+    @alias_flag_value
     def emojis_and_stickers(self):
-        """:class:`bool`: Whether guild emoji and sticker related events are enabled.
+        """:class:`bool`: Alias of :attr:`.expressions`.
 
         .. versionadded:: 2.0
+
+        .. versionchanged:: 2.5
+            Changed to an alias.
+        """
+        return 1 << 3
+
+    @flag_value
+    def expressions(self):
+        """:class:`bool`: Whether guild emoji, sticker, and soundboard sound related events are enabled.
+
+        .. versionadded:: 2.5
 
         This corresponds to the following events:
 
         - :func:`on_guild_emojis_update`
         - :func:`on_guild_stickers_update`
+        - :func:`on_soundboard_sound_create`
+        - :func:`on_soundboard_sound_update`
+        - :func:`on_soundboard_sound_delete`
 
         This also corresponds to the following attributes and classes in terms of cache:
 
         - :class:`Emoji`
         - :class:`GuildSticker`
+        - :class:`SoundboardSound`
         - :meth:`Client.get_emoji`
         - :meth:`Client.get_sticker`
+        - :meth:`Client.get_soundboard_sound`
         - :meth:`Client.emojis`
         - :meth:`Client.stickers`
+        - :meth:`Client.soundboard_sounds`
         - :attr:`Guild.emojis`
         - :attr:`Guild.stickers`
+        - :attr:`Guild.soundboard_sounds`
         """
         return 1 << 3
 
@@ -2031,6 +2057,48 @@ class MemberFlags(BaseFlags):
     def started_onboarding(self):
         """:class:`bool`: Returns ``True`` if the member has started onboarding."""
         return 1 << 3
+
+    @flag_value
+    def guest(self):
+        """:class:`bool`: Returns ``True`` if the member is a guest and can only access
+        the voice channel they were invited to.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 4
+
+    @flag_value
+    def started_home_actions(self):
+        """:class:`bool`: Returns ``True`` if the member has started Server Guide new member actions.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 5
+
+    @flag_value
+    def completed_home_actions(self):
+        """:class:`bool`: Returns ``True`` if the member has completed Server Guide new member actions.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 6
+
+    @flag_value
+    def automod_quarantined_username(self):
+        """:class:`bool`: Returns ``True`` if the member's username, nickname, or global name has been
+        blocked by AutoMod.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 7
+
+    @flag_value
+    def dm_settings_upsell_acknowledged(self):
+        """:class:`bool`: Returns ``True`` if the member has dismissed the DM settings upsell.
+
+        .. versionadded:: 2.5
+        """
+        return 1 << 9
 
 
 @fill_with_flags()
