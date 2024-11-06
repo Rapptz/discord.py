@@ -2490,7 +2490,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
     @property
     def _sorting_bucket(self) -> int:
-        return ChannelType.text.value
+        return ChannelType.media.value if self._type == 16 else ChannelType.forum.value
 
     @property
     def _scheduled_event_entity_type(self) -> Optional[EntityType]:
