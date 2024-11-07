@@ -828,6 +828,10 @@ class MessageInteractionMetadata(Hashable):
         The ID of the message that containes the interactive components, if applicable.
     modal_interaction: Optional[:class:`.MessageInteractionMetadata`]
         The metadata of the modal submit interaction that triggered this interaction, if applicable.
+    target_user: Optional[:class:`User`]
+        The user the command was run on, only applicable to user context menus.
+    target_message_id: Optional[:class:`int`]
+        The ID of the message the command was run on, only applicable to message context menus.
     """
 
     __slots__: Tuple[str, ...] = (
@@ -837,6 +841,8 @@ class MessageInteractionMetadata(Hashable):
         'original_response_message_id',
         'interacted_message_id',
         'modal_interaction',
+        'target_user',
+        'target_message_id',
         '_integration_owners',
         '_state',
         '_guild',
@@ -848,7 +854,7 @@ class MessageInteractionMetadata(Hashable):
 
         self.id: int = int(data['id'])
         self.type: InteractionType = try_enum(InteractionType, data['type'])
-        self.user = state.create_user(data['user'])
+        self.user: User = state.create_user(data['user'])
         self._integration_owners: Dict[int, int] = {
             int(key): int(value) for key, value in data.get('authorizing_integration_owners', {}).items()
         }
@@ -870,6 +876,18 @@ class MessageInteractionMetadata(Hashable):
             self.modal_interaction = MessageInteractionMetadata(
                 state=state, guild=guild, data=data['triggering_interaction_metadata']
             )
+        except KeyError:
+            pass
+
+        self.target_user: Optional[User] = None
+        try:
+            self.target_user = state.create_user(data['target_user'])
+        except KeyError:
+            pass
+
+        self.target_message_id: Optional[int] = None
+        try:
+            self.target_message_id = int(data['target_message_id'])
         except KeyError:
             pass
 
@@ -897,6 +915,13 @@ class MessageInteractionMetadata(Hashable):
         """
         if self.interacted_message_id:
             return self._state._get_message(self.interacted_message_id)
+        return None
+
+    @property
+    def target_message(self) -> Optional[Message]:
+        """Optional[:class:`~discord.Message`]: The target message, if applicable and is found in cache."""
+        if self.target_message_id:
+            return self._state._get_message(self.target_message_id)
         return None
 
     def is_guild_integration(self) -> bool:
