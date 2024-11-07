@@ -830,8 +830,12 @@ class MessageInteractionMetadata(Hashable):
         The metadata of the modal submit interaction that triggered this interaction, if applicable.
     target_user: Optional[:class:`User`]
         The user the command was run on, only applicable to user context menus.
+
+        .. versionadded:: 2.5
     target_message_id: Optional[:class:`int`]
         The ID of the message the command was run on, only applicable to message context menus.
+
+        .. versionadded:: 2.5
     """
 
     __slots__: Tuple[str, ...] = (
@@ -919,7 +923,10 @@ class MessageInteractionMetadata(Hashable):
 
     @property
     def target_message(self) -> Optional[Message]:
-        """Optional[:class:`~discord.Message`]: The target message, if applicable and is found in cache."""
+        """Optional[:class:`~discord.Message`]: The target message, if applicable and is found in cache.
+
+        .. versionadded:: 2.5
+        """
         if self.target_message_id:
             return self._state._get_message(self.target_message_id)
         return None
