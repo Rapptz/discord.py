@@ -260,15 +260,17 @@ class _MessageInteractionMetadata(TypedDict):
     user: User
     authorizing_integration_owners: Dict[Literal['0', '1'], Snowflake]
     original_response_message_id: NotRequired[Snowflake]
-    
+
 
 class _ApplicationCommandMessageInteractionMetadata(_MessageInteractionMetadata):
     type: Literal[2]
     # command_type: Literal[1, 2, 3, 4]
 
+
 class UserApplicationCommandMessageInteractionMetadata(_ApplicationCommandMessageInteractionMetadata):
     # command_type: Literal[2]
     target_user: User
+
 
 class MessageApplicationCommandMessageInteractionMetadata(_ApplicationCommandMessageInteractionMetadata):
     # command_type: Literal[3]
@@ -281,13 +283,17 @@ ApplicationCommandMessageInteractionMetadata = Union[
     MessageApplicationCommandMessageInteractionMetadata,
 ]
 
+
 class MessageComponentMessageInteractionMetadata(_MessageInteractionMetadata):
     type: Literal[3]
     interacted_message_id: Snowflake
 
+
 class ModalSubmitMessageInteractionMetadata(_MessageInteractionMetadata):
     type: Literal[5]
-    triggering_interaction_metadata: Union[ApplicationCommandMessageInteractionMetadata, MessageComponentMessageInteractionMetadata]
+    triggering_interaction_metadata: Union[
+        ApplicationCommandMessageInteractionMetadata, MessageComponentMessageInteractionMetadata
+    ]
 
 
 MessageInteractionMetadata = Union[
