@@ -865,33 +865,33 @@ class MessageInteractionMetadata(Hashable):
 
         self.original_response_message_id: Optional[int] = None
         try:
-            self.original_response_message_id = int(data['original_response_message_id'])
+            self.original_response_message_id = int(data['original_response_message_id'])  # type: ignore # EAFP
         except KeyError:
             pass
 
         self.interacted_message_id: Optional[int] = None
         try:
-            self.interacted_message_id = int(data['interacted_message_id'])
+            self.interacted_message_id = int(data['interacted_message_id'])  # type: ignore # EAFP
         except KeyError:
             pass
 
         self.modal_interaction: Optional[MessageInteractionMetadata] = None
         try:
             self.modal_interaction = MessageInteractionMetadata(
-                state=state, guild=guild, data=data['triggering_interaction_metadata']
+                state=state, guild=guild, data=data['triggering_interaction_metadata']  # type: ignore # EAFP
             )
         except KeyError:
             pass
 
         self.target_user: Optional[User] = None
         try:
-            self.target_user = state.create_user(data['target_user'])
+            self.target_user = state.create_user(data['target_user'])  # type: ignore # EAFP
         except KeyError:
             pass
 
         self.target_message_id: Optional[int] = None
         try:
-            self.target_message_id = int(data['target_message_id'])
+            self.target_message_id = int(data['target_message_id'])  # type: ignore # EAFP
         except KeyError:
             pass
 
