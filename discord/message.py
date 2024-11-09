@@ -828,6 +828,14 @@ class MessageInteractionMetadata(Hashable):
         The ID of the message that containes the interactive components, if applicable.
     modal_interaction: Optional[:class:`.MessageInteractionMetadata`]
         The metadata of the modal submit interaction that triggered this interaction, if applicable.
+    target_user: Optional[:class:`User`]
+        The user the command was run on, only applicable to user context menus.
+
+        .. versionadded:: 2.5
+    target_message_id: Optional[:class:`int`]
+        The ID of the message the command was run on, only applicable to message context menus.
+
+        .. versionadded:: 2.5
     """
 
     __slots__: Tuple[str, ...] = (
@@ -837,6 +845,8 @@ class MessageInteractionMetadata(Hashable):
         'original_response_message_id',
         'interacted_message_id',
         'modal_interaction',
+        'target_user',
+        'target_message_id',
         '_integration_owners',
         '_state',
         '_guild',
@@ -848,28 +858,40 @@ class MessageInteractionMetadata(Hashable):
 
         self.id: int = int(data['id'])
         self.type: InteractionType = try_enum(InteractionType, data['type'])
-        self.user = state.create_user(data['user'])
+        self.user: User = state.create_user(data['user'])
         self._integration_owners: Dict[int, int] = {
             int(key): int(value) for key, value in data.get('authorizing_integration_owners', {}).items()
         }
 
         self.original_response_message_id: Optional[int] = None
         try:
-            self.original_response_message_id = int(data['original_response_message_id'])
+            self.original_response_message_id = int(data['original_response_message_id'])  # type: ignore # EAFP
         except KeyError:
             pass
 
         self.interacted_message_id: Optional[int] = None
         try:
-            self.interacted_message_id = int(data['interacted_message_id'])
+            self.interacted_message_id = int(data['interacted_message_id'])  # type: ignore # EAFP
         except KeyError:
             pass
 
         self.modal_interaction: Optional[MessageInteractionMetadata] = None
         try:
             self.modal_interaction = MessageInteractionMetadata(
-                state=state, guild=guild, data=data['triggering_interaction_metadata']
+                state=state, guild=guild, data=data['triggering_interaction_metadata']  # type: ignore # EAFP
             )
+        except KeyError:
+            pass
+
+        self.target_user: Optional[User] = None
+        try:
+            self.target_user = state.create_user(data['target_user'])  # type: ignore # EAFP
+        except KeyError:
+            pass
+
+        self.target_message_id: Optional[int] = None
+        try:
+            self.target_message_id = int(data['target_message_id'])  # type: ignore # EAFP
         except KeyError:
             pass
 
@@ -897,6 +919,16 @@ class MessageInteractionMetadata(Hashable):
         """
         if self.interacted_message_id:
             return self._state._get_message(self.interacted_message_id)
+        return None
+
+    @property
+    def target_message(self) -> Optional[Message]:
+        """Optional[:class:`~discord.Message`]: The target message, if applicable and is found in cache.
+
+        .. versionadded:: 2.5
+        """
+        if self.target_message_id:
+            return self._state._get_message(self.target_message_id)
         return None
 
     def is_guild_integration(self) -> bool:
