@@ -30,6 +30,7 @@ import logging
 import aiohttp
 import yarl
 
+from .utils import _chunk as chunk
 from .state import AutoShardedConnectionState
 from .client import Client
 from .backoff import ExponentialBackoff
@@ -490,19 +491,38 @@ class AutoShardedClient(Client):
 
         if self.shard_count is None:
             self.shard_count: int
-            self.shard_count, gateway_url, _session_start_limit = await self.http.get_bot_gateway()
+            self.shard_count, gateway_url, session_start_limits = await self.http.get_bot_gateway()
             gateway = yarl.URL(gateway_url)
         else:
             gateway = DiscordWebSocket.DEFAULT_GATEWAY
+            session_start_limits = None
 
         self._connection.shard_count = self.shard_count
 
         shard_ids = self.shard_ids or range(self.shard_count)
         self._connection.shard_ids = shard_ids
 
-        for shard_id in shard_ids:
-            initial = shard_id == shard_ids[0]
-            await self.launch_shard(gateway, shard_id, initial=initial)
+        if (
+            session_start_limits is not None
+            and type(self).before_identify_hook is Client.before_identify_hook
+            and session_start_limits['max_concurrency'] > 1
+        ):
+            # We only set this when not given a shard range, i.e. no user provided clustering
+            # and when the default behavior of before identify hook has not been modified in any way.
+            # possible further improvement here to ratelimit this or warn based on remaining/reset_after
+            # and known number of shards to launch.
+            s0 = shard_ids[0]
+            for shard_set in chunk(shard_ids, session_start_limits['max_concurrency']):
+                tsks = {
+                    asyncio.create_task(self.launch_shard(gateway, shard_id, initial=shard_id == s0))
+                    for shard_id in shard_set
+                }
+                await asyncio.gather(*tsks)
+                # Each of these still waits 5 seconds by default.
+        else:
+            for shard_id in shard_ids:
+                initial = shard_id == shard_ids[0]
+                await self.launch_shard(gateway, shard_id, initial=initial)
 
     async def _async_setup_hook(self) -> None:
         await super()._async_setup_hook()
