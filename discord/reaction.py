@@ -114,6 +114,13 @@ class Reaction:
         """:class:`bool`: If this is a custom emoji."""
         return not isinstance(self.emoji, str)
 
+    def is_super(self) -> bool:
+        """:class:`bool`: Whether this reaction is a super reaction.
+
+        .. versionadded:: 2.5
+        """
+        return self.normal_count == 0 and self.burst_count > 0
+
     def __eq__(self, other: object) -> bool:
         return isinstance(other, self.__class__) and other.emoji == self.emoji
 
