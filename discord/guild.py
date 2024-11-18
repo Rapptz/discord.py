@@ -3900,9 +3900,15 @@ class Guild(Hashable):
             The result of the bulk ban operation.
         """
 
+        user_ids: list[int | str] = [u.id for u in users]
+        if len(user_ids) == 1:
+            user_id = user_ids[0]
+            await self._state.http.ban(user_id, self.id, delete_message_seconds, reason)
+            return BulkBanResult(banned=[Object(id=user_id, type=User)], failed=[])
+
         response = await self._state.http.bulk_ban(
             self.id,
-            user_ids=[u.id for u in users],
+            user_ids=user_ids,
             delete_message_seconds=delete_message_seconds,
             reason=reason,
         )
