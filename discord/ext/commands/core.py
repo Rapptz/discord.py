@@ -265,10 +265,15 @@ async def _convert_stickers(
         except StopIteration:
             raise MissingRequiredSticker(param)
 
-    for sticker in stickers:
+    while not stickers.is_empty():
+        try:
+            sticker = next(stickers)
+        except StopIteration:
+            raise MissingRequiredSticker(param)
+
         fetched = await sticker.fetch()
         if isinstance(fetched, sticker_type):
-            return sticker
+            return fetched
 
     raise MissingRequiredSticker(param)
 
