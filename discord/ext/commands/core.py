@@ -1265,11 +1265,11 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
                     sticker_type = 'sticker'
 
                 if optional:
-                    result.append(f'[{name} (send a {sticker_type})]')
+                    result.append(f'[{name} (upload a {sticker_type})]')
                 elif greedy:
-                    result.append(f'[{name} (send {sticker_type}s)]...')
+                    result.append(f'[{name} (upload {sticker_type}s)]...')
                 else:
-                    result.append(f'<{name} (send a {sticker_type})>')
+                    result.append(f'<{name} (upload a {sticker_type})>')
                 continue
 
             # for typing.Literal[...], typing.Optional[typing.Literal[...]], and Greedy[typing.Literal[...]], the
