@@ -868,6 +868,12 @@ def resolve_invite(invite: Union[Invite, str]) -> ResolvedInvite:
     invite: Union[:class:`~discord.Invite`, :class:`str`]
         The invite.
 
+    Raises
+    -------
+    ValueError
+        The invite is not a valid Discord invite, e.g. is not a URL
+        or does not contain alphanumeric characters.
+
     Returns
     --------
     :class:`.ResolvedInvite`
@@ -887,7 +893,12 @@ def resolve_invite(invite: Union[Invite, str]) -> ResolvedInvite:
             event_id = url.query.get('event')
 
             return ResolvedInvite(code, int(event_id) if event_id else None)
-    return ResolvedInvite(invite, None)
+
+        allowed_characters = r'[a-zA-Z0-9\-_]+'
+        if not re.fullmatch(allowed_characters, invite):
+            raise ValueError('Invite contains characters that are not allowed')
+
+        return ResolvedInvite(invite, None)
 
 
 def resolve_template(code: Union[Template, str]) -> str:
