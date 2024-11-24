@@ -309,7 +309,7 @@ class Route:
         self.metadata: Optional[str] = metadata
         url = self.BASE + self.path
         if parameters:
-            url = url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
+            url = url.format_map({k: _uriquote(v, safe='') if isinstance(v, str) else v for k, v in parameters.items()})
         self.url: str = url
 
         # major parameters:
