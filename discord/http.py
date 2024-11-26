@@ -2456,6 +2456,7 @@ class HTTPClient:
         limit: Optional[int] = None,
         guild_id: Optional[Snowflake] = None,
         exclude_ended: Optional[bool] = None,
+        exclude_deleted: Optional[bool] = None,
     ) -> Response[List[sku.Entitlement]]:
         params: Dict[str, Any] = {}
 
@@ -2473,6 +2474,8 @@ class HTTPClient:
             params['guild_id'] = guild_id
         if exclude_ended is not None:
             params['exclude_ended'] = int(exclude_ended)
+        if exclude_deleted is not None:
+            params['exclude_deleted'] = int(exclude_deleted)
 
         return self.request(
             Route('GET', '/applications/{application_id}/entitlements', application_id=application_id), params=params
