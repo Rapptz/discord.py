@@ -30,6 +30,7 @@ import logging
 import aiohttp
 import yarl
 
+from .utils import _chunk as chunk
 from .state import AutoShardedConnectionState
 from .client import Client
 from .backoff import ExponentialBackoff
@@ -47,13 +48,16 @@ from .enums import Status
 from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict
 
 if TYPE_CHECKING:
+    from typing_extensions import Unpack
     from .gateway import DiscordWebSocket
     from .activity import BaseActivity
     from .flags import Intents
+    from .types.gateway import SessionStartLimit
 
 __all__ = (
     'AutoShardedClient',
     'ShardInfo',
+    'SessionStartLimits',
 )
 
 _log = logging.getLogger(__name__)
@@ -293,6 +297,32 @@ class ShardInfo:
         return self._parent.ws.is_ratelimited()
 
 
+class SessionStartLimits:
+    """A class that holds info about session start limits
+
+    Attributes
+    ----------
+    total: :class:`int`
+        The total number of session starts the current user is allowed
+    remaining: :class:`int`
+        Remaining remaining number of session starts the current user is allowed
+    reset_after: :class:`int`
+        The number of milliseconds until the limit resets
+    max_concurrency: :class:`int`
+        The number of identify requests allowed per 5 seconds
+
+    .. versionadded:: 2.5
+    """
+
+    __slots__ = ("total", "remaining", "reset_after", "max_concurrency")
+
+    def __init__(self, **kwargs: Unpack[SessionStartLimit]):
+        self.total: int = kwargs['total']
+        self.remaining: int = kwargs['remaining']
+        self.reset_after: int = kwargs['reset_after']
+        self.max_concurrency: int = kwargs['max_concurrency']
+
+
 class AutoShardedClient(Client):
     """A client similar to :class:`Client` except it handles the complications
     of sharding for the user into a more manageable and transparent single
@@ -415,6 +445,33 @@ class AutoShardedClient(Client):
         """Mapping[int, :class:`ShardInfo`]: Returns a mapping of shard IDs to their respective info object."""
         return {shard_id: ShardInfo(parent, self.shard_count) for shard_id, parent in self.__shards.items()}
 
+    async def fetch_session_start_limits(self) -> SessionStartLimits:
+        """|coro|
+
+        Get the session start limits.
+
+        This is not typically needed, and will be handled for you by default.
+
+        At the point where you are launching multiple instances
+        with manual shard ranges and are considered required to use large bot
+        sharding by Discord, this function when used along IPC and a
+        before_identity_hook can speed up session start.
+
+        .. versionadded:: 2.5
+
+        Returns
+        -------
+        :class:`SessionStartLimits`
+            A class containing the session start limits
+
+        Raises
+        ------
+        GatewayNotFound
+            The gateway was unreachable
+        """
+        _, _, limits = await self.http.get_bot_gateway()
+        return SessionStartLimits(**limits)
+
     async def launch_shard(self, gateway: yarl.URL, shard_id: int, *, initial: bool = False) -> None:
         try:
             coro = DiscordWebSocket.from_client(self, initial=initial, gateway=gateway, shard_id=shard_id)
@@ -434,19 +491,38 @@ class AutoShardedClient(Client):
 
         if self.shard_count is None:
             self.shard_count: int
-            self.shard_count, gateway_url = await self.http.get_bot_gateway()
+            self.shard_count, gateway_url, session_start_limits = await self.http.get_bot_gateway()
             gateway = yarl.URL(gateway_url)
         else:
             gateway = DiscordWebSocket.DEFAULT_GATEWAY
+            session_start_limits = None
 
         self._connection.shard_count = self.shard_count
 
         shard_ids = self.shard_ids or range(self.shard_count)
         self._connection.shard_ids = shard_ids
 
-        for shard_id in shard_ids:
-            initial = shard_id == shard_ids[0]
-            await self.launch_shard(gateway, shard_id, initial=initial)
+        if (
+            session_start_limits is not None
+            and type(self).before_identify_hook is Client.before_identify_hook
+            and session_start_limits['max_concurrency'] > 1
+        ):
+            # We only set this when not given a shard range, i.e. no user provided clustering
+            # and when the default behavior of before identify hook has not been modified in any way.
+            # possible further improvement here to ratelimit this or warn based on remaining/reset_after
+            # and known number of shards to launch.
+            s0 = shard_ids[0]
+            for shard_set in chunk(shard_ids, session_start_limits['max_concurrency']):
+                tsks = {
+                    asyncio.create_task(self.launch_shard(gateway, shard_id, initial=shard_id == s0))
+                    for shard_id in shard_set
+                }
+                await asyncio.gather(*tsks)
+                # Each of these still waits 5 seconds by default.
+        else:
+            for shard_id in shard_ids:
+                initial = shard_id == shard_ids[0]
+                await self.launch_shard(gateway, shard_id, initial=initial)
 
     async def _async_setup_hook(self) -> None:
         await super()._async_setup_hook()

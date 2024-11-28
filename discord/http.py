@@ -97,6 +97,7 @@ if TYPE_CHECKING:
         subscription,
     )
     from .types.snowflake import Snowflake, SnowflakeList
+    from .types.gateway import SessionStartLimit
 
     from types import TracebackType
 
@@ -2753,13 +2754,13 @@ class HTTPClient:
 
     # Misc
 
-    async def get_bot_gateway(self) -> Tuple[int, str]:
+    async def get_bot_gateway(self) -> Tuple[int, str, SessionStartLimit]:
         try:
             data = await self.request(Route('GET', '/gateway/bot'))
         except HTTPException as exc:
             raise GatewayNotFound() from exc
 
-        return data['shards'], data['url']
+        return data['shards'], data['url'], data['session_start_limit']
 
     def get_user(self, user_id: Snowflake) -> Response[user.User]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))
