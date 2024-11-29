@@ -814,7 +814,7 @@ class DiscordVoiceWebSocket:
     RESUME              = 7
     HELLO               = 8
     RESUMED             = 9
-    CLIENT_CONNECT      = 12
+    CLIENT_CONNECT      = 11
     CLIENT_DISCONNECT   = 13
     # fmt: on
 
