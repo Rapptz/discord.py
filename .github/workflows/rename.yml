@@ -5,6 +5,11 @@ on:
   push:
     branches: [ master ]
 
+# Runs do not need to be concurrent
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
   rename:
     runs-on: ubuntu-latest
