@@ -1381,7 +1381,7 @@ Subscriptions
 .. function:: on_subscription_delete(subscription)
 
     Called when a subscription is deleted.
-    
+
     .. versionadded:: 2.5
 
     :param subscription: The subscription that was deleted.
@@ -5207,6 +5207,14 @@ ShardInfo
 .. attributetable:: ShardInfo
 
 .. autoclass:: ShardInfo()
+    :members:
+
+SessionStartLimits
+~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SessionStartLimits
+
+.. autoclass:: SessionStartLimits()
     :members:
 
 SKU
