@@ -448,7 +448,7 @@ class Role(Hashable):
     async def add_members(self, *members: Snowflake, reason: Optional[str] = None) -> List[Member]:
         r"""|coro|
 
-        Adds a number of :class:`Member`\s to this role.
+        Adds up to 30 :class:`Member`\s to this role.
 
         You must have :attr:`~Permissions.manage_roles` to use this,
         and the current :class:`Role` must appear lower in the list
@@ -483,6 +483,9 @@ class Role(Hashable):
 
         state = self._state
         guild = self.guild
+
+        if len(members) == 0:
+            return []
 
         data = await state.http.add_members_to_role(guild.id, self.id, [m.id for m in members], reason=reason)
         return [Member(data=m, state=state, guild=guild) for m in data.values()]
