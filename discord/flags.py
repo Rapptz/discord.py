@@ -1678,6 +1678,13 @@ class PaymentFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the payment is for a gift."""
         return 1 << 0
 
+    # TODO: Assumption
+
+    @flag_value
+    def user_refunded(self):
+        """:class:`bool`: Returns ``True`` if the payment has been self-refunded"""
+        return 1 << 2
+
     @flag_value
     def preorder(self):
         """:class:`bool`: Returns ``True`` if the payment is a preorder."""

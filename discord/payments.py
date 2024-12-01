@@ -144,6 +144,7 @@ class Payment(Hashable):
         'invoice_url',
         'refund_invoices_urls',
         'refund_disqualification_reasons',
+        '_refundable',
         '_flags',
         '_state',
     )
@@ -177,6 +178,7 @@ class Payment(Hashable):
         self.refund_disqualification_reasons: List[RefundDisqualificationReason] = [
             try_enum(RefundDisqualificationReason, r) for r in data.get('premium_refund_disqualification_reasons', [])
         ]
+        self._refundable = data.get('premium_refund_disqualification_reasons') == []  # Hack for better DUX
         self._flags: int = data.get('flags', 0)
 
         # The subscription object does not include the payment source ID
@@ -210,6 +212,13 @@ class Payment(Hashable):
     def is_purchased_externally(self) -> bool:
         """:class:`bool`: Whether the payment was made externally."""
         return self.payment_gateway in (PaymentGateway.apple, PaymentGateway.google)
+
+    def is_refundable(self) -> bool:
+        """:class:`bool`: Whether the payment is refundable.
+
+        .. versionadded:: 2.1
+        """
+        return self.status == PaymentStatus.completed and self._refundable
 
     @property
     def flags(self) -> PaymentFlags:
@@ -246,8 +255,8 @@ class Payment(Hashable):
         HTTPException
             Refunding the payment failed.
         """
-        await self._state.http.refund_payment(self.id, int(reason))
-        self.status = PaymentStatus.refunded
+        data = await self._state.http.refund_payment(self.id, int(reason))
+        self._update(data)
 
 
 class EntitlementPayment(Hashable):
