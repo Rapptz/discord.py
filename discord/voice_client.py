@@ -260,6 +260,7 @@ class VoiceClient(VoiceProtocol):
         self._player: Optional[AudioPlayer] = None
         self.encoder: Encoder = MISSING
         self._lite_nonce: int = 0
+        self._incr_nonce: int = 0
         self.ws: DiscordVoiceWebSocket = MISSING
 
     warn_nacl: bool = not has_nacl
@@ -267,6 +268,7 @@ class VoiceClient(VoiceProtocol):
         'xsalsa20_poly1305_lite',
         'xsalsa20_poly1305_suffix',
         'xsalsa20_poly1305',
+        'aead_xchacha20_poly1305_rtpsize'
     )
 
     @property
@@ -555,6 +557,15 @@ class VoiceClient(VoiceProtocol):
 
         encrypt_packet = getattr(self, '_encrypt_' + self.mode)
         return encrypt_packet(header, data)
+
+    def _encrypt_aead_xchacha20_poly1305_rtpsize(self, header: bytes, data) -> bytes:
+        box = nacl.secret.Aead(bytes(self.secret_key))
+        nonce = bytearray(24)
+
+        nonce[:4] = struct.pack('>I', self._incr_nonce)
+        self.checked_add('_incr_nonce', 1, 4294967295)
+
+        return header + box.encrypt(bytes(data), bytes(header), bytes(nonce)).ciphertext + nonce[:4]
 
     def _encrypt_xsalsa20_poly1305(self, header: bytes, data) -> bytes:
         box = nacl.secret.SecretBox(bytes(self.secret_key))
