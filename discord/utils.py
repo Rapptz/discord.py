@@ -1453,9 +1453,13 @@ _CLIENT_ASSET_REGEX = re.compile(r'assets/([a-z0-9.]+)\.js')
 _BUILD_NUMBER_REGEX = re.compile(r'build_number:"(\d+)"')
 
 
-async def _get_info(session: ClientSession, proxy: Optional[str] = None, proxy_auth: Optional[aiohttp.BasicAuth] = None) -> Tuple[Dict[str, Any], str]:
+async def _get_info(
+    session: ClientSession, proxy: Optional[str] = None, proxy_auth: Optional[aiohttp.BasicAuth] = None
+) -> Tuple[Dict[str, Any], str]:
     try:
-        async with session.post('https://cordapi.dolfi.es/api/v2/properties/web', timeout=5, proxy=proxy, proxy_auth=proxy_auth) as resp:
+        async with session.post(
+            'https://cordapi.dolfi.es/api/v2/properties/web', timeout=5, proxy=proxy, proxy_auth=proxy_auth
+        ) as resp:
             json = await resp.json()
             return json['properties'], json['encoded']
     except Exception:
@@ -1493,7 +1497,9 @@ async def _get_info(session: ClientSession, proxy: Optional[str] = None, proxy_a
     return properties, b64encode(_to_json(properties).encode()).decode('utf-8')
 
 
-async def _get_build_number(session: ClientSession, proxy: Optional[str] = None, proxy_auth: Optional[aiohttp.BasicAuth] = None) -> int:
+async def _get_build_number(
+    session: ClientSession, proxy: Optional[str] = None, proxy_auth: Optional[aiohttp.BasicAuth] = None
+) -> int:
     """Fetches client build number"""
     async with session.get('https://discord.com/login', proxy=proxy, proxy_auth=proxy_auth) as resp:
         app = await resp.text()
@@ -1512,11 +1518,14 @@ async def _get_build_number(session: ClientSession, proxy: Optional[str] = None,
     raise RuntimeError('Could not find client build number')
 
 
-async def _get_browser_version(session: ClientSession, proxy: Optional[str] = None, proxy_auth: Optional[aiohttp.BasicAuth] = None) -> str:
+async def _get_browser_version(
+    session: ClientSession, proxy: Optional[str] = None, proxy_auth: Optional[aiohttp.BasicAuth] = None
+) -> str:
     """Fetches the latest Windows 10/Chrome major browser version."""
     async with session.get(
         'https://versionhistory.googleapis.com/v1/chrome/platforms/win/channels/stable/versions',
-        proxy=proxy, proxy_auth=proxy_auth
+        proxy=proxy,
+        proxy_auth=proxy_auth,
     ) as response:
         data = await response.json()
         major = data['versions'][0]['version'].split('.')[0]

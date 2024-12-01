@@ -2984,11 +2984,6 @@ class Client:
         if friend_discovery_flags:
             payload['friend_discovery_flags'] = friend_discovery_flags.value
 
-        guild_positions = kwargs.pop('guild_positions', None)
-        if guild_positions:
-            guild_positions = [str(x.id) for x in guild_positions]
-            payload['guild_positions'] = guild_positions
-
         restricted_guilds = kwargs.pop('restricted_guilds', None)
         if restricted_guilds:
             restricted_guilds = [str(x.id) for x in restricted_guilds]

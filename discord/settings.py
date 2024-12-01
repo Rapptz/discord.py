@@ -1794,9 +1794,6 @@ class LegacyUserSettings:
             How you get recommended friends.
         gif_auto_play: :class:`bool`
             Whether to automatically play GIFs that are in the chat.
-        guild_positions: List[:class:`~discord.abc.Snowflake`]
-            A list of guilds in order of the guild/guild icons that are on
-            the left hand side of the UI.
         inline_attachment_media: :class:`bool`
             Whether to display attachments when they are uploaded in chat.
         inline_embed_media: :class:`bool`
@@ -1890,11 +1887,6 @@ class LegacyUserSettings:
         return [
             GuildFolder._from_legacy_settings(data=folder, state=state) for folder in getattr(self, '_guild_folders', [])
         ]
-
-    @property
-    def guild_positions(self) -> List[Guild]:
-        """List[:class:`Guild`]: A list of guilds in order of the guild/guild icons that are on the left hand side of the UI."""
-        return list(map(self._get_guild, getattr(self, '_guild_positions', [])))
 
     @property
     def locale(self) -> Locale:

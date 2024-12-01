@@ -268,7 +268,7 @@ class VoiceClient(VoiceProtocol):
         'xsalsa20_poly1305_lite',
         'xsalsa20_poly1305_suffix',
         'xsalsa20_poly1305',
-        'aead_xchacha20_poly1305_rtpsize'
+        'aead_xchacha20_poly1305_rtpsize',
     )
 
     @property
