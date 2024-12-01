@@ -150,10 +150,9 @@ class _ProtoSettings:
             return self._state._get_or_create_unavailable_guild(id)
         return self._state._get_guild(id) or Object(id=id)
 
-    def to_dict(self, *, with_defaults: bool = False) -> Dict[str, Any]:
+    def to_dict(self) -> Dict[str, Any]:
         return MessageToDict(
             self.settings,
-            always_print_fields_with_no_presence=with_defaults,
             preserving_proto_field_name=True,
             use_integers_for_enums=True,
         )

@@ -64,7 +64,7 @@ if TYPE_CHECKING:
     from .types.gateway import VoiceStateUpdateEvent as VoiceStateUpdatePayload
     from .types.voice import (
         VoiceServerUpdate as VoiceServerUpdatePayload,
-        SupportedModes,
+        TransportEncryptionModes,
     )
 
     VocalChannel = abc.VocalChannel
@@ -264,11 +264,11 @@ class VoiceClient(VoiceProtocol):
         self.ws: DiscordVoiceWebSocket = MISSING
 
     warn_nacl: bool = not has_nacl
-    supported_modes: Tuple[SupportedModes, ...] = (
+    supported_modes: Tuple[TransportEncryptionModes, ...] = (
+        'aead_xchacha20_poly1305_rtpsize',
         'xsalsa20_poly1305_lite',
         'xsalsa20_poly1305_suffix',
         'xsalsa20_poly1305',
-        'aead_xchacha20_poly1305_rtpsize',
     )
 
     @property

@@ -35,7 +35,7 @@ from .channel import ChannelType, DMChannel, GroupDMChannel, StageInstance
 from .emoji import Emoji, PartialEmoji
 from .entitlements import Entitlement, GatewayGift
 from .experiment import GuildExperiment, UserExperiment
-from .guild import ApplicationCommandCounts, Guild, SupplementalGuild, UnavailableGuild
+from .guild import Guild, SupplementalGuild, UnavailableGuild
 from .integration import BaseIntegration, IntegrationApplication
 from .interactions import Modal
 from .invite import _InviteTargetType
