@@ -73,6 +73,7 @@ import sys
 from threading import Timer
 import types
 import warnings
+import aiohttp
 
 import yarl
 
@@ -1452,22 +1453,22 @@ _CLIENT_ASSET_REGEX = re.compile(r'assets/([a-z0-9.]+)\.js')
 _BUILD_NUMBER_REGEX = re.compile(r'build_number:"(\d+)"')
 
 
-async def _get_info(session: ClientSession) -> Tuple[Dict[str, Any], str]:
+async def _get_info(session: ClientSession, proxy: Optional[str] = None, proxy_auth: Optional[aiohttp.BasicAuth] = None) -> Tuple[Dict[str, Any], str]:
     try:
-        async with session.post('https://cordapi.dolfi.es/api/v2/properties/web', timeout=5) as resp:
+        async with session.post('https://cordapi.dolfi.es/api/v2/properties/web', timeout=5, proxy=proxy, proxy_auth=proxy_auth) as resp:
             json = await resp.json()
             return json['properties'], json['encoded']
     except Exception:
         _log.info('Info API temporarily down. Falling back to manual retrieval...')
 
     try:
-        bn = await _get_build_number(session)
+        bn = await _get_build_number(session, proxy, proxy_auth)
     except Exception:
         _log.critical('Could not retrieve client build number. Falling back to hardcoded value...')
         bn = FALLBACK_BUILD_NUMBER
 
     try:
-        bv = await _get_browser_version(session)
+        bv = await _get_browser_version(session, proxy, proxy_auth)
     except Exception:
         _log.critical('Could not retrieve browser version. Falling back to hardcoded value...')
         bv = FALLBACK_BROWSER_VERSION
@@ -1492,16 +1493,16 @@ async def _get_info(session: ClientSession) -> Tuple[Dict[str, Any], str]:
     return properties, b64encode(_to_json(properties).encode()).decode('utf-8')
 
 
-async def _get_build_number(session: ClientSession) -> int:
+async def _get_build_number(session: ClientSession, proxy: Optional[str] = None, proxy_auth: Optional[aiohttp.BasicAuth] = None) -> int:
     """Fetches client build number"""
-    async with session.get('https://discord.com/login') as resp:
+    async with session.get('https://discord.com/login', proxy=proxy, proxy_auth=proxy_auth) as resp:
         app = await resp.text()
         assets = _CLIENT_ASSET_REGEX.findall(app)
         if not assets:
             raise RuntimeError('Could not find client asset files')
 
     for asset in assets[::-1]:
-        async with session.get(f'https://discord.com/assets/{asset}.js') as resp:
+        async with session.get(f'https://discord.com/assets/{asset}.js', proxy=proxy, proxy_auth=proxy_auth) as resp:
             build = await resp.text()
             match = _BUILD_NUMBER_REGEX.search(build)
             if match is None:
@@ -1511,10 +1512,11 @@ async def _get_build_number(session: ClientSession) -> int:
     raise RuntimeError('Could not find client build number')
 
 
-async def _get_browser_version(session: ClientSession) -> str:
+async def _get_browser_version(session: ClientSession, proxy: Optional[str] = None, proxy_auth: Optional[aiohttp.BasicAuth] = None) -> str:
     """Fetches the latest Windows 10/Chrome major browser version."""
     async with session.get(
-        'https://versionhistory.googleapis.com/v1/chrome/platforms/win/channels/stable/versions'
+        'https://versionhistory.googleapis.com/v1/chrome/platforms/win/channels/stable/versions',
+        proxy=proxy, proxy_auth=proxy_auth
     ) as response:
         data = await response.json()
         major = data['versions'][0]['version'].split('.')[0]
