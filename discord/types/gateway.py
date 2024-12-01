@@ -497,7 +497,7 @@ class BillingPopupBridgeCallbackEvent(TypedDict):
     payment_source_type: int
     state: str
     path: str
-    query: str
+    query: Dict[str, str]
 
 
 PaymentUpdateEvent = Payment

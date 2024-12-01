@@ -516,13 +516,17 @@ Billing
 
     .. versionadded:: 2.0
 
+    .. versionchanged:: 2.1
+
+        The type of the ``query`` parameter was corrected from ``str`` to ``Mapping[str, str]``.
+
     :param payment_source_type: The payment source type.
     :type payment_source_type: :class:`PaymentSourceType`
-    :param path: The path of the callback.
+    :param path: The URL path of the callback.
     :type path: :class:`str`
-    :param query: The query of the callback.
-    :type query: :class:`str`
-    :param state: The state of the callback.
+    :param query: The URL query parameters of the callback.
+    :type query: Mapping[:class:`str`, :class:`str`]
+    :param state: A hash to verify the callback.
     :type state: :class:`str`
 
 Entitlements

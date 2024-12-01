@@ -101,6 +101,7 @@ from .audit_logs import AuditLogEntry
 from .read_state import ReadState
 from .tutorial import Tutorial
 from .experiment import UserExperiment, GuildExperiment
+from .metadata import Metadata
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -2006,8 +2007,8 @@ class ConnectionState:
         self.dispatch(
             'billing_popup_bridge_callback',
             try_enum(PaymentSourceType, data.get('payment_source_type', 0)),
-            data.get('path'),
-            data.get('query'),
+            data.get('path', ''),
+            Metadata(data.get('query', {})),
             data.get('state'),
         )
 
