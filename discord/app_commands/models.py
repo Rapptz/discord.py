@@ -252,9 +252,11 @@ class AppCommand(Hashable):
         self.description_localizations: Dict[Locale, str] = _to_locale_dict(data.get('description_localizations') or {})
 
         handler = data.get('handler')
-        self.handler: Optional[EntryPointCommandHandlerType] = None  # type: ignore
-        if handler is not None:
-            self.handler: EntryPointCommandHandlerType = try_enum(EntryPointCommandHandlerType, handler)
+        if handler is None:
+            self.handler = None
+        else:
+            self.handler = try_enum(EntryPointCommandHandlerType, handler)
+        
 
     def to_dict(self) -> ApplicationCommandPayload:
         return {
@@ -268,6 +270,7 @@ class AppCommand(Hashable):
             'contexts': self.allowed_contexts.to_array() if self.allowed_contexts is not None else None,
             'integration_types': self.allowed_installs.to_array() if self.allowed_installs is not None else None,
             'options': [opt.to_dict() for opt in self.options],
+            'handler': self.handler.value if self.handler is not None else None,
         }  # type: ignore # Type checker does not understand this literal.
 
     def __str__(self) -> str:
@@ -328,6 +331,7 @@ class AppCommand(Hashable):
         default_member_permissions: Optional[Permissions] = MISSING,
         dm_permission: bool = MISSING,
         options: List[Union[Argument, AppCommandGroup]] = MISSING,
+        handler: Optional[EntryPointCommandHandlerType] = MISSING,
     ) -> AppCommand:
         """|coro|
 
@@ -346,6 +350,10 @@ class AppCommand(Hashable):
             Indicates if the application command can be used in DMs.
         options: List[Union[:class:`Argument`, :class:`AppCommandGroup`]]
             List of new options for this application command.
+        handler: Optional[:class:`~discord.EntryPointCommandHandlerType`]
+            Determines whether the interaction is handled by the app's interactions handler or by Discord.
+
+            Only available for commands with type :attr:`~discord.AppCommandType.primary_entry_point`.
 
         Raises
         -------
@@ -386,6 +394,9 @@ class AppCommand(Hashable):
 
         if options is not MISSING:
             payload['options'] = [option.to_dict() for option in options]
+
+        if handler is not MISSING:
+            payload['handler'] = handler
 
         if not payload:
             return self
