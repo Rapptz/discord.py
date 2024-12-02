@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: discordpy\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-03-26 03:41+0000\n"
-"PO-Revision-Date: 2024-04-17 02:43\n"
+"PO-Revision-Date: 2024-10-23 23:39\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -932,7 +932,7 @@ msgstr "ギルドにカウント情報を含めるかどうか。これを使う
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_guild:28
 msgid "The guild doesn't exist or you got no access to it."
-msgstr ""
+msgstr "ギルドが存在しないか、アクセスすることができません"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_guild:29
 msgid "Getting the guild failed."
@@ -1283,7 +1283,7 @@ msgstr "Union[:class:`.StandardSticker`, :class:`.GuildSticker`]"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_skus:3
 msgid "Retrieves the bot's available SKUs."
-msgstr ""
+msgstr "ボットの利用可能なSKUを取得します。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_skus:7
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_entitlement:11
@@ -1291,47 +1291,47 @@ msgstr ""
 #: ../../../discord/client.py:docstring of discord.client.Client.create_entitlement:14
 #: ../../../discord/sku.py:docstring of discord.sku.Entitlement.delete:5
 msgid "The application ID could not be found."
-msgstr ""
+msgstr "アプリケーションコマンドが見つからなかった場合。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_skus:8
 msgid "Retrieving the SKUs failed."
-msgstr ""
+msgstr "SKUの取得に失敗した場合。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_skus:10
 msgid "The bot's available SKUs."
-msgstr ""
+msgstr "ボットが利用できるSKU"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_skus:11
 msgid "List[:class:`.SKU`]"
-msgstr ""
+msgstr "List[:class:`.SKU`]"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_entitlement:3
 msgid "Retrieves a :class:`.Entitlement` with the specified ID."
-msgstr ""
+msgstr "特定のIDの :class:`.Entitlement` を取得します。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_entitlement:7
 msgid "The entitlement's ID to fetch from."
-msgstr ""
+msgstr "取得したいエンタイトルメントのID。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_entitlement:10
 msgid "An entitlement with this ID does not exist."
-msgstr ""
+msgstr "このIDを持つエンタイトルメントが存在しない場合。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_entitlement:12
 msgid "Fetching the entitlement failed."
-msgstr ""
+msgstr "エンタイトルメントの取得に失敗した場合。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_entitlement:14
 msgid "The entitlement you requested."
-msgstr ""
+msgstr "要求されたエンタイルメント。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.fetch_entitlement:15
 msgid ":class:`.Entitlement`"
-msgstr ""
+msgstr ":class:`.Entitlement`"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.entitlements:1
 msgid "Retrieves an :term:`asynchronous iterator` of the :class:`.Entitlement` that applications has."
-msgstr ""
+msgstr "アプリケーションが持つ :class:`.Entitlement` の :term:`非同期イテレータ` を取得します。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.entitlements:19
 msgid "The number of entitlements to retrieve. If ``None``, it retrieves every entitlement for this application. Note, however, that this would make it a slow operation. Defaults to ``100``."
@@ -1449,7 +1449,7 @@ msgstr ""
 #: ../../../discord/client.py:docstring of discord.client.Client.add_dynamic_items:3
 #: ../../../discord/client.py:docstring of discord.client.Client.remove_dynamic_items:3
 msgid "This method accepts *class types* rather than instances."
-msgstr ""
+msgstr "この関数はインスタンスではなく、クラスのタイプを返します。"
 
 #: ../../../discord/client.py:docstring of discord.client.Client.add_dynamic_items:7
 msgid "The classes of dynamic items to add."
@@ -1860,11 +1860,11 @@ msgstr ""
 
 #: ../../../discord/appinfo.py:docstring of discord.appinfo.AppInfo.edit:38
 msgid "The reason for editing the application. Shows up on the audit log."
-msgstr ""
+msgstr "アプリケーションを編集する理由。これは、監査ログに表示されます。"
 
 #: ../../../discord/appinfo.py:docstring of discord.appinfo.AppInfo.edit:41
 msgid "Editing the application failed"
-msgstr ""
+msgstr "アプリケーションの変数に失敗した場合。"
 
 #: ../../../discord/appinfo.py:docstring of discord.appinfo.AppInfo.edit:42
 msgid "The image format passed in to ``icon`` or ``cover_image`` is invalid. This is also raised     when ``install_params_scopes`` and ``install_params_permissions`` are incompatible with each other."
@@ -1876,7 +1876,7 @@ msgstr ""
 
 #: ../../../discord/appinfo.py:docstring of discord.appinfo.AppInfo.edit:45
 msgid ":class:`AppInfo`"
-msgstr ""
+msgstr ":class:`AppInfo`"
 
 #: ../../api.rst:68
 msgid "PartialAppInfo"
@@ -2022,11 +2022,11 @@ msgstr ":class:`TeamMembershipState`"
 
 #: ../../../discord/team.py:docstring of discord.team.TeamMember:69
 msgid "The role of the member within the team."
-msgstr ""
+msgstr "チーム内でのメンバーの役割。"
 
 #: ../../../discord/team.py:docstring of discord.team.TeamMember:73
 msgid ":class:`TeamMemberRole`"
-msgstr ""
+msgstr ":class:`TeamMemberRole`"
 
 #: ../../../discord/team.py:docstring of discord.TeamMember.accent_color:1
 #: ../../../discord/user.py:docstring of discord.ClientUser.accent_color:1
@@ -4793,7 +4793,7 @@ msgstr "フォーラムチャンネル。"
 
 #: ../../api.rst:1571
 msgid "A media channel."
-msgstr ""
+msgstr "メディアチャンネル"
 
 #: ../../api.rst:1577
 msgid "Specifies the type of :class:`Message`. This is used to denote if a message is to be interpreted as a system message or a regular message."
@@ -11069,7 +11069,7 @@ msgstr ""
 
 #: ../../../discord/message.py:docstring of discord.Attachment.flags:3
 msgid ":class:`AttachmentFlags`"
-msgstr ""
+msgstr ":class:`AttachmentFlags`"
 
 #: ../../../discord/message.py:docstring of discord.message.Attachment.is_spoiler:1
 msgid ":class:`bool`: Whether this attachment contains a spoiler."
@@ -11711,7 +11711,7 @@ msgstr "このリアクションのメッセージ。"
 
 #: ../../../discord/reaction.py:docstring of discord.reaction.Reaction:52
 msgid "If the user sent this super reaction."
-msgstr ""
+msgstr "ユーザーがスーパーリアクションを付けた場合。"
 
 #: ../../../discord/reaction.py:docstring of discord.reaction.Reaction:60
 msgid "The number of times this reaction was made using normal reactions. This is not available in the gateway events such as :func:`on_reaction_add` or :func:`on_reaction_remove`."
@@ -13789,7 +13789,7 @@ msgstr "BAN解除に失敗した場合。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.bulk_ban:3
 msgid "Bans multiple users from the guild."
-msgstr ""
+msgstr "ギルドから複数のユーザーをBANします。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.bulk_ban:5
 msgid "The users must meet the :class:`abc.Snowflake` abc."
@@ -13801,7 +13801,7 @@ msgstr ""
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.bulk_ban:17
 msgid "The reason the users got banned."
-msgstr ""
+msgstr "ユーザーをBANする理由。"
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.bulk_ban:23
 msgid "The result of the bulk ban operation."
@@ -13809,7 +13809,7 @@ msgstr ""
 
 #: ../../../discord/guild.py:docstring of discord.guild.Guild.bulk_ban:24
 msgid ":class:`BulkBanResult`"
-msgstr ""
+msgstr ":class:`BulkBanResult`"
 
 #: ../../../discord/guild.py:docstring of discord.Guild.vanity_url:1
 msgid "The Discord vanity invite URL for this guild, if available."
@@ -14100,7 +14100,7 @@ msgstr ""
 #: ../../api.rst:4505
 #: ../../api.rst:4511
 msgid "List[:class:`Object`]"
-msgstr ""
+msgstr "List[:class:`Object`]"
 
 #: ../../api.rst:4508
 msgid "The list of users that could not be banned. The inner :class:`Object` of the list has the :attr:`Object.type` set to :class:`User`."
@@ -15672,7 +15672,7 @@ msgstr ""
 
 #: ../../../discord/role.py:docstring of discord.Role.flags:5
 msgid ":class:`RoleFlags`"
-msgstr ""
+msgstr ":class:`RoleFlags`"
 
 #: ../../../discord/role.py:docstring of discord.role.Role.edit:3
 msgid "Edits the role."
@@ -18870,7 +18870,7 @@ msgstr ""
 
 #: ../../../discord/sku.py:docstring of discord.SKU.flags:3
 msgid ":class:`SKUFlags`"
-msgstr ""
+msgstr ":class:`SKUFlags`"
 
 #: ../../../discord/sku.py:docstring of discord.SKU.created_at:1
 msgid "Returns the sku's creation time in UTC."
@@ -18906,7 +18906,7 @@ msgstr ""
 
 #: ../../../discord/sku.py:docstring of discord.sku.Entitlement:33
 msgid ":class:`EntitlementType`"
-msgstr ""
+msgstr ":class:`EntitlementType`"
 
 #: ../../../discord/sku.py:docstring of discord.sku.Entitlement:37
 msgid "Whether the entitlement has been deleted."
@@ -19091,7 +19091,7 @@ msgstr ""
 
 #: ../../../discord/raw_models.py:docstring of discord.raw_models.RawReactionActionEvent:75
 msgid "List[:class:`Colour`]"
-msgstr ""
+msgstr "List[:class:`Colour`]"
 
 #: ../../../discord/raw_models.py:docstring of discord.RawReactionActionEvent.burst_colors:1
 msgid "An alias of :attr:`burst_colours`."
