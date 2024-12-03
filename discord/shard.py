@@ -299,6 +299,8 @@ class ShardInfo:
 class SessionStartLimits:
     """A class that holds info about session start limits
 
+    .. versionadded:: 2.5
+
     Attributes
     ----------
     total: :class:`int`
@@ -309,8 +311,6 @@ class SessionStartLimits:
         The number of milliseconds until the limit resets
     max_concurrency: :class:`int`
         The number of identify requests allowed per 5 seconds
-
-    .. versionadded:: 2.5
     """
 
     __slots__ = ("total", "remaining", "reset_after", "max_concurrency")
