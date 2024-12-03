@@ -310,7 +310,7 @@ class SessionStartLimits:
     max_concurrency: :class:`int`
         The number of identify requests allowed per 5 seconds
 
-    .. versionadded:: 2.5
+        .. versionadded:: 2.5
     """
 
     __slots__ = ("total", "remaining", "reset_after", "max_concurrency")
