@@ -81,7 +81,7 @@ class Flag:
     positional: :class:`bool`
         Whether the flag is positional or not. There can only be one positional flag.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
     """
 
     name: str = MISSING
@@ -143,7 +143,7 @@ def flag(
     positional: :class:`bool`
         Whether the flag is positional or not. There can only be one positional flag.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
     """
     return Flag(
         name=name,

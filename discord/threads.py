@@ -908,7 +908,7 @@ class Thread(Messageable, Hashable):
             The reason for deleting this thread.
             Shows up on the audit log.
 
-            .. versionadded:: 2.4
+            .. versionadded:: 2.1
 
         Raises
         -------

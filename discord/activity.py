@@ -168,7 +168,7 @@ class Activity(BaseActivity):
     platform: Optional[:class:`str`]
         The user's current platform.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
     timestamps: :class:`dict`
         A dictionary of timestamps. It contains the following optional keys:
 
@@ -382,7 +382,7 @@ class Game(BaseActivity):
     platform: Optional[:class:`str`]
         Where the user is playing from (ie. PS5, Xbox).
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
     assets: :class:`dict`
         A dictionary representing the images and their hover text of a game.
@@ -393,7 +393,7 @@ class Game(BaseActivity):
         - ``small_image``: A string representing the ID for the small image asset.
         - ``small_text``: A string representing the text when hovering over the small image asset.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
     """
 
     __slots__ = ('name', '_end', '_start', 'platform', 'assets')

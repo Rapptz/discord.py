@@ -354,7 +354,7 @@ class Permissions(BaseFlags):
         """A factory method that creates a :class:`Permissions` with all
         "Events" permissions from the official Discord UI set to ``True``.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         return cls(0b0000_0000_0000_0000_0001_0000_0000_0010_0000_0000_0000_0000_0000_0000_0000_0000)
 
@@ -702,7 +702,7 @@ class Permissions(BaseFlags):
     def view_creator_monetization_analytics(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can view role subscription insights.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         return 1 << 41
 
@@ -726,7 +726,7 @@ class Permissions(BaseFlags):
     def create_events(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can create guild events.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         return 1 << 44
 
@@ -750,7 +750,7 @@ class Permissions(BaseFlags):
     def send_polls(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can send poll messages.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         return 1 << 49
 
@@ -758,7 +758,7 @@ class Permissions(BaseFlags):
     def create_polls(self) -> int:
         """:class:`bool`: An alias for :attr:`send_polls`.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         return 1 << 49
 
@@ -766,7 +766,7 @@ class Permissions(BaseFlags):
     def use_external_apps(self) -> int:
         """:class:`bool`: Returns ``True`` if a user can use external apps.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         return 1 << 50
 

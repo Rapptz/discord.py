@@ -1791,7 +1791,7 @@ of :class:`enum.Enum`.
 
         A media channel.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
 .. class:: MessageType
 
@@ -1997,25 +1997,25 @@ of :class:`enum.Enum`.
 
         The system message sent when security actions is enabled.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
     .. attribute:: guild_incident_alert_mode_disabled
 
         The system message sent when security actions is disabled.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
     .. attribute:: guild_incident_report_raid
 
         The system message sent when a raid is reported.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
     .. attribute:: guild_incident_report_false_alarm
 
         The system message sent when a false alarm is reported.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
     .. attribute:: purchase_notification
 
@@ -5891,7 +5891,7 @@ of :class:`enum.Enum`.
 
         The rule will trigger when a user's profile contains a keyword.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
 .. class:: AutoModRuleEventType
 
@@ -5907,7 +5907,7 @@ of :class:`enum.Enum`.
 
         The rule will trigger when a member's profile is updated.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
 .. class:: AutoModRuleActionType
 
@@ -5932,7 +5932,7 @@ of :class:`enum.Enum`.
         Similar to :attr:`timeout`, except the user will be timed out indefinitely.
         This will request the user to edit it's profile.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
 .. class:: ForumLayoutType
 

@@ -2310,13 +2310,13 @@ class Guild(Hashable):
             The time when invites should be enabled again, or ``None`` to disable the action.
             This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
 
-            .. versionadded:: 2.4
+            .. versionadded:: 2.1
 
         dms_disabled_until: Optional[:class:`datetime.datetime`]
             The time when direct messages should be allowed again, or ``None`` to disable the action.
             This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
 
-            .. versionadded:: 2.4
+            .. versionadded:: 2.1
 
         Raises
         -------
@@ -4383,7 +4383,7 @@ class Guild(Hashable):
 
         You must have :attr:`~Permissions.ban_members` and :attr:`~Permissions.manage_guild` to do this.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
         Parameters
         -----------
@@ -5555,7 +5555,7 @@ class Guild(Hashable):
         """Optional[:class:`datetime.datetime`]: If invites are paused, returns when
         invites will get enabled in UTC, otherwise returns None.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         if not self._incidents_data:
             return None
@@ -5567,7 +5567,7 @@ class Guild(Hashable):
         """Optional[:class:`datetime.datetime`]: If DMs are paused, returns when DMs
         will get enabled in UTC, otherwise returns None.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         if not self._incidents_data:
             return None
@@ -5599,7 +5599,7 @@ class Guild(Hashable):
     def invites_paused(self) -> bool:
         """:class:`bool`: Whether invites are paused in the guild.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         if not self.invites_paused_until:
             return 'INVITES_DISABLED' in self.features
@@ -5609,7 +5609,7 @@ class Guild(Hashable):
     def dms_paused(self) -> bool:
         """:class:`bool`: Whether DMs are paused in the guild.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         if not self.dms_paused_until:
             return False

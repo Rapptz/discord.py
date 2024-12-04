@@ -388,7 +388,7 @@ class Role(Hashable):
     def flags(self) -> RoleFlags:
         """:class:`RoleFlags`: Returns the role's flags.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         return RoleFlags._from_value(self._flags)
 

@@ -353,7 +353,7 @@ class VoiceClient(VoiceProtocol):
         timeout: Optional[:class:`float`]
             How long to wait for the move to complete.
 
-            .. versionadded:: 2.4
+            .. versionadded:: 2.1
 
         Raises
         -------

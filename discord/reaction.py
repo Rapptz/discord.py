@@ -83,19 +83,19 @@ class Reaction:
     me_burst: :class:`bool`
         If the user sent this super reaction.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
     normal_count: :class:`int`
         The number of times this reaction was made using normal reactions.
         This is not available in the gateway events such as :func:`on_reaction_add`
         or :func:`on_reaction_remove`.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
     burst_count: :class:`int`
         The number of times this reaction was made using super reactions.
         This is not available in the gateway events such as :func:`on_reaction_add`
         or :func:`on_reaction_remove`.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
     """
 
     __slots__ = ('message', 'count', 'emoji', 'me', 'me_burst', 'normal_count', 'burst_count')
@@ -226,7 +226,7 @@ class Reaction:
             The type of reaction to return users from.
             Defaults to :attr:`ReactionType.normal`.
 
-            .. versionadded:: 2.4
+            .. versionadded:: 2.1
 
         Raises
         --------

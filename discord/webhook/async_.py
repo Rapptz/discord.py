@@ -1502,7 +1502,7 @@ class Webhook(BaseWebhook):
 
                 When sending a Poll via webhook, you cannot manually end it.
 
-            .. versionadded:: 2.4
+            .. versionadded:: 2.1
 
         Raises
         --------

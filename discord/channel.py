@@ -1599,7 +1599,7 @@ class VoiceChannel(VocalGuildChannel):
             The new voice channel status. It can be up to 500 characters.
             Can be ``None`` to remove the status.
 
-            .. versionadded:: 2.4
+            .. versionadded:: 2.1
 
         Raises
         ------
@@ -2652,7 +2652,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     def is_media(self) -> bool:
         """:class:`bool`: Checks if the channel is a media channel.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         return self._type == ChannelType.media.value
 

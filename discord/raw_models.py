@@ -210,7 +210,7 @@ class RawReactionActionEvent(_RawReprMixin):
     burst: :class:`bool`
         Whether the reaction was a burst reaction, also known as a "super reaction".
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
     burst_colours: List[:class:`Colour`]
         A list of colours used for burst reaction animation. Only available if ``burst`` is ``True``
         and if ``event_type`` is ``REACTION_ADD``.
@@ -219,7 +219,7 @@ class RawReactionActionEvent(_RawReprMixin):
     type: :class:`ReactionType`
         The type of the reaction.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
     """
 
     __slots__ = (
@@ -257,7 +257,7 @@ class RawReactionActionEvent(_RawReprMixin):
     def burst_colors(self) -> List[Colour]:
         """An alias of :attr:`burst_colours`.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         return self.burst_colours
 
@@ -514,7 +514,7 @@ class RawPollVoteActionEvent(_RawReprMixin):
     """Represents the payload for a :func:`on_raw_poll_vote_add` or :func:`on_raw_poll_vote_remove`
     event.
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.1
 
     Attributes
     ----------

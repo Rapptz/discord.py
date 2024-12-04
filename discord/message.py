@@ -950,7 +950,7 @@ class PartialMessage(Hashable):
             This does not retrieve archived threads, as they are not retained in the internal
             cache. Use :meth:`fetch_thread` instead.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         if self.guild is not None:
             return self.guild.get_thread(self.id)
@@ -1452,7 +1452,7 @@ class PartialMessage(Hashable):
 
             This method is an API call. For general usage, consider :attr:`thread` instead.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
 
         Raises
         -------
@@ -1858,7 +1858,7 @@ class Message(PartialMessage, Hashable):
     poll: Optional[:class:`Poll`]
         The poll attached to this message.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
     purchase_notification: Optional[:class:`PurchaseNotification`]
         The data of the purchase notification that prompted this :attr:`MessageType.purchase_notification` message.
 
@@ -2393,7 +2393,7 @@ class Message(PartialMessage, Hashable):
             For messages received via the gateway this does not retrieve archived threads, as they
             are not retained in the internal cache. Use :meth:`fetch_thread` instead.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         if self.guild is not None:
             # Fall back to guild threads in case one was created after the message

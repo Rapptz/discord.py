@@ -1458,7 +1458,7 @@ class ChannelFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the client hides embedded media download options in a :class:`ForumChannel`.
         Only available in media channels.
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.1
         """
         return 1 << 15
 
@@ -2750,7 +2750,7 @@ class AttachmentFlags(BaseFlags):
 class RoleFlags(BaseFlags):
     r"""Wraps up the Discord Role flags
 
-    .. versionadded:: 2.4
+    .. versionadded:: 2.1
 
     .. container:: operations
 
