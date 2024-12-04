@@ -1144,8 +1144,7 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         channel = await self._get_channel()
         ret = await super().connect(timeout=timeout, reconnect=reconnect, cls=cls, _channel=channel)
 
-        call = channel.call
-        if call is None and ring:
+        if ring:
             await channel._initial_ring()
         return ret
 

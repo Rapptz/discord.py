@@ -3593,13 +3593,15 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         return self
 
     async def _initial_ring(self) -> None:
-        ring = self.recipient.is_friend()
-        if not ring:
-            data = await self._state.http.get_ringability(self.id)
-            ring = data['ringable']
+        call = self.call
+        if not call or (call.connected and len(call.voice_states) == 1):
+            ring = self.recipient.is_friend()
+            if not ring:
+                data = await self._state.http.get_ringability(self.id)
+                ring = data['ringable']
 
-        if ring:
-            await self._state.http.ring(self.id)
+            if ring:
+                await self._state.http.ring(self.id)
 
     def __str__(self) -> str:
         if self.recipient:
@@ -3900,8 +3902,7 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         await self._get_channel()
         ret = await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
 
-        call = self.call
-        if call is None and ring:
+        if ring:
             await self._initial_ring()
         return ret
 
@@ -4473,8 +4474,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         await self._get_channel()
         ret = await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
 
-        call = self.call
-        if call is None and ring:
+        if ring:
             await self._initial_ring()
         return ret
 
