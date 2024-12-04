@@ -333,7 +333,7 @@ class Guild(Hashable):
 
     .. versionchanged:: 2.1
 
-        Removed ``application_command_counts`` as it is no longer provided by Discord.
+        Removed ``application_command_counts`` and ``application_command_count`` as they are no longer provided by Discord.
 
     Attributes
     ----------
@@ -1308,16 +1308,6 @@ class Guild(Hashable):
             Due to a Discord limitation, this may not always be up-to-date and accurate.
         """
         return self._presence_count
-
-    @property
-    def application_command_count(self) -> Optional[int]:
-        """Optional[:class:`int`]: Returns the application command count, if available.
-
-        .. versionadded:: 2.0
-        """
-        counts = self.application_command_counts
-        if counts:
-            sum(counts)
 
     @property
     def chunked(self) -> bool:

@@ -39,6 +39,7 @@ TransportEncryptionModes = Literal[
     'xsalsa20_poly1305_lite',
 ]
 
+
 class BaseVoiceState(TypedDict):
     user_id: Snowflake
     session_id: str

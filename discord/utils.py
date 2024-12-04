@@ -726,7 +726,7 @@ if HAS_ORJSON:
     def _to_json(obj: Any) -> str:
         return orjson.dumps(obj, default=_handle_metadata).decode('utf-8')
 
-    _from_json = orjson.loads  # type: ignore
+    _from_json = orjson.loads
 
 else:
 
