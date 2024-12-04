@@ -58,6 +58,7 @@ __all__ = (
 _log = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from datetime import datetime
     from typing_extensions import Self
     from types import TracebackType
 
@@ -807,7 +808,7 @@ class BaseWebhook(Hashable):
         return guild and guild.get_channel(self.channel_id)  # type: ignore
 
     @property
-    def created_at(self) -> datetime.datetime:
+    def created_at(self) -> datetime:
         """:class:`datetime.datetime`: Returns the webhook's creation time in UTC."""
         return utils.snowflake_time(self.id)
 

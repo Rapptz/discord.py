@@ -170,7 +170,15 @@ class MediaChannel(_BaseForumChannel):
 
 
 GuildChannel = Union[
-    TextChannel, NewsChannel, VoiceChannel, CategoryChannel, StageChannel, DirectoryChannel, ThreadChannel, ForumChannel, MediaChannel
+    TextChannel,
+    NewsChannel,
+    VoiceChannel,
+    CategoryChannel,
+    StageChannel,
+    DirectoryChannel,
+    ThreadChannel,
+    ForumChannel,
+    MediaChannel,
 ]
 
 

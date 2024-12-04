@@ -47,6 +47,7 @@ if TYPE_CHECKING:
 
     from .types.gateway import VoiceStateUpdateEvent as VoiceStateUpdatePayload
     from .types.voice import (
+        GuildVoiceState as GuildVoiceStatePayload,
         VoiceServerUpdate as VoiceServerUpdatePayload,
         TransportEncryptionModes,
     )
@@ -128,7 +129,9 @@ class VoiceProtocol:
         """
         raise NotImplementedError
 
-    async def connect(self, *, timeout: float, reconnect: bool, self_deaf: bool = False, self_mute: bool = False) -> None:
+    async def connect(
+        self, *, timeout: float, reconnect: bool, self_deaf: bool = False, self_mute: bool = False, self_video: bool = False
+    ) -> None:
         """|coro|
 
         An abstract method called when the client initiates the connection request.
@@ -302,9 +305,16 @@ class VoiceClient(VoiceProtocol):
     async def on_voice_server_update(self, data: VoiceServerUpdatePayload) -> None:
         await self._connection.voice_server_update(data)
 
-    async def connect(self, *, reconnect: bool, timeout: float, self_deaf: bool = False, self_mute: bool = False) -> None:
+    async def connect(
+        self, *, reconnect: bool, timeout: float, self_deaf: bool = False, self_mute: bool = False, self_video: bool = False
+    ) -> None:
         await self._connection.connect(
-            reconnect=reconnect, timeout=timeout, self_deaf=self_deaf, self_mute=self_mute, resume=False
+            reconnect=reconnect,
+            timeout=timeout,
+            self_deaf=self_deaf,
+            self_mute=self_mute,
+            self_video=self_video,
+            resume=False,
         )
 
     def wait_until_connected(self, timeout: Optional[float] = 30.0) -> bool:
@@ -541,10 +551,10 @@ class VoiceClient(VoiceProtocol):
     @source.setter
     def source(self, value: AudioSource) -> None:
         if not isinstance(value, AudioSource):
-            raise TypeError(f'expected AudioSource not {value.__class__.__name__}.')
+            raise TypeError(f'expected AudioSource not {value.__class__.__name__}')
 
         if self._player is None:
-            raise ValueError('Not playing anything.')
+            raise ValueError('Not playing anything')
 
         self._player.set_source(value)
 
@@ -567,7 +577,6 @@ class VoiceClient(VoiceProtocol):
         opus.OpusError
             Encoding the data failed.
         """
-
         self.checked_add('sequence', 1, 65535)
         if encode:
             encoded_data = self.encoder.encode(data, self.encoder.SAMPLES_PER_FRAME)
@@ -577,6 +586,6 @@ class VoiceClient(VoiceProtocol):
         try:
             self._connection.send_packet(packet)
         except OSError:
-            _log.debug('A packet has been dropped (seq: %s, timestamp: %s)', self.sequence, self.timestamp)
+            _log.debug('A packet has been dropped (seq: %s, timestamp: %s).', self.sequence, self.timestamp)
 
         self.checked_add('timestamp', opus.Encoder.SAMPLES_PER_FRAME, 4294967295)

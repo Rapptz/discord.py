@@ -2750,8 +2750,6 @@ class AttachmentFlags(BaseFlags):
 class RoleFlags(BaseFlags):
     r"""Wraps up the Discord Role flags
 
-    .. versionadded:: 2.1
-
     .. container:: operations
 
         .. describe:: x == y
@@ -2795,6 +2793,7 @@ class RoleFlags(BaseFlags):
 
             Returns whether any flag is set to ``True``.
 
+    .. versionadded:: 2.1
 
     Attributes
     -----------

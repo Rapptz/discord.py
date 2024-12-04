@@ -70,7 +70,6 @@ if TYPE_CHECKING:
     from .types.invite import Invite as InvitePayload
     from .types.role import Role as RolePayload
     from .types.snowflake import Snowflake
-    from .types.command import ApplicationCommandPermissions
     from .types.automod import AutoModerationAction
     from .user import User
     from .webhook import Webhook

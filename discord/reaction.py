@@ -77,11 +77,11 @@ class Reaction:
     count: :class:`int`
         Number of times this reaction was made. This is a sum of :attr:`normal_count` and :attr:`burst_count`.
     me: :class:`bool`
-        If the user sent this reaction.
+        If the user has reacted with this emoji.
     message: :class:`Message`
         Message this reaction is for.
     me_burst: :class:`bool`
-        If the user sent this super reaction.
+        If the user has super-reacted with this emoji.
 
         .. versionadded:: 2.1
     normal_count: :class:`int`
@@ -105,10 +105,11 @@ class Reaction:
         self.emoji: Union[PartialEmoji, Emoji, str] = emoji or message._state.get_reaction_emoji(data['emoji'])
         self.count: int = data.get('count', 1)
         self.me: bool = data['me']
-        details = data.get('count_details', {})
-        self.normal_count: int = details.get('normal', 0)
-        self.burst_count: int = details.get('burst', 0)
         self.me_burst: bool = data.get('me_burst', False)
+
+        details = data.get('count_details', {})
+        self.normal_count: int = details.get('normal', int(self.me))
+        self.burst_count: int = details.get('burst', int(self.me_burst))
 
     # TODO: typeguard
     def is_custom_emoji(self) -> bool:
@@ -132,7 +133,7 @@ class Reaction:
     def __repr__(self) -> str:
         return f'<Reaction emoji={self.emoji!r} me={self.me} count={self.count}>'
 
-    async def remove(self, user: Snowflake) -> None:
+    async def remove(self, user: Snowflake, *, boost: bool = False) -> None:
         """|coro|
 
         Remove the reaction by the provided :class:`User` from the message.
@@ -147,6 +148,14 @@ class Reaction:
         -----------
         user: :class:`abc.Snowflake`
              The user or member from which to remove the reaction.
+        boost: :class:`bool`
+            Whether to remove a super reaction.
+
+            .. note::
+
+                Keep in mind that members can both react and super react with the same emoji.
+
+            .. versionadded:: 2.1
 
         Raises
         -------
@@ -158,7 +167,7 @@ class Reaction:
             The user you specified, or the reaction's message was not found.
         """
 
-        await self.message.remove_reaction(self.emoji, user)
+        await self.message.remove_reaction(self.emoji, user, boost=boost)
 
     async def clear(self) -> None:
         """|coro|

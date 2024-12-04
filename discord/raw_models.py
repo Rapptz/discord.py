@@ -31,6 +31,8 @@ from .enums import ChannelType, ReactionType, ReadStateType, try_enum
 from .utils import _get_as_snowflake
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .guild import Guild
     from .member import Member
     from .message import Message

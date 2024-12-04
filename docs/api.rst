@@ -1977,22 +1977,6 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.0
 
-.. class:: InviteType
-
-    Specifies the type of :class:`Invite`.
-
-    .. attribute:: guild
-
-        A guild invite.
-
-    .. attribute:: group_dm
-
-        A group DM invite.
-
-    .. attribute:: friend
-
-        A friend invite.
-
     .. attribute:: guild_incident_alert_mode_enabled
 
         The system message sent when security actions is enabled.
@@ -2022,6 +2006,22 @@ of :class:`enum.Enum`.
         The system message sent when a purchase is made in the guild.
 
         .. versionadded:: 2.1
+
+.. class:: InviteType
+
+    Specifies the type of :class:`Invite`.
+
+    .. attribute:: guild
+
+        A guild invite.
+
+    .. attribute:: group_dm
+
+        A group DM invite.
+
+    .. attribute:: friend
+
+        A friend invite.
 
 .. class:: UserFlags
 
@@ -8261,14 +8261,6 @@ DirectoryEntry
 .. autoclass:: DirectoryEntry()
     :members:
 
-RoleFlags
-~~~~~~~~~~
-
-.. attributetable:: RoleFlags
-
-.. autoclass:: RoleFlags
-    :members:
-
 ForumTag
 ~~~~~~~~~
 
@@ -8427,6 +8419,11 @@ Flags
 .. attributetable:: ReadStateFlags
 
 .. autoclass:: ReadStateFlags()
+    :members:
+
+.. attributetable:: RoleFlags
+
+.. autoclass:: RoleFlags()
     :members:
 
 .. attributetable:: SKUFlags

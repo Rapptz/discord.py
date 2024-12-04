@@ -377,9 +377,13 @@ class Guild(Hashable):
     max_members: Optional[:class:`int`]
         The maximum amount of members for the guild.
     max_video_channel_users: Optional[:class:`int`]
-        The maximum amount of users in a video channel.
+        The maximum amount of users in a video stream.
 
         .. versionadded:: 1.4
+    max_stage_video_channel_users: Optional[:class:`int`]
+        The maximum amount of users in a stage video stream.
+
+        .. versionadded:: 2.1
     description: Optional[:class:`str`]
         The guild's description.
     verification_level: :class:`VerificationLevel`
@@ -453,6 +457,7 @@ class Guild(Hashable):
         'max_presences',
         'max_members',
         'max_video_channel_users',
+        'max_stage_video_channel_users',
         '_premium_tier',
         'premium_subscription_count',
         'preferred_locale',
@@ -478,6 +483,7 @@ class Guild(Hashable):
         '_discovery_splash',
         '_rules_channel_id',
         '_public_updates_channel_id',
+        '_safety_alerts_channel_id',
         '_stage_instances',
         '_scheduled_events',
         '_threads',
@@ -671,6 +677,7 @@ class Guild(Hashable):
         self.max_presences: Optional[int] = guild.get('max_presences')
         self.max_members: Optional[int] = guild.get('max_members')
         self.max_video_channel_users: Optional[int] = guild.get('max_video_channel_users')
+        self.max_stage_video_channel_users: Optional[int] = guild.get('max_stage_video_channel_users')
         self._premium_tier = guild.get('premium_tier')
         self.premium_subscription_count: int = guild.get('premium_subscription_count') or 0
         self.vanity_url_code: Optional[str] = guild.get('vanity_url_code')
@@ -681,6 +688,7 @@ class Guild(Hashable):
         self._discovery_splash: Optional[str] = guild.get('discovery_splash')
         self._rules_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'rules_channel_id')
         self._public_updates_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'public_updates_channel_id')
+        self._safety_alerts_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'safety_alerts_channel_id')
         self._afk_channel_id: Optional[int] = utils._get_as_snowflake(guild, 'afk_channel_id')
         self.nsfw_level: NSFWLevel = try_enum(NSFWLevel, guild.get('nsfw_level', 0))
         self.mfa_level: MFALevel = try_enum(MFALevel, guild.get('mfa_level', 0))
@@ -746,6 +754,16 @@ class Guild(Hashable):
     @property
     def _extra_large(self) -> bool:
         return self._member_count is not None and self._member_count >= 75000
+
+    @property
+    def max_stage_video_users(self) -> Optional[int]:
+        """Optional[:class:`int`]: The maximum amount of users in a stage video stream.
+
+        An alias for :attr:`max_stage_video_channel_users`.
+
+        .. versionadded:: 2.1
+        """
+        return self.max_stage_video_channel_users
 
     def is_hub(self) -> bool:
         """:class:`bool`: Whether the guild is a Student Hub.
@@ -1045,6 +1063,17 @@ class Guild(Hashable):
         .. versionadded:: 1.4
         """
         channel_id = self._public_updates_channel_id
+        return channel_id and self._channels.get(channel_id)  # type: ignore
+
+    @property
+    def safety_alerts_channel(self) -> Optional[TextChannel]:
+        """Optional[:class:`TextChannel`]: Return's the guild's channel used for safety alerts, if set.
+
+        For example, this is used for the raid protection setting. The guild must have the ``COMMUNITY`` feature.
+
+        .. versionadded:: 2.1
+        """
+        channel_id = self._safety_alerts_channel_id
         return channel_id and self._channels.get(channel_id)  # type: ignore
 
     @property
@@ -2184,12 +2213,14 @@ class Guild(Hashable):
         preferred_locale: Locale = MISSING,
         rules_channel: Optional[TextChannel] = MISSING,
         public_updates_channel: Optional[TextChannel] = MISSING,
+        safety_alerts_channel: Optional[TextChannel] = MISSING,
         premium_progress_bar_enabled: bool = MISSING,
         discoverable: bool = MISSING,
         invites_disabled: bool = MISSING,
         widget_enabled: bool = MISSING,
         widget_channel: Optional[Snowflake] = MISSING,
         mfa_level: MFALevel = MISSING,
+        raid_alerts_disabled: bool = MISSING,
         invites_disabled_until: datetime = MISSING,
         dms_disabled_until: datetime = MISSING,
     ) -> Guild:
@@ -2278,6 +2309,12 @@ class Guild(Hashable):
             public updates channel.
 
             .. versionadded:: 1.4
+        safety_alerts_channel: Optional[:class:`TextChannel`]
+            The new channel that is used for safety alerts. This is only available to
+            guilds that contain ``COMMUNITY`` in :attr:`Guild.features`. Could be ``None`` for no
+            safety alerts channel.
+
+            .. versionadded:: 2.1
         premium_progress_bar_enabled: :class:`bool`
             Whether the premium AKA server boost level progress bar should be enabled for the guild.
 
@@ -2303,20 +2340,22 @@ class Guild(Hashable):
             Note that you must be owner of the guild to do this.
 
             .. versionadded:: 2.0
-        reason: Optional[:class:`str`]
-            The reason for editing this guild. Shows up on the audit log.
+        raid_alerts_disabled: :class:`bool`
+            Whether the alerts for raid protection should be disabled for the guild.
 
+            .. versionadded:: 2.1
         invites_disabled_until: Optional[:class:`datetime.datetime`]
             The time when invites should be enabled again, or ``None`` to disable the action.
             This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
 
             .. versionadded:: 2.1
-
         dms_disabled_until: Optional[:class:`datetime.datetime`]
             The time when direct messages should be allowed again, or ``None`` to disable the action.
             This must be a timezone-aware datetime object. Consider using :func:`utils.utcnow`.
 
             .. versionadded:: 2.1
+        reason: Optional[:class:`str`]
+            The reason for editing this guild. Shows up on the audit log.
 
         Raises
         -------
@@ -2410,6 +2449,12 @@ class Guild(Hashable):
             else:
                 fields['public_updates_channel_id'] = public_updates_channel.id
 
+        if safety_alerts_channel is not MISSING:
+            if safety_alerts_channel is None:
+                fields['safety_alerts_channel_id'] = safety_alerts_channel
+            else:
+                fields['safety_alerts_channel_id'] = safety_alerts_channel.id
+
         if owner is not MISSING:
             if self.owner_id != self._state.self_id:
                 raise ValueError('To transfer ownership you must be the owner of the guild')
@@ -2434,7 +2479,7 @@ class Guild(Hashable):
 
             fields['system_channel_flags'] = system_channel_flags.value
 
-        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled)):
+        if any(feat is not MISSING for feat in (community, discoverable, invites_disabled, raid_alerts_disabled)):
             features = set(self.features)
 
             if community is not MISSING:
@@ -2459,6 +2504,12 @@ class Guild(Hashable):
                     features.add('INVITES_DISABLED')
                 else:
                     features.discard('INVITES_DISABLED')
+
+            if raid_alerts_disabled is not MISSING:
+                if raid_alerts_disabled:
+                    features.add('RAID_ALERTS_DISABLED')
+                else:
+                    features.discard('RAID_ALERTS_DISABLED')
 
             fields['features'] = list(features)
 
@@ -5212,6 +5263,10 @@ class Guild(Hashable):
 
         .. versionadded:: 1.4
 
+        .. versionchanged:: 2.1
+
+            Removed the ``preferred_region`` parameter.
+
         Parameters
         -----------
         channel: Optional[:class:`abc.Snowflake`]
@@ -5223,23 +5278,12 @@ class Guild(Hashable):
         self_video: :class:`bool`
             Indicates if the client is using video. Untested & unconfirmed
             (do not use).
-        preferred_region: Optional[:class:`str`]
-            The preferred region to connect to.
-
-            .. versionchanged:: 2.0
-
-                The type of this parameter has changed to :class:`str`.
         """
         state = self._state
         ws = state.ws
         channel_id = channel.id if channel else None
 
-        if preferred_region is None or channel_id is None:
-            region = None
-        else:
-            region = str(preferred_region) if preferred_region else state.preferred_rtc_region
-
-        await ws.voice_state(self.id, channel_id, self_mute, self_deaf, self_video, preferred_region=region)
+        await ws.voice_state(self.id, channel_id, self_mute, self_deaf, self_video)
 
     async def subscribe(
         self, *, typing: bool = MISSING, activities: bool = MISSING, threads: bool = MISSING, member_updates: bool = MISSING
@@ -5575,7 +5619,7 @@ class Guild(Hashable):
         return utils.parse_time(self._incidents_data.get('dms_disabled_until'))
 
     @property
-    def dm_spam_detected_at(self) -> Optional[datetime.datetime]:
+    def dm_spam_detected_at(self) -> Optional[datetime]:
         """:class:`datetime.datetime`: Returns the time when DM spam was detected in the guild.
 
         .. versionadded:: 2.1
@@ -5586,7 +5630,7 @@ class Guild(Hashable):
         return utils.parse_time(self._incidents_data.get('dm_spam_detected_at'))
 
     @property
-    def raid_detected_at(self) -> Optional[datetime.datetime]:
+    def raid_detected_at(self) -> Optional[datetime]:
         """Optional[:class:`datetime.datetime`]: Returns the time when a raid was detected in the guild.
 
         .. versionadded:: 2.1

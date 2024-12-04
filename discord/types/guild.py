@@ -130,9 +130,11 @@ class Guild(UnavailableGuild, _GuildMedia):
     max_members: NotRequired[int]
     premium_subscription_count: NotRequired[int]
     max_video_channel_users: NotRequired[int]
+    max_stage_video_channel_users: NotRequired[int]
     # application_command_counts: ApplicationCommandCounts
     hub_type: Optional[Literal[0, 1, 2]]
     incidents_data: Optional[IncidentData]
+    safety_alerts_channel_id: Optional[Snowflake]
 
 
 class UserGuild(BaseGuild):
@@ -201,3 +203,8 @@ class SupplementalGuild(UnavailableGuild):
 class BulkBanUserResponse(TypedDict):
     banned_users: Optional[List[Snowflake]]
     failed_users: Optional[List[Snowflake]]
+
+
+class RTCRegion(TypedDict):
+    region: str
+    ips: List[str]

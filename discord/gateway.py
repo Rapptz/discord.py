@@ -775,8 +775,6 @@ class DiscordWebSocket:
         self_mute: bool = False,
         self_deaf: bool = False,
         self_video: bool = False,
-        *,
-        preferred_region: Optional[str] = None,
     ) -> None:
         payload = {
             'op': self.VOICE_STATE,
@@ -789,8 +787,8 @@ class DiscordWebSocket:
             },
         }
 
-        if preferred_region is not None:
-            payload['d']['preferred_region'] = preferred_region
+        if channel_id:
+            payload['d'].update(self._connection._get_preferred_regions())
 
         _log.debug('Updating %s voice state to %s.', guild_id or 'client', payload)
         await self.send_as_json(payload)
@@ -1025,7 +1023,6 @@ class DiscordVoiceWebSocket:
         await self.loop.sock_connect(state.socket, (state.endpoint_ip, state.voice_port))
 
         state.ip, state.port = await self.discover_ip()
-        # there *should* always be at least one supported mode (xsalsa20_poly1305)
         modes = [mode for mode in data['modes'] if mode in self._connection.supported_modes]
         _log.debug('Received supported encryption modes: %s.', ', '.join(modes))
 
@@ -1055,7 +1052,7 @@ class DiscordVoiceWebSocket:
 
         _log.debug('Received IP discovery packet: %s.', recv)
 
-        # the ip is ascii starting at the 8th byte and ending at the first null
+        # The IP is ascii starting at the 8th byte and ending at the first null
         ip_start = 8
         ip_end = recv.index(0, ip_start)
         ip = recv[ip_start:ip_end].decode('ascii')
@@ -1084,9 +1081,9 @@ class DiscordVoiceWebSocket:
         _log.debug('Received secret key for voice connection.')
         self.secret_key = self._connection.secret_key = data['secret_key']
 
-        # Send a speak command with the "not speaking" state.
+        # Send a speak command with the "not speaking" state
         # This also tells Discord our SSRC value, which Discord requires before
-        # sending any voice data (and is the real reason why we call this here).
+        # sending any voice data (and is the real reason why we call this here)
         await self.speak(SpeakingState.none)
 
     async def poll_event(self) -> None:
@@ -1098,7 +1095,7 @@ class DiscordVoiceWebSocket:
             _log.debug('Voice received %s.', msg)
             raise ConnectionClosed(self.ws) from msg.data
         elif msg.type in (aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.CLOSING):
-            _log.debug('Voice received %s', msg)
+            _log.debug('Voice received %s.', msg)
             raise ConnectionClosed(self.ws, code=self._close_code)
 
     async def close(self, code: int = 1000) -> None:

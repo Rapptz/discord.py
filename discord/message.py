@@ -47,12 +47,22 @@ from typing import (
     overload,
 )
 
+from discord.types.components import MessageActionRow
+
 from . import utils
 from .reaction import Reaction
 from .emoji import Emoji
 from .partial_emoji import PartialEmoji
 from .calls import CallMessage
-from .enums import MessageType, ChannelType, ApplicationCommandType, PurchaseNotificationType, MessageReferenceType, try_enum
+from .enums import (
+    MessageType,
+    ChannelType,
+    ApplicationCommandType,
+    PurchaseNotificationType,
+    MessageReferenceType,
+    ReactionType,
+    try_enum,
+)
 from .errors import HTTPException
 from .components import _component_factory
 from .embeds import Embed
@@ -472,13 +482,29 @@ class DeletedReferencedMessage:
         return self._parent.guild_id
 
 
-class MessageSnapshot:
+class MessageSnapshot(Hashable):
     """Represents a message snapshot attached to a forwarded message.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if the message snapshot is equal to another message snapshot.
+
+        .. describe:: x != y
+
+            Checks if the message snapshot is not equal to another message snapshot.
+
+        .. describe:: hash(x)
+
+            Returns the hash of the message snapshot.
 
     .. versionadded:: 2.1
 
     Attributes
     -----------
+    id: :class:`int`
+        The ID of the forwarded message.
     type: :class:`MessageType`
         The type of the forwarded message.
     content: :class:`str`
@@ -519,27 +545,29 @@ class MessageSnapshot:
         cls,
         state: ConnectionState,
         message_snapshots: Optional[List[Dict[Literal['message'], MessageSnapshotPayload]]],
+        reference: MessageReference,
     ) -> List[Self]:
         if not message_snapshots:
             return []
 
-        return [cls(state, snapshot['message']) for snapshot in message_snapshots]
+        return [cls(state, snapshot['message'], reference) for snapshot in message_snapshots]
 
-    def __init__(self, state: ConnectionState, data: MessageSnapshotPayload):
+    def __init__(self, state: ConnectionState, data: MessageSnapshotPayload, reference: MessageReference):
         self.type: MessageType = try_enum(MessageType, data['type'])
+        self.id: int = reference.message_id  # type: ignore
         self.content: str = data['content']
         self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
         self.attachments: List[Attachment] = [Attachment(data=a, state=state) for a in data['attachments']]
         self.created_at: datetime.datetime = utils.parse_time(data['timestamp'])
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
         self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
-        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('stickers_items', [])]
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
 
-        self.components: List[MessageComponentType] = []
+        self.components: List[MessageActionRow] = []
         for component_data in data.get('components', []):
             component = _component_factory(component_data)
             if component is not None:
-                self.components.append(component)
+                self.components.append(component)  # type: ignore
 
         self._state: ConnectionState = state
 
@@ -577,16 +605,7 @@ class MessageSnapshot:
         state = self._state
         return (
             utils.find(
-                lambda m: (
-                    m.created_at == self.created_at
-                    and m.edited_at == self.edited_at
-                    and m.content == self.content
-                    and m.embeds == self.embeds
-                    and m.components == self.components
-                    and m.stickers == self.stickers
-                    and m.attachments == self.attachments
-                    and m.flags == self.flags
-                ),
+                lambda m: m.id == self.id,
                 reversed(state._messages),
             )
             if state._messages
@@ -1200,7 +1219,7 @@ class PartialMessage(Hashable):
         # pinned exists on PartialMessage for duck typing purposes
         self.pinned = False
 
-    async def add_reaction(self, emoji: Union[EmojiInputType, Reaction], /) -> None:
+    async def add_reaction(self, emoji: Union[EmojiInputType, Reaction], /, *, boost: bool = False) -> None:
         """|coro|
 
         Adds a reaction to the message.
@@ -1223,6 +1242,10 @@ class PartialMessage(Hashable):
         ------------
         emoji: Union[:class:`Emoji`, :class:`Reaction`, :class:`PartialEmoji`, :class:`str`]
             The emoji to react with.
+        boost: :class:`bool`
+            Whether to react with a super reaction.
+
+            .. versionadded:: 2.1
 
         Raises
         --------
@@ -1236,9 +1259,9 @@ class PartialMessage(Hashable):
             The emoji parameter is invalid.
         """
         emoji = convert_emoji_reaction(emoji)
-        await self._state.http.add_reaction(self.channel.id, self.id, emoji)
+        await self._state.http.add_reaction(self.channel.id, self.id, emoji, type=1 if boost else 0)
 
-    async def remove_reaction(self, emoji: Union[EmojiInputType, Reaction], member: Snowflake) -> None:
+    async def remove_reaction(self, emoji: Union[EmojiInputType, Reaction], member: Snowflake, boost: bool = False) -> None:
         """|coro|
 
         Remove a reaction by the member from the message.
@@ -1261,6 +1284,14 @@ class PartialMessage(Hashable):
             The emoji to remove.
         member: :class:`abc.Snowflake`
             The member for which to remove the reaction.
+        boost: :class:`bool`
+            Whether to remove a super reaction.
+
+            .. note::
+
+                Keep in mind that members can both react and super react with the same emoji.
+
+            .. versionadded:: 2.1
 
         Raises
         --------
@@ -1276,9 +1307,9 @@ class PartialMessage(Hashable):
         emoji = convert_emoji_reaction(emoji)
 
         if member.id == self._state.self_id:
-            await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji)
+            await self._state.http.remove_own_reaction(self.channel.id, self.id, emoji, type=1 if boost else 0)
         else:
-            await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id)
+            await self._state.http.remove_reaction(self.channel.id, self.id, emoji, member.id, type=1 if boost else 0)
 
     async def clear_reaction(self, emoji: Union[EmojiInputType, Reaction]) -> None:
         """|coro|
@@ -1657,7 +1688,7 @@ class PartialMessage(Hashable):
 
             .. versionadded:: 1.7
         type: :class:`MessageReferenceType`
-            The type of message reference.
+            The type of message reference. Default :attr:`MessageReferenceType.reply`.
 
             .. versionadded:: 2.1
 
@@ -1967,7 +1998,6 @@ class Message(PartialMessage, Hashable):
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.call: Optional[CallMessage] = None
         self.interaction: Optional[Interaction] = None
-        self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
 
         self.poll: Optional[Poll] = None
         try:
@@ -2035,6 +2065,8 @@ class Message(PartialMessage, Hashable):
 
                     # The channel will be the correct type here
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
+
+        self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'), self.reference)  # type: ignore
 
         self.role_subscription: Optional[RoleSubscriptionInfo] = None
         try:

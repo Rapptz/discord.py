@@ -1053,7 +1053,7 @@ class HTTPClient:
 
             raise HTTPException(response, data)
 
-    async def get_preferred_voice_regions(self) -> List[dict]:
+    async def get_preferred_voice_regions(self) -> List[guild.RTCRegion]:
         async with self.__session.get('https://latency.discord.media/rtc') as resp:
             if resp.status == 200:
                 return await resp.json()
@@ -1283,7 +1283,10 @@ class HTTPClient:
         else:
             return self.request(r, json=params.payload)
 
-    def add_reaction(self, channel_id: Snowflake, message_id: Snowflake, emoji: str) -> Response[None]:
+    def add_reaction(
+        self, channel_id: Snowflake, message_id: Snowflake, emoji: str, type: message.ReactionType = 0
+    ) -> Response[None]:
+        params = {'type': type}
         return self.request(
             Route(
                 'PUT',
@@ -1291,31 +1294,36 @@ class HTTPClient:
                 channel_id=channel_id,
                 message_id=message_id,
                 emoji=emoji,
-            )
+            ),
+            params=params,
         )
 
     def remove_reaction(
-        self, channel_id: Snowflake, message_id: Snowflake, emoji: str, member_id: Snowflake
+        self, channel_id: Snowflake, message_id: Snowflake, emoji: str, member_id: Snowflake, type: message.ReactionType = 0
     ) -> Response[None]:
         return self.request(
             Route(
                 'DELETE',
-                '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/{member_id}',
+                '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/{reaction_type}/{member_id}',
                 channel_id=channel_id,
                 message_id=message_id,
                 member_id=member_id,
                 emoji=emoji,
+                reaction_type=type,
             )
         )
 
-    def remove_own_reaction(self, channel_id: Snowflake, message_id: Snowflake, emoji: str) -> Response[None]:
+    def remove_own_reaction(
+        self, channel_id: Snowflake, message_id: Snowflake, emoji: str, type: message.ReactionType = 0
+    ) -> Response[None]:
         return self.request(
             Route(
                 'DELETE',
-                '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/@me',
+                '/channels/{channel_id}/messages/{message_id}/reactions/{emoji}/{reaction_type}/@me',
                 channel_id=channel_id,
                 message_id=message_id,
                 emoji=emoji,
+                reaction_type=type,
             )
         )
 

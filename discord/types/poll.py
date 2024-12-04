@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from .emoji import PartialEmoji
 
 
-LayoutType = Literal[1]  # 1 = Default
+LayoutType = Literal[1, 2]  # 1 = Default
 
 
 class PollMedia(TypedDict):

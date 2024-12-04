@@ -1016,6 +1016,7 @@ class ConnectionState:
         self._status: Optional[str] = status
         self._afk: bool = options.get('afk', False)
         self._idle_since: int = since
+        self.overriden_rtc_regions: Optional[List[str]] = options.get('preferred_rtc_regions', None)
 
         if cache_flags._empty:
             self.store_user = self.create_user
@@ -1132,10 +1133,6 @@ class ConnectionState:
         return str(getattr(self.user, 'locale', 'en-US'))
 
     @property
-    def preferred_rtc_region(self) -> str:
-        return self.preferred_rtc_regions[0] if self.preferred_rtc_regions else 'us-central'
-
-    @property
     def voice_clients(self) -> List[VoiceProtocol]:
         return list(self._voice_clients.values())
 
@@ -1175,6 +1172,12 @@ class ConnectionState:
 
     def _remove_voice_client(self, guild_id: int) -> None:
         self._voice_clients.pop(guild_id, None)
+
+    def _get_preferred_regions(self) -> Dict[str, Union[List[str], str]]:
+        regions = self.overriden_rtc_regions if self.overriden_rtc_regions is not None else self.client.preferred_rtc_regions
+        if regions:
+            return {'preferred_regions': regions, 'preferred_region': regions[0]}
+        return {}
 
     def _update_references(self, ws: DiscordWebSocket) -> None:
         for vc in self.voice_clients:
