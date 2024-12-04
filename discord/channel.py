@@ -3898,10 +3898,12 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
             A voice client that is fully connected to the voice server.
         """
         await self._get_channel()
+        ret = await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
+
         call = self.call
         if call is None and ring:
             await self._initial_ring()
-        return await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
+        return ret
 
     async def accept(self) -> DMChannel:
         """|coro|
@@ -4469,10 +4471,12 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         ring: bool = True,
     ) -> T:
         await self._get_channel()
+        ret = await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
+
         call = self.call
         if call is None and ring:
             await self._initial_ring()
-        return await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
+        return ret
 
 
 class PartialMessageable(discord.abc.Messageable, Hashable):

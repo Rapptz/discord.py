@@ -47,8 +47,6 @@ from typing import (
     overload,
 )
 
-from discord.types.components import MessageActionRow
-
 from . import utils
 from .reaction import Reaction
 from .emoji import Emoji
@@ -563,7 +561,7 @@ class MessageSnapshot(Hashable):
         self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
 
-        self.components: List[MessageActionRow] = []
+        self.components: List[ComponentPayload] = []
         for component_data in data.get('components', []):
             component = _component_factory(component_data)
             if component is not None:

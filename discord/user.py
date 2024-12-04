@@ -1142,10 +1142,12 @@ class User(BaseUser, discord.abc.Connectable, discord.abc.Messageable):
         ring: bool = True,
     ) -> ConnectReturn:
         channel = await self._get_channel()
+        ret = await super().connect(timeout=timeout, reconnect=reconnect, cls=cls, _channel=channel)
+
         call = channel.call
         if call is None and ring:
             await channel._initial_ring()
-        return await super().connect(timeout=timeout, reconnect=reconnect, cls=cls, _channel=channel)
+        return ret
 
     async def create_dm(self) -> DMChannel:
         """|coro|
