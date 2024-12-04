@@ -58,7 +58,6 @@ from .enums import (
     ApplicationCommandType,
     PurchaseNotificationType,
     MessageReferenceType,
-    ReactionType,
     try_enum,
 )
 from .errors import HTTPException
