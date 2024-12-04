@@ -5,6 +5,7 @@ build-backend = "setuptools.build_meta"
 [tool.black]
 line-length = 125
 skip-string-normalization = true
+fast = true
 
 [tool.coverage.run]
 omit = [
