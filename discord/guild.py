@@ -3983,7 +3983,7 @@ class Guild(Hashable):
 
         Retrieves a :class:`Role` with the specified ID.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
 
         .. note::
 
@@ -5578,7 +5578,7 @@ class Guild(Hashable):
     def dm_spam_detected_at(self) -> Optional[datetime.datetime]:
         """:class:`datetime.datetime`: Returns the time when DM spam was detected in the guild.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
         """
         if not self._incidents_data:
             return None
@@ -5589,7 +5589,7 @@ class Guild(Hashable):
     def raid_detected_at(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: Returns the time when a raid was detected in the guild.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
         """
         if not self._incidents_data:
             return None
@@ -5619,7 +5619,7 @@ class Guild(Hashable):
     def is_dm_spam_detected(self) -> bool:
         """:class:`bool`: Whether DM spam was detected in the guild.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
         """
         if not self.dm_spam_detected_at:
             return False
@@ -5629,7 +5629,7 @@ class Guild(Hashable):
     def is_raid_detected(self) -> bool:
         """:class:`bool`: Whether a raid was detected in the guild.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
         """
         if not self.raid_detected_at:
             return False

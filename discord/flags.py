@@ -678,7 +678,7 @@ class MessageFlags(BaseFlags):
     def forwarded(self):
         """:class:`bool`: Returns ``True`` if the message is a forwarded message.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
         """
         return 16384
 

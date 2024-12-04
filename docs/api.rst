@@ -2021,7 +2021,7 @@ of :class:`enum.Enum`.
 
         The system message sent when a purchase is made in the guild.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
 
 .. class:: UserFlags
 
@@ -6093,7 +6093,7 @@ of :class:`enum.Enum`.
 
     Represents the type of a message reference.
 
-    .. versionadded:: 2.5
+    .. versionadded:: 2.1
 
     .. attribute:: reply
 

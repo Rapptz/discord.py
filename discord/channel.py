@@ -4593,7 +4593,7 @@ class PartialMessageable(discord.abc.Messageable, Hashable):
     def mention(self) -> str:
         """:class:`str`: Returns a string that allows you to mention the channel.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
         """
         return f'<#{self.id}>'
 

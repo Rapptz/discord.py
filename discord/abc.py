@@ -1279,7 +1279,7 @@ class GuildChannel:
 
         .. versionadded:: 1.1
 
-        .. versionchanged:: 2.5
+        .. versionchanged:: 2.1
 
             The ``category`` keyword-only parameter was added.
 

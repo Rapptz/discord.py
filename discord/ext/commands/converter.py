@@ -447,7 +447,7 @@ class GuildChannelConverter(IDConverter[discord.abc.GuildChannel]):
 
     .. versionadded:: 2.0
 
-    .. versionchanged:: 2.4
+    .. versionchanged:: 2.1
         Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 
@@ -541,7 +541,7 @@ class TextChannelConverter(IDConverter[discord.TextChannel]):
     .. versionchanged:: 1.5
          Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
 
-    .. versionchanged:: 2.4
+    .. versionchanged:: 2.1
         Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 
@@ -565,7 +565,7 @@ class VoiceChannelConverter(IDConverter[discord.VoiceChannel]):
     .. versionchanged:: 1.5
          Raise :exc:`.ChannelNotFound` instead of generic :exc:`.BadArgument`
 
-    .. versionchanged:: 2.4
+    .. versionchanged:: 2.1
         Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 
@@ -588,7 +588,7 @@ class StageChannelConverter(IDConverter[discord.StageChannel]):
     3. Lookup by channel URL.
     4. Lookup by name
 
-    .. versionchanged:: 2.4
+    .. versionchanged:: 2.1
         Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 
@@ -609,7 +609,7 @@ class CategoryChannelConverter(IDConverter[discord.CategoryChannel]):
     3. Lookup by channel URL.
     4. Lookup by name
 
-    .. versionchanged:: 2.4
+    .. versionchanged:: 2.1
         Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
 
     .. versionchanged:: 1.5
@@ -634,7 +634,7 @@ class ThreadConverter(IDConverter[discord.Thread]):
 
     .. versionadded: 2.0
 
-    .. versionchanged:: 2.4
+    .. versionchanged:: 2.1
         Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 
@@ -657,7 +657,7 @@ class ForumChannelConverter(IDConverter[discord.ForumChannel]):
 
     .. versionadded:: 2.0
 
-    .. versionchanged:: 2.4
+    .. versionchanged:: 2.1
         Add lookup by channel URL, accessed via "Copy Link" in the Discord client within channels.
     """
 

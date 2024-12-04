@@ -518,7 +518,7 @@ class Colour:
 
         .. colour:: #EB459F
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.1
         """
         return cls(0xEB459F)
 

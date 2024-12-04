@@ -259,7 +259,7 @@ class Permissions(BaseFlags):
         .. versionchanged:: 2.1
             Added :attr:`create_expressions` permission.
 
-        .. versionchanged:: 2.4
+        .. versionchanged:: 2.1
             Added :attr:`view_creator_monetization_analytics` permission.
         """
         return cls(0b0000_0000_0000_0000_0000_1010_0000_0000_0111_0000_0000_1000_0000_0100_1011_0000)
@@ -292,7 +292,7 @@ class Permissions(BaseFlags):
         .. versionchanged:: 2.1
             Added :attr:`send_voice_messages` permission.
 
-        .. versionchanged:: 2.4
+        .. versionchanged:: 2.1
             Added :attr:`send_polls` and :attr:`use_external_apps` permissions.
         """
         return cls(0b0000_0000_0000_0110_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)

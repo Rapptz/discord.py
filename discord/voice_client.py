@@ -439,7 +439,7 @@ class VoiceClient(VoiceProtocol):
         .. versionchanged:: 2.0
             Instead of writing to ``sys.stderr``, the library's logger is used.
 
-        .. versionchanged:: 2.4
+        .. versionchanged:: 2.1
             Added encoder parameters as keyword arguments.
 
         Parameters

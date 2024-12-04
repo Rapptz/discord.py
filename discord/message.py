@@ -475,7 +475,7 @@ class DeletedReferencedMessage:
 class MessageSnapshot:
     """Represents a message snapshot attached to a forwarded message.
 
-    .. versionadded:: 2.5
+    .. versionadded:: 2.1
 
     Attributes
     -----------
@@ -612,7 +612,7 @@ class MessageReference:
     type: :class:`MessageReferenceType`
         The type of message reference.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
     message_id: Optional[:class:`int`]
         The id of the message referenced.
     channel_id: :class:`int`
@@ -690,7 +690,7 @@ class MessageReference:
         type: :class:`~discord.MessageReferenceType`
             The type of message reference this is.
 
-            .. versionadded:: 2.5
+            .. versionadded:: 2.1
 
         Returns
         -------
@@ -789,7 +789,7 @@ class RoleSubscriptionInfo:
 class GuildProductPurchase:
     """Represents a message's guild product that the user has purchased.
 
-    .. versionadded:: 2.5
+    .. versionadded:: 2.1
 
     Attributes
     -----------
@@ -820,7 +820,7 @@ class PurchaseNotification:
 
     This is currently only attached to messages of type :attr:`MessageType.purchase_notification`.
 
-    .. versionadded:: 2.5
+    .. versionadded:: 2.1
 
     Attributes
     -----------
@@ -1659,7 +1659,7 @@ class PartialMessage(Hashable):
         type: :class:`MessageReferenceType`
             The type of message reference.
 
-            .. versionadded:: 2.5
+            .. versionadded:: 2.1
 
         Returns
         ---------
@@ -1679,7 +1679,7 @@ class PartialMessage(Hashable):
 
         Forwards this message to a channel.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
 
         Parameters
         ----------
@@ -1862,11 +1862,11 @@ class Message(PartialMessage, Hashable):
     purchase_notification: Optional[:class:`PurchaseNotification`]
         The data of the purchase notification that prompted this :attr:`MessageType.purchase_notification` message.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
     message_snapshots: List[:class:`MessageSnapshot`]
         The message snapshots attached to this message.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.1
     hit: :class:`bool`
         Whether the message was a hit in a search result. As surrounding messages
         are no longer returned in search results, this is always ``True`` for search results.

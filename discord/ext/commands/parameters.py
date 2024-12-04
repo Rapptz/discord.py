@@ -187,7 +187,7 @@ class Parameter(inspect.Parameter):
     def displayed_name(self) -> Optional[str]:
         """Optional[:class:`str`]: The name that is displayed to the user.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.1
         """
         return self._displayed_name if self._displayed_name is not empty else None
 
@@ -245,7 +245,7 @@ def parameter(
     displayed_name: :class:`str`
         The name that is displayed to the user.
 
-        .. versionadded:: 2.3
+        .. versionadded:: 2.1
     """
     if isinstance(default, Parameter):
         if displayed_default is empty:
