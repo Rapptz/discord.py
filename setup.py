@@ -62,6 +62,7 @@ extras_require = {
 setup(
     name='discord.py-self' if prefix == 'discord' else f'{prefix}.py',
     author='Dolfies',
+    author_email='me@dolfi.es',
     url='https://github.com/dolfies/discord.py-self',
     project_urls={
         'Documentation': 'https://discordpy-self.readthedocs.io/en/latest/',
@@ -88,6 +89,9 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Internet',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules',
