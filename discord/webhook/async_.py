@@ -38,7 +38,7 @@ import aiohttp
 from .. import utils
 from ..errors import HTTPException, Forbidden, NotFound, DiscordServerError
 from ..message import Message
-from ..enums import try_enum, WebhookType, ChannelType
+from ..enums import try_enum, WebhookType, ChannelType, DefaultAvatar
 from ..user import BaseUser, User
 from ..flags import MessageFlags
 from ..asset import Asset
@@ -828,8 +828,7 @@ class BaseWebhook(Hashable):
 
         .. versionadded:: 2.0
         """
-        # Default is always blurple apparently
-        return Asset._from_default_avatar(self._state, 0)
+        return Asset._from_default_avatar(self._state, (self.id >> 22) % len(DefaultAvatar))
 
     @property
     def display_avatar(self) -> Asset:
