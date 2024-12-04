@@ -2359,7 +2359,7 @@ class Client:
     async def fetch_guild_preview(self, guild_id: int) -> GuildPreview:
         """|coro|
 
-        Retrieves a preview of a :class:`Guild` from an ID. If the guild is discoverable, 
+        Retrieves a preview of a :class:`.Guild` from an ID. If the guild is discoverable,
         you don't have to be a member of it.
 
         .. versionadded:: 2.5

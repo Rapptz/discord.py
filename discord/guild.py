@@ -166,6 +166,7 @@ class GuildPreview(Hashable):
     """Represents a preview of a Discord guild.
 
         .. versionadded:: 2.5
+
     .. container:: operations
 
         .. describe:: x == y

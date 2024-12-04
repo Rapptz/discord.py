@@ -51,7 +51,7 @@ import inspect
 
 import os
 
-from .guild import Guild, GuildPreview
+from .guild import Guild
 from .activity import BaseActivity
 from .sku import Entitlement
 from .user import User, ClientUser
