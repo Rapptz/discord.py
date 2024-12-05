@@ -2493,6 +2493,14 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         return ChannelType.text.value
 
     @property
+    def members(self) -> List[Member]:
+        """List[:class:`Member`]: Returns all members that can see this channel.
+
+        .. versionadded:: 2.5
+        """
+        return [m for m in self.guild.members if self.permissions_for(m).read_messages]
+
+    @property
     def _scheduled_event_entity_type(self) -> Optional[EntityType]:
         return None
 
