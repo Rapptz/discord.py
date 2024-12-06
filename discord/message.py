@@ -526,6 +526,7 @@ class MessageSnapshot(Hashable):
         '_cs_raw_mentions',
         '_cs_raw_role_mentions',
         '_edited_timestamp',
+        'id',
         'attachments',
         'content',
         'embeds',
