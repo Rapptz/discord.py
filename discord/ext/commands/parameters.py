@@ -247,6 +247,12 @@ def parameter(
 
         .. versionadded:: 2.3
     """
+    if isinstance(default, Parameter):
+        if displayed_default is empty:
+            displayed_default = default._displayed_default
+
+        default = default._default
+
     return Parameter(
         name='empty',
         kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,

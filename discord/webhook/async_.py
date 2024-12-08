@@ -721,11 +721,6 @@ class _WebhookState:
             return self._parent._get_guild(guild_id)
         return None
 
-    def _get_poll(self, msg_id: Optional[int]) -> Optional[Poll]:
-        if self._parent is not None:
-            return self._parent._get_poll(msg_id)
-        return None
-
     def store_user(self, data: Union[UserPayload, PartialUserPayload], *, cache: bool = True) -> BaseUser:
         if self._parent is not None:
             return self._parent.store_user(data, cache=cache)

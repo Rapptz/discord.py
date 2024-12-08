@@ -93,8 +93,11 @@ if TYPE_CHECKING:
         sku,
         poll,
         voice,
+        soundboard,
+        subscription,
     )
     from .types.snowflake import Snowflake, SnowflakeList
+    from .types.gateway import SessionStartLimit
 
     from types import TracebackType
 
@@ -195,6 +198,7 @@ def handle_message_parameters(
 
     if nonce is not None:
         payload['nonce'] = str(nonce)
+        payload['enforce_nonce'] = True
 
     if message_reference is not MISSING:
         payload['message_reference'] = message_reference
@@ -306,7 +310,7 @@ class Route:
         self.metadata: Optional[str] = metadata
         url = self.BASE + self.path
         if parameters:
-            url = url.format_map({k: _uriquote(v) if isinstance(v, str) else v for k, v in parameters.items()})
+            url = url.format_map({k: _uriquote(v, safe='') if isinstance(v, str) else v for k, v in parameters.items()})
         self.url: str = url
 
         # major parameters:
@@ -775,7 +779,15 @@ class HTTPClient:
             raise RuntimeError('Unreachable code in HTTP handling')
 
     async def get_from_cdn(self, url: str) -> bytes:
-        async with self.__session.get(url) as resp:
+        kwargs = {}
+
+        # Proxy support
+        if self.proxy is not None:
+            kwargs['proxy'] = self.proxy
+        if self.proxy_auth is not None:
+            kwargs['proxy_auth'] = self.proxy_auth
+
+        async with self.__session.get(url, **kwargs) as resp:
             if resp.status == 200:
                 return await resp.read()
             elif resp.status == 404:
@@ -2515,7 +2527,78 @@ class HTTPClient:
             ),
         )
 
-    # Misc
+    # Soundboard
+
+    def get_soundboard_default_sounds(self) -> Response[List[soundboard.SoundboardDefaultSound]]:
+        return self.request(Route('GET', '/soundboard-default-sounds'))
+
+    def get_soundboard_sound(self, guild_id: Snowflake, sound_id: Snowflake) -> Response[soundboard.SoundboardSound]:
+        return self.request(
+            Route('GET', '/guilds/{guild_id}/soundboard-sounds/{sound_id}', guild_id=guild_id, sound_id=sound_id)
+        )
+
+    def get_soundboard_sounds(self, guild_id: Snowflake) -> Response[Dict[str, List[soundboard.SoundboardSound]]]:
+        return self.request(Route('GET', '/guilds/{guild_id}/soundboard-sounds', guild_id=guild_id))
+
+    def create_soundboard_sound(
+        self, guild_id: Snowflake, *, reason: Optional[str], **payload: Any
+    ) -> Response[soundboard.SoundboardSound]:
+        valid_keys = (
+            'name',
+            'sound',
+            'volume',
+            'emoji_id',
+            'emoji_name',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys and v is not None}
+
+        return self.request(
+            Route('POST', '/guilds/{guild_id}/soundboard-sounds', guild_id=guild_id), json=payload, reason=reason
+        )
+
+    def edit_soundboard_sound(
+        self, guild_id: Snowflake, sound_id: Snowflake, *, reason: Optional[str], **payload: Any
+    ) -> Response[soundboard.SoundboardSound]:
+        valid_keys = (
+            'name',
+            'volume',
+            'emoji_id',
+            'emoji_name',
+        )
+
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+
+        return self.request(
+            Route(
+                'PATCH',
+                '/guilds/{guild_id}/soundboard-sounds/{sound_id}',
+                guild_id=guild_id,
+                sound_id=sound_id,
+            ),
+            json=payload,
+            reason=reason,
+        )
+
+    def delete_soundboard_sound(self, guild_id: Snowflake, sound_id: Snowflake, *, reason: Optional[str]) -> Response[None]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/guilds/{guild_id}/soundboard-sounds/{sound_id}',
+                guild_id=guild_id,
+                sound_id=sound_id,
+            ),
+            reason=reason,
+        )
+
+    def send_soundboard_sound(self, channel_id: Snowflake, **payload: Any) -> Response[None]:
+        valid_keys = ('sound_id', 'source_guild_id')
+        payload = {k: v for k, v in payload.items() if k in valid_keys}
+        return self.request(
+            (Route('POST', '/channels/{channel_id}/send-soundboard-sound', channel_id=channel_id)), json=payload
+        )
+
+    # Application
 
     def application_info(self) -> Response[appinfo.AppInfo]:
         return self.request(Route('GET', '/oauth2/applications/@me'))
@@ -2535,6 +2618,59 @@ class HTTPClient:
 
         payload = {k: v for k, v in payload.items() if k in valid_keys}
         return self.request(Route('PATCH', '/applications/@me'), json=payload, reason=reason)
+
+    def get_application_emojis(self, application_id: Snowflake) -> Response[appinfo.ListAppEmojis]:
+        return self.request(Route('GET', '/applications/{application_id}/emojis', application_id=application_id))
+
+    def get_application_emoji(self, application_id: Snowflake, emoji_id: Snowflake) -> Response[emoji.Emoji]:
+        return self.request(
+            Route(
+                'GET', '/applications/{application_id}/emojis/{emoji_id}', application_id=application_id, emoji_id=emoji_id
+            )
+        )
+
+    def create_application_emoji(
+        self,
+        application_id: Snowflake,
+        name: str,
+        image: str,
+    ) -> Response[emoji.Emoji]:
+        payload = {
+            'name': name,
+            'image': image,
+        }
+
+        return self.request(
+            Route('POST', '/applications/{application_id}/emojis', application_id=application_id), json=payload
+        )
+
+    def edit_application_emoji(
+        self,
+        application_id: Snowflake,
+        emoji_id: Snowflake,
+        *,
+        payload: Dict[str, Any],
+    ) -> Response[emoji.Emoji]:
+        r = Route(
+            'PATCH', '/applications/{application_id}/emojis/{emoji_id}', application_id=application_id, emoji_id=emoji_id
+        )
+        return self.request(r, json=payload)
+
+    def delete_application_emoji(
+        self,
+        application_id: Snowflake,
+        emoji_id: Snowflake,
+    ) -> Response[None]:
+        return self.request(
+            Route(
+                'DELETE',
+                '/applications/{application_id}/emojis/{emoji_id}',
+                application_id=application_id,
+                emoji_id=emoji_id,
+            )
+        )
+
+    # Poll
 
     def get_poll_answer_voters(
         self,
@@ -2573,28 +2709,58 @@ class HTTPClient:
             )
         )
 
-    async def get_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> str:
-        try:
-            data = await self.request(Route('GET', '/gateway'))
-        except HTTPException as exc:
-            raise GatewayNotFound() from exc
-        if zlib:
-            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
-        else:
-            value = '{0}?encoding={1}&v={2}'
-        return value.format(data['url'], encoding, INTERNAL_API_VERSION)
+    # Subscriptions
 
-    async def get_bot_gateway(self, *, encoding: str = 'json', zlib: bool = True) -> Tuple[int, str]:
+    def list_sku_subscriptions(
+        self,
+        sku_id: Snowflake,
+        before: Optional[Snowflake] = None,
+        after: Optional[Snowflake] = None,
+        limit: Optional[int] = None,
+        user_id: Optional[Snowflake] = None,
+    ) -> Response[List[subscription.Subscription]]:
+        params = {}
+
+        if before is not None:
+            params['before'] = before
+
+        if after is not None:
+            params['after'] = after
+
+        if limit is not None:
+            params['limit'] = limit
+
+        if user_id is not None:
+            params['user_id'] = user_id
+
+        return self.request(
+            Route(
+                'GET',
+                '/skus/{sku_id}/subscriptions',
+                sku_id=sku_id,
+            ),
+            params=params,
+        )
+
+    def get_sku_subscription(self, sku_id: Snowflake, subscription_id: Snowflake) -> Response[subscription.Subscription]:
+        return self.request(
+            Route(
+                'GET',
+                '/skus/{sku_id}/subscriptions/{subscription_id}',
+                sku_id=sku_id,
+                subscription_id=subscription_id,
+            )
+        )
+
+    # Misc
+
+    async def get_bot_gateway(self) -> Tuple[int, str, SessionStartLimit]:
         try:
             data = await self.request(Route('GET', '/gateway/bot'))
         except HTTPException as exc:
             raise GatewayNotFound() from exc
 
-        if zlib:
-            value = '{0}?encoding={1}&v={2}&compress=zlib-stream'
-        else:
-            value = '{0}?encoding={1}&v={2}'
-        return data['shards'], value.format(data['url'], encoding, INTERNAL_API_VERSION)
+        return data['shards'], data['url'], data['session_start_limit']
 
     def get_user(self, user_id: Snowflake) -> Response[user.User]:
         return self.request(Route('GET', '/users/{user_id}', user_id=user_id))

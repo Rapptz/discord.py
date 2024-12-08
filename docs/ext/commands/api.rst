@@ -708,6 +708,9 @@ Exceptions
 .. autoexception:: discord.ext.commands.ScheduledEventNotFound
     :members:
 
+.. autoexception:: discord.ext.commands.SoundboardSoundNotFound
+    :members:
+
 .. autoexception:: discord.ext.commands.BadBoolArgument
     :members:
 
@@ -800,6 +803,7 @@ Exception Hierarchy
                     - :exc:`~.commands.EmojiNotFound`
                     - :exc:`~.commands.GuildStickerNotFound`
                     - :exc:`~.commands.ScheduledEventNotFound`
+                    - :exc:`~.commands.SoundboardSoundNotFound`
                     - :exc:`~.commands.PartialEmojiConversionFailure`
                     - :exc:`~.commands.BadBoolArgument`
                     - :exc:`~.commands.RangeError`
