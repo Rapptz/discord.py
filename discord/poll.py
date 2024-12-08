@@ -225,6 +225,8 @@ class PollAnswer:
         """:class:`bool`: Whether the answer is the one that had the most
         votes when the poll ended.
 
+        .. versionadded:: 2.5
+
         .. note::
 
             If the poll has not ended, this will always return ``False``.
@@ -487,11 +489,11 @@ class Poll:
     def victor_answer_id(self) -> Optional[int]:
         """Optional[:class:`int`]: The victor answer ID.
 
+        .. versionadded:: 2.5
+
         .. note::
 
             This will **always** be ``None`` for polls that have not yet finished.
-
-        .. versionadded:: 2.5
         """
         return self._victor_answer_id
 
@@ -499,11 +501,11 @@ class Poll:
     def victor_answer(self) -> Optional[PollAnswer]:
         """Optional[:class:`PollAnswer`]: The victor answer.
 
+        .. versionadded:: 2.5
+
         .. note::
 
             This will **always** be ``None`` for polls that have not yet finished.
-
-        .. versionadded:: 2.5
         """
         if self.victor_answer_id is None:
             return None
