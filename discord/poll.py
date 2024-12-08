@@ -490,6 +490,8 @@ class Poll:
         .. note::
 
             This will **always** be ``None`` for polls that have not yet finished.
+
+        .. versionadded:: 2.5
         """
         return self._victor_answer_id
 
@@ -500,6 +502,8 @@ class Poll:
         .. note::
 
             This will **always** be ``None`` for polls that have not yet finished.
+
+        .. versionadded:: 2.5
         """
         if self.victor_answer_id is None:
             return None

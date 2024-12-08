@@ -2269,10 +2269,11 @@ class Message(PartialMessage, Hashable):
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
 
             if self.type is MessageType.poll_result:
-                if self.reference.resolved is not None:
+                if isinstance(self.reference.resolved, self.__class__):
                     self._state._update_poll_results(self, self.reference.resolved)
                 else:
-                    self._state._update_poll_results(self, self.reference.message_id)
+                    if self.reference.message_id:
+                        self._state._update_poll_results(self, self.reference.message_id)
 
         self.application: Optional[MessageApplication] = None
         try:
