@@ -387,37 +387,30 @@ class Poll:
         self._update_results_from_message(message)
 
     def _update_results_from_message(self, message: Message) -> None:
-        if message.type != MessageType.poll_result:
-            return  # Ignore non poll_result message types
+        if message.type != MessageType.poll_result or not message.embeds:
+            return
+
         result_embed = message.embeds[0]  # Will always have 1 embed
+        fields: Dict[str, str] = {field.name: field.value for field in result_embed.fields}  # type: ignore
 
-        total_votes_field = utils.get(
-            result_embed.fields,
-            name='total_votes',
-        )
-        if total_votes_field is not None:
-            self._total_votes = int(total_votes_field.value)  # type: ignore
+        total_votes = fields.get('total_votes')
 
-        victor_answer_id = utils.get(
-            result_embed.fields,
-            name='victor_answer_id',
-        )
-        # If this is None then the poll did not have a winning
-        # answer.
+        if total_votes is not None:
+            self._total_votes = int(total_votes)
 
-        if victor_answer_id is None:
-            return  # Just return because the rest is based of the victor answer
+        victor_answer = fields.get('victor_answer_id')
 
-        self._victor_answer_id = int(victor_answer_id.value)  # type: ignore
-        victor_answer_votes = utils.get(
-            result_embed.fields,
-            name='victor_answer_votes',
-        )
+        if victor_answer is None:
+            return  # Can't do anything else without the victor answer
+
+        self._victor_answer_id = int(victor_answer)
+
+        victor_answer_votes = fields['victor_answer_votes']
 
         answer = self._answers[self._victor_answer_id]
         answer._victor = True
-        answer._vote_count = int(victor_answer_votes.value)  # type: ignore
-        self._answers[self._victor_answer_id] = answer
+        answer._vote_count = int(victor_answer_votes)
+        self._answers[answer.id] = answer  # Ensure update
 
     def _update_results(self, data: PollResultPayload) -> None:
         self._finalized = data['is_finalized']
