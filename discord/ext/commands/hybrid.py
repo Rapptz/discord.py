@@ -234,6 +234,12 @@ def replace_parameter(
                     descriptions[name] = flag.description
                 if flag.name != flag.attribute:
                     renames[name] = flag.name
+                if pseudo.default is not pseudo.empty:
+                    # This ensures the default is wrapped around _CallableDefault if callable
+                    # else leaves it as-is.
+                    pseudo = pseudo.replace(
+                        default=_CallableDefault(flag.default) if callable(flag.default) else flag.default
+                    )
 
                 mapping[name] = pseudo
 
@@ -283,7 +289,7 @@ def replace_parameters(
             param = param.replace(default=default)
 
         if isinstance(param.default, Parameter):
-            # If we're here, then then it hasn't been handled yet so it should be removed completely
+            # If we're here, then it hasn't been handled yet so it should be removed completely
             param = param.replace(default=parameter.empty)
 
         # Flags are flattened out and thus don't get their parameter in the actual mapping
