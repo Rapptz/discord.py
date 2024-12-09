@@ -536,7 +536,7 @@ class Poll:
 
     @property
     def message(self) -> Optional[Message]:
-        """:class:`Message`: The message this poll is from."""
+        """Optional[:class:`Message`]: The message this poll is from."""
         return self._message
 
     @property
@@ -544,6 +544,9 @@ class Poll:
         """:class:`int`: Returns the sum of all the answer votes.
 
         If the poll has not yet finished, this is an approximate vote count.
+
+        .. versionchanged:: 2.5
+            This now returns an exact vote count when updated from its poll results message.
         """
         if self._total_votes is not None:
             return self._total_votes
