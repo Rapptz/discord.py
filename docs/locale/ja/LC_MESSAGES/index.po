@@ -27,7 +27,7 @@ msgstr "discord.ext.tasks API リファレンス"
 
 #: ../../index.rst:7
 msgid "Welcome to discord.py"
-msgstr "discord.py へようこそ。"
+msgstr "discord.py へようこそ"
 
 #: ../../index.rst:12
 msgid "discord.py is a modern, easy to use, feature-rich, and async ready API wrapper for Discord."
