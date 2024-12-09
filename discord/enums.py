@@ -266,6 +266,7 @@ class MessageType(Enum):
     guild_incident_report_raid = 38
     guild_incident_report_false_alarm = 39
     purchase_notification = 44
+    poll_result = 46
 
 
 class SpeakingState(Enum):
