@@ -26,7 +26,11 @@ from __future__ import annotations
 import threading
 import subprocess
 import warnings
-import audioop
+if sys.version_info < (3, 13):
+    import audioop
+else:
+    import numpy as np
+
 import asyncio
 import logging
 import shlex
@@ -683,6 +687,21 @@ class PCMVolumeTransformer(AudioSource, Generic[AT]):
         self.original: AT = original
         self.volume = volume
 
+    def bytes_to_numpy(self, audio_bytes: bytes, sample_width: int) -> np.ndarray:
+        dtype = {1: np.int8, 2: np.int16, 4: np.int32}[sample_width]
+        return np.frombuffer(audio_bytes, dtype=dtype)
+
+    def numpy_to_bytes(self, audio_array: np.ndarray, sample_width: int) -> bytes:
+        dtype = {1: np.int8, 2: np.int16, 4: np.int32}[sample_width]
+        return audio_array.astype(dtype).tobytes()
+
+    def scale_audio(self, audio_bytes: bytes, sample_width: int, scale: float) -> bytes:
+        audio_array: np.ndarray = self.bytes_to_numpy(audio_bytes, sample_width)
+        max_value: int = 2**(8 * sample_width - 1) - 1
+        min_value: int = -2**(8 * sample_width - 1)
+        audio_array = np.clip(audio_array * scale, min_value, max_value)
+        return self.numpy_to_bytes(audio_array, sample_width)
+    
     @property
     def volume(self) -> float:
         """Retrieves or sets the volume as a floating point percentage (e.g. ``1.0`` for 100%)."""
@@ -697,7 +716,11 @@ class PCMVolumeTransformer(AudioSource, Generic[AT]):
 
     def read(self) -> bytes:
         ret = self.original.read()
-        return audioop.mul(ret, 2, min(self._volume, 2.0))
+        if sys.version_info < (3, 13):
+            return audioop.mul(ret, 2, min(self._volume, 2.0))
+        else:
+            return self.scale_audio(ret, 2, min(self._volume, 2.0))
+
 
 
 class AudioPlayer(threading.Thread):
