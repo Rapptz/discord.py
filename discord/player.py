@@ -26,11 +26,6 @@ from __future__ import annotations
 import threading
 import subprocess
 import warnings
-if sys.version_info < (3, 13):
-    import audioop
-else:
-    import numpy as np
-
 import asyncio
 import logging
 import shlex
@@ -39,6 +34,11 @@ import json
 import sys
 import re
 import io
+
+if sys.version_info < (3, 13):
+    import audioop
+else:
+    import numpy as np
 
 from typing import Any, Callable, Generic, IO, Optional, TYPE_CHECKING, Tuple, TypeVar, Union
 
