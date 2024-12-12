@@ -63,6 +63,8 @@ class Subscription(Hashable):
     canceled_at: Optional[:class:`datetime.datetime`]
         When the subscription was canceled.
         This is only available for subscriptions with a :attr:`status` of :attr:`SubscriptionStatus.inactive`.
+    renewal_sku_ids: List[:class:`int`]
+        The IDs of the SKUs that the user is going to be subscribed to when renewing.
     """
 
     __slots__ = (
@@ -75,6 +77,7 @@ class Subscription(Hashable):
         'current_period_end',
         'status',
         'canceled_at',
+        'renewal_sku_ids',
     )
 
     def __init__(self, *, state: ConnectionState, data: SubscriptionPayload):
@@ -88,6 +91,7 @@ class Subscription(Hashable):
         self.current_period_end: datetime.datetime = utils.parse_time(data['current_period_end'])
         self.status: SubscriptionStatus = try_enum(SubscriptionStatus, data['status'])
         self.canceled_at: Optional[datetime.datetime] = utils.parse_time(data['canceled_at'])
+        self.renewal_sku_ids: List[int] = list(map(int, data['renewal_sku_ids'] or []))
 
     def __repr__(self) -> str:
         return f'<Subscription id={self.id} user_id={self.user_id} status={self.status!r}>'
