@@ -64,7 +64,7 @@ class Subscription(Hashable):
         When the subscription was canceled.
         This is only available for subscriptions with a :attr:`status` of :attr:`SubscriptionStatus.inactive`.
     renewal_sku_ids: List[:class:`int`]
-        The IDs of the SKUs that the user is going to be subscribed when renewing.
+        The IDs of the SKUs that the user is going to be subscribed to when renewing.
     """
 
     __slots__ = (
