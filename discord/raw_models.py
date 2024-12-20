@@ -577,23 +577,19 @@ class RawPresenceUpdateEvent(_RawReprMixin):
         The guild ID for the users presence update. Could be ``None``.
     """
 
-    __slots__ = ('user_id', 'guild_id', '_client_status', '_raw_activities', '_state', '_activities')
+    __slots__ = ('user_id', 'guild_id', '_client_status', '_activities')
 
     def __init__(self, *, data: PartialPresenceUpdate, state: ConnectionState) -> None:
         self.user_id: int = int(data["user"]["id"])
 
         self._client_status: _ClientStatus = _ClientStatus()
         self._client_status._update(data["status"], data["client_status"])
-
-        self._raw_activities = data['activities']
-        self._state = state
+        self._activities = tuple(create_activity(d, state) for d in data['activities'])
 
         try:
             self.guild_id: Optional[int] = int(data['guild_id'])
         except KeyError:
             self.guild_id = None
-
-        self._activities = None
 
     @property
     def activities(self) -> Tuple[ActivityTypes, ...]:
@@ -605,9 +601,6 @@ class RawPresenceUpdateEvent(_RawReprMixin):
             if they are listening to a song with a title longer
             than ``128`` characters. See :issue:`1738` for more information.
         """
-        if self._activities is None:
-            self._activities = tuple(create_activity(d, self._state) for d in self._raw_activities)
-
         return self._activities
 
     @property
