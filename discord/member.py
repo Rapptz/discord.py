@@ -550,7 +550,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
     def is_on_mobile(self) -> bool:
         """A helper function that determines if a member is active on a mobile device.
-        
+
         Returns
         -------
         :class:`bool`
