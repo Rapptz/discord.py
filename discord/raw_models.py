@@ -25,14 +25,12 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Literal, Optional, Set, List, Tuple, Union
+from typing import TYPE_CHECKING, Literal, Optional, Set, List, Union
 
-from .enums import ChannelType, try_enum, ReactionType, Status
-from .activity import create_activity
-from .utils import _get_as_snowflake
+from .enums import ChannelType, try_enum, ReactionType
+from .utils import _get_as_snowflake, _RawReprMixin
 from .app_commands import AppCommandPermissions
 from .colour import Colour
-from .member import _ClientStatus
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -53,8 +51,6 @@ if TYPE_CHECKING:
         GuildMemberRemoveEvent,
         PollVoteActionEvent,
     )
-    from .types.activity import PartialPresenceUpdate
-    from .activity import ActivityTypes
     from .types.command import GuildApplicationCommandPermissions
     from .message import Message
     from .partial_emoji import PartialEmoji
@@ -83,16 +79,7 @@ __all__ = (
     'RawMemberRemoveEvent',
     'RawAppCommandPermissionsUpdateEvent',
     'RawPollVoteActionEvent',
-    'RawPresenceUpdateEvent',
 )
-
-
-class _RawReprMixin:
-    __slots__: Tuple[str, ...] = ()
-
-    def __repr__(self) -> str:
-        value = ' '.join(f'{attr}={getattr(self, attr)!r}' for attr in self.__slots__)
-        return f'<{self.__class__.__name__} {value}>'
 
 
 class RawMessageDeleteEvent(_RawReprMixin):
@@ -562,77 +549,3 @@ class RawPollVoteActionEvent(_RawReprMixin):
         self.message_id: int = int(data['message_id'])
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
         self.answer_id: int = int(data['answer_id'])
-
-
-class RawPresenceUpdateEvent(_RawReprMixin):
-    """Represents the payload for a :func:`on_raw_presence_update` event.
-
-    .. versionadded:: 2.5
-
-    Attributes
-    ----------
-    user_id: :class:`int`
-        The ID of the user that triggered the presence update.
-    guild_id: Optional[:class:`int`]
-        The guild ID for the users presence update. Could be ``None``.
-    """
-
-    __slots__ = ('user_id', 'guild_id', '_client_status', '_activities')
-
-    def __init__(self, *, data: PartialPresenceUpdate, state: ConnectionState) -> None:
-        self.user_id: int = int(data["user"]["id"])
-
-        self._client_status: _ClientStatus = _ClientStatus()
-        self._client_status._update(data["status"], data["client_status"])
-        self._activities = tuple(create_activity(d, state) for d in data['activities'])
-
-        try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
-        except KeyError:
-            self.guild_id = None
-
-    @property
-    def activities(self) -> Tuple[ActivityTypes, ...]:
-        """Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]: The activities the user is currently doing.
-
-        .. note::
-
-            Due to a Discord API limitation, a user's Spotify activity may not appear
-            if they are listening to a song with a title longer
-            than ``128`` characters. See :issue:`1738` for more information.
-        """
-        return self._activities
-
-    @property
-    def status(self) -> Status:
-        """:class:`Status`: The user's overall status. If the value is unknown, then it will be a :class:`str` instead."""
-        return try_enum(Status, self._client_status._status)
-
-    @property
-    def raw_status(self) -> str:
-        """:class:`str`: The user's overall status as a string value."""
-        return self._client_status._status
-
-    @property
-    def mobile_status(self) -> Status:
-        """:class:`Status`: The user's status on a mobile device, if applicable."""
-        return try_enum(Status, self._client_status.mobile or 'offline')
-
-    @property
-    def desktop_status(self) -> Status:
-        """:class:`Status`: The user's status on the desktop client, if applicable."""
-        return try_enum(Status, self._client_status.desktop or 'offline')
-
-    @property
-    def web_status(self) -> Status:
-        """:class:`Status`: The user's status on the web client, if applicable."""
-        return try_enum(Status, self._client_status.web or 'offline')
-
-    def is_on_mobile(self) -> bool:
-        """A helper function that determines if a user is active on a mobile device.
-
-        Returns
-        -------
-        :class:`bool`
-        """
-        return self._client_status.mobile is not None

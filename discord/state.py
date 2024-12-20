@@ -62,6 +62,7 @@ from .message import Message
 from .channel import *
 from .channel import _channel_factory
 from .raw_models import *
+from .presences import RawPresenceUpdateEvent
 from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status
@@ -806,25 +807,26 @@ class ConnectionState(Generic[ClientT]):
         self.dispatch('interaction', interaction)
 
     def parse_presence_update(self, data: gw.PresenceUpdateEvent) -> None:
-        if self.raw_presence_flag:
-            self.dispatch('raw_presence_update', RawPresenceUpdateEvent(data=data, state=self))
+        raw = RawPresenceUpdateEvent(data=data, state=self)
 
-        guild_id = utils._get_as_snowflake(data, 'guild_id')
-        # guild_id won't be None here
-        guild = self._get_guild(guild_id)
-        if guild is None:
-            _log.debug('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+        if self.raw_presence_flag:
+            raw._create_activities(data, self)
+            self.dispatch('raw_presence_update', raw)
+
+        if raw.guild is None:
+            _log.debug('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', raw.guild_id)
             return
 
         user = data['user']
-        member_id = int(user['id'])
-        member = guild.get_member(member_id)
+        member = raw.guild.get_member(raw.user_id)
+
         if member is None:
-            _log.debug('PRESENCE_UPDATE referencing an unknown member ID: %s. Discarding', member_id)
+            _log.debug('PRESENCE_UPDATE referencing an unknown member ID: %s. Discarding', raw.user_id)
             return
 
         old_member = Member._copy(member)
-        user_update = member._presence_update(data=data, user=user)
+        user_update = member._presence_update(data, raw=raw, user=user)
+
         if user_update:
             self.dispatch('user_update', user_update[0], user_update[1])
 

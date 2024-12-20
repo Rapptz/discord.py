@@ -36,13 +36,13 @@ from . import utils
 from .asset import Asset
 from .utils import MISSING
 from .user import BaseUser, ClientUser, User, _UserTag
-from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
-from .enums import Status, try_enum
+from .enums import Status
 from .errors import ClientException
 from .colour import Colour
 from .object import Object
 from .flags import MemberFlags
+from .presences import _ClientStatus
 
 __all__ = (
     'VoiceState',
@@ -57,16 +57,14 @@ if TYPE_CHECKING:
     from .channel import DMChannel, VoiceChannel, StageChannel
     from .flags import PublicUserFlags
     from .guild import Guild
-    from .types.activity import (
-        ClientStatus as ClientStatusPayload,
-        PartialPresenceUpdate,
-    )
+    from .activity import ActivityTypes
+    from .presences import RawPresenceUpdateEvent
     from .types.member import (
         MemberWithUser as MemberWithUserPayload,
         Member as MemberPayload,
         UserWithMember as UserWithMemberPayload,
     )
-    from .types.gateway import GuildMemberUpdateEvent
+    from .types.gateway import GuildMemberUpdateEvent, PartialPresenceUpdate
     from .types.user import User as UserPayload, AvatarDecorationData
     from .abc import Snowflake
     from .state import ConnectionState
@@ -166,46 +164,6 @@ class VoiceState:
         ]
         inner = ' '.join('%s=%r' % t for t in attrs)
         return f'<{self.__class__.__name__} {inner}>'
-
-
-class _ClientStatus:
-    __slots__ = ('_status', 'desktop', 'mobile', 'web')
-
-    def __init__(self):
-        self._status: str = 'offline'
-
-        self.desktop: Optional[str] = None
-        self.mobile: Optional[str] = None
-        self.web: Optional[str] = None
-
-    def __repr__(self) -> str:
-        attrs = [
-            ('_status', self._status),
-            ('desktop', self.desktop),
-            ('mobile', self.mobile),
-            ('web', self.web),
-        ]
-        inner = ' '.join('%s=%r' % t for t in attrs)
-        return f'<{self.__class__.__name__} {inner}>'
-
-    def _update(self, status: str, data: ClientStatusPayload, /) -> None:
-        self._status = status
-
-        self.desktop = data.get('desktop')
-        self.mobile = data.get('mobile')
-        self.web = data.get('web')
-
-    @classmethod
-    def _copy(cls, client_status: Self, /) -> Self:
-        self = cls.__new__(cls)  # bypass __init__
-
-        self._status = client_status._status
-
-        self.desktop = client_status.desktop
-        self.mobile = client_status.mobile
-        self.web = client_status.web
-
-        return self
 
 
 def flatten_user(cls: T) -> T:
@@ -473,12 +431,18 @@ class Member(discord.abc.Messageable, _UserTag):
         self._flags = data.get('flags', 0)
         self._avatar_decoration_data = data.get('avatar_decoration_data')
 
-    def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
-        self.activities = tuple(create_activity(d, self._state) for d in data['activities'])
-        self._client_status._update(data['status'], data['client_status'])
+    def _presence_update(
+        self, data: PartialPresenceUpdate, raw: RawPresenceUpdateEvent, user: UserPayload
+    ) -> Optional[Tuple[User, User]]:
+        if raw._activities is None:
+            raw._create_activities(data, self._state)
+
+        self.activities = raw.activities
+        self._client_status = _ClientStatus._copy(raw.client_status)
 
         if len(user) > 1:
             return self._update_inner_user(user)
+
         return None
 
     def _update_inner_user(self, user: UserPayload) -> Optional[Tuple[User, User]]:
@@ -518,7 +482,7 @@ class Member(discord.abc.Messageable, _UserTag):
     @property
     def status(self) -> Status:
         """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
-        return try_enum(Status, self._client_status._status)
+        return self._client_status.status
 
     @property
     def raw_status(self) -> str:
@@ -536,17 +500,17 @@ class Member(discord.abc.Messageable, _UserTag):
     @property
     def mobile_status(self) -> Status:
         """:class:`Status`: The member's status on a mobile device, if applicable."""
-        return try_enum(Status, self._client_status.mobile or 'offline')
+        return self._client_status.mobile_status
 
     @property
     def desktop_status(self) -> Status:
         """:class:`Status`: The member's status on the desktop client, if applicable."""
-        return try_enum(Status, self._client_status.desktop or 'offline')
+        return self._client_status.desktop_status
 
     @property
     def web_status(self) -> Status:
         """:class:`Status`: The member's status on the web client, if applicable."""
-        return try_enum(Status, self._client_status.web or 'offline')
+        return self._client_status.web_status
 
     def is_on_mobile(self) -> bool:
         """A helper function that determines if a member is active on a mobile device.
