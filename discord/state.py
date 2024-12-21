@@ -811,7 +811,7 @@ class ConnectionState(Generic[ClientT]):
 
         if self.raw_presence_flag:
             raw._create_activities(data, self)
-            self.dispatch('raw_presence_update', raw)
+            self.dispatch('raw_presence_update', RawPresenceUpdateEvent._copy(raw))
 
         if raw.guild is None:
             _log.debug('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', raw.guild_id)
