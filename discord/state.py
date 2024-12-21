@@ -817,7 +817,6 @@ class ConnectionState(Generic[ClientT]):
             _log.debug('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', raw.guild_id)
             return
 
-        user = data['user']
         member = raw.guild.get_member(raw.user_id)
 
         if member is None:
@@ -825,7 +824,7 @@ class ConnectionState(Generic[ClientT]):
             return
 
         old_member = Member._copy(member)
-        user_update = member._presence_update(data, raw=raw, user=user)
+        user_update = member._presence_update(data, raw=raw, user=data['user'])
 
         if user_update:
             self.dispatch('user_update', user_update[0], user_update[1])
