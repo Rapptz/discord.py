@@ -237,7 +237,7 @@ class Client:
         To enable these events, this must be set to ``True``. Defaults to ``False``.
 
         .. versionadded:: 2.0
-    enable_raw_presence_event: :class:`bool`
+    enable_raw_presences: :class:`bool`
         Whether to manually enable or disable the :func:`on_raw_presence_update` event.
 
         Setting this flag to ``True`` requires :attr:`Intents.presences` to be enabled.

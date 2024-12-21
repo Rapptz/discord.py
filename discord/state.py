@@ -262,7 +262,7 @@ class ConnectionState(Generic[ClientT]):
         if not intents.members or cache_flags._empty:
             self.store_user = self.store_user_no_intents
 
-        self.raw_presence_flag: bool = options.get('enable_raw_presence_event', utils.MISSING)
+        self.raw_presence_flag: bool = options.get('enable_raw_presences', utils.MISSING)
         if self.raw_presence_flag is utils.MISSING:
             self.raw_presence_flag = not intents.members and intents.presences
 

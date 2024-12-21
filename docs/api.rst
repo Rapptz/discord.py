@@ -930,7 +930,7 @@ Members
         By default, this event is only dispatched when :attr:`Intents.presences` is enabled **and** :attr:`Intents.members` 
         is disabled.
 
-        You can maually override this behaviour by setting the **enable_raw_presence_event** flag in the :class:`Client`,
+        You can maually override this behaviour by setting the **enable_raw_presences** flag in the :class:`Client`,
         however :attr:`Intents.presences` is always required for this event to work.
     
     .. versionadded:: 2.5
