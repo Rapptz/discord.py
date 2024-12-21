@@ -42,7 +42,8 @@ __all__ = ('RawPresenceUpdateEvent', 'ClientStatus')
 
 
 class ClientStatus:
-    """The :class:`ClientStatus` model which holds information about the status of the user on various clients.
+    """Represents the :ddocs:`Client Status Object<events/gateway-events#client-status-object>` from Discord, 
+    which holds information about the status of the user on various clients/platforms, with additional helpers.
 
     .. note::
 
@@ -137,9 +138,9 @@ class RawPresenceUpdateEvent(_RawReprMixin):
         The ID of the user that triggered the presence update.
     guild_id: Optional[:class:`int`]
         The guild ID for the users presence update. Could be ``None``.
-    guild: Optional[:class:`~.Guild`]
+    guild: Optional[:class:`Guild`]
         The guild associated with the presence update and user. Could be ``None``.
-    client_status: :class:`~.ClientStatus`
+    client_status: :class:`ClientStatus`
         The :class:`~.ClientStatus` model which holds information about the status of the user on various clients.
     """
 
