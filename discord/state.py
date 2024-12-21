@@ -1410,13 +1410,12 @@ class ConnectionState(Generic[ClientT]):
         if presences:
             member_dict: Dict[Snowflake, Member] = {str(member.id): member for member in members}
             for presence in presences:
-                raw = RawPresenceUpdateEvent(data=presence, state=self)
                 user = presence['user']
                 member_id = user['id']
                 member = member_dict.get(member_id)
 
                 if member is not None:
-                    member._presence_update(presence, raw, user)
+                    member._perf_presence_update(presence, user)
 
         complete = data.get('chunk_index', 0) + 1 == data.get('chunk_count')
         self.process_chunk_requests(guild_id, data.get('nonce'), members, complete)

@@ -43,6 +43,7 @@ from .colour import Colour
 from .object import Object
 from .flags import MemberFlags
 from .presences import ClientStatus
+from .activity import create_activity
 
 __all__ = (
     'VoiceState',
@@ -447,7 +448,12 @@ class Member(discord.abc.Messageable, _UserTag):
         if len(user) > 1:
             return self._update_inner_user(user)
 
-        return None
+    def _perf_presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
+        self.activities = tuple(create_activity(d, self._state) for d in data['activities'])
+        self.client_status._update(data['status'], data['client_status'])
+
+        if len(user) > 1:
+            return self._update_inner_user(user)
 
     def _update_inner_user(self, user: UserPayload) -> Optional[Tuple[User, User]]:
         u = self._user
