@@ -169,15 +169,3 @@ class RawPresenceUpdateEvent(_RawReprMixin):
             than ``128`` characters. See :issue:`1738` for more information.
         """
         return self._activities or ()
-
-    @classmethod
-    def _copy(cls, other: RawPresenceUpdateEvent) -> Self:
-        new = cls.__new__(cls)
-
-        new.user_id = other.user_id
-        new.client_status = ClientStatus._copy(other.client_status)
-        new._activities = other._activities
-        new.guild_id = other.guild_id
-        new.guild = other.guild
-
-        return new
