@@ -264,6 +264,10 @@ class Member(discord.abc.Messageable, _UserTag):
         This will be set to ``None`` if the user is not timed out.
 
         .. versionadded:: 2.0
+    client_status: :class:`ClientStatus`
+        Model which holds information about the status of the member on various clients/platforms via presence updates.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -276,7 +280,7 @@ class Member(discord.abc.Messageable, _UserTag):
         'nick',
         'timed_out_until',
         '_permissions',
-        '_client_status',
+        'client_status',
         '_user',
         '_state',
         '_avatar',
@@ -312,7 +316,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.joined_at: Optional[datetime.datetime] = utils.parse_time(data.get('joined_at'))
         self.premium_since: Optional[datetime.datetime] = utils.parse_time(data.get('premium_since'))
         self._roles: utils.SnowflakeList = utils.SnowflakeList(map(int, data['roles']))
-        self._client_status: ClientStatus = ClientStatus()
+        self.client_status: ClientStatus = ClientStatus()
         self.activities: Tuple[ActivityTypes, ...] = ()
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
@@ -388,7 +392,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
         self.premium_since = member.premium_since
-        self._client_status = ClientStatus._copy(member._client_status)
+        self.client_status = ClientStatus._copy(member.client_status)
         self.guild = member.guild
         self.nick = member.nick
         self.pending = member.pending
@@ -438,7 +442,7 @@ class Member(discord.abc.Messageable, _UserTag):
             raw._create_activities(data, self._state)
 
         self.activities = raw.activities
-        self._client_status = raw.client_status
+        self.client_status = raw.client_status
 
         if len(user) > 1:
             return self._update_inner_user(user)
@@ -480,18 +484,9 @@ class Member(discord.abc.Messageable, _UserTag):
             return to_return, u
 
     @property
-    def client_status(self) -> ClientStatus:
-        """:class:`ClientStatus`: Model which holds information about the status of the
-        member on various clients.
-
-        .. versionadded:: 2.5
-        """
-        return self._client_status
-
-    @property
     def status(self) -> Status:
         """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
-        return self._client_status.status
+        return self.client_status.status
 
     @property
     def raw_status(self) -> str:
@@ -499,27 +494,27 @@ class Member(discord.abc.Messageable, _UserTag):
 
         .. versionadded:: 1.5
         """
-        return self._client_status._status
+        return self.client_status._status
 
     @status.setter
     def status(self, value: Status) -> None:
         # internal use only
-        self._client_status._status = str(value)
+        self.client_status._status = str(value)
 
     @property
     def mobile_status(self) -> Status:
         """:class:`Status`: The member's status on a mobile device, if applicable."""
-        return self._client_status.mobile_status
+        return self.client_status.mobile_status
 
     @property
     def desktop_status(self) -> Status:
         """:class:`Status`: The member's status on the desktop client, if applicable."""
-        return self._client_status.desktop_status
+        return self.client_status.desktop_status
 
     @property
     def web_status(self) -> Status:
         """:class:`Status`: The member's status on the web client, if applicable."""
-        return self._client_status.web_status
+        return self.client_status.web_status
 
     def is_on_mobile(self) -> bool:
         """A helper function that determines if a member is active on a mobile device.
@@ -528,7 +523,7 @@ class Member(discord.abc.Messageable, _UserTag):
         -------
         :class:`bool`
         """
-        return self._client_status.mobile is not None
+        return self.client_status.mobile is not None
 
     @property
     def colour(self) -> Colour:
