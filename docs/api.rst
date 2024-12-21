@@ -5418,6 +5418,14 @@ MessageSnapshot
 .. autoclass:: MessageSnapshot
     :members:
 
+ClientStatus
+~~~~~~~~~~~~
+
+.. attributetable:: ClientStatus
+
+.. autoclass:: ClientStatus
+    :members:
+
 Data Classes
 --------------
 

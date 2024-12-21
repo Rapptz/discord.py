@@ -46,7 +46,7 @@ class ClientStatus:
 
     .. note::
 
-        You usually wouldn't instantiate this class manually, instead it should be available on members with
+        You shouldn't instantiate this class manually, instead it should be available on members with
         :attr:`Member.client_status` and on the :class:`RawPresenceUpdateEvent` model.
 
     .. versionadded:: 2.5
