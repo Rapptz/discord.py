@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Optional, Tuple
 
 from .activity import create_activity
 from .enums import Status, try_enum
-from .utils import _get_as_snowflake, _RawReprMixin
+from .utils import MISSING, _get_as_snowflake, _RawReprMixin
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -41,15 +41,25 @@ if TYPE_CHECKING:
 __all__ = ('RawPresenceUpdateEvent',)
 
 
-class _ClientStatus:
+class ClientStatus:
+    """The :class:`ClientStatus` model which holds information about the status of the user on various clients.
+    
+    .. note::
+    
+        You usually wouldn't instantiate this class manually, instead it should be available on members with 
+        :attr:`Member.client_status` and on the :class:`RawPresenceUpdateEvent` model.
+    
+    .. versionadded:: 2.5
+    """
     __slots__ = ('_status', 'desktop', 'mobile', 'web')
 
-    def __init__(self):
-        self._status: str = 'offline'
+    def __init__(self, *, status: str = MISSING, data: ClientStatusPayload = MISSING) -> None:
+        self._status: str = status or 'offline'
 
-        self.desktop: Optional[str] = None
-        self.mobile: Optional[str] = None
-        self.web: Optional[str] = None
+        data = data or {}
+        self.desktop: Optional[str] = data.get('desktop')
+        self.mobile: Optional[str] = data.get('mobile')
+        self.web: Optional[str] = data.get('web')
 
     def __repr__(self) -> str:
         attrs = [
@@ -82,23 +92,37 @@ class _ClientStatus:
 
     @property
     def status(self) -> Status:
+        """:class:`Status`: The user's overall status. If the value is unknown, then it will be a :class:`str` instead."""
         return try_enum(Status, self._status)
 
     @property
     def raw_status(self) -> str:
+        """:class:`str`: The user's overall status as a string value."""
         return self._status
 
     @property
     def mobile_status(self) -> Status:
+        """:class:`Status`: The user's status on a mobile device, if applicable."""
         return try_enum(Status, self.mobile or 'offline')
 
     @property
     def desktop_status(self) -> Status:
+        """:class:`Status`: The user's status on the desktop client, if applicable."""
         return try_enum(Status, self.desktop or 'offline')
 
     @property
     def web_status(self) -> Status:
+        """:class:`Status`: The user's status on the web client, if applicable."""
         return try_enum(Status, self.web or 'offline')
+
+    def is_on_mobile(self) -> bool:
+        """A helper function that determines if a user is active on a mobile device.
+
+        Returns
+        -------
+        :class:`bool`
+        """
+        return self.mobile is not None
 
 
 class RawPresenceUpdateEvent(_RawReprMixin):
@@ -112,6 +136,10 @@ class RawPresenceUpdateEvent(_RawReprMixin):
         The ID of the user that triggered the presence update.
     guild_id: Optional[:class:`int`]
         The guild ID for the users presence update. Could be ``None``.
+    guild: Optional[:class:`~.Guild`]
+        The guild associated with the presence update and user. Could be ``None``.
+    client_status: :class:`~.ClientStatus`
+        The :class:`~.ClientStatus` model which holds information about the status of the user on various clients.
     """
 
     __slots__ = ('user_id', 'guild_id', 'guild', 'client_status', '_activities')
@@ -119,8 +147,7 @@ class RawPresenceUpdateEvent(_RawReprMixin):
     def __init__(self, *, data: PartialPresenceUpdate, state: ConnectionState) -> None:
         self.user_id: int = int(data["user"]["id"])
 
-        self.client_status: _ClientStatus = _ClientStatus()
-        self.client_status._update(data["status"], data["client_status"])
+        self.client_status: ClientStatus = ClientStatus(status=data["status"], data=data["client_status"])
         self._activities: Tuple[ActivityTypes, ...] | None = None
 
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
@@ -140,40 +167,16 @@ class RawPresenceUpdateEvent(_RawReprMixin):
             than ``128`` characters. See :issue:`1738` for more information.
         """
         return self._activities or ()
+    
+    @classmethod
+    def _copy(cls, other: RawPresenceUpdateEvent) -> Self:
+        new = cls.__new__(cls)
+        
+        new.user_id = other.user_id
+        new.client_status = ClientStatus._copy(other.client_status)
+        new._activities = other._activities
+        new.guild_id = other.guild_id
+        new.guild = other.guild
+        
+        return new
 
-    @property
-    def status(self) -> Status:
-        """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
-        return self.client_status.status
-
-    @property
-    def raw_status(self) -> str:
-        """:class:`str`: The member's overall status as a string value.
-
-        .. versionadded:: 1.5
-        """
-        return self.client_status._status
-
-    @property
-    def mobile_status(self) -> Status:
-        """:class:`Status`: The member's status on a mobile device, if applicable."""
-        return self.client_status.mobile_status
-
-    @property
-    def desktop_status(self) -> Status:
-        """:class:`Status`: The member's status on the desktop client, if applicable."""
-        return self.client_status.desktop_status
-
-    @property
-    def web_status(self) -> Status:
-        """:class:`Status`: The member's status on the web client, if applicable."""
-        return self.client_status.web_status
-
-    def is_on_mobile(self) -> bool:
-        """A helper function that determines if a member is active on a mobile device.
-
-        Returns
-        -------
-        :class:`bool`
-        """
-        return self.client_status.mobile is not None
