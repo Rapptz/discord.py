@@ -95,7 +95,6 @@ from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 from .partial_emoji import _EmojiTag, PartialEmoji
 from .soundboard import SoundboardSound
-from .presences import RawPresenceUpdateEvent
 
 
 __all__ = (
