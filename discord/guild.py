@@ -537,8 +537,8 @@ class Guild(Hashable):
 
         empty_tuple = ()
         for presence in guild.get('presences', []):
-            raw = RawPresenceUpdateEvent(data=presence, state=self._state)
-            member = self.get_member(raw.user_id)
+            user_id = int(presence['user']['id'])
+            member = self.get_member(user_id)
 
             if member is not None:
                 member._perf_presence_update(presence, empty_tuple)  # type: ignore
