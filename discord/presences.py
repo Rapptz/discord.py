@@ -42,13 +42,8 @@ __all__ = ('RawPresenceUpdateEvent', 'ClientStatus')
 
 
 class ClientStatus:
-    """Represents the :ddocs:`Client Status Object<events/gateway-events#client-status-object>` from Discord,
+    """Represents the :ddocs:`Client Status Object <events/gateway-events#client-status-object>` from Discord,
     which holds information about the status of the user on various clients/platforms, with additional helpers.
-
-    .. note::
-
-        You shouldn't instantiate this class manually, instead it should be available on members with
-        :attr:`Member.client_status` and on the :class:`RawPresenceUpdateEvent` model.
 
     .. versionadded:: 2.5
     """
@@ -147,9 +142,9 @@ class RawPresenceUpdateEvent(_RawReprMixin):
     __slots__ = ('user_id', 'guild_id', 'guild', 'client_status', '_activities')
 
     def __init__(self, *, data: PartialPresenceUpdate, state: ConnectionState) -> None:
-        self.user_id: int = int(data["user"]["id"])
+        self.user_id: int = int(data['user']['id'])
 
-        self.client_status: ClientStatus = ClientStatus(status=data["status"], data=data["client_status"])
+        self.client_status: ClientStatus = ClientStatus(status=data['status'], data=data['client_status'])
         self._activities: Union[Tuple[ActivityTypes, ...], None] = None
 
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')

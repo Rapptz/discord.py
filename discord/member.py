@@ -529,7 +529,7 @@ class Member(discord.abc.Messageable, _UserTag):
         -------
         :class:`bool`
         """
-        return self.client_status.mobile is not None
+        return self.client_status.is_on_mobile()
 
     @property
     def colour(self) -> Colour:

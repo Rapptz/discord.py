@@ -5423,7 +5423,7 @@ ClientStatus
 
 .. attributetable:: ClientStatus
 
-.. autoclass:: ClientStatus
+.. autoclass:: ClientStatus()
     :members:
 
 Data Classes
