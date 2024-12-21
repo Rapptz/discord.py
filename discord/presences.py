@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple, Union
 
 from .activity import create_activity
 from .enums import Status, try_enum
@@ -150,10 +150,10 @@ class RawPresenceUpdateEvent(_RawReprMixin):
         self.user_id: int = int(data["user"]["id"])
 
         self.client_status: ClientStatus = ClientStatus(status=data["status"], data=data["client_status"])
-        self._activities: Tuple[ActivityTypes, ...] | None = None
+        self._activities: Union[Tuple[ActivityTypes, ...], None] = None
 
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
-        self.guild: Guild | None = state._get_guild(self.guild_id)
+        self.guild: Union[Guild, None] = state._get_guild(self.guild_id)
 
     def _create_activities(self, data: PartialPresenceUpdate, state: ConnectionState) -> None:
         self._activities = tuple(create_activity(d, state) for d in data['activities'])
