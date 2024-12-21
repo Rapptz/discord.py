@@ -43,14 +43,15 @@ __all__ = ('RawPresenceUpdateEvent',)
 
 class ClientStatus:
     """The :class:`ClientStatus` model which holds information about the status of the user on various clients.
-    
+
     .. note::
-    
-        You usually wouldn't instantiate this class manually, instead it should be available on members with 
+
+        You usually wouldn't instantiate this class manually, instead it should be available on members with
         :attr:`Member.client_status` and on the :class:`RawPresenceUpdateEvent` model.
-    
+
     .. versionadded:: 2.5
     """
+
     __slots__ = ('_status', 'desktop', 'mobile', 'web')
 
     def __init__(self, *, status: str = MISSING, data: ClientStatusPayload = MISSING) -> None:
@@ -167,16 +168,15 @@ class RawPresenceUpdateEvent(_RawReprMixin):
             than ``128`` characters. See :issue:`1738` for more information.
         """
         return self._activities or ()
-    
+
     @classmethod
     def _copy(cls, other: RawPresenceUpdateEvent) -> Self:
         new = cls.__new__(cls)
-        
+
         new.user_id = other.user_id
         new.client_status = ClientStatus._copy(other.client_status)
         new._activities = other._activities
         new.guild_id = other.guild_id
         new.guild = other.guild
-        
-        return new
 
+        return new

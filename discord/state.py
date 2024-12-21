@@ -1415,7 +1415,7 @@ class ConnectionState(Generic[ClientT]):
                 user = presence['user']
                 member_id = user['id']
                 member = member_dict.get(member_id)
-                
+
                 if member is not None:
                     member._presence_update(presence, raw, user)
 

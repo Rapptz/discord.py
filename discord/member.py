@@ -478,12 +478,12 @@ class Member(discord.abc.Messageable, _UserTag):
             )
             # Signal to dispatch on_user_update
             return to_return, u
-    
+
     @property
     def client_status(self) -> ClientStatus:
-        """:class:`ClientStatus`: Model which holds information about the status of the 
+        """:class:`ClientStatus`: Model which holds information about the status of the
         member on various clients.
-        
+
         .. versionadded:: 2.5
         """
         return self._client_status
