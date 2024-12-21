@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from .types.activity import ClientStatus as ClientStatusPayload, PartialPresenceUpdate
 
 
-__all__ = ('RawPresenceUpdateEvent',)
+__all__ = ('RawPresenceUpdateEvent', 'ClientStatus')
 
 
 class ClientStatus:
