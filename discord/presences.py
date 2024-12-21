@@ -42,7 +42,7 @@ __all__ = ('RawPresenceUpdateEvent', 'ClientStatus')
 
 
 class ClientStatus:
-    """Represents the :ddocs:`Client Status Object<events/gateway-events#client-status-object>` from Discord, 
+    """Represents the :ddocs:`Client Status Object<events/gateway-events#client-status-object>` from Discord,
     which holds information about the status of the user on various clients/platforms, with additional helpers.
 
     .. note::
