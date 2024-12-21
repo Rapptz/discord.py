@@ -242,8 +242,8 @@ class Client:
 
         Setting this flag to ``True`` requires :attr:`Intents.presences` to be enabled.
 
-        By default, this flag is set to True only when :attr:Intents.presences is enabled and :attr:Intents.members
-        is disabled, otherwise it's set to False.
+        By default, this flag is set to ``True`` only when :attr:Intents.presences is enabled and :attr:Intents.members
+        is disabled, otherwise it's set to ``False``.
 
         .. versionadded:: 2.5
     http_trace: :class:`aiohttp.TraceConfig`
