@@ -538,8 +538,9 @@ class Guild(Hashable):
         for presence in guild.get('presences', []):
             user_id = int(presence['user']['id'])
             member = self.get_member(user_id)
+
             if member is not None:
-                member._presence_update(presence, empty_tuple)  # type: ignore
+                member._perf_presence_update(presence, empty_tuple)  # type: ignore
 
         if 'threads' in guild:
             threads = guild['threads']
