@@ -392,7 +392,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
         self.premium_since = member.premium_since
-        self.client_status = ClientStatus._copy(member.client_status)
+        self.client_status = member.client_status
         self.guild = member.guild
         self.nick = member.nick
         self.pending = member.pending
