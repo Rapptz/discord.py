@@ -239,7 +239,7 @@ class SKU:
             data, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 1000:
+            if len(data) < 100:
                 limit = 0
 
             for e in data:
