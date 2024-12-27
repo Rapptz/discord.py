@@ -50,6 +50,8 @@ docs = [
     "sphinxcontrib-serializinghtml==1.1.5",
     "typing-extensions>=4.3,<5",
     "sphinx-inline-tabs==2023.4.21",
+    # TODO: Remove this when moving to Sphinx >= 6.6
+    "imghdr-lts==1.0.0; python_version>='3.13'",
 ]
 speed = [
     "orjson>=3.5.4",
