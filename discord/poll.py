@@ -547,7 +547,7 @@ class Poll:
 
         return self._answers.get(id)
 
-    async def end(self) -> Self:
+    async def end(self) -> Poll:
         """|coro|
 
         Ends the poll.
