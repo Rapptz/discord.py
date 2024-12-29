@@ -303,7 +303,7 @@ class Member(discord.abc.Messageable, _UserTag):
         "Nitro boost" on the guild, if available. This could be ``None``.
     timed_out_until: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies the date and time in UTC that the member's time out will expire.
-        This will be set to ``None`` if the user is not timed out.
+        This will be set to ``None`` or a time in the past if the user is not timed out.
 
         .. versionadded:: 2.0
     """
