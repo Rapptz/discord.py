@@ -100,6 +100,16 @@ class Item(Generic[V]):
 
     @property
     def row(self) -> Optional[int]:
+        """Optional[:class:`int`]: The action row this item belongs to.
+
+        An action row can have up to 5 components. Valid values for the row are
+        integers in the range 0–4 or ``None`` to indicate no specific row.
+    
+        Raises
+        ------
+        ValueError
+            If set to a value less than 0 or greater than or equal to 5.
+        """
         return self._row
 
     @row.setter
@@ -113,6 +123,16 @@ class Item(Generic[V]):
 
     @property
     def width(self) -> int:
+        """int: The width of this item in a Discord UI layout.
+
+        The width determines how much space this item occupies in an action row.
+        This value is primarily used internally by Discord.py to calculate layout constraints.
+
+        Returns
+        -------
+        :class:`int`
+            The width of the item, defaulting to 1.
+        """
         return 1
 
     @property

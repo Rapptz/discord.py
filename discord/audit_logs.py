@@ -874,7 +874,13 @@ class AuditLogEntry(Hashable):
     def _convert_target_emoji(self, target_id: int) -> Union[Emoji, Object]:
         return self._state.get_emoji(target_id) or Object(id=target_id, type=Emoji)
 
-    def _convert_target_message(self, target_id: int) -> Union[Member, User, Object]:
+    def _convert_target_message(self, target_id: Optional[int]) -> Union[Member, User, Object, None]:
+        # Safeguard against target_id being None for actions like message_pin and message_unpin
+        if target_id is None:
+            # Handle the None case (provide a fallback Object or return None)
+            return Object(id=-1, type=Member)  # Use a default ID like -1 if needed
+        
+        # If target_id is not None, proceed normally
         return self._get_member(target_id) or Object(id=target_id, type=Member)
 
     def _convert_target_stage_instance(self, target_id: int) -> Union[StageInstance, Object]:
