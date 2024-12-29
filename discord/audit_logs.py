@@ -799,14 +799,12 @@ class AuditLogEntry(Hashable):
 
     @utils.cached_property
     def target(self) -> TargetType:
-        if self.action.target_type is None:
+        if self.action.target_type is None or self._target_id is None:
             return None
 
         try:
             converter = getattr(self, '_convert_target_' + self.action.target_type)
         except AttributeError:
-            if self._target_id is None:
-                return None
             return Object(id=self._target_id)
         else:
             return converter(self._target_id)
