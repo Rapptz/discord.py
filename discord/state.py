@@ -337,7 +337,7 @@ class MemberSidebar:
         return ret
 
     def handle_manual_override(self, group_members: int) -> None:
-        # Certain guilds like Midjourney have their member list groups manually set
+        # Certain guilds like MidJourney have their member list groups manually set
         # In these cases, the online group is removed, and most online members are not retrievable
         # We must update the limit to the "real" online count, and recalculate the ranges
         self._limit_override = group_members
@@ -440,11 +440,16 @@ class MemberSidebar:
             if not self.subscribing and not requests:
                 break
 
+            request_values = list(requests.values())
+            all_possible_ranges = range(request_values[0][0][0], request_values[-1][-1][1] + 1)
+
             if not requests:
                 raise ClientException('Failed to automatically choose channels; please specify them manually')
 
             def predicate(data):
-                return int(data['guild_id']) == guild.id and any(op['op'] == 'SYNC' for op in data['ops'])
+                return int(data['guild_id']) == guild.id and any(
+                    op['op'] == 'SYNC' and op['range'][0] in all_possible_ranges for op in data['ops']
+                )
 
             await state.subscriptions.subscribe_to_channels(guild, requests, replace=True)
 
@@ -463,7 +468,11 @@ class MemberSidebar:
 
                     # Sometimes servers require safe mode (they used to have 75k+ members)
                     # so if we don't get a response we force safe mode and try again
-                    _log.debug('Forcing member list scraping safe mode for guild ID %s (member count: %s).', guild.id, guild._member_count)
+                    _log.debug(
+                        'Forcing member list scraping safe mode for guild ID %s (member count: %s).',
+                        guild.id,
+                        guild._member_count,
+                    )
                     self.safe_override = True
                     self.ranges = self.get_ranges()
                     await self.scrape()
@@ -2731,8 +2740,16 @@ class ConnectionState:
             # request.add_members(members + to_add)
 
             # Attempt to detect Discord overriding the member list
-            if not request.chunk and not request.manual_override and data['online_count'] > 0 and guild._true_online_count < data['online_count'] and 'online' not in [group['id'] for group in data['groups']]:
-                _log.debug(f'Detected guild {guild} with manually overriden member list groups: online members not cached by the Gateway.')
+            if (
+                not request.chunk
+                and not request.manual_override
+                and data['online_count'] > 0
+                and guild._true_online_count < data['online_count']
+                and 'online' not in [group['id'] for group in data['groups']]
+            ):
+                _log.debug(
+                    f'Detected guild {guild} with manually overriden member list groups: online members not cached by the Gateway.'
+                )
                 request.handle_manual_override(guild._true_online_count)
         else:
             for member in members:  # + to_add:
