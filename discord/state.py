@@ -237,6 +237,7 @@ class MemberSidebar:
         'cache',
         'loop',
         'safe_override',
+        '_limit_override',
         'ranges',
         'subscribing',
         'buffer',
@@ -260,6 +261,7 @@ class MemberSidebar:
         self.delay = delay
         self.loop = loop
         self.safe_override = False  # >.<
+        self._limit_override: Optional[int] = None
 
         self.channels = [str(channel.id) for channel in (channels or self.get_channels(1 if chunk else 5))]
         self.ranges = self.get_ranges()
@@ -269,7 +271,14 @@ class MemberSidebar:
         self.waiters: List[asyncio.Future[Optional[List[Member]]]] = []
 
     @property
+    def manual_override(self) -> bool:
+        return self._limit_override is not None
+
+    @property
     def limit(self) -> int:
+        if self._limit_override is not None:
+            return self._limit_override
+
         guild = self.guild
         members = guild._presence_count if guild._offline_members_hidden else guild._member_count or 0
         # Ensure groups are accounted for
@@ -287,7 +296,7 @@ class MemberSidebar:
     def amalgamate(original: Tuple[int, int], value: Tuple[int, int]) -> Tuple[int, int]:
         return original[0], value[1] - 99
 
-    def get_ranges(self) -> List[Tuple[int, int]]:
+    def get_ranges(self, *, start: int = 0) -> List[Tuple[int, int]]:
         chunk = 100
         end = 99
         amount = self.limit
@@ -296,7 +305,7 @@ class MemberSidebar:
 
         ceiling = ceil(amount / chunk) * chunk
         ranges = []
-        for i in range(0, int(ceiling / chunk)):
+        for i in range(int(start / chunk), int(ceiling / chunk)):
             min = i * chunk
             max = min + end
             ranges.append((min, max))
@@ -326,6 +335,14 @@ class MemberSidebar:
                 ret.append(current)
 
         return ret
+
+    def handle_manual_override(self, group_members: int) -> None:
+        # Certain guilds like Midjourney have their member list groups manually set
+        # In these cases, the online group is removed, and most online members are not retrievable
+        # We must update the limit to the "real" online count, and recalculate the ranges
+        self._limit_override = group_members
+        if self.ranges:
+            self.ranges = self.get_ranges(start=self.ranges[0][0])
 
     def get_channels(self, amount: int) -> List[abcSnowflake]:
         guild = self.guild
@@ -446,6 +463,7 @@ class MemberSidebar:
 
                     # Sometimes servers require safe mode (they used to have 75k+ members)
                     # so if we don't get a response we force safe mode and try again
+                    _log.debug('Forcing member list scraping safe mode for guild ID %s (member count: %s).', guild.id, guild._member_count)
                     self.safe_override = True
                     self.ranges = self.get_ranges()
                     await self.scrape()
@@ -2707,10 +2725,15 @@ class ConnectionState:
                 any(group['id'] == 'offline' for group in data['groups']) or data['member_count'] == data['online_count']
             ):
                 # The guild has offline members hidden
-                print(f'Detected guild {guild} with erroneous offline members')
+                _log.debug(f'Detected guild {guild} with erroneous offline members.')
                 return
             request.add_members(members)
             # request.add_members(members + to_add)
+
+            # Attempt to detect Discord overriding the member list
+            if not request.chunk and not request.manual_override and data['online_count'] > 0 and guild._true_online_count < data['online_count'] and 'online' not in [group['id'] for group in data['groups']]:
+                _log.debug(f'Detected guild {guild} with manually overriden member list groups: online members not cached by the Gateway.')
+                request.handle_manual_override(guild._true_online_count)
         else:
             for member in members:  # + to_add:
                 guild._add_member(member)
