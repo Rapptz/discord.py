@@ -2460,7 +2460,7 @@ class HTTPClient:
     def get_friend_invites(self) -> Response[List[invite.InviteWithMetadata]]:
         return self.request(Route('GET', '/users/@me/invites'), context_properties=ContextProperties.empty())
 
-    def delete_invite(self, invite_id: str, *, reason: Optional[str] = None) -> Response[invite.InviteWithMetadata]:
+    def delete_invite(self, invite_id: str, *, reason: Optional[str] = None) -> Response[invite.PartialInvite]:
         return self.request(Route('DELETE', '/invites/{invite_id}', invite_id=invite_id), reason=reason)
 
     def delete_friend_invites(self) -> Response[List[invite.InviteWithMetadata]]:
@@ -2487,16 +2487,6 @@ class HTTPClient:
         return self.request(
             Route('DELETE', '/guilds/{guild_id}/roles/{role_id}', guild_id=guild_id, role_id=role_id), reason=reason
         )
-
-    def replace_roles(
-        self,
-        user_id: Snowflake,
-        guild_id: Snowflake,
-        role_ids: List[int],
-        *,
-        reason: Optional[str] = None,
-    ) -> Response[member.MemberWithUser]:
-        return self.edit_member(guild_id=guild_id, user_id=user_id, roles=role_ids, reason=reason)
 
     def create_role(self, guild_id: Snowflake, *, reason: Optional[str] = None, **fields: Any) -> Response[role.Role]:
         return self.request(Route('POST', '/guilds/{guild_id}/roles', guild_id=guild_id), json=fields, reason=reason)

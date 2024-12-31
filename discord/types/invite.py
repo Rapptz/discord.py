@@ -78,7 +78,7 @@ class InviteWithMetadata(PartialInvite, _InviteMetadata):
     ...
 
 
-class AcceptedInvite(InviteWithCounts):
+class AcceptedInvite(PartialInvite):
     new_member: bool
     show_verification_form: bool
 
