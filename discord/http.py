@@ -779,9 +779,6 @@ class HTTPClient:
             if isinstance(props, ContextProperties):
                 headers['X-Context-Properties'] = props.value
 
-        if kwargs.pop('super_properties_to_track', False):
-            headers['X-Track'] = headers.pop('X-Super-Properties')
-
         kwargs['headers'] = headers
 
         # Proxy support
@@ -1105,9 +1102,19 @@ class HTTPClient:
     def pomelo_suggestion(self) -> Response[user.PomeloSuggestion]:
         return self.request(Route('GET', '/users/@me/pomelo-suggestions'))
 
+    def pomelo_suggestion_unauthed(self, global_name: Optional[str] = None) -> Response[user.PomeloSuggestion]:
+        params = {}
+        if global_name:
+            params['global_name'] = global_name
+        return self.request(Route('GET', '/unique-username/username-suggestions-unauthed'), params=params, auth=False)
+
     def pomelo_attempt(self, username: str) -> Response[user.PomeloAttempt]:
         payload = {'username': username}
-        return self.request(Route('POST', '/users/@me/pomelo-attempt'), json=payload)
+        return self.request(Route('POST', '/users/@me/pomelo-attempt'), json=payload, auth=False)
+
+    def pomelo_attempt_unauthed(self, username: str) -> Response[user.PomeloAttempt]:
+        payload = {'username': username}
+        return self.request(Route('POST', '/unique-username/username-attempt-unauthed'), json=payload)
 
     # PM functionality
 
@@ -1924,7 +1931,7 @@ class HTTPClient:
 
     def get_guilds(self, with_counts: bool = True) -> Response[List[guild.UserGuild]]:
         params = {'with_counts': str(with_counts).lower()}
-        return self.request(Route('GET', '/users/@me/guilds'), params=params, super_properties_to_track=True)
+        return self.request(Route('GET', '/users/@me/guilds'), params=params)
 
     def join_guild(
         self,
@@ -3004,21 +3011,17 @@ class HTTPClient:
         return self.request(Route('GET', '/applications'), params=params)
 
     def get_my_application(self, app_id: Snowflake) -> Response[application.Application]:
-        return self.request(Route('GET', '/applications/{app_id}', app_id=app_id), super_properties_to_track=True)
+        return self.request(Route('GET', '/applications/{app_id}', app_id=app_id))
 
     def edit_application(self, app_id: Snowflake, payload: dict) -> Response[application.Application]:
-        return self.request(
-            Route('PATCH', '/applications/{app_id}', app_id=app_id), super_properties_to_track=True, json=payload
-        )
+        return self.request(Route('PATCH', '/applications/{app_id}', app_id=app_id), json=payload)
 
     def delete_application(self, app_id: Snowflake) -> Response[None]:
-        return self.request(Route('POST', '/applications/{app_id}/delete', app_id=app_id), super_properties_to_track=True)
+        return self.request(Route('POST', '/applications/{app_id}/delete', app_id=app_id))
 
     def transfer_application(self, app_id: Snowflake, team_id: Snowflake) -> Response[application.Application]:
         payload = {'team_id': team_id}
-        return self.request(
-            Route('POST', '/applications/{app_id}/transfer', app_id=app_id), json=payload, super_properties_to_track=True
-        )
+        return self.request(Route('POST', '/applications/{app_id}/transfer', app_id=app_id), json=payload)
 
     def get_partial_application(self, app_id: Snowflake) -> Response[application.PartialApplication]:
         return self.request(Route('GET', '/oauth2/applications/{app_id}/rpc', app_id=app_id))
@@ -3153,22 +3156,16 @@ class HTTPClient:
         if with_bundled_skus:
             params['with_bundled_skus'] = 'true'
 
-        return self.request(
-            Route('GET', '/applications/{app_id}/skus', app_id=app_id), params=params, super_properties_to_track=True
-        )
+        return self.request(Route('GET', '/applications/{app_id}/skus', app_id=app_id), params=params)
 
     def create_sku(self, payload: dict) -> Response[store.PrivateSKU]:
-        return self.request(Route('POST', '/store/skus'), json=payload, super_properties_to_track=True)
+        return self.request(Route('POST', '/store/skus'), json=payload)
 
     def get_app_discoverability(self, app_id: Snowflake) -> Response[application.ApplicationDiscoverability]:
-        return self.request(
-            Route('GET', '/applications/{app_id}/discoverability-state', app_id=app_id), super_properties_to_track=True
-        )
+        return self.request(Route('GET', '/applications/{app_id}/discoverability-state', app_id=app_id))
 
     def get_embedded_activity_config(self, app_id: Snowflake) -> Response[application.EmbeddedActivityConfig]:
-        return self.request(
-            Route('GET', '/applications/{app_id}/embedded-activity-config', app_id=app_id), super_properties_to_track=True
-        )
+        return self.request(Route('GET', '/applications/{app_id}/embedded-activity-config', app_id=app_id))
 
     def edit_embedded_activity_config(
         self,
@@ -3209,13 +3206,10 @@ class HTTPClient:
         return self.request(
             Route('PATCH', '/applications/{app_id}/embedded-activity-config', app_id=app_id),
             json=payload,
-            super_properties_to_track=True,
         )
 
     def get_app_whitelisted(self, app_id: Snowflake) -> Response[List[application.WhitelistedUser]]:
-        return self.request(
-            Route('GET', '/oauth2/applications/{app_id}/allowlist', app_id=app_id), super_properties_to_track=True
-        )
+        return self.request(Route('GET', '/oauth2/applications/{app_id}/allowlist', app_id=app_id))
 
     def add_app_whitelist(
         self, app_id: Snowflake, username: str, discriminator: Snowflake
@@ -3224,29 +3218,24 @@ class HTTPClient:
         return self.request(
             Route('POST', '/oauth2/applications/{app_id}/allowlist', app_id=app_id),
             json=payload,
-            super_properties_to_track=True,
         )
 
     def delete_app_whitelist(self, app_id: Snowflake, user_id: Snowflake) -> Response[None]:
         return self.request(
             Route('DELETE', '/oauth2/applications/{app_id}/allowlist/{user_id}', app_id=app_id, user_id=user_id),
-            super_properties_to_track=True,
         )
 
     def get_app_assets(self, app_id: Snowflake) -> Response[List[application.Asset]]:
         return self.request(Route('GET', '/oauth2/applications/{app_id}/assets', app_id=app_id))
 
     def get_store_assets(self, app_id: Snowflake) -> Response[List[application.StoreAsset]]:
-        return self.request(
-            Route('GET', '/store/applications/{app_id}/assets', app_id=app_id), super_properties_to_track=True
-        )
+        return self.request(Route('GET', '/store/applications/{app_id}/assets', app_id=app_id))
 
     def create_asset(self, app_id: Snowflake, name: str, type: int, image: str) -> Response[application.Asset]:
         payload = {'name': name, 'type': type, 'image': image}
         return self.request(
             Route('POST', '/oauth2/applications/{app_id}/assets', app_id=app_id),
             json=payload,
-            super_properties_to_track=True,
         )
 
     def create_store_asset(self, app_id: Snowflake, file: File) -> Response[application.StoreAsset]:
@@ -3276,18 +3265,16 @@ class HTTPClient:
     def delete_asset(self, app_id: Snowflake, asset_id: Snowflake) -> Response[None]:
         return self.request(
             Route('DELETE', '/oauth2/applications/{app_id}/assets/{asset_id}', app_id=app_id, asset_id=asset_id),
-            super_properties_to_track=True,
         )
 
     def delete_store_asset(self, app_id: Snowflake, asset_id: Snowflake) -> Response[None]:
         return self.request(
             Route('DELETE', '/store/applications/{app_id}/assets/{asset_id}', app_id=app_id, asset_id=asset_id),
-            super_properties_to_track=True,
         )
 
     def create_team(self, name: str) -> Response[team.Team]:
         payload = {'name': name}
-        return self.request(Route('POST', '/teams'), json=payload, super_properties_to_track=True)
+        return self.request(Route('POST', '/teams'), json=payload)
 
     def get_teams(self, *, include_payout_account_status: bool = False) -> Response[List[team.Team]]:
         params = {}
@@ -3297,46 +3284,39 @@ class HTTPClient:
         return self.request(Route('GET', '/teams'), params=params)
 
     def get_team(self, team_id: Snowflake) -> Response[team.Team]:
-        return self.request(Route('GET', '/teams/{team_id}', team_id=team_id), super_properties_to_track=True)
+        return self.request(Route('GET', '/teams/{team_id}', team_id=team_id))
 
     def edit_team(self, team_id: Snowflake, payload: dict) -> Response[team.Team]:
-        return self.request(
-            Route('PATCH', '/teams/{team_id}', team_id=team_id), json=payload, super_properties_to_track=True
-        )
+        return self.request(Route('PATCH', '/teams/{team_id}', team_id=team_id), json=payload)
 
     def delete_team(self, team_id: Snowflake) -> Response[None]:
-        return self.request(Route('POST', '/teams/{team_id}/delete', team_id=team_id), super_properties_to_track=True)
+        return self.request(Route('POST', '/teams/{team_id}/delete', team_id=team_id))
 
     def get_team_applications(self, team_id: Snowflake) -> Response[List[application.Application]]:
-        return self.request(Route('GET', '/teams/{team_id}/applications', team_id=team_id), super_properties_to_track=True)
+        return self.request(Route('GET', '/teams/{team_id}/applications', team_id=team_id))
 
     def get_team_members(self, team_id: Snowflake) -> Response[List[team.TeamMember]]:
-        return self.request(Route('GET', '/teams/{team_id}/members', team_id=team_id), super_properties_to_track=True)
+        return self.request(Route('GET', '/teams/{team_id}/members', team_id=team_id))
 
     def invite_team_member(
         self, team_id: Snowflake, username: str, discriminator: Optional[Snowflake] = None
     ) -> Response[team.TeamMember]:
         payload = {'username': username, 'discriminator': str(discriminator) or None}
-        return self.request(
-            Route('POST', '/teams/{team_id}/members', team_id=team_id), json=payload, super_properties_to_track=True
-        )
+        return self.request(Route('POST', '/teams/{team_id}/members', team_id=team_id), json=payload)
 
     def remove_team_member(self, team_id: Snowflake, user_id: Snowflake) -> Response[None]:
         return self.request(
             Route('DELETE', '/teams/{team_id}/members/{user_id}', team_id=team_id, user_id=user_id),
-            super_properties_to_track=True,
         )
 
     def create_team_company(self, team_id: Snowflake, name: str) -> Response[application.Company]:
         payload = {'name': name}
-        return self.request(
-            Route('POST', '/teams/{team_id}/companies', team_id=team_id), json=payload, super_properties_to_track=True
-        )
+        return self.request(Route('POST', '/teams/{team_id}/companies', team_id=team_id), json=payload)
 
     def search_companies(self, query: str) -> Response[List[application.Company]]:
         # This endpoint 204s without a query?
         params = {'query': query}
-        data = self.request(Route('GET', '/companies'), params=params, super_properties_to_track=True)
+        data = self.request(Route('GET', '/companies'), params=params)
         return data or []
 
     def get_team_payouts(
@@ -3346,33 +3326,26 @@ class HTTPClient:
         if before is not None:
             params['before'] = before
 
-        return self.request(
-            Route('GET', '/teams/{team_id}/payouts', team_id=team_id), params=params, super_properties_to_track=True
-        )
+        return self.request(Route('GET', '/teams/{team_id}/payouts', team_id=team_id), params=params)
 
     def get_team_payout_report(self, team_id: Snowflake, payout_id: Snowflake, type: str) -> Response[bytes]:
         params = {'type': type}
         return self.request(
             Route('GET', '/teams/{team_id}/payouts/{payout_id}/report', team_id=team_id, payout_id=payout_id),
             params=params,
-            super_properties_to_track=True,
         )
 
     def botify_app(self, app_id: Snowflake) -> Response[application.OptionalToken]:
-        return self.request(
-            Route('POST', '/applications/{app_id}/bot', app_id=app_id), json={}, super_properties_to_track=True
-        )
+        return self.request(Route('POST', '/applications/{app_id}/bot', app_id=app_id), json={})
 
     def edit_bot(self, app_id: Snowflake, payload: dict) -> Response[user.User]:
-        return self.request(
-            Route('PATCH', '/applications/{app_id}/bot', app_id=app_id), json=payload, super_properties_to_track=True
-        )
+        return self.request(Route('PATCH', '/applications/{app_id}/bot', app_id=app_id), json=payload)
 
     def reset_secret(self, app_id: Snowflake) -> Response[application.Secret]:
-        return self.request(Route('POST', '/applications/{app_id}/reset', app_id=app_id), super_properties_to_track=True)
+        return self.request(Route('POST', '/applications/{app_id}/reset', app_id=app_id))
 
     def reset_bot_token(self, app_id: Snowflake) -> Response[application.Token]:
-        return self.request(Route('POST', '/applications/{app_id}/bot/reset', app_id=app_id), super_properties_to_track=True)
+        return self.request(Route('POST', '/applications/{app_id}/bot/reset', app_id=app_id))
 
     def get_detectable_applications(self) -> Response[List[application.PartialApplication]]:
         return self.request(Route('GET', '/applications/detectable'))
@@ -3415,9 +3388,7 @@ class HTTPClient:
         return self.request(Route('GET', '/activities'))
 
     def get_app_manifest_labels(self, app_id: Snowflake) -> Response[List[application.ManifestLabel]]:
-        return self.request(
-            Route('GET', '/applications/{app_id}/manifest-labels', app_id=app_id), super_properties_to_track=True
-        )
+        return self.request(Route('GET', '/applications/{app_id}/manifest-labels', app_id=app_id))
 
     def get_app_branches(self, app_id: Snowflake) -> Response[List[application.Branch]]:
         return self.request(Route('GET', '/applications/{app_id}/branches', app_id=app_id))
@@ -3710,14 +3681,12 @@ class HTTPClient:
         return self.request(
             Route('POST', '/store/listings'),
             json={**payload, 'application_id': application_id, 'sku_id': sku_id},
-            super_properties_to_track=True,
         )
 
     def edit_store_listing(self, listing_id: Snowflake, payload: dict) -> Response[store.PrivateStoreListing]:
         return self.request(
             Route('PATCH', '/store/listings/{listing_id}', listing_id=listing_id),
             json=payload,
-            super_properties_to_track=True,
         )
 
     def get_sku(
@@ -3739,9 +3708,7 @@ class HTTPClient:
         return self.request(Route('GET', '/store/skus/{sku_id}', sku_id=sku_id), params=params)
 
     def edit_sku(self, sku_id: Snowflake, payload: dict) -> Response[store.PrivateSKU]:
-        return self.request(
-            Route('PATCH', '/store/skus/{sku_id}', sku_id=sku_id), json=payload, super_properties_to_track=True
-        )
+        return self.request(Route('PATCH', '/store/skus/{sku_id}', sku_id=sku_id), json=payload)
 
     def preview_sku_purchase(
         self,
@@ -3825,12 +3792,10 @@ class HTTPClient:
         if guild_id:
             params['guild_id'] = guild_id
 
-        return self.request(Route('GET', '/store/price-tiers'), params=params, super_properties_to_track=True)
+        return self.request(Route('GET', '/store/price-tiers'), params=params)
 
     def get_price_tier(self, price_tier: Snowflake) -> Response[Dict[str, int]]:
-        return self.request(
-            Route('GET', '/store/price-tiers/{price_tier}', price_tier=price_tier), super_properties_to_track=True
-        )
+        return self.request(Route('GET', '/store/price-tiers/{price_tier}', price_tier=price_tier))
 
     def create_achievement(
         self,
@@ -3858,14 +3823,10 @@ class HTTPClient:
             'secret': secret,
         }
 
-        return self.request(
-            Route('POST', '/applications/{app_id}/achievements', app_id=app_id), json=payload, super_properties_to_track=True
-        )
+        return self.request(Route('POST', '/applications/{app_id}/achievements', app_id=app_id), json=payload)
 
     def get_achievements(self, app_id: Snowflake) -> Response[List[application.Achievement]]:
-        return self.request(
-            Route('GET', '/applications/{app_id}/achievements', app_id=app_id), super_properties_to_track=True
-        )
+        return self.request(Route('GET', '/applications/{app_id}/achievements', app_id=app_id))
 
     def get_my_achievements(self, app_id: Snowflake) -> Response[List[application.Achievement]]:
         return self.request(Route('GET', '/users/@me/applications/{app_id}/achievements', app_id=app_id))
@@ -3875,7 +3836,6 @@ class HTTPClient:
             Route(
                 'GET', '/applications/{app_id}/achievements/{achievement_id}', app_id=app_id, achievement_id=achievement_id
             ),
-            super_properties_to_track=True,
         )
 
     def edit_achievement(
@@ -3886,7 +3846,6 @@ class HTTPClient:
                 'PATCH', '/applications/{app_id}/achievements/{achievement_id}', app_id=app_id, achievement_id=achievement_id
             ),
             json=payload,
-            super_properties_to_track=True,
         )
 
     def update_user_achievement(
@@ -3913,18 +3872,14 @@ class HTTPClient:
                 app_id=app_id,
                 achievement_id=achievement_id,
             ),
-            super_properties_to_track=True,
         )
 
     def get_gift_batches(self, app_id: Snowflake) -> Response[List[entitlements.GiftBatch]]:
-        return self.request(
-            Route('GET', '/applications/{app_id}/gift-code-batches', app_id=app_id), super_properties_to_track=True
-        )
+        return self.request(Route('GET', '/applications/{app_id}/gift-code-batches', app_id=app_id))
 
     def get_gift_batch_csv(self, app_id: Snowflake, batch_id: Snowflake) -> Response[bytes]:
         return self.request(
             Route('GET', '/applications/{app_id}/gift-code-batches/{batch_id}', app_id=app_id, batch_id=batch_id),
-            super_properties_to_track=True,
         )
 
     def create_gift_batch(
@@ -3949,7 +3904,6 @@ class HTTPClient:
         return self.request(
             Route('POST', '/applications/{app_id}/gift-code-batches', app_id=app_id),
             json=payload,
-            super_properties_to_track=True,
         )
 
     def get_gift(
@@ -4372,10 +4326,10 @@ class HTTPClient:
         self, application_id: Snowflake, channel_id: Snowflake
     ) -> Response[application.ActiveDeveloperResponse]:
         payload = {'application_id': application_id, 'channel_id': channel_id}
-        return self.request(Route('POST', '/developers/active-program'), json=payload, super_properties_to_track=True)
+        return self.request(Route('POST', '/developers/active-program'), json=payload)
 
     def unenroll_active_developer(self) -> Response[None]:
-        return self.request(Route('DELETE', '/developers/active-program'), super_properties_to_track=True)
+        return self.request(Route('DELETE', '/developers/active-program'))
 
     # Misc
 

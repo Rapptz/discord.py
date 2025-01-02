@@ -5408,7 +5408,7 @@ class Client:
         data = await state.http.join_hub(email, guild.id, code)
         return state.create_guild(data['guild'])
 
-    async def pomelo_suggestion(self) -> str:
+    async def pomelo_suggestion(self, global_name: Optional[str] = MISSING) -> str:
         """|coro|
 
         Gets the suggested pomelo username for your account.
@@ -5417,9 +5417,15 @@ class Client:
 
         .. note::
 
-            This method requires you to be in the pomelo rollout.
+            This method requires you to be in the pomelo rollout if ``global_name`` is not provided.
 
         .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        global_name: Optional[:class:`str`]
+            The global name to suggest a username for.
+            Defaults to the current user's global name, if authenticated.
 
         Raises
         -------
@@ -5431,17 +5437,17 @@ class Client:
         :class:`str`
             The suggested username.
         """
-        data = await self.http.pomelo_suggestion()
+        http = self.http
+        if http.token and global_name is MISSING:
+            data = await http.pomelo_suggestion()
+        else:
+            data = await http.pomelo_suggestion_unauthed(global_name)
         return data['username']
 
     async def check_pomelo_username(self, username: str) -> bool:
         """|coro|
 
         Checks if a pomelo username is taken.
-
-        .. note::
-
-            This method requires you to be in the pomelo rollout.
 
         .. versionadded:: 2.1
 
@@ -5460,5 +5466,9 @@ class Client:
         :class:`bool`
             Whether the username is taken.
         """
-        data = await self.http.pomelo_attempt(username)
+        http = self.http
+        if http.token:
+            data = await http.pomelo_attempt(username)
+        else:
+            data = await http.pomelo_attempt_unauthed(username)
         return data['taken']
