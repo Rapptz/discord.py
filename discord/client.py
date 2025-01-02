@@ -2423,69 +2423,6 @@ class Client:
         data = await self.http.get_user(user_id)
         return User(state=self._connection, data=data)
 
-    @overload
-    async def fetch_user_named(self, user: str, /) -> User:
-        ...
-
-    @overload
-    async def fetch_user_named(self, username: str, discriminator: str, /) -> User:
-        ...
-
-    async def fetch_user_named(self, *args: str) -> User:
-        """|coro|
-
-        Retrieves a :class:`discord.User` based on their name or legacy username.
-        You do not have to share any guilds with the user to get this information,
-        however you must be able to add them as a friend.
-
-        This function can be used in multiple ways.
-
-        .. versionadded:: 2.1
-
-        .. code-block:: python
-
-            # Passing a username
-            await client.fetch_user_named('jake')
-
-            # Passing a legacy user:
-            await client.fetch_user_named('Jake#0001')
-
-            # Passing a legacy username and discriminator:
-            await client.fetch_user_named('Jake', '0001')
-
-        Parameters
-        -----------
-        user: :class:`str`
-            The user to send the friend request to.
-        username: :class:`str`
-            The username of the user to send the friend request to.
-        discriminator: :class:`str`
-            The discriminator of the user to send the friend request to.
-
-        Raises
-        -------
-        Forbidden
-            Not allowed to send a friend request to this user.
-        HTTPException
-            Fetching the user failed.
-        TypeError
-            More than 2 parameters or less than 1 parameter was passed.
-
-        Returns
-        --------
-        :class:`discord.User`
-            The user you requested.
-        """
-        if len(args) == 1:
-            username, _, discrim = args[0].partition('#')
-        elif len(args) == 2:
-            username, discrim = args
-        else:
-            raise TypeError(f'fetch_user_named() takes 1 or 2 arguments but {len(args)} were given')
-
-        data = await self.http.get_user_named(username, discrim)
-        return User(state=self._connection, data=data)
-
     async def fetch_user_profile(
         self,
         user_id: int,
