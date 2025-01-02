@@ -330,23 +330,25 @@ def parse_date(date: Optional[str]) -> Optional[datetime.date]:
 
 
 @overload
-def parse_timestamp(timestamp: None) -> None:
+def parse_timestamp(timestamp: None, *, ms: bool = True) -> None:
     ...
 
 
 @overload
-def parse_timestamp(timestamp: float) -> datetime.datetime:
+def parse_timestamp(timestamp: float, *, ms: bool = True) -> datetime.datetime:
     ...
 
 
 @overload
-def parse_timestamp(timestamp: Optional[float]) -> Optional[datetime.datetime]:
+def parse_timestamp(timestamp: Optional[float], *, ms: bool = True) -> Optional[datetime.datetime]:
     ...
 
 
-def parse_timestamp(timestamp: Optional[float]) -> Optional[datetime.datetime]:
+def parse_timestamp(timestamp: Optional[float], *, ms: bool = True) -> Optional[datetime.datetime]:
     if timestamp:
-        return datetime.datetime.fromtimestamp(timestamp / 1000.0, tz=datetime.timezone.utc)
+        if ms:
+            timestamp /= 1000
+        return datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc)
 
 
 def copy_doc(original: Callable[..., Any]) -> Callable[[T], T]:

@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Collection, List, Optional, Tuple
 
 from . import utils
 from .application import ApplicationInstallParams
@@ -72,7 +72,7 @@ class Profile:
         data: ProfilePayload = kwargs.pop('data')
         user = data['user']
         profile = data.get('user_profile')
-        mutual_friends: List[PartialUserPayload] = kwargs.pop('mutual_friends', None)
+        mutual_friends = data.get('mutual_friends')
 
         member = data.get('guild_member')
         member_profile = data.get('guild_member_profile')
@@ -89,7 +89,9 @@ class Profile:
         super().__init__(**kwargs)
         state = self._state
 
+        # All metadata will be missing on a blocked profile
         self.metadata = ProfileMetadata(id=self.id, state=state, data=profile)
+        self._blocked = profile is None
         if member is not None:
             self.guild_metadata = ProfileMetadata(id=self.id, state=state, data=member_profile)
 
@@ -118,7 +120,7 @@ class Profile:
         application = data.get('application')
         self.application: Optional[ApplicationProfile] = ApplicationProfile(data=application) if application else None
 
-    def _parse_mutual_friends(self, mutual_friends: List[PartialUserPayload]) -> Optional[List[User]]:
+    def _parse_mutual_friends(self, mutual_friends: Optional[Collection[PartialUserPayload]]) -> Optional[List[User]]:
         if self.bot:
             # Bots don't have friends
             return []
@@ -144,6 +146,13 @@ class Profile:
         """:class:`bool`: Indicates if the user is a premium user."""
         return self.premium_since is not None
 
+    def is_blocked_by_user(self) -> bool:
+        """:class:`bool`: Indicates if the user has blocked the client user.
+
+        .. versionadded:: 2.1
+        """
+        return self._blocked
+
 
 class ProfileMetadata:
     """Represents global or per-user Discord profile metadata.
@@ -156,8 +165,6 @@ class ProfileMetadata:
         The profile's "about me" field. Could be ``None``.
     pronouns: Optional[:class:`str`]
         The profile's pronouns, if any.
-    effect_id: Optional[:class:`int`]
-        The ID of the profile effect the user has, if any.
     """
 
     __slots__ = (
@@ -167,11 +174,12 @@ class ProfileMetadata:
         'pronouns',
         'emoji',
         'popout_animation_particle_type',
-        'effect_id',
         '_banner',
         '_accent_colour',
         '_theme_colours',
         '_guild_id',
+        '_effect_id',
+        '_effect_expires_at',
     )
 
     def __init__(self, *, id: int, state: ConnectionState, data: Optional[ProfileMetadataPayload]) -> None:
@@ -186,11 +194,14 @@ class ProfileMetadata:
         self.pronouns: Optional[str] = data.get('pronouns') or None
         self.emoji: Optional[PartialEmoji] = PartialEmoji.from_dict_stateful(data['emoji'], state) if data.get('emoji') else None  # type: ignore
         self.popout_animation_particle_type: Optional[int] = utils._get_as_snowflake(data, 'popout_animation_particle_type')
-        self.effect_id: Optional[int] = utils._get_as_snowflake(data['profile_effect'], 'id') if data.get('profile_effect') else None  # type: ignore
         self._banner: Optional[str] = data.get('banner')
         self._accent_colour: Optional[int] = data.get('accent_color')
         self._theme_colours: Optional[Tuple[int, int]] = tuple(data['theme_colors']) if data.get('theme_colors') else None  # type: ignore
         self._guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
+
+        effect_data = data.get('profile_effect')
+        self._effect_id: Optional[int] = utils._get_as_snowflake(effect_data, 'id') if effect_data else None
+        self._effect_expires_at = effect_data.get('expires_at') if effect_data else None
 
     def __repr__(self) -> str:
         return f'<ProfileMetadata bio={self.bio!r} pronouns={self.pronouns!r}>'
@@ -247,6 +258,23 @@ class ProfileMetadata:
         There is an alias for this named :attr:`theme_colours`.
         """
         return self.theme_colours
+
+    @property
+    def effect_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: Returns the ID of the profile effect the user has, if any.."""
+        return self._effect_id
+
+    @property
+    def effect_expires_at(self) -> Optional[datetime]:
+        """Optional[:class:`datetime.datetime`]: Returns the profile effect's expiration time.
+
+        If the user does not have an expiring profile effect, ``None`` is returned.
+
+        .. versionadded:: 2.1
+        """
+        if self._effect_expires_at is None:
+            return None
+        return utils.parse_timestamp(self._effect_expires_at, ms=False)
 
 
 class ApplicationProfile(Hashable):

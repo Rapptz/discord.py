@@ -96,6 +96,7 @@ class User(APIUser, total=False):
 class UserAvatarDecorationData(TypedDict):
     asset: str
     sku_id: NotRequired[Snowflake]
+    expires_at: Optional[int]
 
 
 class PomeloAttempt(TypedDict):

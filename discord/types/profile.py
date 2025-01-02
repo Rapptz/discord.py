@@ -38,6 +38,7 @@ class ProfileUser(APIUser):
 
 class ProfileEffect(TypedDict):
     id: Snowflake
+    expires_at: Optional[int]
 
 
 class ProfileMetadata(TypedDict, total=False):
@@ -82,6 +83,7 @@ class Profile(TypedDict):
     guild_member_profile: NotRequired[Optional[ProfileMetadata]]
     guild_badges: List[ProfileBadge]
     mutual_guilds: NotRequired[List[MutualGuild]]
+    mutual_friends: NotRequired[List[APIUser]]
     mutual_friends_count: NotRequired[int]
     connected_accounts: List[PartialConnection]
     application_role_connections: NotRequired[List[RoleConnection]]

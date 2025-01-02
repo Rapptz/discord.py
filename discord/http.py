@@ -4439,10 +4439,12 @@ class HTTPClient:
         guild_id: Optional[Snowflake] = None,
         *,
         with_mutual_guilds: bool = True,
+        with_mutual_friends: bool = False,
         with_mutual_friends_count: bool = False,
     ) -> Response[profile.Profile]:
         params: Dict[str, Any] = {
             'with_mutual_guilds': str(with_mutual_guilds).lower(),
+            'with_mutual_friends': str(with_mutual_friends).lower(),
             'with_mutual_friends_count': str(with_mutual_friends_count).lower(),
         }
         if guild_id:

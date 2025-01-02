@@ -491,6 +491,16 @@ class User(Snowflake, Protocol):
         raise NotImplementedError
 
     @property
+    def avatar_decoration_expires_at(self) -> Optional[datetime]:
+        """Optional[:class:`datetime.datetime`]: Returns the avatar decoration's expiration time.
+
+        If the user does not have an expiring avatar decoration, ``None`` is returned.
+
+        .. versionadded:: 2.1
+        """
+        raise NotImplementedError
+
+    @property
     def default_avatar(self) -> Asset:
         """:class:`~discord.Asset`: Returns the default avatar for a given user."""
         raise NotImplementedError

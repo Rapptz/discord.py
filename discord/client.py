@@ -2523,8 +2523,7 @@ class Client:
             .. versionadded:: 2.0
         with_mutual_friends: :class:`bool`
             Whether to fetch mutual friends.
-            This fills in :attr:`.UserProfile.mutual_friends` and :attr:`.UserProfile.mutual_friends_count`,
-            but requires an extra API call.
+            This fills in :attr:`.UserProfile.mutual_friends` and :attr:`.UserProfile.mutual_friends_count`.
 
             .. versionadded:: 2.0
 
@@ -2533,7 +2532,7 @@ class Client:
         NotFound
             A user with this ID does not exist.
         Forbidden
-            You do not have a mutual with this user, and and the user is not a bot.
+            You do not have a mutual with this user, and the user is not a bot.
         HTTPException
             Fetching the profile failed.
 
@@ -2544,13 +2543,13 @@ class Client:
         """
         state = self._connection
         data = await state.http.get_user_profile(
-            user_id, with_mutual_guilds=with_mutual_guilds, with_mutual_friends_count=with_mutual_friends_count
+            user_id,
+            with_mutual_guilds=with_mutual_guilds,
+            with_mutual_friends_count=with_mutual_friends_count,
+            with_mutual_friends=with_mutual_friends,
         )
-        mutual_friends = None
-        if with_mutual_friends and not data['user'].get('bot', False):
-            mutual_friends = await state.http.get_mutual_friends(user_id)
 
-        return UserProfile(state=state, data=data, mutual_friends=mutual_friends)
+        return UserProfile(state=state, data=data)
 
     async def fetch_channel(self, channel_id: int, /) -> Union[GuildChannel, PrivateChannel, Thread]:
         """|coro|

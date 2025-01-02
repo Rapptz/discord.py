@@ -2702,8 +2702,7 @@ class Guild(Hashable):
             This fills in :attr:`.MemberProfile.mutual_friends_count`.
         with_mutual_friends: :class:`bool`
             Whether to fetch mutual friends.
-            This fills in :attr:`.MemberProfile.mutual_friends` and :attr:`.MemberProfile.mutual_friends_count`,
-            but requires an extra API call.
+            This fills in :attr:`.MemberProfile.mutual_friends` and :attr:`.MemberProfile.mutual_friends_count`.
 
         Raises
         -------
@@ -2727,16 +2726,14 @@ class Guild(Hashable):
             self.id,
             with_mutual_guilds=with_mutual_guilds,
             with_mutual_friends_count=with_mutual_friends_count,
+            with_mutual_friends=with_mutual_friends,
         )
         if 'guild_member_profile' not in data:
             raise InvalidData('Member is not in this guild')
         if 'guild_member' not in data:
             raise InvalidData('Member has blocked you')
-        mutual_friends = None
-        if with_mutual_friends and not data['user'].get('bot', False):
-            mutual_friends = await state.http.get_mutual_friends(member_id)
 
-        return MemberProfile(state=state, data=data, mutual_friends=mutual_friends, guild=self)
+        return MemberProfile(state=state, data=data, guild=self)
 
     async def fetch_ban(self, user: Snowflake) -> BanEntry:
         """|coro|

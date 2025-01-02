@@ -291,6 +291,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
         avatar: Optional[Asset]
         avatar_decoration: Optional[Asset]
         avatar_decoration_sku_id: Optional[int]
+        avatar_decoration_expires_at: Optional[datetime.datetime]
         note: Note
         relationship: Optional[Relationship]
         is_friend: Callable[[], bool]
@@ -1131,8 +1132,7 @@ class Member(discord.abc.Messageable, discord.abc.Connectable, _UserTag):
             .. versionadded:: 2.0
         with_mutual_friends: :class:`bool`
             Whether to fetch mutual friends.
-            This fills in :attr:`MemberProfile.mutual_friends` and :attr:`MemberProfile.mutual_friends_count`,
-            but requires an extra API call.
+            This fills in :attr:`MemberProfile.mutual_friends` and :attr:`MemberProfile.mutual_friends_count`.
 
             .. versionadded:: 2.0
 
