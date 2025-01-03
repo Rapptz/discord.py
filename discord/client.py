@@ -306,7 +306,7 @@ class Client:
 
         if VoiceClient.warn_nacl:
             VoiceClient.warn_nacl = False
-            _log.warning("PyNaCl is not installed, voice will NOT be supported")
+            _log.warning("libnacl is not installed, voice will NOT be supported")
 
     async def __aenter__(self) -> Self:
         await self._async_setup_hook()

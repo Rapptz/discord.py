@@ -58,10 +58,11 @@ if TYPE_CHECKING:
 has_nacl: bool
 
 try:
-    import nacl.secret  # type: ignore
-    import nacl.utils  # type: ignore
+    import libnacl  # type: ignore
+    from libnacl import CryptError
 
     has_nacl = True
+    has_aes = libnacl.HAS_AEAD_AES256GCM
 except ImportError:
     has_nacl = False
 
@@ -217,7 +218,7 @@ class VoiceClient(VoiceProtocol):
 
     def __init__(self, client: Client, channel: abc.Connectable) -> None:
         if not has_nacl:
-            raise RuntimeError("PyNaCl library needed in order to use voice")
+            raise RuntimeError("libnacl library needed in order to use voice")
 
         super().__init__(client, channel)
         state = client._connection
@@ -235,12 +236,15 @@ class VoiceClient(VoiceProtocol):
         self._connection: VoiceConnectionState = self.create_connection_state()
 
     warn_nacl: bool = not has_nacl
-    supported_modes: Tuple[SupportedModes, ...] = (
-        'aead_xchacha20_poly1305_rtpsize',
-        'xsalsa20_poly1305_lite',
-        'xsalsa20_poly1305_suffix',
-        'xsalsa20_poly1305',
-    )
+    if has_aes:
+        supported_modes: Tuple[SupportedModes, ...] = (
+            'aead_xchacha20_poly1305_rtpsize',
+            'aead_aes256_gcm_rtpsize',
+        )
+    else:
+        supported_modes: Tuple[SupportedModes, ...] = (
+            'aead_xchacha20_poly1305_rtpsize',
+        )
 
     @property
     def guild(self) -> Guild:
@@ -382,44 +386,28 @@ class VoiceClient(VoiceProtocol):
         return encrypt_packet(header, data)
 
     def _encrypt_aead_xchacha20_poly1305_rtpsize(self, header: bytes, data) -> bytes:
-        # Esentially the same as _lite
         # Uses an incrementing 32-bit integer which is appended to the payload
-        # The only other difference is we require AEAD with Additional Authenticated Data (the header)
-        box = nacl.secret.Aead(bytes(self.secret_key))
+        # Uses AEAD with Additional Authenticated Data (the header)
         nonce = bytearray(24)
 
         nonce[:4] = struct.pack('>I', self._incr_nonce)
         self.checked_add('_incr_nonce', 1, 4294967295)
 
-        return header + box.encrypt(bytes(data), bytes(header), bytes(nonce)).ciphertext + nonce[:4]
+        cyphertext = libnacl.crypto_aead_xchacha20poly1305_ietf_encrypt(bytes(data), bytes(header), bytes(nonce), bytes(self.secret_key))
 
-    def _encrypt_xsalsa20_poly1305(self, header: bytes, data) -> bytes:
-        # Deprecated. Removal: 18th Nov 2024. See:
-        # https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes
-        box = nacl.secret.SecretBox(bytes(self.secret_key))
-        nonce = bytearray(24)
-        nonce[:12] = header
+        return header + cyphertext + nonce[:4]
 
-        return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext
-
-    def _encrypt_xsalsa20_poly1305_suffix(self, header: bytes, data) -> bytes:
-        # Deprecated. Removal: 18th Nov 2024. See:
-        # https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes
-        box = nacl.secret.SecretBox(bytes(self.secret_key))
-        nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
-
-        return header + box.encrypt(bytes(data), nonce).ciphertext + nonce
-
-    def _encrypt_xsalsa20_poly1305_lite(self, header: bytes, data) -> bytes:
-        # Deprecated. Removal: 18th Nov 2024. See:
-        # https://discord.com/developers/docs/topics/voice-connections#transport-encryption-modes
-        box = nacl.secret.SecretBox(bytes(self.secret_key))
-        nonce = bytearray(24)
+    def _encrypt_aead_aes256_gcm_rtpsize(self, header: bytes, data) -> bytes:
+        # Uses an incrementing 32-bit integer which is appended to the payload
+        # Uses AEAD with Additional Authenticated Data (the header)
+        nonce = bytearray(12)
 
         nonce[:4] = struct.pack('>I', self._incr_nonce)
         self.checked_add('_incr_nonce', 1, 4294967295)
 
-        return header + box.encrypt(bytes(data), bytes(nonce)).ciphertext + nonce[:4]
+        cyphertext = libnacl.crypto_aead_aes256gcm_encrypt(bytes(data), bytes(header), bytes(nonce), bytes(self.secret_key))
+
+        return header + cyphertext + nonce[:4]
 
     def play(
         self,
