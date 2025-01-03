@@ -399,18 +399,26 @@ class FriendSuggestion(Hashable):
             f'<FriendSuggestion user={self.user!r} reasons={self.reasons!r} from_user_contacts={self.from_user_contacts!r}>'
         )
 
-    async def accept(self) -> None:
+    async def accept(self, *, friend_token: str = MISSING) -> None:
         """|coro|
 
         Accepts the friend suggestion.
         This creates a :class:`Relationship` of type :class:`RelationshipType.outgoing_request`.
+
+        Parameters
+        ----------
+        friend_token: :class:`str`
+            The friend token to accept the friend suggestion with.
+            This will bypass the user's friend request settings.
 
         Raises
         -------
         HTTPException
             Accepting the relationship failed.
         """
-        await self._state.http.add_relationship(self.user.id, action=RelationshipAction.friend_suggestion)
+        await self._state.http.add_relationship(
+            self.user.id, friend_token=friend_token or None, action=RelationshipAction.friend_suggestion
+        )
 
     async def delete(self) -> None:
         """|coro|

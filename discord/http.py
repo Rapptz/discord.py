@@ -2894,11 +2894,18 @@ class HTTPClient:
         return self.request(Route('DELETE', '/users/@me/relationships/{user_id}', user_id=user_id), context_properties=props)
 
     def add_relationship(
-        self, user_id: Snowflake, type: Optional[int] = None, *, action: RelationshipAction
+        self,
+        user_id: Snowflake,
+        type: Optional[int] = None,
+        *,
+        friend_token: Optional[str] = None,
+        action: RelationshipAction,
     ) -> Response[None]:
         payload = {}
         if type is not None:
             payload['type'] = type
+        if friend_token:
+            payload['friend_token'] = friend_token
 
         if action is RelationshipAction.accept_request:  # User Profile, Friends, DM Channel
             props = choice(
@@ -2948,6 +2955,9 @@ class HTTPClient:
 
     def delete_friend_suggestion(self, user_id: Snowflake) -> Response[None]:
         return self.request(Route('DELETE', '/friend-suggestions/{user_id}', user_id=user_id))
+
+    def get_friend_token(self) -> Response[user.FriendToken]:
+        return self.request(Route('GET', '/users/@me/friend-token'))
 
     # Connections
 
@@ -4389,6 +4399,7 @@ class HTTPClient:
         with_mutual_guilds: bool = True,
         with_mutual_friends: bool = False,
         with_mutual_friends_count: bool = False,
+        friend_token: Optional[str] = None,
     ) -> Response[profile.Profile]:
         params: Dict[str, Any] = {
             'with_mutual_guilds': str(with_mutual_guilds).lower(),
@@ -4397,6 +4408,8 @@ class HTTPClient:
         }
         if guild_id:
             params['guild_id'] = guild_id
+        if friend_token:
+            params['friend_token'] = friend_token
 
         return self.request(Route('GET', '/users/{user_id}/profile', user_id=user_id), params=params)
 
