@@ -100,6 +100,9 @@ from .enums import Locale, try_enum
 __all__ = (
     'oauth_url',
     'snowflake_time',
+    'snowflake_worker_id',
+    'snowflake_process_id',
+    'snowflake_increment',
     'time_snowflake',
     'find',
     'get',
@@ -439,6 +442,58 @@ def oauth_url(
     if state is not MISSING:
         url += f'&{urlencode({"state": state})}'
     return url
+
+def snowflake_worker_id(id: int, /) -> int:
+    """Returns the worker ID of the given snowflake
+    
+    .. versionadded:: 2.1
+
+    Parameters
+    -----------
+    id: :class:`int`
+        The snowflake ID.
+
+    Returns
+    --------
+    :class:`int`
+        The worker ID used to generate the snowflake.
+    """
+    return (id >> 17) & 0x1F
+
+def snowflake_process_id(id: int, /) -> int:
+    """Returns the process ID of the given snowflake
+    
+    .. versionadded:: 2.1
+
+    Parameters
+    -----------
+    id: :class:`int`
+        The snowflake ID.
+
+    Returns
+    --------
+    :class:`int`
+        The process ID used to generate the snowflake.
+    """
+    return (id >> 12) & 0x1F
+
+def snowflake_increment(id: int, /) -> int:
+    """Returns the increment of the given snowflake.
+    For every generated ID on that process, this number is incremented.
+
+    .. versionadded:: 2.1
+
+    Parameters
+    -----------
+    id: :class:`int`
+        The snowflake ID.
+
+    Returns
+    --------
+    :class:`int`
+        The increment of current snowflake.
+    """
+    return id & 0xFFF
 
 
 def snowflake_time(id: int, /) -> datetime.datetime:
