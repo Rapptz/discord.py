@@ -4253,11 +4253,35 @@ class HTTPClient:
     def ack_trial_offer(self, trial_id: Snowflake) -> Response[promotions.TrialOffer]:
         return self.request(Route('POST', '/users/@me/billing/user-trial-offer/{trial_id}/ack', trial_id=trial_id))
 
+    def get_user_offer(self, payment_gateway: Optional[int] = None) -> Response[promotions.UserOffer]:
+        payload = {}
+        if payment_gateway:
+            payload['payment_gateway'] = payment_gateway
+        return self.request(Route('POST', '/users/@me/billing/user-offer'), json=payload)
+
+    def ack_user_offer(
+        self, trial_offer_id: Optional[Snowflake] = None, discount_offer_id: Optional[Snowflake] = None
+    ) -> Response[Optional[promotions.UserOffer]]:
+        payload = {}
+        if trial_offer_id:
+            payload['user_trial_offer_id'] = trial_offer_id
+        if discount_offer_id:
+            payload['user_discount_offer_id'] = discount_offer_id
+        return self.request(Route('POST', '/users/@me/billing/user-offer/ack'), json=payload)
+
+    def redeem_user_offer(self, discount_offer_id: Snowflake) -> Response[None]:  # TODO: Unknown responses
+        return self.request(
+            Route('POST', '/users/@me/billing/user-offer/redeem'), json={'user_discount_offer_id': discount_offer_id}
+        )
+
     def get_pricing_promotion(self) -> Response[promotions.WrappedPricingPromotion]:
         return self.request(Route('GET', '/users/@me/billing/localized-pricing-promo'))
 
     def get_premium_usage(self) -> Response[billing.PremiumUsage]:
         return self.request(Route('GET', '/users/@me/premium-usage'))
+
+    def checkout_recovery_eligibility(self) -> Response[billing.CheckoutRecovery]:
+        return self.request(Route('GET', '/users/@me/billing/checkout-recovery'))
 
     # OAuth2
 
@@ -4572,6 +4596,9 @@ class HTTPClient:
 
     def get_channel_affinities(self) -> Response[user.ChannelAffinities]:
         return self.request(Route('GET', '/users/@me/affinities/channels'))
+
+    def get_premium_affinity(self) -> Response[List[user.PartialUser]]:
+        return self.request(Route('GET', '/users/@me/billing/nitro-affinity'))
 
     def get_country_code(self) -> Response[subscriptions.CountryCode]:
         return self.request(Route('GET', '/users/@me/billing/country-code'))

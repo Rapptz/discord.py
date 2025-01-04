@@ -82,7 +82,7 @@ from .team import Team
 from .billing import PaymentSource, PremiumUsage
 from .subscriptions import Subscription, SubscriptionItem, SubscriptionInvoice
 from .payments import Payment
-from .promotions import PricingPromotion, Promotion, TrialOffer
+from .promotions import PricingPromotion, Promotion, TrialOffer, UserOffer
 from .entitlements import Entitlement, Gift
 from .store import SKU, StoreListing, SubscriptionPlan
 from .guild_premium import *
@@ -4129,6 +4129,37 @@ class Client:
         )
         return [Promotion(state=state, data=d) for d in data]
 
+    async def user_offer(self, *, payment_gateway: Optional[PaymentGateway] = None) -> UserOffer:
+        """|coro|
+
+        Retrieves the current user offer for your account.
+        This includes the trial offer and discount offer.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        payment_gateway: Optional[:class:`.PaymentGateway`]
+            The payment gateway to fetch the user offer for.
+            Used to fetch user offers for :attr:`.PaymentGateway.apple`
+            and :attr:`.PaymentGateway.google` mobile platforms.
+
+        Raises
+        -------
+        NotFound
+            You do not have a user offer.
+        HTTPException
+            Retrieving the user offer failed.
+
+        Returns
+        -------
+        :class:`.UserOffer`
+            The user offer for your account.
+        """
+        state = self._connection
+        data = await state.http.get_user_offer(payment_gateway=int(payment_gateway) if payment_gateway else None)
+        return UserOffer(data=data, state=state)
+
     async def trial_offer(self) -> TrialOffer:
         """|coro|
 
@@ -4955,6 +4986,27 @@ class Client:
         data = await self._connection.http.get_premium_usage()
         return PremiumUsage(data=data)
 
+    async def checkout_recovery(self) -> bool:
+        """|coro|
+
+        Checks whether the client should prompt the user to
+        continue their premium purchase.
+
+        .. versionadded:: 2.1
+
+        Raises
+        ------
+        HTTPException
+            Retrieving the checkout recovery eligibility failed.
+
+        Returns
+        -------
+        :class:`bool`
+            Whether the client should prompt the user for checkout recovery.
+        """
+        data = await self._connection.http.checkout_recovery_eligibility()
+        return data.get('is_eligible', False)
+
     async def recent_mentions(
         self,
         *,
@@ -5136,6 +5188,28 @@ class Client:
         state = self._connection
         data = await state.http.get_channel_affinities()
         return [ChannelAffinity(data=d, state=state) for d in data['channel_affinities']]
+
+    async def premium_affinities(self) -> List[User]:
+        """|coro|
+
+        Retrieves a list of friends who have a premium subscription,
+        used to incentivize the user to purchase one as well.
+
+        .. versionadded:: 2.1
+
+        Raises
+        ------
+        HTTPException
+            Retrieving the premium affinities failed.
+
+        Returns
+        -------
+        List[:class:`.User`]
+            The users who share a premium subscription with the current user.
+        """
+        state = self._connection
+        data = await state.http.get_premium_affinity()
+        return [state.store_user(d) for d in data]
 
     async def join_active_developer_program(self, *, application: Snowflake, channel: Snowflake) -> int:
         """|coro|

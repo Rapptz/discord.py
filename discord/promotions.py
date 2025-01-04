@@ -39,11 +39,14 @@ if TYPE_CHECKING:
         ClaimedPromotion as ClaimedPromotionPayload,
         Promotion as PromotionPayload,
         TrialOffer as TrialOfferPayload,
+        DiscountOffer as DiscountOfferPayload,
+        UserOffer as UserOfferPayload,
         PricingPromotion as PricingPromotionPayload,
     )
 
 __all__ = (
     'Promotion',
+    'UserOffer',
     'TrialOffer',
     'PricingPromotion',
 )
@@ -201,6 +204,72 @@ class Promotion(Hashable):
         return data['code']
 
 
+class UserOffer:
+    """Represents a Discord user offer.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    ----------
+    trial_offer: Optional[:class:`TrialOffer`]
+        The trial offer.
+    discount_offer: Optional[:class:`DiscountOffer`]
+        The discount offer.
+    discount: Optional[:class:`DiscountOffer`]
+        The discount applied.
+    """
+
+    __slots__ = (
+        'trial_offer',
+        'discount_offer',
+        'discount',
+        '_state',
+    )
+
+    def __init__(self, *, data: UserOfferPayload, state: ConnectionState) -> None:
+        self._state = state
+        self._update(data)
+
+    def _update(self, data: UserOfferPayload) -> None:
+        state = self._state
+
+        self.trial_offer: Optional[TrialOffer] = None
+        trial_offer = data.get('user_trial_offer')
+        if trial_offer is not None:
+            self.trial_offer = TrialOffer(data=trial_offer, state=state)
+
+        self.discount_offer: Optional[DiscountOffer] = None
+        discount_offer = data.get('user_discount_offer')
+        if discount_offer is not None:
+            self.discount_offer = DiscountOffer(data=discount_offer, state=state)
+
+        self.discount: Optional[DiscountOffer] = None
+        discount = data.get('user_discount')
+        if discount is not None:
+            self.discount = DiscountOffer(data=discount, state=state)
+
+    async def ack(self) -> None:
+        """|coro|
+
+        Acknowledges both the trial and discount offers.
+
+        Raises
+        ------
+        NotFound
+            The offers were not found.
+        HTTPException
+            Acknowledging the offers failed.
+        """
+        # The client sets all offers to null if this 404s
+        # Unsure if I want to do that here
+        data = await self._state.http.ack_user_offer(
+            trial_offer_id=self.trial_offer.id if self.trial_offer else None,
+            discount_offer_id=self.discount_offer.id if self.discount_offer else None,
+        )
+        if data:
+            self._update(data)
+
+
 class TrialOffer(Hashable):
     """Represents a Discord user trial offer.
 
@@ -267,11 +336,104 @@ class TrialOffer(Hashable):
 
         Raises
         ------
+        NotFound
+            The trial offer was not found.
         HTTPException
             Acknowledging the trial offer failed.
         """
         data = await self._state.http.ack_trial_offer(self.id)
         self._update(data)
+
+
+class DiscountOffer(Hashable):
+    """Represents a Discord user discount offer.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two discount offers are equal.
+
+        .. describe:: x != y
+
+            Checks if two discount offers are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the discount offer's hash.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    ----------
+    id: :class:`int`
+        The ID of the discount offer.
+    expires_at: Optional[:class:`datetime.datetime`]
+        When the discount offer expires, if it has been acknowledged.
+    applied_at: Optional[:class:`datetime.datetime`]
+        When the discount offer was applied.
+    discount_id: :class:`int`
+        The ID of the discount.
+    """
+
+    __slots__ = (
+        'id',
+        'expires_at',
+        'applied_at',
+        'discount_id',
+        '_state',
+    )
+
+    def __init__(self, *, data: DiscountOfferPayload, state: ConnectionState) -> None:
+        self._state = state
+        self._update(data)
+
+    def _update(self, data: DiscountOfferPayload) -> None:
+        self.id: int = int(data['id'])
+        self.expires_at: Optional[datetime] = parse_time(data.get('expires_at'))
+        self.applied_at: Optional[datetime] = parse_time(data.get('applied_at'))
+        self.discount_id: int = int(data['discount_id'])
+
+    def __repr__(self) -> str:
+        return f'<DiscountOffer id={self.id} discount_id={self.discount_id}>'
+
+    def is_acked(self) -> bool:
+        """:class:`bool`: Checks if the discount offer has been acknowledged."""
+        return self.expires_at is not None
+
+    async def ack(self) -> None:
+        """|coro|
+
+        Acknowledges the discount offer.
+
+        Raises
+        ------
+        HTTPException
+            Acknowledging the discount offer failed.
+        """
+        data = await self._state.http.ack_user_offer(discount_offer_id=self.id)
+        if not data:
+            return
+
+        # The type checker has no idea what is going on here for some reason
+        if data.get('user_discount_offer') and int(data['user_discount_offer']['id']) == self.id:  # type: ignore
+            self._update(data['user_discount_offer'])  # type: ignore
+        elif data.get('user_discount') and int(data['user_discount']['id']) == self.id:  # type: ignore
+            self._update(data['user_discount'])  # type: ignore
+
+    async def redeem(self) -> None:
+        """|coro|
+
+        Applies the discount on the user's existing subscription.
+
+        Raises
+        ------
+        NotFound
+            The discount offer was not found.
+        HTTPException
+            Redeeming the discount offer failed.
+        """
+        await self._state.http.redeem_user_offer(self.id)
 
 
 class PricingPromotion:

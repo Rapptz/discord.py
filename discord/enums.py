@@ -1234,8 +1234,11 @@ class SubscriptionStatus(Enum):
     canceled = 3
     cancelled = 3
     ended = 4
-    inactive = 5
+    inactive = 5  # Guess, probably incorrect
     account_hold = 6
+    billing_retry = 7
+    paused = 8
+    pause_pending = 9
 
     def __int__(self) -> int:
         return self.value

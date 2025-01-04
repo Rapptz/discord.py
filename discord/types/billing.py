@@ -76,3 +76,7 @@ class PremiumUsage(TypedDict):
     total_large_uploads: PremiumUsageValue
     total_hd_streams: PremiumUsageValue
     hd_hours_streamed: PremiumUsageValue
+
+
+class CheckoutRecovery(TypedDict):
+    is_eligible: bool

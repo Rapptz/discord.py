@@ -55,11 +55,26 @@ class ClaimedPromotion(TypedDict):
     claimed_at: str
 
 
+class UserOffer(TypedDict):
+    user_trial_offer: Optional[TrialOffer]
+    user_discount_offer: Optional[DiscountOffer]
+    user_discount: Optional[DiscountOffer]
+
+
 class TrialOffer(TypedDict):
     id: Snowflake
     expires_at: Optional[str]
     trial_id: Snowflake
     subscription_trial: SubscriptionTrial
+    user_id: Snowflake
+
+
+class DiscountOffer(TypedDict):
+    id: Snowflake
+    expires_at: Optional[str]
+    applied_at: Optional[str]
+    discount_id: Snowflake
+    user_id: Snowflake
 
 
 class PromotionalPrice(TypedDict):

@@ -73,6 +73,7 @@ class SubscriptionInvoiceItem(TypedDict):
     subscription_plan_id: Snowflake
     subscription_plan_price: int
     discounts: List[SubscriptionDiscount]
+    sku_id: Optional[Snowflake]
     tenant_metadata: NotRequired[Dict[str, Any]]
 
 
@@ -87,8 +88,8 @@ class SubscriptionInvoice(TypedDict):
     items: List[SubscriptionInvoiceItem]
     current_period_start: str
     current_period_end: str
-    applied_discount_ids: NotRequired[List[Snowflake]]
-    applied_user_discounts: NotRequired[Dict[Snowflake, Optional[Any]]]
+    # applied_discount_ids: NotRequired[List[Snowflake]]
+    # applied_user_discounts: NotRequired[Dict[Snowflake, Optional[Any]]]
 
 
 class SubscriptionRenewalMutations(TypedDict, total=False):
@@ -118,10 +119,26 @@ class Subscription(PartialSubscription):
     canceled_at: NotRequired[str]
     country_code: Optional[str]
     trial_ends_at: NotRequired[str]
-    metadata: NotRequired[Dict[str, Any]]
+    metadata: NotRequired[SubscriptionMetadata]
     latest_invoice: NotRequired[SubscriptionInvoice]
     use_storekit_resubscribe: bool
     price: Optional[int]
+
+
+class SubscriptionMetadata(TypedDict, total=False):
+    is_egs: bool
+    is_holiday_promotion_2021: bool
+    ended_at: str
+    guild_id: Snowflake
+    application_subscription_guild_id: Snowflake
+    grace_period_expires_date: str
+    apple_grace_period_expires_date: str
+    google_grace_period_expires_date: str
+    google_original_expires_date: str
+    user_trial_offer_id: Snowflake
+    user_discount_offer_id: Snowflake  # guess
+    active_discount_id: Snowflake
+    active_discount_expires_at: str
 
 
 class SubscriptionTrial(TypedDict):

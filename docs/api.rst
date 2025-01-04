@@ -4166,6 +4166,12 @@ of :class:`enum.Enum`.
 
         The subscription is on account hold.
 
+    .. attribute:: billing_retry
+
+        The subscription failed to bill and will retry.
+
+        .. versionadded:: 2.1
+
 .. class:: SubscriptionInvoiceStatus
 
     Represents the status of a subscription invoice.
@@ -7334,9 +7340,19 @@ Promotion
 .. autoclass:: PricingPromotion()
     :members:
 
+.. attributetable:: UserOffer
+
+.. autoclass:: UserOffer()
+    :members:
+
 .. attributetable:: TrialOffer
 
 .. autoclass:: TrialOffer()
+    :members:
+
+.. attributetable:: DiscountOffer
+
+.. autoclass:: DiscountOffer()
     :members:
 
 Subscription

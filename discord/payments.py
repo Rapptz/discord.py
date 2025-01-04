@@ -121,6 +121,10 @@ class Payment(Hashable):
         A list of URLs to download VAT credit notices for refunds on this payment, if available.
     refund_disqualification_reasons: List[:class:`RefundDisqualificationReason`]
         A list of reasons why the payment cannot be refunded, if any.
+    error_code: Optional[:class:`int`]
+        The JSON error code that occurred during the payment, if any.
+
+        .. versionadded:: 2.1
     """
 
     __slots__ = (
@@ -144,6 +148,7 @@ class Payment(Hashable):
         'invoice_url',
         'refund_invoices_urls',
         'refund_disqualification_reasons',
+        'error_code',
         '_refundable',
         '_flags',
         '_state',
@@ -190,6 +195,9 @@ class Payment(Hashable):
         self.subscription: Optional[Subscription] = (
             Subscription(data=data['subscription'], state=state) if 'subscription' in data else None
         )
+
+        metadata = data.get('metadata') or {}
+        self.error_code: Optional[int] = metadata.get('billing_error_code')
 
     def __repr__(self) -> str:
         return f'<Payment id={self.id} amount={self.amount} currency={self.currency} status={self.status}>'
