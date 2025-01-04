@@ -29,11 +29,16 @@ from .mixins import Hashable
 
 if TYPE_CHECKING:
     from .state import ConnectionState
-    from .types.user import UserAffinity as UserAffinityPayload, GuildAffinity as GuildAffinityPayload
+    from .types.user import (
+        UserAffinity as UserAffinityPayload,
+        GuildAffinity as GuildAffinityPayload,
+        ChannelAffinity as ChannelAffinityPayload,
+    )
 
 __all__ = (
     'UserAffinity',
     'GuildAffinity',
+    'ChannelAffinity',
 )
 
 
@@ -137,3 +142,51 @@ class GuildAffinity(Hashable):
     def guild(self):
         """Optional[:class:`Guild`]: The guild being compared."""
         return self._state._get_guild(self.guild_id)
+
+
+class ChannelAffinity(Hashable):
+    """Represents a user's affinity with a channel.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two affinities are equal.
+
+        .. describe:: x != y
+
+            Checks if two affinities are not equal.
+
+        .. describe:: hash(x)
+
+            Return the affinity's hash.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    ----------
+    channel_id: :class:`int`
+        The ID of the channel being compared.
+    affinity: :class:`float`
+        The affinity score.
+    """
+
+    __slots__ = ('_state', 'channel_id', 'affinity')
+
+    def __init__(self, *, state: ConnectionState, data: ChannelAffinityPayload):
+        self._state = state
+        self.channel_id = int(data['channel_id'])
+        self.affinity = data['affinity']
+
+    def __repr__(self) -> str:
+        return f'<ChannelAffinity guild_id={self.channel_id} affinity={self.affinity}>'
+
+    @property
+    def id(self) -> int:
+        """:class:`int`: The ID of the channel being compared."""
+        return self.channel_id
+
+    @property
+    def channel(self):
+        """Optional[Union[:class:`.abc.GuildChannel`, :class:`.Thread`, :class:`.abc.PrivateChannel`]]: The channel being compared."""
+        return self._state.get_channel(self.channel_id)

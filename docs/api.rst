@@ -7044,6 +7044,9 @@ Affinity
 .. autoclass:: GuildAffinity()
     :members:
 
+.. autoclass:: ChannelAffinity()
+    :members:
+
 Billing
 ~~~~~~~
 

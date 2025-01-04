@@ -4570,6 +4570,9 @@ class HTTPClient:
     def get_guild_affinities(self) -> Response[user.GuildAffinities]:
         return self.request(Route('GET', '/users/@me/affinities/guilds'))
 
+    def get_channel_affinities(self) -> Response[user.ChannelAffinities]:
+        return self.request(Route('GET', '/users/@me/affinities/channels'))
+
     def get_country_code(self) -> Response[subscriptions.CountryCode]:
         return self.request(Route('GET', '/users/@me/billing/country-code'))
 

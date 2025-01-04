@@ -230,6 +230,15 @@ class GuildAffinities(TypedDict):
     guild_affinities: List[GuildAffinity]
 
 
+class ChannelAffinity(TypedDict):
+    channel_id: Snowflake
+    affinity: float
+
+
+class ChannelAffinities(TypedDict):
+    channel_affinities: List[ChannelAffinity]
+
+
 class Note(TypedDict):
     note: str
     user_id: Snowflake

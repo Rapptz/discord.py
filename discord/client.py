@@ -5114,6 +5114,29 @@ class Client:
         data = await state.http.get_guild_affinities()
         return [GuildAffinity(data=d, state=state) for d in data['guild_affinities']]
 
+    async def channel_affinities(self) -> List[ChannelAffinity]:
+        """|coro|
+
+        Retrieves the channel affinities for the current user.
+
+        Channel affinities are the channels you interact with most frecently.
+
+        .. versionadded:: 2.1
+
+        Raises
+        ------
+        HTTPException
+            Retrieving the channel affinities failed.
+
+        Returns
+        -------
+        List[:class:`.ChannelAffinity`]
+            The channel affinities.
+        """
+        state = self._connection
+        data = await state.http.get_channel_affinities()
+        return [ChannelAffinity(data=d, state=state) for d in data['channel_affinities']]
+
     async def join_active_developer_program(self, *, application: Snowflake, channel: Snowflake) -> int:
         """|coro|
 
