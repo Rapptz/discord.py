@@ -3171,7 +3171,7 @@ class Client:
         Parameters
         ----------
         name: :class:`str`
-            The emoji name. Must be at least 2 characters.
+            The emoji name. Must be between 2 and 32 characters long.
         image: :class:`bytes`
             The :term:`py:bytes-like object` representing the image data to use.
             Only JPG, PNG and GIF images are supported.
