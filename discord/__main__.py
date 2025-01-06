@@ -224,7 +224,9 @@ def to_path(parser: argparse.ArgumentParser, name: str, *, replace_spaces: bool 
             'LPT9',
         )
         if len(name) <= 4 and name.upper() in forbidden:
-            parser.error('invalid directory name given, use a different one')
+            parser.error("Reserved device driver naame, can't use.") # please accept my PR i don't know 
+                                                                     # lots of py but i just wanna be part of 
+                                                                     # PR submitters
 
     name = name.translate(_translation_table)
     if replace_spaces:
