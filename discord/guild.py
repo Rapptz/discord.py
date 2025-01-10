@@ -55,7 +55,7 @@ from .role import Role
 from .member import Member, VoiceState
 from .emoji import Emoji
 from .errors import ClientException, InvalidData
-from .permissions import PermissionOverwrite
+from .permissions import Permissions, PermissionOverwrite
 from .colour import Colour
 from .errors import ClientException
 from .channel import *
@@ -116,7 +116,6 @@ if TYPE_CHECKING:
         Thread as ThreadPayload,
     )
     from .types.voice import BaseVoiceState as VoiceStatePayload
-    from .permissions import Permissions
     from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel
     from .template import Template
     from .webhook import Webhook
