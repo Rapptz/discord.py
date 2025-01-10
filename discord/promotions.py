@@ -48,6 +48,7 @@ __all__ = (
     'Promotion',
     'UserOffer',
     'TrialOffer',
+    'DiscountOffer',
     'PricingPromotion',
 )
 
