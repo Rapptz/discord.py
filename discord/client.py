@@ -5204,7 +5204,7 @@ class Client:
 
         Returns
         -------
-        List[:class:`.User`]
+        List[:class:`discord.User`]
             The users who share a premium subscription with the current user.
         """
         state = self._connection
