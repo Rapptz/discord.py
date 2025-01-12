@@ -193,7 +193,7 @@ class Interaction(Generic[ClientT]):
         self._from_data(data)
 
     def __repr__(self) -> str:
-        return f'{self.__class__.__name__} id={self.id} type={self.type!r} guild_id={self.guild_id!r} user={self.user!r}'
+        return f'<{self.__class__.__name__} id={self.id} type={self.type!r} guild_id={self.guild_id!r} user={self.user!r}>'
 
     def _from_data(self, data: InteractionPayload):
         self.id: int = int(data['id'])
