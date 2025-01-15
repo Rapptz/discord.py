@@ -328,9 +328,9 @@ def oauth_url(
     guild: Snowflake = MISSING,
     redirect_uri: str = MISSING,
     scopes: Iterable[str] = MISSING,
-    scopeless: bool = False,
     disable_guild_select: bool = False,
     state: str = MISSING,
+    scopeless: bool = False,
 ) -> str:
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
