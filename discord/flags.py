@@ -2738,6 +2738,16 @@ class InviteFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the invite is a guest invite. Guest invites grant temporary membership for the purposes of joining a voice channel."""
         return 1 << 0
 
+    @flag_value
+    def viewed(self):
+        """:class:`bool`: Returns ``True`` if the invite has been viewed."""
+        return 1 << 1
+
+    @flag_value
+    def enhanced(self):
+        """:class:`bool`: Returns ``True`` if the invite is enhanced."""
+        return 1 << 2
+
 
 @fill_with_flags()
 class AttachmentFlags(BaseFlags):
