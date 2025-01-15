@@ -135,7 +135,7 @@ class Parameter(inspect.Parameter):
         if displayed_name is MISSING:
             displayed_name = self._displayed_name
 
-        ret =self.__class__(
+        ret = self.__class__(
             name=name,
             kind=kind,
             default=default,
