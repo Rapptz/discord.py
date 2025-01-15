@@ -2583,6 +2583,18 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
     def _sorting_bucket(self) -> int:
         return ChannelType.text.value
 
+    @property
+    def _scheduled_event_entity_type(self) -> Optional[EntityType]:
+        return None
+
+    @property
+    def members(self) -> List[Member]:
+        """List[:class:`Member`]: Returns all members that can see this channel.
+
+        .. versionadded:: 2.1
+        """
+        return [m for m in self.guild.members if self.permissions_for(m).read_messages]
+
     @utils.copy_doc(discord.abc.GuildChannel.permissions_for)
     def permissions_for(self, obj: Union[Member, Role], /) -> Permissions:
         base = super().permissions_for(obj)
