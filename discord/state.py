@@ -30,6 +30,7 @@ import copy
 import datetime
 import logging
 from typing import (
+    ClassVar,
     Dict,
     Final,
     Optional,
@@ -894,6 +895,8 @@ class ClientStatus:
 class Presence:
     __slots__ = ('client_status', 'activities')
 
+    _OFFLINE: ClassVar[Self] = MISSING
+
     def __init__(self, data: gw.BasePresenceUpdate, state: ConnectionState, /) -> None:
         self.client_status: ClientStatus = ClientStatus(data['status'], data.get('client_status'))
         self.activities: Tuple[ActivityTypes, ...] = tuple(create_activity(d, state) for d in data['activities'])
@@ -922,10 +925,13 @@ class Presence:
 
     @classmethod
     def _offline(cls) -> Self:
-        self = cls.__new__(cls)  # bypass __init__
-        self.client_status = ClientStatus()
-        self.activities = ()
-        return self
+        if cls._OFFLINE is MISSING:
+            self = cls.__new__(cls)  # bypass __init__
+            self.client_status = ClientStatus()
+            self.activities = ()
+            cls._OFFLINE = self
+
+        return cls._OFFLINE
 
     @classmethod
     def _copy(cls, presence: Self, /) -> Self:
