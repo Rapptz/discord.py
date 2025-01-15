@@ -2824,6 +2824,7 @@ class Client:
         user: Optional[Snowflake] = None,
         guild: Optional[Snowflake] = None,
         exclude_ended: bool = False,
+        exclude_deleted: bool = True,
     ) -> AsyncIterator[Entitlement]:
         """Retrieves an :term:`asynchronous iterator` of the :class:`.Entitlement` that applications has.
 
@@ -2865,6 +2866,10 @@ class Client:
             The guild to filter by.
         exclude_ended: :class:`bool`
             Whether to exclude ended entitlements. Defaults to ``False``.
+        exclude_deleted: :class:`bool`
+            Whether to exclude deleted entitlements. Defaults to ``True``.
+
+            .. versionadded:: 2.5
 
         Raises
         -------
@@ -2901,6 +2906,7 @@ class Client:
                 user_id=user.id if user else None,
                 guild_id=guild.id if guild else None,
                 exclude_ended=exclude_ended,
+                exclude_deleted=exclude_deleted,
             )
 
             if data:
