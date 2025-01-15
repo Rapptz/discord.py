@@ -355,8 +355,6 @@ def oauth_url(
         An optional valid list of scopes. Defaults to ``('bot', 'applications.commands')``.
 
         .. versionadded:: 1.7
-    scopeless: :class:`bool`
-        Whether to have the default scopes in the OAuth2 URL.
     disable_guild_select: :class:`bool`
         Whether to disallow the user from changing the guild dropdown.
 
@@ -365,6 +363,10 @@ def oauth_url(
         The state to return after the authorization.
 
         .. versionadded:: 2.0
+    scopeless: :class:`bool`
+        Whether to have the default scopes in the OAuth2 URL.
+
+        .. versionadded:: 2.5
 
     Returns
     --------
