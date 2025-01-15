@@ -7,7 +7,7 @@ The library follows a `semantic versioning principle <https://semver.org/>`_ whi
 
 The first thing to keep in mind is that breaking changes only apply to **publicly documented functions and classes**. If it's not listed in the documentation here then it is not part of the public API and is thus bound to change. This includes attributes that start with an underscore or functions without an underscore that are not documented.
 
-However, the Discord user API is in constant flux, so sometimes breaking changes may creep in.
+However, the Discord user API is in constant flux, so sometimes breaking changes may creep in. The guarantee is that patch releases will not introduce breaking changes, but minor releases may introduce minor ones. Major breaking changes will continue to be reserved for major releases.
 
 .. note::
 
