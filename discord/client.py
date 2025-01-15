@@ -53,7 +53,7 @@ from .user import User, ClientUser
 from .invite import Invite
 from .template import Template
 from .widget import Widget
-from .guild import Guild
+from .guild import Guild, GuildPreview
 from .emoji import Emoji
 from .channel import _threaded_channel_factory, PartialMessageable
 from .enums import ChannelType, EntitlementOwnerType
@@ -2355,6 +2355,29 @@ class Client:
         """
         data = await self.http.get_guild(guild_id, with_counts=with_counts)
         return Guild(data=data, state=self._connection)
+
+    async def fetch_guild_preview(self, guild_id: int) -> GuildPreview:
+        """|coro|
+
+        Retrieves a preview of a :class:`.Guild` from an ID. If the guild is discoverable,
+        you don't have to be a member of it.
+
+        .. versionadded:: 2.5
+
+        Raises
+        ------
+        NotFound
+            The guild doesn't exist, or is not discoverable and you are not in it.
+        HTTPException
+            Getting the guild failed.
+
+        Returns
+        --------
+        :class:`.GuildPreview`
+            The guild preview from the ID.
+        """
+        data = await self.http.get_guild_preview(guild_id)
+        return GuildPreview(data=data, state=self._connection)
 
     async def create_guild(
         self,

@@ -4815,6 +4815,13 @@ Guild
 
         :type: List[:class:`Object`]
 
+GuildPreview
+~~~~~~~~~~~~
+
+.. attributetable:: GuildPreview
+
+.. autoclass:: GuildPreview
+    :members:
 
 ScheduledEvent
 ~~~~~~~~~~~~~~
