@@ -178,8 +178,7 @@ class MessageDeleteBulkEvent(TypedDict):
     guild_id: NotRequired[Snowflake]
 
 
-class MessageUpdateEvent(Message):
-    channel_id: Snowflake
+MessageUpdateEvent = MessageCreateEvent
 
 
 class MessageReactionAddEvent(TypedDict):
