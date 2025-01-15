@@ -369,7 +369,7 @@ class Client:
             if status is None:
                 status = getattr(state.settings, 'status', None) or Status.unknown
             _log.debug('Setting initial presence to %s %s', status, activities)
-            self.loop.create_task(self.change_presence(activities=activities, status=status))
+            self.loop.create_task(self.change_presence(activities=activities, status=status, edit_settings=self._sync_presences))
 
     @property
     def latency(self) -> float:
