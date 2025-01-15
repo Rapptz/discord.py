@@ -528,7 +528,7 @@ class MessageSnapshot:
         self.created_at: datetime.datetime = utils.parse_time(data['timestamp'])
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
         self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
-        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('stickers_items', [])]
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
 
         self.components: List[MessageComponentType] = []
         for component_data in data.get('components', []):
