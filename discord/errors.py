@@ -238,10 +238,6 @@ class CaptchaRequired(HTTPException):
         The CAPTCHA service to use. Usually ``hcaptcha``.
 
         .. versionadded:: 2.1
-    sitekey: :class:`str`
-        The CAPTCHA sitekey to use.
-
-        .. versionadded:: 2.1
     rqdata: Optional[:class:`str`]
         The enterprise hCaptcha request data.
 
@@ -250,9 +246,14 @@ class CaptchaRequired(HTTPException):
         The enterprise hCaptcha request token.
 
         .. versionadded:: 2.1
+    should_serve_invisible: :class:`bool`
+        Whether the CAPTCHA should be invisible.
+
+        .. versionadded:: 2.1
     """
 
     RECAPTCHA_SITEKEY: Final[str] = '6Lef5iQTAAAAAKeIvIY-DeexoO3gj7ryl9rLMEnn'
+    RECAPTCHA_ENTERPRISE_SITEKEY: Final[str] = '6LeYqFcqAAAAAD6iZesmNgVulsO4PkpBdr6NVG6M'
 
     __slots__ = ('errors', 'service', 'sitekey')
 
@@ -260,10 +261,23 @@ class CaptchaRequired(HTTPException):
         super().__init__(response, {'code': -1, 'message': 'Captcha required'})
         self.json: CaptchaPayload = message
         self.errors: List[str] = message['captcha_key']
-        self.service: CaptchaService = message.get('captcha_service', 'hcaptcha')
-        self.sitekey: str = message.get('captcha_sitekey') or self.RECAPTCHA_SITEKEY
+        self.service: CaptchaService = message.get('captcha_service', 'recaptcha')
+        self._sitekey: str | None = message.get('captcha_sitekey')
         self.rqdata: Optional[str] = message.get('captcha_rqdata')
         self.rqtoken: Optional[str] = message.get('captcha_rqtoken')
+        self.should_serve_invisible: bool = message.get('should_serve_invisible', False)
+
+    @property
+    def sitekey(self) -> str:
+        """:class:`str`: The CAPTCHA sitekey to use.
+
+        .. versionadded:: 2.1
+        """
+        if self._sitekey is not None:
+            return self._sitekey
+        elif self.service == 'recaptcha_enterprise':
+            return self.RECAPTCHA_ENTERPRISE_SITEKEY
+        return self.RECAPTCHA_SITEKEY
 
 
 class InvalidData(ClientException):

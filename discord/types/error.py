@@ -46,12 +46,13 @@ class Error(TypedDict):
     errors: NotRequired[FormErrors]
 
 
-CaptchaService = Literal['hcaptcha', 'recaptcha']
+CaptchaService = Literal['hcaptcha', 'recaptcha', 'recaptcha_enterprise']
 
 
 class CaptchaRequired(TypedDict):
     captcha_key: List[str]
-    captcha_service: CaptchaService
+    captcha_service: NotRequired[CaptchaService]
     captcha_sitekey: Optional[str]
     captcha_rqdata: NotRequired[str]
     captcha_rqtoken: NotRequired[str]
+    should_serve_invisible: NotRequired[bool]
