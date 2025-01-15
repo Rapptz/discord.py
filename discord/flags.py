@@ -66,6 +66,7 @@ __all__ = (
     'GiftFlags',
     'LibraryApplicationFlags',
     'ApplicationDiscoveryFlags',
+    'OverlayMethodFlags',
     'FriendSourceFlags',
     'FriendDiscoveryFlags',
     'HubProgressFlags',
@@ -1269,14 +1270,7 @@ class ApplicationFlags(BaseFlags):
         rather than using this raw value.
     """
 
-    # Commented-out flags are no longer used; they are kept here for historical purposes
-
     __slots__ = ()
-
-    # @flag_value
-    # def embedded_released(self):
-    #     """:class:`bool`: Returns ``True`` if the embedded application is released to the public."""
-    #     return 1 << 1
 
     @flag_value
     def managed_emoji(self):
@@ -1293,11 +1287,6 @@ class ApplicationFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the application has the ability to create group DMs without limit."""
         return 1 << 4
 
-    # @flag_value
-    # def rpc_private_beta(self):
-    #     """:class:`bool`: Returns ``True`` if the application has the ability to access the client RPC server."""
-    #     return 1 << 5
-
     @flag_value
     def automod_badge(self):
         """:class:`bool`: Returns ``True`` if the application has created at least 100 automod rules across all guilds.
@@ -1306,25 +1295,21 @@ class ApplicationFlags(BaseFlags):
         """
         return 1 << 6
 
-    # @flag_value
-    # def allow_assets(self):
-    #     """:class:`bool`: Returns ``True`` if the application has the ability to use activity assets."""
-    #     return 1 << 8
+    @flag_value
+    def game_profile_disabled(self):
+        """:class:`bool`: Returns ``True`` if the application has its game profile page disabled.
 
-    # @flag_value
-    # def allow_activity_action_spectate(self):
-    #     """:class:`bool`: Returns ``True`` if the application has the ability to enable spectating activities."""
-    #     return 1 << 9
+        .. versionadded:: 2.1
+        """
+        return 1 << 7
 
-    # @flag_value
-    # def allow_activity_action_join_request(self):
-    #     """:class:`bool`: Returns ``True`` if the application has the ability to enable activity join requests."""
-    #     return 1 << 10
+    @flag_value
+    def public_oauth2_client(self):
+        """:class:`bool`: Returns ``True`` if the application's OAuth2 credentials are public.
 
-    # @flag_value
-    # def rpc_has_connected(self):
-    #     """:class:`bool`: Returns ``True`` if the application has accessed the client RPC server before."""
-    #     return 1 << 11
+        .. versionadded:: 2.1
+        """
+        return 1 << 8
 
     @flag_value
     def gateway_presence(self):
@@ -1394,6 +1379,26 @@ class ApplicationFlags(BaseFlags):
         This means that it has had any global command executed in the past 30 days.
         """
         return 1 << 24
+
+    @flag_value
+    def iframe_modal(self):
+        """:class:`bool`: Returns ``True`` if the application can use iframes within modals."""
+        return 1 << 26
+
+    @flag_value
+    def social_layer_integration(self):
+        """:class:`bool`: Returns ``True`` if the application can use the social layer SDK."""
+        return 1 << 27
+
+    @flag_value
+    def promoted(self):
+        """:class:`bool`: Returns ``True`` if the application is promoted by Discord."""
+        return 1 << 29
+
+    @flag_value
+    def partner(self):
+        """:class:`bool`: Returns ``True`` if the application is a Discord partner."""
+        return 1 << 30
 
 
 @fill_with_flags()
@@ -2088,10 +2093,62 @@ class ApplicationDiscoveryFlags(BaseFlags):
         """:class:`bool`: Returns ``True`` if the application's role connections metadata is safe for work."""
         return 1 << 15
 
+
+@fill_with_flags()
+class OverlayMethodFlags(BaseFlags):
+    r"""Wraps up the Discord application overlay method flags.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two OverlayMethodFlags are equal.
+        .. describe:: x != y
+
+            Checks if two OverlayMethodFlags are not equal.
+        .. describe:: x | y, x |= y
+
+            Returns a OverlayMethodFlags instance with all enabled flags from
+            both x and y.
+        .. describe:: x & y, x &= y
+
+            Returns a OverlayMethodFlags instance with only flags enabled on
+            both x and y.
+        .. describe:: x ^ y, x ^= y
+
+            Returns a OverlayMethodFlags instance with only flags enabled on
+            only one of x or y, not on both.
+        .. describe:: ~x
+
+            Returns a OverlayMethodFlags instance with all flags inverted from x.
+        .. describe:: hash(x)
+
+            Return the flag's hash.
+        .. describe:: iter(x)
+
+            Returns an iterator of ``(name, value)`` pairs. This allows it
+            to be, for example, constructed as a dict or a list of pairs.
+            Note that aliases are not shown.
+        .. describe:: bool(b)
+
+            Returns whether any flag is set to ``True``.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    -----------
+    value: :class:`int`
+        The raw value. This value is a bit array field of a 53-bit integer
+        representing the currently available flags. You should query
+        flags via the properties rather than using this raw value.
+    """
+
+    __slots__ = ()
+
     @flag_value
-    def eligible(self):
-        """:class:`bool`: Returns ``True`` if the application has met all the above criteria and is eligible for discovery."""
-        return 1 << 16
+    def out_of_process(self):
+        """:class:`bool`: Returns ``True`` if the overlay can be rendered out of process for this application."""
+        return 1 << 0
 
 
 @fill_with_flags()

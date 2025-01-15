@@ -443,9 +443,10 @@ def oauth_url(
         url += f'&{urlencode({"state": state})}'
     return url
 
+
 def snowflake_worker_id(id: int, /) -> int:
     """Returns the worker ID of the given snowflake
-    
+
     .. versionadded:: 2.1
 
     Parameters
@@ -460,9 +461,10 @@ def snowflake_worker_id(id: int, /) -> int:
     """
     return (id >> 17) & 0x1F
 
+
 def snowflake_process_id(id: int, /) -> int:
     """Returns the process ID of the given snowflake
-    
+
     .. versionadded:: 2.1
 
     Parameters
@@ -476,6 +478,7 @@ def snowflake_process_id(id: int, /) -> int:
         The process ID used to generate the snowflake.
     """
     return (id >> 12) & 0x1F
+
 
 def snowflake_increment(id: int, /) -> int:
     """Returns the increment of the given snowflake.

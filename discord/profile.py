@@ -302,6 +302,10 @@ class ApplicationProfile(Hashable):
         The application's ID.
     verified: :class:`bool`
         Indicates if the application is verified.
+    storefront_available: :class:`bool`
+        Indicates if the application has public subscriptions or products available for purchase.
+
+        .. versionadded:: 2.1
     popular_application_command_ids: List[:class:`int`]
         A list of the IDs of the application's popular commands.
     primary_sku_id: Optional[:class:`int`]
@@ -316,6 +320,7 @@ class ApplicationProfile(Hashable):
     __slots__ = (
         'id',
         'verified',
+        'storefront_available',
         'popular_application_command_ids',
         'primary_sku_id',
         '_flags',
@@ -326,6 +331,7 @@ class ApplicationProfile(Hashable):
     def __init__(self, data: ProfileApplicationPayload) -> None:
         self.id: int = int(data['id'])
         self.verified: bool = data.get('verified', False)
+        self.storefront_available: bool = data.get('storefront_available', False)
         self.popular_application_command_ids: List[int] = [int(id) for id in data.get('popular_application_command_ids', [])]
         self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
         self._flags: int = data.get('flags', 0)

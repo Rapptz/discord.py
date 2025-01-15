@@ -61,6 +61,7 @@ class MutualGuild(TypedDict):
 class ProfileApplication(TypedDict):
     id: Snowflake
     verified: bool
+    storefront_available: bool
     popular_application_command_ids: NotRequired[List[Snowflake]]
     primary_sku_id: NotRequired[Snowflake]
     flags: int

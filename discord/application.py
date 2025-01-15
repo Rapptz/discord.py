@@ -50,7 +50,7 @@ from .enums import (
     UserFlags,
     try_enum,
 )
-from .flags import ApplicationDiscoveryFlags, ApplicationFlags
+from .flags import ApplicationDiscoveryFlags, ApplicationFlags, OverlayMethodFlags
 from .mixins import Hashable
 from .object import OLDEST_OBJECT, Object
 from .permissions import Permissions
@@ -83,6 +83,7 @@ if TYPE_CHECKING:
         Branch as BranchPayload,
         Build as BuildPayload,
         Company as CompanyPayload,
+        DetectableApplication as DetectableApplicationPayload,
         EmbeddedActivityConfig as EmbeddedActivityConfigPayload,
         EmbeddedActivityPlatform as EmbeddedActivityPlatformValues,
         EmbeddedActivityPlatformConfig as EmbeddedActivityPlatformConfigPayload,
@@ -682,13 +683,13 @@ class ApplicationBot(User):
 
     Attributes
     -----------
-    application: :class:`Application`
+    application: :class:`PartialApplication`
         The application that the bot is attached to.
     """
 
     __slots__ = ('application',)
 
-    def __init__(self, *, data: PartialUserPayload, state: ConnectionState, application: Application):
+    def __init__(self, *, data: PartialUserPayload, state: ConnectionState, application: PartialApplication):
         super().__init__(state=state, data=data)
         self.application = application
 
@@ -852,7 +853,7 @@ class ApplicationExecutable:
             The type of this attribute has changed to :class:`OperatingSystem`.
     launcher: :class:`bool`
         Whether the executable is a launcher or not.
-    application: :class:`PartialApplication`
+    application: Union[:class:`PartialApplication`, :class:`DetectableApplication`]
         The application that the executable is for.
     """
 
@@ -863,7 +864,7 @@ class ApplicationExecutable:
         'application',
     )
 
-    def __init__(self, *, data: ApplicationExecutablePayload, application: PartialApplication):
+    def __init__(self, *, data: ApplicationExecutablePayload, application: _BaseApplication):
         self.name: str = data['name']
         self.os: OperatingSystem = OperatingSystem.from_string(data['os'])
         self.launcher: bool = data['is_launcher']
@@ -1736,8 +1737,137 @@ class ApplicationTester(User):
         await self._state.http.delete_app_whitelist(self.application.id, self.id)
 
 
-class PartialApplication(Hashable):
-    """Represents a partial Application.
+class _BaseApplication(Hashable):
+    __slots__ = (
+        '_state',
+        'id',
+        'name',
+        'aliases',
+        'executables',
+        'hook',
+        'overlay',
+        'overlay_warn',
+        'overlay_compatibility_hook',
+        '_overlay_methods',
+    )
+
+    def __init__(self, *, state: ConnectionState, data: DetectableApplicationPayload):
+        self._state: ConnectionState = state
+        self._update(data)
+
+    def _update(self, data: DetectableApplicationPayload) -> None:
+        self.id: int = int(data['id'])
+        self.name: str = data['name']
+        self.aliases: List[str] = data.get('aliases', [])
+        self.executables: List[ApplicationExecutable] = [
+            ApplicationExecutable(data=e, application=self) for e in data.get('executables', [])
+        ]
+        self.hook: bool = data.get('hook', False)
+        self.overlay: bool = data.get('overlay', False)
+        self.overlay_warn: bool = data.get('overlay_warn', False)
+        self.overlay_compatibility_hook: bool = data.get('overlay_compatibility_hook', False)
+        self._overlay_methods: int = data.get('overlay_methods', 0)
+
+    async def ticket(self) -> str:
+        """|coro|
+
+        Retrieves the license ticket for this application.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the ticket failed.
+
+        Returns
+        --------
+        :class:`str`
+            The ticket retrieved.
+        """
+        state = self._state
+        data = await state.http.get_app_ticket(self.id)
+        return data['ticket']
+
+    async def entitlement_ticket(self) -> str:
+        """|coro|
+
+        Retrieves the entitlement ticket for this application.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the ticket failed.
+
+        Returns
+        --------
+        :class:`str`
+            The ticket retrieved.
+        """
+        state = self._state
+        data = await state.http.get_app_entitlement_ticket(self.id)
+        return data['ticket']
+
+
+class DetectableApplication(_BaseApplication):
+    """Represents a detectable application.
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two applications are equal.
+
+        .. describe:: x != y
+
+            Checks if two applications are not equal.
+
+        .. describe:: hash(x)
+
+            Return the application's hash.
+
+        .. describe:: str(x)
+
+            Returns the application's name.
+
+    .. versionadded:: 2.1
+
+    Attributes
+    -------------
+    id: :class:`int`
+        The application ID.
+    name: :class:`str`
+        The application name.
+    hook: :class:`bool`
+        Whether the Discord client can hook into the application directly.
+    overlay: :class:`bool`
+        Whether the application supports the `Discord overlay <https://support.discord.com/hc/en-us/articles/217659737-Game-Overlay-101>`_.
+    overlay_warn: :class:`bool`
+        Whether the Discord overlay is known to be problematic with the application.
+    overlay_compatibility_hook: :class:`bool`
+        Whether to use the compatibility hook for the Discord overlay.
+    aliases: List[:class:`str`]
+        A list of aliases that can be used to identify the application.
+    executables: List[:class:`ApplicationExecutable`]
+        A list of executables that are the application's.
+    """
+
+    __slots__ = ()
+
+    def __repr__(self) -> str:
+        return f'<DetectableApplication id={self.id} name={self.name!r} overlay={self.overlay}>'
+
+    @property
+    def created_at(self) -> datetime:
+        """:class:`datetime.datetime`: Returns the application's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+    @property
+    def overlay_methods(self) -> OverlayMethodFlags:
+        """:class:`OverlayMethodFlags`: The overlay methods that the application supports."""
+        return OverlayMethodFlags._from_value(self._overlay_methods)
+
+
+class PartialApplication(_BaseApplication):
+    """Represents a partial application.
 
     .. container:: operations
 
@@ -1797,8 +1927,30 @@ class PartialApplication(Hashable):
         The type of application.
     tags: List[:class:`str`]
         A list of tags that describe the application.
+    hook: :class:`bool`
+        Whether the Discord client can hook into the application directly.
     overlay: :class:`bool`
-        Whether the application has a Discord overlay or not.
+        Whether the application supports the `Discord overlay <https://support.discord.com/hc/en-us/articles/217659737-Game-Overlay-101>`_.
+    overlay_warn: :class:`bool`
+        Whether the Discord overlay is known to be problematic with the application.
+    overlay_compatibility_hook: :class:`bool`
+        Whether to use the compatibility hook for the Discord overlay.
+    verified: :class:`bool`
+        Whether the application is verified.
+
+        .. versionadded:: 2.1
+    discoverable: :class:`bool`
+        Whether the application is discoverable in the application directory.
+
+        .. versionadded:: 2.1
+    monetized: :class:`bool`
+        Whether the application has monetization enabled.
+
+        .. versionadded:: 2.1
+    storefront_available: :class:`bool`
+        Whether the application has public subscriptions or products available for purchase.
+
+        .. versionadded:: 2.1
     guild_id: Optional[:class:`int`]
         The ID of the guild the application is attached to, if any.
     primary_sku_id: Optional[:class:`int`]
@@ -1827,6 +1979,10 @@ class PartialApplication(Hashable):
         The parameters to use for authorizing the application, if specified.
     embedded_activity_config: Optional[:class:`EmbeddedActivityConfig`]
         The application's embedded activity configuration, if any.
+    bot: Optional[:class:`User`]
+        The bot attached to the application, if any.
+
+        .. versionadded:: 2.1
     owner: Optional[:class:`User`]
         The application owner. This may be a team user account.
 
@@ -1838,7 +1994,7 @@ class PartialApplication(Hashable):
 
         .. note::
 
-            In almost all cases, this is not available.
+            In almost all cases, this is not available. See :attr:`owner` instead.
     """
 
     __slots__ = (
@@ -1864,6 +2020,10 @@ class PartialApplication(Hashable):
         'overlay',
         'overlay_warn',
         'overlay_compatibility_hook',
+        'verified',
+        'discoverable',
+        'monetized',
+        'storefront_available',
         'aliases',
         'developers',
         'publishers',
@@ -1877,6 +2037,7 @@ class PartialApplication(Hashable):
         'store_listing_sku_id',
         'slug',
         'eula_id',
+        'bot',
         'owner',
         'team',
         '_guild',
@@ -1887,23 +2048,17 @@ class PartialApplication(Hashable):
         owner: Optional[User]
         team: Optional[Team]
 
-    def __init__(self, *, state: ConnectionState, data: PartialApplicationPayload):
-        self._state: ConnectionState = state
-        self._update(data)
-
     def __str__(self) -> str:
         return self.name
 
     def _update(self, data: PartialApplicationPayload) -> None:
+        super()._update(data)
         state = self._state
 
-        self.id: int = int(data['id'])
-        self.name: str = data['name']
         self.description: str = data['description']
         self.rpc_origins: Optional[List[str]] = data.get('rpc_origins')
         self.verify_key: str = data['verify_key']
 
-        self.aliases: List[str] = data.get('aliases', [])
         self.developers: List[Company] = [Company(data=d) for d in data.get('developers', [])]
         self.publishers: List[Company] = [Company(data=d) for d in data.get('publishers', [])]
         self.executables: List[ApplicationExecutable] = [
@@ -1928,6 +2083,10 @@ class PartialApplication(Hashable):
         self.overlay: bool = data.get('overlay', False)
         self.overlay_warn: bool = data.get('overlay_warn', False)
         self.overlay_compatibility_hook: bool = data.get('overlay_compatibility_hook', False)
+        self.verified: bool = data.get('is_verified', False)
+        self.discoverable: bool = data.get('is_discoverable', False)
+        self.monetized: bool = data.get('is_monetized', False)
+        self.storefront_available: bool = data.get('storefront_available', False)
         self.guild_id: Optional[int] = utils._get_as_snowflake(data, 'guild_id')
         self.primary_sku_id: Optional[int] = utils._get_as_snowflake(data, 'primary_sku_id')
         self.store_listing_sku_id: Optional[int] = utils._get_as_snowflake(data, 'store_listing_sku_id')
@@ -1952,16 +2111,20 @@ class PartialApplication(Hashable):
 
         # Hacky, but I want these to be persisted
 
+        existing = getattr(self, 'bot', None)
+        bot = data.get('bot')
+        self.bot: Optional[User] = state.create_user(bot) if bot else existing
+
         existing = getattr(self, 'owner', None)
         owner = data.get('owner')
-        self.owner = state.create_user(owner) if owner else existing
+        self.owner: Optional[User] = state.create_user(owner) if owner else existing
 
         existing = getattr(self, 'team', None)
         team = data.get('team')
         if existing and team:
             existing._update(team)
         else:
-            self.team = Team(state=state, data=team) if team else existing
+            self.team: Optional[Team] = Team(state=state, data=team) if team else existing
 
         if self.team and not self.owner:
             # We can create a team user from the team data
@@ -2038,12 +2201,20 @@ class PartialApplication(Hashable):
         """Optional[:class:`Guild`]: The guild linked to the application, if any and available."""
         return self._state._get_guild(self.guild_id) or self._guild
 
+    @property
+    def overlay_methods(self) -> OverlayMethodFlags:
+        """:class:`OverlayMethodFlags`: The overlay methods that the application supports.
+
+        .. versionadded:: 2.1
+        """
+        return OverlayMethodFlags._from_value(self._overlay_methods)
+
     def has_bot(self) -> bool:
         """:class:`bool`: Whether the application has an attached bot.
 
         .. versionadded:: 2.1
         """
-        return self._has_bot
+        return self._has_bot or self.bot is not None
 
     def is_rpc_enabled(self) -> bool:
         """:class:`bool`: Whether the application has the ability to access the client RPC server.
@@ -2199,44 +2370,6 @@ class PartialApplication(Hashable):
         data = await state.http.get_eula(self.eula_id)
         return EULA(data=data)
 
-    async def ticket(self) -> str:
-        """|coro|
-
-        Retrieves the license ticket for this application.
-
-        Raises
-        -------
-        HTTPException
-            Retrieving the ticket failed.
-
-        Returns
-        --------
-        :class:`str`
-            The ticket retrieved.
-        """
-        state = self._state
-        data = await state.http.get_app_ticket(self.id)
-        return data['ticket']
-
-    async def entitlement_ticket(self) -> str:
-        """|coro|
-
-        Retrieves the entitlement ticket for this application.
-
-        Raises
-        -------
-        HTTPException
-            Retrieving the ticket failed.
-
-        Returns
-        --------
-        :class:`str`
-            The ticket retrieved.
-        """
-        state = self._state
-        data = await state.http.get_app_entitlement_ticket(self.id)
-        return data['ticket']
-
     async def activity_statistics(self) -> List[ApplicationActivityStatistics]:
         """|coro|
 
@@ -2283,10 +2416,104 @@ class Application(PartialApplication):
 
     Attributes
     -------------
-    owner: :class:`User`
-        The application owner. This may be a team user account.
+    id: :class:`int`
+        The application ID.
+    name: :class:`str`
+        The application name.
+    description: :class:`str`
+        The application description.
+    rpc_origins: Optional[List[:class:`str`]]
+        A list of RPC origin URLs, if RPC is enabled.
+
+        .. versionchanged:: 2.1
+
+            The type of this attribute has changed to Optional[List[:class:`str`]].
+    verify_key: :class:`str`
+        The hex encoded key for verification in interactions and the
+        GameSDK's :ddocs:`GetTicket <game-sdk/applications#getticket`.
+    terms_of_service_url: Optional[:class:`str`]
+        The application's terms of service URL, if set.
+    privacy_policy_url: Optional[:class:`str`]
+        The application's privacy policy URL, if set.
+    deeplink_uri: Optional[:class:`str`]
+        The application's deeplink URI, if set.
+
+        .. versionadded:: 2.1
+    public: :class:`bool`
+        Whether the integration can be invited by anyone or if it is locked
+        to the application owner.
+    require_code_grant: :class:`bool`
+        Whether the integration requires the completion of the full OAuth2 code
+        grant flow to join
+    max_participants: Optional[:class:`int`]
+        The max number of people that can participate in the activity.
+        Only available for embedded activities.
+    type: Optional[:class:`ApplicationType`]
+        The type of application.
+    tags: List[:class:`str`]
+        A list of tags that describe the application.
+    hook: :class:`bool`
+        Whether the Discord client can hook into the application directly.
+    overlay: :class:`bool`
+        Whether the application supports the `Discord overlay <https://support.discord.com/hc/en-us/articles/217659737-Game-Overlay-101>`_.
+    overlay_warn: :class:`bool`
+        Whether the Discord overlay is known to be problematic with the application.
+    overlay_compatibility_hook: :class:`bool`
+        Whether to use the compatibility hook for the Discord overlay.
+    verified: :class:`bool`
+        Whether the application is verified.
+
+        .. versionadded:: 2.1
+    discoverable: :class:`bool`
+        Whether the application is discoverable in the application directory.
+
+        .. versionadded:: 2.1
+    monetized: :class:`bool`
+        Whether the application has monetization enabled.
+
+        .. versionadded:: 2.1
+    storefront_available: :class:`bool`
+        Whether the application has public subscriptions or products available for purchase.
+
+        .. versionadded:: 2.1
+    guild_id: Optional[:class:`int`]
+        The ID of the guild the application is attached to, if any.
+    primary_sku_id: Optional[:class:`int`]
+        The application's primary SKU ID, if any.
+        This can be an application's game SKU, subscription SKU, etc.
+    store_listing_sku_id: Optional[:class:`int`]
+        The application's store listing SKU ID, if any.
+        If exists, this SKU ID should be used for checks.
+    slug: Optional[:class:`str`]
+        The slug for the application's primary SKU, if any.
+    eula_id: Optional[:class:`int`]
+        The ID of the EULA for the application, if any.
+    aliases: List[:class:`str`]
+        A list of aliases that can be used to identify the application.
+    developers: List[:class:`Company`]
+        A list of developers that developed the application.
+    publishers: List[:class:`Company`]
+        A list of publishers that published the application.
+    executables: List[:class:`ApplicationExecutable`]
+        A list of executables that are the application's.
+    third_party_skus: List[:class:`ThirdPartySKU`]
+        A list of third party platforms the SKU is available at.
+    custom_install_url: Optional[:class:`str`]
+        The custom URL to use for authorizing the application, if specified.
+    install_params: Optional[:class:`ApplicationInstallParams`]
+        The parameters to use for authorizing the application, if specified.
+    embedded_activity_config: Optional[:class:`EmbeddedActivityConfig`]
+        The application's embedded activity configuration, if any.
     bot: Optional[:class:`ApplicationBot`]
         The bot attached to the application, if any.
+    owner: :class:`User`
+        The application owner. This may be a team user account.
+    team: Optional[:class:`Team`]
+        The team that owns the application.
+
+        .. note::
+
+            In almost all cases, this is not available. See :attr:`owner` instead.
     disabled: :class:`bool`
         Whether the bot attached to this application is disabled by Discord.
 
@@ -2334,7 +2561,6 @@ class Application(PartialApplication):
         'interactions_version',
         'interactions_event_types',
         'role_connections_verification_url',
-        'bot',
         'disabled',
         'quarantined',
         'verification_state',
@@ -2371,16 +2597,15 @@ class Application(PartialApplication):
         self.approximate_guild_count: int = data.get('approximate_guild_count', 0)
 
         state = self._state
+        self.owner = self.owner or state.user
 
         # Hacky, but I want these to be persisted
         existing = getattr(self, 'bot', None)
         bot = data.get('bot')
-        if existing is not None:
+        if existing and bot:
             existing._update(bot)
         else:
-            self.bot: Optional[ApplicationBot] = ApplicationBot(data=bot, state=state, application=self) if bot else None
-
-        self.owner = self.owner or state.user
+            self.bot: Optional[ApplicationBot] = ApplicationBot(data=bot, state=state, application=self) if bot else existing
 
     def __repr__(self) -> str:
         return (
@@ -3692,6 +3917,22 @@ class IntegrationApplication(Hashable):
         .. versionadded:: 2.1
     type: Optional[:class:`ApplicationType`]
         The type of application.
+    verified: :class:`bool`
+        Whether the application is verified.
+
+        .. versionadded:: 2.1
+    discoverable: :class:`bool`
+        Whether the application is discoverable in the application directory.
+
+        .. versionadded:: 2.1
+    monetized: :class:`bool`
+        Whether the application has monetization enabled.
+
+        .. versionadded:: 2.1
+    storefront_available: :class:`bool`
+        Whether the application has public subscriptions or products available for purchase.
+
+        .. versionadded:: 2.1
     primary_sku_id: Optional[:class:`int`]
         The application's primary SKU ID, if any.
         This can be an application's game SKU, subscription SKU, etc.
@@ -3712,6 +3953,10 @@ class IntegrationApplication(Hashable):
         'description',
         'deeplink_uri',
         'type',
+        'verified',
+        'discoverable',
+        'monetized',
+        'storefront_available',
         'primary_sku_id',
         'role_connections_verification_url',
         'third_party_skus',
@@ -3733,6 +3978,10 @@ class IntegrationApplication(Hashable):
         self.description: str = data.get('description') or ''
         self.deeplink_uri: Optional[str] = data.get('deeplink_uri')
         self.type: Optional[ApplicationType] = try_enum(ApplicationType, data['type']) if 'type' in data else None
+        self.verified: bool = data.get('is_verified', False)
+        self.discoverable: bool = data.get('is_discoverable', False)
+        self.monetized: bool = data.get('is_monetized', False)
+        self.storefront_available: bool = data.get('storefront_available', False)
 
         self._icon: Optional[str] = data.get('icon')
         self._cover_image: Optional[str] = data.get('cover_image')

@@ -7169,6 +7169,7 @@ Application
 
 .. autoclass:: PartialApplication()
     :members:
+    :inherited-members:
 
 .. attributetable:: ApplicationProfile
 
@@ -7214,6 +7215,11 @@ Application
 .. attributetable:: EmbeddedActivityPlatformConfig
 
 .. autoclass:: EmbeddedActivityPlatformConfig()
+    :members:
+
+.. attributetable:: DetectableApplication
+
+.. autoclass:: DetectableApplication()
     :members:
 
 .. attributetable:: UnverifiedApplication
@@ -8397,6 +8403,11 @@ Flags
 .. attributetable:: OnboardingProgressFlags
 
 .. autoclass:: OnboardingProgressFlags()
+    :members:
+
+.. attributetable:: OverlayMethodFlags
+
+.. autoclass:: OverlayMethodFlags()
     :members:
 
 .. attributetable:: PaymentFlags

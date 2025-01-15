@@ -72,7 +72,15 @@ from .utils import MISSING
 from .object import Object, OLDEST_OBJECT
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
-from .application import Application, ApplicationActivityStatistics, Company, EULA, PartialApplication, UnverifiedApplication
+from .application import (
+    Application,
+    ApplicationActivityStatistics,
+    Company,
+    EULA,
+    DetectableApplication,
+    PartialApplication,
+    UnverifiedApplication,
+)
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
@@ -369,7 +377,9 @@ class Client:
             if status is None:
                 status = getattr(state.settings, 'status', None) or Status.unknown
             _log.debug('Setting initial presence to %s %s', status, activities)
-            self.loop.create_task(self.change_presence(activities=activities, status=status, edit_settings=self._sync_presences))
+            self.loop.create_task(
+                self.change_presence(activities=activities, status=status, edit_settings=self._sync_presences)
+            )
 
     @property
     def latency(self) -> float:
@@ -3254,12 +3264,17 @@ class Client:
         data = await state.http.get_my_applications(with_team_applications=with_team_applications)
         return [Application(state=state, data=d) for d in data]
 
-    async def detectable_applications(self) -> List[PartialApplication]:
+    async def detectable_applications(self) -> List[DetectableApplication]:
         """|coro|
 
         Retrieves the list of applications detectable by the Discord client.
 
         .. versionadded:: 2.0
+
+        .. versionchanged:: 2.1
+
+            The method now returns a list of :class:`.DetectableApplication`
+            instead of :class:`.PartialApplication` due to an API change.
 
         Raises
         -------
@@ -3268,12 +3283,12 @@ class Client:
 
         Returns
         -------
-        List[:class:`.PartialApplication`]
+        List[:class:`.DetectableApplication`]
             The applications detectable by the Discord client.
         """
         state = self._connection
         data = await state.http.get_detectable_applications()
-        return [PartialApplication(state=state, data=d) for d in data]
+        return [DetectableApplication(state=state, data=d) for d in data]
 
     async def fetch_application(self, application_id: int, /) -> Application:
         """|coro|

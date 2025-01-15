@@ -3357,7 +3357,7 @@ class HTTPClient:
     def reset_bot_token(self, app_id: Snowflake) -> Response[application.Token]:
         return self.request(Route('POST', '/applications/{app_id}/bot/reset', app_id=app_id))
 
-    def get_detectable_applications(self) -> Response[List[application.PartialApplication]]:
+    def get_detectable_applications(self) -> Response[List[application.DetectableApplication]]:
         return self.request(Route('GET', '/applications/detectable'))
 
     def get_guild_applications(

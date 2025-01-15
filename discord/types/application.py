@@ -47,7 +47,7 @@ class Secret(TypedDict):
     secret: str
 
 
-class _BaseApplication(TypedDict):
+class BaseApplication(TypedDict):
     id: Snowflake
     name: str
     description: str
@@ -59,26 +59,35 @@ class _BaseApplication(TypedDict):
     summary: NotRequired[Literal['']]
     deeplink_uri: NotRequired[str]
     third_party_skus: NotRequired[List[ThirdPartySKU]]
-
-
-class BaseApplication(_BaseApplication):
     bot: NotRequired[PartialUser]
+    is_verified: bool
+    is_discoverable: bool
+    is_monetized: bool
+    storefront_available: bool
+
+
+class DetectableApplication(TypedDict):
+    id: Snowflake
+    name: str
+    hook: bool
+    overlay: NotRequired[bool]
+    overlay_methods: NotRequired[int]
+    overlay_warn: NotRequired[bool]
+    overlay_compatibility_hook: NotRequired[bool]
+    aliases: NotRequired[List[str]]
+    executables: NotRequired[List[ApplicationExecutable]]
 
 
 class IntegrationApplication(BaseApplication):
     role_connections_verification_url: NotRequired[Optional[str]]
 
 
-class PartialApplication(_BaseApplication):
+class PartialApplication(BaseApplication, DetectableApplication):
     owner: NotRequired[APIUser]  # Not actually ever present in partial app
     team: NotRequired[Team]
     verify_key: str
     flags: NotRequired[int]
     rpc_origins: NotRequired[List[str]]
-    hook: NotRequired[bool]
-    overlay: NotRequired[bool]
-    overlay_warn: NotRequired[bool]
-    overlay_compatibility_hook: NotRequired[bool]
     terms_of_service_url: NotRequired[str]
     privacy_policy_url: NotRequired[str]
     max_participants: NotRequired[Optional[int]]
@@ -91,13 +100,11 @@ class PartialApplication(_BaseApplication):
     slug: NotRequired[str]
     developers: NotRequired[List[Company]]
     publishers: NotRequired[List[Company]]
-    aliases: NotRequired[List[str]]
     eula_id: NotRequired[Snowflake]
     embedded_activity_config: NotRequired[EmbeddedActivityConfig]
     guild: NotRequired[PartialGuild]
     install_params: NotRequired[ApplicationInstallParams]
     store_listing_sku_id: NotRequired[Snowflake]
-    executables: NotRequired[List[ApplicationExecutable]]
 
 
 class ApplicationDiscoverability(TypedDict):
