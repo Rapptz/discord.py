@@ -252,10 +252,17 @@ class CaptchaRequired(HTTPException):
         .. versionadded:: 2.1
     """
 
+    __slots__ = (
+        'errors',
+        'service',
+        '_sitekey',
+        'rqdata',
+        'rqtoken',
+        'should_serve_invisible',
+    )
+
     RECAPTCHA_SITEKEY: Final[str] = '6Lef5iQTAAAAAKeIvIY-DeexoO3gj7ryl9rLMEnn'
     RECAPTCHA_ENTERPRISE_SITEKEY: Final[str] = '6LeYqFcqAAAAAD6iZesmNgVulsO4PkpBdr6NVG6M'
-
-    __slots__ = ('errors', 'service', 'sitekey')
 
     def __init__(self, response: _ResponseType, message: CaptchaPayload):
         super().__init__(response, {'code': -1, 'message': 'Captcha required'})
