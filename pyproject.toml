@@ -69,6 +69,10 @@ test = [
     "typing-extensions>=4.3,<5",
     "tzdata; sys_platform == 'win32'",
 ]
+dev = [
+    "black==22.6",
+    "typing_extensions>=4.3,<5",
+]
 
 [tool.setuptools]
 packages = [
