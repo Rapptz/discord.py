@@ -327,10 +327,9 @@ def oauth_url(
     permissions: Permissions = MISSING,
     guild: Snowflake = MISSING,
     redirect_uri: str = MISSING,
-    scopes: Iterable[str] = MISSING,
+    scopes: Optional[Iterable[str]] = MISSING,
     disable_guild_select: bool = False,
     state: str = MISSING,
-    scopeless: bool = False,
 ) -> str:
     """A helper function that returns the OAuth2 URL for inviting the bot
     into guilds.
@@ -363,10 +362,6 @@ def oauth_url(
         The state to return after the authorization.
 
         .. versionadded:: 2.0
-    scopeless: :class:`bool`
-        Whether to have the default scopes in the OAuth2 URL.
-
-        .. versionadded:: 2.5
 
     Returns
     --------
@@ -374,7 +369,7 @@ def oauth_url(
         The OAuth2 URL for inviting the bot into guilds.
     """
     url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
-    if not scopeless:
+    if scopes is not None:
         url += '&scope=' + '+'.join(scopes or ('bot', 'applications.commands'))
     if permissions is not MISSING:
         url += f'&permissions={permissions.value}'
