@@ -118,6 +118,7 @@ __all__ = (
     'PartialApplication',
     'Application',
     'IntegrationApplication',
+    'DetectableApplication',
     'UnverifiedApplication',
 )
 
