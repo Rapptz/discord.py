@@ -684,13 +684,13 @@ class ApplicationBot(User):
 
     Attributes
     -----------
-    application: :class:`PartialApplication`
+    application: :class:`Application`
         The application that the bot is attached to.
     """
 
     __slots__ = ('application',)
 
-    def __init__(self, *, data: PartialUserPayload, state: ConnectionState, application: PartialApplication):
+    def __init__(self, *, data: PartialUserPayload, state: ConnectionState, application: Application):
         super().__init__(state=state, data=data)
         self.application = application
 
@@ -1769,6 +1769,9 @@ class _BaseApplication(Hashable):
         self.overlay_compatibility_hook: bool = data.get('overlay_compatibility_hook', False)
         self._overlay_methods: int = data.get('overlay_methods', 0)
 
+    def __str__(self) -> str:
+        return self.name
+
     async def ticket(self) -> str:
         """|coro|
 
@@ -2049,8 +2052,8 @@ class PartialApplication(_BaseApplication):
         owner: Optional[User]
         team: Optional[Team]
 
-    def __str__(self) -> str:
-        return self.name
+    def __init__(self, *, state: ConnectionState, data: PartialApplicationPayload):
+        super().__init__(state=state, data=data)
 
     def _update(self, data: PartialApplicationPayload) -> None:
         super()._update(data)

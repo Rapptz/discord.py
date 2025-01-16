@@ -577,6 +577,7 @@ class PassiveUpdateV1Event(TypedDict):
 
 
 class PassiveUpdateV2Event(TypedDict):
+    guild_id: Snowflake
     removed_voice_states: List[Snowflake]
     updated_channels: List[PartialUpdateChannel]
     members: List[MemberWithUser]

@@ -1493,7 +1493,7 @@ class Guild(Hashable):
         self,
         name: str,
         channel_type: Literal[ChannelType.directory],
-        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = ...,
+        overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = ...,
         category: Optional[Snowflake] = ...,
         **options: Any,
     ) -> Coroutine[Any, Any, DirectoryChannelPayload]:
@@ -1941,7 +1941,7 @@ class Guild(Hashable):
         category: Optional[CategoryChannel] = None,
         position: int = MISSING,
         topic: str = MISSING,
-        overwrites: Mapping[Union[Role, Member], PermissionOverwrite] = MISSING,
+        overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = MISSING,
     ) -> DirectoryChannel:
         """|coro|
 

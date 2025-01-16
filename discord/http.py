@@ -346,7 +346,7 @@ def handle_message_parameters(
         payload.update(channel_payload)
 
     if poll not in (MISSING, None):
-        payload['poll'] = poll._to_dict()  # type: ignore
+        payload['poll'] = poll._to_dict()
 
     # Legacy uploading
     multipart = []

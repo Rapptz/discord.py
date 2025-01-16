@@ -1706,10 +1706,10 @@ class ConnectionState:
         for k, member_data in members.items():
             member = guild.get_member(k)
             if member is not None:
-                member._update(data)
+                member._update(member_data)
             else:
                 if cache_flags.voice:
-                    member = Member(data=member_data, guild=guild, state=self)  # type: ignore # The data is close enough
+                    member = Member(data=member_data, guild=guild, state=self)
                     guild._add_member(member)
 
         for voice_state in data.get('updated_voice_states', []):
@@ -3771,8 +3771,14 @@ class ConnectionState:
                 'name': 'Nitro',
                 'icon': None,
                 'description': '',
-                'verify_key': '93661a9eefe452d12f51e129e8d9340e7ca53a770158c0ec7970e701534b7420',
                 'type': None,
+                'is_monetized': False,
+                'is_verified': False,
+                'is_discoverable': False,
+                'hook': True,
+                'storefront_available': False,
+                'verify_key': '93661a9eefe452d12f51e129e8d9340e7ca53a770158c0ec7970e701534b7420',
+                'flags': 0,
             },
         )
 

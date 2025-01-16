@@ -86,7 +86,7 @@ class PartialApplication(BaseApplication, DetectableApplication):
     owner: NotRequired[APIUser]  # Not actually ever present in partial app
     team: NotRequired[Team]
     verify_key: str
-    flags: NotRequired[int]
+    flags: int
     rpc_origins: NotRequired[List[str]]
     terms_of_service_url: NotRequired[str]
     privacy_policy_url: NotRequired[str]
