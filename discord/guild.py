@@ -2951,7 +2951,7 @@ class Guild(Hashable):
         attachment_filenames: Collection[str] = MISSING,
         attachment_extensions: Collection[str] = MISSING,
         application_commands: Collection[Snowflake] = MISSING,
-        oldest_first: bool = False,
+        oldest_first: bool = MISSING,
         most_relevant: bool = False,
     ) -> AsyncIterator[Message]:
         """Returns an :term:`asynchronous iterator` that enables searching the guild's messages.
@@ -2990,9 +2990,7 @@ class Guild(Hashable):
         limit: Optional[:class:`int`]
             The number of messages to retrieve.
             If ``None``, retrieves every message in the results. Note, however,
-            that this would make it a slow operation. Additionally, note that the
-            search API has a maximum pagination offset of 5000 (subject to change),
-            so a limit of over 5000 or ``None`` may eventually raise an exception.
+            that this would make it a slow operation.
         offset: :class:`int`
             The pagination offset to start at.
         before: Union[:class:`abc.Snowflake`, :class:`datetime.datetime`]
@@ -3035,17 +3033,20 @@ class Guild(Hashable):
         application_commands: List[:class:`abc.ApplicationCommand`]
             The used application commands to filter by.
         oldest_first: :class:`bool`
-            Whether to return the oldest results first.
+            Whether to return the oldest results first. Defaults to ``True`` if
+            ``before`` is specified, otherwise ``False``. Ignored when ``most_relevant`` is set.
         most_relevant: :class:`bool`
-            Whether to sort the results by relevance. Using this with ``oldest_first``
-            will return the least relevant results first.
+            Whether to sort the results by relevance. Limits pagination to 9975 entries.
+            Prevents using both ``before`` and ``after``.
 
         Raises
         ------
-        Forbidden
-            You do not have permissions to search the channel's messages.
-        HTTPException
+        ~discord.HTTPException
             The request to search messages failed.
+        TypeError
+            Provided both ``before`` and ``after`` when ``most_relevant`` is set.
+        ValueError
+            Could not resolve the channel's guild ID.
 
         Yields
         -------
