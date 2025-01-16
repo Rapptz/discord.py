@@ -501,7 +501,7 @@ class GuildSubscriptions:
 
     The client is automatically subscribed to all guilds with < 75k members on connect. For guilds the client is not subscribed to,
     it will not receive non-stateful events (e.g. MESSAGE_CREATE, MESSAGE_UPDATE, MESSAGE_DELETE, etc.).
-    Additionally, it will receive the PASSIVE_UPDATE_V1 event to keep voice states and channel unreads up-to-date.
+    Additionally, it will receive the PASSIVE_UPDATE_V2 event to keep voice states and channel unreads up-to-date.
 
     Once a client subscribes to the ``typing`` feature, it is considered subscribed to that guild indefinitely. On the first subscribe,
     it will receive a GUILD_CREATE event (for some reason). If subscribing to other features/members without having subscribed to the
@@ -1681,15 +1681,18 @@ class ConnectionState:
     def parse_resumed(self, data: gw.ResumedEvent) -> None:
         self.dispatch('resumed')
 
-    def parse_passive_update_v1(self, data: gw.PassiveUpdateEvent) -> None:
-        # PASSIVE_UPDATE_V1 is sent for large guilds you are not subscribed to
-        # in order to keep their read and voice states up-to-date; it replaces CHANNEL_UNREADS_UPDATE
+    def parse_passive_update_v2(self, data: gw.PassiveUpdateV2Event) -> None:
+        # PASSIVE_UPDATE_V2 is sent for large guilds you are not subscribed to
+        # in order to keep their members/read and voice states up-to-date; it replaces CHANNEL_UNREADS_UPDATE and PASSIVE_UPDATE_V1
         guild = self._get_guild(int(data['guild_id']))
         if not guild:
-            _log.debug('PASSIVE_UPDATE_V1 referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
+            _log.debug('PASSIVE_UPDATE_V2 referencing an unknown guild ID: %s. Discarding.', data['guild_id'])
             return
 
-        for channel_data in data.get('channels', []):
+        for user_id in map(int, data.get('removed_voice_states', [])):
+            guild._voice_states.pop(user_id, None)
+
+        for channel_data in data.get('updated_channels', []):
             channel = guild.get_channel(int(channel_data['id']))
             if not channel:
                 continue
@@ -1697,14 +1700,23 @@ class ConnectionState:
             if 'last_pin_timestamp' in channel_data and hasattr(channel, 'last_pin_timestamp'):
                 channel.last_pin_timestamp = utils.parse_time(channel_data['last_pin_timestamp'])  # type: ignore
 
-        # Apparently, voice states not being in the payload means there are no longer any voice states
-        guild._voice_states = {}
         members = {int(m['user']['id']): m for m in data.get('members', [])}
-        for voice_state in data.get('voice_states', []):
+
+        cache_flags = self.member_cache_flags
+        for k, member_data in members.items():
+            member = guild.get_member(k)
+            if member is not None:
+                member._update(data)
+            else:
+                if cache_flags.voice:
+                    member = Member(data=member_data, guild=guild, state=self)  # type: ignore # The data is close enough
+                    guild._add_member(member)
+
+        for voice_state in data.get('updated_voice_states', []):
             user_id = int(voice_state['user_id'])
-            member = members.get(user_id)
-            if member:
-                voice_state['member'] = member
+            member_data = members.get(user_id)
+            if member_data:
+                voice_state['member'] = member_data
             guild._update_voice_state(voice_state, utils._get_as_snowflake(voice_state, 'channel_id'))
 
     def parse_message_create(self, data: gw.MessageCreateEvent) -> None:

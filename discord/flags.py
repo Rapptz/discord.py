@@ -314,8 +314,8 @@ class Capabilities(BaseFlags):
             auth_token_refresh=True,
             user_settings_proto=True,
             client_state_v2=True,
-            passive_guild_update=True,
             auto_call_connect=True,
+            passive_guild_update_v2=True,
         )
 
     @flag_value
@@ -389,6 +389,11 @@ class Capabilities(BaseFlags):
         """:class:`bool`: Debounce message reactions (dispatches ``MESSAGE_REACTION_ADD_MANY`` instead of ``MESSAGE_REACTION_ADD`` when a lot of reactions are sent in quick succession)."""
         # Debounced reactions don't have member information, so this is kinda undesirable :(
         return 1 << 13
+
+    @flag_value
+    def passive_guild_update_v2(self):
+        """:class:`bool`: Enable passive guild update v2 (replace ``PASSIVE_UPDATE_V1`` with ``PASSIVE_UPDATE_V2``, a similar event that includes a ``removed_voice_states`` array and a ``members`` array that includes the updated members as well)."""
+        return 1 << 14
 
 
 @fill_with_flags(inverted=True)
