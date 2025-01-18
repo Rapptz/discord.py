@@ -150,10 +150,7 @@ class SoundboardDefaultSound(BaseSoundboardSound):
 
     @property
     def mention(self) -> str:
-        """:class:`str`: Returns a string that allows you to mention this default sound.
-
-        .. versionadded:: 2.5
-        """
+        """:class:`str`: Returns a string that allows you to mention this default sound."""
         return f'<sound:0:{self.id}>'
 
 
@@ -242,10 +239,7 @@ class SoundboardSound(BaseSoundboardSound):
 
     @property
     def mention(self) -> str:
-        """:class:`str`: Returns a string that allows you to mention this sound.
-
-        .. versionadded:: 2.5
-        """
+        """:class:`str`: Returns a string that allows you to mention this sound."""
         return f'<sound:{self.guild.id}:{self.id}>'
 
     async def edit(
