@@ -96,7 +96,7 @@ class ScheduledEventRecurrenceRule:
 
         This must be ``1``, except when ``frequency`` is :attr:`ScheduledEventRecurrenceFrequency.weekly`,
         in which case it can be set to ``2``.
-    weekdays: Optional[List[:class:`ScheduledEventRecurrenceWeekday`]]
+    weekdays: List[:class:`ScheduledEventRecurrenceWeekday`]
         The weekdays the event will recur on.
 
         Currently this only allows the following sets:
@@ -113,9 +113,9 @@ class ScheduledEventRecurrenceRule:
         If ``frequency`` is :attr:`ScheduledEventRecurrenceFrequency.weekly`:
 
         The list length can only be up to 1, every day is valid.
-    n_weekdays: Optional[List[Tuple[:class:`int`, :class:`ScheduledEventRecurrenceWeekday`]]]
+    n_weekdays: List[Tuple[:class:`int`, :class:`ScheduledEventRecurrenceWeekday`]]
         A (week, weekday) tuple list of the N weekdays the event will recur on.
-    month_days: Optional[List[:class:`datetime.date`]]
+    month_days: List[:class:`datetime.date`]
         The months and month days the scheduled event will recur on.
 
     Examples
@@ -191,7 +191,7 @@ class ScheduledEventRecurrenceRule:
         ],
         interval: int,
         *,
-        weekdays: Optional[List[ScheduledEventRecurrenceWeekday]],
+        weekdays: List[ScheduledEventRecurrenceWeekday],
     ) -> None:
         ...
 
@@ -203,7 +203,7 @@ class ScheduledEventRecurrenceRule:
         frequency: Literal[ScheduledEventRecurrenceFrequency.monthly],
         interval: int,
         *,
-        n_weekdays: Optional[List[NWeekday]],
+        n_weekdays: List[NWeekday],
     ) -> None:
         ...
 
@@ -215,7 +215,7 @@ class ScheduledEventRecurrenceRule:
         frequency: Literal[ScheduledEventRecurrenceFrequency.yearly],
         interval: int,
         *,
-        month_days: Optional[List[date]],
+        month_days: List[date],
     ) -> None:
         ...
 
@@ -226,9 +226,9 @@ class ScheduledEventRecurrenceRule:
         frequency: ScheduledEventRecurrenceFrequency,
         interval: int,
         *,
-        weekdays: Optional[List[ScheduledEventRecurrenceWeekday]] = MISSING,
-        n_weekdays: Optional[List[NWeekday]] = MISSING,
-        month_days: Optional[List[date]] = MISSING,
+        weekdays: List[ScheduledEventRecurrenceWeekday] = MISSING,
+        n_weekdays: List[NWeekday] = MISSING,
+        month_days: List[date] = MISSING,
     ) -> None:
         self.start: datetime = start
         self.frequency: ScheduledEventRecurrenceFrequency = frequency
