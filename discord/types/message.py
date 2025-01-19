@@ -167,6 +167,7 @@ MessageType = Literal[
     38,
     39,
     44,
+    46,
 ]
 
 

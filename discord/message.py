@@ -2064,6 +2064,13 @@ class Message(PartialMessage, Hashable):
                     # The channel will be the correct type here
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
 
+            if self.type is MessageType.poll_result:
+                if isinstance(self.reference.resolved, self.__class__):
+                    self._state._update_poll_results(self, self.reference.resolved)
+                else:
+                    if self.reference.message_id:
+                        self._state._update_poll_results(self, self.reference.message_id)
+
         self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'), self.reference)  # type: ignore
 
         self.role_subscription: Optional[RoleSubscriptionInfo] = None
@@ -2443,6 +2450,7 @@ class Message(PartialMessage, Hashable):
             MessageType.chat_input_command,
             MessageType.context_menu_command,
             MessageType.thread_starter_message,
+            MessageType.poll_result,
         )
 
     def is_acked(self) -> bool:
@@ -2612,6 +2620,14 @@ class Message(PartialMessage, Hashable):
             guild_product_purchase = self.purchase_notification.guild_product_purchase
             if guild_product_purchase is not None:
                 return f'{self.author.name} has purchased {guild_product_purchase.product_name}!'
+
+        if self.type is MessageType.poll_result:
+            embed = self.embeds[0]  # Will always have 1 embed
+            poll_title = utils.get(
+                embed.fields,
+                name='poll_question_text',
+            )
+            return f'{self.author.display_name}\'s poll {poll_title.value} has closed.'  # type: ignore
 
         # Fallback for unknown message types
         return self.content

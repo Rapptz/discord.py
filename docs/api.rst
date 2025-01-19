@@ -2007,6 +2007,12 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.1
 
+    .. attribute:: poll_result
+
+        The system message sent when a poll has closed.
+
+        .. versionadded:: 2.1
+
 .. class:: InviteType
 
     Specifies the type of :class:`Invite`.
