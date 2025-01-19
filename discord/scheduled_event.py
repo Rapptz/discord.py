@@ -279,6 +279,8 @@ class ScheduledEventRecurrenceRule:
             payload['by_month'] = months
             payload['by_month_day'] = month_days
 
+        return payload
+
 
 class ScheduledEvent(Hashable):
     """Represents a scheduled event in a guild.
