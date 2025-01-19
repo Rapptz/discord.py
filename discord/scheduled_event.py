@@ -237,6 +237,7 @@ class ScheduledEventRecurrenceRule:
             interval=int(data['interval']),  # type: ignore
         )
         self.end_date = end
+        self.count = data.get('count')
 
         weekdays = data.get('by_weekday', MISSING) or MISSING
         self._weekdays = weekdays
