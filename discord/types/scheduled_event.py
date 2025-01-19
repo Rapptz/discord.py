@@ -45,7 +45,7 @@ class ScheduledEventRecurrenceRule(TypedDict):
     end: Optional[str]
     frequency: ScheduledEventRecurrenceRuleFrequency
     interval: int
-    by_weekday: Optional[List[int]]
+    by_weekday: Optional[List[Literal[0, 1, 2, 3, 4, 5, 6]]]
     by_n_weekday: Optional[List[_NWeekday]]
     by_month: Optional[List[int]]
     by_month_day: Optional[List[int]]
