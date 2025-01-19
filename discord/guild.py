@@ -84,7 +84,7 @@ from .widget import Widget
 from .asset import Asset
 from .flags import SystemChannelFlags
 from .integrations import Integration, PartialIntegration, _integration_factory
-from .scheduled_event import ScheduledEvent
+from .scheduled_event import ScheduledEvent, ScheduledEventRecurrenceRule
 from .stage_instance import StageInstance
 from .threads import Thread, ThreadMember
 from .sticker import GuildSticker
@@ -3200,6 +3200,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3216,6 +3217,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3231,6 +3233,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3246,6 +3249,7 @@ class Guild(Hashable):
         description: str = ...,
         image: bytes = ...,
         reason: Optional[str] = ...,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = ...,
     ) -> ScheduledEvent:
         ...
 
@@ -3262,6 +3266,7 @@ class Guild(Hashable):
         description: str = MISSING,
         image: bytes = MISSING,
         reason: Optional[str] = None,
+        recurrence_rule: Optional[ScheduledEventRecurrenceRule] = MISSING,
     ) -> ScheduledEvent:
         r"""|coro|
 
@@ -3308,6 +3313,9 @@ class Guild(Hashable):
             Required if the ``entity_type`` is :attr:`EntityType.external`.
         reason: Optional[:class:`str`]
             The reason for creating this scheduled event. Shows up on the audit log.
+        recurrence_rule: Optional[:class:`ScheduledEventRecurrenceRule`]
+            The recurrence rule this event will follow. If this is ``None`` then this is
+            a one-time event.
 
         Raises
         -------
@@ -3401,6 +3409,12 @@ class Guild(Hashable):
                     'end_time must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
                 )
             payload['scheduled_end_time'] = end_time.isoformat()
+
+        if recurrence_rule is not MISSING:
+            if recurrence_rule is not None:
+                payload['recurrence_rule'] = recurrence_rule.to_dict()
+            else:
+                payload['recurrence_rule'] = None
 
         if metadata:
             payload['entity_metadata'] = metadata
