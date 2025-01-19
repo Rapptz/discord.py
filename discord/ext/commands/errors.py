@@ -75,6 +75,7 @@ __all__ = (
     'EmojiNotFound',
     'GuildStickerNotFound',
     'ScheduledEventNotFound',
+    'SoundboardSoundNotFound',
     'PartialEmojiConversionFailure',
     'BadBoolArgument',
     'MissingRole',
@@ -562,6 +563,24 @@ class ScheduledEventNotFound(BadArgument):
     def __init__(self, argument: str) -> None:
         self.argument: str = argument
         super().__init__(f'ScheduledEvent "{argument}" not found.')
+
+
+class SoundboardSoundNotFound(BadArgument):
+    """Exception raised when the bot can not find the soundboard sound.
+
+    This inherits from :exc:`BadArgument`
+
+    .. versionadded:: 2.5
+
+    Attributes
+    -----------
+    argument: :class:`str`
+        The sound supplied by the caller that was not found
+    """
+
+    def __init__(self, argument: str) -> None:
+        self.argument: str = argument
+        super().__init__(f'SoundboardSound "{argument}" not found.')
 
 
 class BadBoolArgument(BadArgument):
@@ -1061,7 +1080,7 @@ class ExtensionNotFound(ExtensionError):
     """
 
     def __init__(self, name: str) -> None:
-        msg = f'Extension {name!r} could not be loaded.'
+        msg = f'Extension {name!r} could not be loaded or found.'
         super().__init__(msg, name=name)
 
 

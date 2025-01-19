@@ -303,7 +303,7 @@ class Member(discord.abc.Messageable, _UserTag):
         "Nitro boost" on the guild, if available. This could be ``None``.
     timed_out_until: Optional[:class:`datetime.datetime`]
         An aware datetime object that specifies the date and time in UTC that the member's time out will expire.
-        This will be set to ``None`` if the user is not timed out.
+        This will be set to ``None`` or a time in the past if the user is not timed out.
 
         .. versionadded:: 2.0
     """
@@ -1076,7 +1076,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         You must have :attr:`~Permissions.manage_roles` to
         use this, and the added :class:`Role`\s must appear lower in the list
-        of roles than the highest role of the member.
+        of roles than the highest role of the client.
 
         Parameters
         -----------
@@ -1115,7 +1115,7 @@ class Member(discord.abc.Messageable, _UserTag):
 
         You must have :attr:`~Permissions.manage_roles` to
         use this, and the removed :class:`Role`\s must appear lower in the list
-        of roles than the highest role of the member.
+        of roles than the highest role of the client.
 
         Parameters
         -----------

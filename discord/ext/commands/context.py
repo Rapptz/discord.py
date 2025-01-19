@@ -87,11 +87,15 @@ class DeferTyping:
         self.ctx: Context[BotT] = ctx
         self.ephemeral: bool = ephemeral
 
+    async def do_defer(self) -> None:
+        if self.ctx.interaction and not self.ctx.interaction.response.is_done():
+            await self.ctx.interaction.response.defer(ephemeral=self.ephemeral)
+
     def __await__(self) -> Generator[Any, None, None]:
-        return self.ctx.defer(ephemeral=self.ephemeral).__await__()
+        return self.do_defer().__await__()
 
     async def __aenter__(self) -> None:
-        await self.ctx.defer(ephemeral=self.ephemeral)
+        await self.do_defer()
 
     async def __aexit__(
         self,

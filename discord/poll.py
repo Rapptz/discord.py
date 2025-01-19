@@ -359,6 +359,7 @@ class Poll:
         # The message's poll contains the more up to date data.
         self._expiry = message.poll.expires_at
         self._finalized = message.poll._finalized
+        self._answers = message.poll._answers
 
     def _update_results(self, data: PollResultPayload) -> None:
         self._finalized = data['is_finalized']
@@ -568,6 +569,7 @@ class Poll:
         if not self._message or not self._state:  # Make type checker happy
             raise ClientException('This poll has no attached message.')
 
-        self._message = await self._message.end_poll()
+        message = await self._message.end_poll()
+        self._update(message)
 
         return self
