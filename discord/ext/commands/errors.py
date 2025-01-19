@@ -1080,7 +1080,7 @@ class ExtensionNotFound(ExtensionError):
     """
 
     def __init__(self, name: str) -> None:
-        msg = f'Extension {name!r} could not be loaded.'
+        msg = f'Extension {name!r} could not be loaded or found.'
         super().__init__(msg, name=name)
 
 
