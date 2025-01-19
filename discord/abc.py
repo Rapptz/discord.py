@@ -340,6 +340,10 @@ async def _handle_message_search(
     ):
         include_nsfw = _state.user.nsfw_allowed
 
+    if before:
+        payload['max_id'] = before.id
+    if after != OLDEST_OBJECT:
+        payload['min_id'] = after.id
     if offset:
         payload['offset'] = offset
     if include_nsfw is not MISSING:
@@ -404,28 +408,16 @@ async def _handle_message_search(
             length = len(data['messages'])
             if limit is not None:
                 limit -= length
-            payload['offset'] = (offset or 0) + length
+            payload['offset'] = payload.get('offset', 0) + length
 
         return data, None, limit
 
-    predicate = None
-
     if most_relevant:
         strategy, state = _relevance_strategy, None
-        if before and after != OLDEST_OBJECT:
-            raise TypeError('Cannot use both before and after with most_relevant')
-        if before:
-            payload['max_id'] = before.id
-        if after != OLDEST_OBJECT:
-            payload['min_id'] = after.id
     elif oldest_first:
         strategy, state = _state_strategy, after
-        if before:
-            predicate = lambda m: int(m[0]['id']) < before.id
     else:
         strategy, state = _state_strategy, before
-        if after and after != OLDEST_OBJECT:
-            predicate = lambda m: int(m[0]['id']) > after.id
 
     total_results = MISSING
     total = 0
@@ -441,8 +433,6 @@ async def _handle_message_search(
             total_results = data['total_results']
 
         messages = data['messages']
-        if predicate:
-            messages = filter(predicate, messages)
 
         threads = {int(thread['id']): thread for thread in data.get('threads', [])}
         for member in data.get('members', []):
@@ -2466,7 +2456,6 @@ class Messageable:
             ``after`` is specified, otherwise ``False``. Ignored when ``most_relevant`` is set.
         most_relevant: :class:`bool`
             Whether to sort the results by relevance. Limits pagination to 9975 entries.
-            Prevents using both ``before`` and ``after``.
 
         Raises
         ------

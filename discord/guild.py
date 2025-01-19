@@ -3037,7 +3037,6 @@ class Guild(Hashable):
             ``before`` is specified, otherwise ``False``. Ignored when ``most_relevant`` is set.
         most_relevant: :class:`bool`
             Whether to sort the results by relevance. Limits pagination to 9975 entries.
-            Prevents using both ``before`` and ``after``.
 
         Raises
         ------
