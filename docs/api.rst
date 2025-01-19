@@ -3799,42 +3799,6 @@ of :class:`enum.Enum`.
         The event repeats daily.
 
 
-.. class:: ScheduledEventRecurrenceWeekday
-
-    Represents a recurrence rule weekday.
-
-    .. versionadded:: 2.5
-
-    .. attribute:: monday
-
-        The ``0`` day of the week.
-
-    .. attribute:: tuesday
-
-        The ``1`` day of the week.
-
-    .. attribute:: wednesday
-
-        The ``2`` day of the week.
-
-    .. attribute:: thursday
-
-        The ``3`` day of the week.
-
-    .. attribute:: friday
-
-        The ``4`` day of the week.
-
-    .. attribute:: saturday
-
-        The ``5`` day of the week.
-
-    .. attribute:: sunday
-
-
-        The ``6`` day of the week.
-
-
 .. class:: VoiceChannelEffectAnimationType
 
     Represents the animation type of a voice channel effect.

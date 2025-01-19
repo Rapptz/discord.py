@@ -78,7 +78,6 @@ __all__ = (
     'SubscriptionStatus',
     'MessageReferenceType',
     'ScheduledEventRecurrenceFrequency',
-    'ScheduledEventRecurrenceWeekday',
 )
 
 
@@ -869,16 +868,6 @@ class ScheduledEventRecurrenceFrequency(Enum):
     monthly = 1
     weekly = 2
     daily = 3
-
-
-class ScheduledEventRecurrenceWeekday(Enum):
-    monday = 0
-    tuesday = 1
-    wednesday = 2
-    thursday = 3
-    friday = 4
-    saturday = 5
-    sunday = 6
 
 
 def create_unknown_value(cls: Type[E], val: Any) -> E:

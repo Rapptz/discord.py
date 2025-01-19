@@ -43,7 +43,6 @@ from .enums import (
     EntityType,
     PrivacyLevel,
     ScheduledEventRecurrenceFrequency,
-    ScheduledEventRecurrenceWeekday,
     try_enum,
 )
 from .mixins import Hashable
@@ -68,8 +67,8 @@ if TYPE_CHECKING:
 
     GuildScheduledEventPayload = Union[BaseGuildScheduledEventPayload, GuildScheduledEventWithUserCountPayload]
     Week = Literal[1, 2, 3, 4, 5]
-    NWeekday = Tuple[Week, ScheduledEventRecurrenceWeekday]
     WeekDay = Literal[0, 1, 2, 3, 4, 5, 6]
+    NWeekday = Tuple[Week, WeekDay]
 
 # fmt: off
 __all__ = (
@@ -90,18 +89,29 @@ class ScheduledEventRecurrenceRule:
         The frequency on which the event will recur.
     interval: :class:`int`
         The spacing between events, defined by ``frequency``.
+
+        Must be ``1`` except if ``frequency`` is :attr:`ScheduledEventRecurrenceFrequency.weekly`,
+        in which case it can also be ``2``.
     weekdays: List[:class:`int`]
         The days within a week the event will recur on. Must be between
         0 (Monday) and 6 (Sunday).
-    n_weekdays: List[Tuple[:class:`int`, :class:`ScheduledEventRecurrenceWeekday`]]
+
+        If ``frequency`` is ``2`` this can only have 1 item.
+
+        This is mutally exclusive with ``n_weekdays`` and ``month_days``.
+    n_weekdays: List[Tuple[:class:`int`, :class:`int`]]
         A (week, weekday) pairs list that represent the specific day within a
         specific week the event will recur on.
 
         ``week`` must be between 1 and 5, representing the first and last week of a month
         respectively.
-        ``weekday`` must be a :class:`ScheduledEventRecurrenceWeekday` enum member.
+        ``weekday`` must be an integer between 0 (Monday) and 6 (Sunday).
+
+        This is mutually exclusive with ``weekdays`` and ``month_days``.
     month_days: List[:class:`datetime.date`]
         The specific days and months in which the event will recur on. The year will be ignored.
+
+        This is mutually exclusive with ``weekdays`` and ``n_weekdays``.
 
     Attributes
     ----------
@@ -110,6 +120,64 @@ class ScheduledEventRecurrenceRule:
     count: Optional[:class:`int`]
         The amount of times the event will recur before stopping. Will be ``None``
         if :attr:`ScheduledEventRecurrenceRule.end_date` is ``None``.
+
+    Examples
+    --------
+
+    Creating a recurrence rule that repeats every weekday: ::
+
+        rrule = discord.ScheduledEventRecurrenceRule(
+            start_date=...,
+            frequency=discord.ScheduledEventRecurrenceFrequency.daily,
+            interval=1,
+            weekdays=[0, 1, 2, 3, 4],  # from monday to friday
+        )
+
+    Creating a recurrence rule that repeats every Wednesday: ::
+
+        rrule = discord.ScheduledEventRecurrenceRule(
+            start_date=...,
+            frequency=discord.ScheduledEventRecurrenceFrequency.weekly,
+            interval=1,  # interval must be 1 for the rule to be "every Wednesday"
+            weekdays=[2],  # wednesday
+        )
+
+    Creating a recurrence rule that repeats every other Wednesday: ::
+
+        rrule = discord.ScheduledEventRecurrenceRule(
+            start_date=...,
+            frequency=discord.ScheduledEventRecurrenceFrequency.weekly,
+            interval=2,  # interval CAN ONLY BE 2 in this context, and makes the rule be "every other Wednesday"
+            weekdays=[2],
+        )
+
+    Creating a recurrence rule that repeats every monthly on the fourth Wednesday: ::
+
+        rrule = discord.ScheduledEventRecurrenceRule(
+            start_date=...,
+            frequency=discord.ScheduledEventRecurrenceFrequency.monthly,
+            interval=1,
+            n_weekdays=[
+                (
+                    4,  # fourth week
+                    2,  # wednesday
+                ),
+            ],
+        )
+
+    Creating a recurrence rule that repeats anually on July 24: ::
+
+        rrule = discord.ScheduledEventRecurrenceRule(
+            start_date=...,
+            frequency=discord.ScheduledEventRecurrenceFrequency.yearly,
+            month_days=[
+                datetime.date(
+                    year=1900,  # use a placeholder year, it is ignored anyways
+                    month=7,  # July
+                    day=24,  # 24th
+                ),
+            ],
+        )
     """
 
     def __init__(
@@ -184,7 +252,7 @@ class ScheduledEventRecurrenceRule:
         ----------
         weekdays: List[:class:`int`]
             The weekdays the event will recur on. Must be between 0 (Monday) and 6 (Sunday).
-        n_weekdays: List[Tuple[:class:`int`, :class:`ScheduledEventRecurrenceWeekday`]]
+        n_weekdays: List[Tuple[:class:`int`, :class:`int`]]
             A (week, weekday) pairs list that the event will recur on.
         month_days: List[:class:`datetime.date`]
             A list of :class:`datetime.date` objects that represent a specific day on a month
@@ -243,7 +311,7 @@ class ScheduledEventRecurrenceRule:
         self._weekdays = weekdays
 
         n_weekdays = data.get('by_n_weekday', []) or []
-        self._n_weekdays = [(data['n'], try_enum(ScheduledEventRecurrenceWeekday, data['day'])) for data in n_weekdays]
+        self._n_weekdays = [(data['n'], data['day']) for data in n_weekdays]
 
         months = data.get('by_month')
         month_days = data.get('by_month_day')
@@ -270,7 +338,7 @@ class ScheduledEventRecurrenceRule:
         if self._n_weekdays is not MISSING:
             payload['by_n_weekday'] = list(
                 map(
-                    lambda nw: {'n': nw[0], 'day': nw[1].value},
+                    lambda nw: {'n': nw[0], 'day': nw[1]},
                     self._n_weekdays,
                 ),
             )
