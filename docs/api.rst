@@ -3801,7 +3801,7 @@ of :class:`enum.Enum`.
 
 .. class:: ScheduledEventRecurrenceWeekday
 
-    Represents the weekdays a scheduled event recurrence rule accepts.
+    Represents a recurrence rule weekday.
 
     .. versionadded:: 2.5
 
