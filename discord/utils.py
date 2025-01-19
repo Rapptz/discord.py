@@ -327,7 +327,7 @@ def oauth_url(
     permissions: Permissions = MISSING,
     guild: Snowflake = MISSING,
     redirect_uri: str = MISSING,
-    scopes: Iterable[str] = MISSING,
+    scopes: Optional[Iterable[str]] = MISSING,
     disable_guild_select: bool = False,
     state: str = MISSING,
 ) -> str:
@@ -369,7 +369,8 @@ def oauth_url(
         The OAuth2 URL for inviting the bot into guilds.
     """
     url = f'https://discord.com/oauth2/authorize?client_id={client_id}'
-    url += '&scope=' + '+'.join(scopes or ('bot', 'applications.commands'))
+    if scopes is not None:
+        url += '&scope=' + '+'.join(scopes or ('bot', 'applications.commands'))
     if permissions is not MISSING:
         url += f'&permissions={permissions.value}'
     if guild is not MISSING:

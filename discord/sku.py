@@ -146,12 +146,12 @@ class SKU:
 
         Usage ::
 
-            async for subscription in sku.subscriptions(limit=100):
+            async for subscription in sku.subscriptions(limit=100, user=user):
                 print(subscription.user_id, subscription.current_period_end)
 
         Flattening into a list ::
 
-            subscriptions = [subscription async for subscription in sku.subscriptions(limit=100)]
+            subscriptions = [subscription async for subscription in sku.subscriptions(limit=100, user=user)]
             # subscriptions is now a list of Subscription...
 
         All parameters are optional.
@@ -239,7 +239,7 @@ class SKU:
             data, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 1000:
+            if len(data) < 100:
                 limit = 0
 
             for e in data:

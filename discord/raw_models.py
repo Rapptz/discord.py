@@ -166,20 +166,22 @@ class RawMessageUpdateEvent(_RawReprMixin):
     cached_message: Optional[:class:`Message`]
         The cached message, if found in the internal message cache. Represents the message before
         it is modified by the data in :attr:`RawMessageUpdateEvent.data`.
+    message: :class:`Message`
+        The updated message.
+
+        .. versionadded:: 2.5
     """
 
-    __slots__ = ('message_id', 'channel_id', 'guild_id', 'data', 'cached_message')
+    __slots__ = ('message_id', 'channel_id', 'guild_id', 'data', 'cached_message', 'message')
 
-    def __init__(self, data: MessageUpdateEvent) -> None:
-        self.message_id: int = int(data['id'])
-        self.channel_id: int = int(data['channel_id'])
+    def __init__(self, data: MessageUpdateEvent, message: Message) -> None:
+        self.message_id: int = message.id
+        self.channel_id: int = message.channel.id
         self.data: MessageUpdateEvent = data
+        self.message: Message = message
         self.cached_message: Optional[Message] = None
 
-        try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
-        except KeyError:
-            self.guild_id: Optional[int] = None
+        self.guild_id: Optional[int] = message.guild.id if message.guild else None
 
 
 class RawReactionActionEvent(_RawReprMixin):
