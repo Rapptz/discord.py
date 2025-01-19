@@ -213,7 +213,7 @@ class ScheduledEventRecurrenceRule:
 
     @property
     def n_weekdays(self) -> List[NWeekday]:
-        """List[Tuple[:class:`int`, :class:`ScheduledEventRecurrenceWeekday`]]: Returns
+        """List[Tuple[:class:`int`, :class:`int`]]: Returns
         a read-only list containing all the specific days within a specific week the
         event will recur on.
         """
