@@ -36,7 +36,6 @@ from typing import (
     Literal,
     List,
 )
-from functools import partial
 
 from .asset import Asset
 from .enums import (
@@ -58,7 +57,6 @@ if TYPE_CHECKING:
         GuildScheduledEvent as BaseGuildScheduledEventPayload,
         GuildScheduledEventWithUserCount as GuildScheduledEventWithUserCountPayload,
         ScheduledEventRecurrenceRule as ScheduledEventRecurrenceRulePayload,
-        _NWeekday as NWeekdayPayload,
         EntityMetadata,
     )
 
@@ -223,10 +221,7 @@ class ScheduledEventRecurrenceRule:
         return months, days
 
     def _parse_month_days_payload(self, months: List[int], days: List[int]) -> List[date]:
-        return [
-            date(1900, month, day)
-            for month, day in zip(months, days)
-        ]
+        return [date(1900, month, day) for month, day in zip(months, days)]
 
     @classmethod
     def from_data(cls, data: Optional[ScheduledEventRecurrenceRulePayload]) -> Optional[Self]:
@@ -247,10 +242,7 @@ class ScheduledEventRecurrenceRule:
         self._weekdays = weekdays
 
         n_weekdays = data.get('by_n_weekday', []) or []
-        self._n_weekdays = [
-            (data['n'], try_enum(ScheduledEventRecurrenceWeekday, data['day']))
-            for data in n_weekdays
-        ]
+        self._n_weekdays = [(data['n'], try_enum(ScheduledEventRecurrenceWeekday, data['day'])) for data in n_weekdays]
 
         months = data.get('by_month')
         month_days = data.get('by_month_day')
