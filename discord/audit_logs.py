@@ -874,8 +874,11 @@ class AuditLogEntry(Hashable):
     def _convert_target_emoji(self, target_id: int) -> Union[Emoji, Object]:
         return self._state.get_emoji(target_id) or Object(id=target_id, type=Emoji)
 
-    def _convert_target_message(self, target_id: int) -> Union[Member, User, Object]:
-        return self._get_member(target_id) or Object(id=target_id, type=Member)
+    def _convert_target_message(self, target_id: Optional[int]) -> Union[Member, User, Object, None]:
+        # The message_pin and message_unpin action types do not have a 
+        # non-null target_id so safeguard against that
+
+        return target_id and self._get_member(target_id) or Object(id=target_id, type=Member)
 
     def _convert_target_stage_instance(self, target_id: int) -> Union[StageInstance, Object]:
         return self.guild.get_stage_instance(target_id) or Object(id=target_id, type=StageInstance)
