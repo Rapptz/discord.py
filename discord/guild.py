@@ -94,10 +94,12 @@ from .object import OLDEST_OBJECT, Object
 from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 from .partial_emoji import _EmojiTag, PartialEmoji
+from .soundboard import SoundboardSound
 
 
 __all__ = (
     'Guild',
+    'GuildPreview',
     'BanEntry',
 )
 
@@ -108,6 +110,7 @@ if TYPE_CHECKING:
     from .types.guild import (
         Ban as BanPayload,
         Guild as GuildPayload,
+        GuildPreview as GuildPreviewPayload,
         RolePositionUpdate as RolePositionUpdatePayload,
         GuildFeature,
         IncidentData,
@@ -157,6 +160,121 @@ class _GuildLimit(NamedTuple):
     stickers: int
     bitrate: float
     filesize: int
+
+
+class GuildPreview(Hashable):
+    """Represents a preview of a Discord guild.
+
+        .. versionadded:: 2.5
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two guild previews are equal.
+
+        .. describe:: x != y
+
+            Checks if two guild previews are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the guild's hash.
+
+        .. describe:: str(x)
+
+            Returns the guild's name.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The guild preview's name.
+    id: :class:`int`
+        The guild preview's ID.
+    features: List[:class:`str`]
+        A list of features the guild has. See :attr:`Guild.features` for more information.
+    description: Optional[:class:`str`]
+        The guild preview's description.
+    emojis: Tuple[:class:`Emoji`, ...]
+        All emojis that the guild owns.
+    stickers: Tuple[:class:`GuildSticker`, ...]
+        All stickers that the guild owns.
+    approximate_member_count: :class:`int`
+        The approximate number of members in the guild.
+    approximate_presence_count: :class:`int`
+        The approximate number of members currently active in in the guild. Offline members are excluded.
+    """
+
+    __slots__ = (
+        '_state',
+        '_icon',
+        '_splash',
+        '_discovery_splash',
+        'id',
+        'name',
+        'emojis',
+        'stickers',
+        'features',
+        'description',
+        "approximate_member_count",
+        "approximate_presence_count",
+    )
+
+    def __init__(self, *, data: GuildPreviewPayload, state: ConnectionState) -> None:
+        self._state: ConnectionState = state
+        self.id = int(data['id'])
+        self.name: str = data['name']
+        self._icon: Optional[str] = data.get('icon')
+        self._splash: Optional[str] = data.get('splash')
+        self._discovery_splash: Optional[str] = data.get('discovery_splash')
+        self.emojis: Tuple[Emoji, ...] = tuple(
+            map(
+                lambda d: Emoji(guild=state._get_or_create_unavailable_guild(self.id), state=state, data=d),
+                data.get('emojis', []),
+            )
+        )
+        self.stickers: Tuple[GuildSticker, ...] = tuple(
+            map(lambda d: GuildSticker(state=state, data=d), data.get('stickers', []))
+        )
+        self.features: List[GuildFeature] = data.get('features', [])
+        self.description: Optional[str] = data.get('description')
+        self.approximate_member_count: int = data.get('approximate_member_count')
+        self.approximate_presence_count: int = data.get('approximate_presence_count')
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return (
+            f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r} '
+            f'features={self.features}>'
+        )
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+    @property
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the guild's icon asset, if available."""
+        if self._icon is None:
+            return None
+        return Asset._from_guild_icon(self._state, self.id, self._icon)
+
+    @property
+    def splash(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the guild's invite splash asset, if available."""
+        if self._splash is None:
+            return None
+        return Asset._from_guild_image(self._state, self.id, self._splash, path='splashes')
+
+    @property
+    def discovery_splash(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the guild's discovery splash asset, if available."""
+        if self._discovery_splash is None:
+            return None
+        return Asset._from_guild_image(self._state, self.id, self._discovery_splash, path='discovery-splashes')
 
 
 class Guild(Hashable):
@@ -328,6 +446,7 @@ class Guild(Hashable):
         '_safety_alerts_channel_id',
         'max_stage_video_users',
         '_incidents_data',
+        '_soundboard_sounds',
     )
 
     _PREMIUM_GUILD_LIMITS: ClassVar[Dict[Optional[int], _GuildLimit]] = {
@@ -345,6 +464,7 @@ class Guild(Hashable):
         self._threads: Dict[int, Thread] = {}
         self._stage_instances: Dict[int, StageInstance] = {}
         self._scheduled_events: Dict[int, ScheduledEvent] = {}
+        self._soundboard_sounds: Dict[int, SoundboardSound] = {}
         self._state: ConnectionState = state
         self._member_count: Optional[int] = None
         self._from_data(data)
@@ -389,6 +509,12 @@ class Guild(Hashable):
         for k in to_remove:
             del self._threads[k]
         return to_remove
+
+    def _add_soundboard_sound(self, sound: SoundboardSound, /) -> None:
+        self._soundboard_sounds[sound.id] = sound
+
+    def _remove_soundboard_sound(self, sound: SoundboardSound, /) -> None:
+        self._soundboard_sounds.pop(sound.id, None)
 
     def __str__(self) -> str:
         return self.name or ''
@@ -546,6 +672,11 @@ class Guild(Hashable):
             for s in guild['guild_scheduled_events']:
                 scheduled_event = ScheduledEvent(data=s, state=self._state)
                 self._scheduled_events[scheduled_event.id] = scheduled_event
+
+        if 'soundboard_sounds' in guild:
+            for s in guild['soundboard_sounds']:
+                soundboard_sound = SoundboardSound(guild=self, data=s, state=self._state)
+                self._add_soundboard_sound(soundboard_sound)
 
     @property
     def channels(self) -> Sequence[GuildChannel]:
@@ -995,6 +1126,37 @@ class Guild(Hashable):
             The scheduled event or ``None`` if not found.
         """
         return self._scheduled_events.get(scheduled_event_id)
+
+    @property
+    def soundboard_sounds(self) -> Sequence[SoundboardSound]:
+        """Sequence[:class:`SoundboardSound`]: Returns a sequence of the guild's soundboard sounds.
+
+        .. versionadded:: 2.5
+        """
+        return utils.SequenceProxy(self._soundboard_sounds.values())
+
+    def get_soundboard_sound(self, sound_id: int, /) -> Optional[SoundboardSound]:
+        """Returns a soundboard sound with the given ID.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        -----------
+        sound_id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`SoundboardSound`]
+            The soundboard sound or ``None`` if not found.
+        """
+        return self._soundboard_sounds.get(sound_id)
+
+    def _resolve_soundboard_sound(self, id: Optional[int], /) -> Optional[SoundboardSound]:
+        if id is None:
+            return
+
+        return self._soundboard_sounds.get(id)
 
     @property
     def owner(self) -> Optional[Member]:
@@ -4308,6 +4470,8 @@ class Guild(Hashable):
         -------
         Forbidden
             You do not have permission to view the automod rule.
+        NotFound
+            The automod rule does not exist within this guild.
 
         Returns
         --------
@@ -4496,3 +4660,130 @@ class Guild(Hashable):
             return False
 
         return self.raid_detected_at > utils.utcnow()
+
+    async def fetch_soundboard_sound(self, sound_id: int, /) -> SoundboardSound:
+        """|coro|
+
+        Retrieves a :class:`SoundboardSound` with the specified ID.
+
+        .. versionadded:: 2.5
+
+        .. note::
+
+            Using this, in order to receive :attr:`SoundboardSound.user`, you must have :attr:`~Permissions.create_expressions`
+            or :attr:`~Permissions.manage_expressions`.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`get_soundboard_sound` instead.
+
+        Raises
+        -------
+        NotFound
+            The sound requested could not be found.
+        HTTPException
+            Retrieving the sound failed.
+
+        Returns
+        --------
+        :class:`SoundboardSound`
+            The retrieved sound.
+        """
+        data = await self._state.http.get_soundboard_sound(self.id, sound_id)
+        return SoundboardSound(guild=self, state=self._state, data=data)
+
+    async def fetch_soundboard_sounds(self) -> List[SoundboardSound]:
+        """|coro|
+
+        Retrieves a list of all soundboard sounds for the guild.
+
+        .. versionadded:: 2.5
+
+        .. note::
+
+            Using this, in order to receive :attr:`SoundboardSound.user`, you must have :attr:`~Permissions.create_expressions`
+            or :attr:`~Permissions.manage_expressions`.
+
+        .. note::
+
+            This method is an API call. For general usage, consider :attr:`soundboard_sounds` instead.
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the sounds failed.
+
+        Returns
+        --------
+        List[:class:`SoundboardSound`]
+            The retrieved soundboard sounds.
+        """
+        data = await self._state.http.get_soundboard_sounds(self.id)
+        return [SoundboardSound(guild=self, state=self._state, data=sound) for sound in data['items']]
+
+    async def create_soundboard_sound(
+        self,
+        *,
+        name: str,
+        sound: bytes,
+        volume: float = 1,
+        emoji: Optional[EmojiInputType] = None,
+        reason: Optional[str] = None,
+    ) -> SoundboardSound:
+        """|coro|
+
+        Creates a :class:`SoundboardSound` for the guild.
+        You must have :attr:`Permissions.create_expressions` to do this.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The name of the sound. Must be between 2 and 32 characters.
+        sound: :class:`bytes`
+            The :term:`py:bytes-like object` representing the sound data.
+            Only MP3 and OGG sound files that don't exceed the duration of 5.2s are supported.
+        volume: :class:`float`
+            The volume of the sound. Must be between 0 and 1. Defaults to ``1``.
+        emoji: Optional[Union[:class:`Emoji`, :class:`PartialEmoji`, :class:`str`]]
+            The emoji of the sound.
+        reason: Optional[:class:`str`]
+            The reason for creating the sound. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You do not have permissions to create a soundboard sound.
+        HTTPException
+            Creating the soundboard sound failed.
+
+        Returns
+        -------
+        :class:`SoundboardSound`
+            The newly created soundboard sound.
+        """
+        payload: Dict[str, Any] = {
+            'name': name,
+            'sound': utils._bytes_to_base64_data(sound, audio=True),
+            'volume': volume,
+            'emoji_id': None,
+            'emoji_name': None,
+        }
+
+        if emoji is not None:
+            if isinstance(emoji, _EmojiTag):
+                partial_emoji = emoji._to_partial()
+            elif isinstance(emoji, str):
+                partial_emoji = PartialEmoji.from_str(emoji)
+            else:
+                partial_emoji = None
+
+            if partial_emoji is not None:
+                if partial_emoji.id is None:
+                    payload['emoji_name'] = partial_emoji.name
+                else:
+                    payload['emoji_id'] = partial_emoji.id
+
+        data = await self._state.http.create_soundboard_sound(self.id, reason=reason, **payload)
+        return SoundboardSound(guild=self, state=self._state, data=data)

@@ -29,7 +29,7 @@ from typing import Optional, List, TYPE_CHECKING, Union, AsyncIterator, Dict
 
 import datetime
 
-from .enums import PollLayoutType, try_enum
+from .enums import PollLayoutType, try_enum, MessageType
 from . import utils
 from .emoji import PartialEmoji, Emoji
 from .user import User
@@ -125,7 +125,16 @@ class PollAnswer:
         Whether the current user has voted to this answer or not.
     """
 
-    __slots__ = ('media', 'id', '_state', '_message', '_vote_count', 'self_voted', '_poll')
+    __slots__ = (
+        'media',
+        'id',
+        '_state',
+        '_message',
+        '_vote_count',
+        'self_voted',
+        '_poll',
+        '_victor',
+    )
 
     def __init__(
         self,
@@ -141,6 +150,7 @@ class PollAnswer:
         self._vote_count: int = 0
         self.self_voted: bool = False
         self._poll: Poll = poll
+        self._victor: bool = False
 
     def _handle_vote_event(self, added: bool, self_voted: bool) -> None:
         if added:
@@ -209,6 +219,19 @@ class PollAnswer:
         return {
             'poll_media': self.media.to_dict(),
         }
+
+    @property
+    def victor(self) -> bool:
+        """:class:`bool`: Whether the answer is the one that had the most
+        votes when the poll ended.
+
+        .. versionadded:: 2.5
+
+        .. note::
+
+            If the poll has not ended, this will always return ``False``.
+        """
+        return self._victor
 
     async def voters(
         self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
@@ -325,6 +348,8 @@ class Poll:
         '_expiry',
         '_finalized',
         '_state',
+        '_total_votes',
+        '_victor_answer_id',
     )
 
     def __init__(
@@ -348,6 +373,8 @@ class Poll:
         self._state: Optional[ConnectionState] = None
         self._finalized: bool = False
         self._expiry: Optional[datetime.datetime] = None
+        self._total_votes: Optional[int] = None
+        self._victor_answer_id: Optional[int] = None
 
     def _update(self, message: Message) -> None:
         self._state = message._state
@@ -359,6 +386,34 @@ class Poll:
         # The message's poll contains the more up to date data.
         self._expiry = message.poll.expires_at
         self._finalized = message.poll._finalized
+        self._answers = message.poll._answers
+        self._update_results_from_message(message)
+
+    def _update_results_from_message(self, message: Message) -> None:
+        if message.type != MessageType.poll_result or not message.embeds:
+            return
+
+        result_embed = message.embeds[0]  # Will always have 1 embed
+        fields: Dict[str, str] = {field.name: field.value for field in result_embed.fields}  # type: ignore
+
+        total_votes = fields.get('total_votes')
+
+        if total_votes is not None:
+            self._total_votes = int(total_votes)
+
+        victor_answer = fields.get('victor_answer_id')
+
+        if victor_answer is None:
+            return  # Can't do anything else without the victor answer
+
+        self._victor_answer_id = int(victor_answer)
+
+        victor_answer_votes = fields['victor_answer_votes']
+
+        answer = self._answers[self._victor_answer_id]
+        answer._victor = True
+        answer._vote_count = int(victor_answer_votes)
+        self._answers[answer.id] = answer  # Ensure update
 
     def _update_results(self, data: PollResultPayload) -> None:
         self._finalized = data['is_finalized']
@@ -432,6 +487,32 @@ class Poll:
         return list(self._answers.values())
 
     @property
+    def victor_answer_id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The victor answer ID.
+
+        .. versionadded:: 2.5
+
+        .. note::
+
+            This will **always** be ``None`` for polls that have not yet finished.
+        """
+        return self._victor_answer_id
+
+    @property
+    def victor_answer(self) -> Optional[PollAnswer]:
+        """Optional[:class:`PollAnswer`]: The victor answer.
+
+        .. versionadded:: 2.5
+
+        .. note::
+
+            This will **always** be ``None`` for polls that have not yet finished.
+        """
+        if self.victor_answer_id is None:
+            return None
+        return self.get_answer(self.victor_answer_id)
+
+    @property
     def expires_at(self) -> Optional[datetime.datetime]:
         """Optional[:class:`datetime.datetime`]: A datetime object representing the poll expiry.
 
@@ -456,12 +537,20 @@ class Poll:
 
     @property
     def message(self) -> Optional[Message]:
-        """:class:`Message`: The message this poll is from."""
+        """Optional[:class:`Message`]: The message this poll is from."""
         return self._message
 
     @property
     def total_votes(self) -> int:
-        """:class:`int`: Returns the sum of all the answer votes."""
+        """:class:`int`: Returns the sum of all the answer votes.
+
+        If the poll has not yet finished, this is an approximate vote count.
+
+        .. versionchanged:: 2.5
+            This now returns an exact vote count when updated from its poll results message.
+        """
+        if self._total_votes is not None:
+            return self._total_votes
         return sum([answer.vote_count for answer in self.answers])
 
     def is_finalised(self) -> bool:
@@ -568,6 +657,7 @@ class Poll:
         if not self._message or not self._state:  # Make type checker happy
             raise ClientException('This poll has no attached message.')
 
-        self._message = await self._message.end_poll()
+        message = await self._message.end_poll()
+        self._update(message)
 
         return self
