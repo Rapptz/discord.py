@@ -99,6 +99,7 @@ from .soundboard import SoundboardSound
 
 __all__ = (
     'Guild',
+    'GuildPreview',
     'BanEntry',
 )
 
@@ -109,6 +110,7 @@ if TYPE_CHECKING:
     from .types.guild import (
         Ban as BanPayload,
         Guild as GuildPayload,
+        GuildPreview as GuildPreviewPayload,
         RolePositionUpdate as RolePositionUpdatePayload,
         GuildFeature,
         IncidentData,
@@ -158,6 +160,121 @@ class _GuildLimit(NamedTuple):
     stickers: int
     bitrate: float
     filesize: int
+
+
+class GuildPreview(Hashable):
+    """Represents a preview of a Discord guild.
+
+        .. versionadded:: 2.5
+
+    .. container:: operations
+
+        .. describe:: x == y
+
+            Checks if two guild previews are equal.
+
+        .. describe:: x != y
+
+            Checks if two guild previews are not equal.
+
+        .. describe:: hash(x)
+
+            Returns the guild's hash.
+
+        .. describe:: str(x)
+
+            Returns the guild's name.
+
+    Attributes
+    ----------
+    name: :class:`str`
+        The guild preview's name.
+    id: :class:`int`
+        The guild preview's ID.
+    features: List[:class:`str`]
+        A list of features the guild has. See :attr:`Guild.features` for more information.
+    description: Optional[:class:`str`]
+        The guild preview's description.
+    emojis: Tuple[:class:`Emoji`, ...]
+        All emojis that the guild owns.
+    stickers: Tuple[:class:`GuildSticker`, ...]
+        All stickers that the guild owns.
+    approximate_member_count: :class:`int`
+        The approximate number of members in the guild.
+    approximate_presence_count: :class:`int`
+        The approximate number of members currently active in in the guild. Offline members are excluded.
+    """
+
+    __slots__ = (
+        '_state',
+        '_icon',
+        '_splash',
+        '_discovery_splash',
+        'id',
+        'name',
+        'emojis',
+        'stickers',
+        'features',
+        'description',
+        "approximate_member_count",
+        "approximate_presence_count",
+    )
+
+    def __init__(self, *, data: GuildPreviewPayload, state: ConnectionState) -> None:
+        self._state: ConnectionState = state
+        self.id = int(data['id'])
+        self.name: str = data['name']
+        self._icon: Optional[str] = data.get('icon')
+        self._splash: Optional[str] = data.get('splash')
+        self._discovery_splash: Optional[str] = data.get('discovery_splash')
+        self.emojis: Tuple[Emoji, ...] = tuple(
+            map(
+                lambda d: Emoji(guild=state._get_or_create_unavailable_guild(self.id), state=state, data=d),
+                data.get('emojis', []),
+            )
+        )
+        self.stickers: Tuple[GuildSticker, ...] = tuple(
+            map(lambda d: GuildSticker(state=state, data=d), data.get('stickers', []))
+        )
+        self.features: List[GuildFeature] = data.get('features', [])
+        self.description: Optional[str] = data.get('description')
+        self.approximate_member_count: int = data.get('approximate_member_count')
+        self.approximate_presence_count: int = data.get('approximate_presence_count')
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __repr__(self) -> str:
+        return (
+            f'<{self.__class__.__name__} id={self.id} name={self.name!r} description={self.description!r} '
+            f'features={self.features}>'
+        )
+
+    @property
+    def created_at(self) -> datetime.datetime:
+        """:class:`datetime.datetime`: Returns the guild's creation time in UTC."""
+        return utils.snowflake_time(self.id)
+
+    @property
+    def icon(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the guild's icon asset, if available."""
+        if self._icon is None:
+            return None
+        return Asset._from_guild_icon(self._state, self.id, self._icon)
+
+    @property
+    def splash(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the guild's invite splash asset, if available."""
+        if self._splash is None:
+            return None
+        return Asset._from_guild_image(self._state, self.id, self._splash, path='splashes')
+
+    @property
+    def discovery_splash(self) -> Optional[Asset]:
+        """Optional[:class:`Asset`]: Returns the guild's discovery splash asset, if available."""
+        if self._discovery_splash is None:
+            return None
+        return Asset._from_guild_image(self._state, self.id, self._discovery_splash, path='discovery-splashes')
 
 
 class Guild(Hashable):

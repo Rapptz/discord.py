@@ -40,3 +40,4 @@ class Subscription(TypedDict):
     current_period_end: str
     status: SubscriptionStatus
     canceled_at: Optional[str]
+    renewal_sku_ids: Optional[List[Snowflake]]

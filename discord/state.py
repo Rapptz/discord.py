@@ -557,6 +557,27 @@ class ConnectionState(Generic[ClientT]):
         poll._handle_vote(answer_id, added, self_voted)
         return poll
 
+    def _update_poll_results(self, from_: Message, to: Union[Message, int]) -> None:
+        if isinstance(to, Message):
+            cached = self._get_message(to.id)
+        elif isinstance(to, int):
+            cached = self._get_message(to)
+
+            if cached is None:
+                return
+
+            to = cached
+        else:
+            return
+
+        if to.poll is None:
+            return
+
+        to.poll._update_results_from_message(from_)
+
+        if cached is not None and cached.poll:
+            cached.poll._update_results_from_message(from_)
+
     async def chunker(
         self, guild_id: int, query: str = '', limit: int = 0, presences: bool = False, *, nonce: Optional[str] = None
     ) -> None:
@@ -695,17 +716,21 @@ class ConnectionState(Generic[ClientT]):
                 self._messages.remove(msg)  # type: ignore
 
     def parse_message_update(self, data: gw.MessageUpdateEvent) -> None:
-        raw = RawMessageUpdateEvent(data)
-        message = self._get_message(raw.message_id)
-        if message is not None:
-            older_message = copy.copy(message)
+        channel, _ = self._get_guild_channel(data)
+        # channel would be the correct type here
+        updated_message = Message(channel=channel, data=data, state=self)  # type: ignore
+
+        raw = RawMessageUpdateEvent(data=data, message=updated_message)
+        cached_message = self._get_message(updated_message.id)
+        if cached_message is not None:
+            older_message = copy.copy(cached_message)
             raw.cached_message = older_message
             self.dispatch('raw_message_edit', raw)
-            message._update(data)
+            cached_message._update(data)
             # Coerce the `after` parameter to take the new updated Member
             # ref: #5999
-            older_message.author = message.author
-            self.dispatch('message_edit', older_message, message)
+            older_message.author = updated_message.author
+            self.dispatch('message_edit', older_message, updated_message)
         else:
             self.dispatch('raw_message_edit', raw)
 

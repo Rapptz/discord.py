@@ -111,12 +111,17 @@ class SleepHandle:
         self.loop: asyncio.AbstractEventLoop = loop
         self.future: asyncio.Future[None] = loop.create_future()
         relative_delta = discord.utils.compute_timedelta(dt)
-        self.handle = loop.call_later(relative_delta, self.future.set_result, None)
+        self.handle = loop.call_later(relative_delta, self._wrapped_set_result, self.future)
+
+    @staticmethod
+    def _wrapped_set_result(future: asyncio.Future) -> None:
+        if not future.done():
+            future.set_result(None)
 
     def recalculate(self, dt: datetime.datetime) -> None:
         self.handle.cancel()
         relative_delta = discord.utils.compute_timedelta(dt)
-        self.handle: asyncio.TimerHandle = self.loop.call_later(relative_delta, self.future.set_result, None)
+        self.handle: asyncio.TimerHandle = self.loop.call_later(relative_delta, self._wrapped_set_result, self.future)
 
     def wait(self) -> asyncio.Future[Any]:
         return self.future

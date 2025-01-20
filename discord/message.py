@@ -528,7 +528,7 @@ class MessageSnapshot:
         self.created_at: datetime.datetime = utils.parse_time(data['timestamp'])
         self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
         self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
-        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('stickers_items', [])]
+        self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
 
         self.components: List[MessageComponentType] = []
         for component_data in data.get('components', []):
@@ -2268,6 +2268,13 @@ class Message(PartialMessage, Hashable):
                     # the channel will be the correct type here
                     ref.resolved = self.__class__(channel=chan, data=resolved, state=state)  # type: ignore
 
+            if self.type is MessageType.poll_result:
+                if isinstance(self.reference.resolved, self.__class__):
+                    self._state._update_poll_results(self, self.reference.resolved)
+                else:
+                    if self.reference.message_id:
+                        self._state._update_poll_results(self, self.reference.message_id)
+
         self.application: Optional[MessageApplication] = None
         try:
             application = data['application']
@@ -2634,6 +2641,7 @@ class Message(PartialMessage, Hashable):
             MessageType.chat_input_command,
             MessageType.context_menu_command,
             MessageType.thread_starter_message,
+            MessageType.poll_result,
         )
 
     @utils.cached_slot_property('_cs_system_content')
@@ -2809,6 +2817,14 @@ class Message(PartialMessage, Hashable):
             guild_product_purchase = self.purchase_notification.guild_product_purchase
             if guild_product_purchase is not None:
                 return f'{self.author.name} has purchased {guild_product_purchase.product_name}!'
+
+        if self.type is MessageType.poll_result:
+            embed = self.embeds[0]  # Will always have 1 embed
+            poll_title = utils.get(
+                embed.fields,
+                name='poll_question_text',
+            )
+            return f'{self.author.display_name}\'s poll {poll_title.value} has closed.'  # type: ignore
 
         # Fallback for unknown message types
         return ''

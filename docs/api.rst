@@ -1910,6 +1910,10 @@ of :class:`enum.Enum`.
 
         .. versionadded:: 2.5
 
+    .. attribute:: poll_result
+
+        The system message sent when a poll has closed.
+
 .. class:: UserFlags
 
     Represents Discord User flags.
@@ -4838,6 +4842,13 @@ Guild
 
         :type: List[:class:`Object`]
 
+GuildPreview
+~~~~~~~~~~~~
+
+.. attributetable:: GuildPreview
+
+.. autoclass:: GuildPreview
+    :members:
 
 ScheduledEvent
 ~~~~~~~~~~~~~~

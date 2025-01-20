@@ -53,7 +53,7 @@ from .user import User, ClientUser
 from .invite import Invite
 from .template import Template
 from .widget import Widget
-from .guild import Guild
+from .guild import Guild, GuildPreview
 from .emoji import Emoji
 from .channel import _threaded_channel_factory, PartialMessageable
 from .enums import ChannelType, EntitlementOwnerType
@@ -2365,6 +2365,29 @@ class Client:
         data = await self.http.get_guild(guild_id, with_counts=with_counts)
         return Guild(data=data, state=self._connection)
 
+    async def fetch_guild_preview(self, guild_id: int) -> GuildPreview:
+        """|coro|
+
+        Retrieves a preview of a :class:`.Guild` from an ID. If the guild is discoverable,
+        you don't have to be a member of it.
+
+        .. versionadded:: 2.5
+
+        Raises
+        ------
+        NotFound
+            The guild doesn't exist, or is not discoverable and you are not in it.
+        HTTPException
+            Getting the guild failed.
+
+        Returns
+        --------
+        :class:`.GuildPreview`
+            The guild preview from the ID.
+        """
+        data = await self.http.get_guild_preview(guild_id)
+        return GuildPreview(data=data, state=self._connection)
+
     async def create_guild(
         self,
         *,
@@ -2810,6 +2833,7 @@ class Client:
         user: Optional[Snowflake] = None,
         guild: Optional[Snowflake] = None,
         exclude_ended: bool = False,
+        exclude_deleted: bool = True,
     ) -> AsyncIterator[Entitlement]:
         """Retrieves an :term:`asynchronous iterator` of the :class:`.Entitlement` that applications has.
 
@@ -2851,6 +2875,10 @@ class Client:
             The guild to filter by.
         exclude_ended: :class:`bool`
             Whether to exclude ended entitlements. Defaults to ``False``.
+        exclude_deleted: :class:`bool`
+            Whether to exclude deleted entitlements. Defaults to ``True``.
+
+            .. versionadded:: 2.5
 
         Raises
         -------
@@ -2887,6 +2915,7 @@ class Client:
                 user_id=user.id if user else None,
                 guild_id=guild.id if guild else None,
                 exclude_ended=exclude_ended,
+                exclude_deleted=exclude_deleted,
             )
 
             if data:
@@ -2935,7 +2964,7 @@ class Client:
             data, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 1000:
+            if len(data) < 100:
                 limit = 0
 
             for e in data:
@@ -3180,7 +3209,7 @@ class Client:
         Parameters
         ----------
         name: :class:`str`
-            The emoji name. Must be at least 2 characters.
+            The emoji name. Must be between 2 and 32 characters long.
         image: :class:`bytes`
             The :term:`py:bytes-like object` representing the image data to use.
             Only JPG, PNG and GIF images are supported.
