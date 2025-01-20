@@ -113,12 +113,7 @@ class ClientStatus:
         return try_enum(Status, self.web or 'offline')
 
     def is_on_mobile(self) -> bool:
-        """A helper function that determines if a user is active on a mobile device.
-
-        Returns
-        -------
-        :class:`bool`
-        """
+        """:class:`bool`: A helper function that determines if a user is active on a mobile device."""
         return self.mobile is not None
 
 
