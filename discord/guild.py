@@ -95,7 +95,7 @@ from .welcome_screen import WelcomeScreen, WelcomeChannel
 from .automod import AutoModRule, AutoModTrigger, AutoModRuleAction
 from .partial_emoji import _EmojiTag, PartialEmoji
 from .soundboard import SoundboardSound
-
+from .presences import RawPresenceUpdateEvent
 
 __all__ = (
     'Guild',
@@ -653,10 +653,11 @@ class Guild(Hashable):
 
         empty_tuple = ()
         for presence in guild.get('presences', []):
-            user_id = int(presence['user']['id'])
-            member = self.get_member(user_id)
+            raw_presence = RawPresenceUpdateEvent(data=presence, state=self._state)
+            member = self.get_member(raw_presence.user_id)
+
             if member is not None:
-                member._presence_update(presence, empty_tuple)  # type: ignore
+                member._presence_update(raw_presence, empty_tuple)  # type: ignore
 
         if 'threads' in guild:
             threads = guild['threads']

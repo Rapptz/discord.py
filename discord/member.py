@@ -36,13 +36,13 @@ from . import utils
 from .asset import Asset
 from .utils import MISSING
 from .user import BaseUser, ClientUser, User, _UserTag
-from .activity import create_activity, ActivityTypes
 from .permissions import Permissions
-from .enums import Status, try_enum
+from .enums import Status
 from .errors import ClientException
 from .colour import Colour
 from .object import Object
 from .flags import MemberFlags
+from .presences import ClientStatus
 
 __all__ = (
     'VoiceState',
@@ -57,10 +57,8 @@ if TYPE_CHECKING:
     from .channel import DMChannel, VoiceChannel, StageChannel
     from .flags import PublicUserFlags
     from .guild import Guild
-    from .types.activity import (
-        ClientStatus as ClientStatusPayload,
-        PartialPresenceUpdate,
-    )
+    from .activity import ActivityTypes
+    from .presences import RawPresenceUpdateEvent
     from .types.member import (
         MemberWithUser as MemberWithUserPayload,
         Member as MemberPayload,
@@ -168,46 +166,6 @@ class VoiceState:
         return f'<{self.__class__.__name__} {inner}>'
 
 
-class _ClientStatus:
-    __slots__ = ('_status', 'desktop', 'mobile', 'web')
-
-    def __init__(self):
-        self._status: str = 'offline'
-
-        self.desktop: Optional[str] = None
-        self.mobile: Optional[str] = None
-        self.web: Optional[str] = None
-
-    def __repr__(self) -> str:
-        attrs = [
-            ('_status', self._status),
-            ('desktop', self.desktop),
-            ('mobile', self.mobile),
-            ('web', self.web),
-        ]
-        inner = ' '.join('%s=%r' % t for t in attrs)
-        return f'<{self.__class__.__name__} {inner}>'
-
-    def _update(self, status: str, data: ClientStatusPayload, /) -> None:
-        self._status = status
-
-        self.desktop = data.get('desktop')
-        self.mobile = data.get('mobile')
-        self.web = data.get('web')
-
-    @classmethod
-    def _copy(cls, client_status: Self, /) -> Self:
-        self = cls.__new__(cls)  # bypass __init__
-
-        self._status = client_status._status
-
-        self.desktop = client_status.desktop
-        self.mobile = client_status.mobile
-        self.web = client_status.web
-
-        return self
-
-
 def flatten_user(cls: T) -> T:
     for attr, value in itertools.chain(BaseUser.__dict__.items(), User.__dict__.items()):
         # ignore private/special methods
@@ -306,6 +264,10 @@ class Member(discord.abc.Messageable, _UserTag):
         This will be set to ``None`` or a time in the past if the user is not timed out.
 
         .. versionadded:: 2.0
+    client_status: :class:`ClientStatus`
+        Model which holds information about the status of the member on various clients/platforms via presence updates.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -318,7 +280,7 @@ class Member(discord.abc.Messageable, _UserTag):
         'nick',
         'timed_out_until',
         '_permissions',
-        '_client_status',
+        'client_status',
         '_user',
         '_state',
         '_avatar',
@@ -354,7 +316,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self.joined_at: Optional[datetime.datetime] = utils.parse_time(data.get('joined_at'))
         self.premium_since: Optional[datetime.datetime] = utils.parse_time(data.get('premium_since'))
         self._roles: utils.SnowflakeList = utils.SnowflakeList(map(int, data['roles']))
-        self._client_status: _ClientStatus = _ClientStatus()
+        self.client_status: ClientStatus = ClientStatus()
         self.activities: Tuple[ActivityTypes, ...] = ()
         self.nick: Optional[str] = data.get('nick', None)
         self.pending: bool = data.get('pending', False)
@@ -430,7 +392,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._roles = utils.SnowflakeList(member._roles, is_sorted=True)
         self.joined_at = member.joined_at
         self.premium_since = member.premium_since
-        self._client_status = _ClientStatus._copy(member._client_status)
+        self.client_status = member.client_status
         self.guild = member.guild
         self.nick = member.nick
         self.pending = member.pending
@@ -473,13 +435,12 @@ class Member(discord.abc.Messageable, _UserTag):
         self._flags = data.get('flags', 0)
         self._avatar_decoration_data = data.get('avatar_decoration_data')
 
-    def _presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
-        self.activities = tuple(create_activity(d, self._state) for d in data['activities'])
-        self._client_status._update(data['status'], data['client_status'])
+    def _presence_update(self, raw: RawPresenceUpdateEvent, user: UserPayload) -> Optional[Tuple[User, User]]:
+        self.activities = raw.activities
+        self.client_status = raw.client_status
 
         if len(user) > 1:
             return self._update_inner_user(user)
-        return None
 
     def _update_inner_user(self, user: UserPayload) -> Optional[Tuple[User, User]]:
         u = self._user
@@ -518,7 +479,7 @@ class Member(discord.abc.Messageable, _UserTag):
     @property
     def status(self) -> Status:
         """:class:`Status`: The member's overall status. If the value is unknown, then it will be a :class:`str` instead."""
-        return try_enum(Status, self._client_status._status)
+        return self.client_status.status
 
     @property
     def raw_status(self) -> str:
@@ -526,31 +487,36 @@ class Member(discord.abc.Messageable, _UserTag):
 
         .. versionadded:: 1.5
         """
-        return self._client_status._status
+        return self.client_status._status
 
     @status.setter
     def status(self, value: Status) -> None:
         # internal use only
-        self._client_status._status = str(value)
+        self.client_status._status = str(value)
 
     @property
     def mobile_status(self) -> Status:
         """:class:`Status`: The member's status on a mobile device, if applicable."""
-        return try_enum(Status, self._client_status.mobile or 'offline')
+        return self.client_status.mobile_status
 
     @property
     def desktop_status(self) -> Status:
         """:class:`Status`: The member's status on the desktop client, if applicable."""
-        return try_enum(Status, self._client_status.desktop or 'offline')
+        return self.client_status.desktop_status
 
     @property
     def web_status(self) -> Status:
         """:class:`Status`: The member's status on the web client, if applicable."""
-        return try_enum(Status, self._client_status.web or 'offline')
+        return self.client_status.web_status
 
     def is_on_mobile(self) -> bool:
-        """:class:`bool`: A helper function that determines if a member is active on a mobile device."""
-        return self._client_status.mobile is not None
+        """A helper function that determines if a member is active on a mobile device.
+
+        Returns
+        -------
+        :class:`bool`
+        """
+        return self.client_status.is_on_mobile()
 
     @property
     def colour(self) -> Colour:

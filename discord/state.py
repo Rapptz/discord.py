@@ -62,6 +62,7 @@ from .message import Message
 from .channel import *
 from .channel import _channel_factory
 from .raw_models import *
+from .presences import RawPresenceUpdateEvent
 from .member import Member
 from .role import Role
 from .enums import ChannelType, try_enum, Status
@@ -260,6 +261,10 @@ class ConnectionState(Generic[ClientT]):
 
         if not intents.members or cache_flags._empty:
             self.store_user = self.store_user_no_intents
+
+        self.raw_presence_flag: bool = options.get('enable_raw_presences', utils.MISSING)
+        if self.raw_presence_flag is utils.MISSING:
+            self.raw_presence_flag = not intents.members and intents.presences
 
         self.parsers: Dict[str, Callable[[Any], None]]
         self.parsers = parsers = {}
@@ -827,22 +832,24 @@ class ConnectionState(Generic[ClientT]):
         self.dispatch('interaction', interaction)
 
     def parse_presence_update(self, data: gw.PresenceUpdateEvent) -> None:
-        guild_id = utils._get_as_snowflake(data, 'guild_id')
-        # guild_id won't be None here
-        guild = self._get_guild(guild_id)
-        if guild is None:
-            _log.debug('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', guild_id)
+        raw = RawPresenceUpdateEvent(data=data, state=self)
+
+        if self.raw_presence_flag:
+            self.dispatch('raw_presence_update', raw)
+
+        if raw.guild is None:
+            _log.debug('PRESENCE_UPDATE referencing an unknown guild ID: %s. Discarding.', raw.guild_id)
             return
 
-        user = data['user']
-        member_id = int(user['id'])
-        member = guild.get_member(member_id)
+        member = raw.guild.get_member(raw.user_id)
+
         if member is None:
-            _log.debug('PRESENCE_UPDATE referencing an unknown member ID: %s. Discarding', member_id)
+            _log.debug('PRESENCE_UPDATE referencing an unknown member ID: %s. Discarding', raw.user_id)
             return
 
         old_member = Member._copy(member)
-        user_update = member._presence_update(data=data, user=user)
+        user_update = member._presence_update(raw=raw, user=data['user'])
+
         if user_update:
             self.dispatch('user_update', user_update[0], user_update[1])
 
@@ -1430,8 +1437,10 @@ class ConnectionState(Generic[ClientT]):
                 user = presence['user']
                 member_id = user['id']
                 member = member_dict.get(member_id)
+
                 if member is not None:
-                    member._presence_update(presence, user)
+                    raw_presence = RawPresenceUpdateEvent(data=presence, state=self)
+                    member._presence_update(raw_presence, user)
 
         complete = data.get('chunk_index', 0) + 1 == data.get('chunk_count')
         self.process_chunk_requests(guild_id, data.get('nonce'), members, complete)
