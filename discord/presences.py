@@ -38,7 +38,10 @@ if TYPE_CHECKING:
     from .types.activity import ClientStatus as ClientStatusPayload, PartialPresenceUpdate
 
 
-__all__ = ('RawPresenceUpdateEvent', 'ClientStatus')
+__all__ = (
+    'RawPresenceUpdateEvent',
+    'ClientStatus',
+)
 
 
 class ClientStatus:
@@ -113,12 +116,7 @@ class ClientStatus:
         return try_enum(Status, self.web or 'offline')
 
     def is_on_mobile(self) -> bool:
-        """A helper function that determines if a user is active on a mobile device.
-
-        Returns
-        -------
-        :class:`bool`
-        """
+        """:class:`bool`: A helper function that determines if a user is active on a mobile device."""
         return self.mobile is not None
 
 
@@ -149,4 +147,4 @@ class RawPresenceUpdateEvent(_RawReprMixin):
         self.client_status: ClientStatus = ClientStatus(status=data['status'], data=data['client_status'])
         self.activities: Tuple[ActivityTypes, ...] = tuple(create_activity(d, state) for d in data['activities'])
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
-        self.guild: Union[Guild, None] = state._get_guild(self.guild_id)
+        self.guild: Optional[Guild] = state._get_guild(self.guild_id)
