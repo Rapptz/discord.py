@@ -333,5 +333,5 @@ class InteractionCallbackResource(TypedDict):
 
 
 class InteractionCallback(TypedDict):
-    interaction: InteractionCallback
+    interaction: InteractionCallbackResponse
     resource: NotRequired[InteractionCallbackResource]

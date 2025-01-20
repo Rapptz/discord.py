@@ -685,11 +685,14 @@ class InteractionCallback:
         'message_id',
     )
 
-    def __init__(self, *, data: InteractionCallbackPayload, state: ConnectionState) -> None:
+    def __init__(self, *, data: InteractionCallbackResponsePayload, state: ConnectionState) -> None:
         self._state: ConnectionState = state
         self.id: int = int(data['id'])
         self._message: Optional[Message] = None
         self._update(data)
+
+    def __repr__(self) -> str:
+        return f'<InteractionCallback id={self.id}>'
 
     def _update(self, data: InteractionCallbackResponsePayload) -> None:
         self.type: InteractionType = try_enum(InteractionType, data['type'])
@@ -756,8 +759,6 @@ class InteractionCallbackResource(Generic[ClientT]):
         except KeyError:
             pass
 
-        self._parent.response._message = self.message
-
 
 class InteractionCallbackResponse(Generic[ClientT]):
     """Represents a Discord response to an interaction.
@@ -792,14 +793,14 @@ class InteractionCallbackResponse(Generic[ClientT]):
         self.resource: Optional[InteractionCallbackResource] = None
 
     def __repr__(self) -> str:
-        return f'<InteractionCallback id={self.id} interaction_type={self.interaction_type!r} callback_type={self.callback_type!r}>'
+        return f'<InteractionCallbackResponse interaction_id={self.interaction.id}>'
 
     def _update(self, data: InteractionCallbackPayload) -> None:
         interaction = data['interaction']
         resource = data.get('resource', {})
         self.interaction._update(interaction)
         if self.resource:
-            self.resource._update(resource)
+            self.resource._update(resource)  # pyright: ignore[reportArgumentType]
         else:
             self.resource = InteractionCallbackResource(data=resource, state=self._state, parent=self)  # type: ignore
 
@@ -1213,7 +1214,7 @@ class InteractionResponse(Generic[ClientT]):
         delete_after: Optional[float] = None,
         suppress_embeds: bool = MISSING,
         with_response: bool = True,
-    ) -> Optional[InteractionCallback[ClientT]]:
+    ) -> Optional[InteractionCallbackResponse[ClientT]]:
         """|coro|
 
         Responds to this interaction by editing the original message of
