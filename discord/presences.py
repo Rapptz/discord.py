@@ -146,7 +146,7 @@ class RawPresenceUpdateEvent(_RawReprMixin):
         self._activities: Union[Tuple[ActivityTypes, ...], None] = None
 
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
-        self.guild: Union[Guild, None] = state._get_guild(self.guild_id)
+        self.guild: Optional[Guild] = state._get_guild(self.guild_id)
 
     def _create_activities(self, data: PartialPresenceUpdate, state: ConnectionState) -> None:
         self._activities = tuple(create_activity(d, state) for d in data['activities'])
