@@ -664,8 +664,8 @@ class InteractionCallbackActivity:
 class InteractionCallback:
     """Represents an interaction callback invoking interaction.
 
-    Attribute
-    ---------
+    Attributes
+    ----------
     id: :class:`int`
         The ID of the interaction.
     type: :class:`InteractionType`
@@ -1349,14 +1349,18 @@ class InteractionResponse(Generic[ClientT]):
             )
 
     @overload
-    async def send_modal(self, modal: Modal, /, *, with_response: Literal[True] = ...) -> InteractionCallbackResponse[ClientT]:
+    async def send_modal(
+        self, modal: Modal, /, *, with_response: Literal[True] = ...
+    ) -> InteractionCallbackResponse[ClientT]:
         ...
 
     @overload
     async def send_modal(self, modal: Modal, /, *, with_response: Literal[False] = False) -> None:
         ...
 
-    async def send_modal(self, modal: Modal, /, *, with_response: bool = True) -> Optional[InteractionCallbackResponse[ClientT]]:
+    async def send_modal(
+        self, modal: Modal, /, *, with_response: bool = True
+    ) -> Optional[InteractionCallbackResponse[ClientT]]:
         """|coro|
 
         Responds to this interaction by sending a modal.
