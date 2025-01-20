@@ -137,30 +137,16 @@ class RawPresenceUpdateEvent(_RawReprMixin):
         The guild associated with the presence update and user. Could be ``None``.
     client_status: :class:`ClientStatus`
         The :class:`~.ClientStatus` model which holds information about the status of the user on various clients.
+    activities: Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]
+        The activities the user is currently doing. Due to a Discord API limitation, a user's Spotify activity may not appear
+        if they are listening to a song with a title longer than ``128`` characters. See :issue:`1738` for more information.
     """
 
-    __slots__ = ('user_id', 'guild_id', 'guild', 'client_status', '_activities')
+    __slots__ = ('user_id', 'guild_id', 'guild', 'client_status', 'activities')
 
     def __init__(self, *, data: PartialPresenceUpdate, state: ConnectionState) -> None:
         self.user_id: int = int(data['user']['id'])
-
         self.client_status: ClientStatus = ClientStatus(status=data['status'], data=data['client_status'])
-        self._activities: Union[Tuple[ActivityTypes, ...], None] = None
-
+        self.activities: Tuple[ActivityTypes, ...] = tuple(create_activity(d, state) for d in data['activities'])
         self.guild_id: Optional[int] = _get_as_snowflake(data, 'guild_id')
         self.guild: Union[Guild, None] = state._get_guild(self.guild_id)
-
-    def _create_activities(self, data: PartialPresenceUpdate, state: ConnectionState) -> None:
-        self._activities = tuple(create_activity(d, state) for d in data['activities'])
-
-    @property
-    def activities(self) -> Tuple[ActivityTypes, ...]:
-        """Tuple[Union[:class:`BaseActivity`, :class:`Spotify`]]: The activities the user is currently doing.
-
-        .. note::
-
-            Due to a Discord API limitation, a user's Spotify activity may not appear
-            if they are listening to a song with a title longer
-            than ``128`` characters. See :issue:`1738` for more information.
-        """
-        return self._activities or ()

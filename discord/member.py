@@ -43,7 +43,6 @@ from .colour import Colour
 from .object import Object
 from .flags import MemberFlags
 from .presences import ClientStatus
-from .activity import create_activity
 
 __all__ = (
     'VoiceState',
@@ -65,7 +64,7 @@ if TYPE_CHECKING:
         Member as MemberPayload,
         UserWithMember as UserWithMemberPayload,
     )
-    from .types.gateway import GuildMemberUpdateEvent, PartialPresenceUpdate
+    from .types.gateway import GuildMemberUpdateEvent
     from .types.user import User as UserPayload, AvatarDecorationData
     from .abc import Snowflake
     from .state import ConnectionState
@@ -436,21 +435,9 @@ class Member(discord.abc.Messageable, _UserTag):
         self._flags = data.get('flags', 0)
         self._avatar_decoration_data = data.get('avatar_decoration_data')
 
-    def _presence_update(
-        self, data: PartialPresenceUpdate, raw: RawPresenceUpdateEvent, user: UserPayload
-    ) -> Optional[Tuple[User, User]]:
-        if raw._activities is None:
-            raw._create_activities(data, self._state)
-
+    def _presence_update(self, raw: RawPresenceUpdateEvent, user: UserPayload) -> Optional[Tuple[User, User]]:
         self.activities = raw.activities
         self.client_status = raw.client_status
-
-        if len(user) > 1:
-            return self._update_inner_user(user)
-
-    def _perf_presence_update(self, data: PartialPresenceUpdate, user: UserPayload) -> Optional[Tuple[User, User]]:
-        self.activities = tuple(create_activity(d, self._state) for d in data['activities'])
-        self.client_status._update(data['status'], data['client_status'])
 
         if len(user) > 1:
             return self._update_inner_user(user)

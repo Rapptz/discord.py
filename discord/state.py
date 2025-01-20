@@ -835,7 +835,6 @@ class ConnectionState(Generic[ClientT]):
         raw = RawPresenceUpdateEvent(data=data, state=self)
 
         if self.raw_presence_flag:
-            raw._create_activities(data, self)
             self.dispatch('raw_presence_update', raw)
 
         if raw.guild is None:
@@ -849,7 +848,7 @@ class ConnectionState(Generic[ClientT]):
             return
 
         old_member = Member._copy(member)
-        user_update = member._presence_update(data, raw=raw, user=data['user'])
+        user_update = member._presence_update(raw=raw, user=data['user'])
 
         if user_update:
             self.dispatch('user_update', user_update[0], user_update[1])
@@ -1439,8 +1438,9 @@ class ConnectionState(Generic[ClientT]):
                 member_id = user['id']
                 member = member_dict.get(member_id)
 
+                raw_presence = RawPresenceUpdateEvent(data=presence, state=self)
                 if member is not None:
-                    member._perf_presence_update(presence, user)
+                    member._presence_update(raw_presence, user)
 
         complete = data.get('chunk_index', 0) + 1 == data.get('chunk_count')
         self.process_chunk_requests(guild_id, data.get('nonce'), members, complete)
