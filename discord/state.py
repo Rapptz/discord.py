@@ -1438,8 +1438,8 @@ class ConnectionState(Generic[ClientT]):
                 member_id = user['id']
                 member = member_dict.get(member_id)
 
-                raw_presence = RawPresenceUpdateEvent(data=presence, state=self)
                 if member is not None:
+                    raw_presence = RawPresenceUpdateEvent(data=presence, state=self)
                     member._presence_update(raw_presence, user)
 
         complete = data.get('chunk_index', 0) + 1 == data.get('chunk_count')
