@@ -848,7 +848,7 @@ class InteractionResponse(Generic[ClientT]):
         *,
         ephemeral: bool = ...,
         thinking: bool = ...,
-        with_response: Literal[False] = ...,
+        with_response: Literal[False] = False,
     ) -> None:
         ...
 
@@ -1010,7 +1010,7 @@ class InteractionResponse(Generic[ClientT]):
         silent: bool = ...,
         delete_after: Optional[float] = ...,
         poll: Poll = ...,
-        with_response: Literal[False] = ...,
+        with_response: Literal[False] = False,
     ) -> None:
         ...
 
@@ -1194,7 +1194,7 @@ class InteractionResponse(Generic[ClientT]):
         allowed_mentions: Optional[AllowedMentions] = ...,
         delete_after: Optional[float] = ...,
         suppress_embeds: bool = ...,
-        with_response: Literal[False] = ...,
+        with_response: Literal[False] = False,
     ) -> None:
         ...
 
@@ -1350,7 +1350,7 @@ class InteractionResponse(Generic[ClientT]):
         ...
 
     @overload
-    async def send_modal(self, modal: Modal, /, *, with_response: Literal[False] = ...) -> None:
+    async def send_modal(self, modal: Modal, /, *, with_response: Literal[False] = False) -> None:
         ...
 
     async def send_modal(self, modal: Modal, /, *, with_response: bool = True) -> Optional[InteractionCallbackResponse[ClientT]]:
