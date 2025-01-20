@@ -275,7 +275,7 @@ class MessageInteractionMetadata(TypedDict):
     triggering_interaction_metadata: NotRequired[MessageInteractionMetadata]
 
 
-class InteractionCallback(TypedDict):
+class InteractionCallbackResponse(TypedDict):
     id: Snowflake
     type: InteractionType
     activity_instance_id: NotRequired[str]
@@ -294,6 +294,6 @@ class InteractionCallbackResource(TypedDict):
     message: NotRequired[Message]
 
 
-class InteractionCallbackResponse(TypedDict):
+class InteractionCallback(TypedDict):
     interaction: InteractionCallback
     resource: NotRequired[InteractionCallbackResource]

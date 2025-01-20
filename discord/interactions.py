@@ -55,6 +55,7 @@ __all__ = (
     'InteractionMessage',
     'InteractionResponse',
     'InteractionCallback',
+    'InteractionCallbackResource',
     'InteractionCallbackActivity',
 )
 
@@ -63,8 +64,10 @@ if TYPE_CHECKING:
         Interaction as InteractionPayload,
         InteractionData,
         ApplicationCommandInteractionData,
-        InteractionCallbackResponse as InteractionCallbackResponsePayload,
+        InteractionCallback as InteractionCallbackPayload,
         InteractionCallbackActivity as InteractionCallbackActivityPayload,
+        InteractionCallbackResponse as InteractionCallbackResponsePayload,
+        InteractionCallbackResource as InteractionCallbackResourcePayload,
     )
     from .types.webhook import (
         Webhook as WebhookPayload,
@@ -655,105 +658,149 @@ class InteractionCallbackActivity:
         return f'<InteractionCallbackActivity id={self.id!r}>'
 
 
-class InteractionCallback(Generic[ClientT]):
+class InteractionCallback:
+    """Represents an interaction callback invoking interaction.
+
+    Attribute
+    ---------
+    id: :class:`int`
+        The ID of the interaction.
+    type: :class:`InteractionType`
+        The interaction response type.
+    activity_instance_id: Optional[:class:`str`]
+        The ID of the activity that was launched as response of this interaction.
+    message_id: Optional[:class:`int`]
+        The ID of the message that was sent as response of this interaction.
+    """
+
+    __slots__ = (
+        '_state',
+        'id',
+        '_message',
+        'type',
+        'activity_instance_id',
+        'message_id',
+    )
+
+    def __init__(self, *, data: InteractionCallbackPayload, state: ConnectionState) -> None:
+        self._state: ConnectionState = state
+        self.id: int = int(data['id'])
+        self._message: Optional[Message] = None
+        self._update(data)
+
+    def _update(self, data: InteractionCallbackResponsePayload) -> None:
+        self.type: InteractionType = try_enum(InteractionType, data['type'])
+        self.activity_instance_id: Optional[str] = data.get('activity_instance_id')
+        self.message_id: Optional[int] = utils._get_as_snowflake(data, 'response_message_id')
+
+    @property
+    def message(self) -> Optional[Message]:
+        """Optional[:class:`Message`]: Returns the cached message, or ``None``."""
+        return self._message or self._state._get_message(self.message_id)
+
+
+class InteractionCallbackResource(Generic[ClientT]):
+    """Represents an interaction callback's resource.
+
+    Attributes
+    ----------
+    type: :class:`InteractionResponseType`
+        The interaction callback response type.
+    activity: Optional[:class:`InteractionCallbackActivity`]
+        The activity that was launched as a response to the interaction.
+    message: Optional[:class:`InteractionMessage`]
+        The message that was sent as a response to the interaction.
+    """
+
+    __slots__ = (
+        '_state',
+        '_parent',
+        'activity',
+        'message',
+        'type',
+    )
+
+    def __init__(
+        self,
+        *,
+        data: InteractionCallbackResourcePayload,
+        state: ConnectionState,
+        parent: InteractionCallbackResponse,
+    ) -> None:
+        self._state: ConnectionState = state
+        self._parent: InteractionCallbackResponse = parent
+        self.activity: Optional[InteractionCallbackActivity] = None
+        self.message: Optional[InteractionMessage] = None
+        self._update(data)
+
+    def _update(self, data: InteractionCallbackResourcePayload) -> None:
+        try:
+            self.type: InteractionResponseType = try_enum(InteractionResponseType, data['type'])
+        except KeyError:
+            pass
+
+        try:
+            self.activity = InteractionCallbackActivity(data=data['activity_instance'])
+        except KeyError:
+            pass
+
+        try:
+            self.message = InteractionMessage(
+                state=self._state,
+                channel=self._parent._parent.channel,  # type: ignore
+                data=data['message'],
+            )
+        except KeyError:
+            pass
+
+        self._parent.response._message = self.message
+
+
+class InteractionCallbackResponse(Generic[ClientT]):
     """Represents a Discord response to an interaction.
 
     .. versionadded:: 2.5
 
     Attributes
     ----------
-    id: :class:`int`
-        The interaction ID this callback responds to.
-    interaction_type: :class:`InteractionType`
-        The interaction type.
-    callback_type: Optional[:class:`InteractionResponseType`]
-        The interaction response type.
-    activity_instance_id: Optional[:class:`str`]
-        The activity instance ID this interaction was invoked from.
-    activity_instance: Optional[:class:`InteractionCallbackActivity`]
-        The resolved activity instance this interaction was invoked from.
-    response_message_id: Optional[:class:`int`]
-        The message ID of the interaction response.
-    response_message_loading: :class:`bool`
-        Whether the response message showed the application was thinking.
-    response_message_ephemeral: :class:`bool`
-        Whether the response message was ephemeral.
-    response_message: Optional[:class:`InteractionMessage`]
-        The resolved response message.
-
-        .. note::
-
-            This is ``None`` if the interaction response type is not :attr:`InteractionResponseType.channel_message`
-            or :attr:`InteractionResponseType.message_update`.
-    response_channel: Union[:class:`abc.GuildChannel`, :class:`abc.PrivateChannel`, :class:`Thread`]
-        The channel this interaction was invoked from.
+    interaction: :class:`InteractionCallback`
+        The interaction callback response.
+    resource: :class:`InteractionCallbackResource`
+        The interaction callback resource.
     """
 
     __slots__ = (
-        'id',
         '_parent',
         '_state',
-        'interaction_type',
-        'activity_instance_id',
-        'activity_instance',
-        'response_message_id',
-        'response_message_thinking',
-        'response_message_ephemeral',
-        'response_message',
-        'response_channel',
-        'callback_type',
+        'interaction',
+        'resource',
     )
 
     def __init__(
         self,
         *,
         parent: Interaction[ClientT],
-        channel: InteractionChannel,
-        data: InteractionCallbackResponsePayload,
+        data: InteractionCallbackPayload,
     ) -> None:
         self._parent: Interaction[ClientT] = parent
         self._state: ConnectionState = parent._state
-        self.response_channel: InteractionChannel = channel
-        self._update(data)
-        parent._original_response = self.response_message
+
+        self.interaction: InteractionCallback = InteractionCallback(data=data['interaction'], state=self._state)
+        self.resource: Optional[InteractionCallbackResource] = None
 
     def __repr__(self) -> str:
         return f'<InteractionCallback id={self.id} interaction_type={self.interaction_type!r} callback_type={self.callback_type!r}>'
 
-    def _update(self, data: InteractionCallbackResponsePayload) -> None:
+    def _update(self, data: InteractionCallbackPayload) -> None:
         interaction = data['interaction']
-        self.id: int = int(interaction['id'])
-        self.interaction_type: InteractionType = try_enum(InteractionType, interaction['type'])
-        self.activity_instance_id: Optional[str] = interaction.get('activity_instance_id')
-        self.response_message_id: Optional[int] = utils._get_as_snowflake(interaction, 'response_message_id')
-        self.response_message_thinking: bool = interaction.get('response_message_loading', False)
-        self.response_message_ephemeral: bool = interaction.get('response_message_ephemeral', False)
-
         resource = data.get('resource', {})
-        self.callback_type: Optional[InteractionResponseType] = None
-        self.activity_instance: Optional[InteractionCallbackActivity] = None
-        self.response_message: Optional[InteractionMessage] = None
+        self.interaction._update(interaction)
+        if self.resource:
+            self.resource._update(resource)
+        else:
+            self.resource = InteractionCallbackResource(data=resource, state=self._state, parent=self)  # type: ignore
 
-        try:
-            self.callback_type = try_enum(InteractionResponseType, resource['type'])
-        except KeyError:
-            pass
-
-        try:
-            self.activity_instance = InteractionCallbackActivity(
-                data=resource['activity_instance'],
-            )
-        except KeyError:
-            pass
-
-        try:
-            self.response_message = InteractionMessage(
-                state=self._state,
-                channel=self.response_channel,  # type: ignore
-                data=resource['message'],
-            )
-        except KeyError:
-            pass
+        self._parent._original_response = self.interaction.message  # type: ignore
 
 
 class InteractionResponse(Generic[ClientT]):
@@ -792,7 +839,7 @@ class InteractionResponse(Generic[ClientT]):
         ephemeral: bool = ...,
         thinking: bool = ...,
         with_response: Literal[True] = ...,
-    ) -> InteractionCallback[ClientT]:
+    ) -> InteractionCallbackResponse[ClientT]:
         ...
 
     @overload
@@ -801,7 +848,7 @@ class InteractionResponse(Generic[ClientT]):
         *,
         ephemeral: bool = ...,
         thinking: bool = ...,
-        with_response: Literal[False] = False,
+        with_response: Literal[False] = ...,
     ) -> None:
         ...
 
@@ -811,7 +858,7 @@ class InteractionResponse(Generic[ClientT]):
         ephemeral: bool = False,
         thinking: bool = False,
         with_response: bool = True,
-    ) -> Optional[InteractionCallback[ClientT]]:
+    ) -> Optional[InteractionCallbackResponse[ClientT]]:
         """|coro|
 
         Defers the interaction response.
@@ -887,7 +934,7 @@ class InteractionResponse(Generic[ClientT]):
             )
             self._response_type = InteractionResponseType(defer_type)
             if response:
-                return InteractionCallback(
+                return InteractionCallbackResponse(
                     parent=parent,
                     channel=parent.channel,  # type: ignore
                     data=response,
@@ -943,7 +990,7 @@ class InteractionResponse(Generic[ClientT]):
         delete_after: Optional[float] = ...,
         poll: Poll = ...,
         with_response: Literal[True] = ...,
-    ) -> InteractionCallback[ClientT]:
+    ) -> InteractionCallbackResponse[ClientT]:
         ...
 
     @overload
@@ -963,7 +1010,7 @@ class InteractionResponse(Generic[ClientT]):
         silent: bool = ...,
         delete_after: Optional[float] = ...,
         poll: Poll = ...,
-        with_response: Literal[False] = False,
+        with_response: Literal[False] = ...,
     ) -> None:
         ...
 
@@ -984,7 +1031,7 @@ class InteractionResponse(Generic[ClientT]):
         delete_after: Optional[float] = None,
         poll: Poll = MISSING,
         with_response: bool = True,
-    ) -> Optional[InteractionCallback[ClientT]]:
+    ) -> Optional[InteractionCallbackResponse[ClientT]]:
         """|coro|
 
         Responds to this interaction by sending a message.
@@ -1113,7 +1160,7 @@ class InteractionResponse(Generic[ClientT]):
 
             asyncio.create_task(inner_call())
         if response:
-            return InteractionCallback(
+            return InteractionCallbackResponse(
                 parent=parent,
                 channel=parent.channel,  # type: ignore
                 data=response,
@@ -1132,7 +1179,7 @@ class InteractionResponse(Generic[ClientT]):
         delete_after: Optional[float] = ...,
         suppress_embeds: bool = ...,
         with_response: Literal[True] = ...,
-    ) -> InteractionCallback[ClientT]:
+    ) -> InteractionCallbackResponse[ClientT]:
         ...
 
     @overload
@@ -1147,7 +1194,7 @@ class InteractionResponse(Generic[ClientT]):
         allowed_mentions: Optional[AllowedMentions] = ...,
         delete_after: Optional[float] = ...,
         suppress_embeds: bool = ...,
-        with_response: Literal[False] = False,
+        with_response: Literal[False] = ...,
     ) -> None:
         ...
 
@@ -1292,21 +1339,21 @@ class InteractionResponse(Generic[ClientT]):
             asyncio.create_task(inner_call())
 
         if response:
-            return InteractionCallback(
+            return InteractionCallbackResponse(
                 parent=parent,
                 channel=parent.channel,  # type: ignore
                 data=response,
             )
 
     @overload
-    async def send_modal(self, modal: Modal, /, *, with_response: Literal[True] = ...) -> InteractionCallback[ClientT]:
+    async def send_modal(self, modal: Modal, /, *, with_response: Literal[True] = ...) -> InteractionCallbackResponse[ClientT]:
         ...
 
     @overload
-    async def send_modal(self, modal: Modal, /, *, with_response: Literal[False] = False) -> None:
+    async def send_modal(self, modal: Modal, /, *, with_response: Literal[False] = ...) -> None:
         ...
 
-    async def send_modal(self, modal: Modal, /, *, with_response: bool = True) -> Optional[InteractionCallback[ClientT]]:
+    async def send_modal(self, modal: Modal, /, *, with_response: bool = True) -> Optional[InteractionCallbackResponse[ClientT]]:
         """|coro|
 
         Responds to this interaction by sending a modal.
@@ -1355,7 +1402,7 @@ class InteractionResponse(Generic[ClientT]):
         self._response_type = InteractionResponseType.modal
 
         if response:
-            return InteractionCallback(
+            return InteractionCallbackResponse(
                 parent=parent,
                 channel=parent.channel,  # type: ignore
                 data=response,

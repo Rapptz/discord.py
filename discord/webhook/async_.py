@@ -91,7 +91,7 @@ if TYPE_CHECKING:
     from ..types.emoji import PartialEmoji as PartialEmojiPayload
     from ..types.snowflake import SnowflakeList
     from ..types.interactions import (
-        InteractionCallbackResponse as InteractionCallbackResponsePayload,
+        InteractionCallback as InteractionCallbackResponsePayload,
     )
 
     BE = TypeVar('BE', bound=BaseException)
