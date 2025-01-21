@@ -759,6 +759,8 @@ class InteractionCallbackResource(Generic[ClientT]):
         except KeyError:
             pass
 
+        self._parent.interaction._message = self.message
+
 
 class InteractionCallbackResponse(Generic[ClientT]):
     """Represents a Discord response to an interaction.
@@ -940,7 +942,6 @@ class InteractionResponse(Generic[ClientT]):
             if response:
                 return InteractionCallbackResponse(
                     parent=parent,
-                    channel=parent.channel,  # type: ignore
                     data=response,
                 )
 
@@ -1166,7 +1167,6 @@ class InteractionResponse(Generic[ClientT]):
         if response:
             return InteractionCallbackResponse(
                 parent=parent,
-                channel=parent.channel,  # type: ignore
                 data=response,
             )
 
@@ -1345,7 +1345,6 @@ class InteractionResponse(Generic[ClientT]):
         if response:
             return InteractionCallbackResponse(
                 parent=parent,
-                channel=parent.channel,  # type: ignore
                 data=response,
             )
 
@@ -1412,7 +1411,6 @@ class InteractionResponse(Generic[ClientT]):
         if response:
             return InteractionCallbackResponse(
                 parent=parent,
-                channel=parent.channel,  # type: ignore
                 data=response,
             )
 
