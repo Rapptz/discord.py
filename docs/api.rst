@@ -916,6 +916,29 @@ Members
     :param after: The updated member's updated info.
     :type after: :class:`Member`
 
+.. function:: on_raw_presence_update(payload)
+
+    Called when a :class:`Member` updates their presence.
+    
+    This requires :attr:`Intents.presences` to be enabled.
+
+    Unlike :func:`on_presence_update`, when enabled, this is called regardless of the state of internal guild 
+    and member caches, and **does not** provide a comparison between the previous and updated states of the :class:`Member`.
+
+    .. important::
+
+        By default, this event is only dispatched when :attr:`Intents.presences` is enabled **and** :attr:`Intents.members` 
+        is disabled.
+
+        You can manually override this behaviour by setting the **enable_raw_presences** flag in the :class:`Client`,
+        however :attr:`Intents.presences` is always required for this event to work.
+    
+    .. versionadded:: 2.5
+
+    :param payload: The raw presence update event model.
+    :type payload: :class:`RawPresenceUpdateEvent`
+        
+
 Messages
 ~~~~~~~~~
 
@@ -5364,6 +5387,14 @@ RawPollVoteActionEvent
 .. autoclass:: RawPollVoteActionEvent()
     :members:
 
+RawPresenceUpdateEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawPresenceUpdateEvent
+
+.. autoclass:: RawPresenceUpdateEvent()
+    :members:
+
 PartialWebhookGuild
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -5396,6 +5427,14 @@ MessageSnapshot
 .. attributetable:: MessageSnapshot
 
 .. autoclass:: MessageSnapshot
+    :members:
+
+ClientStatus
+~~~~~~~~~~~~
+
+.. attributetable:: ClientStatus
+
+.. autoclass:: ClientStatus()
     :members:
 
 Data Classes
