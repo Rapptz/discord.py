@@ -256,7 +256,6 @@ class AppCommand(Hashable):
             self.handler = None
         else:
             self.handler = try_enum(EntryPointCommandHandlerType, handler)
-        
 
     def to_dict(self) -> ApplicationCommandPayload:
         return {
