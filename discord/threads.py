@@ -181,7 +181,7 @@ class Thread(Messageable, Hashable):
         self.slowmode_delay: int = data.get('rate_limit_per_user', 0)
         self.message_count: int = data['message_count']
         self.member_count: int = data['member_count']
-        self._member_ids: List[Union[str, int]] = data['member_ids_preview']
+        self._member_ids: List[Union[str, int]] = data.get('member_ids_preview', [])
         self._flags: int = data.get('flags', 0)
         # SnowflakeList is sorted, but this would not be proper for applied tags, where order actually matters.
         self._applied_tags: array.array[int] = array.array('Q', map(int, data.get('applied_tags', [])))
