@@ -53,7 +53,7 @@ from .user import User, ClientUser
 from .invite import Invite
 from .template import Template
 from .widget import Widget
-from .guild import Guild
+from .guild import Guild, GuildPreview
 from .emoji import Emoji
 from .channel import _threaded_channel_factory, PartialMessageable
 from .enums import ChannelType, EntitlementOwnerType
@@ -77,6 +77,7 @@ from .ui.dynamic import DynamicItem
 from .stage_instance import StageInstance
 from .threads import Thread
 from .sticker import GuildSticker, StandardSticker, StickerPack, _sticker_factory
+from .soundboard import SoundboardDefaultSound, SoundboardSound
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -84,7 +85,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .abc import Messageable, PrivateChannel, Snowflake, SnowflakeTime
-    from .app_commands import Command, ContextMenu, MissingApplicationID
+    from .app_commands import Command, ContextMenu
     from .automod import AutoModAction, AutoModRule
     from .channel import DMChannel, GroupChannel
     from .ext.commands import AutoShardedBot, Bot, Context, CommandError
@@ -107,6 +108,7 @@ if TYPE_CHECKING:
         RawThreadMembersUpdate,
         RawThreadUpdateEvent,
         RawTypingEvent,
+        RawPollVoteActionEvent,
     )
     from .reaction import Reaction
     from .role import Role
@@ -116,6 +118,8 @@ if TYPE_CHECKING:
     from .ui.item import Item
     from .voice_client import VoiceProtocol
     from .audit_logs import AuditLogEntry
+    from .poll import PollAnswer
+    from .subscription import Subscription
 
 
 # fmt: off
@@ -233,6 +237,15 @@ class Client:
         To enable these events, this must be set to ``True``. Defaults to ``False``.
 
         .. versionadded:: 2.0
+    enable_raw_presences: :class:`bool`
+        Whether to manually enable or disable the :func:`on_raw_presence_update` event.
+
+        Setting this flag to ``True`` requires :attr:`Intents.presences` to be enabled.
+
+        By default, this flag is set to ``True`` only when :attr:`Intents.presences` is enabled and :attr:`Intents.members`
+        is disabled, otherwise it's set to ``False``.
+
+        .. versionadded:: 2.5
     http_trace: :class:`aiohttp.TraceConfig`
         The trace configuration to use for tracking HTTP requests the library does using ``aiohttp``.
         This allows you to check requests the library is using. For more information, check the
@@ -247,6 +260,11 @@ class Client:
         set to is ``30.0`` seconds.
 
         .. versionadded:: 2.0
+    connector: Optional[:class:`aiohttp.BaseConnector`]
+        The aiohttp connector to use for this client. This can be used to control underlying aiohttp
+        behavior, such as setting a dns resolver or sslcontext.
+
+        .. versionadded:: 2.5
 
     Attributes
     -----------
@@ -262,6 +280,7 @@ class Client:
         self.shard_id: Optional[int] = options.get('shard_id')
         self.shard_count: Optional[int] = options.get('shard_count')
 
+        connector: Optional[aiohttp.BaseConnector] = options.get('connector', None)
         proxy: Optional[str] = options.pop('proxy', None)
         proxy_auth: Optional[aiohttp.BasicAuth] = options.pop('proxy_auth', None)
         unsync_clock: bool = options.pop('assume_unsync_clock', True)
@@ -269,6 +288,7 @@ class Client:
         max_ratelimit_timeout: Optional[float] = options.pop('max_ratelimit_timeout', None)
         self.http: HTTPClient = HTTPClient(
             self.loop,
+            connector,
             proxy=proxy,
             proxy_auth=proxy_auth,
             unsync_clock=unsync_clock,
@@ -357,7 +377,13 @@ class Client:
 
     @property
     def emojis(self) -> Sequence[Emoji]:
-        """Sequence[:class:`.Emoji`]: The emojis that the connected client has."""
+        """Sequence[:class:`.Emoji`]: The emojis that the connected client has.
+
+        .. note::
+
+            This not include the emojis that are owned by the application.
+            Use :meth:`.fetch_application_emoji` to get those.
+        """
         return self._connection.emojis
 
     @property
@@ -367,6 +393,14 @@ class Client:
         .. versionadded:: 2.0
         """
         return self._connection.stickers
+
+    @property
+    def soundboard_sounds(self) -> List[SoundboardSound]:
+        """List[:class:`.SoundboardSound`]: The soundboard sounds that the connected client has.
+
+        .. versionadded:: 2.5
+        """
+        return self._connection.soundboard_sounds
 
     @property
     def cached_messages(self) -> Sequence[Message]:
@@ -620,6 +654,11 @@ class Client:
         self._application = await self.application_info()
         if self._connection.application_id is None:
             self._connection.application_id = self._application.id
+
+        if self._application.interactions_endpoint_url is not None:
+            _log.warning(
+                'Application has an interaction endpoint URL set, this means registered components and app commands will not be received by the library.'
+            )
 
         if not self._connection.application_flags:
             self._connection.application_flags = self._application.flags
@@ -1089,6 +1128,23 @@ class Client:
         """
         return self._connection.get_sticker(id)
 
+    def get_soundboard_sound(self, id: int, /) -> Optional[SoundboardSound]:
+        """Returns a soundboard sound with the given ID.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        id: :class:`int`
+            The ID to search for.
+
+        Returns
+        --------
+        Optional[:class:`.SoundboardSound`]
+            The soundboard sound or ``None`` if not found.
+        """
+        return self._connection.get_soundboard_sound(id)
+
     def get_all_channels(self) -> Generator[GuildChannel, None, None]:
         """A generator that retrieves every :class:`.abc.GuildChannel` the client can 'access'.
 
@@ -1325,6 +1381,18 @@ class Client:
         check: Optional[Callable[[Union[str, bytes]], bool]],
         timeout: Optional[float] = None,
     ) -> Union[str, bytes]:
+        ...
+
+    # Entitlements
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['entitlement_create', 'entitlement_update', 'entitlement_delete'],
+        /,
+        *,
+        check: Optional[Callable[[Entitlement], bool]],
+        timeout: Optional[float] = None,
+    ) -> Entitlement:
         ...
 
     # Guilds
@@ -1735,6 +1803,18 @@ class Client:
     ) -> Coroutine[Any, Any, Tuple[StageInstance, StageInstance]]:
         ...
 
+    # Subscriptions
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['subscription_create', 'subscription_update', 'subscription_delete'],
+        /,
+        *,
+        check: Optional[Callable[[Subscription], bool]],
+        timeout: Optional[float] = None,
+    ) -> Subscription:
+        ...
+
     # Threads
     @overload
     async def wait_for(
@@ -1813,6 +1893,30 @@ class Client:
         check: Optional[Callable[[Member, VoiceState, VoiceState], bool]],
         timeout: Optional[float] = None,
     ) -> Tuple[Member, VoiceState, VoiceState]:
+        ...
+
+    # Polls
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['poll_vote_add', 'poll_vote_remove'],
+        /,
+        *,
+        check: Optional[Callable[[Union[User, Member], PollAnswer], bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> Tuple[Union[User, Member], PollAnswer]:
+        ...
+
+    @overload
+    async def wait_for(
+        self,
+        event: Literal['raw_poll_vote_add', 'raw_poll_vote_remove'],
+        /,
+        *,
+        check: Optional[Callable[[RawPollVoteActionEvent], bool]] = None,
+        timeout: Optional[float] = None,
+    ) -> RawPollVoteActionEvent:
         ...
 
     # Commands
@@ -2261,6 +2365,29 @@ class Client:
         data = await self.http.get_guild(guild_id, with_counts=with_counts)
         return Guild(data=data, state=self._connection)
 
+    async def fetch_guild_preview(self, guild_id: int) -> GuildPreview:
+        """|coro|
+
+        Retrieves a preview of a :class:`.Guild` from an ID. If the guild is discoverable,
+        you don't have to be a member of it.
+
+        .. versionadded:: 2.5
+
+        Raises
+        ------
+        NotFound
+            The guild doesn't exist, or is not discoverable and you are not in it.
+        HTTPException
+            Getting the guild failed.
+
+        Returns
+        --------
+        :class:`.GuildPreview`
+            The guild preview from the ID.
+        """
+        data = await self.http.get_guild_preview(guild_id)
+        return GuildPreview(data=data, state=self._connection)
+
     async def create_guild(
         self,
         *,
@@ -2706,6 +2833,7 @@ class Client:
         user: Optional[Snowflake] = None,
         guild: Optional[Snowflake] = None,
         exclude_ended: bool = False,
+        exclude_deleted: bool = True,
     ) -> AsyncIterator[Entitlement]:
         """Retrieves an :term:`asynchronous iterator` of the :class:`.Entitlement` that applications has.
 
@@ -2747,6 +2875,10 @@ class Client:
             The guild to filter by.
         exclude_ended: :class:`bool`
             Whether to exclude ended entitlements. Defaults to ``False``.
+        exclude_deleted: :class:`bool`
+            Whether to exclude deleted entitlements. Defaults to ``True``.
+
+            .. versionadded:: 2.5
 
         Raises
         -------
@@ -2783,6 +2915,7 @@ class Client:
                 user_id=user.id if user else None,
                 guild_id=guild.id if guild else None,
                 exclude_ended=exclude_ended,
+                exclude_deleted=exclude_deleted,
             )
 
             if data:
@@ -2831,7 +2964,7 @@ class Client:
             data, state, limit = await strategy(retrieve, state, limit)
 
             # Terminate loop on next iteration; there's no data left after this
-            if len(data) < 1000:
+            if len(data) < 100:
                 limit = 0
 
             for e in data:
@@ -2892,6 +3025,53 @@ class Client:
         """
         data = await self.http.list_premium_sticker_packs()
         return [StickerPack(state=self._connection, data=pack) for pack in data['sticker_packs']]
+
+    async def fetch_premium_sticker_pack(self, sticker_pack_id: int, /) -> StickerPack:
+        """|coro|
+
+        Retrieves a premium sticker pack with the specified ID.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        sticker_pack_id: :class:`int`
+            The sticker pack's ID to fetch from.
+
+        Raises
+        -------
+        NotFound
+            A sticker pack with this ID does not exist.
+        HTTPException
+            Retrieving the sticker pack failed.
+
+        Returns
+        -------
+        :class:`.StickerPack`
+            The retrieved premium sticker pack.
+        """
+        data = await self.http.get_sticker_pack(sticker_pack_id)
+        return StickerPack(state=self._connection, data=data)
+
+    async def fetch_soundboard_default_sounds(self) -> List[SoundboardDefaultSound]:
+        """|coro|
+
+        Retrieves all default soundboard sounds.
+
+        .. versionadded:: 2.5
+
+        Raises
+        -------
+        HTTPException
+            Retrieving the default soundboard sounds failed.
+
+        Returns
+        ---------
+        List[:class:`.SoundboardDefaultSound`]
+            All default soundboard sounds.
+        """
+        data = await self.http.get_soundboard_default_sounds()
+        return [SoundboardDefaultSound(state=self._connection, data=sound) for sound in data]
 
     async def create_dm(self, user: Snowflake) -> DMChannel:
         """|coro|
@@ -3013,3 +3193,97 @@ class Client:
         .. versionadded:: 2.0
         """
         return self._connection.persistent_views
+
+    async def create_application_emoji(
+        self,
+        *,
+        name: str,
+        image: bytes,
+    ) -> Emoji:
+        """|coro|
+
+        Create an emoji for the current application.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        name: :class:`str`
+            The emoji name. Must be between 2 and 32 characters long.
+        image: :class:`bytes`
+            The :term:`py:bytes-like object` representing the image data to use.
+            Only JPG, PNG and GIF images are supported.
+
+        Raises
+        ------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Creating the emoji failed.
+
+        Returns
+        -------
+        :class:`.Emoji`
+            The emoji that was created.
+        """
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        img = utils._bytes_to_base64_data(image)
+        data = await self.http.create_application_emoji(self.application_id, name, img)
+        return Emoji(guild=Object(0), state=self._connection, data=data)
+
+    async def fetch_application_emoji(self, emoji_id: int, /) -> Emoji:
+        """|coro|
+
+        Retrieves an emoji for the current application.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        ----------
+        emoji_id: :class:`int`
+            The emoji ID to retrieve.
+
+        Raises
+        ------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Retrieving the emoji failed.
+
+        Returns
+        -------
+        :class:`.Emoji`
+            The emoji requested.
+        """
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        data = await self.http.get_application_emoji(self.application_id, emoji_id)
+        return Emoji(guild=Object(0), state=self._connection, data=data)
+
+    async def fetch_application_emojis(self) -> List[Emoji]:
+        """|coro|
+
+        Retrieves all emojis for the current application.
+
+        .. versionadded:: 2.5
+
+        Raises
+        -------
+        MissingApplicationID
+            The application ID could not be found.
+        HTTPException
+            Retrieving the emojis failed.
+
+        Returns
+        -------
+        List[:class:`.Emoji`]
+            The list of emojis for the current application.
+        """
+        if self.application_id is None:
+            raise MissingApplicationID
+
+        data = await self.http.get_application_emojis(self.application_id)
+        return [Emoji(guild=Object(0), state=self._connection, data=emoji) for emoji in data['items']]

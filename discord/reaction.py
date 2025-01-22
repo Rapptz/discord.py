@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING, AsyncIterator, Union, Optional
 
 from .user import User
 from .object import Object
+from .enums import ReactionType
 
 # fmt: off
 __all__ = (
@@ -185,7 +186,7 @@ class Reaction:
         await self.message.clear_reaction(self.emoji)
 
     async def users(
-        self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None
+        self, *, limit: Optional[int] = None, after: Optional[Snowflake] = None, type: Optional[ReactionType] = None
     ) -> AsyncIterator[Union[Member, User]]:
         """Returns an :term:`asynchronous iterator` representing the users that have reacted to the message.
 
@@ -220,6 +221,11 @@ class Reaction:
             reacted to the message.
         after: Optional[:class:`abc.Snowflake`]
             For pagination, reactions are sorted by member.
+        type: Optional[:class:`ReactionType`]
+            The type of reaction to return users from.
+            If not provided, Discord only returns users of reactions with type ``normal``.
+
+            .. versionadded:: 2.4
 
         Raises
         --------
@@ -251,7 +257,14 @@ class Reaction:
             state = message._state
             after_id = after.id if after else None
 
-            data = await state.http.get_reaction_users(message.channel.id, message.id, emoji, retrieve, after=after_id)
+            data = await state.http.get_reaction_users(
+                message.channel.id,
+                message.id,
+                emoji,
+                retrieve,
+                after=after_id,
+                type=type.value if type is not None else None,
+            )
 
             if data:
                 limit -= len(data)

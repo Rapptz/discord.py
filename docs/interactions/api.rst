@@ -45,6 +45,14 @@ MessageInteraction
 .. autoclass:: MessageInteraction()
     :members:
 
+MessageInteractionMetadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MessageInteractionMetadata
+
+.. autoclass:: MessageInteractionMetadata()
+    :members:
+
 Component
 ~~~~~~~~~~
 
@@ -326,7 +334,12 @@ Enumerations
     .. attribute:: link
 
         Represents a link button.
+    .. attribute:: premium
 
+        Represents a button denoting that buying a SKU is
+        required to perform this action.
+
+        .. versionadded:: 2.4
     .. attribute:: blurple
 
         An alias for :attr:`primary`.
@@ -859,9 +872,6 @@ Exceptions
 .. autoexception:: discord.app_commands.CommandNotFound
     :members:
 
-.. autoexception:: discord.app_commands.MissingApplicationID
-    :members:
-
 .. autoexception:: discord.app_commands.CommandSyncFailure
     :members:
 
@@ -886,7 +896,7 @@ Exception Hierarchy
             - :exc:`~discord.app_commands.CommandAlreadyRegistered`
             - :exc:`~discord.app_commands.CommandSignatureMismatch`
             - :exc:`~discord.app_commands.CommandNotFound`
-            - :exc:`~discord.app_commands.MissingApplicationID`
+            - :exc:`~discord.MissingApplicationID`
             - :exc:`~discord.app_commands.CommandSyncFailure`
         - :exc:`~discord.HTTPException`
             - :exc:`~discord.app_commands.CommandSyncFailure`

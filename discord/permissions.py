@@ -187,7 +187,7 @@ class Permissions(BaseFlags):
         permissions set to ``True``.
         """
         # Some of these are 0 because we don't want to set unnecessary bits
-        return cls(0b0000_0000_0000_0000_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
+        return cls(0b0000_0000_0000_0110_0111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111)
 
     @classmethod
     def _timeout_mask(cls) -> int:
@@ -209,6 +209,22 @@ class Permissions(BaseFlags):
         return base
 
     @classmethod
+    def _user_installed_permissions(cls, *, in_guild: bool) -> Self:
+        base = cls.none()
+        base.send_messages = True
+        base.attach_files = True
+        base.embed_links = True
+        base.external_emojis = True
+        base.send_voice_messages = True
+        if in_guild:
+            # Logically this is False but if not set to True,
+            # permissions just become 0.
+            base.read_messages = True
+            base.send_tts_messages = True
+            base.send_messages_in_threads = True
+        return base
+
+    @classmethod
     def all_channel(cls) -> Self:
         """A :class:`Permissions` with all channel-specific permissions set to
         ``True`` and the guild-specific ones set to ``False``. The guild-specific
@@ -224,6 +240,10 @@ class Permissions(BaseFlags):
         - :attr:`ban_members`
         - :attr:`administrator`
         - :attr:`create_expressions`
+        - :attr:`moderate_members`
+        - :attr:`create_events`
+        - :attr:`manage_events`
+        - :attr:`view_creator_monetization_analytics`
 
         .. versionchanged:: 1.7
            Added :attr:`stream`, :attr:`priority_speaker` and :attr:`use_application_commands` permissions.
@@ -235,8 +255,12 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 2.3
            Added :attr:`use_soundboard`, :attr:`create_expressions` permissions.
+
+        .. versionchanged:: 2.4
+            Added :attr:`send_polls`, :attr:`send_voice_messages`, attr:`use_external_sounds`,
+            :attr:`use_embedded_activities`, and :attr:`use_external_apps` permissions.
         """
-        return cls(0b0000_0000_0000_0000_0000_0100_0111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
+        return cls(0b0000_0000_0000_0110_0110_0100_1111_1101_1011_0011_1111_0111_1111_1111_0101_0001)
 
     @classmethod
     def general(cls) -> Self:
@@ -251,8 +275,11 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 2.3
             Added :attr:`create_expressions` permission.
+
+        .. versionchanged:: 2.4
+            Added :attr:`view_creator_monetization_analytics` permission.
         """
-        return cls(0b0000_0000_0000_0000_0000_1000_0000_0000_0111_0000_0000_1000_0000_0100_1011_0000)
+        return cls(0b0000_0000_0000_0000_0000_1010_0000_0000_0111_0000_0000_1000_0000_0100_1011_0000)
 
     @classmethod
     def membership(cls) -> Self:
@@ -278,8 +305,11 @@ class Permissions(BaseFlags):
 
         .. versionchanged:: 2.3
             Added :attr:`send_voice_messages` permission.
+
+        .. versionchanged:: 2.4
+            Added :attr:`send_polls` and :attr:`use_external_apps` permissions.
         """
-        return cls(0b0000_0000_0000_0000_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
+        return cls(0b0000_0000_0000_0110_0100_0000_0111_1100_1000_0000_0000_0111_1111_1000_0100_0000)
 
     @classmethod
     def voice(cls) -> Self:
@@ -730,6 +760,30 @@ class Permissions(BaseFlags):
         """
         return 1 << 46
 
+    @flag_value
+    def send_polls(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can send poll messages.
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 49
+
+    @make_permission_alias('send_polls')
+    def create_polls(self) -> int:
+        """:class:`bool`: An alias for :attr:`send_polls`.
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 49
+
+    @flag_value
+    def use_external_apps(self) -> int:
+        """:class:`bool`: Returns ``True`` if a user can use external apps.
+
+        .. versionadded:: 2.4
+        """
+        return 1 << 50
+
 
 def _augment_from_permissions(cls):
     cls.VALID_NAMES = set(Permissions.VALID_FLAGS)
@@ -850,6 +904,9 @@ class PermissionOverwrite:
         send_voice_messages: Optional[bool]
         create_expressions: Optional[bool]
         create_events: Optional[bool]
+        send_polls: Optional[bool]
+        create_polls: Optional[bool]
+        use_external_apps: Optional[bool]
 
     def __init__(self, **kwargs: Optional[bool]):
         self._values: Dict[str, Optional[bool]] = {}

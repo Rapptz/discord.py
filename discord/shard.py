@@ -47,13 +47,16 @@ from .enums import Status
 from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict
 
 if TYPE_CHECKING:
+    from typing_extensions import Unpack
     from .gateway import DiscordWebSocket
     from .activity import BaseActivity
     from .flags import Intents
+    from .types.gateway import SessionStartLimit
 
 __all__ = (
     'AutoShardedClient',
     'ShardInfo',
+    'SessionStartLimits',
 )
 
 _log = logging.getLogger(__name__)
@@ -293,6 +296,32 @@ class ShardInfo:
         return self._parent.ws.is_ratelimited()
 
 
+class SessionStartLimits:
+    """A class that holds info about session start limits
+
+    .. versionadded:: 2.5
+
+    Attributes
+    ----------
+    total: :class:`int`
+        The total number of session starts the current user is allowed
+    remaining: :class:`int`
+        Remaining remaining number of session starts the current user is allowed
+    reset_after: :class:`int`
+        The number of milliseconds until the limit resets
+    max_concurrency: :class:`int`
+        The number of identify requests allowed per 5 seconds
+    """
+
+    __slots__ = ("total", "remaining", "reset_after", "max_concurrency")
+
+    def __init__(self, **kwargs: Unpack[SessionStartLimit]):
+        self.total: int = kwargs['total']
+        self.remaining: int = kwargs['remaining']
+        self.reset_after: int = kwargs['reset_after']
+        self.max_concurrency: int = kwargs['max_concurrency']
+
+
 class AutoShardedClient(Client):
     """A client similar to :class:`Client` except it handles the complications
     of sharding for the user into a more manageable and transparent single
@@ -415,6 +444,33 @@ class AutoShardedClient(Client):
         """Mapping[int, :class:`ShardInfo`]: Returns a mapping of shard IDs to their respective info object."""
         return {shard_id: ShardInfo(parent, self.shard_count) for shard_id, parent in self.__shards.items()}
 
+    async def fetch_session_start_limits(self) -> SessionStartLimits:
+        """|coro|
+
+        Get the session start limits.
+
+        This is not typically needed, and will be handled for you by default.
+
+        At the point where you are launching multiple instances
+        with manual shard ranges and are considered required to use large bot
+        sharding by Discord, this function when used along IPC and a
+        before_identity_hook can speed up session start.
+
+        .. versionadded:: 2.5
+
+        Returns
+        -------
+        :class:`SessionStartLimits`
+            A class containing the session start limits
+
+        Raises
+        ------
+        GatewayNotFound
+            The gateway was unreachable
+        """
+        _, _, limits = await self.http.get_bot_gateway()
+        return SessionStartLimits(**limits)
+
     async def launch_shard(self, gateway: yarl.URL, shard_id: int, *, initial: bool = False) -> None:
         try:
             coro = DiscordWebSocket.from_client(self, initial=initial, gateway=gateway, shard_id=shard_id)
@@ -434,7 +490,7 @@ class AutoShardedClient(Client):
 
         if self.shard_count is None:
             self.shard_count: int
-            self.shard_count, gateway_url = await self.http.get_bot_gateway()
+            self.shard_count, gateway_url, _session_start_limit = await self.http.get_bot_gateway()
             gateway = yarl.URL(gateway_url)
         else:
             gateway = DiscordWebSocket.DEFAULT_GATEWAY

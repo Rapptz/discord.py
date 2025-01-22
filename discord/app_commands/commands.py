@@ -2372,6 +2372,12 @@ def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
         with the :meth:`CommandTree.command` or :meth:`CommandTree.context_menu` decorator
         then this must go below that decorator.
 
+    .. note ::
+
+        Due to a Discord limitation, this decorator cannot be used in conjunction with
+        contexts (e.g. :func:`.app_commands.allowed_contexts`) or installation types
+        (e.g. :func:`.app_commands.allowed_installs`).
+
     Example:
 
     .. code-block:: python3
@@ -2523,6 +2529,16 @@ def guild_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         return inner(func)
 
 
+@overload
+def private_channel_only(func: None = ...) -> Callable[[T], T]:
+    ...
+
+
+@overload
+def private_channel_only(func: T) -> T:
+    ...
+
+
 def private_channel_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """A decorator that indicates this command can only be used in the context of DMs and group DMs.
 
@@ -2532,6 +2548,8 @@ def private_channel_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]
     This decorator can be called with or without parentheses.
 
     Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    .. versionadded:: 2.4
 
     Examples
     ---------
@@ -2563,6 +2581,16 @@ def private_channel_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]
         return inner
     else:
         return inner(func)
+
+
+@overload
+def dm_only(func: None = ...) -> Callable[[T], T]:
+    ...
+
+
+@overload
+def dm_only(func: T) -> T:
+    ...
 
 
 def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
@@ -2606,15 +2634,15 @@ def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         return inner(func)
 
 
-def allowed_contexts(
-    guilds: bool = MISSING, dms: bool = MISSING, private_channels: bool = MISSING
-) -> Union[T, Callable[[T], T]]:
+def allowed_contexts(guilds: bool = MISSING, dms: bool = MISSING, private_channels: bool = MISSING) -> Callable[[T], T]:
     """A decorator that indicates this command can only be used in certain contexts.
     Valid contexts are guilds, DMs and private channels.
 
     This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
 
     Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    .. versionadded:: 2.4
 
     Examples
     ---------
@@ -2650,12 +2678,24 @@ def allowed_contexts(
     return inner
 
 
+@overload
+def guild_install(func: None = ...) -> Callable[[T], T]:
+    ...
+
+
+@overload
+def guild_install(func: T) -> T:
+    ...
+
+
 def guild_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """A decorator that indicates this command should be installed in guilds.
 
     This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
 
     Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    .. versionadded:: 2.4
 
     Examples
     ---------
@@ -2688,12 +2728,24 @@ def guild_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         return inner(func)
 
 
+@overload
+def user_install(func: None = ...) -> Callable[[T], T]:
+    ...
+
+
+@overload
+def user_install(func: T) -> T:
+    ...
+
+
 def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
     """A decorator that indicates this command should be installed for users.
 
     This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
 
     Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    .. versionadded:: 2.4
 
     Examples
     ---------
@@ -2729,13 +2781,15 @@ def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
 def allowed_installs(
     guilds: bool = MISSING,
     users: bool = MISSING,
-) -> Union[T, Callable[[T], T]]:
+) -> Callable[[T], T]:
     """A decorator that indicates this command should be installed in certain contexts.
     Valid contexts are guilds and users.
 
     This is **not** implemented as a :func:`check`, and is instead verified by Discord server side.
 
     Due to a Discord limitation, this decorator does nothing in subcommands and is ignored.
+
+    .. versionadded:: 2.4
 
     Examples
     ---------
@@ -2767,7 +2821,7 @@ def allowed_installs(
     return inner
 
 
-def default_permissions(**perms: bool) -> Callable[[T], T]:
+def default_permissions(perms_obj: Optional[Permissions] = None, /, **perms: bool) -> Callable[[T], T]:
     r"""A decorator that sets the default permissions needed to execute this command.
 
     When this decorator is used, by default users must have these permissions to execute the command.
@@ -2791,8 +2845,12 @@ def default_permissions(**perms: bool) -> Callable[[T], T]:
     -----------
     \*\*perms: :class:`bool`
         Keyword arguments denoting the permissions to set as the default.
+    perms_obj: :class:`~discord.Permissions`
+        A permissions object as positional argument. This can be used in combination with ``**perms``.
 
-    Example
+        .. versionadded:: 2.5
+
+    Examples
     ---------
 
     .. code-block:: python3
@@ -2801,9 +2859,21 @@ def default_permissions(**perms: bool) -> Callable[[T], T]:
         @app_commands.default_permissions(manage_messages=True)
         async def test(interaction: discord.Interaction):
             await interaction.response.send_message('You may or may not have manage messages.')
+
+    .. code-block:: python3
+
+        ADMIN_PERMS = discord.Permissions(administrator=True)
+
+        @app_commands.command()
+        @app_commands.default_permissions(ADMIN_PERMS, manage_messages=True)
+        async def test(interaction: discord.Interaction):
+            await interaction.response.send_message('You may or may not have manage messages.')
     """
 
-    permissions = Permissions(**perms)
+    if perms_obj is not None:
+        permissions = perms_obj | Permissions(**perms)
+    else:
+        permissions = Permissions(**perms)
 
     def decorator(func: T) -> T:
         if isinstance(func, (Command, Group, ContextMenu)):

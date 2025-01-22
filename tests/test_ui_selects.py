@@ -22,27 +22,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Optional, TypedDict
-from typing_extensions import NotRequired
-from .snowflake import Snowflake, SnowflakeList
-from .user import User
+from __future__ import annotations
+
+import discord
+import pytest
 
 
-class PartialEmoji(TypedDict):
-    id: Optional[Snowflake]
-    name: Optional[str]
-    animated: NotRequired[bool]
+@pytest.mark.asyncio
+async def test_add_option():
+    select = discord.ui.Select()
 
+    for i in range(1, 25 + 1):
+        select.add_option(label=str(i), value=str(i))
 
-class Emoji(PartialEmoji, total=False):
-    roles: SnowflakeList
-    user: User
-    require_colons: bool
-    managed: bool
-    animated: bool
-    available: bool
-
-
-class EditEmoji(TypedDict):
-    name: str
-    roles: Optional[SnowflakeList]
+    with pytest.raises(ValueError):
+        select.add_option(label="26", value="26")

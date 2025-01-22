@@ -135,7 +135,7 @@ class Parameter(inspect.Parameter):
         if displayed_name is MISSING:
             displayed_name = self._displayed_name
 
-        return self.__class__(
+        ret = self.__class__(
             name=name,
             kind=kind,
             default=default,
@@ -144,6 +144,8 @@ class Parameter(inspect.Parameter):
             displayed_default=displayed_default,
             displayed_name=displayed_name,
         )
+        ret._fallback = self._fallback
+        return ret
 
     if not TYPE_CHECKING:  # this is to prevent anything breaking if inspect internals change
         name = _gen_property('name')
@@ -247,6 +249,12 @@ def parameter(
 
         .. versionadded:: 2.3
     """
+    if isinstance(default, Parameter):
+        if displayed_default is empty:
+            displayed_default = default._displayed_default
+
+        default = default._default
+
     return Parameter(
         name='empty',
         kind=inspect.Parameter.POSITIONAL_OR_KEYWORD,

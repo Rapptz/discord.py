@@ -30,6 +30,7 @@ from typing_extensions import NotRequired
 from .user import User
 from .team import Team
 from .snowflake import Snowflake
+from .emoji import Emoji
 
 
 class InstallParams(TypedDict):
@@ -49,6 +50,7 @@ class BaseAppInfo(TypedDict):
     summary: str
     description: str
     flags: int
+    approximate_user_install_count: NotRequired[int]
     cover_image: NotRequired[str]
     terms_of_service_url: NotRequired[str]
     privacy_policy_url: NotRequired[str]
@@ -83,3 +85,7 @@ class PartialAppInfo(BaseAppInfo, total=False):
 class GatewayAppInfo(TypedDict):
     id: Snowflake
     flags: int
+
+
+class ListAppEmojis(TypedDict):
+    items: List[Emoji]

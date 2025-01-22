@@ -43,7 +43,7 @@ import inspect
 from discord import app_commands
 from discord.utils import MISSING, maybe_coroutine, async_all
 from .core import Command, Group
-from .errors import BadArgument, CommandRegistrationError, CommandError, HybridCommandError, ConversionError
+from .errors import BadArgument, CommandRegistrationError, CommandError, HybridCommandError, ConversionError, DisabledCommand
 from .converter import Converter, Range, Greedy, run_converters, CONVERTER_MAPPING
 from .parameters import Parameter
 from .flags import is_flag, FlagConverter
@@ -234,6 +234,12 @@ def replace_parameter(
                     descriptions[name] = flag.description
                 if flag.name != flag.attribute:
                     renames[name] = flag.name
+                if pseudo.default is not pseudo.empty:
+                    # This ensures the default is wrapped around _CallableDefault if callable
+                    # else leaves it as-is.
+                    pseudo = pseudo.replace(
+                        default=_CallableDefault(flag.default) if callable(flag.default) else flag.default
+                    )
 
                 mapping[name] = pseudo
 
@@ -283,7 +289,7 @@ def replace_parameters(
             param = param.replace(default=default)
 
         if isinstance(param.default, Parameter):
-            # If we're here, then then it hasn't been handled yet so it should be removed completely
+            # If we're here, then it hasn't been handled yet so it should be removed completely
             param = param.replace(default=parameter.empty)
 
         # Flags are flattened out and thus don't get their parameter in the actual mapping
@@ -526,6 +532,9 @@ class HybridCommand(Command[CogT, P, T]):
             self.app_command.binding = value
 
     async def can_run(self, ctx: Context[BotT], /) -> bool:
+        if not self.enabled:
+            raise DisabledCommand(f'{self.name} command is disabled')
+
         if ctx.interaction is not None and self.app_command:
             return await self.app_command._check_can_run(ctx.interaction)
         else:

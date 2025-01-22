@@ -78,6 +78,7 @@ if TYPE_CHECKING:
     from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel, DMChannel, GroupChannel
     from .threads import Thread
     from .app_commands.commands import Command, ContextMenu
+    from .poll import Poll
 
     InteractionChannel = Union[
         VoiceChannel,
@@ -190,6 +191,9 @@ class Interaction(Generic[ClientT]):
         self.extras: Dict[Any, Any] = {}
         self.command_failed: bool = False
         self._from_data(data)
+
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} id={self.id} type={self.type!r} guild_id={self.guild_id!r} user={self.user!r}>'
 
     def _from_data(self, data: InteractionPayload):
         self.id: int = int(data['id'])
@@ -762,6 +766,7 @@ class InteractionResponse(Generic[ClientT]):
         suppress_embeds: bool = False,
         silent: bool = False,
         delete_after: Optional[float] = None,
+        poll: Poll = MISSING,
     ) -> None:
         """|coro|
 
@@ -805,6 +810,10 @@ class InteractionResponse(Generic[ClientT]):
             then it is silently ignored.
 
             .. versionadded:: 2.1
+        poll: :class:`~discord.Poll`
+            The poll to send with this message.
+
+            .. versionadded:: 2.4
 
         Raises
         -------
@@ -842,6 +851,7 @@ class InteractionResponse(Generic[ClientT]):
             allowed_mentions=allowed_mentions,
             flags=flags,
             view=view,
+            poll=poll,
         )
 
         http = parent._state.http
@@ -949,7 +959,7 @@ class InteractionResponse(Generic[ClientT]):
             message_id = msg.id
             # If this was invoked via an application command then we can use its original interaction ID
             # Since this is used as a cache key for view updates
-            original_interaction_id = msg.interaction.id if msg.interaction is not None else None
+            original_interaction_id = msg.interaction_metadata.id if msg.interaction_metadata is not None else None
         else:
             message_id = None
             original_interaction_id = None
@@ -1042,38 +1052,6 @@ class InteractionResponse(Generic[ClientT]):
         if not modal.is_finished():
             self._parent._state.store_view(modal)
         self._response_type = InteractionResponseType.modal
-
-    async def require_premium(self) -> None:
-        """|coro|
-
-        Sends a message to the user prompting them that a premium purchase is required for this interaction.
-
-        This type of response is only available for applications that have a premium SKU set up.
-
-        Raises
-        -------
-        HTTPException
-            Sending the response failed.
-        InteractionResponded
-            This interaction has already been responded to before.
-        """
-        if self._response_type:
-            raise InteractionResponded(self._parent)
-
-        parent = self._parent
-        adapter = async_context.get()
-        http = parent._state.http
-
-        params = interaction_response_params(InteractionResponseType.premium_required.value)
-        await adapter.create_interaction_response(
-            parent.id,
-            parent.token,
-            session=parent._session,
-            proxy=http.proxy,
-            proxy_auth=http.proxy_auth,
-            params=params,
-        )
-        self._response_type = InteractionResponseType.premium_required
 
     async def autocomplete(self, choices: Sequence[Choice[ChoiceT]]) -> None:
         """|coro|
