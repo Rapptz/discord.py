@@ -29,6 +29,7 @@ from typing import Any, Dict, List, Mapping, Optional, Protocol, TYPE_CHECKING, 
 
 from . import utils
 from .colour import Colour
+from .flags import EmbedFlags, EmbedMediaFlags
 
 # fmt: off
 __all__ = (
@@ -76,6 +77,7 @@ if TYPE_CHECKING:
         proxy_url: Optional[str]
         height: Optional[int]
         width: Optional[int]
+        flags: Optional[EmbedMediaFlags]
 
     class _EmbedVideoProxy(Protocol):
         url: Optional[str]
@@ -146,6 +148,10 @@ class Embed:
     colour: Optional[Union[:class:`Colour`, :class:`int`]]
         The colour code of the embed. Aliased to ``color`` as well.
         This can be set during initialisation.
+    flags: Optional[:class:`EmbedFlags`]
+        This embed flags.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -162,6 +168,7 @@ class Embed:
         '_author',
         '_fields',
         'description',
+        'flags',
     )
 
     def __init__(
@@ -174,6 +181,7 @@ class Embed:
         url: Optional[Any] = None,
         description: Optional[Any] = None,
         timestamp: Optional[datetime.datetime] = None,
+        flags: Optional[EmbedFlags] = None,
     ):
 
         self.colour = colour if colour is not None else color
@@ -181,6 +189,7 @@ class Embed:
         self.type: EmbedType = type
         self.url: Optional[str] = url
         self.description: Optional[str] = description
+        self.flags: Optional[EmbedFlags] = flags
 
         if self.title is not None:
             self.title = str(self.title)
@@ -244,6 +253,11 @@ class Embed:
                 continue
             else:
                 setattr(self, '_' + attr, value)
+
+        try:
+            self.flags = EmbedFlags._from_value(data['flags'])
+        except KeyError:
+            pass
 
         return self
 
@@ -399,13 +413,17 @@ class Embed:
         - ``proxy_url``
         - ``width``
         - ``height``
+        - ``flags``
 
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        return EmbedProxy(getattr(self, '_image', {}))  # type: ignore
+        data = getattr(self, '_image', {})
+        if 'flags' in data:
+            data['flags'] = EmbedMediaFlags._from_value(data['flags'])
+        return EmbedProxy(data)  # type: ignore
 
-    def set_image(self, *, url: Optional[Any]) -> Self:
+    def set_image(self, *, url: Optional[Any], flags: Optional[EmbedMediaFlags] = None) -> Self:
         """Sets the image for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -417,6 +435,11 @@ class Embed:
             The source URL for the image. Only HTTP(S) is supported.
             If ``None`` is passed, any existing image is removed.
             Inline attachment URLs are also supported, see :ref:`local_image`.
+        flags: Optional[:class:`EmbedMediaFlags`]
+            The flags of the image.
+            If ``None`` is passed, any existing flags are removed.
+
+            .. versionadded:: 2.5
         """
 
         if url is None:
@@ -427,6 +450,7 @@ class Embed:
         else:
             self._image = {
                 'url': str(url),
+                'flags': flags.value if flags else None,
             }
 
         return self
@@ -752,5 +776,8 @@ class Embed:
 
         if self.title:
             result['title'] = self.title
+
+        if self.flags:
+            result['flags'] = self.flags.value
 
         return result  # type: ignore # This payload is equivalent to the EmbedData type
