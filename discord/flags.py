@@ -64,6 +64,7 @@ __all__ = (
     'AppInstallationType',
     'SKUFlags',
     'EmbedFlags',
+    'EmbedMediaFlags',
 )
 
 BF = TypeVar('BF', bound='BaseFlags')
