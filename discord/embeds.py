@@ -770,7 +770,4 @@ class Embed:
         if self.title:
             result['title'] = self.title
 
-        if self.flags:
-            result['flags'] = self.flags.value
-
         return result  # type: ignore # This payload is equivalent to the EmbedData type
