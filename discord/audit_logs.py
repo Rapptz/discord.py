@@ -285,11 +285,9 @@ class AuditLogDiff:
 
     if TYPE_CHECKING:
 
-        def __getattr__(self, item: str) -> Any:
-            ...
+        def __getattr__(self, item: str) -> Any: ...
 
-        def __setattr__(self, key: str, value: Any) -> Any:
-            ...
+        def __setattr__(self, key: str, value: Any) -> Any: ...
 
 
 Transformer = Callable[["AuditLogEntry", Any], Any]
@@ -875,7 +873,7 @@ class AuditLogEntry(Hashable):
         return self._state.get_emoji(target_id) or Object(id=target_id, type=Emoji)
 
     def _convert_target_message(self, target_id: Optional[int]) -> Optional[Union[Member, User, Object]]:
-        # The message_pin and message_unpin action types do not have a 
+        # The message_pin and message_unpin action types do not have a
         # non-null target_id so safeguard against that
 
         if target_id is None:
