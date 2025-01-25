@@ -29,7 +29,7 @@ from typing import Any, Dict, List, Mapping, Optional, Protocol, TYPE_CHECKING, 
 
 from . import utils
 from .colour import Colour
-from .flags import EmbedFlags, EmbedMediaFlags
+from .flags import AttachmentFlags, EmbedFlags
 
 # fmt: off
 __all__ = (
@@ -77,7 +77,7 @@ if TYPE_CHECKING:
         proxy_url: Optional[str]
         height: Optional[int]
         width: Optional[int]
-        flags: Optional[EmbedMediaFlags]
+        flags: Optional[AttachmentFlags]
 
     class _EmbedVideoProxy(Protocol):
         url: Optional[str]
@@ -181,7 +181,6 @@ class Embed:
         url: Optional[Any] = None,
         description: Optional[Any] = None,
         timestamp: Optional[datetime.datetime] = None,
-        flags: Optional[EmbedFlags] = None,
     ):
 
         self.colour = colour if colour is not None else color
@@ -189,7 +188,7 @@ class Embed:
         self.type: EmbedType = type
         self.url: Optional[str] = url
         self.description: Optional[str] = description
-        self.flags: Optional[EmbedFlags] = flags
+        self.flags: Optional[EmbedFlags] = None
 
         if self.title is not None:
             self.title = str(self.title)
@@ -420,10 +419,10 @@ class Embed:
         # Lying to the type checker for better developer UX.
         data = getattr(self, '_image', {})
         if 'flags' in data:
-            data['flags'] = EmbedMediaFlags._from_value(data['flags'])
+            data['flags'] = AttachmentFlags._from_value(data['flags'])
         return EmbedProxy(data)  # type: ignore
 
-    def set_image(self, *, url: Optional[Any], flags: Optional[EmbedMediaFlags] = None) -> Self:
+    def set_image(self, *, url: Optional[Any]) -> Self:
         """Sets the image for the embed content.
 
         This function returns the class instance to allow for fluent-style
@@ -435,11 +434,6 @@ class Embed:
             The source URL for the image. Only HTTP(S) is supported.
             If ``None`` is passed, any existing image is removed.
             Inline attachment URLs are also supported, see :ref:`local_image`.
-        flags: Optional[:class:`EmbedMediaFlags`]
-            The flags of the image.
-            If ``None`` is passed, any existing flags are removed.
-
-            .. versionadded:: 2.5
         """
 
         if url is None:
@@ -450,7 +444,6 @@ class Embed:
         else:
             self._image = {
                 'url': str(url),
-                'flags': flags.value if flags else None,
             }
 
         return self

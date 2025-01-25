@@ -5716,14 +5716,6 @@ EmbedFlags
 .. autoclass:: EmbedFlags()
     :members:
 
-EmbedMediaFlags
-~~~~~~~~~~~~~~~
-
-.. attributetable:: EmbedMediaFlags
-
-.. autoclass:: EmbedMediaFlags()
-    :members:
-
 ForumTag
 ~~~~~~~~~
 
