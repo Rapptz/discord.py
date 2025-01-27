@@ -19427,8 +19427,8 @@ msgid "The title of the embed. This can be set during initialisation. Can only b
 msgstr "埋め込みのタイトル。初期化中に設定できます。最大256文字までです。"
 
 #: ../../../discord/embeds.py:docstring of discord.embeds.Embed:38
-msgid "The type of embed. Usually \"rich\". This can be set during initialisation. Possible strings for embed types can be found on discord's :ddocs:`api docs <resources/channel#embed-object-embed-types>`"
-msgstr "埋め込みのタイプ。通常は「rich」です。初期化時に設定できます。 埋め込みのタイプとして可能な文字列は Discordの :ddocs:`API 説明書 <resources/channel#embed-object-embed-types>` にあります。"
+msgid "The type of embed. Usually \"rich\". This can be set during initialisation. Possible strings for embed types can be found on discord's :ddocs:`api docs <resources/message#embed-object-embed-types>`"
+msgstr "埋め込みのタイプ。通常は「rich」です。初期化時に設定できます。 埋め込みのタイプとして可能な文字列は Discordの :ddocs:`API 説明書 <resources/message#embed-object-embed-types>` にあります。"
 
 #: ../../../discord/embeds.py:docstring of discord.embeds.Embed:47
 msgid "The description of the embed. This can be set during initialisation. Can only be up to 4096 characters."
