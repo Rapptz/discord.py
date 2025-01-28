@@ -2048,6 +2048,7 @@ of :class:`enum.Enum`.
         The user is a Bug Hunter.
 
         .. versionadded:: 2.0
+
     .. attribute:: mfa_sms
 
         The user has SMS recovery for Multi Factor Authentication enabled.
@@ -2076,15 +2077,12 @@ of :class:`enum.Enum`.
 
         The user is a Team User.
 
-    .. attribute:: partner_or_verification_application
-
-        The user has a partner or verification application.
-
     .. attribute:: system
 
         The user is a system user (i.e. represents Discord officially).
 
         .. versionadded:: 2.0
+
     .. attribute:: has_unread_urgent_messages
 
         The user has an unread system message.
@@ -2093,11 +2091,6 @@ of :class:`enum.Enum`.
 
         The user is a Bug Hunter Level 2.
 
-    .. attribute:: underage_deleted
-
-        The user has been flagged for deletion for being underage.
-
-        .. versionadded:: 2.0
     .. attribute:: verified_bot
 
         The user is a Verified Bot.
@@ -2115,16 +2108,19 @@ of :class:`enum.Enum`.
         The user is a bot that only uses HTTP interactions and is shown in the online member list.
 
         .. versionadded:: 2.0
+
     .. attribute:: spammer
 
         The user is flagged as a spammer by Discord.
 
         .. versionadded:: 2.0
+
     .. attribute:: disable_premium
 
         The user bought premium but has it manually disabled.
 
         .. versionadded:: 2.0
+
     .. attribute:: quarantined
 
         The user is quarantined.
@@ -2136,6 +2132,24 @@ of :class:`enum.Enum`.
         The user is an active developer.
 
         .. versionadded:: 2.0
+
+    .. attribute:: provisional_account
+
+        The user is a provisional account used with the social layer integration.
+
+        .. versionadded:: 2.1
+
+    .. attribute:: collaborator
+
+        The user is a collaborator and is considered staff.
+
+        .. versionadded:: 2.1
+
+    .. attribute:: restricted_collaborator
+
+        The user is a restricted collaborator and is considered staff.
+
+        .. versionadded:: 2.1
 
 .. class:: ActivityType
 

@@ -680,11 +680,9 @@ class UserFlags(Enum):
     hypesquad_balance = 256
     early_supporter = 512
     team_user = 1024
-    partner_or_verification_application = 2048
     system = 4096
     has_unread_urgent_messages = 8192
     bug_hunter_level_2 = 16384
-    underage_deleted = 32768
     verified_bot = 65536
     verified_bot_developer = 131072
     discord_certified_moderator = 262144
@@ -692,7 +690,10 @@ class UserFlags(Enum):
     spammer = 1048576
     disable_premium = 2097152
     active_developer = 4194304
+    provisional_account = 8388608
     quarantined = 17592186044416
+    collaborator = 1125899906842624
+    restricted_collaborator = 2251799813685248
 
 
 class ActivityType(Enum):

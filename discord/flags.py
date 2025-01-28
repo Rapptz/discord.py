@@ -522,6 +522,18 @@ class SystemChannelFlags(BaseFlags):
         """
         return 32
 
+    @flag_value
+    def unknown_6(self):
+        return 64
+
+    @flag_value
+    def channel_prompt_deadchat(self):
+        """:class:`bool`: Returns ``True`` if dead chat prompts are enabled.
+
+        .. versionadded:: 2.1
+        """
+        return 128
+
 
 @fill_with_flags()
 class MessageFlags(BaseFlags):
@@ -740,6 +752,10 @@ class PublicUserFlags(BaseFlags):
 
     .. versionadded:: 1.4
 
+    .. versionchanged:: 2.1
+
+        Removed the ``system`` flag as it is no longer used.
+
     Attributes
     -----------
     value: :class:`int`
@@ -804,11 +820,6 @@ class PublicUserFlags(BaseFlags):
         return UserFlags.team_user.value
 
     @flag_value
-    def system(self):
-        """:class:`bool`: Returns ``True`` if the user is a system user (i.e. represents Discord officially)."""
-        return UserFlags.system.value
-
-    @flag_value
     def bug_hunter_level_2(self):
         """:class:`bool`: Returns ``True`` if the user is a level 2 Bug Hunter"""
         return UserFlags.bug_hunter_level_2.value
@@ -864,6 +875,14 @@ class PublicUserFlags(BaseFlags):
         """
         return UserFlags.active_developer.value
 
+    @flag_value
+    def provisional_account(self):
+        """:class:`bool`: Returns ``True`` if the user is a provisional account used with the social layer integration.
+
+        .. versionadded:: 2.1
+        """
+        return UserFlags.provisional_account.value
+
     def all(self) -> List[UserFlags]:
         """List[:class:`UserFlags`]: Returns all flags the user has."""
         return [public_flag for public_flag in UserFlags if self._has_flag(public_flag.value)]
@@ -914,6 +933,11 @@ class PrivateUserFlags(PublicUserFlags):
 
     .. versionadded:: 2.0
 
+    .. versionchanged:: 2.1
+
+        Removed the ``underage_deleted``, ``partner_or_verification_application``,
+        and ``disable_premium`` flags as they are not sent or no longer used.
+
     Attributes
     -----------
     value: :class:`int`
@@ -940,24 +964,19 @@ class PrivateUserFlags(PublicUserFlags):
         return UserFlags.mfa_sms.value
 
     @flag_value
-    def underage_deleted(self):
-        """:class:`bool`: Returns ``True`` if the user has been flagged for deletion for being underage."""
-        return UserFlags.underage_deleted.value
-
-    @flag_value
-    def partner_or_verification_application(self):
-        """:class:`bool`: Returns ``True`` if the user has a partner or a verification application."""
-        return UserFlags.partner_or_verification_application.value
-
-    @flag_value
-    def disable_premium(self):
-        """:class:`bool`: Returns ``True`` if the user bought premium but has it manually disabled."""
-        return UserFlags.disable_premium.value
-
-    @flag_value
     def quarantined(self):
         """:class:`bool`: Returns ``True`` if the user is quarantined."""
         return UserFlags.quarantined.value
+
+    @flag_value
+    def collaborator(self):
+        """:class:`bool`: Returns ``True`` if the user is a collaborator and is considered staff."""
+        return UserFlags.collaborator.value
+
+    @flag_value
+    def restricted_collaborator(self):
+        """:class:`bool`: Returns ``True`` if the user is a restricted collaborator and is considered staff."""
+        return UserFlags.restricted_collaborator.value
 
 
 @fill_with_flags()
@@ -1315,6 +1334,14 @@ class ApplicationFlags(BaseFlags):
         .. versionadded:: 2.1
         """
         return 1 << 8
+
+    @flag_value
+    def contextless_activity(self):
+        """:class:`bool`: Returns ``True`` if the embedded application's activity can be launched without a context.
+
+        .. versionadded:: 2.1
+        """
+        return 1 << 9
 
     @flag_value
     def gateway_presence(self):
@@ -1814,6 +1841,14 @@ class PromotionFlags(BaseFlags):
     def outbound_redeemable_by_trial_users(self):
         """:class:`bool`: Returns ``True`` if the promotion is redeemable by trial users."""
         return 1 << 6
+
+    @flag_value
+    def suppress_notification(self):
+        """:class:`bool`: Returns ``True`` if the client should suppress notifications for the promotion.
+
+        .. versionadded:: 2.1
+        """
+        return 1 << 7
 
 
 @fill_with_flags()
