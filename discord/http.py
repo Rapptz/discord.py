@@ -1110,11 +1110,11 @@ class HTTPClient:
 
     def pomelo_attempt(self, username: str) -> Response[user.PomeloAttempt]:
         payload = {'username': username}
-        return self.request(Route('POST', '/users/@me/pomelo-attempt'), json=payload, auth=False)
+        return self.request(Route('POST', '/users/@me/pomelo-attempt'), json=payload)
 
     def pomelo_attempt_unauthed(self, username: str) -> Response[user.PomeloAttempt]:
         payload = {'username': username}
-        return self.request(Route('POST', '/unique-username/username-attempt-unauthed'), json=payload)
+        return self.request(Route('POST', '/unique-username/username-attempt-unauthed'), json=payload, auth=False)
 
     # PM functionality
 
