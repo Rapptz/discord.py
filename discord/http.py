@@ -1137,6 +1137,14 @@ class HTTPClient:
             context_properties=props,
         )
 
+    def convert_dm(self, channel_id: Snowflake, user_id: Snowflake) -> Response[channel.GroupDMChannel]:
+        props = ContextProperties.from_add_friends_to_dm()
+
+        return self.request(
+            Route('PUT', '/channels/{channel_id}/recipients/{user_id}', channel_id=channel_id, user_id=user_id),
+            context_properties=props,
+        )
+
     def remove_group_recipient(self, channel_id: Snowflake, user_id: Snowflake) -> Response[None]:
         return self.request(
             Route('DELETE', '/channels/{channel_id}/recipients/{user_id}', channel_id=channel_id, user_id=user_id)

@@ -115,6 +115,7 @@ if TYPE_CHECKING:
         DMChannel as DMChannelPayload,
         CategoryChannel as CategoryChannelPayload,
         GroupDMChannel as GroupChannelPayload,
+        GroupDMNickname as GroupDMNicknamePayload,
         ForumChannel as ForumChannelPayload,
         MediaChannel as MediaChannelPayload,
         ForumTag as ForumTagPayload,
@@ -3815,6 +3816,48 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         """
         return Permissions._dm_permissions()
 
+    async def add_recipients(self, *recipients: Snowflake) -> GroupChannel:
+        r"""|coro|
+
+        Adds recipients to this DM. This spawns a new group with the existing DM
+        recipient and the new recipients.
+
+        A group can only have a maximum of 10 members.
+        Attempting to add more ends up in an exception. To
+        add a recipient to the group, you must have a relationship
+        with the user of type :attr:`RelationshipType.friend`.
+
+        .. versionadded:: 2.1
+
+        Parameters
+        -----------
+        \*recipients: :class:`~discord.abc.Snowflake`
+            An argument list of users to add to this group.
+
+        Raises
+        -------
+        TypeError
+            No recipients were provided.
+        Forbidden
+            You do not have permissions to add a recipient to this group.
+        HTTPException
+            Adding a recipient to this group failed.
+
+        Returns
+        --------
+        :class:`GroupChannel`
+            The newly created group channel. Due to a Discord limitation,
+            this will not contain complete recipient data.
+        """
+        if len(recipients) < 1:
+            raise TypeError('add_recipients() missing 1 required positional argument')
+
+        state = self._state
+        data = await state.http.convert_dm(self.id, recipients[0].id)
+        channel = GroupChannel(state=state, data=data, me=self.me)
+        await channel.add_recipients(*[r for r in recipients[1:]])
+        return channel
+
     def get_partial_message(self, message_id: int, /) -> PartialMessage:
         """Creates a :class:`PartialMessage` from the message ID.
 
@@ -3899,7 +3942,6 @@ class DMChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc.Pr
         :class:`~discord.VoiceProtocol`
             A voice client that is fully connected to the voice server.
         """
-        await self._get_channel()
         ret = await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
 
         if ring:
@@ -4001,6 +4043,13 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         A mapping of users to their respective nicknames in the group channel.
 
         .. versionadded:: 2.0
+    origin_channel_id: Optional[:class:`int`]
+        The ID of the DM this group channel originated from, if any.
+        This can only be accurately received in :func:`on_private_channel_create`
+        due to a Discord limitation.
+
+        .. versionadded:: 2.1
+
     """
 
     __slots__ = (
@@ -4012,6 +4061,7 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         'managed',
         'application_id',
         'nicks',
+        'origin_channel_id',
         '_icon',
         'name',
         'me',
@@ -4033,7 +4083,17 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         self.last_pin_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('last_pin_timestamp'))
         self.managed: bool = data.get('managed', False)
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
-        self.nicks: Dict[User, str] = {utils.get(self.recipients, id=int(k)): v for k, v in data.get('nicks', {}).items()}  # type: ignore
+        self.nicks: Dict[User, str] = self._unroll_nicks(data.get('nicks', []))
+        self.origin_channel_id: Optional[int] = utils._get_as_snowflake(data, 'origin_channel_id')
+
+    def _unroll_nicks(self, data: List[GroupDMNicknamePayload]) -> Dict[User, str]:
+        ret = {}
+        for entry in data:
+            user_id = int(entry['id'])
+            user = utils.get(self.recipients, id=user_id)
+            if user:
+                ret[user] = entry['nick']
+        return ret
 
     def _get_voice_client_key(self) -> Tuple[int, str]:
         return self.me.id, 'self_id'
@@ -4109,6 +4169,17 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         if self._icon is None:
             return None
         return Asset._from_icon(self._state, self.id, self._icon, path='channel')
+
+    @property
+    def origin_channel(self) -> Optional[DMChannel]:
+        """Optional[:class:`DMChannel`]: The DM this group channel originated from, if any.
+
+        This can only be accurately received in :func:`on_private_channel_create`
+        due to a Discord limitation.
+
+        .. versionadded:: 2.1
+        """
+        return self._state._get_private_channel(self.origin_channel_id) if self.origin_channel_id else None  # type: ignore
 
     @property
     def created_at(self) -> datetime.datetime:
@@ -4295,7 +4366,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
             Adding a recipient to this group failed.
         """
         nicknames = {k.id: v for k, v in nicks.items()} if nicks else {}
-        await self._get_channel()
         req = self._state.http.add_group_recipient
         for recipient in recipients:
             await req(self.id, recipient.id, getattr(recipient, 'nick', (nicknames.get(recipient.id) if nicks else None)))
@@ -4317,7 +4387,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         HTTPException
             Removing a recipient from this group failed.
         """
-        await self._get_channel()
         req = self._state.http.remove_group_recipient
         for recipient in recipients:
             await req(self.id, recipient.id)
@@ -4354,8 +4423,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         HTTPException
             Editing the group failed.
         """
-        await self._get_channel()
-
         payload = {}
         if name is not MISSING:
             payload['name'] = name
@@ -4471,7 +4538,6 @@ class GroupChannel(discord.abc.Messageable, discord.abc.Connectable, discord.abc
         cls: Callable[[Client, discord.abc.VocalChannel], T] = VoiceClient,
         ring: bool = True,
     ) -> T:
-        await self._get_channel()
         ret = await super().connect(timeout=timeout, reconnect=reconnect, cls=cls)
 
         if ring:

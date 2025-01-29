@@ -253,6 +253,7 @@ ChannelCreateEvent = ChannelUpdateEvent = ChannelDeleteEvent = _ChannelEvent
 class ChannelRecipientEvent(TypedDict):
     channel_id: Snowflake
     user: PartialUser
+    nick: str
 
 
 class ChannelPinsUpdateEvent(TypedDict):
