@@ -146,7 +146,7 @@ class Profile:
         """:class:`bool`: Indicates if the user is a premium user."""
         return self.premium_since is not None
 
-    def is_blocked_by_user(self) -> bool:
+    def is_blocker(self) -> bool:
         """:class:`bool`: Indicates if the user has blocked the client user.
 
         .. versionadded:: 2.1
