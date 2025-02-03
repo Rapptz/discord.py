@@ -1557,7 +1557,11 @@ class PaymentSourceFlags(BaseFlags):
         return 1 << 0
 
     @flag_value
-    def unknown(self):
+    def successful_payment(self):
+        """:class:`bool`: Returns ``True`` if the payment source has been successfully used.
+
+        .. versionadded:: 2.1
+        """
         return 1 << 1
 
 
