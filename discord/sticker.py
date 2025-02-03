@@ -141,9 +141,10 @@ class _StickerTag(Hashable, AssetMixin):
 
         Retrieves the content of this sticker as a :class:`bytes` object.
 
-        .. note::
+        .. versionchanged:: 2.1
 
-            Stickers that use the :attr:`StickerFormatType.lottie` format cannot be read.
+            Stickers that use the :attr:`StickerFormatType.lottie` format
+            can now be read.
 
         Raises
         ------
@@ -151,16 +152,12 @@ class _StickerTag(Hashable, AssetMixin):
             Downloading the asset failed.
         NotFound
             The asset was deleted.
-        TypeError
-            The sticker is a lottie type.
 
         Returns
         -------
         :class:`bytes`
             The content of the asset.
         """
-        if self.format is StickerFormatType.lottie:
-            raise TypeError('Cannot read stickers of format "lottie"')
         return await super().read()
 
 
