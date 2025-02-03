@@ -2322,7 +2322,7 @@ class ConnectionState:
         user = self.store_user(data['user'])
         channel.recipients.append(user)  # type: ignore
         if 'nick' in data:
-            channel.nicks[user] = data['nick']
+            channel.nicks[user] = data['nick']  # type: ignore
         self.dispatch('group_join', channel, user)
 
     def parse_channel_recipient_remove(self, data: gw.ChannelRecipientEvent) -> None:

@@ -22,7 +22,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Dict, List, Literal, Optional, TypedDict, Union
+from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired
 
 from .user import PartialUser
