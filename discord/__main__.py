@@ -230,7 +230,7 @@ def to_path(parser: argparse.ArgumentParser, name: str, *, replace_spaces: bool 
             drive, rest = path.parts[0], path.parts[1:]
             transformed = tuple(map(lambda p: p.translate(_translation_table), rest))
             name = drive + '\\'.join(transformed)
-            
+
         else:
             name = name.translate(_translation_table)
     if replace_spaces:
