@@ -307,7 +307,7 @@ class CommandOnCooldown(CheckFailure):
     def __init__(self, cooldown: Cooldown, retry_after: float) -> None:
         self.cooldown: Cooldown = cooldown
         self.retry_after: float = retry_after
-        super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s')
+        super().__init__(f'You are on cooldown. Try again in {retry_after:.2f}s.')
 
 
 class CommandAlreadyRegistered(AppCommandError):
@@ -354,7 +354,7 @@ class CommandNotFound(AppCommandError):
         self.name: str = name
         self.parents: List[str] = parents
         self.type: AppCommandType = type
-        super().__init__(f'Application command {name!r} not found')
+        super().__init__(f'Application command {name!r} not found.')
 
 
 class CommandLimitReached(AppCommandError):
@@ -387,7 +387,7 @@ class CommandLimitReached(AppCommandError):
         }
         desc = lookup.get(type, 'application commands')
         ns = 'globally' if self.guild_id is None else f'for guild ID {self.guild_id}'
-        super().__init__(f'maximum number of {desc} exceeded {limit} {ns}')
+        super().__init__(f'Maximum number of {desc} exceeded {limit} {ns}.')
 
 
 class CommandSignatureMismatch(AppCommandError):
