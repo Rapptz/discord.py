@@ -523,12 +523,31 @@ class Role(Hashable):
         return Role(guild=self.guild, data=data, state=self._state)
 
     @overload
-    async def move(self, *, above: Role, reason: Optional[str] = ...): ...
+    async def move(self, *, beginning: bool, offset: int = ..., reason: Optional[str] = ...):
+        ...
 
     @overload
-    async def move(self, *, below: Role, reason: Optional[str] = ...): ...
+    async def move(self, *, end: bool, offset: int = ..., reason: Optional[str] = ...):
+        ...
 
-    async def move(self, *, above: Optional[Role] = None, below: Optional[Role] = None, reason: Optional[str] = None):
+    @overload
+    async def move(self, *, above: Role, offset: int = ..., reason: Optional[str] = ...):
+        ...
+
+    @overload
+    async def move(self, *, below: Role, offset: int = ..., reason: Optional[str] = ...):
+        ...
+
+    async def move(
+        self,
+        *,
+        beginning: Optional[bool] = None,
+        end: Optional[bool] = None,
+        above: Optional[Role] = None,
+        below: Optional[Role] = None,
+        offset: int = 0,
+        reason: Optional[str] = None,
+    ):
         """|coro|
 
         A rich interface to help move a role relative to other roles.
@@ -540,10 +559,25 @@ class Role(Hashable):
 
         Parameters
         -----------
+        beginning: bool
+            Whether to move this at the beginning of the role list, above the default role.
+            This is mutually exclusive with `end`, `above`, and `below`.
+        end: bool
+            Whether to move this at the end of the role list.
+            This is mutually exclusive with `beginning`, `above`, and `below`.
         above: :class:`Role`
-            The role that should be above our current role. This mutually exclusive with `below`.
+            The role that should be above our current role.
+            This mutually exclusive with `beginning`, `end`, and `below`.
         below: :class:`Role`
-            The role that should be below our current role. This mutually exclusive with `above`.
+            The role that should be below our current role.
+            This mutually exclusive with `beginning`, `end`, and `above`.
+        offset: int
+            The number of roles to offset the move by. For example,
+            an offset of ``2`` with ``beginning=True`` would move
+            it 2 above the beginning. A positive number moves it above
+            while a negative number moves it below. Note that this
+            number is relative and computed after the ``beginning``,
+            ``end``, ``before``, and ``after`` parameters.
         reason: Optional[:class:`str`]
             The reason for editing this role. Shows up on the audit log.
 
@@ -563,25 +597,34 @@ class Role(Hashable):
         List[:class:`Role`]
             A list of all the roles in the guild.
         """
-        if above and below:
-            raise TypeError("Cannot provide both above and below parameters")
+        if sum(bool(a) for a in (beginning, end, above, below)) > 1:
+            raise TypeError('Only one of [above, below, end, end] can be used.')
+
         target = above or below
-        if not target:
-            raise TypeError("Must provide above or below parameter")
-        if target not in self.guild.roles:
-            raise ValueError("Target role is from a different guild")
-        if above == self.guild.default_role:
-            raise ValueError("Role cannot be moved below the default role")
-        if self == target:
-            raise ValueError("Target role cannot be self")
+        if target:
+            if target not in self.guild.roles:
+                raise ValueError("Target role is from a different guild")
+            if above == self.guild.default_role:
+                raise ValueError("Role cannot be moved below the default role")
+            if self == target:
+                raise ValueError("Target role cannot be itself")
 
-        roles = [r for r in self.guild.roles if r != self]
-        if above in roles:
-            roles.insert(roles.index(above), self)
-        if below in roles:
-            roles.insert(roles.index(below) + 1, self)
+        _guild_roles = self.guild.roles
+        roles = [r for r in _guild_roles if r != self]
+        if beginning:
+            index = 1
+        elif end:
+            index = len(roles)
+        elif above in roles:
+            index = roles.index(above)
+        elif below in roles:
+            index = roles.index(below) + 1
+        else:
+            index = _guild_roles.index(self)
+        roles.insert(max((index + offset), 1), self)
 
-        return await self.guild.edit_role_positions({r: idx for idx, r in enumerate(roles)}, reason=reason)
+        payload: List[RolePositionUpdate] = [{"id": role.id, "position": idx} for idx, role in enumerate(roles)]
+        await self._state.http.move_role_position(self.guild.id, payload, reason=reason)
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
