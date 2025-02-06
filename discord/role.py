@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Union, overload, TYPE_CHECKING
 
 from .asset import Asset
 from .permissions import Permissions
@@ -521,6 +521,67 @@ class Role(Hashable):
 
         data = await self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)
         return Role(guild=self.guild, data=data, state=self._state)
+
+    @overload
+    async def move(self, *, above: Role, reason: Optional[str] = ...): ...
+
+    @overload
+    async def move(self, *, below: Role, reason: Optional[str] = ...): ...
+
+    async def move(self, *, above: Optional[Role] = None, below: Optional[Role] = None, reason: Optional[str] = None):
+        """|coro|
+
+        A rich interface to help move a role relative to other roles.
+
+        You must have :attr:`~discord.Permissions.manage_roles` to do this,
+        and you cannot move roles above the client's top role in the guild.
+
+        .. versionadded:: 2.5
+
+        Parameters
+        -----------
+        above: :class:`Role`
+            The role that should be above our current role. This mutually exclusive with `below`.
+        below: :class:`Role`
+            The role that should be below our current role. This mutually exclusive with `above`.
+        reason: Optional[:class:`str`]
+            The reason for editing this role. Shows up on the audit log.
+
+        Raises
+        -------
+        Forbidden
+            You cannot move the role there, or lack permissions to do so.
+        HTTPException
+            Moving the role failed.
+        TypeError
+            A bad mix of arguments were passed.
+        ValueError
+            An invalid role was passed.
+
+        Returns
+        --------
+        List[:class:`Role`]
+            A list of all the roles in the guild.
+        """
+        if above and below:
+            raise TypeError("Cannot provide both above and below parameters")
+        target = above or below
+        if not target:
+            raise TypeError("Must provide above or below parameter")
+        if target not in self.guild.roles:
+            raise ValueError("Target role is from a different guild")
+        if above == self.guild.default_role:
+            raise ValueError("Role cannot be moved below the default role")
+        if self == target:
+            raise ValueError("Target role cannot be self")
+
+        roles = [r for r in self.guild.roles if r != self]
+        if above in roles:
+            roles.insert(roles.index(above), self)
+        if below in roles:
+            roles.insert(roles.index(below) + 1, self)
+
+        return await self.guild.edit_role_positions({r: idx for idx, r in enumerate(roles)}, reason=reason)
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
