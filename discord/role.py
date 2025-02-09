@@ -567,7 +567,7 @@ class Role(Hashable):
         below: :class:`Role`
             The role that should be below our current role.
             This mutually exclusive with `beginning`, `end`, and `above`.
-        offset: int
+        offset: :class:`int`
             The number of roles to offset the move by. For example,
             an offset of ``2`` with ``beginning=True`` would move
             it 2 above the beginning. A positive number moves it above
