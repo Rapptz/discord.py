@@ -537,10 +537,10 @@ class Role(Hashable):
     async def move(
         self,
         *,
-        beginning: Optional[bool] = None,
-        end: Optional[bool] = None,
-        above: Optional[Role] = None,
-        below: Optional[Role] = None,
+        beginning: bool = MISSING,
+        end: bool = MISSING,
+        above: Role = MISSING,
+        below: Role = MISSING,
         offset: int = 0,
         reason: Optional[str] = None,
     ):
