@@ -561,8 +561,9 @@ class Member(discord.abc.Messageable, _UserTag):
             role = g.get_role(role_id)
             if role:
                 result.append(role)
-        if g.default_role:
-            result.append(g.default_role)
+        default_role = g.default_role
+        if default_role:
+            result.append(default_role)
         result.sort()
         return result
 
