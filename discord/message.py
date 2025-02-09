@@ -2507,7 +2507,7 @@ class Message(PartialMessage, Hashable):
                 if guild:
                     self.soundboard_sounds.append(SoundboardSound(state=self._state, data=sound, guild=guild))
                 else:
-                    self.soundboard_sounds.append(SoundboardDefaultSound(state=self._state, data=sound))  # type: ignore
+                    self.soundboard_sounds.append(SoundboardDefaultSound(state=self._state, data=sound))  # type: ignore # EAFP
             except KeyError:
                 pass
 
