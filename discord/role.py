@@ -523,20 +523,16 @@ class Role(Hashable):
         return Role(guild=self.guild, data=data, state=self._state)
 
     @overload
-    async def move(self, *, beginning: bool, offset: int = ..., reason: Optional[str] = ...):
-        ...
+    async def move(self, *, beginning: bool, offset: int = ..., reason: Optional[str] = ...): ...
 
     @overload
-    async def move(self, *, end: bool, offset: int = ..., reason: Optional[str] = ...):
-        ...
+    async def move(self, *, end: bool, offset: int = ..., reason: Optional[str] = ...): ...
 
     @overload
-    async def move(self, *, above: Role, offset: int = ..., reason: Optional[str] = ...):
-        ...
+    async def move(self, *, above: Role, offset: int = ..., reason: Optional[str] = ...): ...
 
     @overload
-    async def move(self, *, below: Role, offset: int = ..., reason: Optional[str] = ...):
-        ...
+    async def move(self, *, below: Role, offset: int = ..., reason: Optional[str] = ...): ...
 
     async def move(
         self,
@@ -601,16 +597,18 @@ class Role(Hashable):
             raise TypeError('Only one of [above, below, end, end] can be used.')
 
         target = above or below
+        guild = self.guild
+        guild_roles = guild.roles
+
         if target:
-            if target not in self.guild.roles:
+            if target not in guild_roles:
                 raise ValueError("Target role is from a different guild")
-            if above == self.guild.default_role:
+            if above == guild.default_role:
                 raise ValueError("Role cannot be moved below the default role")
             if self == target:
                 raise ValueError("Target role cannot be itself")
 
-        _guild_roles = self.guild.roles
-        roles = [r for r in _guild_roles if r != self]
+        roles = [r for r in guild_roles if r != self]
         if beginning:
             index = 1
         elif end:
@@ -620,11 +618,11 @@ class Role(Hashable):
         elif below in roles:
             index = roles.index(below) + 1
         else:
-            index = _guild_roles.index(self)
+            index = guild_roles.index(self)
         roles.insert(max((index + offset), 1), self)
 
         payload: List[RolePositionUpdate] = [{"id": role.id, "position": idx} for idx, role in enumerate(roles)]
-        await self._state.http.move_role_position(self.guild.id, payload, reason=reason)
+        await self._state.http.move_role_position(guild.id, payload, reason=reason)
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
         """|coro|
