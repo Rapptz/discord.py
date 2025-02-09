@@ -660,6 +660,11 @@ class PartialWebhookChannel(Hashable):
     def __repr__(self) -> str:
         return f'<PartialWebhookChannel name={self.name!r} id={self.id}>'
 
+    @property
+    def mention(self) -> str:
+        """:class:`str`: The string that allows you to mention the channel that the webhook is following."""
+        return f'<#{self.id}>'
+
 
 class PartialWebhookGuild(Hashable):
     """Represents a partial guild for webhooks.
