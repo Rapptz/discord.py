@@ -2121,6 +2121,10 @@ class Message(PartialMessage, Hashable):
         The message snapshots attached to this message.
 
         .. versionadded:: 2.5
+    soundboard_sounds: List[Union[:class:`SoundboardSound`, :class:`SoundboardDefaultSound`]]
+        The soundboard sounds mentioned in this message.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
