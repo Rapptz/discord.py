@@ -149,7 +149,7 @@ class Embed:
         The colour code of the embed. Aliased to ``color`` as well.
         This can be set during initialisation.
     flags: Optional[:class:`EmbedFlags`]
-        This embed flags.
+        The flags of this embed.
 
         .. versionadded:: 2.5
     """
