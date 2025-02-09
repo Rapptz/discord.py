@@ -555,7 +555,7 @@ class Role(Hashable):
 
         Parameters
         -----------
-        beginning: bool
+        beginning: :class:`bool`
             Whether to move this at the beginning of the role list, above the default role.
             This is mutually exclusive with `end`, `above`, and `below`.
         end: bool
