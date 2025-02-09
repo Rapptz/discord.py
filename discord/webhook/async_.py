@@ -1607,7 +1607,8 @@ class Webhook(BaseWebhook):
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
         poll: Poll = MISSING,
-    ) -> WebhookMessage: ...
+    ) -> WebhookMessage:
+        ...
 
     @overload
     async def send(
@@ -1631,7 +1632,8 @@ class Webhook(BaseWebhook):
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
         poll: Poll = MISSING,
-    ) -> None: ...
+    ) -> None:
+        ...
 
     async def send(
         self,
