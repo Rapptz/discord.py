@@ -594,7 +594,7 @@ class Role(Hashable):
             A list of all the roles in the guild.
         """
         if sum(bool(a) for a in (beginning, end, above, below)) > 1:
-            raise TypeError('Only one of [above, below, end, end] can be used.')
+            raise TypeError('Only one of [above, below, beginning, end] can be used.')
 
         target = above or below
         guild = self.guild
