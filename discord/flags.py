@@ -2176,17 +2176,26 @@ class AttachmentFlags(BaseFlags):
 
     @flag_value
     def spoiler(self):
-        """:class:`bool`: Returns ``True`` if the attachment was marked as a spoiler."""
+        """:class:`bool`: Returns ``True`` if the attachment was marked as a spoiler.
+
+        .. versionadded:: 2.5
+        """
         return 1 << 3
 
     @flag_value
     def contains_explicit_media(self):
-        """:class:`bool`: Returns ``True`` if the attachment was flagged as sensitive content."""
+        """:class:`bool`: Returns ``True`` if the attachment was flagged as sensitive content.
+
+        .. versionadded:: 2.5
+        """
         return 1 << 4
 
     @flag_value
     def animated(self):
-        """:class:`bool`: Returns ``True`` if the attachment is an animated image."""
+        """:class:`bool`: Returns ``True`` if the attachment is an animated image.
+
+        .. versionadded:: 2.5
+        """
         return 1 << 5
 
 
