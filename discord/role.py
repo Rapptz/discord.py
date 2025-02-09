@@ -598,7 +598,7 @@ class Role(Hashable):
             A list of all the roles in the guild.
         """
         if sum(bool(a) for a in (beginning, end, above, below)) > 1:
-            raise TypeError('Only one of [above, below, beginning, end] can be used.')
+            raise TypeError('Only one of [beginning, end, above, below] can be used.')
 
         target = above or below
         guild = self.guild
@@ -606,11 +606,11 @@ class Role(Hashable):
 
         if target:
             if target not in guild_roles:
-                raise ValueError("Target role is from a different guild")
+                raise ValueError('Target role is from a different guild')
             if above == guild.default_role:
-                raise ValueError("Role cannot be moved below the default role")
+                raise ValueError('Role cannot be moved below the default role')
             if self == target:
-                raise ValueError("Target role cannot be itself")
+                raise ValueError('Target role cannot be itself')
 
         roles = [r for r in guild_roles if r != self]
         if beginning:
@@ -625,7 +625,7 @@ class Role(Hashable):
             index = guild_roles.index(self)
         roles.insert(max((index + offset), 1), self)
 
-        payload: List[RolePositionUpdate] = [{"id": role.id, "position": idx} for idx, role in enumerate(roles)]
+        payload: List[RolePositionUpdate] = [{'id': role.id, 'position': idx} for idx, role in enumerate(roles)]
         await self._state.http.move_role_position(guild.id, payload, reason=reason)
 
     async def delete(self, *, reason: Optional[str] = None) -> None:
