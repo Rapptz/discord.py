@@ -214,12 +214,10 @@ class View:
             # Wait N seconds to see if timeout data has been refreshed
             await asyncio.sleep(self.__timeout_expiry - now)
 
-    def _is_stateless(self) -> bool:
+    def is_dispatchable(self) -> bool:
         # this is used by webhooks to check whether a view requires a state attached
         # or not, this simply is, whether a view has a component other than a url button
-        from .button import Button
-
-        return all(isinstance(ch, Button) and ch.url is not None for ch in self.children)
+        return any(item.is_dispatchable() for item in self.children)
 
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:

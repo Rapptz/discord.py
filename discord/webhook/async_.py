@@ -310,9 +310,9 @@ class AsyncWebhookAdapter:
         files: Optional[Sequence[File]] = None,
         thread_id: Optional[int] = None,
         wait: bool = False,
-        has_view: bool = False,
+        with_components: bool = False,
     ) -> Response[Optional[MessagePayload]]:
-        params = {'wait': int(wait), 'with_components': int(has_view)}
+        params = {'wait': int(wait), 'with_components': int(with_components)}
         if thread_id:
             params['thread_id'] = thread_id
         route = Route('POST', '/webhooks/{webhook_id}/{webhook_token}', webhook_id=webhook_id, webhook_token=token)
@@ -1799,12 +1799,12 @@ class Webhook(BaseWebhook):
             if not hasattr(view, '__discord_ui_view__'):
                 raise TypeError(f'expected view parameter to be of type View not {view.__class__.__name__}')
 
-            if isinstance(self._state, _WebhookState) and not view._is_stateless():
+            if isinstance(self._state, _WebhookState) and view.is_dispatchable():
                 raise ValueError(
                     'Webhook views with any component other than URL buttons require an associated state with the webhook'
                 )
 
-            if ephemeral is True and view.timeout is None and not view._is_stateless():
+            if ephemeral is True and view.timeout is None and view.is_dispatchable():
                 view.timeout = 15 * 60.0
 
         if thread_name is not MISSING and thread is not MISSING:
@@ -1848,7 +1848,7 @@ class Webhook(BaseWebhook):
                 files=params.files,
                 thread_id=thread_id,
                 wait=wait,
-                has_view=view is not MISSING,
+                with_components=view is not MISSING,
             )
 
         msg = None
