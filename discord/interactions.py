@@ -654,6 +654,7 @@ class InteractionCallbackActivityInstance:
     def __init__(self, data: InteractionCallbackActivityPayload) -> None:
         self.id: str = data['id']
 
+
 class InteractionCallback(Generic[ClientT]):
     """Represents an interaction response callback.
 
