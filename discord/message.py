@@ -2502,10 +2502,14 @@ class Message(PartialMessage, Hashable):
 
     def _handle_soundboard_sounds(self, data: List[SoundboardSoundPayload]):
         for sound in data:
-            guild = self._state._get_guild(utils._get_as_snowflake(sound, 'guild_id'))
+            guild_id = utils._get_as_snowflake(sound, 'guild_id')
             try:
-                if guild:
-                    self.soundboard_sounds.append(SoundboardSound(state=self._state, data=sound, guild=guild))
+                if guild_id:
+                    self.soundboard_sounds.append(
+                        SoundboardSound(
+                            state=self._state, data=sound, guild=self._state._get_or_create_unavailable_guild(guild_id)
+                        )
+                    )
                 else:
                     self.soundboard_sounds.append(SoundboardDefaultSound(state=self._state, data=sound))  # type: ignore # EAFP
             except KeyError:
