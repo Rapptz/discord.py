@@ -437,17 +437,14 @@ class AsyncWebhookAdapter:
         proxy: Optional[str] = None,
         proxy_auth: Optional[aiohttp.BasicAuth] = None,
         params: MultipartParameters,
-        with_response: bool = MISSING,
-    ) -> Response[Optional[InteractionCallbackResponsePayload]]:
+    ) -> Response[InteractionCallbackResponsePayload]:
         route = Route(
             'POST',
             '/interactions/{webhook_id}/{webhook_token}/callback',
             webhook_id=interaction_id,
             webhook_token=token,
         )
-
-        if with_response is not MISSING:
-            request_params = {'with_response': with_response}
+        request_params = {'with_response': '1'}
 
         if params.files:
             return self.request(
