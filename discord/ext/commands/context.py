@@ -82,7 +82,7 @@ def is_cog(obj: Any) -> TypeGuard[Cog]:
     return hasattr(obj, '__cog_commands__')
 
 
-class DeferTyping:
+class DeferTyping(Generic[BotT]):
     def __init__(self, ctx: Context[BotT], *, ephemeral: bool):
         self.ctx: Context[BotT] = ctx
         self.ephemeral: bool = ephemeral

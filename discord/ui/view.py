@@ -177,7 +177,7 @@ class View:
         children = []
         for func in self.__view_children_items__:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
-            item.callback = _ViewCallback(func, self, item)
+            item.callback = _ViewCallback(func, self, item)  # type: ignore
             item._view = self
             setattr(self, func.__name__, item)
             children.append(item)

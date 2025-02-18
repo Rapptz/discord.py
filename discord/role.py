@@ -286,7 +286,7 @@ class Role(Hashable):
         self._flags: int = data.get('flags', 0)
 
         try:
-            self.tags = RoleTags(data['tags'])
+            self.tags = RoleTags(data['tags'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.tags = None
 

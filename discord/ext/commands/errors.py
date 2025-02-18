@@ -24,10 +24,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple, Union, Generic
 
 from discord.errors import ClientException, DiscordException
 from discord.utils import _human_join
+
+from ._types import BotT
 
 if TYPE_CHECKING:
     from discord.abc import GuildChannel
@@ -35,7 +37,6 @@ if TYPE_CHECKING:
     from discord.types.snowflake import Snowflake, SnowflakeList
     from discord.app_commands import AppCommandError
 
-    from ._types import BotT
     from .context import Context
     from .converter import Converter
     from .cooldowns import BucketType, Cooldown
@@ -235,7 +236,7 @@ class CheckFailure(CommandError):
     pass
 
 
-class CheckAnyFailure(CheckFailure):
+class CheckAnyFailure(Generic[BotT], CheckFailure):
     """Exception raised when all predicates in :func:`check_any` fail.
 
     This inherits from :exc:`CheckFailure`.

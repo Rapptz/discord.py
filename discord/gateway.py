@@ -831,7 +831,7 @@ class DiscordVoiceWebSocket:
         self._close_code: Optional[int] = None
         self.secret_key: Optional[List[int]] = None
         if hook:
-            self._hook = hook
+            self._hook = hook  # type: ignore
 
     async def _hook(self, *args: Any) -> None:
         pass
@@ -893,7 +893,7 @@ class DiscordVoiceWebSocket:
 
         return ws
 
-    async def select_protocol(self, ip: str, port: int, mode: int) -> None:
+    async def select_protocol(self, ip: str, port: int, mode: str) -> None:
         payload = {
             'op': self.SELECT_PROTOCOL,
             'd': {

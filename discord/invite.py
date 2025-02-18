@@ -437,7 +437,7 @@ class Invite(Hashable):
     def from_incomplete(cls, *, state: ConnectionState, data: InvitePayload) -> Self:
         guild: Optional[Union[Guild, PartialInviteGuild]]
         try:
-            guild_data = data['guild']
+            guild_data = data['guild']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             # If we're here, then this is a group DM
             guild = None

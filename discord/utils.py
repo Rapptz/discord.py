@@ -714,13 +714,13 @@ async def maybe_coroutine(f: MaybeAwaitableFunc[P, T], *args: P.args, **kwargs: 
     if _isawaitable(value):
         return await value
     else:
-        return value  # type: ignore
+        return value
 
 
 async def async_all(
     gen: Iterable[Union[T, Awaitable[T]]],
     *,
-    check: Callable[[Union[T, Awaitable[T]]], TypeGuard[Awaitable[T]]] = _isawaitable,
+    check: Callable[[Union[T, Awaitable[T]]], TypeGuard[Awaitable[T]]] = _isawaitable,  # type: ignore
 ) -> bool:
     for elem in gen:
         if check(elem):
@@ -1121,7 +1121,7 @@ def flatten_literal_params(parameters: Iterable[Any]) -> Tuple[Any, ...]:
     literal_cls = type(Literal[0])
     for p in parameters:
         if isinstance(p, literal_cls):
-            params.extend(p.__args__)
+            params.extend(p.__args__)  # type: ignore
         else:
             params.append(p)
     return tuple(params)

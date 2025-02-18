@@ -196,12 +196,12 @@ class Button(Component):
         self.label: Optional[str] = data.get('label')
         self.emoji: Optional[PartialEmoji]
         try:
-            self.emoji = PartialEmoji.from_dict(data['emoji'])
+            self.emoji = PartialEmoji.from_dict(data['emoji'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.emoji = None
 
         try:
-            self.sku_id: Optional[int] = int(data['sku_id'])
+            self.sku_id: Optional[int] = int(data['sku_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.sku_id = None
 
@@ -415,7 +415,7 @@ class SelectOption:
     @classmethod
     def from_dict(cls, data: SelectOptionPayload) -> SelectOption:
         try:
-            emoji = PartialEmoji.from_dict(data['emoji'])
+            emoji = PartialEmoji.from_dict(data['emoji'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             emoji = None
 
