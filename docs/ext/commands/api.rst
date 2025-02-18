@@ -531,6 +531,11 @@ Converters
 .. autoclass:: discord.ext.commands.ScheduledEventConverter
     :members:
 
+.. attributetable:: discord.ext.commands.SoundboardSoundConverter
+
+.. autoclass:: discord.ext.commands.SoundboardSoundConverter
+    :members:
+
 .. attributetable:: discord.ext.commands.clean_content
 
 .. autoclass:: discord.ext.commands.clean_content
