@@ -73,7 +73,7 @@ class AppInfo(BaseAppInfo):
     tags: NotRequired[List[str]]
     install_params: NotRequired[InstallParams]
     custom_install_url: NotRequired[str]
-    integration_types_config: NotRequired[Dict[Literal["0", "1"], AppIntegrationTypeConfig]]
+    integration_types_config: NotRequired[Dict[Literal['0', '1'], AppIntegrationTypeConfig]]
 
 
 class PartialAppInfo(BaseAppInfo, total=False):

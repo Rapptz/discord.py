@@ -221,7 +221,7 @@ class AppInfo:
         self.redirect_uris: List[str] = data.get('redirect_uris', [])
         self.approximate_guild_count: int = data.get('approximate_guild_count', 0)
         self.approximate_user_install_count: Optional[int] = data.get('approximate_user_install_count')
-        self._integration_types_config: Dict[Literal["0", "1"], AppIntegrationTypeConfigPayload] = data.get(
+        self._integration_types_config: Dict[Literal['0', '1'], AppIntegrationTypeConfigPayload] = data.get(
             'integration_types_config', {}
         )
 
@@ -382,7 +382,7 @@ class AppInfo:
             Editing the application failed
         ValueError
             The image format passed in to ``icon`` or ``cover_image`` is invalid. This is also raised
-            when ``install_params_scopes`` and ``install_params_permissions`` are incompatible with each other.
+            when ``install_params_scopes`` and ``install_params_permissions`` are incompatible with each other,
             or when ``guild_install_scopes`` and ``guild_install_permissions`` are incompatible with each other.
 
         Returns
