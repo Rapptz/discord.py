@@ -722,16 +722,16 @@ class InteractionCallback(Generic[ClientT]):
 
             self.type = try_enum(InteractionResponseType, resource['type'])
 
-            if 'message' in resource and resource['message']:
+            message = resource.get('message')
+            activity_instance = resource.get('activity_instance')
+            if message is not None:
                 self.resource = InteractionMessage(
                     state=self._state,
                     channel=self._parent.channel,  # type: ignore # channel should be the correct type here
-                    data=resource['message'],
+                    data=message,
                 )
-            elif 'activity_instance' in resource and resource['activity_instance']:
-                self.resource = InteractionCallbackActivityInstance(
-                    resource['activity_instance'],
-                )
+            elif activity_instance is not None:
+                self.resource = InteractionCallbackActivityInstance(activity_instance)
 
     def is_thinking(self) -> bool:
         """:class:`bool`: Whether the response was a thinking defer."""
