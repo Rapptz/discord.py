@@ -751,7 +751,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         else:
             return await self.send(content, **kwargs)
 
-    def typing(self, *, ephemeral: bool = False) -> Union[Typing, DeferTyping]:
+    def typing(self, *, ephemeral: bool = False) -> Union[Typing, DeferTyping[BotT]]:
         """Returns an asynchronous context manager that allows you to send a typing indicator to
         the destination for an indefinite period of time, or 10 seconds if the context manager
         is called using ``await``.
@@ -789,7 +789,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         """
         if self.interaction is None:
             return Typing(self)
-        return DeferTyping(self, ephemeral=ephemeral)
+        return DeferTyping[BotT](self, ephemeral=ephemeral)
 
     async def defer(self, *, ephemeral: bool = False) -> None:
         """|coro|
