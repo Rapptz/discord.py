@@ -94,6 +94,10 @@ if TYPE_CHECKING:
         DMChannel,
         GroupChannel,
     ]
+    InteractionCallbackResource = Union[
+        InteractionMessage,
+        InteractionCallbackActivityInstance,
+    ]
 
 MISSING: Any = utils.MISSING
 
@@ -676,6 +680,18 @@ class InteractionCallback(Generic[ClientT]):
         The activity ID of the resource. Only available if the resource is a :class:`InteractionCallbackActivityInstance`.
     """
 
+    __slots__ = (
+        '_state',
+        '_parent',
+        'type',
+        'id,',
+        '_thinking',
+        '_ephemeral',
+        'message_id',
+        'activity_id',
+        'resource',
+    )
+
     def __init__(
         self,
         *,
@@ -699,7 +715,7 @@ class InteractionCallback(Generic[ClientT]):
         self.message_id: Optional[int] = utils._get_as_snowflake(interaction, 'response_message_id')
         self.activity_id: Optional[str] = interaction.get('activity_instance_id')
 
-        self.resource: Optional[Union[InteractionMessage, InteractionCallbackActivityInstance]] = None
+        self.resource: Optional[InteractionCallbackResource] = None
 
         if 'resource' in data:
             resource = data['resource']
