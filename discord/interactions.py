@@ -1195,10 +1195,6 @@ class InteractionResponse(Generic[ClientT]):
         -----------
         modal: :class:`~discord.ui.Modal`
             The modal to send.
-        with_response: :class:`bool`
-            Whether to return the interaction response callback resource.
-
-            .. versionadded:: 2.5
 
         Raises
         -------
