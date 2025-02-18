@@ -903,7 +903,7 @@ class Command(Generic[GroupT, P, T]):
         predicates = getattr(param.autocomplete, '__discord_app_commands_checks__', [])
         if predicates:
             try:
-                passed = await async_all(f(interaction) for f in predicates)
+                passed = await async_all(f(interaction) for f in predicates)  # type: ignore
             except Exception:
                 passed = False
 
@@ -1014,7 +1014,7 @@ class Command(Generic[GroupT, P, T]):
         if not predicates:
             return True
 
-        return await async_all(f(interaction) for f in predicates)
+        return await async_all(f(interaction) for f in predicates)  # type: ignore
 
     def error(self, coro: Error[GroupT]) -> Error[GroupT]:
         """A decorator that registers a coroutine as a local error handler.
@@ -1308,7 +1308,7 @@ class ContextMenu:
         if not predicates:
             return True
 
-        return await async_all(f(interaction) for f in predicates)
+        return await async_all(f(interaction) for f in predicates)  # type: ignore
 
     def _has_any_error_handlers(self) -> bool:
         return self.on_error is not None
@@ -1842,7 +1842,7 @@ class Group:
         if len(params) != 2:
             raise TypeError('The error handler must have 2 parameters.')
 
-        self.on_error = coro
+        self.on_error = coro  # type: ignore
         return coro
 
     async def interaction_check(self, interaction: Interaction, /) -> bool:

@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 from typing import (
     Any,
@@ -330,7 +331,9 @@ class BaseSelect(Item[V]):
         values = selected_values.get({})
         payload: List[PossibleValue]
         try:
-            resolved = Namespace._get_resolved_items(interaction, data['resolved'])
+            resolved = Namespace._get_resolved_items(
+                interaction, data['resolved']  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            )
             payload = list(resolved.values())
         except KeyError:
             payload = data.get("values", [])  # type: ignore

@@ -326,7 +326,7 @@ class Member(discord.abc.Messageable, _UserTag):
         self._flags: int = data['flags']
         self._avatar_decoration_data: Optional[AvatarDecorationData] = data.get('avatar_decoration_data')
         try:
-            self._permissions = int(data['permissions'])
+            self._permissions = int(data['permissions'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self._permissions = None
 
@@ -418,12 +418,12 @@ class Member(discord.abc.Messageable, _UserTag):
         # the nickname change is optional,
         # if it isn't in the payload then it didn't change
         try:
-            self.nick = data['nick']
+            self.nick = data['nick']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             pass
 
         try:
-            self.pending = data['pending']
+            self.pending = data['pending']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             pass
 
@@ -561,7 +561,9 @@ class Member(discord.abc.Messageable, _UserTag):
             role = g.get_role(role_id)
             if role:
                 result.append(role)
-        result.append(g.default_role)
+        default_role = g.default_role
+        if default_role:
+            result.append(default_role)
         result.sort()
         return result
 

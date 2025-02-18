@@ -177,7 +177,7 @@ class View:
         children = []
         for func in self.__view_children_items__:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
-            item.callback = _ViewCallback(func, self, item)
+            item.callback = _ViewCallback(func, self, item)  # type: ignore
             item._view = self
             setattr(self, func.__name__, item)
             children.append(item)
@@ -213,6 +213,11 @@ class View:
 
             # Wait N seconds to see if timeout data has been refreshed
             await asyncio.sleep(self.__timeout_expiry - now)
+
+    def is_dispatchable(self) -> bool:
+        # this is used by webhooks to check whether a view requires a state attached
+        # or not, this simply is, whether a view has a component other than a url button
+        return any(item.is_dispatchable() for item in self.children)
 
     def to_components(self) -> List[Dict[str, Any]]:
         def key(item: Item) -> int:

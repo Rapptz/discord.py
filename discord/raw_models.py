@@ -104,7 +104,7 @@ class RawMessageDeleteEvent(_RawReprMixin):
         self.channel_id: int = int(data['channel_id'])
         self.cached_message: Optional[Message] = None
         try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.guild_id: Optional[int] = None
 
@@ -132,7 +132,7 @@ class RawBulkMessageDeleteEvent(_RawReprMixin):
         self.cached_messages: List[Message] = []
 
         try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.guild_id: Optional[int] = None
 
@@ -248,7 +248,7 @@ class RawReactionActionEvent(_RawReprMixin):
         self.type: ReactionType = try_enum(ReactionType, data['type'])
 
         try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.guild_id: Optional[int] = None
 
@@ -281,7 +281,7 @@ class RawReactionClearEvent(_RawReprMixin):
         self.channel_id: int = int(data['channel_id'])
 
         try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.guild_id: Optional[int] = None
 
@@ -311,7 +311,7 @@ class RawReactionClearEmojiEvent(_RawReprMixin):
         self.channel_id: int = int(data['channel_id'])
 
         try:
-            self.guild_id: Optional[int] = int(data['guild_id'])
+            self.guild_id: Optional[int] = int(data['guild_id'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.guild_id: Optional[int] = None
 
@@ -338,7 +338,9 @@ class RawIntegrationDeleteEvent(_RawReprMixin):
         self.guild_id: int = int(data['guild_id'])
 
         try:
-            self.application_id: Optional[int] = int(data['application_id'])
+            self.application_id: Optional[int] = int(
+                data['application_id']  # pyright: ignore[reportTypedDictNotRequiredAccess]
+            )
         except KeyError:
             self.application_id: Optional[int] = None
 
