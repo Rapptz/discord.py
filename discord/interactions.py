@@ -95,8 +95,8 @@ if TYPE_CHECKING:
         GroupChannel,
     ]
     InteractionCallbackResource = Union[
-        InteractionMessage,
-        InteractionCallbackActivityInstance,
+        "InteractionMessage",
+        "InteractionCallbackActivityInstance",
     ]
 
 MISSING: Any = utils.MISSING
@@ -684,7 +684,7 @@ class InteractionCallback(Generic[ClientT]):
         '_state',
         '_parent',
         'type',
-        'id,',
+        'id',
         '_thinking',
         '_ephemeral',
         'message_id',
