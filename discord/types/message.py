@@ -38,6 +38,7 @@ from .interactions import MessageInteraction, MessageInteractionMetadata
 from .sticker import StickerItem
 from .threads import Thread
 from .poll import Poll
+from soundboard import SoundboardSound, SoundboardDefaultSound
 
 
 class PartialMessage(TypedDict):
@@ -227,6 +228,7 @@ class Message(PartialMessage):
     thread: NotRequired[Thread]
     call: NotRequired[CallMessage]
     purchase_notification: NotRequired[PurchaseNotificationResponse]
+    soundboard_sounds: NotRequired[List[Union[SoundboardSound, SoundboardDefaultSound]]]
 
 
 AllowedMentionType = Literal['roles', 'users', 'everyone']
