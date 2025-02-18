@@ -28,12 +28,12 @@ InteractionResponse
 .. autoclass:: InteractionResponse()
     :members:
 
-InteractionCallback
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+InteractionCallbackResponse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. attributetable:: InteractionCallback
+.. attributetable:: InteractionCallbackResponse
 
-.. autoclass:: InteractionCallback()
+.. autoclass:: InteractionCallbackResponse()
     :members:
 
 InteractionCallbackActivityInstance

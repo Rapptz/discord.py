@@ -54,7 +54,7 @@ __all__ = (
     'Interaction',
     'InteractionMessage',
     'InteractionResponse',
-    'InteractionCallback',
+    'InteractionCallbackResponse',
     'InteractionCallbackActivityInstance',
 )
 
@@ -659,7 +659,7 @@ class InteractionCallbackActivityInstance:
         self.id: str = data['id']
 
 
-class InteractionCallback(Generic[ClientT]):
+class InteractionCallbackResponse(Generic[ClientT]):
     """Represents an interaction response callback.
 
     .. versionadded:: 2.5
@@ -776,7 +776,7 @@ class InteractionResponse(Generic[ClientT]):
         *,
         ephemeral: bool = False,
         thinking: bool = False,
-    ) -> Optional[InteractionCallback[ClientT]]:
+    ) -> Optional[InteractionCallbackResponse[ClientT]]:
         """|coro|
 
         Defers the interaction response.
@@ -791,7 +791,7 @@ class InteractionResponse(Generic[ClientT]):
         - :attr:`InteractionType.modal_submit`
 
         .. versionchanged:: 2.5
-            This now returns a :class:`InteractionCallback` instance.
+            This now returns a :class:`InteractionCallbackResponse` instance.
 
         Parameters
         -----------
@@ -814,7 +814,7 @@ class InteractionResponse(Generic[ClientT]):
 
         Returns
         -------
-        Optional[:class:`InteractionCallback`]
+        Optional[:class:`InteractionCallbackResponse`]
             The interaction callback resource, or ``None``.
         """
         if self._response_type:
@@ -849,7 +849,7 @@ class InteractionResponse(Generic[ClientT]):
                 params=params,
             )
             self._response_type = InteractionResponseType(defer_type)
-            return InteractionCallback(
+            return InteractionCallbackResponse(
                 data=response,
                 parent=self._parent,
                 state=self._parent._state,
@@ -904,13 +904,13 @@ class InteractionResponse(Generic[ClientT]):
         silent: bool = False,
         delete_after: Optional[float] = None,
         poll: Poll = MISSING,
-    ) -> InteractionCallback[ClientT]:
+    ) -> InteractionCallbackResponse[ClientT]:
         """|coro|
 
         Responds to this interaction by sending a message.
 
         .. versionchanged:: 2.5
-            This now returns a :class:`InteractionCallback` instance.
+            This now returns a :class:`InteractionCallbackResponse` instance.
 
         Parameters
         -----------
@@ -968,7 +968,7 @@ class InteractionResponse(Generic[ClientT]):
 
         Returns
         -------
-        :class:`InteractionCallback`
+        :class:`InteractionCallbackResponse`
             The interaction callback data.
         """
         if self._response_type:
@@ -1031,7 +1031,7 @@ class InteractionResponse(Generic[ClientT]):
 
             asyncio.create_task(inner_call())
 
-        return InteractionCallback(
+        return InteractionCallbackResponse(
             data=response,
             parent=self._parent,
             state=self._parent._state,
@@ -1049,14 +1049,14 @@ class InteractionResponse(Generic[ClientT]):
         allowed_mentions: Optional[AllowedMentions] = MISSING,
         delete_after: Optional[float] = None,
         suppress_embeds: bool = MISSING,
-    ) -> Optional[InteractionCallback[ClientT]]:
+    ) -> Optional[InteractionCallbackResponse[ClientT]]:
         """|coro|
 
         Responds to this interaction by editing the original message of
         a component or modal interaction.
 
         .. versionchanged:: 2.5
-            This now returns a :class:`InteractionCallback` instance.
+            This now returns a :class:`InteractionCallbackResponse` instance.
 
         Parameters
         -----------
@@ -1106,7 +1106,7 @@ class InteractionResponse(Generic[ClientT]):
 
         Returns
         -------
-        Optional[:class:`InteractionCallback`]
+        Optional[:class:`InteractionCallbackResponse`]
             The interaction callback data, or ``None`` if editing the message was not possible.
         """
         if self._response_type:
@@ -1175,20 +1175,20 @@ class InteractionResponse(Generic[ClientT]):
 
             asyncio.create_task(inner_call())
 
-        return InteractionCallback(
+        return InteractionCallbackResponse(
             data=response,
             parent=self._parent,
             state=self._parent._state,
             type=self._response_type,
         )
 
-    async def send_modal(self, modal: Modal, /) -> InteractionCallback[ClientT]:
+    async def send_modal(self, modal: Modal, /) -> InteractionCallbackResponse[ClientT]:
         """|coro|
 
         Responds to this interaction by sending a modal.
 
         .. versionchanged:: 2.5
-            This now returns a :class:`InteractionCallback` instance.
+            This now returns a :class:`InteractionCallbackResponse` instance.
 
         Parameters
         -----------
@@ -1208,7 +1208,7 @@ class InteractionResponse(Generic[ClientT]):
 
         Returns
         -------
-        :class:`InteractionCallback`
+        :class:`InteractionCallbackResponse`
             The interaction callback data.
         """
         if self._response_type:
@@ -1232,7 +1232,7 @@ class InteractionResponse(Generic[ClientT]):
             self._parent._state.store_view(modal)
         self._response_type = InteractionResponseType.modal
 
-        return InteractionCallback(
+        return InteractionCallbackResponse(
             data=response,
             parent=self._parent,
             state=self._parent._state,
