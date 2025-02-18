@@ -789,7 +789,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         """
         if self.interaction is None:
             return Typing(self)
-        return DeferTyping[BotT](self, ephemeral=ephemeral)
+        return DeferTyping(self, ephemeral=ephemeral)
 
     async def defer(self, *, ephemeral: bool = False) -> None:
         """|coro|
