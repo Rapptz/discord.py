@@ -668,7 +668,7 @@ class InteractionCallback(Generic[ClientT]):
         The interaction callback response type.
     resource: Optional[Union[:class:`InteractionMessage`, :class:`InteractionCallbackActivityInstance`]]
         The resource that the interaction response created. If a message was sent, this will be
-        a :class:`InteractionMessage`, else if an activity was launched this will be a
+        a :class:`InteractionMessage`. If an activity was launched this will be a
         :class:`InteractionCallbackActivityInstance`. In any other case, this will be ``None``.
     message_id: Optional[:class:`int`]
         The message ID of the resource. Only available if the resource is a :class:`InteractionMessage`.
