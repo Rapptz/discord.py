@@ -336,6 +336,15 @@ class Poll:
         Defaults to ``False``.
     layout_type: :class:`PollLayoutType`
         The layout type of the poll. Defaults to :attr:`PollLayoutType.default`.
+
+    Attributes
+    -----------
+    duration: :class:`datetime.timedelta`
+        The duration of the poll.
+    multiple: :class:`bool`
+        Whether users are allowed to select more than one answer.
+    layout_type: :class:`PollLayoutType`
+        The layout type of the poll.
     """
 
     __slots__ = (
