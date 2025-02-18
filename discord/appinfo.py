@@ -423,7 +423,7 @@ class AppInfo:
 
         else:
             if install_params_permissions is not MISSING:
-                raise ValueError("install_params_scopes must be set if install_params_permissions is set")
+                raise ValueError('install_params_scopes must be set if install_params_permissions is set')
 
         if flags is not MISSING:
             if flags is None:
@@ -455,7 +455,7 @@ class AppInfo:
             if guild_install_scopes in (None, MISSING):
                 guild_install_scopes = []
 
-            if "bot" not in guild_install_scopes and guild_install_permissions is not MISSING:
+            if 'bot' not in guild_install_scopes and guild_install_permissions is not MISSING:
                 raise ValueError("'bot' must be in guild_install_scopes if guild_install_permissions is set")
 
             if guild_install_permissions in (None, MISSING):
@@ -468,14 +468,14 @@ class AppInfo:
             integration_types_config['0'] = {'oauth2_install_params': guild_install_params or None}
         else:
             if guild_install_permissions is not MISSING:
-                raise ValueError("guild_install_scopes must be set if guild_install_permissions is set")
+                raise ValueError('guild_install_scopes must be set if guild_install_permissions is set')
 
         if user_install_scopes is not MISSING or user_install_permissions is not MISSING:
             user_install_params: Optional[Dict[str, Any]] = {}
             if user_install_scopes in (None, MISSING):
                 user_install_scopes = []
 
-            if "bot" not in user_install_scopes and user_install_permissions is not MISSING:
+            if 'bot' not in user_install_scopes and user_install_permissions is not MISSING:
                 raise ValueError("'bot' must be in user_install_scopes if user_install_permissions is set")
 
             if user_install_permissions in (None, MISSING):
@@ -488,7 +488,7 @@ class AppInfo:
             integration_types_config['1'] = {'oauth2_install_params': user_install_params or None}
         else:
             if user_install_permissions is not MISSING:
-                raise ValueError("user_install_scopes must be set if user_install_permissions is set")
+                raise ValueError('user_install_scopes must be set if user_install_permissions is set')
 
         if integration_types_config:
             payload['integration_types_config'] = integration_types_config
