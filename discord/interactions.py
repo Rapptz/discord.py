@@ -717,8 +717,8 @@ class InteractionCallback(Generic[ClientT]):
 
         self.resource: Optional[InteractionCallbackResource] = None
 
-        if 'resource' in data:
-            resource = data['resource']
+        resource = data.get('resource')
+        if resource is not None:
 
             self.type = try_enum(InteractionResponseType, resource['type'])
 
