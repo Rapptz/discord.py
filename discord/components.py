@@ -4,7 +4,7 @@ The MIT License (MIT)
 Copyright (c) 2015-present Rapptz
 
 Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
+copy of this software and associated documentation files (the 'Software'),
 to deal in the Software without restriction, including without limitation
 the rights to use, copy, modify, merge, publish, distribute, sublicense,
 and/or sell copies of the Software, and to permit persons to whom the
@@ -13,7 +13,7 @@ Software is furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -24,8 +24,24 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import ClassVar, List, Literal, Optional, TYPE_CHECKING, Tuple, Union, overload
-from .enums import try_enum, ComponentType, ButtonStyle, TextStyle, ChannelType, SelectDefaultValueType
+from typing import (
+    ClassVar,
+    List,
+    Literal,
+    Optional,
+    TYPE_CHECKING,
+    Tuple,
+    Union,
+)
+from .enums import (
+    try_enum,
+    ComponentType,
+    ButtonStyle,
+    TextStyle,
+    ChannelType,
+    SelectDefaultValueType,
+    DividerSize,
+)
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
 
@@ -33,14 +49,21 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .types.components import (
+        ComponentBase as ComponentBasePayload,
         Component as ComponentPayload,
         ButtonComponent as ButtonComponentPayload,
         SelectMenu as SelectMenuPayload,
         SelectOption as SelectOptionPayload,
         ActionRow as ActionRowPayload,
         TextInput as TextInputPayload,
-        ActionRowChildComponent as ActionRowChildComponentPayload,
         SelectDefaultValues as SelectDefaultValuesPayload,
+        SectionComponent as SectionComponentPayload,
+        TextComponent as TextComponentPayload,
+        ThumbnailComponent as ThumbnailComponentPayload,
+        MediaGalleryComponent as MediaGalleryComponentPayload,
+        FileComponent as FileComponentPayload,
+        DividerComponent as DividerComponentPayload,
+        ComponentContainer as ComponentContainerPayload,
     )
     from .emoji import Emoji
     from .abc import Snowflake
@@ -56,6 +79,13 @@ __all__ = (
     'SelectOption',
     'TextInput',
     'SelectDefaultValue',
+    'SectionComponent',
+    'TextComponent',
+    'ThumbnailComponent',
+    'MediaGalleryComponent',
+    'FileComponent',
+    'DividerComponent',
+    'ComponentContainer',
 )
 
 
@@ -99,7 +129,7 @@ class Component:
                 setattr(self, slot, value)
         return self
 
-    def to_dict(self) -> ComponentPayload:
+    def to_dict(self) -> ComponentBasePayload:
         raise NotImplementedError
 
 
@@ -290,9 +320,13 @@ class SelectMenu(Component):
         self.placeholder: Optional[str] = data.get('placeholder')
         self.min_values: int = data.get('min_values', 1)
         self.max_values: int = data.get('max_values', 1)
-        self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
+        self.options: List[SelectOption] = [
+            SelectOption.from_dict(option) for option in data.get('options', [])
+        ]
         self.disabled: bool = data.get('disabled', False)
-        self.channel_types: List[ChannelType] = [try_enum(ChannelType, t) for t in data.get('channel_types', [])]
+        self.channel_types: List[ChannelType] = [
+            try_enum(ChannelType, t) for t in data.get('channel_types', [])
+        ]
         self.default_values: List[SelectDefaultValue] = [
             SelectDefaultValue.from_dict(d) for d in data.get('default_values', [])
         ]
@@ -312,7 +346,7 @@ class SelectMenu(Component):
         if self.channel_types:
             payload['channel_types'] = [t.value for t in self.channel_types]
         if self.default_values:
-            payload["default_values"] = [v.to_dict() for v in self.default_values]
+            payload['default_values'] = [v.to_dict() for v in self.default_values]
 
         return payload
 
@@ -408,7 +442,9 @@ class SelectOption:
             elif isinstance(value, _EmojiTag):
                 self._emoji = value._to_partial()
             else:
-                raise TypeError(f'expected str, Emoji, or PartialEmoji, received {value.__class__.__name__} instead')
+                raise TypeError(
+                    f'expected str, Emoji, or PartialEmoji, received {value.__class__.__name__} instead'
+                )
         else:
             self._emoji = None
 
@@ -564,7 +600,9 @@ class SelectDefaultValue:
     @type.setter
     def type(self, value: SelectDefaultValueType) -> None:
         if not isinstance(value, SelectDefaultValueType):
-            raise TypeError(f'expected SelectDefaultValueType, received {value.__class__.__name__} instead')
+            raise TypeError(
+                f'expected SelectDefaultValueType, received {value.__class__.__name__} instead'
+            )
 
         self._type = value
 
@@ -642,17 +680,105 @@ class SelectDefaultValue:
         )
 
 
-@overload
-def _component_factory(data: ActionRowChildComponentPayload) -> Optional[ActionRowChildComponentType]:
-    ...
+class SectionComponent(Component):
+    """Represents a section from the Discord Bot UI Kit.
+
+    This inherits from :class:`Component`.
+
+    .. note::
+
+        The user constructible and usable type to create a section is :class:`discord.ui.Section`
+        not this one.
+
+    .. versionadded:: tbd
+
+    Attributes
+    ----------
+    components: List[Union[:class:`TextDisplay`, :class:`Button`]]
+        The components on this section.
+    accessory: Optional[:class:`Component`]
+        The section accessory.
+    """
+
+    def __init__(self, data: SectionComponentPayload) -> None:
+        self.components: List[Union[TextDisplay, Button]] = []
+
+        for component_data in data['components']:
+            component = _component_factory(component_data)
+            if component is not None:
+                self.components.append(component)
+
+        try:
+            self.accessory: Optional[Component] = _component_factory(data['accessory'])
+        except KeyError:
+            self.accessory = None
+
+    @property
+    def type(self) -> Literal[ComponentType.section]:
+        return ComponentType.section
+
+    def to_dict(self) -> SectionComponentPayload:
+        payload: SectionComponentPayload = {
+            'type': self.type.value,
+            'components': [c.to_dict() for c in self.components],
+        }
+        if self.accessory:
+            payload['accessory'] = self.accessory.to_dict()
+        return payload
 
 
-@overload
-def _component_factory(data: ComponentPayload) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
-    ...
+class TextDisplay(Component):
+    """Represents a text display from the Discord Bot UI Kit.
+
+    This inherits from :class:`Component`.
+
+    .. versionadded:: tbd
+
+    Parameters
+    ----------
+    content: :class:`str`
+        The content that this display shows.
+    """
+
+    def __init__(self, content: str) -> None:
+        self.content: str = content
+
+    @property
+    def type(self) -> Literal[ComponentType.text_display]:
+        return ComponentType.text_display
+
+    @classmethod
+    def _from_data(cls, data: TextComponentPayload) -> TextDisplay:
+        return cls(
+            content=data['content'],
+        )
+
+    def to_dict(self) -> TextComponentPayload:
+        return {
+            'type': self.type.value,
+            'content': self.content,
+        }
 
 
-def _component_factory(data: ComponentPayload) -> Optional[Union[ActionRow, ActionRowChildComponentType]]:
+class ThumbnailComponent(Component):
+    """Represents a thumbnail display from the Discord Bot UI Kit.
+
+    This inherits from :class:`Component`.
+
+    .. note::
+
+        The user constructuble and usable type to create a thumbnail
+        component is :class:`discord.ui.Thumbnail` not this one.
+
+    .. versionadded:: tbd
+
+    Attributes
+    ----------
+    media: :class:`ComponentMedia`
+    """
+
+
+def _component_factory(data: ComponentPayload) -> Optional[Component]:
     if data['type'] == 1:
         return ActionRow(data)
     elif data['type'] == 2:
@@ -661,3 +787,17 @@ def _component_factory(data: ComponentPayload) -> Optional[Union[ActionRow, Acti
         return TextInput(data)
     elif data['type'] in (3, 5, 6, 7, 8):
         return SelectMenu(data)
+    elif data['type'] == 9:
+        return SectionComponent(data)
+    elif data['type'] == 10:
+        return TextDisplay._from_data(data)
+    elif data['type'] == 11:
+        return ThumbnailComponent(data)
+    elif data['type'] == 12:
+        return MediaGalleryComponent(data)
+    elif data['type'] == 13:
+        return FileComponent(data)
+    elif data['type'] == 14:
+        return DividerComponent(data)
+    elif data['type'] == 17:
+        return ComponentContainer(data)

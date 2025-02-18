@@ -29,19 +29,27 @@ from typing_extensions import NotRequired
 
 from .emoji import PartialEmoji
 from .channel import ChannelType
+from .attachment import UnfurledAttachment
 
 ComponentType = Literal[1, 2, 3, 4]
 ButtonStyle = Literal[1, 2, 3, 4, 5, 6]
 TextStyle = Literal[1, 2]
-DefaultValueType = Literal['user', 'role', 'channel']
+DefaultValueType = Literal["user", "role", "channel"]
+DividerSize = Literal[1, 2]
+MediaItemLoadingState = Literal[0, 1, 2, 3]
 
 
-class ActionRow(TypedDict):
+class ComponentBase(TypedDict):
+    id: NotRequired[int]
+    type: int
+
+
+class ActionRow(ComponentBase):
     type: Literal[1]
     components: List[ActionRowChildComponent]
 
 
-class ButtonComponent(TypedDict):
+class ButtonComponent(ComponentBase):
     type: Literal[2]
     style: ButtonStyle
     custom_id: NotRequired[str]
@@ -52,7 +60,7 @@ class ButtonComponent(TypedDict):
     sku_id: NotRequired[str]
 
 
-class SelectOption(TypedDict):
+class SelectOption(ComponentBase):
     label: str
     value: str
     default: bool
@@ -60,7 +68,7 @@ class SelectOption(TypedDict):
     emoji: NotRequired[PartialEmoji]
 
 
-class SelectComponent(TypedDict):
+class SelectComponent(ComponentBase):
     custom_id: str
     placeholder: NotRequired[str]
     min_values: NotRequired[int]
@@ -99,7 +107,7 @@ class ChannelSelectComponent(SelectComponent):
     default_values: NotRequired[List[SelectDefaultValues]]
 
 
-class TextInput(TypedDict):
+class TextInput(ComponentBase):
     type: Literal[4]
     custom_id: str
     style: TextStyle
@@ -118,5 +126,52 @@ class SelectMenu(SelectComponent):
     default_values: NotRequired[List[SelectDefaultValues]]
 
 
+class SectionComponent(ComponentBase):
+    type: Literal[9]
+    components: List[Union[TextComponent, ButtonComponent]]
+    accessory: NotRequired[ComponentBase]
+
+
+class TextComponent(ComponentBase):
+    type: Literal[10]
+    content: str
+
+
+class ThumbnailComponent(ComponentBase, UnfurledAttachment):
+    type: Literal[11]
+
+
+class MediaGalleryComponent(ComponentBase):
+    type: Literal[12]
+    items: List[MediaItem]
+
+
+class FileComponent(ComponentBase):
+    type: Literal[13]
+    file: MediaItem
+    spoiler: NotRequired[bool]
+
+
+class DividerComponent(ComponentBase):
+    type: Literal[14]
+    divider: NotRequired[bool]
+    spacing: NotRequired[DividerSize]
+
+
+class ComponentContainer(ComponentBase):
+    type: Literal[17]
+    accent_color: NotRequired[int]
+    spoiler: NotRequired[bool]
+    components: List[ContainerComponent]
+
+
 ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]
-Component = Union[ActionRow, ActionRowChildComponent]
+ContainerComponent = Union[
+    ActionRow,
+    TextComponent,
+    MediaGalleryComponent,
+    FileComponent,
+    SectionComponent,
+    SectionComponent,
+]
+Component = Union[ActionRowChildComponent, ContainerComponent]
