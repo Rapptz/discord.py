@@ -1605,7 +1605,7 @@ class ConnectionState:
         self.session_type = data.get('session_type', 'normal')
         self.auth_session_id = data.get('auth_session_id_hash')
         self.connections = {c['id']: Connection(state=self, data=c) for c in data.get('connected_accounts', [])}
-        self.pending_payments = {int(p['id']): Payment(state=self, data=p) for p in data.get('pending_payments', [])}
+        self.pending_payments = {int(p['id']): Payment(state=self, data=p) for p in (data.get('pending_payments') or [])}
         self.required_action = try_enum(RequiredActionType, data['required_action']) if 'required_action' in data else None
         self.friend_suggestion_count = data.get('friend_suggestion_count', 0)
 
