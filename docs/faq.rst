@@ -467,7 +467,7 @@ Putting it all together, we can do this in a text command:
         # Step 1
         view.message = await ctx.send('Press me!', view=view)
 
-Application commands, when you respond with :meth:`InteractionResponse.send_message`, returns an instance of :class:`InteractionCallbackResponse` which contains the message you sent. This is the message you should attach to the view.
+Application commands, when you respond with :meth:`InteractionResponse.send_message`, return an instance of :class:`InteractionCallbackResponse` which contains the message you sent. This is the message you should attach to the view.
 
 Putting it all together, using the previous view definition:
 
