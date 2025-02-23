@@ -2010,8 +2010,9 @@ class Message(PartialMessage, Hashable):
         The :class:`TextChannel` or :class:`Thread` that the message was sent from.
         Could be a :class:`DMChannel` or :class:`GroupChannel` if it's a private message.
     reference: Optional[:class:`~discord.MessageReference`]
-        The message that this message references. This is only applicable to message replies (:attr:`MessageType.reply`),
-        crossposted messages created by a followed channel integration, and messages of type:
+        The message that this message references. This is only applicable to
+        message replies (:attr:`MessageType.reply`), crossposted messages created by
+        a followed channel integration, forwarded messages, and messages of type:
 
         - :attr:`MessageType.pins_add`
         - :attr:`MessageType.channel_follow_add`
