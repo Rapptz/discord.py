@@ -571,7 +571,10 @@ class DiscordWebSocket:
         except KeyError:
             _log.debug('Unknown event %s.', event)
         else:
-            func(data)
+            try:
+                func(data)
+            except Exception as exc:
+                _log.warning('Parsing event %s encountered an exception.', event, exc_info=exc)
 
         # remove the dispatched listeners
         removed = []
