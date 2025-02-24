@@ -1553,12 +1553,8 @@ class ConnectionState(Generic[ClientT]):
     def parse_guild_scheduled_event_delete(self, data: gw.GuildScheduledEventDeleteEvent) -> None:
         guild = self._get_guild(int(data['guild_id']))
         if guild is not None:
-            try:
-                scheduled_event = guild._scheduled_events.pop(int(data['id']))
-            except KeyError:
-                pass
-            else:
-                self.dispatch('scheduled_event_delete', scheduled_event)
+            scheduled_event = guild._scheduled_events.pop(int(data['id']), ScheduledEvent(state=self, data=data))
+            self.dispatch('scheduled_event_delete', scheduled_event)
         else:
             _log.debug('SCHEDULED_EVENT_DELETE referencing unknown guild ID: %s. Discarding.', data['guild_id'])
 
