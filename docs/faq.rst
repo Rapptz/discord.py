@@ -481,8 +481,8 @@ Putting it all together, using the previous view definition:
 
         # Step 1
         resource = callback.resource
-        # making sure it's a message
-        if isinstance(resource, discord.Message):
+        # making sure it's an interaction response message
+        if isinstance(resource, discord.InteractionMessage):
             view.message = resource
 
 
