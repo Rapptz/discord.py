@@ -1125,7 +1125,7 @@ class Greedy(List[T]):
 
         args = getattr(converter, '__args__', ())
         if discord.utils.PY_310 and converter.__class__ is types.UnionType:  # type: ignore
-            converter = Union[args]  # type: ignore
+            converter = Union[args]
 
         origin = getattr(converter, '__origin__', None)
 
@@ -1138,7 +1138,7 @@ class Greedy(List[T]):
         if origin is Union and type(None) in args:
             raise TypeError(f'Greedy[{converter!r}] is invalid.')
 
-        return cls(converter=converter)
+        return cls(converter=converter)  # type: ignore
 
     @property
     def constructed_converter(self) -> Any:
@@ -1325,7 +1325,7 @@ async def _actual_conversion(ctx: Context[BotT], converter: Any, argument: str, 
             else:
                 return await converter().convert(ctx, argument)
         elif isinstance(converter, Converter):
-            return await converter.convert(ctx, argument)  # type: ignore
+            return await converter.convert(ctx, argument)
     except CommandError:
         raise
     except Exception as exc:

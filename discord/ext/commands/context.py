@@ -82,7 +82,7 @@ def is_cog(obj: Any) -> TypeGuard[Cog]:
     return hasattr(obj, '__cog_commands__')
 
 
-class DeferTyping:
+class DeferTyping(Generic[BotT]):
     def __init__(self, ctx: Context[BotT], *, ephemeral: bool):
         self.ctx: Context[BotT] = ctx
         self.ephemeral: bool = ephemeral
@@ -751,7 +751,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         else:
             return await self.send(content, **kwargs)
 
-    def typing(self, *, ephemeral: bool = False) -> Union[Typing, DeferTyping]:
+    def typing(self, *, ephemeral: bool = False) -> Union[Typing, DeferTyping[BotT]]:
         """Returns an asynchronous context manager that allows you to send a typing indicator to
         the destination for an indefinite period of time, or 10 seconds if the context manager
         is called using ``await``.
@@ -1078,8 +1078,11 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         if self.interaction.response.is_done():
             msg = await self.interaction.followup.send(**kwargs, wait=True)
         else:
-            await self.interaction.response.send_message(**kwargs)
-            msg = await self.interaction.original_response()
+            response = await self.interaction.response.send_message(**kwargs)
+            if not isinstance(response.resource, discord.InteractionMessage):
+                msg = await self.interaction.original_response()
+            else:
+                msg = response.resource
 
         if delete_after is not None:
             await msg.delete(delay=delete_after)

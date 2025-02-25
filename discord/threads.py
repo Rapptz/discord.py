@@ -192,7 +192,7 @@ class Thread(Messageable, Hashable):
 
         self.me: Optional[ThreadMember]
         try:
-            member = data['member']
+            member = data['member']  # pyright: ignore[reportTypedDictNotRequiredAccess]
         except KeyError:
             self.me = None
         else:

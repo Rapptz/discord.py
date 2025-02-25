@@ -102,6 +102,9 @@ if TYPE_CHECKING:
         GuildChannel as GuildChannelPayload,
         OverwriteType,
     )
+    from .types.guild import (
+        ChannelPositionUpdate,
+    )
     from .types.snowflake import (
         SnowflakeList,
     )
@@ -1232,11 +1235,11 @@ class GuildChannel:
             raise ValueError('Could not resolve appropriate move position')
 
         channels.insert(max((index + offset), 0), self)
-        payload = []
+        payload: List[ChannelPositionUpdate] = []
         lock_permissions = kwargs.get('sync_permissions', False)
         reason = kwargs.get('reason')
         for index, channel in enumerate(channels):
-            d = {'id': channel.id, 'position': index}
+            d: ChannelPositionUpdate = {'id': channel.id, 'position': index}
             if parent_id is not MISSING and channel.id == self.id:
                 d.update(parent_id=parent_id, lock_permissions=lock_permissions)
             payload.append(d)

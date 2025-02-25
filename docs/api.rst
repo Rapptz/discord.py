@@ -80,6 +80,14 @@ AppInstallParams
 .. autoclass:: AppInstallParams()
     :members:
 
+IntegrationTypeConfig
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: IntegrationTypeConfig
+
+.. autoclass:: IntegrationTypeConfig()
+    :members:
+
 Team
 ~~~~~
 
@@ -915,6 +923,29 @@ Members
     :type before: :class:`Member`
     :param after: The updated member's updated info.
     :type after: :class:`Member`
+
+.. function:: on_raw_presence_update(payload)
+
+    Called when a :class:`Member` updates their presence.
+    
+    This requires :attr:`Intents.presences` to be enabled.
+
+    Unlike :func:`on_presence_update`, when enabled, this is called regardless of the state of internal guild 
+    and member caches, and **does not** provide a comparison between the previous and updated states of the :class:`Member`.
+
+    .. important::
+
+        By default, this event is only dispatched when :attr:`Intents.presences` is enabled **and** :attr:`Intents.members` 
+        is disabled.
+
+        You can manually override this behaviour by setting the **enable_raw_presences** flag in the :class:`Client`,
+        however :attr:`Intents.presences` is always required for this event to work.
+    
+    .. versionadded:: 2.5
+
+    :param payload: The raw presence update event model.
+    :type payload: :class:`RawPresenceUpdateEvent`
+        
 
 Messages
 ~~~~~~~~~
@@ -1886,6 +1917,10 @@ of :class:`enum.Enum`.
         The system message sent when a purchase is made in the guild.
 
         .. versionadded:: 2.5
+
+    .. attribute:: poll_result
+
+        The system message sent when a poll has closed.
 
 .. class:: UserFlags
 
@@ -3816,17 +3851,25 @@ of :class:`enum.Enum`.
 
     .. versionadded:: 2.5
 
-    .. attribute:: reply
+    .. attribute:: default
 
-        A message reply.
+        A standard reference used by message replies (:attr:`MessageType.reply`),
+        crossposted messaged created by a followed channel integration, and messages of type:
+
+        - :attr:`MessageType.pins_add`
+        - :attr:`MessageType.channel_follow_add`
+        - :attr:`MessageType.thread_created`
+        - :attr:`MessageType.thread_starter_message`
+        - :attr:`MessageType.poll_result`
+        - :attr:`MessageType.context_menu_command`
 
     .. attribute:: forward
 
         A forwarded message.
 
-    .. attribute:: default
+    .. attribute:: reply
 
-        An alias for :attr:`.reply`.
+        An alias for :attr:`.default`.
 
 .. _discord-api-audit-logs:
 
@@ -5360,6 +5403,14 @@ RawPollVoteActionEvent
 .. autoclass:: RawPollVoteActionEvent()
     :members:
 
+RawPresenceUpdateEvent
+~~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: RawPresenceUpdateEvent
+
+.. autoclass:: RawPresenceUpdateEvent()
+    :members:
+
 PartialWebhookGuild
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -5392,6 +5443,14 @@ MessageSnapshot
 .. attributetable:: MessageSnapshot
 
 .. autoclass:: MessageSnapshot
+    :members:
+
+ClientStatus
+~~~~~~~~~~~~
+
+.. attributetable:: ClientStatus
+
+.. autoclass:: ClientStatus()
     :members:
 
 Data Classes
@@ -5663,6 +5722,14 @@ SKUFlags
 .. attributetable:: SKUFlags
 
 .. autoclass:: SKUFlags()
+    :members:
+
+EmbedFlags
+~~~~~~~~~~
+
+.. attributetable:: EmbedFlags
+
+.. autoclass:: EmbedFlags()
     :members:
 
 ForumTag

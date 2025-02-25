@@ -172,7 +172,7 @@ class BotBase(GroupMixin[None]):
         **options: Any,
     ) -> None:
         super().__init__(intents=intents, **options)
-        self.command_prefix: PrefixType[BotT] = command_prefix
+        self.command_prefix: PrefixType[BotT] = command_prefix  # type: ignore
         self.extra_events: Dict[str, List[CoroFunc]] = {}
         # Self doesn't have the ClientT bound, but since this is a mixin it technically does
         self.__tree: app_commands.CommandTree[Self] = tree_cls(self)  # type: ignore
@@ -487,7 +487,7 @@ class BotBase(GroupMixin[None]):
         if len(data) == 0:
             return True
 
-        return await discord.utils.async_all(f(ctx) for f in data)
+        return await discord.utils.async_all(f(ctx) for f in data)  # type: ignore
 
     async def is_owner(self, user: User, /) -> bool:
         """|coro|

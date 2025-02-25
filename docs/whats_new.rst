@@ -11,6 +11,160 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p5p0:
+
+v2.5.0
+-------
+
+New Features
+~~~~~~~~~~~~~
+
+- Add support for message forwarding (:issue:`9950`)
+    - Adds :class:`MessageReferenceType`
+    - Adds :class:`MessageSnapshot`
+    - Adds ``type`` parameter to :class:`MessageReference`, :meth:`MessageReference.from_message`, and :meth:`PartialMessage.to_reference`
+    - Add :meth:`PartialMessage.forward`
+
+- Add SKU subscriptions support (:issue:`9930`)
+    - Adds new events :func:`on_subscription_create`, :func:`on_subscription_update`, and :func:`on_subscription_delete`
+    - Add :class:`SubscriptionStatus` enum
+    - Add :class:`Subscription` model
+    - Add :meth:`SKU.fetch_subscription` and :meth:`SKU.subscriptions`
+
+- Add support for application emojis (:issue:`9891`)
+    - Add :meth:`Client.create_application_emoji`
+    - Add :meth:`Client.fetch_application_emoji`
+    - Add :meth:`Client.fetch_application_emojis`
+    - Add :meth:`Emoji.is_application_owned`
+
+- Support for Soundboard and VC effects (:issue:`9349`)
+    - Add :class:`BaseSoundboardSound`, :class:`SoundboardDefaultSound`, and :class:`SoundboardSound`
+    - Add :class:`VoiceChannelEffect`
+    - Add :class:`VoiceChannelEffectAnimation`
+    - Add :class:`VoiceChannelEffectAnimationType`
+    - Add :class:`VoiceChannelSoundEffect`
+    - Add :meth:`VoiceChannel.send_sound`
+    - Add new audit log actions: :attr:`AuditLogAction.soundboard_sound_create`, :attr:`AuditLogAction.soundboard_sound_update`, and :attr:`AuditLogAction.soundboard_sound_delete`.
+    - Add :attr:`Intents.expressions` and make :attr:`Intents.emojis` and :attr:`Intents.emojis_and_stickers` aliases of that intent.
+    - Add new events: :func:`on_soundboard_sound_create`, :func:`on_soundboard_sound_update`, :func:`on_soundboard_sound_delete`, and :func:`on_voice_channel_effect`.
+    - Add methods and properties dealing with soundboards:
+        - :attr:`Client.soundboard_sounds`
+        - :attr:`Guild.soundboard_sounds`
+        - :meth:`Client.get_soundboard_sound`
+        - :meth:`Guild.get_soundboard_sound`
+        - :meth:`Client.fetch_soundboard_default_sounds`
+        - :meth:`Guild.fetch_soundboard_sound`
+        - :meth:`Guild.fetch_soundboard_sounds`
+        - :meth:`Guild.create_soundboard_sound`
+
+- Add support for retrieving interaction responses when sending a response (:issue:`9957`)
+    - Methods from :class:`InteractionResponse` now return :class:`InteractionCallbackResponse`
+    - Depending on the interaction response type, :attr:`InteractionCallbackResponse.resource` will be different
+
+- Add :attr:`PartialWebhookChannel.mention` attribute (:issue:`10101`)
+- Add support for sending stateless views for :class:`SyncWebhook` or webhooks with no state (:issue:`10089`)
+- Add
+- Add richer :meth:`Role.move` interface (:issue:`10100`)
+- Add support for :class:`EmbedFlags` via :attr:`Embed.flags` (:issue:`10085`)
+- Add new flags for :class:`AttachmentFlags` (:issue:`10085`)
+- Add :func:`on_raw_presence_update` event that does not depend on cache state (:issue:`10048`)
+    - This requires setting the ``enable_raw_presences`` keyword argument within :class:`Client`.
+
+- Add :attr:`ForumChannel.members` property. (:issue:`10034`)
+- Add ``exclude_deleted`` parameter to :meth:`Client.entitlements` (:issue:`10027`)
+- Add :meth:`Client.fetch_guild_preview` (:issue:`9986`)
+- Add :meth:`AutoShardedClient.fetch_session_start_limits` (:issue:`10007`)
+- Add :attr:`PartialMessageable.mention` (:issue:`9988`)
+- Add command target to :class:`MessageInteractionMetadata` (:issue:`10004`)
+    - :attr:`MessageInteractionMetadata.target_user`
+    - :attr:`MessageInteractionMetadata.target_message_id`
+    - :attr:`MessageInteractionMetadata.target_message`
+
+- Add :attr:`Message.forward` flag (:issue:`9978`)
+
+- Add support for purchase notification messages (:issue:`9906`)
+    - Add new type :attr:`MessageType.purchase_notification`
+    - Add new models :class:`GuildProductPurchase` and :class:`PurchaseNotification`
+    - Add :attr:`Message.purchase_notification`
+
+- Add ``category`` parameter to :meth:`.abc.GuildChannel.clone` (:issue:`9941`)
+- Add support for message call (:issue:`9911`)
+    - Add new models :class:`CallMessage`
+    - Add :attr:`Message.call` attribute
+
+- Parse full message for message edit event (:issue:`10035`)
+    - Adds :attr:`RawMessageUpdateEvent.message` attribute
+    - Potentially speeds up :func:`on_message_edit` by no longer copying data
+
+- Add support for retrieving and editing integration type configuration (:issue:`9818`)
+    - This adds :class:`IntegrationTypeConfig`
+    - Retrievable via :attr:`AppInfo.guild_integration_config` and :attr:`AppInfo.user_integration_config`.
+    - Editable via :meth:`AppInfo.edit`
+
+- Allow passing ``None`` for ``scopes`` parameter in :func:`utils.oauth_url` (:issue:`10078`)
+- Add support for :attr:`MessageType.poll_result` messages (:issue:`9905`)
+- Add various new :class:`MessageFlags`
+- Add :meth:`Member.fetch_voice` (:issue:`9908`)
+- Add :attr:`Guild.dm_spam_detected_at` and :meth:`Guild.is_dm_spam_detected` (:issue:`9808`)
+- Add :attr:`Guild.raid_detected_at` and :meth:`Guild.is_raid_detected` (:issue:`9808`)
+- Add :meth:`Client.fetch_premium_sticker_pack` (:issue:`9909`)
+- Add :attr:`AppInfo.approximate_user_install_count` (:issue:`9915`)
+- Add :meth:`Guild.fetch_role` (:issue:`9921`)
+- Add :attr:`Attachment.title` (:issue:`9904`)
+- Add :attr:`Member.guild_banner` and :attr:`Member.display_banner`
+- Re-add ``connector`` parameter that was removed during v2.0 (:issue:`9900`)
+- |commands| Add :class:`~discord.ext.commands.SoundboardSoundConverter` (:issue:`9973`)
+
+Bug Fixes
+~~~~~~~~~~
+
+- Change the default file size limit for :attr:`Guild.filesize_limit` to match new Discord limit of 10 MiB (:issue:`10084`)
+- Handle improper 1000 close code closures by Discord
+    - This fixes an issue causing excessive IDENTIFY in large bots
+
+- Fix potential performance regression when dealing with cookies in the library owned session (:issue:`9916`)
+- Add support for AEAD XChaCha20 Poly1305 encryption mode (:issue:`9953`)
+    - This allows voice to continue working when the older encryption modes eventually get removed.
+    - Support for DAVE is still tentative.
+
+- Fix large performance regression due to polls when creating messages
+- Fix cases where :attr:`Member.roles` contains a ``None`` role (:issue:`10093`)
+- Update all channel clone implementations to work as expected (:issue:`9935`)
+- Fix bug in :meth:`Client.entitlements` only returning 100 entries (:issue:`10051`)
+- Fix :meth:`TextChannel.clone` always sending slowmode when not applicable to news channels (:issue:`9967`)
+- Fix :attr:`Message.system_content` for :attr:`MessageType.role_subscription_purchase` renewals (:issue:`9955`)
+- Fix :attr:`Sticker.url` for GIF stickers (:issue:`9913`)
+- Fix :attr:`User.default_avatar` for team users and webhooks (:issue:`9907`)
+- Fix potential rounding error in :attr:`Poll.duration` (:issue:`9903`)
+- Fix introduced potential TypeError when raising :exc:`app_commands.CommandSyncFailure`
+- Fix :attr:`AuditLogEntry.target` causing errors for :attr:`AuditLogAction.message_pin` and :attr:`AuditLogAction.message_unpin` actions (:issue:`10061`).
+- Fix incorrect :class:`ui.Select` maximum option check (:issue:`9878`, :issue:`9879`)
+- Fix path sanitisation for absolute Windows paths when using ``__main__`` (:issue:`10096`, :issue:`10097`)
+- |tasks| Fix race condition when setting timer handle when using uvloop (:issue:`10020`)
+- |commands| Fix issue with category cooldowns outside of guild channels (:issue:`9959`)
+- |commands| Fix :meth:`Context.defer <ext.commands.Context.defer>` unconditionally deferring
+- |commands| Fix callable FlagConverter defaults on hybrid commands not being called (:issue:`10037`)
+- |commands| Unwrap :class:`~discord.ext.commands.Parameter` if given as default to :func:`~ext.commands.parameter` (:issue:`9977`)
+- |commands| Fix fallback behaviour not being respected when calling replace for :class:`~.ext.commands.Parameter` (:issue:`10076`, :issue:`10077`)
+- |commands| Respect ``enabled`` keyword argument for hybrid app commands (:issue:`10001`)
+
+Miscellaneous
+~~~~~~~~~~~~~~
+
+- Use a fallback package for ``audioop`` to allow the library to work in Python 3.13 or newer.
+- Remove ``aiodns`` from being used on Windows (:issue:`9898`)
+- Add zstd gateway compression to ``speed`` extras (:issue:`9947`)
+    - This can be installed using ``discord.py[speed]``
+
+- Add proxy support fetching from the CDN (:issue:`9966`)
+- Remove ``/`` from being safe from URI encoding when constructing paths internally
+- Sanitize invite argument before calling the invite info endpoint
+- Avoid returning in finally in specific places to prevent exception swallowing (:issue:`9981`, :issue:`9984`)
+- Enforce and create random nonces when creating messages throughout the library
+- Revert IPv6 block in the library (:issue:`9870`)
+- Allow passing :class:`Permissions` object to :func:`app_commands.default_permissions` decorator (:issue:`9951`, :issue:`9971`)
+
+
 .. _vp2p4p0:
 
 v2.4.0

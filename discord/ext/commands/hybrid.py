@@ -203,9 +203,9 @@ def replace_parameter(
         # Fallback to see if the behaviour needs changing
         origin = getattr(converter, '__origin__', None)
         args = getattr(converter, '__args__', [])
-        if isinstance(converter, Range):
+        if isinstance(converter, Range):  # type: ignore # Range is not an Annotation at runtime
             r = converter
-            param = param.replace(annotation=app_commands.Range[r.annotation, r.min, r.max])
+            param = param.replace(annotation=app_commands.Range[r.annotation, r.min, r.max])  # type: ignore
         elif isinstance(converter, Greedy):
             # Greedy is "optional" in ext.commands
             # However, in here, it probably makes sense to make it required.
@@ -257,7 +257,7 @@ def replace_parameter(
                 inner = args[0]
                 is_inner_transformer = is_transformer(inner)
                 if is_converter(inner) and not is_inner_transformer:
-                    param = param.replace(annotation=Optional[ConverterTransformer(inner, original)])  # type: ignore
+                    param = param.replace(annotation=Optional[ConverterTransformer(inner, original)])
             else:
                 raise
         elif origin:
@@ -424,10 +424,10 @@ class HybridAppCommand(discord.app_commands.Command[CogT, P, T]):
                 if not ret:
                     return False
 
-        if self.checks and not await async_all(f(interaction) for f in self.checks):
+        if self.checks and not await async_all(f(interaction) for f in self.checks):  # type: ignore
             return False
 
-        if self.wrapped.checks and not await async_all(f(ctx) for f in self.wrapped.checks):
+        if self.wrapped.checks and not await async_all(f(ctx) for f in self.wrapped.checks):  # type: ignore
             return False
 
         return True
@@ -915,7 +915,8 @@ def hybrid_command(
     def decorator(func: CommandCallback[CogT, ContextT, P, T]) -> HybridCommand[CogT, P, T]:
         if isinstance(func, Command):
             raise TypeError('Callback is already a command.')
-        return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)
+        # Pyright does not allow Command[Any] to be assigned to Command[CogT] despite it being okay here
+        return HybridCommand(func, name=name, with_app_command=with_app_command, **attrs)  # type: ignore
 
     return decorator
 

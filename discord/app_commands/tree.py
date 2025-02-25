@@ -859,7 +859,7 @@ class CommandTree(Generic[ClientT]):
         if len(params) != 2:
             raise TypeError('error handler must have 2 parameters')
 
-        self.on_error = coro
+        self.on_error = coro  # type: ignore
         return coro
 
     def command(

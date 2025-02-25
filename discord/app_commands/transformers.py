@@ -235,7 +235,7 @@ class Transformer(Generic[ClientT]):
         pass
 
     def __or__(self, rhs: Any) -> Any:
-        return Union[self, rhs]  # type: ignore
+        return Union[self, rhs]
 
     @property
     def type(self) -> AppCommandOptionType:
