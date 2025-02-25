@@ -63,7 +63,6 @@ New Features
 
 - Add :attr:`PartialWebhookChannel.mention` attribute (:issue:`10101`)
 - Add support for sending stateless views for :class:`SyncWebhook` or webhooks with no state (:issue:`10089`)
-- Add
 - Add richer :meth:`Role.move` interface (:issue:`10100`)
 - Add support for :class:`EmbedFlags` via :attr:`Embed.flags` (:issue:`10085`)
 - Add new flags for :class:`AttachmentFlags` (:issue:`10085`)
