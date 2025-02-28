@@ -2194,15 +2194,15 @@ class Message(PartialMessage, Hashable):
         self._state: ConnectionState = state
         self.webhook_id: Optional[int] = utils._get_as_snowflake(data, 'webhook_id')
         self.reactions: List[Reaction] = [Reaction(message=self, data=d) for d in data.get('reactions', [])]
-        self.attachments: List[Attachment] = [Attachment(data=a, state=self._state) for a in data['attachments']]
-        self.embeds: List[Embed] = [Embed.from_dict(a) for a in data['embeds']]
+        self.attachments: List[Attachment] = [Attachment(data=a, state=self._state) for a in data.get('attachments', [])]
+        self.embeds: List[Embed] = [Embed.from_dict(a) for a in data.get('embeds', [])]
         self.activity: Optional[MessageActivityPayload] = data.get('activity')
-        self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data['edited_timestamp'])
+        self._edited_timestamp: Optional[datetime.datetime] = utils.parse_time(data.get('edited_timestamp'))
         self.type: MessageType = try_enum(MessageType, data['type'])
-        self.pinned: bool = data['pinned']
+        self.pinned: bool = data.get('pinned', False)
         self.flags: MessageFlags = MessageFlags._from_value(data.get('flags', 0))
-        self.mention_everyone: bool = data['mention_everyone']
-        self.tts: bool = data['tts']
+        self.mention_everyone: bool = data.get('mention_everyone', False)
+        self.tts: bool = data.get('tts', False)
         self.content: str = data['content']
         self.nonce: Optional[Union[int, str]] = data.get('nonce')
         self.position: Optional[int] = data.get('position')
