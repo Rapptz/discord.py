@@ -143,12 +143,12 @@ class ThumbnailComponent(ComponentBase, UnfurledAttachment):
 
 class MediaGalleryComponent(ComponentBase):
     type: Literal[12]
-    items: List[MediaItem]
+    items: List[UnfurledAttachment]
 
 
 class FileComponent(ComponentBase):
     type: Literal[13]
-    file: MediaItem
+    file: UnfurledAttachment
     spoiler: NotRequired[bool]
 
 

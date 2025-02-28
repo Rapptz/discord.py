@@ -26,6 +26,9 @@ from __future__ import annotations
 from typing import List, Optional
 
 from .item import Item
+from ..components import SectionComponent
+
+__all__ = ('Section',)
 
 
 class Section(Item):
@@ -47,4 +50,6 @@ class Section(Item):
     def __init__(self, *, accessory: Optional[Item]) -> None:
         self.accessory: Optional[Item] = accessory
         self._children: List[Item] = []
-        self._underlying = SectionComponent
+        self._underlying = SectionComponent._raw_construct(
+            accessory=accessory,
+        )

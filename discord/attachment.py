@@ -29,12 +29,19 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 from .mixins import Hashable
 from .file import File
-from .state import ConnectionState
 from .flags import AttachmentFlags
+from .enums import MediaLoadingState, try_enum
 from . import utils
 
 if TYPE_CHECKING:
-    from .types.attachment import Attachment as AttachmentPayload
+    from .types.attachment import (
+        AttachmentBase as AttachmentBasePayload,
+        Attachment as AttachmentPayload,
+        UnfurledAttachment as UnfurledAttachmentPayload,
+    )
+
+    from .http import HTTPClient
+    from .state import ConnectionState
 
 MISSING = utils.MISSING
 
@@ -45,7 +52,40 @@ __all__ = (
 
 
 class AttachmentBase:
-    url: str
+
+    __slots__ = (
+        'url',
+        'proxy_url',
+        'description',
+        'filename',
+        'spoiler',
+        'height',
+        'width',
+        'content_type',
+        '_flags',
+        '_http',
+        '_state',
+    )
+
+    def __init__(self, data: AttachmentBasePayload, state: ConnectionState) -> None:
+        self._state: ConnectionState = state
+        self._http: HTTPClient = state.http
+        self.url: str = data['url']
+        self.proxy_url: str = data['proxy_url']
+        self.description: Optional[str] = data.get('description')
+        self.spoiler: bool = data.get('spoiler', False)
+        self.height: Optional[int] = data.get('height')
+        self.width: Optional[int] = data.get('width')
+        self.content_type: Optional[str] = data.get('content_type')
+        self._flags: int = data.get('flags', 0)
+
+    @property
+    def flags(self) -> AttachmentFlags:
+        """:class:`AttachmentFlags`: The attachment's flag value."""
+        return AttachmentFlags._from_value(self._flags)
+
+    def __str__(self) -> str:
+        return self.url or ''
 
     async def save(
         self,
@@ -200,6 +240,22 @@ class AttachmentBase:
             spoiler=spoiler,
         )
 
+    def to_dict(self):
+        base = {
+            'url': self.url,
+            'proxy_url': self.proxy_url,
+            'spoiler': self.spoiler,
+        }
+
+        if self.width:
+            base['width'] = self.width
+        if self.height:
+            base['height'] = self.height
+        if self.description:
+            base['description'] = self.description
+
+        return base
+
 
 class Attachment(Hashable, AttachmentBase):
     """Represents an attachment from Discord.
@@ -268,56 +324,34 @@ class Attachment(Hashable, AttachmentBase):
         The normalised version of the attachment's filename.
 
         .. versionadded:: 2.5
+    spoiler: :class:`bool`
+        Whether the attachment is a spoiler or not. Unlike :meth:`.is_spoiler`, this uses the API returned
+        data.
+
+        .. versionadded:: 2.6
     """
 
     __slots__ = (
         'id',
         'size',
-        'height',
-        'width',
-        'filename',
-        'url',
-        'proxy_url',
-        '_http',
-        'content_type',
-        'description',
         'ephemeral',
         'duration',
         'waveform',
-        '_flags',
         'title',
     )
 
     def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
         self.id: int = int(data['id'])
-        self.size: int = data['size']
-        self.height: Optional[int] = data.get('height')
-        self.width: Optional[int] = data.get('width')
         self.filename: str = data['filename']
-        self.url: str = data['url']
-        self.proxy_url: str = data['proxy_url']
-        self._http = state.http
-        self.content_type: Optional[str] = data.get('content_type')
-        self.description: Optional[str] = data.get('description')
+        self.size: int = data['size']
         self.ephemeral: bool = data.get('ephemeral', False)
         self.duration: Optional[float] = data.get('duration_secs')
         self.title: Optional[str] = data.get('title')
-
-        waveform = data.get('waveform')
-        self.waveform: Optional[bytes] = (
-            utils._base64_to_bytes(waveform) if waveform is not None else None
-        )
-
-        self._flags: int = data.get('flags', 0)
-
-    @property
-    def flags(self) -> AttachmentFlags:
-        """:class:`AttachmentFlags`: The attachment's flags."""
-        return AttachmentFlags._from_value(self._flags)
+        super().__init__(data, state)
 
     def is_spoiler(self) -> bool:
         """:class:`bool`: Whether this attachment contains a spoiler."""
-        return self.filename.startswith('SPOILER_')
+        return self.spoiler or self.filename.startswith('SPOILER_')
 
     def is_voice_message(self) -> bool:
         """:class:`bool`: Whether this attachment is a voice message."""
@@ -326,33 +360,18 @@ class Attachment(Hashable, AttachmentBase):
     def __repr__(self) -> str:
         return f'<Attachment id={self.id} filename={self.filename!r} url={self.url!r}>'
 
-    def __str__(self) -> str:
-        return self.url or ''
-
     def to_dict(self) -> AttachmentPayload:
-        result: AttachmentPayload = {
-            'filename': self.filename,
-            'id': self.id,
-            'proxy_url': self.proxy_url,
-            'size': self.size,
-            'url': self.url,
-            'spoiler': self.is_spoiler(),
-        }
-        if self.height:
-            result['height'] = self.height
-        if self.width:
-            result['width'] = self.width
-        if self.content_type:
-            result['content_type'] = self.content_type
-        if self.description is not None:
-            result['description'] = self.description
+        result: AttachmentPayload = super().to_dict()  # pyright: ignore[reportAssignmentType]
+        result['id'] = self.id
+        result['filename'] = self.filename
+        result['size'] = self.size
         return result
 
 
 class UnfurledAttachment(AttachmentBase):
     """Represents an unfurled attachment item from a :class:`Component`.
 
-    .. versionadded:: tbd
+    .. versionadded:: 2.6
 
     .. container:: operations
 
@@ -370,48 +389,35 @@ class UnfurledAttachment(AttachmentBase):
 
     Attributes
     ----------
+    height: Optional[:class:`int`]
+        The attachment's height, in pixels. Only applicable to images and videos.
+    width: Optional[:class:`int`]
+        The attachment's width, in pixels. Only applicable to images and videos.
     url: :class:`str`
-        The unfurled attachment URL.
-    proxy_url: Optional[:class:`str`]
-        The proxy URL. This is cached version of the :attr:`~UnfurledAttachment.url` in the
+        The attachment URL. If the message this attachment was attached
+        to is deleted, then this will 404.
+    proxy_url: :class:`str`
+        The proxy URL. This is a cached version of the :attr:`~Attachment.url` in the
         case of images. When the message is deleted, this URL might be valid for a few
         minutes or not valid at all.
-
-        .. note::
-
-            This will be ``None`` if :meth:`.is_resolved` is ``False``.
-    height: Optional[:class:`int`]
-        The unfurled attachment's height, in pixels.
-
-        .. note::
-
-            This will be ``None`` if :meth:`.is_resolved` is ``False``.
-    width: Optional[:class:`int`]
-        The unfurled attachment's width, in pixels.
-
-        .. note::
-
-            This will be ``None`` if :meth:`.is_resolved` is ``False``.
     content_type: Optional[:class:`str`]
         The attachment's `media type <https://en.wikipedia.org/wiki/Media_type>`_
-
-        .. note::
-
-            This will be ``None`` if :meth:`.is_resolved` is ``False``.
+    description: Optional[:class:`str`]
+        The attachment's description. Only applicable to images.
+    spoiler: :class:`bool`
+        Whether the attachment is a spoiler or not. Unlike :meth:`.is_spoiler`, this uses the API returned
+        data.
     loading_state: :class:`MediaLoadingState`
-        The load state of this attachment on Discord side.
-    description
+        The cache state of this unfurled attachment.
     """
 
     __slots__ = (
-        'url',
-        'proxy_url',
-        'height',
-        'width',
-        'content_type',
         'loading_state',
-        '_resolved',
-        '_state',
     )
 
-    def __init__(self, )
+    def __init__(self, data: UnfurledAttachmentPayload, state: ConnectionState) -> None:
+        self.loading_state: MediaLoadingState = try_enum(MediaLoadingState, data['loading_state'])
+        super().__init__(data, state)
+
+    def __repr__(self) -> str:
+        return f'<UnfurledAttachment url={self.url!r}>'

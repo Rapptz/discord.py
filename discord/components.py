@@ -690,7 +690,7 @@ class SectionComponent(Component):
         The user constructible and usable type to create a section is :class:`discord.ui.Section`
         not this one.
 
-    .. versionadded:: tbd
+    .. versionadded:: 2.6
 
     Attributes
     ----------
@@ -732,7 +732,7 @@ class TextDisplay(Component):
 
     This inherits from :class:`Component`.
 
-    .. versionadded:: tbd
+    .. versionadded:: 2.6
 
     Parameters
     ----------
@@ -770,7 +770,7 @@ class ThumbnailComponent(Component):
         The user constructuble and usable type to create a thumbnail
         component is :class:`discord.ui.Thumbnail` not this one.
 
-    .. versionadded:: tbd
+    .. versionadded:: 2.6
 
     Attributes
     ----------

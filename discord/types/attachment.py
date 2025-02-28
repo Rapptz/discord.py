@@ -49,10 +49,8 @@ class Attachment(AttachmentBase):
     ephemeral: NotRequired[bool]
     duration_secs: NotRequired[float]
     waveform: NotRequired[str]
+    title: NotRequired[str]
 
 
 class UnfurledAttachment(AttachmentBase):
     loading_state: LoadingState
-    src_is_animated: NotRequired[bool]
-    placeholder: str
-    placeholder_version: int
