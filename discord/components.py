@@ -97,12 +97,19 @@ __all__ = (
 class Component:
     """Represents a Discord Bot UI Kit Component.
 
-    Currently, the only components supported by Discord are:
+    The components supported by Discord are:
 
     - :class:`ActionRow`
     - :class:`Button`
     - :class:`SelectMenu`
     - :class:`TextInput`
+    - :class:`SectionComponent`
+    - :class:`TextDisplay`
+    - :class:`ThumbnailComponent`
+    - :class:`MediaGalleryComponent`
+    - :class:`FileComponent`
+    - :class:`SeparatorComponent`
+    - :class:`Container`
 
     This class is abstract and cannot be instantiated.
 
@@ -705,11 +712,18 @@ class SectionComponent(Component):
         The section accessory.
     """
 
-    def __init__(self, data: SectionComponentPayload) -> None:
+    __slots__ = (
+        'components',
+        'accessory',
+    )
+
+    __repr_info__ = __slots__
+
+    def __init__(self, data: SectionComponentPayload, state: Optional[ConnectionState]) -> None:
         self.components: List[SectionComponentType] = []
 
         for component_data in data['components']:
-            component = _component_factory(component_data)
+            component = _component_factory(component_data, state)
             if component is not None:
                 self.components.append(component)  # type: ignore # should be the correct type here
 
@@ -737,6 +751,11 @@ class ThumbnailComponent(Component):
 
     This inherits from :class:`Component`.
 
+    .. note::
+
+        The user constructible and usable type to create a thumbnail is :class:`discord.ui.Thumbnail`
+        not this one.
+
     Attributes
     ----------
     media: :class:`UnfurledAttachment`
@@ -747,10 +766,12 @@ class ThumbnailComponent(Component):
         Whether this thumbnail is flagged as a spoiler.
     """
 
+    __slots__ = ()
+
     def __init__(
         self,
         data: ThumbnailComponentPayload,
-        state: ConnectionState,
+        state: Optional[ConnectionState],
     ) -> None:
         self.media: UnfurledAttachment = UnfurledAttachment(data['media'], state)
         self.description: Optional[str] = data.get('description')
@@ -932,13 +953,13 @@ class SeparatorComponent(Component):
     ----------
     spacing: :class:`SeparatorSize`
         The spacing size of the separator.
-    divider: :class:`bool`
-        Whether this separator is a divider.
+    visible: :class:`bool`
+        Whether this separator is visible and shows a divider.
     """
 
     __slots__ = (
         'spacing',
-        'divider',
+        'visible',
     )
 
     def __init__(
@@ -946,7 +967,7 @@ class SeparatorComponent(Component):
         data: SeparatorComponentPayload,
     ) -> None:
         self.spacing: SeparatorSize = try_enum(SeparatorSize, data.get('spacing', 1))
-        self.divider: bool = data.get('divider', True)
+        self.visible: bool = data.get('divider', True)
 
     @property
     def type(self) -> Literal[ComponentType.separator]:
@@ -955,7 +976,7 @@ class SeparatorComponent(Component):
     def to_dict(self) -> SeparatorComponentPayload:
         return {
             'type': self.type.value,
-            'divider': self.divider,
+            'divider': self.visible,
             'spacing': self.spacing.value,
         }
 
@@ -1010,9 +1031,11 @@ def _component_factory(
     elif data['type'] in (3, 5, 6, 7, 8):
         return SelectMenu(data)
     elif data['type'] == 9:
-        return SectionComponent(data)
+        return SectionComponent(data, state)
     elif data['type'] == 10:
         return TextDisplay(data)
+    elif data['type'] == 11:
+        return ThumbnailComponent(data, state)
     elif data['type'] == 12:
         return MediaGalleryComponent(data, state)
     elif data['type'] == 13:

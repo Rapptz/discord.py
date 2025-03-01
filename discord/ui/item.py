@@ -80,6 +80,9 @@ class Item(Generic[V]):
     def _refresh_state(self, interaction: Interaction, data: Dict[str, Any]) -> None:
         return None
 
+    def _is_v2(self) -> bool:
+        return False
+
     @classmethod
     def from_component(cls: Type[I], component: Component) -> I:
         return cls()

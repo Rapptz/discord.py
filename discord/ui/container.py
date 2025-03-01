@@ -23,23 +23,32 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypeVar
+
+from .item import Item
+from ..enums import ComponentType
 
 if TYPE_CHECKING:
-    from ..components import Component
+    from typing_extensions import Self
+
+    from .view import View
+
     from ..colour import Colour, Color
+    from ..components import Container as ContainerComponent
+
+V = TypeVar('V', bound='View', covariant=True)
 
 __all__ = ('Container',)
 
 
-class Container:
+class Container(Item[V]):
     """Represents a Components V2 Container.
 
     .. versionadded:: 2.6
 
     Parameters
     ----------
-    children: List[:class:`Item`]    
+    children: List[:class:`Item`]
         The initial children of this container.
     accent_colour: Optional[:class:`~discord.Colour`]
         The colour of the container. Defaults to ``None``.
@@ -48,29 +57,31 @@ class Container:
     spoiler: :class:`bool`
         Whether to flag this container as a spoiler. Defaults
         to ``False``.
+    timeout: Optional[:class:`float`]
+        The timeout to set to this container items. Defaults to ``180``.
     """
 
     __discord_ui_container__ = True
 
     def __init__(
         self,
-        children: List[Component],
+        children: List[Item[Any]],
         *,
         accent_colour: Optional[Colour] = None,
         accent_color: Optional[Color] = None,
         spoiler: bool = False,
     ) -> None:
-        self._children: List[Component] = children
+        self._children: List[Item[Any]] = children
         self.spoiler: bool = spoiler
         self._colour = accent_colour or accent_color
 
     @property
-    def children(self) -> List[Component]:
-        """List[:class:`~discord.Component`]: The children of this container."""
+    def children(self) -> List[Item[Any]]:
+        """List[:class:`Item`]: The children of this container."""
         return self._children.copy()
 
     @children.setter
-    def children(self, value: List[Component]) -> None:
+    def children(self, value: List[Item[Any]]) -> None:
         self._children = value
 
     @property
@@ -84,3 +95,29 @@ class Container:
 
     accent_color = accent_colour
     """Optional[:class:`~discord.Color`]: The color of the container, or ``None``."""
+
+    @property
+    def type(self) -> Literal[ComponentType.container]:
+        return ComponentType.container
+
+    def _is_v2(self) -> bool:
+        return True
+
+    def to_component_dict(self) -> Dict[str, Any]:
+        base = {
+            'type': self.type.value,
+            'spoiler': self.spoiler,
+            'components': [c.to_component_dict() for c in self._children]
+        }
+        if self._colour is not None:
+            base['accent_color'] = self._colour.value
+        return base
+
+    @classmethod
+    def from_component(cls, component: ContainerComponent) -> Self:
+        from .view import _component_to_item
+        return cls(
+            children=[_component_to_item(c) for c in component.children],
+            accent_colour=component.accent_colour,
+            spoiler=component.spoiler,
+        )

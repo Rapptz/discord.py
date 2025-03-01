@@ -193,6 +193,12 @@ def handle_message_parameters(
     if view is not MISSING:
         if view is not None:
             payload['components'] = view.to_components()
+
+            if view.has_components_v2():
+                if flags is not MISSING:
+                    flags.components_v2 = True
+                else:
+                    flags = MessageFlags(components_v2=True)
         else:
             payload['components'] = []
 

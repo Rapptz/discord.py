@@ -184,5 +184,6 @@ ContainerChildComponent = Union[
     SectionComponent,
     ContainerComponent,
     SeparatorComponent,
+    ThumbnailComponent,
 ]
 Component = Union[ActionRowChildComponent, ContainerChildComponent]

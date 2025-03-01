@@ -41,7 +41,7 @@ from ..components import (
     Button as ButtonComponent,
     SelectMenu as SelectComponent,
     SectionComponent,
-    TextDisplay,
+    TextDisplay as TextDisplayComponent,
     MediaGalleryComponent,
     FileComponent,
     SeparatorComponent,
@@ -67,7 +67,6 @@ if TYPE_CHECKING:
 
 
 _log = logging.getLogger(__name__)
-V2_COMPONENTS = (SectionComponent, TextDisplay, MediaGalleryComponent, FileComponent, SeparatorComponent)
 
 
 def _walk_all_components(components: List[Component]) -> Iterator[Component]:
@@ -87,8 +86,7 @@ def _component_to_item(component: Component) -> Item:
         from .select import BaseSelect
 
         return BaseSelect.from_component(component)
-    if isinstance(component, V2_COMPONENTS):
-        return component
+    # TODO: convert V2 Components into Item's
 
     return Item.from_component(component)
 
@@ -97,11 +95,13 @@ class _ViewWeights:
     # fmt: off
     __slots__ = (
         'weights',
+        'max_weight',
     )
     # fmt: on
 
-    def __init__(self, children: List[Item]):
+    def __init__(self, children: List[Item], container: bool):
         self.weights: List[int] = [0, 0, 0, 0, 0]
+        self.max_weight: int = 5 if container is False else 10
 
         key = lambda i: sys.maxsize if i.row is None else i.row
         children = sorted(children, key=key)
@@ -111,7 +111,7 @@ class _ViewWeights:
 
     def find_open_space(self, item: Item) -> int:
         for index, weight in enumerate(self.weights):
-            if weight + item.width <= 5:
+            if weight + item.width <= self.max_weight:
                 return index
 
         raise ValueError('could not find open space for item')
@@ -119,8 +119,8 @@ class _ViewWeights:
     def add_item(self, item: Item) -> None:
         if item.row is not None:
             total = self.weights[item.row] + item.width
-            if total > 5:
-                raise ValueError(f'item would not fit at row {item.row} ({total} > 5 width)')
+            if total > 10:
+                raise ValueError(f'item would not fit at row {item.row} ({total} > {self.max_weight} width)')
             self.weights[item.row] = total
             item._rendered_row = item.row
         else:
@@ -195,7 +195,7 @@ class View:
     def __init__(self, *, timeout: Optional[float] = 180.0):
         self.__timeout = timeout
         self._children: List[Item[Self]] = self._init_children()
-        self.__weights = _ViewWeights(self._children)
+        self.__weights = _ViewWeights(self._children, self.__discord_ui_container__)
         self.id: str = os.urandom(16).hex()
         self._cache_key: Optional[int] = None
         self.__cancel_callback: Optional[Callable[[View], None]] = None
@@ -228,23 +228,32 @@ class View:
         # or not, this simply is, whether a view has a component other than a url button
         return any(item.is_dispatchable() for item in self.children)
 
+    def has_components_v2(self) -> bool:
+        return any(c._is_v2() for c in self.children)
+
     def to_components(self) -> List[Dict[str, Any]]:
-        def key(item: Item) -> int:
-            return item._rendered_row or 0
-
-        children = sorted(self._children, key=key)
         components: List[Dict[str, Any]] = []
-        for _, group in groupby(children, key=key):
-            children = [item.to_component_dict() for item in group]
-            if not children:
-                continue
+        rows_index: Dict[int, int] = {}
+        # helper mapping to find action rows for items that are not
+        # v2 components
 
-            components.append(
-                {
-                    'type': 1,
-                    'components': children,
-                }
-            )
+        for child in self._children:
+            if child._is_v2():
+                components.append(child.to_component_dict())
+            else:
+                row = child._rendered_row or 0
+                index = rows_index.get(row)
+
+                if index is not None:
+                    components[index]['components'].append(child)
+                else:
+                    components.append(
+                        {
+                            'type': 1,
+                            'components': [child.to_component_dict()],
+                        },
+                    )
+                    rows_index[row] = len(components) - 1
 
         return components
 
