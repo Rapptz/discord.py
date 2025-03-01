@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Callable, ClassVar, Coroutine, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple, Type
+from typing import Any, Callable, ClassVar, Coroutine, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple, Type, Union
 from functools import partial
 from itertools import groupby
 
@@ -95,13 +95,11 @@ class _ViewWeights:
     # fmt: off
     __slots__ = (
         'weights',
-        'max_weight',
     )
     # fmt: on
 
-    def __init__(self, children: List[Item], container: bool):
+    def __init__(self, children: List[Item]):
         self.weights: List[int] = [0, 0, 0, 0, 0]
-        self.max_weight: int = 5 if container is False else 10
 
         key = lambda i: sys.maxsize if i.row is None else i.row
         children = sorted(children, key=key)
@@ -109,18 +107,26 @@ class _ViewWeights:
             for item in group:
                 self.add_item(item)
 
-    def find_open_space(self, item: Item) -> int:
+    def find_open_space(self, item: Union[Item, View]) -> int:
         for index, weight in enumerate(self.weights):
-            if weight + item.width <= self.max_weight:
+            if weight + item.width <= 5:
                 return index
 
         raise ValueError('could not find open space for item')
 
-    def add_item(self, item: Item) -> None:
+    def add_item(self, item: Union[Item, View]) -> None:
+        if hasattr(item, '__discord_ui_container__') and item.__discord_ui_container__ is True:
+            raise TypeError(
+                'containers cannot be added to views'
+            )
+
+        if item._is_v2() and not self.v2_weights():
+            # v2 components allow up to 10 rows
+            self.weights.extend([0, 0, 0, 0, 0])
         if item.row is not None:
             total = self.weights[item.row] + item.width
             if total > 10:
-                raise ValueError(f'item would not fit at row {item.row} ({total} > {self.max_weight} width)')
+                raise ValueError(f'item would not fit at row {item.row} ({total} > 5 width)')
             self.weights[item.row] = total
             item._rendered_row = item.row
         else:
@@ -128,13 +134,16 @@ class _ViewWeights:
             self.weights[index] += item.width
             item._rendered_row = index
 
-    def remove_item(self, item: Item) -> None:
+    def remove_item(self, item: Union[Item, View]) -> None:
         if item._rendered_row is not None:
             self.weights[item._rendered_row] -= item.width
             item._rendered_row = None
 
     def clear(self) -> None:
         self.weights = [0, 0, 0, 0, 0]
+
+    def v2_weights(self) -> bool:
+        return sum(1 if w > 0 else 0 for w in self.weights) > 5
 
 
 class _ViewCallback:
@@ -176,6 +185,8 @@ class View:
             for name, member in base.__dict__.items():
                 if hasattr(member, '__discord_ui_model_type__'):
                     children[name] = member
+                if cls.__discord_ui_container__ and isinstance(member, View):
+                    children[name] = member
 
         if len(children) > 25:
             raise TypeError('View cannot have more than 25 children')
@@ -192,16 +203,25 @@ class View:
             children.append(item)
         return children
 
-    def __init__(self, *, timeout: Optional[float] = 180.0):
+    def __init__(self, *, timeout: Optional[float] = 180.0, row: Optional[int] = None):
         self.__timeout = timeout
         self._children: List[Item[Self]] = self._init_children()
-        self.__weights = _ViewWeights(self._children, self.__discord_ui_container__)
+        self.__weights = _ViewWeights(self._children)
         self.id: str = os.urandom(16).hex()
         self._cache_key: Optional[int] = None
         self.__cancel_callback: Optional[Callable[[View], None]] = None
         self.__timeout_expiry: Optional[float] = None
         self.__timeout_task: Optional[asyncio.Task[None]] = None
         self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
+        self.row: Optional[int] = row
+        self._rendered_row: Optional[int] = None
+
+    def _is_v2(self) -> bool:
+        return False
+
+    @property
+    def width(self):
+        return 5
 
     def __repr__(self) -> str:
         return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self._children)}>'
@@ -601,6 +621,19 @@ class ViewStore:
             elif item.is_dispatchable():
                 dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
                 is_fully_dynamic = False
+
+        # components V2 containers allow for views to exist inside them
+        # with dispatchable items, so we iterate over it and add it
+        # to the store
+        if hasattr(view, '_views'):
+            for v in view._views:
+                for item in v._children:
+                    if isinstance(item, DynamicItem):
+                        pattern = item.__discord_ui_compiled_template__
+                        self._dynamic_items[pattern] = item.__class__
+                    elif item.is_dispatchable():
+                        dispatch_info[(item.type.value, item.custom_id)] = item
+                        is_fully_dynamic = False
 
         view._cache_key = message_id
         if message_id is not None and not is_fully_dynamic:

@@ -592,6 +592,13 @@ def interaction_message_response_params(
     if view is not MISSING:
         if view is not None:
             data['components'] = view.to_components()
+
+            if view.has_components_v2():
+                if flags is not MISSING:
+                    flags.components_v2 = True
+                else:
+                    flags = MessageFlags(components_v2=True)
+
         else:
             data['components'] = []
 

@@ -57,6 +57,7 @@ from .file import File
 from .mentions import AllowedMentions
 from . import __version__, utils
 from .utils import MISSING
+from .flags import MessageFlags
 
 _log = logging.getLogger(__name__)
 
@@ -66,7 +67,6 @@ if TYPE_CHECKING:
     from .ui.view import View
     from .embeds import Embed
     from .message import Attachment
-    from .flags import MessageFlags
     from .poll import Poll
 
     from .types import (

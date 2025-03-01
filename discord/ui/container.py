@@ -23,15 +23,15 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypeVar
+import sys
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypeVar, Union
 
 from .item import Item
+from .view import View, _component_to_item
 from ..enums import ComponentType
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
-    from .view import View
 
     from ..colour import Colour, Color
     from ..components import Container as ContainerComponent
@@ -41,15 +41,16 @@ V = TypeVar('V', bound='View', covariant=True)
 __all__ = ('Container',)
 
 
-class Container(Item[V]):
+class Container(View, Item[V]):
     """Represents a Components V2 Container.
 
     .. versionadded:: 2.6
 
     Parameters
     ----------
-    children: List[:class:`Item`]
-        The initial children of this container.
+    children: List[Union[:class:`Item`, :class:`View`]]
+        The initial children or :class:`View`s of this container. Can have up to 10
+        items.
     accent_colour: Optional[:class:`~discord.Colour`]
         The colour of the container. Defaults to ``None``.
     accent_color: Optional[:class:`~discord.Color`]
@@ -57,31 +58,34 @@ class Container(Item[V]):
     spoiler: :class:`bool`
         Whether to flag this container as a spoiler. Defaults
         to ``False``.
-    timeout: Optional[:class:`float`]
-        The timeout to set to this container items. Defaults to ``180``.
     """
 
     __discord_ui_container__ = True
 
     def __init__(
         self,
-        children: List[Item[Any]],
+        children: List[Union[Item[Any], View]],
         *,
         accent_colour: Optional[Colour] = None,
         accent_color: Optional[Color] = None,
         spoiler: bool = False,
+        timeout: Optional[float] = 180,
     ) -> None:
-        self._children: List[Item[Any]] = children
+        if len(children) > 10:
+            raise ValueError('maximum number of components exceeded')
+        self._children: List[Union[Item[Any], View]] = children
         self.spoiler: bool = spoiler
         self._colour = accent_colour or accent_color
 
+        super().__init__(timeout=timeout)
+
     @property
-    def children(self) -> List[Item[Any]]:
+    def children(self) -> List[Union[Item[Any], View]]:
         """List[:class:`Item`]: The children of this container."""
         return self._children.copy()
 
     @children.setter
-    def children(self, value: List[Item[Any]]) -> None:
+    def children(self, value: List[Union[Item[Any], View]]) -> None:
         self._children = value
 
     @property
@@ -100,22 +104,24 @@ class Container(Item[V]):
     def type(self) -> Literal[ComponentType.container]:
         return ComponentType.container
 
+    @property
+    def _views(self) -> List[View]:
+        return [c for c in self._children if isinstance(c, View)]
+
     def _is_v2(self) -> bool:
         return True
 
-    def to_component_dict(self) -> Dict[str, Any]:
-        base = {
+    def to_components(self) -> List[Dict[str, Any]]:
+        components = super().to_components()
+        return [{
             'type': self.type.value,
+            'accent_color': self._colour.value if self._colour else None,
             'spoiler': self.spoiler,
-            'components': [c.to_component_dict() for c in self._children]
-        }
-        if self._colour is not None:
-            base['accent_color'] = self._colour.value
-        return base
+            'components': components,
+        }]
 
     @classmethod
     def from_component(cls, component: ContainerComponent) -> Self:
-        from .view import _component_to_item
         return cls(
             children=[_component_to_item(c) for c in component.children],
             accent_colour=component.accent_colour,

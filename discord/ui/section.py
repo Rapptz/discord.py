@@ -58,14 +58,14 @@ class Section(Item[V]):
 
     def __init__(
         self,
-        children: List[Union[TextDisplay[Any], str]],
+        children: List[Union[Item[Any], str]],
         *,
         accessory: Optional[Item[Any]] = None,
     ) -> None:
         if len(children) > 3:
             raise ValueError('maximum number of children exceeded')        
-        self._children: List[TextDisplay[Any]] = [
-            c if isinstance(c, TextDisplay) else TextDisplay(c) for c in children
+        self._children: List[Item[Any]] = [
+            c if isinstance(c, Item) else TextDisplay(c) for c in children
         ]
         self.accessory: Optional[Item[Any]] = accessory
 
@@ -76,7 +76,7 @@ class Section(Item[V]):
     def _is_v2(self) -> bool:
         return True
 
-    def add_item(self, item: Union[str, TextDisplay[Any]]) -> Self:
+    def add_item(self, item: Union[str, Item[Any]]) -> Self:
         """Adds an item to this section.
 
         This function returns the class instance to allow for fluent-style
@@ -98,15 +98,15 @@ class Section(Item[V]):
         if len(self._children) >= 3:
             raise ValueError('maximum number of children exceeded')
 
-        if not isinstance(item, (TextDisplay, str)):
-            raise TypeError(f'expected TextDisplay or str not {item.__class__.__name__}')
+        if not isinstance(item, (Item, str)):
+            raise TypeError(f'expected Item or str not {item.__class__.__name__}')
 
         self._children.append(
-            item if isinstance(item, TextDisplay) else TextDisplay(item),
+            item if isinstance(item, Item) else TextDisplay(item),
         )
         return self
 
-    def remove_item(self, item: TextDisplay[Any]) -> Self:
+    def remove_item(self, item: Item[Any]) -> Self:
         """Removes an item from this section.
 
         This function returns the class instance to allow for fluent-style
