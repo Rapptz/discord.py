@@ -25,7 +25,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 from typing import Literal, Optional, TypedDict
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, Required
 
 from .snowflake import Snowflake
 
@@ -52,5 +52,5 @@ class Attachment(AttachmentBase):
     title: NotRequired[str]
 
 
-class UnfurledAttachment(AttachmentBase):
-    loading_state: LoadingState
+class UnfurledAttachment(AttachmentBase, total=False):
+    loading_state: Required[LoadingState]

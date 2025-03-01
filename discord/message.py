@@ -238,7 +238,7 @@ class MessageSnapshot:
 
         self.components: List[MessageComponentType] = []
         for component_data in data.get('components', []):
-            component = _component_factory(component_data)
+            component = _component_factory(component_data, state)
             if component is not None:
                 self.components.append(component)
 

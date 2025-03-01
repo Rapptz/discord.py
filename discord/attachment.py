@@ -27,6 +27,7 @@ import io
 from os import PathLike
 from typing import TYPE_CHECKING, Any, Optional, Union
 
+from .errors import ClientException
 from .mixins import Hashable
 from .file import File
 from .flags import AttachmentFlags
@@ -67,9 +68,9 @@ class AttachmentBase:
         '_state',
     )
 
-    def __init__(self, data: AttachmentBasePayload, state: ConnectionState) -> None:
-        self._state: ConnectionState = state
-        self._http: HTTPClient = state.http
+    def __init__(self, data: AttachmentBasePayload, state: Optional[ConnectionState]) -> None:
+        self._state: Optional[ConnectionState] = state
+        self._http: Optional[HTTPClient] = state.http if state else None
         self.url: str = data['url']
         self.proxy_url: str = data['proxy_url']
         self.description: Optional[str] = data.get('description')
@@ -162,12 +163,19 @@ class AttachmentBase:
             You do not have permissions to access this attachment
         NotFound
             The attachment was deleted.
+        ClientException
+            Cannot read a stateless attachment.
 
         Returns
         -------
         :class:`bytes`
             The contents of the attachment.
         """
+        if not self._http:
+            raise ClientException(
+                'Cannot read a stateless attachment'
+            )
+
         url = self.proxy_url if use_cached else self.url
         data = await self._http.get_from_cdn(url)
         return data
@@ -240,8 +248,8 @@ class AttachmentBase:
             spoiler=spoiler,
         )
 
-    def to_dict(self):
-        base = {
+    def to_dict(self) -> AttachmentBasePayload:
+        base: AttachmentBasePayload = {
             'url': self.url,
             'proxy_url': self.proxy_url,
             'spoiler': self.spoiler,
@@ -415,9 +423,12 @@ class UnfurledAttachment(AttachmentBase):
         'loading_state',
     )
 
-    def __init__(self, data: UnfurledAttachmentPayload, state: ConnectionState) -> None:
-        self.loading_state: MediaLoadingState = try_enum(MediaLoadingState, data['loading_state'])
+    def __init__(self, data: UnfurledAttachmentPayload, state: Optional[ConnectionState]) -> None:
+        self.loading_state: MediaLoadingState = try_enum(MediaLoadingState, data.get('loading_state', 0))
         super().__init__(data, state)
 
     def __repr__(self) -> str:
         return f'<UnfurledAttachment url={self.url!r}>'
+
+    def to_object_dict(self):
+        return {'url': self.url}

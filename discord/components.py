@@ -33,6 +33,8 @@ from typing import (
     Tuple,
     Union,
 )
+
+from .attachment import UnfurledAttachment
 from .enums import (
     try_enum,
     ComponentType,
@@ -40,8 +42,9 @@ from .enums import (
     TextStyle,
     ChannelType,
     SelectDefaultValueType,
-    DividerSize,
+    SeparatorSize,
 )
+from .colour import Colour
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
 
@@ -59,16 +62,20 @@ if TYPE_CHECKING:
         SelectDefaultValues as SelectDefaultValuesPayload,
         SectionComponent as SectionComponentPayload,
         TextComponent as TextComponentPayload,
-        ThumbnailComponent as ThumbnailComponentPayload,
         MediaGalleryComponent as MediaGalleryComponentPayload,
         FileComponent as FileComponentPayload,
-        DividerComponent as DividerComponentPayload,
-        ComponentContainer as ComponentContainerPayload,
+        SeparatorComponent as SeparatorComponentPayload,
+        MediaGalleryItem as MediaGalleryItemPayload,
+        ThumbnailComponent as ThumbnailComponentPayload,
+        ContainerComponent as ContainerComponentPayload,
     )
+
     from .emoji import Emoji
     from .abc import Snowflake
+    from .state import ConnectionState
 
     ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
+    SectionComponentType = Union['TextDisplay', 'Button']
 
 
 __all__ = (
@@ -80,12 +87,10 @@ __all__ = (
     'TextInput',
     'SelectDefaultValue',
     'SectionComponent',
-    'TextComponent',
     'ThumbnailComponent',
     'MediaGalleryComponent',
     'FileComponent',
-    'DividerComponent',
-    'ComponentContainer',
+    'SectionComponent',
 )
 
 
@@ -159,7 +164,7 @@ class ActionRow(Component):
             component = _component_factory(component_data)
 
             if component is not None:
-                self.children.append(component)
+                self.children.append(component)  # type: ignore # should be the correct type here
 
     @property
     def type(self) -> Literal[ComponentType.action_row]:
@@ -701,12 +706,12 @@ class SectionComponent(Component):
     """
 
     def __init__(self, data: SectionComponentPayload) -> None:
-        self.components: List[Union[TextDisplay, Button]] = []
+        self.components: List[SectionComponentType] = []
 
         for component_data in data['components']:
             component = _component_factory(component_data)
             if component is not None:
-                self.components.append(component)
+                self.components.append(component)  # type: ignore # should be the correct type here
 
         try:
             self.accessory: Optional[Component] = _component_factory(data['accessory'])
@@ -727,6 +732,43 @@ class SectionComponent(Component):
         return payload
 
 
+class ThumbnailComponent(Component):
+    """Represents a Thumbnail from the Discord Bot UI Kit.
+
+    This inherits from :class:`Component`.
+
+    Attributes
+    ----------
+    media: :class:`UnfurledAttachment`
+        The media for this thumbnail.
+    description: Optional[:class:`str`]
+        The description shown within this thumbnail.
+    spoiler: :class:`bool`
+        Whether this thumbnail is flagged as a spoiler.
+    """
+
+    def __init__(
+        self,
+        data: ThumbnailComponentPayload,
+        state: ConnectionState,
+    ) -> None:
+        self.media: UnfurledAttachment = UnfurledAttachment(data['media'], state)
+        self.description: Optional[str] = data.get('description')
+        self.spoiler: bool = data.get('spoiler', False)
+
+    @property
+    def type(self) -> Literal[ComponentType.thumbnail]:
+        return ComponentType.thumbnail
+
+    def to_dict(self) -> ThumbnailComponentPayload:
+        return {
+            'media': self.media.to_dict(),  # type: ignroe
+            'description': self.description,
+            'spoiler': self.spoiler,
+            'type': self.type.value,
+        }
+
+
 class TextDisplay(Component):
     """Represents a text display from the Discord Bot UI Kit.
 
@@ -734,24 +776,18 @@ class TextDisplay(Component):
 
     .. versionadded:: 2.6
 
-    Parameters
+    Attributes
     ----------
     content: :class:`str`
         The content that this display shows.
     """
 
-    def __init__(self, content: str) -> None:
-        self.content: str = content
+    def __init__(self, data: TextComponentPayload) -> None:
+        self.content: str = data['content']
 
     @property
     def type(self) -> Literal[ComponentType.text_display]:
         return ComponentType.text_display
-
-    @classmethod
-    def _from_data(cls, data: TextComponentPayload) -> TextDisplay:
-        return cls(
-            content=data['content'],
-        )
 
     def to_dict(self) -> TextComponentPayload:
         return {
@@ -760,25 +796,211 @@ class TextDisplay(Component):
         }
 
 
-class ThumbnailComponent(Component):
-    """Represents a thumbnail display from the Discord Bot UI Kit.
+class MediaGalleryItem:
+    """Represents a :class:`MediaGalleryComponent` media item.
+
+    Parameters
+    ----------
+    url: :class:`str`
+        The url of the media item. This can be a local file uploaded
+        as an attachment in the message, that can be accessed using
+        the ``attachment://file-name.extension`` format.
+    description: Optional[:class:`str`]
+        The description to show within this item.
+    spoiler: :class:`bool`
+        Whether this item should be flagged as a spoiler.
+    """
+
+    __slots__ = (
+        'url',
+        'description',
+        'spoiler',
+        '_state',
+    )
+
+    def __init__(
+        self,
+        url: str,
+        *,
+        description: Optional[str] = None,
+        spoiler: bool = False,
+    ) -> None:
+        self.url: str = url
+        self.description: Optional[str] = description
+        self.spoiler: bool = spoiler
+        self._state: Optional[ConnectionState] = None
+
+    @classmethod
+    def _from_data(
+        cls, data: MediaGalleryItemPayload, state: Optional[ConnectionState]
+    ) -> MediaGalleryItem:
+        media = data['media']
+        self = cls(
+            url=media['url'],
+            description=data.get('description'),
+            spoiler=data.get('spoiler', False),
+        )
+        self._state = state
+        return self
+
+    @classmethod
+    def _from_gallery(
+        cls,
+        items: List[MediaGalleryItemPayload],
+        state: Optional[ConnectionState],
+    ) -> List[MediaGalleryItem]:
+        return [cls._from_data(item, state) for item in items]
+
+    def to_dict(self) -> MediaGalleryItemPayload:
+        return {  # type: ignore
+            'media': {'url': self.url},
+            'description': self.description,
+            'spoiler': self.spoiler,
+        }
+
+
+class MediaGalleryComponent(Component):
+    """Represents a Media Gallery component from the Discord Bot UI Kit.
 
     This inherits from :class:`Component`.
 
-    .. note::
+    Attributes
+    ----------
+    items: List[:class:`MediaGalleryItem`]
+        The items this gallery has.
+    """
 
-        The user constructuble and usable type to create a thumbnail
-        component is :class:`discord.ui.Thumbnail` not this one.
+    __slots__ = ('items', 'id')
 
-    .. versionadded:: 2.6
+    def __init__(self, data: MediaGalleryComponentPayload, state: Optional[ConnectionState]) -> None:
+        self.items: List[MediaGalleryItem] = MediaGalleryItem._from_gallery(data['items'], state)
+
+    @property
+    def type(self) -> Literal[ComponentType.media_gallery]:
+        return ComponentType.media_gallery
+
+    def to_dict(self) -> MediaGalleryComponentPayload:
+        return {
+            'id': self.id,
+            'type': self.type.value,
+            'items': [item.to_dict() for item in self.items],
+        }
+
+
+class FileComponent(Component):
+    """Represents a File component from the Discord Bot UI Kit.
+
+    This inherits from :class:`Component`.
 
     Attributes
     ----------
-    media: :class:`ComponentMedia`
+    media: :class:`UnfurledAttachment`
+        The unfurled attachment contents of the file.
+    spoiler: :class:`bool`
+        Whether this file is flagged as a spoiler.
     """
 
+    __slots__ = (
+        'media',
+        'spoiler',
+    )
 
-def _component_factory(data: ComponentPayload) -> Optional[Component]:
+    def __init__(self, data: FileComponentPayload, state: Optional[ConnectionState]) -> None:
+        self.media: UnfurledAttachment = UnfurledAttachment(
+            data['file'], state,
+        )
+        self.spoiler: bool = data.get('spoiler', False)
+
+    @property
+    def type(self) -> Literal[ComponentType.file]:
+        return ComponentType.file
+
+    def to_dict(self) -> FileComponentPayload:
+        return {  # type: ignore
+            'file': {'url': self.url},
+            'spoiler': self.spoiler,
+            'type': self.type.value,
+        }
+
+
+class SeparatorComponent(Component):
+    """Represents a Separator from the Discord Bot UI Kit.
+
+    This inherits from :class:`Component`.
+
+    Attributes
+    ----------
+    spacing: :class:`SeparatorSize`
+        The spacing size of the separator.
+    divider: :class:`bool`
+        Whether this separator is a divider.
+    """
+
+    __slots__ = (
+        'spacing',
+        'divider',
+    )
+
+    def __init__(
+        self,
+        data: SeparatorComponentPayload,
+    ) -> None:
+        self.spacing: SeparatorSize = try_enum(SeparatorSize, data.get('spacing', 1))
+        self.divider: bool = data.get('divider', True)
+
+    @property
+    def type(self) -> Literal[ComponentType.separator]:
+        return ComponentType.separator
+
+    def to_dict(self) -> SeparatorComponentPayload:
+        return {
+            'type': self.type.value,
+            'divider': self.divider,
+            'spacing': self.spacing.value,
+        }
+
+
+class Container(Component):
+    """Represents a Container from the Discord Bot UI Kit.
+
+    This inherits from :class:`Component`.
+
+    Attributes
+    ----------
+    children: :class:`Component`
+        This container's children.
+    spoiler: :class:`bool`
+        Whether this container is flagged as a spoiler.
+    """
+
+    def __init__(self, data: ContainerComponentPayload, state: Optional[ConnectionState]) -> None:
+        self.children: List[Component] = []
+
+        for child in data['components']:
+            comp = _component_factory(child, state)
+
+            if comp:
+                self.children.append(comp)
+
+        self.spoiler: bool = data.get('spoiler', False)
+        self._colour: Optional[Colour]
+        try:
+            self._colour = Colour(data['accent_color'])
+        except KeyError:
+            self._colour = None
+
+    @property
+    def accent_colour(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: The container's accent colour."""
+        return self._colour
+
+    accent_color = accent_colour
+    """Optional[:class:`Color`]: The container's accent color."""
+
+
+def _component_factory(
+    data: ComponentPayload, state: Optional[ConnectionState] = None
+) -> Optional[Component]:
     if data['type'] == 1:
         return ActionRow(data)
     elif data['type'] == 2:
@@ -790,14 +1012,12 @@ def _component_factory(data: ComponentPayload) -> Optional[Component]:
     elif data['type'] == 9:
         return SectionComponent(data)
     elif data['type'] == 10:
-        return TextDisplay._from_data(data)
-    elif data['type'] == 11:
-        return ThumbnailComponent(data)
+        return TextDisplay(data)
     elif data['type'] == 12:
-        return MediaGalleryComponent(data)
+        return MediaGalleryComponent(data, state)
     elif data['type'] == 13:
-        return FileComponent(data)
+        return FileComponent(data, state)
     elif data['type'] == 14:
-        return DividerComponent(data)
+        return SeparatorComponent(data)
     elif data['type'] == 17:
-        return ComponentContainer(data)
+        return Container(data, state)

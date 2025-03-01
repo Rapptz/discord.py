@@ -24,14 +24,14 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Literal, TypedDict, Union
+from typing import List, Literal, Optional, TypedDict, Union
 from typing_extensions import NotRequired
 
 from .emoji import PartialEmoji
 from .channel import ChannelType
 from .attachment import UnfurledAttachment
 
-ComponentType = Literal[1, 2, 3, 4]
+ComponentType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17]
 ButtonStyle = Literal[1, 2, 3, 4, 5, 6]
 TextStyle = Literal[1, 2]
 DefaultValueType = Literal["user", "role", "channel"]
@@ -137,13 +137,22 @@ class TextComponent(ComponentBase):
     content: str
 
 
-class ThumbnailComponent(ComponentBase, UnfurledAttachment):
+class ThumbnailComponent(ComponentBase):
     type: Literal[11]
+    media: UnfurledAttachment
+    description: NotRequired[Optional[str]]
+    spoiler: NotRequired[bool]
+
+
+class MediaGalleryItem(TypedDict):
+    media: UnfurledAttachment
+    description: NotRequired[Optional[str]]
+    spoiler: NotRequired[bool]
 
 
 class MediaGalleryComponent(ComponentBase):
     type: Literal[12]
-    items: List[UnfurledAttachment]
+    items: List[MediaGalleryItem]
 
 
 class FileComponent(ComponentBase):
@@ -152,26 +161,28 @@ class FileComponent(ComponentBase):
     spoiler: NotRequired[bool]
 
 
-class DividerComponent(ComponentBase):
+class SeparatorComponent(ComponentBase):
     type: Literal[14]
     divider: NotRequired[bool]
     spacing: NotRequired[DividerSize]
 
 
-class ComponentContainer(ComponentBase):
+class ContainerComponent(ComponentBase):
     type: Literal[17]
     accent_color: NotRequired[int]
     spoiler: NotRequired[bool]
-    components: List[ContainerComponent]
+    components: List[ContainerChildComponent]
 
 
 ActionRowChildComponent = Union[ButtonComponent, SelectMenu, TextInput]
-ContainerComponent = Union[
+ContainerChildComponent = Union[
     ActionRow,
     TextComponent,
     MediaGalleryComponent,
     FileComponent,
     SectionComponent,
     SectionComponent,
+    ContainerComponent,
+    SeparatorComponent,
 ]
-Component = Union[ActionRowChildComponent, ContainerComponent]
+Component = Union[ActionRowChildComponent, ContainerChildComponent]

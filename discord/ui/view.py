@@ -40,6 +40,11 @@ from ..components import (
     _component_factory,
     Button as ButtonComponent,
     SelectMenu as SelectComponent,
+    SectionComponent,
+    TextDisplay,
+    MediaGalleryComponent,
+    FileComponent,
+    SeparatorComponent,
 )
 
 # fmt: off
@@ -62,6 +67,7 @@ if TYPE_CHECKING:
 
 
 _log = logging.getLogger(__name__)
+V2_COMPONENTS = (SectionComponent, TextDisplay, MediaGalleryComponent, FileComponent, SeparatorComponent)
 
 
 def _walk_all_components(components: List[Component]) -> Iterator[Component]:
@@ -81,6 +87,8 @@ def _component_to_item(component: Component) -> Item:
         from .select import BaseSelect
 
         return BaseSelect.from_component(component)
+    if isinstance(component, V2_COMPONENTS):
+        return component
 
     return Item.from_component(component)
 
@@ -157,6 +165,7 @@ class View:
 
     __discord_ui_view__: ClassVar[bool] = True
     __discord_ui_modal__: ClassVar[bool] = False
+    __discord_ui_container__: ClassVar[bool] = False
     __view_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
 
     def __init_subclass__(cls) -> None:
@@ -737,7 +746,7 @@ class ViewStore:
         components: List[Component] = []
 
         for component_data in data:
-            component = _component_factory(component_data)
+            component = _component_factory(component_data, self._state)
 
             if component is not None:
                 components.append(component)
