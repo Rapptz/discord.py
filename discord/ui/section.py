@@ -62,6 +62,7 @@ class Section(Item[V]):
         *,
         accessory: Optional[Item[Any]] = None,
     ) -> None:
+        super().__init__()
         if len(children) > 3:
             raise ValueError('maximum number of children exceeded')        
         self._children: List[Item[Any]] = [
@@ -72,6 +73,10 @@ class Section(Item[V]):
     @property
     def type(self) -> Literal[ComponentType.section]:
         return ComponentType.section
+
+    @property
+    def width(self):
+        return 5
 
     def _is_v2(self) -> bool:
         return True

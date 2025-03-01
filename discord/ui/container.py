@@ -23,11 +23,11 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-import sys
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple, Type, TypeVar
 
 from .item import Item
 from .view import View, _component_to_item
+from .dynamic import DynamicItem
 from ..enums import ComponentType
 
 if TYPE_CHECKING:
@@ -48,7 +48,7 @@ class Container(View, Item[V]):
 
     Parameters
     ----------
-    children: List[Union[:class:`Item`, :class:`View`]]
+    children: List[:class:`Item`]
         The initial children or :class:`View`s of this container. Can have up to 10
         items.
     accent_colour: Optional[:class:`~discord.Colour`]
@@ -58,34 +58,47 @@ class Container(View, Item[V]):
     spoiler: :class:`bool`
         Whether to flag this container as a spoiler. Defaults
         to ``False``.
+    timeout: Optional[:class:`float`]
+        Timeout in seconds from last interaction with the UI before no longer accepting input.
+        If ``None`` then there is no timeout.
     """
 
     __discord_ui_container__ = True
 
     def __init__(
         self,
-        children: List[Union[Item[Any], View]],
+        children: List[Item[Any]],
         *,
         accent_colour: Optional[Colour] = None,
         accent_color: Optional[Color] = None,
         spoiler: bool = False,
         timeout: Optional[float] = 180,
+        row: Optional[int] = None,
     ) -> None:
-        if len(children) > 10:
+        super().__init__(timeout=timeout)
+        if len(children) + len(self._children) > 10:
             raise ValueError('maximum number of components exceeded')
-        self._children: List[Union[Item[Any], View]] = children
+        self._children.extend(children)
         self.spoiler: bool = spoiler
         self._colour = accent_colour or accent_color
 
-        super().__init__(timeout=timeout)
+        self._view: Optional[V] = None
+        self._row: Optional[int] = None
+        self._rendered_row: Optional[int] = None
+        self.row: Optional[int] = row
+
+    def _init_children(self) -> List[Item[Self]]:
+        if self.__weights.max_weight != 10:
+            self.__weights.max_weight = 10
+        return super()._init_children()
 
     @property
-    def children(self) -> List[Union[Item[Any], View]]:
+    def children(self) -> List[Item[Self]]:
         """List[:class:`Item`]: The children of this container."""
         return self._children.copy()
 
     @children.setter
-    def children(self, value: List[Union[Item[Any], View]]) -> None:
+    def children(self, value: List[Item[Any]]) -> None:
         self._children = value
 
     @property
@@ -105,20 +118,38 @@ class Container(View, Item[V]):
         return ComponentType.container
 
     @property
-    def _views(self) -> List[View]:
-        return [c for c in self._children if isinstance(c, View)]
+    def width(self):
+        return 5
 
     def _is_v2(self) -> bool:
         return True
 
-    def to_components(self) -> List[Dict[str, Any]]:
+    def is_dispatchable(self) -> bool:
+        return any(c.is_dispatchable() for c in self.children)
+
+    def to_component_dict(self) -> Dict[str, Any]:
         components = super().to_components()
-        return [{
+        return {
             'type': self.type.value,
             'accent_color': self._colour.value if self._colour else None,
             'spoiler': self.spoiler,
             'components': components,
-        }]
+        }
+
+    def _update_store_data(
+        self,
+        dispatch_info: Dict[Tuple[int, str], Item[Any]],
+        dynamic_items: Dict[Any, Type[DynamicItem]],
+    ) -> bool:
+        is_fully_dynamic = True
+        for item in self._children:
+            if isinstance(item, DynamicItem):
+                pattern = item.__discord_ui_compiled_template__
+                dynamic_items[pattern] = item.__class__
+            elif item.is_dispatchable():
+                dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
+                is_fully_dynamic = False
+        return is_fully_dynamic
 
     @classmethod
     def from_component(cls, component: ContainerComponent) -> Self:
