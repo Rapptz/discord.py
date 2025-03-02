@@ -174,8 +174,8 @@ class Section(Item[V]):
 
     def to_component_dict(self) -> Dict[str, Any]:
         data = {
-            'components': [c.to_component_dict() for c in self._children],
             'type': self.type.value,
+            'components': [c.to_component_dict() for c in self._children],
             'accessory': self.accessory.to_component_dict(),
         }
         return data

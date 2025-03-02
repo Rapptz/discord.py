@@ -1018,9 +1018,9 @@ class FileComponent(Component):
 
     def to_dict(self) -> FileComponentPayload:
         return {
+            'type': self.type.value,
             'file': self.media.to_dict(),  # type: ignore
             'spoiler': self.spoiler,
-            'type': self.type.value,
         }
 
 
