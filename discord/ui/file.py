@@ -23,41 +23,37 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Literal, Optional, TypeVar, Union
 
 from .item import Item
+from ..components import FileComponent, UnfurledMediaItem
 from ..enums import ComponentType
-from ..components import UnfurledMediaItem
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .view import View
-    from ..components import ThumbnailComponent
 
 V = TypeVar('V', bound='View', covariant=True)
 
-__all__ = (
-    'Thumbnail',
-)
+__all__ = ('File',)
 
-class Thumbnail(Item[V]):
-    """Represents a UI Thumbnail.
+
+class File(Item[V]):
+    """Represents a UI file component.
 
     .. versionadded:: 2.6
 
     Parameters
     ----------
     media: Union[:class:`str`, :class:`UnfurledMediaItem`]
-        The media of the thumbnail. This can be a string that points to a local
-        attachment uploaded within this item. URLs must match the ``attachment://file-name.extension``
-        structure.
-    description: Optional[:class:`str`]
-        The description of this thumbnail. Defaults to ``None``.
+        This file's media. If this is a string itmust point to a local
+        file uploaded within the parent view of this item, and must
+        meet the ``attachment://file-name.extension`` structure.
     spoiler: :class:`bool`
-        Whether to flag this thumbnail as a spoiler. Defaults to ``False``.
+        Whether to flag this file as a spoiler. Defaults to ``False``.
     row: Optional[:class:`int`]
-        The relative row this thumbnail belongs to. By default
+        The relative row this file component belongs to. By default
         items are arranged automatically into those rows. If you'd
         like to control the relative positioning of the row then
         passing an index is advised. For example, row=1 will show
@@ -69,41 +65,61 @@ class Thumbnail(Item[V]):
         self,
         media: Union[str, UnfurledMediaItem],
         *,
-        description: Optional[str] = None,
         spoiler: bool = False,
         row: Optional[int] = None,
     ) -> None:
         super().__init__()
-
-        self.media: UnfurledMediaItem = UnfurledMediaItem(media) if isinstance(media, str) else media
-        self.description: Optional[str] = description
-        self.spoiler: bool = spoiler
+        self._underlying = FileComponent._raw_construct(
+            media=UnfurledMediaItem(media) if isinstance(media, str) else media,
+            spoiler=spoiler,
+        )
 
         self.row = row
+
+    def _is_v2(self):
+        return True
 
     @property
     def width(self):
         return 5
 
     @property
-    def type(self) -> Literal[ComponentType.thumbnail]:
-        return ComponentType.thumbnail
+    def type(self) -> Literal[ComponentType.file]:
+        return self._underlying.type
 
-    def _is_v2(self) -> bool:
-        return True
+    @property
+    def media(self) -> UnfurledMediaItem:
+        """:class:`UnfurledMediaItem`: Returns this file media."""
+        return self._underlying.media
 
-    def to_component_dict(self) -> Dict[str, Any]:
-        return {
-            'type': self.type.value,
-            'spoiler': self.spoiler,
-            'media': self.media.to_dict(),
-            'description': self.description,
-        }
+    @media.setter
+    def media(self, value: UnfurledMediaItem) -> None:
+        self._underlying.media = value
+
+    @property
+    def url(self) -> str:
+        """:class:`str`: Returns this file's url."""
+        return self._underlying.media.url
+
+    @url.setter
+    def url(self, value: str) -> None:
+        self._underlying.media = UnfurledMediaItem(value)
+
+    @property
+    def spoiler(self) -> bool:
+        """:class:`bool`: Returns whether this file should be flagged as a spoiler."""
+        return self._underlying.spoiler
+
+    @spoiler.setter
+    def spoiler(self, value: bool) -> None:
+        self._underlying.spoiler = value
+
+    def to_component_dict(self):
+        return self._underlying.to_dict()
 
     @classmethod
-    def from_component(cls, component: ThumbnailComponent) -> Self:
+    def from_component(cls, component: FileComponent) -> Self:
         return cls(
-            media=component.media.url,
-            description=component.description,
+            media=component.media,
             spoiler=component.spoiler,
         )

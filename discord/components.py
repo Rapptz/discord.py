@@ -986,7 +986,6 @@ class MediaGalleryComponent(Component):
 
     def to_dict(self) -> MediaGalleryComponentPayload:
         return {
-            'id': self.id,
             'type': self.type.value,
             'items': [item.to_dict() for item in self.items],
         }

@@ -49,6 +49,13 @@ class Section(Item[V]):
         The text displays of this section. Up to 3.
     accessory: Optional[:class:`Item`]
         The section accessory. Defaults to ``None``.
+    row: Optional[:class:`int`]
+        The relative row this section belongs to. By default
+        items are arranged automatically into those rows. If you'd
+        like to control the relative positioning of the row then
+        passing an index is advised. For example, row=1 will show
+        up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 9 (i.e. zero indexed)
     """
 
     __slots__ = (
@@ -61,6 +68,7 @@ class Section(Item[V]):
         children: List[Union[Item[Any], str]],
         *,
         accessory: Optional[Item[Any]] = None,
+        row: Optional[int] = None,
     ) -> None:
         super().__init__()
         if len(children) > 3:

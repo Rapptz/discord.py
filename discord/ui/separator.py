@@ -26,28 +26,31 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal, Optional, TypeVar
 
 from .item import Item
-from ..components import TextDisplay as TextDisplayComponent
-from ..enums import ComponentType
+from ..components import SeparatorComponent
+from ..enums import SeparatorSize, ComponentType
 
 if TYPE_CHECKING:
     from .view import View
 
 V = TypeVar('V', bound='View', covariant=True)
 
-__all__ = ('TextDisplay',)
+__all__ = ('Separator',)
 
 
-class TextDisplay(Item[V]):
-    """Represents a UI text display.
+class Separator(Item[V]):
+    """Represents a UI separator.
 
     .. versionadded:: 2.6
 
     Parameters
     ----------
-    content: :class:`str`
-        The content of this text display.
+    visible: :class:`bool`
+        Whether this separator is visible. On the client side this
+        is whether a divider line should be shown or not.
+    spacing: :class:`SeparatorSize`
+        The spacing of this separator.
     row: Optional[:class:`int`]
-        The relative row this text display belongs to. By default
+        The relative row this separator belongs to. By default
         items are arranged automatically into those rows. If you'd
         like to control the relative positioning of the row then
         passing an index is advised. For example, row=1 will show
@@ -55,25 +58,53 @@ class TextDisplay(Item[V]):
         ordering. The row number must be between 0 and 9 (i.e. zero indexed)
     """
 
-    def __init__(self, content: str, *, row: Optional[int] = None) -> None:
+    def __init__(
+        self,
+        *,
+        visible: bool = True,
+        spacing: SeparatorSize = SeparatorSize.small,
+        row: Optional[int] = None,
+    ) -> None:
         super().__init__()
-        self.content: str = content
-        self._underlying = TextDisplayComponent._raw_construct(
-            content=content,
+        self._underlying = SeparatorComponent._raw_construct(
+            spacing=spacing,
+            visible=visible,
         )
 
         self.row = row
 
-    def to_component_dict(self):
-        return self._underlying.to_dict()
+    def _is_v2(self):
+        return True
+
+    @property
+    def visible(self) -> bool:
+        """:class:`bool`: Whether this separator is visible.
+
+        On the client side this is whether a divider line should
+        be shown or not.
+        """
+        return self._underlying.visible
+
+    @visible.setter
+    def visible(self, value: bool) -> None:
+        self._underlying.visible = value
+
+    @property
+    def spacing(self) -> SeparatorSize:
+        """:class:`SeparatorSize`: The spacing of this separator."""
+        return self._underlying.spacing
+
+    @spacing.setter
+    def spacing(self, value: SeparatorSize) -> None:
+        self._underlying.spacing = value
 
     @property
     def width(self):
         return 5
 
     @property
-    def type(self) -> Literal[ComponentType.text_display]:
+    def type(self) -> Literal[ComponentType.separator]:
         return self._underlying.type
 
-    def _is_v2(self) -> bool:
-        return True
+    def to_component_dict(self):
+        return self._underlying.to_dict()

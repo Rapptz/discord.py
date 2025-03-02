@@ -685,7 +685,12 @@ class ViewStore:
         item._view = view
         item._rendered_row = base_item._rendered_row
         item._refresh_state(interaction, interaction.data)  # type: ignore
-
+The relative row this text display belongs to. By default
+        items are arranged automatically into those rows. If you'd
+        like to control the relative positioning of the row then
+        passing an index is advised. For example, row=1 will show
+        up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 9 (i.e. zero indexed)
         try:
             allow = await item.interaction_check(interaction)
         except Exception:

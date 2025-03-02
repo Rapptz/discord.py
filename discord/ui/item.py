@@ -70,6 +70,7 @@ class Item(Generic[V]):
         # actually affect the intended purpose of this check because from_component is
         # only called upon edit and we're mainly interested during initial creation time.
         self._provided_custom_id: bool = False
+        self._max_row: int = 5 if not self._is_v2() else 10
 
     def to_component_dict(self) -> Dict[str, Any]:
         raise NotImplementedError
@@ -109,10 +110,10 @@ class Item(Generic[V]):
     def row(self, value: Optional[int]) -> None:
         if value is None:
             self._row = None
-        elif 5 > value >= 0:
+        elif self._max_row > value >= 0:
             self._row = value
         else:
-            raise ValueError('row cannot be negative or greater than or equal to 5')
+            raise ValueError('row cannot be negative or greater than or equal to 10')
 
     @property
     def width(self) -> int:
