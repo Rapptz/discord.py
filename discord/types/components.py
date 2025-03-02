@@ -29,7 +29,6 @@ from typing_extensions import NotRequired
 
 from .emoji import PartialEmoji
 from .channel import ChannelType
-from .attachment import UnfurledAttachment
 
 ComponentType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17]
 ButtonStyle = Literal[1, 2, 3, 4, 5, 6]
@@ -137,15 +136,26 @@ class TextComponent(ComponentBase):
     content: str
 
 
+class UnfurledMediaItem(TypedDict):
+    url: str
+    proxy_url: str
+    height: NotRequired[Optional[int]]
+    width: NotRequired[Optional[int]]
+    content_type: NotRequired[str]
+    placeholder: str
+    loading_state: MediaItemLoadingState
+    flags: NotRequired[int]
+
+
 class ThumbnailComponent(ComponentBase):
     type: Literal[11]
-    media: UnfurledAttachment
+    media: UnfurledMediaItem
     description: NotRequired[Optional[str]]
     spoiler: NotRequired[bool]
 
 
 class MediaGalleryItem(TypedDict):
-    media: UnfurledAttachment
+    media: UnfurledMediaItem
     description: NotRequired[Optional[str]]
     spoiler: NotRequired[bool]
 
@@ -157,7 +167,7 @@ class MediaGalleryComponent(ComponentBase):
 
 class FileComponent(ComponentBase):
     type: Literal[13]
-    file: UnfurledAttachment
+    file: UnfurledMediaItem
     spoiler: NotRequired[bool]
 
 

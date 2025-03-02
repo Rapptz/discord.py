@@ -38,7 +38,6 @@ from .interactions import MessageInteraction, MessageInteractionMetadata
 from .sticker import StickerItem
 from .threads import Thread
 from .poll import Poll
-from .attachment import Attachment
 
 
 class PartialMessage(TypedDict):
@@ -68,6 +67,23 @@ class Reaction(TypedDict):
     me_burst: bool
     count_details: ReactionCountDetails
     burst_colors: List[str]
+
+
+class Attachment(TypedDict):
+    id: Snowflake
+    filename: str
+    size: int
+    url: str
+    proxy_url: str
+    height: NotRequired[Optional[int]]
+    width: NotRequired[Optional[int]]
+    description: NotRequired[str]
+    content_type: NotRequired[str]
+    spoiler: NotRequired[bool]
+    ephemeral: NotRequired[bool]
+    duration_secs: NotRequired[float]
+    waveform: NotRequired[str]
+    flags: NotRequired[int]
 
 
 MessageActivityType = Literal[1, 2, 3, 5]
