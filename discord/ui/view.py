@@ -176,7 +176,7 @@ class _ViewWeights:
         self.weights = [0, 0, 0, 0, 0]
 
     def v2_weights(self) -> bool:
-        return sum(1 if w > 0 else 0 for w in self.weights) > 5
+        return len(self.weights) > 5
 
 
 class _ViewCallback:
