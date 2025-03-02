@@ -46,7 +46,7 @@ class File(Item[V]):
 
     Parameters
     ----------
-    media: Union[:class:`str`, :class:`discord.UnfurledMediaItem`]
+    media: Union[:class:`str`, :class:`.UnfurledMediaItem`]
         This file's media. If this is a string itmust point to a local
         file uploaded within the parent view of this item, and must
         meet the ``attachment://file-name.extension`` structure.
@@ -89,7 +89,7 @@ class File(Item[V]):
 
     @property
     def media(self) -> UnfurledMediaItem:
-        """:class:`UnfurledMediaItem`: Returns this file media."""
+        """:class:`.UnfurledMediaItem`: Returns this file media."""
         return self._underlying.media
 
     @media.setter

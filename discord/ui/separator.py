@@ -93,7 +93,7 @@ class Separator(Item[V]):
 
     @property
     def spacing(self) -> SeparatorSize:
-        """:class:`SeparatorSize`: The spacing of this separator."""
+        """:class:`.SeparatorSize`: The spacing of this separator."""
         return self._underlying.spacing
 
     @spacing.setter

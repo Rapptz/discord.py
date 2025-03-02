@@ -839,8 +839,10 @@ class UnfurledMediaItem(AssetMixin):
 
     Attributes
     ----------
+    url: :class:`str`
+        The URL of this media item.
     proxy_url: Optional[:class:`str`]
-        The proxy URL. This is a cached version of the :attr:`~UnfurledMediaItem.url` in the
+        The proxy URL. This is a cached version of the :attr:`.url` in the
         case of images. When the message is deleted, this URL might be valid for a few minutes
         or not valid at all.
     height: Optional[:class:`int`]
@@ -1100,7 +1102,6 @@ class Container(Component):
         return self._colour
 
     accent_color = accent_colour
-    """Optional[:class:`Color`]: The container's accent color."""
 
 
 def _component_factory(data: ComponentPayload, state: Optional[ConnectionState] = None) -> Optional[Component]:
