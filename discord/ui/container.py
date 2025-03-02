@@ -42,7 +42,7 @@ __all__ = ('Container',)
 
 
 class Container(View, Item[V]):
-    """Represents a Components V2 Container.
+    """Represents a UI container.
 
     .. versionadded:: 2.6
 
@@ -53,7 +53,7 @@ class Container(View, Item[V]):
         items.
     accent_colour: Optional[:class:`.Colour`]
         The colour of the container. Defaults to ``None``.
-    accent_color: Optional[:class:`.Color`]
+    accent_color: Optional[:class:`.Colour`]
         The color of the container. Defaults to ``None``.
     spoiler: :class:`bool`
         Whether to flag this container as a spoiler. Defaults
@@ -103,7 +103,7 @@ class Container(View, Item[V]):
 
     @property
     def accent_colour(self) -> Optional[Colour]:
-        """Optional[:class:`~discord.Colour`]: The colour of the container, or ``None``."""
+        """Optional[:class:`discord.Colour`]: The colour of the container, or ``None``."""
         return self._colour
 
     @accent_colour.setter
@@ -111,7 +111,6 @@ class Container(View, Item[V]):
         self._colour = value
 
     accent_color = accent_colour
-    """Optional[:class:`~discord.Color`]: The color of the container, or ``None``."""
 
     @property
     def type(self) -> Literal[ComponentType.container]:

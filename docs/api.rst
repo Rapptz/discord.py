@@ -3863,6 +3863,27 @@ of :class:`enum.Enum`.
 
         An alias for :attr:`.reply`.
 
+
+.. class:: MediaItemLoadingState
+
+    Represents a :class:`UnfurledMediaItem` load state.
+
+    .. attribute:: unknown
+
+        Unknown load state.
+
+    .. attribute:: loading
+
+        The media item is still loading.
+
+    .. attribute:: loaded
+
+        The media item is loaded.
+
+    .. attribute:: not_found
+
+        The media item was not found.
+
 .. _discord-api-audit-logs:
 
 Audit Log Data

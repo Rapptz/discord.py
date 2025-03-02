@@ -769,7 +769,7 @@ class ThumbnailComponent(Component):
 
     Attributes
     ----------
-    media: :class:`UnfurledAttachment`
+    media: :class:`UnfurledMediaItem`
         The media for this thumbnail.
     description: Optional[:class:`str`]
         The description shown within this thumbnail.
@@ -831,9 +831,6 @@ class TextDisplay(Component):
 class UnfurledMediaItem(AssetMixin):
     """Represents an unfurled media item that can be used on
     :class:`MediaGalleryItem`s.
-
-    Unlike :class:`UnfurledAttachment` this represents a media item
-    not yet stored on Discord and thus it does not have any data.
 
     Parameters
     ----------
@@ -1004,7 +1001,7 @@ class FileComponent(Component):
 
     Attributes
     ----------
-    media: :class:`UnfurledAttachment`
+    media: :class:`UnfurledMediaItem`
         The unfurled attachment contents of the file.
     spoiler: :class:`bool`
         Whether this file is flagged as a spoiler.

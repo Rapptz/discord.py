@@ -73,7 +73,7 @@ class MediaGallery(Item[V]):
 
     @property
     def items(self) -> List[MediaGalleryItem]:
-        """List[:class:`MediaGalleryItem`]: Returns a read-only list of this gallery's items."""
+        """List[:class:`.MediaGalleryItem`]: Returns a read-only list of this gallery's items."""
         return self._underlying.items.copy()
 
     @items.setter
@@ -97,13 +97,13 @@ class MediaGallery(Item[V]):
 
         Parameters
         ----------
-        item: :class:`MediaGalleryItem`
+        item: :class:`.MediaGalleryItem`
             The item to add to the gallery.
 
         Raises
         ------
         TypeError
-            A :class:`MediaGalleryItem` was not passed.
+            A :class:`.MediaGalleryItem` was not passed.
         ValueError
             Maximum number of items has been exceeded (10).
         """
@@ -125,7 +125,7 @@ class MediaGallery(Item[V]):
 
         Parameters
         ----------
-        item: :class:`MediaGalleryItem`
+        item: :class:`.MediaGalleryItem`
             The item to remove from the gallery.
         """
 
@@ -145,7 +145,7 @@ class MediaGallery(Item[V]):
         ----------
         index: :class:`int`
             The index of where to insert the item.
-        item: :class:`MediaGalleryItem`
+        item: :class:`.MediaGalleryItem`
             The item to insert.
         """
 
