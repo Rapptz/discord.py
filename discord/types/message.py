@@ -229,7 +229,7 @@ class Message(PartialMessage):
     purchase_notification: NotRequired[PurchaseNotificationResponse]
 
 
-AllowedMentionType = Literal["roles", "users", "everyone"]
+AllowedMentionType = Literal['roles', 'users', 'everyone']
 
 
 class AllowedMentions(TypedDict):
