@@ -49,7 +49,7 @@ class Container(View, Item[V]):
     Parameters
     ----------
     children: List[:class:`Item`]
-        The initial children or :class:`View`s of this container. Can have up to 10
+        The initial children or :class:`View` s of this container. Can have up to 10
         items.
     accent_colour: Optional[:class:`.Colour`]
         The colour of the container. Defaults to ``None``.

@@ -45,7 +45,7 @@ __all__ = ('MediaGallery',)
 class MediaGallery(Item[V]):
     """Represents a UI media gallery.
 
-    This can contain up to 10 :class:`.MediaGalleryItem`s.
+    This can contain up to 10 :class:`.MediaGalleryItem` s.
 
     .. versionadded:: 2.6
 

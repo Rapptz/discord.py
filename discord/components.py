@@ -829,8 +829,7 @@ class TextDisplay(Component):
 
 
 class UnfurledMediaItem(AssetMixin):
-    """Represents an unfurled media item that can be used on
-    :class:`MediaGalleryItem`s.
+    """Represents an unfurled media item.
 
     Parameters
     ----------
