@@ -732,7 +732,7 @@ class SectionComponent(Component):
 
     def __init__(self, data: SectionComponentPayload, state: Optional[ConnectionState]) -> None:
         self.components: List[SectionComponentType] = []
-        self.accessory: Component = _component_factory(data['accessory'], state)
+        self.accessory: Component = _component_factory(data['accessory'], state)  # type: ignore
 
         for component_data in data['components']:
             component = _component_factory(component_data, state)

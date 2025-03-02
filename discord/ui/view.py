@@ -215,6 +215,7 @@ class View:
 
         for func in self.__view_children_items__:
             if isinstance(func, Item):
+                func._view = self
                 children.append(func)
             else:
                 item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
