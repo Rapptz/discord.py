@@ -73,11 +73,10 @@ class Button(Item[V]):
         The emoji of the button, if available.
     row: Optional[:class:`int`]
         The relative row this button belongs to. A Discord component can only have 5
-        rows in a :class:`View`, but up to 10 on a :class:`Container`. By default,
-        items are arranged automatically into those rows. If you'd like to control the
-        relative positioning of the row then passing an index is advised. For example,
-        row=1 will show up before row=2. Defaults to ``None``, which is automatic
-        ordering. The row number must be between 0 and 4 or 9 (i.e. zero indexed).
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     sku_id: Optional[:class:`int`]
         The SKU ID this button sends you to. Can't be combined with ``url``, ``label``, ``emoji``
         nor ``custom_id``.
@@ -305,11 +304,10 @@ def button(
         or a full :class:`.Emoji`.
     row: Optional[:class:`int`]
         The relative row this button belongs to. A Discord component can only have 5
-        rows in a :class:`View`, but up to 10 on a :class:`Container`. By default,
-        items are arranged automatically into those rows. If you'd like to control the
-        relative positioning of the row then passing an index is advised. For example,
-        row=1 will show up before row=2. Defaults to ``None``, which is automatic
-        ordering. The row number must be between 0 and 4 or 9 (i.e. zero indexed).
+        rows. By default, items are arranged automatically into those 5 rows. If you'd
+        like to control the relative positioning of the row then passing an index is advised.
+        For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 4 (i.e. zero indexed).
     """
 
     def decorator(func: ItemCallbackType[V, Button[V]]) -> ItemCallbackType[V, Button[V]]:
