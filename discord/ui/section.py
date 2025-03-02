@@ -89,6 +89,15 @@ class Section(Item[V]):
     def _is_v2(self) -> bool:
         return True
 
+    # Accessory can be a button, and thus it can have a callback so, maybe
+    # allow for section to be dispatchable and make the callback func
+    # be accessory component callback, only called if accessory is
+    # dispatchable?
+    def is_dispatchable(self) -> bool:
+        if self.accessory:
+            return self.accessory.is_dispatchable()
+        return False
+
     def add_item(self, item: Union[str, Item[Any]]) -> Self:
         """Adds an item to this section.
 
