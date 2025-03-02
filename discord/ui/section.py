@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypeVar, U
 from .item import Item
 from .text_display import TextDisplay
 from ..enums import ComponentType
+from ..utils import MISSING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -36,6 +37,8 @@ if TYPE_CHECKING:
     from ..components import SectionComponent
 
 V = TypeVar('V', bound='View', covariant=True)
+
+__all__ = ('Section',)
 
 
 class Section(Item[V]):
@@ -47,8 +50,8 @@ class Section(Item[V]):
     ----------
     children: List[Union[:class:`str`, :class:`TextDisplay`]]
         The text displays of this section. Up to 3.
-    accessory: Optional[:class:`Item`]
-        The section accessory. Defaults to ``None``.
+    accessory: :class:`Item`
+        The section accessory.
     row: Optional[:class:`int`]
         The relative row this section belongs to. By default
         items are arranged automatically into those rows. If you'd
@@ -65,16 +68,23 @@ class Section(Item[V]):
 
     def __init__(
         self,
-        children: List[Union[Item[Any], str]],
+        children: List[Union[Item[Any], str]] = MISSING,
         *,
-        accessory: Optional[Item[Any]] = None,
+        accessory: Item[Any],
         row: Optional[int] = None,
     ) -> None:
         super().__init__()
-        if len(children) > 3:
-            raise ValueError('maximum number of children exceeded')
-        self._children: List[Item[Any]] = [c if isinstance(c, Item) else TextDisplay(c) for c in children]
-        self.accessory: Optional[Item[Any]] = accessory
+        self._children: List[Item[Any]] = []
+        if children is not MISSING:
+            if len(children) > 3:
+                raise ValueError('maximum number of children exceeded')
+            self._children.extend(
+                [
+                    c if isinstance(c, Item)
+                    else TextDisplay(c) for c in children
+                ],
+            )
+        self.accessory: Item[Any] = accessory
 
         self.row = row
 
@@ -106,13 +116,14 @@ class Section(Item[V]):
 
         Parameters
         ----------
-        item: Union[:class:`str`, :class:`TextDisplay`]
-            The text display to add.
+        item: Union[:class:`str`, :class:`Item`]
+            The items to append, if it is a string it automatically wrapped around
+            :class:`TextDisplay`.
 
         Raises
         ------
         TypeError
-            A :class:`TextDisplay` was not passed.
+            An :class:`Item` or :class:`str` was not passed.
         ValueError
             Maximum number of children has been exceeded (3).
         """
@@ -161,14 +172,13 @@ class Section(Item[V]):
 
         return cls(
             children=[_component_to_item(c) for c in component.components],
-            accessory=_component_to_item(component.accessory) if component.accessory else None,
+            accessory=_component_to_item(component.accessory),
         )
 
     def to_component_dict(self) -> Dict[str, Any]:
         data = {
             'components': [c.to_component_dict() for c in self._children],
             'type': self.type.value,
+            'accessory': self.accessory.to_component_dict()
         }
-        if self.accessory:
-            data['accessory'] = self.accessory.to_component_dict()
         return data

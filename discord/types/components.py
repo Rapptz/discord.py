@@ -128,7 +128,7 @@ class SelectMenu(SelectComponent):
 class SectionComponent(ComponentBase):
     type: Literal[9]
     components: List[Union[TextComponent, ButtonComponent]]
-    accessory: NotRequired[ComponentBase]
+    accessory: ComponentBase
 
 
 class TextComponent(ComponentBase):

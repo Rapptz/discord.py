@@ -60,14 +60,14 @@ class TextDisplay(Item[V]):
     def __init__(self, content: str, *, row: Optional[int] = None) -> None:
         super().__init__()
         self.content: str = content
-        self._underlying = TextDisplayComponent._raw_construct(
-            content=content,
-        )
 
         self.row = row
 
     def to_component_dict(self):
-        return self._underlying.to_dict()
+        return {
+            'type': self.type.value,
+            'content': self.content,
+        }
 
     @property
     def width(self):
@@ -75,7 +75,7 @@ class TextDisplay(Item[V]):
 
     @property
     def type(self) -> Literal[ComponentType.text_display]:
-        return self._underlying.type
+        return ComponentType.text_display
 
     def _is_v2(self) -> bool:
         return True

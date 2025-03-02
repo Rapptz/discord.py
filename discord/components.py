@@ -732,16 +732,12 @@ class SectionComponent(Component):
 
     def __init__(self, data: SectionComponentPayload, state: Optional[ConnectionState]) -> None:
         self.components: List[SectionComponentType] = []
+        self.accessory: Component = _component_factory(data['accessory'], state)
 
         for component_data in data['components']:
             component = _component_factory(component_data, state)
             if component is not None:
                 self.components.append(component)  # type: ignore # should be the correct type here
-
-        try:
-            self.accessory: Optional[Component] = _component_factory(data['accessory'])  # type: ignore
-        except KeyError:
-            self.accessory = None
 
     @property
     def type(self) -> Literal[ComponentType.section]:
@@ -751,9 +747,8 @@ class SectionComponent(Component):
         payload: SectionComponentPayload = {
             'type': self.type.value,
             'components': [c.to_dict() for c in self.components],
+            'accessory': self.accessory.to_dict()
         }
-        if self.accessory:
-            payload['accessory'] = self.accessory.to_dict()
         return payload
 
 

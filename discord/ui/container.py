@@ -29,6 +29,7 @@ from .item import Item
 from .view import View, _component_to_item
 from .dynamic import DynamicItem
 from ..enums import ComponentType
+from ..utils import MISSING
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -61,13 +62,20 @@ class Container(View, Item[V]):
     timeout: Optional[:class:`float`]
         Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
+    row: Optional[:class:`int`]
+        The relative row this container belongs to. By default
+        items are arranged automatically into those rows. If you'd
+        like to control the relative positioning of the row then
+        passing an index is advised. For example, row=1 will show
+        up before row=2. Defaults to ``None``, which is automatic
+        ordering. The row number must be between 0 and 9 (i.e. zero indexed)
     """
 
     __discord_ui_container__ = True
 
     def __init__(
         self,
-        children: List[Item[Any]],
+        children: List[Item[Any]] = MISSING,
         *,
         accent_colour: Optional[Colour] = None,
         accent_color: Optional[Color] = None,
@@ -76,9 +84,10 @@ class Container(View, Item[V]):
         row: Optional[int] = None,
     ) -> None:
         super().__init__(timeout=timeout)
-        if len(children) + len(self._children) > 10:
-            raise ValueError('maximum number of components exceeded')
-        self._children.extend(children)
+        if children is not MISSING:
+            if len(children) + len(self._children) > 10:
+                raise ValueError('maximum number of components exceeded')
+            self._children.extend(children)
         self.spoiler: bool = spoiler
         self._colour = accent_colour or accent_color
 
@@ -86,11 +95,6 @@ class Container(View, Item[V]):
         self._row: Optional[int] = None
         self._rendered_row: Optional[int] = None
         self.row: Optional[int] = row
-
-    def _init_children(self) -> List[Item[Self]]:
-        if self.__weights.max_weight != 10:
-            self.__weights.max_weight = 10
-        return super()._init_children()
 
     @property
     def children(self) -> List[Item[Self]]:

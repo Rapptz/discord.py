@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, Callable, ClassVar, Coroutine, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple, Type
+from typing import Any, Callable, ClassVar, Coroutine, Dict, Iterator, List, Optional, Sequence, TYPE_CHECKING, Tuple, Type, Union
 from functools import partial
 from itertools import groupby
 
@@ -119,13 +119,11 @@ class _ViewWeights:
     # fmt: off
     __slots__ = (
         'weights',
-        'max_weight',
     )
     # fmt: on
 
     def __init__(self, children: List[Item]):
         self.weights: List[int] = [0, 0, 0, 0, 0]
-        self.max_weight: int = 5
 
         key = lambda i: sys.maxsize if i.row is None else i.row
         children = sorted(children, key=key)
@@ -146,8 +144,8 @@ class _ViewWeights:
             self.weights.extend([0, 0, 0, 0, 0])
         if item.row is not None:
             total = self.weights[item.row] + item.width
-            if total > self.max_weight:
-                raise ValueError(f'item would not fit at row {item.row} ({total} > {self.max_weight} width)')
+            if total > 5:
+                raise ValueError(f'item would not fit at row {item.row} ({total} > 5 width)')
             self.weights[item.row] = total
             item._rendered_row = item.row
         else:
@@ -196,15 +194,15 @@ class View:
     __discord_ui_view__: ClassVar[bool] = True
     __discord_ui_modal__: ClassVar[bool] = False
     __discord_ui_container__: ClassVar[bool] = False
-    __view_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
+    __view_children_items__: ClassVar[List[Union[ItemCallbackType[Any, Any], Item[Any]]]] = []
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        children: Dict[str, ItemCallbackType[Any, Any]] = {}
+        children: Dict[str, Union[ItemCallbackType[Any, Any], Item]] = {}
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
-                if hasattr(member, '__discord_ui_model_type__'):
+                if hasattr(member, '__discord_ui_model_type__') or isinstance(member, Item):
                     children[name] = member
 
         if len(children) > 25:
@@ -214,12 +212,16 @@ class View:
 
     def _init_children(self) -> List[Item[Self]]:
         children = []
+
         for func in self.__view_children_items__:
-            item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
-            item.callback = _ViewCallback(func, self, item)  # type: ignore
-            item._view = self
-            setattr(self, func.__name__, item)
-            children.append(item)
+            if isinstance(func, Item):
+                children.append(func)
+            else:
+                item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
+                item.callback = _ViewCallback(func, self, item)  # type: ignore
+                item._view = self
+                setattr(self, func.__name__, item)
+                children.append(item)
         return children
 
     def __init__(self, *, timeout: Optional[float] = 180.0):
@@ -275,7 +277,13 @@ class View:
         # v2 components
 
         def key(item: Item) -> int:
-            return item._rendered_row or 0
+            if item._rendered_row is not None:
+                return item._rendered_row
+
+            try:
+                return self._children.index(item)
+            except ValueError:
+                return 0
 
         # instead of grouping by row we will sort it so it is added
         # in order and should work as the original implementation
@@ -290,7 +298,7 @@ class View:
                 index = rows_index.get(row)
 
                 if index is not None:
-                    components[index]['components'].append(child)
+                    components[index]['components'].append(child.to_component_dict())
                 else:
                     components.append(
                         {
