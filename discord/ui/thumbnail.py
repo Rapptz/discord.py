@@ -37,9 +37,8 @@ if TYPE_CHECKING:
 
 V = TypeVar('V', bound='View', covariant=True)
 
-__all__ = (
-    'Thumbnail',
-)
+__all__ = ('Thumbnail',)
+
 
 class Thumbnail(Item[V]):
     """Represents a UI Thumbnail.

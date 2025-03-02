@@ -59,7 +59,7 @@ class ButtonComponent(ComponentBase):
     sku_id: NotRequired[str]
 
 
-class SelectOption(ComponentBase):
+class SelectOption(TypedDict):
     label: str
     value: str
     default: bool

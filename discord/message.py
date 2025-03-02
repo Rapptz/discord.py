@@ -96,7 +96,7 @@ if TYPE_CHECKING:
     from .types.gateway import MessageReactionRemoveEvent, MessageUpdateEvent
     from .abc import Snowflake
     from .abc import GuildChannel, MessageableChannel
-    from .components import ActionRow, ActionRowChildComponentType
+    from .components import MessageComponentType
     from .state import ConnectionState
     from .mentions import AllowedMentions
     from .user import User
@@ -104,7 +104,6 @@ if TYPE_CHECKING:
     from .ui.view import View
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
-    MessageComponentType = Union[ActionRow, ActionRowChildComponentType]
 
 
 __all__ = (

@@ -72,10 +72,8 @@ class Section(Item[V]):
     ) -> None:
         super().__init__()
         if len(children) > 3:
-            raise ValueError('maximum number of children exceeded')        
-        self._children: List[Item[Any]] = [
-            c if isinstance(c, Item) else TextDisplay(c) for c in children
-        ]
+            raise ValueError('maximum number of children exceeded')
+        self._children: List[Item[Any]] = [c if isinstance(c, Item) else TextDisplay(c) for c in children]
         self.accessory: Optional[Item[Any]] = accessory
 
         self.row = row
@@ -150,7 +148,8 @@ class Section(Item[V]):
 
     @classmethod
     def from_component(cls, component: SectionComponent) -> Self:
-        from .view import _component_to_item # >circular import<
+        from .view import _component_to_item  # >circular import<
+
         return cls(
             children=[_component_to_item(c) for c in component.components],
             accessory=_component_to_item(component.accessory) if component.accessory else None,

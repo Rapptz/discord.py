@@ -79,6 +79,17 @@ if TYPE_CHECKING:
 
     ActionRowChildComponentType = Union['Button', 'SelectMenu', 'TextInput']
     SectionComponentType = Union['TextDisplay', 'Button']
+    MessageComponentType = Union[
+        ActionRowChildComponentType,
+        SectionComponentType,
+        'ActionRow',
+        'SectionComponent',
+        'ThumbnailComponent',
+        'MediaGalleryComponent',
+        'FileComponent',
+        'SectionComponent',
+        'Component',
+    ]
 
 
 __all__ = (
@@ -337,13 +348,9 @@ class SelectMenu(Component):
         self.placeholder: Optional[str] = data.get('placeholder')
         self.min_values: int = data.get('min_values', 1)
         self.max_values: int = data.get('max_values', 1)
-        self.options: List[SelectOption] = [
-            SelectOption.from_dict(option) for option in data.get('options', [])
-        ]
+        self.options: List[SelectOption] = [SelectOption.from_dict(option) for option in data.get('options', [])]
         self.disabled: bool = data.get('disabled', False)
-        self.channel_types: List[ChannelType] = [
-            try_enum(ChannelType, t) for t in data.get('channel_types', [])
-        ]
+        self.channel_types: List[ChannelType] = [try_enum(ChannelType, t) for t in data.get('channel_types', [])]
         self.default_values: List[SelectDefaultValue] = [
             SelectDefaultValue.from_dict(d) for d in data.get('default_values', [])
         ]
@@ -459,9 +466,7 @@ class SelectOption:
             elif isinstance(value, _EmojiTag):
                 self._emoji = value._to_partial()
             else:
-                raise TypeError(
-                    f'expected str, Emoji, or PartialEmoji, received {value.__class__.__name__} instead'
-                )
+                raise TypeError(f'expected str, Emoji, or PartialEmoji, received {value.__class__.__name__} instead')
         else:
             self._emoji = None
 
@@ -617,9 +622,7 @@ class SelectDefaultValue:
     @type.setter
     def type(self, value: SelectDefaultValueType) -> None:
         if not isinstance(value, SelectDefaultValueType):
-            raise TypeError(
-                f'expected SelectDefaultValueType, received {value.__class__.__name__} instead'
-            )
+            raise TypeError(f'expected SelectDefaultValueType, received {value.__class__.__name__} instead')
 
         self._type = value
 
@@ -733,7 +736,7 @@ class SectionComponent(Component):
                 self.components.append(component)  # type: ignore # should be the correct type here
 
         try:
-            self.accessory: Optional[Component] = _component_factory(data['accessory'])
+            self.accessory: Optional[Component] = _component_factory(data['accessory'])  # type: ignore
         except KeyError:
             self.accessory = None
 
@@ -788,7 +791,7 @@ class ThumbnailComponent(Component):
 
     def to_dict(self) -> ThumbnailComponentPayload:
         return {
-            'media': self.media.to_dict(),  # type: ignroe
+            'media': self.media.to_dict(),  # pyright: ignore[reportReturnType]
             'description': self.description,
             'spoiler': self.spoiler,
             'type': self.type.value,
@@ -938,9 +941,7 @@ class MediaGalleryItem:
         self._state: Optional[ConnectionState] = None
 
     @classmethod
-    def _from_data(
-        cls, data: MediaGalleryItemPayload, state: Optional[ConnectionState]
-    ) -> MediaGalleryItem:
+    def _from_data(cls, data: MediaGalleryItemPayload, state: Optional[ConnectionState]) -> MediaGalleryItem:
         media = data['media']
         self = cls(
             media=media['url'],
@@ -1089,7 +1090,7 @@ class Container(Component):
         self.spoiler: bool = data.get('spoiler', False)
         self._colour: Optional[Colour]
         try:
-            self._colour = Colour(data['accent_color'])
+            self._colour = Colour(data['accent_color'])  # type: ignore
         except KeyError:
             self._colour = None
 
@@ -1102,9 +1103,7 @@ class Container(Component):
     """Optional[:class:`Color`]: The container's accent color."""
 
 
-def _component_factory(
-    data: ComponentPayload, state: Optional[ConnectionState] = None
-) -> Optional[Component]:
+def _component_factory(data: ComponentPayload, state: Optional[ConnectionState] = None) -> Optional[Component]:
     if data['type'] == 1:
         return ActionRow(data)
     elif data['type'] == 2:
@@ -1112,7 +1111,7 @@ def _component_factory(
     elif data['type'] == 4:
         return TextInput(data)
     elif data['type'] in (3, 5, 6, 7, 8):
-        return SelectMenu(data)
+        return SelectMenu(data)  # type: ignore
     elif data['type'] == 9:
         return SectionComponent(data, state)
     elif data['type'] == 10:
