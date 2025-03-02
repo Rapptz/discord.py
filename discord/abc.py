@@ -1580,8 +1580,7 @@ class Messageable:
             You specified both ``file`` and ``files``,
             or you specified both ``embed`` and ``embeds``,
             or the ``reference`` object is not a :class:`~discord.Message`,
-            :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`,
-            or you specified both ``view`` and ``views``.
+            :class:`~discord.MessageReference` or :class:`~discord.PartialMessage`.
 
         Returns
         ---------
