@@ -51,9 +51,9 @@ class Container(View, Item[V]):
     children: List[:class:`Item`]
         The initial children or :class:`View`s of this container. Can have up to 10
         items.
-    accent_colour: Optional[:class:`~discord.Colour`]
+    accent_colour: Optional[:class:`.Colour`]
         The colour of the container. Defaults to ``None``.
-    accent_color: Optional[:class:`~discord.Color`]
+    accent_color: Optional[:class:`.Color`]
         The color of the container. Defaults to ``None``.
     spoiler: :class:`bool`
         Whether to flag this container as a spoiler. Defaults

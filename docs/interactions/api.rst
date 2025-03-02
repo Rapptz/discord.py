@@ -113,6 +113,77 @@ TextInput
     :members:
     :inherited-members:
 
+
+SectionComponent
+~~~~~~~~~~~~~~~~
+
+.. attributetable:: SectionComponent
+
+.. autoclass:: SectionComponent()
+    :members:
+    :inherited-members:
+
+
+ThumbnailComponent
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: ThumbnailComponent
+
+.. autoclass:: ThumbnailComponent()
+    :members:
+    :inherited-members:
+
+
+TextDisplay
+~~~~~~~~~~~
+
+.. attributetable:: TextDisplay
+
+.. autoclass:: TextDisplay()
+    :members:
+    :inherited-members:
+
+
+MediaGalleryComponent
+~~~~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: MediaGalleryComponent
+
+.. autoclass:: MediaGalleryComponent()
+    :members:
+    :inherited-members:
+
+
+FileComponent
+~~~~~~~~~~~~~
+
+.. attributetable:: FileComponent
+
+.. autoclass:: FileComponent()
+    :members:
+    :inherited-members:
+
+
+SeparatorComponent
+~~~~~~~~~~~~~~~~~~
+
+.. attributetable:: SeparatorComponent
+
+.. autoclass:: SeparatorComponent()
+    :members:
+    :inherited-members:
+
+
+Container
+~~~~~~~~~
+
+.. attributetable:: Container
+
+.. autoclass:: Container()
+    :members:
+    :inherited-members:
+
+
 AppCommand
 ~~~~~~~~~~~
 
@@ -299,7 +370,7 @@ Enumerations
 
     .. attribute:: action_row
 
-        Represents the group component which holds different components in a row.
+        Represents a component which holds different components in a row.
 
     .. attribute:: button
 
@@ -328,6 +399,38 @@ Enumerations
     .. attribute:: mentionable_select
 
         Represents a select in which both users and roles can be selected.
+
+    .. attribute:: channel_select
+
+        Represents a channel select component.
+
+    .. attribute:: section
+
+        Represents a component which holds different components in a section.
+
+    .. attribute:: text_display
+
+        Represents a text display component.
+
+    .. attribute:: thumbnail
+
+        Represents a thumbnail component.
+
+    .. attribute:: media_gallery
+
+        Represents a media gallery component.
+
+    .. attribute:: file
+
+        Represents a file component.
+
+    .. attribute:: separator
+
+        Represents a separator component.
+
+    .. attribute:: container
+
+        Represents a component which holds different components in a container.
 
 .. class:: ButtonStyle
 
@@ -463,6 +566,19 @@ Enumerations
 
         The permission is for a user.
 
+.. class:: SeparatorSize
+
+    The separator's size type.
+
+    .. versionadded:: 2.6
+
+    .. attribute:: small
+
+        A small separator.
+    .. attribute:: large
+
+        A large separator.
+
 .. _discord_ui_kit:
 
 Bot UI Kit
@@ -579,6 +695,76 @@ TextInput
 .. attributetable:: discord.ui.TextInput
 
 .. autoclass:: discord.ui.TextInput
+    :members:
+    :inherited-members:
+
+
+Container
+~~~~~~~~~
+
+.. attributetable:: discord.ui.Container
+
+.. autoclass:: discord.ui.Container
+    :members:
+    :inherited-members:
+
+
+File
+~~~~
+
+.. attributetable:: discord.ui.File
+
+.. autoclass:: discord.ui.File
+    :members:
+    :inherited-members:
+
+
+MediaGallery
+~~~~~~~~~~~~
+
+.. attributetable:: discord.ui.MediaGallery
+
+.. autoclass:: discord.ui.MediaGallery
+    :members:
+    :inherited-members:
+
+
+Section
+~~~~~~~
+
+.. attributetable:: discord.ui.Section
+
+.. autoclass:: discord.ui.Section
+    :members:
+    :inherited-members:
+
+
+Separator
+~~~~~~~~~
+
+.. attributetable:: discord.ui.Separator
+
+.. autoclass:: discord.ui.Separator
+    :members:
+    :inherited-members:
+
+
+TextDisplay
+~~~~~~~~~~~
+
+.. attributetable:: discord.ui.TextDisplay
+
+.. autoclass:: discord.ui.TextDisplay
+    :members:
+    :inherited-members:
+
+
+Thumbnail
+~~~~~~~~~
+
+.. attributetable:: discord.ui.Thumbnail
+
+.. autoclass:: discord.ui.Thumbnail
     :members:
     :inherited-members:
 

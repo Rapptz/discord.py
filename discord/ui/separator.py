@@ -30,6 +30,8 @@ from ..components import SeparatorComponent
 from ..enums import SeparatorSize, ComponentType
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .view import View
 
 V = TypeVar('V', bound='View', covariant=True)
@@ -47,7 +49,7 @@ class Separator(Item[V]):
     visible: :class:`bool`
         Whether this separator is visible. On the client side this
         is whether a divider line should be shown or not.
-    spacing: :class:`SeparatorSize`
+    spacing: :class:`discord.SeparatorSize`
         The spacing of this separator.
     row: Optional[:class:`int`]
         The relative row this separator belongs to. By default
@@ -108,3 +110,10 @@ class Separator(Item[V]):
 
     def to_component_dict(self):
         return self._underlying.to_dict()
+
+    @classmethod
+    def from_component(cls, component: SeparatorComponent) -> Self:
+        return cls(
+            visible=component.visible,
+            spacing=component.spacing,
+        )

@@ -45,6 +45,7 @@ from ..components import (
     MediaGalleryComponent,
     FileComponent,
     SeparatorComponent,
+    ThumbnailComponent,
 )
 
 # fmt: off
@@ -86,7 +87,30 @@ def _component_to_item(component: Component) -> Item:
         from .select import BaseSelect
 
         return BaseSelect.from_component(component)
-    # TODO: convert V2 Components into Item's
+    if isinstance(component, SectionComponent):
+        from .section import Section
+
+        return Section.from_component(component)
+    if isinstance(component, TextDisplayComponent):
+        from .text_display import TextDisplay
+
+        return TextDisplay.from_component(component)
+    if isinstance(component, MediaGalleryComponent):
+        from .media_gallery import MediaGallery
+
+        return MediaGallery.from_component(component)
+    if isinstance(component, FileComponent):
+        from .file import File
+
+        return File.from_component(component)
+    if isinstance(component, SeparatorComponent):
+        from .separator import Separator
+
+        return Separator.from_component(component)
+    if isinstance(component, ThumbnailComponent):
+        from .thumbnail import Thumbnail
+
+        return Thumbnail.from_component(component)
 
     return Item.from_component(component)
 

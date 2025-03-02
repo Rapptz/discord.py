@@ -48,7 +48,7 @@ class Thumbnail(Item[V]):
 
     Parameters
     ----------
-    media: Union[:class:`str`, :class:`UnfurledMediaItem`]
+    media: Union[:class:`str`, :class:`.UnfurledMediaItem`]
         The media of the thumbnail. This can be a string that points to a local
         attachment uploaded within this item. URLs must match the ``attachment://file-name.extension``
         structure.

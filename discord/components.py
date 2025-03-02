@@ -91,6 +91,8 @@ __all__ = (
     'SelectDefaultValue',
     'SectionComponent',
     'ThumbnailComponent',
+    'UnfurledMediaItem',
+    'MediaGalleryItem',
     'MediaGalleryComponent',
     'FileComponent',
     'SectionComponent',

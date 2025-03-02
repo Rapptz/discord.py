@@ -30,6 +30,8 @@ from ..components import TextDisplay as TextDisplayComponent
 from ..enums import ComponentType
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .view import View
 
 V = TypeVar('V', bound='View', covariant=True)
@@ -77,3 +79,9 @@ class TextDisplay(Item[V]):
 
     def _is_v2(self) -> bool:
         return True
+
+    @classmethod
+    def from_component(cls, component: TextDisplayComponent) -> Self:
+        return cls(
+            content=component.content,
+        )

@@ -78,6 +78,8 @@ class Section(Item[V]):
         ]
         self.accessory: Optional[Item[Any]] = accessory
 
+        self.row = row
+
     @property
     def type(self) -> Literal[ComponentType.section]:
         return ComponentType.section
