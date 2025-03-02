@@ -109,6 +109,7 @@ __all__ = (
     'SectionComponent',
     'Container',
     'TextDisplay',
+    'SeparatorComponent',
 )
 
 
