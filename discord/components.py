@@ -107,6 +107,8 @@ __all__ = (
     'MediaGalleryComponent',
     'FileComponent',
     'SectionComponent',
+    'Container',
+    'TextDisplay',
 )
 
 

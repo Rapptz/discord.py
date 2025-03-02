@@ -49,7 +49,7 @@ class Separator(Item[V]):
     visible: :class:`bool`
         Whether this separator is visible. On the client side this
         is whether a divider line should be shown or not.
-    spacing: :class:`discord.SeparatorSize`
+    spacing: :class:`.SeparatorSize`
         The spacing of this separator.
     row: Optional[:class:`int`]
         The relative row this separator belongs to. By default

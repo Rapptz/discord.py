@@ -61,7 +61,7 @@ if TYPE_CHECKING:
 
     from ..interactions import Interaction
     from ..message import Message
-    from ..types.components import Component as ComponentPayload
+    from ..types.components import ComponentBase as ComponentBasePayload
     from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
     from ..state import ConnectionState
     from .modal import Modal
@@ -802,11 +802,11 @@ class ViewStore:
     def remove_message_tracking(self, message_id: int) -> Optional[View]:
         return self._synced_message_views.pop(message_id, None)
 
-    def update_from_message(self, message_id: int, data: List[ComponentPayload]) -> None:
+    def update_from_message(self, message_id: int, data: List[ComponentBasePayload]) -> None:
         components: List[Component] = []
 
         for component_data in data:
-            component = _component_factory(component_data, self._state)
+            component = _component_factory(component_data, self._state)  # type: ignore
 
             if component is not None:
                 components.append(component)
