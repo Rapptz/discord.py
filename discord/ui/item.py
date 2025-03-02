@@ -113,7 +113,7 @@ class Item(Generic[V]):
         elif self._max_row > value >= 0:
             self._row = value
         else:
-            raise ValueError('row cannot be negative or greater than or equal to 10')
+            raise ValueError(f'row cannot be negative or greater than or equal to {self._max_row}')
 
     @property
     def width(self) -> int:
