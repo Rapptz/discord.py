@@ -34,7 +34,7 @@ from typing import (
     Union,
 )
 
-from .attachment import UnfurledAttachment
+from .asset import AssetMixin
 from .enums import (
     try_enum,
     ComponentType,
@@ -43,7 +43,9 @@ from .enums import (
     ChannelType,
     SelectDefaultValueType,
     SeparatorSize,
+    MediaItemLoadingState,
 )
+from .flags import AttachmentFlags
 from .colour import Colour
 from .utils import get_slots, MISSING
 from .partial_emoji import PartialEmoji, _EmojiTag
@@ -68,6 +70,7 @@ if TYPE_CHECKING:
         MediaGalleryItem as MediaGalleryItemPayload,
         ThumbnailComponent as ThumbnailComponentPayload,
         ContainerComponent as ContainerComponentPayload,
+        UnfurledMediaItem as UnfurledMediaItemPayload,
     )
 
     from .emoji import Emoji
@@ -773,7 +776,7 @@ class ThumbnailComponent(Component):
         data: ThumbnailComponentPayload,
         state: Optional[ConnectionState],
     ) -> None:
-        self.media: UnfurledAttachment = UnfurledAttachment(data['media'], state)
+        self.media: UnfurledMediaItem = UnfurledMediaItem._from_data(data['media'], state)
         self.description: Optional[str] = data.get('description')
         self.spoiler: bool = data.get('spoiler', False)
 
@@ -817,15 +820,96 @@ class TextDisplay(Component):
         }
 
 
+class UnfurledMediaItem(AssetMixin):
+    """Represents an unfurled media item that can be used on
+    :class:`MediaGalleryItem`s.
+
+    Unlike :class:`UnfurledAttachment` this represents a media item
+    not yet stored on Discord and thus it does not have any data.
+
+    Parameters
+    ----------
+    url: :class:`str`
+        The URL of this media item.
+
+    Attributes
+    ----------
+    proxy_url: Optional[:class:`str`]
+        The proxy URL. This is a cached version of the :attr:`~UnfurledMediaItem.url` in the
+        case of images. When the message is deleted, this URL might be valid for a few minutes
+        or not valid at all.
+    height: Optional[:class:`int`]
+        The media item's height, in pixels. Only applicable to images and videos.
+    width: Optional[:class:`int`]
+        The media item's width, in pixels. Only applicable to images and videos.
+    content_type: Optional[:class:`str`]
+        The media item's `media type <https://en.wikipedia.org/wiki/Media_type>`_
+    placeholder: Optional[:class:`str`]
+        The media item's placeholder.
+    loading_state: Optional[:class:`MediaItemLoadingState`]
+        The loading state of this media item.
+    """
+
+    __slots__ = (
+        'url',
+        'proxy_url',
+        'height',
+        'width',
+        'content_type',
+        '_flags',
+        'placeholder',
+        'loading_state',
+        '_state',
+    )
+
+    def __init__(self, url: str) -> None:
+        self.url: str = url
+
+        self.proxy_url: Optional[str] = None
+        self.height: Optional[int] = None
+        self.width: Optional[int] = None
+        self.content_type: Optional[str] = None
+        self._flags: int = 0
+        self.placeholder: Optional[str] = None
+        self.loading_state: Optional[MediaItemLoadingState] = None
+        self._state: Optional[ConnectionState] = None
+
+    @property
+    def flags(self) -> AttachmentFlags:
+        """:class:`AttachmentFlags`: This media item's flags."""
+        return AttachmentFlags._from_value(self._flags)
+
+    @classmethod
+    def _from_data(cls, data: UnfurledMediaItemPayload, state: Optional[ConnectionState]):
+        self = cls(data['url'])
+        self._update(data, state)
+        return self
+
+    def _update(self, data: UnfurledMediaItemPayload, state: Optional[ConnectionState]) -> None:
+        self.proxy_url = data['proxy_url']
+        self.height = data.get('height')
+        self.width = data.get('width')
+        self.content_type = data.get('content_type')
+        self._flags = data.get('flags', 0)
+        self.placeholder = data.get('placeholder')
+        self.loading_state = try_enum(MediaItemLoadingState, data['loading_state'])
+        self._state = state
+
+    def to_dict(self):
+        return {
+            'url': self.url,
+        }
+
+
 class MediaGalleryItem:
     """Represents a :class:`MediaGalleryComponent` media item.
 
     Parameters
     ----------
-    url: :class:`str`
-        The url of the media item. This can be a local file uploaded
-        as an attachment in the message, that can be accessed using
-        the ``attachment://file-name.extension`` format.
+    media: Union[:class:`str`, :class:`UnfurledMediaItem`]
+        The media item data. This can be a string representing a local
+        file uploaded as an attachment in the message, that can be accessed
+        using the ``attachment://file-name.extension`` format.
     description: Optional[:class:`str`]
         The description to show within this item.
     spoiler: :class:`bool`
@@ -833,7 +917,7 @@ class MediaGalleryItem:
     """
 
     __slots__ = (
-        'url',
+        'media',
         'description',
         'spoiler',
         '_state',
@@ -841,12 +925,12 @@ class MediaGalleryItem:
 
     def __init__(
         self,
-        url: str,
+        media: Union[str, UnfurledMediaItem],
         *,
         description: Optional[str] = None,
         spoiler: bool = False,
     ) -> None:
-        self.url: str = url
+        self.media: UnfurledMediaItem = UnfurledMediaItem(media) if isinstance(media, str) else media
         self.description: Optional[str] = description
         self.spoiler: bool = spoiler
         self._state: Optional[ConnectionState] = None
@@ -857,7 +941,7 @@ class MediaGalleryItem:
     ) -> MediaGalleryItem:
         media = data['media']
         self = cls(
-            url=media['url'],
+            media=media['url'],
             description=data.get('description'),
             spoiler=data.get('spoiler', False),
         )
@@ -873,8 +957,8 @@ class MediaGalleryItem:
         return [cls._from_data(item, state) for item in items]
 
     def to_dict(self) -> MediaGalleryItemPayload:
-        return {  # type: ignore
-            'media': {'url': self.url},
+        return {
+            'media': self.media.to_dict(),  # type: ignore
             'description': self.description,
             'spoiler': self.spoiler,
         }
@@ -927,9 +1011,7 @@ class FileComponent(Component):
     )
 
     def __init__(self, data: FileComponentPayload, state: Optional[ConnectionState]) -> None:
-        self.media: UnfurledAttachment = UnfurledAttachment(
-            data['file'], state,
-        )
+        self.media: UnfurledMediaItem = UnfurledMediaItem._from_data(data['file'], state)
         self.spoiler: bool = data.get('spoiler', False)
 
     @property
@@ -937,8 +1019,8 @@ class FileComponent(Component):
         return ComponentType.file
 
     def to_dict(self) -> FileComponentPayload:
-        return {  # type: ignore
-            'file': {'url': self.url},
+        return {
+            'file': self.media.to_dict(),  # type: ignore
             'spoiler': self.spoiler,
             'type': self.type.value,
         }

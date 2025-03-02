@@ -23,10 +23,11 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, TypeVar, Union
 
 from .item import Item
 from ..enums import ComponentType
+from ..components import UnfurledMediaItem
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -47,9 +48,9 @@ class Thumbnail(Item[V]):
 
     Parameters
     ----------
-    url: :class:`str`
-        The URL of the thumbnail. This can only point to a local attachment uploaded
-        within this item. URLs must match the ``attachment://file-name.extension``
+    media: Union[:class:`str`, :class:`UnfurledMediaItem`]
+        The media of the thumbnail. This can be a string that points to a local
+        attachment uploaded within this item. URLs must match the ``attachment://file-name.extension``
         structure.
     description: Optional[:class:`str`]
         The description of this thumbnail. Defaults to ``None``.
@@ -57,10 +58,12 @@ class Thumbnail(Item[V]):
         Whether to flag this thumbnail as a spoiler. Defaults to ``False``.
     """
 
-    def __init__(self, url: str, *, description: Optional[str] = None, spoiler: bool = False) -> None:
-        self.url: str = url
+    def __init__(self, media: Union[str, UnfurledMediaItem], *, description: Optional[str] = None, spoiler: bool = False) -> None:
+        self.media: UnfurledMediaItem = UnfurledMediaItem(media) if isinstance(media, str) else media
         self.description: Optional[str] = description
         self.spoiler: bool = spoiler
+
+        self._underlying = ThumbnailComponent._raw_construct()
 
     @property
     def type(self) -> Literal[ComponentType.thumbnail]:
@@ -73,14 +76,14 @@ class Thumbnail(Item[V]):
         return {
             'type': self.type.value,
             'spoiler': self.spoiler,
-            'media': {'url': self.url},
+            'media': self.media.to_dict(),
             'description': self.description,
         }
 
     @classmethod
     def from_component(cls, component: ThumbnailComponent) -> Self:
         return cls(
-            url=component.media.url,
+            media=component.media.url,
             description=component.description,
             spoiler=component.spoiler,
         )

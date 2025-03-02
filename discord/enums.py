@@ -78,7 +78,7 @@ __all__ = (
     'SubscriptionStatus',
     'MessageReferenceType',
     'SeparatorSize',
-    'MediaLoadingState',
+    'MediaItemLoadingState',
 )
 
 
@@ -877,7 +877,7 @@ class SeparatorSize(Enum):
     large = 2
 
 
-class MediaLoadingState(Enum):
+class MediaItemLoadingState(Enum):
     unknown = 0
     loading = 1
     loaded = 2

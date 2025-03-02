@@ -255,6 +255,9 @@ class View:
 
         # instead of grouping by row we will sort it so it is added
         # in order and should work as the original implementation
+        # this will append directly the v2 Components into the list
+        # and will add to an action row the loose items, such as
+        # buttons and selects
         for child in sorted(self._children, key=key):
             if child._is_v2():
                 components.append(child.to_component_dict())
