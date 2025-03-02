@@ -747,7 +747,7 @@ class SectionComponent(Component):
         payload: SectionComponentPayload = {
             'type': self.type.value,
             'components': [c.to_dict() for c in self.components],
-            'accessory': self.accessory.to_dict()
+            'accessory': self.accessory.to_dict(),
         }
         return payload
 

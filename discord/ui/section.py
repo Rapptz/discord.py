@@ -79,10 +79,7 @@ class Section(Item[V]):
             if len(children) > 3:
                 raise ValueError('maximum number of children exceeded')
             self._children.extend(
-                [
-                    c if isinstance(c, Item)
-                    else TextDisplay(c) for c in children
-                ],
+                [c if isinstance(c, Item) else TextDisplay(c) for c in children],
             )
         self.accessory: Item[Any] = accessory
 
@@ -179,6 +176,6 @@ class Section(Item[V]):
         data = {
             'components': [c.to_component_dict() for c in self._children],
             'type': self.type.value,
-            'accessory': self.accessory.to_component_dict()
+            'accessory': self.accessory.to_component_dict(),
         }
         return data
