@@ -52,9 +52,87 @@ __all__ = (
 )
 
 
-class AttachmentBase:
+class Attachment(Hashable):
+    """Represents an attachment from Discord.
+
+    .. container:: operations
+
+        .. describe:: str(x)
+
+            Returns the URL of the attachment.
+
+        .. describe:: x == y
+
+            Checks if the attachment is equal to another attachment.
+
+        .. describe:: x != y
+
+            Checks if the attachment is not equal to another attachment.
+
+        .. describe:: hash(x)
+
+            Returns the hash of the attachment.
+
+    .. versionchanged:: 1.7
+        Attachment can now be casted to :class:`str` and is hashable.
+
+    Attributes
+    ------------
+    id: :class:`int`
+        The attachment ID.
+    size: :class:`int`
+        The attachment size in bytes.
+    height: Optional[:class:`int`]
+        The attachment's height, in pixels. Only applicable to images and videos.
+    width: Optional[:class:`int`]
+        The attachment's width, in pixels. Only applicable to images and videos.
+    filename: :class:`str`
+        The attachment's filename.
+    url: :class:`str`
+        The attachment URL. If the message this attachment was attached
+        to is deleted, then this will 404.
+    proxy_url: :class:`str`
+        The proxy URL. This is a cached version of the :attr:`~Attachment.url` in the
+        case of images. When the message is deleted, this URL might be valid for a few
+        minutes or not valid at all.
+    content_type: Optional[:class:`str`]
+        The attachment's `media type <https://en.wikipedia.org/wiki/Media_type>`_
+
+        .. versionadded:: 1.7
+    description: Optional[:class:`str`]
+        The attachment's description. Only applicable to images.
+
+        .. versionadded:: 2.0
+    ephemeral: :class:`bool`
+        Whether the attachment is ephemeral.
+
+        .. versionadded:: 2.0
+    duration: Optional[:class:`float`]
+        The duration of the audio file in seconds. Returns ``None`` if it's not a voice message.
+
+        .. versionadded:: 2.3
+    waveform: Optional[:class:`bytes`]
+        The waveform (amplitudes) of the audio in bytes. Returns ``None`` if it's not a voice message.
+
+        .. versionadded:: 2.3
+    title: Optional[:class:`str`]
+        The normalised version of the attachment's filename.
+
+        .. versionadded:: 2.5
+    spoiler: :class:`bool`
+        Whether the attachment is a spoiler or not. Unlike :meth:`.is_spoiler`, this uses the API returned
+        data.
+
+        .. versionadded:: 2.6
+    """
 
     __slots__ = (
+        'id',
+        'size',
+        'ephemeral',
+        'duration',
+        'waveform',
+        'title',
         'url',
         'proxy_url',
         'description',
@@ -68,7 +146,13 @@ class AttachmentBase:
         '_state',
     )
 
-    def __init__(self, data: AttachmentBasePayload, state: Optional[ConnectionState]) -> None:
+    def __init__(self, *, data: AttachmentPayload, state: Optional[ConnectionState]):
+        self.id: int = int(data['id'])
+        self.filename: str = data['filename']
+        self.size: int = data['size']
+        self.ephemeral: bool = data.get('ephemeral', False)
+        self.duration: Optional[float] = data.get('duration_secs')
+        self.title: Optional[str] = data.get('title')
         self._state: Optional[ConnectionState] = state
         self._http: Optional[HTTPClient] = state.http if state else None
         self.url: str = data['url']
@@ -248,115 +332,6 @@ class AttachmentBase:
             spoiler=spoiler,
         )
 
-    def to_dict(self) -> AttachmentBasePayload:
-        base: AttachmentBasePayload = {
-            'url': self.url,
-            'proxy_url': self.proxy_url,
-            'spoiler': self.spoiler,
-        }
-
-        if self.width:
-            base['width'] = self.width
-        if self.height:
-            base['height'] = self.height
-        if self.description:
-            base['description'] = self.description
-
-        return base
-
-
-class Attachment(Hashable, AttachmentBase):
-    """Represents an attachment from Discord.
-
-    .. container:: operations
-
-        .. describe:: str(x)
-
-            Returns the URL of the attachment.
-
-        .. describe:: x == y
-
-            Checks if the attachment is equal to another attachment.
-
-        .. describe:: x != y
-
-            Checks if the attachment is not equal to another attachment.
-
-        .. describe:: hash(x)
-
-            Returns the hash of the attachment.
-
-    .. versionchanged:: 1.7
-        Attachment can now be casted to :class:`str` and is hashable.
-
-    Attributes
-    ------------
-    id: :class:`int`
-        The attachment ID.
-    size: :class:`int`
-        The attachment size in bytes.
-    height: Optional[:class:`int`]
-        The attachment's height, in pixels. Only applicable to images and videos.
-    width: Optional[:class:`int`]
-        The attachment's width, in pixels. Only applicable to images and videos.
-    filename: :class:`str`
-        The attachment's filename.
-    url: :class:`str`
-        The attachment URL. If the message this attachment was attached
-        to is deleted, then this will 404.
-    proxy_url: :class:`str`
-        The proxy URL. This is a cached version of the :attr:`~Attachment.url` in the
-        case of images. When the message is deleted, this URL might be valid for a few
-        minutes or not valid at all.
-    content_type: Optional[:class:`str`]
-        The attachment's `media type <https://en.wikipedia.org/wiki/Media_type>`_
-
-        .. versionadded:: 1.7
-    description: Optional[:class:`str`]
-        The attachment's description. Only applicable to images.
-
-        .. versionadded:: 2.0
-    ephemeral: :class:`bool`
-        Whether the attachment is ephemeral.
-
-        .. versionadded:: 2.0
-    duration: Optional[:class:`float`]
-        The duration of the audio file in seconds. Returns ``None`` if it's not a voice message.
-
-        .. versionadded:: 2.3
-    waveform: Optional[:class:`bytes`]
-        The waveform (amplitudes) of the audio in bytes. Returns ``None`` if it's not a voice message.
-
-        .. versionadded:: 2.3
-    title: Optional[:class:`str`]
-        The normalised version of the attachment's filename.
-
-        .. versionadded:: 2.5
-    spoiler: :class:`bool`
-        Whether the attachment is a spoiler or not. Unlike :meth:`.is_spoiler`, this uses the API returned
-        data.
-
-        .. versionadded:: 2.6
-    """
-
-    __slots__ = (
-        'id',
-        'size',
-        'ephemeral',
-        'duration',
-        'waveform',
-        'title',
-    )
-
-    def __init__(self, *, data: AttachmentPayload, state: ConnectionState):
-        self.id: int = int(data['id'])
-        self.filename: str = data['filename']
-        self.size: int = data['size']
-        self.ephemeral: bool = data.get('ephemeral', False)
-        self.duration: Optional[float] = data.get('duration_secs')
-        self.title: Optional[str] = data.get('title')
-        super().__init__(data, state)
-
     def is_spoiler(self) -> bool:
         """:class:`bool`: Whether this attachment contains a spoiler."""
         return self.spoiler or self.filename.startswith('SPOILER_')
@@ -369,14 +344,26 @@ class Attachment(Hashable, AttachmentBase):
         return f'<Attachment id={self.id} filename={self.filename!r} url={self.url!r}>'
 
     def to_dict(self) -> AttachmentPayload:
-        result: AttachmentPayload = super().to_dict()  # pyright: ignore[reportAssignmentType]
-        result['id'] = self.id
-        result['filename'] = self.filename
-        result['size'] = self.size
-        return result
+        base: AttachmentPayload = {
+            'url': self.url,
+            'proxy_url': self.proxy_url,
+            'spoiler': self.spoiler,
+            'id': self.id,
+            'filename': self.filename,
+            'size': self.size,
+        }
+
+        if self.width:
+            base['width'] = self.width
+        if self.height:
+            base['height'] = self.height
+        if self.description:
+            base['description'] = self.description
+
+        return base
 
 
-class UnfurledAttachment(AttachmentBase):
+class UnfurledAttachment(Attachment):
     """Represents an unfurled attachment item from a :class:`Component`.
 
     .. versionadded:: 2.6
@@ -425,7 +412,7 @@ class UnfurledAttachment(AttachmentBase):
 
     def __init__(self, data: UnfurledAttachmentPayload, state: Optional[ConnectionState]) -> None:
         self.loading_state: MediaLoadingState = try_enum(MediaLoadingState, data.get('loading_state', 0))
-        super().__init__(data, state)
+        super().__init__(data={'id': 0, 'filename': '', 'size': 0, **data}, state=state)  # type: ignore
 
     def __repr__(self) -> str:
         return f'<UnfurledAttachment url={self.url!r}>'
