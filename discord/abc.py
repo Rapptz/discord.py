@@ -1389,7 +1389,6 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
-        views: Sequence[View] = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
@@ -1411,7 +1410,6 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
-        views: Sequence[View] = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
@@ -1433,7 +1431,6 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
-        views: Sequence[View] = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
@@ -1455,7 +1452,6 @@ class Messageable:
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
         view: View = ...,
-        views: Sequence[View] = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
@@ -1478,7 +1474,6 @@ class Messageable:
         reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
         mention_author: Optional[bool] = None,
         view: Optional[View] = None,
-        views: Optional[Sequence[View]] = None,
         suppress_embeds: bool = False,
         silent: bool = False,
         poll: Optional[Poll] = None,
@@ -1555,10 +1550,6 @@ class Messageable:
             A Discord UI View to add to the message.
 
             .. versionadded:: 2.0
-        views: Sequence[:class:`discord.ui.View`]
-            A sequence of Discord UI Views to add to the message.
-
-            .. versionadded:: 2.6
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
 
@@ -1645,7 +1636,6 @@ class Messageable:
             mention_author=mention_author,
             stickers=sticker_ids,
             view=view,
-            views=views if views is not None else MISSING,
             flags=flags,
             poll=poll,
         ) as params:
