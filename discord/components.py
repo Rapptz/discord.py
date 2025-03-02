@@ -719,7 +719,7 @@ class SectionComponent(Component):
     ----------
     components: List[Union[:class:`TextDisplay`, :class:`Button`]]
         The components on this section.
-    accessory: Optional[:class:`Component`]
+    accessory: :class:`Component`
         The section accessory.
     """
 
@@ -762,6 +762,8 @@ class ThumbnailComponent(Component):
         The user constructible and usable type to create a thumbnail is :class:`discord.ui.Thumbnail`
         not this one.
 
+    .. versionadded:: 2.6
+
     Attributes
     ----------
     media: :class:`UnfurledMediaItem`
@@ -772,7 +774,13 @@ class ThumbnailComponent(Component):
         Whether this thumbnail is flagged as a spoiler.
     """
 
-    __slots__ = ()
+    __slots__ = (
+        'media',
+        'spoiler',
+        'description',
+    )
+
+    __repr_info__ = __slots__
 
     def __init__(
         self,
@@ -801,6 +809,11 @@ class TextDisplay(Component):
 
     This inherits from :class:`Component`.
 
+    .. note::
+
+        The user constructible and usable type to create a text display is
+        :class:`discord.ui.TextDisplay` not this one.
+
     .. versionadded:: 2.6
 
     Attributes
@@ -808,6 +821,10 @@ class TextDisplay(Component):
     content: :class:`str`
         The content that this display shows.
     """
+
+    __slots__ = ('content',)
+
+    __repr_info__ = __slots__
 
     def __init__(self, data: TextComponentPayload) -> None:
         self.content: str = data['content']
@@ -825,6 +842,8 @@ class TextDisplay(Component):
 
 class UnfurledMediaItem(AssetMixin):
     """Represents an unfurled media item.
+
+    .. versionadded:: 2.6
 
     Parameters
     ----------
@@ -896,6 +915,9 @@ class UnfurledMediaItem(AssetMixin):
         self.loading_state = try_enum(MediaItemLoadingState, data['loading_state'])
         self._state = state
 
+    def __repr__(self) -> str:
+        return f'<UnfurledMediaItem url={self.url}>'
+
     def to_dict(self):
         return {
             'url': self.url,
@@ -904,6 +926,8 @@ class UnfurledMediaItem(AssetMixin):
 
 class MediaGalleryItem:
     """Represents a :class:`MediaGalleryComponent` media item.
+
+    .. versionadded:: 2.6
 
     Parameters
     ----------
@@ -935,6 +959,9 @@ class MediaGalleryItem:
         self.description: Optional[str] = description
         self.spoiler: bool = spoiler
         self._state: Optional[ConnectionState] = None
+
+    def __repr__(self) -> str:
+        return f'<MediaGalleryItem media={self.media!r}>'
 
     @classmethod
     def _from_data(cls, data: MediaGalleryItemPayload, state: Optional[ConnectionState]) -> MediaGalleryItem:
@@ -968,13 +995,22 @@ class MediaGalleryComponent(Component):
 
     This inherits from :class:`Component`.
 
+    .. note::
+
+        The user constructible and usable type for creating a media gallery is
+        :class:`discord.ui.MediaGallery` not this one.
+
+    .. versionadded:: 2.6
+
     Attributes
     ----------
     items: List[:class:`MediaGalleryItem`]
         The items this gallery has.
     """
 
-    __slots__ = ('items', 'id')
+    __slots__ = ('items',)
+
+    __repr_info__ = __slots__
 
     def __init__(self, data: MediaGalleryComponentPayload, state: Optional[ConnectionState]) -> None:
         self.items: List[MediaGalleryItem] = MediaGalleryItem._from_gallery(data['items'], state)
@@ -995,6 +1031,13 @@ class FileComponent(Component):
 
     This inherits from :class:`Component`.
 
+    .. note::
+
+        The user constructible and usable type for create a file component is
+        :class:`discord.ui.File` not this one.
+
+    .. versionadded:: 2.6
+
     Attributes
     ----------
     media: :class:`UnfurledMediaItem`
@@ -1007,6 +1050,8 @@ class FileComponent(Component):
         'media',
         'spoiler',
     )
+
+    __repr_info__ = __slots__
 
     def __init__(self, data: FileComponentPayload, state: Optional[ConnectionState]) -> None:
         self.media: UnfurledMediaItem = UnfurledMediaItem._from_data(data['file'], state)
@@ -1029,6 +1074,13 @@ class SeparatorComponent(Component):
 
     This inherits from :class:`Component`.
 
+    .. note::
+
+        The user constructible and usable type for creating a separator is
+        :class:`discord.ui.Separator` not this one.
+
+    .. versionadded:: 2.6
+
     Attributes
     ----------
     spacing: :class:`SeparatorSize`
@@ -1041,6 +1093,8 @@ class SeparatorComponent(Component):
         'spacing',
         'visible',
     )
+
+    __repr_info__ = __slots__
 
     def __init__(
         self,
@@ -1065,6 +1119,13 @@ class Container(Component):
     """Represents a Container from the Discord Bot UI Kit.
 
     This inherits from :class:`Component`.
+
+    .. note::
+
+        The user constructible and usable type for creating a container is
+        :class:`discord.ui.Container` not this one.
+
+    .. versionadded:: 2.6
 
     Attributes
     ----------
