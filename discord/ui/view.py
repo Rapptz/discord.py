@@ -277,13 +277,7 @@ class View:
         # v2 components
 
         def key(item: Item) -> int:
-            if item._rendered_row is not None:
-                return item._rendered_row
-
-            try:
-                return self._children.index(item)
-            except ValueError:
-                return 0
+            return item._rendered_row or 0
 
         # instead of grouping by row we will sort it so it is added
         # in order and should work as the original implementation
