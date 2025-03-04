@@ -56,6 +56,13 @@ class EmbedProxy:
         return isinstance(other, EmbedProxy) and self.__dict__ == other.__dict__
 
 
+class EmbedMediaProxy(EmbedProxy):
+    def __getattribute__(self, name: str) -> Any:
+        if name == 'flags':
+            return AttachmentFlags._from_value(self.__dict__.get('flags', 0))
+        return super().__getattribute__(name)
+
+
 if TYPE_CHECKING:
     from typing_extensions import Self
 
@@ -413,9 +420,7 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        data = getattr(self, '_image', {})
-        data['flags'] = AttachmentFlags._from_value(data.get('flags', 0))
-        return EmbedProxy(data)  # type: ignore
+        return EmbedMediaProxy(getattr(self, '_image', {}))  # type: ignore
 
     def set_image(self, *, url: Optional[Any]) -> Self:
         """Sets the image for the embed content.
@@ -458,9 +463,7 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        data = getattr(self, '_thumbnail', {})
-        data['flags'] = AttachmentFlags._from_value(data.get('flags', 0))
-        return EmbedProxy(data)  # type: ignore
+        return EmbedMediaProxy(getattr(self, '_thumbnail', {}))  # type: ignore
 
     def set_thumbnail(self, *, url: Optional[Any]) -> Self:
         """Sets the thumbnail for the embed content.
@@ -503,9 +506,7 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        data = getattr(self, '_video', {})
-        data['flags'] = AttachmentFlags._from_value(data.get('flags', 0))
-        return EmbedProxy(data)  # type: ignore
+        return EmbedMediaProxy(getattr(self, '_video', {}))  # type: ignore
 
     @property
     def provider(self) -> _EmbedProviderProxy:
