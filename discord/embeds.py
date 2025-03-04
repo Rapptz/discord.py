@@ -46,7 +46,7 @@ class EmbedProxy:
         return len(self.__dict__)
 
     def __repr__(self) -> str:
-        inner = ', '.join((f'{k}={v!r}' for k, v in self.__dict__.items() if not k.startswith('_')))
+        inner = ', '.join((f'{k}={getattr(self, k)!r}' for k in dir(self) if not k.startswith('_')))
         return f'EmbedProxy({inner})'
 
     def __getattr__(self, attr: str) -> None:
@@ -54,6 +54,16 @@ class EmbedProxy:
 
     def __eq__(self, other: object) -> bool:
         return isinstance(other, EmbedProxy) and self.__dict__ == other.__dict__
+
+
+class EmbedMediaProxy(EmbedProxy):
+    def __init__(self, layer: Dict[str, Any]):
+        super().__init__(layer)
+        self._flags = self.__dict__.pop('flags', 0)
+
+    @property
+    def flags(self) -> AttachmentFlags:
+        return AttachmentFlags._from_value(self._flags or 0)
 
 
 if TYPE_CHECKING:
@@ -413,9 +423,7 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        data = getattr(self, '_image', {})
-        data['flags'] = AttachmentFlags._from_value(data.get('flags', 0))
-        return EmbedProxy(data)  # type: ignore
+        return EmbedMediaProxy(getattr(self, '_image', {}))  # type: ignore
 
     def set_image(self, *, url: Optional[Any]) -> Self:
         """Sets the image for the embed content.
@@ -458,9 +466,7 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        data = getattr(self, '_thumbnail', {})
-        data['flags'] = AttachmentFlags._from_value(data.get('flags', 0))
-        return EmbedProxy(data)  # type: ignore
+        return EmbedMediaProxy(getattr(self, '_thumbnail', {}))  # type: ignore
 
     def set_thumbnail(self, *, url: Optional[Any]) -> Self:
         """Sets the thumbnail for the embed content.
@@ -503,9 +509,7 @@ class Embed:
         If the attribute has no value then ``None`` is returned.
         """
         # Lying to the type checker for better developer UX.
-        data = getattr(self, '_video', {})
-        data['flags'] = AttachmentFlags._from_value(data.get('flags', 0))
-        return EmbedProxy(data)  # type: ignore
+        return EmbedMediaProxy(getattr(self, '_video', {}))  # type: ignore
 
     @property
     def provider(self) -> _EmbedProviderProxy:
