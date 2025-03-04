@@ -11,6 +11,20 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p5p1:
+
+v2.5.1
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix :attr:`InteractionCallbackResponse.resource` having incorrect state (:issue:`10107`)
+- Create :class:`ScheduledEvent` on cache miss for :func:`on_scheduled_event_delete` (:issue:`10113`)
+- Add defaults for :class:`Message` creation preventing some crashes (:issue:`10115`)
+- Fix :meth:`Attachment.is_spoiler` and :meth:`Attachment.is_voice_message` being incorrect (:issue:`10122`)
+
+
 .. _vp2p5p0:
 
 v2.5.0
@@ -63,7 +77,6 @@ New Features
 
 - Add :attr:`PartialWebhookChannel.mention` attribute (:issue:`10101`)
 - Add support for sending stateless views for :class:`SyncWebhook` or webhooks with no state (:issue:`10089`)
-- Add
 - Add richer :meth:`Role.move` interface (:issue:`10100`)
 - Add support for :class:`EmbedFlags` via :attr:`Embed.flags` (:issue:`10085`)
 - Add new flags for :class:`AttachmentFlags` (:issue:`10085`)
