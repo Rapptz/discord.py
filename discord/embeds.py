@@ -414,7 +414,7 @@ class Embed:
         """
         # Lying to the type checker for better developer UX.
         data = getattr(self, '_image', {})
-        data['flags'] = AttachmentFlags._from_value(data.get('flags', 0))
+        data['flags'] = data.get('flags', 0)
         return EmbedProxy(data)  # type: ignore
 
     def set_image(self, *, url: Optional[Any]) -> Self:
@@ -459,7 +459,7 @@ class Embed:
         """
         # Lying to the type checker for better developer UX.
         data = getattr(self, '_thumbnail', {})
-        data['flags'] = AttachmentFlags._from_value(data.get('flags', 0))
+        data['flags'] = data.get('flags', 0)
         return EmbedProxy(data)  # type: ignore
 
     def set_thumbnail(self, *, url: Optional[Any]) -> Self:
@@ -504,7 +504,7 @@ class Embed:
         """
         # Lying to the type checker for better developer UX.
         data = getattr(self, '_video', {})
-        data['flags'] = AttachmentFlags._from_value(data.get('flags', 0))
+        data['flags'] = data.get('flags', 0)
         return EmbedProxy(data)  # type: ignore
 
     @property
