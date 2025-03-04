@@ -36,7 +36,6 @@ from typing import (
     TYPE_CHECKING,
     Tuple,
     Type,
-    Union,
 )
 from functools import partial
 from itertools import groupby
@@ -47,6 +46,7 @@ import sys
 import time
 import os
 from .item import Item, ItemCallbackType
+from .action_row import ActionRow
 from .dynamic import DynamicItem
 from ..components import (
     Component,
@@ -153,9 +153,6 @@ class _ViewWeights:
         raise ValueError('could not find open space for item')
 
     def add_item(self, item: Item) -> None:
-        if item._is_v2() and not self.v2_weights():
-            # v2 components allow up to 10 rows
-            self.weights.extend([0, 0, 0, 0, 0])
         if item.row is not None:
             total = self.weights[item.row] + item.width
             if total > 5:
@@ -191,7 +188,7 @@ class _ViewCallback:
         return self.callback(self.view, interaction, self.item)
 
 
-class View:
+class View:  # NOTE: maybe add a deprecation warning in favour of LayoutView?
     """Represents a UI view.
 
     This object must be inherited to create a UI within Discord.
@@ -208,15 +205,15 @@ class View:
     __discord_ui_view__: ClassVar[bool] = True
     __discord_ui_modal__: ClassVar[bool] = False
     __discord_ui_container__: ClassVar[bool] = False
-    __view_children_items__: ClassVar[List[Union[ItemCallbackType[Any, Any], Item[Any]]]] = []
+    __view_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        children: Dict[str, Union[ItemCallbackType[Any, Any], Item]] = {}
+        children: Dict[str, ItemCallbackType[Any, Any]] = {}
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
-                if hasattr(member, '__discord_ui_model_type__') or isinstance(member, Item):
+                if hasattr(member, '__discord_ui_model_type__'):
                     children[name] = member
 
         if len(children) > 25:
@@ -228,15 +225,11 @@ class View:
         children = []
 
         for func in self.__view_children_items__:
-            if isinstance(func, Item):
-                func._view = self
-                children.append(func)
-            else:
-                item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
-                item.callback = _ViewCallback(func, self, item)  # type: ignore
-                item._view = self
-                setattr(self, func.__name__, item)
-                children.append(item)
+            item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
+            item.callback = _ViewCallback(func, self, item)  # type: ignore
+            item._view = self
+            setattr(self, func.__name__, item)
+            children.append(item)
         return children
 
     def __init__(self, *, timeout: Optional[float] = 180.0):
@@ -286,36 +279,22 @@ class View:
         return any(c._is_v2() for c in self.children)
 
     def to_components(self) -> List[Dict[str, Any]]:
-        components: List[Dict[str, Any]] = []
-        rows_index: Dict[int, int] = {}
-        # helper mapping to find action rows for items that are not
-        # v2 components
-
         def key(item: Item) -> int:
             return item._rendered_row or 0
 
-        # instead of grouping by row we will sort it so it is added
-        # in order and should work as the original implementation
-        # this will append directly the v2 Components into the list
-        # and will add to an action row the loose items, such as
-        # buttons and selects
-        for child in sorted(self._children, key=key):
-            if child._is_v2():
-                components.append(child.to_component_dict())
-            else:
-                row = child._rendered_row or 0
-                index = rows_index.get(row)
+        children = sorted(self._children, key=key)
+        components: List[Dict[str, Any]] = []
+        for _, group in groupby(children, key=key):
+            children = [item.to_component_dict() for item in group]
+            if not children:
+                continue
 
-                if index is not None:
-                    components[index]['components'].append(child.to_component_dict())
-                else:
-                    components.append(
-                        {
-                            'type': 1,
-                            'components': [child.to_component_dict()],
-                        },
-                    )
-                    rows_index[row] = len(components) - 1
+            components.append(
+                {
+                    'type': 1,
+                    'components': children,
+                }
+            )
 
         return components
 
@@ -401,8 +380,9 @@ class View:
         TypeError
             An :class:`Item` was not passed.
         ValueError
-            Maximum number of children has been exceeded (25)
-            or the row the item is trying to be added to is full.
+            Maximum number of children has been exceeded (25), the
+            row the item is trying to be added to is full or the item
+            you tried to add is not allowed in this View.
         """
 
         if len(self._children) >= 25:
@@ -410,6 +390,11 @@ class View:
 
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
+
+        if item._is_v2() and not self._is_v2():
+            raise ValueError(
+                'The item can only be added on LayoutView'
+            )
 
         self.__weights.add_item(item)
 
@@ -612,6 +597,64 @@ class View:
             the view finished normally.
         """
         return await self.__stopped
+
+
+class LayoutView(View):
+    __view_children_items__: ClassVar[List[Item[Any]]] = []
+
+    def __init__(self, *, timeout: Optional[float] = 180) -> None:
+        super().__init__(timeout=timeout)
+        self.__weights.weights.extend([0, 0, 0, 0, 0])
+
+    def __init_subclass__(cls) -> None:
+        children: Dict[str, Item[Any]] = {}
+
+        for base in reversed(cls.__mro__):
+            for name, member in base.__dict__.items():
+                if isinstance(member, Item):
+                    children[name] = member
+
+        if len(children) > 10:
+            raise TypeError('LayoutView cannot have more than 10 top-level children')
+
+        cls.__view_children_items__ = list(children.values())
+
+    def _init_children(self) -> List[Item[Self]]:
+        children = []
+
+        for i in self.__view_children_items__:
+            if isinstance(i, Item):
+                if getattr(i, '_parent', None):
+                    # this is for ActionRows which have decorators such as
+                    # @action_row.button and @action_row.select that will convert
+                    # those callbacks into their types but will have a _parent
+                    # attribute which is checked here so the item is not added twice
+                    continue
+                i._view = self
+                if getattr(i, '__discord_ui_action_row__', False):
+                    i._update_children_view(self)  # type: ignore
+                children.append(i)
+            else:
+                # guard just in case
+                raise TypeError(
+                    'LayoutView can only have items'
+                )
+        return children
+
+    def _is_v2(self) -> bool:
+        return True
+
+    def to_components(self):
+        components: List[Dict[str, Any]] = []
+
+        # sorted by row, which in LayoutView indicates the position of the component in the
+        # payload instead of in which ActionRow it should be placed on.
+        for child in sorted(self._children, key=lambda i: i._rendered_row or 0):
+            components.append(
+                child.to_component_dict(),
+            )
+
+        return child
 
 
 class ViewStore:

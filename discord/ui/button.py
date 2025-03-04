@@ -43,6 +43,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .view import View
+    from .action_row import ActionRow
     from ..emoji import Emoji
     from ..types.components import ButtonComponent as ButtonComponentPayload
 
@@ -144,6 +145,7 @@ class Button(Item[V]):
             emoji=emoji,
             sku_id=sku_id,
         )
+        self._parent: Optional[ActionRow] = None
         self.row = row
 
     @property
