@@ -11,6 +11,16 @@ Changelog
 This page keeps a detailed human friendly rendering of what's new and changed
 in specific versions.
 
+.. _vp2p5p2:
+
+v2.5.2
+-------
+
+Bug Fixes
+~~~~~~~~~~
+
+- Fix a serialization issue when sending embeds (:issue:`10126`)
+
 .. _vp2p5p1:
 
 v2.5.1
