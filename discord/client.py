@@ -72,7 +72,7 @@ from .object import Object
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
 from .appinfo import AppInfo
-from .ui.view import View
+from .ui.view import BaseView
 from .ui.dynamic import DynamicItem
 from .stage_instance import StageInstance
 from .threads import Thread
@@ -3149,7 +3149,7 @@ class Client:
 
         self._connection.remove_dynamic_items(*items)
 
-    def add_view(self, view: View, *, message_id: Optional[int] = None) -> None:
+    def add_view(self, view: BaseView, *, message_id: Optional[int] = None) -> None:
         """Registers a :class:`~discord.ui.View` for persistent listening.
 
         This method should be used for when a view is comprised of components
@@ -3175,7 +3175,7 @@ class Client:
             and all their components have an explicitly provided custom_id.
         """
 
-        if not isinstance(view, View):
+        if not isinstance(view, BaseView):
             raise TypeError(f'expected an instance of View not {view.__class__.__name__}')
 
         if not view.is_persistent():
@@ -3187,7 +3187,7 @@ class Client:
         self._connection.store_view(view, message_id)
 
     @property
-    def persistent_views(self) -> Sequence[View]:
+    def persistent_views(self) -> Sequence[BaseView]:
         """Sequence[:class:`.View`]: A sequence of persistent views added to the client.
 
         .. versionadded:: 2.0
