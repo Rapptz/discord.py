@@ -604,6 +604,15 @@ Modal
     :members:
     :inherited-members:
 
+LayoutView
+~~~~~~~~~~
+
+.. attributetable:: discord.ui.LayoutView
+
+.. autoclass:: discord.ui.LayoutView
+    :member:
+    :inherited-members:
+
 Item
 ~~~~~~~
 
