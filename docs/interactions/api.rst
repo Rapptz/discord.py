@@ -594,6 +594,7 @@ View
 
 .. autoclass:: discord.ui.View
     :members:
+    :inherited-members:
 
 Modal
 ~~~~~~
