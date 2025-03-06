@@ -26,7 +26,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple, Type, TypeVar
 
 from .item import Item
-from .view import View, _component_to_item
+from .view import View, _component_to_item, LayoutView
 from .dynamic import DynamicItem
 from ..enums import ComponentType
 from ..utils import MISSING
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
     from ..colour import Colour, Color
     from ..components import Container as ContainerComponent
 
-V = TypeVar('V', bound='View', covariant=True)
+V = TypeVar('V', bound='LayoutView', covariant=True)
 
 __all__ = ('Container',)
 
@@ -69,6 +69,8 @@ class Container(View, Item[V]):
         passing an index is advised. For example, row=1 will show
         up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 9 (i.e. zero indexed)
+    id: Optional[:class:`str`]
+        The ID of this component. This must be unique across the view.
     """
 
     __discord_ui_container__ = True
@@ -82,6 +84,7 @@ class Container(View, Item[V]):
         spoiler: bool = False,
         timeout: Optional[float] = 180,
         row: Optional[int] = None,
+        id: Optional[str] = None,
     ) -> None:
         super().__init__(timeout=timeout)
         if children is not MISSING:
@@ -95,6 +98,7 @@ class Container(View, Item[V]):
         self._row: Optional[int] = None
         self._rendered_row: Optional[int] = None
         self.row: Optional[int] = row
+        self.id: Optional[str] = id
 
     @property
     def children(self) -> List[Item[Self]]:

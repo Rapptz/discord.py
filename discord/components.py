@@ -967,7 +967,7 @@ class MediaGalleryItem:
     def _from_data(cls, data: MediaGalleryItemPayload, state: Optional[ConnectionState]) -> MediaGalleryItem:
         media = data['media']
         self = cls(
-            media=media['url'],
+            media=UnfurledMediaItem._from_data(media, state),
             description=data.get('description'),
             spoiler=data.get('spoiler', False),
         )

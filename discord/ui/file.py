@@ -32,9 +32,9 @@ from ..enums import ComponentType
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .view import View
+    from .view import LayoutView
 
-V = TypeVar('V', bound='View', covariant=True)
+V = TypeVar('V', bound='LayoutView', covariant=True)
 
 __all__ = ('File',)
 
@@ -59,6 +59,8 @@ class File(Item[V]):
         passing an index is advised. For example, row=1 will show
         up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 9 (i.e. zero indexed)
+    id: Optional[:class:`str`]
+        The ID of this component. This must be unique across the view.
     """
 
     def __init__(
@@ -67,6 +69,7 @@ class File(Item[V]):
         *,
         spoiler: bool = False,
         row: Optional[int] = None,
+        id: Optional[str] = None,
     ) -> None:
         super().__init__()
         self._underlying = FileComponent._raw_construct(
@@ -75,6 +78,7 @@ class File(Item[V]):
         )
 
         self.row = row
+        self.id = id
 
     def _is_v2(self):
         return True

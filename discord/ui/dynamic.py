@@ -38,14 +38,14 @@ if TYPE_CHECKING:
     from ..interactions import Interaction
     from ..components import Component
     from ..enums import ComponentType
-    from .view import View
+    from .view import BaseView
 
-    V = TypeVar('V', bound='View', covariant=True, default=View)
+    V = TypeVar('V', bound='BaseView', covariant=True, default=BaseView)
 else:
-    V = TypeVar('V', bound='View', covariant=True)
+    V = TypeVar('V', bound='BaseView', covariant=True)
 
 
-class DynamicItem(Generic[BaseT], Item['View']):
+class DynamicItem(Generic[BaseT], Item['BaseView']):
     """Represents an item with a dynamic ``custom_id`` that can be used to store state within
     that ``custom_id``.
 

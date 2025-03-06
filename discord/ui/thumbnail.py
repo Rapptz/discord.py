@@ -32,10 +32,10 @@ from ..components import UnfurledMediaItem
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .view import View
+    from .view import LayoutView
     from ..components import ThumbnailComponent
 
-V = TypeVar('V', bound='View', covariant=True)
+V = TypeVar('V', bound='LayoutView', covariant=True)
 
 __all__ = ('Thumbnail',)
 
@@ -62,6 +62,8 @@ class Thumbnail(Item[V]):
         passing an index is advised. For example, row=1 will show
         up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 9 (i.e. zero indexed)
+    id: Optional[:class:`str`]
+        The ID of this component. This must be unique across the view.
     """
 
     def __init__(
@@ -71,6 +73,7 @@ class Thumbnail(Item[V]):
         description: Optional[str] = None,
         spoiler: bool = False,
         row: Optional[int] = None,
+        id: Optional[str] = None,
     ) -> None:
         super().__init__()
 
@@ -79,6 +82,7 @@ class Thumbnail(Item[V]):
         self.spoiler: bool = spoiler
 
         self.row = row
+        self.id = id
 
     @property
     def width(self):

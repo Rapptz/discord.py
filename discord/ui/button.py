@@ -42,12 +42,12 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .view import View
+    from .view import BaseView
     from .action_row import ActionRow
     from ..emoji import Emoji
     from ..types.components import ButtonComponent as ButtonComponentPayload
 
-V = TypeVar('V', bound='View', covariant=True)
+V = TypeVar('V', bound='BaseView', covariant=True)
 
 
 class Button(Item[V]):
@@ -147,6 +147,7 @@ class Button(Item[V]):
         )
         self._parent: Optional[ActionRow] = None
         self.row = row
+        self.id = custom_id
 
     @property
     def style(self) -> ButtonStyle:

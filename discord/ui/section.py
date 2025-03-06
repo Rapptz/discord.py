@@ -33,10 +33,10 @@ from ..utils import MISSING
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .view import View
+    from .view import LayoutView
     from ..components import SectionComponent
 
-V = TypeVar('V', bound='View', covariant=True)
+V = TypeVar('V', bound='LayoutView', covariant=True)
 
 __all__ = ('Section',)
 
@@ -59,6 +59,8 @@ class Section(Item[V]):
         passing an index is advised. For example, row=1 will show
         up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 9 (i.e. zero indexed)
+    id: Optional[:class:`str`]
+        The ID of this component. This must be unique across the view.
     """
 
     __slots__ = (
@@ -72,6 +74,7 @@ class Section(Item[V]):
         *,
         accessory: Item[Any],
         row: Optional[int] = None,
+        id: Optional[str] = None,
     ) -> None:
         super().__init__()
         self._children: List[Item[Any]] = []
@@ -84,6 +87,7 @@ class Section(Item[V]):
         self.accessory: Item[Any] = accessory
 
         self.row = row
+        self.id = id
 
     @property
     def type(self) -> Literal[ComponentType.section]:

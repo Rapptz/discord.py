@@ -72,7 +72,7 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import TypeAlias, TypeGuard
 
-    from .view import View
+    from .view import BaseView
     from .action_row import ActionRow
     from ..types.components import SelectMenu as SelectMenuPayload
     from ..types.interactions import SelectMessageComponentInteractionData
@@ -102,7 +102,7 @@ if TYPE_CHECKING:
         Thread,
     ]
 
-V = TypeVar('V', bound='View', covariant=True)
+V = TypeVar('V', bound='BaseView', covariant=True)
 BaseSelectT = TypeVar('BaseSelectT', bound='BaseSelect[Any]')
 SelectT = TypeVar('SelectT', bound='Select[Any]')
 UserSelectT = TypeVar('UserSelectT', bound='UserSelect[Any]')
@@ -259,6 +259,7 @@ class BaseSelect(Item[V]):
         )
 
         self.row = row
+        self.id = custom_id if custom_id is not MISSING else None
         self._parent: Optional[ActionRow] = None
         self._values: List[PossibleValue] = []
 

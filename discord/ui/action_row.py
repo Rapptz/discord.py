@@ -45,7 +45,8 @@ from typing import (
 from .item import Item, ItemCallbackType
 from .button import Button
 from .dynamic import DynamicItem
-from .select import select as _select, Select, SelectCallbackDecorator, UserSelect, RoleSelect, ChannelSelect, MentionableSelect
+from .select import select as _select, Select, UserSelect, RoleSelect, ChannelSelect, MentionableSelect
+from ..components import ActionRow as ActionRowComponent
 from ..enums import ButtonStyle, ComponentType, ChannelType
 from ..partial_emoji import PartialEmoji
 from ..utils import MISSING
@@ -61,7 +62,8 @@ if TYPE_CHECKING:
         ChannelSelectT,
         RoleSelectT,
         UserSelectT,
-        SelectT
+        SelectT,
+        SelectCallbackDecorator,
     )
     from ..emoji import Emoji
     from ..components import SelectOption
@@ -125,7 +127,7 @@ class ActionRow(Item[V]):
 
         for func in self.__action_row_children_items__:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
-            item.callback = _ActionRowCallback(func, self, item)
+            item.callback = _ActionRowCallback(func, self, item)  # type: ignore
             item._parent = getattr(func, '__discord_ui_parent__', self)  # type: ignore
             setattr(self, func.__name__, item)
             children.append(item)
@@ -478,3 +480,11 @@ class ActionRow(Item[V]):
             return r
 
         return decorator  # type: ignore
+
+    @classmethod
+    def from_component(cls, component: ActionRowComponent) -> ActionRow:
+        from .view import _component_to_item
+        self = cls()
+        for cmp in component.children:
+            self.add_item(_component_to_item(cmp))
+        return self

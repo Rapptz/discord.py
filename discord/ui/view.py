@@ -36,6 +36,7 @@ from typing import (
     TYPE_CHECKING,
     Tuple,
     Type,
+    Union,
 )
 from functools import partial
 from itertools import groupby
@@ -46,7 +47,6 @@ import sys
 import time
 import os
 from .item import Item, ItemCallbackType
-from .action_row import ActionRow
 from .dynamic import DynamicItem
 from ..components import (
     Component,
@@ -61,10 +61,12 @@ from ..components import (
     SeparatorComponent,
     ThumbnailComponent,
 )
+from ..utils import get as _utils_get
 
 # fmt: off
 __all__ = (
     'View',
+    'LayoutView',
 )
 # fmt: on
 
@@ -79,6 +81,8 @@ if TYPE_CHECKING:
     from ..types.interactions import ModalSubmitComponentInteractionData as ModalSubmitComponentInteractionDataPayload
     from ..state import ConnectionState
     from .modal import Modal
+
+    ItemLike = Union[ItemCallbackType[Any, Any], Item[Any]]
 
 
 _log = logging.getLogger(__name__)
@@ -188,57 +192,18 @@ class _ViewCallback:
         return self.callback(self.view, interaction, self.item)
 
 
-class View:  # NOTE: maybe add a deprecation warning in favour of LayoutView?
-    """Represents a UI view.
-
-    This object must be inherited to create a UI within Discord.
-
-    .. versionadded:: 2.0
-
-    Parameters
-    -----------
-    timeout: Optional[:class:`float`]
-        Timeout in seconds from last interaction with the UI before no longer accepting input.
-        If ``None`` then there is no timeout.
-    """
-
-    __discord_ui_view__: ClassVar[bool] = True
+class BaseView:
+    __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
     __discord_ui_container__: ClassVar[bool] = False
-    __view_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
+    __view_children_items__: ClassVar[List[ItemLike]] = []
 
-    def __init_subclass__(cls) -> None:
-        super().__init_subclass__()
-
-        children: Dict[str, ItemCallbackType[Any, Any]] = {}
-        for base in reversed(cls.__mro__):
-            for name, member in base.__dict__.items():
-                if hasattr(member, '__discord_ui_model_type__'):
-                    children[name] = member
-
-        if len(children) > 25:
-            raise TypeError('View cannot have more than 25 children')
-
-        cls.__view_children_items__ = list(children.values())
-
-    def _init_children(self) -> List[Item[Self]]:
-        children = []
-
-        for func in self.__view_children_items__:
-            item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
-            item.callback = _ViewCallback(func, self, item)  # type: ignore
-            item._view = self
-            setattr(self, func.__name__, item)
-            children.append(item)
-        return children
-
-    def __init__(self, *, timeout: Optional[float] = 180.0):
+    def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         self.__timeout = timeout
         self._children: List[Item[Self]] = self._init_children()
-        self.__weights = _ViewWeights(self._children)
         self.id: str = os.urandom(16).hex()
         self._cache_key: Optional[int] = None
-        self.__cancel_callback: Optional[Callable[[View], None]] = None
+        self.__cancel_callback: Optional[Callable[[BaseView], None]] = None
         self.__timeout_expiry: Optional[float] = None
         self.__timeout_task: Optional[asyncio.Task[None]] = None
         self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
@@ -246,12 +211,32 @@ class View:  # NOTE: maybe add a deprecation warning in favour of LayoutView?
     def _is_v2(self) -> bool:
         return False
 
-    @property
-    def width(self):
-        return 5
-
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self._children)}>'
+        return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self._children)}'
+
+    def _init_children(self) -> List[Item[Self]]:
+        children = []
+
+        for raw in self.__view_children_items__:
+            if isinstance(raw, Item):
+                raw._view = self
+                parent = getattr(raw, '__discord_ui_parent__', None)
+                if parent and parent._view is None:
+                    parent._view = self
+                item = raw
+            else:
+                item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
+                item.callback = _ViewCallback(raw, self, item)  # type: ignore
+                item._view = self
+                setattr(self, raw.__name__, item)
+                parent = getattr(raw, '__discord_ui_parent__', None)
+                if parent:
+                    if not self._is_v2():
+                        raise RuntimeError('This view cannot have v2 items')
+                    parent._children.append(item)
+            children.append(item)
+
+        return children
 
     async def __timeout_task_impl(self) -> None:
         while True:
@@ -279,24 +264,7 @@ class View:  # NOTE: maybe add a deprecation warning in favour of LayoutView?
         return any(c._is_v2() for c in self.children)
 
     def to_components(self) -> List[Dict[str, Any]]:
-        def key(item: Item) -> int:
-            return item._rendered_row or 0
-
-        children = sorted(self._children, key=key)
-        components: List[Dict[str, Any]] = []
-        for _, group in groupby(children, key=key):
-            children = [item.to_component_dict() for item in group]
-            if not children:
-                continue
-
-            components.append(
-                {
-                    'type': 1,
-                    'components': children,
-                }
-            )
-
-        return components
+        return NotImplemented
 
     def _refresh_timeout(self) -> None:
         if self.__timeout:
@@ -327,7 +295,7 @@ class View:  # NOTE: maybe add a deprecation warning in favour of LayoutView?
         return self._children.copy()
 
     @classmethod
-    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
+    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> Any:
         """Converts a message's components into a :class:`View`.
 
         The :attr:`.Message.components` of a message are read-only
@@ -341,28 +309,8 @@ class View:  # NOTE: maybe add a deprecation warning in favour of LayoutView?
             The message with components to convert into a view.
         timeout: Optional[:class:`float`]
             The timeout of the converted view.
-
-        Returns
-        --------
-        :class:`View`
-            The converted view. This always returns a :class:`View` and not
-            one of its subclasses.
         """
-        view = View(timeout=timeout)
-        row = 0
-        for component in message.components:
-            if isinstance(component, ActionRowComponent):
-                for child in component.children:
-                    item = _component_to_item(child)
-                    item.row = row
-                    view.add_item(item)
-                row += 1
-            else:
-                item = _component_to_item(component)
-                item.row = row
-                view.add_item(item)
-
-        return view
+        pass
 
     def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to the view.
@@ -385,18 +333,10 @@ class View:  # NOTE: maybe add a deprecation warning in favour of LayoutView?
             you tried to add is not allowed in this View.
         """
 
-        if len(self._children) >= 25:
-            raise ValueError('maximum number of children exceeded')
-
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
-
         if item._is_v2() and not self._is_v2():
-            raise ValueError(
-                'The item can only be added on LayoutView'
-            )
-
-        self.__weights.add_item(item)
+            raise ValueError('v2 items cannot be added to this view')
 
         item._view = self
         self._children.append(item)
@@ -418,8 +358,6 @@ class View:  # NOTE: maybe add a deprecation warning in favour of LayoutView?
             self._children.remove(item)
         except ValueError:
             pass
-        else:
-            self.__weights.remove_item(item)
         return self
 
     def clear_items(self) -> Self:
@@ -429,8 +367,29 @@ class View:  # NOTE: maybe add a deprecation warning in favour of LayoutView?
         chaining.
         """
         self._children.clear()
-        self.__weights.clear()
         return self
+
+    def get_item_by_id(self, id: str, /) -> Optional[Item[Self]]:
+        """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
+        not found.
+
+        .. warning::
+
+            This is **not the same** as ``custom_id``.
+
+        .. versionadded:: 2.6
+
+        Parameters
+        ----------
+        id: :class:`str`
+            The ID of the component.
+
+        Returns
+        -------
+        Optional[:class:`Item`]
+            The item found, or ``None``.
+        """
+        return _utils_get(self._children, id=id)
 
     async def interaction_check(self, interaction: Interaction, /) -> bool:
         """|coro|
@@ -599,61 +558,167 @@ class View:  # NOTE: maybe add a deprecation warning in favour of LayoutView?
         return await self.__stopped
 
 
-class LayoutView(View):
-    __view_children_items__: ClassVar[List[Item[Any]]] = []
-    __view_pending_children__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
+class View(BaseView):  # NOTE: maybe add a deprecation warning in favour of LayoutView?
+    """Represents a UI view.
 
-    def __init__(self, *, timeout: Optional[float] = 180) -> None:
+    This object must be inherited to create a UI within Discord.
+
+    .. versionadded:: 2.0
+
+    Parameters
+    -----------
+    timeout: Optional[:class:`float`]
+        Timeout in seconds from last interaction with the UI before no longer accepting input.
+        If ``None`` then there is no timeout.
+    """
+
+    __discord_ui_view__: ClassVar[bool] = True
+
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+
+        children: Dict[str, ItemCallbackType[Any, Any]] = {}
+        for base in reversed(cls.__mro__):
+            for name, member in base.__dict__.items():
+                if hasattr(member, '__discord_ui_model_type__'):
+                    children[name] = member
+
+        if len(children) > 25:
+            raise TypeError('View cannot have more than 25 children')
+
+        cls.__view_children_items__ = list(children.values())
+
+    def __init__(self, *, timeout: Optional[float] = 180.0):
         super().__init__(timeout=timeout)
-        self.__weights.weights.extend([0, 0, 0, 0, 0])
+        self.__weights = _ViewWeights(self._children)
+
+    @property
+    def width(self):
+        return 5
+
+    def to_components(self) -> List[Dict[str, Any]]:
+        def key(item: Item) -> int:
+            return item._rendered_row or 0
+
+        children = sorted(self._children, key=key)
+        components: List[Dict[str, Any]] = []
+        for _, group in groupby(children, key=key):
+            children = [item.to_component_dict() for item in group]
+            if not children:
+                continue
+
+            components.append(
+                {
+                    'type': 1,
+                    'components': children,
+                }
+            )
+
+        return components
+
+    @classmethod
+    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
+        """Converts a message's components into a :class:`View`.
+
+        The :attr:`.Message.components` of a message are read-only
+        and separate types from those in the ``discord.ui`` namespace.
+        In order to modify and edit message components they must be
+        converted into a :class:`View` first.
+
+        Parameters
+        -----------
+        message: :class:`discord.Message`
+            The message with components to convert into a view.
+        timeout: Optional[:class:`float`]
+            The timeout of the converted view.
+
+        Returns
+        --------
+        :class:`View`
+            The converted view. This always returns a :class:`View` and not
+            one of its subclasses.
+        """
+        view = View(timeout=timeout)
+        row = 0
+        for component in message.components:
+            if isinstance(component, ActionRowComponent):
+                for child in component.children:
+                    item = _component_to_item(child)
+                    item.row = row
+                    if item._is_v2():
+                        raise RuntimeError('v2 components cannot be added to this View')
+                    view.add_item(item)
+                row += 1
+            else:
+                item = _component_to_item(component)
+                item.row = row
+                if item._is_v2():
+                    raise RuntimeError('v2 components cannot be added to this View')
+                view.add_item(item)
+
+        return view
+
+    def add_item(self, item: Item[Any]) -> Self:
+        if len(self._children) >= 25:
+            raise ValueError('maximum number of children exceeded')
+
+        super().add_item(item)
+        try:
+            self.__weights.add_item(item)
+        except ValueError as e:
+            # if the item has no space left then remove it from _children
+            self._children.remove(item)
+            raise e
+
+        return self
+
+    def remove_item(self, item: Item[Any]) -> Self:
+        try:
+            self._children.remove(item)
+        except ValueError:
+            pass
+        else:
+            self.__weights.remove_item(item)
+        return self
+
+    def clear_items(self) -> Self:
+        super().clear_items()
+        self.__weights.clear()
+        return self
+
+
+class LayoutView(BaseView):
+    """Represents a layout view for components v2.
+
+    Unline :class:`View` this allows for components v2 to exist
+    within it.
+
+    .. versionadded:: 2.6
+
+    Parameters
+    ----------
+    timeout: Optional[:class:`float`]
+        Timeout in seconds from last interaction with the UI before no longer accepting input.
+        If ``None`` then there is no timeout.
+    """
+
+    def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
+        super().__init__(timeout=timeout)
 
     def __init_subclass__(cls) -> None:
         children: Dict[str, Item[Any]] = {}
-        pending: Dict[str, ItemCallbackType[Any, Any]] = {}
 
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if isinstance(member, Item):
                     children[name] = member
                 elif hasattr(member, '__discord_ui_model_type__') and getattr(member, '__discord_ui_parent__', None):
-                    pending[name] = member
+                    children[name] = member
 
         if len(children) > 10:
             raise TypeError('LayoutView cannot have more than 10 top-level children')
 
         cls.__view_children_items__ = list(children.values())
-        cls.__view_pending_children__ = list(pending.values())
-
-    def _init_children(self) -> List[Item[Self]]:
-        children = []
-
-        for func in self.__view_pending_children__:
-            item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
-            item.callback = _ViewCallback(func, self, item)
-            item._view = self
-            setattr(self, func.__name__, item)
-            parent: ActionRow = func.__discord_ui_parent__
-            parent.add_item(item)
-
-        for i in self.__view_children_items__:
-            if isinstance(i, Item):
-                if getattr(i, '_parent', None):
-                    # this is for ActionRows which have decorators such as
-                    # @action_row.button and @action_row.select that will convert
-                    # those callbacks into their types but will have a _parent
-                    # attribute which is checked here so the item is not added twice
-                    continue
-                i._view = self
-                if getattr(i, '__discord_ui_action_row__', False):
-                    i._update_children_view(self)  # type: ignore
-                children.append(i)
-            else:
-                # guard just in case
-                raise TypeError(
-                    'LayoutView can only have items'
-                )
-
-        return children
 
     def _is_v2(self) -> bool:
         return True
@@ -670,11 +735,49 @@ class LayoutView(View):
 
         return child
 
+    def add_item(self, item: Item[Any]) -> Self:
+        if len(self._children) >= 10:
+            raise ValueError('maximum number of children exceeded')
+        super().add_item(item)
+        return self
+
+    @classmethod
+    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView:
+        """Converts a message's components into a :class:`LayoutView`.
+
+        The :attr:`.Message.components` of a message are read-only
+        and separate types from those in the ``discord.ui`` namespace.
+        In order to modify and edit message components they must be
+        converted into a :class:`LayoutView` first.
+
+        Unlike :meth:`View.from_message` this works for 
+
+        Parameters
+        -----------
+        message: :class:`discord.Message`
+            The message with components to convert into a view.
+        timeout: Optional[:class:`float`]
+            The timeout of the converted view.
+
+        Returns
+        --------
+        :class:`LayoutView`
+            The converted view. This always returns a :class:`LayoutView` and not
+            one of its subclasses.
+        """
+        view = LayoutView(timeout=timeout)
+        for component in message.components:
+            item = _component_to_item(component)
+            item.row = 0
+            view.add_item(item)
+
+        return view
+
 
 class ViewStore:
     def __init__(self, state: ConnectionState):
         # entity_id: {(component_type, custom_id): Item}
-        self._views: Dict[Optional[int], Dict[Tuple[int, str], Item[View]]] = {}
+        self._views: Dict[Optional[int], Dict[Tuple[int, str], Item[BaseView]]] = {}
         # message_id: View
         self._synced_message_views: Dict[int, View] = {}
         # custom_id: Modal
@@ -684,7 +787,7 @@ class ViewStore:
         self._state: ConnectionState = state
 
     @property
-    def persistent_views(self) -> Sequence[View]:
+    def persistent_views(self) -> Sequence[BaseView]:
         # fmt: off
         views = {
             item.view.id: item.view
@@ -722,7 +825,7 @@ class ViewStore:
                     is_fully_dynamic = item._update_store_data(  # type: ignore
                         dispatch_info,
                         self._dynamic_items,
-                    )
+                    ) or is_fully_dynamic
                 elif getattr(item, '__discord_ui_action_row__', False):
                     is_fully_dynamic = item._update_store_data(  # type: ignore
                         dispatch_info,
@@ -784,7 +887,7 @@ class ViewStore:
             return
 
         # Swap the item in the view with our new dynamic item
-        view._children[base_item_index] = item
+        view._children[base_item_index] = item  # type: ignore
         item._view = view
         item._rendered_row = base_item._rendered_row
         item._refresh_state(interaction, interaction.data)  # type: ignore
@@ -826,7 +929,7 @@ class ViewStore:
         key = (component_type, custom_id)
 
         # The entity_id can either be message_id, interaction_id, or None in that priority order.
-        item: Optional[Item[View]] = None
+        item: Optional[Item[BaseView]] = None
         if message_id is not None:
             item = self._views.get(message_id, {}).get(key)
 
@@ -878,7 +981,7 @@ class ViewStore:
     def is_message_tracked(self, message_id: int) -> bool:
         return message_id in self._synced_message_views
 
-    def remove_message_tracking(self, message_id: int) -> Optional[View]:
+    def remove_message_tracking(self, message_id: int) -> Optional[BaseView]:
         return self._synced_message_views.pop(message_id, None)
 
     def update_from_message(self, message_id: int, data: List[ComponentBasePayload]) -> None:
