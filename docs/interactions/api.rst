@@ -611,7 +611,7 @@ LayoutView
 .. attributetable:: discord.ui.LayoutView
 
 .. autoclass:: discord.ui.LayoutView
-    :member:
+    :members:
     :inherited-members:
 
 Item

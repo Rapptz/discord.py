@@ -461,7 +461,7 @@ class BaseView:
             return await self.on_error(interaction, e, item)
 
     def _start_listening_from_store(self, store: ViewStore) -> None:
-        self.__cancel_callback = partial(store.remove_view)
+        self.__cancel_callback = partial(store.remove_view)  # type: ignore
         if self.timeout:
             if self.__timeout_task is not None:
                 self.__timeout_task.cancel()
@@ -808,7 +808,7 @@ class ViewStore:
             pattern = item.__discord_ui_compiled_template__
             self._dynamic_items.pop(pattern, None)
 
-    def add_view(self, view: View, message_id: Optional[int] = None) -> None:
+    def add_view(self, view: BaseView, message_id: Optional[int] = None) -> None:
         view._start_listening_from_store(self)
         if view.__discord_ui_modal__:
             self._modals[view.custom_id] = view  # type: ignore
