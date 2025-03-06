@@ -601,6 +601,7 @@ class View:  # NOTE: maybe add a deprecation warning in favour of LayoutView?
 
 class LayoutView(View):
     __view_children_items__: ClassVar[List[Item[Any]]] = []
+    __view_pending_children__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
 
     def __init__(self, *, timeout: Optional[float] = 180) -> None:
         super().__init__(timeout=timeout)
@@ -608,19 +609,31 @@ class LayoutView(View):
 
     def __init_subclass__(cls) -> None:
         children: Dict[str, Item[Any]] = {}
+        pending: Dict[str, ItemCallbackType[Any, Any]] = {}
 
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if isinstance(member, Item):
                     children[name] = member
+                elif hasattr(member, '__discord_ui_model_type__') and getattr(member, '__discord_ui_parent__', None):
+                    pending[name] = member
 
         if len(children) > 10:
             raise TypeError('LayoutView cannot have more than 10 top-level children')
 
         cls.__view_children_items__ = list(children.values())
+        cls.__view_pending_children__ = list(pending.values())
 
     def _init_children(self) -> List[Item[Self]]:
         children = []
+
+        for func in self.__view_pending_children__:
+            item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
+            item.callback = _ViewCallback(func, self, item)
+            item._view = self
+            setattr(self, func.__name__, item)
+            parent: ActionRow = func.__discord_ui_parent__
+            parent.add_item(item)
 
         for i in self.__view_children_items__:
             if isinstance(i, Item):
@@ -639,6 +652,7 @@ class LayoutView(View):
                 raise TypeError(
                     'LayoutView can only have items'
                 )
+
         return children
 
     def _is_v2(self) -> bool:
@@ -709,6 +723,11 @@ class ViewStore:
                         dispatch_info,
                         self._dynamic_items,
                     )
+                elif getattr(item, '__discord_ui_action_row__', False):
+                    is_fully_dynamic = item._update_store_data(  # type: ignore
+                        dispatch_info,
+                        self._dynamic_items,
+                    ) or is_fully_dynamic
                 else:
                     dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
                     is_fully_dynamic = False

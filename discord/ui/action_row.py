@@ -39,16 +39,20 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    overload,
 )
 
 from .item import Item, ItemCallbackType
 from .button import Button
-from .select import Select, SelectCallbackDecorator
+from .dynamic import DynamicItem
+from .select import select as _select, Select, SelectCallbackDecorator, UserSelect, RoleSelect, ChannelSelect, MentionableSelect
 from ..enums import ButtonStyle, ComponentType, ChannelType
 from ..partial_emoji import PartialEmoji
 from ..utils import MISSING
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from .view import LayoutView
     from .select import (
         BaseSelectT,
@@ -122,10 +126,25 @@ class ActionRow(Item[V]):
         for func in self.__action_row_children_items__:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
             item.callback = _ActionRowCallback(func, self, item)
-            item._parent = self  # type: ignore
+            item._parent = getattr(func, '__discord_ui_parent__', self)  # type: ignore
             setattr(self, func.__name__, item)
             children.append(item)
         return children
+
+    def _update_store_data(self, dispatch_info: Dict, dynamic_items: Dict) -> bool:
+        is_fully_dynamic = True
+
+        for item in self._children:
+            if isinstance(item, DynamicItem):
+                pattern = item.__discord_ui_compiled_template__
+                dynamic_items[pattern] = item.__class__
+            elif item.is_dispatchable():
+                dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
+                is_fully_dynamic = False
+        return is_fully_dynamic
+
+    def is_dispatchable(self) -> bool:
+        return any(c.is_dispatchable() for c in self.children)
 
     def _update_children_view(self, view: LayoutView) -> None:
         for child in self._children:
@@ -146,6 +165,77 @@ class ActionRow(Item[V]):
     @property
     def type(self) -> Literal[ComponentType.action_row]:
         return ComponentType.action_row
+
+    @property
+    def children(self) -> List[Item[V]]:
+        """List[:class:`Item`]: The list of children attached to this action row."""
+        return self._children.copy()
+
+    def add_item(self, item: Item[Any]) -> Self:
+        """Adds an item to this row.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        Parameters
+        ----------
+        item: :class:`Item`
+            The item to add to the row.
+
+        Raises
+        ------
+        TypeError
+            An :class:`Item` was not passed.
+        ValueError
+            Maximum number of children has been exceeded (5).
+        """
+
+        if len(self._children) >= 5:
+            raise ValueError('maximum number of children exceeded')
+
+        if not isinstance(item, Item):
+            raise TypeError(f'expected Item not {item.__class__.__name__}')
+
+        self._children.append(item)
+        return self
+
+    def remove_item(self, item: Item[Any]) -> Self:
+        """Removes an item from the row.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        Parameters
+        ----------
+        item: :class:`Item`
+            The item to remove from the view.
+        """
+
+        try:
+            self._children.remove(item)
+        except ValueError:
+            pass
+        return self
+
+    def clear_items(self) -> Self:
+        """Removes all items from the row.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+        """
+        self._children.clear()
+        return self
+
+    def to_component_dict(self) -> Dict[str, Any]:
+        components = []
+
+        for item in self._children:
+            components.append(item.to_component_dict())
+
+        return {
+            'type': self.type.value,
+            'components': components,
+        }
 
     def button(
         self,
@@ -192,6 +282,7 @@ class ActionRow(Item[V]):
             if not inspect.iscoroutinefunction(func):
                 raise TypeError('button function must be a coroutine function')
 
+            func.__discord_ui_parent__ = self
             func.__discord_ui_modal_type__ = Button
             func.__discord_ui_model_kwargs__ = {
                 'style': style,
@@ -207,7 +298,90 @@ class ActionRow(Item[V]):
 
         return decorator  # type: ignore
 
+    @overload
     def select(
+        self,
+        *,
+        cls: Type[SelectT] = Select[Any],
+        options: List[SelectOption] = MISSING,
+        channel_types: List[ChannelType] = ...,
+        placeholder: Optional[str] = ...,
+        custom_id: str = ...,
+        min_values: int = ...,
+        max_values: int = ...,
+        disabled: bool = ...,
+    ) -> SelectCallbackDecorator[V, SelectT]:
+        ...
+
+    @overload
+    def select(
+        self,
+        *,
+        cls: Type[UserSelectT] = UserSelect[Any],
+        options: List[SelectOption] = MISSING,
+        channel_types: List[ChannelType] = ...,
+        placeholder: Optional[str] = ...,
+        custom_id: str = ...,
+        min_values: int = ...,
+        max_values: int = ...,
+        disabled: bool = ...,
+        default_values: Sequence[ValidDefaultValues] = ...,
+    ) -> SelectCallbackDecorator[V, UserSelectT]:
+        ...
+
+
+    @overload
+    def select(
+        self,
+        *,
+        cls: Type[RoleSelectT] = RoleSelect[Any],
+        options: List[SelectOption] = MISSING,
+        channel_types: List[ChannelType] = ...,
+        placeholder: Optional[str] = ...,
+        custom_id: str = ...,
+        min_values: int = ...,
+        max_values: int = ...,
+        disabled: bool = ...,
+        default_values: Sequence[ValidDefaultValues] = ...,
+    ) -> SelectCallbackDecorator[V, RoleSelectT]:
+        ...
+
+
+    @overload
+    def select(
+        self,
+        *,
+        cls: Type[ChannelSelectT] = ChannelSelect[Any],
+        options: List[SelectOption] = MISSING,
+        channel_types: List[ChannelType] = ...,
+        placeholder: Optional[str] = ...,
+        custom_id: str = ...,
+        min_values: int = ...,
+        max_values: int = ...,
+        disabled: bool = ...,
+        default_values: Sequence[ValidDefaultValues] = ...,
+    ) -> SelectCallbackDecorator[V, ChannelSelectT]:
+        ...
+
+
+    @overload
+    def select(
+        self,
+        *,
+        cls: Type[MentionableSelectT] = MentionableSelect[Any],
+        options: List[SelectOption] = MISSING,
+        channel_types: List[ChannelType] = MISSING,
+        placeholder: Optional[str] = ...,
+        custom_id: str = ...,
+        min_values: int = ...,
+        max_values: int = ...,
+        disabled: bool = ...,
+        default_values: Sequence[ValidDefaultValues] = ...,
+    ) -> SelectCallbackDecorator[V, MentionableSelectT]:
+        ...
+
+    def select(
+        self,
         *,
         cls: Type[BaseSelectT] = Select[Any],
         options: List[SelectOption] = MISSING,
@@ -241,9 +415,6 @@ class ActionRow(Item[V]):
         +----------------------------------------+-----------------------------------------------------------------------------------------------------------------+
         | :class:`discord.ui.ChannelSelect`      | List[Union[:class:`~discord.app_commands.AppCommandChannel`, :class:`~discord.app_commands.AppCommandThread`]]  |
         +----------------------------------------+-----------------------------------------------------------------------------------------------------------------+
-
-        .. versionchanged:: 2.1
-            Added the following keyword-arguments: ``cls``, ``channel_types``
 
         Example
         ---------
@@ -290,3 +461,20 @@ class ActionRow(Item[V]):
             If ``cls`` is :class:`MentionableSelect` and :class:`.Object` is passed, then the type must be specified in the constructor.
             Number of items must be in range of ``min_values`` and ``max_values``.
         """
+
+        def decorator(func: ItemCallbackType[V, BaseSelectT]) -> ItemCallbackType[V, BaseSelectT]:
+            r = _select(  # type: ignore
+                cls=cls,  # type: ignore
+                placeholder=placeholder,
+                custom_id=custom_id,
+                min_values=min_values,
+                max_values=max_values,
+                options=options,
+                channel_types=channel_types,
+                disabled=disabled,
+                default_values=default_values,
+            )(func)
+            r.__discord_ui_parent__ = self
+            return r
+
+        return decorator  # type: ignore
