@@ -779,7 +779,7 @@ class ViewStore:
         # entity_id: {(component_type, custom_id): Item}
         self._views: Dict[Optional[int], Dict[Tuple[int, str], Item[BaseView]]] = {}
         # message_id: View
-        self._synced_message_views: Dict[int, View] = {}
+        self._synced_message_views: Dict[int, BaseView] = {}
         # custom_id: Modal
         self._modals: Dict[str, Modal] = {}
         # component_type is the key
