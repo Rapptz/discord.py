@@ -331,7 +331,6 @@ class ActionRow(Item[V]):
     ) -> SelectCallbackDecorator[V, UserSelectT]:
         ...
 
-
     @overload
     def select(
         self,
@@ -348,7 +347,6 @@ class ActionRow(Item[V]):
     ) -> SelectCallbackDecorator[V, RoleSelectT]:
         ...
 
-
     @overload
     def select(
         self,
@@ -364,7 +362,6 @@ class ActionRow(Item[V]):
         default_values: Sequence[ValidDefaultValues] = ...,
     ) -> SelectCallbackDecorator[V, ChannelSelectT]:
         ...
-
 
     @overload
     def select(
@@ -484,6 +481,7 @@ class ActionRow(Item[V]):
     @classmethod
     def from_component(cls, component: ActionRowComponent) -> ActionRow:
         from .view import _component_to_item
+
         self = cls()
         for cmp in component.children:
             self.add_item(_component_to_item(cmp))

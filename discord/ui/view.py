@@ -750,7 +750,7 @@ class LayoutView(BaseView):
         In order to modify and edit message components they must be
         converted into a :class:`LayoutView` first.
 
-        Unlike :meth:`View.from_message` this works for 
+        Unlike :meth:`View.from_message` this works for
 
         Parameters
         -----------
@@ -822,15 +822,21 @@ class ViewStore:
                 self._dynamic_items[pattern] = item.__class__
             elif item.is_dispatchable():
                 if getattr(item, '__discord_ui_container__', False):
-                    is_fully_dynamic = item._update_store_data(  # type: ignore
-                        dispatch_info,
-                        self._dynamic_items,
-                    ) or is_fully_dynamic
+                    is_fully_dynamic = (
+                        item._update_store_data(  # type: ignore
+                            dispatch_info,
+                            self._dynamic_items,
+                        )
+                        or is_fully_dynamic
+                    )
                 elif getattr(item, '__discord_ui_action_row__', False):
-                    is_fully_dynamic = item._update_store_data(  # type: ignore
-                        dispatch_info,
-                        self._dynamic_items,
-                    ) or is_fully_dynamic
+                    is_fully_dynamic = (
+                        item._update_store_data(  # type: ignore
+                            dispatch_info,
+                            self._dynamic_items,
+                        )
+                        or is_fully_dynamic
+                    )
                 else:
                     dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
                     is_fully_dynamic = False
