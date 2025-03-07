@@ -733,7 +733,7 @@ class LayoutView(BaseView):
                 child.to_component_dict(),
             )
 
-        return child
+        return components
 
     def add_item(self, item: Item[Any]) -> Self:
         if len(self._children) >= 10:

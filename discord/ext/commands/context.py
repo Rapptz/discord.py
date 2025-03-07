@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from discord.mentions import AllowedMentions
     from discord.sticker import GuildSticker, StickerItem
     from discord.message import MessageReference, PartialMessage
-    from discord.ui import View
+    from discord.ui.view import BaseView
     from discord.types.interactions import ApplicationCommandInteractionData
     from discord.poll import Poll
 
@@ -642,7 +642,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
+        view: BaseView = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -664,7 +664,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
+        view: BaseView = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -686,7 +686,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
+        view: BaseView = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -708,7 +708,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
+        view: BaseView = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -831,7 +831,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
+        view: BaseView = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -853,7 +853,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
+        view: BaseView = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -875,7 +875,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
+        view: BaseView = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -897,7 +897,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: View = ...,
+        view: BaseView = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -920,7 +920,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: Optional[AllowedMentions] = None,
         reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
         mention_author: Optional[bool] = None,
-        view: Optional[View] = None,
+        view: Optional[BaseView] = None,
         suppress_embeds: bool = False,
         ephemeral: bool = False,
         silent: bool = False,
