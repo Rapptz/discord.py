@@ -23,7 +23,6 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-import inspect
 import os
 from typing import (
     TYPE_CHECKING,
