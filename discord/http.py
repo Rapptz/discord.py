@@ -64,7 +64,7 @@ _log = logging.getLogger(__name__)
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from .ui.view import View
+    from .ui.view import BaseView
     from .embeds import Embed
     from .message import Attachment
     from .poll import Poll
@@ -150,7 +150,7 @@ def handle_message_parameters(
     embed: Optional[Embed] = MISSING,
     embeds: Sequence[Embed] = MISSING,
     attachments: Sequence[Union[Attachment, File]] = MISSING,
-    view: Optional[View] = MISSING,
+    view: Optional[BaseView] = MISSING,
     allowed_mentions: Optional[AllowedMentions] = MISSING,
     message_reference: Optional[message.MessageReference] = MISSING,
     stickers: Optional[SnowflakeList] = MISSING,

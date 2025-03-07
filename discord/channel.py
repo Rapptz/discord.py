@@ -100,7 +100,7 @@ if TYPE_CHECKING:
     from .file import File
     from .user import ClientUser, User, BaseUser
     from .guild import Guild, GuildChannel as GuildChannelType
-    from .ui.view import View
+    from .ui.view import BaseView
     from .types.channel import (
         TextChannel as TextChannelPayload,
         NewsChannel as NewsChannelPayload,
@@ -2857,7 +2857,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         allowed_mentions: AllowedMentions = MISSING,
         mention_author: bool = MISSING,
         applied_tags: Sequence[ForumTag] = MISSING,
-        view: View = MISSING,
+        view: BaseView = MISSING,
         suppress_embeds: bool = False,
         reason: Optional[str] = None,
     ) -> ThreadWithMessage:

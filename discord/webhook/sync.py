@@ -66,7 +66,7 @@ if TYPE_CHECKING:
     from ..message import Attachment
     from ..abc import Snowflake
     from ..state import ConnectionState
-    from ..ui import View
+    from ..ui.view import BaseView
     from ..types.webhook import (
         Webhook as WebhookPayload,
     )
@@ -876,6 +876,7 @@ class SyncWebhook(BaseWebhook):
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
         poll: Poll = MISSING,
+        view: BaseView = MISSING,
     ) -> SyncWebhookMessage:
         ...
 
@@ -899,6 +900,7 @@ class SyncWebhook(BaseWebhook):
         silent: bool = MISSING,
         applied_tags: List[ForumTag] = MISSING,
         poll: Poll = MISSING,
+        view: BaseView = MISSING,
     ) -> None:
         ...
 
@@ -921,7 +923,7 @@ class SyncWebhook(BaseWebhook):
         silent: bool = False,
         applied_tags: List[ForumTag] = MISSING,
         poll: Poll = MISSING,
-        view: View = MISSING,
+        view: BaseView = MISSING,
     ) -> Optional[SyncWebhookMessage]:
         """Sends a message using the webhook.
 

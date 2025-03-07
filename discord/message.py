@@ -101,7 +101,7 @@ if TYPE_CHECKING:
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
-    from .ui.view import View
+    from .ui.view import BaseView
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
 
@@ -1305,7 +1305,7 @@ class PartialMessage(Hashable):
         attachments: Sequence[Union[Attachment, File]] = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
+        view: Optional[BaseView] = ...,
     ) -> Message:
         ...
 
@@ -1318,7 +1318,7 @@ class PartialMessage(Hashable):
         attachments: Sequence[Union[Attachment, File]] = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
+        view: Optional[BaseView] = ...,
     ) -> Message:
         ...
 
@@ -1331,7 +1331,7 @@ class PartialMessage(Hashable):
         attachments: Sequence[Union[Attachment, File]] = MISSING,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
-        view: Optional[View] = MISSING,
+        view: Optional[BaseView] = MISSING,
     ) -> Message:
         """|coro|
 
@@ -2839,7 +2839,7 @@ class Message(PartialMessage, Hashable):
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
+        view: Optional[BaseView] = ...,
     ) -> Message:
         ...
 
@@ -2853,7 +2853,7 @@ class Message(PartialMessage, Hashable):
         suppress: bool = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[View] = ...,
+        view: Optional[BaseView] = ...,
     ) -> Message:
         ...
 
@@ -2867,7 +2867,7 @@ class Message(PartialMessage, Hashable):
         suppress: bool = False,
         delete_after: Optional[float] = None,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
-        view: Optional[View] = MISSING,
+        view: Optional[BaseView] = MISSING,
     ) -> Message:
         """|coro|
 

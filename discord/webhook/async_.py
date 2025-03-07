@@ -71,7 +71,7 @@ if TYPE_CHECKING:
     from ..emoji import Emoji
     from ..channel import VoiceChannel
     from ..abc import Snowflake
-    from ..ui.view import View
+    from ..ui.view import BaseView
     from ..poll import Poll
     import datetime
     from ..types.webhook import (
@@ -1619,7 +1619,7 @@ class Webhook(BaseWebhook):
         embed: Embed = MISSING,
         embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
-        view: View = MISSING,
+        view: BaseView = MISSING,
         thread: Snowflake = MISSING,
         thread_name: str = MISSING,
         wait: Literal[True],
@@ -1644,7 +1644,7 @@ class Webhook(BaseWebhook):
         embed: Embed = MISSING,
         embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
-        view: View = MISSING,
+        view: BaseView = MISSING,
         thread: Snowflake = MISSING,
         thread_name: str = MISSING,
         wait: Literal[False] = ...,
@@ -1668,7 +1668,7 @@ class Webhook(BaseWebhook):
         embed: Embed = MISSING,
         embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
-        view: View = MISSING,
+        view: BaseView = MISSING,
         thread: Snowflake = MISSING,
         thread_name: str = MISSING,
         wait: bool = False,

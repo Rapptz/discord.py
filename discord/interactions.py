@@ -76,7 +76,7 @@ if TYPE_CHECKING:
     from .mentions import AllowedMentions
     from aiohttp import ClientSession
     from .embeds import Embed
-    from .ui.view import View
+    from .ui.view import BaseView
     from .app_commands.models import Choice, ChoiceT
     from .ui.modal import Modal
     from .channel import VoiceChannel, StageChannel, TextChannel, ForumChannel, CategoryChannel, DMChannel, GroupChannel
@@ -476,7 +476,7 @@ class Interaction(Generic[ClientT]):
         embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
         attachments: Sequence[Union[Attachment, File]] = MISSING,
-        view: Optional[View] = MISSING,
+        view: Optional[BaseView] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
         poll: Poll = MISSING,
     ) -> InteractionMessage:
@@ -897,7 +897,7 @@ class InteractionResponse(Generic[ClientT]):
         embeds: Sequence[Embed] = MISSING,
         file: File = MISSING,
         files: Sequence[File] = MISSING,
-        view: View = MISSING,
+        view: BaseView = MISSING,
         tts: bool = False,
         ephemeral: bool = False,
         allowed_mentions: AllowedMentions = MISSING,
@@ -1046,7 +1046,7 @@ class InteractionResponse(Generic[ClientT]):
         embed: Optional[Embed] = MISSING,
         embeds: Sequence[Embed] = MISSING,
         attachments: Sequence[Union[Attachment, File]] = MISSING,
-        view: Optional[View] = MISSING,
+        view: Optional[BaseView] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = MISSING,
         delete_after: Optional[float] = None,
         suppress_embeds: bool = MISSING,
@@ -1334,7 +1334,7 @@ class InteractionMessage(Message):
         embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
         attachments: Sequence[Union[Attachment, File]] = MISSING,
-        view: Optional[View] = MISSING,
+        view: Optional[BaseView] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
         delete_after: Optional[float] = None,
         poll: Poll = MISSING,
