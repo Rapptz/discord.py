@@ -1473,7 +1473,7 @@ class Messageable:
         allowed_mentions: Optional[AllowedMentions] = None,
         reference: Optional[Union[Message, MessageReference, PartialMessage]] = None,
         mention_author: Optional[bool] = None,
-        view: Optional[View] = None,
+        view: Optional[BaseView] = None,
         suppress_embeds: bool = False,
         silent: bool = False,
         poll: Optional[Poll] = None,
