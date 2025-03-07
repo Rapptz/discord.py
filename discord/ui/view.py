@@ -223,7 +223,7 @@ class BaseView:
                 parent = getattr(raw, '__discord_ui_parent__', None)
                 if parent and parent._view is None:
                     parent._view = self
-                item = raw
+                children.append(raw)
             else:
                 item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
                 item.callback = _ViewCallback(raw, self, item)  # type: ignore
@@ -231,10 +231,9 @@ class BaseView:
                 setattr(self, raw.__name__, item)
                 parent = getattr(raw, '__discord_ui_parent__', None)
                 if parent:
-                    if not self._is_v2():
-                        raise RuntimeError('This view cannot have v2 items')
                     parent._children.append(item)
-            children.append(item)
+                    continue
+                children.append(item)
 
         return children
 

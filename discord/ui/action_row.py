@@ -43,7 +43,7 @@ from typing import (
 )
 
 from .item import Item, ItemCallbackType
-from .button import Button
+from .button import Button, button as _button
 from .dynamic import DynamicItem
 from .select import select as _select, Select, UserSelect, RoleSelect, ChannelSelect, MentionableSelect
 from ..components import ActionRow as ActionRowComponent
@@ -281,22 +281,16 @@ class ActionRow(Item[V]):
         """
 
         def decorator(func: ItemCallbackType[V, Button[V]]) -> ItemCallbackType[V, Button[V]]:
-            if not inspect.iscoroutinefunction(func):
-                raise TypeError('button function must be a coroutine function')
-
-            func.__discord_ui_parent__ = self
-            func.__discord_ui_modal_type__ = Button
-            func.__discord_ui_model_kwargs__ = {
-                'style': style,
-                'custom_id': custom_id,
-                'url': None,
-                'disabled': disabled,
-                'label': label,
-                'emoji': emoji,
-                'row': None,
-                'sku_id': None,
-            }
-            return func
+            ret = _button(
+                label=label,
+                custom_id=custom_id,
+                disabled=disabled,
+                style=style,
+                emoji=emoji,
+                row=None,
+            )(func)
+            ret.__discord_ui_parent__ = self  # type: ignore
+            return ret  # type: ignore
 
         return decorator  # type: ignore
 
