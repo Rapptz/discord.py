@@ -26,7 +26,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple, Type, TypeVar
 
 from .item import Item
-from .view import View, _component_to_item, LayoutView
+from .view import BaseView, _component_to_item, LayoutView
 from .dynamic import DynamicItem
 from ..enums import ComponentType
 from ..utils import MISSING
@@ -42,7 +42,7 @@ V = TypeVar('V', bound='LayoutView', covariant=True)
 __all__ = ('Container',)
 
 
-class Container(View, Item[V]):
+class Container(BaseView, Item[V]):
     """Represents a UI container.
 
     .. versionadded:: 2.6
@@ -59,9 +59,6 @@ class Container(View, Item[V]):
     spoiler: :class:`bool`
         Whether to flag this container as a spoiler. Defaults
         to ``False``.
-    timeout: Optional[:class:`float`]
-        Timeout in seconds from last interaction with the UI before no longer accepting input.
-        If ``None`` then there is no timeout.
     row: Optional[:class:`int`]
         The relative row this container belongs to. By default
         items are arranged automatically into those rows. If you'd
@@ -73,8 +70,6 @@ class Container(View, Item[V]):
         The ID of this component. This must be unique across the view.
     """
 
-    __discord_ui_container__ = True
-
     def __init__(
         self,
         children: List[Item[Any]] = MISSING,
@@ -82,11 +77,10 @@ class Container(View, Item[V]):
         accent_colour: Optional[Colour] = None,
         accent_color: Optional[Color] = None,
         spoiler: bool = False,
-        timeout: Optional[float] = 180,
         row: Optional[int] = None,
         id: Optional[str] = None,
     ) -> None:
-        super().__init__(timeout=timeout)
+        super().__init__(timeout=None)
         if children is not MISSING:
             if len(children) + len(self._children) > 10:
                 raise ValueError('maximum number of components exceeded')
@@ -134,8 +128,14 @@ class Container(View, Item[V]):
     def is_dispatchable(self) -> bool:
         return any(c.is_dispatchable() for c in self.children)
 
+    def to_components(self) -> List[Dict[str, Any]]:
+        components = []
+        for child in self._children:
+            components.append(child.to_component_dict())
+        return components
+
     def to_component_dict(self) -> Dict[str, Any]:
-        components = super().to_components()
+        components = self.to_components()
         return {
             'type': self.type.value,
             'accent_color': self._colour.value if self._colour else None,
