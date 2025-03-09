@@ -224,6 +224,7 @@ class BaseSelect(Item[V]):
         'min_values',
         'max_values',
         'disabled',
+        'id',
     )
 
     def __init__(
@@ -257,6 +258,7 @@ class BaseSelect(Item[V]):
             channel_types=[] if channel_types is MISSING else channel_types,
             options=[] if options is MISSING else options,
             default_values=[] if default_values is MISSING else default_values,
+            id=id,
         )
 
         self.row = row

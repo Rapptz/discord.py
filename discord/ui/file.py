@@ -75,6 +75,7 @@ class File(Item[V]):
         self._underlying = FileComponent._raw_construct(
             media=UnfurledMediaItem(media) if isinstance(media, str) else media,
             spoiler=spoiler,
+            id=id,
         )
 
         self.row = row
@@ -126,4 +127,5 @@ class File(Item[V]):
         return cls(
             media=component.media,
             spoiler=component.spoiler,
+            id=component.id,
         )

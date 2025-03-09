@@ -75,6 +75,7 @@ class MediaGallery(Item[V]):
 
         self._underlying = MediaGalleryComponent._raw_construct(
             items=items,
+            id=id,
         )
 
         self.row = row
@@ -183,4 +184,5 @@ class MediaGallery(Item[V]):
     def from_component(cls, component: MediaGalleryComponent) -> Self:
         return cls(
             items=component.items,
+            id=component.id,
         )

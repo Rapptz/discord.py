@@ -149,6 +149,7 @@ class Button(Item[V]):
             style=style,
             emoji=emoji,
             sku_id=sku_id,
+            id=id,
         )
         self._parent: Optional[ActionRow] = None
         self.row = row
@@ -250,6 +251,7 @@ class Button(Item[V]):
             emoji=button.emoji,
             row=None,
             sku_id=button.sku_id,
+            id=button.id,
         )
 
     @property

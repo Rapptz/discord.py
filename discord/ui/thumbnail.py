@@ -96,12 +96,15 @@ class Thumbnail(Item[V]):
         return True
 
     def to_component_dict(self) -> Dict[str, Any]:
-        return {
+        base = {
             'type': self.type.value,
             'spoiler': self.spoiler,
             'media': self.media.to_dict(),
             'description': self.description,
         }
+        if self.id is not None:
+            base['id'] = self.id
+        return base
 
     @classmethod
     def from_component(cls, component: ThumbnailComponent) -> Self:
@@ -109,4 +112,5 @@ class Thumbnail(Item[V]):
             media=component.media.url,
             description=component.description,
             spoiler=component.spoiler,
+            id=component.id,
         )

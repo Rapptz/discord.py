@@ -74,6 +74,7 @@ class Separator(Item[V]):
         self._underlying = SeparatorComponent._raw_construct(
             spacing=spacing,
             visible=visible,
+            id=id,
         )
 
         self.row = row
@@ -120,4 +121,5 @@ class Separator(Item[V]):
         return cls(
             visible=component.visible,
             spacing=component.spacing,
+            id=component.id,
         )

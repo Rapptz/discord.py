@@ -174,6 +174,7 @@ class Section(Item[V]):
         return cls(
             children=[_component_to_item(c) for c in component.components],
             accessory=_component_to_item(component.accessory),
+            id=component.id,
         )
 
     def to_component_dict(self) -> Dict[str, Any]:
@@ -182,4 +183,6 @@ class Section(Item[V]):
             'components': [c.to_component_dict() for c in self._children],
             'accessory': self.accessory.to_component_dict(),
         }
+        if self.id is not None:
+            data['id'] = self.id
         return data

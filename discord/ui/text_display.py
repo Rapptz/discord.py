@@ -67,10 +67,13 @@ class TextDisplay(Item[V]):
         self.id = id
 
     def to_component_dict(self):
-        return {
+        base = {
             'type': self.type.value,
             'content': self.content,
         }
+        if self.id is not None:
+            base['id'] = self.id
+        return base
 
     @property
     def width(self):
@@ -87,4 +90,5 @@ class TextDisplay(Item[V]):
     def from_component(cls, component: TextDisplayComponent) -> Self:
         return cls(
             content=component.content,
+            id=component.id,
         )

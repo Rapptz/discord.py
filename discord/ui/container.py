@@ -194,12 +194,15 @@ class Container(Item[V]):
 
     def to_component_dict(self) -> Dict[str, Any]:
         components = self.to_components()
-        return {
+        base = {
             'type': self.type.value,
             'accent_color': self._colour.value if self._colour else None,
             'spoiler': self.spoiler,
             'components': components,
         }
+        if self.id is not None:
+            base['id'] = self.id
+        return base
 
     def _update_store_data(
         self,
@@ -222,4 +225,5 @@ class Container(Item[V]):
             children=[_component_to_item(c) for c in component.children],
             accent_colour=component.accent_colour,
             spoiler=component.spoiler,
+            id=component.id,
         )
