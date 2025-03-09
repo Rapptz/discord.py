@@ -136,7 +136,7 @@ class Container(Item[V]):
         return children
 
     def is_dispatchable(self) -> bool:
-        return True
+        return bool(self.__dispatchable)
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
