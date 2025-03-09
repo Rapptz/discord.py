@@ -177,13 +177,18 @@ class ActionRow(Component):
     ------------
     children: List[Union[:class:`Button`, :class:`SelectMenu`, :class:`TextInput`]]
         The children components that this holds, if any.
+    id: Optional[:class:`int`]
+        The ID of this component.
+
+        .. versionadded:: 2.6
     """
 
-    __slots__: Tuple[str, ...] = ('children',)
+    __slots__: Tuple[str, ...] = ('children', 'id')
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
     def __init__(self, data: ActionRowPayload, /) -> None:
+        self.id: Optional[int] = data.get('id')
         self.children: List[ActionRowChildComponentType] = []
 
         for component_data in data.get('components', []):
@@ -198,10 +203,13 @@ class ActionRow(Component):
         return ComponentType.action_row
 
     def to_dict(self) -> ActionRowPayload:
-        return {
+        payload: ActionRowPayload = {
             'type': self.type.value,
             'components': [child.to_dict() for child in self.children],
         }
+        if self.id is not None:
+            payload['id'] = self.id
+        return payload
 
 
 class Button(Component):
@@ -235,6 +243,10 @@ class Button(Component):
         The SKU ID this button sends you to, if available.
 
         .. versionadded:: 2.4
+    id: Optional[:class:`int`]
+        The ID of this component.
+
+        .. versionadded:: 2.6
     """
 
     __slots__: Tuple[str, ...] = (
@@ -245,11 +257,13 @@ class Button(Component):
         'label',
         'emoji',
         'sku_id',
+        'id',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
 
     def __init__(self, data: ButtonComponentPayload, /) -> None:
+        self.id: Optional[int] = data.get('id')
         self.style: ButtonStyle = try_enum(ButtonStyle, data['style'])
         self.custom_id: Optional[str] = data.get('custom_id')
         self.url: Optional[str] = data.get('url')
@@ -277,6 +291,9 @@ class Button(Component):
             'style': self.style.value,
             'disabled': self.disabled,
         }
+
+        if self.id is not None:
+            payload['id'] = self.id
 
         if self.sku_id:
             payload['sku_id'] = str(self.sku_id)
@@ -329,6 +346,10 @@ class SelectMenu(Component):
         Whether the select is disabled or not.
     channel_types: List[:class:`.ChannelType`]
         A list of channel types that are allowed to be chosen in this select menu.
+    id: Optional[:class:`int`]
+        The ID of this component.
+
+        .. versionadded:: 2.6
     """
 
     __slots__: Tuple[str, ...] = (
@@ -341,6 +362,7 @@ class SelectMenu(Component):
         'disabled',
         'channel_types',
         'default_values',
+        'id',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
@@ -357,6 +379,7 @@ class SelectMenu(Component):
         self.default_values: List[SelectDefaultValue] = [
             SelectDefaultValue.from_dict(d) for d in data.get('default_values', [])
         ]
+        self.id: Optional[int] = data.get('id')
 
     def to_dict(self) -> SelectMenuPayload:
         payload: SelectMenuPayload = {
@@ -366,6 +389,8 @@ class SelectMenu(Component):
             'max_values': self.max_values,
             'disabled': self.disabled,
         }
+        if self.id is not None:
+            payload['id'] = self.id
         if self.placeholder:
             payload['placeholder'] = self.placeholder
         if self.options:
@@ -531,6 +556,10 @@ class TextInput(Component):
         The minimum length of the text input.
     max_length: Optional[:class:`int`]
         The maximum length of the text input.
+    id: Optional[:class:`int`]
+        The ID of this component.
+
+        .. versionadded:: 2.6
     """
 
     __slots__: Tuple[str, ...] = (
@@ -542,6 +571,7 @@ class TextInput(Component):
         'required',
         'min_length',
         'max_length',
+        'id',
     )
 
     __repr_info__: ClassVar[Tuple[str, ...]] = __slots__
@@ -555,6 +585,7 @@ class TextInput(Component):
         self.required: bool = data.get('required', True)
         self.min_length: Optional[int] = data.get('min_length')
         self.max_length: Optional[int] = data.get('max_length')
+        self.id: Optional[int] = data.get('id')
 
     @property
     def type(self) -> Literal[ComponentType.text_input]:
@@ -569,6 +600,9 @@ class TextInput(Component):
             'custom_id': self.custom_id,
             'required': self.required,
         }
+
+        if self.id is not None:
+            payload['id'] = self.id
 
         if self.placeholder:
             payload['placeholder'] = self.placeholder
@@ -721,11 +755,14 @@ class SectionComponent(Component):
         The components on this section.
     accessory: :class:`Component`
         The section accessory.
+    id: Optional[:class:`int`]
+        The ID of this component.
     """
 
     __slots__ = (
         'components',
         'accessory',
+        'id',
     )
 
     __repr_info__ = __slots__
@@ -733,6 +770,7 @@ class SectionComponent(Component):
     def __init__(self, data: SectionComponentPayload, state: Optional[ConnectionState]) -> None:
         self.components: List[SectionComponentType] = []
         self.accessory: Component = _component_factory(data['accessory'], state)  # type: ignore
+        self.id: Optional[int] = data.get('id')
 
         for component_data in data['components']:
             component = _component_factory(component_data, state)
@@ -749,6 +787,10 @@ class SectionComponent(Component):
             'components': [c.to_dict() for c in self.components],
             'accessory': self.accessory.to_dict(),
         }
+
+        if self.id is not None:
+            payload['id'] = self.id
+
         return payload
 
 
@@ -772,12 +814,15 @@ class ThumbnailComponent(Component):
         The description shown within this thumbnail.
     spoiler: :class:`bool`
         Whether this thumbnail is flagged as a spoiler.
+    id: Optional[:class:`int`]
+        The ID of this component.
     """
 
     __slots__ = (
         'media',
         'spoiler',
         'description',
+        'id',
     )
 
     __repr_info__ = __slots__
@@ -790,18 +835,24 @@ class ThumbnailComponent(Component):
         self.media: UnfurledMediaItem = UnfurledMediaItem._from_data(data['media'], state)
         self.description: Optional[str] = data.get('description')
         self.spoiler: bool = data.get('spoiler', False)
+        self.id: Optional[int] = data.get('id')
 
     @property
     def type(self) -> Literal[ComponentType.thumbnail]:
         return ComponentType.thumbnail
 
     def to_dict(self) -> ThumbnailComponentPayload:
-        return {
-            'media': self.media.to_dict(),  # pyright: ignore[reportReturnType]
+        payload = {
+            'media': self.media.to_dict(),
             'description': self.description,
             'spoiler': self.spoiler,
             'type': self.type.value,
         }
+
+        if self.id is not None:
+            payload['id'] = self.id
+
+        return payload  # type: ignore
 
 
 class TextDisplay(Component):
@@ -820,24 +871,30 @@ class TextDisplay(Component):
     ----------
     content: :class:`str`
         The content that this display shows.
+    id: Optional[:class:`int`]
+        The ID of this component.
     """
 
-    __slots__ = ('content',)
+    __slots__ = ('content', 'id')
 
     __repr_info__ = __slots__
 
     def __init__(self, data: TextComponentPayload) -> None:
         self.content: str = data['content']
+        self.id: Optional[int] = data.get('id')
 
     @property
     def type(self) -> Literal[ComponentType.text_display]:
         return ComponentType.text_display
 
     def to_dict(self) -> TextComponentPayload:
-        return {
+        payload: TextComponentPayload = {
             'type': self.type.value,
             'content': self.content,
         }
+        if self.id is not None:
+            payload['id'] = self.id
+        return payload
 
 
 class UnfurledMediaItem(AssetMixin):
@@ -1006,24 +1063,30 @@ class MediaGalleryComponent(Component):
     ----------
     items: List[:class:`MediaGalleryItem`]
         The items this gallery has.
+    id: Optional[:class:`int`]
+        The ID of this component.
     """
 
-    __slots__ = ('items',)
+    __slots__ = ('items', 'id')
 
     __repr_info__ = __slots__
 
     def __init__(self, data: MediaGalleryComponentPayload, state: Optional[ConnectionState]) -> None:
         self.items: List[MediaGalleryItem] = MediaGalleryItem._from_gallery(data['items'], state)
+        self.id: Optional[int] = data.get('id')
 
     @property
     def type(self) -> Literal[ComponentType.media_gallery]:
         return ComponentType.media_gallery
 
     def to_dict(self) -> MediaGalleryComponentPayload:
-        return {
+        payload: MediaGalleryComponentPayload = {
             'type': self.type.value,
             'items': [item.to_dict() for item in self.items],
         }
+        if self.id is not None:
+            payload['id'] = self.id
+        return payload
 
 
 class FileComponent(Component):
@@ -1044,11 +1107,14 @@ class FileComponent(Component):
         The unfurled attachment contents of the file.
     spoiler: :class:`bool`
         Whether this file is flagged as a spoiler.
+    id: Optional[:class:`int`]
+        The ID of this component.
     """
 
     __slots__ = (
         'media',
         'spoiler',
+        'id',
     )
 
     __repr_info__ = __slots__
@@ -1056,17 +1122,21 @@ class FileComponent(Component):
     def __init__(self, data: FileComponentPayload, state: Optional[ConnectionState]) -> None:
         self.media: UnfurledMediaItem = UnfurledMediaItem._from_data(data['file'], state)
         self.spoiler: bool = data.get('spoiler', False)
+        self.id: Optional[int] = data.get('id')
 
     @property
     def type(self) -> Literal[ComponentType.file]:
         return ComponentType.file
 
     def to_dict(self) -> FileComponentPayload:
-        return {
+        payload: FileComponentPayload = {
             'type': self.type.value,
             'file': self.media.to_dict(),  # type: ignore
             'spoiler': self.spoiler,
         }
+        if self.id is not None:
+            payload['id'] = self.id
+        return payload
 
 
 class SeparatorComponent(Component):
@@ -1087,11 +1157,14 @@ class SeparatorComponent(Component):
         The spacing size of the separator.
     visible: :class:`bool`
         Whether this separator is visible and shows a divider.
+    id: Optional[:class:`int`]
+        The ID of this component.
     """
 
     __slots__ = (
         'spacing',
         'visible',
+        'id',
     )
 
     __repr_info__ = __slots__
@@ -1102,17 +1175,21 @@ class SeparatorComponent(Component):
     ) -> None:
         self.spacing: SeparatorSize = try_enum(SeparatorSize, data.get('spacing', 1))
         self.visible: bool = data.get('divider', True)
+        self.id: Optional[int] = data.get('id')
 
     @property
     def type(self) -> Literal[ComponentType.separator]:
         return ComponentType.separator
 
     def to_dict(self) -> SeparatorComponentPayload:
-        return {
+        payload: SeparatorComponentPayload = {
             'type': self.type.value,
             'divider': self.visible,
             'spacing': self.spacing.value,
         }
+        if self.id is not None:
+            payload['id'] = self.id
+        return payload
 
 
 class Container(Component):
@@ -1133,10 +1210,13 @@ class Container(Component):
         This container's children.
     spoiler: :class:`bool`
         Whether this container is flagged as a spoiler.
+    id: Optional[:class:`int`]
+        The ID of this component.
     """
 
     def __init__(self, data: ContainerComponentPayload, state: Optional[ConnectionState]) -> None:
         self.children: List[Component] = []
+        self.id: Optional[int] = data.get('id')
 
         for child in data['components']:
             comp = _component_factory(child, state)
@@ -1157,6 +1237,18 @@ class Container(Component):
         return self._colour
 
     accent_color = accent_colour
+
+    def to_dict(self) -> ContainerComponentPayload:
+        payload: ContainerComponentPayload = {
+            'type': self.type.value,  # type: ignore
+            'spoiler': self.spoiler,
+            'components': [c.to_dict() for c in self.children],
+        }
+        if self.id is not None:
+            payload['id'] = self.id
+        if self._colour:
+            payload['accent_color'] = self._colour.value
+        return payload
 
 
 def _component_factory(data: ComponentPayload, state: Optional[ConnectionState] = None) -> Optional[Component]:

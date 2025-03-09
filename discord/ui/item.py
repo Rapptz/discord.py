@@ -127,8 +127,7 @@ class Item(Generic[V]):
 
     @property
     def id(self) -> Optional[int]:
-        """Optional[:class:`int`]: The ID of this component.
-        """
+        """Optional[:class:`int`]: The ID of this component."""
         return self._id
 
     @id.setter

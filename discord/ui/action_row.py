@@ -234,10 +234,13 @@ class ActionRow(Item[V]):
         for item in self._children:
             components.append(item.to_component_dict())
 
-        return {
+        base = {
             'type': self.type.value,
             'components': components,
         }
+        if self.id is not None:
+            base['id'] = self.id
+        return base
 
     def button(
         self,
