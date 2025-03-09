@@ -183,9 +183,6 @@ class Container(Item[V]):
     def _is_v2(self) -> bool:
         return True
 
-    def is_dispatchable(self) -> bool:
-        return any(c.is_dispatchable() for c in self.children)
-
     def to_components(self) -> List[Dict[str, Any]]:
         components = []
         for child in self._children:
