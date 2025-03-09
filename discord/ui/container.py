@@ -140,7 +140,7 @@ class Container(Item[V]):
             for name, member in base.__dict__.items():
                 if isinstance(member, Item):
                     children[name] = member
-                if hasattr(member, '__discord_ui_model_type__') and hasattr(member, '__discord_ui_parent__'):
+                if hasattr(member, '__discord_ui_model_type__') and getattr(member, '__discord_ui_parent__', None):
                     children[name] = member
 
         cls.__container_children_items__ = list(children.values())
