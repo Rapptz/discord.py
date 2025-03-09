@@ -85,6 +85,7 @@ class Container(Item[V]):
 
     __container_children_items__: ClassVar[List[Union[ItemCallbackType[Any, Any], Item[Any]]]] = []
     __pending_view__: ClassVar[bool] = True
+    __discord_ui_container__: ClassVar[bool] = True
 
     def __init__(
         self,
@@ -131,6 +132,9 @@ class Container(Item[V]):
                 # selects are not from the container but the action row itself.
 
         return children
+
+    def is_dispatchable(self) -> bool:
+        return True
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
