@@ -1225,11 +1225,11 @@ class Container(Component):
                 self.children.append(comp)
 
         self.spoiler: bool = data.get('spoiler', False)
-        self._colour: Optional[Colour]
-        try:
-            self._colour = Colour(data['accent_color'])  # type: ignore
-        except KeyError:
-            self._colour = None
+
+        colour = data.get('accent_color')
+        self._colour: Optional[Colour] = None
+        if colour is not None:
+            self._colour = Colour(colour)
 
     @property
     def accent_colour(self) -> Optional[Colour]:
