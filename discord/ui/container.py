@@ -97,6 +97,7 @@ class Container(Item[V]):
         row: Optional[int] = None,
         id: Optional[int] = None,
     ) -> None:
+        self.__dispatchable: List[Item[V]] = []
         self._children: List[Item[V]] = self._init_children()
 
         if children is not MISSING:
@@ -130,6 +131,7 @@ class Container(Item[V]):
                 parent._children.append(item)
                 # we donnot append it to the children list because technically these buttons and
                 # selects are not from the container but the action row itself.
+                self.__dispatchable.append(item)
 
         return children
 
@@ -211,7 +213,7 @@ class Container(Item[V]):
         dynamic_items: Dict[Any, Type[DynamicItem]],
     ) -> bool:
         is_fully_dynamic = True
-        for item in self._children:
+        for item in self.__dispatchable:
             if isinstance(item, DynamicItem):
                 pattern = item.__discord_ui_compiled_template__
                 dynamic_items[pattern] = item.__class__
