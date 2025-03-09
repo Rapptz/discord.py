@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypeVar, Union, ClassVar
 
 from .item import Item
 from .text_display import TextDisplay
@@ -62,6 +62,8 @@ class Section(Item[V]):
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """
+
+    __discord_ui_section__: ClassVar[bool] = True
 
     __slots__ = (
         '_children',
