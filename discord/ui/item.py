@@ -70,7 +70,7 @@ class Item(Generic[V]):
         # actually affect the intended purpose of this check because from_component is
         # only called upon edit and we're mainly interested during initial creation time.
         self._provided_custom_id: bool = False
-        self._id: Optional[str] = None
+        self._id: Optional[int] = None
         self._max_row: int = 5 if not self._is_v2() else 10
 
     def to_component_dict(self) -> Dict[str, Any]:
@@ -126,14 +126,13 @@ class Item(Generic[V]):
         return self._view
 
     @property
-    def id(self) -> Optional[str]:
-        """Optional[:class:`str`]: The ID of this component. For non v2 components this is the
-        equivalent to ``custom_id``.
+    def id(self) -> Optional[int]:
+        """Optional[:class:`int`]: The ID of this component.
         """
         return self._id
 
     @id.setter
-    def id(self, value: Optional[str]) -> None:
+    def id(self, value: Optional[int]) -> None:
         self._id = value
 
     async def callback(self, interaction: Interaction[ClientT]) -> Any:

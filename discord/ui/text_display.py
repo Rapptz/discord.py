@@ -55,11 +55,11 @@ class TextDisplay(Item[V]):
         passing an index is advised. For example, row=1 will show
         up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 9 (i.e. zero indexed)
-    id: Optional[:class:`str`]
+    id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """
 
-    def __init__(self, content: str, *, row: Optional[int] = None, id: Optional[str] = None) -> None:
+    def __init__(self, content: str, *, row: Optional[int] = None, id: Optional[int] = None) -> None:
         super().__init__()
         self.content: str = content
 

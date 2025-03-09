@@ -48,8 +48,8 @@ class Thumbnail(Item[V]):
     Parameters
     ----------
     media: Union[:class:`str`, :class:`discord.UnfurledMediaItem`]
-        The media of the thumbnail. This can be a string that points to a local
-        attachment uploaded within this item. URLs must match the ``attachment://file-name.extension``
+        The media of the thumbnail. This can be a URL or a reference
+        to an attachment that matches the ``attachment://filename.extension``
         structure.
     description: Optional[:class:`str`]
         The description of this thumbnail. Defaults to ``None``.
@@ -62,7 +62,7 @@ class Thumbnail(Item[V]):
         passing an index is advised. For example, row=1 will show
         up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 9 (i.e. zero indexed)
-    id: Optional[:class:`str`]
+    id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """
 
@@ -73,7 +73,7 @@ class Thumbnail(Item[V]):
         description: Optional[str] = None,
         spoiler: bool = False,
         row: Optional[int] = None,
-        id: Optional[str] = None,
+        id: Optional[int] = None,
     ) -> None:
         super().__init__()
 

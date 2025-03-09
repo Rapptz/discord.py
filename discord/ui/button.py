@@ -83,6 +83,10 @@ class Button(Item[V]):
         nor ``custom_id``.
 
         .. versionadded:: 2.4
+    id: Optional[:class:`int`]
+        The ID of this component. This must be unique across the view.
+
+        .. versionadded:: 2.6
     """
 
     __item_repr_attributes__: Tuple[str, ...] = (
@@ -106,6 +110,7 @@ class Button(Item[V]):
         emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
         row: Optional[int] = None,
         sku_id: Optional[int] = None,
+        id: Optional[int] = None,
     ):
         super().__init__()
         if custom_id is not None and (url is not None or sku_id is not None):
@@ -147,7 +152,7 @@ class Button(Item[V]):
         )
         self._parent: Optional[ActionRow] = None
         self.row = row
-        self.id = custom_id
+        self.id = id
 
     @property
     def style(self) -> ButtonStyle:

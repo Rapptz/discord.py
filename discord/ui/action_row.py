@@ -94,18 +94,19 @@ class ActionRow(Item[V]):
 
     Parameters
     ----------
-    id: Optional[:class:`str`]
-        The ID of this action row. Defaults to ``None``.
+    id: Optional[:class:`int`]
+        The ID of this component. This must be unique across the view.
     """
 
     __action_row_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
     __discord_ui_action_row__: ClassVar[bool] = True
+    __pending_view__: ClassVar[bool] = True
 
-    def __init__(self, *, id: Optional[str] = None) -> None:
+    def __init__(self, *, id: Optional[int] = None) -> None:
         super().__init__()
-
-        self.id: str = id or os.urandom(16).hex()
         self._children: List[Item[Any]] = self._init_children()
+
+        self.id = id
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()

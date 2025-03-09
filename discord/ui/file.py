@@ -59,7 +59,7 @@ class File(Item[V]):
         passing an index is advised. For example, row=1 will show
         up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 9 (i.e. zero indexed)
-    id: Optional[:class:`str`]
+    id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """
 
@@ -69,7 +69,7 @@ class File(Item[V]):
         *,
         spoiler: bool = False,
         row: Optional[int] = None,
-        id: Optional[str] = None,
+        id: Optional[int] = None,
     ) -> None:
         super().__init__()
         self._underlying = FileComponent._raw_construct(

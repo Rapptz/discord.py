@@ -223,6 +223,8 @@ class BaseView:
                 parent = getattr(raw, '__discord_ui_parent__', None)
                 if parent and parent._view is None:
                     parent._view = self
+                if getattr(raw, '__pending_view__', False):
+                    raw._update_children_view(self)  # type: ignore
                 children.append(raw)
             else:
                 item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
@@ -581,6 +583,8 @@ class View(BaseView):  # NOTE: maybe add a deprecation warning in favour of Layo
             for name, member in base.__dict__.items():
                 if hasattr(member, '__discord_ui_model_type__'):
                     children[name] = member
+                elif isinstance(member, Item) and member._is_v2():
+                    raise RuntimeError(f'{name} cannot be added to this View')
 
         if len(children) > 25:
             raise TypeError('View cannot have more than 25 children')
@@ -707,10 +711,14 @@ class LayoutView(BaseView):
     def __init_subclass__(cls) -> None:
         children: Dict[str, Item[Any]] = {}
 
+        row = 0
+
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if isinstance(member, Item):
+                    member._rendered_row = member._row or row
                     children[name] = member
+                    row += 1
                 elif hasattr(member, '__discord_ui_model_type__') and getattr(member, '__discord_ui_parent__', None):
                     children[name] = member
 

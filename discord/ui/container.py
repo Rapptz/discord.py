@@ -23,10 +23,10 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple, Type, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union
 
-from .item import Item
-from .view import BaseView, _component_to_item, LayoutView
+from .item import Item, ItemCallbackType
+from .view import _component_to_item, LayoutView
 from .dynamic import DynamicItem
 from ..enums import ComponentType
 from ..utils import MISSING
@@ -36,13 +36,26 @@ if TYPE_CHECKING:
 
     from ..colour import Colour, Color
     from ..components import Container as ContainerComponent
+    from ..interactions import Interaction
 
 V = TypeVar('V', bound='LayoutView', covariant=True)
 
 __all__ = ('Container',)
 
 
-class Container(BaseView, Item[V]):
+class _ContainerCallback:
+    __slots__ = ('container', 'callback', 'item')
+
+    def __init__(self, callback: ItemCallbackType[Any, Any], container: Container, item: Item[Any]) -> None:
+        self.callback: ItemCallbackType[Any, Any] = callback
+        self.container: Container = container
+        self.item: Item[Any] = item
+
+    def __call__(self, interaction: Interaction) -> Coroutine[Any, Any, Any]:
+        return self.callback(self.container, interaction, self.item)
+
+
+class Container(Item[V]):
     """Represents a UI container.
 
     .. versionadded:: 2.6
@@ -66,41 +79,86 @@ class Container(BaseView, Item[V]):
         passing an index is advised. For example, row=1 will show
         up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 9 (i.e. zero indexed)
-    id: Optional[:class:`str`]
+    id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """
 
+    __container_children_items__: ClassVar[List[Union[ItemCallbackType[Any, Any], Item[Any]]]] = []
+    __pending_view__: ClassVar[bool] = True
+
     def __init__(
         self,
-        children: List[Item[Any]] = MISSING,
+        children: List[Item[V]] = MISSING,
         *,
         accent_colour: Optional[Colour] = None,
         accent_color: Optional[Color] = None,
         spoiler: bool = False,
         row: Optional[int] = None,
-        id: Optional[str] = None,
+        id: Optional[int] = None,
     ) -> None:
-        super().__init__(timeout=None)
+        self._children: List[Item[V]] = self._init_children()
+
         if children is not MISSING:
             if len(children) + len(self._children) > 10:
-                raise ValueError('maximum number of components exceeded')
-            self._children.extend(children)
+                raise ValueError('maximum number of children exceeded')
         self.spoiler: bool = spoiler
         self._colour = accent_colour or accent_color
 
         self._view: Optional[V] = None
-        self._row: Optional[int] = None
-        self._rendered_row: Optional[int] = None
-        self.row: Optional[int] = row
-        self.id: Optional[str] = id
+        self.row = row
+        self.id = id
+
+    def _init_children(self) -> List[Item[Any]]:
+        children = []
+
+        for raw in self.__container_children_items__:
+            if isinstance(raw, Item):
+                children.append(raw)
+            else:
+                # action rows can be created inside containers, and then callbacks can exist here
+                # so we create items based off them
+                item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
+                item.callback = _ContainerCallback(raw, self, item)  # type: ignore
+                setattr(self, raw.__name__, item)
+                # this should not fail because in order for a function to be here it should be from
+                # an action row and must have passed the check in __init_subclass__, but still
+                # guarding it
+                parent = getattr(raw, '__discord_ui_parent__', None)
+                if parent is None:
+                    raise RuntimeError(f'{raw.__name__} is not a valid item for a Container')
+                parent._children.append(item)
+                # we donnot append it to the children list because technically these buttons and
+                # selects are not from the container but the action row itself.
+
+        return children
+
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+
+        children: Dict[str, Union[ItemCallbackType[Any, Any], Item[Any]]] = {}
+        for base in reversed(cls.__mro__):
+            for name, member in base.__dict__.items():
+                if isinstance(member, Item):
+                    children[name] = member
+                if hasattr(member, '__discord_ui_model_type__') and hasattr(member, '__discord_ui_parent__'):
+                    children[name] = member
+
+        cls.__container_children_items__ = list(children.values())
+
+    def _update_children_view(self, view) -> None:
+        for child in self._children:
+            child._view = view
+            if getattr(child, '__pending_view__', False):
+                # if the item is an action row which child's view can be updated, then update it
+                child._update_children_view(view)  # type: ignore
 
     @property
-    def children(self) -> List[Item[Self]]:
+    def children(self) -> List[Item[V]]:
         """List[:class:`Item`]: The children of this container."""
         return self._children.copy()
 
     @children.setter
-    def children(self, value: List[Item[Any]]) -> None:
+    def children(self, value: List[Item[V]]) -> None:
         self._children = value
 
     @property
