@@ -844,6 +844,9 @@ class ViewStore:
                         )
                         or is_fully_dynamic
                     )
+                elif getattr(item, '__discord_ui_section__', False):
+                    accessory = item.accessory. # type: ignore
+                    dispatch_info[(accessory.type.value, accessory.custom_id)] = accessory  # type: ignore
                 else:
                     dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
                     is_fully_dynamic = False
