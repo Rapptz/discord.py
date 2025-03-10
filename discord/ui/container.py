@@ -116,6 +116,9 @@ class Container(Item[V]):
         for raw in self.__container_children_items__:
             if isinstance(raw, Item):
                 children.append(raw)
+
+                if getattr(raw, '__discord_ui_section__', False) and raw.accessory.is_dispatchable():  # type: ignore
+                    self.__dispatchable.append(raw.accessory)  # type: ignore
             else:
                 # action rows can be created inside containers, and then callbacks can exist here
                 # so we create items based off them
@@ -218,12 +221,8 @@ class Container(Item[V]):
                 pattern = item.__discord_ui_compiled_template__
                 dynamic_items[pattern] = item.__class__
             elif item.is_dispatchable():
-                if getattr(item, '__discord_ui_section__', False):
-                    accessory = item.accessory  # type: ignore
-                    dispatch_info[(accessory.type.value, accessory.custom_id)] = accessory
-                else:
-                    dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
-                    is_fully_dynamic = False
+                dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
+                is_fully_dynamic = False
         return is_fully_dynamic
 
     @classmethod
