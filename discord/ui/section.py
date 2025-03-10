@@ -64,6 +64,7 @@ class Section(Item[V]):
     """
 
     __discord_ui_section__: ClassVar[bool] = True
+    __pending_view__: ClassVar[bool] = True
 
     __slots__ = (
         '_children',
@@ -107,9 +108,10 @@ class Section(Item[V]):
     # be accessory component callback, only called if accessory is
     # dispatchable?
     def is_dispatchable(self) -> bool:
-        if self.accessory:
-            return self.accessory.is_dispatchable()
-        return False
+        return self.accessory.is_dispatchable()
+
+    def _update_children_view(self, view) -> None:
+        self.accessory._view = view
 
     def add_item(self, item: Union[str, Item[Any]]) -> Self:
         """Adds an item to this section.

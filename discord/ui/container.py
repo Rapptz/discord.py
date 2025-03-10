@@ -218,8 +218,12 @@ class Container(Item[V]):
                 pattern = item.__discord_ui_compiled_template__
                 dynamic_items[pattern] = item.__class__
             elif item.is_dispatchable():
-                dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
-                is_fully_dynamic = False
+                if getattr(item, '__discord_ui_section__', False):
+                    accessory = item.accessory  # type: ignore
+                    dispatch_info[(accessory.type.value, accessory.custom_id)] = accessory
+                else:
+                    dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
+                    is_fully_dynamic = False
         return is_fully_dynamic
 
     @classmethod
