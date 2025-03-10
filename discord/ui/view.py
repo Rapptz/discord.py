@@ -850,7 +850,7 @@ class ViewStore:
                         pattern = accessory.__discord_ui_compiled_template__
                         self._dynamic_items[pattern] = accessory.__class__
                     else:
-                        dispatch_info[(accessory.type.value, accessory.custom_id)] = accessory  # type: ignore
+                        dispatch_info[(accessory.type.value, accessory.custom_id)] = accessory
                 else:
                     dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
                     is_fully_dynamic = False
