@@ -119,6 +119,8 @@ class Container(Item[V]):
 
                 if getattr(raw, '__discord_ui_section__', False) and raw.accessory.is_dispatchable():  # type: ignore
                     self.__dispatchable.append(raw.accessory)  # type: ignore
+                elif getattr(raw, '__discord_ui_action_row__', False) and raw.is_dispatchable():
+                    self.__dispatchable.extend(raw._children)  # type: ignore
             else:
                 # action rows can be created inside containers, and then callbacks can exist here
                 # so we create items based off them
