@@ -845,12 +845,14 @@ class ViewStore:
                         or is_fully_dynamic
                     )
                 elif getattr(item, '__discord_ui_section__', False):
-                    accessory = item.accessory  # type: ignore
+                    accessory: Item = item.accessory  # type: ignore
+                    accessory._view = view
+
                     if isinstance(accessory, DynamicItem):
                         pattern = accessory.__discord_ui_compiled_template__
                         self._dynamic_items[pattern] = accessory.__class__
                     else:
-                        dispatch_info[(accessory.type.value, accessory.custom_id)] = accessory
+                        dispatch_info[(accessory.type.value, accessory.custom_id)] = accessory  # type: ignore
                 else:
                     dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
                     is_fully_dynamic = False
