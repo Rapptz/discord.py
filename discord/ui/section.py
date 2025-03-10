@@ -64,6 +64,7 @@ class Section(Item[V]):
     """
 
     __discord_ui_section__: ClassVar[bool] = True
+    __pending_view__: ClassVar[bool] = True
 
     __slots__ = (
         '_children',
