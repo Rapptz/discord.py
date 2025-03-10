@@ -121,7 +121,7 @@ class Section(Item[V]):
         Parameters
         ----------
         item: Union[:class:`str`, :class:`Item`]
-            The items to append, if it is a string it automatically wrapped around
+            The item to append, if it is a string it automatically wrapped around
             :class:`TextDisplay`.
 
         Raises

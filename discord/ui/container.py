@@ -233,3 +233,63 @@ class Container(Item[V]):
             spoiler=component.spoiler,
             id=component.id,
         )
+
+    def add_item(self, item: Item[Any]) -> Self:
+        """Adds an item to this container.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        Parameters
+        ----------
+        item: :class:`Item`
+            The item to append.
+
+        Raises
+        ------
+        TypeError
+            An :class:`Item` was not passed.
+        ValueError
+            Maximum number of children has been exceeded (10).
+        """
+
+        if len(self._children) >= 10:
+            raise ValueError('maximum number of children exceeded')
+
+        if not isinstance(item, Item):
+            raise TypeError(f'expected Item not {item.__class__.__name__}')
+
+        self._children.append(item)
+
+        if item.is_dispatchable():
+            if getattr(item, '__discord_ui_section__', False):
+                self.__dispatchable.append(item.accessory)  # type: ignore
+
+        return self
+
+    def remove_item(self, item: Item[Any]) -> Self:
+        """Removes an item from this container.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        Parameters
+        ----------
+        item: :class:`TextDisplay`
+            The item to remove from the section.
+        """
+
+        try:
+            self._children.remove(item)
+        except ValueError:
+            pass
+        return self
+
+    def clear_items(self) -> Self:
+        """Removes all the items from the container.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+        """
+        self._children.clear()
+        return self
