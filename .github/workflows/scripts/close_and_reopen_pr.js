@@ -1,4 +1,4 @@
-module.exports = (async function ({github, context}) {
+module.exports = (async function ({ github, context }) {
     const pr_number = process.env.PR_NUMBER;
     const pr_operation = process.env.PR_OPERATION;
 
@@ -12,8 +12,8 @@ module.exports = (async function ({github, context}) {
         await new Promise(r => setTimeout(r, 5000));
 
         // Close the PR
-        github.issues.update({
-            issue_number: pr_number,
+        await github.pulls.update({
+            pull_number: pr_number,
             owner: context.repo.owner,
             repo: context.repo.repo,
             state
