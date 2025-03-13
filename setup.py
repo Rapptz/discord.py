@@ -1,11 +1,14 @@
 from setuptools import setup
 import re
 
-
 def derive_version() -> str:
     version = ''
     with open('discord/__init__.py') as f:
         version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
+\
+
+some 
+
 
     if not version:
         raise RuntimeError('version is not set')
@@ -28,5 +31,11 @@ def derive_version() -> str:
 
     return version
 
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
-setup(version=derive_version())
+setup(
+    version=derive_version(),
+    long_description=long_description,
+    long_description_content_type="text/markdown"
+)
