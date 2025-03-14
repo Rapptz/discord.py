@@ -41,7 +41,7 @@ Likewise, configuring the log level to ``logging.DEBUG`` is also possible:
     # Assume client refers to a discord.Client subclass...
     client.run(token, log_handler=handler, log_level=logging.DEBUG)
 
-This is recommended, especially at verbose levels such as ``DEBUG``, as there are a lot of events logged and it would clog the stderr of your program.
+This is not recommended, especially at verbose levels such as ``DEBUG``, as there are a lot of events logged and it would clog the stderr of your program.
 
 If you want the logging configuration the library provides to affect all loggers rather than just the ``discord`` logger, you can pass ``root_logger=True`` inside :meth:`Client.run`:
 
