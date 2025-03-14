@@ -494,6 +494,21 @@ class Embed:
 
         return self
 
+    def remove_thumbnail(self) -> Self:
+        """Clears embed's thumbnail information.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        .. versionadded:: 2.6
+        """
+        try:
+            del self._thumbnail
+        except AttributeError:
+            pass
+
+        return self
+
     @property
     def video(self) -> _EmbedMediaProxy:
         """Returns an ``EmbedProxy`` denoting the video contents.
