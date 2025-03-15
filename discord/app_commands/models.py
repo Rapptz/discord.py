@@ -26,7 +26,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from .errors import MissingApplicationID
-from ..flags import AppCommandContext, AppInstallationType
+from ..flags import AppCommandContext, AppInstallationType, ChannelFlags
 from .translator import TranslationContextLocation, TranslationContext, locale_str, Translator
 from ..permissions import Permissions
 from ..enums import (
@@ -575,6 +575,23 @@ class AppCommandChannel(Hashable):
         the application command in that channel.
     guild_id: :class:`int`
         The guild ID this channel belongs to.
+    category_id: Optional[:class:`int`]
+        The category channel ID this channel belongs to, if applicable.
+    topic: Optional[:class:`str`]
+        The channel's topic. ``None`` if it doesn't exist.
+    position: :class:`int`
+        The position in the channel list. This is a number that starts at 0. e.g. the
+        top channel is position 0.
+    last_message_id: Optional[:class:`int`]
+        The last message ID of the message sent to this channel. It may
+        *not* point to an existing or valid message.
+    slowmode_delay: :class:`int`
+        The number of seconds a member must wait between sending messages
+        in this channel. A value of ``0`` denotes that it is disabled.
+        Bots and users with :attr:`~Permissions.manage_channels` or
+        :attr:`~Permissions.manage_messages` bypass slowmode.
+    nsfw: :class:`bool`
+        If the channel is marked as "not safe for work" or "age restricted".
     """
 
     __slots__ = (
@@ -583,6 +600,14 @@ class AppCommandChannel(Hashable):
         'name',
         'permissions',
         'guild_id',
+        'topic',
+        'nsfw',
+        'position',
+        'category_id',
+        'slowmode_delay',
+        'last_message_id',
+        '_last_pin',
+        '_flags',
         '_state',
     )
 
@@ -599,6 +624,14 @@ class AppCommandChannel(Hashable):
         self.type: ChannelType = try_enum(ChannelType, data['type'])
         self.name: str = data['name']
         self.permissions: Permissions = Permissions(int(data['permissions']))
+        self.topic: Optional[str] = data.get('topic')
+        self.position: int = data.get('position') or 0
+        self.nsfw: bool = data.get('nsfw') or False
+        self.category_id: Optional[int] = _get_as_snowflake(data, 'parent_id')
+        self.slowmode_delay: int = data.get('rate_limit_per_user') or 0
+        self.last_message_id: Optional[int] = _get_as_snowflake(data, 'last_message_id')
+        self._last_pin: Optional[datetime] = parse_time(data.get('last_pin_timestamp'))
+        self._flags: int = data.get('flags', 0)
 
     def __str__(self) -> str:
         return self.name
@@ -610,6 +643,22 @@ class AppCommandChannel(Hashable):
     def guild(self) -> Optional[Guild]:
         """Optional[:class:`~discord.Guild`]: The channel's guild, from cache, if found."""
         return self._state._get_guild(self.guild_id)
+
+    @property
+    def flags(self) -> ChannelFlags:
+        """:class:`ChannelFlags`: The flags associated with this channel object.
+
+        .. versionadded:: 2.6
+        """
+        return ChannelFlags._from_value(self._flags)
+
+    def is_nsfw(self) -> bool:
+        """:class:`bool`: Checks if the channel is NSFW."""
+        return self.nsfw
+
+    def is_news(self) -> bool:
+        """:class:`bool`: Checks if the channel is a news channel."""
+        return self.type == ChannelType.news
 
     def resolve(self) -> Optional[GuildChannel]:
         """Resolves the application command channel to the appropriate channel
