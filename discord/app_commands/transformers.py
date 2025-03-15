@@ -52,7 +52,7 @@ from ..channel import StageChannel, VoiceChannel, TextChannel, CategoryChannel, 
 from ..abc import GuildChannel
 from ..threads import Thread
 from ..enums import Enum as InternalEnum, AppCommandOptionType, ChannelType, Locale
-from ..utils import MISSING, maybe_coroutine
+from ..utils import MISSING, maybe_coroutine, _human_join
 from ..user import User
 from ..role import Role
 from ..member import Member
@@ -631,7 +631,7 @@ class BaseChannelTransformer(Transformer[ClientT]):
             display_name = channel_types[0].__name__
             types = CHANNEL_TO_TYPES[channel_types[0]]
         else:
-            display_name = '{}, and {}'.format(', '.join(t.__name__ for t in channel_types[:-1]), channel_types[-1].__name__)
+            display_name = _human_join([t.__name__ for t in channel_types])
             types = []
 
             for t in channel_types:
