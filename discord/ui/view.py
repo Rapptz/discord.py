@@ -33,6 +33,7 @@ import sys
 import time
 import os
 from .item import Item, ItemCallbackType
+from .select import Select
 from .dynamic import DynamicItem
 from ..components import (
     Component,
@@ -179,6 +180,8 @@ class View:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
             item.callback = _ViewCallback(func, self, item)  # type: ignore
             item._view = self
+            if isinstance(item, Select):
+                item.options = [option.copy() for option in item.options]
             setattr(self, func.__name__, item)
             children.append(item)
         return children
