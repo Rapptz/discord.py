@@ -778,6 +778,16 @@ Thumbnail
     :members:
     :inherited-members:
 
+
+ActionRow
+~~~~~~~~~
+
+.. attributetable:: discord.ui.ActionRow
+
+.. autoclass:: discord.ui.ActionRow
+    :members:
+    :inherited-members:
+
 .. _discord_app_commands:
 
 Application Commands
