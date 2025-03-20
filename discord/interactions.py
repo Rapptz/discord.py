@@ -727,7 +727,7 @@ class InteractionCallbackResponse(Generic[ClientT]):
             activity_instance = resource.get('activity_instance')
             if message is not None:
                 self.resource = InteractionMessage(
-                    state=self._state,
+                    state=_InteractionMessageState(self._parent, self._state),  # pyright: ignore[reportArgumentType]
                     channel=self._parent.channel,  # type: ignore # channel should be the correct type here
                     data=message,
                 )

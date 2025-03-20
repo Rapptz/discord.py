@@ -2418,7 +2418,7 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
         set to an unspecified proxy object with two attributes:
 
-        - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the members were moved.
+        - ``channel``: An :class:`abc.Connectable` or :class:`Object` with the channel ID where the members were moved.
         - ``count``: An integer specifying how many members were moved.
 
         .. versionadded:: 1.3
@@ -3851,17 +3851,25 @@ of :class:`enum.Enum`.
 
     .. versionadded:: 2.5
 
-    .. attribute:: reply
+    .. attribute:: default
 
-        A message reply.
+        A standard reference used by message replies (:attr:`MessageType.reply`),
+        crossposted messaged created by a followed channel integration, and messages of type:
+
+        - :attr:`MessageType.pins_add`
+        - :attr:`MessageType.channel_follow_add`
+        - :attr:`MessageType.thread_created`
+        - :attr:`MessageType.thread_starter_message`
+        - :attr:`MessageType.poll_result`
+        - :attr:`MessageType.context_menu_command`
 
     .. attribute:: forward
 
         A forwarded message.
 
-    .. attribute:: default
+    .. attribute:: reply
 
-        An alias for :attr:`.reply`.
+        An alias for :attr:`.default`.
 
 
 .. class:: MediaItemLoadingState
