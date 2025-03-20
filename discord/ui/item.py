@@ -53,6 +53,14 @@ class Item(Generic[V]):
     - :class:`discord.ui.Button`
     - :class:`discord.ui.Select`
     - :class:`discord.ui.TextInput`
+    - :class:`discord.ui.ActionRow`
+    - :class:`discord.ui.Container`
+    - :class:`discord.ui.File`
+    - :class:`discord.ui.MediaGallery`
+    - :class:`discord.ui.Section`
+    - :class:`discord.ui.Separator`
+    - :class:`discord.ui.TextDisplay`
+    - :class:`discord.ui.Thumbnail`
 
     .. versionadded:: 2.0
     """

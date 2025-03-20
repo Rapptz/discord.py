@@ -23,6 +23,8 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
+
+import warnings
 from typing import (
     Any,
     Callable,
@@ -183,10 +185,10 @@ class _ViewWeights:
 class _ViewCallback:
     __slots__ = ('view', 'callback', 'item')
 
-    def __init__(self, callback: ItemCallbackType[Any, Any], view: View, item: Item[View]) -> None:
+    def __init__(self, callback: ItemCallbackType[Any, Any], view: BaseView, item: Item[BaseView]) -> None:
         self.callback: ItemCallbackType[Any, Any] = callback
-        self.view: View = view
-        self.item: Item[View] = item
+        self.view: BaseView = view
+        self.item: Item[BaseView] = item
 
     def __call__(self, interaction: Interaction) -> Coroutine[Any, Any, Any]:
         return self.callback(self.view, interaction, self.item)
@@ -223,7 +225,7 @@ class BaseView:
                 parent = getattr(raw, '__discord_ui_parent__', None)
                 if parent and parent._view is None:
                     parent._view = self
-                if getattr(raw, '__pending_view__', False):
+                if getattr(raw, '__discord_ui_update_view__', False):
                     raw._update_children_view(self)  # type: ignore
                 children.append(raw)
             else:
@@ -559,12 +561,14 @@ class BaseView:
         return await self.__stopped
 
 
-class View(BaseView):  # NOTE: maybe add a deprecation warning in favour of LayoutView?
+class View(BaseView):
     """Represents a UI view.
 
     This object must be inherited to create a UI within Discord.
 
     .. versionadded:: 2.0
+
+    .. deprecated:: 2.6
 
     Parameters
     -----------
@@ -576,6 +580,10 @@ class View(BaseView):  # NOTE: maybe add a deprecation warning in favour of Layo
     __discord_ui_view__: ClassVar[bool] = True
 
     def __init_subclass__(cls) -> None:
+        warnings.warn(
+            'discord.ui.View and subclasses are deprecated, use discord.ui.LayoutView instead',
+            DeprecationWarning,
+        )
         super().__init_subclass__()
 
         children: Dict[str, ItemCallbackType[Any, Any]] = {}
@@ -691,10 +699,7 @@ class View(BaseView):  # NOTE: maybe add a deprecation warning in favour of Layo
 
 
 class LayoutView(BaseView):
-    """Represents a layout view for components v2.
-
-    Unline :class:`View` this allows for components v2 to exist
-    within it.
+    """Represents a layout view for components.
 
     .. versionadded:: 2.6
 
@@ -710,6 +715,7 @@ class LayoutView(BaseView):
 
     def __init_subclass__(cls) -> None:
         children: Dict[str, Item[Any]] = {}
+        callback_children: Dict[str, ItemCallbackType[Any, Any]] = {}
 
         row = 0
 
@@ -720,12 +726,12 @@ class LayoutView(BaseView):
                     children[name] = member
                     row += 1
                 elif hasattr(member, '__discord_ui_model_type__') and getattr(member, '__discord_ui_parent__', None):
-                    children[name] = member
+                    callback_children[name] = member
 
         if len(children) > 10:
             raise TypeError('LayoutView cannot have more than 10 top-level children')
 
-        cls.__view_children_items__ = list(children.values())
+        cls.__view_children_items__ = list(children.values()) + list(callback_children.values())
 
     def _is_v2(self) -> bool:
         return True

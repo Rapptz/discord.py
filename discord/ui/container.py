@@ -84,7 +84,7 @@ class Container(Item[V]):
     """
 
     __container_children_items__: ClassVar[List[Union[ItemCallbackType[Any, Any], Item[Any]]]] = []
-    __pending_view__: ClassVar[bool] = True
+    __discord_ui_update_view__: ClassVar[bool] = True
     __discord_ui_container__: ClassVar[bool] = True
 
     def __init__(
@@ -157,7 +157,7 @@ class Container(Item[V]):
     def _update_children_view(self, view) -> None:
         for child in self._children:
             child._view = view
-            if getattr(child, '__pending_view__', False):
+            if getattr(child, '__discord_ui_update_view__', False):
                 # if the item is an action row which child's view can be updated, then update it
                 child._update_children_view(view)  # type: ignore
 

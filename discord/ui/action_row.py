@@ -99,7 +99,7 @@ class ActionRow(Item[V]):
 
     __action_row_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
     __discord_ui_action_row__: ClassVar[bool] = True
-    __pending_view__: ClassVar[bool] = True
+    __discord_ui_update_view__: ClassVar[bool] = True
 
     def __init__(self, *, id: Optional[int] = None) -> None:
         super().__init__()
