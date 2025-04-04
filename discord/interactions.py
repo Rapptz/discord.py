@@ -154,6 +154,10 @@ class Interaction(Generic[ClientT]):
         The context of the interaction.
 
         .. versionadded:: 2.4
+    max_attachment_size: :class:`int`
+        The maximum attachments size you can send, in bytes.
+
+        .. versionadded:: 2.7
     """
 
     __slots__: Tuple[str, ...] = (
@@ -172,7 +176,7 @@ class Interaction(Generic[ClientT]):
         'command_failed',
         'entitlement_sku_ids',
         'entitlements',
-        "context",
+        'context',
         '_integration_owners',
         '_permissions',
         '_app_permissions',
@@ -186,6 +190,7 @@ class Interaction(Generic[ClientT]):
         'channel',
         '_cs_namespace',
         '_cs_command',
+        'max_attachment_size',
     )
 
     def __init__(self, *, data: InteractionPayload, state: ConnectionState[ClientT]):
@@ -282,6 +287,8 @@ class Interaction(Generic[ClientT]):
                 self.user = User(state=self._state, data=data['user'])  # type: ignore # The key is optional and handled
             except KeyError:
                 pass
+
+        self.max_attachment_size: int = data['attachment_size_limit']
 
     @property
     def client(self) -> ClientT:
