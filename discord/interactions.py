@@ -157,7 +157,7 @@ class Interaction(Generic[ClientT]):
     max_attachment_size: :class:`int`
         The maximum attachments size you can send, in bytes.
 
-        .. versionadded:: 2.7
+        .. versionadded:: 2.6
     """
 
     __slots__: Tuple[str, ...] = (
