@@ -3317,6 +3317,8 @@ class Guild(Hashable):
             The recurrence rule this event will follow. If this is ``None`` then this is
             a one-time event.
 
+            .. versionadded:: 2.6
+
         Raises
         -------
         TypeError
