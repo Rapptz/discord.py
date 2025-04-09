@@ -100,7 +100,7 @@ class ScheduledEventRecurrenceRule:
 
         If ``frequency`` is ``2`` this can only have 1 item.
 
-        This is mutally exclusive with ``n_weekdays`` and ``month_days``.
+        This is mutually exclusive with ``n_weekdays`` and ``month_days``.
     n_weekdays: List[Tuple[:class:`int`, :class:`int`]]
         A (week, weekday) pairs list that represent the specific day within a
         specific week the event will recur on.
