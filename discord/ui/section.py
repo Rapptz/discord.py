@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypeVar, U
 from .item import Item
 from .text_display import TextDisplay
 from ..enums import ComponentType
-from ..utils import MISSING
+from ..utils import MISSING, get as _utils_get
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -161,6 +161,26 @@ class Section(Item[V]):
         except ValueError:
             pass
         return self
+
+    def get_item_by_id(self, id: str, /) -> Optional[Item[V]]:
+        """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
+        not found.
+
+        .. warning::
+
+            This is **not the same** as ``custom_id``.
+
+        Parameters
+        ----------
+        id: :class:`str`
+            The ID of the component.
+
+        Returns
+        -------
+        Optional[:class:`Item`]
+            The item found, or ``None``.
+        """
+        return _utils_get(self._children, id=id)
 
     def clear_items(self) -> Self:
         """Removes all the items from the section.
