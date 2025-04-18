@@ -2907,8 +2907,11 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
         applied_tags: List[:class:`discord.ForumTag`]
             A list of tags to apply to the thread.
-        view: :class:`discord.ui.View`
+        view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             A Discord UI View to add to the message.
+
+            .. versionchanged:: 2.6
+                This parameter now accepts :class:`discord.ui.LayoutView` instances.
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
         suppress_embeds: :class:`bool`

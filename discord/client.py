@@ -3159,8 +3159,11 @@ class Client:
 
         Parameters
         ------------
-        view: :class:`discord.ui.View`
+        view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             The view to register for dispatching.
+
+            .. versionchanged:: 2.6
+                This now accepts :class:`discord.ui.LayoutView` instances.
         message_id: Optional[:class:`int`]
             The message ID that the view is attached to. This is currently used to
             refresh the view's state during message update events. If not given
@@ -3188,7 +3191,7 @@ class Client:
 
     @property
     def persistent_views(self) -> Sequence[BaseView]:
-        """Sequence[:class:`.View`]: A sequence of persistent views added to the client.
+        """Sequence[Union[:class:`.View`, :class:`.LayoutView`]]: A sequence of persistent views added to the client.
 
         .. versionadded:: 2.0
         """

@@ -996,13 +996,15 @@ class SyncWebhook(BaseWebhook):
                 When sending a Poll via webhook, you cannot manually end it.
 
             .. versionadded:: 2.4
-        view: :class:`~discord.ui.View`
+        view: Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]
             The view to send with the message. This can only have URL buttons, which donnot
             require a state to be attached to it.
 
             If you want to send a view with any component attached to it, check :meth:`Webhook.send`.
 
             .. versionadded:: 2.5
+            .. versionchanged:: 2.6
+                This now accepts :class:`discord.ui.LayoutView` instances.
 
         Raises
         --------

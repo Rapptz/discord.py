@@ -1734,12 +1734,14 @@ class Webhook(BaseWebhook):
             Controls the mentions being processed in this message.
 
             .. versionadded:: 1.4
-        view: :class:`discord.ui.View`
+        view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             The view to send with the message. If the webhook is partial or
             is not managed by the library, then you can only send URL buttons.
             Otherwise, you can send views with any type of components.
 
             .. versionadded:: 2.0
+            .. versionchanged:: 2.6
+                This now accepts :class:`discord.ui.LayoutView` instances.
         thread: :class:`~discord.abc.Snowflake`
             The thread to send this webhook to.
 
