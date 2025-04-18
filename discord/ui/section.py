@@ -162,7 +162,7 @@ class Section(Item[V]):
             pass
         return self
 
-    def get_item_by_id(self, id: str, /) -> Optional[Item[V]]:
+    def get_item_by_id(self, id: int, /) -> Optional[Item[V]]:
         """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
         not found.
 
@@ -172,7 +172,7 @@ class Section(Item[V]):
 
         Parameters
         ----------
-        id: :class:`str`
+        id: :class:`int`
             The ID of the component.
 
         Returns
@@ -204,7 +204,13 @@ class Section(Item[V]):
     def to_component_dict(self) -> Dict[str, Any]:
         data = {
             'type': self.type.value,
-            'components': [c.to_component_dict() for c in self._children],
+            'components': [
+                c.to_component_dict() for c in
+                sorted(
+                    self._children,
+                    key=lambda i: i._rendered_row or 0,
+                )
+            ],
             'accessory': self.accessory.to_component_dict(),
         }
         if self.id is not None:

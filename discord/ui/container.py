@@ -97,6 +97,7 @@ class Container(Item[V]):
         row: Optional[int] = None,
         id: Optional[int] = None,
     ) -> None:
+        super().__init__()
         self.__dispatchable: List[Item[V]] = []
         self._children: List[Item[V]] = self._init_children()
 
@@ -196,7 +197,7 @@ class Container(Item[V]):
 
     def to_components(self) -> List[Dict[str, Any]]:
         components = []
-        for child in self._children:
+        for child in sorted(self._children, key=lambda i: i._rendered_row or 0):
             components.append(child.to_component_dict())
         return components
 
@@ -287,7 +288,7 @@ class Container(Item[V]):
             pass
         return self
 
-    def get_item_by_id(self, id: str, /) -> Optional[Item[V]]:
+    def get_item_by_id(self, id: int, /) -> Optional[Item[V]]:
         """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
         not found.
 
@@ -297,7 +298,7 @@ class Container(Item[V]):
 
         Parameters
         ----------
-        id: :class:`str`
+        id: :class:`int`
             The ID of the component.
 
         Returns

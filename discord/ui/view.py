@@ -372,7 +372,7 @@ class BaseView:
         self._children.clear()
         return self
 
-    def get_item_by_id(self, id: str, /) -> Optional[Item[Self]]:
+    def get_item_by_id(self, id: int, /) -> Optional[Item[Self]]:
         """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
         not found.
 
@@ -384,7 +384,7 @@ class BaseView:
 
         Parameters
         ----------
-        id: :class:`str`
+        id: :class:`int`
             The ID of the component.
 
         Returns

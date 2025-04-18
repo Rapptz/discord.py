@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
+import os
 from typing import Any, Callable, Coroutine, Dict, Generic, Optional, TYPE_CHECKING, Tuple, Type, TypeVar
 
 from ..interactions import Interaction
@@ -81,6 +82,9 @@ class Item(Generic[V]):
         self._id: Optional[int] = None
         self._max_row: int = 5 if not self._is_v2() else 10
 
+        if self._is_v2():
+            self.custom_id: str = os.urandom(16).hex()
+
     def to_component_dict(self) -> Dict[str, Any]:
         raise NotImplementedError
 
@@ -123,6 +127,9 @@ class Item(Generic[V]):
             self._row = value
         else:
             raise ValueError(f'row cannot be negative or greater than or equal to {self._max_row}')
+
+        if self._rendered_row is None:
+            self._rendered_row = value
 
     @property
     def width(self) -> int:

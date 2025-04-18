@@ -140,7 +140,7 @@ class ActionRow(Item[V]):
                 pattern = item.__discord_ui_compiled_template__
                 dynamic_items[pattern] = item.__class__
             elif item.is_dispatchable():
-                dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
+                dispatch_info[(item.type.value, item.custom_id)] = item
                 is_fully_dynamic = False
         return is_fully_dynamic
 
@@ -218,7 +218,7 @@ class ActionRow(Item[V]):
             pass
         return self
 
-    def get_item_by_id(self, id: str, /) -> Optional[Item[V]]:
+    def get_item_by_id(self, id: int, /) -> Optional[Item[V]]:
         """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
         not found.
 
@@ -228,7 +228,7 @@ class ActionRow(Item[V]):
 
         Parameters
         ----------
-        id: :class:`str`
+        id: :class:`int`
             The ID of the component.
 
         Returns
