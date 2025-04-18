@@ -205,8 +205,8 @@ class Section(Item[V]):
         data = {
             'type': self.type.value,
             'components': [
-                c.to_component_dict() for c in
-                sorted(
+                c.to_component_dict()
+                for c in sorted(
                     self._children,
                     key=lambda i: i._rendered_row or 0,
                 )
