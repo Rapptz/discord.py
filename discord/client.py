@@ -2433,6 +2433,14 @@ class Client:
             The guild created. This is not the same guild that is
             added to cache.
         """
+        import warnings
+
+        msg = (
+            "client.create_guild will be deprecated from July 15, 2025.\n"
+            "Please refer to https://discord.com/developers/docs/change-log?topic=HTTP+API#deprecating-guild-creation-by-apps"
+        )
+        warnings.warn(msg)
+
         if icon is not MISSING:
             icon_base64 = utils._bytes_to_base64_data(icon)
         else:
