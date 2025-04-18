@@ -1214,6 +1214,20 @@ class Container(Component):
         The ID of this component.
     """
 
+    __slots__ = (
+        'children',
+        'id',
+        'spoiler',
+        '_colour',
+    )
+
+    __repr_info__ = (
+        'children',
+        'id',
+        'spoiler',
+        'accent_colour',
+    )
+
     def __init__(self, data: ContainerComponentPayload, state: Optional[ConnectionState]) -> None:
         self.children: List[Component] = []
         self.id: Optional[int] = data.get('id')
