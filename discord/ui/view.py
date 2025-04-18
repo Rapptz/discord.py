@@ -492,7 +492,7 @@ class BaseView:
     def _refresh(self, components: List[Component]) -> None:
         # fmt: off
         old_state: Dict[str, Item[Any]] = {
-            item.custom_id: item  # type: ignore
+            item.custom_id: item
             for item in self._children
             if item.is_dispatchable()
         }
@@ -859,9 +859,9 @@ class ViewStore:
                         pattern = accessory.__discord_ui_compiled_template__
                         self._dynamic_items[pattern] = accessory.__class__
                     else:
-                        dispatch_info[(accessory.type.value, accessory.custom_id)] = accessory  # type: ignore
+                        dispatch_info[(accessory.type.value, accessory.custom_id)] = accessory
                 else:
-                    dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
+                    dispatch_info[(item.type.value, item.custom_id)] = item
                     is_fully_dynamic = False
 
         view._cache_key = message_id
@@ -880,7 +880,7 @@ class ViewStore:
                     pattern = item.__discord_ui_compiled_template__
                     self._dynamic_items.pop(pattern, None)
                 elif item.is_dispatchable():
-                    dispatch_info.pop((item.type.value, item.custom_id), None)  # type: ignore
+                    dispatch_info.pop((item.type.value, item.custom_id), None)
 
             if len(dispatch_info) == 0:
                 self._views.pop(view._cache_key, None)

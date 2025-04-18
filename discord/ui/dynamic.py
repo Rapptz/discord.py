@@ -144,7 +144,7 @@ class DynamicItem(Generic[BaseT], Item['BaseView']):
     @property
     def custom_id(self) -> str:
         """:class:`str`: The ID of the dynamic item that gets received during an interaction."""
-        return self.item.custom_id  # type: ignore  # This attribute exists for dispatchable items
+        return self.item.custom_id
 
     @custom_id.setter
     def custom_id(self, value: str) -> None:
@@ -154,7 +154,7 @@ class DynamicItem(Generic[BaseT], Item['BaseView']):
         if not self.template.match(value):
             raise ValueError(f'custom_id must match the template {self.template.pattern!r}')
 
-        self.item.custom_id = value  # type: ignore  # This attribute exists for dispatchable items
+        self.item.custom_id = value
         self._provided_custom_id = True
 
     @property
