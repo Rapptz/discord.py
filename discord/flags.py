@@ -503,7 +503,9 @@ class MessageFlags(BaseFlags):
     def components_v2(self):
         """:class:`bool`: Returns ``True`` if the message has Discord's v2 components.
 
-        Does not allow sending any ``content``, ``embed``, or ``embeds``.
+        Does not allow sending any ``content``, ``embed``, ``embeds``, ``stickers``, or ``poll``.
+
+        .. versionadded:: 2.6
         """
         return 32768
 
