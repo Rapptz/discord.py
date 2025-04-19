@@ -65,9 +65,9 @@ class Container(Item[V]):
     children: List[:class:`Item`]
         The initial children of this container. Can have up to 10
         items.
-    accent_colour: Optional[:class:`.Colour`]
+    accent_colour: Optional[Union[:class:`.Colour`, :class:`int`]]
         The colour of the container. Defaults to ``None``.
-    accent_color: Optional[:class:`.Colour`]
+    accent_color: Optional[Union[:class:`.Colour`, :class:`int`]]
         The color of the container. Defaults to ``None``.
     spoiler: :class:`bool`
         Whether to flag this container as a spoiler. Defaults
@@ -91,8 +91,8 @@ class Container(Item[V]):
         self,
         children: List[Item[V]] = MISSING,
         *,
-        accent_colour: Optional[Colour] = None,
-        accent_color: Optional[Color] = None,
+        accent_colour: Optional[Union[Colour, int]] = None,
+        accent_color: Optional[Union[Color, int]] = None,
         spoiler: bool = False,
         row: Optional[int] = None,
         id: Optional[int] = None,
@@ -178,12 +178,12 @@ class Container(Item[V]):
         self._children = value
 
     @property
-    def accent_colour(self) -> Optional[Colour]:
-        """Optional[:class:`discord.Colour`]: The colour of the container, or ``None``."""
+    def accent_colour(self) -> Optional[Union[Colour, int]]:
+        """Optional[Union[:class:`discord.Colour`, :class:`int`]]: The colour of the container, or ``None``."""
         return self._colour
 
     @accent_colour.setter
-    def accent_colour(self, value: Optional[Colour]) -> None:
+    def accent_colour(self, value: Optional[Union[Colour, int]]) -> None:
         self._colour = value
 
     accent_color = accent_colour
@@ -207,9 +207,14 @@ class Container(Item[V]):
 
     def to_component_dict(self) -> Dict[str, Any]:
         components = self.to_components()
+
+        colour = None
+        if self._colour:
+            colour = self._colour if isinstance(self._colour, int) else self._colour.value
+
         base = {
             'type': self.type.value,
-            'accent_color': self._colour.value if self._colour else None,
+            'accent_color': colour,
             'spoiler': self.spoiler,
             'components': components,
         }
