@@ -214,7 +214,7 @@ class BaseView:
         return False
 
     def __repr__(self) -> str:
-        return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self._children)}'
+        return f'<{self.__class__.__name__} timeout={self.timeout} children={len(self._children)}>'
 
     def _init_children(self) -> List[Item[Self]]:
         children = []
