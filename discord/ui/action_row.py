@@ -197,6 +197,7 @@ class ActionRow(Item[V]):
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
 
+        item._view = self._view
         self._children.append(item)
         return self
 

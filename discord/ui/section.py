@@ -139,9 +139,9 @@ class Section(Item[V]):
         if not isinstance(item, (Item, str)):
             raise TypeError(f'expected Item or str not {item.__class__.__name__}')
 
-        self._children.append(
-            item if isinstance(item, Item) else TextDisplay(item),
-        )
+        item = item if isinstance(item, Item) else TextDisplay(item)
+        item._view = self.view
+        self._children.append(item)
         return self
 
     def remove_item(self, item: Item[Any]) -> Self:

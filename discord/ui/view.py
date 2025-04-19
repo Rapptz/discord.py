@@ -342,6 +342,10 @@ class BaseView:
             raise ValueError('v2 items cannot be added to this view')
 
         item._view = self
+
+        if getattr(item, '__discord_ui_update_view__', False):
+            item._update_children_view(self)  # type: ignore
+
         self._children.append(item)
         return self
 

@@ -110,7 +110,6 @@ class Container(Item[V]):
         self.spoiler: bool = spoiler
         self._colour = accent_colour or accent_color
 
-        self._view: Optional[V] = None
         self.row = row
         self.id = id
 
@@ -276,6 +275,9 @@ class Container(Item[V]):
         if item.is_dispatchable():
             if getattr(item, '__discord_ui_section__', False):
                 self.__dispatchable.append(item.accessory)  # type: ignore
+
+        if getattr(item, '__discord_ui_update_view__', False):
+            item._update_children_view(self.view)  # type: ignore
 
         return self
 
