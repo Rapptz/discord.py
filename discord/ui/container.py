@@ -83,7 +83,7 @@ class Container(Item[V]):
         The ID of this component. This must be unique across the view.
     """
 
-    __container_children_items__: ClassVar[List[Union[ItemCallbackType[Any, Any], Item[Any]]]] = []
+    __container_children_items__: ClassVar[List[Union[ItemCallbackType[Any], Item[Any]]]] = []
     __discord_ui_update_view__: ClassVar[bool] = True
     __discord_ui_container__: ClassVar[bool] = True
 
@@ -151,7 +151,7 @@ class Container(Item[V]):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        children: Dict[str, Union[ItemCallbackType[Any, Any], Item[Any]]] = {}
+        children: Dict[str, Union[ItemCallbackType[Any], Item[Any]]] = {}
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if isinstance(member, Item):
