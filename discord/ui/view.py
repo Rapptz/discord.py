@@ -84,7 +84,7 @@ if TYPE_CHECKING:
     from ..state import ConnectionState
     from .modal import Modal
 
-    ItemLike = Union[ItemCallbackType[Any, Any], Item[Any]]
+    ItemLike = Union[ItemCallbackType[Any], Item[Any]]
 
 
 _log = logging.getLogger(__name__)
@@ -185,8 +185,8 @@ class _ViewWeights:
 class _ViewCallback:
     __slots__ = ('view', 'callback', 'item')
 
-    def __init__(self, callback: ItemCallbackType[Any, Any], view: BaseView, item: Item[BaseView]) -> None:
-        self.callback: ItemCallbackType[Any, Any] = callback
+    def __init__(self, callback: ItemCallbackType[Any], view: BaseView, item: Item[BaseView]) -> None:
+        self.callback: ItemCallbackType[Any] = callback
         self.view: BaseView = view
         self.item: Item[BaseView] = item
 
@@ -452,7 +452,7 @@ class BaseView:
         try:
             item._refresh_state(interaction, interaction.data)  # type: ignore
 
-            allow = await item.interaction_check(interaction) and await self.interaction_check(interaction)
+            allow = await item._run_checks(interaction) and await self.interaction_check(interaction)
             if not allow:
                 return
 
@@ -581,13 +581,13 @@ class View(BaseView):
 
     def __init_subclass__(cls) -> None:
         warnings.warn(
-            'discord.ui.View and subclasses are deprecated and will be removed in'
+            'discord.ui.View and subclasses are deprecated and will be removed in '
             'a future version, use discord.ui.LayoutView instead',
             DeprecationWarning,
         )
         super().__init_subclass__()
 
-        children: Dict[str, ItemCallbackType[Any, Any]] = {}
+        children: Dict[str, ItemCallbackType[Any]] = {}
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if hasattr(member, '__discord_ui_model_type__'):
@@ -716,7 +716,7 @@ class LayoutView(BaseView):
 
     def __init_subclass__(cls) -> None:
         children: Dict[str, Item[Any]] = {}
-        callback_children: Dict[str, ItemCallbackType[Any, Any]] = {}
+        callback_children: Dict[str, ItemCallbackType[Any]] = {}
 
         row = 0
 

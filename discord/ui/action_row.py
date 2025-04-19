@@ -75,8 +75,8 @@ __all__ = ('ActionRow',)
 class _ActionRowCallback:
     __slots__ = ('row', 'callback', 'item')
 
-    def __init__(self, callback: ItemCallbackType[Any, Any], row: ActionRow, item: Item[Any]) -> None:
-        self.callback: ItemCallbackType[Any, Any] = callback
+    def __init__(self, callback: ItemCallbackType[Any], row: ActionRow, item: Item[Any]) -> None:
+        self.callback: ItemCallbackType[Any] = callback
         self.row: ActionRow = row
         self.item: Item[Any] = item
 
@@ -97,7 +97,7 @@ class ActionRow(Item[V]):
         The ID of this component. This must be unique across the view.
     """
 
-    __action_row_children_items__: ClassVar[List[ItemCallbackType[Any, Any]]] = []
+    __action_row_children_items__: ClassVar[List[ItemCallbackType[Any]]] = []
     __discord_ui_action_row__: ClassVar[bool] = True
     __discord_ui_update_view__: ClassVar[bool] = True
 
@@ -110,7 +110,7 @@ class ActionRow(Item[V]):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        children: Dict[str, ItemCallbackType[Any, Any]] = {}
+        children: Dict[str, ItemCallbackType[Any]] = {}
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if hasattr(member, '__discord_ui_model_type__'):
@@ -269,7 +269,7 @@ class ActionRow(Item[V]):
         disabled: bool = False,
         style: ButtonStyle = ButtonStyle.secondary,
         emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
-    ) -> Callable[[ItemCallbackType[V, Button[V]]], Button[V]]:
+    ) -> Callable[[ItemCallbackType[Button[V]]], Button[V]]:
         """A decorator that attaches a button to a component.
 
         The function being decorated should have three parameters, ``self`` representing
@@ -302,7 +302,7 @@ class ActionRow(Item[V]):
             or a full :class:`.Emoji`.
         """
 
-        def decorator(func: ItemCallbackType[V, Button[V]]) -> ItemCallbackType[V, Button[V]]:
+        def decorator(func: ItemCallbackType[Button[V]]) -> ItemCallbackType[Button[V]]:
             ret = _button(
                 label=label,
                 custom_id=custom_id,
@@ -328,7 +328,7 @@ class ActionRow(Item[V]):
         min_values: int = ...,
         max_values: int = ...,
         disabled: bool = ...,
-    ) -> SelectCallbackDecorator[V, SelectT]:
+    ) -> SelectCallbackDecorator[SelectT]:
         ...
 
     @overload
@@ -344,7 +344,7 @@ class ActionRow(Item[V]):
         max_values: int = ...,
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
-    ) -> SelectCallbackDecorator[V, UserSelectT]:
+    ) -> SelectCallbackDecorator[UserSelectT]:
         ...
 
     @overload
@@ -360,7 +360,7 @@ class ActionRow(Item[V]):
         max_values: int = ...,
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
-    ) -> SelectCallbackDecorator[V, RoleSelectT]:
+    ) -> SelectCallbackDecorator[RoleSelectT]:
         ...
 
     @overload
@@ -376,7 +376,7 @@ class ActionRow(Item[V]):
         max_values: int = ...,
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
-    ) -> SelectCallbackDecorator[V, ChannelSelectT]:
+    ) -> SelectCallbackDecorator[ChannelSelectT]:
         ...
 
     @overload
@@ -392,7 +392,7 @@ class ActionRow(Item[V]):
         max_values: int = ...,
         disabled: bool = ...,
         default_values: Sequence[ValidDefaultValues] = ...,
-    ) -> SelectCallbackDecorator[V, MentionableSelectT]:
+    ) -> SelectCallbackDecorator[MentionableSelectT]:
         ...
 
     def select(
@@ -407,7 +407,7 @@ class ActionRow(Item[V]):
         max_values: int = 1,
         disabled: bool = False,
         default_values: Sequence[ValidDefaultValues] = MISSING,
-    ) -> SelectCallbackDecorator[V, BaseSelectT]:
+    ) -> SelectCallbackDecorator[BaseSelectT]:
         """A decorator that attaches a select menu to a component.
 
         The function being decorated should have three parameters, ``self`` representing
@@ -477,7 +477,7 @@ class ActionRow(Item[V]):
             Number of items must be in range of ``min_values`` and ``max_values``.
         """
 
-        def decorator(func: ItemCallbackType[V, BaseSelectT]) -> ItemCallbackType[V, BaseSelectT]:
+        def decorator(func: ItemCallbackType[BaseSelectT]) -> ItemCallbackType[BaseSelectT]:
             r = _select(  # type: ignore
                 cls=cls,  # type: ignore
                 placeholder=placeholder,

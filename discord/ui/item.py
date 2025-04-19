@@ -43,7 +43,7 @@ if TYPE_CHECKING:
 
 I = TypeVar('I', bound='Item[Any]')
 V = TypeVar('V', bound='BaseView', covariant=True)
-ItemCallbackType = Callable[[V, Interaction[Any], I], Coroutine[Any, Any, Any]]
+ItemCallbackType = Callable[[Any, Interaction[Any], I], Coroutine[Any, Any, Any]]
 
 
 class Item(Generic[V]):
@@ -150,6 +150,17 @@ class Item(Generic[V]):
     @id.setter
     def id(self, value: Optional[int]) -> None:
         self._id = value
+
+    async def _run_checks(self, interaction: Interaction[ClientT]) -> bool:
+        can_run = await self.interaction_check(interaction)
+
+        if can_run:
+            parent = getattr(self, '_parent', None)
+
+            if parent is not None:
+                can_run = await parent._run_checks(interaction)
+
+        return can_run
 
     async def callback(self, interaction: Interaction[ClientT]) -> Any:
         """|coro|

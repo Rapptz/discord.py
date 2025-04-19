@@ -46,8 +46,8 @@ __all__ = ('Container',)
 class _ContainerCallback:
     __slots__ = ('container', 'callback', 'item')
 
-    def __init__(self, callback: ItemCallbackType[Any, Any], container: Container, item: Item[Any]) -> None:
-        self.callback: ItemCallbackType[Any, Any] = callback
+    def __init__(self, callback: ItemCallbackType[Any], container: Container, item: Item[Any]) -> None:
+        self.callback: ItemCallbackType[Any] = callback
         self.container: Container = container
         self.item: Item[Any] = item
 
@@ -63,7 +63,7 @@ class Container(Item[V]):
     Parameters
     ----------
     children: List[:class:`Item`]
-        The initial children or :class:`View` s of this container. Can have up to 10
+        The initial children of this container. Can have up to 10
         items.
     accent_colour: Optional[:class:`.Colour`]
         The colour of the container. Defaults to ``None``.
@@ -124,6 +124,7 @@ class Container(Item[V]):
                 if getattr(raw, '__discord_ui_section__', False) and raw.accessory.is_dispatchable():  # type: ignore
                     self.__dispatchable.append(raw.accessory)  # type: ignore
                 elif getattr(raw, '__discord_ui_action_row__', False) and raw.is_dispatchable():
+                    raw._parent = self  # type: ignore
                     self.__dispatchable.extend(raw._children)  # type: ignore
             else:
                 # action rows can be created inside containers, and then callbacks can exist here

@@ -281,7 +281,8 @@ def button(
     style: ButtonStyle = ButtonStyle.secondary,
     emoji: Optional[Union[str, Emoji, PartialEmoji]] = None,
     row: Optional[int] = None,
-) -> Callable[[ItemCallbackType[V, Button[V]]], Button[V]]:
+    id: Optional[int] = None,
+) -> Callable[[ItemCallbackType[Button[V]]], Button[V]]:
     """A decorator that attaches a button to a component.
 
     The function being decorated should have three parameters, ``self`` representing
@@ -318,9 +319,13 @@ def button(
         like to control the relative positioning of the row then passing an index is advised.
         For example, row=1 will show up before row=2. Defaults to ``None``, which is automatic
         ordering. The row number must be between 0 and 4 (i.e. zero indexed).
+    id: Optional[:class:`int`]
+        The ID of this component. This must be unique across the view.
+
+        .. versionadded:: 2.6
     """
 
-    def decorator(func: ItemCallbackType[V, Button[V]]) -> ItemCallbackType[V, Button[V]]:
+    def decorator(func: ItemCallbackType[Button[V]]) -> ItemCallbackType[Button[V]]:
         if not inspect.iscoroutinefunction(func):
             raise TypeError('button function must be a coroutine function')
 
@@ -334,6 +339,7 @@ def button(
             'emoji': emoji,
             'row': row,
             'sku_id': None,
+            'id': id,
         }
         return func
 
