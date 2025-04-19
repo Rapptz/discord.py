@@ -104,6 +104,9 @@ class Container(Item[V]):
         if children is not MISSING:
             if len(children) + len(self._children) > 10:
                 raise ValueError('maximum number of children exceeded')
+            for child in children:
+                self.add_item(child)
+
         self.spoiler: bool = spoiler
         self._colour = accent_colour or accent_color
 
