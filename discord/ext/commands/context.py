@@ -986,10 +986,12 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             This is ignored for interaction based contexts.
 
             .. versionadded:: 1.6
-        view: :class:`discord.ui.View`
+        view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             A Discord UI View to add to the message.
 
             .. versionadded:: 2.0
+            .. versionchanged:: 2.6
+                This now accepts :class:`discord.ui.LayoutView` instances.
         embeds: List[:class:`~discord.Embed`]
             A list of embeds to upload. Must be a maximum of 10.
 

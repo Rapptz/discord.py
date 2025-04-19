@@ -2911,7 +2911,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             A Discord UI View to add to the message.
 
             .. versionchanged:: 2.6
-                This parameter now accepts :class:`discord.ui.LayoutView` instances.
+                This now accepts :class:`discord.ui.LayoutView` instances.
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
         suppress_embeds: :class:`bool`
