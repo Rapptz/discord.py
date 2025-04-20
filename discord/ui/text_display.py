@@ -47,7 +47,7 @@ class TextDisplay(Item[V]):
     Parameters
     ----------
     content: :class:`str`
-        The content of this text display.
+        The content of this text display. Up to 4000 characters.
     row: Optional[:class:`int`]
         The relative row this text display belongs to. By default
         items are arranged automatically into those rows. If you'd
