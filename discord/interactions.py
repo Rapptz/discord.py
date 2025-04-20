@@ -929,8 +929,11 @@ class InteractionResponse(Generic[ClientT]):
             A list of files to upload. Must be a maximum of 10.
         tts: :class:`bool`
             Indicates if the message should be sent using text-to-speech.
-        view: :class:`discord.ui.View`
+        view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             The view to send with the message.
+
+            .. versionchanged:: 2.6
+                This now accepts :class:`discord.ui.LayoutView` instances.
         ephemeral: :class:`bool`
             Indicates if the message should only be visible to the user who started the interaction.
             If a view is sent with an ephemeral message and it has no timeout set then the timeout
@@ -1076,9 +1079,12 @@ class InteractionResponse(Generic[ClientT]):
 
                 New files will always appear after current attachments.
 
-        view: Optional[:class:`~discord.ui.View`]
+        view: Optional[Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+
+            .. versionchanged:: 2.6
+                This now accepts :class:`~discord.ui.LayoutView` instances.
         allowed_mentions: Optional[:class:`~discord.AllowedMentions`]
             Controls the mentions being processed in this message. See :meth:`.Message.edit`
             for more information.
@@ -1363,9 +1369,12 @@ class InteractionMessage(Message):
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
             See :meth:`.abc.Messageable.send` for more information.
-        view: Optional[:class:`~discord.ui.View`]
+        view: Optional[Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+
+            .. versionchanged:: 2.6
+                This now accepts :class:`~discord.ui.LayoutView` instances.
         delete_after: Optional[:class:`float`]
             If provided, the number of seconds to wait in the background
             before deleting the message we just sent. If the deletion fails,
