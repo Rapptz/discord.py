@@ -192,8 +192,6 @@ def handle_message_parameters(
 
     if view is not MISSING:
         if view is not None:
-            if getattr(view, '__discord_ui_container__', False):
-                raise TypeError('Containers must be wrapped around Views')
             payload['components'] = view.to_components()
 
             if view.has_components_v2():
