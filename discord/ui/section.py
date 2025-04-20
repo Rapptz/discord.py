@@ -141,6 +141,7 @@ class Section(Item[V]):
 
         item = item if isinstance(item, Item) else TextDisplay(item)
         item._view = self.view
+        item._parent = self
         self._children.append(item)
         return self
 

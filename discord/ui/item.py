@@ -81,6 +81,7 @@ class Item(Generic[V]):
         self._provided_custom_id: bool = False
         self._id: Optional[int] = None
         self._max_row: int = 5 if not self._is_v2() else 10
+        self._parent: Optional[Item] = None
 
         if self._is_v2():
             # this is done so v2 components can be stored on ViewStore._views
@@ -154,11 +155,8 @@ class Item(Generic[V]):
     async def _run_checks(self, interaction: Interaction[ClientT]) -> bool:
         can_run = await self.interaction_check(interaction)
 
-        if can_run:
-            parent = getattr(self, '_parent', None)
-
-            if parent is not None:
-                can_run = await parent._run_checks(interaction)
+        if can_run and self._parent:
+            can_run = await self._parent._run_checks(interaction)
 
         return can_run
 

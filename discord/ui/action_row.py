@@ -198,6 +198,7 @@ class ActionRow(Item[V]):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
 
         item._view = self._view
+        item._parent = self
         self._children.append(item)
         return self
 

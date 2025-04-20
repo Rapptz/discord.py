@@ -275,10 +275,16 @@ class Container(Item[V]):
         if item.is_dispatchable():
             if getattr(item, '__discord_ui_section__', False):
                 self.__dispatchable.append(item.accessory)  # type: ignore
+            elif hasattr(item, '_children'):
+                self.__dispatchable.extend([i for i in item._children if i.is_dispatchable()])  # type: ignore
+            else:
+                self.__dispatchable.append(item)
 
         if getattr(item, '__discord_ui_update_view__', False):
             item._update_children_view(self.view)  # type: ignore
 
+        item._view = self.view
+        item._parent = self
         return self
 
     def remove_item(self, item: Item[Any]) -> Self:
