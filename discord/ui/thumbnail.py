@@ -52,7 +52,7 @@ class Thumbnail(Item[V]):
         to an attachment that matches the ``attachment://filename.extension``
         structure.
     description: Optional[:class:`str`]
-        The description of this thumbnail. Defaults to ``None``.
+        The description of this thumbnail. Up to 256 characters. Defaults to ``None``.
     spoiler: :class:`bool`
         Whether to flag this thumbnail as a spoiler. Defaults to ``False``.
     row: Optional[:class:`int`]
