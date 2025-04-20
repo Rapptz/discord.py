@@ -993,7 +993,8 @@ class MediaGalleryItem:
         file uploaded as an attachment in the message, that can be accessed
         using the ``attachment://file-name.extension`` format.
     description: Optional[:class:`str`]
-        The description to show within this item.
+        The description to show within this item. Up to 256 characters. Defaults
+        to ``None``.
     spoiler: :class:`bool`
         Whether this item should be flagged as a spoiler.
     """
