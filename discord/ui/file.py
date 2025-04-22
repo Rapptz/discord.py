@@ -56,8 +56,7 @@ class File(Item[V]):
 
         class MyView(ui.LayoutView):
             file = ui.File('attachment://file.txt')
-            # attachment://file.txt points to an attachment uploaded alongside
-            # this view
+            # attachment://file.txt points to an attachment uploaded alongside this view
 
     Parameters
     ----------

@@ -42,6 +42,8 @@ __all__ = ('TextDisplay',)
 class TextDisplay(Item[V]):
     """Represents a UI text display.
 
+    This is a top-level layout component that can only be used on :class:`LayoutView`.
+
     .. versionadded:: 2.6
 
     Parameters

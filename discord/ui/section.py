@@ -44,6 +44,8 @@ __all__ = ('Section',)
 class Section(Item[V]):
     """Represents a UI section.
 
+    This is a top-level layout component that can only be used on :class:`LayoutView`
+
     .. versionadded:: 2.6
 
     Parameters
