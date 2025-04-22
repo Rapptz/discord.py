@@ -100,7 +100,7 @@ if TYPE_CHECKING:
     from .file import File
     from .user import ClientUser, User, BaseUser
     from .guild import Guild, GuildChannel as GuildChannelType
-    from .ui.view import BaseView
+    from .ui.view import BaseView, View, LayoutView
     from .types.channel import (
         TextChannel as TextChannelPayload,
         NewsChannel as NewsChannelPayload,
@@ -2840,6 +2840,46 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             pass
 
         return result
+
+    @overload
+    async def create_thread(
+        self,
+        *,
+        name: str,
+        auto_archive_duration: ThreadArchiveDuration = MISSING,
+        slowmode_delay: Optional[int] = None,
+        file: File = MISSING,
+        files: Sequence[File] = MISSING,
+        allowed_mentions: AllowedMentions = MISSING,
+        mention_author: bool = MISSING,
+        view: LayoutView,
+        suppress_embeds: bool = False,
+        reason: Optional[str] = None,
+    ) -> ThreadWithMessage:
+        ...
+
+    @overload
+    async def create_thread(
+        self,
+        *,
+        name: str,
+        auto_archive_duration: ThreadArchiveDuration = MISSING,
+        slowmode_delay: Optional[int] = None,
+        content: Optional[str] = None,
+        tts: bool = False,
+        embed: Embed = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        file: File = MISSING,
+        files: Sequence[File] = MISSING,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = MISSING,
+        allowed_mentions: AllowedMentions = MISSING,
+        mention_author: bool = MISSING,
+        applied_tags: Sequence[ForumTag] = MISSING,
+        view: View = MISSING,
+        suppress_embeds: bool = False,
+        reason: Optional[str] = None,
+    ) -> ThreadWithMessage:
+        ...
 
     async def create_thread(
         self,

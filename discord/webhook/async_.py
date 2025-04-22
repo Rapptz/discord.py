@@ -71,7 +71,7 @@ if TYPE_CHECKING:
     from ..emoji import Emoji
     from ..channel import VoiceChannel
     from ..abc import Snowflake
-    from ..ui.view import BaseView
+    from ..ui.view import BaseView, View, LayoutView
     from ..poll import Poll
     import datetime
     from ..types.webhook import (
@@ -1608,6 +1608,44 @@ class Webhook(BaseWebhook):
     @overload
     async def send(
         self,
+        *,
+        username: str = MISSING,
+        avatar_url: Any = MISSING,
+        file: File = MISSING,
+        files: Sequence[File] = MISSING,
+        allowed_mentions: AllowedMentions = MISSING,
+        view: LayoutView,
+        wait: Literal[True],
+        thread: Snowflake = MISSING,
+        thread_name: str = MISSING,
+        suppress_embeds: bool = MISSING,
+        silent: bool = MISSING,
+        applied_tags: List[ForumTag] = MISSING,
+    ) -> WebhookMessage:
+        ...
+
+    @overload
+    async def send(
+        self,
+        *,
+        username: str = MISSING,
+        avatar_url: Any = MISSING,
+        file: File = MISSING,
+        files: Sequence[File] = MISSING,
+        allowed_mentions: AllowedMentions = MISSING,
+        view: LayoutView,
+        wait: Literal[False] = ...,
+        thread: Snowflake = MISSING,
+        thread_name: str = MISSING,
+        suppress_embeds: bool = MISSING,
+        silent: bool = MISSING,
+        applied_tags: List[ForumTag] = MISSING,
+    ) -> None:
+        ...
+
+    @overload
+    async def send(
+        self,
         content: str = MISSING,
         *,
         username: str = MISSING,
@@ -1619,7 +1657,7 @@ class Webhook(BaseWebhook):
         embed: Embed = MISSING,
         embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
-        view: BaseView = MISSING,
+        view: View = MISSING,
         thread: Snowflake = MISSING,
         thread_name: str = MISSING,
         wait: Literal[True],
@@ -1644,7 +1682,7 @@ class Webhook(BaseWebhook):
         embed: Embed = MISSING,
         embeds: Sequence[Embed] = MISSING,
         allowed_mentions: AllowedMentions = MISSING,
-        view: BaseView = MISSING,
+        view: View = MISSING,
         thread: Snowflake = MISSING,
         thread_name: str = MISSING,
         wait: Literal[False] = ...,
@@ -1940,6 +1978,30 @@ class Webhook(BaseWebhook):
         )
         return self._create_message(data, thread=thread)
 
+    @overload
+    async def edit_message(
+        self,
+        message_id: int,
+        *,
+        view: LayoutView,
+    ) -> WebhookMessage:
+        ...
+
+    @overload
+    async def edit_message(
+        self,
+        message_id: int,
+        *,
+        content: Optional[str] = MISSING,
+        embeds: Sequence[Embed] = MISSING,
+        embed: Optional[Embed] = MISSING,
+        attachments: Sequence[Union[Attachment, File]] = MISSING,
+        view: Optional[View] = MISSING,
+        allowed_mentions: Optional[AllowedMentions] = None,
+        thread: Snowflake = MISSING,
+    ) -> WebhookMessage:
+        ...
+
     async def edit_message(
         self,
         message_id: int,
@@ -1987,12 +2049,14 @@ class Webhook(BaseWebhook):
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
             See :meth:`.abc.Messageable.send` for more information.
-        view: Optional[:class:`~discord.ui.View`]
+        view: Optional[Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed. The webhook must have state attached, similar to
             :meth:`send`.
 
             .. versionadded:: 2.0
+            .. versionchanged:: 2.6
+                This now accepts :class:`~discord.ui.LayoutView` instances.
         thread: :class:`~discord.abc.Snowflake`
             The thread the webhook message belongs to.
 

@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from discord.mentions import AllowedMentions
     from discord.sticker import GuildSticker, StickerItem
     from discord.message import MessageReference, PartialMessage
-    from discord.ui.view import BaseView
+    from discord.ui.view import BaseView, View, LayoutView
     from discord.types.interactions import ApplicationCommandInteractionData
     from discord.poll import Poll
 
@@ -631,6 +631,40 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     @overload
     async def reply(
         self,
+        *,
+        file: File = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: LayoutView,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
+        *,
+        files: Sequence[File] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: LayoutView,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
@@ -642,7 +676,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -664,7 +698,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -686,7 +720,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -708,7 +742,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -816,6 +850,14 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
         if self.interaction:
             await self.interaction.response.defer(ephemeral=ephemeral)
+
+    @overload
+    async def send(
+        self,
+        *,
+        view: LayoutView,
+    ) -> Message:
+        ...
 
     @overload
     async def send(

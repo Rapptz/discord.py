@@ -101,7 +101,7 @@ if TYPE_CHECKING:
     from .mentions import AllowedMentions
     from .user import User
     from .role import Role
-    from .ui.view import BaseView
+    from .ui.view import BaseView, View, LayoutView
 
     EmojiInputType = Union[Emoji, PartialEmoji, str]
 
@@ -534,7 +534,7 @@ class MessageSnapshot:
         for component_data in data.get('components', []):
             component = _component_factory(component_data, state)  # type: ignore
             if component is not None:
-                self.components.append(component)  # type: ignore
+                self.components.append(component)
 
         self._state: ConnectionState = state
 
@@ -1306,12 +1306,23 @@ class PartialMessage(Hashable):
     async def edit(
         self,
         *,
+        view: LayoutView,
+        attachments: Sequence[Union[Attachment, File]] = ...,
+        delete_after: Optional[float] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def edit(
+        self,
+        *,
         content: Optional[str] = ...,
         embed: Optional[Embed] = ...,
         attachments: Sequence[Union[Attachment, File]] = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[BaseView] = ...,
+        view: Optional[View] = ...,
     ) -> Message:
         ...
 
@@ -1324,7 +1335,7 @@ class PartialMessage(Hashable):
         attachments: Sequence[Union[Attachment, File]] = ...,
         delete_after: Optional[float] = ...,
         allowed_mentions: Optional[AllowedMentions] = ...,
-        view: Optional[BaseView] = ...,
+        view: Optional[View] = ...,
     ) -> Message:
         ...
 
@@ -1387,9 +1398,12 @@ class PartialMessage(Hashable):
             are used instead.
 
             .. versionadded:: 1.4
-        view: Optional[:class:`~discord.ui.View`]
+        view: Optional[Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]]
             The updated view to update this message with. If ``None`` is passed then
             the view is removed.
+
+            .. versionchanged:: 2.6
+                This now accepts :class:`~discord.ui.LayoutView` instances.
 
         Raises
         -------
@@ -1755,6 +1769,38 @@ class PartialMessage(Hashable):
     @overload
     async def reply(
         self,
+        *,
+        file: File = ...,g
+        view: LayoutView,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
+        *,
+        files: Sequence[File] = ...,
+        view: LayoutView,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def reply(
+        self,
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
@@ -1766,7 +1812,7 @@ class PartialMessage(Hashable):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
@@ -1787,7 +1833,7 @@ class PartialMessage(Hashable):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
@@ -1808,7 +1854,7 @@ class PartialMessage(Hashable):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
@@ -1829,7 +1875,7 @@ class PartialMessage(Hashable):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,

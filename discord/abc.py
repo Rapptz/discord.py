@@ -95,7 +95,7 @@ if TYPE_CHECKING:
     )
     from .poll import Poll
     from .threads import Thread
-    from .ui.view import BaseView
+    from .ui.view import BaseView, View, LayoutView
     from .types.channel import (
         PermissionOverwrite as PermissionOverwritePayload,
         Channel as ChannelPayload,
@@ -1377,6 +1377,38 @@ class Messageable:
     @overload
     async def send(
         self,
+        *,
+        file: File = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: LayoutView,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
+        *,
+        files: Sequence[File] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: LayoutView,
+        suppress_embeds: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
         content: Optional[str] = ...,
         *,
         tts: bool = ...,
@@ -1388,7 +1420,7 @@ class Messageable:
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
@@ -1409,7 +1441,7 @@ class Messageable:
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
@@ -1430,7 +1462,7 @@ class Messageable:
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
@@ -1451,7 +1483,7 @@ class Messageable:
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         silent: bool = ...,
         poll: Poll = ...,
