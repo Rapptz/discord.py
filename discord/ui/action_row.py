@@ -87,9 +87,41 @@ class _ActionRowCallback:
 class ActionRow(Item[V]):
     """Represents a UI action row.
 
-    This object can be inherited.
+    This is a top-level layout component that can only be used on :class:`LayoutView`
+    and can contain :class:`Button` 's and :class:`Select` 's in it.
+
+    This can be inherited.
+
+    .. note::
+
+        Action rows can contain up to 5 components, which is, 5 buttons or 1 select.
 
     .. versionadded:: 2.6
+
+    Examples
+    --------
+
+    .. code-block:: python3
+
+        import discord
+        from discord import ui
+
+        # you can subclass it and add components with the decorators
+        class MyActionRow(ui.ActionRow):
+            @ui.button(label='Click Me!')
+            async def click_me(self, interaction: discord.Interaction, button: discord.ui.Button):
+                await interaction.response.send_message('You clicked me!')
+
+        # or use it directly on LayoutView
+        class MyView(ui.LayoutView):
+            row = ui.ActionRow()
+            # or you can use your subclass:
+            # row = MyActionRow()
+
+            # you can create items with row.button and row.select
+            @row.button(label='A button!')
+            async def row_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+                await interaction.response.send_message('You clicked a button!')
 
     Parameters
     ----------
@@ -127,7 +159,7 @@ class ActionRow(Item[V]):
         for func in self.__action_row_children_items__:
             item: Item = func.__discord_ui_model_type__(**func.__discord_ui_model_kwargs__)
             item.callback = _ActionRowCallback(func, self, item)  # type: ignore
-            item._parent = getattr(func, '__discord_ui_parent__', self)  # type: ignore
+            item._parent = getattr(func, '__discord_ui_parent__', self)
             setattr(self, func.__name__, item)
             children.append(item)
         return children

@@ -58,7 +58,40 @@ class _ContainerCallback:
 class Container(Item[V]):
     """Represents a UI container.
 
+    This is a top-level layout component that can only be used on :class:`LayoutView`
+    and can contain :class:`ActionRow` 's, :class:`TextDisplay` 's, :class:`Section` 's,
+    :class:`MediaGallery` 's, and :class:`File` 's in it.
+
+    This can be inherited.
+
+    .. note::
+
+        Containers can contain up to 10 top-level components.
+
     .. versionadded:: 2.6
+
+    Examples
+    --------
+
+    .. code-block:: python3
+
+        import discord
+        from discord import ui
+
+        # you can subclass it and add components as you would add them
+        # in a LayoutView
+        class MyContainer(ui.Container):
+            action_row = ui.ActionRow()
+
+            @action_row.button(label='A button in a container!')
+            async def a_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+                await interaction.response.send_message('You clicked a button!')
+
+        # or use it directly on LayoutView
+        class MyView(ui.LayoutView):
+            container = ui.Container([ui.TextDisplay('I am a text display on a container!')])
+            # or you can use your subclass:
+            # container = MyContainer()
 
     Parameters
     ----------
@@ -123,7 +156,7 @@ class Container(Item[V]):
                 if getattr(raw, '__discord_ui_section__', False) and raw.accessory.is_dispatchable():  # type: ignore
                     self.__dispatchable.append(raw.accessory)  # type: ignore
                 elif getattr(raw, '__discord_ui_action_row__', False) and raw.is_dispatchable():
-                    raw._parent = self  # type: ignore
+                    raw._parent = self
                     self.__dispatchable.extend(raw._children)  # type: ignore
             else:
                 # action rows can be created inside containers, and then callbacks can exist here

@@ -706,6 +706,10 @@ class View(BaseView):
 class LayoutView(BaseView):
     """Represents a layout view for components.
 
+    This object must be inherited to create a UI within Discord.
+
+    
+
     .. versionadded:: 2.6
 
     Parameters

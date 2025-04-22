@@ -42,7 +42,22 @@ __all__ = ('File',)
 class File(Item[V]):
     """Represents a UI file component.
 
+    This is a top-level layout component that can only be used on :class:`LayoutView`.
+
     .. versionadded:: 2.6
+
+    Example
+    -------
+
+    .. code-block:: python3
+
+        import discord
+        from discord import ui
+
+        class MyView(ui.LayoutView):
+            file = ui.File('attachment://file.txt')
+            # attachment://file.txt points to an attachment uploaded alongside
+            # this view
 
     Parameters
     ----------
