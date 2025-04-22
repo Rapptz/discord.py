@@ -1770,7 +1770,7 @@ class PartialMessage(Hashable):
     async def reply(
         self,
         *,
-        file: File = ...,g
+        file: File = ...,
         view: LayoutView,
         delete_after: float = ...,
         nonce: Union[str, int] = ...,
