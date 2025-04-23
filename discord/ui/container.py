@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import copy
+import os
 from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union
 
 from .item import Item, ItemCallbackType
@@ -161,8 +162,14 @@ class Container(Item[V]):
 
                     if item.is_dispatchable():
                         self.__dispatchable.extend(item._children)  # type: ignore
+                if getattr(raw, '__discord_ui_section__', False):
+                    item = copy.copy(raw)
+                    if item.accessory.is_dispatchable():  # type: ignore
+                        item.accessory = copy.deepcopy(item.accessory)  # type: ignore
+                        if item.accessory._provided_custom_id is False:  # type: ignore
+                            item.accessory.custom_id = os.urandom(16).hex()  # type: ignore
                 else:
-                    item = raw
+                    item = copy.copy(raw)
 
                 if getattr(item, '__discord_ui_section__', False) and item.accessory.is_dispatchable():  # type: ignore
                     self.__dispatchable.append(item.accessory)  # type: ignore

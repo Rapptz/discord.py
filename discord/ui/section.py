@@ -75,22 +75,21 @@ class Section(Item[V]):
 
     def __init__(
         self,
-        children: List[Union[Item[Any], str]] = MISSING,
+        children: List[Union[Item[V], str]] = MISSING,
         *,
-        accessory: Item[Any],
+        accessory: Item[V],
         row: Optional[int] = None,
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
-        self._children: List[Item[Any]] = []
+        self._children: List[Item[V]] = []
         if children is not MISSING:
             if len(children) > 3:
                 raise ValueError('maximum number of children exceeded')
             self._children.extend(
                 [c if isinstance(c, Item) else TextDisplay(c) for c in children],
             )
-        self.accessory: Item[Any] = accessory
-
+        self.accessory: Item[V] = accessory
         self.row = row
         self.id = id
 
