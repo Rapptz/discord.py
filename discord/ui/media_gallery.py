@@ -68,15 +68,14 @@ class MediaGallery(Item[V]):
 
     def __init__(
         self,
-        items: List[MediaGalleryItem],
-        *,
+        *items: MediaGalleryItem,
         row: Optional[int] = None,
         id: Optional[int] = None,
     ) -> None:
         super().__init__()
 
         self._underlying = MediaGalleryComponent._raw_construct(
-            items=items,
+            items=list(items),
             id=id,
         )
 

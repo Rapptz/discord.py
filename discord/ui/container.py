@@ -124,8 +124,7 @@ class Container(Item[V]):
 
     def __init__(
         self,
-        children: List[Item[V]] = MISSING,
-        *,
+        *children: Item[V],
         accent_colour: Optional[Union[Colour, int]] = None,
         accent_color: Optional[Union[Color, int]] = None,
         spoiler: bool = False,

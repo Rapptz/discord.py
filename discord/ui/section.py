@@ -75,8 +75,7 @@ class Section(Item[V]):
 
     def __init__(
         self,
-        children: List[Union[Item[V], str]] = MISSING,
-        *,
+        *children: Union[Item[V], str],
         accessory: Item[V],
         row: Optional[int] = None,
         id: Optional[int] = None,
