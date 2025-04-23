@@ -571,8 +571,6 @@ class View(BaseView):
     This object must be inherited to create a UI within Discord.
 
     .. versionadded:: 2.0
-    .. deprecated:: 2.6
-        This class is deprecated and will be removed in a future version. Use :class:`LayoutView` instead.
 
     Parameters
     -----------
@@ -584,11 +582,6 @@ class View(BaseView):
     __discord_ui_view__: ClassVar[bool] = True
 
     def __init_subclass__(cls) -> None:
-        warnings.warn(
-            'discord.ui.View and subclasses are deprecated and will be removed in '
-            'a future version, use discord.ui.LayoutView instead',
-            DeprecationWarning,
-        )
         super().__init_subclass__()
 
         children: Dict[str, ItemCallbackType[Any]] = {}
