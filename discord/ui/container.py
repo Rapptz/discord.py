@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
+import copy
 from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union
 
 from .item import Item, ItemCallbackType
@@ -116,7 +117,7 @@ class Container(Item[V]):
         The ID of this component. This must be unique across the view.
     """
 
-    __container_children_items__: ClassVar[List[Union[ItemCallbackType[Any], Item[Any]]]] = []
+    __container_children_items__: ClassVar[Dict[str, Union[ItemCallbackType[Any], Item[Any]]]] = {}
     __discord_ui_update_view__: ClassVar[bool] = True
     __discord_ui_container__: ClassVar[bool] = True
 
@@ -148,16 +149,28 @@ class Container(Item[V]):
 
     def _init_children(self) -> List[Item[Any]]:
         children = []
+        parents = {}
 
-        for raw in self.__container_children_items__:
+        for name, raw in self.__container_children_items__.items():
             if isinstance(raw, Item):
-                children.append(raw)
+                if getattr(raw, '__discord_ui_action_row__', False):
+                    item = copy.deepcopy(raw)
+                    # we need to deepcopy this object and set it later to prevent
+                    # errors reported on the bikeshedding post
+                    item._parent = self
 
-                if getattr(raw, '__discord_ui_section__', False) and raw.accessory.is_dispatchable():  # type: ignore
-                    self.__dispatchable.append(raw.accessory)  # type: ignore
-                elif getattr(raw, '__discord_ui_action_row__', False) and raw.is_dispatchable():
-                    raw._parent = self
-                    self.__dispatchable.extend(raw._children)  # type: ignore
+                    if item.is_dispatchable():
+                        self.__dispatchable.extend(item._children)  # type: ignore
+                else:
+                    item = raw
+
+                if getattr(item, '__discord_ui_section__', False) and item.accessory.is_dispatchable():  # type: ignore
+                    self.__dispatchable.append(item.accessory)  # type: ignore
+
+                setattr(self, name, item)
+                children.append(item)
+
+                parents[raw] = item
             else:
                 # action rows can be created inside containers, and then callbacks can exist here
                 # so we create items based off them
@@ -170,7 +183,7 @@ class Container(Item[V]):
                 parent = getattr(raw, '__discord_ui_parent__', None)
                 if parent is None:
                     raise RuntimeError(f'{raw.__name__} is not a valid item for a Container')
-                parent._children.append(item)
+                parents.get(parent, parent)._children.append(item)
                 # we donnot append it to the children list because technically these buttons and
                 # selects are not from the container but the action row itself.
                 self.__dispatchable.append(item)
@@ -189,9 +202,9 @@ class Container(Item[V]):
                 if isinstance(member, Item):
                     children[name] = member
                 if hasattr(member, '__discord_ui_model_type__') and getattr(member, '__discord_ui_parent__', None):
-                    children[name] = member
+                    children[name] = copy.copy(member)
 
-        cls.__container_children_items__ = list(children.values())
+        cls.__container_children_items__ = children
 
     def _update_children_view(self, view) -> None:
         for child in self._children:
