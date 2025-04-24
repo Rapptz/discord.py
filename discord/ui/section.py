@@ -197,7 +197,7 @@ class Section(Item[V]):
         from .view import _component_to_item  # >circular import<
 
         return cls(
-            children=[_component_to_item(c) for c in component.components],
+            *[_component_to_item(c) for c in component.components],
             accessory=_component_to_item(component.accessory),
             id=component.id,
         )
