@@ -1800,6 +1800,7 @@ class Guild(Hashable):
         category: Optional[CategoryChannel] = None,
         slowmode_delay: int = MISSING,
         nsfw: bool = MISSING,
+        media_only: bool = MISSING,
         overwrites: Mapping[Union[Role, Member, Object], PermissionOverwrite] = MISSING,
         reason: Optional[str] = None,
         default_auto_archive_duration: int = MISSING,
@@ -1862,12 +1863,17 @@ class Guild(Hashable):
             .. versionadded:: 2.3
         default_layout: :class:`ForumLayoutType`
             The default layout for posts in this forum.
+            This cannot be set if ``media_only`` is set to ``True``.
 
             .. versionadded:: 2.3
         available_tags: Sequence[:class:`ForumTag`]
             The available tags for this forum channel.
 
             .. versionadded:: 2.1
+        media_only: :class:`bool`
+            Whether to create a media-only forum channel.
+
+            .. versionadded:: 2.6
 
         Raises
         -------
@@ -1919,7 +1925,7 @@ class Guild(Hashable):
             else:
                 raise ValueError(f'default_reaction_emoji parameter must be either Emoji, PartialEmoji, or str')
 
-        if default_layout is not MISSING:
+        if not media_only and default_layout is not MISSING:
             if not isinstance(default_layout, ForumLayoutType):
                 raise TypeError(
                     f'default_layout parameter must be a ForumLayoutType not {default_layout.__class__.__name__}'
@@ -1931,7 +1937,12 @@ class Guild(Hashable):
             options['available_tags'] = [t.to_dict() for t in available_tags]
 
         data = await self._create_channel(
-            name=name, overwrites=overwrites, channel_type=ChannelType.forum, category=category, reason=reason, **options
+            name=name,
+            overwrites=overwrites,
+            channel_type=ChannelType.forum if not media_only else ChannelType.media,
+            category=category,
+            reason=reason,
+            **options,
         )
 
         channel = ForumChannel(state=self._state, guild=self, data=data)
