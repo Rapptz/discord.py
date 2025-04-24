@@ -291,7 +291,7 @@ class Container(Item[V]):
     @classmethod
     def from_component(cls, component: ContainerComponent) -> Self:
         return cls(
-            children=[_component_to_item(c) for c in component.children],
+            *[_component_to_item(c) for c in component.children],
             accent_colour=component.accent_colour,
             spoiler=component.spoiler,
             id=component.id,
