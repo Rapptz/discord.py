@@ -184,6 +184,6 @@ class MediaGallery(Item[V]):
     @classmethod
     def from_component(cls, component: MediaGalleryComponent) -> Self:
         return cls(
-            items=component.items,
+            *component.items,
             id=component.id,
         )
