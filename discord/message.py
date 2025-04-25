@@ -488,7 +488,7 @@ class MessageSnapshot:
         Extra features of the the message snapshot.
     stickers: List[:class:`StickerItem`]
         A list of sticker items given to the message.
-    components: List[Union[:class:`ActionRow`, :class:`Button`, :class:`SelectMenu`]]
+    components: List[Union[:class:`ActionRow`, :class:`Button`, :class:`SelectMenu`, :class:`Container`, :class:`SectionComponent`, :class:`TextDisplay`, :class:`MediaGalleryComponent`, :class:`FileComponent`, :class:`SeparatorComponent`, :class:`ThumbnailComponent`]]
         A list of components in the message.
     """
 
