@@ -28,11 +28,9 @@ class Layout(discord.ui.LayoutView):
         await interaction.response.send_message('Hi!', ephemeral=True)
 
     container = discord.ui.Container(
-        [
-            discord.ui.TextDisplay(
-                'Click the above button to receive a **very special** message!',
-            ),
-        ],
+        discord.ui.TextDisplay(
+            'Click the above button to receive a **very special** message!',
+        ),
         accent_colour=discord.Colour.blurple(),
     )
 
@@ -43,7 +41,7 @@ bot = Bot()
 @bot.command()
 async def layout(ctx: commands.Context):
     """Sends a very special message!"""
-    await ctx.send(view=Layout())  # sending LayoutView's does not allow for sending any other content
+    await ctx.send(view=Layout())  # sending LayoutView's does not allow for sending any content, embed(s), stickers, or poll
 
 
 bot.run('token')

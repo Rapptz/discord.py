@@ -700,7 +700,7 @@ class LayoutView(BaseView):
 
     This object must be inherited to create a UI within Discord.
 
-
+    You can find usage examples in the :resource:`repository <examples>`
 
     .. versionadded:: 2.6
 
