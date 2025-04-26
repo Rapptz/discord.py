@@ -198,7 +198,7 @@ class BaseView:
     __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
     __discord_ui_container__: ClassVar[bool] = False
-    __view_children_items__: ClassVar[Dict[str, ItemLike]] = []
+    __view_children_items__: ClassVar[Dict[str, ItemLike]] = {}
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         self.__timeout = timeout
