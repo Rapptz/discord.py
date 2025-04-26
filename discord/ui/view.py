@@ -218,6 +218,7 @@ class BaseView:
 
     def _init_children(self) -> List[Item[Self]]:
         children = []
+        parents = {}
 
         for name, raw in self.__view_children_items__.items():
             if isinstance(raw, Item):
@@ -230,6 +231,7 @@ class BaseView:
                 if getattr(item, '__discord_ui_update_view__', False):
                     item._update_children_view(self)  # type: ignore
                 children.append(item)
+                parents[raw] = item
             else:
                 item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
                 item.callback = _ViewCallback(raw, self, item)  # type: ignore
@@ -237,7 +239,7 @@ class BaseView:
                 setattr(self, raw.__name__, item)
                 parent = getattr(raw, '__discord_ui_parent__', None)
                 if parent:
-                    parent._children.append(item)
+                    parents.get(parent, parent)._children.append(item)
                     continue
                 children.append(item)
 
@@ -586,7 +588,7 @@ class View(BaseView):
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
-        children: Dict[str, ItemCallbackType[Any]] = {}
+        children: Dict[str, ItemLike] = {}
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if hasattr(member, '__discord_ui_model_type__'):
