@@ -47,6 +47,7 @@ import logging
 import sys
 import time
 import os
+import copy
 from .item import Item, ItemCallbackType
 from .dynamic import DynamicItem
 from ..components import (
@@ -197,7 +198,7 @@ class BaseView:
     __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
     __discord_ui_container__: ClassVar[bool] = False
-    __view_children_items__: ClassVar[List[ItemLike]] = []
+    __view_children_items__: ClassVar[Dict[str, ItemLike]] = []
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         self.__timeout = timeout
@@ -218,15 +219,17 @@ class BaseView:
     def _init_children(self) -> List[Item[Self]]:
         children = []
 
-        for raw in self.__view_children_items__:
+        for name, raw in self.__view_children_items__.items():
             if isinstance(raw, Item):
-                raw._view = self
-                parent = getattr(raw, '__discord_ui_parent__', None)
+                item = copy.deepcopy(raw)
+                setattr(self, name, item)
+                item._view = self
+                parent = getattr(item, '__discord_ui_parent__', None)
                 if parent and parent._view is None:
                     parent._view = self
-                if getattr(raw, '__discord_ui_update_view__', False):
-                    raw._update_children_view(self)  # type: ignore
-                children.append(raw)
+                if getattr(item, '__discord_ui_update_view__', False):
+                    item._update_children_view(self)  # type: ignore
+                children.append(item)
             else:
                 item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
                 item.callback = _ViewCallback(raw, self, item)  # type: ignore
@@ -594,7 +597,7 @@ class View(BaseView):
         if len(children) > 25:
             raise TypeError('View cannot have more than 25 children')
 
-        cls.__view_children_items__ = list(children.values())
+        cls.__view_children_items__ = children
 
     def __init__(self, *, timeout: Optional[float] = 180.0):
         super().__init__(timeout=timeout)
@@ -715,7 +718,7 @@ class LayoutView(BaseView):
         super().__init__(timeout=timeout)
 
     def __init_subclass__(cls) -> None:
-        children: Dict[str, Item[Any]] = {}
+        children: Dict[str, ItemLike] = {}
         callback_children: Dict[str, ItemCallbackType[Any]] = {}
 
         row = 0
@@ -732,7 +735,8 @@ class LayoutView(BaseView):
         if len(children) > 10:
             raise TypeError('LayoutView cannot have more than 10 top-level children')
 
-        cls.__view_children_items__ = list(children.values()) + list(callback_children.values())
+        children.update(callback_children)
+        cls.__view_children_items__ = children
 
     def _is_v2(self) -> bool:
         return True
