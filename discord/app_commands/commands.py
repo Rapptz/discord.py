@@ -2524,7 +2524,10 @@ def guild_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
             allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext()
             f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
 
-        allowed_contexts.guild = True
+        # Ensure that only Guild context is allowed
+        allowed_contexts.guild = False  # Enable guild context
+        allowed_contexts.private_channel = False  # Disable private channel context
+        allowed_contexts.dm_channel = False  # Disable DM context
 
         return f
 
@@ -2578,7 +2581,10 @@ def private_channel_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]
             allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext()
             f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
 
-        allowed_contexts.private_channel = True
+        # Ensure that only Private Channel context is allowed
+        allowed_contexts.guild = False  # Disable guild context
+        allowed_contexts.private_channel = True  # Enable private channel context
+        allowed_contexts.dm_channel = False  # Disable DM context
 
         return f
 
@@ -2630,7 +2636,11 @@ def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
             allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext()
             f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
 
-        allowed_contexts.dm_channel = True
+        # Ensure that only DM context is allowed
+        allowed_contexts.guild = False  # Disable guild context
+        allowed_contexts.private_channel = False  # Disable private channel context
+        allowed_contexts.dm_channel = True  # Enable DM context
+
         return f
 
     # Check if called with parentheses or not
@@ -2724,6 +2734,7 @@ def guild_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
             f.__discord_app_commands_installation_types__ = allowed_installs  # type: ignore # Runtime attribute assignment
 
         allowed_installs.guild = True
+        allowed_installs.user = False
 
         return f
 
@@ -2774,6 +2785,7 @@ def user_install(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
             f.__discord_app_commands_installation_types__ = allowed_installs  # type: ignore # Runtime attribute assignment
 
         allowed_installs.user = True
+        allowed_installs.guild = False
 
         return f
 
