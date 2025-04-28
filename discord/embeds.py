@@ -737,7 +737,7 @@ class Embed:
         # fmt: off
         result = {
             key[1:]: getattr(self, key)
-            for key in self.__slots__
+            for key in Embed.__slots__
             if key[0] == '_' and hasattr(self, key)
         }
         # fmt: on
