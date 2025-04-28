@@ -2623,6 +2623,11 @@ def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
             allowed_contexts = getattr(f, '__discord_app_commands_contexts__', None) or AppCommandContext()
             f.__discord_app_commands_contexts__ = allowed_contexts  # type: ignore # Runtime attribute assignment
 
+        # Ensure that only DM context is allowed
+        allowed_contexts.guild = False  # Disable guild context
+        allowed_contexts.private_channel = False  # Disable private channel context
+        allowed_contexts.dm_channel = True  # Enable DM context
+
         allowed_contexts.dm_channel = True
         return f
 
