@@ -2627,8 +2627,7 @@ def dm_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         allowed_contexts.guild = False  # Disable guild context
         allowed_contexts.private_channel = False  # Disable private channel context
         allowed_contexts.dm_channel = True  # Enable DM context
-
-        allowed_contexts.dm_channel = True
+        
         return f
 
     # Check if called with parentheses or not
