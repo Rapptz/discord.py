@@ -1983,7 +1983,10 @@ class Webhook(BaseWebhook):
         self,
         message_id: int,
         *,
+        attachments: Sequence[Union[Attachment, File]] = ...,
         view: LayoutView,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+        thread: Snowflake = ...,
     ) -> WebhookMessage:
         ...
 
@@ -1992,13 +1995,13 @@ class Webhook(BaseWebhook):
         self,
         message_id: int,
         *,
-        content: Optional[str] = MISSING,
-        embeds: Sequence[Embed] = MISSING,
-        embed: Optional[Embed] = MISSING,
-        attachments: Sequence[Union[Attachment, File]] = MISSING,
-        view: Optional[View] = MISSING,
-        allowed_mentions: Optional[AllowedMentions] = None,
-        thread: Snowflake = MISSING,
+        content: Optional[str] = ...,
+        embeds: Sequence[Embed] = ...,
+        embed: Optional[Embed] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
+        view: Optional[View] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+        thread: Snowflake = ...,
     ) -> WebhookMessage:
         ...
 

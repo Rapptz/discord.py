@@ -1035,7 +1035,7 @@ class SyncWebhook(BaseWebhook):
 
             .. versionadded:: 2.4
         view: Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]
-            The view to send with the message. This can only have URL buttons, which donnot
+            The view to send with the message. This can only have non-interactible items, which donnot
             require a state to be attached to it.
 
             If you want to send a view with any component attached to it, check :meth:`Webhook.send`.
@@ -1185,6 +1185,33 @@ class SyncWebhook(BaseWebhook):
         )
         return self._create_message(data, thread=thread)
 
+    @overload
+    def edit_message(
+        self,
+        message_id: int,
+        *,
+        attachments: Sequence[Union[Attachment, File]] = ...,
+        view: LayoutView,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+        thread: Snowflake = ...,
+    ) -> SyncWebhookMessage:
+        ...
+
+    @overload
+    def edit_message(
+        self,
+        message_id: int,
+        *,
+        content: Optional[str] = ...,
+        embeds: Sequence[Embed] = ...,
+        embed: Optional[Embed] = ...,
+        attachments: Sequence[Union[Attachment, File]] = ...,
+        view: Optional[View] = ...,
+        allowed_mentions: Optional[AllowedMentions] = ...,
+        thread: Snowflake = ...,
+    ) -> SyncWebhookMessage:
+        ...
+
     def edit_message(
         self,
         message_id: int,
@@ -1193,6 +1220,7 @@ class SyncWebhook(BaseWebhook):
         embeds: Sequence[Embed] = MISSING,
         embed: Optional[Embed] = MISSING,
         attachments: Sequence[Union[Attachment, File]] = MISSING,
+        view: Optional[BaseView] = MISSING,
         allowed_mentions: Optional[AllowedMentions] = None,
         thread: Snowflake = MISSING,
     ) -> SyncWebhookMessage:
@@ -1219,6 +1247,13 @@ class SyncWebhook(BaseWebhook):
             then all attachments are removed.
 
             .. versionadded:: 2.0
+        view: Optional[Union[:class:`~discord.ui.View`, :class:`~discord.ui.LayoutView`]]
+            The updated view to update this message with. This can only have non-interactible items, which donnot
+            require a state to be attached to it. If ``None`` is passed then the view is removed.
+
+            If you want to edit a webhook message with any component attached to it, check :meth:`WebhookMessage.edit`.
+
+            .. versionadded:: 2.6
         allowed_mentions: :class:`AllowedMentions`
             Controls the mentions being processed in this message.
             See :meth:`.abc.Messageable.send` for more information.
