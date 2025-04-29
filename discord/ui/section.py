@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, TypeVar, Union, ClassVar
+from typing import TYPE_CHECKING, Any, Dict, Generator, List, Literal, Optional, TypeVar, Union, ClassVar
 
 from .item import Item
 from .text_display import TextDisplay
@@ -97,6 +97,11 @@ class Section(Item[V]):
         return ComponentType.section
 
     @property
+    def children(self) -> List[Item[V]]:
+        """List[:class:`Item`]: The list of children attached to this section."""
+        return self._children.copy()
+
+    @property
     def width(self):
         return 5
 
@@ -109,6 +114,20 @@ class Section(Item[V]):
     # dispatchable?
     def is_dispatchable(self) -> bool:
         return self.accessory.is_dispatchable()
+
+    def walk_children(self) -> Generator[Item[V], Any, None]:
+        """An iterator that recursively walks through all the children of this section.
+        and it's children, if applicable.
+
+        Yields
+        ------
+        :class:`Item`
+            An item in this section.
+        """
+
+        for child in self.children:
+            yield child
+        yield self.accessory
 
     def _update_children_view(self, view) -> None:
         self.accessory._view = view

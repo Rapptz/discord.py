@@ -30,6 +30,7 @@ from typing import (
     ClassVar,
     Coroutine,
     Dict,
+    Generator,
     List,
     Literal,
     Optional,
@@ -203,6 +204,19 @@ class ActionRow(Item[V]):
     def children(self) -> List[Item[V]]:
         """List[:class:`Item`]: The list of children attached to this action row."""
         return self._children.copy()
+
+    def walk_children(self) -> Generator[Item[V], Any, None]:
+        """An iterator that recursively walks through all the children of this view
+        and it's children, if applicable.
+
+        Yields
+        ------
+        :class:`Item`
+            An item in the action row.
+        """
+
+        for child in self.children:
+            yield child
 
     def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to this row.

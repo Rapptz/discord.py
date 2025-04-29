@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import copy
 import os
-from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, List, Literal, Optional, Tuple, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, Generator, List, Literal, Optional, Tuple, Type, TypeVar, Union
 
 from .item import Item, ItemCallbackType
 from .view import _component_to_item, LayoutView
@@ -296,6 +296,23 @@ class Container(Item[V]):
             spoiler=component.spoiler,
             id=component.id,
         )
+
+    def walk_children(self) -> Generator[Item[V], Any, None]:
+        """An iterator that recursively walks through all the children of this container
+        and it's children, if applicable.
+
+        Yields
+        ------
+        :class:`Item`
+            An item in the container.
+        """
+
+        for child in self.children:
+            yield child
+
+            if getattr(child, '__discord_ui_update_view__', False):
+                # if it has this attribute then it can contain children
+                yield from child.walk_children()  # type: ignore
 
     def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to this container.

@@ -638,6 +638,11 @@ class View(BaseView):
         In order to modify and edit message components they must be
         converted into a :class:`View` first.
 
+        .. warning::
+
+            This **will not** take into account every v2 component, if you
+            want to edit them, use :meth:`LayoutView.from_message` instead.
+
         Parameters
         -----------
         message: :class:`discord.Message`
@@ -770,7 +775,7 @@ class LayoutView(BaseView):
         In order to modify and edit message components they must be
         converted into a :class:`LayoutView` first.
 
-        Unlike :meth:`View.from_message` this works for
+        Unlike :meth:`View.from_message` this converts v2 components.
 
         Parameters
         -----------
@@ -792,6 +797,23 @@ class LayoutView(BaseView):
             view.add_item(item)
 
         return view
+
+    def walk_children(self):
+        """An iterator that recursively walks through all the children of this view
+        and it's children, if applicable.
+
+        Yields
+        ------
+        :class:`Item`
+            An item in the view.
+        """
+
+        for child in self.children:
+            yield child
+
+            if getattr(child, '__discord_ui_update_view__', False):
+                # if it has this attribute then it can contain children
+                yield from child.walk_children()  # type: ignore
 
 
 class ViewStore:
