@@ -112,7 +112,9 @@ class Item(Generic[V]):
         return False
 
     def is_persistent(self) -> bool:
-        return self._provided_custom_id
+        if self.is_dispatchable():
+            return self._provided_custom_id
+        return True
 
     def __repr__(self) -> str:
         attrs = ' '.join(f'{key}={getattr(self, key)!r}' for key in self.__item_repr_attributes__)
