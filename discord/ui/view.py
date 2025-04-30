@@ -209,7 +209,7 @@ class BaseView:
         self.__timeout_expiry: Optional[float] = None
         self.__timeout_task: Optional[asyncio.Task[None]] = None
         self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
-        self.__total_children: int = len(list(self.walk_children()))
+        self.__total_children: int = len(tuple(self.walk_children()))
 
     def _is_v2(self) -> bool:
         return False
@@ -351,7 +351,7 @@ class BaseView:
 
         if getattr(item, '__discord_ui_update_view__', False):
             item._update_children_view(self)  # type: ignore
-            added += len(list(item.walk_children()))  # type: ignore
+            added += len(tuple(item.walk_children()))  # type: ignore
 
         if self._is_v2() and self.__total_children + added > 40:
             raise ValueError('maximum number of children exceeded')
@@ -378,7 +378,7 @@ class BaseView:
         else:
             removed = 1
             if getattr(item, '__discord_ui_update_view__', False):
-                removed += len(list(item.walk_children()))  # type: ignore
+                removed += len(tuple(item.walk_children()))  # type: ignore
 
             if self.__total_children - removed < 0:
                 self.__total_children = 0
