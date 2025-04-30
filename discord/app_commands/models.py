@@ -646,7 +646,7 @@ class AppCommandChannel(Hashable):
 
     @property
     def flags(self) -> ChannelFlags:
-        """:class:`ChannelFlags`: The flags associated with this channel object.
+        """:class:`~discord.ChannelFlags`: The flags associated with this channel object.
 
         .. versionadded:: 2.6
         """
