@@ -115,7 +115,7 @@ class Section(Item[V]):
     def is_dispatchable(self) -> bool:
         return self.accessory.is_dispatchable()
 
-    def walk_children(self) -> Generator[Item[V], Any, None]:
+    def walk_children(self) -> Generator[Item[V], None, None]:
         """An iterator that recursively walks through all the children of this section.
         and it's children, if applicable.
 
