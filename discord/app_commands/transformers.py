@@ -689,6 +689,7 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.news,
         ChannelType.category,
         ChannelType.forum,
+        ChannelType.media,
     ],
     GuildChannel: [
         ChannelType.stage_voice,
