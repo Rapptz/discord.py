@@ -588,8 +588,8 @@ class AppCommandChannel(Hashable):
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.
-        Bots and users with :attr:`~Permissions.manage_channels` or
-        :attr:`~Permissions.manage_messages` bypass slowmode.
+        Bots and users with :attr:`~discord.Permissions.manage_channels` or
+        :attr:`~discord.Permissions.manage_messages` bypass slowmode.
     nsfw: :class:`bool`
         If the channel is marked as "not safe for work" or "age restricted".
     """

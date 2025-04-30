@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union, Optional
 from typing_extensions import NotRequired
 
 from .channel import ChannelTypeWithoutThread, GuildChannel, InteractionDMChannel, GroupDMChannel
