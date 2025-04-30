@@ -134,9 +134,19 @@ class ActionRow(Item[V]):
     __discord_ui_action_row__: ClassVar[bool] = True
     __discord_ui_update_view__: ClassVar[bool] = True
 
-    def __init__(self, *, id: Optional[int] = None) -> None:
+    def __init__(
+        self,
+        *children: Item[V],
+        id: Optional[int] = None,
+    ) -> None:
         super().__init__()
-        self._children: List[Item[Any]] = self._init_children()
+        self._weight: int = 0
+        self._children: List[Item[V]] = self._init_children()
+        self._children.extend(children)
+        self._weight += sum(i.width for i in children)
+
+        if self._weight > 5:
+            raise ValueError('maximum number of children exceeded')
 
         self.id = id
 
@@ -162,6 +172,7 @@ class ActionRow(Item[V]):
             item.callback = _ActionRowCallback(func, self, item)  # type: ignore
             item._parent = getattr(func, '__discord_ui_parent__', self)
             setattr(self, func.__name__, item)
+            self._weight += item.width
             children.append(item)
         return children
 
@@ -182,7 +193,7 @@ class ActionRow(Item[V]):
 
     def _update_children_view(self, view: LayoutView) -> None:
         for child in self._children:
-            child._view = view
+            child._view = view  # pyright: ignore[reportAttributeAccessIssue]
 
     def _is_v2(self) -> bool:
         # although it is not really a v2 component the only usecase here is for
