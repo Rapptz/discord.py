@@ -30,6 +30,7 @@ from typing import (
     ClassVar,
     Coroutine,
     Dict,
+    Generator,
     Iterator,
     List,
     Optional,
@@ -585,7 +586,7 @@ class BaseView:
         """
         return await self.__stopped
 
-    def walk_children(self):
+    def walk_children(self) -> Generator[Item[Any], None, None]:
         """An iterator that recursively walks through all the children of this view
         and it's children, if applicable.
 
