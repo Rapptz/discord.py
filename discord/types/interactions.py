@@ -69,8 +69,8 @@ class PartialChannel(_BasePartialChannel):
     nsfw: bool
     flags: int
     rate_limit_per_user: int
-    parent_id: Snowflake
-    last_message_id: Snowflake
+    parent_id: Optional[Snowflake]
+    last_message_id: Optional[Snowflake]
     last_pin_timestamp: NotRequired[str]
 
 
