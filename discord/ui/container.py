@@ -25,7 +25,21 @@ from __future__ import annotations
 
 import copy
 import os
-from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, Generator, List, Literal, Optional, Tuple, Type, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Coroutine,
+    Dict,
+    Generator,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from .item import Item, ItemCallbackType
 from .view import _component_to_item, LayoutView
