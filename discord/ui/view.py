@@ -209,6 +209,7 @@ class BaseView:
         self.__timeout_expiry: Optional[float] = None
         self.__timeout_task: Optional[asyncio.Task[None]] = None
         self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
+        self.__total_children: int = len(list(self.walk_children()))
 
     def _is_v2(self) -> bool:
         return False
@@ -346,9 +347,14 @@ class BaseView:
             raise ValueError('v2 items cannot be added to this view')
 
         item._view = self
+        added = 1
 
         if getattr(item, '__discord_ui_update_view__', False):
             item._update_children_view(self)  # type: ignore
+            added += len(list(item.walk_children()))  # type: ignore
+
+        if self._is_v2() and self.__total_children + added > 40:
+            raise ValueError('maximum number of children exceeded')
 
         self._children.append(item)
         return self
@@ -369,6 +375,16 @@ class BaseView:
             self._children.remove(item)
         except ValueError:
             pass
+        else:
+            removed = 1
+            if getattr(item, '__discord_ui_update_view__', False):
+                removed += len(list(item.walk_children()))  # type: ignore
+
+            if self.__total_children - removed < 0:
+                self.__total_children = 0
+            else:
+                self.__total_children -= removed
+
         return self
 
     def clear_items(self) -> Self:
@@ -378,6 +394,7 @@ class BaseView:
         chaining.
         """
         self._children.clear()
+        self.__total_children = 0
         return self
 
     def get_item_by_id(self, id: int, /) -> Optional[Item[Self]]:
@@ -568,6 +585,23 @@ class BaseView:
         """
         return await self.__stopped
 
+    def walk_children(self):
+        """An iterator that recursively walks through all the children of this view
+        and it's children, if applicable.
+
+        Yields
+        ------
+        :class:`Item`
+            An item in the view.
+        """
+
+        for child in self.children:
+            yield child
+
+            if getattr(child, '__discord_ui_update_view__', False):
+                # if it has this attribute then it can contain children
+                yield from child.walk_children()  # type: ignore
+
 
 class View(BaseView):
     """Represents a UI view.
@@ -723,6 +757,10 @@ class LayoutView(BaseView):
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         super().__init__(timeout=timeout)
+        self.__total_children: int = len(list(self.walk_children()))
+
+        if self.__total_children > 40:
+            raise ValueError('maximum number of children exceeded')
 
     def __init_subclass__(cls) -> None:
         children: Dict[str, ItemLike] = {}
@@ -738,9 +776,6 @@ class LayoutView(BaseView):
                     row += 1
                 elif hasattr(member, '__discord_ui_model_type__') and getattr(member, '__discord_ui_parent__', None):
                     callback_children[name] = member
-
-        if len(children) > 10:
-            raise TypeError('LayoutView cannot have more than 10 top-level children')
 
         children.update(callback_children)
         cls.__view_children_items__ = children
@@ -761,7 +796,7 @@ class LayoutView(BaseView):
         return components
 
     def add_item(self, item: Item[Any]) -> Self:
-        if len(self._children) >= 10:
+        if self.__total_children >= 40:
             raise ValueError('maximum number of children exceeded')
         super().add_item(item)
         return self
@@ -797,23 +832,6 @@ class LayoutView(BaseView):
             view.add_item(item)
 
         return view
-
-    def walk_children(self):
-        """An iterator that recursively walks through all the children of this view
-        and it's children, if applicable.
-
-        Yields
-        ------
-        :class:`Item`
-            An item in the view.
-        """
-
-        for child in self.children:
-            yield child
-
-            if getattr(child, '__discord_ui_update_view__', False):
-                # if it has this attribute then it can contain children
-                yield from child.walk_children()  # type: ignore
 
 
 class ViewStore:
