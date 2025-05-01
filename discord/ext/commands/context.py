@@ -855,7 +855,33 @@ class Context(discord.abc.Messageable, Generic[BotT]):
     async def send(
         self,
         *,
+        file: File = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
         view: LayoutView,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
+    ) -> Message:
+        ...
+
+    @overload
+    async def send(
+        self,
+        *,
+        files: Sequence[File] = ...,
+        delete_after: float = ...,
+        nonce: Union[str, int] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        reference: Union[Message, MessageReference, PartialMessage] = ...,
+        mention_author: bool = ...,
+        view: LayoutView,
+        suppress_embeds: bool = ...,
+        ephemeral: bool = ...,
+        silent: bool = ...,
     ) -> Message:
         ...
 
@@ -873,7 +899,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -895,7 +921,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -917,7 +943,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
@@ -939,7 +965,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         allowed_mentions: AllowedMentions = ...,
         reference: Union[Message, MessageReference, PartialMessage] = ...,
         mention_author: bool = ...,
-        view: BaseView = ...,
+        view: View = ...,
         suppress_embeds: bool = ...,
         ephemeral: bool = ...,
         silent: bool = ...,
