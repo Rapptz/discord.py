@@ -126,6 +126,8 @@ class ActionRow(Item[V]):
 
     Parameters
     ----------
+    *children: :class:`Item`
+        The initial children of this action row.
     id: Optional[:class:`int`]
         The ID of this component. This must be unique across the view.
     """

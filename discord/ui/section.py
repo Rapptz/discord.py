@@ -50,7 +50,7 @@ class Section(Item[V]):
 
     Parameters
     ----------
-    children: List[Union[:class:`str`, :class:`TextDisplay`]]
+    *children: Union[:class:`str`, :class:`TextDisplay`]
         The text displays of this section. Up to 3.
     accessory: :class:`Item`
         The section accessory.

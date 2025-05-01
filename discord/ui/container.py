@@ -111,9 +111,8 @@ class Container(Item[V]):
 
     Parameters
     ----------
-    children: List[:class:`Item`]
-        The initial children of this container. Can have up to 10
-        items.
+    *children: List[:class:`Item`]
+        The initial children of this container.
     accent_colour: Optional[Union[:class:`.Colour`, :class:`int`]]
         The colour of the container. Defaults to ``None``.
     accent_color: Optional[Union[:class:`.Colour`, :class:`int`]]

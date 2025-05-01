@@ -53,7 +53,7 @@ class MediaGallery(Item[V]):
 
     Parameters
     ----------
-    items: List[:class:`.MediaGalleryItem`]
+    *items: :class:`.MediaGalleryItem`
         The initial items of this gallery.
     row: Optional[:class:`int`]
         The relative row this media gallery belongs to. By default
