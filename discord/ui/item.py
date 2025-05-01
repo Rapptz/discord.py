@@ -80,7 +80,7 @@ class Item(Generic[V]):
         # only called upon edit and we're mainly interested during initial creation time.
         self._provided_custom_id: bool = False
         self._id: Optional[int] = None
-        self._max_row: int = 5 if not self._is_v2() else 10
+        self._max_row: int = 5 if not self._is_v2() else 40
         self._parent: Optional[Item] = None
 
         if self._is_v2():
