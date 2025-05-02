@@ -528,7 +528,7 @@ class Colour:
 
         .. colour:: #393a41
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5.2
         """
         return cls(0x393A41)
 
@@ -538,7 +538,7 @@ class Colour:
 
         .. colour:: #242429
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5.2
         """
         return cls(0x242429)
 
@@ -548,7 +548,7 @@ class Colour:
 
         .. colour:: #131416
 
-        .. versionadded:: 2.4
+        .. versionadded:: 2.5.2
         """
         return cls(0x131416)
 
