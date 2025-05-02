@@ -522,5 +522,35 @@ class Colour:
         """
         return cls(0xEB459F)
 
+    @classmethod
+    def ash(cls) -> Self:
+        """A factory method that returns a :class:`Colour` representing the new Discord 'Ash' theme background.
+
+        .. colour:: #393a41
+
+        .. versionadded:: 2.4
+        """
+        return cls(0x393A41)
+
+    @classmethod
+    def discord_dark(cls) -> Self:
+        """A factory method that returns a :class:`Colour` representing the new Discord 'Dark' theme background.
+
+        .. colour:: #242429
+
+        .. versionadded:: 2.4
+        """
+        return cls(0x242429)
+
+    @classmethod
+    def onyx(cls) -> Self:
+        """A factory method that returns a :class:`Colour` representing the new Discord 'Onyx' theme background.
+
+        .. colour:: #131416
+
+        .. versionadded:: 2.4
+        """
+        return cls(0x131416)
+
 
 Color = Colour
