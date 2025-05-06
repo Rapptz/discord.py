@@ -791,7 +791,8 @@ class LayoutView(BaseView):
 
         # sorted by row, which in LayoutView indicates the position of the component in the
         # payload instead of in which ActionRow it should be placed on.
-        for child in sorted(self._children, key=lambda i: i._rendered_row or 0):
+        key = lambda i: i._rendered_row or i._row or sys.maxsize
+        for child in sorted(self._children, key=key):
             components.append(
                 child.to_component_dict(),
             )
