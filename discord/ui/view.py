@@ -766,6 +766,8 @@ class LayoutView(BaseView):
             raise ValueError('maximum number of children exceeded')
 
     def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+
         children: Dict[str, ItemLike] = {}
         callback_children: Dict[str, ItemCallbackType[Any]] = {}
 
