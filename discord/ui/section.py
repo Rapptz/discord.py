@@ -162,6 +162,10 @@ class Section(Item[V]):
         item._view = self.view
         item._parent = self
         self._children.append(item)
+
+        if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
+            self._view.__total_children += 1
+
         return self
 
     def remove_item(self, item: Item[Any]) -> Self:
@@ -180,6 +184,10 @@ class Section(Item[V]):
             self._children.remove(item)
         except ValueError:
             pass
+        else:
+            if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
+                self._view.__total_children -= 1
+
         return self
 
     def get_item_by_id(self, id: int, /) -> Optional[Item[V]]:
@@ -208,6 +216,9 @@ class Section(Item[V]):
         This function returns the class instance to allow for fluent-style
         chaining.
         """
+        if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
+            self._view.__total_children -= len(self._children) + 1  # the + 1 is the accessory
+
         self._children.clear()
         return self
 

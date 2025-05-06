@@ -360,8 +360,16 @@ class Container(Item[V]):
             else:
                 self.__dispatchable.append(item)
 
+        is_layout_view = self._view and getattr(self._view, '__discord_ui_layout_view__', False)
+
         if getattr(item, '__discord_ui_update_view__', False):
             item._update_children_view(self.view)  # type: ignore
+
+            if is_layout_view:
+                self._view.__total_children += len(tuple(item.walk_children()))  # type: ignore
+        else:
+            if is_layout_view:
+                self._view.__total_children += 1  # type: ignore
 
         item._view = self.view
         item._parent = self
@@ -383,6 +391,12 @@ class Container(Item[V]):
             self._children.remove(item)
         except ValueError:
             pass
+        else:
+            if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
+                if getattr(item, '__discord_ui_update_view__', False):
+                    self._view.__total_children -= len(tuple(item.walk_children()))  # type: ignore
+                else:
+                    self._view.__total_children -= 1
         return self
 
     def get_item_by_id(self, id: int, /) -> Optional[Item[V]]:
@@ -411,5 +425,8 @@ class Container(Item[V]):
         This function returns the class instance to allow for fluent-style
         chaining.
         """
+
+        if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
+            self._view.__total_children -= len(tuple(self.walk_children()))
         self._children.clear()
         return self

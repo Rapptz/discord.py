@@ -756,6 +756,8 @@ class LayoutView(BaseView):
         If ``None`` then there is no timeout.
     """
 
+    __discord_ui_layout_view__: ClassVar[bool] = True
+
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         super().__init__(timeout=timeout)
         self.__total_children: int = len(list(self.walk_children()))
