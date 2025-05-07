@@ -340,13 +340,7 @@ class Container(Item[V]):
         ------
         TypeError
             An :class:`Item` was not passed.
-        ValueError
-            Maximum number of children has been exceeded (10).
         """
-
-        if len(self._children) >= 10:
-            raise ValueError('maximum number of children exceeded')
-
         if not isinstance(item, Item):
             raise TypeError(f'expected Item not {item.__class__.__name__}')
 

@@ -337,7 +337,7 @@ class BaseView:
         TypeError
             An :class:`Item` was not passed.
         ValueError
-            Maximum number of children has been exceeded (25), the
+            Maximum number of children has been exceeded, the
             row the item is trying to be added to is full or the item
             you tried to add is not allowed in this View.
         """
@@ -803,7 +803,7 @@ class LayoutView(BaseView):
 
     def add_item(self, item: Item[Any]) -> Self:
         if self.__total_children >= 40:
-            raise ValueError('maximum number of children exceeded')
+            raise ValueError('maximum number of children exceeded (40)')
         super().add_item(item)
         return self
 
