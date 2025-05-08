@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Literal, Optional, TypeVar, Union, ClassVar
 
 from .item import Item
@@ -114,6 +115,9 @@ class Section(Item[V]):
     # dispatchable?
     def is_dispatchable(self) -> bool:
         return self.accessory.is_dispatchable()
+
+    def is_persistent(self) -> bool:
+        return self.is_dispatchable() and self.accessory.is_persistent()
 
     def walk_children(self) -> Generator[Item[V], None, None]:
         """An iterator that recursively walks through all the children of this section.
@@ -239,7 +243,7 @@ class Section(Item[V]):
                 c.to_component_dict()
                 for c in sorted(
                     self._children,
-                    key=lambda i: i._rendered_row or 0,
+                    key=lambda i: i._rendered_row or sys.maxsize,
                 )
             ],
             'accessory': self.accessory.to_component_dict(),

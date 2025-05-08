@@ -23,6 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
+import sys
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -202,6 +203,9 @@ class ActionRow(Item[V]):
     def is_dispatchable(self) -> bool:
         return any(c.is_dispatchable() for c in self.children)
 
+    def is_persistent(self) -> bool:
+        return self.is_dispatchable() and all(c.is_persistent() for c in self.children)
+
     def _update_children_view(self, view: LayoutView) -> None:
         for child in self._children:
             child._view = view  # pyright: ignore[reportAttributeAccessIssue]
@@ -330,8 +334,9 @@ class ActionRow(Item[V]):
     def to_component_dict(self) -> Dict[str, Any]:
         components = []
 
-        for item in self._children:
-            components.append(item.to_component_dict())
+        key = lambda i: i._rendered_row or i._row or sys.maxsize
+        for child in sorted(self._children, key=key):
+            components.append(child.to_component_dict())
 
         base = {
             'type': self.type.value,

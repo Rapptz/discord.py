@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import copy
 import os
+import sys
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -210,6 +211,9 @@ class Container(Item[V]):
     def is_dispatchable(self) -> bool:
         return bool(self.__dispatchable)
 
+    def is_persistent(self) -> bool:
+        return self.is_dispatchable() and all(c.is_persistent() for c in self.children)
+
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 
@@ -263,7 +267,9 @@ class Container(Item[V]):
 
     def to_components(self) -> List[Dict[str, Any]]:
         components = []
-        for child in sorted(self._children, key=lambda i: i._rendered_row or 0):
+
+        key = lambda i: i._rendered_row or i._row or sys.maxsize
+        for child in sorted(self._children, key=key):
             components.append(child.to_component_dict())
         return components
 
