@@ -776,7 +776,9 @@ class LayoutView(BaseView):
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if isinstance(member, Item):
-                    member._rendered_row = member._row or row
+                    if member._row is None:
+                        member._row = row
+                    member._rendered_row = member._row
                     children[name] = member
                     row += 1
                 elif hasattr(member, '__discord_ui_model_type__') and getattr(member, '__discord_ui_parent__', None):
