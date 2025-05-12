@@ -274,7 +274,7 @@ class ActionRow(Item[V]):
         self._children.append(item)
 
         if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
-            self._view.__total_children += 1
+            self._view._total_children += 1
 
         return self
 
@@ -296,7 +296,7 @@ class ActionRow(Item[V]):
             pass
         else:
             if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
-                self._view.__total_children -= 1
+                self._view._total_children -= 1
 
         return self
 
@@ -327,7 +327,7 @@ class ActionRow(Item[V]):
         chaining.
         """
         if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
-            self._view.__total_children -= len(self._children)
+            self._view._total_children -= len(self._children)
         self._children.clear()
         return self
 

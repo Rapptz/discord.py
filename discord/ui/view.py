@@ -198,7 +198,6 @@ class _ViewCallback:
 class BaseView:
     __discord_ui_view__: ClassVar[bool] = False
     __discord_ui_modal__: ClassVar[bool] = False
-    __discord_ui_container__: ClassVar[bool] = False
     __view_children_items__: ClassVar[Dict[str, ItemLike]] = {}
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
@@ -210,7 +209,7 @@ class BaseView:
         self.__timeout_expiry: Optional[float] = None
         self.__timeout_task: Optional[asyncio.Task[None]] = None
         self.__stopped: asyncio.Future[bool] = asyncio.get_running_loop().create_future()
-        self.__total_children: int = len(tuple(self.walk_children()))
+        self._total_children: int = sum(1 for _ in self.walk_children())
 
     def _is_v2(self) -> bool:
         return False
@@ -354,7 +353,7 @@ class BaseView:
             item._update_children_view(self)  # type: ignore
             added += len(tuple(item.walk_children()))  # type: ignore
 
-        if self._is_v2() and self.__total_children + added > 40:
+        if self._is_v2() and self._total_children + added > 40:
             raise ValueError('maximum number of children exceeded')
 
         self._children.append(item)
@@ -381,10 +380,10 @@ class BaseView:
             if getattr(item, '__discord_ui_update_view__', False):
                 removed += len(tuple(item.walk_children()))  # type: ignore
 
-            if self.__total_children - removed < 0:
-                self.__total_children = 0
+            if self._total_children - removed < 0:
+                self._total_children = 0
             else:
-                self.__total_children -= removed
+                self._total_children -= removed
 
         return self
 
@@ -395,7 +394,7 @@ class BaseView:
         chaining.
         """
         self._children.clear()
-        self.__total_children = 0
+        self._total_children = 0
         return self
 
     def get_item_by_id(self, id: int, /) -> Optional[Item[Self]]:
@@ -760,9 +759,8 @@ class LayoutView(BaseView):
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
         super().__init__(timeout=timeout)
-        self.__total_children: int = len(list(self.walk_children()))
 
-        if self.__total_children > 40:
+        if self._total_children > 40:
             raise ValueError('maximum number of children exceeded')
 
     def __init_subclass__(cls) -> None:
@@ -776,9 +774,7 @@ class LayoutView(BaseView):
         for base in reversed(cls.__mro__):
             for name, member in base.__dict__.items():
                 if isinstance(member, Item):
-                    if member._row is None:
-                        member._row = row
-                    member._rendered_row = member._row
+                    member._rendered_row = member._row or row
                     children[name] = member
                     row += 1
                 elif hasattr(member, '__discord_ui_model_type__') and getattr(member, '__discord_ui_parent__', None):
@@ -804,7 +800,7 @@ class LayoutView(BaseView):
         return components
 
     def add_item(self, item: Item[Any]) -> Self:
-        if self.__total_children >= 40:
+        if self._total_children >= 40:
             raise ValueError('maximum number of children exceeded (40)')
         super().add_item(item)
         return self

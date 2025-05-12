@@ -168,7 +168,7 @@ class Section(Item[V]):
         self._children.append(item)
 
         if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
-            self._view.__total_children += 1
+            self._view._total_children += 1
 
         return self
 
@@ -190,7 +190,7 @@ class Section(Item[V]):
             pass
         else:
             if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
-                self._view.__total_children -= 1
+                self._view._total_children -= 1
 
         return self
 
@@ -221,7 +221,7 @@ class Section(Item[V]):
         chaining.
         """
         if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
-            self._view.__total_children -= len(self._children) + 1  # the + 1 is the accessory
+            self._view._total_children -= len(self._children)  # we don't count the accessory because it is required
 
         self._children.clear()
         return self
