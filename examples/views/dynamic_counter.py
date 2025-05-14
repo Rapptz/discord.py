@@ -17,7 +17,7 @@ import re
 
 # Note that custom_ids can only be up to 100 characters long.
 class DynamicCounter(
-    discord.ui.DynamicItem[discord.ui.Button],
+    discord.ui.DynamicItem[discord.ui.Button, discord.ui.View],
     template=r'counter:(?P<count>[0-9]+):user:(?P<id>[0-9]+)',
 ):
     def __init__(self, user_id: int, count: int = 0) -> None:
