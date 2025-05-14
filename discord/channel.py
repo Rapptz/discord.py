@@ -2852,6 +2852,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         files: Sequence[File] = ...,
         allowed_mentions: AllowedMentions = ...,
         mention_author: bool = ...,
+        applied_tags: Sequence[ForumTag] = ...,
         view: LayoutView,
         suppress_embeds: bool = ...,
         reason: Optional[str] = ...,
