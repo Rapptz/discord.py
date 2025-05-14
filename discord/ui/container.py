@@ -26,6 +26,7 @@ from __future__ import annotations
 import copy
 import os
 import sys
+from itertools import groupby
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -269,8 +270,8 @@ class Container(Item[V]):
         components = []
 
         key = lambda i: i._rendered_row or i._row or sys.maxsize
-        for child in sorted(self._children, key=key):
-            components.append(child.to_component_dict())
+        for _, comps in groupby(self._children, key=key):
+            components.extend(c.to_component_dict() for c in comps)
         return components
 
     def to_component_dict(self) -> Dict[str, Any]:

@@ -24,6 +24,7 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import sys
+from itertools import groupby
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Literal, Optional, TypeVar, Union, ClassVar
 
 from .item import Item
@@ -236,16 +237,16 @@ class Section(Item[V]):
             id=component.id,
         )
 
+    def to_components(self) -> List[Dict[str, Any]]:
+        components = []
+        for _, comps in groupby(self._children, key=lambda i: i._rendered_row or i._row or sys.maxsize):
+            components.extend(c.to_component_dict() for c in comps)
+        return components
+
     def to_component_dict(self) -> Dict[str, Any]:
         data = {
             'type': self.type.value,
-            'components': [
-                c.to_component_dict()
-                for c in sorted(
-                    self._children,
-                    key=lambda i: i._rendered_row or sys.maxsize,
-                )
-            ],
+            'components': self.to_components(),
             'accessory': self.accessory.to_component_dict(),
         }
         if self.id is not None:

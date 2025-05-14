@@ -761,7 +761,7 @@ class LayoutView(BaseView):
         super().__init__(timeout=timeout)
 
         if self._total_children > 40:
-            raise ValueError('maximum number of children exceeded')
+            raise ValueError('maximum number of children exceeded (40)')
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -792,9 +792,9 @@ class LayoutView(BaseView):
         # sorted by row, which in LayoutView indicates the position of the component in the
         # payload instead of in which ActionRow it should be placed on.
         key = lambda i: i._rendered_row or i._row or sys.maxsize
-        for child in sorted(self._children, key=key):
-            components.append(
-                child.to_component_dict(),
+        for _, cmps in groupby(self._children, key=key):
+            components.extend(
+                c.to_component_dict() for c in cmps
             )
 
         return components
