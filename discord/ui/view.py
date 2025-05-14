@@ -948,7 +948,8 @@ class ViewStore:
         if interaction.message is None:
             return
 
-        view = View.from_message(interaction.message, timeout=None)
+        view_cls = View if not interaction.message.flags.components_v2 else LayoutView
+        view = view_cls.from_message(interaction.message, timeout=None)
 
         try:
             base_item_index, base_item = next(

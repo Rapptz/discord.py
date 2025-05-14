@@ -45,7 +45,7 @@ else:
     V = TypeVar('V', bound='BaseView', covariant=True)
 
 
-class DynamicItem(Generic[BaseT], Item['BaseView']):
+class DynamicItem(Generic[BaseT, V], Item[V]):
     """Represents an item with a dynamic ``custom_id`` that can be used to store state within
     that ``custom_id``.
 
@@ -57,9 +57,10 @@ class DynamicItem(Generic[BaseT], Item['BaseView']):
     and should not be used long term. Their only purpose is to act as a "template"
     for the actual dispatched item.
 
-    When this item is generated, :attr:`view` is set to a regular :class:`View` instance
-    from the original message given from the interaction. This means that custom view
-    subclasses cannot be accessed from this item.
+    When this item is generated, :attr:`view` is set to a regular :class:`View` instance,
+    but to a :class:`LayoutView` if the component was sent with one, this is obtained from
+    the original message given from the interaction. This means that custom view subclasses
+    cannot be accessed from this item.
 
     .. versionadded:: 2.4
 
