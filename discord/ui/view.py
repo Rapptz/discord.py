@@ -793,9 +793,7 @@ class LayoutView(BaseView):
         # payload instead of in which ActionRow it should be placed on.
         key = lambda i: i._rendered_row or i._row or sys.maxsize
         for _, cmps in groupby(self._children, key=key):
-            components.extend(
-                c.to_component_dict() for c in cmps
-            )
+            components.extend(c.to_component_dict() for c in cmps)
 
         return components
 
