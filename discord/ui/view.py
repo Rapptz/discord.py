@@ -179,9 +179,6 @@ class _ViewWeights:
     def clear(self) -> None:
         self.weights = [0, 0, 0, 0, 0]
 
-    def v2_weights(self) -> bool:
-        return len(self.weights) > 5
-
 
 class _ViewCallback:
     __slots__ = ('view', 'callback', 'item')
