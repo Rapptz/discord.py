@@ -356,7 +356,7 @@ class Container(Item[V]):
         if item.is_dispatchable():
             if getattr(item, '__discord_ui_section__', False):
                 self.__dispatchable.append(item.accessory)  # type: ignore
-            elif hasattr(item, '_children'):
+            elif getattr(item, '__discord_ui_action_row__', False):
                 self.__dispatchable.extend([i for i in item._children if i.is_dispatchable()])  # type: ignore
             else:
                 self.__dispatchable.append(item)
@@ -392,6 +392,22 @@ class Container(Item[V]):
         except ValueError:
             pass
         else:
+            if item.is_dispatchable():
+                # none of this should error, but wrap in a try/except block
+                # anyways.
+                try:
+                    if getattr(item, '__discord_ui_section__', False):
+                        self.__dispatchable.remove(item.accessory)  # type: ignore
+                    elif getattr(item, '__discord_ui_action_row__', False):
+                        for c in item._children:  # type: ignore
+                            if not c.is_dispatchable():
+                                continue
+                            self.__dispatchable.remove(c)
+                    else:
+                        self.__dispatchable.remove(item)
+                except ValueError:
+                    pass
+
             if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
                 if getattr(item, '__discord_ui_update_view__', False):
                     self._view._total_children -= len(tuple(item.walk_children()))  # type: ignore
@@ -429,4 +445,5 @@ class Container(Item[V]):
         if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
             self._view._total_children -= sum(1 for _ in self.walk_children())
         self._children.clear()
+        self.__dispatchable.clear()
         return self
