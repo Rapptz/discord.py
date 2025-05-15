@@ -277,6 +277,9 @@ class ActionRow(Item[V]):
         if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
             self._view._total_children += 1
 
+        if item.is_dispatchable() and self._parent and getattr(self._parent, '__discord_ui_container__', False):
+            self._parent._add_dispatchable(item)  # type: ignore
+
         return self
 
     def remove_item(self, item: Item[Any]) -> Self:

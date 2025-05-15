@@ -160,6 +160,15 @@ class Container(Item[V]):
         self.row = row
         self.id = id
 
+    def _add_dispatchable(self, item: Item[Any]) -> None:
+        self.__dispatchable.append(item)
+
+    def _remove_dispatchable(self, item: Item[Any]) -> None:
+        try:
+            self.__dispatchable.remove(item)
+        except ValueError:
+            pass
+
     def _init_children(self) -> List[Item[Any]]:
         children = []
         parents = {}
@@ -393,20 +402,15 @@ class Container(Item[V]):
             pass
         else:
             if item.is_dispatchable():
-                # none of this should error, but wrap in a try/except block
-                # anyways.
-                try:
-                    if getattr(item, '__discord_ui_section__', False):
-                        self.__dispatchable.remove(item.accessory)  # type: ignore
-                    elif getattr(item, '__discord_ui_action_row__', False):
-                        for c in item._children:  # type: ignore
-                            if not c.is_dispatchable():
-                                continue
-                            self.__dispatchable.remove(c)
-                    else:
-                        self.__dispatchable.remove(item)
-                except ValueError:
-                    pass
+                if getattr(item, '__discord_ui_section__', False):
+                    self._remove_dispatchable(item.accessory)  # type: ignore
+                elif getattr(item, '__discord_ui_action_row__', False):
+                    for c in item._children:  # type: ignore
+                        if not c.is_dispatchable():
+                            continue
+                        self._remove_dispatchable(c)
+                else:
+                    self._remove_dispatchable(item)
 
             if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
                 if getattr(item, '__discord_ui_update_view__', False):
