@@ -175,23 +175,15 @@ class Container(Item[V]):
 
         for name, raw in self.__container_children_items__.items():
             if isinstance(raw, Item):
-                if getattr(raw, '__discord_ui_action_row__', False):
-                    item = copy.deepcopy(raw)
-                    # we need to deepcopy this object and set it later to prevent
-                    # errors reported on the bikeshedding post
-                    item._parent = self
-
+                item = copy.deepcopy(raw)
+                item._parent = self
+                if getattr(item, '__discord_ui_action_row__', False):
                     if item.is_dispatchable():
                         self.__dispatchable.extend(item._children)  # type: ignore
-                if getattr(raw, '__discord_ui_section__', False):
-                    item = copy.copy(raw)
+                if getattr(item, '__discord_ui_section__', False):
                     if item.accessory.is_dispatchable():  # type: ignore
-                        item.accessory = copy.deepcopy(item.accessory)  # type: ignore
                         if item.accessory._provided_custom_id is False:  # type: ignore
                             item.accessory.custom_id = os.urandom(16).hex()  # type: ignore
-                else:
-                    item = copy.copy(raw)
-
                 if getattr(item, '__discord_ui_section__', False) and item.accessory.is_dispatchable():  # type: ignore
                     self.__dispatchable.append(item.accessory)  # type: ignore
 
