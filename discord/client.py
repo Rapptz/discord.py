@@ -42,6 +42,7 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
+    TypedDict,
     Union,
     overload,
 )
@@ -82,7 +83,7 @@ from .soundboard import SoundboardDefaultSound, SoundboardSound
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from typing_extensions import Self
+    from typing_extensions import Self, NotRequired, Unpack, Required
 
     from .abc import Messageable, PrivateChannel, Snowflake, SnowflakeTime
     from .app_commands import Command, ContextMenu
@@ -120,7 +121,29 @@ if TYPE_CHECKING:
     from .audit_logs import AuditLogEntry
     from .poll import PollAnswer
     from .subscription import Subscription
+    from .flags import MemberCacheFlags
 
+    class _ClientOptions(TypedDict, total=False):
+        intents: Required[Intents]
+        max_messages: NotRequired[Optional[int]]
+        proxy: NotRequired[Optional[str]]
+        proxy_auth: NotRequired[Optional[aiohttp.BasicAuth]]
+        shard_id: NotRequired[Optional[int]]
+        shard_count: NotRequired[Optional[int]]
+        application_id: NotRequired[int]
+        member_cache_flags: NotRequired[MemberCacheFlags]
+        chunk_guilds_at_startup: NotRequired[bool]
+        status: NotRequired[Optional[Status]]
+        activity: NotRequired[Optional[BaseActivity]]
+        allowed_mentions: NotRequired[Optional[AllowedMentions]]
+        heartbeat_timeout: NotRequired[float]
+        guild_ready_timeout: NotRequired[float]
+        assume_unsync_clock: NotRequired[bool]
+        enable_debug_events: NotRequired[bool]
+        enable_raw_presences: NotRequired[bool]
+        http_trace: NotRequired[Optional[aiohttp.TraceConfig]]
+        max_ratelimit_timeout: NotRequired[Optional[float]]
+        connector: NotRequired[Optional[aiohttp.BaseConnector]]
 
 # fmt: off
 __all__ = (
@@ -272,7 +295,7 @@ class Client:
         The websocket gateway the client is currently connected to. Could be ``None``.
     """
 
-    def __init__(self, *, intents: Intents, **options: Any) -> None:
+    def __init__(self, **options: Unpack[_ClientOptions]) -> None:
         self.loop: asyncio.AbstractEventLoop = _loop
         # self.ws is set in the connect method
         self.ws: DiscordWebSocket = None  # type: ignore
@@ -305,7 +328,7 @@ class Client:
         }
 
         self._enable_debug_events: bool = options.pop('enable_debug_events', False)
-        self._connection: ConnectionState[Self] = self._get_state(intents=intents, **options)
+        self._connection: ConnectionState[Self] = self._get_state(**options)
         self._connection.shard_count = self.shard_count
         self._closing_task: Optional[asyncio.Task[None]] = None
         self._ready: asyncio.Event = MISSING

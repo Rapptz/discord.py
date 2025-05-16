@@ -64,7 +64,7 @@ from .cog import Cog
 from .hybrid import hybrid_command, hybrid_group, HybridCommand, HybridGroup
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack, NotRequired
 
     import importlib.machinery
 
@@ -81,10 +81,17 @@ if TYPE_CHECKING:
     )
     from .core import Command
     from .hybrid import CommandCallback, ContextT, P
+    from discord.client import _ClientOptions
 
     _Prefix = Union[Iterable[str], str]
     _PrefixCallable = MaybeAwaitableFunc[[BotT, Message], _Prefix]
     PrefixType = Union[_Prefix, _PrefixCallable[BotT]]
+
+    class _BotOptions(_ClientOptions):
+        owner_id: NotRequired[Optional[int]]
+        owner_ids: NotRequired[Optional[Collection[int]]]
+        strip_after_prefix: NotRequired[bool]
+
 
 __all__ = (
     'when_mentioned',
@@ -168,10 +175,9 @@ class BotBase(GroupMixin[None]):
         description: Optional[str] = None,
         allowed_contexts: app_commands.AppCommandContext = MISSING,
         allowed_installs: app_commands.AppInstallationType = MISSING,
-        intents: discord.Intents,
-        **options: Any,
+        **options: Unpack[_BotOptions],
     ) -> None:
-        super().__init__(intents=intents, **options)
+        super().__init__(**options)
         self.command_prefix: PrefixType[BotT] = command_prefix  # type: ignore
         self.extra_events: Dict[str, List[CoroFunc]] = {}
         # Self doesn't have the ClientT bound, but since this is a mixin it technically does
