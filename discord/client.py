@@ -83,7 +83,7 @@ from .soundboard import SoundboardDefaultSound, SoundboardSound
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from typing_extensions import Self, NotRequired, Unpack, Required
+    from typing_extensions import Self, NotRequired, Unpack
 
     from .abc import Messageable, PrivateChannel, Snowflake, SnowflakeTime
     from .app_commands import Command, ContextMenu
