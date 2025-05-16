@@ -175,9 +175,10 @@ class BotBase(GroupMixin[None]):
         description: Optional[str] = None,
         allowed_contexts: app_commands.AppCommandContext = MISSING,
         allowed_installs: app_commands.AppInstallationType = MISSING,
+        intents: discord.Intents,
         **options: Unpack[_BotOptions],
     ) -> None:
-        super().__init__(**options)
+        super().__init__(intents=intents, **options)
         self.command_prefix: PrefixType[BotT] = command_prefix  # type: ignore
         self.extra_events: Dict[str, List[CoroFunc]] = {}
         # Self doesn't have the ClientT bound, but since this is a mixin it technically does
