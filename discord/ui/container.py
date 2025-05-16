@@ -26,7 +26,6 @@ from __future__ import annotations
 import copy
 import os
 import sys
-from itertools import groupby
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -107,7 +106,7 @@ class Container(Item[V]):
 
         # or use it directly on LayoutView
         class MyView(ui.LayoutView):
-            container = ui.Container([ui.TextDisplay('I am a text display on a container!')])
+            container = ui.Container(ui.TextDisplay('I am a text display on a container!'))
             # or you can use your subclass:
             # container = MyContainer()
 
@@ -269,9 +268,9 @@ class Container(Item[V]):
     def to_components(self) -> List[Dict[str, Any]]:
         components = []
 
-        key = lambda i: i._rendered_row or i._row or sys.maxsize
-        for _, comps in groupby(self._children, key=key):
-            components.extend(c.to_component_dict() for c in comps)
+        key = lambda i: (i._rendered_row or i._row or sys.maxsize) + 1
+        for i in sorted(self._children, key=key):
+            components.append(i.to_component_dict())
         return components
 
     def to_component_dict(self) -> Dict[str, Any]:
