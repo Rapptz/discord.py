@@ -184,8 +184,7 @@ class Container(Item[V]):
                     if item.accessory.is_dispatchable():  # type: ignore
                         if item.accessory._provided_custom_id is False:  # type: ignore
                             item.accessory.custom_id = os.urandom(16).hex()  # type: ignore
-                if getattr(item, '__discord_ui_section__', False) and item.accessory.is_dispatchable():  # type: ignore
-                    self.__dispatchable.append(item.accessory)  # type: ignore
+                        self.__dispatchable.append(item.accessory)  # type: ignore
 
                 setattr(self, name, item)
                 children.append(item)
