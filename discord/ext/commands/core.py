@@ -63,6 +63,8 @@ if TYPE_CHECKING:
 
     from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, Hook, UserCheck
 
+    from discord.permissions import _PermissionsKwargs
+
     class _CommandDecoratorKwargs(TypedDict):
         enabled: NotRequired[bool]
         help: NotRequired[str]
@@ -2192,7 +2194,7 @@ def bot_has_any_role(*items: int) -> Callable[[T], T]:
     return check(predicate)
 
 
-def has_permissions(**perms: bool) -> Check[Any]:
+def has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """A :func:`.check` that is added that checks if the member has all of
     the permissions necessary.
 
@@ -2239,7 +2241,7 @@ def has_permissions(**perms: bool) -> Check[Any]:
     return check(predicate)
 
 
-def bot_has_permissions(**perms: bool) -> Check[Any]:
+def bot_has_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """Similar to :func:`.has_permissions` except checks if the bot itself has
     the permissions listed.
 
@@ -2264,7 +2266,7 @@ def bot_has_permissions(**perms: bool) -> Check[Any]:
     return check(predicate)
 
 
-def has_guild_permissions(**perms: bool) -> Check[Any]:
+def has_guild_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """Similar to :func:`.has_permissions`, but operates on guild wide
     permissions instead of the current channel permissions.
 
@@ -2293,7 +2295,7 @@ def has_guild_permissions(**perms: bool) -> Check[Any]:
     return check(predicate)
 
 
-def bot_has_guild_permissions(**perms: bool) -> Check[Any]:
+def bot_has_guild_permissions(**perms: Unpack[_PermissionsKwargs]) -> Check[Any]:
     """Similar to :func:`.has_guild_permissions`, but checks the bot
     members guild permissions.
 
