@@ -123,7 +123,7 @@ if TYPE_CHECKING:
     from .subscription import Subscription
     from .flags import MemberCacheFlags
 
-    class _ClientOptions(TypedDict, total=False):
+    class _ClientOptions(TypedDict):
         max_messages: NotRequired[Optional[int]]
         proxy: NotRequired[Optional[str]]
         proxy_auth: NotRequired[Optional[aiohttp.BasicAuth]]
