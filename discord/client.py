@@ -144,6 +144,7 @@ if TYPE_CHECKING:
         max_ratelimit_timeout: NotRequired[Optional[float]]
         connector: NotRequired[Optional[aiohttp.BaseConnector]]
 
+
 # fmt: off
 __all__ = (
     'Client',

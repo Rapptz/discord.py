@@ -425,7 +425,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
     ) -> None:
         if not asyncio.iscoroutinefunction(func):
             raise TypeError('Callback must be a coroutine.')
-        
+
         name = kwargs.get('name') or func.__name__
         if not isinstance(name, str):
             raise TypeError('Name of a command must be a string.')
@@ -481,7 +481,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             max_concurrency = kwargs.get('max_concurrency')
 
         self._max_concurrency: Optional[MaxConcurrency] = max_concurrency
-        
+
         self.require_var_positional: bool = kwargs.get('require_var_positional', False)
         self.ignore_extra: bool = kwargs.get('ignore_extra', True)
         self.cooldown_after_parsing: bool = kwargs.get('cooldown_after_parsing', False)

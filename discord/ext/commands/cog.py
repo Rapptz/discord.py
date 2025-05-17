@@ -44,7 +44,7 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
-    TypedDict
+    TypedDict,
 )
 
 from ._types import _BaseCommand, BotT
@@ -67,6 +67,7 @@ if TYPE_CHECKING:
         group_auto_locale_strings: NotRequired[bool]
         group_extras: NotRequired[Dict[Any, Any]]
         command_attrs: NotRequired[_CommandDecoratorKwargs]
+
 
 __all__ = (
     'CogMeta',
