@@ -373,12 +373,8 @@ class AutoShardedClient(Client):
 
     def __init__(self, *args: Any, intents: Intents, **kwargs: Unpack[_AutoShardedClientOptions]) -> None:
         kwargs.pop('shard_id', None)
-        self.shard_ids: Optional[List[int]] = kwargs.pop(
-            'shard_ids', None
-        )  # pyright: ignore[reportAttributeAccessIssue] # it's fine
-        self.shard_connect_timeout: Optional[float] = kwargs.pop(
-            'shard_connect_timeout', 180.0
-        )  # pyright: ignore[reportAttributeAccessIssue] # it's fine
+        self.shard_ids: Optional[List[int]] = kwargs.pop('shard_ids', None)
+        self.shard_connect_timeout: Optional[float] = kwargs.pop('shard_connect_timeout', 180.0)
 
         super().__init__(*args, intents=intents, **kwargs)
 
