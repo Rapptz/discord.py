@@ -496,7 +496,7 @@ class Permissions(BaseFlags):
         """
         return cls(1 << 3)
 
-    def update(self, **kwargs: bool) -> None:
+    def update(self, **kwargs: Unpack[_PermissionsKwargs]) -> None:
         r"""Bulk updates this permission object.
 
         Allows you to set multiple attributes by using keyword
@@ -511,7 +511,7 @@ class Permissions(BaseFlags):
         for key, value in kwargs.items():
             flag = self.VALID_FLAGS.get(key)
             if flag is not None:
-                self._set_flag(flag, value)
+                self._set_flag(flag, value)  # type: ignore
 
     def handle_overwrite(self, allow: int, deny: int) -> None:
         # Basically this is what's happening here.
@@ -1085,7 +1085,7 @@ class PermissionOverwrite:
         """
         return len(self._values) == 0
 
-    def update(self, **kwargs: Optional[bool]) -> None:
+    def update(self, **kwargs: Unpack[_PermissionOverwriteKwargs]) -> None:
         r"""Bulk updates this permission overwrite object.
 
         Allows you to set multiple attributes by using keyword
