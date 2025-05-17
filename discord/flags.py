@@ -79,6 +79,10 @@ if TYPE_CHECKING:
         guild_polls: NotRequired[bool]
         dm_polls: NotRequired[bool]
 
+    class _MemberCacheFlagsKwargs(TypedDict):
+        voice: NotRequired[bool]
+        joined: NotRequired[bool]
+
 
 __all__ = (
     'SystemChannelFlags',
@@ -1447,7 +1451,7 @@ class MemberCacheFlags(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, **kwargs: bool):
+    def __init__(self, **kwargs: Unpack[_MemberCacheFlagsKwargs]) -> None:
         bits = max(self.VALID_FLAGS.values()).bit_length()
         self.value: int = (1 << bits) - 1
         for key, value in kwargs.items():
