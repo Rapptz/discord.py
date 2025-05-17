@@ -43,6 +43,7 @@ from typing import (
     TypeVar,
     Union,
     overload,
+    TypedDict,
 )
 import re
 
@@ -58,9 +59,36 @@ from .parameters import Parameter, Signature
 from discord.app_commands.commands import NUMPY_DOCSTRING_ARG_REGEX
 
 if TYPE_CHECKING:
-    from typing_extensions import Concatenate, ParamSpec, Self
+    from typing_extensions import Concatenate, ParamSpec, Self, NotRequired, Unpack
 
     from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, Hook, UserCheck
+
+    class _CommandDecoratorKwargs(TypedDict):
+        enabled: NotRequired[bool]
+        help: NotRequired[str]
+        brief: NotRequired[str]
+        usage: NotRequired[str]
+        rest_is_raw: NotRequired[bool]
+        aliases: NotRequired[List[str]]
+        description: NotRequired[str]
+        hidden: NotRequired[bool]
+        checks: NotRequired[List[UserCheck[Context[Any]]]]
+        cooldown: NotRequired[CooldownMapping[Context[Any]]]
+        max_concurrency: NotRequired[MaxConcurrency]
+        require_var_positional: NotRequired[bool]
+        cooldown_after_parsing: NotRequired[bool]
+        ignore_extra: NotRequired[bool]
+        extras: NotRequired[Dict[Any, Any]]
+
+    class _CommandKwargs(_CommandDecoratorKwargs):
+        name: NotRequired[str]
+
+    class _GroupDecoratorKwargs(_CommandDecoratorKwargs):
+        invoke_without_command: NotRequired[bool]
+        case_insensitive: NotRequired[bool]
+
+    class _GroupKwargs(_GroupDecoratorKwargs):
+        name: NotRequired[str]
 
 
 __all__ = (
@@ -368,9 +396,9 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
 
         .. versionadded:: 2.0
     """
-    __original_kwargs__: Dict[str, Any]
+    __original_kwargs__: _CommandKwargs
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> Self:
+    def __new__(cls, *args: Any, **kwargs: Unpack[_CommandKwargs]) -> Self:
         # if you're wondering why this is done, it's because we need to ensure
         # we have a complete original copy of **kwargs even for classes that
         # mess with it by popping before delegating to the subclass __init__.
@@ -393,11 +421,11 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             Callable[Concatenate[Context[Any], P], Coro[T]],
         ],
         /,
-        **kwargs: Any,
+        **kwargs: Unpack[_CommandKwargs],
     ) -> None:
         if not asyncio.iscoroutinefunction(func):
             raise TypeError('Callback must be a coroutine.')
-
+        
         name = kwargs.get('name') or func.__name__
         if not isinstance(name, str):
             raise TypeError('Name of a command must be a string.')
@@ -453,7 +481,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
             max_concurrency = kwargs.get('max_concurrency')
 
         self._max_concurrency: Optional[MaxConcurrency] = max_concurrency
-
+        
         self.require_var_positional: bool = kwargs.get('require_var_positional', False)
         self.ignore_extra: bool = kwargs.get('ignore_extra', True)
         self.cooldown_after_parsing: bool = kwargs.get('cooldown_after_parsing', False)
@@ -556,7 +584,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         except ValueError:
             pass
 
-    def update(self, **kwargs: Any) -> None:
+    def update(self, **kwargs: Unpack[_CommandKwargs]) -> None:
         """Updates :class:`Command` instance with updated attribute.
 
         This works similarly to the :func:`~discord.ext.commands.command` decorator in terms
@@ -564,7 +592,7 @@ class Command(_BaseCommand, Generic[CogT, P, T]):
         subclass constructors, sans the name and callback.
         """
         cog = self.cog
-        self.__init__(self.callback, **dict(self.__original_kwargs__, **kwargs))
+        self.__init__(self.callback, **dict(self.__original_kwargs__, **kwargs))  # type: ignore # it's a typeddict
         self.cog = cog
 
     async def __call__(self, context: Context[BotT], /, *args: P.args, **kwargs: P.kwargs) -> T:
@@ -1468,7 +1496,7 @@ class GroupMixin(Generic[CogT]):
         self: GroupMixin[CogT],
         name: str = ...,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_CommandDecoratorKwargs],
     ) -> Callable[
         [
             Union[
@@ -1486,7 +1514,7 @@ class GroupMixin(Generic[CogT]):
         name: str = ...,
         cls: Type[CommandT] = ...,  # type: ignore  # previous overload handles case where cls is not set
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_CommandDecoratorKwargs],
     ) -> Callable[
         [
             Union[
@@ -1503,7 +1531,7 @@ class GroupMixin(Generic[CogT]):
         name: str = MISSING,
         cls: Type[Command[Any, ..., Any]] = MISSING,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_CommandDecoratorKwargs],
     ) -> Any:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.command` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
@@ -1515,8 +1543,7 @@ class GroupMixin(Generic[CogT]):
         """
 
         def decorator(func):
-
-            kwargs.setdefault('parent', self)
+            kwargs.setdefault('parent', self)  # type: ignore # the parent kwarg is not for users to set.
             result = command(name=name, cls=cls, *args, **kwargs)(func)
             self.add_command(result)
             return result
@@ -1528,7 +1555,7 @@ class GroupMixin(Generic[CogT]):
         self: GroupMixin[CogT],
         name: str = ...,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_GroupDecoratorKwargs],
     ) -> Callable[
         [
             Union[
@@ -1546,7 +1573,7 @@ class GroupMixin(Generic[CogT]):
         name: str = ...,
         cls: Type[GroupT] = ...,  # type: ignore  # previous overload handles case where cls is not set
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_GroupDecoratorKwargs],
     ) -> Callable[
         [
             Union[
@@ -1563,7 +1590,7 @@ class GroupMixin(Generic[CogT]):
         name: str = MISSING,
         cls: Type[Group[Any, ..., Any]] = MISSING,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_GroupDecoratorKwargs],
     ) -> Any:
         """A shortcut decorator that invokes :func:`.group` and adds it to
         the internal command list via :meth:`~.GroupMixin.add_command`.
@@ -1575,7 +1602,7 @@ class GroupMixin(Generic[CogT]):
         """
 
         def decorator(func):
-            kwargs.setdefault('parent', self)
+            kwargs.setdefault('parent', self)  # type: ignore # the parent kwarg is not for users to set.
             result = group(name=name, cls=cls, *args, **kwargs)(func)
             self.add_command(result)
             return result
@@ -1606,7 +1633,7 @@ class Group(GroupMixin[CogT], Command[CogT, P, T]):
         Defaults to ``False``.
     """
 
-    def __init__(self, *args: Any, **attrs: Any) -> None:
+    def __init__(self, *args: Any, **attrs: Unpack[_GroupKwargs]) -> None:
         self.invoke_without_command: bool = attrs.pop('invoke_without_command', False)
         super().__init__(*args, **attrs)
 
@@ -1728,7 +1755,7 @@ if TYPE_CHECKING:
 @overload
 def command(
     name: str = ...,
-    **attrs: Any,
+    **attrs: Unpack[_CommandDecoratorKwargs],
 ) -> _CommandDecorator:
     ...
 
@@ -1737,7 +1764,7 @@ def command(
 def command(
     name: str = ...,
     cls: Type[CommandT] = ...,  # type: ignore  # previous overload handles case where cls is not set
-    **attrs: Any,
+    **attrs: Unpack[_CommandDecoratorKwargs],
 ) -> Callable[
     [
         Union[
@@ -1753,7 +1780,7 @@ def command(
 def command(
     name: str = MISSING,
     cls: Type[Command[Any, ..., Any]] = MISSING,
-    **attrs: Any,
+    **attrs: Unpack[_CommandDecoratorKwargs],
 ) -> Any:
     """A decorator that transforms a function into a :class:`.Command`
     or if called with :func:`.group`, :class:`.Group`.
@@ -1798,7 +1825,7 @@ def command(
 @overload
 def group(
     name: str = ...,
-    **attrs: Any,
+    **attrs: Unpack[_GroupDecoratorKwargs],
 ) -> _GroupDecorator:
     ...
 
@@ -1807,7 +1834,7 @@ def group(
 def group(
     name: str = ...,
     cls: Type[GroupT] = ...,  # type: ignore  # previous overload handles case where cls is not set
-    **attrs: Any,
+    **attrs: Unpack[_GroupDecoratorKwargs],
 ) -> Callable[
     [
         Union[
@@ -1823,7 +1850,7 @@ def group(
 def group(
     name: str = MISSING,
     cls: Type[Group[Any, ..., Any]] = MISSING,
-    **attrs: Any,
+    **attrs: Unpack[_GroupDecoratorKwargs],
 ) -> Any:
     """A decorator that transforms a function into a :class:`.Group`.
 
