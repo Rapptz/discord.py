@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Optional
+from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Optional, TypedDict
 from .flags import BaseFlags, flag_value, fill_with_flags, alias_flag_value
 
 __all__ = (
@@ -33,7 +33,122 @@ __all__ = (
 )
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack, NotRequired
+
+    class _PermissionsKwargs(TypedDict):
+        create_instant_invite: NotRequired[bool]
+        kick_members: NotRequired[bool]
+        ban_members: NotRequired[bool]
+        administrator: NotRequired[bool]
+        manage_channels: NotRequired[bool]
+        manage_guild: NotRequired[bool]
+        add_reactions: NotRequired[bool]
+        view_audit_log: NotRequired[bool]
+        priority_speaker: NotRequired[bool]
+        stream: NotRequired[bool]
+        read_messages: NotRequired[bool]
+        view_channel: NotRequired[bool]
+        send_messages: NotRequired[bool]
+        send_tts_messages: NotRequired[bool]
+        manage_messages: NotRequired[bool]
+        embed_links: NotRequired[bool]
+        attach_files: NotRequired[bool]
+        read_message_history: NotRequired[bool]
+        mention_everyone: NotRequired[bool]
+        external_emojis: NotRequired[bool]
+        use_external_emojis: NotRequired[bool]
+        view_guild_insights: NotRequired[bool]
+        connect: NotRequired[bool]
+        speak: NotRequired[bool]
+        mute_members: NotRequired[bool]
+        deafen_members: NotRequired[bool]
+        move_members: NotRequired[bool]
+        use_voice_activation: NotRequired[bool]
+        change_nickname: NotRequired[bool]
+        manage_nicknames: NotRequired[bool]
+        manage_roles: NotRequired[bool]
+        manage_permissions: NotRequired[bool]
+        manage_webhooks: NotRequired[bool]
+        manage_expressions: NotRequired[bool]
+        manage_emojis: NotRequired[bool]
+        manage_emojis_and_stickers: NotRequired[bool]
+        use_application_commands: NotRequired[bool]
+        request_to_speak: NotRequired[bool]
+        manage_events: NotRequired[bool]
+        manage_threads: NotRequired[bool]
+        create_public_threads: NotRequired[bool]
+        create_private_threads: NotRequired[bool]
+        send_messages_in_threads: NotRequired[bool]
+        external_stickers: NotRequired[bool]
+        use_external_stickers: NotRequired[bool]
+        use_embedded_activities: NotRequired[bool]
+        moderate_members: NotRequired[bool]
+        use_soundboard: NotRequired[bool]
+        use_external_sounds: NotRequired[bool]
+        send_voice_messages: NotRequired[bool]
+        create_expressions: NotRequired[bool]
+        create_events: NotRequired[bool]
+        send_polls: NotRequired[bool]
+        create_polls: NotRequired[bool]
+        use_external_apps: NotRequired[bool]
+
+    class _PermissionOverwriteKwargs(_PermissionsKwargs):
+        create_instant_invite: NotRequired[Optional[bool]]
+        kick_members: NotRequired[Optional[bool]]
+        ban_members: NotRequired[Optional[bool]]
+        administrator: NotRequired[Optional[bool]]
+        manage_channels: NotRequired[Optional[bool]]
+        manage_guild: NotRequired[Optional[bool]]
+        add_reactions: NotRequired[Optional[bool]]
+        view_audit_log: NotRequired[Optional[bool]]
+        priority_speaker: NotRequired[Optional[bool]]
+        stream: NotRequired[Optional[bool]]
+        read_messages: NotRequired[Optional[bool]]
+        view_channel: NotRequired[Optional[bool]]
+        send_messages: NotRequired[Optional[bool]]
+        send_tts_messages: NotRequired[Optional[bool]]
+        manage_messages: NotRequired[Optional[bool]]
+        embed_links: NotRequired[Optional[bool]]
+        attach_files: NotRequired[Optional[bool]]
+        read_message_history: NotRequired[Optional[bool]]
+        mention_everyone: NotRequired[Optional[bool]]
+        external_emojis: NotRequired[Optional[bool]]
+        use_external_emojis: NotRequired[Optional[bool]]
+        view_guild_insights: NotRequired[Optional[bool]]
+        connect: NotRequired[Optional[bool]]
+        speak: NotRequired[Optional[bool]]
+        mute_members: NotRequired[Optional[bool]]
+        deafen_members: NotRequired[Optional[bool]]
+        move_members: NotRequired[Optional[bool]]
+        use_voice_activation: NotRequired[Optional[bool]]
+        change_nickname: NotRequired[Optional[bool]]
+        manage_nicknames: NotRequired[Optional[bool]]
+        manage_roles: NotRequired[Optional[bool]]
+        manage_permissions: NotRequired[Optional[bool]]
+        manage_webhooks: NotRequired[Optional[bool]]
+        manage_expressions: NotRequired[Optional[bool]]
+        manage_emojis: NotRequired[Optional[bool]]
+        manage_emojis_and_stickers: NotRequired[Optional[bool]]
+        use_application_commands: NotRequired[Optional[bool]]
+        request_to_speak: NotRequired[Optional[bool]]
+        manage_events: NotRequired[Optional[bool]]
+        manage_threads: NotRequired[Optional[bool]]
+        create_public_threads: NotRequired[Optional[bool]]
+        create_private_threads: NotRequired[Optional[bool]]
+        send_messages_in_threads: NotRequired[Optional[bool]]
+        external_stickers: NotRequired[Optional[bool]]
+        use_external_stickers: NotRequired[Optional[bool]]
+        use_embedded_activities: NotRequired[Optional[bool]]
+        moderate_members: NotRequired[Optional[bool]]
+        use_soundboard: NotRequired[Optional[bool]]
+        use_external_sounds: NotRequired[Optional[bool]]
+        send_voice_messages: NotRequired[Optional[bool]]
+        create_expressions: NotRequired[Optional[bool]]
+        create_events: NotRequired[Optional[bool]]
+        send_polls: NotRequired[Optional[bool]]
+        create_polls: NotRequired[Optional[bool]]
+        use_external_apps: NotRequired[Optional[bool]]
+
 
 # A permission alias works like a regular flag but is marked
 # So the PermissionOverwrite knows to work with it
@@ -135,18 +250,18 @@ class Permissions(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, permissions: int = 0, **kwargs: bool):
+    def __init__(self, permissions: int = 0, **kwargs: Unpack[_PermissionsKwargs]):
         if not isinstance(permissions, int):
             raise TypeError(f'Expected int parameter, received {permissions.__class__.__name__} instead.')
 
         self.value = permissions
-        for key, value in kwargs.items():
+        for key, kwvalue in kwargs.items():
             try:
                 flag = self.VALID_FLAGS[key]
             except KeyError:
                 raise TypeError(f'{key!r} is not a valid permission name.') from None
             else:
-                self._set_flag(flag, value)
+                self._set_flag(flag, kwvalue)  # type: ignore
 
     def is_subset(self, other: Permissions) -> bool:
         """Returns ``True`` if self has the same or fewer permissions as other."""
@@ -908,7 +1023,7 @@ class PermissionOverwrite:
         create_polls: Optional[bool]
         use_external_apps: Optional[bool]
 
-    def __init__(self, **kwargs: Optional[bool]):
+    def __init__(self, **kwargs: Unpack[_PermissionOverwriteKwargs]) -> None:
         self._values: Dict[str, Optional[bool]] = {}
 
         for key, value in kwargs.items():
