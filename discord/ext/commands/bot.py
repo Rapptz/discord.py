@@ -82,6 +82,7 @@ if TYPE_CHECKING:
     from .core import Command
     from .hybrid import CommandCallback, ContextT, P
     from discord.client import _ClientOptions
+    from discord.shard import _AutoShardedClientOptions
 
     _Prefix = Union[Iterable[str], str]
     _PrefixCallable = MaybeAwaitableFunc[[BotT, Message], _Prefix]
@@ -91,6 +92,9 @@ if TYPE_CHECKING:
         owner_id: NotRequired[Optional[int]]
         owner_ids: NotRequired[Optional[Collection[int]]]
         strip_after_prefix: NotRequired[bool]
+
+    class _AutoShardedBotOptions(_AutoShardedClientOptions, _BotOptions):
+        ...
 
 
 __all__ = (
@@ -1534,4 +1538,13 @@ class AutoShardedBot(BotBase, discord.AutoShardedClient):
             .. versionadded:: 2.0
     """
 
-    pass
+    if TYPE_CHECKING:
+
+        def __init__(
+            self,
+            command_prefix: PrefixType[BotT],
+            *,
+            intents: discord.Intents,
+            **kwargs: Unpack[_AutoShardedBotOptions],
+        ) -> None:
+            ...

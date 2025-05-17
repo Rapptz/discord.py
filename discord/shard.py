@@ -47,11 +47,17 @@ from .enums import Status
 from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict
 
 if TYPE_CHECKING:
-    from typing_extensions import Unpack
+    from typing_extensions import Unpack, NotRequired
     from .gateway import DiscordWebSocket
     from .activity import BaseActivity
     from .flags import Intents
     from .types.gateway import SessionStartLimit
+    from .client import _ClientOptions
+
+    class _AutoShardedClientOptions(_ClientOptions):
+        shard_ids: NotRequired[Optional[List[int]]]
+        shard_connect_timeout: NotRequired[Optional[float]]
+
 
 __all__ = (
     'AutoShardedClient',
@@ -365,10 +371,14 @@ class AutoShardedClient(Client):
     if TYPE_CHECKING:
         _connection: AutoShardedConnectionState
 
-    def __init__(self, *args: Any, intents: Intents, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, intents: Intents, **kwargs: Unpack[_AutoShardedClientOptions]) -> None:
         kwargs.pop('shard_id', None)
-        self.shard_ids: Optional[List[int]] = kwargs.pop('shard_ids', None)
-        self.shard_connect_timeout: Optional[float] = kwargs.pop('shard_connect_timeout', 180.0)
+        self.shard_ids: Optional[List[int]] = kwargs.pop(
+            'shard_ids', None
+        )  # pyright: ignore[reportAttributeAccessIssue] # it's fine
+        self.shard_connect_timeout: Optional[float] = kwargs.pop(
+            'shard_connect_timeout', 180.0
+        )  # pyright: ignore[reportAttributeAccessIssue] # it's fine
 
         super().__init__(*args, intents=intents, **kwargs)
 
