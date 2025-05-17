@@ -80,7 +80,7 @@ if TYPE_CHECKING:
         MaybeAwaitableFunc,
     )
     from .core import Command
-    from .hybrid import CommandCallback, ContextT, P
+    from .hybrid import CommandCallback, ContextT, P, _HybridCommandDecoratorKwargs, _HybridGroupDecoratorKwargs
     from discord.client import _ClientOptions
     from discord.shard import _AutoShardedClientOptions
 
@@ -292,7 +292,7 @@ class BotBase(GroupMixin[None]):
         name: Union[str, app_commands.locale_str] = MISSING,
         with_app_command: bool = True,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_HybridCommandDecoratorKwargs],  # type: ignore # name, with_app_command
     ) -> Callable[[CommandCallback[Any, ContextT, P, T]], HybridCommand[Any, P, T]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_command` and adds it to
         the internal command list via :meth:`add_command`.
@@ -304,8 +304,8 @@ class BotBase(GroupMixin[None]):
         """
 
         def decorator(func: CommandCallback[Any, ContextT, P, T]):
-            kwargs.setdefault('parent', self)
-            result = hybrid_command(name=name, *args, with_app_command=with_app_command, **kwargs)(func)
+            kwargs.setdefault('parent', self)  # type: ignore # parent is not for the user to set
+            result = hybrid_command(name=name, *args, with_app_command=with_app_command, **kwargs)(func)  # type: ignore # name, with_app_command
             self.add_command(result)
             return result
 
@@ -316,7 +316,7 @@ class BotBase(GroupMixin[None]):
         name: Union[str, app_commands.locale_str] = MISSING,
         with_app_command: bool = True,
         *args: Any,
-        **kwargs: Any,
+        **kwargs: Unpack[_HybridGroupDecoratorKwargs],  # type: ignore # name, with_app_command
     ) -> Callable[[CommandCallback[Any, ContextT, P, T]], HybridGroup[Any, P, T]]:
         """A shortcut decorator that invokes :func:`~discord.ext.commands.hybrid_group` and adds it to
         the internal command list via :meth:`add_command`.
@@ -328,8 +328,8 @@ class BotBase(GroupMixin[None]):
         """
 
         def decorator(func: CommandCallback[Any, ContextT, P, T]):
-            kwargs.setdefault('parent', self)
-            result = hybrid_group(name=name, *args, with_app_command=with_app_command, **kwargs)(func)
+            kwargs.setdefault('parent', self)  # type: ignore # parent is not for the user to set
+            result = hybrid_group(name=name, *args, with_app_command=with_app_command, **kwargs)(func)  # type: ignore # name, with_app_command
             self.add_command(result)
             return result
 
