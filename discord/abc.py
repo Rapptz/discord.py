@@ -73,7 +73,7 @@ __all__ = (
 T = TypeVar('T', bound=VoiceProtocol)
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
 
     from .client import Client
     from .user import ClientUser
@@ -108,6 +108,7 @@ if TYPE_CHECKING:
     from .types.snowflake import (
         SnowflakeList,
     )
+    from .permissions import _PermissionOverwriteKwargs
 
     PartialMessageableChannel = Union[TextChannel, VoiceChannel, StageChannel, Thread, DMChannel, PartialMessageable]
     MessageableChannel = Union[PartialMessageableChannel, GroupChannel]
@@ -886,7 +887,7 @@ class GuildChannel:
         target: Union[Member, Role],
         *,
         reason: Optional[str] = ...,
-        **permissions: Optional[bool],
+        **permissions: Unpack[_PermissionOverwriteKwargs],
     ) -> None:
         ...
 
@@ -896,7 +897,7 @@ class GuildChannel:
         *,
         overwrite: Any = _undefined,
         reason: Optional[str] = None,
-        **permissions: Optional[bool],
+        **permissions: Unpack[_PermissionOverwriteKwargs],
     ) -> None:
         r"""|coro|
 
