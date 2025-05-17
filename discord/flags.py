@@ -40,12 +40,44 @@ from typing import (
     Type,
     TypeVar,
     overload,
+    TypedDict,
 )
 
 from .enums import UserFlags
 
 if TYPE_CHECKING:
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack, NotRequired
+
+    class _IntentsFlagsKwargs(TypedDict):
+        guilds: NotRequired[bool]
+        members: NotRequired[bool]
+        moderation: NotRequired[bool]
+        bans: NotRequired[bool]
+        emojis: NotRequired[bool]
+        emojis_and_stickers: NotRequired[bool]
+        expressions: NotRequired[bool]
+        integrations: NotRequired[bool]
+        webhooks: NotRequired[bool]
+        invites: NotRequired[bool]
+        voice_states: NotRequired[bool]
+        presences: NotRequired[bool]
+        messages: NotRequired[bool]
+        guild_messages: NotRequired[bool]
+        dm_messages: NotRequired[bool]
+        reactions: NotRequired[bool]
+        guild_reactions: NotRequired[bool]
+        dm_reactions: NotRequired[bool]
+        typing: NotRequired[bool]
+        guild_typing: NotRequired[bool]
+        dm_typing: NotRequired[bool]
+        message_content: NotRequired[bool]
+        guild_scheduled_events: NotRequired[bool]
+        auto_moderation: NotRequired[bool]
+        auto_moderation_configuration: NotRequired[bool]
+        auto_moderation_execution: NotRequired[bool]
+        polls: NotRequired[bool]
+        guild_polls: NotRequired[bool]
+        dm_polls: NotRequired[bool]
 
 
 __all__ = (
@@ -754,12 +786,12 @@ class Intents(BaseFlags):
 
     __slots__ = ()
 
-    def __init__(self, value: int = 0, **kwargs: bool) -> None:
+    def __init__(self, value: int = 0, **kwargs: Unpack[_IntentsFlagsKwargs]) -> None:
         self.value: int = value
-        for key, value in kwargs.items():
+        for key, kwvalue in kwargs.items():
             if key not in self.VALID_FLAGS:
                 raise TypeError(f'{key!r} is not a valid flag name.')
-            setattr(self, key, value)
+            setattr(self, key, kwvalue)
 
     @classmethod
     def all(cls: Type[Intents]) -> Intents:
