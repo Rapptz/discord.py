@@ -92,6 +92,7 @@ if TYPE_CHECKING:
         owner_id: NotRequired[Optional[int]]
         owner_ids: NotRequired[Optional[Collection[int]]]
         strip_after_prefix: NotRequired[bool]
+        case_insensitive: NotRequired[bool]
 
     class _AutoShardedBotOptions(_AutoShardedClientOptions, _BotOptions):
         ...
@@ -1544,6 +1545,11 @@ class AutoShardedBot(BotBase, discord.AutoShardedClient):
             self,
             command_prefix: PrefixType[BotT],
             *,
+            help_command: Optional[HelpCommand] = _default,
+            tree_cls: Type[app_commands.CommandTree[Any]] = app_commands.CommandTree,
+            description: Optional[str] = None,
+            allowed_contexts: app_commands.AppCommandContext = MISSING,
+            allowed_installs: app_commands.AppInstallationType = MISSING,
             intents: discord.Intents,
             **kwargs: Unpack[_AutoShardedBotOptions],
         ) -> None:
