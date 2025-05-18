@@ -23,7 +23,7 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import TypedDict
+from typing import TypedDict, Optional
 from .types.snowflake import Snowflake
 
 
@@ -38,10 +38,10 @@ class ClanTag:
     __slots__ = ("identity_guild_id", "identity_enabled", "tag", "badge")
 
     def __init__(self, data: ClanTagPayload):
-        self.identity_guild_id: int = int(data.get("identity_guild_id", 0))
+        self.identity_guild_id: Optional[int] = (int(data["identity_guild_id"]) if data.get("identity_guild_id") is not None else None)
         self.identity_enabled: bool = data.get("identity_enabled", False)
-        self.tag: str = data.get("tag", "null")
-        self.badge: str = data.get("badge", "null")
+        self.tag: Optional[str] = data.get("tag", "null")
+        self.badge: Optional[str] = data.get("badge", "null")
 
     def __repr__(self) -> str:
         return f"<ClanTag tag={self.tag!r} identity_guild_id={self.identity_guild_id}>"
