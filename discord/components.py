@@ -905,7 +905,9 @@ class UnfurledMediaItem(AssetMixin):
     Parameters
     ----------
     url: :class:`str`
-        The URL of this media item.
+        The URL of this media item. This can be an arbitrary url or a reference to a local
+        file uploaded as an attachment within the message, which can be accessed with the
+        ``attachment://<filename>`` format.
 
     Attributes
     ----------
@@ -990,8 +992,8 @@ class MediaGalleryItem:
     ----------
     media: Union[:class:`str`, :class:`UnfurledMediaItem`]
         The media item data. This can be a string representing a local
-        file uploaded as an attachment in the message, that can be accessed
-        using the ``attachment://file-name.extension`` format.
+        file uploaded as an attachment in the message, which can be accessed
+        using the ``attachment://<filename>`` format, or an arbitrary url.
     description: Optional[:class:`str`]
         The description to show within this item. Up to 256 characters. Defaults
         to ``None``.

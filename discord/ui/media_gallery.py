@@ -23,13 +23,14 @@ DEALINGS IN THE SOFTWARE.
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Literal, Optional, TypeVar
+from typing import TYPE_CHECKING, List, Literal, Optional, TypeVar, Union
 
 from .item import Item
 from ..enums import ComponentType
 from ..components import (
     MediaGalleryItem,
     MediaGalleryComponent,
+    UnfurledMediaItem,
 )
 
 if TYPE_CHECKING:
@@ -100,8 +101,45 @@ class MediaGallery(Item[V]):
     def _is_v2(self) -> bool:
         return True
 
-    def add_item(self, item: MediaGalleryItem) -> Self:
+    def add_item(
+        self,
+        *,
+        media: Union[str, UnfurledMediaItem],
+        description: Optional[str] = None,
+        spoiler: bool = False,
+    ) -> Self:
         """Adds an item to this gallery.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        Parameters
+        ----------
+        media: Union[:class:`str`, :class:`.UnfurledMediaItem`]
+            The media item data. This can be a string representing a local
+            file uploaded as an attachment in the message, which can be accessed
+            using the ``attachment://<filename>`` format, or an arbitrary url.
+        description: Optional[:class:`str`]
+            The description to show within this item. Up to 256 characters. Defaults
+            to ``None``.
+        spoiler: :class:`bool`
+            Whether this item should be flagged as a spoiler. Defaults to ``False``.
+
+        Raises
+        ------
+        ValueError
+            Maximum number of items has been exceeded (10).
+        """
+
+        if len(self._underlying.items) >= 10:
+            raise ValueError('maximum number of items has been exceeded')
+
+        item = MediaGalleryItem(media, description=description, spoiler=spoiler)
+        self._underlying.items.append(item)
+        return self
+
+    def append_item(self, item: MediaGalleryItem) -> Self:
+        """Appends an item to this gallery.
 
         This function returns the class instance to allow for fluent-style
         chaining.
@@ -128,6 +166,50 @@ class MediaGallery(Item[V]):
         self._underlying.items.append(item)
         return self
 
+    def insert_item_at(
+        self,
+        index: int,
+        *,
+        media: Union[str, UnfurledMediaItem],
+        description: Optional[str] = None,
+        spoiler: bool = False,
+    ) -> Self:
+        """Inserts an item before a specified index to the media gallery.
+
+        This function returns the class instance to allow for fluent-style
+        chaining.
+
+        Parameters
+        ----------
+        index: :class:`int`
+            The index of where to insert the field.
+        media: Union[:class:`str`, :class:`.UnfurledMediaItem`]
+            The media item data. This can be a string representing a local
+            file uploaded as an attachment in the message, which can be accessed
+            using the ``attachment://<filename>`` format, or an arbitrary url.
+        description: Optional[:class:`str`]
+            The description to show within this item. Up to 256 characters. Defaults
+            to ``None``.
+        spoiler: :class:`bool`
+            Whether this item should be flagged as a spoiler. Defaults to ``False``.
+
+        Raises
+        ------
+        ValueError
+            Maximum number of items has been exceeded (10).
+        """
+
+        if len(self._underlying.items) >= 10:
+            raise ValueError('maximum number of items has been exceeded')
+
+        item = MediaGalleryItem(
+            media,
+            description=description,
+            spoiler=spoiler,
+        )
+        self._underlying.items.insert(index, item)
+        return self
+
     def remove_item(self, item: MediaGalleryItem) -> Self:
         """Removes an item from the gallery.
 
@@ -144,23 +226,6 @@ class MediaGallery(Item[V]):
             self._underlying.items.remove(item)
         except ValueError:
             pass
-        return self
-
-    def insert_item_at(self, index: int, item: MediaGalleryItem) -> Self:
-        """Inserts an item before a specified index to the gallery.
-
-        This function returns the class instance to allow for fluent-style
-        chaining.
-
-        Parameters
-        ----------
-        index: :class:`int`
-            The index of where to insert the item.
-        item: :class:`.MediaGalleryItem`
-            The item to insert.
-        """
-
-        self._underlying.items.insert(index, item)
         return self
 
     def clear_items(self) -> Self:
