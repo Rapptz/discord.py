@@ -22,38 +22,26 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .snowflake import Snowflake
-from typing import Literal, Optional, TypedDict
-from typing_extensions import NotRequired
-from ..clantag import ClanTagPayload
+from __future__ import annotations
+from typing import TypedDict
+from .types.snowflake import Snowflake
 
 
-class AvatarDecorationData(TypedDict):
-    asset: str
-    sku_id: Snowflake
+class ClanTagPayload(TypedDict):
+    identity_guild_id: Snowflake
+    identity_enabled: bool
+    tag: str
+    badge: str
 
 
-class PartialUser(TypedDict):
-    id: Snowflake
-    username: str
-    discriminator: str
-    avatar: Optional[str]
-    global_name: Optional[str]
-    avatar_decoration_data: NotRequired[AvatarDecorationData]
-    clan: NotRequired[ClanTagPayload]
-    primary_guild: NotRequired[ClanTagPayload]
+class ClanTag:
+    __slots__ = ("identity_guild_id", "identity_enabled", "tag", "badge")
 
+    def __init__(self, data: ClanTagPayload):
+        self.identity_guild_id: int = int(data["identity_guild_id"])
+        self.identity_enabled: bool = data["identity_enabled"]
+        self.tag: str = data["tag"]
+        self.badge: str = data["badge"]
 
-PremiumType = Literal[0, 1, 2, 3]
-
-
-class User(PartialUser, total=False):
-    bot: bool
-    system: bool
-    mfa_enabled: bool
-    locale: str
-    verified: bool
-    email: Optional[str]
-    flags: int
-    premium_type: PremiumType
-    public_flags: int
+    def __repr__(self) -> str:
+        return f"<ClanTag tag={self.tag!r} identity_guild_id={self.identity_guild_id}>"
