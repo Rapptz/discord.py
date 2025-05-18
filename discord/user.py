@@ -129,7 +129,8 @@ class BaseUser(_UserTag):
         self._avatar_decoration_data = data.get('avatar_decoration_data')
         
         clan_data = data.get("clan") or data.get("primary_guild")
-        self.clan_tag: Optional[ClanTag] = ClanTag(clan_data) if clan_data else None
+        if clan_data:
+            self.clan_tag: Optional[ClanTag] = ClanTag(clan_data)
 
 
     @classmethod

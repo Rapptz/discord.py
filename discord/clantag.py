@@ -38,10 +38,10 @@ class ClanTag:
     __slots__ = ("identity_guild_id", "identity_enabled", "tag", "badge")
 
     def __init__(self, data: ClanTagPayload):
-        self.identity_guild_id: int = int(data["identity_guild_id"])
-        self.identity_enabled: bool = data["identity_enabled"]
-        self.tag: str = data["tag"]
-        self.badge: str = data["badge"]
+        self.identity_guild_id: int = int(data.get("identity_guild_id", 0))
+        self.identity_enabled: bool = data.get("identity_enabled", False)
+        self.tag: str = data.get("tag", "null")
+        self.badge: str = data.get("badge", "null")
 
     def __repr__(self) -> str:
         return f"<ClanTag tag={self.tag!r} identity_guild_id={self.identity_guild_id}>"
