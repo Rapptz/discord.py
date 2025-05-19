@@ -40,6 +40,8 @@ class PartialUser(TypedDict):
     avatar: Optional[str]
     global_name: Optional[str]
     avatar_decoration_data: NotRequired[AvatarDecorationData]
+    clan: NotRequired[ClanTagPayload]
+    primary_guild: NotRequired[ClanTagPayload]
 
 
 PremiumType = Literal[0, 1, 2, 3]
@@ -55,5 +57,3 @@ class User(PartialUser, total=False):
     flags: int
     premium_type: PremiumType
     public_flags: int
-    clan: NotRequired[ClanTagPayload]
-    primary_guild: NotRequired[ClanTagPayload]
