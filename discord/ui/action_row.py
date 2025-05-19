@@ -205,7 +205,7 @@ class ActionRow(Item[V]):
         return any(c.is_dispatchable() for c in self.children)
 
     def is_persistent(self) -> bool:
-        return self.is_dispatchable() and all(c.is_persistent() for c in self.children)
+        return all(c.is_persistent() for c in self.children)
 
     def _update_children_view(self, view: LayoutView) -> None:
         for child in self._children:
