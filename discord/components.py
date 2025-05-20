@@ -965,7 +965,7 @@ class UnfurledMediaItem(AssetMixin):
         return self
 
     def _update(self, data: UnfurledMediaItemPayload, state: Optional[ConnectionState]) -> None:
-        self.proxy_url = data['proxy_url']
+        self.proxy_url = data.get('proxy_url')
         self.height = data.get('height')
         self.width = data.get('width')
         self.content_type = data.get('content_type')
