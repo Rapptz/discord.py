@@ -239,7 +239,15 @@ class Section(Item[V]):
 
     def to_components(self) -> List[Dict[str, Any]]:
         components = []
-        for _, comps in groupby(self._children, key=lambda i: i._rendered_row or i._row or sys.maxsize):
+
+        def key(item: Item) -> int:
+            if item._rendered_row is not None:
+                return item._rendered_row
+            if item._row is not None:
+                return item._row
+            return sys.maxsize
+
+        for _, comps in groupby(self._children, key=key):
             components.extend(c.to_component_dict() for c in comps)
         return components
 
