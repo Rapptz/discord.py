@@ -151,7 +151,7 @@ class Container(Item[V]):
                 self.add_item(child)
 
         self.spoiler: bool = spoiler
-        self._colour = accent_colour or accent_color
+        self._colour = accent_colour if accent_colour is not None else accent_color
 
         self.row = row
         self.id = id
