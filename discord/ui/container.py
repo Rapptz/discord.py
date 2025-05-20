@@ -247,6 +247,9 @@ class Container(Item[V]):
 
     @accent_colour.setter
     def accent_colour(self, value: Optional[Union[Colour, int]]) -> None:
+        if not isinstance(value, (int, Colour)):
+            raise TypeError(f'expected an int, or Colour, not {value.__class__.__name__!r}')
+
         self._colour = value
 
     accent_color = accent_colour
