@@ -179,10 +179,7 @@ def _component_data_to_item(data: ComponentPayload) -> Item:
             max_values=data.get('max_values', 1),
             disabled=data.get('disabled', False),
             id=data.get('id'),
-            options=[
-                SelectOption.from_dict(o)
-                for o in data.get('options', [])
-            ],
+            options=[SelectOption.from_dict(o) for o in data.get('options', [])],
         )
     elif data['type'] == 4:
         from .text_input import TextInput
@@ -219,10 +216,7 @@ def _component_data_to_item(data: ComponentPayload) -> Item:
             min_values=data.get('min_values', 1),
             max_values=data.get('max_values', 1),
             disabled=data.get('disabled', False),
-            default_values=[
-                SelectDefaultValue.from_dict(v)
-                for v in data.get('default_values', [])
-            ],
+            default_values=[SelectDefaultValue.from_dict(v) for v in data.get('default_values', [])],
             id=data.get('id'),
         )
     elif data['type'] == 9:
@@ -785,6 +779,7 @@ class View(BaseView):
     __discord_ui_view__: ClassVar[bool] = True
 
     if TYPE_CHECKING:
+
         @classmethod
         def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> View:
             """Converts a :class:`list` of :class:`dict` s to a :class:`View` provided it is in the
@@ -938,6 +933,7 @@ class LayoutView(BaseView):
     __discord_ui_layout_view__: ClassVar[bool] = True
 
     if TYPE_CHECKING:
+
         @classmethod
         def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> LayoutView:
             """Converts a :class:`list` of :class:`dict` s to a :class:`LayoutView` provided it is in the

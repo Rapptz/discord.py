@@ -54,7 +54,6 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .types.components import (
-        ComponentBase as ComponentBasePayload,
         Component as ComponentPayload,
         ButtonComponent as ButtonComponentPayload,
         SelectMenu as SelectMenuPayload,
@@ -160,7 +159,7 @@ class Component:
                 setattr(self, slot, value)
         return self
 
-    def to_dict(self) -> ComponentBasePayload:
+    def to_dict(self) -> ComponentPayload:
         raise NotImplementedError
 
 
