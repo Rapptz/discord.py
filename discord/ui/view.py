@@ -69,7 +69,7 @@ from ..components import (
     ThumbnailComponent,
     SelectOption,
 )
-from ..utils import MISSING, get as _utils_get, _get_as_snowflake
+from ..utils import get as _utils_get, _get_as_snowflake
 from ..enums import SeparatorSize, TextStyle, try_enum, ButtonStyle
 from ..emoji import PartialEmoji
 
