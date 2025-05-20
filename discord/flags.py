@@ -46,42 +46,42 @@ from typing import (
 from .enums import UserFlags
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, Unpack, NotRequired
+    from typing_extensions import Self, Unpack
 
-    class _IntentsFlagsKwargs(TypedDict):
-        guilds: NotRequired[bool]
-        members: NotRequired[bool]
-        moderation: NotRequired[bool]
-        bans: NotRequired[bool]
-        emojis: NotRequired[bool]
-        emojis_and_stickers: NotRequired[bool]
-        expressions: NotRequired[bool]
-        integrations: NotRequired[bool]
-        webhooks: NotRequired[bool]
-        invites: NotRequired[bool]
-        voice_states: NotRequired[bool]
-        presences: NotRequired[bool]
-        messages: NotRequired[bool]
-        guild_messages: NotRequired[bool]
-        dm_messages: NotRequired[bool]
-        reactions: NotRequired[bool]
-        guild_reactions: NotRequired[bool]
-        dm_reactions: NotRequired[bool]
-        typing: NotRequired[bool]
-        guild_typing: NotRequired[bool]
-        dm_typing: NotRequired[bool]
-        message_content: NotRequired[bool]
-        guild_scheduled_events: NotRequired[bool]
-        auto_moderation: NotRequired[bool]
-        auto_moderation_configuration: NotRequired[bool]
-        auto_moderation_execution: NotRequired[bool]
-        polls: NotRequired[bool]
-        guild_polls: NotRequired[bool]
-        dm_polls: NotRequired[bool]
+    class _IntentsFlagsKwargs(TypedDict, total=False):
+        guilds: bool
+        members: bool
+        moderation: bool
+        bans: bool
+        emojis: bool
+        emojis_and_stickers: bool
+        expressions: bool
+        integrations: bool
+        webhooks: bool
+        invites: bool
+        voice_states: bool
+        presences: bool
+        messages: bool
+        guild_messages: bool
+        dm_messages: bool
+        reactions: bool
+        guild_reactions: bool
+        dm_reactions: bool
+        typing: bool
+        guild_typing: bool
+        dm_typing: bool
+        message_content: bool
+        guild_scheduled_events: bool
+        auto_moderation: bool
+        auto_moderation_configuration: bool
+        auto_moderation_execution: bool
+        polls: bool
+        guild_polls: bool
+        dm_polls: bool
 
-    class _MemberCacheFlagsKwargs(TypedDict):
-        voice: NotRequired[bool]
-        joined: NotRequired[bool]
+    class _MemberCacheFlagsKwargs(TypedDict, total=False):
+        voice: bool
+        joined: bool
 
 
 __all__ = (

@@ -39,7 +39,7 @@ from .cog import Cog
 from .view import StringView
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, ParamSpec, Concatenate, Unpack, NotRequired
+    from typing_extensions import Self, ParamSpec, Concatenate, Unpack
     from ._types import ContextT, Coro, BotT
     from .bot import Bot
     from .context import Context
@@ -50,29 +50,27 @@ if TYPE_CHECKING:
     )
     from .core import _CommandKwargs
 
-    class _HybridCommandKwargs(
-        _CommandKwargs,
-    ):
-        guild_ids: NotRequired[Optional[List[int]]]
-        guild_only: NotRequired[bool]
-        default_permissions: NotRequired[Optional[bool]]
-        nsfw: NotRequired[bool]
-        with_app_command: NotRequired[bool]
+    class _HybridCommandKwargs(_CommandKwargs, total=False):
+        guild_ids: list[int]
+        guild_only: bool
+        default_permissions: bool
+        nsfw: bool
+        with_app_command: bool
 
-    class _HybridCommandDecoratorKwargs(_HybridCommandKwargs):
-        description: NotRequired[Union[str, app_commands.locale_str]]
+    class _HybridCommandDecoratorKwargs(_HybridCommandKwargs, total=False):
+        description: Union[str, app_commands.locale_str]
 
-    class _HybridGroupKwargs(_HybridCommandDecoratorKwargs):
-        with_app_command: NotRequired[bool]
-        guild_ids: NotRequired[Optional[List[int]]]
-        guild_only: NotRequired[bool]
-        default_permissions: NotRequired[Optional[bool]]
-        nsfw: NotRequired[bool]
-        description: NotRequired[str]
+    class _HybridGroupKwargs(_HybridCommandDecoratorKwargs, total=False):
+        with_app_command: bool
+        guild_ids: list[int]
+        guild_only: bool
+        default_permissions: bool
+        nsfw: bool
+        description: str
 
-    class _HybridGroupDecoratorKwargs(_HybridGroupKwargs):
-        description: NotRequired[Union[str, app_commands.locale_str]]
-        fallback: NotRequired[Union[str, app_commands.locale_str]]
+    class _HybridGroupDecoratorKwargs(_HybridGroupKwargs, total=False):
+        description: Union[str, app_commands.locale_str]
+        fallback: Union[str, app_commands.locale_str]
 
 
 __all__ = (

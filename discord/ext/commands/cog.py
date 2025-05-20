@@ -50,7 +50,7 @@ from typing import (
 from ._types import _BaseCommand, BotT
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, Unpack, NotRequired
+    from typing_extensions import Self, Unpack
     from discord.abc import Snowflake
     from discord._types import ClientT
 
@@ -58,15 +58,15 @@ if TYPE_CHECKING:
     from .context import Context
     from .core import Command, _CommandDecoratorKwargs
 
-    class _CogKwargs(TypedDict):
-        name: NotRequired[Optional[str]]
-        group_name: NotRequired[Optional[Union[str, app_commands.locale_str]]]
-        description: NotRequired[Optional[str]]
-        group_description: NotRequired[Optional[Union[str, app_commands.locale_str]]]
-        group_nsfw: NotRequired[bool]
-        group_auto_locale_strings: NotRequired[bool]
-        group_extras: NotRequired[Dict[Any, Any]]
-        command_attrs: NotRequired[_CommandDecoratorKwargs]
+    class _CogKwargs(TypedDict, total=False):
+        name: str
+        group_name: Union[str, app_commands.locale_str]
+        description: str
+        group_description: Union[str, app_commands.locale_str]
+        group_nsfw: bool
+        group_auto_locale_strings: bool
+        group_extras: Dict[Any, Any]
+        command_attrs: _CommandDecoratorKwargs
 
 
 __all__ = (

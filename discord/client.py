@@ -83,7 +83,7 @@ from .soundboard import SoundboardDefaultSound, SoundboardSound
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from typing_extensions import Self, NotRequired, Unpack
+    from typing_extensions import Self, Unpack
 
     from .abc import Messageable, PrivateChannel, Snowflake, SnowflakeTime
     from .app_commands import Command, ContextMenu
@@ -123,26 +123,26 @@ if TYPE_CHECKING:
     from .subscription import Subscription
     from .flags import MemberCacheFlags
 
-    class _ClientOptions(TypedDict):
-        max_messages: NotRequired[Optional[int]]
-        proxy: NotRequired[Optional[str]]
-        proxy_auth: NotRequired[Optional[aiohttp.BasicAuth]]
-        shard_id: NotRequired[Optional[int]]
-        shard_count: NotRequired[Optional[int]]
-        application_id: NotRequired[int]
-        member_cache_flags: NotRequired[MemberCacheFlags]
-        chunk_guilds_at_startup: NotRequired[bool]
-        status: NotRequired[Optional[Status]]
-        activity: NotRequired[Optional[BaseActivity]]
-        allowed_mentions: NotRequired[Optional[AllowedMentions]]
-        heartbeat_timeout: NotRequired[float]
-        guild_ready_timeout: NotRequired[float]
-        assume_unsync_clock: NotRequired[bool]
-        enable_debug_events: NotRequired[bool]
-        enable_raw_presences: NotRequired[bool]
-        http_trace: NotRequired[Optional[aiohttp.TraceConfig]]
-        max_ratelimit_timeout: NotRequired[Optional[float]]
-        connector: NotRequired[Optional[aiohttp.BaseConnector]]
+    class _ClientOptions(TypedDict, total=False):
+        max_messages: int
+        proxy: str
+        proxy_auth: aiohttp.BasicAuth
+        shard_id: int
+        shard_count: int
+        application_id: int
+        member_cache_flags: MemberCacheFlags
+        chunk_guilds_at_startup: bool
+        status: Status
+        activity: BaseActivity
+        allowed_mentions: AllowedMentions
+        heartbeat_timeout: float
+        guild_ready_timeout: float
+        assume_unsync_clock: bool
+        enable_debug_events: bool
+        enable_raw_presences: bool
+        http_trace: aiohttp.TraceConfig
+        max_ratelimit_timeout: float
+        connector: aiohttp.BaseConnector
 
 
 # fmt: off

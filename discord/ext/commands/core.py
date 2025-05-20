@@ -59,38 +59,38 @@ from .parameters import Parameter, Signature
 from discord.app_commands.commands import NUMPY_DOCSTRING_ARG_REGEX
 
 if TYPE_CHECKING:
-    from typing_extensions import Concatenate, ParamSpec, Self, NotRequired, Unpack
+    from typing_extensions import Concatenate, ParamSpec, Self, Unpack
 
     from ._types import BotT, Check, ContextT, Coro, CoroFunc, Error, Hook, UserCheck
 
     from discord.permissions import _PermissionsKwargs
 
-    class _CommandDecoratorKwargs(TypedDict):
-        enabled: NotRequired[bool]
-        help: NotRequired[str]
-        brief: NotRequired[str]
-        usage: NotRequired[str]
-        rest_is_raw: NotRequired[bool]
-        aliases: NotRequired[List[str]]
-        description: NotRequired[str]
-        hidden: NotRequired[bool]
-        checks: NotRequired[List[UserCheck[Context[Any]]]]
-        cooldown: NotRequired[CooldownMapping[Context[Any]]]
-        max_concurrency: NotRequired[MaxConcurrency]
-        require_var_positional: NotRequired[bool]
-        cooldown_after_parsing: NotRequired[bool]
-        ignore_extra: NotRequired[bool]
-        extras: NotRequired[Dict[Any, Any]]
+    class _CommandDecoratorKwargs(TypedDict, total=False):
+        enabled: bool
+        help: str
+        brief: str
+        usage: str
+        rest_is_raw: bool
+        aliases: List[str]
+        description: str
+        hidden: bool
+        checks: List[UserCheck[Context[Any]]]
+        cooldown: CooldownMapping[Context[Any]]
+        max_concurrency: MaxConcurrency
+        require_var_positional: bool
+        cooldown_after_parsing: bool
+        ignore_extra: bool
+        extras: Dict[Any, Any]
 
-    class _CommandKwargs(_CommandDecoratorKwargs):
-        name: NotRequired[str]
+    class _CommandKwargs(_CommandDecoratorKwargs, total=False):
+        name: str
 
-    class _GroupDecoratorKwargs(_CommandDecoratorKwargs):
-        invoke_without_command: NotRequired[bool]
-        case_insensitive: NotRequired[bool]
+    class _GroupDecoratorKwargs(_CommandDecoratorKwargs, total=False):
+        invoke_without_command: bool
+        case_insensitive: bool
 
-    class _GroupKwargs(_GroupDecoratorKwargs):
-        name: NotRequired[str]
+    class _GroupKwargs(_GroupDecoratorKwargs, total=False):
+        name: str
 
 
 __all__ = (

@@ -51,7 +51,7 @@ from .core import Group, Command, get_signature_parameters
 from .errors import CommandError
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, Unpack, NotRequired
+    from typing_extensions import Self, Unpack
 
     import discord.abc
 
@@ -67,28 +67,28 @@ if TYPE_CHECKING:
         _Bot,
     )
 
-    class _HelpCommandOptions(TypedDict):
-        show_hidden: NotRequired[bool]
-        verify_checks: NotRequired[bool]
-        command_attrs: NotRequired[_CommandKwargs]
+    class _HelpCommandOptions(TypedDict, total=False):
+        show_hidden: bool
+        verify_checks: bool
+        command_attrs: _CommandKwargs
 
-    class _BaseHelpCommandOptions(_HelpCommandOptions):
-        sort_commands: NotRequired[bool]
-        dm_help: NotRequired[bool]
-        dm_help_threshold: NotRequired[int]
-        no_category: NotRequired[str]
-        paginator: NotRequired[Paginator]
-        commands_heading: NotRequired[str]
+    class _BaseHelpCommandOptions(_HelpCommandOptions, total=False):
+        sort_commands: bool
+        dm_help: bool
+        dm_help_threshold: int
+        no_category: str
+        paginator: Paginator
+        commands_heading: str
 
-    class _DefaultHelpCommandOptions(_BaseHelpCommandOptions):
-        width: NotRequired[int]
-        indent: NotRequired[int]
-        arguments_heading: NotRequired[str]
-        default_argument_description: NotRequired[str]
-        show_parameter_descriptions: NotRequired[bool]
+    class _DefaultHelpCommandOptions(_BaseHelpCommandOptions, total=False):
+        width: int
+        indent: int
+        arguments_heading: str
+        default_argument_description: str
+        show_parameter_descriptions: bool
 
-    class _MinimalHelpCommandOptions(_BaseHelpCommandOptions):
-        aliases_heading: NotRequired[str]
+    class _MinimalHelpCommandOptions(_BaseHelpCommandOptions, total=False):
+        aliases_heading: str
 
 
 __all__ = (

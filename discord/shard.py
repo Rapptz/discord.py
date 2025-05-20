@@ -47,16 +47,16 @@ from .enums import Status
 from typing import TYPE_CHECKING, Any, Callable, Tuple, Type, Optional, List, Dict
 
 if TYPE_CHECKING:
-    from typing_extensions import Unpack, NotRequired
+    from typing_extensions import Unpack
     from .gateway import DiscordWebSocket
     from .activity import BaseActivity
     from .flags import Intents
     from .types.gateway import SessionStartLimit
     from .client import _ClientOptions
 
-    class _AutoShardedClientOptions(_ClientOptions):
-        shard_ids: NotRequired[Optional[List[int]]]
-        shard_connect_timeout: NotRequired[Optional[float]]
+    class _AutoShardedClientOptions(_ClientOptions, total=False):
+        shard_ids: List[int]
+        shard_connect_timeout: Optional[float]
 
 
 __all__ = (

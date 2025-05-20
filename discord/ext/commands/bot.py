@@ -64,7 +64,7 @@ from .cog import Cog
 from .hybrid import hybrid_command, hybrid_group, HybridCommand, HybridGroup
 
 if TYPE_CHECKING:
-    from typing_extensions import Self, Unpack, NotRequired
+    from typing_extensions import Self, Unpack
 
     import importlib.machinery
 
@@ -88,11 +88,11 @@ if TYPE_CHECKING:
     _PrefixCallable = MaybeAwaitableFunc[[BotT, Message], _Prefix]
     PrefixType = Union[_Prefix, _PrefixCallable[BotT]]
 
-    class _BotOptions(_ClientOptions):
-        owner_id: NotRequired[Optional[int]]
-        owner_ids: NotRequired[Optional[Collection[int]]]
-        strip_after_prefix: NotRequired[bool]
-        case_insensitive: NotRequired[bool]
+    class _BotOptions(_ClientOptions, total=False):
+        owner_id: int
+        owner_ids: Collection[int]
+        strip_after_prefix: bool
+        case_insensitive: bool
 
     class _AutoShardedBotOptions(_AutoShardedClientOptions, _BotOptions):
         ...
