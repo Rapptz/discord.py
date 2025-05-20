@@ -34,7 +34,7 @@ ComponentType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17]
 ButtonStyle = Literal[1, 2, 3, 4, 5, 6]
 TextStyle = Literal[1, 2]
 DefaultValueType = Literal["user", "role", "channel"]
-DividerSize = Literal[1, 2]
+SeparatorSize = Literal[1, 2]
 MediaItemLoadingState = Literal[0, 1, 2, 3]
 
 
@@ -128,7 +128,7 @@ class SelectMenu(SelectComponent):
 class SectionComponent(ComponentBase):
     type: Literal[9]
     components: List[Union[TextComponent, ButtonComponent]]
-    accessory: ComponentBase
+    accessory: Component
 
 
 class TextComponent(ComponentBase):
@@ -174,7 +174,7 @@ class FileComponent(ComponentBase):
 class SeparatorComponent(ComponentBase):
     type: Literal[14]
     divider: NotRequired[bool]
-    spacing: NotRequired[DividerSize]
+    spacing: NotRequired[SeparatorSize]
 
 
 class ContainerComponent(ComponentBase):
