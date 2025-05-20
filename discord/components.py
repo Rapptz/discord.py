@@ -971,7 +971,10 @@ class UnfurledMediaItem(AssetMixin):
         self.content_type = data.get('content_type')
         self._flags = data.get('flags', 0)
         self.placeholder = data.get('placeholder')
-        self.loading_state = try_enum(MediaItemLoadingState, data['loading_state'])
+
+        loading_state = data.get('loading_state')
+        if loading_state is not None:
+            self.loading_state = try_enum(MediaItemLoadingState, loading_state)
         self._state = state
 
     def __repr__(self) -> str:
