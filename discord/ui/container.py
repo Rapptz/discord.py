@@ -81,9 +81,6 @@ class Container(Item[V]):
 
     This can be inherited.
 
-    .. note::
-
-        Containers can contain up to 10 top-level components.
 
     .. versionadded:: 2.6
 
