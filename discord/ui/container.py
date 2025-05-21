@@ -47,11 +47,11 @@ from .view import _component_to_item, LayoutView
 from .dynamic import DynamicItem
 from ..enums import ComponentType
 from ..utils import MISSING, get as _utils_get
+from ..colour import Colour, Color
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from ..colour import Colour, Color
     from ..components import Container as ContainerComponent
     from ..interactions import Interaction
 
