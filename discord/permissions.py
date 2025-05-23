@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Optional, TypedDict
+from typing import Callable, Any, ClassVar, Dict, Iterator, Set, TYPE_CHECKING, Tuple, Optional, TypedDict, Generic, TypeVar
 from .flags import BaseFlags, flag_value, fill_with_flags, alias_flag_value
 
 __all__ = (
@@ -35,119 +35,70 @@ __all__ = (
 if TYPE_CHECKING:
     from typing_extensions import Self, Unpack
 
-    class _PermissionsKwargs(TypedDict, total=False):
-        create_instant_invite: bool
-        kick_members: bool
-        ban_members: bool
-        administrator: bool
-        manage_channels: bool
-        manage_guild: bool
-        add_reactions: bool
-        view_audit_log: bool
-        priority_speaker: bool
-        stream: bool
-        read_messages: bool
-        view_channel: bool
-        send_messages: bool
-        send_tts_messages: bool
-        manage_messages: bool
-        embed_links: bool
-        attach_files: bool
-        read_message_history: bool
-        mention_everyone: bool
-        external_emojis: bool
-        use_external_emojis: bool
-        view_guild_insights: bool
-        connect: bool
-        speak: bool
-        mute_members: bool
-        deafen_members: bool
-        move_members: bool
-        use_voice_activation: bool
-        change_nickname: bool
-        manage_nicknames: bool
-        manage_roles: bool
-        manage_permissions: bool
-        manage_webhooks: bool
-        manage_expressions: bool
-        manage_emojis: bool
-        manage_emojis_and_stickers: bool
-        use_application_commands: bool
-        request_to_speak: bool
-        manage_events: bool
-        manage_threads: bool
-        create_public_threads: bool
-        create_private_threads: bool
-        send_messages_in_threads: bool
-        external_stickers: bool
-        use_external_stickers: bool
-        use_embedded_activities: bool
-        moderate_members: bool
-        use_soundboard: bool
-        use_external_sounds: bool
-        send_voice_messages: bool
-        create_expressions: bool
-        create_events: bool
-        send_polls: bool
-        create_polls: bool
-        use_external_apps: bool
+    BoolOrNoneT = TypeVar('BoolOrNoneT', bound=Optional[bool])
 
-    class _PermissionOverwriteKwargs(_PermissionsKwargs, total=False):
-        create_instant_invite: Optional[bool]
-        kick_members: Optional[bool]
-        ban_members: Optional[bool]
-        administrator: Optional[bool]
-        manage_channels: Optional[bool]
-        manage_guild: Optional[bool]
-        add_reactions: Optional[bool]
-        view_audit_log: Optional[bool]
-        priority_speaker: Optional[bool]
-        stream: Optional[bool]
-        read_messages: Optional[bool]
-        view_channel: Optional[bool]
-        send_messages: Optional[bool]
-        send_tts_messages: Optional[bool]
-        manage_messages: Optional[bool]
-        embed_links: Optional[bool]
-        attach_files: Optional[bool]
-        read_message_history: Optional[bool]
-        mention_everyone: Optional[bool]
-        external_emojis: Optional[bool]
-        use_external_emojis: Optional[bool]
-        view_guild_insights: Optional[bool]
-        connect: Optional[bool]
-        speak: Optional[bool]
-        mute_members: Optional[bool]
-        deafen_members: Optional[bool]
-        move_members: Optional[bool]
-        use_voice_activation: Optional[bool]
-        change_nickname: Optional[bool]
-        manage_nicknames: Optional[bool]
-        manage_roles: Optional[bool]
-        manage_permissions: Optional[bool]
-        manage_webhooks: Optional[bool]
-        manage_expressions: Optional[bool]
-        manage_emojis: Optional[bool]
-        manage_emojis_and_stickers: Optional[bool]
-        use_application_commands: Optional[bool]
-        request_to_speak: Optional[bool]
-        manage_events: Optional[bool]
-        manage_threads: Optional[bool]
-        create_public_threads: Optional[bool]
-        create_private_threads: Optional[bool]
-        send_messages_in_threads: Optional[bool]
-        external_stickers: Optional[bool]
-        use_external_stickers: Optional[bool]
-        use_embedded_activities: Optional[bool]
-        moderate_members: Optional[bool]
-        use_soundboard: Optional[bool]
-        use_external_sounds: Optional[bool]
-        send_voice_messages: Optional[bool]
-        create_expressions: Optional[bool]
-        create_events: Optional[bool]
-        send_polls: Optional[bool]
-        create_polls: Optional[bool]
-        use_external_apps: Optional[bool]
+    class _BasePermissionsKwargs(Generic[BoolOrNoneT], TypedDict, total=False):
+        create_instant_invite: BoolOrNoneT
+        kick_members: BoolOrNoneT
+        ban_members: BoolOrNoneT
+        administrator: BoolOrNoneT
+        manage_channels: BoolOrNoneT
+        manage_guild: BoolOrNoneT
+        add_reactions: BoolOrNoneT
+        view_audit_log: BoolOrNoneT
+        priority_speaker: BoolOrNoneT
+        stream: BoolOrNoneT
+        read_messages: BoolOrNoneT
+        view_channel: BoolOrNoneT
+        send_messages: BoolOrNoneT
+        send_tts_messages: BoolOrNoneT
+        manage_messages: BoolOrNoneT
+        embed_links: BoolOrNoneT
+        attach_files: BoolOrNoneT
+        read_message_history: BoolOrNoneT
+        mention_everyone: BoolOrNoneT
+        external_emojis: BoolOrNoneT
+        use_external_emojis: BoolOrNoneT
+        view_guild_insights: BoolOrNoneT
+        connect: BoolOrNoneT
+        speak: BoolOrNoneT
+        mute_members: BoolOrNoneT
+        deafen_members: BoolOrNoneT
+        move_members: BoolOrNoneT
+        use_voice_activation: BoolOrNoneT
+        change_nickname: BoolOrNoneT
+        manage_nicknames: BoolOrNoneT
+        manage_roles: BoolOrNoneT
+        manage_permissions: BoolOrNoneT
+        manage_webhooks: BoolOrNoneT
+        manage_expressions: BoolOrNoneT
+        manage_emojis: BoolOrNoneT
+        manage_emojis_and_stickers: BoolOrNoneT
+        use_application_commands: BoolOrNoneT
+        request_to_speak: BoolOrNoneT
+        manage_events: BoolOrNoneT
+        manage_threads: BoolOrNoneT
+        create_public_threads: BoolOrNoneT
+        create_private_threads: BoolOrNoneT
+        send_messages_in_threads: BoolOrNoneT
+        external_stickers: BoolOrNoneT
+        use_external_stickers: BoolOrNoneT
+        use_embedded_activities: BoolOrNoneT
+        moderate_members: BoolOrNoneT
+        use_soundboard: BoolOrNoneT
+        use_external_sounds: BoolOrNoneT
+        send_voice_messages: BoolOrNoneT
+        create_expressions: BoolOrNoneT
+        create_events: BoolOrNoneT
+        send_polls: BoolOrNoneT
+        create_polls: BoolOrNoneT
+        use_external_apps: BoolOrNoneT
+
+    class _PermissionsKwargs(_BasePermissionsKwargs[bool]):
+        ...
+
+    class _PermissionOverwriteKwargs(_BasePermissionsKwargs[Optional[bool]]):
+        ...
 
 
 # A permission alias works like a regular flag but is marked
