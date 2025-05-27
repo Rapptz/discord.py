@@ -33,7 +33,7 @@ from .channel import ChannelType
 ComponentType = Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 17]
 ButtonStyle = Literal[1, 2, 3, 4, 5, 6]
 TextStyle = Literal[1, 2]
-DefaultValueType = Literal["user", "role", "channel"]
+DefaultValueType = Literal['user', 'role', 'channel']
 SeparatorSize = Literal[1, 2]
 MediaItemLoadingState = Literal[0, 1, 2, 3]
 

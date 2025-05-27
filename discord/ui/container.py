@@ -47,11 +47,11 @@ from .view import _component_to_item, LayoutView
 from .dynamic import DynamicItem
 from ..enums import ComponentType
 from ..utils import MISSING, get as _utils_get
+from ..colour import Colour, Color
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
-    from ..colour import Colour, Color
     from ..components import Container as ContainerComponent
     from ..interactions import Interaction
 
@@ -81,9 +81,6 @@ class Container(Item[V]):
 
     This can be inherited.
 
-    .. note::
-
-        Containers can contain up to 10 top-level components.
 
     .. versionadded:: 2.6
 
@@ -154,7 +151,7 @@ class Container(Item[V]):
                 self.add_item(child)
 
         self.spoiler: bool = spoiler
-        self._colour = accent_colour or accent_color
+        self._colour = accent_colour if accent_colour is not None else accent_color
 
         self.row = row
         self.id = id
@@ -250,6 +247,9 @@ class Container(Item[V]):
 
     @accent_colour.setter
     def accent_colour(self, value: Optional[Union[Colour, int]]) -> None:
+        if not isinstance(value, (int, Colour)):
+            raise TypeError(f'expected an int, or Colour, not {value.__class__.__name__!r}')
+
         self._colour = value
 
     accent_color = accent_colour
