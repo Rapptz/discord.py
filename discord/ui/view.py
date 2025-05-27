@@ -446,7 +446,16 @@ class BaseView:
         The :attr:`.Message.components` of a message are read-only
         and separate types from those in the ``discord.ui`` namespace.
         In order to modify and edit message components they must be
-        converted into a :class:`View` first.
+        converted into a :class:`View` or :class:`LayoutView` first.
+
+        If the message has any v2 component, then you must use
+        :class:`LayoutView` in order for them to be converted into
+        their respective items.
+
+        This method should be called on the respective class (or subclass), so
+        if you want to convert v2 items, you should call :meth:`LayoutView.from_message`,
+        or the same method from any subclass of it; and not :meth:`View.from_message`, or the
+        same method from any subclass of it.
 
         Parameters
         -----------
@@ -454,8 +463,40 @@ class BaseView:
             The message with components to convert into a view.
         timeout: Optional[:class:`float`]
             The timeout of the converted view.
+
+        Returns
+        -------
+        Union[:class:`View`, :class:`LayoutView`]
+            The converted view. This will always return one of :class:`View` or
+            :class:`LayoutView`, and not one of its subclasses.
         """
-        pass
+        cls = cls._to_minimal_cls()
+        view = cls(timeout=timeout)
+        row = 0
+
+        for component in message.components:
+            if not view._is_v2() and isinstance(component, ActionRowComponent):
+                for child in component.children:
+                    item = _component_to_item(child)
+                    item.row = row
+                    # this error should never be raised, because ActionRows can only
+                    # contain items that View accepts, but check anyways
+                    if item._is_v2():
+                        raise RuntimeError(f'{item.__class__.__name__} cannot be added to {view.__class__.__name__}')
+                    view.add_item(item)
+                    row += 1
+                continue
+
+            item = _component_to_item(component)
+            item.row = row
+
+            if item._is_v2() and not view._is_v2():
+                raise RuntimeError(f'{item.__class__.__name__} cannot be added to {view.__class__.__name__}')
+
+            view.add_item(item)
+            row += 1
+
+        return view
 
     def add_item(self, item: Item[Any]) -> Self:
         """Adds an item to the view.
@@ -749,6 +790,29 @@ class BaseView:
 
     @classmethod
     def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> Any:
+        r"""Converts a :class:`list` of :class:`dict`\s to a :class:`View` or :class:`LayoutView`,
+        provided as in the format that Discord expects it to be in.
+
+        You can find out about this format in the :ddocs:`official Discord documentation <components/reference#anatomy-of-a-component>`.
+
+        This method shuold be called on the respective class (or subclass), so if you
+        want to convert v2 items, you should call :meth:`LayoutView.from_dict`, or the same
+        method from any subclass of it; and not :meth:`View.from_message`, or the same
+        method from any subclass of it.
+
+        Parameters
+        ----------
+        data: List[:class:`dict`]
+            The array of dictionaries to convert into a LayoutView
+        timeout: Optional[:class:`float`]
+            The timeout of the converted view.
+
+        Returns
+        -------
+        Union[:class:`View`, :class:`LayoutView`]
+            The converted view. This will always return one of :class:`View` or
+            :class:`LayoutView`, and not one of its subclasses.
+        """
         cls = cls._to_minimal_cls()
         self = cls(timeout=timeout)
 
@@ -782,16 +846,10 @@ class View(BaseView):
 
         @classmethod
         def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> View:
-            """Converts a :class:`list` of :class:`dict` s to a :class:`View` provided it is in the
-            format that Discord expects it to be in.
+            ...
 
-            You can find out about this format in the :ddocs:`official Discord documentation <components/reference#anatomy-of-a-component>`.
-
-            Parameters
-            ----------
-            data: List[:class:`dict`]
-                The array of dictionaries to convert into a View.
-            """
+        @classmethod
+        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
             ...
 
     def __init_subclass__(cls) -> None:
@@ -837,53 +895,6 @@ class View(BaseView):
             )
 
         return components
-
-    @classmethod
-    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> View:
-        """Converts a message's components into a :class:`View`.
-
-        The :attr:`.Message.components` of a message are read-only
-        and separate types from those in the ``discord.ui`` namespace.
-        In order to modify and edit message components they must be
-        converted into a :class:`View` first.
-
-        .. warning::
-
-            This **will not** take into account every v2 component, if you
-            want to edit them, use :meth:`LayoutView.from_message` instead.
-
-        Parameters
-        -----------
-        message: :class:`discord.Message`
-            The message with components to convert into a view.
-        timeout: Optional[:class:`float`]
-            The timeout of the converted view.
-
-        Returns
-        --------
-        :class:`View`
-            The converted view. This always returns a :class:`View` and not
-            one of its subclasses.
-        """
-        view = View(timeout=timeout)
-        row = 0
-        for component in message.components:
-            if isinstance(component, ActionRowComponent):
-                for child in component.children:
-                    item = _component_to_item(child)
-                    item.row = row
-                    if item._is_v2():
-                        raise RuntimeError('v2 components cannot be added to this View')
-                    view.add_item(item)
-                row += 1
-            else:
-                item = _component_to_item(component)
-                item.row = row
-                if item._is_v2():
-                    raise RuntimeError('v2 components cannot be added to this View')
-                view.add_item(item)
-
-        return view
 
     def add_item(self, item: Item[Any]) -> Self:
         if len(self._children) >= 25:
@@ -936,16 +947,10 @@ class LayoutView(BaseView):
 
         @classmethod
         def from_dict(cls, data: List[ComponentPayload], *, timeout: Optional[float] = 180.0) -> LayoutView:
-            """Converts a :class:`list` of :class:`dict` s to a :class:`LayoutView` provided it is in the
-            format that Discord expects it to be in.
+            ...
 
-            You can find out about this format in the :ddocs:`official Discord documentation <components/reference#anatomy-of-a-component>`.
-
-            Parameters
-            ----------
-            data: List[:class:`dict`]
-                The array of dictionaries to convert into a LayoutView.
-            """
+        @classmethod
+        def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView:
             ...
 
     def __init__(self, *, timeout: Optional[float] = 180.0) -> None:
@@ -997,38 +1002,6 @@ class LayoutView(BaseView):
             raise ValueError('maximum number of children exceeded (40)')
         super().add_item(item)
         return self
-
-    @classmethod
-    def from_message(cls, message: Message, /, *, timeout: Optional[float] = 180.0) -> LayoutView:
-        """Converts a message's components into a :class:`LayoutView`.
-
-        The :attr:`.Message.components` of a message are read-only
-        and separate types from those in the ``discord.ui`` namespace.
-        In order to modify and edit message components they must be
-        converted into a :class:`LayoutView` first.
-
-        Unlike :meth:`View.from_message` this converts v2 components.
-
-        Parameters
-        -----------
-        message: :class:`discord.Message`
-            The message with components to convert into a view.
-        timeout: Optional[:class:`float`]
-            The timeout of the converted view.
-
-        Returns
-        --------
-        :class:`LayoutView`
-            The converted view. This always returns a :class:`LayoutView` and not
-            one of its subclasses.
-        """
-        view = LayoutView(timeout=timeout)
-        for component in message.components:
-            item = _component_to_item(component)
-            item.row = 0
-            view.add_item(item)
-
-        return view
 
 
 class ViewStore:

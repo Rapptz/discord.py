@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import sys
-from itertools import groupby
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -345,8 +344,8 @@ class ActionRow(Item[V]):
                 return item._row
             return sys.maxsize
 
-        for _, cmps in groupby(self._children, key=key):
-            components.extend(c.to_component_dict() for c in cmps)
+        for component in sorted(self.children, key=key):
+            components.append(component.to_component_dict())
 
         base = {
             'type': self.type.value,
