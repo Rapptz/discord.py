@@ -566,7 +566,7 @@ Enumerations
 
         The permission is for a user.
 
-.. class:: SeparatorSize
+.. class:: SeparatorSpacing
 
     The separator's size type.
 
