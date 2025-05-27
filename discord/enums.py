@@ -77,7 +77,7 @@ __all__ = (
     'VoiceChannelEffectAnimationType',
     'SubscriptionStatus',
     'MessageReferenceType',
-    'SeparatorSize',
+    'SeparatorSpacing',
     'MediaItemLoadingState',
 )
 
@@ -872,7 +872,7 @@ class SubscriptionStatus(Enum):
     inactive = 2
 
 
-class SeparatorSize(Enum):
+class SeparatorSpacing(Enum):
     small = 1
     large = 2
 

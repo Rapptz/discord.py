@@ -70,7 +70,7 @@ from ..components import (
     SelectOption,
 )
 from ..utils import get as _utils_get, _get_as_snowflake
-from ..enums import SeparatorSize, TextStyle, try_enum, ButtonStyle
+from ..enums import SeparatorSpacing, TextStyle, try_enum, ButtonStyle
 from ..emoji import PartialEmoji
 
 # fmt: off
@@ -260,7 +260,7 @@ def _component_data_to_item(data: ComponentPayload) -> Item:
 
         return Separator(
             visible=data.get('divider', True),
-            spacing=try_enum(SeparatorSize, data.get('spacing', 1)),
+            spacing=try_enum(SeparatorSpacing, data.get('spacing', 1)),
             id=data.get('id'),
         )
     elif data['type'] == 17:

@@ -42,7 +42,7 @@ from .enums import (
     TextStyle,
     ChannelType,
     SelectDefaultValueType,
-    SeparatorSize,
+    SeparatorSpacing,
     MediaItemLoadingState,
 )
 from .flags import AttachmentFlags
@@ -1158,7 +1158,7 @@ class SeparatorComponent(Component):
 
     Attributes
     ----------
-    spacing: :class:`SeparatorSize`
+    spacing: :class:`SeparatorSpacing`
         The spacing size of the separator.
     visible: :class:`bool`
         Whether this separator is visible and shows a divider.
@@ -1178,7 +1178,7 @@ class SeparatorComponent(Component):
         self,
         data: SeparatorComponentPayload,
     ) -> None:
-        self.spacing: SeparatorSize = try_enum(SeparatorSize, data.get('spacing', 1))
+        self.spacing: SeparatorSpacing = try_enum(SeparatorSpacing, data.get('spacing', 1))
         self.visible: bool = data.get('divider', True)
         self.id: Optional[int] = data.get('id')
 

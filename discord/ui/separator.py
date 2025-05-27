@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Literal, Optional, TypeVar
 
 from .item import Item
 from ..components import SeparatorComponent
-from ..enums import SeparatorSize, ComponentType
+from ..enums import SeparatorSpacing, ComponentType
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -51,7 +51,7 @@ class Separator(Item[V]):
     visible: :class:`bool`
         Whether this separator is visible. On the client side this
         is whether a divider line should be shown or not.
-    spacing: :class:`.SeparatorSize`
+    spacing: :class:`.SeparatorSpacing`
         The spacing of this separator.
     row: Optional[:class:`int`]
         The relative row this separator belongs to. By default
@@ -68,7 +68,7 @@ class Separator(Item[V]):
         self,
         *,
         visible: bool = True,
-        spacing: SeparatorSize = SeparatorSize.small,
+        spacing: SeparatorSpacing = SeparatorSpacing.small,
         row: Optional[int] = None,
         id: Optional[int] = None,
     ) -> None:
@@ -99,12 +99,12 @@ class Separator(Item[V]):
         self._underlying.visible = value
 
     @property
-    def spacing(self) -> SeparatorSize:
-        """:class:`.SeparatorSize`: The spacing of this separator."""
+    def spacing(self) -> SeparatorSpacing:
+        """:class:`.SeparatorSpacing`: The spacing of this separator."""
         return self._underlying.spacing
 
     @spacing.setter
-    def spacing(self, value: SeparatorSize) -> None:
+    def spacing(self, value: SeparatorSpacing) -> None:
         self._underlying.spacing = value
 
     @property
