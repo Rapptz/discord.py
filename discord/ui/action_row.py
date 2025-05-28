@@ -87,10 +87,10 @@ class _ActionRowCallback:
 
 
 class ActionRow(Item[V]):
-    """Represents a UI action row.
+    r"""Represents a UI action row.
 
     This is a top-level layout component that can only be used on :class:`LayoutView`
-    and can contain :class:`Button` 's and :class:`Select` 's in it.
+    and can contain :class:`Button`\s and :class:`Select`\s in it.
 
     This can be inherited.
 

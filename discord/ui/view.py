@@ -575,7 +575,7 @@ class BaseView:
         self._total_children = 0
         return self
 
-    def get_item_by_id(self, id: int, /) -> Optional[Item[Self]]:
+    def get_item(self, id: int, /) -> Optional[Item[Self]]:
         """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
         not found.
 

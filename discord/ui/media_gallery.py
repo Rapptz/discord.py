@@ -44,9 +44,9 @@ __all__ = ('MediaGallery',)
 
 
 class MediaGallery(Item[V]):
-    """Represents a UI media gallery.
+    r"""Represents a UI media gallery.
 
-    Can contain up to 10 :class:`.MediaGalleryItem` 's.
+    Can contain up to 10 :class:`.MediaGalleryItem`\s.
 
     This is a top-level layout component that can only be used on :class:`LayoutView`.
 
