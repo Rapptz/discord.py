@@ -39,6 +39,8 @@ if TYPE_CHECKING:
     from ..components import Component
     from ..enums import ComponentType
     from .view import View, LayoutView
+else:
+    View = LayoutView = Any
 
 
 class DynamicItem(Generic[BaseT], Item[Union[View, LayoutView]]):
