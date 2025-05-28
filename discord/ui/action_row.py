@@ -143,6 +143,10 @@ class ActionRow(Item[V]):
     __action_row_children_items__: ClassVar[List[ItemCallbackType[Any]]] = []
     __discord_ui_action_row__: ClassVar[bool] = True
     __discord_ui_update_view__: ClassVar[bool] = True
+    __item_repr_attributes__ = (
+        'row',
+        'id',
+    )
 
     def __init__(
         self,
@@ -175,6 +179,9 @@ class ActionRow(Item[V]):
             raise TypeError('ActionRow cannot have more than 5 children')
 
         cls.__action_row_children_items__ = list(children.values())
+
+    def __repr__(self) -> str:
+        return f'{super().__repr__()[:-1]} children={len(self._children)}>'
 
     def _init_children(self) -> List[Item[Any]]:
         children = []
@@ -303,7 +310,7 @@ class ActionRow(Item[V]):
 
         return self
 
-    def get_item_by_id(self, id: int, /) -> Optional[Item[V]]:
+    def get_item(self, id: int, /) -> Optional[Item[V]]:
         """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
         not found.
 
@@ -321,7 +328,7 @@ class ActionRow(Item[V]):
         Optional[:class:`Item`]
             The item found, or ``None``.
         """
-        return _utils_get(self._children, id=id)
+        return _utils_get(self.walk_children(), id=id)
 
     def clear_items(self) -> Self:
         """Removes all items from the row.

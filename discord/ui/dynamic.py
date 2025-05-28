@@ -107,6 +107,9 @@ class DynamicItem(Generic[BaseT], Item[Union[View, LayoutView]]):
         if not self.item.is_dispatchable():
             raise TypeError('item must be dispatchable, e.g. not a URL button')
 
+        if not self.item._can_be_dynamic():
+            raise TypeError(f'{self.item.__class__.__name__} cannot be set as a dynamic item')
+
         if not self.template.match(self.custom_id):
             raise ValueError(f'item custom_id {self.custom_id!r} must match the template {self.template.pattern!r}')
 

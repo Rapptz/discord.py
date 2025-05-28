@@ -77,6 +77,13 @@ class File(Item[V]):
         The ID of this component. This must be unique across the view.
     """
 
+    __item_repr_attributes__ = (
+        'media',
+        'spoiler',
+        'row',
+        'id',
+    )
+
     def __init__(
         self,
         media: Union[str, UnfurledMediaItem],

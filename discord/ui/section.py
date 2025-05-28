@@ -67,6 +67,11 @@ class Section(Item[V]):
         The ID of this component. This must be unique across the view.
     """
 
+    __item_repr_attributes__ = (
+        'accessory',
+        'row',
+        'id',
+    )
     __discord_ui_section__: ClassVar[bool] = True
     __discord_ui_update_view__: ClassVar[bool] = True
 
@@ -93,6 +98,9 @@ class Section(Item[V]):
         self.accessory: Item[V] = accessory
         self.row = row
         self.id = id
+
+    def __repr__(self) -> str:
+        return f'<{super().__repr__()[:-1]} children={len(self._children)}'
 
     @property
     def type(self) -> Literal[ComponentType.section]:

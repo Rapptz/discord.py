@@ -132,6 +132,12 @@ class Container(Item[V]):
     __container_children_items__: ClassVar[Dict[str, Union[ItemCallbackType[Any], Item[Any]]]] = {}
     __discord_ui_update_view__: ClassVar[bool] = True
     __discord_ui_container__: ClassVar[bool] = True
+    __item_repr_attributes__ = (
+        'accent_colour',
+        'spoiler',
+        'row',
+        'id',
+    )
 
     def __init__(
         self,
@@ -156,6 +162,9 @@ class Container(Item[V]):
         self.row = row
         self.id = id
 
+    def __repr__(self) -> str:
+        return f'<{super().__repr__()[:-1]} children={len(self._children)}>'
+
     def _add_dispatchable(self, item: Item[Any]) -> None:
         self.__dispatchable.append(item)
 
@@ -173,14 +182,13 @@ class Container(Item[V]):
             if isinstance(raw, Item):
                 item = copy.deepcopy(raw)
                 item._parent = self
-                if getattr(item, '__discord_ui_action_row__', False):
+                if getattr(item, '__discord_ui_action_row__', False) and item.is_dispatchable():
                     if item.is_dispatchable():
                         self.__dispatchable.extend(item._children)  # type: ignore
-                if getattr(item, '__discord_ui_section__', False):
-                    if item.accessory.is_dispatchable():  # type: ignore
-                        if item.accessory._provided_custom_id is False:  # type: ignore
-                            item.accessory.custom_id = os.urandom(16).hex()  # type: ignore
-                        self.__dispatchable.append(item.accessory)  # type: ignore
+                if getattr(item, '__discord_ui_section__', False) and item.accessory.is_dispatchable():  # type: ignore
+                    if item.accessory._provided_custom_id is False:  # type: ignore
+                        item.accessory.custom_id = os.urandom(16).hex()  # type: ignore
+                    self.__dispatchable.append(item.accessory)  # type: ignore
 
                 setattr(self, name, item)
                 children.append(item)
@@ -415,7 +423,7 @@ class Container(Item[V]):
                     self._view._total_children -= 1
         return self
 
-    def get_item_by_id(self, id: int, /) -> Optional[Item[V]]:
+    def get_item(self, id: int, /) -> Optional[Item[V]]:
         """Gets an item with :attr:`Item.id` set as ``id``, or ``None`` if
         not found.
 
@@ -433,7 +441,7 @@ class Container(Item[V]):
         Optional[:class:`Item`]
             The item found, or ``None``.
         """
-        return _utils_get(self._children, id=id)
+        return _utils_get(self.walk_children(), id=id)
 
     def clear_items(self) -> Self:
         """Removes all the items from the container.

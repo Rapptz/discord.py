@@ -67,6 +67,12 @@ class MediaGallery(Item[V]):
         The ID of this component. This must be unique across the view.
     """
 
+    __item_repr_attributes__ = (
+        'items',
+        'row',
+        'id',
+    )
+
     def __init__(
         self,
         *items: MediaGalleryItem,
@@ -82,6 +88,9 @@ class MediaGallery(Item[V]):
 
         self.row = row
         self.id = id
+
+    def __repr__(self) -> str:
+        return f'<{super().__repr__()[:-1]} items={len(self._underlying.items)}>'
 
     @property
     def items(self) -> List[MediaGalleryItem]:

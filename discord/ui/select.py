@@ -217,6 +217,7 @@ class BaseSelect(Item[V]):
         'min_values',
         'max_values',
         'disabled',
+        'id',
     )
     __component_attributes__: Tuple[str, ...] = (
         'custom_id',
@@ -362,6 +363,9 @@ class BaseSelect(Item[V]):
         constructor = type_to_cls.get(component.type, Select)
         kwrgs = {key: getattr(component, key) for key in constructor.__component_attributes__}
         return constructor(**kwrgs)
+
+    def _can_be_dynamic(self) -> bool:
+        return True
 
 
 class Select(BaseSelect[V]):

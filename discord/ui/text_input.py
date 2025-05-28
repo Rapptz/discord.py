@@ -102,6 +102,7 @@ class TextInput(Item[V]):
         'label',
         'placeholder',
         'required',
+        'id',
     )
 
     def __init__(
