@@ -24,7 +24,6 @@ DEALINGS IN THE SOFTWARE.
 from __future__ import annotations
 
 import sys
-from itertools import groupby
 from typing import TYPE_CHECKING, Any, Dict, Generator, List, Literal, Optional, TypeVar, Union, ClassVar
 
 from .item import Item
@@ -255,8 +254,8 @@ class Section(Item[V]):
                 return item._row
             return sys.maxsize
 
-        for _, comps in groupby(self._children, key=key):
-            components.extend(c.to_component_dict() for c in comps)
+        for component in sorted(self._children, key=key):
+            components.append(component.to_component_dict())
         return components
 
     def to_component_dict(self) -> Dict[str, Any]:
