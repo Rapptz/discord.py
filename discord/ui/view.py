@@ -795,7 +795,7 @@ class BaseView:
 
         You can find out about this format in the :ddocs:`official Discord documentation <components/reference#anatomy-of-a-component>`.
 
-        This method shuold be called on the respective class (or subclass), so if you
+        This method should be called on the respective class (or subclass), so if you
         want to convert v2 items, you should call :meth:`LayoutView.from_dict`, or the same
         method from any subclass of it; and not :meth:`View.from_message`, or the same
         method from any subclass of it.
