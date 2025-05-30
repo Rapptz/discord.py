@@ -1287,6 +1287,51 @@ class InteractionResponse(Generic[ClientT]):
 
         self._response_type = InteractionResponseType.autocomplete_result
 
+    async def launch_activity(self) -> InteractionCallbackResponse[ClientT]:
+        """|coro|
+
+        Responds to this interaction by launching the activity associated with the app.
+
+        Only available for apps with activities enabled.
+
+        Raises
+        -------
+        HTTPException
+            Launching the activity failed.
+        InteractionResponded
+            This interaction has already been responded to before.
+
+        Returns
+        -------
+        :class:`InteractionCallbackResponse`
+            The interaction callback data.
+        """
+        if self._response_type:
+            raise InteractionResponded(self._parent)
+
+        parent = self._parent
+
+        adapter = async_context.get()
+        http = parent._state.http
+
+        params = interaction_response_params(InteractionResponseType.launch_activity.value)
+        response = await adapter.create_interaction_response(
+            parent.id,
+            parent.token,
+            session=parent._session,
+            proxy=http.proxy,
+            proxy_auth=http.proxy_auth,
+            params=params,
+        )
+        self._response_type = InteractionResponseType.launch_activity
+
+        return InteractionCallbackResponse(
+            data=response,
+            parent=self._parent,
+            state=self._parent._state,
+            type=self._response_type,
+        )
+
 
 class _InteractionMessageState:
     __slots__ = ('_parent', '_interaction')
