@@ -1162,12 +1162,15 @@ class ViewStore:
 
     def dispatch_view(self, component_type: int, custom_id: str, interaction: Interaction) -> None:
         self.dispatch_dynamic_items(component_type, custom_id, interaction)
+        interaction_id: Optional[int] = None
         message_id: Optional[int] = None
         # Realistically, in a component based interaction the Interaction.message will never be None
         # However, this guard is just in case Discord screws up somehow
         msg = interaction.message
         if msg is not None:
             message_id = msg.id
+            if msg.interaction_metadata:
+                interaction_id = msg.interaction_metadata.id
 
         key = (component_type, custom_id)
 
@@ -1176,10 +1179,27 @@ class ViewStore:
         if message_id is not None:
             item = self._views.get(message_id, {}).get(key)
 
+        if item is None and interaction_id is not None:
+            try:
+                items = self._views.pop(interaction_id)
+            except KeyError:
+                item = None
+            else:
+                item = items.get(key)
+                # If we actually got the items, then these keys should probably be moved
+                # to the proper message_id instead of the interaction_id as they are now.
+                # An interaction_id is only used as a temporary stop gap for
+                # InteractionResponse.send_message so multiple view instances do not
+                # override each other.
+                # NOTE: Fix this mess if /callback endpoint ever gets proper return types
+                self._views.setdefault(message_id, {}).update(items)
+
         if item is None:
+            # Fallback to None message_id searches in case a persistent view
+            # was added without an associated message_id
             item = self._views.get(None, {}).get(key)
 
-        # If 2 lookups failed at this point then just discard it
+        # If 3 lookups failed at this point then just discard it
         if item is None:
             return
 
@@ -1198,6 +1218,11 @@ class ViewStore:
             return
 
         modal._dispatch_submit(interaction, components)
+
+    def remove_interaction_mapping(self, interaction_id: int) -> None:
+        # This is called before re-adding the view
+        self._views.pop(interaction_id, None)
+        self._synced_message_views.pop(interaction_id, None)
 
     def is_message_tracked(self, message_id: int) -> bool:
         return message_id in self._synced_message_views
