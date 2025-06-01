@@ -595,7 +595,7 @@ class BaseView:
         Optional[:class:`Item`]
             The item found, or ``None``.
         """
-        return _utils_get(self._children, id=id)
+        return _utils_get(self.walk_children(), id=id)
 
     async def interaction_check(self, interaction: Interaction, /) -> bool:
         """|coro|
