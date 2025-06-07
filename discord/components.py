@@ -1050,7 +1050,7 @@ class MediaGalleryItem:
             'spoiler': self.spoiler,
         }
 
-        if self.description is not None:
+        if self.description:
             payload['description'] = self.description
 
         return payload
