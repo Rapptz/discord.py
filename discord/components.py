@@ -1261,6 +1261,10 @@ class Container(Component):
 
     accent_color = accent_colour
 
+    @property
+    def type(self) -> Literal[ComponentType.container]:
+        return ComponentType.container
+
     def to_dict(self) -> ContainerComponentPayload:
         payload: ContainerComponentPayload = {
             'type': self.type.value,  # type: ignore
