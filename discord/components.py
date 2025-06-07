@@ -1267,9 +1267,9 @@ class Container(Component):
 
     def to_dict(self) -> ContainerComponentPayload:
         payload: ContainerComponentPayload = {
-            'type': self.type.value,  # type: ignore
+            'type': self.type.value,
             'spoiler': self.spoiler,
-            'components': [c.to_dict() for c in self.children],
+            'components': [c.to_dict() for c in self.children],  # pyright: ignore[reportAssignmentType]
         }
         if self.id is not None:
             payload['id'] = self.id
