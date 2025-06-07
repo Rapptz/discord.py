@@ -156,7 +156,7 @@ class ThumbnailComponent(ComponentBase):
 
 class MediaGalleryItem(TypedDict):
     media: UnfurledMediaItem
-    description: NotRequired[Optional[str]]
+    description: NotRequired[str]
     spoiler: NotRequired[bool]
 
 
