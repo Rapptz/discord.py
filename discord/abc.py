@@ -1710,16 +1710,32 @@ class Messageable:
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
 
-    async def pins(self) -> List[Message]:
+    async def pins(self, *, before: Optional[SnowflakeTime] = None, limit: Optional[int] = None) -> List[Message]:
         """|coro|
 
-        Retrieves all messages that are currently pinned in the channel.
+        Retrieves a maximum of 50 pinned messages from the destination.
+
+        Requires the :attr:`~discord.Permissions.view_channel` permission.
+
+        No pins will be returned if the user is missing the
+        :attr:`~discord.Permissions.read_message_history` permission.
 
         .. note::
 
             Due to a limitation with the Discord API, the :class:`.Message`
             objects returned by this method do not contain complete
             :attr:`.Message.reactions` data.
+
+        Parameters
+        -----------
+        before: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
+            Retrieve pinned messages before this date or message.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+        limit: Optional[int]
+            The maximum number of pinned messages to retrieve. Defaults to 50.
+
+            This must be a number between 1 and 50.
 
         Raises
         -------
@@ -1733,11 +1749,13 @@ class Messageable:
         List[:class:`~discord.Message`]
             The messages that are currently pinned.
         """
+        if isinstance(before, datetime):
+            before = Object(id=utils.time_snowflake(before, high=False))
 
         channel = await self._get_channel()
         state = self._state
-        data = await state.http.pins_from(channel.id)
-        return [state.create_message(channel=channel, data=m) for m in data]
+        data = await state.http.pins_from(channel.id, before=before.id if before else None, limit=limit)
+        return [state.create_message(channel=channel, data=m["message"]) for m in data["items"]]
 
     async def history(
         self,
