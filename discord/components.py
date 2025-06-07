@@ -1045,11 +1045,15 @@ class MediaGalleryItem:
         return [cls._from_data(item, state) for item in items]
 
     def to_dict(self) -> MediaGalleryItemPayload:
-        return {
+        payload: MediaGalleryItemPayload = {
             'media': self.media.to_dict(),  # type: ignore
-            'description': self.description,
             'spoiler': self.spoiler,
         }
+
+        if self.description is not None:
+            payload['description'] = self.description
+
+        return payload
 
 
 class MediaGalleryComponent(Component):
