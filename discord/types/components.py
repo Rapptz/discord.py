@@ -144,6 +144,7 @@ class UnfurledMediaItem(TypedDict):
     content_type: NotRequired[str]
     placeholder: str
     loading_state: MediaItemLoadingState
+    attachment_id: NotRequired[int]
     flags: NotRequired[int]
 
 
@@ -169,6 +170,8 @@ class FileComponent(ComponentBase):
     type: Literal[13]
     file: UnfurledMediaItem
     spoiler: NotRequired[bool]
+    name: NotRequired[str]
+    size: NotRequired[int]
 
 
 class SeparatorComponent(ComponentBase):
