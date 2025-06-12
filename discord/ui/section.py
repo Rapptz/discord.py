@@ -236,13 +236,14 @@ class Section(Item[V]):
 
     @classmethod
     def from_component(cls, component: SectionComponent) -> Self:
-        from .view import _component_to_item  # >circular import<
+        from .view import _component_to_item
 
-        return cls(
-            *[_component_to_item(c) for c in component.components],
-            accessory=_component_to_item(component.accessory),
-            id=component.id,
-        )
+        self = cls.__new__(cls)
+        self.accessory = _component_to_item(component.accessory, self)
+        self.id = component.id
+        self._children = [_component_to_item(c, self) for c in component.components]
+
+        return self
 
     def to_components(self) -> List[Dict[str, Any]]:
         components = []

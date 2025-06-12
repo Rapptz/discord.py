@@ -321,12 +321,17 @@ class Container(Item[V]):
 
     @classmethod
     def from_component(cls, component: ContainerComponent) -> Self:
-        return cls(
-            *[_component_to_item(c) for c in component.children],
+        self = cls(
             accent_colour=component.accent_colour,
             spoiler=component.spoiler,
             id=component.id,
         )
+        self._children = [
+            _component_to_item(
+                cmp, self
+            ) for cmp in component.children
+        ]
+        return self
 
     def walk_children(self) -> Generator[Item[V], None, None]:
         """An iterator that recursively walks through all the children of this container

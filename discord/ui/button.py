@@ -152,7 +152,6 @@ class Button(Item[V]):
             sku_id=sku_id,
             id=id,
         )
-        self._parent: Optional[ActionRow] = None
         self.row = row
         self.id = id
 

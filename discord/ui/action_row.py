@@ -601,5 +601,5 @@ class ActionRow(Item[V]):
 
         self = cls()
         for cmp in component.children:
-            self.add_item(_component_to_item(cmp))
+            self.add_item(_component_to_item(cmp, self))
         return self

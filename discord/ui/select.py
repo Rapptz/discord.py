@@ -264,7 +264,6 @@ class BaseSelect(Item[V]):
 
         self.row = row
         self.id = id
-        self._parent: Optional[ActionRow] = None
         self._values: List[PossibleValue] = []
 
     @property
