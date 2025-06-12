@@ -1144,8 +1144,21 @@ class ViewStore:
             return
 
         # Swap the item in the view or parent with our new dynamic item
+        # if the item has a parent, then it is a nested item
         if base_item._parent:
-            base_item._parent._children[base_item_index] = item  # type: ignore
+            # try and find the item reference on the parent children
+            try:
+                child_index = base_item._parent._children.index(base_item)  # type: ignore
+            except ValueError:
+                # there can be cases in which the button is an accessory
+                # of a section, so the index will fail
+                if getattr(base_item._parent, '__discord_ui_section__', False):
+                    accessory = base_item._parent.accessory  # type: ignore
+                    if accessory.type.value == component_type and getattr(accessory, 'custom_id', None) == custom_id:
+                        base_item._parent.accessory = item  # type: ignore
+            else:
+                base_item._parent._children[child_index] = item  # type: ignore
+        # if it does not have a parent then it is at top level
         else:
             view._children[base_item_index] = item  # type: ignore
         item._view = view
