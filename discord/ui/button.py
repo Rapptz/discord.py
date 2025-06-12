@@ -43,7 +43,6 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from .view import BaseView
-    from .action_row import ActionRow
     from ..emoji import Emoji
     from ..types.components import ButtonComponent as ButtonComponentPayload
 

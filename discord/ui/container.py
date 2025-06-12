@@ -326,11 +326,7 @@ class Container(Item[V]):
             spoiler=component.spoiler,
             id=component.id,
         )
-        self._children = [
-            _component_to_item(
-                cmp, self
-            ) for cmp in component.children
-        ]
+        self._children = [_component_to_item(cmp, self) for cmp in component.children]
         return self
 
     def walk_children(self) -> Generator[Item[V], None, None]:
