@@ -1062,7 +1062,7 @@ class ViewStore:
                 pattern = item.__discord_ui_compiled_template__
                 self._dynamic_items[pattern] = item.__class__
             elif item.is_dispatchable():
-                dispatch_info[(item.type.value, item.custom_id)] = item
+                dispatch_info[(item.type.value, item.custom_id)] = item  # type: ignore
                 is_fully_dynamic = False
 
         view._cache_key = message_id
@@ -1081,7 +1081,7 @@ class ViewStore:
                     pattern = item.__discord_ui_compiled_template__
                     self._dynamic_items.pop(pattern, None)
                 elif item.is_dispatchable():
-                    dispatch_info.pop((item.type.value, item.custom_id), None)
+                    dispatch_info.pop((item.type.value, item.custom_id), None)  # type: ignore
 
             if len(dispatch_info) == 0:
                 self._views.pop(view._cache_key, None)
