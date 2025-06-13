@@ -1057,39 +1057,13 @@ class ViewStore:
 
         dispatch_info = self._views.setdefault(message_id, {})
         is_fully_dynamic = True
-        for item in view._children:
+        for item in view.walk_children():
             if isinstance(item, DynamicItem):
                 pattern = item.__discord_ui_compiled_template__
                 self._dynamic_items[pattern] = item.__class__
             elif item.is_dispatchable():
-                if getattr(item, '__discord_ui_container__', False):
-                    is_fully_dynamic = (
-                        item._update_store_data(  # type: ignore
-                            dispatch_info,
-                            self._dynamic_items,
-                        )
-                        or is_fully_dynamic
-                    )
-                elif getattr(item, '__discord_ui_action_row__', False):
-                    is_fully_dynamic = (
-                        item._update_store_data(  # type: ignore
-                            dispatch_info,
-                            self._dynamic_items,
-                        )
-                        or is_fully_dynamic
-                    )
-                elif getattr(item, '__discord_ui_section__', False):
-                    accessory: Item = item.accessory  # type: ignore
-                    accessory._view = view
-
-                    if isinstance(accessory, DynamicItem):
-                        pattern = accessory.__discord_ui_compiled_template__
-                        self._dynamic_items[pattern] = accessory.__class__
-                    else:
-                        dispatch_info[(accessory.type.value, accessory.custom_id)] = accessory
-                else:
-                    dispatch_info[(item.type.value, item.custom_id)] = item
-                    is_fully_dynamic = False
+                dispatch_info[(item.type.value, item.custom_id)] = item
+                is_fully_dynamic = False
 
         view._cache_key = message_id
         if message_id is not None and not is_fully_dynamic:

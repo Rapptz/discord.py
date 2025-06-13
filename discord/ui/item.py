@@ -83,11 +83,6 @@ class Item(Generic[V]):
         self._max_row: int = 5 if not self._is_v2() else 40
         self._parent: Optional[Item] = None
 
-        if self._is_v2():
-            # this is done so v2 components can be stored on ViewStore._views
-            # and does not break v1 components custom_id property
-            self.custom_id: str = os.urandom(16).hex()
-
     def to_component_dict(self) -> Dict[str, Any]:
         raise NotImplementedError
 

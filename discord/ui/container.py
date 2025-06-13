@@ -213,12 +213,6 @@ class Container(Item[V]):
 
         return children
 
-    def is_dispatchable(self) -> bool:
-        return bool(self.__dispatchable)
-
-    def is_persistent(self) -> bool:
-        return all(c.is_persistent() for c in self.children)
-
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
 

@@ -207,12 +207,6 @@ class ActionRow(Item[V]):
                 is_fully_dynamic = False
         return is_fully_dynamic
 
-    def is_dispatchable(self) -> bool:
-        return any(c.is_dispatchable() for c in self.children)
-
-    def is_persistent(self) -> bool:
-        return all(c.is_persistent() for c in self.children)
-
     def _update_children_view(self, view: LayoutView) -> None:
         for child in self._children:
             child._view = view  # pyright: ignore[reportAttributeAccessIssue]

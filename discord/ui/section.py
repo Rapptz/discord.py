@@ -117,16 +117,6 @@ class Section(Item[V]):
     def _is_v2(self) -> bool:
         return True
 
-    # Accessory can be a button, and thus it can have a callback so, maybe
-    # allow for section to be dispatchable and make the callback func
-    # be accessory component callback, only called if accessory is
-    # dispatchable?
-    def is_dispatchable(self) -> bool:
-        return self.accessory.is_dispatchable()
-
-    def is_persistent(self) -> bool:
-        return self.accessory.is_persistent()
-
     def walk_children(self) -> Generator[Item[V], None, None]:
         """An iterator that recursively walks through all the children of this section.
         and it's children, if applicable.
