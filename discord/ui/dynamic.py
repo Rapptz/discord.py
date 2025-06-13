@@ -156,7 +156,7 @@ class DynamicItem(Generic[BaseT], Item[Union[View, LayoutView]]):
         if not self.template.match(value):
             raise ValueError(f'custom_id must match the template {self.template.pattern!r}')
 
-        self.item.custom_id = value  # type: ignore  # This attribute exists for dispatchable itesm
+        self.item.custom_id = value  # type: ignore  # This attribute exists for dispatchable items
         self._provided_custom_id = True
 
     @property
