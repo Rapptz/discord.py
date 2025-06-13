@@ -706,7 +706,7 @@ class BaseView:
     def _refresh(self, components: List[Component]) -> None:
         # fmt: off
         old_state: Dict[str, Item[Any]] = {
-            item.custom_id: item
+            item.custom_id: item  # type: ignore
             for item in self._children
             if item.is_dispatchable()
         }

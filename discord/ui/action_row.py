@@ -44,7 +44,6 @@ from typing import (
 
 from .item import Item, ItemCallbackType
 from .button import Button, button as _button
-from .dynamic import DynamicItem
 from .select import select as _select, Select, UserSelect, RoleSelect, ChannelSelect, MentionableSelect
 from ..components import ActionRow as ActionRowComponent
 from ..enums import ButtonStyle, ComponentType, ChannelType

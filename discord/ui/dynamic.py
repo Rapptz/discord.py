@@ -146,7 +146,7 @@ class DynamicItem(Generic[BaseT], Item[Union[View, LayoutView]]):
     @property
     def custom_id(self) -> str:
         """:class:`str`: The ID of the dynamic item that gets received during an interaction."""
-        return self.item.custom_id
+        return self.item.custom_id  # type: ignore
 
     @custom_id.setter
     def custom_id(self, value: str) -> None:
@@ -156,7 +156,7 @@ class DynamicItem(Generic[BaseT], Item[Union[View, LayoutView]]):
         if not self.template.match(value):
             raise ValueError(f'custom_id must match the template {self.template.pattern!r}')
 
-        self.item.custom_id = value
+        self.item.custom_id = value  # type: ignore
         self._provided_custom_id = True
 
     @property

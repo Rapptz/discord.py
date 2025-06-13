@@ -36,15 +36,12 @@ from typing import (
     List,
     Literal,
     Optional,
-    Tuple,
-    Type,
     TypeVar,
     Union,
 )
 
 from .item import Item, ItemCallbackType
 from .view import _component_to_item, LayoutView
-from .dynamic import DynamicItem
 from ..enums import ComponentType
 from ..utils import MISSING, get as _utils_get
 from ..colour import Colour, Color
