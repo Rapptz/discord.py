@@ -195,18 +195,6 @@ class ActionRow(Item[V]):
             children.append(item)
         return children
 
-    def _update_store_data(self, dispatch_info: Dict, dynamic_items: Dict) -> bool:
-        is_fully_dynamic = True
-
-        for item in self._children:
-            if isinstance(item, DynamicItem):
-                pattern = item.__discord_ui_compiled_template__
-                dynamic_items[pattern] = item.__class__
-            elif item.is_dispatchable():
-                dispatch_info[(item.type.value, item.custom_id)] = item
-                is_fully_dynamic = False
-        return is_fully_dynamic
-
     def _update_children_view(self, view: LayoutView) -> None:
         for child in self._children:
             child._view = view  # pyright: ignore[reportAttributeAccessIssue]
@@ -276,9 +264,6 @@ class ActionRow(Item[V]):
 
         if self._view and getattr(self._view, '__discord_ui_layout_view__', False):
             self._view._total_children += 1
-
-        if item.is_dispatchable() and self._parent and getattr(self._parent, '__discord_ui_container__', False):
-            self._parent._add_dispatchable(item)  # type: ignore
 
         return self
 
