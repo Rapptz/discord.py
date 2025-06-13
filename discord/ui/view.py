@@ -1129,9 +1129,9 @@ class ViewStore:
         view = view_cls.from_message(interaction.message, timeout=None)
 
         try:
-            base_item_index, base_item = next(
-                (index, child)
-                for index, child in enumerate(view.walk_children())
+            base_item = next(
+                child
+                for child in view.walk_children()
                 if child.type.value == component_type and getattr(child, 'custom_id', None) == custom_id
             )
         except StopIteration:
@@ -1144,23 +1144,24 @@ class ViewStore:
             return
 
         # Swap the item in the view or parent with our new dynamic item
-        # if the item has a parent, then it is a nested item
-        if base_item._parent:
-            # try and find the item reference on the parent children
-            try:
-                child_index = base_item._parent._children.index(base_item)  # type: ignore
-            except ValueError:
-                # there can be cases in which the button is an accessory
-                # of a section, so the index will fail
-                if getattr(base_item._parent, '__discord_ui_section__', False):
-                    accessory = base_item._parent.accessory  # type: ignore
-                    if accessory.type.value == component_type and getattr(accessory, 'custom_id', None) == custom_id:
-                        base_item._parent.accessory = item  # type: ignore
+        # Prioritize the item parent:
+        parent = base_item._parent or view
+
+        try:
+            child_index = parent._children.index(base_item)  # type: ignore
+        except ValueError:
+            # handle cases in which the item is a section accesory
+            if getattr(base_item._parent, '__discord_ui_section__', False):
+                if (
+                    base_item._parent.accessory.type.value == component_type  # type: ignore
+                    and getattr(base_item._parent.accessory, 'custom_id', None) == custom_id  # type: ignore
+                ):
+                    base_item._parent.accessory = item  # type: ignore
             else:
-                base_item._parent._children[child_index] = item  # type: ignore
-        # if it does not have a parent then it is at top level
+                return
         else:
-            view._children[base_item_index] = item  # type: ignore
+            parent._children[child_index] = item  # type: ignore
+
         item._view = view
         item._rendered_row = base_item._rendered_row
         item._refresh_state(interaction, interaction.data)  # type: ignore
