@@ -1749,7 +1749,6 @@ class Messageable:
         List[:class:`~discord.Message`]
             The messages that are currently pinned.
         """
-        state = self._state
         if before is not None:
             if not isinstance(before, datetime):
                 raise TypeError(f'before must be a datetime object, not {before.__class__!r}')
@@ -1758,6 +1757,7 @@ class Messageable:
                     'before must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
                 )
 
+        state = self._state
         channel = await self._get_channel()
         data = await state.http.pins_from(channel.id, before=before.isoformat() if before else None, limit=limit)
         ret: List[Message] = []
