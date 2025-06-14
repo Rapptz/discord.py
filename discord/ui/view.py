@@ -70,7 +70,7 @@ from ..components import (
     SelectOption,
     Container as ContainerComponent,
 )
-from ..utils import get as _utils_get, _get_as_snowflake
+from ..utils import get as _utils_get, _get_as_snowflake, find as _utils_find
 from ..enums import SeparatorSpacing, TextStyle, try_enum, ButtonStyle
 from ..emoji import PartialEmoji
 
@@ -412,8 +412,9 @@ class BaseView:
             await asyncio.sleep(self.__timeout_expiry - now)
 
     def is_dispatchable(self) -> bool:
-        # this is used by webhooks to check whether a view requires a state attached
-        # or not, this simply is, whether a view has a component other than a url button
+        # checks whether any interactable items (buttons or selects) are present
+        # in this view, and check whether this requires a state attached in case
+        # of webhooks and if the view should be stored in the view store
         return any(item.is_dispatchable() for item in self.children)
 
     def has_components_v2(self) -> bool:
@@ -1102,13 +1103,13 @@ class ViewStore:
         view_cls = View if not interaction.message.flags.components_v2 else LayoutView
         view = view_cls.from_message(interaction.message, timeout=None)
 
-        try:
-            base_item = next(
-                child
-                for child in view.walk_children()
-                if child.type.value == component_type and getattr(child, 'custom_id', None) == custom_id
-            )
-        except StopIteration:
+        base_item = _utils_find(
+            lambda i: i.type.value == component_type and getattr(i, 'custom_id', None) == custom_id,
+            view.walk_children(),
+        )
+
+        # if the item is not found then return
+        if not base_item:
             return
 
         try:
@@ -1124,7 +1125,7 @@ class ViewStore:
         try:
             child_index = parent._children.index(base_item)  # type: ignore
         except ValueError:
-            # handle cases in which the item is a section accesory
+            # handle cases in which the item is a section accessory
             if getattr(base_item._parent, '__discord_ui_section__', False):
                 if (
                     base_item._parent.accessory.type.value == component_type  # type: ignore

@@ -592,7 +592,7 @@ class Interaction(Generic[ClientT]):
         # The message channel types should always match
         state = _InteractionMessageState(self, self._state)
         message = InteractionMessage(state=state, channel=self.channel, data=data)  # type: ignore
-        if view and not view.is_finished():
+        if view and not view.is_finished() and view.is_dispatchable():
             self._state.store_view(view, message.id, interaction_id=self.id)
         return message
 
@@ -1252,7 +1252,7 @@ class InteractionResponse(Generic[ClientT]):
             params=params,
         )
 
-        if view and not view.is_finished():
+        if view and not view.is_finished() and view.is_dispatchable():
             state.store_view(view, message_id, interaction_id=original_interaction_id)
 
         self._response_type = InteractionResponseType.message_update

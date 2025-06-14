@@ -1678,7 +1678,7 @@ class Messageable:
             data = await state.http.send_message(channel.id, params=params)
 
         ret = state.create_message(channel=channel, data=data)
-        if view and not view.is_finished():
+        if view and not view.is_finished() and view.is_dispatchable():
             state.store_view(view, ret.id)
 
         if poll:
