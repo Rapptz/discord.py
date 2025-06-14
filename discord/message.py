@@ -2171,6 +2171,7 @@ class Message(PartialMessage, Hashable):
         'call',
         'purchase_notification',
         'message_snapshots',
+        '_pinned_at',
     )
 
     if TYPE_CHECKING:
@@ -2210,6 +2211,8 @@ class Message(PartialMessage, Hashable):
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
+        # Set by Messageable.pins
+        self._pinned_at: Optional[datetime.datetime] = None
 
         self.poll: Optional[Poll] = None
         try:
@@ -2629,6 +2632,18 @@ class Message(PartialMessage, Hashable):
         if self.guild is not None:
             # Fall back to guild threads in case one was created after the message
             return self._thread or self.guild.get_thread(self.id)
+        
+    @property
+    def pinned_at(self) -> Optional[datetime.datetime]:
+        """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the time 
+        when the message was pinned.
+
+        .. note::
+            This is only set for messages that are returned by :meth:`Messageable.pins`.
+
+        .. versionadded:: 2.6
+        """
+        return self._pinned_at
 
     @property
     @deprecated('interaction_metadata')

@@ -1710,7 +1710,7 @@ class Messageable:
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
 
-    async def pins(self, *, before: Optional[SnowflakeTime] = None, limit: Optional[int] = None) -> List[Message]:
+    async def pins(self, *, before: Optional[datetime] = None, limit: Optional[int] = None) -> List[Message]:
         """|coro|
 
         Retrieves a maximum of 50 pinned messages from the destination.
@@ -1728,8 +1728,8 @@ class Messageable:
 
         Parameters
         -----------
-        before: Optional[Union[:class:`~discord.abc.Snowflake`, :class:`datetime.datetime`]]
-            Retrieve pinned messages before this date or message.
+        before: Optional[:class:`datetime.datetime`]
+            Retrieve pinned messages before this time.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
             If the datetime is naive, it is assumed to be local time.
         limit: Optional[int]
@@ -1749,13 +1749,17 @@ class Messageable:
         List[:class:`~discord.Message`]
             The messages that are currently pinned.
         """
-        if isinstance(before, datetime):
-            before = Object(id=utils.time_snowflake(before, high=False))
+        state = self._state
+        if before is not None:
+            if not isinstance(before, datetime):
+                raise TypeError(f'before must be a datetime object, not {before.__class__!r}')
+            if before.tzinfo is None:
+                raise TypeError(
+                    'before must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                )
 
         channel = await self._get_channel()
-        state = self._state
-        data = await state.http.pins_from(channel.id, before=before.id if before else None, limit=limit)
-        return [state.create_message(channel=channel, data=m["message"]) for m in data["items"]]
+        data = await state.http.pins_from(channel.id, before=before.isoformat() if before else None, limit=limit)
 
     async def history(
         self,

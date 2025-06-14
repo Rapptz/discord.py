@@ -1054,7 +1054,7 @@ class HTTPClient:
     def pins_from(
         self,
         channel_id: Snowflake,
-        before: Optional[Snowflake] = None,
+        before: Optional[str] = None,
         limit: Optional[int] = None,
     ) -> Response[message.ChannelPins]:
         params = {}
