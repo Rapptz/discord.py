@@ -1760,6 +1760,12 @@ class Messageable:
 
         channel = await self._get_channel()
         data = await state.http.pins_from(channel.id, before=before.isoformat() if before else None, limit=limit)
+        ret: List[Message] = []
+        for m in data["items"]:
+            message = state.create_message(channel=channel, data=m["message"])
+            message._pinned_at = utils.parse_time(m.get("pinned_at"))
+            ret.append(message)
+        return ret
 
     async def history(
         self,
