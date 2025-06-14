@@ -577,7 +577,7 @@ class ActionRow(Item[V]):
     def from_component(cls, component: ActionRowComponent) -> ActionRow:
         from .view import _component_to_item
 
-        self = cls()
+        self = cls(id=component.id)
         for cmp in component.children:
             self.add_item(_component_to_item(cmp, self))
         return self
