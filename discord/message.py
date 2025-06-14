@@ -2632,10 +2632,10 @@ class Message(PartialMessage, Hashable):
         if self.guild is not None:
             # Fall back to guild threads in case one was created after the message
             return self._thread or self.guild.get_thread(self.id)
-        
+
     @property
     def pinned_at(self) -> Optional[datetime.datetime]:
-        """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the time 
+        """Optional[:class:`datetime.datetime`]: An aware UTC datetime object containing the time
         when the message was pinned.
 
         .. note::
