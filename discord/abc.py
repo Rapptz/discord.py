@@ -1735,7 +1735,7 @@ class Messageable:
         limit: Optional[int]
             The maximum number of pinned messages to retrieve. Defaults to 50.
 
-            This must be a number between 1 and 50.
+            This must be a number between 2 and 50.
 
         Raises
         -------
