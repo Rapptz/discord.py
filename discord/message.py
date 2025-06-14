@@ -2639,7 +2639,7 @@ class Message(PartialMessage, Hashable):
         when the message was pinned.
 
         .. note::
-            This is only set for messages that are returned by :meth:`Messageable.pins`.
+            This is only set for messages that are returned by :meth:`abc.Messageable.pins`.
 
         .. versionadded:: 2.6
         """
