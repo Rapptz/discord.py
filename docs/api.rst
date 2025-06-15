@@ -1306,6 +1306,7 @@ Scheduled Events
     - The description is changed.
     - The status is changed.
     - The image is changed.
+    - The recurrence rule is changed.
 
     .. versionadded:: 2.0
 
