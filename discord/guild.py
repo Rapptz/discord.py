@@ -3201,6 +3201,7 @@ class Guild(Hashable):
         end_time: datetime.datetime = ...,
         description: str = ...,
         image: bytes = ...,
+        recurrence_rule: str = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -3217,6 +3218,7 @@ class Guild(Hashable):
         end_time: datetime.datetime = ...,
         description: str = ...,
         image: bytes = ...,
+        recurrence_rule: str = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -3232,6 +3234,7 @@ class Guild(Hashable):
         end_time: datetime.datetime = ...,
         description: str = ...,
         image: bytes = ...,
+        recurrence_rule: str = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -3247,6 +3250,7 @@ class Guild(Hashable):
         end_time: datetime.datetime = ...,
         description: str = ...,
         image: bytes = ...,
+        recurrence_rule: str = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -3263,6 +3267,7 @@ class Guild(Hashable):
         end_time: datetime.datetime = MISSING,
         description: str = MISSING,
         image: bytes = MISSING,
+        recurrence_rule: str = MISSING,
         reason: Optional[str] = None,
     ) -> ScheduledEvent:
         r"""|coro|
@@ -3308,6 +3313,9 @@ class Guild(Hashable):
             The location of the scheduled event.
 
             Required if the ``entity_type`` is :attr:`EntityType.external`.
+        recurrence_rule: :class:`str`
+            The recurrence rule for the scheduled event in iCalendar format.
+            This determines how often the event repeats.
         reason: Optional[:class:`str`]
             The reason for creating this scheduled event. Shows up on the audit log.
 
@@ -3376,6 +3384,9 @@ class Guild(Hashable):
         if image is not MISSING:
             image_as_str: str = utils._bytes_to_base64_data(image)
             payload['image'] = image_as_str
+
+        if recurrence_rule is not MISSING:
+            payload['recurrence_rule'] = recurrence_rule
 
         if entity_type in (EntityType.stage_instance, EntityType.voice):
             if channel in (MISSING, None):

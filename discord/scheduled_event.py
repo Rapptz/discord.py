@@ -104,6 +104,9 @@ class ScheduledEvent(Hashable):
         .. versionadded:: 2.2
     location: Optional[:class:`str`]
         The location of the scheduled event.
+    recurrence_rule: Optional[:class:`str`]
+        The recurrence rule for the scheduled event in iCalendar format.
+        This determines how often the event repeats.
     """
 
     __slots__ = (
@@ -125,6 +128,7 @@ class ScheduledEvent(Hashable):
         'channel_id',
         'creator_id',
         'location',
+        'recurrence_rule',
     )
 
     def __init__(self, *, state: ConnectionState, data: GuildScheduledEventPayload) -> None:
@@ -145,6 +149,7 @@ class ScheduledEvent(Hashable):
         self._cover_image: Optional[str] = data.get('image', None)
         self.user_count: int = data.get('user_count', 0)
         self.creator_id: Optional[int] = _get_as_snowflake(data, 'creator_id')
+        self.recurrence_rule: Optional[str] = data.get('recurrence_rule')
 
         creator = data.get('creator')
         self.creator: Optional[User] = self._state.store_user(creator) if creator else None
@@ -343,6 +348,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         location: str,
+        recurrence_rule: str = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -359,6 +365,7 @@ class ScheduledEvent(Hashable):
         privacy_level: PrivacyLevel = ...,
         status: EventStatus = ...,
         image: bytes = ...,
+        recurrence_rule: str = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -375,6 +382,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = ...,
         image: bytes = ...,
         location: str,
+        recurrence_rule: str = ...,
         reason: Optional[str] = ...,
     ) -> ScheduledEvent:
         ...
@@ -392,6 +400,7 @@ class ScheduledEvent(Hashable):
         status: EventStatus = MISSING,
         image: bytes = MISSING,
         location: str = MISSING,
+        recurrence_rule: str = MISSING,
         reason: Optional[str] = None,
     ) -> ScheduledEvent:
         r"""|coro|
@@ -439,6 +448,9 @@ class ScheduledEvent(Hashable):
             The new location of the scheduled event.
 
             Required if the entity type is :attr:`EntityType.external`.
+        recurrence_rule: :class:`str`
+            The recurrence rule for the scheduled event in iCalendar format.
+            This determines how often the event repeats.
         reason: Optional[:class:`str`]
             The reason for editing the scheduled event. Shows up on the audit log.
 
@@ -493,6 +505,9 @@ class ScheduledEvent(Hashable):
         if image is not MISSING:
             image_as_str: Optional[str] = _bytes_to_base64_data(image) if image is not None else image
             payload['image'] = image_as_str
+
+        if recurrence_rule is not MISSING:
+            payload['recurrence_rule'] = recurrence_rule
 
         entity_type = entity_type or getattr(channel, '_scheduled_event_entity_type', MISSING)
         if entity_type is MISSING:
