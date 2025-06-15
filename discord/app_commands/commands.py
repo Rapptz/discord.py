@@ -688,9 +688,7 @@ class Command(Generic[GroupT, P, T]):
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
         self._guild_ids: Optional[List[int]] = guild_ids
         if self._guild_ids is None:
-            self._guild_ids = getattr(
-                callback, '__discord_app_commands_default_guilds__', None
-            )
+            self._guild_ids = getattr(callback, '__discord_app_commands_default_guilds__', None)
         self.default_permissions: Optional[Permissions] = getattr(
             callback, '__discord_app_commands_default_permissions__', None
         )
