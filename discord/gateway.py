@@ -212,6 +212,9 @@ class KeepAliveHandler(threading.Thread):
 
 
 class VoiceKeepAliveHandler(KeepAliveHandler):
+    if TYPE_CHECKING:
+        ws: DiscordVoiceWebSocket
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         name: str = kwargs.pop('name', f'voice-keep-alive-handler:{id(self):#x}')
         super().__init__(*args, name=name, **kwargs)
@@ -223,7 +226,10 @@ class VoiceKeepAliveHandler(KeepAliveHandler):
     def get_payload(self) -> Dict[str, Any]:
         return {
             'op': self.ws.HEARTBEAT,
-            'd': int(time.time() * 1000),
+            'd': {
+                't': int(time.time() * 1000),
+                'seq_ack': self.ws.seq_ack,
+            },
         }
 
     def ack(self) -> None:
@@ -830,6 +836,8 @@ class DiscordVoiceWebSocket:
         self._keep_alive: Optional[VoiceKeepAliveHandler] = None
         self._close_code: Optional[int] = None
         self.secret_key: Optional[List[int]] = None
+        # defaulting to -1
+        self.seq_ack: int = -1
         if hook:
             self._hook = hook  # type: ignore
 
@@ -876,7 +884,7 @@ class DiscordVoiceWebSocket:
         hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
     ) -> Self:
         """Creates a voice websocket for the :class:`VoiceClient`."""
-        gateway = f'wss://{state.endpoint}/?v=4'
+        gateway = f'wss://{state.endpoint}/?v=8'
         client = state.voice_client
         http = client._state.http
         socket = await http.ws_connect(gateway, compress=15)
@@ -926,6 +934,7 @@ class DiscordVoiceWebSocket:
                 'delay': 0,
                 'ssrc': self._connection.ssrc,
             },
+            'seq': self.seq_ack,
         }
 
         await self.send_as_json(payload)
@@ -934,6 +943,7 @@ class DiscordVoiceWebSocket:
         _log.debug('Voice websocket frame received: %s', msg)
         op = msg['op']
         data = msg['d']  # According to Discord this key is always given
+        self.seq_ack = msg.get('seq', self.seq_ack)  # this key may not be given
 
         if op == self.READY:
             await self.initial_connection(data)
