@@ -350,7 +350,7 @@ class Asset(AssetMixin):
     def _from_primary_guild(cls, state: _State, guild_id: int, icon_hash: str) -> Self:
         return cls(
             state,
-            url=f'{cls.BASE}/clan-badges/{guild_id}/{icon_hash}.png?size=16',
+            url=f'{cls.BASE}/clan-badges/{guild_id}/{icon_hash}.png?size=64',
             key=icon_hash,
             animated=False,
         )

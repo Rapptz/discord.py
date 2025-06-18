@@ -51,7 +51,7 @@ class PrimaryGuild:
         self._update(data)
 
     def _update(self, data: PrimaryGuildPayload):
-        self._guild_id = data.get('identity_guild_id', None)
+        self.id = _get_as_snowflake(data, 'identity_guild_id')
         self.identity_enabled = data['identity_enabled']
         self._tag = data.get('tag', None)
         self._badge = data.get('badge')
