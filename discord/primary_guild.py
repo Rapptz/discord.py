@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 
 from .asset import Asset
@@ -37,17 +37,17 @@ if TYPE_CHECKING:
 
 class PrimaryGuild:
     __slots__ = (
-        'guild_id',
+        '_guild_id',
         'identity_enabled',
-        'tag',
+        '_tag',
         '_badge',
         '_state'
     )
 
     if TYPE_CHECKING:
-        guild_id: int
+        _guild_id: int
         identity_enabled: bool
-        tag: str
+        _tag: str
         _badge: str
         _state: ConnectionState
     
@@ -56,20 +56,38 @@ class PrimaryGuild:
         self._update(data)
 
     def _update(self, data: PrimaryGuildPayload):
-        self.guild_id = data['identity_guild_id']
+        self._guild_id = data.get('identity_guild_id', None)
         self.identity_enabled = data['identity_enabled']
-        self.tag = data['tag']
-        self._badge = data['badge']
+        self._tag = data.get('tag', None)
+        self._badge = data.get('badge')
     
     @property
-    def badge(self) -> Asset:
+    def guild_id(self) -> Optional[int]:
+        """:class:`int`: Returns the primary guild's id"""
+        if self._guild_id:
+            return self._guild_id
+        return None
+
+    @property
+    def tag(self) -> Optional[str]:
+        """:class:`str`: Return's the primary guild's tag"""
+        if self._tag:
+            return self._tag
+        return None
+
+    @property
+    def badge(self) -> Optional[Asset]:
         """:class:`Asset`: Returns the primary guild's asset"""
-        return Asset._from_primary_guild(self._state, self.guild_id, self._badge)
+        if self._badge and self.guild_id:
+            return Asset._from_primary_guild(self._state, self.guild_id, self._badge)
+        return None
     
     @property
-    def created_at(self) -> datetime:
+    def created_at(self) -> Optional[datetime]:
         """:class:`datetime.datetime`: Returns the primary guild's creation time in UTC."""
-        return snowflake_time(self.guild_id)
+        if self.guild_id:
+            return snowflake_time(self.guild_id)
+        return None
     
     def __repr__(self) -> str:
         return (
