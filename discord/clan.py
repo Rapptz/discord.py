@@ -23,14 +23,13 @@ DEALINGS IN THE SOFTWARE.
 """
 
 from typing import TYPE_CHECKING
+from datetime import datetime
 
 from .asset import Asset
 from .utils import snowflake_time
+from .types.clan import Clan as ClanPayload
 
 if TYPE_CHECKING:
-    from datetime import datetime
-    
-    from .types.clan import Clan as ClanPayload
     from .state import ConnectionState
 
 
@@ -50,7 +49,7 @@ class Clan:
         _badge: str
         _state: ConnectionState
     
-    def __init__(self, *, state: ConnectionState, data: ClanPayload) -> None:
+    def __init__(self, *, state, data: ClanPayload) -> None:
         self._state = state
         self._update(data)
 
@@ -72,3 +71,9 @@ class Clan:
         This is when the guild, of that clan tag, was created.
         """
         return snowflake_time(self.guild_id)
+    
+    def __repr__(self) -> str:
+        return (
+            f"<guild_id={self.guild_id} identity_enabled={self.identity_enabled} tag={self.tag}"
+            f" badge={self.badge}>"
+        )
