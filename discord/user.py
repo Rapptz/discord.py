@@ -312,11 +312,11 @@ class BaseUser(_UserTag):
         return self.name
 
     @property
-    def primary_guild(self) -> Optional[PrimaryGuild]:
-        """:class:`PrimaryGuild`: Returns the user's primary guild, if applicable."""
-        if self._primary_guild and self._primary_guild.get("identity_enabled"):
+    def primary_guild(self) -> PrimaryGuild:
+        """:class:`PrimaryGuild`: Returns the user's primary guild."""
+        if self._primary_guild:
             return PrimaryGuild(state=self._state, data=self._primary_guild)
-        return None
+        return PrimaryGuild._default(self._state)
 
     def mentioned_in(self, message: Message) -> bool:
         """Checks if the user is mentioned in the specified message.

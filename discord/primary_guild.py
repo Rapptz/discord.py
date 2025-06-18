@@ -33,6 +33,7 @@ from .utils import snowflake_time, _get_as_snowflake
 if TYPE_CHECKING:
     from .state import ConnectionState
     from .types.primary_guild import PrimaryGuild as PrimaryGuildPayload
+    from typing_extensions import Self
 
 
 class PrimaryGuild:
@@ -43,7 +44,9 @@ class PrimaryGuild:
     id: Optional[:class:`int`]
         The ID of the user's primary guild, if any.
     tag: Optional[:class:`str`]
-        The guild's tag.
+        The primary guild's tag.
+    badge: Optional[:class:`Asset`]
+        The primary guild's asset
     identity_enabled: Optional[:class:`bool`]
         Whether the user has their primary guild publicly displayed. If ``None``, the user has a public guild but has not reaffirmed the guild identity after a change
 
@@ -84,6 +87,12 @@ class PrimaryGuild:
         if self.id:
             return snowflake_time(self.id)
         return None
+
+    @classmethod
+    def _default(cls, state: ConnectionState) -> Self:
+        """Creates a blank :class:`PrimaryGuild`"""
+        payload: PrimaryGuildPayload = {"identity_guild_id": None, "identity_enabled": False, "tag": None, "badge": None}
+        return cls(state=state, data=payload)
 
     def __repr__(self) -> str:
         return f'<PrimaryGuild id={self.id} identity_enabled={self.identity_enabled} tag={self.tag}' f' badge={self.badge}>'
