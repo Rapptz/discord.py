@@ -38,12 +38,12 @@ if TYPE_CHECKING:
 class PrimaryGuild:
     """Represents the primary guild (formally known as a clan) of a :class:`User`"""
 
-    __slots__ = ('_id', 'identity_enabled', '_tag', '_badge', '_state')
+    __slots__ = ('id', 'identity_enabled', 'tag', '_badge', '_state')
 
     if TYPE_CHECKING:
-        _id: Optional[int]
+        id: Optional[int]
         identity_enabled: bool
-        _tag: str
+        tag: Optional[str]
         _badge: str
         _state: ConnectionState
 
@@ -52,37 +52,23 @@ class PrimaryGuild:
         self._update(data)
 
     def _update(self, data: PrimaryGuildPayload):
-        self._id = _get_as_snowflake(data, 'identity_guild_id')
+        self.id = _get_as_snowflake(data, 'identity_guild_id')
         self.identity_enabled = data['identity_enabled']
-        self._tag = data.get('tag', None)
+        self.tag = data.get('tag', None)
         self._badge = data.get('badge')
-
-    @property
-    def id(self) -> Optional[int]:
-        """:class:`int`: Returns the primary guild's id"""
-        if self._id:
-            return self._id
-        return None
-
-    @property
-    def tag(self) -> Optional[str]:
-        """:class:`str`: Return's the primary guild's tag"""
-        if self._tag:
-            return self._tag
-        return None
 
     @property
     def badge(self) -> Optional[Asset]:
         """:class:`Asset`: Returns the primary guild's asset"""
-        if self._badge and self._id:
-            return Asset._from_primary_guild(self._state, self._id, self._badge)
+        if self._badge and self.id:
+            return Asset._from_primary_guild(self._state, self.id, self._badge)
         return None
 
     @property
     def created_at(self) -> Optional[datetime]:
         """:class:`datetime.datetime`: Returns the primary guild's creation time in UTC."""
-        if self._id:
-            return snowflake_time(self._id)
+        if self.id:
+            return snowflake_time(self.id)
         return None
 
     def __repr__(self) -> str:
