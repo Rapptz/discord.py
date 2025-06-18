@@ -36,7 +36,21 @@ if TYPE_CHECKING:
 
 
 class PrimaryGuild:
-    """Represents the primary guild (formally known as a clan) of a :class:`User`"""
+    """Represents the primary guild identity of a :class:`User`
+    
+    Attributes
+    -----------
+    id: Optional[:class:`int`]
+        The ID of the user's primary guild, if any.
+    tag: Optional[:class:`str`]
+        The guild's tag.
+    identity_enabled: Optional[:class:`bool`]
+        Whether the user has their primary guild publicly displayed. If ``None``, the user has a public guild but has not reaffirmed the guild identity after a change
+        
+        .. note::
+
+            Users can have their primary guild publicly displayed while still having an :attr:`id` of ``None``. Be careful when checking this attribute!
+    """
 
     __slots__ = ('id', 'identity_enabled', 'tag', '_badge', '_state')
 
@@ -59,14 +73,14 @@ class PrimaryGuild:
 
     @property
     def badge(self) -> Optional[Asset]:
-        """:class:`Asset`: Returns the primary guild's asset"""
+        """Optional[:class:`Asset`]: Returns the primary guild's asset"""
         if self._badge and self.id:
             return Asset._from_primary_guild(self._state, self.id, self._badge)
         return None
 
     @property
     def created_at(self) -> Optional[datetime]:
-        """:class:`datetime.datetime`: Returns the primary guild's creation time in UTC."""
+        """Optional[:class:`datetime.datetime`]: Returns the primary guild's creation time in UTC."""
         if self.id:
             return snowflake_time(self.id)
         return None
