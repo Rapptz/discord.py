@@ -26,7 +26,7 @@ from typing import TypedDict
 
 
 class PrimaryGuild(TypedDict):
-    identity_guild_id: int
-    identity_enabled: bool
-    tag: str
-    badge: str
+    identity_guild_id: Optional[int]
+    identity_enabled: Optional[bool]
+    tag: Optional[str]
+    badge: Optional[str]
