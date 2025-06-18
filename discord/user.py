@@ -73,7 +73,7 @@ class BaseUser(_UserTag):
         '_public_flags',
         '_state',
         '_avatar_decoration_data',
-        '_primary_guild'
+        '_primary_guild',
     )
 
     if TYPE_CHECKING:
@@ -310,7 +310,7 @@ class BaseUser(_UserTag):
         if self.global_name:
             return self.global_name
         return self.name
-    
+
     @property
     def primary_guild(self) -> Optional[PrimaryGuild]:
         """:class:`PrimaryGuild`: Returns the user's primary guild, if applicable."""

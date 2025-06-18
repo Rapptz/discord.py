@@ -36,13 +36,7 @@ if TYPE_CHECKING:
 
 
 class PrimaryGuild:
-    __slots__ = (
-        '_guild_id',
-        'identity_enabled',
-        '_tag',
-        '_badge',
-        '_state'
-    )
+    __slots__ = ('_guild_id', 'identity_enabled', '_tag', '_badge', '_state')
 
     if TYPE_CHECKING:
         _guild_id: int
@@ -50,7 +44,7 @@ class PrimaryGuild:
         _tag: str
         _badge: str
         _state: ConnectionState
-    
+
     def __init__(self, *, state, data: PrimaryGuildPayload) -> None:
         self._state = state
         self._update(data)
@@ -60,7 +54,7 @@ class PrimaryGuild:
         self.identity_enabled = data['identity_enabled']
         self._tag = data.get('tag', None)
         self._badge = data.get('badge')
-    
+
     @property
     def guild_id(self) -> Optional[int]:
         """:class:`int`: Returns the primary guild's id"""
@@ -81,14 +75,14 @@ class PrimaryGuild:
         if self._badge and self.guild_id:
             return Asset._from_primary_guild(self._state, self.guild_id, self._badge)
         return None
-    
+
     @property
     def created_at(self) -> Optional[datetime]:
         """:class:`datetime.datetime`: Returns the primary guild's creation time in UTC."""
         if self.guild_id:
             return snowflake_time(self.guild_id)
         return None
-    
+
     def __repr__(self) -> str:
         return (
             f'<PrimaryGuild guild_id={self.guild_id} identity_enabled={self.identity_enabled} tag={self.tag}'
