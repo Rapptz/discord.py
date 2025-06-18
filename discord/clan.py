@@ -67,8 +67,8 @@ class Clan:
     
     @property
     def created_at(self) -> datetime:
-        """:class:`datetime.datetime`: Returns the guilds's creation time in UTC.
+        """:class:`datetime.datetime`: Returns the clan's guild creation time in UTC.
 
-        This is when the guild was created.
+        This is when the guild, of that clan tag, was created.
         """
         return snowflake_time(self.guild_id)
