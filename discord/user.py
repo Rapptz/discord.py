@@ -32,7 +32,7 @@ from .colour import Colour
 from .enums import DefaultAvatar
 from .flags import PublicUserFlags
 from .utils import snowflake_time, _bytes_to_base64_data, MISSING, _get_as_snowflake
-from .clan import Clan
+from .primary_guild import PrimaryGuild
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .message import Message
     from .state import ConnectionState
-    from .types.clan import Clan as ClanPayload
+    from .types.primary_guild import PrimaryGuild as PrimaryGuildPayload
     from .types.channel import DMChannel as DMChannelPayload
     from .types.user import PartialUser as PartialUserPayload, User as UserPayload, AvatarDecorationData
 
@@ -73,7 +73,7 @@ class BaseUser(_UserTag):
         '_public_flags',
         '_state',
         '_avatar_decoration_data',
-        '_clan'
+        '_primary_guild'
     )
 
     if TYPE_CHECKING:
@@ -89,7 +89,7 @@ class BaseUser(_UserTag):
         _accent_colour: Optional[int]
         _public_flags: int
         _avatar_decoration_data: Optional[AvatarDecorationData]
-        _clan: Optional[ClanPayload]
+        _primary_guild: Optional[PrimaryGuildPayload]
 
     def __init__(self, *, state: ConnectionState, data: Union[UserPayload, PartialUserPayload]) -> None:
         self._state = state
@@ -127,7 +127,7 @@ class BaseUser(_UserTag):
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
         self._avatar_decoration_data = data.get('avatar_decoration_data')
-        self._clan = data.get('clan', None)
+        self._primary_guild = data.get('primary_guild', None)
 
     @classmethod
     def _copy(cls, user: Self) -> Self:
@@ -144,7 +144,7 @@ class BaseUser(_UserTag):
         self._state = user._state
         self._public_flags = user._public_flags
         self._avatar_decoration_data = user._avatar_decoration_data
-        self._clan = user._clan
+        self._primary_guild = user._primary_guild
 
         return self
 
@@ -312,12 +312,12 @@ class BaseUser(_UserTag):
         return self.name
     
     @property
-    def clan(self) -> Optional[Clan]:
-        """:class:`Clan`: Returns the user's clan, if applicable.
+    def primary_guild(self) -> Optional[PrimaryGuild]:
+        """:class:`PrimaryGuild`: Returns the user's primary guild, if applicable.
         
-        If the user has not set a clan, ``None`` is returned."""
-        if self._clan:
-            return Clan(state=self._state, data=self._clan)
+        \nIf the user has not set a primary guild, ``None`` is returned."""
+        if self._primary_guild:
+            return PrimaryGuild(state=self._state, data=self._primary_guild)
         return None
 
     def mentioned_in(self, message: Message) -> bool:

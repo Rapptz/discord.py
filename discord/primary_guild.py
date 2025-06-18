@@ -27,13 +27,13 @@ from datetime import datetime
 
 from .asset import Asset
 from .utils import snowflake_time
-from .types.clan import Clan as ClanPayload
+from .types.primary_guild import PrimaryGuild as PrimaryGuildPayload
 
 if TYPE_CHECKING:
     from .state import ConnectionState
 
 
-class Clan:
+class PrimaryGuild:
     __slots__ = (
         'guild_id',
         'identity_enabled',
@@ -49,11 +49,11 @@ class Clan:
         _badge: str
         _state: ConnectionState
     
-    def __init__(self, *, state, data: ClanPayload) -> None:
+    def __init__(self, *, state, data: PrimaryGuildPayload) -> None:
         self._state = state
         self._update(data)
 
-    def _update(self, data: ClanPayload):
+    def _update(self, data: PrimaryGuildPayload):
         self.guild_id = data["identity_guild_id"]
         self.identity_enabled = data['identity_enabled']
         self.tag = data['tag']
@@ -61,14 +61,12 @@ class Clan:
     
     @property
     def badge(self) -> Asset:
-        """:class:`Asset`: Returns the clan's asset"""
-        return Asset._from_clan(self._state, self.guild_id, self._badge)
+        """:class:`Asset`: Returns the primary guild's asset"""
+        return Asset._from_primary_guild(self._state, self.guild_id, self._badge)
     
     @property
     def created_at(self) -> datetime:
-        """:class:`datetime.datetime`: Returns the clan's guild creation time in UTC.
-
-        This is when the guild, of that clan tag, was created.
+        """:class:`datetime.datetime`: Returns the primary guild's creation time in UTC.
         """
         return snowflake_time(self.guild_id)
     

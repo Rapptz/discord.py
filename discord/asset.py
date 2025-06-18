@@ -347,7 +347,7 @@ class Asset(AssetMixin):
         )
 
     @classmethod
-    def _from_clan(cls, state: _State, guild_id: int, icon_hash: str) -> Self:
+    def _from_primary_guild(cls, state: _State, guild_id: int, icon_hash: str) -> Self:
         return cls(
             state,
             url=f'{cls.BASE}/clan-badges/{guild_id}/{icon_hash}.png?size=16',

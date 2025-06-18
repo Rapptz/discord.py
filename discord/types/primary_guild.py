@@ -24,7 +24,7 @@ DEALINGS IN THE SOFTWARE.
 
 from typing import TypedDict
 
-class Clan(TypedDict):
+class PrimaryGuild(TypedDict):
     identity_guild_id: int
     identity_enabled: bool
     tag: str
