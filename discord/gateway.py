@@ -858,6 +858,7 @@ class DiscordVoiceWebSocket:
                 'token': state.token,
                 'server_id': str(state.server_id),
                 'session_id': state.session_id,
+                'seq_ack': self.seq_ack,
             },
         }
         await self.send_as_json(payload)
@@ -934,7 +935,6 @@ class DiscordVoiceWebSocket:
                 'delay': 0,
                 'ssrc': self._connection.ssrc,
             },
-            'seq': self.seq_ack,
         }
 
         await self.send_as_json(payload)
