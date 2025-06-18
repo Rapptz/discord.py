@@ -45,8 +45,6 @@ class PrimaryGuild:
         The ID of the user's primary guild, if any.
     tag: Optional[:class:`str`]
         The primary guild's tag.
-    badge: Optional[:class:`Asset`]
-        The primary guild's asset
     identity_enabled: Optional[:class:`bool`]
         Whether the user has their primary guild publicly displayed. If ``None``, the user has a public guild but has not reaffirmed the guild identity after a change
 
