@@ -36,6 +36,7 @@ if TYPE_CHECKING:
 
 
 class PrimaryGuild:
+    r"""Represents the primary guild (formally known as a clan) of a :class:`User`"""
     __slots__ = ('_guild_id', 'identity_enabled', '_tag', '_badge', '_state')
 
     if TYPE_CHECKING:
