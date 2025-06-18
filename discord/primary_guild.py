@@ -60,7 +60,7 @@ class PrimaryGuild:
     def guild_id(self) -> Optional[int]:
         """:class:`int`: Returns the primary guild's id"""
         if self._guild_id:
-            return self._guild_id
+            return int(self._guild_id)
         return None
 
     @property
