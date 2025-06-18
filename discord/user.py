@@ -32,6 +32,7 @@ from .colour import Colour
 from .enums import DefaultAvatar
 from .flags import PublicUserFlags
 from .utils import snowflake_time, _bytes_to_base64_data, MISSING, _get_as_snowflake
+from .clan import Clan
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -71,6 +72,7 @@ class BaseUser(_UserTag):
         '_public_flags',
         '_state',
         '_avatar_decoration_data',
+        '_clan'
     )
 
     if TYPE_CHECKING:
@@ -123,6 +125,7 @@ class BaseUser(_UserTag):
         self.bot = data.get('bot', False)
         self.system = data.get('system', False)
         self._avatar_decoration_data = data.get('avatar_decoration_data')
+        self._clan = data.get('clan')
 
     @classmethod
     def _copy(cls, user: Self) -> Self:
@@ -139,6 +142,7 @@ class BaseUser(_UserTag):
         self._state = user._state
         self._public_flags = user._public_flags
         self._avatar_decoration_data = user._avatar_decoration_data
+        self._clan = user._clan
 
         return self
 
@@ -304,6 +308,15 @@ class BaseUser(_UserTag):
         if self.global_name:
             return self.global_name
         return self.name
+    
+    @property
+    def clan(self) -> Optional[Clan]:
+        """:class:`Clan`: Returns the user's clan, if applicable.
+        
+        If the user has not set a clan, ``None`` is returned."""
+        if self._clan:
+            return self._clan
+        return None
 
     def mentioned_in(self, message: Message) -> bool:
         """Checks if the user is mentioned in the specified message.
