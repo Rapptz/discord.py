@@ -74,6 +74,7 @@ if TYPE_CHECKING:
         GuildVoiceState as GuildVoiceStatePayload,
         VoiceState as VoiceStatePayload,
     )
+    from .primary_guild import PrimaryGuild
 
     VocalGuildChannel = Union[VoiceChannel, StageChannel]
 
@@ -308,6 +309,7 @@ class Member(discord.abc.Messageable, _UserTag):
         accent_colour: Optional[Colour]
         avatar_decoration: Optional[Asset]
         avatar_decoration_sku_id: Optional[int]
+        primary_guild: Optional[PrimaryGuild]
 
     def __init__(self, *, data: MemberWithUserPayload, guild: Guild, state: ConnectionState):
         self._state: ConnectionState = state
