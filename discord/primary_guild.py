@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 class PrimaryGuild:
     """Represents the primary guild identity of a :class:`User`
-    
+
     Attributes
     -----------
     id: Optional[:class:`int`]
@@ -46,7 +46,7 @@ class PrimaryGuild:
         The guild's tag.
     identity_enabled: Optional[:class:`bool`]
         Whether the user has their primary guild publicly displayed. If ``None``, the user has a public guild but has not reaffirmed the guild identity after a change
-        
+
         .. note::
 
             Users can have their primary guild publicly displayed while still having an :attr:`id` of ``None``. Be careful when checking this attribute!
@@ -56,9 +56,9 @@ class PrimaryGuild:
 
     if TYPE_CHECKING:
         id: Optional[int]
-        identity_enabled: bool
+        identity_enabled: Optional[bool]
         tag: Optional[str]
-        _badge: str
+        _badge: Optional[str]
         _state: ConnectionState
 
     def __init__(self, *, state, data: PrimaryGuildPayload) -> None:
