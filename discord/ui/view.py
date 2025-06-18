@@ -545,7 +545,7 @@ class BaseView:
 
         if self._is_v2() and self._total_children + added > 40:
             raise ValueError('maximum number of children exceeded')
-
+        self._total_children += added
         self._children.append(item)
         return self
 
