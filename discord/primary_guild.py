@@ -28,7 +28,7 @@ from typing import Optional, TYPE_CHECKING
 from datetime import datetime
 
 from .asset import Asset
-from .utils import snowflake_time
+from .utils import snowflake_time, _get_as_snowflake
 
 if TYPE_CHECKING:
     from .state import ConnectionState
@@ -36,11 +36,11 @@ if TYPE_CHECKING:
 
 
 class PrimaryGuild:
-    r"""Represents the primary guild (formally known as a clan) of a :class:`User`"""
-    __slots__ = ('_guild_id', 'identity_enabled', '_tag', '_badge', '_state')
+    """Represents the primary guild (formally known as a clan) of a :class:`User`"""
+    __slots__ = ('_id', 'identity_enabled', '_tag', '_badge', '_state')
 
     if TYPE_CHECKING:
-        _guild_id: int
+        _id: Optional[int]
         identity_enabled: bool
         _tag: str
         _badge: str
@@ -51,16 +51,16 @@ class PrimaryGuild:
         self._update(data)
 
     def _update(self, data: PrimaryGuildPayload):
-        self.id = _get_as_snowflake(data, 'identity_guild_id')
+        self._id = _get_as_snowflake(data, 'identity_guild_id')
         self.identity_enabled = data['identity_enabled']
         self._tag = data.get('tag', None)
         self._badge = data.get('badge')
 
     @property
-    def guild_id(self) -> Optional[int]:
+    def id(self) -> Optional[int]:
         """:class:`int`: Returns the primary guild's id"""
-        if self._guild_id:
-            return int(self._guild_id)
+        if self._id:
+            return self._id
         return None
 
     @property
@@ -73,19 +73,19 @@ class PrimaryGuild:
     @property
     def badge(self) -> Optional[Asset]:
         """:class:`Asset`: Returns the primary guild's asset"""
-        if self._badge and self.guild_id:
-            return Asset._from_primary_guild(self._state, self.guild_id, self._badge)
+        if self._badge and self._id:
+            return Asset._from_primary_guild(self._state, self._id, self._badge)
         return None
 
     @property
     def created_at(self) -> Optional[datetime]:
         """:class:`datetime.datetime`: Returns the primary guild's creation time in UTC."""
-        if self.guild_id:
-            return snowflake_time(self.guild_id)
+        if self._id:
+            return snowflake_time(self._id)
         return None
 
     def __repr__(self) -> str:
         return (
-            f'<PrimaryGuild guild_id={self.guild_id} identity_enabled={self.identity_enabled} tag={self.tag}'
+            f'<PrimaryGuild id={self.id} identity_enabled={self.identity_enabled} tag={self.tag}'
             f' badge={self.badge}>'
         )
