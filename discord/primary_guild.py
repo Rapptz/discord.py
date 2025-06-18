@@ -54,7 +54,7 @@ class PrimaryGuild:
         self._update(data)
 
     def _update(self, data: PrimaryGuildPayload):
-        self.guild_id = data["identity_guild_id"]
+        self.guild_id = data['identity_guild_id']
         self.identity_enabled = data['identity_enabled']
         self.tag = data['tag']
         self._badge = data['badge']
@@ -66,12 +66,11 @@ class PrimaryGuild:
     
     @property
     def created_at(self) -> datetime:
-        """:class:`datetime.datetime`: Returns the primary guild's creation time in UTC.
-        """
+        """:class:`datetime.datetime`: Returns the primary guild's creation time in UTC."""
         return snowflake_time(self.guild_id)
     
     def __repr__(self) -> str:
         return (
-            f"<guild_id={self.guild_id} identity_enabled={self.identity_enabled} tag={self.tag}"
-            f" badge={self.badge}>"
+            f'<PrimaryGuild guild_id={self.guild_id} identity_enabled={self.identity_enabled} tag={self.tag}'
+            f' badge={self.badge}>'
         )
