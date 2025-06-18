@@ -314,7 +314,7 @@ class BaseUser(_UserTag):
     @property
     def primary_guild(self) -> Optional[PrimaryGuild]:
         """:class:`PrimaryGuild`: Returns the user's primary guild, if applicable."""
-        if self._primary_guild:
+        if self._primary_guild and self._primary_guild.get("identity_enabled"):
             return PrimaryGuild(state=self._state, data=self._primary_guild)
         return None
 
