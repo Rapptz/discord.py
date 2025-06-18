@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 
 class PrimaryGuild:
     """Represents the primary guild (formally known as a clan) of a :class:`User`"""
+
     __slots__ = ('_id', 'identity_enabled', '_tag', '_badge', '_state')
 
     if TYPE_CHECKING:
@@ -85,7 +86,4 @@ class PrimaryGuild:
         return None
 
     def __repr__(self) -> str:
-        return (
-            f'<PrimaryGuild id={self.id} identity_enabled={self.identity_enabled} tag={self.tag}'
-            f' badge={self.badge}>'
-        )
+        return f'<PrimaryGuild id={self.id} identity_enabled={self.identity_enabled} tag={self.tag}' f' badge={self.badge}>'
