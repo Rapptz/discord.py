@@ -415,7 +415,7 @@ class BaseView:
         # checks whether any interactable items (buttons or selects) are present
         # in this view, and check whether this requires a state attached in case
         # of webhooks and if the view should be stored in the view store
-        return any(item.is_dispatchable() for item in self.children)
+        return any(item.is_dispatchable() for item in self.walk_children())
 
     def has_components_v2(self) -> bool:
         return any(c._is_v2() for c in self.children)
