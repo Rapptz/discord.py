@@ -22,15 +22,17 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 from datetime import datetime
 
 from .asset import Asset
 from .utils import snowflake_time
-from .types.primary_guild import PrimaryGuild as PrimaryGuildPayload
 
 if TYPE_CHECKING:
     from .state import ConnectionState
+    from .types.primary_guild import PrimaryGuild as PrimaryGuildPayload
 
 
 class PrimaryGuild:
