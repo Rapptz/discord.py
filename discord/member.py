@@ -309,7 +309,7 @@ class Member(discord.abc.Messageable, _UserTag):
         accent_colour: Optional[Colour]
         avatar_decoration: Optional[Asset]
         avatar_decoration_sku_id: Optional[int]
-        primary_guild: Optional[PrimaryGuild]
+        primary_guild: PrimaryGuild
 
     def __init__(self, *, data: MemberWithUserPayload, guild: Guild, state: ConnectionState):
         self._state: ConnectionState = state
