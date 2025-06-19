@@ -943,7 +943,7 @@ class DiscordVoiceWebSocket:
         _log.debug('Voice websocket frame received: %s', msg)
         op = msg['op']
         data = msg['d']  # According to Discord this key is always given
-        self.seq_ack = msg.get('seq', self.seq_ack)  # this key may not be given
+        self.seq_ack = msg.get('seq', self.seq_ack)  # this key could not be given
 
         if op == self.READY:
             await self.initial_connection(data)
