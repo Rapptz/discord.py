@@ -574,7 +574,10 @@ class VoiceConnectionState:
         self._disconnected.clear()
 
     async def _connect_websocket(self, resume: bool) -> DiscordVoiceWebSocket:
-        ws = await DiscordVoiceWebSocket.from_connection_state(self, resume=resume, hook=self.hook)
+        seq_ack = -1
+        if self.ws is not MISSING:
+            seq_ack = self.ws.seq_ack
+        ws = await DiscordVoiceWebSocket.from_connection_state(self, resume=resume, hook=self.hook, seq_ack=seq_ack)
         self.state = ConnectionFlowState.websocket_connected
         return ws
 

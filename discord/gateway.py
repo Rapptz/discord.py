@@ -883,6 +883,7 @@ class DiscordVoiceWebSocket:
         *,
         resume: bool = False,
         hook: Optional[Callable[..., Coroutine[Any, Any, Any]]] = None,
+        seq_ack: int = -1,
     ) -> Self:
         """Creates a voice websocket for the :class:`VoiceClient`."""
         gateway = f'wss://{state.endpoint}/?v=8'
@@ -891,6 +892,7 @@ class DiscordVoiceWebSocket:
         socket = await http.ws_connect(gateway, compress=15)
         ws = cls(socket, loop=client.loop, hook=hook)
         ws.gateway = gateway
+        ws.seq_ack = seq_ack
         ws._connection = state
         ws._max_heartbeat_timeout = 60.0
         ws.thread_id = threading.get_ident()
