@@ -43,9 +43,8 @@ if TYPE_CHECKING:
     from .guild import Guild
     from .message import Message
     from .state import ConnectionState
-    from .types.primary_guild import PrimaryGuild as PrimaryGuildPayload
     from .types.channel import DMChannel as DMChannelPayload
-    from .types.user import PartialUser as PartialUserPayload, User as UserPayload, AvatarDecorationData
+    from .types.user import PartialUser as PartialUserPayload, User as UserPayload, AvatarDecorationData, PrimaryGuild as PrimaryGuildPayload
 
 
 __all__ = (

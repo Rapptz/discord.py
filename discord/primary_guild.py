@@ -32,7 +32,7 @@ from .utils import snowflake_time, _get_as_snowflake
 
 if TYPE_CHECKING:
     from .state import ConnectionState
-    from .types.primary_guild import PrimaryGuild as PrimaryGuildPayload
+    from .types.user import PrimaryGuild as PrimaryGuildPayload
     from typing_extensions import Self
 
 
