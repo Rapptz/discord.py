@@ -88,9 +88,8 @@ class PrimaryGuild:
 
     @classmethod
     def _default(cls, state: ConnectionState) -> Self:
-        """Creates a blank :class:`PrimaryGuild`"""
         payload: PrimaryGuildPayload = {"identity_guild_id": None, "identity_enabled": False, "tag": None, "badge": None}
         return cls(state=state, data=payload)
 
     def __repr__(self) -> str:
-        return f'<PrimaryGuild id={self.id} identity_enabled={self.identity_enabled} tag={self.tag}' f' badge={self.badge}>'
+        return f'<PrimaryGuild id={self.id} identity_enabled={self.identity_enabled} tag={self.tag!r}>'
