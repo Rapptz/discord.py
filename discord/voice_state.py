@@ -632,6 +632,7 @@ class VoiceConnectionState:
                             continue
 
                     if exc.code == 4015:
+                        _log.info('Disconnected from voice, attempting a resume...')
                         try:
                             await self._connect(
                                 reconnect=reconnect,
@@ -641,11 +642,12 @@ class VoiceConnectionState:
                                 resume=True,
                             )
                         except asyncio.TimeoutError:
-                            _log.warning('Could not resume the voice connection... Disconnecting...')
+                            _log.info('Could not resume the voice connection... Disconnecting...')
                             if self.state is not ConnectionFlowState.disconnected:
                                 await self.disconnect()
                             break
                         else:
+                            _log.info('Successfully resumed voice connection')
                             continue
 
                     _log.debug('Not handling close code %s (%s)', exc.code, exc.reason or 'no reason')
