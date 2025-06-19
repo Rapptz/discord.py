@@ -55,6 +55,7 @@ class User(PartialUser, total=False):
     premium_type: PremiumType
     public_flags: int
 
+
 class PrimaryGuild(TypedDict):
     identity_guild_id: Optional[int]
     identity_enabled: Optional[bool]
