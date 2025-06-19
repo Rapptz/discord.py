@@ -645,6 +645,8 @@ class VoiceConnectionState:
                             if self.state is not ConnectionFlowState.disconnected:
                                 await self.disconnect()
                             break
+                        else:
+                            continue
 
                     _log.debug('Not handling close code %s (%s)', exc.code, exc.reason or 'no reason')
 
