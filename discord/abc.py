@@ -1732,10 +1732,14 @@ class Messageable:
             Retrieve pinned messages before this time.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
             If the datetime is naive, it is assumed to be local time.
+
+            .. versionadded:: 2.6
         limit: Optional[int]
             The maximum number of pinned messages to retrieve. Defaults to 50.
 
             This must be a number between 2 and 50.
+
+            .. versionadded:: 2.6
 
         Raises
         -------
@@ -1743,6 +1747,8 @@ class Messageable:
             You do not have the permission to retrieve pinned messages.
         ~discord.HTTPException
             Retrieving the pinned messages failed.
+        TypeError
+            The ``before`` parameter was not an aware :class:`datetime.datetime` object.
 
         Returns
         --------
