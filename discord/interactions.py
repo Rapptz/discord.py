@@ -712,6 +712,9 @@ class InteractionCallbackResponse(Generic[ClientT]):
         self.type: InteractionResponseType = type
         self._update(data)
 
+    def __repr__(self) -> str:
+        return f'<InteractionCallbackResponse id={self.id} type={self.type!r}>'
+
     def _update(self, data: InteractionCallbackPayload) -> None:
         interaction = data['interaction']
 
