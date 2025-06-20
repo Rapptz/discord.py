@@ -551,6 +551,17 @@ class Role(Hashable):
         if mentionable is not MISSING:
             payload['mentionable'] = mentionable
 
+        solid_color_used = color is not MISSING or colour is not MISSING
+        colors_used = (
+            primary_color is not MISSING or
+            secondary_color is not MISSING or
+            tertiary_color is not MISSING
+        )
+        if solid_color_used and colors_used:
+            raise TypeError(
+                "You must choose either only solid color (color/colour) or colors (primary_color/secondary_color/tertiary_color), not both."
+            )
+        
         colors_payload: Dict[str, Any] = {}
         if primary_color is not MISSING:
             if primary_color is None:
