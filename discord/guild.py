@@ -1945,7 +1945,9 @@ class Guild(Hashable):
             **options,
         )
 
-        channel = ForumChannel(state=self._state, guild=self, data=data)  # pyright: ignore[reportArgumentType] # it's the correct data
+        channel = ForumChannel(
+            state=self._state, guild=self, data=data  # pyright: ignore[reportArgumentType] # it's the correct data
+        )
 
         # temporarily add to the cache
         self._channels[channel.id] = channel
