@@ -577,21 +577,33 @@ class AppCommandChannel(Hashable):
         The guild ID this channel belongs to.
     category_id: Optional[:class:`int`]
         The category channel ID this channel belongs to, if applicable.
+
+        .. versionadded:: 2.6
     topic: Optional[:class:`str`]
         The channel's topic. ``None`` if it doesn't exist.
+
+        .. versionadded:: 2.6
     position: :class:`int`
         The position in the channel list. This is a number that starts at 0. e.g. the
         top channel is position 0.
+
+        .. versionadded:: 2.6
     last_message_id: Optional[:class:`int`]
         The last message ID of the message sent to this channel. It may
         *not* point to an existing or valid message.
+
+        .. versionadded:: 2.6
     slowmode_delay: :class:`int`
         The number of seconds a member must wait between sending messages
         in this channel. A value of ``0`` denotes that it is disabled.
         Bots and users with :attr:`~discord.Permissions.manage_channels` or
         :attr:`~discord.Permissions.manage_messages` bypass slowmode.
+
+        .. versionadded:: 2.6
     nsfw: :class:`bool`
         If the channel is marked as "not safe for work" or "age restricted".
+
+        .. versionadded:: 2.6
     """
 
     __slots__ = (
@@ -653,11 +665,17 @@ class AppCommandChannel(Hashable):
         return ChannelFlags._from_value(self._flags)
 
     def is_nsfw(self) -> bool:
-        """:class:`bool`: Checks if the channel is NSFW."""
+        """:class:`bool`: Checks if the channel is NSFW.
+
+        .. versionadded:: 2.6
+        """
         return self.nsfw
 
     def is_news(self) -> bool:
-        """:class:`bool`: Checks if the channel is a news channel."""
+        """:class:`bool`: Checks if the channel is a news channel.
+
+        .. versionadded:: 2.6
+        """
         return self.type == ChannelType.news
 
     def resolve(self) -> Optional[GuildChannel]:
