@@ -109,6 +109,9 @@ class Parameter(inspect.Parameter):
         self._fallback = False
         self._displayed_name = displayed_name
 
+    def __repr__(self) -> str:
+        return f'<{self.__class__.__name__} name={self._name!r} required={self.required}>'
+
     def replace(
         self,
         *,

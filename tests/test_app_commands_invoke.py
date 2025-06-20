@@ -21,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
+
 from __future__ import annotations
 
 
@@ -90,6 +91,7 @@ class MockCommandInteraction(discord.Interaction):
             "version": 1,
             "type": 2,
             "data": self._get_command_data(command, self._get_command_options(**options)),
+            "attachment_size_limit": 0,
         }
         super().__init__(data=data, state=client._connection)
 

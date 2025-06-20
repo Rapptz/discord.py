@@ -1112,6 +1112,9 @@ class AppCommandPermissions:
 
         self.target: Union[Object, User, Member, Role, AllChannels, GuildChannel] = _object
 
+    def __repr__(self) -> str:
+        return f'<AppCommandPermissions id={self.id} type={self.type!r} guild={self.guild!r} permission={self.permission}>'
+
     def to_dict(self) -> ApplicationCommandPermissions:
         return {
             'id': self.target.id,
@@ -1154,6 +1157,9 @@ class GuildAppCommandPermissions:
         self.permissions: List[AppCommandPermissions] = [
             AppCommandPermissions(data=value, guild=guild, state=self._state) for value in data['permissions']
         ]
+
+    def __repr__(self) -> str:
+        return f'<GuildAppCommandPermissions id={self.id!r} guild_id={self.guild_id!r} permissions={self.permissions!r}>'
 
     def to_dict(self) -> Dict[str, Any]:
         return {'permissions': [p.to_dict() for p in self.permissions]}
