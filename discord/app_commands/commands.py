@@ -2520,7 +2520,7 @@ def guild_only(func: Optional[T] = None) -> Union[T, Callable[[T], T]]:
         # Ensure that only Guild context is allowed
         allowed_contexts.guild = False  # Enable guild context
         allowed_contexts.private_channel = False  # Disable private channel context
-        allowed_contexts.dm_channel = False # Disable DM context
+        allowed_contexts.dm_channel = False  # Disable DM context
 
         return f
 
