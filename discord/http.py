@@ -2052,6 +2052,7 @@ class HTTPClient:
             'description',
             'entity_type',
             'image',
+            'recurrence_rule',
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
@@ -2105,6 +2106,7 @@ class HTTPClient:
             'description',
             'entity_type',
             'image',
+            'recurrence_rule',
         )
         payload = {k: v for k, v in payload.items() if k in valid_keys}
 
