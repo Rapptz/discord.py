@@ -621,6 +621,7 @@ class InteractionResponseType(Enum):
     autocomplete_result = 8
     modal = 9  # for modals
     # premium_required = 10 (deprecated)
+    launch_activity = 12
 
 
 class VideoQualityMode(Enum):
