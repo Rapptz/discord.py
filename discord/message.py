@@ -989,6 +989,9 @@ class MessageApplication:
         self._icon: Optional[str] = data['icon']
         self._cover_image: Optional[str] = data.get('cover_image')
 
+    def __str__(self) -> str:
+        return self.name
+
     def __repr__(self) -> str:
         return f'<MessageApplication id={self.id} name={self.name!r}>'
 
