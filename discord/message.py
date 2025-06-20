@@ -65,6 +65,7 @@ from .sticker import StickerItem, GuildSticker
 from .threads import Thread
 from .channel import PartialMessageable
 from .poll import Poll
+from .soundboard import SoundboardSound, SoundboardDefaultSound
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -81,6 +82,7 @@ if TYPE_CHECKING:
         CallMessage as CallMessagePayload,
         PurchaseNotificationResponse as PurchaseNotificationResponsePayload,
         GuildProductPurchase as GuildProductPurchasePayload,
+        SoundboardSound as SoundboardSoundPayload,
     )
 
     from .types.interactions import MessageInteraction as MessageInteractionPayload
@@ -2135,6 +2137,10 @@ class Message(PartialMessage, Hashable):
         The message snapshots attached to this message.
 
         .. versionadded:: 2.5
+    soundboard_sounds: List[Union[:class:`SoundboardSound`, :class:`SoundboardDefaultSound`]]
+        The soundboard sounds mentioned in this message.
+
+        .. versionadded:: 2.5
     """
 
     __slots__ = (
@@ -2174,6 +2180,7 @@ class Message(PartialMessage, Hashable):
         'call',
         'purchase_notification',
         'message_snapshots',
+        'soundboard_sounds',
     )
 
     if TYPE_CHECKING:
@@ -2213,6 +2220,7 @@ class Message(PartialMessage, Hashable):
         self.application_id: Optional[int] = utils._get_as_snowflake(data, 'application_id')
         self.stickers: List[StickerItem] = [StickerItem(data=d, state=state) for d in data.get('sticker_items', [])]
         self.message_snapshots: List[MessageSnapshot] = MessageSnapshot._from_value(state, data.get('message_snapshots'))
+        self.soundboard_sounds: List[Union[SoundboardSound, SoundboardDefaultSound]] = []
 
         self.poll: Optional[Poll] = None
         try:
@@ -2316,7 +2324,7 @@ class Message(PartialMessage, Hashable):
         else:
             self.purchase_notification = PurchaseNotification(purchase_notification)
 
-        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components', 'call'):
+        for handler in ('author', 'member', 'mentions', 'mention_roles', 'components', 'call', 'soundboard_sounds'):
             try:
                 getattr(self, f'_handle_{handler}')(data[handler])  # type: ignore
             except KeyError:
@@ -2508,6 +2516,21 @@ class Message(PartialMessage, Hashable):
             self.call = CallMessage(state=self._state, message=self, data=data)
         else:
             self.call = None
+
+    def _handle_soundboard_sounds(self, data: List[SoundboardSoundPayload]):
+        for sound in data:
+            guild_id = utils._get_as_snowflake(sound, 'guild_id')
+            try:
+                if guild_id:
+                    self.soundboard_sounds.append(
+                        SoundboardSound(
+                            state=self._state, data=sound, guild=self._state._get_or_create_unavailable_guild(guild_id)
+                        )
+                    )
+                else:
+                    self.soundboard_sounds.append(SoundboardDefaultSound(state=self._state, data=sound))  # type: ignore # EAFP
+            except KeyError:
+                pass
 
     def _rebind_cached_references(
         self,
