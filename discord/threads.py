@@ -277,9 +277,7 @@ class Thread(Messageable, Hashable):
 
         parent = self.parent
         for tag_id in self._applied_tags:
-            tag = parent.get_tag(  # pyright: ignore[reportAttributeAccessIssue] # parent here will be ForumChannel instance
-                tag_id
-            )
+            tag = parent.get_tag(tag_id)  # type: ignore # parent here will be ForumChannel instance
             if tag is not None:
                 tags.append(tag)
 
