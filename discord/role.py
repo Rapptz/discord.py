@@ -224,7 +224,7 @@ class Role(Hashable):
         '_state',
         '_primary_color',
         '_secondary_color',
-        '_tertiary_color', 
+        '_tertiary_color',
     )
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: RolePayload):
@@ -344,6 +344,7 @@ class Role(Hashable):
     def tertiary_color(self) -> Optional[Colour]:
         """Optional[:class:`Colour`]: The role's tertiary color."""
         return Colour(self._tertiary_color) if self._tertiary_color is not None else None
+
     @property
     def permissions(self) -> Permissions:
         """:class:`Permissions`: Returns the role's permissions."""
@@ -552,16 +553,12 @@ class Role(Hashable):
             payload['mentionable'] = mentionable
 
         solid_color_used = color is not MISSING or colour is not MISSING
-        colors_used = (
-            primary_color is not MISSING or
-            secondary_color is not MISSING or
-            tertiary_color is not MISSING
-        )
+        colors_used = primary_color is not MISSING or secondary_color is not MISSING or tertiary_color is not MISSING
         if solid_color_used and colors_used:
             raise TypeError(
                 "You must choose either only solid color (color/colour) or colors (primary_color/secondary_color/tertiary_color), not both."
             )
-        
+
         colors_payload: Dict[str, Any] = {}
         if primary_color is not MISSING:
             if primary_color is None:
@@ -586,25 +583,21 @@ class Role(Hashable):
                 colors_payload['tertiary_color'] = tertiary_color.value
         if colors_payload:
             payload['colors'] = colors_payload
-            
+
         data = await self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)
         return Role(guild=self.guild, data=data, state=self._state)
 
     @overload
-    async def move(self, *, beginning: bool, offset: int = ..., reason: Optional[str] = ...):
-        ...
+    async def move(self, *, beginning: bool, offset: int = ..., reason: Optional[str] = ...): ...
 
     @overload
-    async def move(self, *, end: bool, offset: int = ..., reason: Optional[str] = ...):
-        ...
+    async def move(self, *, end: bool, offset: int = ..., reason: Optional[str] = ...): ...
 
     @overload
-    async def move(self, *, above: Role, offset: int = ..., reason: Optional[str] = ...):
-        ...
+    async def move(self, *, above: Role, offset: int = ..., reason: Optional[str] = ...): ...
 
     @overload
-    async def move(self, *, below: Role, offset: int = ..., reason: Optional[str] = ...):
-        ...
+    async def move(self, *, below: Role, offset: int = ..., reason: Optional[str] = ...): ...
 
     async def move(
         self,
