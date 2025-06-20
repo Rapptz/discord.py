@@ -1710,10 +1710,15 @@ class Messageable:
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
 
-    async def pins(self) -> List[Message]:
+    async def pins(self, *, before: Optional[datetime] = None, limit: Optional[int] = None) -> List[Message]:
         """|coro|
 
-        Retrieves all messages that are currently pinned in the channel.
+        Retrieves a maximum of 50 pinned messages from the destination.
+
+        Requires the :attr:`~discord.Permissions.view_channel` permission.
+
+        No pins will be returned if the user is missing the
+        :attr:`~discord.Permissions.read_message_history` permission.
 
         .. note::
 
@@ -1721,23 +1726,52 @@ class Messageable:
             objects returned by this method do not contain complete
             :attr:`.Message.reactions` data.
 
+        Parameters
+        -----------
+        before: Optional[:class:`datetime.datetime`]
+            Retrieve pinned messages before this time.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+
+            .. versionadded:: 2.6
+        limit: Optional[int]
+            The maximum number of pinned messages to retrieve. Defaults to 50.
+
+            This must be a number between 2 and 50.
+
+            .. versionadded:: 2.6
+
         Raises
         -------
         ~discord.Forbidden
             You do not have the permission to retrieve pinned messages.
         ~discord.HTTPException
             Retrieving the pinned messages failed.
+        TypeError
+            The ``before`` parameter was not an aware :class:`datetime.datetime` object.
 
         Returns
         --------
         List[:class:`~discord.Message`]
             The messages that are currently pinned.
         """
+        if before is not None:
+            if not isinstance(before, datetime):
+                raise TypeError(f'before must be a datetime object, not {before.__class__!r}')
+            if before.tzinfo is None:
+                raise TypeError(
+                    'before must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
+                )
 
-        channel = await self._get_channel()
         state = self._state
-        data = await state.http.pins_from(channel.id)
-        return [state.create_message(channel=channel, data=m) for m in data]
+        channel = await self._get_channel()
+        data = await state.http.pins_from(channel.id, before=before.isoformat() if before else None, limit=limit)
+        ret: List[Message] = []
+        for m in data["items"]:
+            message = state.create_message(channel=channel, data=m["message"])
+            message._pinned_at = utils.parse_time(m.get("pinned_at"))
+            ret.append(message)
+        return ret
 
     async def history(
         self,

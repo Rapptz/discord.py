@@ -237,3 +237,13 @@ class AllowedMentions(TypedDict):
     roles: SnowflakeList
     users: SnowflakeList
     replied_user: bool
+
+
+class MessagePin(TypedDict):
+    pinned_at: str
+    message: Message
+
+
+class ChannelPins(TypedDict):
+    items: List[MessagePin]
+    has_more: bool
