@@ -924,7 +924,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
         suppress_embeds: bool = False,
         ephemeral: bool = False,
         silent: bool = False,
-        poll: Poll = MISSING,
+        poll: Optional[Poll] = None,
     ) -> Message:
         """|coro|
 
@@ -1014,10 +1014,12 @@ class Context(discord.abc.Messageable, Generic[BotT]):
 
             .. versionadded:: 2.2
 
-        poll: :class:`~discord.Poll`
+        poll: Optional[:class:`~discord.Poll`]
             The poll to send with this message.
 
             .. versionadded:: 2.4
+            .. versionchanged:: 2.6
+                This can now be ``None`` and defaults to ``None`` instead of ``MISSING``.
 
         Raises
         --------
@@ -1072,7 +1074,7 @@ class Context(discord.abc.Messageable, Generic[BotT]):
             'suppress_embeds': suppress_embeds,
             'ephemeral': ephemeral,
             'silent': silent,
-            'poll': poll,
+            'poll': MISSING if poll is None else poll,
         }
 
         if self.interaction.response.is_done():
