@@ -364,6 +364,16 @@ class Permissions(BaseFlags):
         return cls(0b0000_0000_0000_0000_0000_0001_0000_0100_0111_0000_0000_0000_0010_0000_0011_1110)
 
     @classmethod
+    def apps(cls) -> Self:
+        """A factory method that creates a :class:`Permissions` with all
+        "Apps" permissions from the official Discord UI set to ``True``.
+
+
+        .. versionadded:: 2.6
+        """
+        return cls(0b0000_0000_0000_0100_0000_0000_1000_0000_1000_0000_0000_0000_0000_0000_0000_0000)
+
+    @classmethod
     def events(cls) -> Self:
         """A factory method that creates a :class:`Permissions` with all
         "Events" permissions from the official Discord UI set to ``True``.
