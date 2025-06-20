@@ -3614,6 +3614,9 @@ class Guild(Hashable):
         hoist: bool = ...,
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
+        primary_color: Union[Colour, int, None] = ...,
+        secondary_color: Union[Colour, int, None] = ...,
+        tertiary_color: Union[Colour, int, None] = ...,
     ) -> Role:
         ...
 
@@ -3628,6 +3631,9 @@ class Guild(Hashable):
         hoist: bool = ...,
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
+        primary_color: Union[Colour, int, None] = ...,
+        secondary_color: Union[Colour, int, None] = ...,
+        tertiary_color: Union[Colour, int, None] = ...,
     ) -> Role:
         ...
 
@@ -3642,6 +3648,9 @@ class Guild(Hashable):
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = MISSING,
         reason: Optional[str] = None,
+        primary_color: Union[Colour, int, None] = MISSING,
+        secondary_color: Union[Colour, int, None] = MISSING,
+        tertiary_color: Union[Colour, int, None] = MISSING,
     ) -> Role:
         """|coro|
 
@@ -3670,6 +3679,14 @@ class Guild(Hashable):
         colour: Union[:class:`Colour`, :class:`int`]
             The colour for the role. Defaults to :meth:`Colour.default`.
             This is aliased to ``color`` as well.
+        primary_color: Union[:class:`Colour`, :class:`int`, None]
+            The primary color for the role. If provided, must be an integer or :class:`Colour`.
+        secondary_color: Union[:class:`Colour`, :class:`int`, None]
+            The secondary color for the role. Requires ``primary_color`` to also be set.
+        tertiary_color: Union[:class:`Colour`, :class:`int`, None]
+            The tertiary_color color for the role. Used for holographic role.
+            The holographic preset is:
+            {"primary_color": 11127295, "secondary_color": 16759788, "tertiary_color": 16761760}
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
             Defaults to ``False``.
@@ -3709,6 +3726,39 @@ class Guild(Hashable):
             fields['color'] = actual_colour
         else:
             fields['color'] = actual_colour.value
+
+        colors_payload: Dict[str, Any]= {}
+        if primary_color is not MISSING:
+            if primary_color is None:
+                colors_payload['primary_color'] = None
+            elif isinstance(primary_color, int):
+                colors_payload['primary_color'] = primary_color
+            else:
+                colors_payload['primary_color'] = primary_color.value
+        if secondary_color is not MISSING:
+            if secondary_color is None:
+                colors_payload['secondary_color'] = None
+            elif isinstance(secondary_color, int):
+                colors_payload['secondary_color'] = secondary_color
+            else:
+                colors_payload['secondary_color'] = secondary_color.value
+        if tertiary_color is not MISSING:
+            if tertiary_color is None:
+                colors_payload['tertiary_color'] = None
+            elif isinstance(tertiary_color, int):
+                colors_payload['tertiary_color'] = tertiary_color
+            else:
+                colors_payload['tertiary_color'] = tertiary_color.value
+
+        if colors_payload:
+            fields['colors'] = colors_payload
+        
+        if not colors_payload:
+            actual_colour = colour or color or Colour.default()
+            if isinstance(actual_colour, int):
+                fields['color'] = actual_colour
+            else:
+                fields['color'] = actual_colour.value
 
         if hoist is not MISSING:
             fields['hoist'] = hoist

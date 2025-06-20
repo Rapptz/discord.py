@@ -222,6 +222,9 @@ class Role(Hashable):
         'tags',
         '_flags',
         '_state',
+        '_primary_color',
+        '_secondary_color',
+        '_tertiary_color', 
     )
 
     def __init__(self, *, guild: Guild, state: ConnectionState, data: RolePayload):
@@ -284,6 +287,10 @@ class Role(Hashable):
         self.mentionable: bool = data.get('mentionable', False)
         self.tags: Optional[RoleTags]
         self._flags: int = data.get('flags', 0)
+        colors = data.get('colors', {})
+        self._primary_color = colors.get('primary_color', None)
+        self._secondary_color = colors.get('secondary_color', None)
+        self._tertiary_color = colors.get('tertiary_color', None)
 
         try:
             self.tags = RoleTags(data['tags'])  # pyright: ignore[reportTypedDictNotRequiredAccess]
@@ -323,6 +330,20 @@ class Role(Hashable):
         me = self.guild.me
         return not self.is_default() and not self.managed and (me.top_role > self or me.id == self.guild.owner_id)
 
+    @property
+    def primary_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: The role's primary color."""
+        return Colour(self._primary_color) if self._primary_color is not None else None
+
+    @property
+    def secondary_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: The role's secondary color."""
+        return Colour(self._secondary_color) if self._secondary_color is not None else None
+
+    @property
+    def tertiary_color(self) -> Optional[Colour]:
+        """Optional[:class:`Colour`]: The role's tertiary color."""
+        return Colour(self._tertiary_color) if self._tertiary_color is not None else None
     @property
     def permissions(self) -> Permissions:
         """:class:`Permissions`: Returns the role's permissions."""
@@ -425,6 +446,9 @@ class Role(Hashable):
         mentionable: bool = MISSING,
         position: int = MISSING,
         reason: Optional[str] = MISSING,
+        primary_color: Union[Colour, int, None] = MISSING,
+        secondary_color: Union[Colour, int, None] = MISSING,
+        tertiary_color: Union[Colour, int, None] = MISSING,
     ) -> Optional[Role]:
         """|coro|
 
@@ -470,6 +494,14 @@ class Role(Hashable):
             position or it will fail.
         reason: Optional[:class:`str`]
             The reason for editing this role. Shows up on the audit log.
+        primary_color: Union[:class:`Colour`, :class:`int`, None]
+            The primary color for the role. If provided, must be an integer or :class:`Colour`.
+        secondary_color: Union[:class:`Colour`, :class:`int`, None]
+            The secondary color for the role.
+        tertiary_color: Union[:class:`Colour`, :class:`int`, None]
+            The tertiary_color color for the role. Used for holographic role.
+            The holographic preset is:
+            {"primary_color": 11127295, "secondary_color": 16759788, "tertiary_color": 16761760}
 
         Raises
         -------
@@ -519,6 +551,31 @@ class Role(Hashable):
         if mentionable is not MISSING:
             payload['mentionable'] = mentionable
 
+        colors_payload: Dict[str, Any] = {}
+        if primary_color is not MISSING:
+            if primary_color is None:
+                colors_payload['primary_color'] = None
+            elif isinstance(primary_color, int):
+                colors_payload['primary_color'] = primary_color
+            else:
+                colors_payload['primary_color'] = primary_color.value
+        if secondary_color is not MISSING:
+            if secondary_color is None:
+                colors_payload['secondary_color'] = None
+            elif isinstance(secondary_color, int):
+                colors_payload['secondary_color'] = secondary_color
+            else:
+                colors_payload['secondary_color'] = secondary_color.value
+        if tertiary_color is not MISSING:
+            if tertiary_color is None:
+                colors_payload['tertiary_color'] = None
+            elif isinstance(tertiary_color, int):
+                colors_payload['tertiary_color'] = tertiary_color
+            else:
+                colors_payload['tertiary_color'] = tertiary_color.value
+        if colors_payload:
+            payload['colors'] = colors_payload
+            
         data = await self._state.http.edit_role(self.guild.id, self.id, reason=reason, **payload)
         return Role(guild=self.guild, data=data, state=self._state)
 
