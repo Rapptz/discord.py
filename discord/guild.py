@@ -1863,7 +1863,7 @@ class Guild(Hashable):
             .. versionadded:: 2.3
         default_layout: :class:`ForumLayoutType`
             The default layout for posts in this forum.
-            This cannot be set if ``media_only`` is set to ``True``.
+            This cannot be set if ``media`` is set to ``True``.
 
             .. versionadded:: 2.3
         available_tags: Sequence[:class:`ForumTag`]
