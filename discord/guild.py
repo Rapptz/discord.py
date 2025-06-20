@@ -2932,6 +2932,11 @@ class Guild(Hashable):
             The name of the template.
         description: :class:`str`
             The description of the template.
+
+        Returns
+        --------
+        :class:`Template`
+            The created template.
         """
         from .template import Template
 
