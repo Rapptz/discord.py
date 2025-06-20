@@ -1354,8 +1354,10 @@ Soundboard
 
     .. versionadded:: 2.5
 
-    :param sound: The soundboard sound that was updated.
-    :type sound: :class:`SoundboardSound`
+    :param before: The soundboard sound before the update.
+    :type before: :class:`SoundboardSound`
+    :param after: The soundboard sound after the update.
+    :type after: :class:`SoundboardSound`
 
 
 Stages

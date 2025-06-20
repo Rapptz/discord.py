@@ -461,7 +461,12 @@ class Ratelimit:
             future = self._loop.create_future()
             self._pending_requests.append(future)
             try:
-                await future
+                while not future.done():
+                    # 30 matches the smallest allowed max_ratelimit_timeout
+                    max_wait_time = self.expires - self._loop.time() if self.expires else 30
+                    await asyncio.wait([future], timeout=max_wait_time)
+                    if not future.done():
+                        await self._refresh()
             except:
                 future.cancel()
                 if self.remaining > 0 and not future.cancelled():

@@ -67,7 +67,7 @@ from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
 from . import utils
-from .utils import MISSING, time_snowflake
+from .utils import MISSING, time_snowflake, deprecated
 from .object import Object
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
@@ -2388,6 +2388,7 @@ class Client:
         data = await self.http.get_guild_preview(guild_id)
         return GuildPreview(data=data, state=self._connection)
 
+    @deprecated()
     async def create_guild(
         self,
         *,
@@ -2407,6 +2408,9 @@ class Client:
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
             ``InvalidArgument``.
+
+        .. deprecated:: 2.6
+            This function is deprecated and will be removed in a future version.
 
         Parameters
         ----------
