@@ -233,6 +233,7 @@ class _BaseInteraction(TypedDict):
     entitlements: NotRequired[List[Entitlement]]
     authorizing_integration_owners: Dict[Literal['0', '1'], Snowflake]
     context: NotRequired[InteractionContextType]
+    attachment_size_limit: int
 
 
 class PingInteraction(_BaseInteraction):

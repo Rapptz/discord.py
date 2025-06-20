@@ -527,6 +527,9 @@ class SelectOption:
 
         return payload
 
+    def copy(self) -> SelectOption:
+        return self.__class__.from_dict(self.to_dict())
+
 
 class TextInput(Component):
     """Represents a text input from the Discord Bot UI Kit.

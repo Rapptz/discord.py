@@ -267,3 +267,14 @@ def test_embed_colour_setter_failure(value):
     embed = discord.Embed()
     with pytest.raises(TypeError):
         embed.colour = value
+
+@pytest.mark.parametrize(
+    ('title', 'return_val'),
+    [
+        ('test', True),
+        (None, False)
+    ]
+)
+def test_embed_truthiness(title: str, return_val: bool) -> None:
+    embed = discord.Embed(title=title)
+    assert bool(embed) is return_val

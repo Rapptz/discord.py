@@ -51,6 +51,7 @@ import os
 import copy
 
 from .item import Item, ItemCallbackType
+from .select import Select
 from .dynamic import DynamicItem
 from ..components import (
     Component,
@@ -385,6 +386,8 @@ class BaseView:
                 item: Item = raw.__discord_ui_model_type__(**raw.__discord_ui_model_kwargs__)
                 item.callback = _ViewCallback(raw, self, item)  # type: ignore
                 item._view = self
+                if isinstance(item, Select):
+                    item.options = [option.copy() for option in item.options]
                 setattr(self, raw.__name__, item)
                 parent = getattr(raw, '__discord_ui_parent__', None)
                 if parent:
