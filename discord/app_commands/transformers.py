@@ -689,6 +689,7 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.news,
         ChannelType.category,
         ChannelType.forum,
+        ChannelType.media,
     ],
     GuildChannel: [
         ChannelType.stage_voice,
@@ -697,6 +698,7 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
         ChannelType.news,
         ChannelType.category,
         ChannelType.forum,
+        ChannelType.media,
     ],
     AppCommandThread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
     Thread: [ChannelType.news_thread, ChannelType.private_thread, ChannelType.public_thread],
@@ -704,7 +706,7 @@ CHANNEL_TO_TYPES: Dict[Any, List[ChannelType]] = {
     VoiceChannel: [ChannelType.voice],
     TextChannel: [ChannelType.text, ChannelType.news],
     CategoryChannel: [ChannelType.category],
-    ForumChannel: [ChannelType.forum],
+    ForumChannel: [ChannelType.forum, ChannelType.media],
 }
 
 BUILT_IN_TRANSFORMERS: Dict[Any, Transformer] = {
