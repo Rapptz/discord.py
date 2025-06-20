@@ -81,6 +81,8 @@ __all__ = (
 class ScheduledEventRecurrenceRule:
     """Represents a :class:`ScheduledEvent`'s recurrence rule.
 
+    .. versionadded:: 2.6
+
     Parameters
     ----------
     start_date: :class:`datetime.datetime`
@@ -98,7 +100,7 @@ class ScheduledEventRecurrenceRule:
 
         If ``frequency`` is ``2`` this can only have 1 item.
 
-        This is mutally exclusive with ``n_weekdays`` and ``month_days``.
+        This is mutually exclusive with ``n_weekdays`` and ``month_days``.
     n_weekdays: List[Tuple[:class:`int`, :class:`int`]]
         A (week, weekday) pairs list that represent the specific day within a
         specific week the event will recur on.
@@ -403,16 +405,16 @@ class ScheduledEvent(Hashable):
     recurrence_rule: Optional[:class:`.ScheduledEventRecurrenceRule`]
         The recurrence rule for this event, or ``None``.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.6
     sku_ids: List[:class:`Object`]
         A list of objects that represent the related SKUs of this event.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.6
     exceptions: List[:class:`Object`]
         A list of objects that represent the events on the recurrence rule of this event that
         were cancelled.
 
-        .. versionadded:: 2.5
+        .. versionadded:: 2.6
     """
 
     __slots__ = (
@@ -771,6 +773,8 @@ class ScheduledEvent(Hashable):
         recurrence_rule: Optional[:class:`.ScheduledEventRecurrenceRule`]
             The recurrence rule this event will follow, or ``None`` to set it to a
             one-time event.
+
+            .. versionadded:: 2.6
 
         Raises
         -------
