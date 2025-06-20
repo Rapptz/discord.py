@@ -61,6 +61,12 @@ class EmbedMediaProxy(EmbedProxy):
         super().__init__(layer)
         self._flags = self.__dict__.pop('flags', 0)
 
+    def __bool__(self) -> bool:
+        # This is a nasty check to see if we only have the `_flags` attribute which is created regardless in init.
+        # Had we had any of the other items, like image/video data this would be >1 and therefor
+        # would not be "empty".
+        return len(self.__dict__) > 1
+
     @property
     def flags(self) -> AttachmentFlags:
         return AttachmentFlags._from_value(self._flags or 0)
@@ -737,7 +743,7 @@ class Embed:
         # fmt: off
         result = {
             key[1:]: getattr(self, key)
-            for key in self.__slots__
+            for key in Embed.__slots__
             if key[0] == '_' and hasattr(self, key)
         }
         # fmt: on
