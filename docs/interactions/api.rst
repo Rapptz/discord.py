@@ -329,6 +329,10 @@ Enumerations
 
         Represents a select in which both users and roles can be selected.
 
+    .. attribute:: channel_select
+
+        Represents a channel select component.
+
 .. class:: ButtonStyle
 
     Represents the style of the button component.
