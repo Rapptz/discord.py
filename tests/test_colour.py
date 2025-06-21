@@ -106,18 +106,21 @@ def test_from_str_failures(value):
         (discord.Colour.og_blurple(), 0x7289DA),
         (discord.Colour.blurple(), 0x5865F2),
         (discord.Colour.greyple(), 0x99AAB5),
-        (discord.Colour.dark_theme(), 0x313338),
+        (discord.Colour.ash_theme(), 0x2E2E34),
+        (discord.Colour.dark_theme(), 0x1A1A1E),
+        (discord.Colour.onyx_theme(), 0x070709),
+        (discord.Colour.light_theme(), 0xFBFBFB),
         (discord.Colour.fuchsia(), 0xEB459E),
         (discord.Colour.yellow(), 0xFEE75C),
-        (discord.Colour.dark_embed(), 0x2B2D31),
-        (discord.Colour.light_embed(), 0xEEEFF1),
+        (discord.Colour.ash_embed(), 0x37373E),
+        (discord.Colour.dark_embed(), 0x242429),
+        (discord.Colour.onyx_embed(), 0x131416),
+        (discord.Colour.light_embed(), 0xFFFFFF),
         (discord.Colour.pink(), 0xEB459F),
     ],
 )
 def test_static_colours(value, expected):
     assert value.value == expected
-
-
 
 
 @pytest.mark.parametrize(
