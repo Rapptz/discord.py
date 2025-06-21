@@ -3718,9 +3718,8 @@ class Guild(Hashable):
         secondary_color: Union[:class:`Colour`, :class:`int`, None]
             The secondary color for the role. Requires ``primary_color`` to also be set.
         tertiary_color: Union[:class:`Colour`, :class:`int`, None]
-            The tertiary_color color for the role. Used for holographic role.
-            The holographic preset is:
-            {"primary_color": 11127295, "secondary_color": 16759788, "tertiary_color": 16761760}
+            The tertiary color for the role. Can only be used for the holographic role preset,
+            which is ``(11127295, 16759788, 16761760)``
         hoist: :class:`bool`
             Indicates if the role should be shown separately in the member list.
             Defaults to ``False``.
