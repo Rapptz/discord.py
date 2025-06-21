@@ -1710,15 +1710,20 @@ class Messageable:
         data = await self._state.http.get_message(channel.id, id)
         return self._state.create_message(channel=channel, data=data)
 
-    async def pins(self, *, before: Optional[datetime] = None, limit: Optional[int] = None) -> List[Message]:
-        """|coro|
+    async def pins(
+        self,
+        *,
+        limit: Optional[int] = None,
+        before: SnowflakeTime = MISSING,
+        after: SnowflakeTime = MISSING,
+    ) -> AsyncIterator[Message]:
+        """Retrieves an :term:`asynchronous iterator` of the pinned messages in the channel.
 
-        Retrieves a maximum of 50 pinned messages from the destination.
+        You must have :attr:`~discord.Permissions.view_channel` and
+        :attr:`~discord.Permissions.read_message_history` to get these.
 
-        Requires the :attr:`~discord.Permissions.view_channel` permission.
-
-        No pins will be returned if the user is missing the
-        :attr:`~discord.Permissions.read_message_history` permission.
+        .. versionchanged:: 2.6
+            Due to a change in Discord's API, this now returns a paginated iterator instead of a list.
 
         .. note::
 
@@ -1729,15 +1734,22 @@ class Messageable:
         Parameters
         -----------
         before: Optional[:class:`datetime.datetime`]
-            Retrieve pinned messages before this time.
+            Retrieve pinned messages before this time or snowflake.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+
+            .. versionadded:: 2.6
+        after: Optional[:class:`datetime.datetime`]
+            Retrieve pinned messages after this time or snowflake.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
             If the datetime is naive, it is assumed to be local time.
 
             .. versionadded:: 2.6
         limit: Optional[int]
-            The maximum number of pinned messages to retrieve. Defaults to 50.
-
-            This must be a number between 2 and 50.
+            The number of pinned messages to retrieve. If ``None``, it retrieves
+            every pinned message in the channel. Note, however, that this would
+            make it a slow operation.
+            Defaults to ``50``.
 
             .. versionadded:: 2.6
 
@@ -1755,23 +1767,69 @@ class Messageable:
         List[:class:`~discord.Message`]
             The messages that are currently pinned.
         """
-        if before is not None:
-            if not isinstance(before, datetime):
-                raise TypeError(f'before must be a datetime object, not {before.__class__!r}')
-            if before.tzinfo is None:
-                raise TypeError(
-                    'before must be an aware datetime. Consider using discord.utils.utcnow() or datetime.datetime.now().astimezone() for local time.'
-                )
+        if before is not MISSING and after is not MISSING:
+            raise TypeError('pins pagination does not support both before and after')
 
-        state = self._state
+        endpoint = self._state.http.pins_from
         channel = await self._get_channel()
-        data = await state.http.pins_from(channel.id, before=before.isoformat() if before else None, limit=limit)
-        ret: List[Message] = []
-        for m in data["items"]:
-            message = state.create_message(channel=channel, data=m["message"])
-            message._pinned_at = utils.parse_time(m.get("pinned_at"))
-            ret.append(message)
-        return ret
+        state = self._state
+
+        async def _before_strategy(retrieve: int, before: Optional[SnowflakeTime], limit: Optional[int]):
+            before_time = (
+                before.isoformat()
+                if isinstance(before, datetime)
+                else utils.snowflake_time(before.id).isoformat()
+                if before
+                else None
+            )
+            data = await endpoint(channel.id, limit=retrieve, before=before_time)
+
+            if data and data['items']:
+                if limit is not None:
+                    limit -= len(data)
+
+                before = utils.parse_time(data['items'][-1]['pinned_at'])
+
+            return data, before, limit
+
+        async def _after_strategy(retrieve: int, after: Optional[SnowflakeTime], limit: Optional[int]):
+            after_time = (
+                after.isoformat()
+                if isinstance(after, datetime)
+                else utils.snowflake_time(after.id).isoformat()
+                if after
+                else None
+            )
+            data = await endpoint(channel.id, limit=retrieve, after=after_time)
+
+            if data and data['items']:
+                if limit is not None:
+                    limit -= len(data)
+
+                after = utils.parse_time(data['items'][-1]['pinned_at'])
+
+            return data, after, limit
+
+        if before:
+            strategy, time = _before_strategy, before
+        else:
+            strategy, time = _after_strategy, after
+
+        while True:
+            retrieve = 50 if limit is None else min(limit, 50)
+            if retrieve < 1:
+                return
+
+            data, time, limit = await strategy(retrieve, time, limit)
+
+            # Terminate loop on next iteration; there's no data left after this
+            if len(data) < 50:
+                limit = 0
+
+            for m in data["items"]:
+                message = state.create_message(channel=channel, data=m['message'])
+                message._pinned_at = utils.parse_time(m['pinned_at'])
+                yield message
 
     async def history(
         self,
