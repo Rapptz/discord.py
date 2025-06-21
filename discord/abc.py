@@ -1719,8 +1719,8 @@ class Messageable:
     ) -> AsyncIterator[Message]:
         """Retrieves an :term:`asynchronous iterator` of the pinned messages in the channel.
 
-        You must have :attr:`~discord.Permissions.view_channel` and
-        :attr:`~discord.Permissions.read_message_history` to get these.
+        You must have the following permissions to get these:
+        :attr:`~discord.Permissions.view_channel`, :attr:`~discord.Permissions.read_message_history`.
 
         .. versionchanged:: 2.6
             Due to a change in Discord's API, this now returns a paginated iterator instead of a list.
@@ -1733,23 +1733,23 @@ class Messageable:
 
         Parameters
         -----------
-        before: Optional[:class:`datetime.datetime`]
-            Retrieve pinned messages before this time or snowflake.
-            If a datetime is provided, it is recommended to use a UTC aware datetime.
-            If the datetime is naive, it is assumed to be local time.
-
-            .. versionadded:: 2.6
-        after: Optional[:class:`datetime.datetime`]
-            Retrieve pinned messages after this time or snowflake.
-            If a datetime is provided, it is recommended to use a UTC aware datetime.
-            If the datetime is naive, it is assumed to be local time.
-
-            .. versionadded:: 2.6
         limit: Optional[int]
             The number of pinned messages to retrieve. If ``None``, it retrieves
             every pinned message in the channel. Note, however, that this would
             make it a slow operation.
             Defaults to ``50``.
+
+            .. versionadded:: 2.6
+        before: Union[:class:`datetime.datetime`, :class:`.abc.Snowflake`]
+            Retrieve pinned messages before this time or snowflake.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
+
+            .. versionadded:: 2.6
+        after: Union[:class:`datetime.datetime`, :class:`.abc.Snowflake`]
+            Retrieve pinned messages after this time or snowflake.
+            If a datetime is provided, it is recommended to use a UTC aware datetime.
+            If the datetime is naive, it is assumed to be local time.
 
             .. versionadded:: 2.6
 
@@ -1760,7 +1760,10 @@ class Messageable:
         ~discord.HTTPException
             Retrieving the pinned messages failed.
         TypeError
-            The ``before`` parameter was not an aware :class:`datetime.datetime` object.
+            
+            - The ``before`` parameter was not an aware :class:`datetime.datetime` object.
+            - The ``after`` parameter was not an aware :class:`datetime.datetime` object.
+            - The ``before`` and ``after`` parameters were both set.
 
         Returns
         --------
