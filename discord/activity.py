@@ -418,7 +418,7 @@ class Game(BaseActivity):
         return str(self.name)
 
     def __repr__(self) -> str:
-        return f'<Game name={self.name!r}>'
+        return f'<Game name={self.name!r} platform={self.platform!r}>'
 
     def to_dict(self) -> Dict[str, Any]:
         timestamps: Dict[str, Any] = {}
@@ -514,7 +514,7 @@ class Streaming(BaseActivity):
         return str(self.name)
 
     def __repr__(self) -> str:
-        return f'<Streaming name={self.name!r}>'
+        return f'<Streaming name={self.name!r} platform={self.platform!r}>'
 
     @property
     def twitch_name(self) -> Optional[str]:

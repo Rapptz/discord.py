@@ -546,7 +546,7 @@ class Invite(Hashable):
 
         return self
 
-    async def delete(self, *, reason: Optional[str] = None) -> None:
+    async def delete(self, *, reason: Optional[str] = None) -> Self:
         """|coro|
 
         Revokes the instant invite.
@@ -568,4 +568,5 @@ class Invite(Hashable):
             Revoking the invite failed.
         """
 
-        await self._state.http.delete_invite(self.code, reason=reason)
+        data = await self._state.http.delete_invite(self.code, reason=reason)
+        return self.from_incomplete(state=self._state, data=data)
