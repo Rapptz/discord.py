@@ -100,7 +100,7 @@ if TYPE_CHECKING:
     from .file import File
     from .user import ClientUser, User, BaseUser
     from .guild import Guild, GuildChannel as GuildChannelType
-    from .ui.view import View
+    from .ui.view import BaseView, View, LayoutView
     from .types.channel import (
         TextChannel as TextChannelPayload,
         NewsChannel as NewsChannelPayload,
@@ -2841,6 +2841,47 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
 
         return result
 
+    @overload
+    async def create_thread(
+        self,
+        *,
+        name: str,
+        auto_archive_duration: ThreadArchiveDuration = ...,
+        slowmode_delay: Optional[int] = ...,
+        file: File = ...,
+        files: Sequence[File] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        applied_tags: Sequence[ForumTag] = ...,
+        view: LayoutView,
+        suppress_embeds: bool = ...,
+        reason: Optional[str] = ...,
+    ) -> ThreadWithMessage:
+        ...
+
+    @overload
+    async def create_thread(
+        self,
+        *,
+        name: str,
+        auto_archive_duration: ThreadArchiveDuration = ...,
+        slowmode_delay: Optional[int] = ...,
+        content: Optional[str] = ...,
+        tts: bool = ...,
+        embed: Embed = ...,
+        embeds: Sequence[Embed] = ...,
+        file: File = ...,
+        files: Sequence[File] = ...,
+        stickers: Sequence[Union[GuildSticker, StickerItem]] = ...,
+        allowed_mentions: AllowedMentions = ...,
+        mention_author: bool = ...,
+        applied_tags: Sequence[ForumTag] = ...,
+        view: View = ...,
+        suppress_embeds: bool = ...,
+        reason: Optional[str] = ...,
+    ) -> ThreadWithMessage:
+        ...
+
     async def create_thread(
         self,
         *,
@@ -2857,7 +2898,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
         allowed_mentions: AllowedMentions = MISSING,
         mention_author: bool = MISSING,
         applied_tags: Sequence[ForumTag] = MISSING,
-        view: View = MISSING,
+        view: BaseView = MISSING,
         suppress_embeds: bool = False,
         reason: Optional[str] = None,
     ) -> ThreadWithMessage:
@@ -2907,8 +2948,11 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             If set, overrides the :attr:`~discord.AllowedMentions.replied_user` attribute of ``allowed_mentions``.
         applied_tags: List[:class:`discord.ForumTag`]
             A list of tags to apply to the thread.
-        view: :class:`discord.ui.View`
+        view: Union[:class:`discord.ui.View`, :class:`discord.ui.LayoutView`]
             A Discord UI View to add to the message.
+
+            .. versionchanged:: 2.6
+                This now accepts :class:`discord.ui.LayoutView` instances.
         stickers: Sequence[Union[:class:`~discord.GuildSticker`, :class:`~discord.StickerItem`]]
             A list of stickers to upload. Must be a maximum of 3.
         suppress_embeds: :class:`bool`
@@ -2983,7 +3027,7 @@ class ForumChannel(discord.abc.GuildChannel, Hashable):
             data = await state.http.start_thread_in_forum(self.id, params=params, reason=reason)
             thread = Thread(guild=self.guild, state=self._state, data=data)
             message = Message(state=self._state, channel=thread, data=data['message'])
-            if view and not view.is_finished():
+            if view and not view.is_finished() and view.is_dispatchable():
                 self._state.store_view(view, message.id)
 
             return ThreadWithMessage(thread=thread, message=message)
