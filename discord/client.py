@@ -67,7 +67,7 @@ from .voice_client import VoiceClient
 from .http import HTTPClient
 from .state import ConnectionState
 from . import utils
-from .utils import MISSING, time_snowflake
+from .utils import MISSING, time_snowflake, deprecated
 from .object import Object
 from .backoff import ExponentialBackoff
 from .webhook import Webhook
@@ -2388,6 +2388,7 @@ class Client:
         data = await self.http.get_guild_preview(guild_id)
         return GuildPreview(data=data, state=self._connection)
 
+    @deprecated()
     async def create_guild(
         self,
         *,
@@ -2407,6 +2408,9 @@ class Client:
         .. versionchanged:: 2.0
             This function will now raise :exc:`ValueError` instead of
             ``InvalidArgument``.
+
+        .. deprecated:: 2.6
+            This function is deprecated and will be removed in a future version.
 
         Parameters
         ----------
@@ -2546,7 +2550,7 @@ class Client:
         )
         return Invite.from_incomplete(state=self._connection, data=data)
 
-    async def delete_invite(self, invite: Union[Invite, str], /) -> None:
+    async def delete_invite(self, invite: Union[Invite, str], /) -> Invite:
         """|coro|
 
         Revokes an :class:`.Invite`, URL, or ID to an invite.
@@ -2574,7 +2578,8 @@ class Client:
         """
 
         resolved = utils.resolve_invite(invite)
-        await self.http.delete_invite(resolved.code)
+        data = await self.http.delete_invite(resolved.code)
+        return Invite.from_incomplete(state=self._connection, data=data)
 
     # Miscellaneous stuff
 
