@@ -686,9 +686,9 @@ class Command(Generic[GroupT, P, T]):
 
         self._params: Dict[str, CommandParameter] = _extract_parameters_from_callback(callback, callback.__globals__)
         self.checks: List[Check] = getattr(callback, '__discord_app_commands_checks__', [])
-        self._guild_ids: Optional[List[int]] = guild_ids or getattr(
-            callback, '__discord_app_commands_default_guilds__', None
-        )
+        self._guild_ids: Optional[List[int]] = guild_ids
+        if self._guild_ids is None:
+            self._guild_ids = getattr(callback, '__discord_app_commands_default_guilds__', None)
         self.default_permissions: Optional[Permissions] = getattr(
             callback, '__discord_app_commands_default_permissions__', None
         )
@@ -1249,7 +1249,9 @@ class ContextMenu:
         self._param_name = param
         self._annotation = annotation
         self.module: Optional[str] = callback.__module__
-        self._guild_ids = guild_ids or getattr(callback, '__discord_app_commands_default_guilds__', None)
+        self._guild_ids = guild_ids
+        if self._guild_ids is None:
+            self._guild_ids = getattr(callback, '__discord_app_commands_default_guilds__', None)
         self.on_error: Optional[UnboundError] = None
         self.default_permissions: Optional[Permissions] = getattr(
             callback, '__discord_app_commands_default_permissions__', None
@@ -1586,7 +1588,9 @@ class Group:
 
         self._attr: Optional[str] = None
         self._owner_cls: Optional[Type[Any]] = None
-        self._guild_ids: Optional[List[int]] = guild_ids or getattr(cls, '__discord_app_commands_default_guilds__', None)
+        self._guild_ids: Optional[List[int]] = guild_ids
+        if self._guild_ids is None:
+            self._guild_ids = getattr(cls, '__discord_app_commands_default_guilds__', None)
 
         if default_permissions is MISSING:
             if cls.__discord_app_commands_default_permissions__ is MISSING:
@@ -2365,6 +2369,9 @@ def guilds(*guild_ids: Union[Snowflake, int]) -> Callable[[T], T]:
     When the command instance is added to a :class:`CommandTree`, the guilds that are
     specified by this decorator become the default guilds that it's added to rather
     than being a global command.
+
+    If no arguments are given, then the command will not be synced anywhere. This may
+    be modified later using the :meth:`CommandTree.add_command` method.
 
     .. note::
 
