@@ -5455,6 +5455,14 @@ ClientStatus
 .. autoclass:: ClientStatus()
     :members:
 
+PrimaryGuild
+~~~~~~~~~~~~
+
+.. attributetable:: PrimaryGuild
+
+.. autoclass:: PrimaryGuild()
+    :members:
+
 Data Classes
 --------------
 
