@@ -1760,7 +1760,7 @@ class Messageable:
         ~discord.HTTPException
             Retrieving the pinned messages failed.
         TypeError
-            
+
             - The ``before`` parameter was not an aware :class:`datetime.datetime` object.
             - The ``after`` parameter was not an aware :class:`datetime.datetime` object.
             - The ``before`` and ``after`` parameters were both set.
