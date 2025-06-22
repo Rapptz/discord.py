@@ -1061,13 +1061,10 @@ class HTTPClient:
         channel_id: Snowflake,
         limit: Optional[int] = None,
         before: Optional[str] = None,
-        after: Optional[str] = None,
     ) -> Response[message.ChannelPins]:
         params = {}
         if before is not None:
             params['before'] = before
-        if after is not None:
-            params['after'] = after
         if limit is not None:
             params['limit'] = limit
 
