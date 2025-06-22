@@ -1715,6 +1715,7 @@ class Messageable:
         *,
         limit: Optional[int] = None,
         before: SnowflakeTime = MISSING,
+        oldest_first: bool = False,
     ) -> AsyncIterator[Message]:
         """Retrieves an :term:`asynchronous iterator` of the pinned messages in the channel.
 
@@ -1743,6 +1744,11 @@ class Messageable:
             Retrieve pinned messages before this time or snowflake.
             If a datetime is provided, it is recommended to use a UTC aware datetime.
             If the datetime is naive, it is assumed to be local time.
+
+            .. versionadded:: 2.6
+        oldest_first: :class:`bool`
+            If set to ``True``, return messages in oldest->newest order.
+            Defaults to ``False``.
 
             .. versionadded:: 2.6
 
@@ -1793,6 +1799,9 @@ class Messageable:
             # Terminate loop on next iteration; there's no data left after this
             if len(items) < max_limit or not data['has_more']:
                 limit = 0
+
+            if oldest_first:
+                reversed(items)
 
             for m in items:
                 message = state.create_message(channel=channel, data=m['message'])
