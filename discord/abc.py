@@ -1758,9 +1758,6 @@ class Messageable:
             You do not have the permission to retrieve pinned messages.
         ~discord.HTTPException
             Retrieving the pinned messages failed.
-        TypeError
-
-            - The ``before`` parameter was not an aware :class:`datetime.datetime` object.
 
         Returns
         --------
