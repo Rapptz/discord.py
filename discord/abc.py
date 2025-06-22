@@ -1761,6 +1761,7 @@ class Messageable:
         :class:`~discord.Message`
             The pinned message with :attr:`.Message.pinned_at` set.
         """
+
         channel = await self._get_channel()
         state = self._state
         max_limit: int = 50
