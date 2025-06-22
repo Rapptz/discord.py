@@ -1785,14 +1785,13 @@ class Messageable:
                 before=time,
             )
 
-            if data and data["items"]:
-                items = data["items"]
+            items = data and data["items"]
+            if items:
                 if limit is not None:
                     limit -= len(items)
 
                 time = items[-1]['pinned_at']
 
-            items = data['items']
             # Terminate loop on next iteration; there's no data left after this
             if len(items) < max_limit or not data['has_more']:
                 limit = 0
