@@ -1766,7 +1766,11 @@ class Messageable:
         state = self._state
         max_limit: int = 50
 
-        time: Optional[SnowflakeTime] = before if before is not MISSING else None
+        time: Optional[str] = (
+            (before if isinstance(before, datetime) else utils.snowflake_time(before.id)).isoformat()
+            if before is not None
+            else None
+        )
         while True:
             limit = max_limit if limit is None else min(limit, max_limit)
             if limit < 1:
@@ -1775,9 +1779,7 @@ class Messageable:
             data = await self._state.http.pins_from(
                 channel_id=channel.id,
                 limit=limit,
-                before=(time if isinstance(time, datetime) else utils.snowflake_time(time.id)).isoformat()
-                if time is not None
-                else None,
+                before=time,
             )
 
             if data and data["items"]:
@@ -1785,7 +1787,7 @@ class Messageable:
                 if limit is not None:
                     limit -= len(items)
 
-                time = utils.parse_time(items[-1]['pinned_at'])
+                time = items[-1]['pinned_at']
 
             items = data['items']
             # Terminate loop on next iteration; there's no data left after this
