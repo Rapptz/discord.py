@@ -1772,13 +1772,13 @@ class Messageable:
             else None
         )
         while True:
-            limit = max_limit if limit is None else min(limit, max_limit)
-            if limit < 1:
+            retrieve = max_limit if limit is None else min(limit, max_limit)
+            if retrieve < 1:
                 return
 
             data = await self._state.http.pins_from(
                 channel_id=channel.id,
-                limit=limit,
+                limit=retrieve,
                 before=time,
             )
 
