@@ -3648,7 +3648,6 @@ class Guild(Hashable):
         hoist: bool = ...,
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
-        primary_colour: Union[Colour, int, None] = ...,
         secondary_colour: Union[Colour, int, None] = ...,
         tertiary_colour: Union[Colour, int, None] = ...,
     ) -> Role:
@@ -3665,7 +3664,6 @@ class Guild(Hashable):
         hoist: bool = ...,
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = ...,
-        primary_color: Union[Colour, int, None] = ...,
         secondary_color: Union[Colour, int, None] = ...,
         tertiary_color: Union[Colour, int, None] = ...,
     ) -> Role:
@@ -3682,10 +3680,8 @@ class Guild(Hashable):
         display_icon: Union[bytes, str] = MISSING,
         mentionable: bool = MISSING,
         reason: Optional[str] = None,
-        primary_color: Union[Colour, int, None] = MISSING,
         secondary_color: Union[Colour, int, None] = MISSING,
         tertiary_color: Union[Colour, int, None] = MISSING,
-        primary_colour: Union[Colour, int, None] = MISSING,
         secondary_colour: Union[Colour, int, None] = MISSING,
         tertiary_colour: Union[Colour, int, None] = MISSING,
     ) -> Role:
@@ -3716,8 +3712,6 @@ class Guild(Hashable):
         colour: Union[:class:`Colour`, :class:`int`]
             The colour for the role. Defaults to :meth:`Colour.default`.
             This is aliased to ``color`` as well.
-        primary_colour: Union[:class:`Colour`, :class:`int`, None]
-            The primary colour for the role. If provided, must be an integer or :class:`Colour`.
         secondary_colour: Union[:class:`Colour`, :class:`int`, None]
             The secondary colour for the role.
         tertiary_colour: Union[:class:`Colour`, :class:`int`, None]
@@ -3764,41 +3758,28 @@ class Guild(Hashable):
             fields['color'] = actual_colour.value
 
 
-        actual_primary_colour = primary_colour or primary_color
         actual_secondary_colour = secondary_colour or secondary_color
         actual_tertiary_colour = tertiary_colour or tertiary_color
-        colors_payload: Dict[str, Any] = {}
-        if actual_primary_colour is not MISSING:
-            if actual_primary_colour is None:
-                colors_payload['primary_color'] = None
-            elif isinstance(actual_primary_colour, int):
-                colors_payload['primary_color'] = actual_primary_colour
-            else:
-                colors_payload['primary_color'] = actual_primary_colour.value
+        colours = {
+            'primary_color': fields['color'],
+        }
+        
         if actual_secondary_colour is not MISSING:
             if actual_secondary_colour is None:
-                colors_payload['secondary_color'] = None
+                colours['secondary_color'] = None
             elif isinstance(actual_secondary_colour, int):
-                colors_payload['secondary_color'] = actual_secondary_colour
+                colours['secondary_color'] = actual_secondary_colour
             else:
-                colors_payload['secondary_color'] = actual_secondary_colour.value
+                colours['secondary_color'] = actual_secondary_colour.value
         if actual_tertiary_colour is not MISSING:
             if actual_tertiary_colour is None:
-                colors_payload['tertiary_color'] = None
+                colours['tertiary_color'] = None
             elif isinstance(actual_tertiary_colour, int):
-                colors_payload['tertiary_color'] = actual_tertiary_colour
+                colours['tertiary_color'] = actual_tertiary_colour
             else:
-                colors_payload['tertiary_color'] = actual_tertiary_colour.value
+                colours['tertiary_color'] = actual_tertiary_colour.value
 
-        if colors_payload:
-            fields['colors'] = colors_payload
-
-        if not colors_payload:
-            actual_colour = colour or color or Colour.default()
-            if isinstance(actual_colour, int):
-                fields['color'] = actual_colour
-            else:
-                fields['color'] = actual_colour.value
+        fields['colors'] = colours
 
         if hoist is not MISSING:
             fields['hoist'] = hoist
