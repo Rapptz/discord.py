@@ -24,12 +24,12 @@ DEALINGS IN THE SOFTWARE.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union
+from typing import TYPE_CHECKING, Dict, List, Literal, TypedDict, Union, Optional
 from typing_extensions import NotRequired
 
-from .channel import ChannelTypeWithoutThread, ThreadMetadata, GuildChannel, InteractionDMChannel, GroupDMChannel
+from .channel import ChannelTypeWithoutThread, GuildChannel, InteractionDMChannel, GroupDMChannel
 from .sku import Entitlement
-from .threads import ThreadType
+from .threads import ThreadType, ThreadMetadata
 from .member import Member
 from .message import Attachment
 from .role import Role
@@ -64,6 +64,14 @@ class _BasePartialChannel(TypedDict):
 
 class PartialChannel(_BasePartialChannel):
     type: ChannelTypeWithoutThread
+    topic: NotRequired[str]
+    position: int
+    nsfw: bool
+    flags: int
+    rate_limit_per_user: int
+    parent_id: Optional[Snowflake]
+    last_message_id: Optional[Snowflake]
+    last_pin_timestamp: NotRequired[str]
 
 
 class PartialThread(_BasePartialChannel):
@@ -233,6 +241,7 @@ class _BaseInteraction(TypedDict):
     entitlements: NotRequired[List[Entitlement]]
     authorizing_integration_owners: Dict[Literal['0', '1'], Snowflake]
     context: NotRequired[InteractionContextType]
+    attachment_size_limit: int
 
 
 class PingInteraction(_BaseInteraction):

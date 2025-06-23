@@ -154,6 +154,10 @@ class Interaction(Generic[ClientT]):
         The context of the interaction.
 
         .. versionadded:: 2.4
+    filesize_limit: int
+        The maximum number of bytes a file can have when responding to this interaction.
+
+        .. versionadded:: 2.6
     """
 
     __slots__: Tuple[str, ...] = (
@@ -172,7 +176,8 @@ class Interaction(Generic[ClientT]):
         'command_failed',
         'entitlement_sku_ids',
         'entitlements',
-        "context",
+        'context',
+        'filesize_limit',
         '_integration_owners',
         '_permissions',
         '_app_permissions',
@@ -214,6 +219,7 @@ class Interaction(Generic[ClientT]):
         self.application_id: int = int(data['application_id'])
         self.entitlement_sku_ids: List[int] = [int(x) for x in data.get('entitlement_skus', []) or []]
         self.entitlements: List[Entitlement] = [Entitlement(self._state, x) for x in data.get('entitlements', [])]
+        self.filesize_limit: int = data['attachment_size_limit']
         # This is not entirely useful currently, unsure how to expose it in a way that it is.
         self._integration_owners: Dict[int, Snowflake] = {
             int(k): int(v) for k, v in data.get('authorizing_integration_owners', {}).items()
@@ -705,6 +711,9 @@ class InteractionCallbackResponse(Generic[ClientT]):
         self._parent: Interaction[ClientT] = parent
         self.type: InteractionResponseType = type
         self._update(data)
+
+    def __repr__(self) -> str:
+        return f'<InteractionCallbackResponse id={self.id} type={self.type!r}>'
 
     def _update(self, data: InteractionCallbackPayload) -> None:
         interaction = data['interaction']

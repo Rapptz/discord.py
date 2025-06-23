@@ -1354,8 +1354,10 @@ Soundboard
 
     .. versionadded:: 2.5
 
-    :param sound: The soundboard sound that was updated.
-    :type sound: :class:`SoundboardSound`
+    :param before: The soundboard sound before the update.
+    :type before: :class:`SoundboardSound`
+    :param after: The soundboard sound after the update.
+    :type after: :class:`SoundboardSound`
 
 
 Stages
@@ -2418,7 +2420,7 @@ of :class:`enum.Enum`.
         When this is the action, the type of :attr:`~AuditLogEntry.extra` is
         set to an unspecified proxy object with two attributes:
 
-        - ``channel``: A :class:`TextChannel` or :class:`Object` with the channel ID where the members were moved.
+        - ``channel``: An :class:`abc.Connectable` or :class:`Object` with the channel ID where the members were moved.
         - ``count``: An integer specifying how many members were moved.
 
         .. versionadded:: 1.3
