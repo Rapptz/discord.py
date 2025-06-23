@@ -34,6 +34,8 @@ class Role(TypedDict):
     id: Snowflake
     name: str
     color: int
+    secondary_color: NotRequired[Optional[int]]
+    tertiary_color: NotRequired[Optional[int]]
     hoist: bool
     position: int
     permissions: str

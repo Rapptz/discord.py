@@ -3757,24 +3757,20 @@ class Guild(Hashable):
         else:
             fields['color'] = actual_colour.value
 
-
-        actual_secondary_colour = secondary_colour or secondary_color
+        actual_secondary_colour = secondary_colour or secondary_color or Colour.default()
         actual_tertiary_colour = tertiary_colour or tertiary_color
         colours = {
             'primary_color': fields['color'],
         }
-        
+
         if actual_secondary_colour is not MISSING:
-            if actual_secondary_colour is None:
-                colours['secondary_color'] = None
-            elif isinstance(actual_secondary_colour, int):
+            if isinstance(actual_secondary_colour, int):
                 colours['secondary_color'] = actual_secondary_colour
             else:
                 colours['secondary_color'] = actual_secondary_colour.value
-        if actual_tertiary_colour is not MISSING:
-            if actual_tertiary_colour is None:
-                colours['tertiary_color'] = None
-            elif isinstance(actual_tertiary_colour, int):
+
+        if actual_tertiary_colour is not MISSING and actual_tertiary_colour is not None:
+            if isinstance(actual_tertiary_colour, int):
                 colours['tertiary_color'] = actual_tertiary_colour
             else:
                 colours['tertiary_color'] = actual_tertiary_colour.value

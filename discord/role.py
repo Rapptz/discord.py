@@ -222,7 +222,6 @@ class Role(Hashable):
         'tags',
         '_flags',
         '_state',
-        '_primary_colour',
         '_secondary_colour',
         '_tertiary_colour',
     )
@@ -288,7 +287,6 @@ class Role(Hashable):
         self.tags: Optional[RoleTags]
         self._flags: int = data.get('flags', 0)
         colors = data.get('colors', {})
-        self._primary_colour = colors.get('primary_colour', None)
         self._secondary_colour = colors.get('secondary_colour', None)
         self._tertiary_colour = colors.get('tertiary_colour', None)
 
@@ -329,16 +327,6 @@ class Role(Hashable):
         """
         me = self.guild.me
         return not self.is_default() and not self.managed and (me.top_role > self or me.id == self.guild.owner_id)
-
-    @property
-    def primary_colour(self) -> Optional[Colour]:
-        """Optional[:class:`Colour`]: The role's primary colour."""
-        return Colour(self._primary_colour) if self._primary_colour is not None else None
-
-    @property
-    def primary_color(self) -> Optional[Colour]:
-        """Optional[:class:`Colour`]: Alias for :attr:`primary_colour`."""
-        return self.primary_colour
 
     @property
     def secondary_colour(self) -> Optional[Colour]:
@@ -568,7 +556,10 @@ class Role(Hashable):
         colours = {
             'primary_color': payload['color'],
         }
-        
+
+        actual_secondary_colour = secondary_colour or secondary_color
+        actual_tertiary_colour = tertiary_colour or tertiary_color
+
         if actual_secondary_colour is not MISSING:
             if actual_secondary_colour is None:
                 colours['secondary_color'] = None
