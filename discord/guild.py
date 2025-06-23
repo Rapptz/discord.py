@@ -3763,19 +3763,6 @@ class Guild(Hashable):
         else:
             fields['color'] = actual_colour.value
 
-        solid_color_used = color is not MISSING or colour is not MISSING
-        colors_used = (
-            primary_color is not MISSING
-            or secondary_color is not MISSING
-            or tertiary_color is not MISSING
-            or primary_colour is not MISSING
-            or secondary_colour is not MISSING
-            or tertiary_colour is not MISSING
-        )
-        if solid_color_used and colors_used:
-            raise TypeError(
-                "You must choose either only solid colour (color/colour) or colours (primary_colour/secondary_colour/tertiary_colour), not both."
-            )
 
         actual_primary_colour = primary_colour or primary_color
         actual_secondary_colour = secondary_colour or secondary_color
